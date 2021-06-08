@@ -30,7 +30,7 @@ include(config/FindZLIB.cmake)
 include(config/SiteConfig.cmake)
 include(config/GitInfo.cmake)
 
-add_subdirectory(third_party)
+add_subdirectory(submodules)
 add_subdirectory(source)
 add_subdirectory(example)
 

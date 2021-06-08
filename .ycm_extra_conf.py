@@ -98,9 +98,10 @@ system_include_dirs = scan_for_system_include_dirs()
 project_include_dirs = [
     os.path.join(binaryDir(), "include"),
     'include',
-    'third_party/include',
-    'third_party/asio/asio/include',
-    'third_party/rapidjson/include',
+    'submodules/include',
+    'submodules/asio/asio/include',
+    'submodules/rapidjson/include',
+    'submodules/rapidyaml/include',
     'source/utils'
 ]
 #------------------------------------------------------------------------------#
