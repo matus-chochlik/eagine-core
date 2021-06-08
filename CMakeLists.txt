@@ -33,3 +33,9 @@ include(config/GitInfo.cmake)
 add_subdirectory(third_party)
 add_subdirectory(source)
 add_subdirectory(example)
+
+# tests
+if(NOT ${NO_TESTS})
+	add_subdirectory(test)
+endif()
+
