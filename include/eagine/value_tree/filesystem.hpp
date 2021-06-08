@@ -30,7 +30,7 @@ auto from_filesystem_path(
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree
 
-#if !EAGINE_LINK_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
 #include <eagine/value_tree/filesystem.inl>
 #endif
 

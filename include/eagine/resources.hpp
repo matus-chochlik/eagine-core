@@ -53,7 +53,7 @@ inline auto ca_certificate_pem(memory::const_block embedded_blk, main_ctx& ctx)
 //------------------------------------------------------------------------------
 } // namespace eagine
 
-#if !EAGINE_LINK_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
 #include <eagine/resources.inl>
 #endif
 

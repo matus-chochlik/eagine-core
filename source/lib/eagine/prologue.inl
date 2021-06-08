@@ -6,4 +6,4 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#define EAGINE_LINK_LIBRARY 1
+#define EAGINE_CORE_LIBRARY 1

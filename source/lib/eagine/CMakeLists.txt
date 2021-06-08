@@ -39,16 +39,18 @@ target_compile_definitions(
 )
 
 target_include_directories(
-	eagine-core PUBLIC
-	"$<INSTALL_INTERFACE:include>"
-	"$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
-	"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
-	"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/asio/asio/include>"
-	"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/rapidjson/include>"
-	"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+	eagine-core
+	PUBLIC
+		"$<INSTALL_INTERFACE:include>"
+		"$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
+		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+	PRIVATE
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/asio/asio/include>"
+		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/rapidjson/include>"
 )
 
-target_link_libraries(eagine-core PUBLIC ryml)
+target_link_libraries(eagine-core PRIVATE ryml)
 
 # TODO
 # eagine_embed_target_resources(eagine)

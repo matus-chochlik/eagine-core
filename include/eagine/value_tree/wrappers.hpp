@@ -884,7 +884,7 @@ static inline auto operator/(compound c, attribute a) noexcept
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree
 
-#if !EAGINE_LINK_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
 #include <eagine/value_tree/wrappers.inl>
 #endif
 
