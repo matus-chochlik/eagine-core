@@ -5,6 +5,9 @@
 
 add_subdirectory(lib)
 
+add_library(EAGine::Core INTERFACE IMPORTED GLOBAL)
+target_link_libraries(EAGine::Core INTERFACE eagine-core)
+
 install(
 	TARGETS eagine-core
 	EXPORT Core
@@ -16,7 +19,7 @@ install(
 
 install(
 	EXPORT Core
-	FILE Core.cmake
 	NAMESPACE EAGine::
+	FILE Core.cmake
 	DESTINATION lib/cmake/EAGine
 )

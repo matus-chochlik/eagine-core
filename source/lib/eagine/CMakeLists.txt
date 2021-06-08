@@ -52,9 +52,6 @@ target_include_directories(
 
 target_link_libraries(eagine-core PRIVATE ryml)
 
-# TODO
-# eagine_embed_target_resources(eagine)
-
 target_link_libraries(
 	eagine-core
 	PUBLIC
