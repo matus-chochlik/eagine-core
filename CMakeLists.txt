@@ -5,29 +5,21 @@
 #
 cmake_minimum_required(VERSION 3.10)
 
-include(config/Policies.cmake)
-
 project(EAGineCore)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
 file(STRINGS VERSION EAGINE_VERSION)
 
-include(config/Defaults.cmake)
-include(config/BuildType.cmake)
-include(config/StaticAnalysis.cmake)
-include(config/Compiler.cmake)
-include(config/CppFeature.cmake)
-include(config/LowProfile.cmake)
+include(EAGineCoreCommon)
+include(EAGineCppFeature)
 
-include(config/CommonFindMod.cmake)
-include(config/CommonLibs.cmake)
+find_package(Threads REQUIRED)
+find_package(EAGineCommonLibs)
+find_package(EAGineSystemd)
+find_package(EAGineZLIB)
+find_package(EAGineBoostSpirit)
+find_package(EAGineStacktrace)
 
-include(config/FindThreads.cmake)
-include(config/FindStacktrace.cmake)
-include(config/FindBoostSpirit.cmake)
-include(config/FindSystemd.cmake)
-include(config/FindZLIB.cmake)
-
-# now create the site-configuration headers
-include(config/GitInfo.cmake)
+include(EAGineGitInfo)
 
 add_subdirectory(submodules)
 

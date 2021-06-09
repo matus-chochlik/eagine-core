@@ -3,9 +3,9 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-add_custom_target(eagine-examples ALL)
+add_custom_target(eagine-core-examples ALL)
 set_target_properties(
-	eagine-examples
+	eagine-core-examples
 	PROPERTIES FOLDER "Example/EAGine"
 )
 
@@ -17,7 +17,7 @@ function(eagine_example_common EXAMPLE_NAME)
 		${ARGN}
 	)
 	eagine_add_exe_analysis(eagine-${EXAMPLE_NAME})
-	add_dependencies(eagine-examples eagine-${EXAMPLE_NAME})
+	add_dependencies(eagine-core-examples eagine-${EXAMPLE_NAME})
 	target_link_libraries(
 		eagine-${EXAMPLE_NAME}
 		PUBLIC EAGine::Core
