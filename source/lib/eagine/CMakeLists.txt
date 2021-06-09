@@ -3,7 +3,8 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 
-set(EAGINE_LIB_SOURCES
+add_library(
+	eagine-core
 	debug.cpp
 	main_wrap.cpp
 	git_info.cpp
@@ -15,7 +16,6 @@ set(EAGINE_LIB_SOURCES
 	from_string.cpp
 	edit_distance.cpp
 	logging.cpp
-	file_contents.cpp
 	input_data.cpp
 	compression.cpp
 	str_var_subst.cpp
@@ -27,11 +27,6 @@ set(EAGINE_LIB_SOURCES
 	value_tree_wrappers.cpp
 	watchdog.cpp
 )
-
-add_library(
-	eagine-core
-	${EAGINE_LIB_SOURCES}
-)
 eagine_add_lib_analysis(eagine-core)
 
 target_compile_definitions(
@@ -40,28 +35,24 @@ target_compile_definitions(
 
 target_include_directories(
 	eagine-core
-	PUBLIC
-		"$<INSTALL_INTERFACE:include>"
-		"$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
-		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
 	PRIVATE
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/submodules/asio/asio/include>"
-		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/submodules/rapidjson/include>"
 )
-
-target_link_libraries(eagine-core PRIVATE ryml)
 
 target_link_libraries(
 	eagine-core
 	PUBLIC
-		EAGine::Required
-		EAGopt::Stacktrace
+		eagine-core-generated-headers
+		eagine-core-headers
+		EAGine::Core::Deps::System
+		EAGine::Core::Deps::ZLIB
+		EAGine::Core::Deps::Stacktrace
+		EAGine::Core::Deps::BoostSpirit
 		Threads::Threads
-	PRIVATE
-		EAGopt::ZLIB
-		EAGopt::BoostSpirit
 		SYSTEMD::SYSTEMD
+	PRIVATE
+		eagine-core-private-headers
+		ryml
 )
 
 set_target_properties(

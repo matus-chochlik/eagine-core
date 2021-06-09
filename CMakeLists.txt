@@ -27,10 +27,11 @@ include(config/FindSystemd.cmake)
 include(config/FindZLIB.cmake)
 
 # now create the site-configuration headers
-include(config/SiteConfig.cmake)
 include(config/GitInfo.cmake)
 
 add_subdirectory(submodules)
+
+add_subdirectory(include)
 add_subdirectory(source)
 add_subdirectory(example)
 

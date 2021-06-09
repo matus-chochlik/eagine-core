@@ -9,12 +9,17 @@ add_library(EAGine::Core INTERFACE IMPORTED GLOBAL)
 target_link_libraries(EAGine::Core INTERFACE eagine-core)
 
 install(
-	TARGETS eagine-core
+	TARGETS
+		eagine-core-generated-headers
+		eagine-core-private-headers
+		eagine-core-headers
+		eagine-core
 	EXPORT Core
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
 	INCLUDES DESTINATION include
+	PUBLIC_HEADER DESTINATION include
 )
 
 install(

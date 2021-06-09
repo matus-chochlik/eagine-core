@@ -3,7 +3,7 @@
 #  See accompanying file LICENSE_1_0.txt or copy at
 #   http://www.boost.org/LICENSE_1_0.txt
 #
-add_library(EAGine::Required INTERFACE IMPORTED)
+add_library(EAGine::Core::Deps::System INTERFACE IMPORTED)
 
 if(UNIX AND NOT APPLE)
 	add_library(EAGreq::StdCxxFs INTERFACE IMPORTED)
@@ -25,7 +25,7 @@ if(UNIX AND NOT APPLE)
 	)
 
 	set_target_properties(
-		EAGine::Required PROPERTIES
+		EAGine::Core::Deps::System PROPERTIES
 		INTERFACE_LINK_LIBRARIES
 		"EAGreq::StdCxxFs;EAGreq::RunTime;EAGreq::DynLib"
 	)

@@ -80,9 +80,3 @@ else()
 	set(EAGINE_HAS_GIT_INFO 0)
 endif()
 
-configure_file(
-	${PROJECT_SOURCE_DIR}/config/eagine/config/git_info.hpp.in
-	${PROJECT_BINARY_DIR}/include/eagine/config/git_info.hpp
-	@ONLY
-)
-
