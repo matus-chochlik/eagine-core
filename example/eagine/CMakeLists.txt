@@ -86,4 +86,4 @@ eagine_embed_target_resources(eagine-embed_self)
 #eagine_example_common(embed_baked)
 #eagine_embed_packed_target_resources(eagine-embed_baked zebra_fur)
 #
-#add_subdirectory(serialize)
+add_subdirectory(serialize)
