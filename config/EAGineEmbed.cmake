@@ -5,7 +5,7 @@
 #
 set(
 	EAGINE_EMBED_GENERATOR
-	"python3" "${PROJECT_SOURCE_DIR}/config/tools/embed_generator"
+	"python3" "${EAGINE_CORE_ROOT}/config/tools/embed_generator"
 )
 
 include(EAGineEmbedCommon)

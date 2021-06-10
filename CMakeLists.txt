@@ -6,6 +6,9 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(EAGineCore)
+if(NOT EAGINE_CORE_ROOT)
+	set(EAGINE_CORE_ROOT ${PROJECT_SOURCE_DIR})
+endif()
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
 file(STRINGS VERSION EAGINE_VERSION)
 
