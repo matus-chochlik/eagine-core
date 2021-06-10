@@ -157,7 +157,6 @@ eagine/logging/type/exception.hpp
 eagine/logging/type/filesystem.hpp
 eagine/logging/type/program_args.hpp
 eagine/logging/type/yes_no_maybe.hpp
-eagine/logging/type/remote_node.hpp
 eagine/logging/config.hpp
 eagine/logging/fwd.hpp
 eagine/logging/severity.hpp
