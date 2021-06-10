@@ -21,7 +21,9 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-class main_ctx_storage : public main_ctx_getters {
+class main_ctx_storage
+  : public main_ctx_getters
+  , public main_ctx_setters {
 public:
     main_ctx_storage(
       int argc,
@@ -44,6 +46,10 @@ public:
         _log_root.info("application ${appName} starting")
           .arg(EAGINE_ID(appName), _app_name)
           .arg(EAGINE_ID(exePath), _exe_path);
+    }
+
+    auto setters() noexcept -> main_ctx_setters* final {
+        return this;
     }
 
     auto preinitialize() noexcept -> main_ctx_storage& final {
@@ -91,6 +97,11 @@ public:
     auto bus() noexcept -> message_bus& final {
         EAGINE_ASSERT(_msg_bus);
         return *_msg_bus;
+    }
+
+    void inject(std::shared_ptr<message_bus> msg_bus) final {
+        EAGINE_ASSERT(!_msg_bus);
+        _msg_bus = std::move(msg_bus);
     }
 
     auto compressor() noexcept -> data_compressor& final {

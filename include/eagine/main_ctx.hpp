@@ -59,6 +59,10 @@ public:
         return *_single_ptr();
     }
 
+    auto setters() noexcept -> main_ctx_setters* final {
+        return _source.setters();
+    }
+
     auto preinitialize() noexcept -> main_ctx& final;
 
     auto instance_id() const noexcept -> process_instance_id_t final {

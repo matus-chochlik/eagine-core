@@ -35,10 +35,20 @@ class main_ctx_object_parent_info;
 /// @ingroup main_context
 using main_ctx_parent = const main_ctx_object_parent_info&;
 
-/// @brief Interface for classes providing access to some singletons.
+/// @brief Interface for classes providing access to main context singletons.
+/// @ingroup main_context
+/// @see main_ctx_setters
+struct main_ctx_setters : interface<main_ctx_setters> {
+    /// @brief Injects the message bus object to main context.
+    virtual void inject(std::shared_ptr<message_bus>) = 0;
+};
+
+/// @brief Interface for classes providing access to main context singletons.
 /// @ingroup main_context
 /// @see main_ctx
 struct main_ctx_getters : interface<main_ctx_getters> {
+    /// @brief Returns the associated setter object (may return nullptr).
+    virtual auto setters() noexcept -> main_ctx_setters* = 0;
 
     /// @brief Does potentially expensive initialization and caching.
     virtual auto preinitialize() noexcept -> main_ctx_getters& = 0;
