@@ -55,7 +55,7 @@ target_include_directories(
 		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/submodules/rapidjson/include>"
 )
 
-foreach(FILENAME ${HEADERS} ${LIB_INLS})
+foreach(FILENAME ${LIB_INLS})
 	set_property(
 		TARGET eagine-core-private-headers
 		APPEND PROPERTY PRIVATE_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}

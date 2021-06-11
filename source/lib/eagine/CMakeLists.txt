@@ -20,6 +20,7 @@ add_library(
 	compression.cpp
 	str_var_subst.cpp
 	random.cpp
+	resources.cpp
 	url.cpp
 	value_tree_json.cpp
 	value_tree_yaml.cpp
@@ -27,6 +28,7 @@ add_library(
 	value_tree_wrappers.cpp
 	watchdog.cpp
 )
+eagine_embed_target_resources(TARGET eagine-core)
 eagine_add_lib_analysis(eagine-core)
 
 target_compile_definitions(

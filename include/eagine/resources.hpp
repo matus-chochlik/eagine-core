@@ -39,18 +39,6 @@ inline auto fetch_resource(
       ctx.log());
 }
 //------------------------------------------------------------------------------
-auto ca_certificate_pem(
-  memory::const_block embedded_blk,
-  memory::buffer&,
-  application_config&,
-  logger&) -> memory::const_block;
-//------------------------------------------------------------------------------
-inline auto ca_certificate_pem(memory::const_block embedded_blk, main_ctx& ctx)
-  -> memory::const_block {
-    return ca_certificate_pem(
-      embedded_blk, ctx.scratch_space(), ctx.config(), ctx.log());
-}
-//------------------------------------------------------------------------------
 } // namespace eagine
 
 #if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)

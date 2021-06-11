@@ -56,19 +56,4 @@ auto fetch_resource(
     return {};
 }
 //------------------------------------------------------------------------------
-EAGINE_LIB_FUNC
-auto ca_certificate_pem(
-  memory::const_block embedded_blk,
-  memory::buffer& buf,
-  application_config& cfg,
-  logger& log) -> memory::const_block {
-    return fetch_resource(
-      string_view{"CA certificate"},
-      string_view{"ca_cert_path"},
-      embedded_blk,
-      buf,
-      cfg,
-      log);
-}
-//------------------------------------------------------------------------------
 } // namespace eagine
