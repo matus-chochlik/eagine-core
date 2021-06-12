@@ -3,9 +3,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-file(STRINGS headers.txt HEADERS)
-file(STRINGS pub_inl.txt PUB_INLS)
-file(STRINGS lib_inl.txt LIB_INLS)
+include(./Sources.cmake)
 # - generated headers ---------------------------------------------------------
 configure_file(eagine/config/site.hpp.in eagine/config/site.hpp)
 configure_file(eagine/config/git_info.hpp.in eagine/config/git_info.hpp @ONLY)

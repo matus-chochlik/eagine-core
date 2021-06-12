@@ -1,5 +1,0 @@
-eagine/memory/alloc_arena.inl
-eagine/memory/c_realloc.inl
-eagine/memory/stack_alloc.inl
-eagine/multi_byte_seq.inl
-eagine/progress_bar.inl
