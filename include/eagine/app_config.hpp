@@ -6,8 +6,8 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#ifndef EAGINE_APPLICATION_CONFIG_HPP
-#define EAGINE_APPLICATION_CONFIG_HPP
+#ifndef EAGINE_APP_CONFIG_HPP
+#define EAGINE_APP_CONFIG_HPP
 
 #include "main_ctx_object.hpp"
 #include "program_args.hpp"
@@ -244,7 +244,7 @@ private:
 } // namespace eagine
 
 #if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
-#include <eagine/application_config.inl>
+#include <eagine/app_config.inl>
 #endif
 
 #endif

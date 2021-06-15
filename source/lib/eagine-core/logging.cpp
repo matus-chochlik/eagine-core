@@ -8,7 +8,7 @@
 
 // clang-format off
 #include "prologue.inl"
-#include <eagine/application_config.hpp>
+#include <eagine/app_config.hpp>
 #include <eagine/compiler_info.hpp>
 #include <eagine/git_info.hpp>
 #include <eagine/from_string.hpp>

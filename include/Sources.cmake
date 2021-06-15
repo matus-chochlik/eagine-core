@@ -8,7 +8,7 @@ set(HEADERS
     eagine/animated_value.hpp
     eagine/any_random_engine.hpp
     eagine/anything.hpp
-    eagine/application_config.hpp
+    eagine/app_config.hpp
     eagine/args_within_limits.hpp
     eagine/array_size.hpp
     eagine/assert.hpp
@@ -367,7 +367,7 @@ set(PUB_INLS
 )
 
 set(LIB_INLS
-    eagine/application_config.inl
+    eagine/app_config.inl
     eagine/bindump.inl
     eagine/build_info.inl
     eagine/compiler_info.inl

@@ -5,7 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#include <eagine/application_config.hpp>
+#include <eagine/app_config.hpp>
 #include <eagine/file_contents.hpp>
 #include <eagine/logging/type/program_args.hpp>
 #include <eagine/memory/buffer.hpp>

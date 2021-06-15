@@ -8,7 +8,7 @@
 #ifndef EAGINE_MAIN_CTX_STORAGE_HPP
 #define EAGINE_MAIN_CTX_STORAGE_HPP
 
-#include "application_config.hpp"
+#include "app_config.hpp"
 #include "build_info.hpp"
 #include "compiler_info.hpp"
 #include "compression.hpp"
