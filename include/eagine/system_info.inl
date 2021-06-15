@@ -304,6 +304,12 @@ auto system_info::hostname() noexcept -> valid_if_not_empty<std::string> {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
+auto system_info::config_dir_path() noexcept
+  -> valid_if_not_empty<string_view> {
+    return {"/etc"};
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
 auto system_info::memory_page_size() noexcept
   -> valid_if_positive<span_size_t> {
 #if EAGINE_POSIX

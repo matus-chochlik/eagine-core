@@ -25,10 +25,13 @@ public:
       : main_ctx_object{EAGINE_ID(UserInfo), parent} {}
 
     /// @brief The user's login name.
-    auto login_name() -> valid_if_not_empty<string_view>;
+    auto login_name() noexcept -> valid_if_not_empty<string_view>;
 
     /// @brief Paths to the user's home directory.
-    auto home_dir_path() -> valid_if_not_empty<string_view>;
+    auto home_dir_path() noexcept -> valid_if_not_empty<string_view>;
+
+    /// @brief Paths to the user's configuration directory.
+    auto config_dir_path() noexcept -> valid_if_not_empty<string_view>;
 
 private:
     std::shared_ptr<user_info_impl> _pimpl;

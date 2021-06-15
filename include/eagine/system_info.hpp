@@ -49,6 +49,9 @@ public:
     /// @brief Returns the hostname.
     auto hostname() noexcept -> valid_if_not_empty<std::string>;
 
+    /// @brief Paths to the system's configuration directory.
+    auto config_dir_path() noexcept -> valid_if_not_empty<string_view>;
+
     /// @brief Returns the system uptime.
     auto uptime() noexcept -> std::chrono::duration<float>;
 

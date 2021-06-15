@@ -35,6 +35,8 @@ auto main(main_ctx& ctx) -> int {
               << std::endl;
     std::cout << "version patch: " << either_or(build.version_patch(), na)
               << std::endl;
+    std::cout << "install prefix: " << either_or(build.install_prefix(), na)
+              << std::endl;
 
     return 0;
 }

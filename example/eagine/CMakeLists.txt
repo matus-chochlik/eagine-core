@@ -6,8 +6,15 @@
 add_custom_target(eagine-core-examples ALL)
 set_target_properties(
 	eagine-core-examples
-	PROPERTIES FOLDER "Example/EAGine"
+	PROPERTIES FOLDER "Example/Core"
 )
+
+function(eagine_install_example TARGET_NAME)
+	install(
+		TARGETS ${TARGET_NAME}
+		DESTINATION share/eagine/example/core
+	)
+endfunction()
 
 function(eagine_example_common EXAMPLE_NAME)
 	add_executable(
@@ -26,7 +33,7 @@ function(eagine_example_common EXAMPLE_NAME)
 
 	set_target_properties(
 		eagine-${EXAMPLE_NAME}
-		PROPERTIES FOLDER "Example/EAGine"
+		PROPERTIES FOLDER "Example/Core"
 	)
 	eagine_install_example(eagine-${EXAMPLE_NAME})
 endfunction()
@@ -75,6 +82,11 @@ eagine_example_common(value_tree)
 eagine_example_common(memoized)
 eagine_example_common(c_api_wrap)
 eagine_example_common(dyn_lib_lookup)
+eagine_example_common(serialize_basic)
+eagine_example_common(serialize_string)
+eagine_example_common(serialize_portable)
+eagine_example_common(serialize_packed)
+eagine_example_common(serialize_fragmented)
 eagine_example_common(sudoku_solver)
 eagine_example_common(sudoku_tiling)
 eagine_example_common(sudoku_noise)
@@ -84,5 +96,9 @@ eagine_embed_target_resources(TARGET eagine-embed_self)
 # TODO
 #eagine_example_common(embed_baked)
 #eagine_embed_packed_target_resources(eagine-embed_baked zebra_fur)
-#
-add_subdirectory(serialize)
+
+install(
+	FILES
+		eagine-application_config.yaml
+	DESTINATION etc/eagine
+)

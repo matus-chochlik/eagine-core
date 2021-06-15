@@ -31,7 +31,7 @@ public:
       : _min_severity{min_severity} {
 #if EAGINE_POSIX
         ::openlog(
-          "OGLplus",
+          "EAGine",
           LOG_CONS | LOG_NDELAY | LOG_PID, // NOLINT(hicpp-signed-bitwise)
           LOG_LOCAL0);                     // NOLINT(hicpp-signed-bitwise)
 #endif

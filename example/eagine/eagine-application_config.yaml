@@ -1,0 +1,18 @@
+value_1: This is a string value
+value_2: This is another string value
+section_a:
+    subsection_a:
+        value_a: 7
+    subsection_b:
+        value_a: 42
+        value_b: 111
+        value_c: 123
+        value_c@debug: 234
+        values:
+            - 0.69314
+            - 1
+            - 1.41421
+            - 1.61803
+            - 1.73205
+            - 2.71828
+            - 3.1416 

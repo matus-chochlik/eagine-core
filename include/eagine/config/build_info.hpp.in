@@ -1,0 +1,17 @@
+/// @file
+/// @brief Build config build and install information
+///
+/// Copyright Matus Chochlik.
+/// Distributed under the Boost Software License, Version 1.0.
+/// See accompanying file LICENSE_1_0.txt or copy at
+/// http://www.boost.org/LICENSE_1_0.txt
+///
+///
+#ifndef EAGINE_CONFIG_BUILD_INFO_HPP
+#define EAGINE_CONFIG_BUILD_INFO_HPP
+
+// clang-format off
+#define EAGINE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
+// clang-format on
+
+#endif

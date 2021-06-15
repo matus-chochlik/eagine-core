@@ -24,6 +24,7 @@ public:
 
     const std::string login_name{_get_username()};
     const std::string home_dir_path{_get_home_dir_path()};
+    const std::string config_dir_path{_get_config_dir_path()};
 
 private:
     static auto _get_username() -> std::string {
@@ -53,6 +54,15 @@ private:
         }
         return {};
     }
+
+    static auto _get_config_dir_path() -> std::string {
+        auto result = _get_home_dir_path();
+        if(!result.empty() && result.back() != '/') {
+            result.append("/");
+        }
+        result.append(".config");
+        return result;
+    }
 };
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
@@ -67,7 +77,7 @@ auto user_info::_impl() noexcept -> user_info_impl* {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto user_info::login_name() -> valid_if_not_empty<string_view> {
+auto user_info::login_name() noexcept -> valid_if_not_empty<string_view> {
     if(auto impl{_impl()}) {
         return {extract(impl).login_name};
     }
@@ -75,9 +85,17 @@ auto user_info::login_name() -> valid_if_not_empty<string_view> {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto user_info::home_dir_path() -> valid_if_not_empty<string_view> {
+auto user_info::home_dir_path() noexcept -> valid_if_not_empty<string_view> {
     if(auto impl{_impl()}) {
         return {extract(impl).home_dir_path};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+auto user_info::config_dir_path() noexcept -> valid_if_not_empty<string_view> {
+    if(auto impl{_impl()}) {
+        return {extract(impl).config_dir_path};
     }
     return {};
 }

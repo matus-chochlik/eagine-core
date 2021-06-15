@@ -9,8 +9,10 @@
 #define EAGINE_BUILD_INFO_HPP
 
 #include "serialize/fwd.hpp"
+#include "string_span.hpp"
 #include "tribool.hpp"
 #include "valid_if/nonnegative.hpp"
+#include "valid_if/not_empty.hpp"
 #include <tuple>
 
 namespace eagine {
@@ -28,6 +30,14 @@ public:
       std::is_nothrow_default_constructible_v<_data_tuple>) = default;
 
     static auto query() noexcept -> build_info;
+
+    /// @brief Paths to the install directory.
+    /// @see config_dir_path
+    auto install_prefix() const noexcept -> valid_if_not_empty<string_view>;
+
+    /// @brief Paths to the install prefix configuration directory.
+    /// @see install_prefix
+    auto config_dir_path() const noexcept -> valid_if_not_empty<string_view>;
 
     /// @brief Returns the project version numbers in a single tuple.
     /// @see version_major

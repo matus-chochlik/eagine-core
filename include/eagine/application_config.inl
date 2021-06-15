@@ -95,27 +95,32 @@ private:
       string_view group,
       string_view key,
       span<const string_view> tags) noexcept -> valtree::compound_attribute {
-        for(auto tag : tags) {
+        for(auto path_kind :
+            {config_path_kind::user,
+             config_path_kind::system,
+             config_path_kind::install}) {
+            for(auto tag : tags) {
+                if(auto found{_find_in(
+                     _config_path(_cat(group, "@", tag, ".yaml"), path_kind),
+                     key,
+                     tags)}) {
+                    return found;
+                }
+                if(auto found{_find_in(
+                     _config_path(_cat(group, "@", tag, ".json"), path_kind),
+                     key,
+                     tags)}) {
+                    return found;
+                }
+            }
             if(auto found{_find_in(
-                 _user_config_path(_cat(group, "@", tag, ".yaml")),
-                 key,
-                 tags)}) {
+                 _config_path(_cat(group, ".yaml"), path_kind), key, tags)}) {
                 return found;
             }
             if(auto found{_find_in(
-                 _user_config_path(_cat(group, "@", tag, ".json")),
-                 key,
-                 tags)}) {
+                 _config_path(_cat(group, ".json"), path_kind), key, tags)}) {
                 return found;
             }
-        }
-        if(auto found{
-             _find_in(_user_config_path(_cat(group, ".yaml")), key, tags)}) {
-            return found;
-        }
-        if(auto found{
-             _find_in(_user_config_path(_cat(group, ".json")), key, tags)}) {
-            return found;
         }
         return {};
     }
@@ -138,15 +143,31 @@ private:
         return {};
     }
 
-    auto _user_config_path(string_view name) -> const std::filesystem::path& {
-        _config_path.clear();
-        if(auto home_dir{main_context().user().home_dir_path()}) {
-            _config_path.append(std::string_view{extract(home_dir)});
-            _config_path.append(".oglplus");
-            _config_path.append("config");
-            _config_path.append(std::string_view{name});
+    enum class config_path_kind { user, system, install };
+
+    auto _config_path(string_view name, config_path_kind kind)
+      -> std::filesystem::path {
+        std::filesystem::path config_path;
+        if(kind == config_path_kind::user) {
+            if(auto config_dir{main_context().user().config_dir_path()}) {
+                config_path.append(std::string_view{extract(config_dir)});
+                config_path.append("eagine");
+                config_path.append(std::string_view{name});
+            }
+        } else if(kind == config_path_kind::system) {
+            if(auto config_dir{main_context().system().config_dir_path()}) {
+                config_path.append(std::string_view{extract(config_dir)});
+                config_path.append("eagine");
+                config_path.append(std::string_view{name});
+            }
+        } else if(kind == config_path_kind::install) {
+            if(auto config_dir{main_context().build().config_dir_path()}) {
+                config_path.append(std::string_view{extract(config_dir)});
+                config_path.append("eagine");
+                config_path.append(std::string_view{name});
+            }
         }
-        return _config_path;
+        return config_path;
     }
 
     auto _open_config(const std::filesystem::path& cfg_path)
@@ -179,7 +200,6 @@ private:
     std::map<std::string, valtree::compound> _open_configs;
     std::vector<string_view> _tag_list;
     std::string _config_name;
-    std::filesystem::path _config_path;
 };
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC

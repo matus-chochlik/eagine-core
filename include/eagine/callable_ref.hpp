@@ -222,8 +222,8 @@ static constexpr inline auto make_callable_ref(
 
 /// @brief Macro for creating a callable_ref object from the specified member function.
 /// @ingroup functional
-/// @see oglplus::callable_ref
-/// @see oglplus::make_callable_ref
+/// @see eagine::callable_ref
+/// @see eagine::make_callable_ref
 /// @see EAGINE_THIS_MEM_FUNC_C
 /// @see EAGINE_THIS_T
 #define EAGINE_THIS_MEM_FUNC_REF(FUNC) \
