@@ -14,5 +14,5 @@ include(EAGineStaticAnalysis)
 include(EAGineCompiler)
 include(EAGineLowProfile)
 include(EAGineCommonFindMod)
+include(EAGineBaking)
 include(EAGineEmbed)
-
