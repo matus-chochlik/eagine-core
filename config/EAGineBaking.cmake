@@ -15,7 +15,7 @@ function(eagine_add_baked_resource)
 	cmake_parse_arguments(
 		EAGINE_BAKE
 		"TRY_PACK"
-		"COMMAND;PREFIX;RES_KIND;RES_NAME;INPUT"
+		"COMMAND;PREFIX;RES_KIND;RES_NAME;SUFFIX"
 		""
 		${ARGN}
 	)
@@ -28,7 +28,7 @@ function(eagine_add_baked_resource)
 		if(NOT EXISTS "${EAGINE_BAKE_RES_CONFIG}")
 			set(
 				EAGINE_BAKE_RES_INPUT
-				"${CMAKE_CURRENT_SOURCE_DIR}/${EAGINE_BAKE_RES_NAME}.bake${EAGINE_BAKE_RES_KIND}"
+				"${CMAKE_CURRENT_SOURCE_DIR}/${EAGINE_BAKE_RES_NAME}${EAGINE_BAKE_SUFFIX}.bake${EAGINE_BAKE_RES_KIND}"
 			)
 			configure_file("${EAGINE_BAKE_RES_INPUT}" "${EAGINE_BAKE_RES_CONFIG}")
 		endif()
