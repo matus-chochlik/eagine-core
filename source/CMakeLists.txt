@@ -4,6 +4,7 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 
 add_subdirectory(lib)
+add_subdirectory(app)
 
 add_library(EAGine::Core INTERFACE IMPORTED GLOBAL)
 target_link_libraries(EAGine::Core INTERFACE eagine-core)
