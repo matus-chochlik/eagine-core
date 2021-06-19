@@ -15,7 +15,7 @@
 auto main() -> int {
     using namespace eagine;
 
-    std::mt19937 gen{std::random_device()()};
+    std::default_random_engine gen{std::random_device()()};
     std::uniform_real_distribution<float> dis{0.F, 1.F};
     std::normal_distribution<float> nrm{0.5F, 1.5F};
 
