@@ -4,7 +4,7 @@
 #   http://www.boost.org/LICENSE_1_0.txt
 #
 
-add_library(EAGine::Core::Deps::Stacktrace INTERFACE IMPORTED)
+add_library(EAGine::Deps::Stacktrace INTERFACE IMPORTED)
 set(EAGINE_USE_BACKTRACE 0)
 set(EAGINE_USE_STACKTRACE 0)
 
@@ -48,7 +48,7 @@ if(${EAGINE_DEBUG})
 		foreach(DIR ${STACKTRACE_INCLUDE_DIRS})
 			if(EXISTS ${DIR})
 				set_target_properties(
-					EAGine::Core::Deps::Stacktrace 
+					EAGine::Deps::Stacktrace 
 					PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${DIR}"
 				)
 			endif()
@@ -59,7 +59,7 @@ if(${EAGINE_DEBUG})
 		message(STATUS "Found Stacktrace: ${STACKTRACE_LIBRARIES}")
 		foreach(LIB ${STACKTRACE_LIBRARIES})
 			set_target_properties(
-				EAGine::Core::Deps::Stacktrace 
+				EAGine::Deps::Stacktrace 
 				PROPERTIES INTERFACE_LINK_LIBRARIES "${LIB}"
 			)
 		endforeach()

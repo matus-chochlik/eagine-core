@@ -46,12 +46,12 @@ target_link_libraries(
 	PUBLIC
 		eagine-core-generated-headers
 		eagine-core-headers
-		EAGine::Core::Deps::System
-		EAGine::Core::Deps::ZLIB
-		EAGine::Core::Deps::Stacktrace
-		EAGine::Core::Deps::BoostSpirit
+		EAGine::Deps::System
+		EAGine::Deps::ZLIB
+		EAGine::Deps::Stacktrace
+		EAGine::Deps::BoostSpirit
+		EAGine::Deps::SYSTEMD
 		Threads::Threads
-		SYSTEMD::SYSTEMD
 	PRIVATE
 		eagine-core-private-headers
 		ryml
