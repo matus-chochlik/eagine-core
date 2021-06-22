@@ -1,0 +1,9 @@
+[submodule "submodules/asio"]
+	path = submodules/asio
+	url = https://github.com/chriskohlhoff/asio.git
+[submodule "submodules/rapidjson"]
+	path = submodules/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
+[submodule "submodules/rapidyaml"]
+	path = submodules/rapidyaml
+	url = https://github.com/biojppm/rapidyaml.git
