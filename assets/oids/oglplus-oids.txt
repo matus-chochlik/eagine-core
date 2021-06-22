@@ -1,1 +1,3 @@
 oglplus 1.3.6.1.4.1.55765
+eagiMsgBus 1.3.6.1.4.1.55765.3
+eagiMsgBusNode 1.3.6.1.4.1.55765.3.1
