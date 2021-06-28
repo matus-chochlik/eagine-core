@@ -57,7 +57,7 @@ target_include_directories(
 foreach(FILENAME ${GEN_HPPS})
 	set_property(
 		TARGET eagine-core-generated-headers
-		APPEND PROPERTY PRIVATE_HEADER ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME}
+		APPEND PROPERTY PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME}
 	)
 endforeach()
 

@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+source "$(dirname ${0})/build-pkg-cfg"
+src_dir=$(realpath "@SRC_DIR@")
+bin_dir=$(realpath "@BIN_DIR@")
+pkg_dir=$(realpath "@PKG_DIR@")
+
+mkdir -p "${pkg_dir}/usr"
+pkg_prefix=$(realpath "@PKG_DIR@/usr")
+
+mkdir -p "${pkg_dir}/DEBIAN"
+mkdir -p "${pkg_prefix}/include"
+mkdir -p "${pkg_prefix}/lib/cmake/EAGine"
+
+cp "${src_dir}/config/EAGineEmbedCommon.cmake" \
+   "${pkg_prefix}/lib/cmake/EAGine/EAGineEmbedCommon.cmake"
+
+cp "${eagine_core_path}" \
+   "${pkg_prefix}/lib/${eagine_core_name}"
+
+cat "$(dirname ${0})/pkg-headers.txt" |\
+tr ';' '\n' |\
+while read abs_path
+do
+	rel_path=${abs_path#$(realpath "${src_dir}/include")/}
+	mkdir -p $(dirname "${pkg_prefix}/include/${rel_path}")
+	cp "${abs_path}" \
+	   "${pkg_prefix}/include/${rel_path}"
+done 
+
+cat "$(dirname ${0})/pkg-gen-headers.txt" |\
+tr ';' '\n' |\
+while read abs_path
+do
+	rel_path=${abs_path#$(realpath "${bin_dir}/include")/}
+	mkdir -p $(dirname "${pkg_prefix}/include/${rel_path}")
+	cp "${abs_path}" \
+	   "${pkg_prefix}/include/${rel_path}"
+done 
+
+mkdir -p "${pkg_dir}/DEBIAN"
+cat << EOD > "${pkg_dir}/DEBIAN/control"
+Package: eagine-core-dev
+Version: @PKG_VERSION@
+Architecture: @PKG_ARCH@
+Installed-Size: $(du -k -s ${pkg_dir} | cut -f1)
+Depends: libsystemd-dev
+Maintainer: Matus Chochlik <chochlik@gmail.com>
+Description: Collection of C++ utilities
+EOD
