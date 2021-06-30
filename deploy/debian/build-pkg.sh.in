@@ -38,6 +38,41 @@ do
 	   "${pkg_prefix}/include/${rel_path}"
 done 
 
+mkdir -p "${pkg_prefix}/lib/cmake/EAGine"
+cat << EOD > "${pkg_prefix}/lib/cmake/EAGine/Core.cmake"
+if(CMAKE_VERSION VERSION_LESS 3.0.0)
+  message(
+    FATAL_ERROR
+    "This file relies on consumers using CMake 3.0.0 or greater."
+  )
+endif()
+
+get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_IMPORT_PREFIX "\${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "\${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "\${_IMPORT_PREFIX}" PATH)
+if(_IMPORT_PREFIX STREQUAL "/")
+  set(_IMPORT_PREFIX "")
+endif()
+
+add_library(EAGine::Core INTERFACE IMPORTED)
+
+target_compile_definitions(
+  EAGine::Core INTERFACE EAGINE_CORE_LIBRARY=1
+)
+set_target_properties(
+  EAGine::Core PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
+)
+set_target_properties(
+  EAGine::Core PROPERTIES
+  INTERFACE_LINK_DIRECTORIES "\${_IMPORT_PREFIX}/lib"
+)
+target_link_libraries(
+  EAGine::Core INTERFACE "\${_IMPORT_PREFIX}/lib/${eagine_core_name}"
+)
+EOD
+
 mkdir -p "${pkg_dir}/DEBIAN"
 cat << EOD > "${pkg_dir}/DEBIAN/control"
 Package: eagine-core-dev
