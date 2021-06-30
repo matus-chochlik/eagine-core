@@ -14,12 +14,27 @@ if(${EAGINE_DEBUG})
         boost/stacktrace/stacktrace.hpp
     )
 
-    find_library(BACKTRACE_LIBRARY backtrace)
+	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+		# TODO: do something better here?
+		string(
+			REGEX REPLACE
+			"^([0-9]+).([0-9]+).([0-9]+)$"
+			"\\1"
+			EAGINE_GCC_MAJOR_VERSION
+			"${CMAKE_CXX_COMPILER_VERSION}"
+		)
 
-    find_library(
-        STACKTRACE_BACKTRACE_LIBRARY
-        boost_stacktrace_backtrace
-    )
+		find_library(
+			BACKTRACE_LIBRARY
+			NAMES backtrace
+			PATHS "/usr/lib/gcc/x86_64-linux-gnu/${EAGINE_GCC_MAJOR_VERSION}"
+		)
+
+		find_library(
+			STACKTRACE_BACKTRACE_LIBRARY
+			boost_stacktrace_backtrace
+		)
+	endif()
 
     if(
         STACKTRACE_BACKTRACE_LIBRARY AND
