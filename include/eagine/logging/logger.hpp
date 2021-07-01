@@ -31,7 +31,7 @@ public:
       std::shared_ptr<logger_backend> backend) noexcept
       : _backend{std::move(backend)} {}
 
-    auto operator()() noexcept -> logger_backend* {
+    auto operator()() const noexcept -> logger_backend* {
         return _backend.get();
     }
 
@@ -52,7 +52,7 @@ public:
       conditional_t<is_log_level_enabled_v<severity>, log_entry, no_log_entry>;
 
     /// @brief Returns a pointer to the backend of this logger object.
-    auto backend() noexcept {
+    auto backend() const noexcept {
         return _backend_getter()();
     }
 
@@ -89,7 +89,7 @@ protected:
       identifier source,
       log_event_severity severity,
       std::true_type,
-      string_view format) noexcept -> log_entry {
+      string_view format) const noexcept -> log_entry {
         return {
           source,
           instance_id(),
@@ -102,7 +102,7 @@ protected:
       identifier,
       log_event_severity,
       std::false_type,
-      string_view) noexcept -> no_log_entry {
+      string_view) const noexcept -> no_log_entry {
         return {};
     }
 
@@ -110,7 +110,7 @@ protected:
     constexpr auto make_log_entry(
       identifier source,
       log_event_severity_constant<severity>,
-      string_view format) noexcept -> entry_type<severity> {
+      string_view format) const noexcept -> entry_type<severity> {
         return make_log_entry(
           source, severity, is_log_level_enabled_t<severity>{}, format);
     }
@@ -118,7 +118,7 @@ protected:
     auto make_log_entry(
       identifier source,
       log_event_severity severity,
-      string_view format) noexcept -> log_entry {
+      string_view format) const noexcept -> log_entry {
         return {
           source,
           instance_id(),
@@ -127,77 +127,80 @@ protected:
           _entry_backend(source, severity)};
     }
 
-    constexpr auto log_fatal(identifier source, string_view format) noexcept {
+    constexpr auto
+    log_fatal(identifier source, string_view format) const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::fatal>{},
           format);
     }
 
-    constexpr auto log_error(identifier source, string_view format) noexcept {
+    constexpr auto
+    log_error(identifier source, string_view format) const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::error>{},
           format);
     }
 
-    constexpr auto log_warning(identifier source, string_view format) noexcept {
+    constexpr auto
+    log_warning(identifier source, string_view format) const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::warning>{},
           format);
     }
 
-    constexpr auto log_info(identifier source, string_view format) noexcept {
+    constexpr auto
+    log_info(identifier source, string_view format) const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::info>{},
           format);
     }
 
-    constexpr auto log_stat(identifier source, string_view format) noexcept {
+    constexpr auto
+    log_stat(identifier source, string_view format) const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::stat>{},
           format);
     }
 
-    auto log_debug(identifier source, string_view format) noexcept {
+    auto log_debug(identifier source, string_view format) const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::debug>{},
           format);
     }
 
-    auto log_trace(identifier source, string_view format) noexcept {
+    auto log_trace(identifier source, string_view format) const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::trace>{},
           format);
     }
 
-    auto log_backtrace(identifier source, string_view format) noexcept {
+    auto log_backtrace(identifier source, string_view format) const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::backtrace>{},
           format);
     }
 
-    auto log_lifetime(identifier source, string_view format) noexcept {
+    auto log_lifetime(identifier source, string_view format) const noexcept {
         // TODO: switch depending on Debug/Release ?
         return log_info(source, format);
     }
 
-    auto make_log_stream(identifier source, log_event_severity severity) noexcept
-      -> stream_log_entry {
+    auto make_log_stream(identifier source, log_event_severity severity)
+      const noexcept -> stream_log_entry {
         return {
           source, instance_id(), severity, _entry_backend(source, severity)};
     }
 
-    void log_chart_sample(
-      identifier source,
-      identifier series,
-      float value) noexcept {
+    void log_chart_sample(identifier source, identifier series, float value)
+      const noexcept {
         EAGINE_MAYBE_UNUSED(source);
         EAGINE_MAYBE_UNUSED(series);
         EAGINE_MAYBE_UNUSED(value);
@@ -209,8 +212,8 @@ protected:
         }
     }
 
-    auto _entry_backend(identifier source, log_event_severity severity) noexcept
-      -> logger_backend* {
+    auto _entry_backend(identifier source, log_event_severity severity)
+      const noexcept -> logger_backend* {
         if(is_log_level_enabled(severity)) {
             if(auto lbe{backend()}) {
                 return lbe->entry_backend(source, severity);
@@ -220,7 +223,7 @@ protected:
     }
 
 private:
-    auto _backend_getter() noexcept -> BackendGetter& {
+    auto _backend_getter() const noexcept -> const BackendGetter& {
         return *this;
     }
 };
@@ -308,88 +311,87 @@ public:
 
     /// @brief Create a log message entry for fatal error, with specified format.
     /// @see log_event_severity
-    auto log_fatal(string_view format) noexcept {
+    auto log_fatal(string_view format) const noexcept {
         return base::log_fatal(_object_id, format);
     }
 
     /// @brief Create a log message entry for error, with specified format.
     /// @see log_event_severity
-    auto log_error(string_view format) noexcept {
+    auto log_error(string_view format) const noexcept {
         return base::log_error(_object_id, format);
     }
 
     /// @brief Create a log message entry for warning, with specified format.
     /// @see log_event_severity
-    auto log_warning(string_view format) noexcept {
+    auto log_warning(string_view format) const noexcept {
         return base::log_warning(_object_id, format);
     }
 
     /// @brief Create a log message entry for information, with specified format.
     /// @see log_event_severity
-    auto log_info(string_view format) noexcept {
+    auto log_info(string_view format) const noexcept {
         return base::log_info(_object_id, format);
     }
 
     /// @brief Create a log message entry for statistic, with specified format.
     /// @see log_event_severity
-    auto log_stat(string_view format) noexcept {
+    auto log_stat(string_view format) const noexcept {
         return base::log_stat(_object_id, format);
     }
 
     /// @brief Create a log message entry for debugging, with specified format.
     /// @see log_event_severity
-    auto log_debug(string_view format) noexcept {
+    auto log_debug(string_view format) const noexcept {
         return base::log_debug(_object_id, format);
     }
 
     /// @brief Create a log message entry for tracing, with specified format.
     /// @see log_event_severity
-    auto log_trace(string_view format) noexcept {
+    auto log_trace(string_view format) const noexcept {
         return base::log_trace(_object_id, format);
     }
 
     /// @brief Create a log message entry for backtracing, with specified format.
     /// @see log_event_severity
-    auto log_backtrace(string_view format) noexcept {
+    auto log_backtrace(string_view format) const noexcept {
         return base::log_backtrace(_object_id, format);
     }
 
     /// @brief Returns a log entry stream for debug messages.
     /// @see log_event_severity
     /// @see stream_log_entry
-    auto log_debug_stream() noexcept {
+    auto log_debug_stream() const noexcept {
         return make_log_stream(log_event_severity::debug);
     }
 
     /// @brief Returns a log entry stream for error messages.
     /// @see log_event_severity
     /// @see stream_log_entry
-    auto log_error_stream() noexcept {
+    auto log_error_stream() const noexcept {
         return make_log_stream(log_event_severity::error);
     }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
-    auto log_chart_sample(identifier series, float value) noexcept
-      -> named_logging_object& {
+    auto log_chart_sample(identifier series, float value) const noexcept
+      -> const named_logging_object& {
         base::log_chart_sample(_object_id, series, value);
         return *this;
     }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename U>
-    auto log_chart_sample(
-      identifier series,
-      const tagged_quantity<T, U>& qty) noexcept
-      -> std::enable_if_t<std::is_convertible_v<T, float>, named_logging_object&> {
+    auto log_chart_sample(identifier series, const tagged_quantity<T, U>& qty)
+      const noexcept -> std::enable_if_t<
+        std::is_convertible_v<T, float>,
+        const named_logging_object&> {
         log_chart_sample(series, qty.value());
         return *this;
     }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename P>
-    auto log_chart_sample(
-      identifier series,
-      const valid_if<T, P>& opt_value) noexcept -> named_logging_object& {
+    auto log_chart_sample(identifier series, const valid_if<T, P>& opt_value)
+      const noexcept -> const named_logging_object& {
         if(opt_value) {
             base::log_chart_sample(
               _object_id, series, float(extract(opt_value)));
@@ -406,12 +408,12 @@ protected:
         return base::make_log_entry(_object_id, tag, level, format);
     }
 
-    auto make_log_entry(log_event_severity severity, string_view format) noexcept
-      -> log_entry {
+    auto make_log_entry(log_event_severity severity, string_view format)
+      const noexcept -> log_entry {
         return base::make_log_entry(_object_id, severity, format);
     }
 
-    auto make_log_stream(log_event_severity severity) noexcept {
+    auto make_log_stream(log_event_severity severity) const noexcept {
         return base::make_log_stream(_object_id, severity);
     }
 
@@ -440,9 +442,8 @@ public:
     /// @see backtrace
     /// @see log_tagged
     template <log_event_severity severity>
-    auto log(
-      log_event_severity_constant<severity> level,
-      string_view format) noexcept -> entry_type<severity> {
+    auto log(log_event_severity_constant<severity> level, string_view format)
+      const noexcept -> entry_type<severity> {
         return make_log_entry(level, format);
     }
 
@@ -456,44 +457,43 @@ public:
     /// @see debug
     /// @see trace
     /// @see backtrace
-    auto log(log_event_severity severity, string_view format) noexcept {
+    auto log(log_event_severity severity, string_view format) const noexcept {
         return make_log_entry(severity, format);
     }
 
     /// @brief Returns a log entry stream for debug messages.
     /// @see log_event_severity
     /// @see stream_log_entry
-    auto debug_stream() noexcept {
+    auto debug_stream() const noexcept {
         return log_debug_stream();
     }
 
     /// @brief Returns a log entry stream for error messages.
     /// @see log_event_severity
     /// @see stream_log_entry
-    auto error_stream() noexcept {
+    auto error_stream() const noexcept {
         return log_error_stream();
     }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
-    auto chart_sample(identifier series, float value) noexcept -> logger& {
+    auto chart_sample(identifier series, float value) const noexcept
+      -> const logger& {
         base::log_chart_sample(series, value);
         return *this;
     }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename U>
-    auto
-    chart_sample(identifier series, const tagged_quantity<T, U>& qty) noexcept
-      -> std::enable_if_t<std::is_convertible_v<T, float>, logger&> {
+    auto chart_sample(identifier series, const tagged_quantity<T, U>& qty) const
+      noexcept -> std::enable_if_t<std::is_convertible_v<T, float>, logger&> {
         log_chart_sample(series, qty.value());
         return *this;
     }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename P>
-    auto
-    chart_sample(identifier series, const valid_if<T, P>& opt_value) noexcept
-      -> logger& {
+    auto chart_sample(identifier series, const valid_if<T, P>& opt_value)
+      const noexcept -> const logger& {
         if(opt_value) {
             base::log_chart_sample(series, float(extract(opt_value)));
         }
@@ -503,56 +503,56 @@ public:
     /// @brief Returns a fatal error log entry.
     /// @param format the log message format string.
     /// @see log
-    auto fatal(string_view format) noexcept {
+    auto fatal(string_view format) const noexcept {
         return log_fatal(format);
     }
 
     /// @brief Returns an error log entry.
     /// @param format the log message format string.
     /// @see log
-    auto error(string_view format) noexcept {
+    auto error(string_view format) const noexcept {
         return log_error(format);
     }
 
     /// @brief Returns a warning log entry.
     /// @param format the log message format string.
     /// @see log
-    auto warning(string_view format) noexcept {
+    auto warning(string_view format) const noexcept {
         return log_warning(format);
     }
 
     /// @brief Returns an informational log entry.
     /// @param format the log message format string.
     /// @see log
-    auto info(string_view format) noexcept {
+    auto info(string_view format) const noexcept {
         return log_info(format);
     }
 
     /// @brief Returns a statistic log entry.
     /// @param format the log message format string.
     /// @see log
-    auto stat(string_view format) noexcept {
+    auto stat(string_view format) const noexcept {
         return log_stat(format);
     }
 
     /// @brief Returns a debugging log entry.
     /// @param format the log message format string.
     /// @see log
-    auto debug(string_view format) noexcept {
+    auto debug(string_view format) const noexcept {
         return log_debug(format);
     }
 
     /// @brief Returns a tracing log entry.
     /// @param format the log message format string.
     /// @see log
-    auto trace(string_view format) noexcept {
+    auto trace(string_view format) const noexcept {
         return log_trace(format);
     }
 
     /// @brief Returns a backtracing log entry.
     /// @param format the log message format string.
     /// @see log
-    auto backtrace(string_view format) noexcept {
+    auto backtrace(string_view format) const noexcept {
         return log_backtrace(format);
     }
 
