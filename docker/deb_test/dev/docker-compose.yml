@@ -1,0 +1,6 @@
+version: "3.6"
+services:
+    eagine_core_dev_deb_test:
+        build: .
+        container_name: eagine_core_dev_deb_test
+

@@ -38,6 +38,7 @@ function(eagine_example_common EXAMPLE_NAME)
 	eagine_install_example(eagine-${EXAMPLE_NAME})
 endfunction()
 
+eagine_example_common(assert)
 eagine_example_common(valgrind)
 eagine_example_common(array_size)
 eagine_example_common(integer_hash)

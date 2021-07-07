@@ -30,6 +30,7 @@ add_subdirectory(config)
 add_subdirectory(include)
 add_subdirectory(source)
 add_subdirectory(example)
+add_subdirectory(deploy)
 
 # tests
 if(NOT ${NO_TESTS})
