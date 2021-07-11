@@ -327,6 +327,10 @@ public:
       : _type{that._type}
       , _blocks{that._blocks} {}
 
+    auto blocks() const noexcept -> auto& {
+        return _blocks;
+    }
+
     auto type() const noexcept -> auto& {
         return _type;
     }
