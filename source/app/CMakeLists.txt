@@ -9,3 +9,9 @@ install(
 	DESTINATION bin
 )
 
+install(
+	PROGRAMS servicectl.py
+	RENAME eagine-servicectl
+	DESTINATION bin
+)
+
