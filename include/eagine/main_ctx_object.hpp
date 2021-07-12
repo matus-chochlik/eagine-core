@@ -12,6 +12,7 @@
 #include "identifier_t.hpp"
 #include "logging/logger.hpp"
 #include "main_ctx_fwd.hpp"
+#include "overwrite_guard.hpp"
 
 namespace eagine {
 
@@ -46,7 +47,8 @@ private:
 /// Objects that want to get access to the main context object and the services
 /// it provides (like logging), should inherit from this class.
 class main_ctx_object
-  : public named_logging_object<main_ctx_log_backend_getter> {
+  : public overwrite_guard<>
+  , public named_logging_object<main_ctx_log_backend_getter> {
     using base = named_logging_object<main_ctx_log_backend_getter>;
 
 public:
