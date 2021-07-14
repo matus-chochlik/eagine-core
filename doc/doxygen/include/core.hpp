@@ -59,19 +59,9 @@ namespace msgbus {
 /// @defgroup msgbus Message bus
 }
 
-/// @brief Shape generator and loader code is placed in this namespace.
-namespace shapes {
-/// @defgroup shapes Shape generators and loaders
-}
-
 /// @defgroup main_context Program utilities and main context
 
 /// @defgroup c_api_wrap C-API wrappers
-
-/// @brief Application harness / wrapper code is placed in this namespace.
-namespace application {
-/// @defgroup application Application wrapper
-}
 
 /// @defgroup embedding Compiled-in resource blocks.
 
