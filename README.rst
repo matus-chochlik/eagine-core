@@ -4,6 +4,17 @@ EAGine core
 
 :Author: Matúš Chochlík <chochlik@gmail.com>
 
+EAGine is a collection of C++ libraries providing set of basic utilities, C++
+wrappers for OpenGL, OpenAL, EGL, SSL, and a message bus useful for writing
+potentially distributed, multi-process applications with graphics rendering
+and/or audio playback.
+
+This repository is one of the sub-modules of the main project hosted
+at https://github.com/matus-chochlik/eagine-all and implements math and memory
+utilities, logging and debugging utilities, serialization, compile-time
+unit system, unified YAML and JSON reader API, application configuration
+provider, etc.
+
 Cloning the repo
 ================
 ::
