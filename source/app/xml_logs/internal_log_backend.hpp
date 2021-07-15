@@ -62,21 +62,26 @@ private:
     void leave_scope(identifier) noexcept final {}
 
     void set_description(
-      identifier,
-      logger_instance_id,
-      string_view,
-      string_view) noexcept final {}
+      identifier source,
+      logger_instance_id instance,
+      string_view display_name,
+      string_view description) noexcept final {
+        _entries->setDescription(
+          0U, source, instance, display_name, description);
+    }
 
     auto begin_message(
       identifier source,
       identifier tag,
       logger_instance_id instance,
       log_event_severity severity,
-      string_view) noexcept -> bool final {
+      string_view format) noexcept -> bool final {
+        _current.stream_id = 0U;
         _current.source = source;
         _current.tag = tag;
         _current.instance = instance;
         _current.severity = severity;
+        _current.format = _entries->cacheString(format);
         return true;
     }
 
@@ -102,11 +107,16 @@ private:
       identifier,
       std::chrono::duration<float>) noexcept final {}
 
-    void add_string(identifier, identifier, string_view) noexcept final {}
+    void add_string(identifier name, identifier tag, string_view value) noexcept
+      final {
+        _current.args_str[name] = {tag, _entries->cacheString(value)};
+    }
 
     void add_blob(identifier, identifier, memory::const_block) noexcept final {}
 
-    void finish_message() noexcept final {}
+    void finish_message() noexcept final {
+        _entries->addEntry(_current);
+    }
 
     void finish_log() noexcept final {}
 

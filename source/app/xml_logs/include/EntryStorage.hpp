@@ -17,9 +17,9 @@
 
 class Backend;
 //------------------------------------------------------------------------------
-struct LogStreamInfo {
-    std::string display_name;
-    std::string description;
+struct LogSourceInfo {
+    eagine::string_view display_name;
+    eagine::string_view description;
 };
 //------------------------------------------------------------------------------
 struct LogEntryData {
@@ -28,6 +28,12 @@ struct LogEntryData {
     eagine::identifier tag;
     eagine::logger_instance_id instance;
     eagine::log_event_severity severity;
+    eagine::string_view format;
+
+    std::map<
+      eagine::identifier,
+      std::tuple<eagine::identifier, eagine::string_view>>
+      args_str;
 };
 //------------------------------------------------------------------------------
 class LogEntryStorage {
@@ -40,13 +46,28 @@ public:
         return {*pos};
     }
 
-    void addEntry(LogEntryData entry) {
+    void addEntry(LogEntryData& entry) {
         _entries.emplace_back(std::move(entry));
     }
 
+    void setDescription(
+      std::size_t stream_id,
+      eagine::identifier source,
+      eagine::logger_instance_id instance,
+      eagine::string_view display_name,
+      eagine::string_view description) {
+        auto& info = _sources[{stream_id, source, instance}];
+        info.display_name = cacheString(display_name);
+        info.description = cacheString(description);
+    }
+
 private:
-    std::set<std::string, eagine::str_view_less> _str_cache;
     std::vector<LogEntryData> _entries;
+    std::map<
+      std::tuple<std::size_t, eagine::identifier, eagine::logger_instance_id>,
+      LogSourceInfo>
+      _sources;
+    std::set<std::string, eagine::str_view_less> _str_cache;
 };
 //------------------------------------------------------------------------------
 #endif
