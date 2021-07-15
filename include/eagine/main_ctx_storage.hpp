@@ -28,7 +28,7 @@ public:
     main_ctx_storage(
       int argc,
       const char** argv,
-      const main_ctx_options& options) noexcept
+      main_ctx_options& options) noexcept
       : _args{argc, argv}
       , _log_root{options.app_id, _args, options.logger_opts}
       , _bld_info{build_info::query()}
