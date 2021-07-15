@@ -14,6 +14,7 @@
 #include "../memory/shared_alloc.hpp"
 #include "../message_id.hpp"
 #include "../string_span.hpp"
+#include "fwd.hpp"
 #include "severity.hpp"
 #include <chrono>
 #include <cstdint>
@@ -51,10 +52,6 @@ template <typename T>
 constexpr const bool has_log_entry_adapter_v =
   has_log_entry_adapter_t<T>::value;
 //------------------------------------------------------------------------------
-/// @brief Logger object instance id type.
-/// @ingroup logging
-using logger_instance_id = std::uintptr_t;
-
 /// @brief Interface for logging backend implementations.
 /// @ingroup logging
 struct logger_backend : interface<logger_backend> {

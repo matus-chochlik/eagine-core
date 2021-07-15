@@ -9,7 +9,16 @@
 Backend::Backend(eagine::main_ctx_parent parent)
   : QObject{nullptr}
   , eagine::main_ctx_object{EAGINE_ID(Backend), parent}
+  , _entryLog{*this}
   , _theme{*this} {}
+//------------------------------------------------------------------------------
+void Backend::assignStorage(std::shared_ptr<LogEntryStorage> entries) {
+    _entryLog.assignStorage(std::move(entries));
+}
+//------------------------------------------------------------------------------
+auto Backend::getEntryLog() noexcept -> EntryLog* {
+    return &_entryLog;
+}
 //------------------------------------------------------------------------------
 auto Backend::getTheme() noexcept -> Theme* {
     return &_theme;

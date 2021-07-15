@@ -5,6 +5,7 @@
 ///
 
 #include "Backend.hpp"
+#include "internal_log_backend.hpp"
 #include <eagine/main_ctx.hpp>
 #include <eagine/main_fwd.hpp>
 #include <QApplication>
@@ -27,6 +28,7 @@ auto main(main_ctx& ctx) -> int {
     qmlRegisterUncreatableType<Theme>(registerId, 1, 0, "Theme", {});
 
     Backend backend{ctx};
+    backend.assignStorage(internal_log_backend::storage());
     QQmlApplicationEngine engine;
 
     engine.rootContext()->setContextProperty("backend", &backend);
@@ -42,6 +44,8 @@ auto main(int argc, const char** argv) -> int {
     eagine::argv_copy = argv;
     eagine::main_ctx_options options;
     options.app_id = EAGINE_ID(XmlLogView);
+    options.logger_opts.forced_backend =
+      std::make_unique<eagine::internal_log_backend>();
     return eagine::main_impl(argc, argv, options);
 }
 

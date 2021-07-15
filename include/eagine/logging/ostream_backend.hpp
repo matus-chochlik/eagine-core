@@ -20,16 +20,6 @@ namespace eagine {
 //------------------------------------------------------------------------------
 template <typename Lockable = std::mutex>
 class ostream_log_backend : public logger_backend {
-private:
-    Lockable _lockable{};
-    std::ostream& _out;
-    log_event_severity _min_severity;
-    const std::chrono::steady_clock::time_point _start;
-    memory::aligned_block<63 * 1024> _alloc_block{};
-
-protected:
-    virtual void flush() noexcept {}
-
 public:
     ostream_log_backend(
       std::ostream& out,
@@ -281,6 +271,16 @@ public:
     ~ostream_log_backend() noexcept override {
         finish_log();
     }
+
+protected:
+    virtual void flush() noexcept {}
+
+private:
+    Lockable _lockable{};
+    std::ostream& _out;
+    log_event_severity _min_severity;
+    const std::chrono::steady_clock::time_point _start;
+    memory::aligned_block<63 * 1024> _alloc_block{};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

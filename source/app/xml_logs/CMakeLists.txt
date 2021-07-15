@@ -10,10 +10,14 @@ set(XML_LOGS_RESOURCES
 set(XML_LOGS_SOURCES
 	xml_logs.cpp
 	src/Theme.cpp
+	src/EntryLog.cpp
 	src/Backend.cpp
 )
 set(XML_LOGS_HEADERS
+	internal_log_backend.hpp
 	include/Theme.hpp
+	include/EntryStorage.hpp
+	include/EntryLog.hpp
 	include/Backend.hpp
 )
 add_executable(
