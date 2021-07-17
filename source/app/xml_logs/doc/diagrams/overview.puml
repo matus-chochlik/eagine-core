@@ -1,0 +1,78 @@
+@startuml
+
+interface logger_backend {
+    +type_id() : identifier
+    +set_description()
+    +enter_scope()
+    +leave_scope()
+    +log_chart_sample(...)
+    +begin_message(...)
+    +add_argument(...)
+    +finish_message(...)
+    +finish_log()
+}
+
+class internal_log_backend {
+    +storage()
+}
+
+class Backend {
+    +entryLog: EntryLog
+    +theme: Theme
+}
+
+class Theme {
+    +light: bool
+}
+
+class LogEntryData {
+    +stream_id
+    +source
+    +instance
+    +tag
+    +severity
+    +format
+    +args
+}
+
+class LogEntryStorage {
+}
+
+class EntryLog {
+}
+
+class LogViewModel {
+}
+
+class EntryFilterModel {
+}
+
+class EntryListModel {
+}
+
+class ChartViewModel {
+}
+
+class ProgressViewModel {
+}
+
+logger_backend <|-- internal_log_backend
+internal_log_backend o-- LogEntryStorage
+
+Backend *-- Theme
+Backend *-- EntryLog
+Backend <-- EntryLog
+LogEntryStorage <-- LogEntryLog
+LogEntryStorage "1" o-- "*" LogEntryData
+EntryLog *-- LogViewModel
+EntryLog <-- LogViewModel
+LogViewModel *-- EntryFilterModel
+LogViewModel <-- EntryFilterModel
+LogViewModel *-- EntryListModel
+LogViewModel <-- EntryListModel
+EntryLog *-- ChartViewModel
+EntryLog <-- ChartViewModel
+EntryLog *-- ProgressViewModel
+EntryLog <-- ProgressViewModel
+
+@enduml
