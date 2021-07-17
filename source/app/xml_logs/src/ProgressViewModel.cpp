@@ -4,13 +4,11 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#include "LogViewModel.hpp"
+#include "ProgressViewModel.hpp"
 #include "EntryLog.hpp"
 //------------------------------------------------------------------------------
-LogViewModel::LogViewModel(EntryLog& parent)
+ProgressViewModel::ProgressViewModel(EntryLog& parent)
   : QObject{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(LogVM), parent}
-  , _parent{parent}
-  , _entryFilterModel{*this}
-  , _entryListModel{*this} {}
+  , eagine::main_ctx_object{EAGINE_ID(ProgressVM), parent}
+  , _parent{parent} {}
 //------------------------------------------------------------------------------

@@ -11,9 +11,16 @@ EntryLog::EntryLog(Backend& backend)
   : QObject{nullptr}
   , eagine::main_ctx_object{EAGINE_ID(EntryLog), backend}
   , _backend{backend}
-  , _logViewModel{*this} {}
+  , _logViewModel{*this}
+  , _chartsViewModel{*this}
+  , _progressViewModel{*this} {}
 //------------------------------------------------------------------------------
 void EntryLog::assignStorage(std::shared_ptr<LogEntryStorage> entries) {
     _entries = std::move(entries);
+}
+//------------------------------------------------------------------------------
+auto EntryLog::entries() -> LogEntryStorage& {
+    EAGINE_ASSERT(_entries);
+    return *_entries;
 }
 //------------------------------------------------------------------------------

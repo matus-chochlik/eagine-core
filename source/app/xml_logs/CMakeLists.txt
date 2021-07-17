@@ -14,6 +14,8 @@ set(XML_LOGS_SOURCES
 	src/LogViewModel.cpp
 	src/EntryFilterModel.cpp
 	src/EntryListModel.cpp
+	src/ChartsViewModel.cpp
+	src/ProgressViewModel.cpp
 	src/Backend.cpp
 )
 set(XML_LOGS_HEADERS
@@ -24,6 +26,8 @@ set(XML_LOGS_HEADERS
 	include/LogViewModel.hpp
 	include/EntryFilterModel.hpp
 	include/EntryListModel.hpp
+	include/ChartsViewModel.hpp
+	include/ProgressViewModel.hpp
 	include/Backend.hpp
 )
 add_executable(

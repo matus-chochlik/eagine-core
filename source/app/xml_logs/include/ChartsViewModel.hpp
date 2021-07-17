@@ -4,31 +4,27 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#ifndef EAGINE_XML_LOG_LOG_VIEW_MODEL
-#define EAGINE_XML_LOG_LOG_VIEW_MODEL
+#ifndef EAGINE_XML_LOG_CHARTS_VIEW_MODEL
+#define EAGINE_XML_LOG_CHARTS_VIEW_MODEL
 
-#include "EntryFilterModel.hpp"
-#include "EntryListModel.hpp"
 #include <eagine/main_ctx_object.hpp>
 #include <QObject>
 
 class EntryLog;
 //------------------------------------------------------------------------------
-class LogViewModel
+class ChartsViewModel
   : public QObject
   , public eagine::main_ctx_object {
     Q_OBJECT
 
 public:
-    LogViewModel(EntryLog& parent);
+    ChartsViewModel(EntryLog& parent);
 
 signals:
 public slots:
 
 private:
     EntryLog& _parent;
-    EntryFilterModel _entryFilterModel;
-    EntryListModel _entryListModel;
 };
 //------------------------------------------------------------------------------
 #endif
