@@ -11,6 +11,9 @@ set(XML_LOGS_SOURCES
 	xml_logs.cpp
 	src/Theme.cpp
 	src/EntryLog.cpp
+	src/LogViewModel.cpp
+	src/EntryFilterModel.cpp
+	src/EntryListModel.cpp
 	src/Backend.cpp
 )
 set(XML_LOGS_HEADERS
@@ -18,6 +21,9 @@ set(XML_LOGS_HEADERS
 	include/Theme.hpp
 	include/EntryStorage.hpp
 	include/EntryLog.hpp
+	include/LogViewModel.hpp
+	include/EntryFilterModel.hpp
+	include/EntryListModel.hpp
 	include/Backend.hpp
 )
 add_executable(
