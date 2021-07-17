@@ -26,6 +26,9 @@ auto main(main_ctx& ctx) -> int {
     const auto registerId = "com.github.matus-chochlik.eagine.core.xml_logs";
 
     qmlRegisterUncreatableType<Theme>(registerId, 1, 0, "Theme", {});
+    qmlRegisterUncreatableType<EntryLog>(registerId, 1, 0, "EntryLog", {});
+    qmlRegisterUncreatableType<EntriesViewModel>(
+      registerId, 1, 0, "EntriesViewModel", {});
 
     Backend backend{ctx};
     backend.assignStorage(internal_log_backend::storage());

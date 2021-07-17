@@ -8,6 +8,7 @@
 #define EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 
 #include <eagine/identifier.hpp>
+#include <eagine/is_within_limits.hpp>
 #include <eagine/logging/fwd.hpp>
 #include <eagine/logging/severity.hpp>
 #include <eagine/string_span.hpp>
@@ -46,10 +47,6 @@ public:
         return {*pos};
     }
 
-    void addEntry(LogEntryData& entry) {
-        _entries.emplace_back(std::move(entry));
-    }
-
     void setDescription(
       std::size_t stream_id,
       eagine::identifier source,
@@ -59,6 +56,21 @@ public:
         auto& info = _sources[{stream_id, source, instance}];
         info.display_name = cacheString(display_name);
         info.description = cacheString(description);
+    }
+
+    void addEntry(LogEntryData& entry) {
+        _entries.emplace_back(std::move(entry));
+    }
+
+    auto entryCount() const noexcept -> int {
+        return eagine::limit_cast<int>(_entries.size());
+    }
+
+    auto getEntry(int index) noexcept -> LogEntryData* {
+        if(auto entIdx{eagine::convert_if_fits<std::size_t>(index)}) {
+            return &_entries[extract(entIdx)];
+        }
+        return nullptr;
     }
 
 private:

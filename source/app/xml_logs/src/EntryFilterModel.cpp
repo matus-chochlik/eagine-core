@@ -5,9 +5,9 @@
 ///
 
 #include "EntryFilterModel.hpp"
-#include "LogViewModel.hpp"
+#include "EntriesViewModel.hpp"
 //------------------------------------------------------------------------------
-EntryFilterModel::EntryFilterModel(LogViewModel& parent)
+EntryFilterModel::EntryFilterModel(EntriesViewModel& parent)
   : QObject{nullptr}
   , eagine::main_ctx_object{EAGINE_ID(EntFlrtMdl), parent}
   , _parent{parent} {}

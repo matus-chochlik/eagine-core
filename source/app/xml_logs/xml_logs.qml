@@ -64,6 +64,12 @@ ApplicationWindow {
             TabButton {
                 text: qsTr("Entries")
             }
+            TabButton {
+                text: qsTr("Charts")
+            }
+            TabButton {
+                text: qsTr("Progress")
+            }
         }
 
         StackLayout {
@@ -72,11 +78,28 @@ ApplicationWindow {
 
             currentIndex: mainTabBar.currentIndex
 
-            EntryView {
+            EntriesView {
+				id: entriesView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                // model: backend.entries
+                model: backend.entryLog.entries
+            }
+
+            ChartsView {
+				id: chartsView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                model: backend.entryLog.charts
+            }
+
+            ProgressView {
+				id: progressView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                model: backend.entryLog.progress
             }
         }
     }

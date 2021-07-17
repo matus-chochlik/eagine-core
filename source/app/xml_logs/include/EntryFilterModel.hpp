@@ -10,7 +10,7 @@
 #include <eagine/main_ctx_object.hpp>
 #include <QObject>
 
-class LogViewModel;
+class EntriesViewModel;
 //------------------------------------------------------------------------------
 class EntryFilterModel
   : public QObject
@@ -18,13 +18,13 @@ class EntryFilterModel
     Q_OBJECT
 
 public:
-    EntryFilterModel(LogViewModel& parent);
+    EntryFilterModel(EntriesViewModel& parent);
 
 signals:
 public slots:
 
 private:
-    LogViewModel& _parent;
+    EntriesViewModel& _parent;
 };
 //------------------------------------------------------------------------------
 #endif

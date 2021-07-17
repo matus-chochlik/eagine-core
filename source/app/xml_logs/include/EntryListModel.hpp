@@ -10,7 +10,7 @@
 #include <eagine/main_ctx_object.hpp>
 #include <QAbstractItemModel>
 
-class LogViewModel;
+class EntriesViewModel;
 //------------------------------------------------------------------------------
 class EntryListModel
   : public QAbstractItemModel
@@ -18,7 +18,7 @@ class EntryListModel
     Q_OBJECT
 
 public:
-    EntryListModel(LogViewModel& parent);
+    EntryListModel(EntriesViewModel& parent);
 
     auto roleNames() const -> QHash<int, QByteArray> final;
     auto index(int row, int column, const QModelIndex& parent = {}) const
@@ -31,7 +31,18 @@ signals:
 public slots:
 
 private:
-    LogViewModel& _parent;
+    enum EntryAttributes : int {
+        entryMessage = Qt::UserRole + 1,
+        entryFormat,
+        entryStreamId,
+        entryInstanceId,
+        entrySource,
+        entryTag,
+        entrySeverity,
+        entryArgCount
+    };
+
+    EntriesViewModel& _parent;
 };
 //------------------------------------------------------------------------------
 #endif
