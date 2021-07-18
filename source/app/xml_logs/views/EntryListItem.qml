@@ -25,29 +25,19 @@ Control {
 		opacity: 0.05
 	}
 
-	function isSelected() {
-		return entryListItem.view.model.selectedRow == index
-	}
-
 	function isCurrent() {
 		return entryListItem.view.currentIndex == index
 	}
 
 	function makeCurrent() {
 		entryListItem.view.currentIndex = index
-		entryListItem.view.model.onItemSelected(index);
-	}
-
-	function unselect() {
-		entryListItem.view.currentIndex = -1
-		entryListItem.view.model.onItemSelected(-1);
 	}
 
 	function highlightOpacity() {
-		return (isSelected() ? 0.4 : 0.0) + (isCurrent() ? 0.3 : 0.0)
+		return (isCurrent() ? 0.5 : 0.0)
 	}
 
-	state: isSelected() || isCurrent() ? "Highlighted" : "Default"
+	state: isCurrent() ? "Highlighted" : "Default"
 	states: [
 		State {
 			name: "Highlighted"
@@ -85,4 +75,28 @@ Control {
 			}
 		}
 	]
+
+	focus: true
+	Keys.onPressed: {
+		if(event.key == Qt.Key_Return) {
+			makeCurrent()
+		}
+	}
+
+	MouseArea {
+		anchors.fill: parent
+		onClicked: makeCurrent()
+	}
+
+	ColumnLayout {
+		Item {
+			Layout.preferredWidth: 10
+		}
+		Label {
+			text: format ? format : "-"
+		}
+		Label {
+			text: sourceId ? sourceId : "-"
+		}
+	}
 }

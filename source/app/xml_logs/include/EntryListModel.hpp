@@ -11,6 +11,7 @@
 #include <QAbstractItemModel>
 
 class EntriesViewModel;
+struct LogEntryData;
 //------------------------------------------------------------------------------
 class EntryListModel
   : public QAbstractItemModel
@@ -36,11 +37,18 @@ private:
         entryFormat,
         entryStreamId,
         entryInstanceId,
-        entrySource,
+        entrySourceId,
         entryTag,
         entrySeverity,
         entryArgCount
     };
+
+    auto getEntryMessage(LogEntryData&) const -> QString;
+    auto getEntryFormat(LogEntryData&) const -> QString;
+    auto getEntryStreamId(LogEntryData&) const -> qlonglong;
+    auto getEntryInstanceId(LogEntryData&) const -> qlonglong;
+    auto getEntrySourceId(LogEntryData&) const -> QString;
+    auto getEntryTag(LogEntryData&) const -> QString;
 
     EntriesViewModel& _parent;
 };

@@ -14,6 +14,10 @@ EntriesViewModel::EntriesViewModel(EntryLog& parent)
   , _entryFilterModel{*this}
   , _entryListModel{*this} {}
 //------------------------------------------------------------------------------
+auto EntriesViewModel::getEntryFilterModel() noexcept -> EntryFilterModel* {
+    return &_entryFilterModel;
+}
+//------------------------------------------------------------------------------
 auto EntriesViewModel::getEntryListModel() noexcept -> EntryListModel* {
     return &_entryListModel;
 }

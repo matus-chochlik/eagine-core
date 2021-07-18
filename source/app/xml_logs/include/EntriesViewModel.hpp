@@ -19,6 +19,7 @@ class EntriesViewModel
   , public eagine::main_ctx_object {
     Q_OBJECT
 
+    Q_PROPERTY(EntryFilterModel* entryFilter READ getEntryFilterModel CONSTANT)
     Q_PROPERTY(EntryListModel* entryList READ getEntryListModel CONSTANT)
 public:
     EntriesViewModel(EntryLog& parent);
@@ -27,6 +28,7 @@ public:
         return _parent;
     }
 
+    auto getEntryFilterModel() noexcept -> EntryFilterModel*;
     auto getEntryListModel() noexcept -> EntryListModel*;
 signals:
 public slots:
