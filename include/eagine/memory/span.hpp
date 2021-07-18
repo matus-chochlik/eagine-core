@@ -17,6 +17,7 @@
 #include "../type_identity.hpp"
 #include "../types.hpp"
 #include "address.hpp"
+#include <cmath>
 #include <cstring>
 #include <initializer_list>
 #include <iterator>
@@ -244,7 +245,7 @@ public:
     /// @brief Returns the number of elements in the span.
     /// @see is_empty
     constexpr auto size() const noexcept -> size_type {
-        return EAGINE_LIKELY(_size >= 0) ? _size : -_size;
+        return std::abs(_size);
     }
 
     /// @brief Returns a pointer to the start of the span.
