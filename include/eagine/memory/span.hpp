@@ -220,7 +220,7 @@ public:
     /// @see is_empty
     /// @see size
     explicit constexpr operator bool() const noexcept {
-        return size() != 0;
+        return !is_empty();
     }
 
     /// @brief Indicates that the span is empty.
@@ -238,7 +238,7 @@ public:
 
     /// @brief Indicates that the span is terminated with value T(0) if applicable.
     constexpr auto is_zero_terminated() const noexcept -> bool {
-        return size() < 0;
+        return _size < 0;
     }
 
     /// @brief Returns the number of elements in the span.
