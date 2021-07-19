@@ -545,10 +545,9 @@ static constexpr auto can_accomodate(
   basic_span<B, P, S> blk,
   span_size_t count,
   type_identity<T> tid = {}) noexcept {
-    return can_accomodate_between(
-      align_up(blk.begin_addr(), span_align_of(tid), span_align_of(tid)),
-      align_down(blk.end_addr(), span_align_of(tid), span_align_of(tid)),
-      count * span_size_of(tid));
+    return is_aligned_as(blk.begin_addr(), tid) &&
+           can_accomodate_between(
+             blk.begin_addr(), blk.end_addr(), count * span_size_of(tid));
 }
 //------------------------------------------------------------------------------
 /// @brief Indicates if the specified memory block can accomodate one element of T.
@@ -566,9 +565,11 @@ can_accomodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept {
 template <typename T, typename B, typename P, typename S>
 static constexpr auto
 accomodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept
-  -> basic_span<std::add_const_t<T>, rebind_pointer_t<P, T>, S> {
-    return {
-      align_up_to(blk.begin_addr(), tid), align_down_to(blk.end_addr(), tid)};
+  -> basic_span<T, rebind_pointer_t<P, T>, S> {
+    return EAGINE_CONSTEXPR_ASSERT(
+      (can_accomodate(blk, tid)),
+      (basic_span<T, rebind_pointer_t<P, T>, S>{
+        blk.begin_addr(), blk.end_addr()}));
 }
 //------------------------------------------------------------------------------
 // extract
