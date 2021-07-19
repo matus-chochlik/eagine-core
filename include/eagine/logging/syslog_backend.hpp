@@ -22,6 +22,11 @@
 #include <unistd.h>
 #endif
 
+EAGINE_DIAG_PUSH()
+#if defined(__clang__)
+EAGINE_DIAG_OFF(format-nonliteral)
+#endif
+
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename Lockable = std::mutex>
@@ -303,6 +308,8 @@ private:
     }
 };
 //------------------------------------------------------------------------------
+EAGINE_DIAG_POP()
+
 } // namespace eagine
 
 #endif // EAGINE_LOGGING_SYSLOG_BACKEND_HPP

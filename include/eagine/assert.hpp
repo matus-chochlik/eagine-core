@@ -28,6 +28,7 @@
 #ifdef __clang__
 EAGINE_DIAG_PUSH()
 EAGINE_DIAG_OFF(shadow)
+EAGINE_DIAG_OFF(missing-noreturn)
 #endif
 
 #if EAGINE_USE_BACKTRACE

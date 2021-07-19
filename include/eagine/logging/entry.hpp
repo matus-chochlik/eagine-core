@@ -219,7 +219,6 @@ public:
 
     /// @brief Adds a new message argument with 32-bit signed integer span.
     /// @param name the argument name identifier. Used in message substitution.
-    /// @param name the argument name identifier. Used in message substitution.
     auto arg(identifier name, span<const std::int32_t> values) noexcept
       -> auto& {
         return arg(name, EAGINE_ID(int32), values);

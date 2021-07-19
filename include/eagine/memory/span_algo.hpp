@@ -15,6 +15,11 @@
 #include <type_traits>
 #include <vector>
 
+EAGINE_DIAG_PUSH()
+#if defined(__clang__)
+EAGINE_DIAG_OFF(unused-template)
+#endif
+
 namespace eagine::memory {
 //------------------------------------------------------------------------------
 template <typename T, typename P, typename S>
@@ -791,5 +796,7 @@ static auto default_edit_distance(
       s1, s2, [](auto e1, auto e2) { return e1 == e2 ? 0 : 1; });
 }
 //------------------------------------------------------------------------------
+EAGINE_DIAG_POP()
+
 } // namespace eagine::memory
 #endif // EAGINE_MEMORY_SPAN_ALGO_HPP

@@ -28,7 +28,7 @@ public:
       , _min_severity{min_severity}
       , _start{std::chrono::steady_clock::now()} {
         try {
-            std::unique_lock lock{_lockable};
+            std::unique_lock<Lockable> lock{_lockable};
             _out << "<?xml version='1.0' encoding='UTF-8'?>\n";
             _out << "<log start='" << _start.time_since_epoch().count()
                  << "'>\n";
@@ -81,7 +81,7 @@ public:
       string_view display_name,
       string_view description) noexcept final {
         try {
-            std::unique_lock lock{_lockable};
+            std::unique_lock<Lockable> lock{_lockable};
             _out << "<d";
             _out << " src='" << source.name() << "'";
             _out << " iid='" << instance << "'";
@@ -241,7 +241,7 @@ public:
 
     void finish_log() noexcept final {
         try {
-            std::unique_lock lock{_lockable};
+            std::unique_lock<Lockable> lock{_lockable};
             _out << "</log>\n" << std::flush;
             flush();
         } catch(...) {
@@ -256,7 +256,7 @@ public:
         try {
             const auto now = std::chrono::steady_clock::now();
             const auto sec = std::chrono::duration<float>(now - _start);
-            std::unique_lock lock{_lockable};
+            std::unique_lock<Lockable> lock{_lockable};
             _out << "<c";
             _out << " src='" << source.name() << "'";
             _out << " iid='" << instance << "'";

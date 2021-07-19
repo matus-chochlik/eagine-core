@@ -52,7 +52,7 @@ public:
     auto find_compound_attribute(string_view key, string_view tag) noexcept
       -> valtree::compound_attribute {
         try {
-            std::unique_lock lck{_mutex};
+            std::unique_lock<std::mutex> lck{_mutex};
             _tag_list[0] = tag;
             const auto tags{skip_until(
               view(_tag_list), [](auto t) { return !t.is_empty(); })};
@@ -259,7 +259,7 @@ auto application_config::_eval_env_var(string_view key) noexcept
         if(c == '.') {
             c = '_';
         } else {
-            c = std::toupper(c);
+            c = static_cast<char>(std::toupper(c));
         }
         arg_name.append(&c, 1U);
     }

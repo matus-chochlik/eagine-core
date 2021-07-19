@@ -101,7 +101,6 @@ struct logger_backend : interface<logger_backend> {
     /// @brief Add valueless (name-only) argument.
     /// @param arg the argument name identifier.
     /// @param tag the argument type identifier.
-    /// @param value the value of the argument.
     virtual void add_nothing(identifier arg, identifier tag) noexcept = 0;
 
     /// @brief Add argument with identifier value.
@@ -188,7 +187,6 @@ struct logger_backend : interface<logger_backend> {
 
     /// @brief Add argument with value having type adaptable to log entry.
     /// @param arg the argument name identifier.
-    /// @param tag the argument type identifier.
     /// @param value the value of the argument.
     /// @see has_log_entry_adapter_v
     template <typename T>

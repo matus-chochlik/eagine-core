@@ -14,9 +14,15 @@
 #include <eagine/main_ctx_object.hpp>
 #include <eagine/memory/span_algo.hpp>
 #include <eagine/value_tree/implementation.hpp>
+#include <vector>
+
+EAGINE_DIAG_PUSH()
+#if defined(__clang__)
+EAGINE_DIAG_OFF(zero-as-null-pointer-constant)
+#endif
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
-#include <vector>
+EAGINE_DIAG_POP()
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
