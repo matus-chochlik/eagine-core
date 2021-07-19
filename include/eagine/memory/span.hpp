@@ -529,33 +529,33 @@ static constexpr auto cover(C& container) noexcept {
     return cover(container.data(), container.size());
 }
 //------------------------------------------------------------------------------
-// accomodate
+// accommodate
 //------------------------------------------------------------------------------
-static constexpr auto can_accomodate_between(
+static constexpr auto can_accommodate_between(
   const_address bgn,
   const_address end,
   span_size_t size) noexcept -> bool {
     return (end - bgn) >= size;
 }
 //------------------------------------------------------------------------------
-/// @brief Indicates if the specified memory block can accomodate count elements of T.
+/// @brief Indicates if the specified memory block can accommodate count elements of T.
 /// @ingroup type_utils
 template <typename T, typename B, typename P, typename S>
-static constexpr auto can_accomodate(
+static constexpr auto can_accommodate(
   basic_span<B, P, S> blk,
   span_size_t count,
   type_identity<T> tid = {}) noexcept {
     return is_aligned_as(blk.begin_addr(), tid) &&
-           can_accomodate_between(
+           can_accommodate_between(
              blk.begin_addr(), blk.end_addr(), count * span_size_of(tid));
 }
 //------------------------------------------------------------------------------
-/// @brief Indicates if the specified memory block can accomodate one element of T.
+/// @brief Indicates if the specified memory block can accommodate one element of T.
 /// @ingroup type_utils
 template <typename T, typename B, typename P, typename S>
 static constexpr auto
-can_accomodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept {
-    return can_accomodate(blk, 1, tid);
+can_accommodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept {
+    return can_accommodate(blk, 1, tid);
 }
 //------------------------------------------------------------------------------
 /// @brief Returns a span, rebinding the element type (typically from basic_block).
@@ -564,10 +564,10 @@ can_accomodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept {
 /// @see as_chars
 template <typename T, typename B, typename P, typename S>
 static constexpr auto
-accomodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept
+accommodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept
   -> basic_span<T, rebind_pointer_t<P, T>, S> {
     return EAGINE_CONSTEXPR_ASSERT(
-      (can_accomodate(blk, tid)),
+      (can_accommodate(blk, tid)),
       (basic_span<T, rebind_pointer_t<P, T>, S>{
         blk.begin_addr(), blk.end_addr()}));
 }

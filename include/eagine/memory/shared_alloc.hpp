@@ -145,7 +145,7 @@ private:
     static auto _get_new(X&& that) noexcept
       -> enable_if_compatible_t<X, byte_allocator*> {
         try {
-            return that.accomodate_self();
+            return that.accommodate_self();
         } catch(const std::bad_alloc&) {
         }
         return nullptr;

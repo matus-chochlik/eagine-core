@@ -37,7 +37,7 @@ static inline auto make_byte_span(span<byte> s) noexcept -> valid_byte_span {
 }
 //------------------------------------------------------------------------------
 static inline auto make_byte_span(span<char> s) noexcept -> valid_byte_span {
-    return {memory::accomodate<byte>(s)};
+    return {memory::accommodate<byte>(s)};
 }
 //------------------------------------------------------------------------------
 using valid_cbyte_span = valid_if_size_gt<span<const byte>, span_size_t>;
@@ -49,18 +49,23 @@ static inline auto make_cbyte_span(span<const byte> s) noexcept
 //------------------------------------------------------------------------------
 static inline auto make_cbyte_span(span<const char> s) noexcept
   -> valid_cbyte_span {
-    return {memory::accomodate<const byte>(s)};
+    return {memory::accommodate<const byte>(s)};
 }
 //------------------------------------------------------------------------------
 static constexpr auto max_code_point(const valid_sequence_length& len) noexcept
   -> valid_if_not_zero<code_point_t> {
-    return len == 1 ? 0x0000007F :           //  7b
-             len == 2 ? 0x000007FF :         // 11b
-               len == 3 ? 0x0000FFFF :       // 16b
-                 len == 4 ? 0x001FFFFF :     // 21b
-                   len == 5 ? 0x03FFFFFF :   // 26b
-                     len == 6 ? 0x7FFFFFFF : // 31b
-                       0x00000000;
+    return len == 1 ? 0x0000007F : //  7b
+             len == 2 ? 0x000007FF
+                      : // 11b
+             len == 3 ? 0x0000FFFF
+                      : // 16b
+             len == 4 ? 0x001FFFFF
+                      : // 21b
+             len == 5 ? 0x03FFFFFF
+                      : // 26b
+             len == 6 ? 0x7FFFFFFF
+                      : // 31b
+             0x00000000;
 }
 //------------------------------------------------------------------------------
 static constexpr auto head_data_bitshift(
@@ -78,14 +83,13 @@ static constexpr auto tail_data_bitshift(
 //------------------------------------------------------------------------------
 static constexpr auto head_code_mask(const valid_sequence_length& len) noexcept
   -> valid_if_not_zero<byte> {
-    return len == 1
-             ? 0x80
-             : len == 2
-                 ? 0xE0
-                 : len == 3
-                     ? 0xF0
-                     : len == 4 ? 0xF8
-                                : len == 5 ? 0xFC : len == 6 ? 0xFE : 0x00;
+    return len == 1   ? 0x80
+           : len == 2 ? 0xE0
+           : len == 3 ? 0xF0
+           : len == 4 ? 0xF8
+           : len == 5 ? 0xFC
+           : len == 6 ? 0xFE
+                      : 0x00;
 }
 //------------------------------------------------------------------------------
 template <typename P>
@@ -154,17 +158,13 @@ static constexpr auto is_valid_tail_byte(
 //------------------------------------------------------------------------------
 static constexpr auto required_sequence_length(const code_point_t cp) noexcept
   -> valid_sequence_length {
-    return (max_code_point(1) > cp)
-             ? 1
-             : (max_code_point(2) > cp)
-                 ? 2
-                 : (max_code_point(3) > cp)
-                     ? 3
-                     : (max_code_point(4) > cp)
-                         ? 4
-                         : (max_code_point(5) > cp)
-                             ? 5
-                             : (max_code_point(6) > cp) ? 6 : 0;
+    return (max_code_point(1) > cp)   ? 1
+           : (max_code_point(2) > cp) ? 2
+           : (max_code_point(3) > cp) ? 3
+           : (max_code_point(4) > cp) ? 4
+           : (max_code_point(5) > cp) ? 5
+           : (max_code_point(6) > cp) ? 6
+                                      : 0;
 }
 //------------------------------------------------------------------------------
 auto do_decode_sequence_length(const byte b) noexcept -> valid_sequence_length;
