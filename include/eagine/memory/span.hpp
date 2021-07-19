@@ -14,6 +14,7 @@
 #include "../compare.hpp"
 #include "../extract.hpp"
 #include "../int_constant.hpp"
+#include "../integer_range.hpp"
 #include "../type_identity.hpp"
 #include "../types.hpp"
 #include "address.hpp"
@@ -618,8 +619,7 @@ struct equal_cmp<memory::basic_span<Tl, Pl, Sl>, memory::basic_span<Tr, Pr, Sr>>
                        std::memcmp(
                          l.data(), r.data(), sizeof(Tl) * std_size(l.size()));
             } else {
-                const auto n = span_size(l.size());
-                for(span_size_t i = 0; i < n; ++i) {
+                for(const auto i : integer_range(span_size(l.size()))) {
                     if(!are_equal(l[i], r[i])) {
                         return false;
                     }
