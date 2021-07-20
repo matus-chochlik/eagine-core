@@ -1,4 +1,4 @@
-/// @example eagine/serialize/003_fragmented.cpp
+/// @example eagine/serialize_fragmented.cpp
 ///
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.

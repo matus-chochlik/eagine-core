@@ -1,4 +1,4 @@
-/// @example eagine/serialize/002_string.cpp
+/// @example eagine/serialize_string.cpp
 ///
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.

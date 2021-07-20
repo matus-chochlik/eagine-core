@@ -1,4 +1,4 @@
-/// @example eagine/identifier.cpp
+/// @example eagine/variable_history.cpp
 ///
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
