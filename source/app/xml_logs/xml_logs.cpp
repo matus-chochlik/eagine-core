@@ -13,8 +13,8 @@
 #include <QQmlContext>
 namespace eagine {
 //------------------------------------------------------------------------------
-int argc_copy = 0;
-const char** argv_copy = nullptr;
+static int argc_copy = 0;
+static const char** argv_copy = nullptr;
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

@@ -53,7 +53,7 @@ struct example_file_api {
             return EAGINE_POSIX != 0;
         }
 
-        auto operator()(const char* path, int flags) noexcept -> ssize_t {
+        auto operator()(const char* path, int flags) noexcept -> int {
             EAGINE_MAYBE_UNUSED(path);
             EAGINE_MAYBE_UNUSED(flags);
 #if EAGINE_POSIX
@@ -182,15 +182,13 @@ auto main(int, const char** argv) -> int {
         };
 
         if(api.open_file) {
-            int fd = api.open_file(argv[0], 0);
+            auto fd = api.open_file(argv[0], 0);
             if(fd >= 0) {
                 auto getbyte = make_getbyte(fd);
                 while(auto optb = getbyte()) {
                     api.write_block(pfd[1], view_one(extract(optb)));
                 }
             }
-        } else {
-            std::cerr << "open function is not available" << std::endl;
         }
 
         api.write_string(pfd[1], "some test string");
