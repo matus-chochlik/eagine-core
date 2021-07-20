@@ -293,9 +293,9 @@ inline auto stack_aligned_byte_allocator<Policy>::_own_end_misalign(
 }
 //------------------------------------------------------------------------------
 template <typename Policy>
-inline auto stack_aligned_byte_allocator<Policy>::accomodate_self() noexcept
+inline auto stack_aligned_byte_allocator<Policy>::accommodate_self() noexcept
   -> byte_allocator* {
-    auto* ba = this->accomodate_derived(*this);
+    auto* ba = this->accommodate_derived(*this);
 
     if(span_size_t m = _own_end_misalign(ba)) {
         this->release_block(ba->_alloc.allocate(m));

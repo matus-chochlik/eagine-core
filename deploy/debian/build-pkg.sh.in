@@ -7,17 +7,21 @@ pkg_dir=$(realpath "@PKG_DIR@")
 
 mkdir -p "${pkg_dir}/usr"
 pkg_prefix=$(realpath "@PKG_DIR@/usr")
+lib_prefix="${pkg_prefix}/lib/@PKG_MULTIARCH@"
+cmk_prefix="${lib_prefix}/cmake/EAGine"
 
 mkdir -p "${pkg_dir}/DEBIAN"
 mkdir -p "${pkg_prefix}/include"
-mkdir -p "${pkg_prefix}/lib/cmake/EAGine"
+mkdir -p "${cmk_prefix}"
 
+# ------------------------------------------------------------------------------
 cp "${src_dir}/config/EAGineEmbedCommon.cmake" \
-   "${pkg_prefix}/lib/cmake/EAGine/EAGineEmbedCommon.cmake"
+   "${cmk_prefix}/EAGineEmbedCommon.cmake"
 
 cp "${eagine_core_path}" \
-   "${pkg_prefix}/lib/${eagine_core_name}"
+   "${lib_prefix}/${eagine_core_name}"
 
+# ------------------------------------------------------------------------------
 cat "$(dirname ${0})/pkg-headers.txt" |\
 tr ';' '\n' |\
 while read abs_path
@@ -37,13 +41,53 @@ do
 	cp "${abs_path}" \
 	   "${pkg_prefix}/include/${rel_path}"
 done 
+# ------------------------------------------------------------------------------
+cat << EOD > "${cmk_prefix}/EAGineConfig.cmake"
+if (NOT EAGine_FIND_COMPONENTS)
+    set(EAGine_NOT_FOUND_MESSAGE "The EAGine package requires at least one component")
+    set(EAGine_FOUND False)
+    return()
+endif()
 
-mkdir -p "${pkg_prefix}/lib/cmake/EAGine"
-cat << EOD > "${pkg_prefix}/lib/cmake/EAGine/Core.cmake"
-if(CMAKE_VERSION VERSION_LESS 3.0.0)
+set(_EAGine_FIND_PARTS_REQUIRED)
+if(EAGine_FIND_REQUIRED)
+    set(_EAGine_FIND_PARTS_REQUIRED REQUIRED)
+endif()
+set(_EAGine_FIND_PARTS_QUIET)
+if(EAGine_FIND_QUIETLY)
+    set(_EAGine_FIND_PARTS_QUIET QUIET)
+endif()
+
+set(_EAGine_NOTFOUND_MESSAGE)
+
+foreach(MODULE \${EAGine_FIND_COMPONENTS})
+    find_package(EAGine\${MODULE}
+        \${_EAGine_FIND_PARTS_QUIET}
+        \${_EAGine_FIND_PARTS_REQUIRED}
+        PATHS \${CMAKE_CURRENT_LIST_DIR}
+		NO_DEFAULT_PATH
+    )
+    if(NOT EAGine\${MODULE}_FOUND)
+        if(EAGine_FIND_REQUIRED_\${MODULE})
+            set(_EAGine_NOTFOUND_MESSAGE "\${_EAGine_NOTFOUND_MESSAGE}Failed to find EAGine component '\${MODULE}'\\n")
+        elseif(NOT EAGine_FIND_QUIETLY)
+            message(WARNING "Failed to find EAGine component '\${MODULE}'")
+        endif()
+    endif()
+endforeach()
+
+if (_EAGine_NOTFOUND_MESSAGE)
+    set(EAGine_NOT_FOUND_MESSAGE "\${_EAGine_NOTFOUND_MESSAGE}")
+    set(EAGine_FOUND False)
+endif()
+EOD
+# ------------------------------------------------------------------------------
+mkdir -p "${cmk_prefix}"
+cat << EOD > "${cmk_prefix}/EAGineCoreConfig.cmake"
+if(CMAKE_VERSION VERSION_LESS 3.1.0)
   message(
     FATAL_ERROR
-    "This file relies on consumers using CMake 3.0.0 or greater."
+    "This file relies on consumers using CMake 3.1.0 or greater."
   )
 endif()
 
@@ -66,13 +110,13 @@ set_target_properties(
 )
 set_target_properties(
   EAGine::Core PROPERTIES
-  INTERFACE_LINK_DIRECTORIES "\${_IMPORT_PREFIX}/lib"
+  INTERFACE_LINK_DIRECTORIES "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@"
 )
 target_link_libraries(
-  EAGine::Core INTERFACE "\${_IMPORT_PREFIX}/lib/${eagine_core_name}"
+  EAGine::Core INTERFACE "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@/${eagine_core_name}"
 )
 EOD
-
+# ------------------------------------------------------------------------------
 mkdir -p "${pkg_dir}/DEBIAN"
 cat << EOD > "${pkg_dir}/DEBIAN/control"
 Package: eagine-core-dev

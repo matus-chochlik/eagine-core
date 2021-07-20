@@ -153,7 +153,7 @@ public:
     }
 
     template <typename Final>
-    static auto accomodate_derived(Final& that) noexcept -> Final* {
+    static auto accommodate_derived(Final& that) noexcept -> Final* {
         owned_block ob =
           that.allocate(span_size_of<Final>(), span_align_of<Final>());
         auto* const result = new(ob.begin()) Final(std::move(that));
@@ -168,8 +168,8 @@ public:
           acquire_block(as_bytes(cover_one(that))), span_align_of<Final>());
     }
 
-    auto accomodate_self() noexcept -> Derived* {
-        return accomodate_derived(derived());
+    auto accommodate_self() noexcept -> Derived* {
+        return accommodate_derived(derived());
     }
 
     void eject_self() noexcept override {

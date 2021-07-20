@@ -21,7 +21,16 @@ struct get_serialize_buffer_size<Sid, basic_sudoku_board<S, T>, Selector>
   : get_serialize_buffer_size<
       Sid,
       typename basic_sudoku_board<S, T>::blocks_type,
-      Selector> {};
+      Selector> {
+
+    static constexpr auto
+    get(string_view s, const basic_sudoku_board<S, T>& v) noexcept {
+        return get_serialize_buffer_size<
+          Sid,
+          typename basic_sudoku_board<S, T>::blocks_type,
+          Selector>::get(s, v.blocks());
+    }
+};
 //------------------------------------------------------------------------------
 template <unsigned S, bool T>
 struct serializer<basic_sudoku_board<S, T>>

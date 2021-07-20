@@ -12,6 +12,10 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 class logger;
+
+/// @brief Logger object instance id type.
+/// @ingroup logging
+using logger_instance_id = std::uintptr_t;
 //------------------------------------------------------------------------------
 } // namespace eagine
 

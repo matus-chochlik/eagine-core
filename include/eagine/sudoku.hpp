@@ -327,6 +327,10 @@ public:
       : _type{that._type}
       , _blocks{that._blocks} {}
 
+    auto blocks() const noexcept -> auto& {
+        return _blocks;
+    }
+
     auto type() const noexcept -> auto& {
         return _type;
     }
@@ -777,10 +781,10 @@ public:
 
     auto fill(int xmin, int ymin, basic_sudoku_tile_patch<S>& patch)
       -> basic_sudoku_tile_patch<S>& {
-        const int ymax = ymin + patch.height() / (S * (S - 2));
-        const int xmax = xmin + patch.width() / (S * (S - 2));
+        const auto ymax = ymin + patch.height() / (S * (S - 2));
+        const auto xmax = xmin + patch.width() / (S * (S - 2));
         std::size_t k = 0;
-        for(int y = ymax - 1; y >= ymin; --y) {
+        for(auto y = ymax - 1; y >= ymin; --y) {
             for(const auto by : integer_range(1U, S - 1U)) {
                 for(const auto cy : integer_range(S)) {
                     for(const auto x : integer_range(xmin, xmax)) {

@@ -302,6 +302,8 @@ private:
                 src = skip(src, 1);
             }
             pop(skip_len);
+        } else {
+            errors |= error_code::not_enough_data;
         }
         return errors;
     }

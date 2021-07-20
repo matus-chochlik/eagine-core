@@ -33,7 +33,7 @@ using const_block = basic_block<true>;
 //------------------------------------------------------------------------------
 /// @brief Converts a span into a basic_block.
 /// @ingroup memory
-/// @see accomodate
+/// @see accommodate
 /// @see as_chars
 template <typename T, typename P, typename S>
 static constexpr auto as_bytes(basic_span<T, P, S> spn) noexcept
@@ -43,18 +43,18 @@ static constexpr auto as_bytes(basic_span<T, P, S> spn) noexcept
 //------------------------------------------------------------------------------
 /// @brief Converts a block into a span of characters.
 /// @ingroup memory
-/// @see accomodate
+/// @see accommodate
 /// @see as_bytes
 static constexpr auto as_chars(block blk) noexcept {
-    return accomodate<char>(blk);
+    return accommodate<char>(blk);
 }
 //------------------------------------------------------------------------------
 /// @brief Converts a block into a span of characters.
 /// @ingroup memory
-/// @see accomodate
+/// @see accommodate
 /// @see as_bytes
 static constexpr auto as_chars(const_block blk) noexcept {
-    return accomodate<const char>(blk);
+    return accommodate<const char>(blk);
 }
 //------------------------------------------------------------------------------
 class block_owner;

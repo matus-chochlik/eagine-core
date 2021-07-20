@@ -10,10 +10,18 @@
 #include <eagine/is_within_limits.hpp>
 #include <eagine/main_ctx_object.hpp>
 #include <eagine/value_tree/implementation.hpp>
+#include <stdexcept>
 #include <vector>
 
+EAGINE_DIAG_PUSH()
+#if defined(__clang__)
+EAGINE_DIAG_OFF(extra-semi-stmt)
+EAGINE_DIAG_OFF(final-dtor-non-final-class)
+EAGINE_DIAG_OFF(newline-eof)
+EAGINE_DIAG_OFF(reserved-id-macro)
+#endif
 #include <ryml.hpp>
-#include <stdexcept>
+EAGINE_DIAG_POP()
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -30,11 +38,11 @@ class rapidyaml_callbacks {
     c4::yml::Callbacks _prev{};
     c4::yml::Callbacks _cbks{};
 
-    void _do_handle_error(const std::string& msg) {
+    [[noreturn]] void _do_handle_error(const std::string& msg) {
         throw std::runtime_error(msg);
     }
 
-    static void
+    [[noreturn]] static void
     _handle_error(const char* msg, size_t len, c4::yml::Location, void* self) {
         static_cast<rapidyaml_callbacks*>(self)->_do_handle_error(
           std::string(msg, len));
@@ -251,7 +259,7 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-class rapidyaml_tree_compound
+class rapidyaml_tree_compound final
   : public main_ctx_object
   , public compound_with_refcounted_node<
       rapidyaml_tree_compound,

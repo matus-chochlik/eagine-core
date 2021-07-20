@@ -20,6 +20,13 @@ namespace eagine::memory {
 /// @see buffer
 class buffer_pool {
 public:
+    /// @brief Default constructors.
+    buffer_pool() noexcept = default;
+
+    /// @brief Constructor initializing the maximum number of buffers in the pool.
+    explicit buffer_pool(std::size_t max) noexcept
+      : _max{max} {}
+
     /// @brief Gets a buffer with the specified required size.
     /// @param req_size The returned buffer will have at least this number of bytes.
     /// @see eat
@@ -28,13 +35,11 @@ public:
           _pool.begin(), _pool.end(), req_size, [](auto& buf, auto req) {
               return buf.capacity() < req;
           });
-        if(pos != _pool.end()) {
-            memory::buffer result{std::move(*pos)};
-            _pool.erase(pos);
-            result.resize(req_size);
-            return result;
-        }
         memory::buffer result{};
+        if(pos != _pool.end()) {
+            result = std::move(*pos);
+            _pool.erase(pos);
+        }
         result.resize(req_size);
         return result;
     }
@@ -47,11 +52,18 @@ public:
           _pool.end(),
           used.capacity(),
           [](auto& buf, auto capacity) { return buf.capacity() < capacity; });
-        _pool.emplace(pos, std::move(used));
+        if(_pool.size() < _max) {
+            _pool.emplace(pos, std::move(used));
+        } else if(pos != _pool.end()) {
+            *pos = std::move(used);
+        } else {
+            _pool.back() = std::move(used);
+        }
     }
 
 private:
     std::vector<memory::buffer> _pool;
+    std::size_t _max{64};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine::memory

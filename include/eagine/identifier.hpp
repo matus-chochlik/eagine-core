@@ -132,7 +132,8 @@ public:
 
     /// @brief Returns a string view covering the unpacked identifier name.
     auto view() const -> string_view {
-        return {data(), size()};
+        // negative size indicates that the data is zero terminated
+        return {data(), -size()};
     }
 
     /// @brief Returns the unpacked identifier name as a standard string.

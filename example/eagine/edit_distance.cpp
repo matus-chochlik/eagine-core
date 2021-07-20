@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/compare.hpp>
 #include <eagine/edit_distance.hpp>
 #include <eagine/integer_range.hpp>
 #include <filesystem>
@@ -36,7 +37,7 @@ auto main() -> int {
             }
         }
         if(min_idx < words.size()) {
-            if(min_dist == 0) {
+            if(are_equal(min_dist, 0.F)) {
                 std::cout << "Found: " << words[min_idx] << std::endl;
             } else {
                 std::cout << "Did you mean " << words[min_idx] << '?'

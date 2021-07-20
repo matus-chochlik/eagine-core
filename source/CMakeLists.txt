@@ -8,13 +8,20 @@ add_subdirectory(app)
 
 add_library(EAGine::Core INTERFACE IMPORTED GLOBAL)
 target_link_libraries(EAGine::Core INTERFACE eagine-core)
-
-install(
-	TARGETS
+set(
+	EAGINE_CORE_EXPORT_TARGETS
 		eagine-core-generated-headers
 		eagine-core-private-headers
 		eagine-core-headers
 		eagine-core
+)
+
+if(TARGET eagine-xml_logs-gui)
+	list(APPEND EAGINE_CORE_EXPORT_TARGETS eagine-xml_logs-gui)
+endif()
+
+install(
+	TARGETS ${EAGINE_CORE_EXPORT_TARGETS}
 	EXPORT Core
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib

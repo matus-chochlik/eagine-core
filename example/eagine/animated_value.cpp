@@ -7,6 +7,7 @@
 ///
 #include <eagine/animated_value.hpp>
 #include <eagine/progress_bar.hpp>
+#include <eagine/signal_switch.hpp>
 #include <chrono>
 #include <iostream>
 #include <random>
@@ -14,6 +15,7 @@
 
 auto main() -> int {
     using namespace eagine;
+    signal_switch interrupted;
 
     std::default_random_engine gen{std::random_device()()};
     std::uniform_real_distribution<float> dis{0.F, 1.F};
@@ -27,7 +29,7 @@ auto main() -> int {
     using step_t = std::chrono::duration<float>;
     step_t step{0.020F};
 
-    while(true) {
+    while(!interrupted) {
         if(a.is_done()) {
             a.set(dis(gen), step_t(math::clamp(nrm(gen), 0.5F, 1.5F)));
         }

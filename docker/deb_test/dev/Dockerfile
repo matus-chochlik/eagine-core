@@ -5,7 +5,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get --yes update
 RUN apt-get --yes install pkgconf cmake make g++
 
+RUN mkdir -p /tmp/eagine
 COPY eagine-core-dev.deb /tmp
-COPY entrypoint /tmp
+COPY entrypoint /tmp/eagine
+COPY CMakeLists.txt /tmp/eagine
 
-ENTRYPOINT /bin/sh /tmp/entrypoint
+
+WORKDIR /tmp/eagine
+ENTRYPOINT /bin/sh /tmp/eagine/entrypoint

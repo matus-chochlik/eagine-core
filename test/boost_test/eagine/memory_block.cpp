@@ -222,7 +222,7 @@ void eagine_test_memory_block_7() {
 
     memory::block b(x.data(), span_size(x.size()));
 
-    span<T> s = eagine::memory::accomodate<T>(b);
+    span<T> s = eagine::memory::accommodate<T>(b);
 
     BOOST_CHECK_EQUAL(s.size(), x.size() / sizeof(T));
 }

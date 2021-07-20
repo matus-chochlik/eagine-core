@@ -16,8 +16,7 @@ namespace eagine {
 extern auto main(main_ctx& ctx) -> int;
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto main_impl(int argc, const char** argv, const main_ctx_options& options)
-  -> int {
+auto main_impl(int argc, const char** argv, main_ctx_options& options) -> int {
     main_ctx_storage storage{argc, argv, options};
     main_ctx ctx{storage};
     try {

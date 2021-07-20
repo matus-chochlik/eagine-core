@@ -32,8 +32,8 @@ struct serialize_size_constant : size_constant<S> {
     }
 
     template <typename X>
-    static constexpr auto get(std::pair<string_view, const X&> mapped) noexcept {
-        return std_size(12 + mapped.first.size() + 2 + span_size(S));
+    static constexpr auto get(string_view s, const X&) noexcept {
+        return std_size(12 + s.size() + 2 + span_size(S));
     }
 };
 //------------------------------------------------------------------------------
@@ -120,10 +120,8 @@ template <identifier_t Sid, typename Selector>
 struct get_serialize_buffer_size<Sid, string_view, Selector>
   : serialize_size_constant<0, false> {
 
-    static constexpr auto
-    get(std::pair<string_view, string_view> mapped) noexcept {
-        return std_size(
-          12 + mapped.first.size() + 2 + span_size(mapped.second.size()));
+    static constexpr auto get(string_view s, string_view v) noexcept {
+        return std_size(12 + s.size() + 2 + v.size());
     }
 };
 
@@ -131,10 +129,8 @@ template <identifier_t Sid, typename Selector>
 struct get_serialize_buffer_size<Sid, std::string, Selector>
   : serialize_size_constant<0, false> {
 
-    static constexpr auto
-    get(std::pair<string_view, const std::string&> mapped) noexcept {
-        return std_size(
-          12 + mapped.first.size() + 2 + span_size(mapped.second.size()));
+    static constexpr auto get(string_view s, const std::string& v) noexcept {
+        return std_size(12 + s.size() + 2 + span_size(v.size()));
     }
 };
 //------------------------------------------------------------------------------
@@ -145,11 +141,11 @@ struct get_serialize_buffer_size<Sid, std::array<T, N>, Selector>
       (get_serialize_buffer_size<Sid, T, Selector>::is_constant)> {
 
     static constexpr auto
-    get(std::pair<string_view, const std::array<T, N>&> mapped) noexcept {
-        auto result = std_size(12 + mapped.first.size());
-        for(auto& e : mapped.second) {
+    get(string_view s, const std::array<T, N>& v) noexcept {
+        auto result = std_size(12 + s.size());
+        for(const auto& e : v) {
             result +=
-              2 + get_serialize_buffer_size<Sid, T, Selector>::get({{}, e});
+              2 + get_serialize_buffer_size<Sid, T, Selector>::get({}, e);
         }
         return result;
     }
@@ -162,11 +158,10 @@ struct get_serialize_buffer_size<Sid, std::tuple<T...>, Selector>
       (true && ... && (serialize_buffer_is_constant_v<Sid, T, Selector>))> {
 
     template <typename Tup>
-    static constexpr auto
-    get(std::pair<string_view, const Tup&> mapped) noexcept {
+    static constexpr auto get(string_view s, const Tup& v) noexcept {
         return std_size(
-          12 + mapped.first.size() + 2 +
-          _do_get(mapped.second, std::make_index_sequence<sizeof...(T)>()));
+          12 + s.size() + 2 +
+          _do_get(v, std::make_index_sequence<sizeof...(T)>()));
     }
 
 private:
@@ -176,16 +171,15 @@ private:
         return (
           0 + ... +
           (2 + get_serialize_buffer_size<Sid, T, Selector>::get(
-                 {string_view(), std::get<I>(t)})));
+                 {}, std::get<I>(t))));
     }
 };
 //------------------------------------------------------------------------------
 template <identifier_t Sid, typename T, typename Selector>
 struct get_struct_serialize_buffer_size : serialize_size_constant<0, false> {
 
-    static constexpr auto get(std::pair<string_view, const T&> mapped) noexcept {
-        return std_size(
-          12 + mapped.first.size() + 2 + _get(map_data_members(mapped.second)));
+    static constexpr auto get(string_view s, const T& v) noexcept {
+        return std_size(12 + s.size() + 2 + _get(map_data_members(v)));
     }
 
 private:
@@ -202,8 +196,7 @@ private:
         return span_size(
           (0 + ... +
            (2 + get_serialize_buffer_size<Sid, M, Selector>::get(
-                  std::pair<string_view, const M&>{
-                    std::get<I>(mapped).first, std::get<I>(mapped).second}))));
+                  std::get<I>(mapped).first, std::get<I>(mapped).second))));
     }
 };
 //------------------------------------------------------------------------------
@@ -224,11 +217,16 @@ constexpr auto get_serialize_array_for(const T&, Selector) noexcept
 }
 //------------------------------------------------------------------------------
 template <identifier_t SerializerId, typename T, typename Selector>
-inline auto get_serialize_vector_for(const T& inst, Selector) noexcept
+inline auto serialize_buffer_size_for(const T& inst, Selector) noexcept
+  -> span_size_t {
+    return get_serialize_buffer_size<SerializerId, T, Selector>::get({}, inst);
+}
+//------------------------------------------------------------------------------
+template <identifier_t SerializerId, typename T, typename Selector>
+inline auto get_serialize_vector_for(const T& inst, Selector sel) noexcept
   -> std::vector<byte> {
     std::vector<byte> result;
-    result.resize(get_serialize_buffer_size<SerializerId, T, Selector>::get(
-      std::pair<string_view, const T&>({}, inst)));
+    result.resize(serialize_buffer_size_for<SerializerId>(inst, sel));
     return result;
 }
 //------------------------------------------------------------------------------

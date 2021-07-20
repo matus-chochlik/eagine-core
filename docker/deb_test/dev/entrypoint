@@ -1,2 +1,3 @@
 #!/bin/sh
 apt --yes install /tmp/eagine-core-dev.deb
+cmake /tmp/eagine

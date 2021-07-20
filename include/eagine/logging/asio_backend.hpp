@@ -20,6 +20,7 @@ EAGINE_DIAG_OFF(covered-switch-default)
 EAGINE_DIAG_OFF(zero-as-null-pointer-constant)
 EAGINE_DIAG_OFF(shorten-64-to-32)
 EAGINE_DIAG_OFF(deprecated)
+EAGINE_DIAG_OFF(shadow)
 #endif
 
 #include <asio/io_context.hpp>

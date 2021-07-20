@@ -37,7 +37,7 @@ public:
     constexpr basic_string_span() noexcept = default;
 
     constexpr basic_string_span(P addr, S length) noexcept
-      : base(addr, length) {}
+      : base{addr, length} {}
 
     template <
       typename R,
@@ -45,23 +45,23 @@ public:
         !std::is_array_v<R> && std::is_convertible_v<R, P> &&
         std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>>>
     constexpr explicit basic_string_span(R addr) noexcept
-      : base(addr, -limit_cast<S>(std::strlen(addr))) {}
+      : base{addr, -limit_cast<S>(std::strlen(addr))} {}
 
     /// @brief Construction from C string literal
     template <std::size_t N>
     constexpr basic_string_span(C (&array)[N]) noexcept
-      : base(
+      : base{
           static_cast<P>(array),
-          array[N - 1] == C(0) ? 1 - limit_cast<S>(N) : limit_cast<S>(N)) {}
+          array[N - 1] == C(0) ? 1 - limit_cast<S>(N) : limit_cast<S>(N)} {}
 
     /// @brief Construction from C-array and explicit length value.
     template <std::size_t N>
     constexpr basic_string_span(C (&array)[N], span_size_t n) noexcept
-      : base(static_cast<P>(array), limit_cast<S>(n)) {}
+      : base{static_cast<P>(array), limit_cast<S>(n)} {}
 
     /// @brief Construction from related standard string type.
     constexpr basic_string_span(const string_type& str) noexcept
-      : base(static_cast<P>(str.c_str()), -limit_cast<S>(str.size())) {}
+      : base{static_cast<P>(str.c_str()), -limit_cast<S>(str.size())} {}
 
     /// @brief Construction from compatible container reference.
     ///
@@ -73,7 +73,7 @@ public:
         memory::has_span_data_member_v<Str, C> &&
         memory::has_span_size_member_v<Str>>>
     constexpr basic_string_span(Str& str) noexcept
-      : base(static_cast<P>(str.data()), limit_cast<S>(str.size())) {}
+      : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
 
     /// @brief Construction from compatible container const reference.
     ///
@@ -85,7 +85,7 @@ public:
         memory::has_span_data_member_v<Str, C> &&
         memory::has_span_size_member_v<Str>>>
     constexpr basic_string_span(const Str& str) noexcept
-      : base(static_cast<P>(str.data()), limit_cast<S>(str.size())) {}
+      : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
 
     using base::data;
     using base::empty;

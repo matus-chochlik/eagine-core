@@ -1,0 +1,13 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+	<file>qtquickcontrols2.conf</file>
+	<file>xml_logs.qml</file>
+
+	<file>views/EntriesView.qml</file>
+	<file>views/EntryListView.qml</file>
+	<file>views/EntryListItem.qml</file>
+	<file>views/ChartsView.qml</file>
+	<file>views/ProgressView.qml</file>
+
+</qresource>
+</RCC>

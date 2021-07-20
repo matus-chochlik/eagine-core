@@ -209,7 +209,7 @@ public:
 
     auto _own_end_misalign(_this_class* p) const noexcept -> span_size_t;
 
-    auto accomodate_self() noexcept -> byte_allocator*;
+    auto accommodate_self() noexcept -> byte_allocator*;
 
     void eject_self() noexcept override;
 };

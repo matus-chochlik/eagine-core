@@ -14,6 +14,7 @@
 #include "../compare.hpp"
 #include "../extract.hpp"
 #include "../int_constant.hpp"
+#include "../integer_range.hpp"
 #include "../type_identity.hpp"
 #include "../types.hpp"
 #include "address.hpp"
@@ -220,7 +221,7 @@ public:
     /// @see is_empty
     /// @see size
     explicit constexpr operator bool() const noexcept {
-        return size() != 0;
+        return !is_empty();
     }
 
     /// @brief Indicates that the span is empty.
@@ -238,13 +239,17 @@ public:
 
     /// @brief Indicates that the span is terminated with value T(0) if applicable.
     constexpr auto is_zero_terminated() const noexcept -> bool {
-        return size() < 0;
+        return _size < 0;
     }
 
     /// @brief Returns the number of elements in the span.
     /// @see is_empty
     constexpr auto size() const noexcept -> size_type {
-        return EAGINE_LIKELY(_size >= 0) ? _size : -_size;
+        if constexpr(std::is_same_v<std::remove_const_t<ValueType>, char>) {
+            return EAGINE_LIKELY(_size < 0) ? -_size : _size;
+        } else {
+            return EAGINE_LIKELY(_size >= 0) ? _size : -_size;
+        }
     }
 
     /// @brief Returns a pointer to the start of the span.
@@ -524,34 +529,33 @@ static constexpr auto cover(C& container) noexcept {
     return cover(container.data(), container.size());
 }
 //------------------------------------------------------------------------------
-// accomodate
+// accommodate
 //------------------------------------------------------------------------------
-static constexpr auto can_accomodate_between(
+static constexpr auto can_accommodate_between(
   const_address bgn,
   const_address end,
   span_size_t size) noexcept -> bool {
     return (end - bgn) >= size;
 }
 //------------------------------------------------------------------------------
-/// @brief Indicates if the specified memory block can accomodate count elements of T.
+/// @brief Indicates if the specified memory block can accommodate count elements of T.
 /// @ingroup type_utils
 template <typename T, typename B, typename P, typename S>
-static constexpr auto can_accomodate(
+static constexpr auto can_accommodate(
   basic_span<B, P, S> blk,
   span_size_t count,
   type_identity<T> tid = {}) noexcept {
-    return can_accomodate_between(
-      align_up(blk.begin_addr(), span_align_of(tid), span_align_of(tid)),
-      align_down(blk.end_addr(), span_align_of(tid), span_align_of(tid)),
-      count * span_size_of(tid));
+    return is_aligned_as(blk.begin_addr(), tid) &&
+           can_accommodate_between(
+             blk.begin_addr(), blk.end_addr(), count * span_size_of(tid));
 }
 //------------------------------------------------------------------------------
-/// @brief Indicates if the specified memory block can accomodate one element of T.
+/// @brief Indicates if the specified memory block can accommodate one element of T.
 /// @ingroup type_utils
 template <typename T, typename B, typename P, typename S>
 static constexpr auto
-can_accomodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept {
-    return can_accomodate(blk, 1, tid);
+can_accommodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept {
+    return can_accommodate(blk, 1, tid);
 }
 //------------------------------------------------------------------------------
 /// @brief Returns a span, rebinding the element type (typically from basic_block).
@@ -560,10 +564,12 @@ can_accomodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept {
 /// @see as_chars
 template <typename T, typename B, typename P, typename S>
 static constexpr auto
-accomodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept
-  -> basic_span<std::add_const_t<T>, rebind_pointer_t<P, T>, S> {
-    return {
-      align_up_to(blk.begin_addr(), tid), align_down_to(blk.end_addr(), tid)};
+accommodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept
+  -> basic_span<T, rebind_pointer_t<P, T>, S> {
+    return EAGINE_CONSTEXPR_ASSERT(
+      (can_accommodate(blk, tid)),
+      (basic_span<T, rebind_pointer_t<P, T>, S>{
+        blk.begin_addr(), blk.end_addr()}));
 }
 //------------------------------------------------------------------------------
 // extract
@@ -614,8 +620,7 @@ struct equal_cmp<memory::basic_span<Tl, Pl, Sl>, memory::basic_span<Tr, Pr, Sr>>
                        std::memcmp(
                          l.data(), r.data(), sizeof(Tl) * std_size(l.size()));
             } else {
-                const auto n = span_size(l.size());
-                for(span_size_t i = 0; i < n; ++i) {
+                for(const auto i : integer_range(span_size(l.size()))) {
                     if(!are_equal(l[i], r[i])) {
                         return false;
                     }
