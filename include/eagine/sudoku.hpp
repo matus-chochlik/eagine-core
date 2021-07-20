@@ -781,8 +781,8 @@ public:
 
     auto fill(int xmin, int ymin, basic_sudoku_tile_patch<S>& patch)
       -> basic_sudoku_tile_patch<S>& {
-        const auto ymax = ymin + patch.height() / (S * (S - 2));
-        const auto xmax = xmin + patch.width() / (S * (S - 2));
+        const int ymax = limit_cast<int>(ymin + patch.height() / (S * (S - 2)));
+        const int xmax = limit_cast<int>(xmin + patch.width() / (S * (S - 2)));
         std::size_t k = 0;
         for(auto y = ymax - 1; y >= ymin; --y) {
             for(const auto by : integer_range(1U, S - 1U)) {
