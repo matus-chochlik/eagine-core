@@ -42,10 +42,11 @@ struct deserializer_data_source : interface<deserializer_data_source> {
     template <typename Function>
     auto scan_until(
       Function predicate,
-      const valid_if_positive<span_size_t>& max,
-      const valid_if_positive<span_size_t>& step = {256})
-      -> valid_if_nonnegative<span_size_t> {
-        const auto inc{extract(step)};
+      const span_size_t max,
+      const span_size_t step = 256) -> valid_if_nonnegative<span_size_t> {
+        EAGINE_ASSERT(max > 0);
+        EAGINE_ASSERT(step > 0);
+        const auto inc{step};
         span_size_t start{0};
         span_size_t total{inc};
         while(auto blk = top(total)) {
@@ -55,8 +56,8 @@ struct deserializer_data_source : interface<deserializer_data_source> {
             if(blk.size() < total) {
                 break;
             }
-            if(extract(max) < total) {
-                return extract(max);
+            if(max < total) {
+                return max;
             }
             start += inc;
             total += inc;
@@ -70,19 +71,19 @@ struct deserializer_data_source : interface<deserializer_data_source> {
     /// @param max the maximum number of bytes from the top to scan.
     /// @param step how much data should be fetched per scan iteration.
     auto scan_for(
-      byte what,
-      const valid_if_positive<span_size_t>& max,
-      const valid_if_positive<span_size_t>& step = {256})
-      -> valid_if_nonnegative<span_size_t> {
+      const byte what,
+      const span_size_t max,
+      const span_size_t step = 256) -> valid_if_nonnegative<span_size_t> {
+        EAGINE_ASSERT(max > 0);
+        EAGINE_ASSERT(step > 0);
         return scan_until([what](byte b) { return b == what; }, max, step);
     }
 
     /// @brief Fetches all the remaining data into a buffer.
-    void fetch_all(
-      memory::buffer& dst,
-      valid_if_positive<span_size_t> step = {256}) {
+    void fetch_all(memory::buffer& dst, span_size_t step = 256) {
+        EAGINE_ASSERT(step > 0);
         span_size_t offs{dst.size()};
-        while(auto blk = top(extract(step))) {
+        while(const auto blk{top(step)}) {
             dst.enlarge_by(blk.size());
             copy(blk, skip(cover(dst), offs));
             offs += blk.size();

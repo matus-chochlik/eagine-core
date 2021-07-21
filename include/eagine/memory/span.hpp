@@ -124,25 +124,26 @@ public:
     using reverse_iterator = std::reverse_iterator<iterator>;
 
     /// @brief Construction from pointer and length.
-    constexpr basic_span(pointer addr, size_type len) noexcept
-      : _addr{addr}
-      , _size{len} {}
+    constexpr basic_span(
+      pointer addr, // NOLINT(modernize-pass-by-value)
+      size_type len) noexcept
+      : _size{len}
+      , _addr{addr} {}
 
     /// @brief Construction from memory address and length.
     constexpr basic_span(address_type addr, size_type len) noexcept
-      : _addr{static_cast<Pointer>(addr)}
-      , _size{len} {}
+      : basic_span{static_cast<pointer>(addr), len} {}
 
     /// @brief Construction from a pair of pointers.
     constexpr basic_span(pointer b, pointer e) noexcept
-      : _addr{b}
-      , _size{b <= e ? e - b : 0} {}
+      : basic_span{b, b <= e ? e - b : 0} {}
 
     /// @brief Construction from a pair of memory addresses.
     constexpr basic_span(address_type ba, address_type be) noexcept
-      : _addr{static_cast<Pointer>(ba)}
-      , _size{limit_cast<size_type>(
-          ba <= be ? (be - ba) / sizeof(value_type) : 0)} {}
+      : basic_span{
+          static_cast<pointer>(ba),
+          limit_cast<size_type>(
+            (ba <= be) ? (be - ba) / sizeof(value_type) : 0)} {}
 
     template <typename T, typename P, typename S>
     using enable_if_convertible = std::enable_if_t<
@@ -180,8 +181,9 @@ public:
       typename = enable_if_convertible<T, P, S>,
       typename = enable_if_different<T, P, S>>
     constexpr basic_span(basic_span<T, P, S> that) noexcept
-      : _addr{static_cast<Pointer>(that.data())}
-      , _size{limit_cast<SizeType>(that.size())} {}
+      : basic_span{
+          static_cast<pointer>(that.data()),
+          limit_cast<size_type>(that.size())} {}
 
     /// @brief Converting copy assignment from span of compatible elements.
     template <
@@ -191,8 +193,8 @@ public:
       typename = enable_if_convertible<T, P, S>,
       typename = enable_if_different<T, P, S>>
     auto operator=(basic_span<T, P, S> that) noexcept -> auto& {
-        _addr = static_cast<Pointer>(that.data());
-        _size = limit_cast<SizeType>(that.size());
+        _addr = static_cast<pointer>(that.data());
+        _size = limit_cast<size_type>(that.size());
         return *this;
     }
 
@@ -398,11 +400,11 @@ public:
     }
 
 private:
-    pointer _addr{nullptr};
     // if _size is negative it indicates that the span is terminated
     // by a zero value. if such case the span length is calculated by
     // getting the absolute value of _size.
     size_type _size{0};
+    pointer _addr{nullptr};
 };
 //------------------------------------------------------------------------------
 /// @brief Converts argument to span using a native pointer type.
