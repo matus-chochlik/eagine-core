@@ -20,16 +20,13 @@
 namespace eagine::memory {
 
 // multi_align_byte_allocator - fwd
-template <typename AlignSeq, typename Policy = default_byte_allocator_policy>
+template <typename AlignSeq>
 class multi_align_byte_allocator;
 
 // multi_align_byte_allocator
-template <std::size_t... Align, typename Policy>
-class multi_align_byte_allocator<std::index_sequence<Align...>, Policy>
-  : public byte_allocator_impl<
-      Policy,
-      multi_align_byte_allocator,
-      std::index_sequence<Align...>> {
+template <std::size_t... Align>
+class multi_align_byte_allocator<std::index_sequence<Align...>>
+  : public byte_allocator {
 public:
     multi_align_byte_allocator(
       instead_of_t<size_constant<Align>, shared_byte_allocator>... aligned_alloc,

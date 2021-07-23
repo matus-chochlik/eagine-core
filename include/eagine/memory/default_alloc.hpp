@@ -13,7 +13,7 @@
 
 namespace eagine::memory {
 
-using default_byte_allocator = c_byte_reallocator<>;
+using default_byte_allocator = c_byte_reallocator;
 
 } // namespace eagine::memory
 

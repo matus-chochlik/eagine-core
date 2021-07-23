@@ -15,9 +15,7 @@
 
 namespace eagine::memory {
 
-template <typename Policy = default_byte_allocator_policy>
-class byte_allocator_with_fallback
-  : public byte_allocator_impl<Policy, byte_allocator_with_fallback> {
+class byte_allocator_with_fallback : public byte_allocator {
 private:
     span_size_t _fbk_size;
     span_size_t _fbk_max;

@@ -113,8 +113,7 @@ private:
     auto _make_1(const span_size_t align, Args&&... args) -> T*;
 };
 
-using system_allocation_arena =
-  basic_allocation_arena<c_byte_reallocator<byte_alloc_managed_policy>>;
+using system_allocation_arena = basic_allocation_arena<c_byte_reallocator>;
 
 } // namespace eagine::memory
 
