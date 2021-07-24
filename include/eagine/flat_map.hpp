@@ -313,12 +313,12 @@ public:
     }
 
     void assign(std::initializer_list<std::pair<Key, Val>> il) {
-        _vec = _vec_t(il);
+        _vec.assign(il.begin(), il.end());
         std::sort(_vec.begin(), _vec.end(), value_comp());
     }
 
     void assign(const std::vector<value_type>& v) {
-        _vec = _vec_t(v.begin(), v.end());
+        _vec.assign(v.begin(), v.end());
         std::sort(_vec.begin(), _vec.end(), value_comp());
     }
 
