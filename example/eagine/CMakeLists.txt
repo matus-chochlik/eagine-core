@@ -94,9 +94,6 @@ eagine_example_common(sudoku_noise)
 #
 eagine_example_common(embed_self)
 eagine_embed_target_resources(TARGET eagine-embed_self)
-# TODO
-#eagine_example_common(embed_baked)
-#eagine_embed_packed_target_resources(eagine-embed_baked zebra_fur)
 
 install(
 	FILES

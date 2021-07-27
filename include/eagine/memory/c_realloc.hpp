@@ -16,9 +16,7 @@
 namespace eagine::memory {
 
 // c_byte_reallocator
-template <typename Policy = default_byte_allocator_policy>
-class c_byte_reallocator
-  : public byte_allocator_impl<Policy, c_byte_reallocator> {
+class c_byte_reallocator : public byte_allocator {
 public:
     using size_type = span_size_t;
 

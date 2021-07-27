@@ -21,7 +21,7 @@ template <typename T>
 class std_allocator : public block_owner {
 
 public:
-    auto _get_sba() const -> auto& {
+    auto _get_sba() const noexcept -> auto& {
         return _sba;
     }
 

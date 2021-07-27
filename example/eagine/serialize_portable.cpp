@@ -1,4 +1,4 @@
-/// @example eagine/serialize/003_portable.cpp
+/// @example eagine/serialize_portable.cpp
 ///
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.

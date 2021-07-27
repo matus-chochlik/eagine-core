@@ -15,22 +15,12 @@
 
 namespace eagine::memory {
 
-template <typename Policy = default_byte_allocator_policy>
-class byte_allocator_with_fallback
-  : public byte_allocator_impl<Policy, byte_allocator_with_fallback> {
-private:
-    span_size_t _fbk_size;
-    span_size_t _fbk_max;
-    shared_byte_allocator _dft;
-    shared_byte_allocator _fbk;
-
+class byte_allocator_with_fallback : public byte_allocator {
 public:
     byte_allocator_with_fallback(
       shared_byte_allocator&& dft,
       shared_byte_allocator&& fbk = default_byte_allocator())
-      : _fbk_size(0)
-      , _fbk_max(0)
-      , _dft(std::move(dft))
+      : _dft(std::move(dft))
       , _fbk(std::move(fbk)) {}
 
     using size_type = span_size_t;
@@ -80,6 +70,12 @@ public:
             EAGINE_ABORT("Pointer not allocated by this allocator!");
         }
     }
+
+private:
+    span_size_t _fbk_size{0};
+    span_size_t _fbk_max{0};
+    shared_byte_allocator _dft;
+    shared_byte_allocator _fbk;
 };
 
 } // namespace eagine::memory

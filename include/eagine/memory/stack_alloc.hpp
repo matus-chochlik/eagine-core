@@ -21,17 +21,6 @@ namespace eagine::memory {
 //------------------------------------------------------------------------------
 template <typename T>
 class base_stack_allocator : public block_owner {
-private:
-    T* _btm{nullptr};
-    T* _top{nullptr};
-    T* _pos{nullptr};
-    T* _min{nullptr};
-    span_size_t _dif{0};
-
-    auto _store() const noexcept -> const_block;
-    auto _allocated() const noexcept -> const_block;
-    auto _available() const noexcept -> const_block;
-
 public:
     using value_type = T;
     using pointer = T*;
@@ -87,16 +76,22 @@ public:
         }
         return false;
     }
+
+private:
+    T* _btm{nullptr};
+    T* _top{nullptr};
+    T* _pos{nullptr};
+    T* _min{nullptr};
+    span_size_t _dif{0};
+
+    auto _store() const noexcept -> const_block;
+    auto _allocated() const noexcept -> const_block;
+    auto _available() const noexcept -> const_block;
 };
 //------------------------------------------------------------------------------
 // stack_byte_allocator_only
 //------------------------------------------------------------------------------
-template <typename Policy = default_byte_allocator_policy>
-class stack_byte_allocator_only
-  : public byte_allocator_impl<Policy, stack_byte_allocator_only> {
-private:
-    base_stack_allocator<byte> _alloc;
-
+class stack_byte_allocator_only : public byte_allocator {
 public:
     using value_type = byte;
     using size_type = span_size_t;
@@ -109,7 +104,7 @@ public:
     ~stack_byte_allocator_only() noexcept override = default;
 
     stack_byte_allocator_only(const block& blk)
-      : _alloc(blk) {}
+      : _alloc{blk} {}
 
     auto equal(byte_allocator* a) const noexcept -> bool override;
 
@@ -129,15 +124,14 @@ public:
     auto allocate(size_type n, size_type a) noexcept -> owned_block override;
 
     void deallocate(owned_block&& b, size_type) noexcept override;
+
+private:
+    base_stack_allocator<byte> _alloc;
 };
 //------------------------------------------------------------------------------
 // stack_byte_allocator
 //------------------------------------------------------------------------------
-template <typename Policy = default_byte_allocator_policy>
-class stack_byte_allocator
-  : public byte_allocator_impl<Policy, stack_byte_allocator> {
-private:
-    base_stack_allocator<byte> _alloc;
+class stack_byte_allocator : public byte_allocator {
 
 public:
     using value_type = byte;
@@ -147,10 +141,10 @@ public:
     stack_byte_allocator(const stack_byte_allocator&) = delete;
     auto operator=(stack_byte_allocator&&) = delete;
     auto operator=(const stack_byte_allocator&) = delete;
-    ~stack_byte_allocator() noexcept = default;
+    ~stack_byte_allocator() noexcept final = default;
 
     stack_byte_allocator(const block& blk)
-      : _alloc(blk) {}
+      : _alloc{blk} {}
 
     auto equal(byte_allocator* a) const noexcept -> bool override;
 
@@ -166,17 +160,14 @@ public:
     auto allocate(size_type n, size_type a) noexcept -> owned_block override;
 
     void deallocate(owned_block&& b, size_type) noexcept override;
+
+private:
+    base_stack_allocator<byte> _alloc;
 };
 //------------------------------------------------------------------------------
 // stack_aligned_byte_allocator
 //------------------------------------------------------------------------------
-template <typename Policy = default_byte_allocator_policy>
-class stack_aligned_byte_allocator
-  : public byte_allocator_impl<Policy, stack_aligned_byte_allocator> {
-private:
-    span_size_t _align;
-
-    base_stack_allocator<byte> _alloc;
+class stack_aligned_byte_allocator : public byte_allocator {
     using _this_class = stack_aligned_byte_allocator;
 
 public:
@@ -187,12 +178,11 @@ public:
     stack_aligned_byte_allocator(const _this_class&) = delete;
     auto operator=(stack_aligned_byte_allocator&&) = delete;
     auto operator=(const stack_aligned_byte_allocator&) = delete;
-
-    ~stack_aligned_byte_allocator() noexcept = default;
+    ~stack_aligned_byte_allocator() noexcept final = default;
 
     stack_aligned_byte_allocator(const block& blk, span_size_t align)
-      : _align(align)
-      , _alloc(blk, _align) {}
+      : _align{align}
+      , _alloc{blk, _align} {}
 
     auto equal(byte_allocator* a) const noexcept -> bool override;
 
@@ -207,11 +197,10 @@ public:
 
     void deallocate(owned_block&& b, size_type a) noexcept override;
 
-    auto _own_end_misalign(_this_class* p) const noexcept -> span_size_t;
+private:
+    span_size_t _align;
 
-    auto accommodate_self() noexcept -> byte_allocator*;
-
-    void eject_self() noexcept override;
+    base_stack_allocator<byte> _alloc;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine::memory

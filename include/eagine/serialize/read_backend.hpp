@@ -255,10 +255,9 @@ public:
 
 protected:
     auto scan_for(
-      byte what,
-      const valid_if_positive<span_size_t>& max,
-      const valid_if_positive<span_size_t>& step = {256})
-      -> valid_if_nonnegative<span_size_t> {
+      const byte what,
+      const span_size_t max,
+      const span_size_t step = 256) -> valid_if_nonnegative<span_size_t> {
         EAGINE_ASSERT(_source);
         return _source->scan_for(what, max, step);
     }
@@ -273,9 +272,9 @@ protected:
     }
 
     auto string_before(
-      char c,
-      const valid_if_positive<span_size_t>& max,
-      const valid_if_positive<span_size_t>& step = {256}) {
+      const char c,
+      const span_size_t max,
+      const span_size_t step = 256) {
         auto found = scan_for(byte(c), max, step);
         return top_string(extract_or(found, 0));
     }
@@ -318,9 +317,7 @@ protected:
     }
 
     template <typename Function>
-    void consume_until(
-      Function predicate,
-      const valid_if_positive<span_size_t> step = {256}) {
+    void consume_until(Function predicate, const span_size_t step = 256) {
         while(auto pos = _source->scan_until(predicate, step, step)) {
             if(extract(pos) > 0) {
                 pop(extract(pos));

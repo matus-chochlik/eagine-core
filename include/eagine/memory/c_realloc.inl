@@ -11,9 +11,7 @@
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
-template <typename Policy>
-inline auto
-c_byte_reallocator<Policy>::allocate(size_type n, size_type a) noexcept
+inline auto c_byte_reallocator::allocate(size_type n, size_type a) noexcept
   -> owned_block {
     EAGINE_ASSERT(a > 0);
     EAGINE_MAYBE_UNUSED(a);
@@ -31,10 +29,7 @@ c_byte_reallocator<Policy>::allocate(size_type n, size_type a) noexcept
     return this->acquire_block(block(p, n));
 }
 //------------------------------------------------------------------------------
-template <typename Policy>
-void c_byte_reallocator<Policy>::deallocate(
-  owned_block&& b,
-  size_type) noexcept {
+inline void c_byte_reallocator::deallocate(owned_block&& b, size_type) noexcept {
     if(!b.empty()) {
         // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
         std::free(b.data());
@@ -42,8 +37,7 @@ void c_byte_reallocator<Policy>::deallocate(
     }
 }
 //------------------------------------------------------------------------------
-template <typename Policy>
-auto c_byte_reallocator<Policy>::reallocate(
+inline auto c_byte_reallocator::reallocate(
   owned_block&& b,
   size_type n,
   size_type a) noexcept -> owned_block {

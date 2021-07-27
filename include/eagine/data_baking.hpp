@@ -14,8 +14,8 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-using data_bake_arena_base = memory::basic_allocation_arena<
-  memory::stack_byte_allocator_only<memory::byte_alloc_managed_policy>>;
+using data_bake_arena_base =
+  memory::basic_allocation_arena<memory::stack_byte_allocator_only>;
 //------------------------------------------------------------------------------
 class data_bake_arena : public data_bake_arena_base {
 public:
