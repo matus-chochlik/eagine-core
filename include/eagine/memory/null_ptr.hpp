@@ -28,7 +28,8 @@ constexpr typed_nullptr_t<T> typed_nullptr = {};
 /// @brief Pointer arithmetic addition operator for null pointers.
 /// @ingroup type_utils
 template <typename T, typename N>
-static constexpr auto operator+(typed_nullptr_t<T>, N n) noexcept -> T* {
+static constexpr auto operator+(const typed_nullptr_t<T>, const N n) noexcept
+  -> T* {
     return reinterpret_cast<T*>(std::uintptr_t(std_size(n) * sizeof(T)));
 }
 //------------------------------------------------------------------------------

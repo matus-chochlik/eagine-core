@@ -23,19 +23,21 @@ EAGINE_DIAG_OFF(unused-template)
 namespace eagine::memory {
 //------------------------------------------------------------------------------
 template <typename T, typename P, typename S>
-static constexpr auto clamp_span_iterator(basic_span<T, P, S> s, P p) noexcept
-  -> P {
+static constexpr auto
+clamp_span_iterator(const basic_span<T, P, S> s, P p) noexcept -> P {
     return (p < s.begin()) ? s.begin() : (p > s.end()) ? s.end() : p;
 }
 //------------------------------------------------------------------------------
 template <typename T, typename P, typename S, typename I>
-static constexpr auto clamp_span_position(basic_span<T, P, S> s, I p) noexcept
+static constexpr auto
+clamp_span_position(const basic_span<T, P, S> s, const I p) noexcept
   -> std::enable_if_t<std::is_integral_v<I>, P> {
     return clamp_span_iterator(s, s.begin() + p);
 }
 //------------------------------------------------------------------------------
 template <typename T, typename P, typename S, typename B, typename E>
-static constexpr auto subspan(basic_span<T, P, S> s, B b, E e) noexcept
+static constexpr auto
+subspan(const basic_span<T, P, S> s, const B b, const E e) noexcept
   -> std::enable_if_t<
     std::is_integral_v<B> && std::is_integral_v<E>,
     basic_span<T, P, S>> {
@@ -49,7 +51,8 @@ static constexpr auto subspan(basic_span<T, P, S> s, B b, E e) noexcept
 /// @see skip
 /// @see snip
 template <typename T, typename P, typename S, typename I, typename L>
-static constexpr auto slice(basic_span<T, P, S> s, I i, L l) noexcept
+static constexpr auto
+slice(const basic_span<T, P, S> s, const I i, const L l) noexcept
   -> basic_span<T, P, S> {
     return {clamp_span_position(s, i), clamp_span_position(s, i + l)};
 }
@@ -62,7 +65,7 @@ static constexpr auto slice(basic_span<T, P, S> s, I i, L l) noexcept
 /// @see snip
 /// @see shrink
 template <typename T, typename P, typename S, typename L>
-static constexpr auto skip(basic_span<T, P, S> s, L l) noexcept
+static constexpr auto skip(const basic_span<T, P, S> s, const L l) noexcept
   -> basic_span<T, P, S> {
     return slice(s, l, s.size() - l);
 }
@@ -75,7 +78,7 @@ static constexpr auto skip(basic_span<T, P, S> s, L l) noexcept
 /// @see skip
 /// @see shrink
 template <typename T, typename P, typename S, typename L>
-static constexpr auto snip(basic_span<T, P, S> s, L l) noexcept
+static constexpr auto snip(const basic_span<T, P, S> s, const L l) noexcept
   -> basic_span<T, P, S> {
     return head(s, s.size() - l);
 }
@@ -88,7 +91,7 @@ static constexpr auto snip(basic_span<T, P, S> s, L l) noexcept
 /// @see skip
 /// @see shrink
 template <typename T, typename P, typename S, typename L>
-static constexpr auto shrink(basic_span<T, P, S> s, L l) noexcept
+static constexpr auto shrink(const basic_span<T, P, S> s, const L l) noexcept
   -> basic_span<T, P, S> {
     return snip(skip(s, l), l);
 }
@@ -101,7 +104,7 @@ static constexpr auto shrink(basic_span<T, P, S> s, L l) noexcept
 /// @see snip
 /// @see shrink
 template <typename T, typename P, typename S, typename L>
-static constexpr auto head(basic_span<T, P, S> s, L l) noexcept
+static constexpr auto head(const basic_span<T, P, S> s, const L l) noexcept
   -> basic_span<T, P, S> {
     return slice(s, S(0), l);
 }
@@ -121,7 +124,7 @@ template <
   typename Pl,
   typename Sl>
 static constexpr auto
-head(basic_span<Ts, Ps, Ss> s, basic_span<Tl, Pl, Sl> l) noexcept
+head(const basic_span<Ts, Ps, Ss> s, const basic_span<Tl, Pl, Sl> l) noexcept
   -> basic_span<Ts, Ps, Ss> {
     return head(s, l.size());
 }
@@ -134,7 +137,7 @@ head(basic_span<Ts, Ps, Ss> s, basic_span<Tl, Pl, Sl> l) noexcept
 /// @see snip
 /// @see shrink
 template <typename T, typename P, typename S, typename L>
-static constexpr auto tail(basic_span<T, P, S> s, L l) noexcept
+static constexpr auto tail(const basic_span<T, P, S> s, const L l) noexcept
   -> basic_span<T, P, S> {
     return skip(s, s.size() - l);
 }
@@ -154,7 +157,7 @@ template <
   typename Pl,
   typename Sl>
 static constexpr auto
-tail(basic_span<Ts, Ps, Ss> s, basic_span<Tl, Pl, Sl> l) noexcept
+tail(const basic_span<Ts, Ps, Ss> s, const basic_span<Tl, Pl, Sl> l) noexcept
   -> basic_span<Ts, Ps, Ss> {
     return tail(s, l.size());
 }
@@ -172,7 +175,8 @@ template <
   typename P2,
   typename S2>
 static constexpr auto
-starts_with(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> with) -> bool {
+starts_with(const basic_span<T1, P1, S1> spn, const basic_span<T2, P2, S2> with)
+  -> bool {
     return are_equal(head(spn, with.size()), with);
 }
 //------------------------------------------------------------------------------
@@ -189,7 +193,8 @@ template <
   typename P2,
   typename S2>
 static constexpr auto
-ends_with(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> with) -> bool {
+ends_with(const basic_span<T1, P1, S1> spn, const basic_span<T2, P2, S2> with)
+  -> bool {
     return are_equal(tail(spn, with.size()), with);
 }
 //------------------------------------------------------------------------------
@@ -204,9 +209,9 @@ template <
   typename T2,
   typename P2,
   typename S2>
-static constexpr auto
-strip_prefix(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> prefix)
-  -> basic_span<T1, P1, S1> {
+static constexpr auto strip_prefix(
+  const basic_span<T1, P1, S1> spn,
+  const basic_span<T2, P2, S2> prefix) -> basic_span<T1, P1, S1> {
     return starts_with(spn, prefix) ? skip(spn, prefix.size()) : spn;
 }
 //------------------------------------------------------------------------------
@@ -221,9 +226,9 @@ template <
   typename T2,
   typename P2,
   typename S2>
-static constexpr auto
-strip_suffix(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> suffix)
-  -> basic_span<T1, P1, S1> {
+static constexpr auto strip_suffix(
+  const basic_span<T1, P1, S1> spn,
+  const basic_span<T2, P2, S2> suffix) -> basic_span<T1, P1, S1> {
     return ends_with(spn, suffix) ? snip(spn, suffix.size()) : spn;
 }
 //------------------------------------------------------------------------------
@@ -238,9 +243,9 @@ template <
   typename T2,
   typename P2,
   typename S2>
-static constexpr auto
-contains(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> what) noexcept
-  -> S1 {
+static constexpr auto contains(
+  const basic_span<T1, P1, S1> spn,
+  const basic_span<T2, P2, S2> what) noexcept -> S1 {
     for(S1 i = 0; i < spn.size(); ++i) {
         if(starts_with(skip(spn, i), what)) {
             return true;
@@ -261,9 +266,9 @@ template <
   typename T2,
   typename P2,
   typename S2>
-static constexpr auto
-find_position(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> what) noexcept
-  -> optionally_valid<S1> {
+static constexpr auto find_position(
+  const basic_span<T1, P1, S1> spn,
+  const basic_span<T2, P2, S2> what) noexcept -> optionally_valid<S1> {
     auto pos = S1(0);
     while(pos < spn.size()) {
         if(starts_with(skip(spn, pos), what)) {
@@ -281,7 +286,8 @@ find_position(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> what) noexcept
 /// @see find_element_if
 /// @see reverse_find_position
 template <typename T, typename P, typename S, typename E>
-static constexpr auto find_element(basic_span<T, P, S> spn, E what) noexcept
+static constexpr auto
+find_element(const basic_span<T, P, S> spn, const E& what) noexcept
   -> optionally_valid<S> {
     auto pos = S(0);
     while(pos < spn.size()) {
@@ -301,7 +307,7 @@ static constexpr auto find_element(basic_span<T, P, S> spn, E what) noexcept
 /// @see reverse_find_position
 template <typename T, typename P, typename S, typename F>
 static constexpr auto
-find_element_if(basic_span<T, P, S> spn, F predicate) noexcept
+find_element_if(const basic_span<T, P, S> spn, F predicate) noexcept
   -> optionally_valid<S> {
     auto pos = S(0);
     while(pos < spn.size()) {
@@ -318,7 +324,7 @@ find_element_if(basic_span<T, P, S> spn, F predicate) noexcept
 /// @see take_until
 template <typename T, typename P, typename S, typename Predicate>
 static constexpr auto
-skip_until(basic_span<T, P, S> spn, Predicate predicate) noexcept
+skip_until(const basic_span<T, P, S> spn, Predicate predicate) noexcept
   -> basic_span<T, P, S> {
     if(auto found{find_element_if(spn, predicate)}) {
         return skip(spn, extract(found));
@@ -331,7 +337,7 @@ skip_until(basic_span<T, P, S> spn, Predicate predicate) noexcept
 /// @see skip_until
 template <typename T, typename P, typename S, typename Predicate>
 static constexpr auto
-take_until(basic_span<T, P, S> spn, Predicate predicate) noexcept
+take_until(const basic_span<T, P, S> spn, Predicate predicate) noexcept
   -> basic_span<T, P, S> {
     if(auto found{find_element_if(spn, predicate)}) {
         return head(spn, extract(found));
@@ -351,8 +357,8 @@ template <
   typename P2,
   typename S2>
 static constexpr auto reverse_find_position(
-  basic_span<T1, P1, S1> spn,
-  basic_span<T2, P2, S2> what) noexcept -> optionally_valid<S1> {
+  const basic_span<T1, P1, S1> spn,
+  const basic_span<T2, P2, S2> what) noexcept -> optionally_valid<S1> {
     auto pos = spn.size();
     while(pos > S1(0)) {
         --pos;
@@ -376,7 +382,7 @@ template <
   typename P2,
   typename S2>
 static inline auto
-find(basic_span<T1, P1, S1> where, basic_span<T2, P2, S2> what)
+find(const basic_span<T1, P1, S1> where, const basic_span<T2, P2, S2> what)
   -> basic_span<T1, P1, S1> {
     if(auto pos = find_position(where, what)) {
         return skip(where, extract(pos));
@@ -395,9 +401,9 @@ template <
   typename T2,
   typename P2,
   typename S2>
-static inline auto
-slice_before(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> what)
-  -> basic_span<T1, P1, S1> {
+static inline auto slice_before(
+  const basic_span<T1, P1, S1> spn,
+  const basic_span<T2, P2, S2> what) -> basic_span<T1, P1, S1> {
     return head(spn, extract_or(find_position(spn, what), spn.size()));
 }
 //------------------------------------------------------------------------------
@@ -413,7 +419,7 @@ template <
   typename P2,
   typename S2>
 static inline auto
-slice_after(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> what)
+slice_after(const basic_span<T1, P1, S1> spn, const basic_span<T2, P2, S2> what)
   -> basic_span<T1, P1, S1> {
     return skip(
       spn, extract_or(find_position(spn, what), spn.size()) + what.size());
@@ -429,8 +435,9 @@ template <
   typename T2,
   typename P2,
   typename S2>
-static inline auto
-split_by_first(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> what)
+static inline auto split_by_first(
+  const basic_span<T1, P1, S1> spn,
+  const basic_span<T2, P2, S2> what)
   -> std::tuple<basic_span<T1, P1, S1>, basic_span<T1, P1, S1>> {
     const auto pos{extract_or(find_position(spn, what), spn.size())};
     return {head(spn, pos), skip(spn, pos + what.size())};
@@ -446,9 +453,9 @@ template <
   typename T2,
   typename P2,
   typename S2>
-static inline auto
-slice_before_last(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> what)
-  -> basic_span<T1, P1, S1> {
+static inline auto slice_before_last(
+  const basic_span<T1, P1, S1> spn,
+  const basic_span<T2, P2, S2> what) -> basic_span<T1, P1, S1> {
     return head(spn, extract_or(reverse_find_position(spn, what), spn.size()));
 }
 //------------------------------------------------------------------------------
@@ -462,9 +469,9 @@ template <
   typename T2,
   typename P2,
   typename S2>
-static inline auto
-slice_after_last(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> what)
-  -> basic_span<T1, P1, S1> {
+static inline auto slice_after_last(
+  const basic_span<T1, P1, S1> spn,
+  const basic_span<T2, P2, S2> what) -> basic_span<T1, P1, S1> {
     return skip(
       spn,
       extract_or(reverse_find_position(spn, what), spn.size()) + what.size());
@@ -480,8 +487,9 @@ template <
   typename T2,
   typename P2,
   typename S2>
-static inline auto
-split_by_last(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> what)
+static inline auto split_by_last(
+  const basic_span<T1, P1, S1> spn,
+  const basic_span<T2, P2, S2> what)
   -> std::tuple<basic_span<T1, P1, S1>, basic_span<T1, P1, S1>> {
     const auto pos{extract_or(reverse_find_position(spn, what), spn.size())};
     return {head(spn, pos), skip(spn, pos + what.size())};
@@ -491,9 +499,10 @@ split_by_last(basic_span<T1, P1, S1> spn, basic_span<T2, P2, S2> what)
 /// @ingroup memory
 /// @see find_element
 template <typename T, typename P, typename S, typename B>
-static inline auto
-slice_inside_brackets(basic_span<T, P, S> spn, B left, B right) noexcept
-  -> basic_span<T, P, S> {
+static inline auto slice_inside_brackets(
+  basic_span<T, P, S> spn,
+  const B left,
+  const B right) noexcept -> basic_span<T, P, S> {
 
     if(auto found = find_element(spn, left)) {
         spn = skip(spn, extract(found));
@@ -525,7 +534,8 @@ template <
   typename TT,
   typename PT,
   typename ST>
-static inline auto copy(basic_span<TF, PF, SF> from, basic_span<TT, PT, ST> to)
+static inline auto
+copy(const basic_span<TF, PF, SF> from, basic_span<TT, PT, ST> to)
   -> basic_span<TT, PT, ST> {
     EAGINE_ASSERT(from.size() <= to.size());
     std::copy(from.begin(), from.end(), to.begin());
@@ -538,7 +548,7 @@ static inline auto copy(basic_span<TF, PF, SF> from, basic_span<TT, PT, ST> to)
 /// @see zero
 /// @see generate
 template <typename T, typename P, typename S, typename V>
-static inline auto fill(basic_span<T, P, S> spn, const V& v)
+static inline auto fill(const basic_span<T, P, S> spn, const V& v)
   -> basic_span<T, P, S> {
     std::fill(spn.begin(), spn.end(), v);
     return spn;
@@ -642,9 +652,10 @@ template <
   typename PI,
   typename SI,
   typename Compare>
-static inline auto
-make_index(basic_span<T, P, S> spn, basic_span<I, PI, SI> idx, Compare compare)
-  -> bool {
+static inline auto make_index(
+  const basic_span<T, P, S> spn,
+  basic_span<I, PI, SI> idx,
+  Compare compare) -> bool {
     if(spn.size() == idx.size()) {
         std::sort(idx.begin(), idx.end(), [spn, &compare](auto& l, auto& r) {
             return compare(spn[l], spn[r]);
@@ -660,7 +671,7 @@ make_index(basic_span<T, P, S> spn, basic_span<I, PI, SI> idx, Compare compare)
 /// @see shuffle
 template <typename T, typename P, typename S, typename I, typename PI, typename SI>
 static inline auto
-make_index(basic_span<T, P, S> spn, basic_span<I, PI, SI> idx) -> bool {
+make_index(const basic_span<T, P, S> spn, basic_span<I, PI, SI> idx) -> bool {
     return make_index(spn, idx, std::less<T>());
 }
 //------------------------------------------------------------------------------
@@ -670,7 +681,7 @@ make_index(basic_span<T, P, S> spn, basic_span<I, PI, SI> idx) -> bool {
 /// @see shuffle
 /// @see make_index
 template <typename T, typename P, typename S>
-static inline auto is_sorted(basic_span<T, P, S> spn) -> bool {
+static inline auto is_sorted(const basic_span<T, P, S> spn) -> bool {
     return std::is_sorted(spn.begin(), spn.end());
 }
 //------------------------------------------------------------------------------
@@ -680,7 +691,8 @@ static inline auto is_sorted(basic_span<T, P, S> spn) -> bool {
 /// @see shuffle
 /// @see make_index
 template <typename T, typename P, typename S, typename Compare>
-static inline auto is_sorted(basic_span<T, P, S> spn, Compare compare) -> bool {
+static inline auto is_sorted(const basic_span<T, P, S> spn, Compare compare)
+  -> bool {
     return std::is_sorted(spn.begin(), spn.end(), std::move(compare));
 }
 //------------------------------------------------------------------------------
@@ -689,7 +701,7 @@ static inline auto is_sorted(basic_span<T, P, S> spn, Compare compare) -> bool {
 /// @see any_of
 /// @see none_of
 template <typename T, typename P, typename S, typename Predicate>
-static inline auto all_of(basic_span<T, P, S> spn, Predicate predicate)
+static inline auto all_of(const basic_span<T, P, S> spn, Predicate predicate)
   -> bool {
     return std::all_of(spn.begin(), spn.end(), std::move(predicate));
 }
@@ -699,7 +711,7 @@ static inline auto all_of(basic_span<T, P, S> spn, Predicate predicate)
 /// @see all_of
 /// @see none_of
 template <typename T, typename P, typename S, typename Predicate>
-static inline auto any_of(basic_span<T, P, S> spn, Predicate predicate)
+static inline auto any_of(const basic_span<T, P, S> spn, Predicate predicate)
   -> bool {
     return std::any_of(spn.begin(), spn.end(), std::move(predicate));
 }
@@ -709,7 +721,7 @@ static inline auto any_of(basic_span<T, P, S> spn, Predicate predicate)
 /// @see all_of
 /// @see any_of
 template <typename T, typename P, typename S, typename Predicate>
-static inline auto none_of(basic_span<T, P, S> spn, Predicate predicate)
+static inline auto none_of(const basic_span<T, P, S> spn, Predicate predicate)
   -> bool {
     return std::none_of(spn.begin(), spn.end(), std::move(predicate));
 }
@@ -727,7 +739,7 @@ template <
   typename UnaryOperation>
 static inline void for_each_delimited(
   basic_span<T1, P1, S1> spn,
-  basic_span<T2, P2, S2> delim,
+  const basic_span<T2, P2, S2> delim,
   UnaryOperation unary_op) {
     basic_span<T1, P1, S1> tmp = spn;
     while(auto pos = find_position(tmp, delim)) {
@@ -763,8 +775,8 @@ template <
   typename S2,
   typename BinaryFunction>
 static auto basic_edit_distance(
-  basic_span<const T, P1, S1> s1,
-  basic_span<const T, P2, S2> s2,
+  const basic_span<const T, P1, S1> s1,
+  const basic_span<const T, P2, S2> s2,
   BinaryFunction get_distance) -> Result {
     const auto l1 = s1.size();
     const auto l2 = s2.size();
@@ -790,8 +802,8 @@ static auto basic_edit_distance(
 //------------------------------------------------------------------------------
 template <typename T, typename P1, typename S1, typename P2, typename S2>
 static auto default_edit_distance(
-  basic_span<const T, P1, S1> s1,
-  basic_span<const T, P2, S2> s2) -> span_size_t {
+  const basic_span<const T, P1, S1> s1,
+  const basic_span<const T, P2, S2> s2) -> span_size_t {
     return basic_edit_distance<span_size_t>(
       s1, s2, [](auto e1, auto e2) { return e1 == e2 ? 0 : 1; });
 }

@@ -412,7 +412,7 @@ private:
 /// @ingroup memory
 /// @see relative
 template <typename T, typename P, typename S>
-static constexpr auto absolute(basic_span<T, P, S> spn) noexcept
+static constexpr auto absolute(const basic_span<T, P, S> spn) noexcept
   -> basic_span<T, T*, S> {
     return {spn};
 }
@@ -546,7 +546,7 @@ static constexpr auto can_accommodate_between(
 /// @ingroup type_utils
 template <typename T, typename B, typename P, typename S>
 static constexpr auto can_accommodate(
-  basic_span<B, P, S> blk,
+  const basic_span<B, P, S> blk,
   const span_size_t count,
   const type_identity<T> tid = {}) noexcept {
     return is_aligned_as(blk.begin_addr(), tid) &&
@@ -558,7 +558,7 @@ static constexpr auto can_accommodate(
 /// @ingroup type_utils
 template <typename T, typename B, typename P, typename S>
 static constexpr auto can_accommodate(
-  basic_span<B, P, S> blk,
+  const basic_span<B, P, S> blk,
   const type_identity<T> tid = {}) noexcept {
     return can_accommodate(blk, 1, tid);
 }
@@ -568,8 +568,9 @@ static constexpr auto can_accommodate(
 /// @see as_bytes
 /// @see as_chars
 template <typename T, typename B, typename P, typename S>
-static constexpr auto
-accommodate(basic_span<B, P, S> blk, const type_identity<T> tid = {}) noexcept
+static constexpr auto accommodate(
+  const basic_span<B, P, S> blk,
+  const type_identity<T> tid = {}) noexcept
   -> basic_span<T, rebind_pointer_t<P, T>, S> {
     return EAGINE_CONSTEXPR_ASSERT(
       (can_accommodate(blk, tid)),
