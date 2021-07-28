@@ -112,8 +112,8 @@ default_keyboard_layout::default_keyboard_layout(const float shift) {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto keyboard_distance::operator()(string_view ls, string_view rs) const
-  -> float {
+auto keyboard_distance::operator()(const string_view ls, const string_view rs)
+  const -> float {
     return memory::basic_edit_distance<float>(ls, rs, [&](char lc, char rc) {
         if(lc == rc) {
             return 0.F;

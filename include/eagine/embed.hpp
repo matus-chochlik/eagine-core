@@ -29,9 +29,9 @@ public:
     constexpr embedded_resource() noexcept = default;
 
     constexpr embedded_resource(
-      memory::const_block blk,
-      string_view src_path,
-      bool packed = false) noexcept
+      const memory::const_block blk,
+      const string_view src_path,
+      const bool packed = false) noexcept
       : _res_blk{blk}
       , _src_path{src_path}
       , _packed{packed} {}
@@ -88,9 +88,9 @@ static inline auto as_chars(const embedded_resource& res) noexcept {
     return as_chars(memory::const_block{res});
 }
 
-extern auto
-get_embedded_resource(identifier res_id, string_view src_path) noexcept
-  -> embedded_resource;
+extern auto get_embedded_resource(
+  const identifier res_id,
+  const string_view src_path) noexcept -> embedded_resource;
 
 /// @brief Triggers the embedding of data from a file on the specified path.
 /// @ingroup embedding
@@ -103,7 +103,8 @@ get_embedded_resource(identifier res_id, string_view src_path) noexcept
 /// The embed generator is installed as one of the tools and in cmake-based
 /// build systems the eagine_embed_packed_target_resources and
 /// eagine_embed_target_resources cmake functions can be used invoke it.
-static inline auto embed(identifier res_id, string_view src_path) noexcept
+static inline auto
+embed(const identifier res_id, const string_view src_path) noexcept
   -> embedded_resource {
     return get_embedded_resource(res_id, src_path);
 }

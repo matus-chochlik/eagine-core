@@ -30,7 +30,7 @@ public:
 
     /// @brief Construction from a pack of characters.
     template <typename... C, typename = std::enable_if_t<sizeof...(C) == N>>
-    constexpr fixed_size_string(C... c) noexcept
+    constexpr fixed_size_string(const C... c) noexcept
       : _str{c...} {}
 
     /// @brief Construction from a C-string literal.
@@ -142,7 +142,7 @@ static inline auto operator+(
 /// @ingroup string_utils
 template <int I>
 static inline auto to_fixed_size_string(
-  int_constant<I>,
+  const int_constant<I>,
   std::enable_if_t<(I >= 0) && (I < 10)>* = nullptr) noexcept {
     return fixed_size_string<2>(char('0' + I), '\0');
 }
@@ -151,7 +151,7 @@ static inline auto to_fixed_size_string(
 /// @ingroup string_utils
 template <int I>
 static inline auto to_fixed_size_string(
-  int_constant<I>,
+  const int_constant<I>,
   std::enable_if_t<(I > 9)>* = nullptr) noexcept {
     return to_fixed_size_string(int_constant<I / 10>()) +
            fixed_size_string<2>(char('0' + I % 10), '\0');
@@ -161,7 +161,7 @@ static inline auto to_fixed_size_string(
 /// @ingroup string_utils
 template <int I>
 static inline auto to_fixed_size_string(
-  int_constant<I>,
+  const int_constant<I>,
   std::enable_if_t<(I < 0)>* = nullptr) noexcept {
     return fixed_size_string<2>("-") + to_fixed_size_string(int_constant<-I>());
 }

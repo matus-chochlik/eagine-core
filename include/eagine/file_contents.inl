@@ -15,7 +15,7 @@ private:
     memory::buffer _buf;
 
 public:
-    buffered_file_contents(string_view path) {
+    buffered_file_contents(const string_view path) {
         read_file_data(path, _buf);
     }
 
@@ -24,7 +24,7 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-inline auto make_file_contents_impl(string_view path)
+inline auto make_file_contents_impl(const string_view path)
   -> std::shared_ptr<file_contents_intf> {
     try {
         return std::make_shared<buffered_file_contents>(path);
@@ -36,7 +36,7 @@ inline auto make_file_contents_impl(string_view path)
 // file_contents::file_contents
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-file_contents::file_contents(string_view path)
+file_contents::file_contents(const string_view path)
   : _pimpl{make_file_contents_impl(path)} {}
 //------------------------------------------------------------------------------
 } // namespace eagine

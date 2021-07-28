@@ -33,7 +33,7 @@ public:
     file_contents() = default;
 
     /// @brief Constructor that opens and loads contents of file at the given path.
-    file_contents(string_view path);
+    file_contents(const string_view path);
 
     /// @brief Checks if the contents were loaded.
     /// @see block
@@ -73,7 +73,7 @@ class structured_file_content
   , public structured_memory_block<const T> {
 public:
     /// @brief Constructor that opens and loads contents of file at the given path.
-    structured_file_content(string_view path)
+    structured_file_content(const string_view path)
       : protected_member<file_contents>(path)
       , structured_memory_block<const T>(get_the_member()) {}
 
