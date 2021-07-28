@@ -28,14 +28,14 @@ public:
     constexpr bitfield() noexcept = default;
 
     /// @brief Explicit construction from the underlying interger type value.
-    constexpr explicit bitfield(value_type bits) noexcept
+    constexpr explicit bitfield(const value_type bits) noexcept
       : _bits{bits} {}
 
     /// @brief Construction from the bit enumeration type value.
-    constexpr bitfield(bit_type _bit) noexcept
+    constexpr bitfield(const bit_type _bit) noexcept
       : _bits{value_type(_bit)} {}
 
-    constexpr bitfield(bit_type _bit_a, bit_type _bit_b) noexcept
+    constexpr bitfield(const bit_type _bit_a, const bit_type _bit_b) noexcept
       : _bits(value_type(_bit_a) | value_type(_bit_b)) {}
 
     /// @brief Indicates that none of the bits are set.
@@ -67,7 +67,7 @@ public:
     /// @see has_any
     /// @see has_none
     /// @see has_at_most
-    constexpr auto has(bit_type bit) const noexcept {
+    constexpr auto has(const bit_type bit) const noexcept {
         return (_bits & value_type(bit)) == value_type(bit);
     }
 
@@ -78,7 +78,7 @@ public:
     /// @see has_only
     /// @see has_none
     /// @see has_at_most
-    constexpr auto has_not(bit_type bit) const noexcept {
+    constexpr auto has_not(const bit_type bit) const noexcept {
         return (_bits & value_type(bit)) != value_type(bit);
     }
 
@@ -90,7 +90,7 @@ public:
     /// @see has_none
     /// @see has_at_most
     template <typename... B>
-    constexpr auto has_all(bit_type bit, B... bits) const noexcept
+    constexpr auto has_all(const bit_type bit, B... bits) const noexcept
       -> std::enable_if_t<all_are_same_v<bit_type, B...>, bool> {
         return (has(bit) && ... && has(bits));
     }
@@ -103,7 +103,7 @@ public:
     /// @see has_none
     /// @see has_at_most
     template <typename... B>
-    constexpr auto has_any(bit_type bit, B... bits) const noexcept
+    constexpr auto has_any(const bit_type bit, B... bits) const noexcept
       -> std::enable_if_t<all_are_same_v<bit_type, B...>, bool> {
         return (has(bit) || ... || has(bits));
     }
@@ -116,7 +116,7 @@ public:
     /// @see has_any
     /// @see has_at_most
     template <typename... B>
-    constexpr auto has_none(bit_type bit, B... bits) const noexcept
+    constexpr auto has_none(const bit_type bit, B... bits) const noexcept
       -> std::enable_if_t<all_are_same_v<bit_type, B...>, bool> {
         return (has_not(bit) && ... && has_not(bits));
     }
@@ -128,7 +128,7 @@ public:
     /// @see has_any
     /// @see has_none
     /// @see has_at_most
-    constexpr auto has_only(bit_type bit) const noexcept {
+    constexpr auto has_only(const bit_type bit) const noexcept {
         return _bits == value_type(bit);
     }
 
@@ -139,51 +139,53 @@ public:
     /// @see has_all
     /// @see has_any
     /// @see has_none
-    constexpr auto has_at_most(bit_type bit) const noexcept {
+    constexpr auto has_at_most(const bit_type bit) const noexcept {
         return is_empty() || has_only(bit);
     }
 
     /// @brief Equality comparison.
-    friend constexpr auto operator==(bitfield a, bitfield b) noexcept {
+    friend constexpr auto
+    operator==(const bitfield a, const bitfield b) noexcept {
         return a._bits == b._bits;
     }
 
     /// @brief Nonequality comparison.
-    friend constexpr auto operator!=(bitfield a, bitfield b) noexcept {
+    friend constexpr auto
+    operator!=(const bitfield a, const bitfield b) noexcept {
         return a._bits != b._bits;
     }
 
     /// @brief Bitwise-or operator.
-    friend constexpr auto operator|(bitfield a, bitfield b) noexcept
+    friend constexpr auto operator|(const bitfield a, const bitfield b) noexcept
       -> bitfield {
         return bitfield(a._bits | b._bits);
     }
 
     /// @brief Bitwise-or operator.
-    auto operator|=(bitfield b) noexcept -> bitfield& {
+    auto operator|=(const bitfield b) noexcept -> bitfield& {
         _bits |= b._bits;
         return *this;
     }
 
     /// @brief Bitwise-and operator.
-    friend constexpr auto operator&(bitfield a, bitfield b) noexcept
+    friend constexpr auto operator&(const bitfield a, const bitfield b) noexcept
       -> bitfield {
         return bitfield(a._bits & b._bits);
     }
 
     /// @brief Bitwise-and operator.
-    auto operator&=(bitfield b) noexcept -> bitfield& {
+    auto operator&=(const bitfield b) noexcept -> bitfield& {
         _bits &= b._bits;
         return *this;
     }
 
     /// @brief Bit inversion operator
-    friend constexpr auto operator~(bitfield b) noexcept -> bitfield {
+    friend constexpr auto operator~(const bitfield b) noexcept -> bitfield {
         return bitfield{value_type(~b._bits)};
     }
 
     /// @brief Clears the specified bit.
-    auto clear(bit_type b) noexcept -> bitfield& {
+    auto clear(const bit_type b) noexcept -> bitfield& {
         _bits &= ~value_type(b); // NOLINT(hicpp-signed-bitwise)
         return *this;
     }
