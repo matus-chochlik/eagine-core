@@ -29,7 +29,10 @@ void _bindump_to_bin_b(Putter& put_char, byte b) {
 }
 //------------------------------------------------------------------------------
 template <typename Getter, typename Putter>
-void _bindump_do_bin_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
+void _bindump_do_bin_dump(
+  const span_size_t bgn,
+  Getter get_byte,
+  Putter put_char) {
 
     bool done = false;
     span_size_t row = bgn - (bgn % 4);

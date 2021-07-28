@@ -19,7 +19,7 @@ template <typename T>
 struct valid_if_ge0_le1_policy {
 
     /// @brief Indicates value validity, true if 0 <= value <= 1.
-    constexpr auto operator()(T value) const noexcept {
+    constexpr auto operator()(const T value) const noexcept {
         return (T(0) <= value) && (value <= T(1));
     }
 

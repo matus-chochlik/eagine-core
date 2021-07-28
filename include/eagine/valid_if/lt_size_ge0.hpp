@@ -19,12 +19,12 @@ template <typename T, typename C>
 struct valid_if_lt_size_ge0_policy {
 
     /// @brief Indicates value validity, true if 0 <= x < c.size().
-    auto operator()(T x, const C& c) const {
+    auto operator()(const T x, const C& c) const {
         return (T(0) <= x) && (x < c.size());
     }
 
     /// @brief Indicates value validity, true if 0 <= x < c.size() - o.
-    auto operator()(T x, const C& c, T o) const {
+    auto operator()(const T x, const C& c, const T o) const {
         return (T(0) <= x) && (x < c.size() - o);
     }
 

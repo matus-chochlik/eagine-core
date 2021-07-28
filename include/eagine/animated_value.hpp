@@ -28,7 +28,8 @@ public:
       , _next{initial} {}
 
     /// @brief Sets the next point to animate into, duration and sigmoid slope.
-    auto set(T value, valid_if_positive<F> duration, S slope) -> auto& {
+    auto set(const T value, const valid_if_positive<F> duration, const S slope)
+      -> auto& {
         _curr = _next;
         _next = value;
         _duration = extract(duration);
@@ -38,7 +39,7 @@ public:
     }
 
     /// @brief Sets the next point to animate into and the duration of the transition.
-    auto set(T value, valid_if_positive<F> duration) -> auto& {
+    auto set(const T value, const valid_if_positive<F> duration) -> auto& {
         return set(value, duration, 2);
     }
 
@@ -51,7 +52,7 @@ public:
     }
 
     /// @brief Updates the transition factor by the specified amount.
-    auto update(F deltaT) -> auto& {
+    auto update(const F deltaT) -> auto& {
         _phase += deltaT;
         return *this;
     }

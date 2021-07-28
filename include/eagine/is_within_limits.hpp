@@ -60,14 +60,14 @@ template <
   bool DIsSig,
   bool SIsSig>
 struct within_limits_num {
-    static constexpr auto check(Src) noexcept {
+    static constexpr auto check(const Src) noexcept {
         return implicitly_within_limits<Dst, Src>::value;
     }
 };
 //------------------------------------------------------------------------------
 template <typename Dst, typename Src, bool IsInt, bool IsSig>
 struct within_limits_num<Dst, Src, IsInt, IsInt, IsSig, IsSig> {
-    static constexpr auto check(Src value) noexcept {
+    static constexpr auto check(const Src value) noexcept {
         using dnl = std::numeric_limits<Dst>;
 
         return (dnl::min() <= value) && (value <= dnl::max());
@@ -76,7 +76,7 @@ struct within_limits_num<Dst, Src, IsInt, IsInt, IsSig, IsSig> {
 //------------------------------------------------------------------------------
 template <typename Dst, typename Src, bool IsInt>
 struct within_limits_num<Dst, Src, IsInt, IsInt, false, true> {
-    static constexpr auto check(Src value) noexcept {
+    static constexpr auto check(const Src value) noexcept {
         using Dnl = std::numeric_limits<Dst>;
         using Tmp = std::make_unsigned_t<Src>;
 
@@ -86,7 +86,7 @@ struct within_limits_num<Dst, Src, IsInt, IsInt, false, true> {
 //------------------------------------------------------------------------------
 template <typename Dst, typename Src, bool IsInt>
 struct within_limits_num<Dst, Src, IsInt, IsInt, true, false> {
-    static constexpr auto check(Src value) noexcept {
+    static constexpr auto check(const Src value) noexcept {
         using dnl = std::numeric_limits<Dst>;
 
         return (value < dnl::max());
@@ -105,7 +105,7 @@ struct within_limits
 //------------------------------------------------------------------------------
 template <typename T>
 struct within_limits<T, T> {
-    static constexpr auto check(T&) noexcept {
+    static constexpr auto check(const T&) noexcept {
         return true;
     }
 };
@@ -119,7 +119,7 @@ struct within_limits<T, T> {
 /// For example if a value stored in 64-bit integer can be converted into
 /// a 16-bit integer without overflow.
 template <typename Dst, typename Src>
-static constexpr auto is_within_limits(Src value) noexcept {
+static constexpr auto is_within_limits(const Src value) noexcept {
     return implicitly_within_limits<Dst, Src>::value ||
            within_limits<Dst, Src>::check(value);
 }

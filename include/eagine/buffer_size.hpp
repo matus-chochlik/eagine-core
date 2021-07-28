@@ -16,23 +16,21 @@ namespace eagine {
 
 template <typename S>
 class buffer_size {
-private:
-    static_assert(std::is_integral_v<S>);
-    S _v{0};
-
 public:
     constexpr buffer_size() noexcept = default;
 
-    explicit constexpr buffer_size(S v) noexcept
-      : _v(v) {}
+    explicit constexpr buffer_size(const S v) noexcept
+      : _v{v} {}
 
     template <typename T>
-    constexpr buffer_size(type_identity<T>, span_size_t count) noexcept
-      : _v(S(span_size_of<T>() * count)) {}
+    constexpr buffer_size(
+      const type_identity<T>,
+      const span_size_t count) noexcept
+      : _v{S(span_size_of<T>() * count)} {}
 
     template <typename T, typename P, typename Z>
-    constexpr buffer_size(memory::basic_span<T, P, Z> s) noexcept
-      : _v(S(span_size_of<T>() * span_size(s.size()))) {}
+    constexpr buffer_size(const memory::basic_span<T, P, Z> s) noexcept
+      : _v{S(span_size_of<T>() * span_size(s.size()))} {}
 
     constexpr auto get() const noexcept -> S {
         return _v;
@@ -51,6 +49,10 @@ public:
       -> buffer_size {
         return {a._v + b._v};
     }
+
+private:
+    static_assert(std::is_integral_v<S>);
+    S _v{0};
 };
 
 } // namespace eagine

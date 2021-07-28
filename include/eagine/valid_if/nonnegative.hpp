@@ -19,7 +19,7 @@ template <typename T>
 struct valid_if_nonneg_policy {
 
     /// @brief Indicates value validity, true if 0 <= value.
-    constexpr auto operator()(T value) const noexcept {
+    constexpr auto operator()(const T value) const noexcept {
         return value >= T(0);
     }
 

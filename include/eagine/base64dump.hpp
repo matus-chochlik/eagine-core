@@ -25,7 +25,7 @@ namespace eagine {
 class base64dump {
 public:
     /// @brief Construction initializing the dumped memory block.
-    base64dump(memory::const_block mb) noexcept
+    base64dump(const memory::const_block mb) noexcept
       : _mb{mb} {}
 
     /// @brief Operator for writing instances of base64dump to standard output streams.

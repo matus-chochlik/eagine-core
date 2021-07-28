@@ -93,8 +93,8 @@ private:
     }
 
     explicit constexpr basic_valid_if(Policy plcy) noexcept
-      : Policy(plcy)
-      , DoLog(policy()) {}
+      : Policy{plcy}
+      , DoLog{policy()} {}
 
 public:
     /// @brief Returns a reference to this object's policy.
@@ -104,32 +104,32 @@ public:
 
     /// @brief Default constructor.
     constexpr basic_valid_if() noexcept
-      : DoLog(policy()) {}
+      : DoLog{policy()} {}
 
     /// @brief Constructor initializing the stored value by @p val.
     constexpr basic_valid_if(T val) noexcept
-      : basic_valid_if_value<T>(std::move(val))
-      , DoLog(policy()) {}
+      : basic_valid_if_value<T>{std::move(val)}
+      , DoLog{policy()} {}
 
     /// @brief Constructor initializing the stored value and policy.
     constexpr basic_valid_if(T val, Policy plcy) noexcept
-      : basic_valid_if_value<T>(std::move(val))
-      , Policy(std::move(plcy))
-      , DoLog(policy()) {}
+      : basic_valid_if_value<T>{std::move(val)}
+      , Policy{std::move(plcy)}
+      , DoLog{policy()} {}
 
     /// @brief Copy constructor.
     constexpr basic_valid_if(const basic_valid_if& that)
       : basic_valid_if_value<T>(
           static_cast<const basic_valid_if_value<T>&>(that))
-      , Policy(static_cast<const Policy&>(that))
-      , DoLog(policy()) {}
+      , Policy{static_cast<const Policy&>(that)}
+      , DoLog{policy()} {}
 
     /// @brief Move constructor.
     basic_valid_if(basic_valid_if&& that) noexcept(
       std::is_nothrow_move_constructible_v<T>)
-      : basic_valid_if_value<T>(static_cast<basic_valid_if_value<T>&&>(that))
-      , Policy(static_cast<Policy&&>(that))
-      , DoLog(policy()) {}
+      : basic_valid_if_value<T>{static_cast<basic_valid_if_value<T>&&>(that)}
+      , Policy{static_cast<Policy&&>(that)}
+      , DoLog{policy()} {}
 
     /// @brief Copy assignment operator.
     // NOLINTNEXTLINE(bugprone-unhandled-self-assignment,cert-oop54-cpp)

@@ -28,7 +28,7 @@ class bindump {
 
 public:
     /// @brief Construction initializing the dumped memory block.
-    bindump(memory::const_block mb) noexcept
+    bindump(const memory::const_block mb) noexcept
       : _mb{mb} {}
 
     /// @brief Alias for source byte getter callable.

@@ -19,7 +19,7 @@ template <typename T, T Cmp>
 struct valid_if_ne_policy {
 
     /// @brief Indicates value validity, true if value != Cmp.
-    constexpr auto operator()(T value) const noexcept {
+    constexpr auto operator()(const T value) const noexcept {
         return value != Cmp;
     }
 

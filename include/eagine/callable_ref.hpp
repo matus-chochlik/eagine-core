@@ -84,32 +84,32 @@ public:
     /// @brief Construction from a reference to an object and a pointer to function.
     template <typename T>
     basic_callable_ref(T& data, RV (*func)(T*, P...) noexcept(NE)) noexcept
-      : _data(static_cast<void*>(&data))
-      , _func(reinterpret_cast<_func_t>(func)) {}
+      : _data{static_cast<void*>(&data)}
+      , _func{reinterpret_cast<_func_t>(func)} {}
 
     /// @brief Construction a reference to object with a call operator.
     template <
       typename C,
       typename = std::enable_if_t<!std::is_same_v<C, basic_callable_ref>>>
     basic_callable_ref(construct_from_t, C& obj) noexcept
-      : _data(static_cast<void*>(&obj))
-      , _func(reinterpret_cast<_func_t>(&_cls_fn_call_op<C>)) {}
+      : _data{static_cast<void*>(&obj)}
+      , _func{reinterpret_cast<_func_t>(&_cls_fn_call_op<C>)} {}
 
     /// @brief Construction a const reference to object with a call operator.
     template <
       typename C,
       typename = std::enable_if_t<!std::is_same_v<C, basic_callable_ref>>>
     basic_callable_ref(construct_from_t, const C& obj) noexcept
-      : _data(static_cast<void*>(const_cast<C*>(&obj)))
-      , _func(reinterpret_cast<_func_t>(&_cls_fn_call_op_c<C>)) {}
+      : _data{static_cast<void*>(const_cast<C*>(&obj))}
+      , _func{reinterpret_cast<_func_t>(&_cls_fn_call_op_c<C>)} {}
 
     /// @brief Construction a pointer to object and member function constant.
     template <typename C, RV (C::*Ptr)(P...) noexcept(NE)>
     basic_callable_ref(
       C* obj,
       member_function_constant<RV (C::*)(P...) noexcept(NE), Ptr> mfc) noexcept
-      : _data(static_cast<void*>(obj))
-      , _func(reinterpret_cast<_func_t>(mfc.make_free())) {
+      : _data{static_cast<void*>(obj)}
+      , _func{reinterpret_cast<_func_t>(mfc.make_free())} {
         EAGINE_ASSERT(_data != nullptr);
         EAGINE_ASSERT(_func != nullptr);
     }
@@ -120,8 +120,8 @@ public:
       const C* obj,
       member_function_constant<RV (C::*)(P...) const noexcept(NE), Ptr>
         mfc) noexcept
-      : _data(static_cast<void*>(const_cast<C*>(obj)))
-      , _func(reinterpret_cast<_func_t>(mfc.make_free())) {
+      : _data{static_cast<void*>(const_cast<C*>(obj))}
+      , _func{reinterpret_cast<_func_t>(mfc.make_free())} {
         EAGINE_ASSERT(_data != nullptr);
         EAGINE_ASSERT(_func != nullptr);
     }

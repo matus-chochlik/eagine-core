@@ -19,7 +19,7 @@ template <typename C, typename T>
 struct valid_if_size_gt_policy {
 
     /// @brief Indicates value validity, true if c.size() > s.
-    auto operator()(const C& c, T s) const {
+    auto operator()(const C& c, const T s) const {
         return c.size() > s;
     }
 

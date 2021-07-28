@@ -28,12 +28,12 @@ public:
 
     /// @brief Initialization specifying the past the end integer value.
     /// @post size() == e
-    constexpr integer_range(T e) noexcept
+    constexpr integer_range(const T e) noexcept
       : _end{e} {}
 
     /// @brief Initialization specifying the begin and past the end integer values.
     /// @post size() == e - b
-    constexpr integer_range(T b, T e) noexcept
+    constexpr integer_range(const T b, const T e) noexcept
       : _begin{b}
       , _end{e} {}
 

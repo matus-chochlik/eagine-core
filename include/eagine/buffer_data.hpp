@@ -16,21 +16,17 @@ namespace eagine {
 
 template <typename S>
 class buffer_data_spec {
-private:
-    buffer_size<S> _size{};
-    const void* _data{nullptr};
-
 public:
     buffer_data_spec() noexcept = default;
 
     buffer_data_spec(const memory::block& blk) noexcept
-      : _size(S(blk.size()))
-      , _data(blk.data()) {}
+      : _size{S(blk.size())}
+      , _data{blk.data()} {}
 
     template <typename T, span_size_t N>
     buffer_data_spec(const T (&data)[N]) noexcept
-      : _size(type_identity<T>(), N)
-      , _data(static_cast<const void*>(data)) {}
+      : _size{type_identity<T>(), N}
+      , _data{static_cast<const void*>(data)} {}
 
     template <typename T>
     buffer_data_spec(const T* data, span_size_t n) noexcept
@@ -39,8 +35,8 @@ public:
 
     template <typename T>
     buffer_data_spec(span<T> av) noexcept
-      : _size(av)
-      , _data(av.data()) {}
+      : _size{av}
+      , _data{av.data()} {}
 
     auto empty() const noexcept -> bool {
         return _size.get() == 0;
@@ -58,6 +54,10 @@ public:
         return {
           static_cast<const byte*>(_data), static_cast<std::ptrdiff_t>(_size)};
     }
+
+private:
+    buffer_size<S> _size{};
+    const void* _data{nullptr};
 };
 
 } // namespace eagine

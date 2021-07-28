@@ -23,8 +23,8 @@ struct valid_flag_policy {
 
     constexpr valid_flag_policy() noexcept = default;
 
-    constexpr valid_flag_policy(bool is_valid) noexcept
-      : _is_valid(is_valid) {}
+    constexpr valid_flag_policy(const bool is_valid) noexcept
+      : _is_valid{is_valid} {}
 
     /// @brief Returns value validity depending on internally stored flag.
     template <typename T>
@@ -34,7 +34,7 @@ struct valid_flag_policy {
 
     struct do_log {
         template <typename X>
-        constexpr do_log(X) noexcept {}
+        constexpr do_log(const X&) noexcept {}
 
         template <typename Log, typename T>
         void operator()(Log& log, const T&) const {
