@@ -126,12 +126,12 @@ public:
     /// @brief Construction from pointer and length.
     constexpr basic_span(
       pointer addr, // NOLINT(modernize-pass-by-value)
-      size_type len) noexcept
+      const size_type len) noexcept
       : _size{len}
       , _addr{addr} {}
 
     /// @brief Construction from memory address and length.
-    constexpr basic_span(address_type addr, size_type len) noexcept
+    constexpr basic_span(const address_type addr, const size_type len) noexcept
       : basic_span{static_cast<pointer>(addr), len} {}
 
     /// @brief Construction from a pair of pointers.
@@ -139,7 +139,7 @@ public:
       : basic_span{b, b <= e ? e - b : 0} {}
 
     /// @brief Construction from a pair of memory addresses.
-    constexpr basic_span(address_type ba, address_type be) noexcept
+    constexpr basic_span(const address_type ba, const address_type be) noexcept
       : basic_span{
           static_cast<pointer>(ba),
           limit_cast<size_type>(
@@ -205,12 +205,13 @@ public:
     }
 
     /// @brief Resets this span with a new pointer and length.
-    auto reset(pointer addr, size_type length) noexcept -> auto& {
+    auto reset(pointer addr, const size_type length) noexcept -> auto& {
         return *this = basic_span(addr, length);
     }
 
     /// @brief Resets this span with a new memory address and length.
-    auto reset(address_type addr, size_type length) noexcept -> auto& {
+    auto reset(const address_type addr, const size_type length) noexcept
+      -> auto& {
         return *this = basic_span(addr, length);
     }
 
@@ -305,7 +306,7 @@ public:
 
     /// @brief Indicates if this span encloses the specified address.
     /// @see contains
-    auto encloses(const_address a) const noexcept -> bool {
+    auto encloses(const const_address a) const noexcept -> bool {
         return (addr() <= a) && (a <= end_addr());
     }
 
@@ -328,14 +329,14 @@ public:
 
     /// @brief Returns a const reference to value at the specified index.
     /// @pre index < size()
-    constexpr auto ref(size_type index) const noexcept
+    constexpr auto ref(const size_type index) const noexcept
       -> std::add_const_t<value_type>& {
         return EAGINE_CONSTEXPR_ASSERT(index < size(), _addr[index]);
     }
 
     /// @brief Returns a reference to value at the specified index.
     /// @pre index < size()
-    auto ref(size_type index) noexcept -> value_type& {
+    auto ref(const size_type index) noexcept -> value_type& {
         return EAGINE_CONSTEXPR_ASSERT(index < size(), _addr[index]);
     }
 
@@ -370,7 +371,7 @@ public:
     /// @brief Returns a const reference to value at the specified index.
     /// @pre 0 <= index < size()
     template <typename Int>
-    constexpr auto element(Int index) const noexcept
+    constexpr auto element(const Int index) const noexcept
       -> std::enable_if_t<std::is_integral_v<Int>, std::add_const_t<value_type>&> {
         return ref(span_size(index));
     }
@@ -378,7 +379,7 @@ public:
     /// @brief Returns a reference to value at the specified index.
     /// @pre 0 <= index < size()
     template <typename Int>
-    auto element(Int index) noexcept
+    auto element(const Int index) noexcept
       -> std::enable_if_t<std::is_integral_v<Int>, value_type&> {
         return ref(span_size(index));
     }
@@ -386,7 +387,7 @@ public:
     /// @brief Array subscript operator.
     /// @see element
     template <typename Int>
-    auto operator[](Int index) noexcept
+    auto operator[](const Int index) noexcept
       -> std::enable_if_t<std::is_integral_v<Int>, value_type&> {
         return element(index);
     }
@@ -394,7 +395,7 @@ public:
     /// @brief Array subscript operator.
     /// @see element
     template <typename Int>
-    constexpr auto operator[](Int index) const noexcept
+    constexpr auto operator[](const Int index) const noexcept
       -> std::enable_if_t<std::is_integral_v<Int>, std::add_const_t<value_type>&> {
         return element(index);
     }
@@ -462,21 +463,22 @@ static constexpr auto cover_one(T* pointer) noexcept -> span_if_mutable<T> {
 /// @brief Creates a view starting at the specified pointer and specified length.
 /// @ingroup memory
 template <typename T, typename S>
-static constexpr auto view(T* addr, S size) noexcept -> const_span<T> {
+static constexpr auto view(T* addr, const S size) noexcept -> const_span<T> {
     return {addr, span_size(size)};
 }
 //------------------------------------------------------------------------------
 /// @brief Creates a span starting at the specified pointer and specified length.
 /// @ingroup memory
 template <typename T, typename S>
-static constexpr auto cover(T* addr, S size) noexcept -> span_if_mutable<T> {
+static constexpr auto cover(T* addr, const S size) noexcept
+  -> span_if_mutable<T> {
     return {addr, span_size(size)};
 }
 //------------------------------------------------------------------------------
 /// @brief Creates a view starting at the specified address and specified length.
 /// @ingroup memory
 template <typename T, typename S>
-static constexpr auto view(const_address addr, S size) noexcept
+static constexpr auto view(const_address addr, const S size) noexcept
   -> const_span<T> {
     return {addr, span_size(size)};
 }
@@ -484,7 +486,7 @@ static constexpr auto view(const_address addr, S size) noexcept
 /// @brief Creates a span starting at the specified address and specified length.
 /// @ingroup memory
 template <typename T, typename S>
-static constexpr auto cover(address addr, S size) noexcept
+static constexpr auto cover(address addr, const S size) noexcept
   -> span_if_mutable<T> {
     return {addr, span_size(size)};
 }
@@ -536,7 +538,7 @@ static constexpr auto cover(C& container) noexcept {
 static constexpr auto can_accommodate_between(
   const_address bgn,
   const_address end,
-  span_size_t size) noexcept -> bool {
+  const span_size_t size) noexcept -> bool {
     return (end - bgn) >= size;
 }
 //------------------------------------------------------------------------------
@@ -545,8 +547,8 @@ static constexpr auto can_accommodate_between(
 template <typename T, typename B, typename P, typename S>
 static constexpr auto can_accommodate(
   basic_span<B, P, S> blk,
-  span_size_t count,
-  type_identity<T> tid = {}) noexcept {
+  const span_size_t count,
+  const type_identity<T> tid = {}) noexcept {
     return is_aligned_as(blk.begin_addr(), tid) &&
            can_accommodate_between(
              blk.begin_addr(), blk.end_addr(), count * span_size_of(tid));
@@ -555,8 +557,9 @@ static constexpr auto can_accommodate(
 /// @brief Indicates if the specified memory block can accommodate one element of T.
 /// @ingroup type_utils
 template <typename T, typename B, typename P, typename S>
-static constexpr auto
-can_accommodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept {
+static constexpr auto can_accommodate(
+  basic_span<B, P, S> blk,
+  const type_identity<T> tid = {}) noexcept {
     return can_accommodate(blk, 1, tid);
 }
 //------------------------------------------------------------------------------
@@ -566,7 +569,7 @@ can_accommodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept {
 /// @see as_chars
 template <typename T, typename B, typename P, typename S>
 static constexpr auto
-accommodate(basic_span<B, P, S> blk, type_identity<T> tid = {}) noexcept
+accommodate(basic_span<B, P, S> blk, const type_identity<T> tid = {}) noexcept
   -> basic_span<T, rebind_pointer_t<P, T>, S> {
     return EAGINE_CONSTEXPR_ASSERT(
       (can_accommodate(blk, tid)),
@@ -612,8 +615,8 @@ template <
 struct equal_cmp<memory::basic_span<Tl, Pl, Sl>, memory::basic_span<Tr, Pr, Sr>> {
 
     static auto check(
-      memory::basic_span<Tl, Pl, Sl> l,
-      memory::basic_span<Tr, Pr, Sr> r) noexcept -> bool {
+      const memory::basic_span<Tl, Pl, Sl> l,
+      const memory::basic_span<Tr, Pr, Sr> r) noexcept -> bool {
         if(are_equal(l.size(), r.size())) {
             if constexpr(
               std::is_same_v<std::remove_const_t<Tl>, std::remove_const_t<Tr>> &&

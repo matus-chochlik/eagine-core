@@ -54,7 +54,7 @@ struct enum_value<T, mp_list<Classes...>, Tag> {
     const T value{};
 
     /// @brief Initialization from the specified value.
-    constexpr enum_value(value_type val) noexcept
+    constexpr enum_value(const value_type val) noexcept
       : value{val} {}
 
     /// @brief Explicit conversion to the value type.
@@ -77,7 +77,7 @@ struct enum_value<bool, mp_list<Classes...>, Tag> {
 
     const bool value{false};
 
-    constexpr enum_value(bool val) noexcept
+    constexpr enum_value(const bool val) noexcept
       : value{val} {}
 
     explicit constexpr operator bool() const noexcept {
@@ -121,12 +121,12 @@ struct opt_enum_value<T, mp_list<Classes...>, Tag> {
     const bool is_valid{false};
 
     /// @brief Initialization from the specified value and validity indicator.
-    constexpr opt_enum_value(T val, bool valid) noexcept
+    constexpr opt_enum_value(const T val, const bool valid) noexcept
       : value{val}
       , is_valid{valid} {}
 
     /// @brief Initialization from the specified value and validity indicator.
-    constexpr opt_enum_value(std::tuple<value_type, bool> init) noexcept
+    constexpr opt_enum_value(const std::tuple<value_type, bool> init) noexcept
       : value{std::get<0>(init)}
       , is_valid{std::get<1>(init)} {}
 
@@ -152,11 +152,11 @@ struct opt_enum_value<bool, mp_list<Classes...>, Tag> {
     const bool value{};
     const bool is_valid{false};
 
-    constexpr opt_enum_value(bool val, bool valid) noexcept
+    constexpr opt_enum_value(const bool val, const bool valid) noexcept
       : value(val)
       , is_valid{valid} {}
 
-    constexpr opt_enum_value(std::tuple<bool, bool> init) noexcept
+    constexpr opt_enum_value(const std::tuple<bool, bool> init) noexcept
       : value(std::get<0>(init))
       , is_valid{std::get<1>(init)} {}
 
@@ -253,7 +253,7 @@ struct enum_class {
       typename Classes,
       typename Tag,
       typename = std::enable_if_t<mp_contains_v<Classes, Self>>>
-    constexpr enum_class(enum_value<T, Classes, Tag> ev) noexcept
+    constexpr enum_class(const enum_value<T, Classes, Tag> ev) noexcept
       : _value{ev.value} {}
 
     /// @brief Construction from a related opt_enum_value.
@@ -261,13 +261,13 @@ struct enum_class {
       typename Classes,
       typename Tag,
       typename = std::enable_if_t<mp_contains_v<Classes, Self>>>
-    constexpr enum_class(opt_enum_value<T, Classes, Tag> ev) noexcept
+    constexpr enum_class(const opt_enum_value<T, Classes, Tag> ev) noexcept
       : _value{ev.value} {
         EAGINE_ASSERT(ev.is_valid);
     }
 
     /// @brief Construction from a no_enum_value.
-    constexpr enum_class(no_enum_value<T>) noexcept {
+    constexpr enum_class(const no_enum_value<T>) noexcept {
         EAGINE_UNREACHABLE();
     }
 
@@ -278,7 +278,7 @@ struct enum_class {
     }
 
     /// @brief Explicit initialization from argument of value type.
-    explicit constexpr enum_class(value_type value) noexcept
+    explicit constexpr enum_class(const value_type value) noexcept
       : _value{value} {}
 
     constexpr operator Self() const noexcept {
@@ -291,17 +291,19 @@ struct enum_class {
     }
 
     /// @brief Equality comparison.
-    friend constexpr auto operator==(enum_class a, enum_class b) noexcept {
+    friend constexpr auto
+    operator==(const enum_class a, const enum_class b) noexcept {
         return a._value == b._value;
     }
 
     /// @brief Nonequality comparison.
-    friend constexpr auto operator!=(enum_class a, enum_class b) noexcept {
+    friend constexpr auto
+    operator!=(const enum_class a, const enum_class b) noexcept {
         return a._value != b._value;
     }
 
     struct transform {
-        constexpr auto operator()(T value) noexcept {
+        constexpr auto operator()(const T value) noexcept {
             return enum_class<Self, T, LibId, Id>{value};
         }
     };
@@ -433,7 +435,7 @@ struct any_enum_value {
 
     /// @brief Construction from enum_class from the same "library" or API.
     template <typename Self, typename T, identifier_t Id>
-    constexpr any_enum_value(enum_class<Self, T, LibId, Id> v) noexcept
+    constexpr any_enum_value(const enum_class<Self, T, LibId, Id> v) noexcept
       : _value{long(v._value)}
       , _type_id{Id} {
         static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
@@ -461,8 +463,9 @@ struct any_enum_value {
 /// @ingroup c_api_wrap
 /// @see any_enum_class
 template <identifier_t LibId>
-static constexpr auto
-same_enum_class(any_enum_class<LibId> a, any_enum_class<LibId> b) noexcept {
+static constexpr auto same_enum_class(
+  const any_enum_class<LibId> a,
+  const any_enum_class<LibId> b) noexcept {
     return a._type_id == b._type_id;
 }
 //------------------------------------------------------------------------------
