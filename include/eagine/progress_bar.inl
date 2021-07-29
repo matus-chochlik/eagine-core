@@ -11,11 +11,11 @@ namespace eagine {
 template <typename Putter>
 inline void format_progress_bar(
   Putter& put,
-  int width,
-  float min,
-  float max,
-  float prev,
-  float curr) {
+  const int width,
+  const float min,
+  const float max,
+  const float prev,
+  const float curr) {
     int i = 0;
     if(min < max) {
         const float inorm = 1.F / (max - min);

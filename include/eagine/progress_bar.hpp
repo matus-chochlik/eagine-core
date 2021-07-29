@@ -17,34 +17,34 @@ namespace eagine {
 template <typename Putter>
 void format_progress_bar(
   Putter& put,
-  int width,
-  float min,
-  float max,
-  float prev,
-  float curr);
+  const int width,
+  const float min,
+  const float max,
+  const float prev,
+  const float curr);
 //------------------------------------------------------------------------------
 class progress_bar {
 public:
     progress_bar() noexcept = default;
 
-    auto set_width(int w) noexcept -> auto& {
+    auto set_width(const int w) noexcept -> auto& {
         _width = w < 0 ? 0 : w;
         return *this;
     }
 
-    auto set_min(float min) noexcept -> auto& {
+    auto set_min(const float min) noexcept -> auto& {
         _min = min;
         return *this;
     }
 
-    auto set_max(float max) noexcept -> auto& {
+    auto set_max(const float max) noexcept -> auto& {
         _max = max;
         return *this;
     }
 
     auto reformat() noexcept -> progress_bar&;
 
-    auto update(float value) noexcept -> progress_bar&;
+    auto update(const float value) noexcept -> progress_bar&;
 
     auto get() const noexcept -> string_view {
         return {_buffer.c_str(), span_size_t(_idx)};
