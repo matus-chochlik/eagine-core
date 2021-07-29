@@ -28,14 +28,14 @@ struct is_matrix_constructor<scale<matrix<T, N, N, RM, V>>> : std::true_type {};
 template <typename T, bool RM, bool V>
 class scale<matrix<T, 4, 4, RM, V>> {
 public:
-    constexpr scale(vect::data_t<T, 3, V> v) noexcept
-      : _v(v) {}
+    constexpr scale(const vect::data_t<T, 3, V> v) noexcept
+      : _v{v} {}
 
     /// @brief Initializes the matrix constructor.
     /// @param vx is the x-axis scale factor.
     /// @param vy is the y-axis scale factor.
     /// @param vz is the z-axis scale factor.
-    constexpr scale(T vx, T vy, T vz) noexcept
+    constexpr scale(const T vx, const T vy, const T vz) noexcept
       : _v{vx, vy, vz} {}
 
     /// @brief Returns the constructed matrix.

@@ -29,16 +29,16 @@ template <typename T, bool RM, bool V>
 class ortho<matrix<T, 4, 4, RM, V>> {
 public:
     constexpr ortho(const vect::data_t<T, 6, V>& v) noexcept
-      : _v(v) {}
+      : _v{v} {}
 
     /// @brief Initializes the matrix constructor.
     constexpr ortho(
-      T x_left,
-      T x_right,
-      T y_bottom,
-      T y_top,
-      T z_near,
-      T z_far) noexcept
+      const T x_left,
+      const T x_right,
+      const T y_bottom,
+      const T y_top,
+      const T z_near,
+      const T z_far) noexcept
       : _v{x_left, x_right, y_bottom, y_top, z_near, z_far} {}
 
     /// @brief Returns the constructed matrix.
@@ -90,7 +90,7 @@ private:
         return -(_z_far() + _z_near()) / (_z_far() - _z_near());
     }
 
-    constexpr auto _make(std::true_type) const noexcept {
+    constexpr auto _make(const std::true_type) const noexcept {
         return matrix<T, 4, 4, true, V>{
           {{_m00(), T(0), T(0), _m30()},
            {T(0), _m11(), T(0), _m31()},
@@ -98,7 +98,7 @@ private:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-    constexpr auto _make(std::false_type) const noexcept {
+    constexpr auto _make(const std::false_type) const noexcept {
         return matrix<T, 4, 4, false, V>{
           {{_m00(), T(0), T(0), T(0)},
            {T(0), _m11(), T(0), T(0)},

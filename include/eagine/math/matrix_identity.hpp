@@ -41,7 +41,7 @@ private:
     using _make_useq = std::make_integer_sequence<int, N>;
 
     template <int... I>
-    static constexpr auto _identity(_useq<I...>) noexcept
+    static constexpr auto _identity(const _useq<I...>) noexcept
       -> matrix<T, R, C, RM, V> {
         return {{vect::axis < T, RM ? C : R, I, V > ::apply(1)...}};
     }

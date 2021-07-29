@@ -41,8 +41,8 @@ class rotation_I<matrix<T, 4, 4, RM, V>, I> {
 public:
     /// @brief Initializes the matrix constructor.
     /// @param v is the angle of rotation.
-    constexpr rotation_I(radians_t<T> v) noexcept
-      : _v(v) {}
+    constexpr rotation_I(const radians_t<T> v) noexcept
+      : _v{v} {}
 
     /// @brief Returns the constructed matrix.
     constexpr auto operator()() const {
@@ -61,7 +61,7 @@ private:
     using _y = int_constant<1>;
     using _z = int_constant<2>;
 
-    static constexpr auto _make(T cx, T sx, _x) noexcept {
+    static constexpr auto _make(const T cx, const T sx, _x) noexcept {
         return matrix<T, 4, 4, RM, V>{
           {{T(1), T(0), T(0), T(0)},
            {T(0), cx, -sx, T(0)},
@@ -69,7 +69,7 @@ private:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-    static constexpr auto _make(T cx, T sx, _y) noexcept {
+    static constexpr auto _make(const T cx, const T sx, _y) noexcept {
         return matrix<T, 4, 4, RM, V>{
           {{cx, T(0), sx, T(0)},
            {T(0), T(1), T(0), T(0)},
@@ -77,7 +77,7 @@ private:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-    static constexpr auto _make(T cx, T sx, _z) noexcept {
+    static constexpr auto _make(const T cx, const T sx, _z) noexcept {
         return matrix<T, 4, 4, RM, V>{
           {{cx, -sx, T(0), T(0)},
            {sx, cx, T(0), T(0)},
