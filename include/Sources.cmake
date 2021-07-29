@@ -161,7 +161,6 @@ set(HEADERS
     eagine/network_sorter.hpp
     eagine/nothing.hpp
     eagine/offset_ptr.hpp
-    eagine/optional_expr.hpp
     eagine/optional_ref.hpp
     eagine/overloaded.hpp
     eagine/overwrite_guard.hpp
