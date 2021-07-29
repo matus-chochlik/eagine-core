@@ -83,7 +83,7 @@ public:
     /// The number of points must be ((C * Order) + 1) and connected
     /// or (C * (Order + 1)) and not(connected),
     /// where @em C is the number of curves (segments) in the sequence.
-    bezier_curves(std::vector<Type> points, bool connected)
+    bezier_curves(std::vector<Type> points, const bool connected)
       : _points{std::move(points)}
       , _connected{connected} {
         EAGINE_ASSERT(points_are_ok(_points));
@@ -99,7 +99,7 @@ public:
     /// to be connected.
     template <typename P, typename S>
     bezier_curves(memory::basic_span<const Type, P, S> points)
-      : _points(points.begin(), points.end())
+      : _points{points.begin(), points.end()}
       , _connected{are_connected(_points)} {
         EAGINE_ASSERT(points_are_ok(_points));
     }
@@ -113,9 +113,11 @@ public:
     /// If both of the above are true then the curves are considered
     /// to be connected.
     template <typename P, typename S>
-    bezier_curves(memory::basic_span<const Type, P, S> points, bool connected)
-      : _points(points.begin(), points.end())
-      , _connected(connected) {
+    bezier_curves(
+      memory::basic_span<const Type, P, S> points,
+      const bool connected)
+      : _points{points.begin(), points.end()}
+      , _connected{connected} {
         EAGINE_ASSERT(points_are_ok(_points));
         EAGINE_ASSERT(are_connected(_points) == _connected);
     }
@@ -170,13 +172,14 @@ public:
     }
 
     /// @brief Gets the point on the curve at position t wrapped to [0.0, 1.0].
-    auto position(Parameter t) const noexcept -> Type {
+    auto position(const Parameter t) const noexcept -> Type {
         return position01(wrap(t));
     }
 
     /// @brief Makes a sequence of points on the curve (n points per segment).
-    void approximate(std::vector<Type>& dest, valid_if_positive<span_size_t> n)
-      const noexcept {
+    void approximate(
+      std::vector<Type>& dest,
+      const valid_if_positive<span_size_t>& n) const noexcept {
         const auto sstep = segment_step();
         const auto s = segment_count();
 
@@ -204,7 +207,7 @@ public:
     }
 
     /// @brief Returns a sequence of points on the curve (n points per segment).
-    auto approximate(valid_if_positive<span_size_t> n) const
+    auto approximate(const valid_if_positive<span_size_t> n) const
       -> std::vector<Type> {
         std::vector<Type> result;
         approximate(result, n);
@@ -254,15 +257,15 @@ public:
     /// @brief Creates a loop passing through the sequence of the input points.
     template <typename P, typename S>
     cubic_bezier_loop(
-      memory::basic_span<const Type, P, S> points,
-      Parameter r = Parameter(1) / Parameter(3))
+      const memory::basic_span<const Type, P, S> points,
+      const Parameter r = Parameter(1) / Parameter(3))
       : bezier_curves<Type, Parameter, 3>(_make_cpoints(points, r)) {}
 
 private:
     template <typename P, typename S>
-    static auto
-    _make_cpoints(memory::basic_span<const Type, P, S> points, Parameter r)
-      -> std::vector<Type> {
+    static auto _make_cpoints(
+      const memory::basic_span<const Type, P, S> points,
+      const Parameter r) -> std::vector<Type> {
         span_size_t i = 0, n = points.size();
         EAGINE_ASSERT(n != 0);
 

@@ -37,28 +37,28 @@ struct scalar {
 
     using scalar_param = const scalar&;
 
-    static constexpr auto _from(data_type v) noexcept {
+    static constexpr auto _from(const data_type v) noexcept {
         return scalar{v};
     }
 
-    static constexpr auto _make(T v, std::true_type) noexcept {
+    static constexpr auto _make(const T v, const std::true_type) noexcept {
         return scalar{vect::fill<T, N, V>::apply(v)};
     }
 
-    static constexpr auto _make(T v, std::false_type) noexcept {
+    static constexpr auto _make(const T v, const std::false_type) noexcept {
         return scalar{v};
     }
 
     /// @brief Creates a scalar with the specified value.
-    static constexpr auto make(T v) noexcept {
+    static constexpr auto make(const T v) noexcept {
         return _make(v, is_vectorized());
     }
 
-    constexpr auto _get(std::true_type) const noexcept -> T {
+    constexpr auto _get(const std::true_type) const noexcept -> T {
         return _v[0];
     }
 
-    constexpr auto _get(std::false_type) const noexcept -> T {
+    constexpr auto _get(const std::false_type) const noexcept -> T {
         return _v;
     }
 
@@ -68,7 +68,7 @@ struct scalar {
     }
 
     /// @brief Assignment from the value type.
-    auto operator=(T v) noexcept -> scalar& {
+    auto operator=(const T v) noexcept -> scalar& {
         return *this = make(v);
     }
 };

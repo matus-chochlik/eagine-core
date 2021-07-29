@@ -29,7 +29,7 @@ public:
     constexpr sign() noexcept = default;
 
     /// @brief Construction with explicit specitication of the sign.
-    constexpr explicit sign(bool pos) noexcept
+    constexpr explicit sign(const bool pos) noexcept
       : _positive{pos} {}
 
     /// @brief Construction taking the sign from the specified numeric @p value.

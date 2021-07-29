@@ -53,23 +53,24 @@ nearest_ray_param(const std::pair<valid_if<T, P, L>, valid_if<T, P, L>>& params)
 // line-sphere
 //------------------------------------------------------------------------------
 template <typename T, bool V>
-static constexpr auto
-_line_sphere_intersection_a(vector<T, 3, V> ld, vector<T, 3, V> oc) noexcept
-  -> T {
+static constexpr auto _line_sphere_intersection_a(
+  const vector<T, 3, V> ld,
+  const vector<T, 3, V> oc) noexcept -> T {
     return -T(2) * dot(ld, oc);
 }
 //------------------------------------------------------------------------------
 template <typename T, bool V>
-static constexpr auto _line_sphere_intersection_d(vector<T, 3, V> ld) noexcept
+static constexpr auto
+_line_sphere_intersection_d(const vector<T, 3, V> ld) noexcept
   -> valid_if_positive<T> {
     return T(2) * dot(ld, ld);
 }
 //------------------------------------------------------------------------------
 template <typename T, bool V>
 static constexpr auto _line_sphere_intersection_b(
-  vector<T, 3, V> ld,
-  vector<T, 3, V> oc,
-  T sr) noexcept -> valid_if_nonnegative<T> {
+  const vector<T, 3, V> ld,
+  const vector<T, 3, V> oc,
+  const T sr) noexcept -> valid_if_nonnegative<T> {
     using std::pow;
     return T(
       pow(2 * dot(ld, oc), 2) - 4 * dot(ld, ld) * (dot(oc, oc) - pow(sr, 2)));
@@ -77,9 +78,9 @@ static constexpr auto _line_sphere_intersection_b(
 //------------------------------------------------------------------------------
 template <typename T>
 static constexpr auto _line_sphere_intersection_t(
-  T a,
-  valid_if_nonnegative<T> b,
-  valid_if_positive<T> d) noexcept {
+  const T a,
+  const valid_if_nonnegative<T> b,
+  const valid_if_positive<T> d) noexcept {
     using std::sqrt;
     using R = std::pair<optionally_valid<T>, optionally_valid<T>>;
     return (b && d) ? (extract(b) > T(0))
