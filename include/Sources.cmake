@@ -43,7 +43,6 @@ set(HEADERS
     eagine/enum_class.hpp
     eagine/enum_log.hpp
     eagine/enum_map.hpp
-    eagine/enum_range.hpp
     eagine/enum_span.hpp
     eagine/environment.hpp
     eagine/extract.hpp
@@ -165,6 +164,7 @@ set(HEADERS
     eagine/optional_expr.hpp
     eagine/optional_ref.hpp
     eagine/overloaded.hpp
+    eagine/overwrite_guard.hpp
     eagine/power_supply_kind.hpp
     eagine/preprocessor.hpp
     eagine/process.hpp
