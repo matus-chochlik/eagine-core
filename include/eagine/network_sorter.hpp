@@ -25,23 +25,6 @@ template <
   typename Compare = std::less<T>,
   typename Network = sorting_network<N>>
 class basic_network_sorter {
-private:
-    Compare _before;
-    Network _sn;
-
-    auto _min(const T& a, const T& b) const -> const T& {
-        return _before(a, b) ? a : b;
-    }
-
-    auto _max(const T& a, const T& b) const -> const T& {
-        return _before(a, b) ? b : a;
-    }
-
-    auto _min_max_cpy(const T& a, const T& b, bool min, bool max) const
-      -> const T& {
-        return min ? _min(a, b) : max ? _max(a, b) : a;
-    }
-
 public:
     void single_sort_step(
       std::array<T, N>& src,
@@ -63,6 +46,23 @@ public:
     auto rounds() const noexcept -> span_size_t {
         return _sn.rounds();
     }
+
+private:
+    Compare _before;
+    Network _sn;
+
+    auto _min(const T& a, const T& b) const -> const T& {
+        return _before(a, b) ? a : b;
+    }
+
+    auto _max(const T& a, const T& b) const -> const T& {
+        return _before(a, b) ? b : a;
+    }
+
+    auto _min_max_cpy(const T& a, const T& b, bool min, bool max) const
+      -> const T& {
+        return min ? _min(a, b) : max ? _max(a, b) : a;
+    }
 };
 
 template <
@@ -71,10 +71,6 @@ template <
   typename Compare = std::less<T>,
   typename Network = sorting_network<N>>
 class network_sorter : basic_network_sorter<T, N, Compare, Network> {
-private:
-    span_size_t _round{0};
-    std::array<std::array<T, N>, 2> _a;
-
 public:
     constexpr network_sorter(std::array<T, N> a)
       : _a{{a, a}} {}
@@ -121,6 +117,10 @@ public:
     auto operator()() -> const std::array<T, N>& {
         return sort().result();
     }
+
+private:
+    span_size_t _round{0};
+    std::array<std::array<T, N>, 2> _a{};
 };
 
 template <std::size_t N, typename Cmp, typename T, typename P, typename S>

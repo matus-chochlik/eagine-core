@@ -32,22 +32,24 @@ using code_point = valid_if_less_than<code_point_t, 0x7FFFFFFFU>;
 using valid_sequence_length = valid_if_between<span_size_t, 1, 6>;
 using valid_byte_span = valid_if_size_gt<span<byte>, span_size_t>;
 //------------------------------------------------------------------------------
-static inline auto make_byte_span(span<byte> s) noexcept -> valid_byte_span {
+static inline auto make_byte_span(const span<byte> s) noexcept
+  -> valid_byte_span {
     return {s};
 }
 //------------------------------------------------------------------------------
-static inline auto make_byte_span(span<char> s) noexcept -> valid_byte_span {
+static inline auto make_byte_span(const span<char> s) noexcept
+  -> valid_byte_span {
     return {memory::accommodate<byte>(s)};
 }
 //------------------------------------------------------------------------------
 using valid_cbyte_span = valid_if_size_gt<span<const byte>, span_size_t>;
 //------------------------------------------------------------------------------
-static inline auto make_cbyte_span(span<const byte> s) noexcept
+static inline auto make_cbyte_span(const span<const byte> s) noexcept
   -> valid_cbyte_span {
     return {s};
 }
 //------------------------------------------------------------------------------
-static inline auto make_cbyte_span(span<const char> s) noexcept
+static inline auto make_cbyte_span(const span<const char> s) noexcept
   -> valid_cbyte_span {
     return {memory::accommodate<const byte>(s)};
 }

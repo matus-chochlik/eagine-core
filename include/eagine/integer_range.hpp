@@ -66,8 +66,8 @@ public:
     }
 
 private:
-    T _begin{0};
-    T _end{0};
+    const T _begin{0};
+    const T _end{0};
 };
 
 /// @brief Deduction guide for integer_range.

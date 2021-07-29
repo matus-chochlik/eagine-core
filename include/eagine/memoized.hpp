@@ -20,12 +20,6 @@ class memoized;
 
 template <typename R, typename... P>
 class memoized<R(P...)> {
-private:
-    using T = std::tuple<P...>;
-    using E = std::pair<T, R>;
-    std::map<T, R> _memo;
-    callable_ref<R(P..., memoized&)> _func;
-
 public:
     template <
       typename Func,
@@ -54,6 +48,12 @@ public:
     void clear() {
         _memo.clear();
     }
+
+private:
+    using T = std::tuple<P...>;
+    using E = std::pair<T, R>;
+    std::map<T, R> _memo;
+    callable_ref<R(P..., memoized&)> _func;
 };
 
 } // namespace eagine

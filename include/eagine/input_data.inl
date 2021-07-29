@@ -43,7 +43,7 @@ void read_stream_data(std::istream& input, memory::buffer& dest) {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-void read_file_data(string_view path, memory::buffer& dest) {
+void read_file_data(const string_view path, memory::buffer& dest) {
     std::ifstream file;
     std::ios_base::iostate oldexc = file.exceptions();
     auto reset_exc = finally([&file, oldexc] { file.exceptions(oldexc); });

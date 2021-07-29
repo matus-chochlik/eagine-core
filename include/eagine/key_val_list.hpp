@@ -34,7 +34,9 @@ struct key_value_list_element {
     value_type _value;
 
     /// @brief Construction from the key and the value.
-    constexpr key_value_list_element(key_type key, value_type value) noexcept
+    constexpr key_value_list_element(
+      const key_type key,
+      const value_type value) noexcept
       : _key{key}
       , _value{value} {}
 };
@@ -62,14 +64,16 @@ struct key_value_list_base<Traits, 2> {
     using conv_type = typename Traits::conv_type;
     using value_type = typename Traits::value_type;
 
-    constexpr key_value_list_base(key_type key, value_type value) noexcept
+    constexpr key_value_list_base(
+      const key_type key,
+      const value_type value) noexcept
       : _elements{{value_type(conv_type(key)), value, Traits::terminator()}} {}
 
     constexpr key_value_list_base(
       const key_value_list_base<Traits, 0>&,
-      key_type key,
-      value_type value,
-      std::index_sequence<>) noexcept
+      const key_type key,
+      const value_type value,
+      const std::index_sequence<>) noexcept
       : _elements{{value_type(conv_type(key)), value, Traits::terminator()}} {}
 
     auto data() const noexcept -> const value_type* {
@@ -91,9 +95,9 @@ struct key_value_list_base {
       typename = std::enable_if_t<(M + 2 == N) && (sizeof...(I) == M)>>
     constexpr key_value_list_base(
       const key_value_list_base<Traits, M>& head,
-      key_type key,
-      value_type value,
-      std::index_sequence<I...>) noexcept
+      const key_type key,
+      const value_type value,
+      const std::index_sequence<I...>) noexcept
       : _elements{
           {head._elements[I]...,
            value_type(conv_type(key)),
@@ -124,8 +128,8 @@ public:
     template <std::size_t M, typename = std::enable_if_t<M + 2 == N>>
     constexpr key_value_list(
       const key_value_list_base<Traits, M>& head,
-      key_type key,
-      value_type value) noexcept
+      const key_type key,
+      const value_type value) noexcept
       : _base(head, key, value, std::make_index_sequence<M>()) {}
 
     key_value_list(const key_value_list_element<Traits>& head) noexcept
