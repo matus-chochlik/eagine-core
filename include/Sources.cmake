@@ -208,7 +208,6 @@ set(HEADERS
     eagine/serialize/write.hpp
     eagine/signal_switch.hpp
     eagine/slow_exec.hpp
-    eagine/smart_callable.hpp
     eagine/sorting_network.hpp
     eagine/sorting_network_io.hpp
     eagine/span.hpp
