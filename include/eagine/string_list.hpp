@@ -21,28 +21,30 @@
 namespace eagine {
 namespace string_list {
 //------------------------------------------------------------------------------
-static inline auto encode_length(span_size_t len) -> std::string {
+static inline auto encode_length(const span_size_t len) -> std::string {
     return extract(mbs::encode_code_point(mbs::code_point_t(len)));
 }
 //------------------------------------------------------------------------------
-static inline auto element_header_size(string_view elem) noexcept
+static inline auto element_header_size(const string_view elem) noexcept
   -> span_size_t {
     return extract_or(
       mbs::decode_sequence_length(mbs::make_cbyte_span(elem)), 0);
 }
 //------------------------------------------------------------------------------
-static inline auto element_value_size(string_view elem, span_size_t l) noexcept
+static inline auto
+element_value_size(const string_view elem, const span_size_t l) noexcept
   -> span_size_t {
     return extract_or(
       mbs::do_decode_code_point(mbs::make_cbyte_span(elem), l), 0U);
 }
 //------------------------------------------------------------------------------
-static inline auto element_value_size(string_view elem) noexcept
+static inline auto element_value_size(const string_view elem) noexcept
   -> span_size_t {
     return element_value_size(elem, elem.size());
 }
 //------------------------------------------------------------------------------
-static inline auto rev_seek_header_start(string_view elem) -> span_size_t {
+static inline auto rev_seek_header_start(const string_view elem)
+  -> span_size_t {
     for(auto i = elem.rbegin(); i != elem.rend(); ++i) {
         if(mbs::is_valid_head_byte(byte(*i))) {
             return elem.rend() - i - 1;
@@ -51,21 +53,21 @@ static inline auto rev_seek_header_start(string_view elem) -> span_size_t {
     return 0;
 }
 //------------------------------------------------------------------------------
-static inline auto front_value(string_view list) noexcept -> string_view {
+static inline auto front_value(const string_view list) noexcept -> string_view {
     const span_size_t k = element_header_size(list);
     const span_size_t l = element_value_size(list, k);
     return slice(list, k, l);
 }
 //------------------------------------------------------------------------------
-static inline auto back_value(string_view list) noexcept -> string_view {
+static inline auto back_value(const string_view list) noexcept -> string_view {
     const span_size_t i = rev_seek_header_start(list);
-    string_view header = skip(list, i);
+    const string_view header = skip(list, i);
     const span_size_t k = element_header_size(header);
     const span_size_t l = element_value_size(header, k);
     return slice(list, i - l, l);
 }
 //------------------------------------------------------------------------------
-static inline auto pop_back(string_view list) noexcept -> string_view {
+static inline auto pop_back(const string_view list) noexcept -> string_view {
     const span_size_t i = rev_seek_header_start(list);
     string_view header = skip(list, i);
     const span_size_t k = element_header_size(header);
@@ -74,7 +76,7 @@ static inline auto pop_back(string_view list) noexcept -> string_view {
     return head(list, i - k - l);
 }
 //------------------------------------------------------------------------------
-static inline void push_back(std::string& list, string_view value) {
+static inline void push_back(std::string& list, const string_view value) {
     const span_size_t vl = value.size();
     const std::string elen = encode_length(vl);
     const std::size_t nl = list.size() + elen.size() * 2 + std_size(vl);
@@ -95,38 +97,43 @@ private:
         return *this;
     }
 
-    static inline auto _fit(string_view s) noexcept -> string_view {
-        span_size_t hs = element_header_size(s);
-        span_size_t vs = element_value_size(s, hs);
+    static inline auto _fit(const string_view s) noexcept -> string_view {
+        const span_size_t hs = element_header_size(s);
+        const span_size_t vs = element_value_size(s, hs);
         EAGINE_ASSERT(s.size() >= hs + vs + hs);
         return {s.data(), hs + vs + hs};
     }
 
-    static inline auto _fit(const char* ptr, span_size_t max_size) noexcept
-      -> string_view {
+    static inline auto
+    _fit(const char* ptr, const span_size_t max_size) noexcept -> string_view {
         return _fit(string_view(ptr, max_size));
     }
 
-    static inline auto _rev_fit(string_view s, span_size_t rev_sz) noexcept
+    static inline auto
+    _rev_fit(const string_view s, const span_size_t rev_sz) noexcept
       -> string_view {
-        span_size_t hs = element_header_size(s);
-        span_size_t vs = element_value_size(s, hs);
+        const span_size_t hs = element_header_size(s);
+        const span_size_t vs = element_value_size(s, hs);
         EAGINE_ASSERT(rev_sz >= hs + vs);
         EAGINE_MAYBE_UNUSED(rev_sz);
         return {s.data() - hs - vs, hs + vs + hs};
     }
 
-    static inline auto
-    _rev_fit(const char* ptr, span_size_t rev_sz, span_size_t foot_sz) noexcept
-      -> string_view {
+    static inline auto _rev_fit(
+      const char* ptr,
+      const span_size_t rev_sz,
+      const span_size_t foot_sz) noexcept -> string_view {
         return _rev_fit(string_view(ptr, foot_sz), rev_sz);
     }
 
 public:
-    element(const char* ptr, span_size_t max_size) noexcept
+    element(const char* ptr, const span_size_t max_size) noexcept
       : string_view(_fit(ptr, max_size)) {}
 
-    element(const char* ptr, span_size_t rev_sz, span_size_t foot_sz) noexcept
+    element(
+      const char* ptr,
+      const span_size_t rev_sz,
+      const span_size_t foot_sz) noexcept
       : string_view(_rev_fit(ptr, rev_sz, foot_sz)) {}
 
     auto header_size() const noexcept -> span_size_t {
@@ -159,7 +166,7 @@ public:
 };
 //------------------------------------------------------------------------------
 template <typename Func>
-static inline void for_each_elem(string_view list, Func func) noexcept {
+static inline void for_each_elem(const string_view list, Func func) noexcept {
     span_size_t i = 0;
     bool first = true;
     while(i < list.size()) {
@@ -171,7 +178,7 @@ static inline void for_each_elem(string_view list, Func func) noexcept {
 }
 //------------------------------------------------------------------------------
 template <typename Func>
-static inline void for_each(string_view list, Func func) noexcept {
+static inline void for_each(const string_view list, Func func) noexcept {
     auto adapted_func = [&func](const element& elem, bool) {
         func(elem.value());
     };
@@ -179,7 +186,8 @@ static inline void for_each(string_view list, Func func) noexcept {
 }
 //------------------------------------------------------------------------------
 template <typename Func>
-static inline void rev_for_each_elem(string_view list, Func func) noexcept {
+static inline void
+rev_for_each_elem(const string_view list, Func func) noexcept {
     span_size_t i = list.size() - 1;
     bool first = true;
     while(i > 0) {
@@ -195,7 +203,7 @@ static inline void rev_for_each_elem(string_view list, Func func) noexcept {
 }
 //------------------------------------------------------------------------------
 template <typename Func>
-static inline void rev_for_each(string_view list, Func func) noexcept {
+static inline void rev_for_each(const string_view list, Func func) noexcept {
     auto adapted_func = [&func](const element& elem, bool) {
         func(elem.value());
     };
@@ -203,7 +211,8 @@ static inline void rev_for_each(string_view list, Func func) noexcept {
 }
 //------------------------------------------------------------------------------
 static inline auto
-split_into(std::string& dst, string_view str, string_view sep) -> span_size_t {
+split_into(std::string& dst, const string_view str, const string_view sep)
+  -> span_size_t {
     span_size_t cnt = 0;
     for_each_delimited(str, sep, [&dst, &cnt](const auto& x) {
         push_back(dst, x);
@@ -272,9 +281,10 @@ static inline auto split_c_str(const char* str, const char sep)
     return std::make_tuple(std::move(res), cnt);
 }
 //------------------------------------------------------------------------------
-static inline auto join(string_view list, string_view sep, bool trail_sep)
+static inline auto
+join(const string_view list, const string_view sep, const bool trail_sep)
   -> std::string {
-    span_size_t slen = sep.size();
+    const span_size_t slen = sep.size();
     span_size_t len = trail_sep ? slen : 0;
     auto get_len = [&len, slen](const element& elem, bool first) {
         if(!first) {
@@ -303,40 +313,13 @@ static inline auto join(string_view list, string_view sep, bool trail_sep)
     return res;
 }
 //------------------------------------------------------------------------------
-static inline auto join(string_view list, string_view sep) -> std::string {
+static inline auto join(const string_view list, const string_view sep)
+  -> std::string {
     return join(list, sep, false);
 }
 //------------------------------------------------------------------------------
 template <typename Iter>
 class iterator {
-private:
-    Iter _pos;
-    mutable string_view _tmp;
-
-    auto _b() const noexcept {
-        return byte(*_pos);
-    }
-
-    auto _len_len() const noexcept -> span_size_t {
-        byte b = _b();
-        EAGINE_ASSERT(mbs::is_valid_head_byte(b));
-        return extract(mbs::do_decode_sequence_length(b));
-    }
-
-    auto _val_len(span_size_t ll) const noexcept -> span_size_t {
-        string_view el{&*_pos, ll};
-        return extract_or(
-          mbs::do_decode_code_point(mbs::make_cbyte_span(el), ll), 0U);
-    }
-
-    void _update() const {
-        if(_tmp.size() == 0) {
-            span_size_t ll = _len_len();
-            span_size_t vl = _val_len(ll);
-            _tmp = string_view{&*(_pos + ll), vl};
-        }
-    }
-
 public:
     using difference_type = std::ptrdiff_t;
     using value_type = string_view;
@@ -382,22 +365,13 @@ public:
         ++(*this);
         return result;
     }
-};
-//------------------------------------------------------------------------------
-template <typename Iter>
-class rev_iterator {
+
 private:
-    mutable Iter _pos;
+    Iter _pos;
     mutable string_view _tmp;
 
-    auto _b() const noexcept {
+    auto _b() const noexcept -> byte {
         return byte(*_pos);
-    }
-
-    void _rseek_head() const noexcept {
-        while(!mbs::is_valid_head_byte(_b())) {
-            --_pos;
-        }
     }
 
     auto _len_len() const noexcept -> span_size_t {
@@ -406,7 +380,7 @@ private:
         return extract(mbs::do_decode_sequence_length(b));
     }
 
-    auto _val_len(span_size_t ll) const noexcept -> span_size_t {
+    auto _val_len(const span_size_t ll) const noexcept -> span_size_t {
         string_view el{&*_pos, ll};
         return extract_or(
           mbs::do_decode_code_point(mbs::make_cbyte_span(el), ll), 0U);
@@ -414,13 +388,15 @@ private:
 
     void _update() const {
         if(_tmp.size() == 0) {
-            _rseek_head();
             span_size_t ll = _len_len();
             span_size_t vl = _val_len(ll);
-            _tmp = string_view{&*(_pos - vl), vl};
+            _tmp = string_view{&*(_pos + ll), vl};
         }
     }
-
+};
+//------------------------------------------------------------------------------
+template <typename Iter>
+class rev_iterator {
 public:
     using difference_type = std::ptrdiff_t;
     using value_type = string_view;
@@ -466,6 +442,41 @@ public:
         rev_iterator result = *this;
         ++(*this);
         return result;
+    }
+
+private:
+    mutable Iter _pos;
+    mutable string_view _tmp;
+
+    auto _b() const noexcept -> byte {
+        return byte(*_pos);
+    }
+
+    void _rseek_head() const noexcept {
+        while(!mbs::is_valid_head_byte(_b())) {
+            --_pos;
+        }
+    }
+
+    auto _len_len() const noexcept -> span_size_t {
+        byte b = _b();
+        EAGINE_ASSERT(mbs::is_valid_head_byte(b));
+        return extract(mbs::do_decode_sequence_length(b));
+    }
+
+    auto _val_len(span_size_t ll) const noexcept -> span_size_t {
+        string_view el{&*_pos, ll};
+        return extract_or(
+          mbs::do_decode_code_point(mbs::make_cbyte_span(el), ll), 0U);
+    }
+
+    void _update() const {
+        if(_tmp.size() == 0) {
+            _rseek_head();
+            span_size_t ll = _len_len();
+            span_size_t vl = _val_len(ll);
+            _tmp = string_view{&*(_pos - vl), vl};
+        }
     }
 };
 //------------------------------------------------------------------------------
@@ -553,13 +564,15 @@ static inline auto make_string_list(std::string str)
     return {std::move(str)};
 }
 //------------------------------------------------------------------------------
-static inline auto split_into_string_list(string_view src, char sep) {
+static inline auto
+split_into_string_list(const string_view src, const char sep) {
     std::string temp;
-    string_list::split_into(temp, src, cover_one(sep));
+    string_list::split_into(temp, src, view_one(sep));
     return make_string_list(std::move(temp));
 }
 //------------------------------------------------------------------------------
-static inline auto split_c_str_into_string_list(const char* src, char sep) {
+static inline auto
+split_c_str_into_string_list(const char* src, const char sep) {
     std::string temp;
     string_list::split_c_str_into(temp, src, sep);
     return make_string_list(std::move(temp));

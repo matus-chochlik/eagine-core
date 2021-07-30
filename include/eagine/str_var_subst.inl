@@ -15,25 +15,25 @@ EAGINE_LIB_FUNC
 auto substitute_variables_into(
   std::string& dst,
   string_view src,
-  const callable_ref<optionally_valid<string_view>(string_view)>& translate,
-  variable_substitution_options opts) -> std::string& {
+  const callable_ref<optionally_valid<string_view>(const string_view)>&
+    translate,
+  const variable_substitution_options opts) -> std::string& {
 
     do {
-        if(auto lpos = find_element(src, opts.leading_sign)) {
+        if(const auto lpos{find_element(src, opts.leading_sign)}) {
             append_to(dst, head(src, lpos.value()));
             src = skip(src, lpos.value());
 
-            if(
-              auto inner = slice_inside_brackets(
-                src, opts.opening_bracket, opts.closing_bracket)) {
+            if(const auto inner{slice_inside_brackets(
+                 src, opts.opening_bracket, opts.closing_bracket)}) {
 
-                if(auto translation = translate(inner)) {
+                if(const auto translation{translate(inner)}) {
                     append_to(dst, translation.value());
                 } else {
                     if(find_element(inner, opts.leading_sign)) {
                         std::string temp;
                         substitute_variables_into(temp, inner, translate, opts);
-                        if(auto translation2 = translate(temp)) {
+                        if(const auto translation2 = translate(temp)) {
                             append_to(dst, translation2.value());
                         } else if(opts.keep_untranslated) {
                             append_to(dst, head(src, inner.size() + 3));
@@ -59,9 +59,10 @@ auto substitute_variables_into(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto substitute_variables(
-  string_view src,
-  const callable_ref<optionally_valid<string_view>(string_view)>& translate,
-  variable_substitution_options opts) -> std::string {
+  const string_view src,
+  const callable_ref<optionally_valid<string_view>(const string_view)>&
+    translate,
+  const variable_substitution_options opts) -> std::string {
     std::string result;
     return std::move(substitute_variables_into(result, src, translate, opts));
 }
@@ -69,8 +70,8 @@ auto substitute_variables(
 EAGINE_LIB_FUNC
 auto substitute_variables(
   const std::string& str,
-  span<const std::string> strings,
-  variable_substitution_options opts) -> std::string {
+  const span<const std::string> strings,
+  const variable_substitution_options opts) -> std::string {
     auto translate_func =
       [&strings](string_view key) -> optionally_valid<string_view> {
         char* e = nullptr;
@@ -87,7 +88,7 @@ EAGINE_LIB_FUNC
 auto substitute_variables(
   const std::string& str,
   const std::map<std::string, std::string, str_view_less>& dictionary,
-  variable_substitution_options opts) -> std::string {
+  const variable_substitution_options opts) -> std::string {
     auto translate_func =
       [&dictionary](string_view key) -> optionally_valid<string_view> {
         if(!dictionary.empty()) {

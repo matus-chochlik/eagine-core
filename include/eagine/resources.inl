@@ -15,9 +15,9 @@ namespace eagine {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto fetch_resource(
-  string_view description,
-  string_view key,
-  memory::const_block embedded_blk,
+  const string_view description,
+  const string_view key,
+  const memory::const_block embedded_blk,
   memory::buffer& buf,
   application_config& cfg,
   logger& log) -> memory::const_block {

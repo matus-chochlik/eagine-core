@@ -25,8 +25,8 @@ template <
   typename S2>
 auto string_replace(
   std::basic_string<C, T, A>& str,
-  memory::basic_span<const C, P1, S1> from,
-  memory::basic_span<const C, P2, S2> to) -> std::basic_string<C, T, A>& {
+  const memory::basic_span<const C, P1, S1> from,
+  const memory::basic_span<const C, P2, S2> to) -> std::basic_string<C, T, A>& {
     std::string::size_type index = 0;
     while(true) {
         index = str.find(from.data(), index, from.size());
@@ -51,7 +51,7 @@ template <
   typename S2>
 auto string_replace(
   std::basic_string<C, T, A>& str,
-  span<const std::tuple<
+  const span<const std::tuple<
     basic_string_span<const C, P1, S1>,
     basic_string_span<const C, P2, S2>>> dict) -> std::basic_string<C, T, A>& {
     for(auto& [from, to] : dict) {

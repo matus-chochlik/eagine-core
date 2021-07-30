@@ -32,7 +32,7 @@ private:
     }
 
 public:
-    static auto is_valid_block(memory::const_block blk) noexcept -> bool {
+    static auto is_valid_block(const memory::const_block blk) noexcept -> bool {
         return !blk.empty() && (blk.is_aligned_as<T>()) &&
                (can_accommodate(blk, type_identity<T>()));
     }

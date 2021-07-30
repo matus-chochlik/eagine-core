@@ -43,8 +43,9 @@ struct variable_substitution_options {
 auto substitute_variables_into(
   std::string& dst,
   string_view src,
-  const callable_ref<optionally_valid<string_view>(string_view)>& translate,
-  variable_substitution_options = {}) -> std::string&;
+  const callable_ref<optionally_valid<string_view>(const string_view)>&
+    translate,
+  const variable_substitution_options = {}) -> std::string&;
 //------------------------------------------------------------------------------
 /// @brief Substitutes variable values by using translate, from src.
 /// @ingroup string_utils
@@ -54,9 +55,10 @@ auto substitute_variables_into(
 /// using substitution options and substitutes the variables with their values
 /// using the translation function and returns the resulting string.
 auto substitute_variables(
-  string_view src,
-  const callable_ref<optionally_valid<string_view>(string_view)>& translate,
-  variable_substitution_options = {}) -> std::string;
+  const string_view src,
+  const callable_ref<optionally_valid<string_view>(const string_view)>&
+    translate,
+  const variable_substitution_options = {}) -> std::string;
 //------------------------------------------------------------------------------
 /// @brief Substitutes variable values by using translate, from src into dst.
 /// @ingroup string_utils
@@ -67,8 +69,8 @@ auto substitute_variables(
 /// their values the strings span and returns the resulting string.
 auto substitute_variables(
   const std::string& str,
-  span<const std::string> strings,
-  variable_substitution_options = {}) -> std::string;
+  const span<const std::string> strings,
+  const variable_substitution_options = {}) -> std::string;
 //------------------------------------------------------------------------------
 /// @brief Substitutes variable values by using translate, from src.
 /// @ingroup string_utils
@@ -80,7 +82,7 @@ auto substitute_variables(
 auto substitute_variables(
   const std::string& str,
   const std::map<std::string, std::string, str_view_less>& dictionary,
-  variable_substitution_options = {}) -> std::string;
+  const variable_substitution_options = {}) -> std::string;
 //------------------------------------------------------------------------------
 /// @brief Class storing a map of variable names to values, doing string substitution.
 /// @ingroup string_utils

@@ -28,16 +28,16 @@ public:
 
     /// @brief Construction intializing with the specified action.
     on_scope_exit(action_type action) noexcept
-      : _action(std::move(action)) {}
+      : _action{std::move(action)} {}
 
     /// @brief Construction intializing with the specified action.
     template <typename Func>
     on_scope_exit(Func& action) noexcept
-      : _action(construct_from, action) {}
+      : _action{construct_from, action} {}
 
     /// @brief Move constructor.
     on_scope_exit(on_scope_exit&& temp) noexcept
-      : on_scope_exit(temp.release()) {}
+      : on_scope_exit{temp.release()} {}
 
     /// @brief Not copy constructible.
     on_scope_exit(const on_scope_exit&) = delete;
@@ -81,7 +81,7 @@ public:
 private:
     action_type _action;
 
-    void _invoke(std::true_type) const {
+    void _invoke(const std::true_type) const {
         if(_action) {
             if(std::uncaught_exceptions()) {
                 try {
@@ -92,7 +92,7 @@ private:
         }
     }
 
-    void _invoke(std::false_type) const {
+    void _invoke(const std::false_type) const {
         if(_action) {
             if(!std::uncaught_exceptions()) {
                 _action();
@@ -100,7 +100,7 @@ private:
         }
     }
 
-    void _invoke(nothing_t) const {
+    void _invoke(const nothing_t) const {
         if(_action) {
             _action();
         }
