@@ -66,27 +66,29 @@ public:
     /// @brief Construction from the default and initial timeout duration.
     /// @see reset
     /// @see period
-    timeout(_clock::duration duration, _clock::duration initial) noexcept
+    timeout(
+      const _clock::duration duration,
+      const _clock::duration initial) noexcept
       : _duration{duration}
       , _timeout{_clock::now() + initial} {}
 
     /// @brief Construction from the default and zero initial timeout duration.
     /// @see reset
     /// @see period
-    timeout(_clock::duration duration, nothing_t) noexcept
+    timeout(const _clock::duration duration, const nothing_t) noexcept
       : timeout{duration, _clock::duration::zero()} {}
 
     /// @brief Construction from the default duration.
     /// @see reset
     /// @see period
-    timeout(_clock::duration duration) noexcept
+    timeout(const _clock::duration duration) noexcept
       : timeout{duration, duration} {}
 
     /// @brief Construction from the default duration.
     /// @see reset
     /// @see period
     template <typename R, typename P>
-    timeout(std::chrono::duration<R, P> duration) noexcept
+    timeout(const std::chrono::duration<R, P> duration) noexcept
       : timeout{std::chrono::duration_cast<_clock::duration>(duration)} {}
 
     /// @brief Resets the timeout using the previously specified duration.
@@ -96,8 +98,9 @@ public:
     }
 
     /// @brief Resets the timeout using the specified duration values.
-    auto reset(_clock::duration duration, _clock::duration initial) noexcept
-      -> auto& {
+    auto reset(
+      const _clock::duration duration,
+      const _clock::duration initial) noexcept -> auto& {
         _duration = duration;
         _timeout = std::chrono::steady_clock::now() + initial;
         return *this;
@@ -105,13 +108,14 @@ public:
 
     /// @brief Resets the timeout using the specified duration values.
     /// @post is_expired()
-    auto reset(_clock::duration duration, nothing_t) noexcept -> auto& {
+    auto reset(const _clock::duration duration, const nothing_t) noexcept
+      -> auto& {
         return reset(duration, _clock::duration::zero());
     }
 
     /// @brief Resets the timeout using the specified duration value.
     /// @see is_expired
-    auto reset(_clock::duration duration) noexcept -> auto& {
+    auto reset(const _clock::duration duration) noexcept -> auto& {
         return reset(duration, duration);
     }
 

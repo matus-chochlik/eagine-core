@@ -65,7 +65,7 @@ public:
 
     /// @brief Checks if the url scheme matches the given string.
     /// @see scheme
-    auto has_scheme(string_view str) const noexcept -> bool {
+    auto has_scheme(const string_view str) const noexcept -> bool {
         return are_equal(str, _scheme);
     }
 
@@ -111,7 +111,7 @@ public:
     /// @brief Checks if the path matches the given string.
     /// @see path_str
     /// @see path
-    auto has_path(string_view str) const noexcept -> bool {
+    auto has_path(const string_view str) const noexcept -> bool {
         return are_equal(str, _path);
     }
 
@@ -137,7 +137,7 @@ public:
 
     /// @brief Returns the value of the specified query argument.
     /// @see query
-    auto argument(string_view arg_name) const noexcept
+    auto argument(const string_view arg_name) const noexcept
       -> valid_if_not_empty<string_view> {
         string_view result;
         for_each_delimited(_query, string_view{"+"}, [&](auto part) {
@@ -160,7 +160,7 @@ private:
     void _cover(
       string_view& part,
       const std::match_results<std::string::iterator>& match,
-      std::size_t index) const noexcept;
+      const std::size_t index) const noexcept;
 
     static auto _get_regex() noexcept -> const std::regex&;
 

@@ -29,14 +29,7 @@ class tribool;
 /// @see tribool
 /// @see indeterminate
 class weakbool {
-private:
     using _value_t = _tribool_value_t;
-    _value_t _value;
-
-    friend class tribool;
-
-    constexpr explicit weakbool(_value_t value) noexcept
-      : _value(value) {}
 
 public:
     /// @brief Returns true, if the stored value is not @c false.
@@ -50,36 +43,43 @@ public:
     }
 
     ///@ brief Checks if the stored value is indeterminate.
-    constexpr auto is(indeterminate_t) const noexcept {
+    constexpr auto is(const indeterminate_t) const noexcept {
         return _value == _value_t::_unknown;
     }
+
+private:
+    _value_t _value;
+
+    friend class tribool;
+
+    constexpr explicit weakbool(const _value_t value) noexcept
+      : _value{value} {}
 };
 
 /// @brief Tri-state boolean value.
 /// @see weakbool
 /// @see indeterminate
 class tribool {
-private:
     using _value_t = _tribool_value_t;
-    _value_t _value{_value_t::_false};
 
 public:
     /// @brief Default constructor.
     constexpr tribool() noexcept = default;
 
     /// @brief Constructions from boolean value.
-    constexpr tribool(bool value) noexcept
-      : _value(value ? _value_t::_true : _value_t::_false) {}
+    constexpr tribool(const bool value) noexcept
+      : _value{value ? _value_t::_true : _value_t::_false} {}
 
     /// @brief Constructions from indeterminate value.
-    constexpr tribool(indeterminate_t) noexcept
-      : _value(_value_t::_unknown) {}
+    constexpr tribool(const indeterminate_t) noexcept
+      : _value{_value_t::_unknown} {}
 
     /// @brief Construction with separate true/false, known/unknown arguments.
-    constexpr tribool(bool value, bool is_unknown) noexcept
+    constexpr tribool(const bool value, const bool is_unknown) noexcept
       : _value(
           is_unknown ? _value_t::_unknown
-                     : value ? _value_t::_true : _value_t::_false) {}
+          : value    ? _value_t::_true
+                     : _value_t::_false) {}
 
     /// @brief Returns true, if the stored value is true.
     constexpr explicit operator bool() const noexcept {
@@ -102,36 +102,45 @@ public:
     }
 
     /// @brief Returns true if the stored value is known and equal to @p value.
-    constexpr auto is(bool value) const noexcept -> bool {
+    constexpr auto is(const bool value) const noexcept -> bool {
         return _value == (value ? _value_t::_true : _value_t::_false);
     }
 
     /// @brief Returns true if the stored value is indeterminate.
-    constexpr auto is(indeterminate_t) const noexcept -> bool {
+    constexpr auto is(const indeterminate_t) const noexcept -> bool {
         return *(*this);
     }
 
     /// @brief Equality comparison.
-    friend constexpr auto operator==(tribool a, tribool b) noexcept -> tribool {
+    friend constexpr auto operator==(const tribool a, const tribool b) noexcept
+      -> tribool {
         return {a._value == b._value, (*a || *b)};
     }
 
     /// @brief Non-equality comparison.
-    friend constexpr auto operator!=(tribool a, tribool b) noexcept -> tribool {
+    friend constexpr auto operator!=(const tribool a, const tribool b) noexcept
+      -> tribool {
         return {a._value != b._value, (*a || *b)};
     }
+
+private:
+    _value_t _value{_value_t::_false};
 };
 
 /// @brief Tri-state boolean and operator.
-constexpr auto operator&&(tribool a, tribool b) noexcept {
-    return !a ? tribool{false}
-              : a ? b : !b ? tribool{false} : tribool{indeterminate};
+constexpr auto operator&&(const tribool a, const tribool b) noexcept {
+    return !a   ? tribool{false}
+           : a  ? b
+           : !b ? tribool{false}
+                : tribool{indeterminate};
 }
 
 /// @brief Tri-state boolean or operator.
-constexpr auto operator||(tribool a, tribool b) noexcept {
-    return a ? tribool{true}
-             : !a ? b : b ? tribool{true} : tribool{indeterminate};
+constexpr auto operator||(const tribool a, const tribool b) noexcept {
+    return a    ? tribool{true}
+           : !a ? b
+           : b  ? tribool{true}
+                : tribool{indeterminate};
 }
 
 } // namespace eagine
