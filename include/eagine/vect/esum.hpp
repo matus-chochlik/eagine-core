@@ -20,16 +20,10 @@ namespace eagine::vect {
 template <typename T, int N, bool V>
 struct esum {
 private:
-    using _dpT = data_param_t<T, N, V>;
-
-    template <int U>
-    using _int = int_constant<U>;
-
-    template <bool B>
-    using _bool = bool_constant<B>;
-
     template <int M, bool B>
-    static auto _hlp(_dpT v, _int<M>, _bool<B>) noexcept -> T {
+    static auto
+    _hlp(data_param_t<T, N, V> v, int_constant<M>, bool_constant<B>) noexcept
+      -> T {
         static_assert(M == N);
         T r = T(0);
 
@@ -41,19 +35,23 @@ private:
 
 #if EAGINE_VECT_OPTS
     template <bool B>
-    static constexpr auto _hlp(_dpT v, _int<1>, _bool<B>) noexcept -> T {
+    static constexpr auto
+    _hlp(data_param_t<T, N, V> v, int_constant<1>, bool_constant<B>) noexcept
+      -> T {
         return v[0];
     }
 
     template <int M>
-    static auto _hlp(_dpT v, _int<M>, std::true_type) noexcept -> T {
+    static auto
+    _hlp(data_param_t<T, N, V> v, int_constant<M>, std::true_type) noexcept
+      -> T {
         static_assert(M == N);
         return hsum<T, N, V>::apply(v)[N - 1];
     }
 #endif
 public:
-    static auto apply(_dpT v) noexcept -> T {
-        return _hlp(v, _int<N>(), has_vect_data<T, N, V>());
+    static auto apply(data_param_t<T, N, V> v) noexcept -> T {
+        return _hlp(v, int_constant<N>(), has_vect_data<T, N, V>());
     }
 };
 

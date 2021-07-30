@@ -16,14 +16,13 @@ namespace eagine::vect {
 template <typename T, int N, bool V>
 struct view {
 private:
-    static auto _addr(const data_t<T, N, V>& d, std::false_type) noexcept
+    static auto _addr(const data_t<T, N, V>& d, const std::false_type) noexcept
       -> const T* {
         return static_cast<const T*>(d._v);
     }
 
-    static auto _addr(const data_t<T, N, V>& d, std::true_type) noexcept
+    static auto _addr(const data_t<T, N, V>& d, const std::true_type) noexcept
       -> const T* {
-        // TODO: strict aliasing, launder?
         return reinterpret_cast<const T*>(&d);
     }
 
