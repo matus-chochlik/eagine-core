@@ -19,14 +19,15 @@ struct yes_no_maybe : tribool {
       : tribool{v} {}
 };
 //------------------------------------------------------------------------------
-static inline auto adapt_log_entry_arg(identifier name, yes_no_maybe value) {
+static inline auto
+adapt_log_entry_arg(const identifier name, yes_no_maybe value) {
     return [name, value](logger_backend& backend) {
         backend.add_string(
           name,
           EAGINE_ID(YesNoMaybe),
-          value.is(true)
-            ? string_view{"yes"}
-            : value.is(false) ? string_view{"no"} : string_view{"maybe"});
+          value.is(true)    ? string_view{"yes"}
+          : value.is(false) ? string_view{"no"}
+                            : string_view{"maybe"});
     };
 }
 //------------------------------------------------------------------------------

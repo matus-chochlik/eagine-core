@@ -15,7 +15,7 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 static inline auto
-adapt_log_entry_arg(identifier name, const build_info& value) {
+adapt_log_entry_arg(const identifier name, const build_info& value) {
     return [name, value](logger_backend& backend) {
         if(const auto opt_maj{value.version_major()}) {
             backend.add_integer(name, EAGINE_ID(VerMajor), extract(opt_maj));

@@ -39,12 +39,12 @@ namespace eagine {
 //------------------------------------------------------------------------------
 #if EAGINE_POSIX
 class asio_local_ostream_log_connection {
-    static auto _fix_addr(string_view addr_str) noexcept {
+    static auto _fix_addr(const string_view addr_str) noexcept {
         return addr_str ? addr_str : string_view{"/tmp/eagine-xmllog"};
     }
 
 public:
-    asio_local_ostream_log_connection(string_view addr_str)
+    asio_local_ostream_log_connection(const string_view addr_str)
       : _endpoint{c_str(_fix_addr(addr_str))}
       , _socket{_context}
       , _out{&_buffer} {
@@ -80,7 +80,7 @@ private:
 //------------------------------------------------------------------------------
 class asio_tcpipv4_ostream_log_connection {
 public:
-    asio_tcpipv4_ostream_log_connection(string_view addr_str)
+    asio_tcpipv4_ostream_log_connection(const string_view addr_str)
       : _addr{_fix_addr(addr_str)}
       , _resolver{_context}
       , _socket{_context}
@@ -111,7 +111,7 @@ protected:
     }
 
 private:
-    static auto _fix_addr(string_view addr_str)
+    static auto _fix_addr(const string_view addr_str)
       -> std::tuple<std::string, std::string> {
         auto [hostname, port_str] = split_by_last(addr_str, string_view(":"));
         return {
@@ -140,13 +140,13 @@ class asio_ostream_log_backend
 
 public:
     asio_ostream_log_backend(
-      string_view addr_str,
-      log_event_severity min_severity)
-      : Connection(addr_str)
-      , ostream_log_backend<Lockable>(Connection::out(), min_severity) {}
+      const string_view addr_str,
+      const log_event_severity min_severity)
+      : Connection{addr_str}
+      , ostream_log_backend<Lockable>{Connection::out(), min_severity} {}
 
-    asio_ostream_log_backend(log_event_severity min_severity)
-      : asio_ostream_log_backend(string_view{}, min_severity) {}
+    asio_ostream_log_backend(const log_event_severity min_severity)
+      : asio_ostream_log_backend{string_view{}, min_severity} {}
 
     asio_ostream_log_backend(asio_ostream_log_backend&&) = delete;
     asio_ostream_log_backend(const asio_ostream_log_backend&) = delete;

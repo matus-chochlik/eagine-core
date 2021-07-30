@@ -32,7 +32,7 @@ namespace eagine {
 template <typename Lockable = std::mutex>
 class syslog_log_backend : public logger_backend {
 public:
-    syslog_log_backend(log_event_severity min_severity)
+    syslog_log_backend(const log_event_severity min_severity)
       : _min_severity{min_severity} {
 #if EAGINE_POSIX
         ::openlog(
@@ -42,7 +42,8 @@ public:
 #endif
     }
 
-    auto entry_backend(identifier, log_event_severity severity) noexcept
+    auto
+    entry_backend(const identifier, const log_event_severity severity) noexcept
       -> logger_backend* final {
         if(severity >= _min_severity) {
             return this;
@@ -58,15 +59,15 @@ public:
         return EAGINE_ID(Syslog);
     }
 
-    void enter_scope(identifier) noexcept final {}
+    void enter_scope(const identifier) noexcept final {}
 
-    void leave_scope(identifier) noexcept final {}
+    void leave_scope(const identifier) noexcept final {}
 
     void set_description(
-      identifier src,
-      logger_instance_id inst,
-      string_view name,
-      string_view desc) noexcept final {
+      const identifier src,
+      const logger_instance_id inst,
+      const string_view name,
+      const string_view desc) noexcept final {
         EAGINE_MAYBE_UNUSED(src);
 #if EAGINE_POSIX
         const auto idn{src.name()};
@@ -83,11 +84,11 @@ public:
     }
 
     auto begin_message(
-      identifier src,
-      identifier tag,
-      logger_instance_id inst,
-      log_event_severity,
-      string_view format) noexcept -> bool final {
+      const identifier src,
+      const identifier tag,
+      const logger_instance_id inst,
+      const log_event_severity,
+      const string_view format) noexcept -> bool final {
 
         auto& msg = _new_message();
         msg.source = src;
@@ -100,7 +101,7 @@ public:
         return true;
     }
 
-    void do_add_arg(identifier arg, string_view value) noexcept {
+    void do_add_arg(const identifier arg, const string_view value) noexcept {
         auto& msg = _get_message();
         const auto aidv = arg.value();
         bool found = false;
@@ -120,15 +121,19 @@ public:
         }
     }
 
-    void add_nothing(identifier, identifier) noexcept final {}
+    void add_nothing(const identifier, const identifier) noexcept final {}
 
-    void add_identifier(identifier arg, identifier, identifier value) noexcept
-      final {
+    void add_identifier(
+      const identifier arg,
+      const identifier,
+      const identifier value) noexcept final {
         do_add_arg(arg, value.name().view());
     }
 
-    void add_message_id(identifier arg, identifier, message_id value) noexcept
-      final {
+    void add_message_id(
+      const identifier arg,
+      const identifier,
+      const message_id value) noexcept final {
         std::string temp;
         temp.reserve(21);
         temp.append(value.class_().name().view());
@@ -137,51 +142,69 @@ public:
         do_add_arg(arg, temp);
     }
 
-    void add_bool(identifier arg, identifier, bool value) noexcept final {
+    void add_bool(
+      const identifier arg,
+      const identifier,
+      const bool value) noexcept final {
         do_add_arg(arg, value ? string_view{"True"} : string_view{"False"});
     }
 
-    void add_integer(identifier arg, identifier, std::intmax_t value) noexcept
-      final {
+    void add_integer(
+      const identifier arg,
+      const identifier,
+      const std::intmax_t value) noexcept final {
         using std::to_string;
         do_add_arg(arg, to_string(value));
     }
 
-    void add_unsigned(identifier arg, identifier, std::uintmax_t value) noexcept
-      final {
+    void add_unsigned(
+      const identifier arg,
+      const identifier,
+      const std::uintmax_t value) noexcept final {
         using std::to_string;
         do_add_arg(arg, to_string(value));
     }
 
-    void add_float(identifier arg, identifier, float value) noexcept final {
+    void add_float(
+      const identifier arg,
+      const identifier,
+      const float value) noexcept final {
         using std::to_string;
         do_add_arg(arg, to_string(value));
     }
 
-    void
-    add_float(identifier arg, identifier, float, float value, float) noexcept
-      final {
+    void add_float(
+      const identifier arg,
+      const identifier,
+      const float,
+      const float value,
+      const float) noexcept final {
         using std::to_string;
         do_add_arg(arg, to_string(value));
     }
 
     void add_duration(
-      identifier arg,
-      identifier,
-      std::chrono::duration<float> value) noexcept final {
+      const identifier arg,
+      const identifier,
+      const std::chrono::duration<float> value) noexcept final {
         using std::to_string;
         std::string temp(to_string(value.count()));
         temp.append("[s]");
         do_add_arg(arg, temp);
     }
 
-    void
-    add_string(identifier arg, identifier, string_view value) noexcept final {
+    void add_string(
+      const identifier arg,
+      const identifier,
+      const string_view value) noexcept final {
         using std::to_string;
         do_add_arg(arg, value);
     }
 
-    void add_blob(identifier, identifier, memory::const_block) noexcept final {}
+    void add_blob(
+      const identifier,
+      const identifier,
+      const memory::const_block) noexcept final {}
 
     void finish_message() noexcept final {
         _do_log(_get_message());
@@ -195,10 +218,10 @@ public:
     }
 
     void log_chart_sample(
-      identifier,
-      logger_instance_id,
-      identifier,
-      float) noexcept final {}
+      const identifier,
+      const logger_instance_id,
+      const identifier,
+      const float) noexcept final {}
 
 private:
     Lockable _lockable{};
@@ -234,7 +257,7 @@ private:
         _lockable.unlock();
     }
 
-    static constexpr auto _translate(log_event_severity severity) noexcept
+    static constexpr auto _translate(const log_event_severity severity) noexcept
       -> int {
 #if EAGINE_POSIX
         switch(severity) {
@@ -275,7 +298,7 @@ private:
     }
 
     template <std::size_t... I>
-    void _do_log_I(_message_state& msg, std::index_sequence<I...>) {
+    void _do_log_I(_message_state& msg, const std::index_sequence<I...>) {
         const auto source_name = msg.source.name();
         const auto tag_name = msg.tag ? msg.tag.name().str() : std::string();
         ::syslog( // NOLINT(hicpp-vararg)
