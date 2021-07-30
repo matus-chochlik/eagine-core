@@ -330,7 +330,6 @@ set(HEADERS
     eagine/value_tree/wrappers.hpp
     eagine/value_tree/yaml.hpp
     eagine/value_with_history.hpp
-    eagine/vararray.hpp
     eagine/vec_mat_traits.hpp
     eagine/vect/abs.hpp
     eagine/vect/axis.hpp
