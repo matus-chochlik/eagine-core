@@ -25,7 +25,7 @@ constexpr auto data_member_mapping(
 //------------------------------------------------------------------------------
 template <typename C, typename... M>
 constexpr auto data_member_tuple_from_mapping(
-  const std::tuple<std::pair<const string_view, M C::*>...>&) noexcept {
+  const std::tuple<std::pair<const string_view, M C::*const>...>&) noexcept {
     return std::tuple<std::remove_cv_t<std::remove_reference_t<M>>...>{};
 }
 
@@ -120,7 +120,7 @@ template <typename T, typename Selector, typename C, typename... M>
 constexpr auto do_map_data_members(
   T& instance,
   const Selector select,
-  const std::tuple<std::pair<const string_view, M C::*>...>& mapping) {
+  const std::tuple<std::pair<const string_view, M C::*const>...>& mapping) {
     return _map_data_members_impl(
       instance, select, mapping, std::make_index_sequence<sizeof...(M)>());
 }

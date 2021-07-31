@@ -38,7 +38,7 @@ static inline auto view(rapidjson::GenericValue<E, A>& val) -> string_view {
     return {};
 }
 //------------------------------------------------------------------------------
-static inline auto rapidjson_size(span_size_t s) {
+static inline auto rapidjson_size(const span_size_t s) {
     return limit_cast<rapidjson::SizeType>(s);
 }
 //------------------------------------------------------------------------------
@@ -146,7 +146,8 @@ public:
         return 0;
     }
 
-    auto nested(_comp_t& owner, span_size_t index) -> attribute_interface* {
+    auto nested(_comp_t& owner, const span_size_t index)
+      -> attribute_interface* {
         if(_rj_val) {
             auto& val = extract(_rj_val);
             if(val.IsArray()) {
@@ -166,7 +167,8 @@ public:
         return {};
     }
 
-    auto nested(_comp_t& owner, string_view name) -> attribute_interface* {
+    auto nested(_comp_t& owner, const string_view name)
+      -> attribute_interface* {
         if(_rj_val) {
             auto& val = extract(_rj_val);
             if(val.IsObject()) {
@@ -186,7 +188,7 @@ public:
     auto find(
       _comp_t& owner,
       const basic_string_path& path,
-      span<const string_view> tags) -> attribute_interface* {
+      const span<const string_view> tags) -> attribute_interface* {
         _val_t* result = _rj_val;
         _val_t* name = nullptr;
         std::string temp_str;
@@ -452,7 +454,8 @@ public:
     }
 
     template <typename T>
-    auto do_fetch_values(span_size_t offset, span<T> dest) -> span_size_t {
+    auto do_fetch_values(const span_size_t offset, span<T> dest)
+      -> span_size_t {
         if(_rj_val) {
             auto& val = extract(_rj_val);
             if(val.IsArray()) {
@@ -477,11 +480,12 @@ public:
     }
 
     template <typename T>
-    auto fetch_values(span_size_t offset, span<T> dest) -> span_size_t {
+    auto fetch_values(const span_size_t offset, span<T> dest) -> span_size_t {
         return do_fetch_values(offset, dest);
     }
 
-    auto fetch_values(span_size_t offset, span<char> dest) -> span_size_t {
+    auto fetch_values(const span_size_t offset, span<char> dest)
+      -> span_size_t {
         if(_rj_val) {
             auto& val = extract(_rj_val);
             if(val.IsString()) {
@@ -493,7 +497,8 @@ public:
         return 0;
     }
 
-    auto fetch_values(span_size_t offset, span<byte> dest) -> span_size_t {
+    auto fetch_values(const span_size_t offset, span<byte> dest)
+      -> span_size_t {
         if(_rj_val) {
             auto& val = extract(_rj_val);
             // blobs can also be decoded from base64 strings
@@ -615,7 +620,7 @@ public:
     template <typename T>
     auto do_fetch_values(
       attribute_interface& attrib,
-      span_size_t offset,
+      const span_size_t offset,
       span<T> dest) -> span_size_t {
         return _unwrap(attrib).fetch_values(offset, dest);
     }

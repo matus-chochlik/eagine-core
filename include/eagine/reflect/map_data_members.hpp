@@ -18,8 +18,8 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename C, typename... M>
-constexpr auto
-make_data_member_mapping(std::pair<const string_view, M C::*>... m) noexcept {
+constexpr auto make_data_member_mapping(
+  std::pair<const string_view, M C::*const>... m) noexcept {
     return std::make_tuple(m...);
 }
 //------------------------------------------------------------------------------

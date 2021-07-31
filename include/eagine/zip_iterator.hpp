@@ -54,13 +54,13 @@ public:
     using difference_type = std::ptrdiff_t;
 
     constexpr zip_iterator(Iter... iters)
-      : _iters(iters...) {}
+      : _iters{iters...} {}
 
     friend auto operator==(const zip_iterator& a, const zip_iterator& b) {
         return _fold_and_2(
           a._iters,
           b._iters,
-          [](auto ia, auto ib) { return ia == ib; },
+          [](const auto ia, const auto ib) { return ia == ib; },
           _idx_seq{});
     }
 
@@ -68,7 +68,7 @@ public:
         return _fold_or_2(
           a._iters,
           b._iters,
-          [](auto ia, auto ib) { return ia != ib; },
+          [](const auto ia, const auto ib) { return ia != ib; },
           _idx_seq{});
     }
 
@@ -100,25 +100,26 @@ private:
     _rrefs_t _rrefs;
 
     template <typename RR, std::size_t... I>
-    static auto _zip_bgn(RR& r, std::index_sequence<I...>) {
+    static auto _zip_bgn(RR& r, const std::index_sequence<I...>) {
         using std::begin;
         return zip_iters(std::begin(std::get<I>(r))...);
     }
 
     template <typename RR, std::size_t... I>
-    static auto _zip_end(RR& r, std::index_sequence<I...>) {
+    static auto _zip_end(RR& r, const std::index_sequence<I...>) {
         using std::end;
         return zip_iters(std::end(std::get<I>(r))...);
     }
 
     template <typename Tup, typename Func, std::size_t... I>
-    static void _deref_call(Tup& tup, Func& func, std::index_sequence<I...>) {
+    static void
+    _deref_call(Tup& tup, Func& func, const std::index_sequence<I...>) {
         func(std::get<I>(tup)...);
     }
 
 public:
     zipped_range_refs(Range&... ranges) noexcept
-      : _rrefs(ranges...) {}
+      : _rrefs{ranges...} {}
 
     auto begin() {
         return _zip_bgn(_rrefs, _idx_seq{});

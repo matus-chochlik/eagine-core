@@ -131,7 +131,7 @@ struct not_converted_value {
     }
 
     template <identifier_t V>
-    constexpr auto apply(selector<V>) const noexcept {
+    constexpr auto apply(const selector<V>) const noexcept {
         return true;
     }
 
@@ -152,7 +152,7 @@ public:
     }
 
     template <identifier_t V>
-    auto apply(selector<V> sel) const {
+    auto apply(const selector<V> sel) const {
         if(auto converted{from_string(_temp, type_identity<T>(), sel)}) {
             _dest = extract(converted);
             return true;
@@ -200,7 +200,7 @@ public:
     }
 
     template <identifier_t V>
-    auto apply(selector<V>) const {
+    auto apply(const selector<V>) const {
         _dest = std::chrono::duration_cast<T>(_temp);
         return true;
     }
@@ -316,7 +316,8 @@ public:
     /// @pre this->type_id() == attrib.type_id()
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto nested(const attribute& attrib, span_size_t index) const -> attribute {
+    auto nested(const attribute& attrib, const span_size_t index) const
+      -> attribute {
         if(_pimpl && attrib._pimpl) {
             return {_pimpl, _pimpl->nested(*attrib._pimpl, index)};
         }
@@ -327,7 +328,8 @@ public:
     /// @pre this->type_id() == attrib.type_id()
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto nested(const attribute& attrib, string_view name) const -> attribute {
+    auto nested(const attribute& attrib, const string_view name) const
+      -> attribute {
         if(_pimpl && attrib._pimpl) {
             return {_pimpl, _pimpl->nested(*attrib._pimpl, name)};
         }
@@ -337,7 +339,7 @@ public:
     /// @brief Returns nested attribute of the root attribute with the specified name.
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto nested(string_view name) const -> attribute {
+    auto nested(const string_view name) const -> attribute {
         return nested(structure(), name);
     }
 
@@ -360,7 +362,7 @@ public:
     auto find(
       const attribute& attrib,
       const basic_string_path& path,
-      span<const string_view> tags) const -> attribute {
+      const span<const string_view> tags) const -> attribute {
         if(_pimpl && attrib._pimpl) {
             return {_pimpl, _pimpl->find(*attrib._pimpl, path, tags)};
         }
@@ -377,8 +379,8 @@ public:
     /// @brief Returns nested attribute of root attribute at path with tags.
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto find(const basic_string_path& path, span<const string_view> tags) const
-      -> attribute {
+    auto find(const basic_string_path& path, const span<const string_view> tags)
+      const -> attribute {
         return find(structure(), path, tags);
     }
 
@@ -396,14 +398,16 @@ public:
     }
 
     /// @brief Returns the number of value elements at attribute with the given name.
-    auto value_count(string_view name) -> span_size_t {
+    auto value_count(const string_view name) -> span_size_t {
         return value_count(nested(name));
     }
 
     /// @brief Fetches values at the given attribute, starting at offset into @p dest.
     template <typename T>
-    auto fetch_values(const attribute& attrib, span_size_t offset, span<T> dest)
-      const -> span<T> {
+    auto fetch_values(
+      const attribute& attrib,
+      const span_size_t offset,
+      span<T> dest) const -> span<T> {
         if(_pimpl && attrib._pimpl) {
             return head(
               dest, _pimpl->fetch_values(*attrib._pimpl, offset, dest));
@@ -415,15 +419,17 @@ public:
     template <typename T>
     auto fetch_values(
       const basic_string_path& path,
-      span_size_t offset,
+      const span_size_t offset,
       span<T> dest) const -> span<T> {
         return fetch_values(find(path), offset, dest);
     }
 
     /// @brief Fetches values at the given name, starting at offset into @p dest.
     template <typename T>
-    auto fetch_values(string_view name, span_size_t offset, span<T> dest) const
-      -> span<T> {
+    auto fetch_values(
+      const string_view name,
+      const span_size_t offset,
+      span<T> dest) const -> span<T> {
         return fetch_values(nested(name), offset, dest);
     }
 
@@ -442,7 +448,7 @@ public:
 
     /// @brief Fetches values at the attribute with the specified name, into @p dest.
     template <typename T>
-    auto fetch_values(string_view name, span<T> dest) const -> span<T> {
+    auto fetch_values(const string_view name, span<T> dest) const -> span<T> {
         return fetch_values(name, 0, dest);
     }
 
@@ -459,7 +465,7 @@ public:
     }
 
     /// @brief Fetches a BLOB at the attribute with the specified name, into @p dest.
-    auto fetch_blob(string_view name, memory::block dest) const
+    auto fetch_blob(const string_view name, memory::block dest) const
       -> memory::block {
         return fetch_values(name, dest);
     }
@@ -468,9 +474,9 @@ public:
     template <typename T, identifier_t V>
     auto select_value(
       const attribute& attrib,
-      span_size_t offset,
+      const span_size_t offset,
       T& dest,
-      selector<V> sel) const -> bool {
+      const selector<V> sel) const -> bool {
         converted_value<T> conv{dest};
         if(!fetch_values(attrib, offset, cover_one(conv.dest())).empty()) {
             return conv.apply(sel);
@@ -480,8 +486,8 @@ public:
 
     /// @brief Fetches a single value at the specified attribute, at offset into @p dest.
     template <typename T>
-    auto fetch_value(const attribute& attrib, span_size_t offset, T& dest) const
-      -> bool {
+    auto fetch_value(const attribute& attrib, const span_size_t offset, T& dest)
+      const -> bool {
         return select_value(attrib, offset, dest, default_selector);
     }
 
@@ -489,9 +495,9 @@ public:
     template <typename T, identifier_t V>
     auto select_values(
       const attribute& attrib,
-      span_size_t offset,
+      const span_size_t offset,
       span<T> dest,
-      selector<V> sel) const -> span<T> {
+      const selector<V> sel) const -> span<T> {
         span_size_t index = 0;
         for(T& elem : dest) {
             if(!select_value(attrib, offset + index, elem, sel)) {
@@ -504,15 +510,18 @@ public:
 
     /// @brief Fetches values through the specified name, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto
-    select_value(string_view name, span_size_t offset, T& dest, selector<V> sel)
-      const -> bool {
+    auto select_value(
+      const string_view name,
+      const span_size_t offset,
+      T& dest,
+      const selector<V> sel) const -> bool {
         return select_value(nested(name), offset, dest, sel);
     }
 
     /// @brief Fetches values through the specified name, into dest.
     template <typename T>
-    auto fetch_value(string_view name, span_size_t offset, T& dest) const
+    auto
+    fetch_value(const string_view name, const span_size_t offset, T& dest) const
       -> bool {
         return select_value(name, offset, dest, default_selector);
     }
@@ -521,35 +530,39 @@ public:
     template <typename T, identifier_t V>
     auto select_value(
       const basic_string_path& path,
-      span_size_t offset,
+      const span_size_t offset,
       T& dest,
-      selector<V> sel) const -> bool {
+      const selector<V> sel) const -> bool {
         return select_value(find(path), offset, dest, sel);
     }
 
     /// @brief Fetches values through the specified path, into dest.
     template <typename T>
-    auto fetch_value(const basic_string_path& path, span_size_t offset, T& dest)
-      const -> bool {
+    auto fetch_value(
+      const basic_string_path& path,
+      const span_size_t offset,
+      T& dest) const -> bool {
         return select_value(path, offset, dest, default_selector);
     }
 
     /// @brief Fetches values through the specified name, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto select_value(string_view name, T& dest, selector<V> sel) const
+    auto
+    select_value(const string_view name, T& dest, const selector<V> sel) const
       -> bool {
         return select_value(name, 0, dest, sel);
     }
 
     /// @brief Fetches values through the specified name, into dest.
     template <typename T>
-    auto fetch_value(string_view name, T& dest) const -> bool {
+    auto fetch_value(const string_view name, T& dest) const -> bool {
         return select_value(name, 0, dest, default_selector);
     }
 
     /// @brief Fetches a value at the specified attribute, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto select_value(const attribute& attrib, T& dest, selector<V> sel) const
+    auto
+    select_value(const attribute& attrib, T& dest, const selector<V> sel) const
       -> bool {
         return select_value(attrib, 0, dest, sel);
     }
@@ -570,9 +583,10 @@ public:
 
     /// @brief Fetches a value through the specified path, with selector, into dest.
     template <typename T, identifier_t V>
-    auto
-    select_value(const basic_string_path& path, T& dest, selector<V> sel) const
-      -> bool {
+    auto select_value(
+      const basic_string_path& path,
+      T& dest,
+      const selector<V> sel) const -> bool {
         return select_value(path, 0, dest, sel);
     }
 
@@ -597,9 +611,9 @@ public:
     template <typename T, identifier_t V>
     auto get(
       const attribute& attrib,
-      span_size_t offset,
-      type_identity<T>,
-      selector<V> sel) const -> optionally_valid<T> {
+      const span_size_t offset,
+      const type_identity<T>,
+      const selector<V> sel) const -> optionally_valid<T> {
         T temp{};
         if(select_value(attrib, offset, temp, sel)) {
             return {std::move(temp), true};
@@ -611,8 +625,8 @@ public:
     template <typename T>
     auto get(
       const attribute& attrib,
-      span_size_t offset,
-      type_identity<T> tid = {}) const -> optionally_valid<T> {
+      const span_size_t offset,
+      const type_identity<T> tid = {}) const -> optionally_valid<T> {
         return get<T>(attrib, offset, tid, default_selector);
     }
 
@@ -620,9 +634,9 @@ public:
     template <typename T, identifier_t V>
     auto get(
       const basic_string_path& path,
-      span_size_t offset,
-      type_identity<T>,
-      selector<V> sel) const -> optionally_valid<T> {
+      const span_size_t offset,
+      const type_identity<T>,
+      const selector<V> sel) const -> optionally_valid<T> {
         T temp{};
         if(select_value(path, offset, temp, sel)) {
             return {std::move(temp), true};
@@ -634,16 +648,18 @@ public:
     template <typename T>
     auto get(
       const basic_string_path& path,
-      span_size_t offset,
-      type_identity<T> tid = {}) const -> optionally_valid<T> {
+      const span_size_t offset,
+      const type_identity<T> tid = {}) const -> optionally_valid<T> {
         return get<T>(path, offset, tid, default_selector);
     }
 
     /// @brief Returns the value of type T at name, at given offset, with selector.
     template <typename T, identifier_t V>
-    auto
-    get(string_view name, span_size_t offset, type_identity<T>, selector<V> sel)
-      const -> optionally_valid<T> {
+    auto get(
+      const string_view name,
+      const span_size_t offset,
+      const type_identity<T>,
+      const selector<V> sel) const -> optionally_valid<T> {
         T temp{};
         if(select_value(name, offset, temp, sel)) {
             return {std::move(temp), true};
@@ -653,23 +669,25 @@ public:
 
     /// @brief Returns the value of type T at name, at given offset.
     template <typename T>
-    auto
-    get(string_view name, span_size_t offset, type_identity<T> tid = {}) const
-      -> optionally_valid<T> {
+    auto get(
+      const string_view name,
+      const span_size_t offset,
+      const type_identity<T> tid = {}) const -> optionally_valid<T> {
         return get<T>(name, offset, tid, default_selector);
     }
 
     /// @brief Returns the value of type T at an attribute, with selector.
     template <typename T, identifier_t V>
-    auto
-    get(const attribute& attrib, type_identity<T> tid, selector<V> sel) const
-      -> optionally_valid<T> {
+    auto get(
+      const attribute& attrib,
+      const type_identity<T> tid,
+      const selector<V> sel) const -> optionally_valid<T> {
         return get<T>(attrib, 0, tid, sel);
     }
 
     /// @brief Returns the value of type T at an attribute.
     template <typename T>
-    auto get(const attribute& attrib, type_identity<T> tid = {}) const
+    auto get(const attribute& attrib, const type_identity<T> tid = {}) const
       -> optionally_valid<T> {
         return get<T>(attrib, tid, default_selector);
     }
@@ -678,28 +696,31 @@ public:
     template <typename T, identifier_t V>
     auto get(
       const basic_string_path& path,
-      type_identity<T> tid,
-      selector<V> sel) const -> optionally_valid<T> {
+      const type_identity<T> tid,
+      const selector<V> sel) const -> optionally_valid<T> {
         return get<T>(path, 0, tid, sel);
     }
 
     /// @brief Returns the value of type T at path.
     template <typename T>
-    auto get(const basic_string_path& path, type_identity<T> tid = {}) const
+    auto
+    get(const basic_string_path& path, const type_identity<T> tid = {}) const
       -> optionally_valid<T> {
         return get<T>(path, tid, default_selector);
     }
 
     /// @brief Returns the value of type T at name, with selector.
     template <typename T, identifier_t V>
-    auto get(string_view name, type_identity<T> tid, selector<V> sel) const
-      -> optionally_valid<T> {
+    auto get(
+      const string_view name,
+      const type_identity<T> tid,
+      const selector<V> sel) const -> optionally_valid<T> {
         return get<T>(name, 0, tid, sel);
     }
 
     /// @brief Returns the value of type T at name.
     template <typename T>
-    auto get(string_view name, type_identity<T> tid = {}) const
+    auto get(const string_view name, const type_identity<T> tid = {}) const
       -> optionally_valid<T> {
         return get<T>(name, tid, default_selector);
     }
@@ -787,14 +808,14 @@ public:
     /// @brief Returns nested attribute of an attribute at the specified index.
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto nested(span_size_t index) const -> compound_attribute {
+    auto nested(const span_size_t index) const -> compound_attribute {
         return {_c, _c.nested(_a, index)};
     }
 
     /// @brief Returns nested attribute of an attribute with the specified name.
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto nested(string_view name) const -> compound_attribute {
+    auto nested(const string_view name) const -> compound_attribute {
         return {_c, _c.nested(_a, name)};
     }
 
@@ -812,7 +833,7 @@ public:
 
     /// @brief Fetches values from this attribute, starting at offset, into dest.
     template <typename T>
-    auto fetch_values(span_size_t offset, span<T> dest) const {
+    auto fetch_values(const span_size_t offset, span<T> dest) const {
         return _c.fetch_values(_a, offset, dest);
     }
 
@@ -830,21 +851,21 @@ public:
     /// @brief Fetches a value from this attribute, starting at offset, with selector.
     template <typename T, identifier_t V>
     auto fetch_value(
-      span_size_t offset,
+      const span_size_t offset,
       T& dest,
-      selector<V> sel = default_selector) const -> bool {
+      const selector<V> sel = default_selector) const -> bool {
         return _c.select_value(_a, offset, dest, sel);
     }
 
     /// @brief Fetches a value from this attribute, with selector.
     template <typename T, identifier_t V>
-    auto select_value(T& dest, selector<V> sel) const -> bool {
+    auto select_value(T& dest, const selector<V> sel) const -> bool {
         return _c.select_value(_a, dest, sel);
     }
 
     /// @brief Fetches a value from this attribute, with selector, into dest.
     template <typename T, identifier_t V>
-    auto select_values(span<T> dest, selector<V> sel) const -> span<T> {
+    auto select_values(span<T> dest, const selector<V> sel) const -> span<T> {
         return _c.select_values(_a, dest, sel);
     }
 
@@ -856,13 +877,13 @@ public:
 
     /// @brief Returns a value of type T, from this attribute, at offset.
     template <typename T>
-    auto get(span_size_t offset, type_identity<T> tid = {}) const {
+    auto get(const span_size_t offset, const type_identity<T> tid = {}) const {
         return _c.get(_a, offset, tid);
     }
 
     /// @brief Returns a value of type T, from this attribute.
     template <typename T>
-    auto get(type_identity<T> tid = {}) const {
+    auto get(const type_identity<T> tid = {}) const {
         return _c.get(_a, tid);
     }
 
