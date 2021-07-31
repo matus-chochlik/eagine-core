@@ -48,7 +48,7 @@ public:
         return transaction_handle(_subs.size());
     }
 
-    void commit(transaction_handle th) final {
+    void commit(const transaction_handle th) final {
         EAGINE_ASSERT(th == transaction_handle(_subs.size()));
         EAGINE_MAYBE_UNUSED(th);
         std::stringstream top{std::move(_subs.top())};
@@ -56,7 +56,7 @@ public:
         current() << top.rdbuf();
     }
 
-    void rollback(transaction_handle th) final {
+    void rollback(const transaction_handle th) final {
         EAGINE_ASSERT(th == transaction_handle(_subs.size()));
         EAGINE_MAYBE_UNUSED(th);
         _subs.pop();

@@ -94,10 +94,10 @@ struct deserializer_backend : interface<deserializer_backend> {
     virtual auto begin_struct(span_size_t& member_count) -> result = 0;
 
     /// @brief Begins the deserialization of a structure data member.
-    virtual auto begin_member(string_view name) -> result = 0;
+    virtual auto begin_member(const string_view name) -> result = 0;
 
     /// @brief Finishes the deserialization of a structure data member.
-    virtual auto finish_member(string_view name) -> result = 0;
+    virtual auto finish_member(const string_view name) -> result = 0;
 
     /// @brief Finishes the deserialization of a structure instance.
     virtual auto finish_struct() -> result = 0;
@@ -106,10 +106,10 @@ struct deserializer_backend : interface<deserializer_backend> {
     virtual auto begin_list(span_size_t& element_count) -> result = 0;
 
     /// @brief Begins the deserialization of a container element.
-    virtual auto begin_element(span_size_t index) -> result = 0;
+    virtual auto begin_element(const span_size_t index) -> result = 0;
 
     /// @brief Finishes the deserialization of a container element.
-    virtual auto finish_element(span_size_t index) -> result = 0;
+    virtual auto finish_element(const span_size_t index) -> result = 0;
 
     /// @brief Finishes the deserialization of a container instance.
     virtual auto finish_list() -> result = 0;
@@ -228,10 +228,10 @@ public:
     auto begin_struct(span_size_t&) -> result override {
         return {};
     }
-    auto begin_member(string_view) -> result override {
+    auto begin_member(const string_view) -> result override {
         return {};
     }
-    auto finish_member(string_view) -> result override {
+    auto finish_member(const string_view) -> result override {
         return {};
     }
     auto finish_struct() -> result override {
@@ -240,10 +240,10 @@ public:
     auto begin_list(span_size_t&) -> result override {
         return {};
     }
-    auto begin_element(span_size_t) -> result override {
+    auto begin_element(const span_size_t) -> result override {
         return {};
     }
-    auto finish_element(span_size_t) -> result override {
+    auto finish_element(const span_size_t) -> result override {
         return {};
     }
     auto finish_list() -> result override {

@@ -26,18 +26,18 @@ public:
     /// @brief Constructor setting the backing block and data compressor.
     packed_block_data_sink(
       data_compressor compressor,
-      memory::block dst) noexcept
+      const memory::block dst) noexcept
       : block_data_sink{dst}
       , _compressor{std::move(compressor)} {}
 
-    packed_block_data_sink(memory::block dst) noexcept
+    packed_block_data_sink(const memory::block dst) noexcept
       : packed_block_data_sink{{}, dst} {}
 
     packed_block_data_sink(data_compressor compressor) noexcept
       : packed_block_data_sink{std::move(compressor), {}} {}
 
     auto finalize() -> serialization_errors final {
-        if(auto packed{
+        if(const auto packed{
              _compressor.compress(done(), data_compression_level::normal)}) {
             return this->replace_with(packed);
         }

@@ -93,25 +93,25 @@ struct serializer_backend : interface<serializer_backend> {
     virtual auto write(span<const string_view>, span_size_t&) -> result = 0;
 
     /// @brief Begins the serialization of a structure instance.
-    virtual auto begin_struct(span_size_t member_count) -> result = 0;
+    virtual auto begin_struct(const span_size_t member_count) -> result = 0;
 
     /// @brief Begins the serialization of a structure data member.
-    virtual auto begin_member(string_view name) -> result = 0;
+    virtual auto begin_member(const string_view name) -> result = 0;
 
     /// @brief Finishes the serialization of a structure data member.
-    virtual auto finish_member(string_view name) -> result = 0;
+    virtual auto finish_member(const string_view name) -> result = 0;
 
     /// @brief Finishes the serialization of a structure instance.
     virtual auto finish_struct() -> result = 0;
 
     /// @brief Begins the serialization of a container instance.
-    virtual auto begin_list(span_size_t element_count) -> result = 0;
+    virtual auto begin_list(const span_size_t element_count) -> result = 0;
 
     /// @brief Begins the serialization of a container element.
-    virtual auto begin_element(span_size_t index) -> result = 0;
+    virtual auto begin_element(const span_size_t index) -> result = 0;
 
     /// @brief Finishes the serialization of a container element.
-    virtual auto finish_element(span_size_t index) -> result = 0;
+    virtual auto finish_element(const span_size_t index) -> result = 0;
 
     /// @brief Finishes the serialization of a container instance.
     virtual auto finish_list() -> result = 0;
@@ -231,25 +231,25 @@ public:
         return derived().do_write(values, done);
     }
 
-    auto begin_struct(span_size_t) -> result override {
+    auto begin_struct(const span_size_t) -> result override {
         return {};
     }
-    auto begin_member(string_view) -> result override {
+    auto begin_member(const string_view) -> result override {
         return {};
     }
-    auto finish_member(string_view) -> result override {
+    auto finish_member(const string_view) -> result override {
         return {};
     }
     auto finish_struct() -> result override {
         return {};
     }
-    auto begin_list(span_size_t) -> result override {
+    auto begin_list(const span_size_t) -> result override {
         return {};
     }
-    auto begin_element(span_size_t) -> result override {
+    auto begin_element(const span_size_t) -> result override {
         return {};
     }
-    auto finish_element(span_size_t) -> result override {
+    auto finish_element(const span_size_t) -> result override {
         return {};
     }
     auto finish_list() -> result override {

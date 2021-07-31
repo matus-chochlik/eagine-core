@@ -27,12 +27,12 @@ public:
     constexpr block_data_sink() noexcept = default;
 
     /// @brief Constructor setting the backing block.
-    block_data_sink(memory::block dst) noexcept
+    block_data_sink(const memory::block dst) noexcept
       : _dst{dst} {}
 
     /// @brief Resets the backing block.
     /// @see replace_with
-    void reset(memory::block dst) {
+    void reset(const memory::block dst) {
         _dst = dst;
         _done = 0;
         _save_points.clear();
@@ -55,7 +55,7 @@ public:
     /// @see done
     /// @see remaining_size
     /// @see free
-    auto mark_used(span_size_t size) noexcept -> auto& {
+    auto mark_used(const span_size_t size) noexcept -> auto& {
         EAGINE_ASSERT(size <= remaining_size());
         _done += size;
         return *this;
@@ -84,7 +84,7 @@ public:
 
     /// @brief Replaces the content of the backing block with the content of the argument.
     /// @see reset
-    auto replace_with(memory::const_block blk) -> serialization_errors {
+    auto replace_with(const memory::const_block blk) -> serialization_errors {
         if(_dst.size() < blk.size()) {
             return {serialization_error_code::too_much_data};
         }
@@ -98,13 +98,13 @@ public:
         return transaction_handle(_save_points.size());
     }
 
-    void commit(transaction_handle th) final {
+    void commit(const transaction_handle th) final {
         EAGINE_ASSERT(th == transaction_handle(_save_points.size()));
         EAGINE_MAYBE_UNUSED(th);
         _save_points.pop_back();
     }
 
-    void rollback(transaction_handle th) final {
+    void rollback(const transaction_handle th) final {
         EAGINE_ASSERT(th == transaction_handle(_save_points.size()));
         EAGINE_MAYBE_UNUSED(th);
         _done = _save_points.back();

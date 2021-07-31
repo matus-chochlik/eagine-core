@@ -34,10 +34,10 @@ public:
     using result = serialization_errors;
 
     template <typename T>
-    auto do_write(span<const T> values, span_size_t& done) -> result {
+    auto do_write(const span<const T> values, span_size_t& done) -> result {
         done = 0;
         result errors{};
-        for(auto& val : values) {
+        for(const auto& val : values) {
             errors |= _write_one(val, type_identity<T>{});
             errors |= sink(';');
             if(errors) {
@@ -57,20 +57,20 @@ public:
         return sink('<');
     }
 
-    auto begin_struct(span_size_t count) -> result final {
+    auto begin_struct(const span_size_t count) -> result final {
         result errors = sink('{');
         errors |= _write_one(count, type_identity<span_size_t>{});
         errors |= sink('|');
         return errors;
     }
 
-    auto begin_member(string_view name) -> result final {
+    auto begin_member(const string_view name) -> result final {
         result errors = sink(name);
         errors |= sink(':');
         return errors;
     }
 
-    auto finish_member(string_view) -> result final {
+    auto finish_member(const string_view) -> result final {
         return {};
     }
 
@@ -78,18 +78,18 @@ public:
         return sink("}");
     }
 
-    auto begin_list(span_size_t count) -> result final {
+    auto begin_list(const span_size_t count) -> result final {
         result errors = sink('[');
         errors |= _write_one(count, type_identity<span_size_t>{});
         errors |= sink('|');
         return errors;
     }
 
-    auto begin_element(span_size_t) -> result final {
+    auto begin_element(const span_size_t) -> result final {
         return {};
     }
 
-    auto finish_element(span_size_t) -> result final {
+    auto finish_element(const span_size_t) -> result final {
         return {};
     }
 
@@ -102,7 +102,7 @@ public:
     }
 
 private:
-    auto _write_one(bool value, type_identity<bool>) -> result {
+    auto _write_one(const bool value, const type_identity<bool>) -> result {
         if(value) {
             return sink("T");
         }
@@ -110,7 +110,7 @@ private:
     }
 
     template <typename I>
-    auto _write_one(I value, type_identity<I>) noexcept
+    auto _write_one(I value, const type_identity<I>) noexcept
       -> std::enable_if_t<std::is_integral_v<I> && std::is_unsigned_v<I>, result> {
         result errors{};
         auto encode = [&]() {
@@ -130,7 +130,7 @@ private:
     }
 
     template <typename I>
-    auto _write_one(I value, type_identity<I>) noexcept
+    auto _write_one(I value, const type_identity<I>) noexcept
       -> std::enable_if_t<std::is_integral_v<I> && std::is_signed_v<I>, result> {
         result errors = sink(value < 0 ? '-' : '+');
         using U = std::make_unsigned_t<I>;
@@ -140,7 +140,7 @@ private:
     }
 
     template <typename F>
-    auto _write_one(F value, type_identity<F> tid)
+    auto _write_one(const F value, const type_identity<F> tid)
       -> std::enable_if_t<std::is_floating_point_v<F>, result> {
         const auto [f, e] = fputils::decompose(value, tid);
         result errors =
@@ -152,15 +152,18 @@ private:
         return errors;
     }
 
-    auto _write_one(identifier id, type_identity<identifier>) -> result {
+    auto _write_one(const identifier id, const type_identity<identifier>)
+      -> result {
         return sink(id.name().view());
     }
 
-    auto _write_one(decl_name name, type_identity<decl_name>) -> result {
+    auto _write_one(const decl_name name, const type_identity<decl_name>)
+      -> result {
         return sink(name);
     }
 
-    auto _write_one(string_view str, type_identity<string_view>) -> result {
+    auto _write_one(const string_view str, const type_identity<string_view>)
+      -> result {
         result errors = sink('"');
         errors |= _write_one(str.size(), type_identity<span_size_t>{});
         errors |= sink('|');
@@ -224,7 +227,7 @@ public:
         return errors;
     }
 
-    auto begin_member(string_view name) -> result final {
+    auto begin_member(const string_view name) -> result final {
         result errors = require(name);
         if(!errors) {
             errors |= require(':');
@@ -232,7 +235,7 @@ public:
         return errors;
     }
 
-    auto finish_member(string_view) -> result final {
+    auto finish_member(const string_view) -> result final {
         return {};
     }
 
@@ -248,11 +251,11 @@ public:
         return errors;
     }
 
-    auto begin_element(span_size_t) -> result final {
+    auto begin_element(const span_size_t) -> result final {
         return {};
     }
 
-    auto finish_element(span_size_t) -> result final {
+    auto finish_element(const span_size_t) -> result final {
         return {};
     }
 
@@ -265,7 +268,7 @@ public:
     }
 
 private:
-    auto _read_one(bool& value, char delimiter) -> result {
+    auto _read_one(bool& value, const char delimiter) -> result {
         result temp{};
         if(this->consume('T', temp)) {
             value = true;
@@ -278,7 +281,7 @@ private:
     }
 
     template <typename I>
-    auto _read_one(I& value, char delimiter)
+    auto _read_one(I& value, const char delimiter)
       -> std::enable_if_t<std::is_integral_v<I> && std::is_unsigned_v<I>, result> {
         value = I(0);
         result errors{};
@@ -309,7 +312,7 @@ private:
     }
 
     template <typename I>
-    auto _read_one(I& value, char delimiter)
+    auto _read_one(I& value, const char delimiter)
       -> std::enable_if_t<std::is_integral_v<I> && std::is_signed_v<I>, result> {
         using U = std::make_unsigned_t<I>;
         const char sign = extract_or(top_char(), '\0');
@@ -330,7 +333,7 @@ private:
     }
 
     template <typename F>
-    auto _read_one(F& value, char delimiter)
+    auto _read_one(F& value, const char delimiter)
       -> std::enable_if_t<std::is_floating_point_v<F>, result> {
         fputils::decompose_fraction_t<F> f{};
 
@@ -345,7 +348,7 @@ private:
         return errors;
     }
 
-    auto _read_one(identifier& value, char delimiter) -> result {
+    auto _read_one(identifier& value, const char delimiter) -> result {
         result errors{};
         if(auto src{this->string_before(delimiter, 32)}) {
             value = identifier(src);
@@ -356,7 +359,7 @@ private:
         return errors;
     }
 
-    auto _read_one(decl_name_storage& value, char delimiter) -> result {
+    auto _read_one(decl_name_storage& value, const char delimiter) -> result {
         result errors{};
         const auto max = decl_name_storage::max_length + 1;
         if(auto src{this->string_before(delimiter, max)}) {
@@ -368,7 +371,7 @@ private:
         return errors;
     }
 
-    auto _read_one(std::string& value, char delimiter) -> result {
+    auto _read_one(std::string& value, const char delimiter) -> result {
         result errors = require('"');
         if(!errors) {
             span_size_t len{0};

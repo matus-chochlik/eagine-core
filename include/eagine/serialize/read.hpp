@@ -42,11 +42,11 @@ public:
         _done_size = 0;
     }
 
-    auto slice(span_size_t offset, span_size_t size) const noexcept {
+    auto slice(const span_size_t offset, const span_size_t size) const noexcept {
         return memory::slice(_dst, offset, size);
     }
 
-    void mark_done(span_size_t offs, span_size_t size) noexcept {
+    void mark_done(const span_size_t offs, const span_size_t size) noexcept {
         auto i = math::minimum(_done_bits.begin() + offs, _done_bits.end());
         auto e = math::minimum(i + size, _done_bits.end());
         while(i != e) {
@@ -208,7 +208,7 @@ private:
       deserialization_errors& errors,
       Tuple& values,
       Backend& backend,
-      std::index_sequence<I...>) const {
+      const std::index_sequence<I...>) const {
         (...,
          _read_element(
            errors,
@@ -221,7 +221,7 @@ private:
     template <typename Elem, typename Backend, typename Serializer>
     static void _read_element(
       deserialization_errors& errors,
-      std::size_t index,
+      const std::size_t index,
       Elem& elem,
       Backend& backend,
       Serializer& serial) {
@@ -269,7 +269,7 @@ private:
       deserialization_errors& errors,
       Tuple& values,
       Backend& backend,
-      std::index_sequence<I...>) {
+      const std::index_sequence<I...>) {
         (...,
          _read_member(
            errors,
@@ -282,7 +282,7 @@ private:
     template <typename Memb, typename Backend, typename Serializer>
     static void _read_member(
       deserialization_errors& errors,
-      string_view name,
+      const string_view name,
       Memb& value,
       Backend& backend,
       Serializer& serial) {
