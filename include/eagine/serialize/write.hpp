@@ -217,12 +217,12 @@ private:
 };
 //------------------------------------------------------------------------------
 template <typename... T>
-struct serializer<std::tuple<std::pair<string_view, T>...>>
-  : common_serializer<std::tuple<std::pair<string_view, T>...>> {
+struct serializer<std::tuple<std::pair<const string_view, T>...>>
+  : common_serializer<std::tuple<std::pair<const string_view, T>...>> {
 
     template <typename Backend>
     auto write(
-      const std::tuple<std::pair<string_view, T>...>& members,
+      const std::tuple<std::pair<const string_view, T>...>& members,
       Backend& backend) const {
         serialization_errors errors =
           backend.begin_struct(span_size(sizeof...(T)));

@@ -191,7 +191,7 @@ private:
 
     template <typename... M, std::size_t... I>
     static constexpr auto _do_get(
-      const std::tuple<std::pair<string_view, const M&>...>& mapped,
+      const std::tuple<std::pair<const string_view, const M&>...>& mapped,
       std::index_sequence<I...>) noexcept {
         return span_size(
           (0 + ... +

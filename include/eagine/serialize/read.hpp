@@ -238,14 +238,16 @@ private:
 };
 //------------------------------------------------------------------------------
 template <typename... T>
-struct deserializer<std::tuple<std::pair<string_view, T>...>>
-  : common_deserializer<std::tuple<std::pair<string_view, T>...>> {
+struct deserializer<std::tuple<std::pair<const string_view, T>...>>
+  : common_deserializer<std::tuple<std::pair<const string_view, T>...>> {
 
-    using common_deserializer<std::tuple<std::pair<string_view, T>...>>::read;
+    using common_deserializer<
+      std::tuple<std::pair<const string_view, T>...>>::read;
 
     template <typename Backend>
-    auto
-    read(std::tuple<std::pair<string_view, T>...>& values, Backend& backend) {
+    auto read(
+      std::tuple<std::pair<const string_view, T>...>& values,
+      Backend& backend) {
         deserialization_errors errors{};
         span_size_t memb_count{0};
         errors |= backend.begin_struct(memb_count);
