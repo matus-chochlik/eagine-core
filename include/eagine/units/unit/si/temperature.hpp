@@ -45,12 +45,12 @@ using kilokelvin =
 // celsius
 struct celsius_conv {
     template <typename T>
-    static constexpr auto to_base(T v) noexcept -> T {
+    static constexpr auto to_base(const T v) noexcept -> T {
         return T(v + 273.15F);
     }
 
     template <typename T>
-    static constexpr auto from_base(T v) noexcept -> T {
+    static constexpr auto from_base(const T v) noexcept -> T {
         return T(v - 273.15F);
     }
 };

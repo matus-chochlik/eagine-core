@@ -95,22 +95,22 @@ struct compose_str<MpStrWrap, base::scaled_unit<Scale, Unit>, nothing_t>
 };
 //------------------------------------------------------------------------------
 template <typename X>
-static inline auto get_symbol(X) noexcept -> string_view {
+static constexpr auto get_symbol(const X) noexcept -> string_view {
     return compose_str_t<symbol_of, X>::value;
 }
 //------------------------------------------------------------------------------
 template <typename X>
-static inline auto get_symbol_form(X) noexcept -> string_view {
+static constexpr auto get_symbol_form(const X) noexcept -> string_view {
     return compose_str_n<symbol_of, X>::value;
 }
 //------------------------------------------------------------------------------
 template <typename X>
-static inline auto get_name(X) noexcept -> string_view {
+static constexpr auto get_name(const X) noexcept -> string_view {
     return compose_str_t<name_of, X>::value;
 }
 //------------------------------------------------------------------------------
 template <typename X>
-static inline auto get_name_form(X) noexcept -> string_view {
+static constexpr auto get_name_form(const X) noexcept -> string_view {
     return compose_str_n<name_of, X>::value;
 }
 //------------------------------------------------------------------------------
