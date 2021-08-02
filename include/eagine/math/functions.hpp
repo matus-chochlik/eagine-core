@@ -156,14 +156,14 @@ static constexpr auto sigmoid01(const T x) noexcept {
 /// @ingroup math
 /// @pre 0 <= x <= 1
 template <typename T>
-static inline auto sine_sigmoid01(const T x) {
+static inline auto sine_sigmoid01(const T x) -> T {
 
 #ifdef __clang__
     EAGINE_DIAG_PUSH()
     EAGINE_DIAG_OFF(double-promotion)
 #endif
     using std::cos;
-    return (1 - cos(x * pi)) / 2;
+    return T((1 - cos(x * pi)) / 2);
 #ifdef __clang__
     EAGINE_DIAG_POP()
 #endif
@@ -173,26 +173,26 @@ static inline auto sine_sigmoid01(const T x) {
 /// @ingroup math
 /// @pre 0 <= x <= 1
 template <typename T>
-static constexpr auto sine_wave01(const T x) noexcept {
+static constexpr auto sine_wave01(const T x) noexcept -> T {
     using std::sin;
-    return (sin(2 * pi * x) + 1) / 2;
+    return T((sin(2 * pi * x) + 1) / 2);
 }
 //------------------------------------------------------------------------------
 /// @brief Calculates cosine of @p x, mapped to interval (0, 1).
 /// @ingroup math
 /// @pre 0 <= x <= 1
 template <typename T>
-static constexpr auto cosine_wave01(const T x) noexcept {
+static constexpr auto cosine_wave01(const T x) noexcept -> T {
     using std::cos;
-    return (cos(2 * pi * x) + 1) / 2;
+    return T((cos(2 * pi * x) + 1) / 2);
 }
 //------------------------------------------------------------------------------
 /// @brief Calculates floating-point modulo of @p x in intervals of @p u.
 /// @ingroup math
 template <typename T, typename U = T>
-static constexpr auto saw(const T x, const U u = T(1)) noexcept {
+static constexpr auto saw(const T x, const U u = T(1)) noexcept -> T {
     using std::fmod;
-    return fmod(x, u);
+    return T(fmod(x, u));
 }
 //------------------------------------------------------------------------------
 /// @brief Calculates factorial of @p n.

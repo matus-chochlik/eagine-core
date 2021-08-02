@@ -30,6 +30,7 @@ constexpr typed_nullptr_t<T> typed_nullptr = {};
 template <typename T, typename N>
 static constexpr auto operator+(const typed_nullptr_t<T>, const N n) noexcept
   -> T* {
+    // NOLINTNEXTLINE(performance-no-int-to-ptr)
     return reinterpret_cast<T*>(std::uintptr_t(std_size(n) * sizeof(T)));
 }
 //------------------------------------------------------------------------------
