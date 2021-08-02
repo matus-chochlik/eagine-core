@@ -56,8 +56,8 @@ static constexpr const bool is_log_level_enabled_v =
 /// @brief Function indicating if the specified log severity is enabled.
 /// @ingroup logging
 /// @see is_log_level_enabled_v
-static constexpr auto
-is_log_level_enabled(const log_event_severity severity) noexcept -> bool {
+static constexpr auto is_log_level_enabled(
+  const log_event_severity severity) noexcept -> bool {
     return (severity >= min_log_severity_t::value);
 }
 //------------------------------------------------------------------------------

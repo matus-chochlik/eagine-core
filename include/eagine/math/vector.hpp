@@ -108,15 +108,17 @@ struct vector {
       bool W,
       typename =
         std::enable_if_t<(!std::is_same_v<T, P> || (N != M) || (V != W))>>
-    static constexpr auto
-    from(const vector<P, M, W>& v, const T d = T(0)) noexcept {
+    static constexpr auto from(
+      const vector<P, M, W>& v,
+      const T d = T(0)) noexcept {
         return vector{vect::cast<P, M, W, T, N, V>::apply(v._v, d)};
     }
 
     /// @brief Creates vector instance from two other vectors.
     template <typename P, int M, bool W>
-    static constexpr auto
-    from(const vector<P, M, W>& v, const vector<T, N - M, W>& u) noexcept {
+    static constexpr auto from(
+      const vector<P, M, W>& v,
+      const vector<T, N - M, W>& u) noexcept {
         return vector{vect::cast<P, M, W, T, N, V>::apply(v._v, u._v)};
     }
 
@@ -308,8 +310,9 @@ static constexpr auto _dot(
 /// @brief Vector dot product.
 /// @ingroup math
 template <typename T, int N, bool V>
-static constexpr auto
-dot(const vector<T, N, V>& a, const vector<T, N, V>& b) noexcept {
+static constexpr auto dot(
+  const vector<T, N, V>& a,
+  const vector<T, N, V>& b) noexcept {
     return _dot(a, b, vect::has_vect_data<T, N, V>());
 }
 
@@ -323,8 +326,9 @@ static inline auto perpendicular(const vector<T, 2, V>& a) noexcept {
 /// @brief 3D vector cross product.
 /// @ingroup math
 template <typename T, bool V>
-static inline auto
-cross(const vector<T, 3, V>& a, const vector<T, 3, V>& b) noexcept {
+static inline auto cross(
+  const vector<T, 3, V>& a,
+  const vector<T, 3, V>& b) noexcept {
     using _sh = vect::shuffle<T, 3, V>;
     return vector<T, 3, V>{
       _sh::template apply<1, 2, 0>(a._v) * _sh::template apply<2, 0, 1>(b._v) -
@@ -332,15 +336,17 @@ cross(const vector<T, 3, V>& a, const vector<T, 3, V>& b) noexcept {
 }
 
 template <typename T, int N, bool V>
-static constexpr auto
-_mag(const vector<T, N, V>& a, const std::true_type) noexcept {
+static constexpr auto _mag(
+  const vector<T, N, V>& a,
+  const std::true_type) noexcept {
     return scalar<T, N, V>{
       vect::sqrt<T, N, V>::apply(vect::hsum<T, N, V>::apply(a._v * a._v))};
 }
 
 template <typename T, int N, bool V>
-static constexpr auto
-_mag(const vector<T, N, V> a, const std::false_type) noexcept {
+static constexpr auto _mag(
+  const vector<T, N, V> a,
+  const std::false_type) noexcept {
     using std::sqrt;
     return scalar<T, N, V>{T(sqrt(vect::esum<T, N, V>::apply(a._v * a._v)))};
 }
@@ -387,8 +393,9 @@ static inline auto normalized(const vector<T, N, V>& a) noexcept {
 /// @brief Returns the distance between two vectors.
 /// @ingroup math
 template <typename T, int N, bool V>
-static constexpr auto
-distance(const vector<T, N, V>& a, const vector<T, N, V>& b) noexcept {
+static constexpr auto distance(
+  const vector<T, N, V>& a,
+  const vector<T, N, V>& b) noexcept {
     return magnitude(a - b);
 }
 

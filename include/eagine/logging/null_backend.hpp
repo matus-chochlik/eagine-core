@@ -59,8 +59,8 @@ struct null_log_backend : logger_backend {
       const identifier,
       const message_id) noexcept final {}
 
-    void
-    add_bool(const identifier, const identifier, const bool) noexcept final {}
+    void add_bool(const identifier, const identifier, const bool) noexcept
+      final {}
 
     void add_integer(
       const identifier,
@@ -72,8 +72,8 @@ struct null_log_backend : logger_backend {
       const identifier,
       const std::uintmax_t) noexcept final {}
 
-    void
-    add_float(const identifier, const identifier, const float) noexcept final {}
+    void add_float(const identifier, const identifier, const float) noexcept
+      final {}
 
     void add_float(
       const identifier,

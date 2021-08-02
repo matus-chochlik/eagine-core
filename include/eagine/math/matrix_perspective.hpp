@@ -49,8 +49,8 @@ public:
     }
 
     /// @brief Constructs perspective matrix with x-FOV angle and aspect ratio.
-    static auto
-    x(const radians_t<T> xfov,
+    static auto x(
+      const radians_t<T> xfov,
       const T aspect,
       const T z_near,
       const T z_far) noexcept {
@@ -67,8 +67,8 @@ public:
     }
 
     /// @brief Constructs perspective matrix with y-FOV angle and aspect ratio.
-    static auto
-    y(const radians_t<T> yfov,
+    static auto y(
+      const radians_t<T> yfov,
       const T aspect,
       const T z_near,
       const T z_far) noexcept {
@@ -85,8 +85,10 @@ public:
     }
 
     /// @brief Constructs perspective matrix with FOV angle and aspect ratio of 1.
-    static auto
-    square(const radians_t<T> fov, const T z_near, const T z_far) noexcept {
+    static auto square(
+      const radians_t<T> fov,
+      const T z_near,
+      const T z_far) noexcept {
         EAGINE_ASSERT(T(fov) > T(0));
 
         const T x_right = z_near * tan(fov * T(0.5));
@@ -173,8 +175,8 @@ private:
 
 // reorder_mat_ctr(perspective)
 template <typename T, int N, bool RM, bool V>
-static constexpr auto
-reorder_mat_ctr(const perspective<matrix<T, N, N, RM, V>>& c) noexcept
+static constexpr auto reorder_mat_ctr(
+  const perspective<matrix<T, N, N, RM, V>>& c) noexcept
   -> perspective<matrix<T, N, N, !RM, V>> {
     return {c._v};
 }

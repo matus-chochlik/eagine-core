@@ -17,8 +17,9 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename T, typename Selector>
-constexpr auto
-enumerator_count(const type_identity<T> id, const Selector sel) noexcept
+constexpr auto enumerator_count(
+  const type_identity<T> id,
+  const Selector sel) noexcept
   -> std::enable_if_t<has_enumerator_mapping_v<T, Selector>, span_size_t> {
     return span_size_t(enumerator_mapping(id, sel).size());
 }
@@ -29,8 +30,9 @@ constexpr auto enumerator_count(const type_identity<T> id) noexcept {
 }
 //------------------------------------------------------------------------------
 template <typename T>
-constexpr auto
-enumerator_name(const T value, const type_identity<T> id = {}) noexcept {
+constexpr auto enumerator_name(
+  const T value,
+  const type_identity<T> id = {}) noexcept {
     return enumerator_name(value, id, default_selector);
 }
 //------------------------------------------------------------------------------
@@ -49,8 +51,9 @@ inline auto enumerator_name(
 }
 //------------------------------------------------------------------------------
 template <typename T>
-constexpr auto
-enumerator_value(const T value, const type_identity<T> = {}) noexcept {
+constexpr auto enumerator_value(
+  const T value,
+  const type_identity<T> = {}) noexcept {
     return static_cast<std::underlying_type_t<T>>(value);
 }
 //------------------------------------------------------------------------------
@@ -147,8 +150,9 @@ inline auto for_each_enumerator(
 }
 //------------------------------------------------------------------------------
 template <typename Function, typename T>
-inline auto
-for_each_enumerator(Function& function, const type_identity<T> id) noexcept
+inline auto for_each_enumerator(
+  Function& function,
+  const type_identity<T> id) noexcept
   -> std::enable_if_t<has_enumerator_mapping_v<T, default_selector_t>> {
     for_each_enumerator(function, id, default_selector);
 }

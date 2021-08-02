@@ -160,9 +160,8 @@ public:
     }
 
     /// @brief Appends a key/value pair and returns a new extended list.
-    constexpr auto
-    append(const key_value_list_element<Traits>& key_val) const noexcept
-      -> key_value_list<Traits, N + 2> {
+    constexpr auto append(const key_value_list_element<Traits>& key_val)
+      const noexcept -> key_value_list<Traits, N + 2> {
         return {_base, key_val._key, key_val._value};
     }
 

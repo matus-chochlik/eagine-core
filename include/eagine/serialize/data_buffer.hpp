@@ -140,8 +140,9 @@ struct get_serialize_buffer_size<Sid, std::array<T, N>, Selector>
       (4 + (2 + serialize_buffer_size_v<Sid, T, Selector>)*N),
       (get_serialize_buffer_size<Sid, T, Selector>::is_constant)> {
 
-    static constexpr auto
-    get(string_view s, const std::array<T, N>& v) noexcept {
+    static constexpr auto get(
+      string_view s,
+      const std::array<T, N>& v) noexcept {
         auto result = std_size(12 + s.size());
         for(const auto& e : v) {
             result +=
@@ -166,8 +167,9 @@ struct get_serialize_buffer_size<Sid, std::tuple<T...>, Selector>
 
 private:
     template <typename Tup, std::size_t... I>
-    static constexpr auto
-    _do_get(const Tup& t, std::index_sequence<I...>) noexcept {
+    static constexpr auto _do_get(
+      const Tup& t,
+      std::index_sequence<I...>) noexcept {
         return (
           0 + ... +
           (2 + get_serialize_buffer_size<Sid, T, Selector>::get(

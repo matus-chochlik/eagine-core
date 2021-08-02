@@ -23,8 +23,8 @@ private:
     ::z_stream _zsd{};
     ::z_stream _zsi{};
 
-    static constexpr auto
-    _translate(const data_compression_level level) noexcept -> int {
+    static constexpr auto _translate(const data_compression_level level) noexcept
+      -> int {
         switch(level) {
             case data_compression_level::none:
                 return 0;
@@ -256,9 +256,8 @@ public:
         return false;
     }
 
-    auto
-    decompress(const memory::const_block input, memory::buffer& output) const
-      -> memory::const_block {
+    auto decompress(const memory::const_block input, memory::buffer& output)
+      const -> memory::const_block {
         if(input.front() == 0x00U) {
             output.resize(input.size() - 1);
             copy(skip(input, 1), cover(output));

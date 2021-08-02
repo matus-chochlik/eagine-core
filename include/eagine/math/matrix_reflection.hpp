@@ -66,8 +66,8 @@ static constexpr auto multiply(
 
 // reorder_mat_ctr(reflection_I)
 template <typename T, int N, bool RM, bool V, int I>
-static constexpr auto
-reorder_mat_ctr(const reflection_I<matrix<T, N, N, RM, V>, I>& c) noexcept
+static constexpr auto reorder_mat_ctr(
+  const reflection_I<matrix<T, N, N, RM, V>, I>& c) noexcept
   -> reflection_I<matrix<T, N, N, !RM, V>, I> {
     return {c._v < T(0)};
 }

@@ -266,15 +266,14 @@ protected:
 /// @brief Overload of extract for api_result_value.
 //
 template <typename Result>
-static constexpr auto
-extract(api_result_value<Result, api_result_validity::never>&) noexcept
-  -> Result& {
+static constexpr auto extract(
+  api_result_value<Result, api_result_validity::never>&) noexcept -> Result& {
     return unreachable_reference(type_identity<Result>{});
 }
 
 template <typename Result>
-static constexpr auto
-extract(const api_result_value<Result, api_result_validity::never>&) noexcept
+static constexpr auto extract(
+  const api_result_value<Result, api_result_validity::never>&) noexcept
   -> const Result& {
     return unreachable_reference(type_identity<Result>{});
 }
@@ -363,8 +362,8 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-static constexpr auto
-extract(const api_result_value<void, api_result_validity::never>&) noexcept
+static constexpr auto extract(
+  const api_result_value<void, api_result_validity::never>&) noexcept
   -> nothing_t {
     return {};
 }
@@ -442,15 +441,15 @@ public:
 };
 //------------------------------------------------------------------------------
 template <typename Result>
-static constexpr auto
-extract(api_result_value<Result, api_result_validity::always>&& result) noexcept
+static constexpr auto extract(
+  api_result_value<Result, api_result_validity::always>&& result) noexcept
   -> Result {
     return std::move(result._value);
 }
 
 template <typename Result>
-static constexpr auto
-extract(api_result_value<Result, api_result_validity::always>& result) noexcept
+static constexpr auto extract(
+  api_result_value<Result, api_result_validity::always>& result) noexcept
   -> Result& {
     return result._value;
 }
@@ -558,8 +557,8 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-static constexpr auto
-extract(const api_result_value<void, api_result_validity::always>&) noexcept
+static constexpr auto extract(
+  const api_result_value<void, api_result_validity::always>&) noexcept
   -> nothing_t {
     return {};
 }
@@ -644,8 +643,8 @@ public:
 /// @brief Specialization of extract for api_result_value.
 /// @ingroup c_api_wrap
 template <typename Result>
-static constexpr auto
-extract(api_result_value<Result, api_result_validity::maybe>&& result) noexcept
+static constexpr auto extract(
+  api_result_value<Result, api_result_validity::maybe>&& result) noexcept
   -> Result {
     return EAGINE_CONSTEXPR_ASSERT(result._valid, std::move(result._value));
 }
@@ -653,8 +652,8 @@ extract(api_result_value<Result, api_result_validity::maybe>&& result) noexcept
 /// @brief Specialization of extract for api_result_value.
 /// @ingroup c_api_wrap
 template <typename Result>
-static constexpr auto
-extract(api_result_value<Result, api_result_validity::maybe>& result) noexcept
+static constexpr auto extract(
+  api_result_value<Result, api_result_validity::maybe>& result) noexcept
   -> Result& {
     return EAGINE_CONSTEXPR_ASSERT(result._valid, result._value);
 }
@@ -774,8 +773,8 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-static constexpr auto
-extract(const api_result_value<void, api_result_validity::maybe>&) noexcept
+static constexpr auto extract(
+  const api_result_value<void, api_result_validity::maybe>&) noexcept
   -> nothing_t {
     return {};
 }
@@ -926,9 +925,10 @@ struct default_c_api_traits {
     static constexpr void fallback(const Tag, const type_identity<void>) {}
 
     template <typename RV, typename Tag, typename... Params, typename... Args>
-    static constexpr auto
-    call_static(const Tag tag, RV (*function)(Params...), Args&&... args)
-      -> RV {
+    static constexpr auto call_static(
+      const Tag tag,
+      RV (*function)(Params...),
+      Args&&... args) -> RV {
         if(function) {
             return function(
               std::forward<Args>(args)...); // NOLINT(hicpp-no-array-decay)
@@ -937,9 +937,10 @@ struct default_c_api_traits {
     }
 
     template <typename RV, typename Tag, typename... Params, typename... Args>
-    static constexpr auto
-    call_dynamic(const Tag tag, RV (*function)(Params...), Args&&... args)
-      -> RV {
+    static constexpr auto call_dynamic(
+      const Tag tag,
+      RV (*function)(Params...),
+      Args&&... args) -> RV {
         if(function) {
             return function(
               std::forward<Args>(args)...); // NOLINT(hicpp-no-array-decay)
@@ -1186,9 +1187,9 @@ protected:
     }
 
     template <typename RV, typename... Params>
-    static constexpr auto
-    _fake(const dynamic_c_api_function<ApiTraits, Tag, RV(Params...)>&) noexcept
-      -> typename ApiTraits::template result<RV> {
+    static constexpr auto _fake(
+      const dynamic_c_api_function<ApiTraits, Tag, RV(Params...)>&) noexcept ->
+      typename ApiTraits::template result<RV> {
         return {RV{}};
     }
 

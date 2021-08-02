@@ -33,8 +33,9 @@ template <
   typename T,
   typename Selector,
   typename = std::enable_if_t<has_data_member_mapping_v<T, Selector>>>
-constexpr auto
-data_member_tuple(const type_identity<T> tid, const Selector sel) noexcept {
+constexpr auto data_member_tuple(
+  const type_identity<T> tid,
+  const Selector sel) noexcept {
     return data_member_tuple_from_mapping(data_member_mapping(tid, sel));
 }
 //------------------------------------------------------------------------------
@@ -126,8 +127,9 @@ constexpr auto do_map_data_members(
 }
 //------------------------------------------------------------------------------
 template <typename T, identifier_t Id>
-constexpr auto
-map_data_members(const T& instance, const selector<Id> select) noexcept {
+constexpr auto map_data_members(
+  const T& instance,
+  const selector<Id> select) noexcept {
     return do_map_data_members(
       instance,
       select,
@@ -135,8 +137,9 @@ map_data_members(const T& instance, const selector<Id> select) noexcept {
 }
 //------------------------------------------------------------------------------
 template <typename T, identifier_t Id>
-constexpr auto
-map_data_members(T& instance, const selector<Id> select) noexcept {
+constexpr auto map_data_members(
+  T& instance,
+  const selector<Id> select) noexcept {
     return do_map_data_members(
       instance,
       select,

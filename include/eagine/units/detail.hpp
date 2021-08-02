@@ -63,8 +63,9 @@ struct pow_of_dim<D1, dims<dim_pow<D2, P>, T>> : pow_of_dim<D1, T> {};
 
 // get_pow_of_dim
 template <typename D, typename H, typename T>
-static constexpr auto
-get_pow_of_dim(const base::dimension<D>, const dims<H, T>) noexcept -> int {
+static constexpr auto get_pow_of_dim(
+  const base::dimension<D>,
+  const dims<H, T>) noexcept -> int {
     return pow_of_dim_v<D, dims<H, T>>;
 }
 
@@ -354,8 +355,10 @@ struct _sc_unit_sc_hlp {
     }
 
     template <typename Dir, typename T, typename D, int E>
-    static constexpr auto
-    _hlp2(const Dir, const T v, const dim_pow<D, E>) noexcept {
+    static constexpr auto _hlp2(
+      const Dir,
+      const T v,
+      const dim_pow<D, E>) noexcept {
         using SBU = typename System ::template base_unit<D>::type;
         using BS = scales::scale_of_t<SBU>;
 
@@ -366,8 +369,10 @@ struct _sc_unit_sc_hlp {
     }
 
     template <typename Dir, typename T, typename D, int P, typename Dims>
-    static constexpr auto
-    _hlp(const Dir dir, const T v, const dims<dim_pow<D, P>, Dims>) noexcept {
+    static constexpr auto _hlp(
+      const Dir dir,
+      const T v,
+      const dims<dim_pow<D, P>, Dims>) noexcept {
         return _hlp(dir, _hlp2(dir, v, dim_pow<D, P>()), Dims());
     }
 };

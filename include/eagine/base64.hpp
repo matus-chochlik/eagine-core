@@ -84,9 +84,9 @@ static inline auto base64_encode(
 }
 //------------------------------------------------------------------------------
 template <typename P, typename S, typename Dst>
-static inline auto
-base64_encode(const memory::basic_span<const byte, P, S> src, Dst& dst)
-  -> optional_reference_wrapper<Dst> {
+static inline auto base64_encode(
+  const memory::basic_span<const byte, P, S> src,
+  Dst& dst) -> optional_reference_wrapper<Dst> {
     using Ds = typename Dst::size_type;
     dst.resize(Ds(base64_encoded_length(src.size())));
     span_size_t i = 0;
@@ -119,9 +119,9 @@ static inline auto base64_decode(
 }
 //------------------------------------------------------------------------------
 template <typename P, typename S, typename Dst>
-static inline auto
-base64_decode(const memory::basic_span<const char, P, S> src, Dst& dst)
-  -> optional_reference_wrapper<Dst> {
+static inline auto base64_decode(
+  const memory::basic_span<const char, P, S> src,
+  Dst& dst) -> optional_reference_wrapper<Dst> {
     using Ds = typename Dst::size_type;
     dst.resize(Ds(base64_decoded_length(src.size())));
     span_size_t i = 0;

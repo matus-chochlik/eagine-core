@@ -67,8 +67,9 @@ template <
   typename = std::enable_if_t<
     is_matrix_constructor_v<MC> &&
     are_multiplicable<constructed_matrix_t<MC>, matrix<T, C, R, RM, V>>::value>>
-static constexpr auto
-multiply(const MC& mc, const identity<matrix<T, C, R, RM, V>>&) noexcept -> MC {
+static constexpr auto multiply(
+  const MC& mc,
+  const identity<matrix<T, C, R, RM, V>>&) noexcept -> MC {
     return mc;
 }
 
@@ -82,15 +83,16 @@ template <
   typename = std::enable_if_t<
     is_matrix_constructor_v<MC> &&
     are_multiplicable<matrix<T, C, R, RM, V>, constructed_matrix_t<MC>>::value>>
-static constexpr auto
-multiply(const identity<matrix<T, C, R, RM, V>>&, const MC& mc) noexcept -> MC {
+static constexpr auto multiply(
+  const identity<matrix<T, C, R, RM, V>>&,
+  const MC& mc) noexcept -> MC {
     return mc;
 }
 
 // reorder_mat_ctr(identity)
 template <typename T, int R, int C, bool RM, bool V>
-static constexpr auto
-reorder_mat_ctr(const identity<matrix<T, R, C, RM, V>>&) noexcept
+static constexpr auto reorder_mat_ctr(
+  const identity<matrix<T, R, C, RM, V>>&) noexcept
   -> identity<matrix<T, R, C, !RM, V>> {
     return {};
 }

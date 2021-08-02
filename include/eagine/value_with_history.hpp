@@ -21,25 +21,28 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename T>
-static constexpr auto
-value_with_history_changed(const T& a, const T& b) noexcept -> bool {
+static constexpr auto value_with_history_changed(const T& a, const T& b) noexcept
+  -> bool {
     return !are_equal(a, b);
 }
 
 template <typename T>
-static constexpr auto
-value_with_history_delta(const T& new_value, const T& old_value) noexcept {
+static constexpr auto value_with_history_delta(
+  const T& new_value,
+  const T& old_value) noexcept {
     return new_value - old_value;
 }
 
-static constexpr auto
-value_with_history_delta(bool new_value, bool old_value) noexcept -> int {
+static constexpr auto value_with_history_delta(
+  bool new_value,
+  bool old_value) noexcept -> int {
     return int(new_value) - int(old_value);
 }
 
 template <typename T>
-static constexpr auto
-value_with_history_distance(const T& new_value, const T& old_value) noexcept {
+static constexpr auto value_with_history_distance(
+  const T& new_value,
+  const T& old_value) noexcept {
     using std::abs;
     return abs(value_with_history_delta(new_value, old_value));
 }
@@ -143,8 +146,8 @@ static inline auto differentiate_stored_values(
 }
 //------------------------------------------------------------------------------
 template <typename U, typename T, std::size_t N>
-static inline auto
-convert_stored_values(const value_with_history_storage<T, N>& storage) {
+static inline auto convert_stored_values(
+  const value_with_history_storage<T, N>& storage) {
     return transform_stored_values([](const T& v) { return U(v); }, storage);
 }
 //------------------------------------------------------------------------------
@@ -300,8 +303,9 @@ private:
 };
 //------------------------------------------------------------------------------
 template <typename Transform, typename... T, std::size_t N>
-static inline auto
-transform(Transform transform_op, const value_with_history<T, N>&... v) {
+static inline auto transform(
+  Transform transform_op,
+  const value_with_history<T, N>&... v) {
     return value_with_history<
       decltype(std::declval<Transform>()(std::declval<T>()...)),
       N>(transform_stored_values(transform_op, v.values()...));

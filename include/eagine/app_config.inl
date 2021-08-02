@@ -84,8 +84,7 @@ private:
         return append_to(assign_to(_config_name, l), r);
     }
 
-    auto
-    _cat(string_view a, string_view b, string_view c, string_view d) noexcept
+    auto _cat(string_view a, string_view b, string_view c, string_view d) noexcept
       -> const std::string& {
         return append_to(
           append_to(append_to(assign_to(_config_name, a), b), c), d);
@@ -267,4 +266,3 @@ auto application_config::_eval_env_var(string_view key) noexcept
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
-

@@ -14,9 +14,9 @@ namespace eagine::vect {
 
 template <typename T, int N, bool V>
 struct sdiv {
-    static constexpr auto
-    apply(data_param_t<T, N, V> a, data_param_t<T, N, V> b) noexcept
-      -> data_t<T, N, V> {
+    static constexpr auto apply(
+      data_param_t<T, N, V> a,
+      data_param_t<T, N, V> b) noexcept -> data_t<T, N, V> {
         return a / b;
     }
 };
@@ -40,9 +40,9 @@ struct sdiv<T, 3, V> {
         return a / b;
     }
 
-    static constexpr auto
-    apply(data_param_t<T, 3, V> a, data_param_t<T, 3, V> b) noexcept
-      -> data_t<T, 3, V> {
+    static constexpr auto apply(
+      data_param_t<T, 3, V> a,
+      data_param_t<T, 3, V> b) noexcept -> data_t<T, 3, V> {
         return _hlp(a, b, has_vect_data<T, 3, V>());
     }
 };

@@ -64,9 +64,9 @@ public:
     }
 
     template <typename T, typename P, typename S>
-    auto
-    copy_aligned_array(const basic_span<T, P, S> src, const span_size_t align)
-      -> span<std::remove_const_t<T>> {
+    auto copy_aligned_array(
+      const basic_span<T, P, S> src,
+      const span_size_t align) -> span<std::remove_const_t<T>> {
         auto dst =
           make_aligned_array<std::remove_const_t<T>>(src.size(), align);
         std::copy(src.begin(), src.end(), dst.begin());

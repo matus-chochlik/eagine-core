@@ -24,9 +24,9 @@ public:
     }
 
 protected:
-    static constexpr auto
-    _next_log(const std::size_t n, const std::size_t pot = 1) noexcept
-      -> std::size_t {
+    static constexpr auto _next_log(
+      const std::size_t n,
+      const std::size_t pot = 1) noexcept -> std::size_t {
         return (n > pot) ? 1U + _next_log(n, pot << 1U) : 0U;
     }
 
@@ -79,13 +79,17 @@ public:
         return (_c(r, i) & 1U) == 1U;
     }
 
-    static auto
-    min(const span_size_t r, const span_size_t i, const span_size_t j) -> bool {
+    static auto min(
+      const span_size_t r,
+      const span_size_t i,
+      const span_size_t j) -> bool {
         return inv(r, i) ? (i > j) : (i < j);
     }
 
-    static auto
-    max(const span_size_t r, const span_size_t i, const span_size_t j) -> bool {
+    static auto max(
+      const span_size_t r,
+      const span_size_t i,
+      const span_size_t j) -> bool {
         return inv(r, i) ? (i < j) : (i > j);
     }
 
@@ -143,9 +147,9 @@ struct manual_sorting_network_base<1> {
         return 1;
     }
 
-    static constexpr auto
-    index(const span_size_t /*round*/, const span_size_t /*elem*/) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t /*round*/,
+      const span_size_t /*elem*/) noexcept -> span_size_t {
         return 0;
     }
 };
@@ -158,9 +162,9 @@ struct manual_sorting_network_base<2> {
         return 1;
     }
 
-    static constexpr auto
-    index(const span_size_t /*round*/, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t /*round*/,
+      const span_size_t elem) noexcept -> span_size_t {
         return elem == 0 ? 1 : 0;
     }
 };
@@ -175,9 +179,9 @@ struct manual_sorting_network_base<3> {
 
     static constexpr span_size_t idx[3][3] = {{1, 0, 2}, {0, 2, 1}, {1, 0, 2}};
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };
@@ -201,9 +205,9 @@ struct manual_sorting_network_base<4> {
       {2, 3, 0, 1},
       {0, 2, 1, 3}};
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };
@@ -229,9 +233,9 @@ struct manual_sorting_network_base<5> {
       {0, 2, 1, 4, 3},
       {0, 1, 3, 2, 4}};
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };
@@ -257,9 +261,9 @@ struct manual_sorting_network_base<6> {
       {0, 2, 1, 4, 3, 5},
       {0, 1, 3, 2, 4, 5}};
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };
@@ -286,9 +290,9 @@ struct manual_sorting_network_base<7> {
       {0, 1, 4, 5, 2, 3, 6},
       {0, 2, 1, 4, 3, 6, 5}};
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };
@@ -315,9 +319,9 @@ struct manual_sorting_network_base<8> {
       {0, 1, 4, 5, 2, 3, 6, 7},
       {0, 2, 1, 4, 3, 6, 5, 7}};
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };
@@ -345,9 +349,9 @@ struct manual_sorting_network_base<9> {
       {1, 0, 3, 2, 5, 4, 7, 6, 8},
       {0, 1, 2, 4, 3, 6, 5, 7, 8}};
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };
@@ -376,9 +380,9 @@ struct manual_sorting_network_base<10> {
       {0, 1, 3, 2, 5, 4, 7, 6, 8, 9},
     };
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };
@@ -408,9 +412,9 @@ struct manual_sorting_network_base<11> {
       {0, 1, 3, 2, 5, 4, 7, 6, 8, 9, 10},
     };
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };
@@ -439,9 +443,9 @@ struct manual_sorting_network_base<12> {
       {0, 1, 3, 2, 6, 7, 4, 5, 9, 8, 10, 11},
       {0, 1, 2, 4, 3, 6, 5, 8, 7, 9, 10, 11}};
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };
@@ -471,9 +475,9 @@ struct manual_sorting_network_base<14> {
       {0, 1, 2, 4, 3, 6, 5, 8, 7, 10, 9, 11, 12, 13},
       {0, 1, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 12, 13}};
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };
@@ -503,9 +507,9 @@ struct manual_sorting_network_base<16> {
       {0, 1, 2, 3, 5, 4, 7, 6, 9, 8, 11, 10, 12, 13, 14, 15},
       {0, 1, 2, 4, 3, 6, 5, 8, 7, 11, 9, 12, 11, 13, 14, 15}};
 
-    static constexpr auto
-    index(const span_size_t round, const span_size_t elem) noexcept
-      -> span_size_t {
+    static constexpr auto index(
+      const span_size_t round,
+      const span_size_t elem) noexcept -> span_size_t {
         return idx[round][elem];
     }
 };

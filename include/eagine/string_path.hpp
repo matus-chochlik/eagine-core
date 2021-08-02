@@ -115,8 +115,9 @@ public:
     }
 
     /// @brief Less-than comparison.
-    friend auto
-    operator<(const basic_string_path& a, const basic_string_path& b) noexcept {
+    friend auto operator<(
+      const basic_string_path& a,
+      const basic_string_path& b) noexcept {
         return a._str < b._str;
     }
 
@@ -128,8 +129,9 @@ public:
     }
 
     /// @brief Greater-than comparison.
-    friend auto
-    operator>(const basic_string_path& a, const basic_string_path& b) noexcept {
+    friend auto operator>(
+      const basic_string_path& a,
+      const basic_string_path& b) noexcept {
         return a._str > b._str;
     }
 
@@ -141,8 +143,9 @@ public:
     }
 
     /// @brief Concatenates two paths.
-    friend auto
-    operator+(const basic_string_path& a, const basic_string_path& b) noexcept {
+    friend auto operator+(
+      const basic_string_path& a,
+      const basic_string_path& b) noexcept {
         return basic_string_path(a, EAGINE_TAG(plus), b);
     }
 

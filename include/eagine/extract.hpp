@@ -25,8 +25,9 @@ static constexpr auto extract(T* ptr) noexcept -> T& {
 //------------------------------------------------------------------------------
 /// @brief Checks @p ptr and dereferences it if not null, otherwise returns fallback.
 template <typename T>
-static constexpr auto
-extract_or(T* ptr, std::remove_const_t<T>& fallback) noexcept -> T& {
+static constexpr auto extract_or(
+  T* ptr,
+  std::remove_const_t<T>& fallback) noexcept -> T& {
     return bool(ptr) ? *ptr : fallback;
 }
 //------------------------------------------------------------------------------
@@ -54,9 +55,9 @@ static constexpr auto extract(const std::shared_ptr<T>& ptr) noexcept
 //------------------------------------------------------------------------------
 /// @brief Checks @p ptr and dereferences it if not null, otherwise returns fallback.
 template <typename T>
-static constexpr auto
-extract_or(std::shared_ptr<T>& ptr, std::remove_const_t<T>& fallback) noexcept
-  -> T& {
+static constexpr auto extract_or(
+  std::shared_ptr<T>& ptr,
+  std::remove_const_t<T>& fallback) noexcept -> T& {
     return bool(ptr) ? *ptr : fallback;
 }
 //------------------------------------------------------------------------------
@@ -137,8 +138,8 @@ public:
       : _outcome{std::move(outcome)} {}
 
     /// @brief Indicates if the stored outcome contains valid result value.
-    explicit constexpr
-    operator bool() noexcept(noexcept(bool(std::declval<Outcome&>()))) {
+    explicit constexpr operator bool() noexcept(
+      noexcept(bool(std::declval<Outcome&>()))) {
         return bool(_outcome);
     }
 

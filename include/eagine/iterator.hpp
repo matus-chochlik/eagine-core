@@ -60,8 +60,9 @@ public:
     }
 
     /// @brief Addition operator.
-    friend constexpr auto
-    operator+(const basic_iterable_type a, const difference_type d) noexcept {
+    friend constexpr auto operator+(
+      const basic_iterable_type a,
+      const difference_type d) noexcept {
         Derived res(a.self());
         res += d;
         return res;
@@ -87,17 +88,18 @@ public:
     }
 
     /// @brief Difference operator.
-    friend constexpr auto
-    operator-(const basic_iterable_type a, const difference_type d) noexcept {
+    friend constexpr auto operator-(
+      const basic_iterable_type a,
+      const difference_type d) noexcept {
         Derived res(a.self());
         res -= d;
         return res;
     }
 
     /// @brief Subtraction operator.
-    constexpr friend auto
-    operator-(const basic_iterable_type a, const basic_iterable_type b) noexcept
-      -> difference_type {
+    constexpr friend auto operator-(
+      const basic_iterable_type a,
+      const basic_iterable_type b) noexcept -> difference_type {
         return a._value - b._value;
     }
 
@@ -317,8 +319,8 @@ public:
       : _base{iter, &_cast} {}
 
 private:
-    static constexpr auto
-    _cast(typename std::iterator_traits<Iterator>::reference r) noexcept -> T {
+    static constexpr auto _cast(
+      typename std::iterator_traits<Iterator>::reference r) noexcept -> T {
         return static_cast<T>(r);
     }
 };

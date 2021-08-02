@@ -736,9 +736,9 @@ public:
         return _cells[std_size(y * _width + x)];
     }
 
-    friend auto
-    operator<<(std::ostream& out, const basic_sudoku_tile_patch& that)
-      -> std::ostream& {
+    friend auto operator<<(
+      std::ostream& out,
+      const basic_sudoku_tile_patch& that) -> std::ostream& {
         std::size_t k = 0;
         for(const auto y : integer_range(that._height)) {
             for(const auto x : integer_range(that._width)) {

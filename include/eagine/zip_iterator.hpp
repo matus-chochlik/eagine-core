@@ -34,14 +34,20 @@ private:
     }
 
     template <typename IT, typename Func, std::size_t... I>
-    static constexpr auto
-    _fold_or_2(IT& a, IT& b, Func func, std::index_sequence<I...>) {
+    static constexpr auto _fold_or_2(
+      IT& a,
+      IT& b,
+      Func func,
+      std::index_sequence<I...>) {
         return (... || func(std::get<I>(a), std::get<I>(b)));
     }
 
     template <typename IT, typename Func, std::size_t... I>
-    static constexpr auto
-    _fold_and_2(IT& a, IT& b, Func func, std::index_sequence<I...>) {
+    static constexpr auto _fold_and_2(
+      IT& a,
+      IT& b,
+      Func func,
+      std::index_sequence<I...>) {
         return (... && func(std::get<I>(a), std::get<I>(b)));
     }
 
@@ -112,8 +118,10 @@ private:
     }
 
     template <typename Tup, typename Func, std::size_t... I>
-    static void
-    _deref_call(Tup& tup, Func& func, const std::index_sequence<I...>) {
+    static void _deref_call(
+      Tup& tup,
+      Func& func,
+      const std::index_sequence<I...>) {
         func(std::get<I>(tup)...);
     }
 

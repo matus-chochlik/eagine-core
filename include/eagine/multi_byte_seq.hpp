@@ -139,9 +139,9 @@ static constexpr auto is_valid_masked_code(
              : false;
 }
 //------------------------------------------------------------------------------
-static constexpr auto
-is_valid_head_byte(const byte b, const valid_sequence_length& l) noexcept
-  -> bool {
+static constexpr auto is_valid_head_byte(
+  const byte b,
+  const valid_sequence_length& l) noexcept -> bool {
     return is_valid_masked_code(b, head_code_mask(l), head_code(l));
 }
 //------------------------------------------------------------------------------

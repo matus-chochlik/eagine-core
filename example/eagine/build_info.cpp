@@ -42,4 +42,3 @@ auto main(main_ctx& ctx) -> int {
 }
 
 } // namespace eagine
-

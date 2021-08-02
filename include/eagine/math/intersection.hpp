@@ -25,8 +25,8 @@ namespace eagine::math {
 // utils
 //------------------------------------------------------------------------------
 template <typename T, typename P, typename L>
-static inline auto
-nearest_ray_param(const std::pair<valid_if<T, P, L>, valid_if<T, P, L>>& params)
+static inline auto nearest_ray_param(
+  const std::pair<valid_if<T, P, L>, valid_if<T, P, L>>& params)
   -> valid_if<T, P, L> {
 
     const auto& t0 = std::get<0>(params);
@@ -60,9 +60,8 @@ static constexpr auto _line_sphere_intersection_a(
 }
 //------------------------------------------------------------------------------
 template <typename T, bool V>
-static constexpr auto
-_line_sphere_intersection_d(const vector<T, 3, V> ld) noexcept
-  -> valid_if_positive<T> {
+static constexpr auto _line_sphere_intersection_d(
+  const vector<T, 3, V> ld) noexcept -> valid_if_positive<T> {
     return T(2) * dot(ld, ld);
 }
 //------------------------------------------------------------------------------

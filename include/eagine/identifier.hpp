@@ -66,8 +66,9 @@ private:
     }
 
     template <std::size_t L>
-    static constexpr auto
-    _do_decode(const std::uint8_t i, const char (&enc)[L]) noexcept -> char {
+    static constexpr auto _do_decode(
+      const std::uint8_t i,
+      const char (&enc)[L]) noexcept -> char {
         return (i < invalid()) ? enc[i] : '\0';
     }
 };
@@ -268,42 +269,48 @@ public:
     }
 
     /// @brief Equality comparison.
-    friend constexpr auto
-    operator==(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator==(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites == b._bites;
     }
 
     /// @brief Nonequality comparison.
-    friend constexpr auto
-    operator!=(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator!=(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites != b._bites;
     }
 
     /// @brief Less-than comparison.
     /// @note This is not lexicographical string comparison.
-    friend constexpr auto
-    operator<(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator<(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites < b._bites;
     }
 
     /// @brief Less-equal comparison.
     /// @note This is not lexicographical string comparison.
-    friend constexpr auto
-    operator<=(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator<=(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites <= b._bites;
     }
 
     /// @brief Greater-than comparison.
     /// @note This is not lexicographical string comparison.
-    friend constexpr auto
-    operator>(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator>(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites > b._bites;
     }
 
     /// @brief Greater-equal comparison.
     /// @note This is not lexicographical string comparison.
-    friend constexpr auto
-    operator>=(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator>=(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites >= b._bites;
     }
 

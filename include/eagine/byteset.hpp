@@ -161,38 +161,44 @@ public:
     }
 
     /// @brief Equality comparison.
-    friend constexpr auto
-    operator==(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator==(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) == 0;
     }
 
     /// @brief Non-equality comparison.
-    friend constexpr auto
-    operator!=(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator!=(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) != 0;
     }
 
     /// @brief Less-than comparison.
-    friend constexpr auto
-    operator<(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator<(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) < 0;
     }
 
     /// @brief Less-equal comparison.
-    friend constexpr auto
-    operator<=(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator<=(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) <= 0;
     }
 
     /// @brief Greater-than comparison.
-    friend constexpr auto
-    operator>(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator>(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) > 0;
     }
 
     /// @brief Greater-equal comparison.
-    friend constexpr auto
-    operator>=(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator>=(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) >= 0;
     }
 
@@ -214,16 +220,16 @@ private:
     value_type _bytes[N]{};
 
     template <typename UInt>
-    constexpr auto
-    _push_back_to(const UInt state, const std::size_t i) const noexcept
-      -> UInt {
+    constexpr auto _push_back_to(const UInt state, const std::size_t i)
+      const noexcept -> UInt {
         // NOLINTNEXTLINE(hicpp-signed-bitwise)
         return (i < N) ? _push_back_to((state << CHAR_BIT) | _bytes[i], i + 1)
                        : state;
     }
 
-    static constexpr auto
-    _cmp_byte(const value_type a, const value_type b) noexcept -> int {
+    static constexpr auto _cmp_byte(
+      const value_type a,
+      const value_type b) noexcept -> int {
         return (a == b) ? 0 : (a < b) ? -1 : 1;
     }
 

@@ -50,8 +50,8 @@ struct _has_span_size_member_base {
 /// @ingroup type_utils
 template <typename T>
 struct has_span_size_member
-  : public decltype(
-      _has_span_size_member_base::_detect(static_cast<T*>(nullptr))) {};
+  : public decltype(_has_span_size_member_base::_detect(
+      static_cast<T*>(nullptr))) {};
 //------------------------------------------------------------------------------
 /// @brief Trait indicating if type T has x.size() member function.
 /// @ingroup type_utils
@@ -75,8 +75,8 @@ struct _has_span_data_member_base {
 /// @ingroup type_utils
 template <typename T, typename E>
 struct has_span_data_member
-  : public decltype(
-      _has_span_data_member_base<E>::_detect(static_cast<T*>(nullptr))) {};
+  : public decltype(_has_span_data_member_base<E>::_detect(
+      static_cast<T*>(nullptr))) {};
 //------------------------------------------------------------------------------
 /// @brief Trait indicating if type T has x.size() member function.
 /// @ingroup type_utils

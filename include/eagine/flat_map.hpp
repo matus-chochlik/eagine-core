@@ -34,14 +34,14 @@ struct flat_map_value_compare : Cmp {
     }
 
     template <typename L, typename R>
-    constexpr auto
-    operator()(const std::pair<L, Val>& a, const R& b) const noexcept {
+    constexpr auto operator()(const std::pair<L, Val>& a, const R& b)
+      const noexcept {
         return key_comp()(a.first, b);
     }
 
     template <typename L, typename R>
-    constexpr auto
-    operator()(const L& a, const std::pair<R, Val>& b) const noexcept {
+    constexpr auto operator()(const L& a, const std::pair<R, Val>& b)
+      const noexcept {
         return key_comp()(a, b.first);
     }
 };

@@ -129,9 +129,10 @@ static constexpr auto get_cm(const matrix<T, C, R, true, V>& m) noexcept
 /// @brief Returns the matrix element at [ci, ri]. Column-major implementation.
 /// @ingroup math
 template <typename T, int C, int R, bool V>
-static constexpr auto
-get_cm(const matrix<T, C, R, false, V>& m, const int ci, const int ri) noexcept
-  -> T {
+static constexpr auto get_cm(
+  const matrix<T, C, R, false, V>& m,
+  const int ci,
+  const int ri) noexcept -> T {
     EAGINE_ASSERT(ci < C && ri < R);
     return m._v[ci][ri];
 }
@@ -139,9 +140,10 @@ get_cm(const matrix<T, C, R, false, V>& m, const int ci, const int ri) noexcept
 /// @brief Returns the matrix element at [ci, ri]. Row-major implementation.
 /// @ingroup math
 template <typename T, int C, int R, bool V>
-static constexpr auto
-get_cm(const matrix<T, C, R, true, V>& m, const int ci, const int ri) noexcept
-  -> T {
+static constexpr auto get_cm(
+  const matrix<T, C, R, true, V>& m,
+  const int ci,
+  const int ri) noexcept -> T {
     EAGINE_ASSERT(ci < C && ri < R);
     return m._v[ri][ci];
 }
@@ -165,9 +167,10 @@ static constexpr auto get_rm(const matrix<T, C, R, true, V>& m) noexcept
 /// @brief Returns the matrix element at [ri, ci]. Column-major implementation.
 /// @ingroup math
 template <typename T, int C, int R, bool V>
-static constexpr auto
-get_rm(const matrix<T, C, R, false, V>& m, const int ri, const int ci) noexcept
-  -> T {
+static constexpr auto get_rm(
+  const matrix<T, C, R, false, V>& m,
+  const int ri,
+  const int ci) noexcept -> T {
     EAGINE_ASSERT(ci < C && ri < R);
     return m._v[ci][ri];
 }
@@ -175,9 +178,10 @@ get_rm(const matrix<T, C, R, false, V>& m, const int ri, const int ci) noexcept
 /// @brief Returns the matrix element at [ri, ci]. Row-major implementation.
 /// @ingroup math
 template <typename T, int C, int R, bool V>
-static constexpr auto
-get_rm(const matrix<T, C, R, true, V>& m, const int ri, const int ci) noexcept
-  -> T {
+static constexpr auto get_rm(
+  const matrix<T, C, R, true, V>& m,
+  const int ri,
+  const int ci) noexcept -> T {
     EAGINE_ASSERT(ci < C && ri < R);
     return m._v[ri][ci];
 }
@@ -470,9 +474,10 @@ static inline auto _col_hlp(
 //------------------------------------------------------------------------------
 // _col_hlp
 template <typename T, int C, int R, bool RM, bool V, int I>
-static inline auto
-_col_hlp(const matrix<T, C, R, RM, V>& m, int_constant<I>, const int i) noexcept
-  -> vector<T, R, V> {
+static inline auto _col_hlp(
+  const matrix<T, C, R, RM, V>& m,
+  int_constant<I>,
+  const int i) noexcept -> vector<T, R, V> {
     if(I == i) {
         return column<I>(m);
     }
@@ -578,9 +583,9 @@ struct multiplication_result<matrix<T, C, R, RM, V>, vector<T, C, V>>
 /// @brief Matrix-vector multiplication function.
 /// @ingroup math
 template <typename T, int C, int R, bool RM, bool V>
-static inline auto
-multiply(const matrix<T, C, R, RM, V>& m, const vector<T, C, V>& v) noexcept
-  -> vector<T, R, V> {
+static inline auto multiply(
+  const matrix<T, C, R, RM, V>& m,
+  const vector<T, C, V>& v) noexcept -> vector<T, R, V> {
     vector<T, R, V> r{};
 
     for(int i = 0; i < R; ++i) {

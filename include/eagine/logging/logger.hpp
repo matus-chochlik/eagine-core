@@ -152,16 +152,16 @@ protected:
           format);
     }
 
-    constexpr auto
-    log_info(const identifier source, const string_view format) const noexcept {
+    constexpr auto log_info(const identifier source, const string_view format)
+      const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::info>{},
           format);
     }
 
-    constexpr auto
-    log_stat(const identifier source, const string_view format) const noexcept {
+    constexpr auto log_stat(const identifier source, const string_view format)
+      const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::stat>{},
@@ -383,9 +383,8 @@ public:
     }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
-    auto
-    log_chart_sample(const identifier series, const float value) const noexcept
-      -> const named_logging_object& {
+    auto log_chart_sample(const identifier series, const float value)
+      const noexcept -> const named_logging_object& {
         base::log_chart_sample(_object_id, series, value);
         return *this;
     }

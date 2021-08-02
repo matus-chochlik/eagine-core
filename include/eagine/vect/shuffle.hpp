@@ -59,8 +59,9 @@ private:
 
 public:
     template <int... I>
-    static constexpr auto
-    apply(data_param_t<T, N, V> v, const shuffle_mask<I...> m = {}) noexcept {
+    static constexpr auto apply(
+      data_param_t<T, N, V> v,
+      const shuffle_mask<I...> m = {}) noexcept {
         return _do_apply(v, m, has_vect_data<T, N, V>());
     }
 };

@@ -81,8 +81,8 @@ public:
         return _make(bool_constant<RM>());
     }
 
-    friend constexpr auto
-    reorder_mat_ctr(const orbiting_y_up<matrix<T, 4, 4, RM, V>>& c) noexcept
+    friend constexpr auto reorder_mat_ctr(
+      const orbiting_y_up<matrix<T, 4, 4, RM, V>>& c) noexcept
       -> orbiting_y_up<matrix<T, 4, 4, !RM, V>> {
         return {c._t, c._x, c._y, c._z, c._r};
     }

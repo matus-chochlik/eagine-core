@@ -13,8 +13,9 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-static inline void
-do_read_stream_data(std::istream& input, memory::buffer& dest) {
+static inline void do_read_stream_data(
+  std::istream& input,
+  memory::buffer& dest) {
     try {
         input.seekg(0, std::ios::end);
         dest.resize(memory::buffer::size_type(input.tellg()));

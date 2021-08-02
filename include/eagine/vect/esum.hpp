@@ -21,9 +21,10 @@ template <typename T, int N, bool V>
 struct esum {
 private:
     template <int M, bool B>
-    static auto
-    _hlp(data_param_t<T, N, V> v, int_constant<M>, bool_constant<B>) noexcept
-      -> T {
+    static auto _hlp(
+      data_param_t<T, N, V> v,
+      int_constant<M>,
+      bool_constant<B>) noexcept -> T {
         static_assert(M == N);
         T r = T(0);
 
@@ -35,16 +36,18 @@ private:
 
 #if EAGINE_VECT_OPTS
     template <bool B>
-    static constexpr auto
-    _hlp(data_param_t<T, N, V> v, int_constant<1>, bool_constant<B>) noexcept
-      -> T {
+    static constexpr auto _hlp(
+      data_param_t<T, N, V> v,
+      int_constant<1>,
+      bool_constant<B>) noexcept -> T {
         return v[0];
     }
 
     template <int M>
-    static auto
-    _hlp(data_param_t<T, N, V> v, int_constant<M>, std::true_type) noexcept
-      -> T {
+    static auto _hlp(
+      data_param_t<T, N, V> v,
+      int_constant<M>,
+      std::true_type) noexcept -> T {
         static_assert(M == N);
         return hsum<T, N, V>::apply(v)[N - 1];
     }

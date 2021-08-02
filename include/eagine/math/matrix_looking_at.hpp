@@ -50,8 +50,11 @@ private:
 
     vector<T, 3, V> _e, _t;
 
-    static constexpr auto
-    _make(const _dT& x, const _dT& y, const _dT& z, const _dT& t) noexcept {
+    static constexpr auto _make(
+      const _dT& x,
+      const _dT& y,
+      const _dT& z,
+      const _dT& t) noexcept {
         return matrix<T, 4, 4, true, V>{
           {{x[0], x[1], x[2], -dot(x, t)},
            {y[0], y[1], y[2], -dot(y, t)},
@@ -59,8 +62,10 @@ private:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-    static constexpr auto
-    _make(const _dT& y, const _dT& z, const _dT& t) noexcept {
+    static constexpr auto _make(
+      const _dT& y,
+      const _dT& z,
+      const _dT& t) noexcept {
         return _make(cross(y, z), y, z, t);
     }
 
@@ -83,8 +88,8 @@ private:
 
 // reorder_mat_ctr(looking_at_y_up)
 template <typename T, int N, bool RM, bool V>
-static constexpr auto
-reorder_mat_ctr(const looking_at_y_up<matrix<T, N, N, RM, V>>& c) noexcept
+static constexpr auto reorder_mat_ctr(
+  const looking_at_y_up<matrix<T, N, N, RM, V>>& c) noexcept
   -> looking_at_y_up<matrix<T, N, N, !RM, V>> {
     return {c._e, c._t};
 }

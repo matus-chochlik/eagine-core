@@ -38,23 +38,30 @@ private:
 
 #if EAGINE_VECT_OPTS
     template <bool B>
-    static constexpr auto
-    _hlp(data_t<T, N, V> v, int_constant<1>, bool_constant<B>) noexcept {
+    static constexpr auto _hlp(
+      data_t<T, N, V> v,
+      int_constant<1>,
+      bool_constant<B>) noexcept {
         return v;
     }
 
-    static constexpr auto
-    _hlp(data_param_t<T, N, V> v, int_constant<2>, std::true_type) noexcept {
+    static constexpr auto _hlp(
+      data_param_t<T, N, V> v,
+      int_constant<2>,
+      std::true_type) noexcept {
         return v + _sh_apply<1, 0>(v);
     }
 
-    static constexpr auto
-    _hlp3_1(data_param_t<T, N, V> t, data_param_t<T, N, V> v) noexcept {
+    static constexpr auto _hlp3_1(
+      data_param_t<T, N, V> t,
+      data_param_t<T, N, V> v) noexcept {
         return t + _sh_apply<2, 2, 1>(v);
     }
 
-    static constexpr auto
-    _hlp(data_param_t<T, N, V> v, int_constant<3>, std::true_type) noexcept {
+    static constexpr auto _hlp(
+      data_param_t<T, N, V> v,
+      int_constant<3>,
+      std::true_type) noexcept {
         return _hlp3_1(v + _sh_apply<1, 0, 0>(v), v);
     }
 
@@ -62,8 +69,10 @@ private:
         return v + _sh_apply<2, 3, 0, 1>(v);
     }
 
-    static constexpr auto
-    _hlp(data_param_t<T, N, V> v, int_constant<4>, std::true_type) noexcept {
+    static constexpr auto _hlp(
+      data_param_t<T, N, V> v,
+      int_constant<4>,
+      std::true_type) noexcept {
         return _hlp4_1(v + _sh_apply<1, 0, 3, 2>(v));
     }
 
@@ -79,8 +88,10 @@ private:
         return v + _sh_apply<4, 5, 6, 7, 0, 1, 2, 3>(v);
     }
 
-    static constexpr auto
-    _hlp(data_param_t<T, N, V> v, int_constant<8>, std::true_type) noexcept {
+    static constexpr auto _hlp(
+      data_param_t<T, N, V> v,
+      int_constant<8>,
+      std::true_type) noexcept {
         return _hlp8_3(_hlp8_2(_hlp8_1(v)));
     }
 #endif

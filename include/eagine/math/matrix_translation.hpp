@@ -44,8 +44,8 @@ public:
         return _make(bool_constant<RM>());
     }
 
-    friend constexpr auto
-    reorder_mat_ctr(const translation<matrix<T, 4, 4, RM, V>>& c) noexcept
+    friend constexpr auto reorder_mat_ctr(
+      const translation<matrix<T, 4, 4, RM, V>>& c) noexcept
       -> translation<matrix<T, 4, 4, !RM, V>> {
         return {c._v};
     }

@@ -152,8 +152,9 @@ private:
     static void _log_invalid(const X&, const std::ostream&) noexcept {}
 
     template <typename X, typename P, typename L>
-    static void
-    _log_invalid(const valid_if<X, P, L>& vi, std::ostream& log) noexcept {
+    static void _log_invalid(
+      const valid_if<X, P, L>& vi,
+      std::ostream& log) noexcept {
         vi.log_invalid(log);
     }
 
@@ -401,8 +402,8 @@ public:
     /// @brief Tries to parse the following argument's value into @p dest.
     /// @returns True if the parse is successful, false otherwise.
     template <typename T, identifier_t V>
-    auto
-    parse_next(T& dest, const selector<V> sel, std::ostream& parse_log) const {
+    auto parse_next(T& dest, const selector<V> sel, std::ostream& parse_log)
+      const {
         return next().parse(dest, sel, parse_log);
     }
 
@@ -522,9 +523,10 @@ public:
     }
 
     template <typename T, typename C>
-    auto
-    consume_next(T& dest, const span<const C> choices, std::ostream& errorlog)
-      -> bool {
+    auto consume_next(
+      T& dest,
+      const span<const C> choices,
+      std::ostream& errorlog) -> bool {
         auto if_missing{missing_handler(errorlog)};
         auto if_invalid{invalid_handler(errorlog)};
         return do_consume_next(dest, choices, if_missing, if_invalid);
@@ -702,9 +704,8 @@ private:
     }
 
     template <identifier_t V>
-    auto
-    _do_parse(std::string& dest, const selector<V>, const std::ostream&) const
-      -> bool {
+    auto _do_parse(std::string& dest, const selector<V>, const std::ostream&)
+      const -> bool {
         dest = get_string();
         return true;
     }
@@ -786,45 +787,51 @@ public:
     using iterator_category = std::random_access_iterator_tag;
 
     /// @brief Equality comparison.
-    friend constexpr auto
-    operator==(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator==(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) == 0;
     }
 
     /// @brief Nonequality comparison.
-    friend constexpr auto
-    operator!=(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator!=(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) != 0;
     }
 
     /// @brief Less-than comparison.
-    friend constexpr auto
-    operator<(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator<(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) < 0;
     }
 
     /// @brief Less-equal comparison.
-    friend constexpr auto
-    operator<=(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator<=(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) <= 0;
     }
 
     /// @brief Greater-than comparison.
-    friend constexpr auto
-    operator>(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator>(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) > 0;
     }
 
     /// @brief Greater-equal comparison.
-    friend constexpr auto
-    operator>=(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator>=(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) >= 0;
     }
 
     /// @brief Difference.
-    friend constexpr auto
-    operator-(const this_class& l, const this_class& r) noexcept
-      -> difference_type {
+    friend constexpr auto operator-(
+      const this_class& l,
+      const this_class& r) noexcept -> difference_type {
         return _cmp(l._a, r._a);
     }
 
@@ -895,8 +902,9 @@ public:
     }
 
 private:
-    static constexpr auto
-    _cmp(const program_arg& l, const program_arg& r) noexcept -> int {
+    static constexpr auto _cmp(
+      const program_arg& l,
+      const program_arg& r) noexcept -> int {
         return EAGINE_CONSTEXPR_ASSERT(l._argv == r._argv, l._argi - r._argi);
     }
 
@@ -1032,14 +1040,14 @@ private:
         }
 
         template <typename X, typename P, typename L>
-        static auto
-        _plchldr_name(const type_identity<valid_if<X, P, L>>) noexcept {
+        static auto _plchldr_name(
+          const type_identity<valid_if<X, P, L>>) noexcept {
             return _plchldr_name(type_identity<X>());
         }
 
         template <typename X, typename A>
-        static auto
-        _plchldr_name(const type_identity<std::vector<X, A>>) noexcept {
+        static auto _plchldr_name(
+          const type_identity<std::vector<X, A>>) noexcept {
             return _plchldr_name(type_identity<X>());
         }
 

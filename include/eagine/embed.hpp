@@ -103,9 +103,9 @@ extern auto get_embedded_resource(
 /// The embed generator is installed as one of the tools and in cmake-based
 /// build systems the eagine_embed_packed_target_resources and
 /// eagine_embed_target_resources cmake functions can be used invoke it.
-static inline auto
-embed(const identifier res_id, const string_view src_path) noexcept
-  -> embedded_resource {
+static inline auto embed(
+  const identifier res_id,
+  const string_view src_path) noexcept -> embedded_resource {
     return get_embedded_resource(res_id, src_path);
 }
 

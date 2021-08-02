@@ -291,14 +291,16 @@ struct enum_class {
     }
 
     /// @brief Equality comparison.
-    friend constexpr auto
-    operator==(const enum_class a, const enum_class b) noexcept {
+    friend constexpr auto operator==(
+      const enum_class a,
+      const enum_class b) noexcept {
         return a._value == b._value;
     }
 
     /// @brief Nonequality comparison.
-    friend constexpr auto
-    operator!=(const enum_class a, const enum_class b) noexcept {
+    friend constexpr auto operator!=(
+      const enum_class a,
+      const enum_class b) noexcept {
         return a._value != b._value;
     }
 
@@ -408,14 +410,16 @@ struct any_enum_class {
     }
 
     /// @brief Equality comparison.
-    friend auto
-    operator==(const any_enum_class& a, const any_enum_class& b) noexcept {
+    friend auto operator==(
+      const any_enum_class& a,
+      const any_enum_class& b) noexcept {
         return a._type_id == b._type_id;
     }
 
     /// @brief Nonequality comparison.
-    friend auto
-    operator!=(const any_enum_class& a, const any_enum_class& b) noexcept {
+    friend auto operator!=(
+      const any_enum_class& a,
+      const any_enum_class& b) noexcept {
         return a._type_id != b._type_id;
     }
 };
@@ -447,14 +451,16 @@ struct any_enum_value {
     }
 
     /// @brief Equality comparison.
-    friend auto
-    operator==(const any_enum_value& a, const any_enum_value& b) noexcept {
+    friend auto operator==(
+      const any_enum_value& a,
+      const any_enum_value& b) noexcept {
         return (a._value == b._value) && (a._type_id == b._type_id);
     }
 
     /// @brief Nonequality comparison.
-    friend auto
-    operator!=(const any_enum_value& a, const any_enum_value& b) noexcept {
+    friend auto operator!=(
+      const any_enum_value& a,
+      const any_enum_value& b) noexcept {
         return (a._value != b._value) || (a._type_id != b._type_id);
     }
 };

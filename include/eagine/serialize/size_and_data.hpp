@@ -19,9 +19,9 @@ namespace eagine {
 /// @brief Encodes the size of the source block into destination, copies data afterwards.
 /// @ingroup serialization
 /// @see get_data_with_size
-static inline auto
-store_data_with_size(const memory::const_block src, memory::block dst) noexcept
-  -> memory::block {
+static inline auto store_data_with_size(
+  const memory::const_block src,
+  memory::block dst) noexcept -> memory::block {
 
     const auto opt_size_cp = limit_cast<mbs::code_point>(src.size());
     if(EAGINE_LIKELY(opt_size_cp)) {
@@ -90,8 +90,9 @@ static inline auto get_data_with_size(const memory::const_block src) noexcept
 /// @see store_data_with_size
 /// @see get_data_with_size
 template <typename Function>
-static inline void
-for_each_data_with_size(memory::const_block src, Function function) noexcept {
+static inline void for_each_data_with_size(
+  memory::const_block src,
+  Function function) noexcept {
     while(src) {
         const auto opt_skip_len = mbs::decode_sequence_length(src);
         const auto opt_data_len = mbs::do_decode_code_point(src, opt_skip_len);

@@ -19,8 +19,9 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-static inline auto
-adapt_log_entry_arg(const identifier name, logger_backend* value) {
+static inline auto adapt_log_entry_arg(
+  const identifier name,
+  logger_backend* value) {
     return [name, value](logger_backend& backend) {
         if(value) {
             backend.add_identifier(
@@ -39,8 +40,9 @@ static constexpr auto adapt_log_entry_arg(const identifier name, const T value) 
 }
 //------------------------------------------------------------------------------
 template <typename T, typename = std::enable_if_t<has_enumerator_mapping_v<T>>>
-static constexpr auto
-adapt_log_entry_arg(const identifier name, const bitfield<T> bf) {
+static constexpr auto adapt_log_entry_arg(
+  const identifier name,
+  const bitfield<T> bf) {
     return [=](logger_backend& backend) {
         auto func = [&backend, name, bf](const auto& info) {
             if(bf.has(static_cast<T>(info.value))) {
@@ -196,9 +198,9 @@ public:
 
     /// @brief Adds a new message argument with 64-bit signed integer span.
     /// @param name the argument name identifier. Used in message substitution.
-    auto
-    arg(const identifier name, const span<const std::int64_t> values) noexcept
-      -> auto& {
+    auto arg(
+      const identifier name,
+      const span<const std::int64_t> values) noexcept -> auto& {
         return arg(name, EAGINE_ID(int64), values);
     }
 
@@ -236,9 +238,9 @@ public:
 
     /// @brief Adds a new message argument with 32-bit signed integer span.
     /// @param name the argument name identifier. Used in message substitution.
-    auto
-    arg(const identifier name, const span<const std::int32_t> values) noexcept
-      -> auto& {
+    auto arg(
+      const identifier name,
+      const span<const std::int32_t> values) noexcept -> auto& {
         return arg(name, EAGINE_ID(int32), values);
     }
 
@@ -276,9 +278,9 @@ public:
 
     /// @brief Adds a new message argument with 16-bit signed integer span.
     /// @param name the argument name identifier. Used in message substitution.
-    auto
-    arg(const identifier name, const span<const std::int16_t> values) noexcept
-      -> auto& {
+    auto arg(
+      const identifier name,
+      const span<const std::int16_t> values) noexcept -> auto& {
         return arg(name, EAGINE_ID(int16), values);
     }
 
@@ -316,9 +318,9 @@ public:
 
     /// @brief Adds a new message argument with 64-bit unsigned integer span.
     /// @param name the argument name identifier. Used in message substitution.
-    auto
-    arg(const identifier name, const span<const std::uint64_t> values) noexcept
-      -> auto& {
+    auto arg(
+      const identifier name,
+      const span<const std::uint64_t> values) noexcept -> auto& {
         return arg(name, EAGINE_ID(uint64), values);
     }
 
@@ -356,9 +358,9 @@ public:
 
     /// @brief Adds a new message argument with 32-bit unsigned integer span.
     /// @param name the argument name identifier. Used in message substitution.
-    auto
-    arg(const identifier name, const span<const std::uint32_t> values) noexcept
-      -> auto& {
+    auto arg(
+      const identifier name,
+      const span<const std::uint32_t> values) noexcept -> auto& {
         return arg(name, EAGINE_ID(uint32), values);
     }
 
@@ -396,9 +398,9 @@ public:
 
     /// @brief Adds a new message argument with 16-bit unsigned integer span.
     /// @param name the argument name identifier. Used in message substitution.
-    auto
-    arg(const identifier name, const span<const std::uint16_t> values) noexcept
-      -> auto& {
+    auto arg(
+      const identifier name,
+      const span<const std::uint16_t> values) noexcept -> auto& {
         return arg(name, EAGINE_ID(uint16), values);
     }
 
@@ -406,9 +408,10 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     /// @param tag the argument type identifier. Used in value formatting.
     /// @param value the value of the argument.
-    auto
-    arg(const identifier name, const identifier tag, const float value) noexcept
-      -> auto& {
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      const float value) noexcept -> auto& {
         if(_backend) {
             _args.add([=](logger_backend& backend) {
                 backend.add_float(name, tag, value);
@@ -499,9 +502,9 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     /// @param value the value of the argument.
     template <typename R, typename P>
-    auto
-    arg(const identifier name, const std::chrono::duration<R, P> value) noexcept
-      -> auto& {
+    auto arg(
+      const identifier name,
+      const std::chrono::duration<R, P> value) noexcept -> auto& {
         return arg(name, EAGINE_ID(duration), value);
     }
 
@@ -690,9 +693,10 @@ struct no_log_entry {
     }
 
     template <typename T>
-    constexpr auto
-    arg(const identifier, const identifier, const span<const T>) noexcept
-      -> auto& {
+    constexpr auto arg(
+      const identifier,
+      const identifier,
+      const span<const T>) noexcept -> auto& {
         return *this;
     }
 

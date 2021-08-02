@@ -77,8 +77,9 @@ static constexpr auto span_size_of(const type_identity<T> = {}) noexcept {
 /// @brief Returns the total byte size of n elements of type T as span_size_t.
 /// @ingroup type_utils
 template <typename T, typename S>
-static constexpr auto
-span_size_of(const S n, const type_identity<T> = {}) noexcept {
+static constexpr auto span_size_of(
+  const S n,
+  const type_identity<T> = {}) noexcept {
     return span_size(sizeof(T)) * span_size(n);
 }
 

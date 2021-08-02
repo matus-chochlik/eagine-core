@@ -22,8 +22,10 @@ static inline void _check_close(float a, float b, eagine::type_identity<float>) 
     BOOST_CHECK_CLOSE(a, b, 0.1f);
 }
 
-static inline void
-_check_close(double a, double b, eagine::type_identity<double>) {
+static inline void _check_close(
+  double a,
+  double b,
+  eagine::type_identity<double>) {
     BOOST_CHECK_CLOSE(a, b, 0.001);
 }
 

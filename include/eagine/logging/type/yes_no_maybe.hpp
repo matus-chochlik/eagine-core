@@ -19,8 +19,9 @@ struct yes_no_maybe : tribool {
       : tribool{v} {}
 };
 //------------------------------------------------------------------------------
-static inline auto
-adapt_log_entry_arg(const identifier name, yes_no_maybe value) {
+static inline auto adapt_log_entry_arg(
+  const identifier name,
+  yes_no_maybe value) {
     return [name, value](logger_backend& backend) {
         backend.add_string(
           name,

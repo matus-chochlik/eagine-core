@@ -53,9 +53,9 @@ static inline auto operator<<(std::ostream& o, const matrix<T, C, R, true, V>& m
 /// @brief Operator for writing column-major matrix into output stream.
 /// @ingroup math
 template <typename T, int C, int R, bool V>
-static inline auto
-operator<<(std::ostream& o, const matrix<T, C, R, false, V>& m)
-  -> std::ostream& {
+static inline auto operator<<(
+  std::ostream& o,
+  const matrix<T, C, R, false, V>& m) -> std::ostream& {
     o << "|C0[" << m._v[0][0];
 
     for(int r = 1; r < R; ++r) {

@@ -61,8 +61,9 @@ public:
         return _cast(v, d, is(), ds());
     }
 
-    static constexpr auto
-    apply(const data_param_t<TF, NF, VF> v, const TT d) noexcept {
+    static constexpr auto apply(
+      const data_param_t<TF, NF, VF> v,
+      const TT d) noexcept {
         return apply(v, fill < TT, (NT > NF) ? NT - NF : 0, VT > ::apply(d));
     }
 };

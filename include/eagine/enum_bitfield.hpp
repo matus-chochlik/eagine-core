@@ -29,8 +29,9 @@ template <
   typename TL1,
   typename TL2,
   typename = std::enable_if_t<!mp_is_empty_v<mp_union_t<TL1, TL2>>>>
-static constexpr auto
-operator|(const enum_value<T, TL1> a, const enum_value<T, TL2> b) noexcept {
+static constexpr auto operator|(
+  const enum_value<T, TL1> a,
+  const enum_value<T, TL2> b) noexcept {
     // NOLINTNEXTLINE(hicpp-signed-bitwise)
     return enum_bits<T, mp_union_t<TL1, TL2>>{a.value | b.value};
 }
@@ -40,8 +41,9 @@ template <
   typename TL1,
   typename TL2,
   typename = std::enable_if_t<!mp_is_empty_v<mp_union_t<TL1, TL2>>>>
-static constexpr auto
-operator|(const enum_bits<T, TL1> eb, const enum_value<T, TL2> ev) noexcept {
+static constexpr auto operator|(
+  const enum_bits<T, TL1> eb,
+  const enum_value<T, TL2> ev) noexcept {
     return enum_bits<T, mp_union_t<TL1, TL2>>{eb._bits | ev.value};
 }
 //------------------------------------------------------------------------------
@@ -90,23 +92,27 @@ struct enum_bitfield {
         return (_value & ev._value) == ev._value;
     }
 
-    friend constexpr auto
-    operator==(const enum_bitfield a, const enum_bitfield b) noexcept {
+    friend constexpr auto operator==(
+      const enum_bitfield a,
+      const enum_bitfield b) noexcept {
         return a._value == b._value;
     }
 
-    friend constexpr auto
-    operator!=(const enum_bitfield a, const enum_bitfield b) noexcept {
+    friend constexpr auto operator!=(
+      const enum_bitfield a,
+      const enum_bitfield b) noexcept {
         return a._value != b._value;
     }
 
-    friend constexpr auto
-    operator|(const enum_bitfield a, const enum_bitfield b) noexcept {
+    friend constexpr auto operator|(
+      const enum_bitfield a,
+      const enum_bitfield b) noexcept {
         return enum_bitfield{value_type(a._value) | value_type(b._value)};
     }
 
-    friend constexpr auto
-    operator&(const enum_bitfield a, const enum_bitfield b) noexcept {
+    friend constexpr auto operator&(
+      const enum_bitfield a,
+      const enum_bitfield b) noexcept {
         return enum_bitfield{value_type(a._value) & value_type(b._value)};
     }
 };

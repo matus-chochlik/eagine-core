@@ -50,8 +50,8 @@ public:
         return _make(cos(_v), sin(_v) * (RM ? 1 : -1), _axis());
     }
 
-    friend constexpr auto
-    reorder_mat_ctr(const rotation_I<matrix<T, 4, 4, RM, V>, I>& c) noexcept
+    friend constexpr auto reorder_mat_ctr(
+      const rotation_I<matrix<T, 4, 4, RM, V>, I>& c) noexcept
       -> rotation_I<matrix<T, 4, 4, !RM, V>, I> {
         return {c._v};
     }

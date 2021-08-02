@@ -23,8 +23,9 @@ struct get_serialize_buffer_size<Sid, basic_sudoku_board<S, T>, Selector>
       typename basic_sudoku_board<S, T>::blocks_type,
       Selector> {
 
-    static constexpr auto
-    get(string_view s, const basic_sudoku_board<S, T>& v) noexcept {
+    static constexpr auto get(
+      string_view s,
+      const basic_sudoku_board<S, T>& v) noexcept {
         return get_serialize_buffer_size<
           Sid,
           typename basic_sudoku_board<S, T>::blocks_type,
@@ -60,4 +61,3 @@ private:
 } // namespace eagine
 
 #endif
-

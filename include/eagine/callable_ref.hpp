@@ -145,8 +145,8 @@ public:
         if(_data == nullptr) {
             return (reinterpret_cast<_func_pt>(_func))(std::forward<A>(a)...);
         } else {
-            return (reinterpret_cast<_func_vpt>(_func))(
-              _data, std::forward<A>(a)...);
+            return (
+              reinterpret_cast<_func_vpt>(_func))(_data, std::forward<A>(a)...);
         }
     }
 

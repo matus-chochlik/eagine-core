@@ -199,8 +199,9 @@ public:
 };
 
 template <typename BiS>
-static inline void
-swap(biteset_value_proxy<BiS>&& a, biteset_value_proxy<BiS>&& b) noexcept {
+static inline void swap(
+  biteset_value_proxy<BiS>&& a,
+  biteset_value_proxy<BiS>&& b) noexcept {
     return a.swap(b);
 }
 
@@ -316,8 +317,9 @@ protected:
 };
 
 template <typename BiS>
-static inline void
-swap(biteset_iterator_base<BiS>& a, biteset_iterator_base<BiS>& b) noexcept {
+static inline void swap(
+  biteset_iterator_base<BiS>& a,
+  biteset_iterator_base<BiS>& b) noexcept {
     return a.swap(b);
 }
 
@@ -521,38 +523,44 @@ public:
     }
 
     /// @brief Equality comparison.
-    friend constexpr auto
-    operator==(const biteset& a, const biteset& b) noexcept {
+    friend constexpr auto operator==(
+      const biteset& a,
+      const biteset& b) noexcept {
         return a.bytes() == b.bytes();
     }
 
     /// @brief Non-equality comparison.
-    friend constexpr auto
-    operator!=(const biteset& a, const biteset& b) noexcept {
+    friend constexpr auto operator!=(
+      const biteset& a,
+      const biteset& b) noexcept {
         return a.bytes() != b.bytes();
     }
 
     /// @brief Less-than comparison.
-    friend constexpr auto
-    operator<(const biteset& a, const biteset& b) noexcept {
+    friend constexpr auto operator<(
+      const biteset& a,
+      const biteset& b) noexcept {
         return a.bytes() < b.bytes();
     }
 
     /// @brief Less-equal comparison.
-    friend constexpr auto
-    operator<=(const biteset& a, const biteset& b) noexcept {
+    friend constexpr auto operator<=(
+      const biteset& a,
+      const biteset& b) noexcept {
         return a.bytes() <= b.bytes();
     }
 
     /// @brief Greater-than comparison.
-    friend constexpr auto
-    operator>(const biteset& a, const biteset& b) noexcept {
+    friend constexpr auto operator>(
+      const biteset& a,
+      const biteset& b) noexcept {
         return a.bytes() > b.bytes();
     }
 
     /// @brief Greater-equal comparison.
-    friend constexpr auto
-    operator>=(const biteset& a, const biteset& b) noexcept {
+    friend constexpr auto operator>=(
+      const biteset& a,
+      const biteset& b) noexcept {
         return a.bytes() >= b.bytes();
     }
 
@@ -564,8 +572,9 @@ public:
 private:
     _bytes_t _bytes{};
 
-    static constexpr auto
-    _min_s(const std::size_t x, const std::size_t y) noexcept -> std::size_t {
+    static constexpr auto _min_s(
+      const std::size_t x,
+      const std::size_t y) noexcept -> std::size_t {
         return (x < y) ? x : y;
     }
 
@@ -643,8 +652,9 @@ private:
           init, byte(0), bb, be, bb / _bite_s, be / _bite_s, size_constant<1>{});
     }
 
-    static constexpr auto
-    _get_byte(const T (&init)[N], const std::size_t i) noexcept {
+    static constexpr auto _get_byte(
+      const T (&init)[N],
+      const std::size_t i) noexcept {
         return (B == _byte_s)
                  ? static_cast<byte>(init[i])
                  : _get_byte_bits(init, (i + 0) * _byte_s, (i + 1) * _byte_s);
@@ -708,9 +718,8 @@ private:
                      l);
     }
 
-    constexpr auto
-    _get_cell_bits(const std::size_t bb, const std::size_t be) const noexcept
-      -> T {
+    constexpr auto _get_cell_bits(const std::size_t bb, const std::size_t be)
+      const noexcept -> T {
         return _get_cell_bits(
           byte(0), bb, be, bb / _byte_s, be / _byte_s, size_constant<1>{});
     }

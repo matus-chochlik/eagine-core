@@ -45,9 +45,10 @@ static constexpr auto concentrated_bits_length(
 }
 //------------------------------------------------------------------------------
 template <typename Getter, typename Putter>
-static inline auto
-do_dissolve_bits(Getter get, Putter put, const span_size_t bits) noexcept
-  -> bool {
+static inline auto do_dissolve_bits(
+  Getter get,
+  Putter put,
+  const span_size_t bits) noexcept -> bool {
 
     EAGINE_ASSERT(bits >= 1);
     EAGINE_ASSERT(bits <= byte_bits());
@@ -91,9 +92,10 @@ do_dissolve_bits(Getter get, Putter put, const span_size_t bits) noexcept
 }
 //------------------------------------------------------------------------------
 template <typename Getter, typename Putter>
-static inline auto
-do_concentrate_bits(Getter get, Putter put, const span_size_t bits) noexcept
-  -> bool {
+static inline auto do_concentrate_bits(
+  Getter get,
+  Putter put,
+  const span_size_t bits) noexcept -> bool {
     EAGINE_ASSERT(bits >= 1);
     EAGINE_ASSERT(bits <= byte_bits());
 

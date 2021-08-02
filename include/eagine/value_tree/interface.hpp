@@ -141,19 +141,22 @@ struct compound_interface : interface<compound_interface> {
     virtual auto value_count(attribute_interface& attr) -> span_size_t = 0;
 
     /// @brief Fetches boolean values from attribute into dest, starting at offset.
-    virtual auto
-    fetch_values(attribute_interface&, span_size_t offset, span<bool> dest)
-      -> span_size_t = 0;
+    virtual auto fetch_values(
+      attribute_interface&,
+      span_size_t offset,
+      span<bool> dest) -> span_size_t = 0;
 
     /// @brief Fetches char values from attribute into dest, starting at offset.
-    virtual auto
-    fetch_values(attribute_interface&, span_size_t offset, span<char> dest)
-      -> span_size_t = 0;
+    virtual auto fetch_values(
+      attribute_interface&,
+      span_size_t offset,
+      span<char> dest) -> span_size_t = 0;
 
     /// @brief Fetches byte values from attribute into dest, starting at offset.
-    virtual auto
-    fetch_values(attribute_interface&, span_size_t offset, span<byte> dest)
-      -> span_size_t = 0;
+    virtual auto fetch_values(
+      attribute_interface&,
+      span_size_t offset,
+      span<byte> dest) -> span_size_t = 0;
 
     /// @brief Fetches 16-bit int values from attribute into dest, starting at offset.
     virtual auto fetch_values(
@@ -192,9 +195,10 @@ struct compound_interface : interface<compound_interface> {
       span<std::uint64_t> dest) -> span_size_t = 0;
 
     /// @brief Fetches float values from attribute into dest, starting at offset.
-    virtual auto
-    fetch_values(attribute_interface&, span_size_t offset, span<float> dest)
-      -> span_size_t = 0;
+    virtual auto fetch_values(
+      attribute_interface&,
+      span_size_t offset,
+      span<float> dest) -> span_size_t = 0;
 
     /// @brief Fetches duration values from attribute into dest, starting at offset.
     virtual auto fetch_values(

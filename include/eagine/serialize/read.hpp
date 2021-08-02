@@ -307,8 +307,8 @@ struct deserializer<fragment_deserialize_wrapper<span<T>>>
     using common_deserializer<fragment_deserialize_wrapper<span<T>>>::read;
 
     template <typename Backend>
-    auto
-    read(fragment_deserialize_wrapper<span<T>>& frag, Backend& backend) const {
+    auto read(fragment_deserialize_wrapper<span<T>>& frag, Backend& backend)
+      const {
         deserialization_errors errors{};
         span_size_t offs{0};
         errors |= _size_deserializer.read(offs, backend);

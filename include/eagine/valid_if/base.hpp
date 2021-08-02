@@ -190,9 +190,9 @@ public:
     }
 
     /// @brief Equality comparison.
-    constexpr friend auto
-    operator==(const basic_valid_if& a, const basic_valid_if& b) noexcept
-      -> bool {
+    constexpr friend auto operator==(
+      const basic_valid_if& a,
+      const basic_valid_if& b) noexcept -> bool {
         return (a._get_value() == b._get_value()) && a.is_valid() &&
                b.is_valid();
     }

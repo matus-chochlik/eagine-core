@@ -47,8 +47,8 @@ public:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-    friend constexpr auto
-    reorder_mat_ctr(const scale<matrix<T, 4, 4, RM, V>>& c) noexcept
+    friend constexpr auto reorder_mat_ctr(
+      const scale<matrix<T, 4, 4, RM, V>>& c) noexcept
       -> scale<matrix<T, 4, 4, !RM, V>> {
         return {c._v};
     }
@@ -97,8 +97,8 @@ public:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-    friend constexpr auto
-    reorder_mat_ctr(const uniform_scale<matrix<T, 4, 4, RM, V>>& c) noexcept
+    friend constexpr auto reorder_mat_ctr(
+      const uniform_scale<matrix<T, 4, 4, RM, V>>& c) noexcept
       -> uniform_scale<matrix<T, 4, 4, !RM, V>> {
         return {c._v};
     }

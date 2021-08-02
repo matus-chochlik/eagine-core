@@ -520,9 +520,8 @@ public:
 
     /// @brief Fetches values through the specified name, into dest.
     template <typename T>
-    auto
-    fetch_value(const string_view name, const span_size_t offset, T& dest) const
-      -> bool {
+    auto fetch_value(const string_view name, const span_size_t offset, T& dest)
+      const -> bool {
         return select_value(name, offset, dest, default_selector);
     }
 
@@ -547,9 +546,8 @@ public:
 
     /// @brief Fetches values through the specified name, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto
-    select_value(const string_view name, T& dest, const selector<V> sel) const
-      -> bool {
+    auto select_value(const string_view name, T& dest, const selector<V> sel)
+      const -> bool {
         return select_value(name, 0, dest, sel);
     }
 
@@ -561,17 +559,15 @@ public:
 
     /// @brief Fetches a value at the specified attribute, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto
-    select_value(const attribute& attrib, T& dest, const selector<V> sel) const
-      -> bool {
+    auto select_value(const attribute& attrib, T& dest, const selector<V> sel)
+      const -> bool {
         return select_value(attrib, 0, dest, sel);
     }
 
     /// @brief Fetches values at the specified attribute, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto
-    select_values(const attribute& attrib, span<T> dest, selector<V> sel) const
-      -> span<T> {
+    auto select_values(const attribute& attrib, span<T> dest, selector<V> sel)
+      const -> span<T> {
         return select_values(attrib, 0, dest, sel);
     }
 
@@ -703,9 +699,8 @@ public:
 
     /// @brief Returns the value of type T at path.
     template <typename T>
-    auto
-    get(const basic_string_path& path, const type_identity<T> tid = {}) const
-      -> optionally_valid<T> {
+    auto get(const basic_string_path& path, const type_identity<T> tid = {})
+      const -> optionally_valid<T> {
         return get<T>(path, tid, default_selector);
     }
 

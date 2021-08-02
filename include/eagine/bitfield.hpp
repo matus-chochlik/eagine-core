@@ -144,14 +144,16 @@ public:
     }
 
     /// @brief Equality comparison.
-    friend constexpr auto
-    operator==(const bitfield a, const bitfield b) noexcept {
+    friend constexpr auto operator==(
+      const bitfield a,
+      const bitfield b) noexcept {
         return a._bits == b._bits;
     }
 
     /// @brief Nonequality comparison.
-    friend constexpr auto
-    operator!=(const bitfield a, const bitfield b) noexcept {
+    friend constexpr auto operator!=(
+      const bitfield a,
+      const bitfield b) noexcept {
         return a._bits != b._bits;
     }
 

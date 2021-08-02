@@ -36,9 +36,10 @@ struct byte_allocator
 
     virtual void deallocate(owned_block&& b, size_type a = 0) noexcept = 0;
 
-    virtual auto
-    can_reallocate(const owned_block& b, size_type n, size_type a) noexcept
-      -> bool {
+    virtual auto can_reallocate(
+      const owned_block& b,
+      size_type n,
+      size_type a) noexcept -> bool {
         EAGINE_MAYBE_UNUSED(b);
         EAGINE_MAYBE_UNUSED(n);
         EAGINE_MAYBE_UNUSED(a);

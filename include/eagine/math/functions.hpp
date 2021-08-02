@@ -51,8 +51,11 @@ static constexpr auto minimum(const T a, const T b) noexcept {
 /// @brief Returns the minimum value from multiple arguments.
 /// @ingroup math
 template <typename T, typename... P>
-static constexpr auto
-minimum(const T a, const T b, const T c, const P... d) noexcept {
+static constexpr auto minimum(
+  const T a,
+  const T b,
+  const T c,
+  const P... d) noexcept {
     return minimum(minimum(a, b), c, d...);
 }
 //------------------------------------------------------------------------------
@@ -66,8 +69,11 @@ static constexpr auto maximum(const T a, const T b) noexcept {
 /// @brief Returns the maximum value from multiple arguments.
 /// @ingroup math
 template <typename T, typename... P>
-static constexpr auto
-maximum(const T a, const T b, const T c, const P... d) noexcept {
+static constexpr auto maximum(
+  const T a,
+  const T b,
+  const T c,
+  const P... d) noexcept {
     return maximum(maximum(a, b), c, d...);
 }
 //------------------------------------------------------------------------------
@@ -232,8 +238,10 @@ public:
     }
 
 private:
-    static constexpr auto
-    _coef(const int m, const int i, const Parameter t) noexcept {
+    static constexpr auto _coef(
+      const int m,
+      const int i,
+      const Parameter t) noexcept {
         using std::pow;
         return binomial(m, i) * pow(t, i) * pow(1 - t, m - i);
     }
