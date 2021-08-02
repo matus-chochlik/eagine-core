@@ -128,12 +128,26 @@ static constexpr auto is_within_limits(const Src value) noexcept {
 /// @ingroup type_utils
 /// @see is_within_limits
 /// @see convert_if_fits
+/// @see signedness_cast
 /// @pre is_within_limits<Dst>(value)
 template <typename Dst, typename Src>
 static constexpr auto limit_cast(Src value) noexcept
   -> std::enable_if_t<std::is_convertible_v<Src, Dst>, Dst> {
     return EAGINE_CONSTEXPR_ASSERT(
       is_within_limits<Dst>(value), Dst(std::move(value)));
+}
+//------------------------------------------------------------------------------
+/// @brief Casts @p value to a type with the opposite signedness.
+/// @ingroup type_utils
+/// @see is_within_limits
+/// @see convert_if_fits
+/// @see limit_cast
+template <typename Src>
+static constexpr auto signedness_cast(Src value) noexcept {
+    return limit_cast<std::conditional_t<
+      std::is_signed_v<Src>,
+      std::make_unsigned_t<Src>,
+      std::make_signed_t<Src>>>(value);
 }
 //------------------------------------------------------------------------------
 /// @brief Optionally converts @p value to Dst type if the value fits in that type.
