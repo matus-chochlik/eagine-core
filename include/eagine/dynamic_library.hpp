@@ -76,7 +76,7 @@ public:
     auto find_symbol(const string_view name) -> optionally_valid<void*> {
         ::dlerror();
         void* result = ::dlsym(_handle, c_str(name));
-        if(auto error = ::dlerror()) {
+        if(const auto error{::dlerror()}) {
             _message.assign(error);
             return {};
         }

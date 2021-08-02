@@ -74,7 +74,7 @@ auto substitute_variables(
   const variable_substitution_options opts) -> std::string {
     auto translate_func =
       [&strings](string_view key) -> optionally_valid<string_view> {
-        char* e = nullptr;
+        char* e = nullptr; // NOLINT(hicpp-vararg)
         const span_size_t idx = span_size(std::strtol(c_str(key), &e, 10));
         if((0 < idx) && (idx <= strings.size())) {
             return {{strings[idx - 1]}, true};

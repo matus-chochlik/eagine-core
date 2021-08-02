@@ -25,8 +25,9 @@ namespace eagine {
 auto _parse_from_string(const string_view src, long long int&) noexcept -> bool;
 //------------------------------------------------------------------------------
 template <typename T>
-static inline auto
-parse_from_string(const string_view src, type_identity<T>) noexcept
+static inline auto parse_from_string(
+  const string_view src,
+  type_identity<T>) noexcept
   -> std::enable_if_t<std::is_integral_v<T>, optionally_valid<T>> {
     long long int parsed{};
     if(_parse_from_string(src, parsed)) {
@@ -38,8 +39,9 @@ parse_from_string(const string_view src, type_identity<T>) noexcept
 auto _parse_from_string(const string_view src, long double&) noexcept -> bool;
 //------------------------------------------------------------------------------
 template <typename T>
-static inline auto
-parse_from_string(const string_view src, type_identity<T>) noexcept
+static inline auto parse_from_string(
+  const string_view src,
+  type_identity<T>) noexcept
   -> std::enable_if_t<std::is_floating_point_v<T>, optionally_valid<T>> {
     long double parsed{};
     if(_parse_from_string(src, parsed)) {
@@ -100,7 +102,7 @@ auto convert_from_string_with(
   N (*converter)(const char*, char**),
   const string_view src,
   const type_identity<T> tid) noexcept -> optionally_valid<T> {
-    char* end = nullptr;
+    char* end = nullptr; // NOLINT(hicpp-vararg)
     auto cstr = c_str(src);
     errno = 0;
     const N result{converter(cstr, &end)};
@@ -119,7 +121,7 @@ auto convert_from_string_with(
   const int base,
   const string_view src,
   const type_identity<T> tid) noexcept -> optionally_valid<T> {
-    char* end = nullptr;
+    char* end = nullptr; // NOLINT(hicpp-vararg)
     auto cstr = c_str(src);
     errno = 0;
     const N result = converter(cstr, &end, base);

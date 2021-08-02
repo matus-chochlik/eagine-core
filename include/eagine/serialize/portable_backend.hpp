@@ -195,7 +195,7 @@ public:
     auto do_read(span<T> values, span_size_t& done) -> result {
         done = 0;
         result errors{};
-        for(T& val : values) {
+        for(T& val : values) { // NOLINT(hicpp-vararg)
             errors |= _read_one(val, ';');
             if(errors) {
                 break;

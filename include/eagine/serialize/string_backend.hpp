@@ -144,9 +144,9 @@ private:
         return _sprintf_one(value, "%hd");
     }
 
-    auto
-    _write_one(const unsigned short value, const type_identity<unsigned short>)
-      -> result {
+    auto _write_one(
+      const unsigned short value,
+      const type_identity<unsigned short>) -> result {
         return _sprintf_one(value, "%hu");
     }
 
@@ -163,9 +163,9 @@ private:
         return _sprintf_one(value, "%ld");
     }
 
-    auto
-    _write_one(const unsigned long value, const type_identity<unsigned long>)
-      -> result {
+    auto _write_one(
+      const unsigned long value,
+      const type_identity<unsigned long>) -> result {
         return _sprintf_one(value, "%lu");
     }
 
@@ -231,7 +231,7 @@ public:
     auto do_read(span<T> values, span_size_t& done) -> result {
         done = 0;
         result errors{};
-        for(T& val : values) {
+        for(T& val : values) { // NOLINT(hicpp-vararg)
             errors |= _read_one(val, ';');
             if(errors) {
                 break;

@@ -38,9 +38,9 @@ public:
     filesystem_node(const std::filesystem::path& fs_path)
       : filesystem_node{fs_path, canonical(fs_path)} {}
 
-    friend auto
-    operator==(const filesystem_node& l, const filesystem_node& r) noexcept
-      -> bool {
+    friend auto operator==(
+      const filesystem_node& l,
+      const filesystem_node& r) noexcept -> bool {
         return l._node_path == r._node_path;
     }
 
@@ -164,7 +164,7 @@ public:
 
     auto value_count() -> span_size_t {
         if(is_regular_file(_real_path)) {
-            return file_size(_real_path);
+            return limit_cast<span_size_t>(file_size(_real_path));
         }
         return 0;
     }
