@@ -114,8 +114,8 @@ void _bindump_do_bin_dump(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void bindump::apply(
-  bindump::byte_getter get_byte,
-  bindump::char_putter put_char) {
+  const bindump::byte_getter get_byte,
+  const bindump::char_putter put_char) {
 
     _bindump_do_bin_dump(0, get_byte, put_char);
 }

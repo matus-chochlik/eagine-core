@@ -12,7 +12,7 @@
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-void compound::traverse(stack_visit_handler visit) {
+void compound::traverse(const stack_visit_handler visit) {
     std::vector<attribute> atr;
     std::vector<span_size_t> pos;
     basic_string_path path{};
@@ -48,7 +48,7 @@ void compound::traverse(stack_visit_handler visit) {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-void compound::traverse(visit_handler visit) {
+void compound::traverse(const visit_handler visit) {
     auto adapted = [visit](
                      compound& c,
                      const attribute& a,

@@ -42,7 +42,7 @@ struct variable_substitution_options {
 /// using the translation function into @p dst.
 auto substitute_variables_into(
   std::string& dst,
-  string_view src,
+  const string_view src,
   const callable_ref<optionally_valid<string_view>(const string_view)>&
     translate,
   const variable_substitution_options = {}) -> std::string&;
