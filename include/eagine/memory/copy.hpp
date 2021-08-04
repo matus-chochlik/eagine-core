@@ -31,8 +31,7 @@ static inline auto copy(const const_block source, block dest) -> block {
 /// @see const_block
 /// @see buffer
 static inline auto copy_into(const const_block source, buffer& dest) -> block {
-    dest.resize(source.size());
-    return copy(source, cover(dest));
+    return copy(source, cover(dest.ensure(source.size())));
 }
 
 } // namespace eagine::memory
