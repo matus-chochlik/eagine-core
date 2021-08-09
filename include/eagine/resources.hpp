@@ -23,7 +23,7 @@ auto fetch_resource(
   const memory::const_block embedded_blk,
   memory::buffer& buf,
   application_config& args,
-  logger& log) -> memory::const_block;
+  const logger& log) -> memory::const_block;
 //------------------------------------------------------------------------------
 inline auto fetch_resource(
   const string_view description,

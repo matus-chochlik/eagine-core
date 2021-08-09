@@ -20,7 +20,7 @@ auto fetch_resource(
   const memory::const_block embedded_blk,
   memory::buffer& buf,
   application_config& cfg,
-  logger& log) -> memory::const_block {
+  const logger& log) -> memory::const_block {
 
     if(const auto res_path{cfg.get<std::string>(key)}) {
         if(const auto contents{file_contents(extract(res_path))}) {
