@@ -35,7 +35,7 @@ namespace eagine {
 /// @see dynamic_c_api_constant
 struct c_api_constant_base {
 public:
-    constexpr c_api_constant_base(string_view name) noexcept
+    constexpr c_api_constant_base(const string_view name) noexcept
       : _name{name} {}
 
     /// @brief Returns the name of the constant as a string.
@@ -55,12 +55,12 @@ struct no_c_api_constant
   , no_enum_value<T, Tag> {
 public:
     template <typename ApiTraits, typename Api>
-    constexpr no_c_api_constant(string_view name, ApiTraits&, Api&) noexcept
+    constexpr no_c_api_constant(const string_view name, ApiTraits&, Api&) noexcept
       : c_api_constant_base{name} {}
 
     /// @brief Adds the specified value to the constant (it it IsIndexed).
     template <typename I>
-    constexpr auto operator+(I) const noexcept -> std::
+    constexpr auto operator+(const I) const noexcept -> std::
       enable_if_t<(IsIndexed && std::is_integral_v<I>), no_enum_value<T, Tag>> {
         return {};
     }
@@ -85,7 +85,7 @@ public:
 
     /// @brief Adds the specified value to the constant (it it IsIndexed).
     template <typename I>
-    constexpr auto operator+(I index) const noexcept -> std::enable_if_t<
+    constexpr auto operator+(const I index) const noexcept -> std::enable_if_t<
       (IsIndexed && std::is_integral_v<I>),
       enum_value<T, ClassList, Tag>> {
         using O = std::conditional_t<
@@ -111,7 +111,7 @@ public:
 
     template <typename ApiTraits, typename Api>
     constexpr dynamic_c_api_constant(
-      string_view name,
+      const string_view name,
       ApiTraits& traits,
       Api& api) noexcept
       : c_api_constant_base{name}
@@ -120,7 +120,7 @@ public:
 
     /// @brief Adds the specified value to the constant (it it IsIndexed).
     template <typename I>
-    constexpr auto operator+(I index) const noexcept -> std::enable_if_t<
+    constexpr auto operator+(const I index) const noexcept -> std::enable_if_t<
       (IsIndexed && std::is_integral_v<I>),
       opt_enum_value<T, ClassList, Tag>> {
         using O = std::conditional_t<
@@ -266,15 +266,14 @@ protected:
 /// @brief Overload of extract for api_result_value.
 //
 template <typename Result>
-static constexpr auto
-extract(api_result_value<Result, api_result_validity::never>&) noexcept
-  -> Result& {
+static constexpr auto extract(
+  api_result_value<Result, api_result_validity::never>&) noexcept -> Result& {
     return unreachable_reference(type_identity<Result>{});
 }
 
 template <typename Result>
-static constexpr auto
-extract(const api_result_value<Result, api_result_validity::never>&) noexcept
+static constexpr auto extract(
+  const api_result_value<Result, api_result_validity::never>&) noexcept
   -> const Result& {
     return unreachable_reference(type_identity<Result>{});
 }
@@ -294,7 +293,7 @@ protected:
     template <typename Info, typename T>
     auto _cast_to(
       const api_result<void, Info, api_result_validity::never>& src,
-      type_identity<T>) const {
+      const type_identity<T>) const {
         api_result<T, Info, api_result_validity::never> result{};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
@@ -333,22 +332,22 @@ public:
     }
 
     template <typename T>
-    auto replaced_with(T) const {
+    auto replaced_with(const T&) const {
         api_result<T, Info, api_result_validity::never> result{};
         static_cast<Info&>(result) = static_cast<const Info&>(*this);
         return result;
     }
 
     template <typename T>
-    auto cast_to(type_identity<T> tid) const {
+    auto cast_to(const type_identity<T> tid) const {
         return this->_cast_to(*this, tid);
     }
 
-    auto cast_to(type_identity<void>) const noexcept -> auto& {
+    auto cast_to(const type_identity<void>) const noexcept -> auto& {
         return *this;
     }
 
-    auto cast_to(type_identity<nothing_t>) const noexcept -> auto& {
+    auto cast_to(const type_identity<nothing_t>) const noexcept -> auto& {
         return *this;
     }
 
@@ -363,8 +362,8 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-static constexpr auto
-extract(const api_result_value<void, api_result_validity::never>&) noexcept
+static constexpr auto extract(
+  const api_result_value<void, api_result_validity::never>&) noexcept
   -> nothing_t {
     return {};
 }
@@ -407,7 +406,7 @@ protected:
     template <typename Info, typename T>
     auto _cast_to(
       const api_result<Result, Info, api_result_validity::always>& src,
-      type_identity<T>) const {
+      const type_identity<T>) const {
         api_result<T, Info, api_result_validity::always> result{T(_value)};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
@@ -442,15 +441,15 @@ public:
 };
 //------------------------------------------------------------------------------
 template <typename Result>
-static constexpr auto
-extract(api_result_value<Result, api_result_validity::always>&& result) noexcept
+static constexpr auto extract(
+  api_result_value<Result, api_result_validity::always>&& result) noexcept
   -> Result {
     return std::move(result._value);
 }
 
 template <typename Result>
-static constexpr auto
-extract(api_result_value<Result, api_result_validity::always>& result) noexcept
+static constexpr auto extract(
+  api_result_value<Result, api_result_validity::always>& result) noexcept
   -> Result& {
     return result._value;
 }
@@ -480,7 +479,7 @@ protected:
     template <typename Info, typename T>
     auto _cast_to(
       const api_result<void, Info, api_result_validity::always>& src,
-      type_identity<T>) const {
+      const type_identity<T>) const {
         api_result<T, Info, api_result_validity::always> result{};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
@@ -534,15 +533,15 @@ public:
 
     /// @brief Returns an api_result with the stored value cast to different type.
     template <typename T>
-    auto cast_to(type_identity<T> tid) const {
+    auto cast_to(const type_identity<T> tid) const {
         return this->_cast_to(*this, tid);
     }
 
-    auto cast_to(type_identity<void>) const noexcept -> auto& {
+    auto cast_to(const type_identity<void>) const noexcept -> auto& {
         return *this;
     }
 
-    auto cast_to(type_identity<nothing_t>) const noexcept -> auto& {
+    auto cast_to(const type_identity<nothing_t>) const noexcept -> auto& {
         return *this;
     }
 
@@ -558,8 +557,8 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-static constexpr auto
-extract(const api_result_value<void, api_result_validity::always>&) noexcept
+static constexpr auto extract(
+  const api_result_value<void, api_result_validity::always>&) noexcept
   -> nothing_t {
     return {};
 }
@@ -592,7 +591,7 @@ class api_result_value<Result, api_result_validity::maybe> {
 public:
     constexpr api_result_value() noexcept = default;
 
-    constexpr api_result_value(Result value, bool valid) noexcept
+    constexpr api_result_value(Result value, const bool valid) noexcept
       : _value{std::move(value)}
       , _valid{valid} {}
 
@@ -605,7 +604,7 @@ protected:
     template <typename Info, typename T>
     auto _cast_to(
       const api_result<Result, Info, api_result_validity::maybe>& src,
-      type_identity<T>) const {
+      const type_identity<T>) const {
         api_result<T, Info, api_result_validity::maybe> result{
           T(_value), src.is_valid()};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
@@ -644,8 +643,8 @@ public:
 /// @brief Specialization of extract for api_result_value.
 /// @ingroup c_api_wrap
 template <typename Result>
-static constexpr auto
-extract(api_result_value<Result, api_result_validity::maybe>&& result) noexcept
+static constexpr auto extract(
+  api_result_value<Result, api_result_validity::maybe>&& result) noexcept
   -> Result {
     return EAGINE_CONSTEXPR_ASSERT(result._valid, std::move(result._value));
 }
@@ -653,8 +652,8 @@ extract(api_result_value<Result, api_result_validity::maybe>&& result) noexcept
 /// @brief Specialization of extract for api_result_value.
 /// @ingroup c_api_wrap
 template <typename Result>
-static constexpr auto
-extract(api_result_value<Result, api_result_validity::maybe>& result) noexcept
+static constexpr auto extract(
+  api_result_value<Result, api_result_validity::maybe>& result) noexcept
   -> Result& {
     return EAGINE_CONSTEXPR_ASSERT(result._valid, result._value);
 }
@@ -688,7 +687,7 @@ class api_result_value<void, api_result_validity::maybe> {
 public:
     constexpr api_result_value() noexcept = default;
 
-    constexpr api_result_value(bool valid) noexcept
+    constexpr api_result_value(const bool valid) noexcept
       : _valid{valid} {}
 
     constexpr auto is_valid() const noexcept {
@@ -699,7 +698,7 @@ protected:
     template <typename Info, typename T>
     auto _cast_to(
       const api_result<void, Info, api_result_validity::maybe>& src,
-      type_identity<T>) const {
+      const type_identity<T>) const {
         api_result<T, Info, api_result_validity::maybe> result{
           T{}, src.is_valid()};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
@@ -751,15 +750,15 @@ public:
     }
 
     template <typename T>
-    auto cast_to(type_identity<T> tid) const {
+    auto cast_to(const type_identity<T> tid) const {
         return this->_cast_to(*this, tid);
     }
 
-    auto cast_to(type_identity<void>) const noexcept -> auto& {
+    auto cast_to(const type_identity<void>) const noexcept -> auto& {
         return *this;
     }
 
-    auto cast_to(type_identity<nothing_t>) const noexcept -> auto& {
+    auto cast_to(const type_identity<nothing_t>) const noexcept -> auto& {
         return *this;
     }
 
@@ -774,8 +773,8 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-static constexpr auto
-extract(const api_result_value<void, api_result_validity::maybe>&) noexcept
+static constexpr auto extract(
+  const api_result_value<void, api_result_validity::maybe>&) noexcept
   -> nothing_t {
     return {};
 }
@@ -903,28 +902,33 @@ struct default_c_api_traits {
     using function_pointer = std::add_pointer<Signature>;
 
     template <typename Api, typename Type>
-    auto load_constant(Api&, string_view, type_identity<Type>)
+    auto load_constant(Api&, const string_view, const type_identity<Type>)
       -> std::tuple<Type, bool> {
         return {{}, false};
     }
 
     template <typename Api, typename Tag, typename Signature>
-    auto link_function(Api&, Tag, string_view, type_identity<Signature>)
-      -> std::add_pointer_t<Signature> {
+    auto link_function(
+      Api&,
+      const Tag,
+      const string_view,
+      const type_identity<Signature>) -> std::add_pointer_t<Signature> {
         return nullptr;
     }
 
     template <typename Tag, typename RV>
-    static constexpr auto fallback(Tag, type_identity<RV>) -> RV {
+    static constexpr auto fallback(const Tag, const type_identity<RV>) -> RV {
         return {};
     }
 
     template <typename Tag>
-    static constexpr void fallback(Tag, type_identity<void>) {}
+    static constexpr void fallback(const Tag, const type_identity<void>) {}
 
     template <typename RV, typename Tag, typename... Params, typename... Args>
-    static constexpr auto
-    call_static(Tag tag, RV (*function)(Params...), Args&&... args) -> RV {
+    static constexpr auto call_static(
+      const Tag tag,
+      RV (*function)(Params...),
+      Args&&... args) -> RV {
         if(function) {
             return function(
               std::forward<Args>(args)...); // NOLINT(hicpp-no-array-decay)
@@ -933,8 +937,10 @@ struct default_c_api_traits {
     }
 
     template <typename RV, typename Tag, typename... Params, typename... Args>
-    static constexpr auto
-    call_dynamic(Tag tag, RV (*function)(Params...), Args&&... args) -> RV {
+    static constexpr auto call_dynamic(
+      const Tag tag,
+      RV (*function)(Params...),
+      Args&&... args) -> RV {
         if(function) {
             return function(
               std::forward<Args>(args)...); // NOLINT(hicpp-no-array-decay)
@@ -955,7 +961,7 @@ struct default_c_api_traits {
 template <bool IsAvailable>
 class c_api_function_base : public bool_constant<IsAvailable> {
 public:
-    constexpr c_api_function_base(string_view name) noexcept
+    constexpr c_api_function_base(const string_view name) noexcept
       : _name{name} {}
 
     constexpr explicit operator bool() const noexcept {
@@ -980,7 +986,7 @@ public:
 
     template <typename Api>
     constexpr unimplemented_c_api_function(
-      string_view name,
+      const string_view name,
       const ApiTraits&,
       Api&)
       : base(name) {}
@@ -1011,7 +1017,10 @@ public:
     using signature = RV(Params...);
 
     template <typename Api>
-    constexpr static_c_api_function(string_view name, const ApiTraits&, Api&)
+    constexpr static_c_api_function(
+      const string_view name,
+      const ApiTraits&,
+      Api&)
       : base(name) {}
 
     /// @brief Calls the wrapped function.
@@ -1040,7 +1049,7 @@ public:
 
     template <typename Api>
     constexpr dynamic_c_api_function(
-      string_view name,
+      const string_view name,
       ApiTraits& traits,
       Api& api)
       : base(name)
@@ -1178,15 +1187,15 @@ protected:
     }
 
     template <typename RV, typename... Params>
-    static constexpr auto
-    _fake(const dynamic_c_api_function<ApiTraits, Tag, RV(Params...)>&) noexcept
-      -> typename ApiTraits::template result<RV> {
+    static constexpr auto _fake(
+      const dynamic_c_api_function<ApiTraits, Tag, RV(Params...)>&) noexcept ->
+      typename ApiTraits::template result<RV> {
         return {RV{}};
     }
 
 public:
     constexpr derived_c_api_function(
-      string_view name,
+      const string_view name,
       ApiTraits&,
       Api& parent) noexcept
       : _name{name}
@@ -1243,12 +1252,12 @@ protected:
     }
 
     template <typename S, typename T, identifier_t L, identifier_t I>
-    static constexpr auto _conv(enum_class<S, T, L, I> value) noexcept {
+    static constexpr auto _conv(const enum_class<S, T, L, I> value) noexcept {
         return T(value);
     }
 
     template <typename EC>
-    static constexpr auto _conv(enum_bitfield<EC> bits) noexcept {
+    static constexpr auto _conv(const enum_bitfield<EC> bits) noexcept {
         return _conv(bits._value);
     }
 
@@ -1257,7 +1266,7 @@ protected:
         return T(hndl);
     }
 
-    static constexpr auto _conv(string_view str) noexcept {
+    static constexpr auto _conv(const string_view str) noexcept {
         return c_str(str);
     }
 
@@ -1265,7 +1274,7 @@ protected:
         return blk.data();
     }
 
-    static constexpr auto _conv(memory::const_block blk) noexcept {
+    static constexpr auto _conv(const memory::const_block blk) noexcept {
         return blk.data();
     }
 

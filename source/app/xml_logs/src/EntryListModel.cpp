@@ -8,6 +8,7 @@
 #include "EntriesViewModel.hpp"
 #include "EntryLog.hpp"
 #include <eagine/extract.hpp>
+#include <eagine/is_within_limits.hpp>
 //------------------------------------------------------------------------------
 EntryListModel::EntryListModel(EntriesViewModel& parent)
   : QAbstractItemModel{nullptr}
@@ -55,12 +56,12 @@ auto EntryListModel::getEntryFormat(LogEntryData& entry) const -> QString {
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntryStreamId(LogEntryData& entry) const -> qlonglong {
-    return entry.stream_id;
+    return eagine::limit_cast<qlonglong>(entry.stream_id);
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntryInstanceId(LogEntryData& entry) const
   -> qlonglong {
-    return entry.instance;
+    return eagine::limit_cast<qlonglong>(entry.instance);
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntrySourceId(LogEntryData& entry) const -> QString {

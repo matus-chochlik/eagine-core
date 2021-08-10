@@ -195,7 +195,8 @@ static inline auto do_parse(Iter i, Iter e, parsed_number_t& n) {
 } // namespace numexpr
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto _parse_from_string(string_view src, long double& parsed) noexcept -> bool {
+auto _parse_from_string(const string_view src, long double& parsed) noexcept
+  -> bool {
     numexpr::parsed_number_t temp{};
     // Spirit does not support non-ASCII7 characters
     // NOLINTNEXTLINE(hicpp-signed-bitwise)
@@ -209,7 +210,7 @@ auto _parse_from_string(string_view src, long double& parsed) noexcept -> bool {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto _parse_from_string(string_view src, long long int& parsed) noexcept
+auto _parse_from_string(const string_view src, long long int& parsed) noexcept
   -> bool {
     long double temp{};
     if(_parse_from_string(src, temp)) {
@@ -226,12 +227,12 @@ auto _parse_from_string(string_view src, long long int& parsed) noexcept
 #else
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto _parse_from_string(string_view, long double&) noexcept -> bool {
+auto _parse_from_string(const string_view, long double&) noexcept -> bool {
     return false;
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto _parse_from_string(string_view, long long int&) noexcept -> bool {
+auto _parse_from_string(const string_view, long long int&) noexcept -> bool {
     return false;
 }
 //------------------------------------------------------------------------------

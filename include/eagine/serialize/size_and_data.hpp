@@ -19,9 +19,9 @@ namespace eagine {
 /// @brief Encodes the size of the source block into destination, copies data afterwards.
 /// @ingroup serialization
 /// @see get_data_with_size
-static inline auto
-store_data_with_size(memory::const_block src, memory::block dst) noexcept
-  -> memory::block {
+static inline auto store_data_with_size(
+  const memory::const_block src,
+  memory::block dst) noexcept -> memory::block {
 
     const auto opt_size_cp = limit_cast<mbs::code_point>(src.size());
     if(EAGINE_LIKELY(opt_size_cp)) {
@@ -47,7 +47,7 @@ store_data_with_size(memory::const_block src, memory::block dst) noexcept
 /// @ingroup serialization
 /// @see store_data_with_size
 /// @see get_data_with_size
-static inline auto skip_data_with_size(memory::const_block src) noexcept
+static inline auto skip_data_with_size(const memory::const_block src) noexcept
   -> span_size_t {
     const auto opt_skip_len = mbs::decode_sequence_length(src);
     if(const auto opt_data_len = mbs::do_decode_code_point(src, opt_skip_len)) {
@@ -59,7 +59,7 @@ static inline auto skip_data_with_size(memory::const_block src) noexcept
 /// @brief Extracts a sub-block from a larger mutable block with encoded sub-block size.
 /// @ingroup serialization
 /// @see store_data_with_size
-static inline auto get_data_with_size(memory::block src) noexcept
+static inline auto get_data_with_size(const memory::block src) noexcept
   -> memory::block {
     const memory::const_block tmp{src};
     const auto opt_skip_len = mbs::decode_sequence_length(tmp);
@@ -74,7 +74,7 @@ static inline auto get_data_with_size(memory::block src) noexcept
 /// @brief Extracts a sub-block from a larger const block with encoded sub-block size.
 /// @ingroup serialization
 /// @see store_data_with_size
-static inline auto get_data_with_size(memory::const_block src) noexcept
+static inline auto get_data_with_size(const memory::const_block src) noexcept
   -> memory::const_block {
     const auto opt_skip_len = mbs::decode_sequence_length(src);
     if(const auto opt_data_len = mbs::do_decode_code_point(src, opt_skip_len)) {
@@ -90,8 +90,9 @@ static inline auto get_data_with_size(memory::const_block src) noexcept
 /// @see store_data_with_size
 /// @see get_data_with_size
 template <typename Function>
-static inline void
-for_each_data_with_size(memory::const_block src, Function function) noexcept {
+static inline void for_each_data_with_size(
+  memory::const_block src,
+  Function function) noexcept {
     while(src) {
         const auto opt_skip_len = mbs::decode_sequence_length(src);
         const auto opt_data_len = mbs::do_decode_code_point(src, opt_skip_len);

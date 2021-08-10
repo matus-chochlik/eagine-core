@@ -43,7 +43,6 @@ set(HEADERS
     eagine/enum_class.hpp
     eagine/enum_log.hpp
     eagine/enum_map.hpp
-    eagine/enum_range.hpp
     eagine/enum_span.hpp
     eagine/environment.hpp
     eagine/extract.hpp
@@ -162,9 +161,9 @@ set(HEADERS
     eagine/network_sorter.hpp
     eagine/nothing.hpp
     eagine/offset_ptr.hpp
-    eagine/optional_expr.hpp
     eagine/optional_ref.hpp
     eagine/overloaded.hpp
+    eagine/overwrite_guard.hpp
     eagine/power_supply_kind.hpp
     eagine/preprocessor.hpp
     eagine/process.hpp
@@ -209,7 +208,6 @@ set(HEADERS
     eagine/serialize/write.hpp
     eagine/signal_switch.hpp
     eagine/slow_exec.hpp
-    eagine/smart_callable.hpp
     eagine/sorting_network.hpp
     eagine/sorting_network_io.hpp
     eagine/span.hpp
@@ -332,7 +330,6 @@ set(HEADERS
     eagine/value_tree/wrappers.hpp
     eagine/value_tree/yaml.hpp
     eagine/value_with_history.hpp
-    eagine/vararray.hpp
     eagine/vec_mat_traits.hpp
     eagine/vect/abs.hpp
     eagine/vect/axis.hpp

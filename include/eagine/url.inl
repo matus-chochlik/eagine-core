@@ -30,7 +30,7 @@ EAGINE_LIB_FUNC
 void url::_cover(
   string_view& part,
   const std::match_results<std::string::iterator>& match,
-  std::size_t index) const noexcept {
+  const std::size_t index) const noexcept {
     if(index < match.size()) {
         auto& m = match[index];
         part = head(

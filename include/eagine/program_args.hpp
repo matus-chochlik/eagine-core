@@ -56,7 +56,7 @@ public:
     }
 
     /// @brief Specifies a human-readable description for this program parameter.
-    constexpr auto description(string_view help_str) noexcept -> auto& {
+    constexpr auto description(const string_view help_str) noexcept -> auto& {
         _description = help_str;
         return *this;
     }
@@ -86,15 +86,15 @@ class program_parameter : public basic_program_parameter {
 public:
     /// @brief Construction from short and long tag strings.
     constexpr program_parameter(
-      string_view short_tag,
-      string_view long_tag) noexcept
+      const string_view short_tag,
+      const string_view long_tag) noexcept
       : basic_program_parameter{short_tag, long_tag} {}
 
     /// @brief Construction from short and long tag strings and the initial value.
     constexpr program_parameter(
-      string_view short_tag,
-      string_view long_tag,
-      T initial) noexcept
+      const string_view short_tag,
+      const string_view long_tag,
+      const T initial) noexcept
       : basic_program_parameter{short_tag, long_tag}
       , _value{std::move(initial)} {}
 
@@ -152,8 +152,9 @@ private:
     static void _log_invalid(const X&, const std::ostream&) noexcept {}
 
     template <typename X, typename P, typename L>
-    static void
-    _log_invalid(const valid_if<X, P, L>& vi, std::ostream& log) noexcept {
+    static void _log_invalid(
+      const valid_if<X, P, L>& vi,
+      std::ostream& log) noexcept {
         vi.log_invalid(log);
     }
 
@@ -189,7 +190,9 @@ template <>
 class program_parameter<void> : public basic_program_parameter {
 public:
     /// @brief Construction from the short and long tag strings.
-    program_parameter(string_view short_tag, string_view long_tag) noexcept
+    program_parameter(
+      const string_view short_tag,
+      const string_view long_tag) noexcept
       : basic_program_parameter{short_tag, long_tag} {}
 
     void increment() noexcept {
@@ -233,8 +236,8 @@ public:
 
     /// @brief Construction from alternative short and long tags and parameter reference.
     program_parameter_alias(
-      string_view short_tag,
-      string_view long_tag,
+      const string_view short_tag,
+      const string_view long_tag,
       program_parameter<T>& that) noexcept
       : basic_program_parameter{short_tag, long_tag}
       , _aliased{that} {}
@@ -270,7 +273,7 @@ public:
     /// @brief Default constructor.
     constexpr program_arg() noexcept = default;
 
-    program_arg(int argi, int argc, const char** argv) noexcept
+    program_arg(const int argi, const int argc, const char** argv) noexcept
       : _argi{argi}
       , _argc{argc}
       , _argv{argv} {}
@@ -331,23 +334,24 @@ public:
 
     /// @brief Indicates if this argument value starts with the specified string.
     /// @see ends_with
-    auto starts_with(string_view str) const noexcept {
+    auto starts_with(const string_view str) const noexcept {
         return memory::starts_with(get(), str);
     }
 
     /// @brief Indicates if this argument value ends with the specified string.
     /// @see starts_with
-    auto ends_with(string_view str) const noexcept {
+    auto ends_with(const string_view str) const noexcept {
         return memory::ends_with(get(), str);
     }
 
     /// @brief Indicates if this argument value is equal to the specified string.
-    auto is_tag(string_view tag) const noexcept {
+    auto is_tag(const string_view tag) const noexcept {
         return are_equal(get(), tag);
     }
 
     /// @brief Indicates if this argument value is one of the two specified strings.
-    auto is_tag(string_view short_tag, string_view long_tag) const noexcept {
+    auto is_tag(const string_view short_tag, const string_view long_tag)
+      const noexcept {
         return are_equal(get(), short_tag) || are_equal(get(), long_tag);
     }
 
@@ -376,7 +380,7 @@ public:
     /// @brief Tries to parse this argument's value into @p dest.
     /// @returns True if the parse is successful, false otherwise.
     template <typename T, identifier_t V>
-    auto parse(T& dest, selector<V> sel, std::ostream& parse_log) const
+    auto parse(T& dest, const selector<V> sel, std::ostream& parse_log) const
       -> bool {
         if(is_valid()) {
             T temp = dest;
@@ -398,7 +402,8 @@ public:
     /// @brief Tries to parse the following argument's value into @p dest.
     /// @returns True if the parse is successful, false otherwise.
     template <typename T, identifier_t V>
-    auto parse_next(T& dest, selector<V> sel, std::ostream& parse_log) const {
+    auto parse_next(T& dest, const selector<V> sel, std::ostream& parse_log)
+      const {
         return next().parse(dest, sel, parse_log);
     }
 
@@ -410,18 +415,19 @@ public:
     }
 
     auto missing_handler(std::ostream& errorlog) {
-        return [&errorlog](string_view arg_tag) {
+        return [&errorlog](const string_view arg_tag) {
             errorlog << "Missing value after '" << arg_tag << "'." << std::endl;
         };
     }
 
     auto invalid_handler(std::ostream& errorlog) {
-        return
-          [&errorlog](
-            string_view arg_tag, string_view arg_val, string_view log_str) {
-              errorlog << "Invalid value '" << arg_val << "' after '" << arg_tag
-                       << "'. " << log_str << std::endl;
-          };
+        return [&errorlog](
+                 const string_view arg_tag,
+                 const string_view arg_val,
+                 const string_view log_str) {
+            errorlog << "Invalid value '" << arg_val << "' after '" << arg_tag
+                     << "'. " << log_str << std::endl;
+        };
     }
 
     template <typename T, typename MissingFunc, typename InvalidFunc>
@@ -489,7 +495,7 @@ public:
     template <typename T, typename MissingFunc, typename InvalidFunc>
     auto do_consume_next(
       T& dest,
-      span<const T> choices,
+      const span<const T> choices,
       MissingFunc handle_missing,
       InvalidFunc handle_invalid) {
         valid_if_in_list<T, span<const T>> temp(T(), choices);
@@ -503,7 +509,7 @@ public:
     template <typename T, typename P, typename L, class MissingFunc, class InvalidFunc>
     auto do_consume_next(
       valid_if<T, P, L>& dest,
-      span<const T> choices,
+      const span<const T> choices,
       MissingFunc handle_missing,
       InvalidFunc handle_invalid) {
         T temp = {};
@@ -517,8 +523,10 @@ public:
     }
 
     template <typename T, typename C>
-    auto consume_next(T& dest, span<const C> choices, std::ostream& errorlog)
-      -> bool {
+    auto consume_next(
+      T& dest,
+      const span<const C> choices,
+      std::ostream& errorlog) -> bool {
         auto if_missing{missing_handler(errorlog)};
         auto if_invalid{invalid_handler(errorlog)};
         return do_consume_next(dest, choices, if_missing, if_invalid);
@@ -527,7 +535,7 @@ public:
     template <typename T, typename C, class MissingFunc, class InvalidFunc>
     auto do_parse_param(
       program_parameter<T>& param,
-      span<const C> choices,
+      const span<const C> choices,
       MissingFunc handle_missing,
       InvalidFunc handle_invalid) {
         if(is_tag_param(param)) {
@@ -540,7 +548,7 @@ public:
     template <typename T, typename C>
     auto parse_param(
       program_parameter<T>& param,
-      span<const C> choices,
+      const span<const C> choices,
       std::ostream& errorlog) -> bool {
         auto if_missing{missing_handler(errorlog)};
         auto if_invalid{invalid_handler(errorlog)};
@@ -550,8 +558,8 @@ public:
     template <typename T, typename MissingFunc, typename InvalidFunc>
     auto do_consume_next(
       T& dest,
-      span<const string_view> symbols,
-      span<const T> translations,
+      const span<const string_view> symbols,
+      const span<const T> translations,
       MissingFunc handle_missing,
       InvalidFunc handle_invalid) {
         EAGINE_ASSERT(symbols.size() <= translations.size());
@@ -571,8 +579,8 @@ public:
     template <typename T, typename P, typename L, class MissingFunc, class InvalidFunc>
     auto do_consume_next(
       valid_if<T, P, L>& dest,
-      span<const string_view> symbols,
-      span<const T> translations,
+      const span<const string_view> symbols,
+      const span<const T> translations,
       MissingFunc handle_missing,
       InvalidFunc handle_invalid) {
         T temp{};
@@ -591,8 +599,8 @@ public:
     template <typename T, typename R>
     auto consume_next(
       T& dest,
-      span<const string_view> symbols,
-      span<const R> translations,
+      const span<const string_view> symbols,
+      const span<const R> translations,
       std::ostream& errorlog) -> bool {
         auto if_missing{missing_handler(errorlog)};
         auto if_invalid{invalid_handler(errorlog)};
@@ -603,8 +611,8 @@ public:
     template <typename T, typename R, class MissingFunc, class InvalidFunc>
     auto do_parse_param(
       program_parameter<T>& param,
-      span<const string_view> symbols,
-      span<const R> translations,
+      const span<const string_view> symbols,
+      const span<const R> translations,
       MissingFunc handle_missing,
       InvalidFunc handle_invalid) {
         if(is_tag_param(param)) {
@@ -621,8 +629,8 @@ public:
     template <typename T, typename R>
     auto parse_param(
       program_parameter<T>& param,
-      span<const string_view> symbols,
-      span<const R> translations,
+      const span<const string_view> symbols,
+      const span<const R> translations,
       std::ostream& errorlog) -> bool {
         auto if_missing{missing_handler(errorlog)};
         auto if_invalid{invalid_handler(errorlog)};
@@ -633,8 +641,8 @@ public:
     template <typename T, typename R, class MissingFunc, class InvalidFunc>
     auto do_parse_param(
       program_parameter_alias<T>& param,
-      span<const string_view> symbols,
-      span<const R> translations,
+      const span<const string_view> symbols,
+      const span<const R> translations,
       MissingFunc handle_missing,
       InvalidFunc handle_invalid) {
         if(is_tag_param(param)) {
@@ -651,8 +659,8 @@ public:
     template <typename T, typename R>
     auto parse_param(
       program_parameter_alias<T>& param,
-      span<const string_view> symbols,
-      span<const R> translations,
+      const span<const string_view> symbols,
+      const span<const R> translations,
       std::ostream& errorlog) -> bool {
         auto if_missing{missing_handler(errorlog)};
         auto if_invalid{invalid_handler(errorlog)};
@@ -679,8 +687,8 @@ private:
     friend class program_args;
 
     template <typename T, identifier_t V>
-    auto _do_parse(T& dest, selector<V> sel, const std::ostream&) const noexcept
-      -> bool {
+    auto _do_parse(T& dest, const selector<V> sel, const std::ostream&)
+      const noexcept -> bool {
         if(auto opt_val{from_string<T>(get(), sel)}) {
             dest = std::move(extract(opt_val));
             return true;
@@ -689,15 +697,15 @@ private:
     }
 
     template <identifier_t V>
-    auto _do_parse(string_view& dest, selector<V>, const std::ostream&)
+    auto _do_parse(string_view& dest, const selector<V>, const std::ostream&)
       const noexcept -> bool {
         dest = get();
         return true;
     }
 
     template <identifier_t V>
-    auto _do_parse(std::string& dest, selector<V>, const std::ostream&) const
-      -> bool {
+    auto _do_parse(std::string& dest, const selector<V>, const std::ostream&)
+      const -> bool {
         dest = get_string();
         return true;
     }
@@ -705,7 +713,7 @@ private:
     template <typename T, typename P, typename L, identifier_t V>
     auto _do_parse(
       valid_if<T, P, L>& dest,
-      selector<V> sel,
+      const selector<V> sel,
       std::ostream& parse_log) const -> bool {
         T value{};
         if(parse(value, sel, parse_log)) {
@@ -725,7 +733,7 @@ private:
     template <typename T, typename A, identifier_t V>
     auto _do_parse(
       std::vector<T, A>& dest,
-      selector<V> sel,
+      const selector<V> sel,
       std::ostream& parse_log) const -> bool {
         T value{};
         if(parse(value, sel, parse_log)) {
@@ -754,7 +762,7 @@ class program_arg_iterator {
     using this_class = program_arg_iterator;
 
 public:
-    constexpr program_arg_iterator(program_arg arg) noexcept
+    constexpr program_arg_iterator(const program_arg arg) noexcept
       : _a{arg} {}
 
     /// @brief Alias for the referenced value type.
@@ -779,45 +787,51 @@ public:
     using iterator_category = std::random_access_iterator_tag;
 
     /// @brief Equality comparison.
-    friend constexpr auto
-    operator==(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator==(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) == 0;
     }
 
     /// @brief Nonequality comparison.
-    friend constexpr auto
-    operator!=(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator!=(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) != 0;
     }
 
     /// @brief Less-than comparison.
-    friend constexpr auto
-    operator<(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator<(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) < 0;
     }
 
     /// @brief Less-equal comparison.
-    friend constexpr auto
-    operator<=(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator<=(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) <= 0;
     }
 
     /// @brief Greater-than comparison.
-    friend constexpr auto
-    operator>(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator>(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) > 0;
     }
 
     /// @brief Greater-equal comparison.
-    friend constexpr auto
-    operator>=(const this_class& l, const this_class& r) noexcept {
+    friend constexpr auto operator>=(
+      const this_class& l,
+      const this_class& r) noexcept {
         return _cmp(l._a, r._a) >= 0;
     }
 
     /// @brief Difference.
-    friend constexpr auto
-    operator-(const this_class& l, const this_class& r) noexcept
-      -> difference_type {
+    friend constexpr auto operator-(
+      const this_class& l,
+      const this_class& r) noexcept -> difference_type {
         return _cmp(l._a, r._a);
     }
 
@@ -848,26 +862,30 @@ public:
     }
 
     /// @brief Increment operator.
-    constexpr auto operator+=(difference_type dist) noexcept -> this_class& {
+    constexpr auto operator+=(const difference_type dist) noexcept
+      -> this_class& {
         _a._argi += dist;
         return *this;
     }
 
     /// @brief Decrement operator.
-    constexpr auto operator-=(difference_type dist) noexcept -> this_class& {
+    constexpr auto operator-=(const difference_type dist) noexcept
+      -> this_class& {
         _a._argi -= dist;
         return *this;
     }
 
     /// @brief Difference addition.
-    constexpr auto operator+(difference_type dist) noexcept -> this_class {
+    constexpr auto operator+(const difference_type dist) noexcept
+      -> this_class {
         this_class result{*this};
         result._a._argi += dist;
         return result;
     }
 
     /// @brief Difference subtraction.
-    constexpr auto operator-(difference_type dist) noexcept -> this_class {
+    constexpr auto operator-(const difference_type dist) noexcept
+      -> this_class {
         this_class result{*this};
         result._a._argi -= dist;
         return result;
@@ -884,8 +902,9 @@ public:
     }
 
 private:
-    static constexpr auto
-    _cmp(const program_arg& l, const program_arg& r) noexcept -> int {
+    static constexpr auto _cmp(
+      const program_arg& l,
+      const program_arg& r) noexcept -> int {
         return EAGINE_CONSTEXPR_ASSERT(l._argv == r._argv, l._argi - r._argi);
     }
 
@@ -921,7 +940,8 @@ public:
         return all_ok;
     }
 
-    auto print_usage(std::ostream& out, string_view command) -> std::ostream& {
+    auto print_usage(std::ostream& out, const string_view command)
+      -> std::ostream& {
         out << "Usage: " << command;
 
         span_size_t stag_maxl = 0;
@@ -1001,7 +1021,8 @@ private:
         }
 
         template <typename X>
-        static auto _plchldr_name(type_identity<X>) noexcept -> string_view {
+        static auto _plchldr_name(const type_identity<X>) noexcept
+          -> string_view {
             if(std::is_same_v<X, bool>) {
                 return {"BOOLEAN"};
             }
@@ -1019,12 +1040,14 @@ private:
         }
 
         template <typename X, typename P, typename L>
-        static auto _plchldr_name(type_identity<valid_if<X, P, L>>) noexcept {
+        static auto _plchldr_name(
+          const type_identity<valid_if<X, P, L>>) noexcept {
             return _plchldr_name(type_identity<X>());
         }
 
         template <typename X, typename A>
-        static auto _plchldr_name(type_identity<std::vector<X, A>>) noexcept {
+        static auto _plchldr_name(
+          const type_identity<std::vector<X, A>>) noexcept {
             return _plchldr_name(type_identity<X>());
         }
 
@@ -1095,12 +1118,12 @@ public:
     program_args() noexcept = default;
 
     /// @brief  Construction from the length and pointer to the argument list.
-    program_args(span_size_t argn, char** args) noexcept
+    program_args(const span_size_t argn, char** args) noexcept
       : _argc{int(argn)}
       , _argv{const_cast<const char**>(args)} {}
 
     /// @brief  Construction from the length and const pointer to the argument list.
-    program_args(span_size_t argn, const char** args) noexcept
+    program_args(const span_size_t argn, const char** args) noexcept
       : _argc{int(argn)}
       , _argv{args} {}
 
@@ -1181,7 +1204,7 @@ public:
     }
 
     /// @brief Finds and returns the argument with the specified value.
-    auto find(string_view what) const noexcept -> program_arg {
+    auto find(const string_view what) const noexcept -> program_arg {
         int i = 1;
         while(i < _argc) {
             if((_argv != nullptr) && (_argv[i] != nullptr)) {
@@ -1207,7 +1230,7 @@ public:
     }
 
 private:
-    int _argc{0};
+    const int _argc{0};
     const char** _argv{nullptr};
 };
 //------------------------------------------------------------------------------

@@ -42,8 +42,11 @@ class rapidyaml_callbacks {
         throw std::runtime_error(msg);
     }
 
-    [[noreturn]] static void
-    _handle_error(const char* msg, size_t len, c4::yml::Location, void* self) {
+    [[noreturn]] static void _handle_error(
+      const char* msg,
+      size_t len,
+      c4::yml::Location,
+      void* self) {
         static_cast<rapidyaml_callbacks*>(self)->_do_handle_error(
           std::string(msg, len));
     }
@@ -79,9 +82,9 @@ public:
 //------------------------------------------------------------------------------
 class rapidyaml_tree_compound;
 class rapidyaml_attribute;
-static auto
-rapidyaml_make_new_node(rapidyaml_tree_compound&, ryml::NodeRef) noexcept
-  -> rapidyaml_attribute*;
+static auto rapidyaml_make_new_node(
+  rapidyaml_tree_compound&,
+  ryml::NodeRef) noexcept -> rapidyaml_attribute*;
 //------------------------------------------------------------------------------
 class rapidyaml_attribute : public attribute_interface {
     ryml::NodeRef _node{};

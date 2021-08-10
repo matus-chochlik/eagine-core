@@ -17,7 +17,7 @@
 namespace eagine {
 
 void read_stream_data(std::istream&, memory::buffer& dest);
-void read_file_data(string_view path, memory::buffer& dest);
+void read_file_data(const string_view path, memory::buffer& dest);
 
 } // namespace eagine
 

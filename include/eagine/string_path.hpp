@@ -57,33 +57,33 @@ public:
 
     ~basic_string_path() noexcept = default;
 
-    basic_string_path(string_view str, span_size_t size)
+    basic_string_path(const string_view str, const span_size_t size)
       : _size{size}
-      , _str(str.data(), std_size(str.size())) {}
+      , _str{str.data(), std_size(str.size())} {}
 
-    basic_string_path(std::string str, span_size_t size)
+    basic_string_path(std::string str, const span_size_t size)
       : _size{size}
-      , _str(std::move(str)) {}
+      , _str{std::move(str)} {}
 
     basic_string_path(std::tuple<std::string, span_size_t>&& init)
-      : basic_string_path(std::move(std::get<0>(init)), std::get<1>(init)) {}
+      : basic_string_path{std::move(std::get<0>(init)), std::get<1>(init)} {}
 
     /// @brief Construction from a path string and a separator string.
     basic_string_path(
-      string_view path,
+      const string_view path,
       EAGINE_TAG_TYPE(split_by),
-      string_view sep)
-      : basic_string_path(string_list::split(path, sep)) {}
+      const string_view sep)
+      : basic_string_path{string_list::split(path, sep)} {}
 
     explicit basic_string_path(
       const basic_string_path& a,
       EAGINE_TAG_TYPE(plus),
       const basic_string_path& b)
-      : _size(a._size + b._size)
-      , _str(a._str + b._str) {}
+      : _size{a._size + b._size}
+      , _str{a._str + b._str} {}
 
     /// @brief Construction from a list of path element names.
-    explicit basic_string_path(span<const string_view> names) {
+    explicit basic_string_path(const span<const string_view> names) {
         _init(names);
     }
 
@@ -96,7 +96,7 @@ public:
     template <typename... Str>
     explicit basic_string_path(
       EAGINE_TAG_TYPE(from_pack),
-      string_view name,
+      const string_view name,
       const Str&... names)
       : basic_string_path(_pack_names(name, view(names)...)) {}
 
@@ -115,8 +115,9 @@ public:
     }
 
     /// @brief Less-than comparison.
-    friend auto
-    operator<(const basic_string_path& a, const basic_string_path& b) noexcept {
+    friend auto operator<(
+      const basic_string_path& a,
+      const basic_string_path& b) noexcept {
         return a._str < b._str;
     }
 
@@ -128,8 +129,9 @@ public:
     }
 
     /// @brief Greater-than comparison.
-    friend auto
-    operator>(const basic_string_path& a, const basic_string_path& b) noexcept {
+    friend auto operator>(
+      const basic_string_path& a,
+      const basic_string_path& b) noexcept {
         return a._str > b._str;
     }
 
@@ -141,8 +143,9 @@ public:
     }
 
     /// @brief Concatenates two paths.
-    friend auto
-    operator+(const basic_string_path& a, const basic_string_path& b) noexcept {
+    friend auto operator+(
+      const basic_string_path& a,
+      const basic_string_path& b) noexcept {
         return basic_string_path(a, EAGINE_TAG(plus), b);
     }
 
@@ -167,17 +170,17 @@ public:
         return _size;
     }
 
-    static auto required_bytes(size_type l) -> size_type {
+    static auto required_bytes(const size_type l) -> size_type {
         using namespace mbs;
         return l + 2 * required_sequence_length(code_point_t(l)).value();
     }
 
-    static auto required_bytes(string_view str) -> size_type {
+    static auto required_bytes(const string_view str) -> size_type {
         return required_bytes(size_type(str.size()));
     }
 
     /// @brief Reserves the specified number of bytes in the storage.
-    void reserve_bytes(size_type s) {
+    void reserve_bytes(const size_type s) {
         _str.reserve(std_size(s));
     }
 
@@ -195,7 +198,7 @@ public:
 
     /// @brief Appends a new element with the specified name to the end.
     /// @see pop_back
-    void push_back(string_view name) {
+    void push_back(const string_view name) {
         string_list::push_back(_str, _fix(name));
         ++_size;
     }
@@ -267,7 +270,8 @@ public:
     }
 
     /// @brief Returns this path as string with elements separated by @p sep.
-    auto as_string(string_view sep, bool trail_sep) const -> std::string {
+    auto as_string(const string_view sep, const bool trail_sep) const
+      -> std::string {
         return string_list::join(view(_str), sep, trail_sep);
     }
 
@@ -281,7 +285,7 @@ private:
     std::string _str{};
 
     template <typename Str>
-    void _init(span<Str> names) {
+    void _init(const span<Str> names) {
         span_size_t len = 2 * names.size();
         for(const auto& name : names) {
             len += span_size(name.size());

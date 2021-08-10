@@ -14,15 +14,16 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-static inline auto
-adapt_log_entry_arg(identifier name, const std::filesystem::path& fsp) {
+static inline auto adapt_log_entry_arg(
+  const identifier name,
+  const std::filesystem::path& fsp) {
     return [name, fsps{fsp.native()}](logger_backend& backend) {
         backend.add_string(name, EAGINE_ID(FsPath), string_view(fsps));
     };
 }
 //------------------------------------------------------------------------------
 static inline auto adapt_log_entry_arg(
-  identifier name,
+  const identifier name,
   const std::filesystem::filesystem_error& value) {
     return [name, value](logger_backend& backend) {
         backend.add_string(

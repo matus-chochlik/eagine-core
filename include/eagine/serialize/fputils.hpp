@@ -58,7 +58,7 @@ constexpr auto max_fraction(type_identity<F> = {}) noexcept
 }
 //------------------------------------------------------------------------------
 template <typename F>
-constexpr inline auto decompose(F f, type_identity<F> = {}) noexcept
+constexpr inline auto decompose(const F f, const type_identity<F> = {}) noexcept
   -> decomposed_t<F> {
     switch(std::fpclassify(f)) {
         case FP_ZERO:
@@ -83,8 +83,9 @@ constexpr inline auto decompose(F f, type_identity<F> = {}) noexcept
 }
 //------------------------------------------------------------------------------
 template <typename F>
-constexpr inline auto
-compose(const decomposed_t<F>& f, type_identity<F> = {}) noexcept -> F {
+constexpr inline auto compose(
+  const decomposed_t<F>& f,
+  const type_identity<F> = {}) noexcept -> F {
     const auto fre = std::get<0>(f);
     if(EAGINE_UNLIKELY(!fre)) {
         switch(std::get<1>(f)) {

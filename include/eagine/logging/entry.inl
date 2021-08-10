@@ -10,9 +10,9 @@ namespace eagine {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto log_entry::arg(
-  identifier name,
-  identifier tag,
-  span<const std::int64_t> values) noexcept -> log_entry& {
+  const identifier name,
+  const identifier tag,
+  const span<const std::int64_t> values) noexcept -> log_entry& {
 
     if(_backend) {
         _args.add([=](logger_backend& backend) {
@@ -26,9 +26,9 @@ auto log_entry::arg(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto log_entry::arg(
-  identifier name,
-  identifier tag,
-  span<const std::int32_t> values) noexcept -> log_entry& {
+  const identifier name,
+  const identifier tag,
+  const span<const std::int32_t> values) noexcept -> log_entry& {
     if(_backend) {
         _args.add([=](logger_backend& backend) {
             for(auto value : values) {

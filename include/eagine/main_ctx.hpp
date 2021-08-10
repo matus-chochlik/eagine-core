@@ -97,7 +97,7 @@ public:
         return _usr_info;
     }
 
-    auto log() noexcept -> logger& final {
+    auto log() noexcept -> const logger& final {
         return _log;
     }
 
@@ -127,7 +127,7 @@ private:
     const program_args& _args;
     const compiler_info& _cmplr_info;
     const build_info& _bld_info;
-    logger& _log;
+    const logger& _log;
     process_watchdog& _watchdog;
     application_config& _app_config;
     system_info& _sys_info;

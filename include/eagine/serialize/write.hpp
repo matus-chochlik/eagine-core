@@ -32,7 +32,7 @@ class fragment_serialize_wrapper<span<const T>> {
 public:
     constexpr fragment_serialize_wrapper() noexcept = default;
 
-    fragment_serialize_wrapper(span<const T> src) noexcept
+    fragment_serialize_wrapper(const span<const T> src) noexcept
       : _src{src} {}
 
     auto remaining() const noexcept {
@@ -43,7 +43,7 @@ public:
         return _offset;
     }
 
-    void advance(span_size_t inc) noexcept {
+    void advance(const span_size_t inc) noexcept {
         _offset += inc;
     }
 
@@ -68,7 +68,7 @@ struct serializer<const T&> : serializer<T> {};
 template <typename T>
 struct plain_serializer {
     template <typename Backend>
-    static auto write(T value, Backend& backend) {
+    static auto write(const T value, Backend& backend) {
         span_size_t written{0};
         auto errors = backend.write(view_one(value), written);
         if(EAGINE_UNLIKELY(written < 1)) {
@@ -78,9 +78,9 @@ struct plain_serializer {
     }
 
     template <typename Backend>
-    static auto write(span<const T> values, Backend& backend) {
+    static auto write(const span<const T> values, Backend& backend) {
         span_size_t written{0};
-        auto errors = backend.write(values, written);
+        const auto errors = backend.write(values, written);
         if(EAGINE_UNLIKELY(written < 1)) {
             EAGINE_ASSERT(errors.has(serialization_error_code::too_much_data));
         } else if(EAGINE_UNLIKELY(written < values.size())) {
@@ -132,14 +132,14 @@ template <typename T>
 struct common_serializer {
 
     template <typename Backend>
-    auto write(span<const T> values, Backend& backend) const {
+    auto write(const span<const T> values, Backend& backend) const {
         const auto tmd = serialization_error_code::too_much_data;
         const auto icw = serialization_error_code::incomplete_write;
         auto& sink = extract(backend.sink());
         serialization_errors errors{};
         span_size_t i = 0;
-        for(auto& elem : values) {
-            auto th = sink.begin_work();
+        for(const auto& elem : values) {
+            const auto th = sink.begin_work();
             errors |= backend.begin_element(i);
             if(EAGINE_LIKELY(!errors)) {
                 errors |=
@@ -175,8 +175,8 @@ struct serializer<std::tuple<T...>> : common_serializer<std::tuple<T...>> {
 
     template <typename Backend>
     auto write(const std::tuple<T...>& values, Backend& backend) const {
-        serialization_errors errors{};
-        errors |= backend.begin_list(span_size(sizeof...(T)));
+        serialization_errors errors =
+          backend.begin_list(span_size(sizeof...(T)));
         if(EAGINE_LIKELY(!errors)) {
             _write_elements(
               errors, values, backend, std::make_index_sequence<sizeof...(T)>());
@@ -200,7 +200,7 @@ private:
     template <typename Elem, typename Backend, typename Serializer>
     static void _write_element(
       serialization_errors& errors,
-      std::size_t index,
+      const std::size_t index,
       Elem& elem,
       Backend& backend,
       Serializer& serial) {
@@ -217,15 +217,15 @@ private:
 };
 //------------------------------------------------------------------------------
 template <typename... T>
-struct serializer<std::tuple<std::pair<string_view, T>...>>
-  : common_serializer<std::tuple<std::pair<string_view, T>...>> {
+struct serializer<std::tuple<std::pair<const string_view, T>...>>
+  : common_serializer<std::tuple<std::pair<const string_view, T>...>> {
 
     template <typename Backend>
     auto write(
-      const std::tuple<std::pair<string_view, T>...>& members,
+      const std::tuple<std::pair<const string_view, T>...>& members,
       Backend& backend) const {
-        serialization_errors errors{};
-        errors |= backend.begin_struct(span_size(sizeof...(T)));
+        serialization_errors errors =
+          backend.begin_struct(span_size(sizeof...(T)));
         if(EAGINE_LIKELY(!errors)) {
             _write_members(
               errors,
@@ -310,9 +310,8 @@ struct serializer<span<const T>> : common_serializer<span<const T>> {
     using common_serializer<span<const T>>::write;
 
     template <typename Backend>
-    auto write(span<const T> values, Backend& backend) const {
-        serialization_errors errors{};
-        errors |= backend.begin_list(values.size());
+    auto write(const span<const T> values, Backend& backend) const {
+        serialization_errors errors = backend.begin_list(values.size());
         if(EAGINE_LIKELY(!errors)) {
             errors |= _elem_serializer.write(values, backend);
             errors |= backend.finish_list();
@@ -337,10 +336,10 @@ struct serializer<fragment_serialize_wrapper<span<const T>>>
     auto write(
       fragment_serialize_wrapper<span<const T>>& frag,
       Backend& backend) const {
-        serialization_errors errors{};
-        errors |= _size_serializer.write(frag.offset(), backend);
+        serialization_errors errors =
+          _size_serializer.write(frag.offset(), backend);
         if(EAGINE_LIKELY(!errors)) {
-            auto todo = frag.remaining();
+            const auto todo = frag.remaining();
             errors |= _size_serializer.write(todo.size(), backend);
             if(EAGINE_LIKELY(!errors)) {
                 span_size_t written{0};
@@ -364,8 +363,7 @@ struct serializer<std::array<T, N>> : common_serializer<std::array<T, N>> {
 
     template <typename Backend>
     auto write(const std::array<T, N>& values, Backend& backend) const {
-        serialization_errors errors{};
-        errors |= backend.begin_list(span_size(N));
+        serialization_errors errors = backend.begin_list(span_size(N));
         if(EAGINE_LIKELY(!errors)) {
             errors |= _elem_serializer.write(view(values), backend);
             errors |= backend.finish_list();
@@ -384,8 +382,7 @@ struct serializer<std::vector<T, A>> : common_serializer<std::vector<T, A>> {
 
     template <typename Backend>
     auto write(const std::vector<T, A>& values, Backend& backend) const {
-        serialization_errors errors{};
-        errors |= backend.begin_list(values.size());
+        serialization_errors errors = backend.begin_list(values.size());
         if(EAGINE_LIKELY(!errors)) {
             errors |= _elem_serializer.write(view(values), backend);
             errors |= backend.finish_list();
@@ -402,7 +399,7 @@ struct serializer<std::chrono::duration<Rep>>
   : common_serializer<std::chrono::duration<Rep>> {
 
     template <typename Backend>
-    auto write(std::chrono::duration<Rep> value, Backend& backend) const {
+    auto write(const std::chrono::duration<Rep> value, Backend& backend) const {
         return _serializer.write(value.count(), backend);
     }
 
@@ -415,9 +412,8 @@ struct serializer<valid_if<T, P>> : common_serializer<valid_if<T, P>> {
 
     template <typename Backend>
     auto write(const valid_if<T, P>& value, Backend& backend) const {
-        serialization_errors errors{};
         const bool is_valid = value.is_valid();
-        errors |= backend.begin_list(is_valid ? 1 : 0);
+        serialization_errors errors = backend.begin_list(is_valid ? 1 : 0);
         if(EAGINE_LIKELY(!errors)) {
             if(is_valid) {
                 errors |= _serializer.write(value.value_anyway(), backend);
@@ -447,13 +443,13 @@ private:
 template <typename T>
 struct enum_serializer {
     template <typename Backend>
-    auto write(T enumerator, Backend& backend) const {
+    auto write(const T enumerator, Backend& backend) const {
         serialization_errors errors{};
         if(backend.enum_as_string()) {
-            errors |=
+            errors =
               _name_serializer.write(enumerator_name(enumerator), backend);
         } else {
-            errors |=
+            errors =
               _value_serializer.write(enumerator_value(enumerator), backend);
         }
         return errors;
@@ -469,7 +465,7 @@ struct struct_serializer {
 public:
     template <typename Backend>
     auto write(const T& instance, Backend& backend) const {
-        auto member_map = map_data_members(instance);
+        const auto member_map = map_data_members(instance);
         return _serializer.write(member_map, backend);
     }
 
@@ -495,8 +491,7 @@ template <typename T, typename Backend>
 auto serialize(const T& value, Backend& backend) -> std::enable_if_t<
   std::is_base_of_v<serializer_backend, Backend>,
   serialization_errors> {
-    serialization_errors errors{};
-    errors |= backend.begin();
+    serialization_errors errors = backend.begin();
     if(EAGINE_LIKELY(!errors)) {
         serializer<std::remove_cv_t<T>> writer;
         errors |= writer.write(value, backend);

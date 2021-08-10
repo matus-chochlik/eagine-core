@@ -57,7 +57,7 @@ struct tvec : vector<T, N, V> {
 
     /// @brief Construction from vector of different dimensionality.
     template <typename P, int M, bool W>
-    constexpr tvec(const vector<P, M, W>& v, T d) noexcept
+    constexpr tvec(const vector<P, M, W>& v, const T d) noexcept
       : base{base::from(v, d)} {}
 
     /// @brief Construction from vector of different dimensionality.
@@ -101,7 +101,7 @@ struct flatten_traits<math::tvec<T, N, V>, T> {
 
     template <typename Ps, typename Ss>
     static constexpr auto required_size(
-      memory::basic_span<const math::tvec<T, N, V>, Ps, Ss> src) noexcept
+      const memory::basic_span<const math::tvec<T, N, V>, Ps, Ss> src) noexcept
       -> span_size_t {
         return src.size() * N;
     }
@@ -118,7 +118,7 @@ struct flatten_traits<math::tvec<T, N, V>, T> {
 private:
     template <typename Pd, typename Sd, std::size_t... I>
     static void _do_apply(
-      vect::data_t<T, N, V> src,
+      const vect::data_t<T, N, V> src,
       memory::basic_span<T, Pd, Sd> dst,
       std::index_sequence<I...>) noexcept {
         ((dst[I] = src[I]), ...);

@@ -31,8 +31,9 @@ template <
   typename Td,
   typename Pd,
   typename Sd>
-auto flatten(basic_span<Ts, Ps, Ss> src, basic_span<Td, Pd, Sd> dst) noexcept
-  -> basic_span<Td, Pd, Sd> {
+auto flatten(
+  const basic_span<Ts, Ps, Ss> src,
+  basic_span<Td, Pd, Sd> dst) noexcept -> basic_span<Td, Pd, Sd> {
     flatten_traits<std::remove_cv_t<Ts>, Td> traits{};
     EAGINE_ASSERT(traits.required_size(src) <= dst.size());
 
@@ -44,7 +45,8 @@ auto flatten(basic_span<Ts, Ps, Ss> src, basic_span<Td, Pd, Sd> dst) noexcept
 }
 //------------------------------------------------------------------------------
 template <typename Ts, typename Ps, typename Ss, typename Td, typename A>
-auto flatten(basic_span<Ts, Ps, Ss> src, std::vector<Td, A>& dst) -> auto& {
+auto flatten(const basic_span<Ts, Ps, Ss> src, std::vector<Td, A>& dst)
+  -> auto& {
     flatten_traits<std::remove_cv_t<Ts>, Td> traits{};
     dst.resize(std_size(traits.required_size(src)));
     flatten(src, cover(dst));
@@ -59,7 +61,7 @@ struct flatten_traits<std::array<Ts, N>, Td> {
 
     template <typename Ps, typename Ss>
     static constexpr auto required_size(
-      memory::basic_span<const std::array<Ts, N>, Ps, Ss> src) noexcept
+      const memory::basic_span<const std::array<Ts, N>, Ps, Ss> src) noexcept
       -> span_size_t {
         return src.size() * span_size(N);
     }
@@ -80,7 +82,7 @@ struct flatten_traits<std::tuple<P...>, T> {
 
     template <typename Ps, typename Ss>
     static constexpr auto required_size(
-      memory::basic_span<const std::tuple<P...>, Ps, Ss> src) noexcept
+      const memory::basic_span<const std::tuple<P...>, Ps, Ss> src) noexcept
       -> span_size_t {
         return src.size() * span_size(sizeof...(P));
     }

@@ -52,9 +52,9 @@ static constexpr auto do_decode_code_point_head(
             (mask.is_valid() && bitshift.is_valid())};
 }
 //------------------------------------------------------------------------------
-static constexpr auto
-decode_code_point_head(const byte b, const valid_sequence_length& l) noexcept
-  -> optionally_valid<code_point_t> {
+static constexpr auto decode_code_point_head(
+  const byte b,
+  const valid_sequence_length& l) noexcept -> optionally_valid<code_point_t> {
     return do_decode_code_point_head(
       b, head_data_mask(l), head_data_bitshift(l));
 }
@@ -162,9 +162,9 @@ inline auto do_encode_code_point(
     return false;
 }
 //------------------------------------------------------------------------------
-inline auto
-encode_code_point(const code_point& cp, const valid_byte_span& dest) noexcept
-  -> valid_sequence_length {
+inline auto encode_code_point(
+  const code_point& cp,
+  const valid_byte_span& dest) noexcept -> valid_sequence_length {
     auto len = required_sequence_length(cp.value());
     do_encode_code_point(cp, dest, len);
     return len;
@@ -253,9 +253,9 @@ inline auto encode_code_points(
     return true;
 }
 //------------------------------------------------------------------------------
-inline auto
-decode_code_points(const valid_cbyte_span& bytes, span<code_point> cps)
-  -> bool {
+inline auto decode_code_points(
+  const valid_cbyte_span& bytes,
+  span<code_point> cps) -> bool {
     span_size_t i = 0;
 
     for(code_point& cp : cps) {

@@ -23,8 +23,8 @@ struct valid_flag_policy {
 
     constexpr valid_flag_policy() noexcept = default;
 
-    constexpr valid_flag_policy(bool is_valid) noexcept
-      : _is_valid(is_valid) {}
+    constexpr valid_flag_policy(const bool is_valid) noexcept
+      : _is_valid{is_valid} {}
 
     /// @brief Returns value validity depending on internally stored flag.
     template <typename T>
@@ -34,7 +34,7 @@ struct valid_flag_policy {
 
     struct do_log {
         template <typename X>
-        constexpr do_log(X) noexcept {}
+        constexpr do_log(const X&) noexcept {}
 
         template <typename Log, typename T>
         void operator()(Log& log, const T&) const {
@@ -154,9 +154,9 @@ public:
 /// @brief Equality comparison of two conditionally valid values.
 /// @ingroup valid_if
 template <typename T, typename P1, typename P2>
-static constexpr auto
-operator==(const valid_if<T, P1>& v1, const valid_if<T, P2>& v2) noexcept
-  -> tribool {
+static constexpr auto operator==(
+  const valid_if<T, P1>& v1,
+  const valid_if<T, P2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() == v2.value_anyway()),
       (!v1.is_valid() || !v2.is_valid())};
@@ -165,9 +165,9 @@ operator==(const valid_if<T, P1>& v1, const valid_if<T, P2>& v2) noexcept
 /// @brief Non-equality comparison of two conditionally valid values.
 /// @ingroup valid_if
 template <typename T, typename P1, typename P2>
-static constexpr auto
-operator!=(const valid_if<T, P1>& v1, const valid_if<T, P2>& v2) noexcept
-  -> tribool {
+static constexpr auto operator!=(
+  const valid_if<T, P1>& v1,
+  const valid_if<T, P2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() != v2.value_anyway()),
       (!v1.is_valid() || !v2.is_valid())};
@@ -176,9 +176,9 @@ operator!=(const valid_if<T, P1>& v1, const valid_if<T, P2>& v2) noexcept
 /// @brief Less-than comparison of two conditionally valid values.
 /// @ingroup valid_if
 template <typename T, typename P1, typename P2>
-static constexpr auto
-operator<(const valid_if<T, P1>& v1, const valid_if<T, P2>& v2) noexcept
-  -> tribool {
+static constexpr auto operator<(
+  const valid_if<T, P1>& v1,
+  const valid_if<T, P2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() < v2.value_anyway()),
       (!v1.is_valid() || !v2.is_valid())};
@@ -187,9 +187,9 @@ operator<(const valid_if<T, P1>& v1, const valid_if<T, P2>& v2) noexcept
 /// @brief Greater-than comparison of two conditionally valid values.
 /// @ingroup valid_if
 template <typename T, typename P1, typename P2>
-static constexpr auto
-operator>(const valid_if<T, P1>& v1, const valid_if<T, P2>& v2) noexcept
-  -> tribool {
+static constexpr auto operator>(
+  const valid_if<T, P1>& v1,
+  const valid_if<T, P2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() > v2.value_anyway()),
       (!v1.is_valid() || !v2.is_valid())};
@@ -198,9 +198,9 @@ operator>(const valid_if<T, P1>& v1, const valid_if<T, P2>& v2) noexcept
 /// @brief Less-equal comparison of two conditionally valid values.
 /// @ingroup valid_if
 template <typename T, typename P1, typename P2>
-static constexpr auto
-operator<=(const valid_if<T, P1>& v1, const valid_if<T, P2>& v2) noexcept
-  -> tribool {
+static constexpr auto operator<=(
+  const valid_if<T, P1>& v1,
+  const valid_if<T, P2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() <= v2.value_anyway()),
       (!v1.is_valid() || !v2.is_valid())};
@@ -209,9 +209,9 @@ operator<=(const valid_if<T, P1>& v1, const valid_if<T, P2>& v2) noexcept
 /// @brief Greater-equal comparison of two conditionally valid values.
 /// @ingroup valid_if
 template <typename T, typename P1, typename P2>
-static constexpr auto
-operator>=(const valid_if<T, P1>& v1, const valid_if<T, P2>& v2) noexcept
-  -> tribool {
+static constexpr auto operator>=(
+  const valid_if<T, P1>& v1,
+  const valid_if<T, P2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() >= v2.value_anyway()),
       (!v1.is_valid() || !v2.is_valid())};
@@ -240,9 +240,9 @@ static constexpr auto extract(valid_if<T, P>&& opt) noexcept -> T&& {
 //------------------------------------------------------------------------------
 /// @brief Overload of extract_or for conditionally valid values.
 template <typename T, typename P, typename F>
-static constexpr auto
-extract_or(const valid_if<T, P>& opt, F&& fallback) noexcept
-  -> std::enable_if_t<std::is_convertible_v<F, T>, T> {
+static constexpr auto extract_or(
+  const valid_if<T, P>& opt,
+  F&& fallback) noexcept -> std::enable_if_t<std::is_convertible_v<F, T>, T> {
     if(bool(opt)) {
         return opt.value_anyway();
     }

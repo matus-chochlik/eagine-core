@@ -58,7 +58,7 @@ struct vector {
     }
 
     /// @brief Creates a zero vector instance with all elements set to @p v.
-    static auto fill(T v) noexcept {
+    static auto fill(const T v) noexcept {
         return vector{vect::fill<T, N, V>::apply(v)};
     }
 
@@ -72,13 +72,13 @@ struct vector {
     /// @brief Creates an axis vector for the I-th dimension with specified length.
     /// @pre I < N
     template <int I>
-    static auto axis(T v) noexcept {
+    static auto axis(const T v) noexcept {
         return vector{vect::axis<T, N, I, V>::apply(v)};
     }
 
     /// @brief Creates an axis vector for the i-th dimension with specified length.
     /// @pre i < N
-    static auto axis(int i, T v) noexcept {
+    static auto axis(const int i, const T v) noexcept {
         EAGINE_ASSERT(i < N);
         vector r = zero();
         r._v[i] = v;
@@ -108,29 +108,32 @@ struct vector {
       bool W,
       typename =
         std::enable_if_t<(!std::is_same_v<T, P> || (N != M) || (V != W))>>
-    static constexpr auto from(const vector<P, M, W>& v, T d = T(0)) noexcept {
+    static constexpr auto from(
+      const vector<P, M, W>& v,
+      const T d = T(0)) noexcept {
         return vector{vect::cast<P, M, W, T, N, V>::apply(v._v, d)};
     }
 
     /// @brief Creates vector instance from two other vectors.
     template <typename P, int M, bool W>
-    static constexpr auto
-    from(const vector<P, M, W>& v, const vector<T, N - M, W>& u) noexcept {
+    static constexpr auto from(
+      const vector<P, M, W>& v,
+      const vector<T, N - M, W>& u) noexcept {
         return vector{vect::cast<P, M, W, T, N, V>::apply(v._v, u._v)};
     }
 
     /// @brief Creates vector instance from data pointer and length.
-    static auto from(const T* dt, span_size_t sz) noexcept {
+    static auto from(const T* dt, const span_size_t sz) noexcept {
         return vector{vect::from_array<T, N, V>::apply(dt, sz)};
     }
 
     /// @brief Creates vector instance from data pointer, length and additional value.
-    static auto from(const T* dt, span_size_t sz, T fv) noexcept {
+    static auto from(const T* dt, const span_size_t sz, const T fv) noexcept {
         return vector{vect::from_saafv<T, N, V>::apply(dt, sz, fv)};
     }
 
     /// @brief Subscript operator.
-    constexpr auto operator[](int pos) const noexcept {
+    constexpr auto operator[](const int pos) const noexcept {
         return _v[pos];
     }
 
@@ -229,17 +232,17 @@ struct vector {
     }
 
     /// @brief Multiplication by constant operator.
-    friend constexpr auto operator*(T c, vector_param a) noexcept {
+    friend constexpr auto operator*(const T c, vector_param a) noexcept {
         return vector{a._v * vect::fill<T, N, V>::apply(c)};
     }
 
     /// @brief Multiplication by constant operator.
-    friend constexpr auto operator*(vector_param a, T c) noexcept {
+    friend constexpr auto operator*(vector_param a, const T c) noexcept {
         return vector{a._v * vect::fill<T, N, V>::apply(c)};
     }
 
     /// @brief Multiplication by constant operator.
-    auto operator*=(T c) noexcept -> auto& {
+    auto operator*=(const T c) noexcept -> auto& {
         _v = _v * vect::fill<T, N, V>::apply(c);
         return *this;
     }
@@ -262,13 +265,13 @@ struct vector {
     }
 
     /// @brief Division by constant operator.
-    friend constexpr auto operator/(vector_param a, T c) noexcept {
+    friend constexpr auto operator/(vector_param a, const T c) noexcept {
         return vector{
           vect::sdiv<T, N, V>::apply(a._v, vect::fill<T, N, V>::apply(c))};
     }
 
     /// @brief Constant division operator.
-    friend constexpr auto operator/(T c, vector_param a) noexcept {
+    friend constexpr auto operator/(const T c, vector_param a) noexcept {
         return vector{
           vect::sdiv<T, N, V>::apply(vect::fill<T, N, V>::apply(c), a._v)};
     }
@@ -292,7 +295,7 @@ template <typename T, int N, bool V>
 static constexpr auto _dot(
   const vector<T, N, V>& a,
   const vector<T, N, V>& b,
-  std::true_type) noexcept {
+  const std::true_type) noexcept {
     return scalar<T, N, V>{vect::hsum<T, N, V>::apply(a._v * b._v)};
 }
 
@@ -300,15 +303,16 @@ template <typename T, int N, bool V>
 static constexpr auto _dot(
   const vector<T, N, V>& a,
   const vector<T, N, V>& b,
-  std::false_type) noexcept {
+  const std::false_type) noexcept {
     return scalar<T, N, V>{vect::esum<T, N, V>::apply(a._v * b._v)};
 }
 
 /// @brief Vector dot product.
 /// @ingroup math
 template <typename T, int N, bool V>
-static constexpr auto
-dot(const vector<T, N, V>& a, const vector<T, N, V>& b) noexcept {
+static constexpr auto dot(
+  const vector<T, N, V>& a,
+  const vector<T, N, V>& b) noexcept {
     return _dot(a, b, vect::has_vect_data<T, N, V>());
 }
 
@@ -322,8 +326,9 @@ static inline auto perpendicular(const vector<T, 2, V>& a) noexcept {
 /// @brief 3D vector cross product.
 /// @ingroup math
 template <typename T, bool V>
-static inline auto
-cross(const vector<T, 3, V>& a, const vector<T, 3, V>& b) noexcept {
+static inline auto cross(
+  const vector<T, 3, V>& a,
+  const vector<T, 3, V>& b) noexcept {
     using _sh = vect::shuffle<T, 3, V>;
     return vector<T, 3, V>{
       _sh::template apply<1, 2, 0>(a._v) * _sh::template apply<2, 0, 1>(b._v) -
@@ -331,13 +336,17 @@ cross(const vector<T, 3, V>& a, const vector<T, 3, V>& b) noexcept {
 }
 
 template <typename T, int N, bool V>
-static constexpr auto _mag(const vector<T, N, V>& a, std::true_type) noexcept {
+static constexpr auto _mag(
+  const vector<T, N, V>& a,
+  const std::true_type) noexcept {
     return scalar<T, N, V>{
       vect::sqrt<T, N, V>::apply(vect::hsum<T, N, V>::apply(a._v * a._v))};
 }
 
 template <typename T, int N, bool V>
-static constexpr auto _mag(const vector<T, N, V> a, std::false_type) noexcept {
+static constexpr auto _mag(
+  const vector<T, N, V> a,
+  const std::false_type) noexcept {
     using std::sqrt;
     return scalar<T, N, V>{T(sqrt(vect::esum<T, N, V>::apply(a._v * a._v)))};
 }
@@ -360,7 +369,7 @@ template <typename T, int N, bool V>
 static inline auto _nmld(
   const vector<T, N, V>& a,
   const scalar<T, N, V>& l,
-  std::true_type) noexcept {
+  const std::true_type) noexcept {
     return vector<T, N, V>{vect::sdiv<T, N, V>::apply(a._v, l._v)};
 }
 
@@ -368,7 +377,7 @@ template <typename T, int N, bool V>
 static inline auto _nmld(
   const vector<T, N, V>& a,
   const scalar<T, N, V>& l,
-  std::false_type) noexcept {
+  const std::false_type) noexcept {
     return vector<T, N, V>{
       vect::sdiv<T, N, V>::apply(a._v, vect::fill<T, N, V>::apply(l._v))};
 }
@@ -384,8 +393,9 @@ static inline auto normalized(const vector<T, N, V>& a) noexcept {
 /// @brief Returns the distance between two vectors.
 /// @ingroup math
 template <typename T, int N, bool V>
-static constexpr auto
-distance(const vector<T, N, V>& a, const vector<T, N, V>& b) noexcept {
+static constexpr auto distance(
+  const vector<T, N, V>& a,
+  const vector<T, N, V>& b) noexcept {
     return magnitude(a - b);
 }
 

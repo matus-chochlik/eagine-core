@@ -21,8 +21,8 @@ class interleaved_call {
 public:
     /// @brief Construction from the base function and the separator function.
     interleaved_call(Func func, SepFunc sep_func)
-      : _func(func)
-      , _sep_func(sep_func) {}
+      : _func{std::move(func)}
+      , _sep_func{std::move(sep_func)} {}
 
     /// @brief The function call operator.
     template <typename... P>

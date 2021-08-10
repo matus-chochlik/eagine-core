@@ -17,7 +17,7 @@ namespace eagine::units {
 
 // multiplication
 template <typename D1, typename D2>
-static inline auto operator*(D1, D2) noexcept -> std::enable_if_t<
+static inline auto operator*(const D1, const D2) noexcept -> std::enable_if_t<
   is_dimension_v<D1> && is_dimension_v<D2>,
   bits::dim_add_t<D1, D2>> {
     return {};
@@ -25,7 +25,7 @@ static inline auto operator*(D1, D2) noexcept -> std::enable_if_t<
 
 // division
 template <typename D1, typename D2>
-static inline auto operator/(D1, D2) noexcept -> std::enable_if_t<
+static inline auto operator/(const D1, const D2) noexcept -> std::enable_if_t<
   is_dimension_v<D1> && is_dimension_v<D2>,
   bits::dim_sub_t<D1, D2>> {
     return {};

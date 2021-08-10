@@ -48,7 +48,7 @@ public:
 
     void clear();
 
-    auto allocate(span_size_t size, span_size_t align) -> block {
+    auto allocate(const span_size_t size, const span_size_t align) -> block {
         _blks.push_back(_alloc.allocate(size, align));
         _alns.push_back(align);
         return _blks.back();
@@ -64,8 +64,9 @@ public:
     }
 
     template <typename T, typename P, typename S>
-    auto copy_aligned_array(basic_span<T, P, S> src, const span_size_t align)
-      -> span<std::remove_const_t<T>> {
+    auto copy_aligned_array(
+      const basic_span<T, P, S> src,
+      const span_size_t align) -> span<std::remove_const_t<T>> {
         auto dst =
           make_aligned_array<std::remove_const_t<T>>(src.size(), align);
         std::copy(src.begin(), src.end(), dst.begin());
@@ -73,7 +74,8 @@ public:
     }
 
     template <typename T, typename P, typename S>
-    auto copy_array(basic_span<T, P, S> src) -> span<std::remove_const_t<T>> {
+    auto copy_array(const basic_span<T, P, S> src)
+      -> span<std::remove_const_t<T>> {
         return copy_aligned_array<T>(src, span_size(alignof(T)));
     }
 

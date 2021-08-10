@@ -59,7 +59,7 @@ public:
       typename = std::enable_if_t<
         (sizeof...(B) == N) && (sizeof...(B) != 0) &&
         std::conjunction_v<std::true_type, std::is_convertible<B, value_type>...>>>
-    explicit constexpr byteset(B... b) noexcept
+    explicit constexpr byteset(const B... b) noexcept
       : _bytes{value_type{b}...} {}
 
     template <
@@ -67,7 +67,7 @@ public:
       typename UInt,
       typename =
         std::enable_if_t<(sizeof(UInt) >= N) && std::is_integral_v<UInt>>>
-    constexpr byteset(std::index_sequence<I...>, UInt init) noexcept
+    constexpr byteset(const std::index_sequence<I...>, const UInt init) noexcept
       : _bytes{value_type((init >> (8 * (N - I - 1))) & 0xFFU)...} {}
 
     /// @brief Construiction from unsigned integer that is then split into bytes.
@@ -76,7 +76,7 @@ public:
       typename = std::enable_if_t<
         (sizeof(UInt) >= N) && std::is_integral_v<UInt> &&
         std::is_unsigned_v<UInt>>>
-    explicit constexpr byteset(UInt init) noexcept
+    explicit constexpr byteset(const UInt init) noexcept
       : byteset(std::make_index_sequence<N>(), init) {}
 
     /// @brief Returns a pointer to the byte sequence start.
@@ -102,12 +102,13 @@ public:
     }
 
     /// @brief Subscript operator.
-    constexpr auto operator[](size_type i) noexcept -> reference {
+    constexpr auto operator[](const size_type i) noexcept -> reference {
         return _bytes[i];
     }
 
     /// @brief Subscript operator.
-    constexpr auto operator[](size_type i) const noexcept -> const_reference {
+    constexpr auto operator[](const size_type i) const noexcept
+      -> const_reference {
         return _bytes[i];
     }
 
@@ -160,38 +161,44 @@ public:
     }
 
     /// @brief Equality comparison.
-    friend constexpr auto
-    operator==(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator==(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) == 0;
     }
 
     /// @brief Non-equality comparison.
-    friend constexpr auto
-    operator!=(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator!=(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) != 0;
     }
 
     /// @brief Less-than comparison.
-    friend constexpr auto
-    operator<(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator<(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) < 0;
     }
 
     /// @brief Less-equal comparison.
-    friend constexpr auto
-    operator<=(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator<=(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) <= 0;
     }
 
     /// @brief Greater-than comparison.
-    friend constexpr auto
-    operator>(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator>(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) > 0;
     }
 
     /// @brief Greater-equal comparison.
-    friend constexpr auto
-    operator>=(const byteset& a, const byteset& b) noexcept {
+    friend constexpr auto operator>=(
+      const byteset& a,
+      const byteset& b) noexcept {
         return compare(a, b) >= 0;
     }
 
@@ -205,7 +212,7 @@ public:
                                  std::is_same_v<UInt, __int128_t> ||
 #endif
                                  std::is_integral_v<UInt>)>>
-    constexpr auto as(UInt i = 0) const noexcept {
+    constexpr auto as(const UInt i = 0) const noexcept {
         return _push_back_to(i, 0);
     }
 
@@ -213,21 +220,23 @@ private:
     value_type _bytes[N]{};
 
     template <typename UInt>
-    constexpr auto _push_back_to(UInt state, std::size_t i) const noexcept
-      -> UInt {
+    constexpr auto _push_back_to(const UInt state, const std::size_t i)
+      const noexcept -> UInt {
         // NOLINTNEXTLINE(hicpp-signed-bitwise)
         return (i < N) ? _push_back_to((state << CHAR_BIT) | _bytes[i], i + 1)
                        : state;
     }
 
-    static constexpr auto _cmp_byte(value_type a, value_type b) noexcept
-      -> int {
+    static constexpr auto _cmp_byte(
+      const value_type a,
+      const value_type b) noexcept -> int {
         return (a == b) ? 0 : (a < b) ? -1 : 1;
     }
 
-    static constexpr auto
-    _do_cmp(const byteset&, const byteset&, std::index_sequence<>) noexcept
-      -> int {
+    static constexpr auto _do_cmp(
+      const byteset&,
+      const byteset&,
+      const std::index_sequence<>) noexcept -> int {
         return 0;
     }
 
@@ -235,7 +244,7 @@ private:
     static constexpr auto _do_cmp(
       const byteset& a,
       const byteset& b,
-      std::index_sequence<I, In...>) noexcept -> int {
+      const std::index_sequence<I, In...>) noexcept -> int {
         return (a._bytes[I] == b._bytes[I])
                  ? _do_cmp(a, b, std::index_sequence<In...>{})
                  : _cmp_byte(a._bytes[I], b._bytes[I]);

@@ -17,7 +17,7 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 static constexpr auto make_base64_encode_transform() {
-    return [](byte b) -> always_valid<char> {
+    return [](const byte b) -> always_valid<char> {
         const auto i = int(b);
         if(i < 26) {
             return {char('A' + i)};
@@ -39,7 +39,7 @@ static constexpr auto make_base64_encode_transform() {
 }
 //------------------------------------------------------------------------------
 static constexpr auto make_base64_decode_transform() {
-    return [](char c) -> optionally_valid<byte> {
+    return [](const char c) -> optionally_valid<byte> {
         if((c >= 'A') && (c <= 'Z')) {
             return {byte(c - 'A'), true};
         }
@@ -59,17 +59,17 @@ static constexpr auto make_base64_decode_transform() {
     };
 }
 //------------------------------------------------------------------------------
-static inline auto base64_encoded_length(span_size_t orig_size) noexcept {
+static inline auto base64_encoded_length(const span_size_t orig_size) noexcept {
     return dissolved_bits_length(orig_size, 6);
 }
 //------------------------------------------------------------------------------
-static inline auto base64_decoded_length(span_size_t orig_size) noexcept {
+static inline auto base64_decoded_length(const span_size_t orig_size) noexcept {
     return concentrated_bits_length(orig_size, 6);
 }
 //------------------------------------------------------------------------------
 template <typename Ps, typename Ss, typename Pd, typename Sd>
 static inline auto base64_encode(
-  memory::basic_span<const byte, Ps, Ss> src,
+  const memory::basic_span<const byte, Ps, Ss> src,
   memory::basic_span<char, Pd, Sd> dst) -> memory::basic_span<char, Pd, Sd> {
     span_size_t i = 0;
     span_size_t o = 0;
@@ -84,9 +84,9 @@ static inline auto base64_encode(
 }
 //------------------------------------------------------------------------------
 template <typename P, typename S, typename Dst>
-static inline auto
-base64_encode(memory::basic_span<const byte, P, S> src, Dst& dst)
-  -> optional_reference_wrapper<Dst> {
+static inline auto base64_encode(
+  const memory::basic_span<const byte, P, S> src,
+  Dst& dst) -> optional_reference_wrapper<Dst> {
     using Ds = typename Dst::size_type;
     dst.resize(Ds(base64_encoded_length(src.size())));
     span_size_t i = 0;
@@ -104,7 +104,7 @@ base64_encode(memory::basic_span<const byte, P, S> src, Dst& dst)
 //------------------------------------------------------------------------------
 template <typename Ps, typename Ss, typename Pd, typename Sd>
 static inline auto base64_decode(
-  memory::basic_span<const char, Ps, Ss> src,
+  const memory::basic_span<const char, Ps, Ss> src,
   memory::basic_span<byte, Pd, Sd> dst) -> memory::basic_span<byte, Pd, Sd> {
     span_size_t i = 0;
     span_size_t o = 0;
@@ -119,9 +119,9 @@ static inline auto base64_decode(
 }
 //------------------------------------------------------------------------------
 template <typename P, typename S, typename Dst>
-static inline auto
-base64_decode(memory::basic_span<const char, P, S> src, Dst& dst)
-  -> optional_reference_wrapper<Dst> {
+static inline auto base64_decode(
+  const memory::basic_span<const char, P, S> src,
+  Dst& dst) -> optional_reference_wrapper<Dst> {
     using Ds = typename Dst::size_type;
     dst.resize(Ds(base64_decoded_length(src.size())));
     span_size_t i = 0;

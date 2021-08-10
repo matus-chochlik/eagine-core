@@ -31,15 +31,15 @@ struct message_id : std::tuple<identifier_t, identifier_t> {
       : base{0U, 0U} {}
 
     ///	@brief Construction from two identifier values.
-    constexpr message_id(identifier_t c, identifier_t m) noexcept
+    constexpr message_id(const identifier_t c, const identifier_t m) noexcept
       : base{c, m} {}
 
     ///	@brief Construction from two identifier objects.
-    constexpr message_id(identifier c, identifier m) noexcept
+    constexpr message_id(const identifier c, const identifier m) noexcept
       : base{c.value(), m.value()} {}
 
     ///	@brief Construction from a tuple of two identifier objects.
-    constexpr message_id(std::tuple<identifier, identifier> t) noexcept
+    constexpr message_id(const std::tuple<identifier, identifier> t) noexcept
       : message_id{std::get<0>(t), std::get<1>(t)} {}
 
     ///	@brief Construction from static_message_id value.
@@ -82,13 +82,13 @@ struct message_id : std::tuple<identifier_t, identifier_t> {
 
     /// @brief Checks if the class identifier matches the argument.
     /// @see has_method
-    constexpr auto has_class(identifier id) const noexcept {
+    constexpr auto has_class(const identifier id) const noexcept {
         return class_id() == id.value();
     }
 
     /// @brief Checks if the method identifier matches the argument.
     /// @see has_class
-    constexpr auto has_method(identifier id) const noexcept {
+    constexpr auto has_method(const identifier id) const noexcept {
         return method_id() == id.value();
     }
 };
@@ -127,8 +127,9 @@ struct static_message_id {
 /// @brief Equality comparison between message_id and static_message_id.
 /// @ingroup identifiers
 template <identifier_t ClassId, identifier_t MethodId>
-inline auto
-operator==(message_id l, static_message_id<ClassId, MethodId> r) noexcept {
+inline auto operator==(
+  const message_id l,
+  const static_message_id<ClassId, MethodId> r) noexcept {
     return l == message_id{r};
 }
 //------------------------------------------------------------------------------

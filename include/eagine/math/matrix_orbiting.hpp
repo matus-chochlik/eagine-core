@@ -39,11 +39,11 @@ public:
       const vector<T, 3, V>& y,
       const vector<T, 3, V>& z,
       T r) noexcept
-      : _t(t)
-      , _x(x)
-      , _z(z)
-      , _y(y)
-      , _r(r) {}
+      : _t{t}
+      , _x{x}
+      , _z{z}
+      , _y{y}
+      , _r{r} {}
 
     constexpr orbiting_y_up(
       const vector<T, 3, V>& t,
@@ -52,11 +52,11 @@ public:
       const T ca,
       const T se,
       const T ce) noexcept
-      : _t(t)
+      : _t{t}
       , _x{{-sa, T(0), -ca}}
       , _z{{ce * ca, se, ce * -sa}}
-      , _y(cross(_z, _x))
-      , _r(rs) {}
+      , _y{cross(_z, _x)}
+      , _r{rs} {}
 
     /// @brief Initalizes the matrix constructor.
     /// @param target is the point that the camera orbits around.
@@ -66,29 +66,29 @@ public:
     constexpr orbiting_y_up(
       const vector<T, 3, V>& target,
       const T radius,
-      radians_t<T> azimuth,
-      radians_t<T> elevation)
-      : orbiting_y_up(
+      const radians_t<T> azimuth,
+      const radians_t<T> elevation)
+      : orbiting_y_up{
           target,
           radius,
           sin(azimuth),
           cos(azimuth),
           sin(elevation),
-          cos(elevation)) {}
+          cos(elevation)} {}
 
     /// @brief Returns the constructed matrix.
     constexpr auto operator()() const noexcept {
         return _make(bool_constant<RM>());
     }
 
-    friend constexpr auto
-    reorder_mat_ctr(const orbiting_y_up<matrix<T, 4, 4, RM, V>>& c) noexcept
+    friend constexpr auto reorder_mat_ctr(
+      const orbiting_y_up<matrix<T, 4, 4, RM, V>>& c) noexcept
       -> orbiting_y_up<matrix<T, 4, 4, !RM, V>> {
         return {c._t, c._x, c._y, c._z, c._r};
     }
 
 private:
-    constexpr auto _make(std::true_type) const noexcept {
+    constexpr auto _make(const std::true_type) const noexcept {
         return matrix<T, 4, 4, true, V>{
           {{_x[0], _x[1], _x[2], -_r * dot(_x, _z) - dot(_x, _t)},
            {_y[0], _y[1], _y[2], -_r * dot(_y, _z) - dot(_y, _t)},
@@ -96,7 +96,7 @@ private:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-    constexpr auto _make(std::false_type) const noexcept {
+    constexpr auto _make(const std::false_type) const noexcept {
         return reorder(_make(std::true_type()));
     }
 

@@ -28,7 +28,7 @@ public:
     using pointer = typename block::pointer;
 
     /// @brief Constructor with explicit alignment specification.
-    explicit buffer(span_size_t align)
+    explicit buffer(const span_size_t align)
       : _align(align)
       , _alloc(default_byte_allocator()) {}
 
@@ -99,7 +99,7 @@ public:
     /// @brief Pre-allocate the specified number of bytes.
     /// @see capacity
     /// @see resize
-    auto reserve(span_size_t new_size) -> auto& {
+    auto reserve(const span_size_t new_size) -> auto& {
         if(capacity() < new_size) {
             _reallocate(new_size);
         }
@@ -111,7 +111,7 @@ public:
     /// @see size
     /// @see ensure
     /// @see reserve
-    auto resize(span_size_t new_size) -> auto& {
+    auto resize(const span_size_t new_size) -> auto& {
         reserve(new_size);
         _size = new_size;
         EAGINE_ASSERT(_is_ok());
@@ -123,7 +123,7 @@ public:
     /// @see resize
     /// @see reserve
     /// @see enlarge_by
-    auto ensure(span_size_t new_size) -> auto& {
+    auto ensure(const span_size_t new_size) -> auto& {
         if(size() < new_size) {
             return resize(new_size);
         }
@@ -136,7 +136,7 @@ public:
     /// @see resize
     /// @see reserve
     /// @see ensure
-    auto enlarge_by(span_size_t inc_size) -> auto& {
+    auto enlarge_by(const span_size_t inc_size) -> auto& {
         return resize(size() + inc_size);
     }
 
@@ -183,7 +183,7 @@ private:
         return bool(_alloc) && size() <= capacity();
     }
 
-    void _reallocate(span_size_t new_size) {
+    void _reallocate(const span_size_t new_size) {
         _alloc.do_reallocate(_storage, new_size, _align);
     }
 };

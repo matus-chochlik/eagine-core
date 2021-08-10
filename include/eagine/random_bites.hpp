@@ -31,22 +31,23 @@ auto make_random_biteset(
 //------------------------------------------------------------------------------
 template <std::size_t B, typename T, std::size_t... I, typename Engine>
 auto make_random_biteset(
-  std::index_sequence<I...> idx_seq,
-  T min,
-  T max,
+  const std::index_sequence<I...> idx_seq,
+  const T min,
+  const T max,
   Engine& engine) {
     std::uniform_int_distribution<T> dist(min, max);
     return make_random_biteset<B, T>(idx_seq, dist, engine);
 }
 //------------------------------------------------------------------------------
 template <std::size_t N, std::size_t B, typename T, typename Engine>
-auto random_biteset(T min, T max, Engine& engine) -> biteset<N, B, T> {
+auto random_biteset(const T min, const T max, Engine& engine)
+  -> biteset<N, B, T> {
     return make_random_biteset<B, T>(
       std::make_index_sequence<N>(), min, max, engine);
 }
 //------------------------------------------------------------------------------
 template <std::size_t N, std::size_t B, typename T>
-auto random_biteset(T min, T max) -> biteset<N, B, T> {
+auto random_biteset(const T min, const T max) -> biteset<N, B, T> {
     std::random_device engine;
     return make_random_biteset<B, T>(
       std::make_index_sequence<N>(), min, max, engine);

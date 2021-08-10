@@ -26,12 +26,12 @@ public:
     block_data_source() noexcept = default;
 
     /// @brief Constructor setting the backing block.
-    block_data_source(memory::const_block src) noexcept
+    block_data_source(const memory::const_block src) noexcept
       : _src{src} {}
 
     /// @brief Resets the backing block.
     /// @see replace_with
-    void reset(memory::const_block src) {
+    void reset(const memory::const_block src) {
         _src = src;
         _done = 0;
     }

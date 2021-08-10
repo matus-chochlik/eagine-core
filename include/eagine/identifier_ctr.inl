@@ -10,7 +10,7 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto byte_to_identifier(byte b) noexcept -> identifier {
+auto byte_to_identifier(const byte b) noexcept -> identifier {
     // clang-format off
     static const char hd[16] = {
 		'0', '1', '2', '3', '4', '5', '6', '7',
@@ -37,7 +37,7 @@ static auto _ident_dec_to_str(int i, char (&tmp)[L]) noexcept -> identifier {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto dec_to_identifier(int i) noexcept -> identifier {
+auto dec_to_identifier(const int i) noexcept -> identifier {
     EAGINE_ASSERT(i >= 0);
     if(i < 10) {
         char tmp[2];

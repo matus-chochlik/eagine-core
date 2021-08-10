@@ -23,7 +23,7 @@ template <typename T, typename C, C Min, C Max>
 struct valid_if_btwn_policy {
 
     /// @brief Indicates @p value validity, true if between Min and Max.
-    constexpr auto operator()(T value) const noexcept {
+    constexpr auto operator()(const T value) const noexcept {
         return (T(Min) <= value) && (value <= T(Max));
     }
 

@@ -32,7 +32,7 @@ public:
     constexpr basic_iterable_type() = default;
 
     /// @brief Initializing constructor.
-    constexpr basic_iterable_type(T value) noexcept
+    constexpr basic_iterable_type(const T value) noexcept
       : _value{value} {}
 
     /// @brief Explicit conversion to the wrapped iterable type.
@@ -47,7 +47,7 @@ public:
     }
 
     /// @brief Addition operator.
-    constexpr auto operator+=(difference_type d) noexcept -> auto& {
+    constexpr auto operator+=(const difference_type d) noexcept -> auto& {
         _value += d;
         return self();
     }
@@ -60,8 +60,9 @@ public:
     }
 
     /// @brief Addition operator.
-    friend constexpr auto
-    operator+(basic_iterable_type a, difference_type d) noexcept {
+    friend constexpr auto operator+(
+      const basic_iterable_type a,
+      const difference_type d) noexcept {
         Derived res(a.self());
         res += d;
         return res;
@@ -74,7 +75,7 @@ public:
     }
 
     /// @brief Subtraction operator.
-    auto constexpr operator-=(difference_type d) noexcept -> auto& {
+    auto constexpr operator-=(const difference_type d) noexcept -> auto& {
         _value -= d;
         return self();
     }
@@ -87,53 +88,60 @@ public:
     }
 
     /// @brief Difference operator.
-    friend constexpr auto
-    operator-(basic_iterable_type a, difference_type d) noexcept {
+    friend constexpr auto operator-(
+      const basic_iterable_type a,
+      const difference_type d) noexcept {
         Derived res(a.self());
         res -= d;
         return res;
     }
 
     /// @brief Subtraction operator.
-    constexpr friend auto
-    operator-(basic_iterable_type a, basic_iterable_type b) noexcept
-      -> difference_type {
+    constexpr friend auto operator-(
+      const basic_iterable_type a,
+      const basic_iterable_type b) noexcept -> difference_type {
         return a._value - b._value;
     }
 
     /// @brief Equality comparison.
-    constexpr friend auto
-    operator==(basic_iterable_type a, basic_iterable_type b) noexcept {
+    constexpr friend auto operator==(
+      const basic_iterable_type a,
+      const basic_iterable_type b) noexcept {
         return a._value == b._value;
     }
 
     /// @brief Non-equality comparison.
-    constexpr friend auto
-    operator!=(basic_iterable_type a, basic_iterable_type b) noexcept {
+    constexpr friend auto operator!=(
+      const basic_iterable_type a,
+      const basic_iterable_type b) noexcept {
         return a._value != b._value;
     }
 
     /// @brief Less-than comparison.
-    constexpr friend auto
-    operator<(basic_iterable_type a, basic_iterable_type b) noexcept {
+    constexpr friend auto operator<(
+      const basic_iterable_type a,
+      const basic_iterable_type b) noexcept {
         return a._value < b._value;
     }
 
     /// @brief Less-equal comparison.
-    constexpr friend auto
-    operator<=(basic_iterable_type a, basic_iterable_type b) noexcept {
+    constexpr friend auto operator<=(
+      const basic_iterable_type a,
+      const basic_iterable_type b) noexcept {
         return a._value <= b._value;
     }
 
     /// @brief Greater-than comparison.
-    constexpr friend auto
-    operator>(basic_iterable_type a, basic_iterable_type b) noexcept {
+    constexpr friend auto operator>(
+      const basic_iterable_type a,
+      const basic_iterable_type b) noexcept {
         return a._value > b._value;
     }
 
     /// @brief Greater-equal comparison.
-    constexpr friend auto
-    operator>=(basic_iterable_type a, basic_iterable_type b) noexcept {
+    constexpr friend auto operator>=(
+      const basic_iterable_type a,
+      const basic_iterable_type b) noexcept {
         return a._value >= b._value;
     }
 
@@ -199,7 +207,7 @@ public:
     constexpr basic_transforming_iterator() = default;
 
     /// @brief Initialization for the underlying iterator and transform callable.
-    constexpr basic_transforming_iterator(Iterator iter, Transform transf)
+    constexpr basic_transforming_iterator(const Iterator iter, Transform transf)
       : _base{iter}
       , _transf{std::move(transf)} {}
 
@@ -232,13 +240,7 @@ private:
 template <typename Iterator, typename T, typename Transform, typename Derived>
 class basic_transforming_iterator<Iterator, T, T&, Transform, Derived>
   : public basic_selfref_iterator<Iterator, Derived> {
-private:
     using _base = basic_selfref_iterator<Iterator, Derived>;
-    Transform _transf{};
-
-    auto _base_iter() const noexcept -> const _base& {
-        return *this;
-    }
 
 public:
     constexpr basic_transforming_iterator() = default;
@@ -257,6 +259,13 @@ public:
 
     constexpr auto operator*() const -> const T& {
         return _transf(**_base_iter());
+    }
+
+private:
+    Transform _transf{};
+
+    auto _base_iter() const noexcept -> const _base& {
+        return *this;
     }
 };
 //------------------------------------------------------------------------------
@@ -306,12 +315,12 @@ class basic_noexcept_casting_iterator
       Derived>;
 
 public:
-    constexpr basic_noexcept_casting_iterator(Iterator iter)
+    constexpr basic_noexcept_casting_iterator(const Iterator iter)
       : _base{iter, &_cast} {}
 
 private:
-    static constexpr auto
-    _cast(typename std::iterator_traits<Iterator>::reference r) noexcept -> T {
+    static constexpr auto _cast(
+      typename std::iterator_traits<Iterator>::reference r) noexcept -> T {
         return static_cast<T>(r);
     }
 };

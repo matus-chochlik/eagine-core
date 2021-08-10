@@ -24,13 +24,13 @@ public:
     buffer_pool() noexcept = default;
 
     /// @brief Constructor initializing the maximum number of buffers in the pool.
-    explicit buffer_pool(std::size_t max) noexcept
+    explicit buffer_pool(const std::size_t max) noexcept
       : _max{max} {}
 
     /// @brief Gets a buffer with the specified required size.
     /// @param req_size The returned buffer will have at least this number of bytes.
     /// @see eat
-    auto get(span_size_t req_size = 0) -> memory::buffer {
+    auto get(const span_size_t req_size = 0) -> memory::buffer {
         auto pos = std::lower_bound(
           _pool.begin(), _pool.end(), req_size, [](auto& buf, auto req) {
               return buf.capacity() < req;

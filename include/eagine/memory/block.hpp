@@ -36,7 +36,7 @@ using const_block = basic_block<true>;
 /// @see accommodate
 /// @see as_chars
 template <typename T, typename P, typename S>
-static constexpr auto as_bytes(basic_span<T, P, S> spn) noexcept
+static constexpr auto as_bytes(const basic_span<T, P, S> spn) noexcept
   -> basic_block<std::is_const_v<T>> {
     return {spn.begin_addr(), spn.end_addr()};
 }
@@ -45,7 +45,7 @@ static constexpr auto as_bytes(basic_span<T, P, S> spn) noexcept
 /// @ingroup memory
 /// @see accommodate
 /// @see as_bytes
-static constexpr auto as_chars(block blk) noexcept {
+static constexpr auto as_chars(const block blk) noexcept {
     return accommodate<char>(blk);
 }
 //------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ static constexpr auto as_chars(block blk) noexcept {
 /// @ingroup memory
 /// @see accommodate
 /// @see as_bytes
-static constexpr auto as_chars(const_block blk) noexcept {
+static constexpr auto as_chars(const const_block blk) noexcept {
     return accommodate<const char>(blk);
 }
 //------------------------------------------------------------------------------

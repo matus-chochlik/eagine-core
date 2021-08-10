@@ -40,7 +40,7 @@ static inline auto system_info_linux_sysinfo() noexcept -> struct ::sysinfo& {
     return _si;
 }
 
-static inline auto system_info_linux_load_avg(std::size_t which) noexcept
+static inline auto system_info_linux_load_avg(const std::size_t which) noexcept
   -> float {
     return static_cast<float>(system_info_linux_sysinfo().loads[which]) /
            static_cast<float>(
@@ -139,7 +139,7 @@ public:
         return span_size(_tz_temp_a.size());
     }
 
-    auto tz_temperature(span_size_t index) noexcept
+    auto tz_temperature(const span_size_t index) noexcept
       -> valid_if_positive<kelvins_t<float>> {
         EAGINE_ASSERT((index >= 0) && (index < tz_count()));
         auto& temp_a = _tz_temp_a[std_size(index)];
@@ -190,7 +190,8 @@ public:
         return span_size(_cd_cm_a.size());
     }
 
-    auto cd_state(span_size_t index) noexcept -> valid_if_between_0_1<float> {
+    auto cd_state(const span_size_t index) noexcept
+      -> valid_if_between_0_1<float> {
         EAGINE_ASSERT((index >= 0) && (index < cd_count()));
         auto& [cur_a, max_a] = _cd_cm_a[index];
         if(cur_a && max_a) {
@@ -211,7 +212,7 @@ public:
         return span_size(_bat_cap_a.size());
     }
 
-    auto bat_capacity(span_size_t index) noexcept
+    auto bat_capacity(const span_size_t index) noexcept
       -> valid_if_between_0_1<float> {
         EAGINE_ASSERT((index >= 0) && (index < bat_count()));
         auto& cap_a = _bat_cap_a[index];
@@ -228,7 +229,7 @@ public:
         return span_size(_ac_online_a.size());
     }
 
-    auto acps_online(span_size_t index) noexcept -> tribool {
+    auto acps_online(const span_size_t index) noexcept -> tribool {
         EAGINE_ASSERT((index >= 0) && (index < acps_count()));
         auto& onl_a = _ac_online_a[index];
         if(onl_a) {
@@ -403,7 +404,7 @@ auto system_info::thermal_sensor_count() noexcept -> span_size_t {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto system_info::sensor_temperature(span_size_t index) noexcept
+auto system_info::sensor_temperature(const span_size_t index) noexcept
   -> valid_if_positive<kelvins_t<float>> {
 #if EAGINE_LINUX
     if(auto impl{_impl()}) {
@@ -459,7 +460,7 @@ auto system_info::cooling_device_count() noexcept -> span_size_t {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto system_info::cooling_device_state(span_size_t index) noexcept
+auto system_info::cooling_device_state(const span_size_t index) noexcept
   -> valid_if_between_0_1<float> {
 #if EAGINE_LINUX
     if(auto impl{_impl()}) {
@@ -481,7 +482,7 @@ auto system_info::battery_count() noexcept -> span_size_t {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto system_info::battery_capacity(span_size_t index) noexcept
+auto system_info::battery_capacity(const span_size_t index) noexcept
   -> valid_if_between_0_1<float> {
 #if EAGINE_LINUX
     if(auto impl{_impl()}) {
@@ -503,7 +504,8 @@ auto system_info::ac_supply_count() noexcept -> span_size_t {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto system_info::ac_supply_online(span_size_t index) noexcept -> tribool {
+auto system_info::ac_supply_online(const span_size_t index) noexcept
+  -> tribool {
 #if EAGINE_LINUX
     if(auto impl{_impl()}) {
         return extract(impl).acps_online(index);

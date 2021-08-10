@@ -36,7 +36,7 @@ public:
         span_size_t can_do = remaining / span_size(sizeof(T));
         if(can_do < values.size()) {
             values = head(values, can_do);
-            errors |= serialization_error_code::incomplete_write;
+            errors = serialization_error_code::incomplete_write;
         } else {
             can_do = values.size();
         }
@@ -46,7 +46,8 @@ public:
     }
 
     template <typename Str>
-    auto do_write_strings(span<const Str> values, span_size_t& done) -> result {
+    auto do_write_strings(const span<const Str> values, span_size_t& done)
+      -> result {
         done = 0;
         serialization_errors errors{};
         for(auto& str : values) {
@@ -61,20 +62,20 @@ public:
         return errors;
     }
 
-    auto do_write(span<const decl_name> values, span_size_t& done) {
+    auto do_write(const span<const decl_name> values, span_size_t& done) {
         return do_write_strings(values, done);
     }
 
-    auto do_write(span<const string_view> values, span_size_t& done) {
+    auto do_write(const span<const string_view> values, span_size_t& done) {
         return do_write_strings(values, done);
     }
 
-    auto begin_struct(span_size_t size) -> result final {
+    auto begin_struct(const span_size_t size) -> result final {
         span_size_t written{0};
         return do_write(view_one(size), written);
     }
 
-    auto begin_list(span_size_t size) -> result final {
+    auto begin_list(const span_size_t size) -> result final {
         span_size_t written{0};
         return do_write(view_one(size), written);
     }
@@ -107,7 +108,7 @@ public:
         if(src.size() < dst.size()) {
             done = src.size() / ts;
             src = head(src, done * ts);
-            errors |= error_code::incomplete_read;
+            errors = error_code::incomplete_read;
         } else {
             done = values.size();
         }

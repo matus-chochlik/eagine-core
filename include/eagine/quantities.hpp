@@ -30,7 +30,7 @@ using seconds_t = tagged_quantity<T, units::second>;
 /// @brief Creates a tagged quantity storing value in seconds.
 /// @ingroup units
 template <typename T>
-static constexpr auto seconds_(T value) noexcept -> seconds_t<T> {
+static constexpr auto seconds_(const T value) noexcept -> seconds_t<T> {
     return seconds_t<T>{value};
 }
 
@@ -47,7 +47,7 @@ using radians_t = tagged_quantity<T, units::radian>;
 /// @see right_angle_
 /// @see turns_
 template <typename T>
-static constexpr auto radians_(T value) noexcept -> radians_t<T> {
+static constexpr auto radians_(const T value) noexcept -> radians_t<T> {
     return radians_t<T>{value};
 }
 
@@ -58,7 +58,7 @@ static constexpr auto radians_(T value) noexcept -> radians_t<T> {
 /// @see right_angle_
 /// @see turns_
 template <typename T>
-static constexpr auto right_angles_(T value) noexcept {
+static constexpr auto right_angles_(const T value) noexcept {
     return radians_(value * math::pi / 2);
 }
 
@@ -79,7 +79,7 @@ static constexpr auto right_angle_() noexcept {
 /// @see right_angle_
 /// @see right_angles_
 template <typename T>
-static constexpr auto turns_(T value) noexcept {
+static constexpr auto turns_(const T value) noexcept {
     return radians_(value * math::pi * 2);
 }
 
@@ -136,7 +136,7 @@ static constexpr auto tan(const Qty& qty) {
 /// @see turns_
 /// @relates tagged_quantity
 template <typename T>
-static constexpr auto arcsin(T x) {
+static constexpr auto arcsin(const T x) {
     using std::asin;
     return make_tagged_quantity<units::radian>(asin(x));
 }
@@ -149,7 +149,7 @@ static constexpr auto arcsin(T x) {
 /// @see turns_
 /// @relates tagged_quantity
 template <typename T>
-static constexpr auto arccos(T x) {
+static constexpr auto arccos(const T x) {
     using std::acos;
     return make_tagged_quantity<units::radian>(acos(x));
 }
@@ -162,7 +162,7 @@ static constexpr auto arccos(T x) {
 /// @see turns_
 /// @relates tagged_quantity
 template <typename T>
-static constexpr auto arctan(T y, T x) {
+static constexpr auto arctan(const T y, const T x) {
     using std::atan2;
     return make_tagged_quantity<units::radian>(atan2(y, x));
 }
@@ -180,7 +180,7 @@ using degrees_t = tagged_quantity<T, units::degree>;
 /// @see right_angle_
 /// @see turns_
 template <typename T>
-static constexpr auto degrees_(T value) noexcept -> degrees_t<T> {
+static constexpr auto degrees_(const T value) noexcept -> degrees_t<T> {
     return degrees_t<T>{value};
 }
 
@@ -193,7 +193,7 @@ using kelvins_t = tagged_quantity<T, units::kelvin>;
 /// @brief Creates a tagged quantity storing value in kelvins.
 /// @ingroup units
 template <typename T>
-static constexpr auto kelvins_(T value) noexcept -> kelvins_t<T> {
+static constexpr auto kelvins_(const T value) noexcept -> kelvins_t<T> {
     return kelvins_t<T>{value};
 }
 

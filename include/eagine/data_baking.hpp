@@ -19,7 +19,7 @@ using data_bake_arena_base =
 //------------------------------------------------------------------------------
 class data_bake_arena : public data_bake_arena_base {
 public:
-    explicit data_bake_arena(memory::block blk)
+    explicit data_bake_arena(const memory::block blk)
       : data_bake_arena_base(blk) {}
 
     auto baked_data() const noexcept -> memory::const_block {

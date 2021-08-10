@@ -27,45 +27,6 @@ class flat_set : private Compare {
     using _vec_t = std::vector<Key, Allocator>;
     _vec_t _vec;
 
-    auto _find_insert_pos(const Key& k) const noexcept {
-        const auto b = _vec.begin();
-        const auto e = _vec.end();
-        const auto p = std::lower_bound(b, e, k, key_comp());
-
-        return std::pair{p, (p == e) || (k != *p)};
-    }
-
-    template <typename I>
-    auto _find_insert_pos(I p, const Key& k) const noexcept {
-        auto b = _vec.begin();
-        auto e = _vec.end();
-        if(p == e) {
-            if(_vec.empty() || value_comp()(_vec.back(), k)) {
-                return std::pair{p, true};
-            }
-            p = std::lower_bound(b, e, k, key_comp());
-        }
-        if(k == *p) {
-            return std::pair{p, false};
-        }
-        if(key_comp()(k, *p)) {
-            if(p != b) {
-                p = std::lower_bound(b, p, k, key_comp());
-            }
-        } else {
-            p = std::lower_bound(p, e, k, key_comp());
-        }
-        return std::pair{p, true};
-    }
-
-    template <typename I>
-    auto _do_insert(I ip, const Key& value) -> I {
-        if(ip.second) {
-            ip.first = _vec.insert(ip.first, value);
-        }
-        return ip;
-    }
-
 public:
     using key_type = Key;
     using value_type = Key;
@@ -189,6 +150,46 @@ public:
         EAGINE_ASSERT(res <= 1);
         _vec.erase(p.first, p.second);
         return res;
+    }
+
+private:
+    auto _find_insert_pos(const Key& k) const noexcept {
+        const auto b = _vec.begin();
+        const auto e = _vec.end();
+        const auto p = std::lower_bound(b, e, k, key_comp());
+
+        return std::pair{p, (p == e) || (k != *p)};
+    }
+
+    template <typename I>
+    auto _find_insert_pos(I p, const Key& k) const noexcept {
+        auto b = _vec.begin();
+        auto e = _vec.end();
+        if(p == e) {
+            if(_vec.empty() || value_comp()(_vec.back(), k)) {
+                return std::pair{p, true};
+            }
+            p = std::lower_bound(b, e, k, key_comp());
+        }
+        if(k == *p) {
+            return std::pair{p, false};
+        }
+        if(key_comp()(k, *p)) {
+            if(p != b) {
+                p = std::lower_bound(b, p, k, key_comp());
+            }
+        } else {
+            p = std::lower_bound(p, e, k, key_comp());
+        }
+        return std::pair{p, true};
+    }
+
+    template <typename I>
+    auto _do_insert(I ip, const Key& value) -> I {
+        if(ip.second) {
+            ip.first = _vec.insert(ip.first, value);
+        }
+        return ip;
     }
 };
 //------------------------------------------------------------------------------

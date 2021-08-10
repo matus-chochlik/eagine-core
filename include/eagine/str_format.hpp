@@ -107,9 +107,9 @@ public:
 /// @ingroup string_utils
 /// @see format
 template <span_size_t N>
-static inline auto
-operator%(format_string_and_list<N>&& fsal, std::string&& val) noexcept
-  -> format_string_and_list<N + 1> {
+static inline auto operator%(
+  format_string_and_list<N>&& fsal,
+  std::string&& val) noexcept -> format_string_and_list<N + 1> {
     return {std::move(fsal), std::move(val)};
 }
 //------------------------------------------------------------------------------

@@ -263,8 +263,9 @@ static constexpr auto extract(basic_offset_ptr<P, O> ptr) noexcept -> P& {
 //------------------------------------------------------------------------------
 /// @brief Overload of extract_or for basic_offset_ptr.
 template <typename P, typename O>
-static constexpr auto
-extract_or(basic_offset_ptr<P, O> ptr, P& fallback) noexcept -> P& {
+static constexpr auto extract_or(
+  basic_offset_ptr<P, O> ptr,
+  P& fallback) noexcept -> P& {
     return ptr.is_null() ? fallback : ptr.get();
 }
 //------------------------------------------------------------------------------

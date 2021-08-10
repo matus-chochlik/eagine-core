@@ -18,17 +18,17 @@ public:
     /// @brief Default constructible.
     constexpr some_true() noexcept = default;
     /// @brief Initializing constructior.
-    constexpr some_true(bool init) noexcept
+    constexpr some_true(const bool init) noexcept
       : _result{init} {}
 
     /// @brief Logically or-s the stored state with the specified argument.
-    constexpr auto operator()(bool b = true) noexcept -> auto& {
+    constexpr auto operator()(const bool b = true) noexcept -> auto& {
         _result |= b;
         return *this;
     }
 
     /// @brief Logically or-s the stored state with the specified argument.
-    constexpr auto operator()(some_true that) noexcept -> auto& {
+    constexpr auto operator()(const some_true that) noexcept -> auto& {
         _result |= that._result;
         return *this;
     }

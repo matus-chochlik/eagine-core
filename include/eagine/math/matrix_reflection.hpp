@@ -35,10 +35,10 @@ class reflection_I<matrix<T, 4, 4, RM, V>, I> {
 public:
     /// @brief Initializes the matrix constructor.
     /// @param r says whether to actually reflect along the I axis.
-    constexpr reflection_I(bool r = true) noexcept
-      : _v(r ? T(-1) : T(1)) {}
+    constexpr reflection_I(const bool r = true) noexcept
+      : _v{r ? T(-1) : T(1)} {}
 
-    constexpr auto v(int i) const noexcept -> T {
+    constexpr auto v(const int i) const noexcept -> T {
         return (I == i) ? _v : T(1);
     }
 
@@ -52,7 +52,7 @@ public:
     }
 
 private:
-    T _v;
+    T _v{};
 };
 
 // multiply
@@ -66,8 +66,8 @@ static constexpr auto multiply(
 
 // reorder_mat_ctr(reflection_I)
 template <typename T, int N, bool RM, bool V, int I>
-static constexpr auto
-reorder_mat_ctr(const reflection_I<matrix<T, N, N, RM, V>, I>& c) noexcept
+static constexpr auto reorder_mat_ctr(
+  const reflection_I<matrix<T, N, N, RM, V>, I>& c) noexcept
   -> reflection_I<matrix<T, N, N, !RM, V>, I> {
     return {c._v < T(0)};
 }

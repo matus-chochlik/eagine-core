@@ -82,7 +82,7 @@ struct main_ctx_getters : interface<main_ctx_getters> {
     virtual auto user() noexcept -> user_info& = 0;
 
     /// @brief Returns a reference to the root logger object.
-    virtual auto log() noexcept -> logger& = 0;
+    virtual auto log() noexcept -> const logger& = 0;
 
     /// @brief Returns a reference to application config object.
     virtual auto config() noexcept -> application_config& = 0;

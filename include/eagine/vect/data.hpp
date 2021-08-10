@@ -34,9 +34,9 @@ struct has_vect_data : bool_constant<V && _has_vec_data<T, N>::value> {};
 template <typename T, int N, bool V>
 struct data_param
   : std::conditional_t<
-      _has_vec_data<T, N>::value && V,
-      _vec_data<T, N>,
-      _ary_param<T, N>> {};
+      V && _has_vec_data<T, N>::value,
+      const _vec_data<T, N>,
+      const _ary_param<T, N>> {};
 
 // param
 template <typename Data>

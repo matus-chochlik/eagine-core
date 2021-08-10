@@ -20,7 +20,7 @@ public:
 
     default_keyboard_layout(const float shift = 1.F);
 
-    auto get_coord(char c) noexcept -> coord_type {
+    auto get_coord(const char c) noexcept -> coord_type {
         const auto pos = _key_coord.find(c);
         if(pos != _key_coord.end()) {
             return pos->second;
@@ -36,7 +36,7 @@ public:
     }
 
 protected:
-    void add_key_coord(char key, math::tvec<float, 3, true> coord) {
+    void add_key_coord(const char key, const math::tvec<float, 3, true> coord) {
         _key_coord[key] = coord;
     }
 
@@ -47,7 +47,7 @@ private:
 class keyboard_distance {
 public:
     template <typename Layout>
-    keyboard_distance(const Layout& layout, float multiplier = 1.F) {
+    keyboard_distance(const Layout& layout, const float multiplier = 1.F) {
         layout.for_each_char_coord([&](char lc, auto lp) {
             layout.for_each_char_coord([&](char rc, auto rp) {
                 if(lc != rc) {
@@ -58,7 +58,7 @@ public:
         });
     }
 
-    auto operator()(string_view ls, string_view rs) const -> float;
+    auto operator()(const string_view ls, const string_view rs) const -> float;
 
 private:
     flat_map<std::pair<char, char>, float> _key_dist;

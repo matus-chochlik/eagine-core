@@ -89,13 +89,15 @@ public:
         }
     }
 
-    friend auto
-    operator==(const std_allocator& a, const std_allocator& b) noexcept {
+    friend auto operator==(
+      const std_allocator& a,
+      const std_allocator& b) noexcept {
         return (a._sba == b._sba);
     }
 
-    friend auto
-    operator!=(const std_allocator& a, const std_allocator& b) noexcept {
+    friend auto operator!=(
+      const std_allocator& a,
+      const std_allocator& b) noexcept {
         return (a._sba != b._sba);
     }
 

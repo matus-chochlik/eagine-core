@@ -28,7 +28,7 @@ class bindump {
 
 public:
     /// @brief Construction initializing the dumped memory block.
-    bindump(memory::const_block mb) noexcept
+    bindump(const memory::const_block mb) noexcept
       : _mb{mb} {}
 
     /// @brief Alias for source byte getter callable.
@@ -38,7 +38,7 @@ public:
     using char_putter = callable_ref<bool(char)>;
 
     /// @brief Uses get_byte to read input bytes, encodes them and calls put_char.
-    static void apply(byte_getter get_byte, char_putter put_char);
+    static void apply(const byte_getter get_byte, const char_putter put_char);
 
     /// @brief Operator for writing instances of bindump to standard output streams.
     friend auto operator<<(std::ostream&, const bindump&) -> std::ostream&;

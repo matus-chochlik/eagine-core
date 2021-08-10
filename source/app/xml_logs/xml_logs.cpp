@@ -51,4 +51,3 @@ auto main(int argc, const char** argv) -> int {
       std::make_unique<eagine::internal_log_backend>();
     return eagine::main_impl(argc, argv, options);
 }
-

@@ -42,42 +42,44 @@ using valid_span_size = valid_if_nonnegative<span_size_t>;
 /// @brief Converts argument to std alignment type.
 /// @ingroup type_utils
 template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-static constexpr auto std_align(T v) noexcept {
+static constexpr auto std_align(const T v) noexcept {
     return limit_cast<std_align_t>(v);
 }
 
 /// @brief Converts argument to std size type.
 /// @ingroup type_utils
 template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-static constexpr auto std_size(T v) noexcept {
+static constexpr auto std_size(const T v) noexcept {
     return limit_cast<std_size_t>(v);
 }
 
 /// @brief Converts argument to span size type.
 /// @ingroup type_utils
 template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-static constexpr auto span_size(T v) noexcept {
+static constexpr auto span_size(const T v) noexcept {
     return limit_cast<span_size_t>(v);
 }
 
 /// @brief Returns the byte alignment of type T as span_size_t.
 /// @ingroup type_utils
 template <typename T>
-static constexpr auto span_align_of(type_identity<T> = {}) noexcept {
+static constexpr auto span_align_of(const type_identity<T> = {}) noexcept {
     return span_size(alignof(T));
 }
 
 /// @brief Returns the byte size of type T as span_size_t.
 /// @ingroup type_utils
 template <typename T>
-static constexpr auto span_size_of(type_identity<T> = {}) noexcept {
+static constexpr auto span_size_of(const type_identity<T> = {}) noexcept {
     return span_size(sizeof(T));
 }
 
 /// @brief Returns the total byte size of n elements of type T as span_size_t.
 /// @ingroup type_utils
 template <typename T, typename S>
-static constexpr auto span_size_of(S n, type_identity<T> = {}) noexcept {
+static constexpr auto span_size_of(
+  const S n,
+  const type_identity<T> = {}) noexcept {
     return span_size(sizeof(T)) * span_size(n);
 }
 

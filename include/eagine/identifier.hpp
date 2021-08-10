@@ -66,8 +66,9 @@ private:
     }
 
     template <std::size_t L>
-    static constexpr auto
-    _do_decode(const std::uint8_t i, const char (&enc)[L]) noexcept -> char {
+    static constexpr auto _do_decode(
+      const std::uint8_t i,
+      const char (&enc)[L]) noexcept -> char {
         return (i < invalid()) ? enc[i] : '\0';
     }
 };
@@ -208,16 +209,16 @@ public:
           std::make_index_sequence<M>{})} {}
 
     /// @brief Construction from a const span of characters.
-    explicit constexpr basic_identifier(span<const char> init) noexcept
+    explicit constexpr basic_identifier(const span<const char> init) noexcept
       : _bites{_make_bites(
           init.data(),
           init.size(),
           std::make_index_sequence<M>{})} {}
 
-    explicit constexpr basic_identifier(UIntT init) noexcept
+    explicit constexpr basic_identifier(const UIntT init) noexcept
       : _bites{_bites_t::from_value(init)} {}
 
-    explicit constexpr basic_identifier(_bites_t init) noexcept
+    explicit constexpr basic_identifier(const _bites_t init) noexcept
       : _bites{std::move(init)} {}
 
     /// @brief Returns the maximum length of this identifier type.
@@ -242,7 +243,8 @@ public:
     }
 
     /// @brief Subscript operator. Allows to access individual characters.
-    constexpr auto operator[](size_type idx) const noexcept -> value_type {
+    constexpr auto operator[](const size_type idx) const noexcept
+      -> value_type {
         return encoding::decode(_bites[idx]);
     }
 
@@ -250,7 +252,7 @@ public:
         return _bites.bytes().template as<UIntT>();
     }
 
-    constexpr auto matches(UIntT what) const noexcept {
+    constexpr auto matches(const UIntT what) const noexcept {
         return value() == what;
     }
 
@@ -267,42 +269,48 @@ public:
     }
 
     /// @brief Equality comparison.
-    friend constexpr auto
-    operator==(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator==(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites == b._bites;
     }
 
     /// @brief Nonequality comparison.
-    friend constexpr auto
-    operator!=(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator!=(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites != b._bites;
     }
 
     /// @brief Less-than comparison.
     /// @note This is not lexicographical string comparison.
-    friend constexpr auto
-    operator<(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator<(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites < b._bites;
     }
 
     /// @brief Less-equal comparison.
     /// @note This is not lexicographical string comparison.
-    friend constexpr auto
-    operator<=(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator<=(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites <= b._bites;
     }
 
     /// @brief Greater-than comparison.
     /// @note This is not lexicographical string comparison.
-    friend constexpr auto
-    operator>(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator>(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites > b._bites;
     }
 
     /// @brief Greater-equal comparison.
     /// @note This is not lexicographical string comparison.
-    friend constexpr auto
-    operator>=(const basic_identifier& a, const basic_identifier& b) noexcept {
+    friend constexpr auto operator>=(
+      const basic_identifier& a,
+      const basic_identifier& b) noexcept {
         return a._bites >= b._bites;
     }
 

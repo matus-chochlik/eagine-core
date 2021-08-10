@@ -15,8 +15,8 @@ namespace eagine {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto proxy_log_backend::entry_backend(
-  identifier source,
-  log_event_severity severity) noexcept -> logger_backend* {
+  const identifier source,
+  const log_event_severity severity) noexcept -> logger_backend* {
     if(EAGINE_LIKELY(_delegate)) {
         return _delegate->entry_backend(source, severity);
     }
@@ -40,7 +40,7 @@ auto proxy_log_backend::type_id() noexcept -> identifier {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-void proxy_log_backend::enter_scope(identifier source) noexcept {
+void proxy_log_backend::enter_scope(const identifier source) noexcept {
     if(_delayed) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back(
@@ -49,7 +49,7 @@ void proxy_log_backend::enter_scope(identifier source) noexcept {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-void proxy_log_backend::leave_scope(identifier source) noexcept {
+void proxy_log_backend::leave_scope(const identifier source) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back(
@@ -59,10 +59,10 @@ void proxy_log_backend::leave_scope(identifier source) noexcept {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::set_description(
-  identifier source,
-  logger_instance_id instance,
-  string_view name,
-  string_view desc) noexcept {
+  const identifier source,
+  const logger_instance_id instance,
+  const string_view name,
+  const string_view desc) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back([this,
@@ -77,11 +77,11 @@ void proxy_log_backend::set_description(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto proxy_log_backend::begin_message(
-  identifier source,
-  identifier tag,
-  logger_instance_id instance,
-  log_event_severity severity,
-  string_view format) noexcept -> bool {
+  const identifier source,
+  const identifier tag,
+  const logger_instance_id instance,
+  const log_event_severity severity,
+  const string_view format) noexcept -> bool {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back(
@@ -94,7 +94,9 @@ auto proxy_log_backend::begin_message(
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-void proxy_log_backend::add_nothing(identifier arg, identifier tag) noexcept {
+void proxy_log_backend::add_nothing(
+  const identifier arg,
+  const identifier tag) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back(
@@ -105,9 +107,9 @@ void proxy_log_backend::add_nothing(identifier arg, identifier tag) noexcept {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::add_identifier(
-  identifier arg,
-  identifier tag,
-  identifier value) noexcept {
+  const identifier arg,
+  const identifier tag,
+  const identifier value) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back([this, arg, tag, value]() {
@@ -119,9 +121,9 @@ void proxy_log_backend::add_identifier(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::add_message_id(
-  identifier arg,
-  identifier tag,
-  message_id value) noexcept {
+  const identifier arg,
+  const identifier tag,
+  const message_id value) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back([this, arg, tag, value]() {
@@ -133,9 +135,9 @@ void proxy_log_backend::add_message_id(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::add_bool(
-  identifier arg,
-  identifier tag,
-  bool value) noexcept {
+  const identifier arg,
+  const identifier tag,
+  const bool value) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back(
@@ -146,9 +148,9 @@ void proxy_log_backend::add_bool(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::add_integer(
-  identifier arg,
-  identifier tag,
-  std::intmax_t value) noexcept {
+  const identifier arg,
+  const identifier tag,
+  const std::intmax_t value) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back([this, arg, tag, value]() {
@@ -160,9 +162,9 @@ void proxy_log_backend::add_integer(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::add_unsigned(
-  identifier arg,
-  identifier tag,
-  std::uintmax_t value) noexcept {
+  const identifier arg,
+  const identifier tag,
+  const std::uintmax_t value) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back([this, arg, tag, value]() {
@@ -174,9 +176,9 @@ void proxy_log_backend::add_unsigned(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::add_float(
-  identifier arg,
-  identifier tag,
-  float value) noexcept {
+  const identifier arg,
+  const identifier tag,
+  const float value) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back(
@@ -187,11 +189,11 @@ void proxy_log_backend::add_float(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::add_float(
-  identifier arg,
-  identifier tag,
-  float min,
-  float value,
-  float max) noexcept {
+  const identifier arg,
+  const identifier tag,
+  const float min,
+  const float value,
+  const float max) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back([this, arg, tag, min, value, max]() {
@@ -202,9 +204,9 @@ void proxy_log_backend::add_float(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::add_duration(
-  identifier arg,
-  identifier tag,
-  std::chrono::duration<float> value) noexcept {
+  const identifier arg,
+  const identifier tag,
+  const std::chrono::duration<float> value) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back([this, arg, tag, value]() {
@@ -216,9 +218,9 @@ void proxy_log_backend::add_duration(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::add_string(
-  identifier arg,
-  identifier tag,
-  string_view value) noexcept {
+  const identifier arg,
+  const identifier tag,
+  const string_view value) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back([this, arg, tag, value{to_string(value)}]() {
@@ -230,9 +232,9 @@ void proxy_log_backend::add_string(
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::add_blob(
-  identifier arg,
-  identifier tag,
-  memory::const_block value) noexcept {
+  const identifier arg,
+  const identifier tag,
+  const memory::const_block value) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back(
@@ -266,10 +268,10 @@ void proxy_log_backend::finish_log() noexcept {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 void proxy_log_backend::log_chart_sample(
-  identifier source,
-  logger_instance_id instance,
-  identifier series,
-  float value) noexcept {
+  const identifier source,
+  const logger_instance_id instance,
+  const identifier series,
+  const float value) noexcept {
     if(EAGINE_LIKELY(_delayed)) {
         EAGINE_ASSERT(!_delegate);
         _delayed->emplace_back([this, source, instance, series, value]() {
@@ -281,7 +283,7 @@ void proxy_log_backend::log_chart_sample(
 auto proxy_log_choose_backend(
   application_config& config,
   const std::string& name,
-  log_event_severity min_severity) -> std::unique_ptr<logger_backend> {
+  const log_event_severity min_severity) -> std::unique_ptr<logger_backend> {
     if(name == "null") {
         return std::make_unique<null_log_backend>();
     } else if(name == "cerr") {

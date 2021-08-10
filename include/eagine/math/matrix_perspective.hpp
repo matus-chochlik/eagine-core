@@ -31,16 +31,16 @@ template <typename T, bool RM, bool V>
 class perspective<matrix<T, 4, 4, RM, V>> {
 public:
     constexpr perspective(const vect::data_t<T, 6, V>& v) noexcept
-      : _v(v) {}
+      : _v{v} {}
 
     /// @brief Initialized the matrix constructor.
     constexpr perspective(
-      T x_left,
-      T x_right,
-      T y_bottom,
-      T y_top,
-      T z_near,
-      T z_far) noexcept
+      const T x_left,
+      const T x_right,
+      const T y_bottom,
+      const T y_top,
+      const T z_near,
+      const T z_far) noexcept
       : _v{x_left, x_right, y_bottom, y_top, z_near, z_far} {}
 
     /// @brief Returns the constructed matrix.
@@ -49,42 +49,53 @@ public:
     }
 
     /// @brief Constructs perspective matrix with x-FOV angle and aspect ratio.
-    static auto x(radians_t<T> xfov, T aspect, T z_near, T z_far) noexcept {
+    static auto x(
+      const radians_t<T> xfov,
+      const T aspect,
+      const T z_near,
+      const T z_far) noexcept {
         EAGINE_ASSERT(aspect > T(0));
         EAGINE_ASSERT(T(xfov) > T(0));
 
-        T x_right = z_near * tan(xfov * T(0.5));
-        T x_left = -x_right;
+        const T x_right = z_near * tan(xfov * T(0.5));
+        const T x_left = -x_right;
 
-        T y_bottom = x_left / aspect;
-        T y_top = x_right / aspect;
+        const T y_bottom = x_left / aspect;
+        const T y_top = x_right / aspect;
 
         return perspective(x_left, x_right, y_bottom, y_top, z_near, z_far);
     }
 
     /// @brief Constructs perspective matrix with y-FOV angle and aspect ratio.
-    static auto y(radians_t<T> yfov, T aspect, T z_near, T z_far) noexcept {
+    static auto y(
+      const radians_t<T> yfov,
+      const T aspect,
+      const T z_near,
+      const T z_far) noexcept {
         EAGINE_ASSERT(aspect > T(0));
         EAGINE_ASSERT(T(yfov) > T(0));
 
-        T y_top = z_near * tan(yfov * T(0.5));
-        T y_bottom = -y_top;
+        const T y_top = z_near * tan(yfov * T(0.5));
+        const T y_bottom = -y_top;
 
-        T x_left = y_bottom * aspect;
-        T x_right = y_top * aspect;
+        const T x_left = y_bottom * aspect;
+        const T x_right = y_top * aspect;
 
         return perspective(x_left, x_right, y_bottom, y_top, z_near, z_far);
     }
 
     /// @brief Constructs perspective matrix with FOV angle and aspect ratio of 1.
-    static auto square(radians_t<T> fov, T z_near, T z_far) noexcept {
+    static auto square(
+      const radians_t<T> fov,
+      const T z_near,
+      const T z_far) noexcept {
         EAGINE_ASSERT(T(fov) > T(0));
 
-        T x_right = z_near * tan(fov * T(0.5));
-        T x_left = -x_right;
+        const T x_right = z_near * tan(fov * T(0.5));
+        const T x_left = -x_right;
 
-        T y_bottom = x_left;
-        T y_top = x_right;
+        const T y_bottom = x_left;
+        const T y_top = x_right;
 
         return perspective(x_left, x_right, y_bottom, y_top, z_near, z_far);
     }
@@ -142,7 +153,7 @@ private:
         return -(T(2) * _z_far() * _z_near()) / (_z_far() - _z_near());
     }
 
-    constexpr auto _make(std::true_type) const noexcept {
+    constexpr auto _make(const std::true_type) const noexcept {
         return matrix<T, 4, 4, true, V>{
           {{_m00(), T(0), _m20(), T(0)},
            {T(0), _m11(), _m21(), T(0)},
@@ -150,7 +161,7 @@ private:
            {T(0), T(0), _m23(), T(0)}}};
     }
 
-    constexpr auto _make(std::false_type) const noexcept {
+    constexpr auto _make(const std::false_type) const noexcept {
         return matrix<T, 4, 4, false, V>{
           {{_m00(), T(0), T(0), T(0)},
            {T(0), _m11(), T(0), T(0)},
@@ -164,8 +175,8 @@ private:
 
 // reorder_mat_ctr(perspective)
 template <typename T, int N, bool RM, bool V>
-static constexpr auto
-reorder_mat_ctr(const perspective<matrix<T, N, N, RM, V>>& c) noexcept
+static constexpr auto reorder_mat_ctr(
+  const perspective<matrix<T, N, N, RM, V>>& c) noexcept
   -> perspective<matrix<T, N, N, !RM, V>> {
     return {c._v};
 }

@@ -15,25 +15,27 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 template <std::size_t N, typename I>
-constexpr auto
-integer_rotate_right(I x, type_identity<I> = {}, size_constant<N> = {}) noexcept
-  -> I {
+constexpr auto integer_rotate_right(
+  const I x,
+  const type_identity<I> = {},
+  const size_constant<N> = {}) noexcept -> I {
     static_assert(N < sizeof(I) * 8);
     return I(x << N) | I(x >> (-N & (sizeof(I) * 8U - 1U)));
 }
 //------------------------------------------------------------------------------
 template <typename H>
-constexpr auto
-integer_hash_init(H x, type_identity<H> = {}, type_identity<H> = {}) noexcept
-  -> H {
+constexpr auto integer_hash_init(
+  const H x,
+  const type_identity<H> = {},
+  const type_identity<H> = {}) noexcept -> H {
     return x;
 }
 //------------------------------------------------------------------------------
 template <typename H, typename I>
 constexpr auto integer_hash_init(
-  I x,
-  type_identity<H> hid = {},
-  type_identity<I> = {}) noexcept -> H {
+  const I x,
+  const type_identity<H> hid = {},
+  const type_identity<I> = {}) noexcept -> H {
     using std::is_same_v;
 
     if constexpr(is_same_v<I, std::uint16_t>) {
@@ -68,8 +70,10 @@ constexpr auto integer_hash_init(
 /// @brief Creates a hash value with type @p H from an integer value of type @p I.
 /// @ingroup type_utils
 template <typename H, typename I>
-inline auto
-integer_hash(I x, type_identity<H> hid = {}, type_identity<I> iid = {}) -> H {
+inline auto integer_hash(
+  const I x,
+  const type_identity<H> hid = {},
+  const type_identity<I> iid = {}) -> H {
     using std::is_same_v;
     if constexpr(std::is_unsigned_v<H>) {
         auto h = integer_hash_init(x, hid, iid);

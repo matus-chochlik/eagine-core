@@ -30,7 +30,7 @@ public:
 
     /// @brief Initializing constructor.
     constexpr basic_split_span(
-      basic_span<ValueType, Pointer, SizeType> spn) noexcept
+      const basic_span<ValueType, Pointer, SizeType> spn) noexcept
       : _span{spn} {}
 
     /// @brief Returns the position of split as count of bytes since beginning.
@@ -58,7 +58,7 @@ public:
     /// @brief Moves the split by the specified amout (number of bytes).
     /// @see split_position
     /// @see skip_to_end
-    auto advance(span_size_t amount) noexcept -> auto& {
+    auto advance(const span_size_t amount) noexcept -> auto& {
         _split += amount;
         return *this;
     }

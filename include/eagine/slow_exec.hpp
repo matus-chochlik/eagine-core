@@ -31,7 +31,8 @@ enum class memory_access_rate {
 
 #if EAGINE_DEBUG && defined(RUNNING_ON_VALGRIND)
 static inline auto temporal_slowdown_factor(
-  memory_access_rate mem_access = memory_access_rate::medium) noexcept -> int {
+  const memory_access_rate mem_access = memory_access_rate::medium) noexcept
+  -> int {
     if(EAGINE_UNLIKELY(running_on_valgrind())) {
         switch(mem_access) {
             case memory_access_rate::minimal:
@@ -50,7 +51,7 @@ static inline auto temporal_slowdown_factor(
 }
 #else
 static constexpr auto temporal_slowdown_factor(
-  memory_access_rate = memory_access_rate::medium) noexcept -> int {
+  const memory_access_rate = memory_access_rate::medium) noexcept -> int {
     return 1;
 }
 #endif

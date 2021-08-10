@@ -76,11 +76,12 @@ struct deserializer_data_source : interface<deserializer_data_source> {
       const span_size_t step = 256) -> valid_if_nonnegative<span_size_t> {
         EAGINE_ASSERT(max > 0);
         EAGINE_ASSERT(step > 0);
-        return scan_until([what](byte b) { return b == what; }, max, step);
+        return scan_until(
+          [what](const byte b) { return b == what; }, max, step);
     }
 
     /// @brief Fetches all the remaining data into a buffer.
-    void fetch_all(memory::buffer& dst, span_size_t step = 256) {
+    void fetch_all(memory::buffer& dst, const span_size_t step = 256) {
         EAGINE_ASSERT(step > 0);
         span_size_t offs{dst.size()};
         while(const auto blk{top(step)}) {

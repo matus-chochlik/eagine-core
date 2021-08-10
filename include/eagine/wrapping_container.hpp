@@ -41,7 +41,7 @@ public:
 
     /// @brief Resizing constructor.
     constexpr explicit basic_wrapping_container(
-      typename Container::size_type count) {
+      const typename Container::size_type count) {
         _items.resize(count);
         _initialize(_items);
     }
@@ -104,12 +104,12 @@ public:
 
     /// @brief Subscript access.
     /// @pre index < size()
-    constexpr auto operator[](span_size_t index) const noexcept {
+    constexpr auto operator[](const span_size_t index) const noexcept {
         return _transf()(_items[range_index<Container>(index)]);
     }
 
     /// @brief Access the element at the specified index.
-    constexpr auto at(span_size_t index) const {
+    constexpr auto at(const span_size_t index) const {
         return _transf()(_items.at(range_index<Container>(index)));
     }
 

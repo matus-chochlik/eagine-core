@@ -18,8 +18,8 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename C, typename... M>
-constexpr auto
-make_data_member_mapping(std::pair<string_view, M C::*>... m) noexcept {
+constexpr auto make_data_member_mapping(
+  std::pair<const string_view, M C::*const>... m) noexcept {
     return std::make_tuple(m...);
 }
 //------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ struct does_have_data_member_mapping {
 private:
     template <
       typename X,
-      typename = decltype(data_member_mapping(type_identity<X>(), Selector()))>
+      typename = decltype(data_member_mapping(type_identity<X>{}, Selector{}))>
     static auto _test(X*) -> std::true_type;
     static auto _test(...) -> std::false_type;
 

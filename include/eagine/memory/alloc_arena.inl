@@ -59,9 +59,9 @@ inline auto basic_allocation_arena<Alloc>::_make_n(
 //------------------------------------------------------------------------------
 template <typename Alloc>
 template <typename T, typename... Args>
-inline auto
-basic_allocation_arena<Alloc>::_make_1(const span_size_t align, Args&&... a)
-  -> T* {
+inline auto basic_allocation_arena<Alloc>::_make_1(
+  const span_size_t align,
+  Args&&... a) -> T* {
     return new(_allocate<T>(1, align).data()) T(std::forward<Args>(a)...);
 }
 //------------------------------------------------------------------------------

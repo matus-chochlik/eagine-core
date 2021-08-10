@@ -20,15 +20,16 @@ static constexpr auto args_within_limits_of(const Args&... args) noexcept
 }
 //------------------------------------------------------------------------------
 template <typename RV, typename... Params, typename... Args>
-static constexpr auto
-args_within_limits(RV (*)(Params...), const Args&... args) noexcept -> bool {
+static constexpr auto args_within_limits(
+  RV (*)(Params...),
+  const Args&... args) noexcept -> bool {
     return args_within_limits_of<Params...>(args...);
 }
 //------------------------------------------------------------------------------
 template <typename RV, typename Cls, typename... Params, typename... Args>
-static constexpr auto
-args_within_limits(RV (Cls::*)(Params...), const Args&... args) noexcept
-  -> bool {
+static constexpr auto args_within_limits(
+  RV (Cls::*)(Params...),
+  const Args&... args) noexcept -> bool {
     return args_within_limits_of<Params...>(args...);
 }
 //------------------------------------------------------------------------------
@@ -40,9 +41,9 @@ static constexpr auto args_within_limits(
 }
 //------------------------------------------------------------------------------
 template <typename RV, typename Cls, typename... Params, typename... Args>
-static constexpr auto
-args_within_limits(RV (Cls::*)(Params...) const, const Args&... args) noexcept
-  -> bool {
+static constexpr auto args_within_limits(
+  RV (Cls::*)(Params...) const,
+  const Args&... args) noexcept -> bool {
     return args_within_limits_of<Params...>(args...);
 }
 //------------------------------------------------------------------------------

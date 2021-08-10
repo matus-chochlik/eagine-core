@@ -124,8 +124,9 @@ static inline auto extract(optional_reference_wrapper<T> ref) noexcept -> T& {
 /// @brief Overload of extract_or for optional_reference_wrapper.
 /// @ingroup valid_if
 template <typename T>
-static inline auto
-extract_or(optional_reference_wrapper<T> ref, T& fallback) noexcept -> T& {
+static inline auto extract_or(
+  optional_reference_wrapper<T> ref,
+  T& fallback) noexcept -> T& {
     if(ref) {
         return ref.get();
     }

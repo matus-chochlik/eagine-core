@@ -201,13 +201,13 @@ public:
 
     static constexpr const unsigned glyph_count = board_traits::glyph_count;
 
-    static constexpr auto to_cell_type(unsigned index) noexcept {
+    static constexpr auto to_cell_type(const unsigned index) noexcept {
         // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
         return cell_type(1U << index);
     }
 
     constexpr basic_sudoku_glyph() noexcept = default;
-    constexpr basic_sudoku_glyph(unsigned index) noexcept
+    constexpr basic_sudoku_glyph(const unsigned index) noexcept
       : _cel_val{to_cell_type(index)} {}
 
     constexpr auto is_empty() const noexcept {
@@ -238,13 +238,13 @@ public:
         return result;
     }
 
-    constexpr auto set(unsigned index) noexcept -> auto& {
+    constexpr auto set(const unsigned index) noexcept -> auto& {
         EAGINE_ASSERT(index < glyph_count);
         _cel_val = to_cell_type(index);
         return *this;
     }
 
-    constexpr auto add(unsigned index) noexcept -> auto& {
+    constexpr auto add(const unsigned index) noexcept -> auto& {
         EAGINE_ASSERT(index < glyph_count);
         _cel_val |= to_cell_type(index);
         return *this;
@@ -276,10 +276,12 @@ private:
     friend class basic_sudoku_board<S, true>;
 
     struct from_cell_value_tag {};
-    constexpr basic_sudoku_glyph(cell_type cel_val, from_cell_value_tag) noexcept
+    constexpr basic_sudoku_glyph(
+      const cell_type cel_val,
+      from_cell_value_tag) noexcept
       : _cel_val{cel_val} {}
 
-    static constexpr auto _is_pot(cell_type v) noexcept {
+    static constexpr auto _is_pot(const cell_type v) noexcept {
         return (v != 0U) && ((v & (v - 1U)) == 0U);
     }
 
@@ -340,7 +342,8 @@ public:
         return that._type.get().print(out, that);
     }
 
-    auto is_possible(const coord_type& coord, glyph_type value) const noexcept {
+    auto is_possible(const coord_type& coord, const glyph_type value)
+      const noexcept {
         const auto [cbx, cby, ccx, ccy] = coord;
         const auto cel_val = value.cell_value();
 
@@ -376,7 +379,7 @@ public:
         return true;
     }
 
-    auto is_solved() noexcept {
+    auto is_solved() const noexcept {
         bool result = true;
         for_each_coord([&](const auto& coord) {
             const auto value = get(coord);
@@ -389,7 +392,7 @@ public:
         return result;
     }
 
-    auto has_empty() noexcept {
+    auto has_empty() const noexcept {
         bool result = false;
         for_each_coord([&](const auto& coord) {
             if(get(coord).is_empty()) {
@@ -405,7 +408,8 @@ public:
         return {_cell_val(coord), typename glyph_type::from_cell_value_tag{}};
     }
 
-    auto set(const coord_type& coord, glyph_type value) noexcept -> auto& {
+    auto set(const coord_type& coord, const glyph_type value) noexcept
+      -> auto& {
         _cell_ref(coord) = value.cell_value();
         return *this;
     }
@@ -474,13 +478,15 @@ public:
     using block_type = std::array<cell_type, glyph_count>;
     using blocks_type = std::array<block_type, glyph_count>;
 
-    auto get_block(unsigned bx, unsigned by) const noexcept
+    auto get_block(const unsigned bx, const unsigned by) const noexcept
       -> const block_type& {
         return _block(_blocks, bx, by);
     }
 
-    auto set_block(unsigned bx, unsigned by, const block_type& block) noexcept
-      -> auto& {
+    auto set_block(
+      const unsigned bx,
+      const unsigned by,
+      const block_type& block) noexcept -> auto& {
         _block(_blocks, bx, by) = block;
         return *this;
     }
@@ -501,12 +507,14 @@ private:
     }
 
     template <typename B>
-    static auto _cell(B& block, unsigned x, unsigned y) noexcept -> auto& {
+    static auto _cell(B& block, const unsigned x, const unsigned y) noexcept
+      -> auto& {
         return block[y * S + x];
     }
 
     template <typename B>
-    static auto _block(B& blocks, unsigned x, unsigned y) noexcept -> auto& {
+    static auto _block(B& blocks, const unsigned x, const unsigned y) noexcept
+      -> auto& {
         return blocks[y * S + x];
     }
 
@@ -705,7 +713,7 @@ class basic_sudoku_tile_patch {
     static constexpr const span_size_t M = S * (S - 2);
 
 public:
-    basic_sudoku_tile_patch(span_size_t w, span_size_t h)
+    basic_sudoku_tile_patch(const span_size_t w, const span_size_t h)
       : _width{w % M ? (1 + w / M) * M : w}
       , _height{h % M ? (1 + w / M) * M : h} {
         EAGINE_ASSERT(_width > 0);
@@ -721,15 +729,16 @@ public:
         return _height;
     }
 
-    auto get(span_size_t x, span_size_t y) const noexcept -> unsigned {
+    auto get(const span_size_t x, const span_size_t y) const noexcept
+      -> unsigned {
         EAGINE_ASSERT((x >= 0) && (x < width()));
         EAGINE_ASSERT((y >= 0) && (y < height()));
         return _cells[std_size(y * _width + x)];
     }
 
-    friend auto
-    operator<<(std::ostream& out, const basic_sudoku_tile_patch& that)
-      -> std::ostream& {
+    friend auto operator<<(
+      std::ostream& out,
+      const basic_sudoku_tile_patch& that) -> std::ostream& {
         std::size_t k = 0;
         for(const auto y : integer_range(that._height)) {
             for(const auto x : integer_range(that._width)) {
@@ -770,7 +779,8 @@ public:
         _boards.emplace(std::make_tuple(0, 0), this->solve(std::move(board)));
     }
 
-    auto generate(int xmin, int ymin, int xmax, int ymax) -> auto& {
+    auto generate(const int xmin, const int ymin, const int xmax, const int ymax)
+      -> auto& {
         for(const auto y : integer_range(ymin, ymax + 1)) {
             for(const auto x : integer_range(xmin, xmax + 1)) {
                 _get(x, y);
@@ -779,7 +789,7 @@ public:
         return *this;
     }
 
-    auto fill(int xmin, int ymin, basic_sudoku_tile_patch<S>& patch)
+    auto fill(const int xmin, const int ymin, basic_sudoku_tile_patch<S>& patch)
       -> basic_sudoku_tile_patch<S>& {
         const int ymax = limit_cast<int>(ymin + patch.height() / (S * (S - 2)));
         const int xmax = limit_cast<int>(xmin + patch.width() / (S * (S - 2)));
@@ -803,8 +813,12 @@ public:
         return patch;
     }
 
-    auto print(std::ostream& out, int xmin, int ymin, int xmax, int ymax)
-      -> std::ostream& {
+    auto print(
+      std::ostream& out,
+      const int xmin,
+      const int ymin,
+      const int xmax,
+      const int ymax) -> std::ostream& {
         for(const auto y : integer_range(ymin, ymax + 1)) {
             for(const auto by : integer_range(1U, S - 1U)) {
                 for(const auto cy : integer_range(S)) {
@@ -825,7 +839,7 @@ public:
     }
 
 private:
-    auto _get(int x, int y) -> const board_type& {
+    auto _get(const int x, const int y) -> const board_type& {
         auto pos = _boards.find(std::tuple<int, int>{x, y});
         if(pos == _boards.end()) {
             board_type added{_traits};
@@ -903,7 +917,8 @@ private:
         }
         return pos->second;
     }
-    auto _emplace(int x, int y, board_type board) {
+
+    auto _emplace(const int x, const int y, board_type board) {
         return _boards
           .emplace(
             std::make_tuple(x, y), this->solve(board.calculate_alternatives()))

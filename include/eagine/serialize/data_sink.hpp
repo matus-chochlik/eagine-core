@@ -33,12 +33,12 @@ struct serializer_data_sink : abstract<serializer_data_sink> {
     virtual auto write(memory::const_block data) -> result = 0;
 
     /// @brief Writes a single string character into this sink.
-    auto write(char chr) -> result {
+    auto write(const char chr) -> result {
         return this->write(as_bytes(view_one(chr)));
     }
 
     /// @brief Writes a string view into this sink.
-    auto write(string_view str) -> result {
+    auto write(const string_view str) -> result {
         return this->write(as_bytes(str));
     }
 
@@ -67,12 +67,12 @@ struct serializer_data_sink : abstract<serializer_data_sink> {
     /// @brief Commits writes done as a part of transaction identified by argument.
     /// @see begin_work
     /// @see rollback
-    virtual void commit(transaction_handle) = 0;
+    virtual void commit(const transaction_handle) = 0;
 
     /// @brief Rolls-back writes done as a part of transaction identified by argument.
     /// @see begin_work
     /// @see commit
-    virtual void rollback(transaction_handle) = 0;
+    virtual void rollback(const transaction_handle) = 0;
 
     /// @brief Does additional finalization, like compression after serialization operation.
     virtual auto finalize() -> result = 0;

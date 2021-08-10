@@ -20,7 +20,7 @@ template <typename Dst, typename Src>
 struct valid_if_within_limits_policy {
 
     /// @brief Indicates value validity, true if value fits into Dst type.
-    constexpr auto operator()(Src value) const noexcept {
+    constexpr auto operator()(const Src value) const noexcept {
         return is_within_limits<Dst>(value);
     }
 

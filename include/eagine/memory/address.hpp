@@ -51,12 +51,12 @@ public:
     constexpr explicit basic_address(std::nullptr_t) noexcept {}
 
     /// @brief Construction from signed integer type.
-    constexpr explicit basic_address(std::intptr_t addr) noexcept
-      : _addr(reinterpret_cast<pointer>(addr)) {}
+    constexpr explicit basic_address(const std::intptr_t addr) noexcept
+      : _addr{reinterpret_cast<pointer>(addr)} {}
 
     /// @brief Construction from untyped pointer type.
     constexpr explicit basic_address(pointer addr) noexcept
-      : _addr(addr) {}
+      : _addr{addr} {}
 
     template <
       typename Int,
@@ -123,14 +123,14 @@ public:
     /// @brief Returns the misalignment of this address to the specified alignment.
     /// @see is_aligned_to
     /// @see is_aligned_as
-    constexpr auto misalignment(span_size_t alignment) const noexcept {
+    constexpr auto misalignment(const span_size_t alignment) const noexcept {
         return memory::misalignment(value(), alignment);
     }
 
     /// @brief Indicates if this address is aligned to the specified alignment.
     /// @see misalignment
     /// @see is_aligned_as
-    constexpr auto is_aligned_to(span_size_t alignment) const noexcept {
+    constexpr auto is_aligned_to(const span_size_t alignment) const noexcept {
         return memory::is_aligned_to(value(), alignment);
     }
 
@@ -138,55 +138,71 @@ public:
     /// @see misalignment
     /// @see is_aligned_to
     template <typename T>
-    constexpr auto is_aligned_as(type_identity<T> tid = {}) const noexcept {
+    constexpr auto is_aligned_as(
+      const type_identity<T> tid = {}) const noexcept {
         return memory::is_aligned_as<T>(value(), tid);
     }
 
     /// @brief Equality comparison.
-    constexpr friend auto operator==(basic_address a, basic_address b) noexcept {
+    constexpr friend auto operator==(
+      const basic_address a,
+      const basic_address b) noexcept {
         return a.ptr() == b.ptr();
     }
 
     /// @brief Non-equality comparison.
-    constexpr friend auto operator!=(basic_address a, basic_address b) noexcept {
+    constexpr friend auto operator!=(
+      const basic_address a,
+      const basic_address b) noexcept {
         return a.ptr() != b.ptr();
     }
 
     /// @brief Less-than comparison.
-    constexpr friend auto operator<(basic_address a, basic_address b) noexcept {
+    constexpr friend auto operator<(
+      const basic_address a,
+      const basic_address b) noexcept {
         return a.ptr() < b.ptr();
     }
 
     /// @brief Less-equal comparison.
-    constexpr friend auto operator<=(basic_address a, basic_address b) noexcept {
+    constexpr friend auto operator<=(
+      const basic_address a,
+      const basic_address b) noexcept {
         return a.ptr() <= b.ptr();
     }
 
     /// @brief Greater-than comparison.
-    constexpr friend auto operator>(basic_address a, basic_address b) noexcept {
+    constexpr friend auto operator>(
+      const basic_address a,
+      const basic_address b) noexcept {
         return a.ptr() > b.ptr();
     }
 
     /// @brief Greater-equal comparison.
-    constexpr friend auto operator>=(basic_address a, basic_address b) noexcept {
+    constexpr friend auto operator>=(
+      const basic_address a,
+      const basic_address b) noexcept {
         return a.ptr() >= b.ptr();
     }
 
     /// @brief Byte difference between two addresses.
-    constexpr friend auto operator-(basic_address a, basic_address b) noexcept
-      -> std::ptrdiff_t {
+    constexpr friend auto operator-(
+      const basic_address a,
+      const basic_address b) noexcept -> std::ptrdiff_t {
         return a.ptr() - b.ptr();
     }
 
     /// @brief Byte offset addition.
-    constexpr friend auto operator+(basic_address a, std::ptrdiff_t o) noexcept
-      -> basic_address {
+    constexpr friend auto operator+(
+      const basic_address a,
+      const std::ptrdiff_t o) noexcept -> basic_address {
         return {a, o};
     }
 
     /// @brief Byte offset subtraction.
-    constexpr friend auto operator-(basic_address a, std::ptrdiff_t o) noexcept
-      -> basic_address {
+    constexpr friend auto operator-(
+      const basic_address a,
+      const std::ptrdiff_t o) noexcept -> basic_address {
         return {a, -o};
     }
 
@@ -211,50 +227,56 @@ static constexpr auto as_address(T* addr) noexcept {
 //------------------------------------------------------------------------------
 /// @brief Returns the misalignment of a memory address to the specified alignment.
 /// @ingroup memory
-static constexpr auto
-misalignment(const_address addr, span_size_t alignment) noexcept {
+static constexpr auto misalignment(
+  const_address addr,
+  const span_size_t alignment) noexcept {
     return addr.misalignment(alignment);
 }
 //------------------------------------------------------------------------------
 /// @brief Returns the misalignment of a pointer to the specified alignment.
 /// @ingroup memory
-static constexpr auto
-misalignment(const void* ptr, span_size_t alignment) noexcept {
+static constexpr auto misalignment(
+  const void* ptr,
+  const span_size_t alignment) noexcept {
     return misalignment(as_address(ptr), alignment);
 }
 //------------------------------------------------------------------------------
 /// @brief Indicates if a memory address aligned to the specified alignment.
 /// @ingroup memory
-static constexpr auto
-is_aligned_to(const_address addr, span_size_t alignment) noexcept {
+static constexpr auto is_aligned_to(
+  const_address addr,
+  const span_size_t alignment) noexcept {
     return addr.is_aligned_to(alignment);
 }
 //------------------------------------------------------------------------------
 /// @brief Indicates if a pointer is aligned to the specified alignment.
 /// @ingroup memory
-static constexpr auto
-is_aligned_to(const void* ptr, span_size_t alignment) noexcept {
+static constexpr auto is_aligned_to(
+  const void* ptr,
+  const span_size_t alignment) noexcept {
     return is_aligned_to(as_address(ptr), alignment);
 }
 //------------------------------------------------------------------------------
 /// @brief Indicates if a memory address aligned as the specified type T.
 /// @ingroup memory
 template <typename T>
-static constexpr auto
-is_aligned_as(const_address addr, type_identity<T> tid = {}) noexcept {
+static constexpr auto is_aligned_as(
+  const_address addr,
+  const type_identity<T> tid = {}) noexcept {
     return addr.is_aligned_as(tid);
 }
 //------------------------------------------------------------------------------
-static constexpr auto
-align_up_offs(span_size_t align, span_size_t misalign) noexcept {
+static constexpr auto align_up_offs(
+  span_size_t align,
+  const span_size_t misalign) noexcept {
     return (misalign ? align - misalign : 0);
 }
 //------------------------------------------------------------------------------
 template <bool IsConst>
 static constexpr auto align_up_by(
-  basic_address<IsConst> addr,
-  span_size_t offs,
-  span_size_t max) noexcept {
+  const basic_address<IsConst> addr,
+  const span_size_t offs,
+  const span_size_t max) noexcept {
     return EAGINE_CONSTEXPR_ASSERT(
       (offs <= max), basic_address<IsConst>(addr, offs));
 }
@@ -264,23 +286,24 @@ static constexpr auto align_up_by(
 /// @ingroup memory
 template <bool IsConst>
 static constexpr auto align_up(
-  basic_address<IsConst> addr,
-  span_size_t align,
-  span_size_t max) noexcept -> basic_address<IsConst> {
+  const basic_address<IsConst> addr,
+  const span_size_t align,
+  const span_size_t max) noexcept -> basic_address<IsConst> {
     return align_up_by(
       addr, align_up_offs(align, misalignment(addr, align)), max);
 }
 //------------------------------------------------------------------------------
-static constexpr auto
-align_down_offs(span_size_t, span_size_t misalign) noexcept {
+static constexpr auto align_down_offs(
+  const span_size_t,
+  const span_size_t misalign) noexcept {
     return misalign;
 }
 //------------------------------------------------------------------------------
 template <bool IsConst>
 static constexpr auto align_down_by(
-  basic_address<IsConst> addr,
-  span_size_t offs,
-  span_size_t max) noexcept {
+  const basic_address<IsConst> addr,
+  const span_size_t offs,
+  const span_size_t max) noexcept {
     return EAGINE_CONSTEXPR_ASSERT(
       (offs <= max), basic_address<IsConst>(addr, -offs));
 }
@@ -290,9 +313,9 @@ static constexpr auto align_down_by(
 /// @ingroup memory
 template <bool IsConst>
 static constexpr auto align_down(
-  basic_address<IsConst> addr,
-  span_size_t align,
-  span_size_t max) noexcept -> basic_address<IsConst> {
+  const basic_address<IsConst> addr,
+  const span_size_t align,
+  const span_size_t max) noexcept -> basic_address<IsConst> {
 
     return align_down_by(
       addr, align_down_offs(align, misalignment(addr, align)), max);
@@ -301,14 +324,15 @@ static constexpr auto align_down(
 /// @brief Aligns a memory address down to the specified alignment.
 /// @ingroup memory
 template <bool IsConst>
-static constexpr auto
-align_down(basic_address<IsConst> addr, span_size_t align) noexcept {
+static constexpr auto align_down(
+  const basic_address<IsConst> addr,
+  const span_size_t align) noexcept {
     return align_down(addr, align, addr.value());
 }
 //------------------------------------------------------------------------------
 /// @brief Aligns a byte pointer down to the specified alignment.
 /// @ingroup memory
-static inline auto align_down(const byte* ptr, span_size_t align)
+static inline auto align_down(const byte* ptr, const span_size_t align)
   -> const byte* {
     return align_down(const_address(ptr), align).ptr();
 }
@@ -318,10 +342,10 @@ static inline auto align_down(const byte* ptr, span_size_t align)
 /// @ingroup memory
 template <typename T>
 static constexpr auto align_up_to(
-  basic_address<std::is_const_v<T>> addr,
-  type_identity<T> = {},
+  const basic_address<std::is_const_v<T>> addr,
+  const type_identity<T> = {},
   span_size_t align = span_align_of<T>(),
-  span_size_t max = span_size_of<T>()) noexcept {
+  const span_size_t max = span_size_of<T>()) noexcept {
 
     if(align < span_align_of<T>()) {
         align = span_align_of<T>();
@@ -335,10 +359,10 @@ static constexpr auto align_up_to(
 /// @ingroup memory
 template <typename T>
 static constexpr auto align_down_to(
-  basic_address<std::is_const_v<T>> addr,
-  type_identity<T> = {},
+  const basic_address<std::is_const_v<T>> addr,
+  const type_identity<T> = {},
   span_size_t align = span_align_of<T>(),
-  span_size_t max = span_size_of<T>()) noexcept {
+  const span_size_t max = span_size_of<T>()) noexcept {
     if(align < span_align_of<T>()) {
         align = span_align_of<T>();
     }

@@ -17,9 +17,9 @@ namespace eagine {
 //------------------------------------------------------------------------------
 template <typename Self, typename T, identifier_t LibId, identifier_t Id>
 static constexpr auto adapt_log_entry_arg(
-  identifier name,
-  enum_class<Self, T, LibId, Id> ec,
-  std::enable_if_t<std::is_signed_v<T>, T> = {}) {
+  const identifier name,
+  const enum_class<Self, T, LibId, Id> ec,
+  const std::enable_if_t<std::is_signed_v<T>, T> = {}) {
     return [=](logger_backend& backend) {
         backend.add_integer(name, identifier{Id}, ec._value);
     };
@@ -27,9 +27,9 @@ static constexpr auto adapt_log_entry_arg(
 //------------------------------------------------------------------------------
 template <typename Self, typename T, identifier_t LibId, identifier_t Id>
 static constexpr auto adapt_log_entry_arg(
-  identifier name,
-  enum_class<Self, T, LibId, Id> ec,
-  std::enable_if_t<std::is_unsigned_v<T>, T> = {}) {
+  const identifier name,
+  const enum_class<Self, T, LibId, Id> ec,
+  const std::enable_if_t<std::is_unsigned_v<T>, T> = {}) {
     return [=](logger_backend& backend) {
         backend.add_unsigned(name, identifier{Id}, ec._value);
     };

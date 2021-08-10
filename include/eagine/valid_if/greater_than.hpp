@@ -16,7 +16,7 @@ namespace eagine {
 // greater-than
 template <typename T, T Cmp>
 struct valid_if_gt_policy {
-    constexpr auto operator()(T value) const noexcept {
+    constexpr auto operator()(const T value) const noexcept {
         return value > Cmp;
     }
 

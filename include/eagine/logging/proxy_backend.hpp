@@ -17,88 +17,97 @@ namespace eagine {
 //------------------------------------------------------------------------------
 class proxy_log_backend : public logger_backend {
 public:
-    proxy_log_backend(log_event_severity min_severity) noexcept
+    proxy_log_backend(const log_event_severity min_severity) noexcept
       : _min_severity{min_severity} {}
 
     auto configure(application_config&) -> bool final;
 
-    auto entry_backend(identifier source, log_event_severity severity) noexcept
-      -> logger_backend* final;
+    auto entry_backend(
+      const identifier source,
+      const log_event_severity severity) noexcept -> logger_backend* final;
 
     auto allocator() noexcept -> memory::shared_byte_allocator final;
     auto type_id() noexcept -> identifier final;
 
-    void enter_scope(identifier source) noexcept final;
-    void leave_scope(identifier source) noexcept final;
+    void enter_scope(const identifier source) noexcept final;
+    void leave_scope(const identifier source) noexcept final;
 
     void set_description(
-      identifier source,
-      logger_instance_id instance,
-      string_view name,
-      string_view desc) noexcept final;
+      const identifier source,
+      const logger_instance_id instance,
+      const string_view name,
+      const string_view desc) noexcept final;
 
     auto begin_message(
-      identifier source,
-      identifier tag,
-      logger_instance_id instance,
-      log_event_severity severity,
-      string_view format) noexcept -> bool final;
+      const identifier source,
+      const identifier tag,
+      const logger_instance_id instance,
+      const log_event_severity severity,
+      const string_view format) noexcept -> bool final;
 
-    void add_nothing(identifier arg, identifier tag) noexcept final;
+    void add_nothing(const identifier arg, const identifier tag) noexcept final;
 
     void add_identifier(
-      identifier arg,
-      identifier tag,
-      identifier value) noexcept final;
+      const identifier arg,
+      const identifier tag,
+      const identifier value) noexcept final;
 
     void add_message_id(
-      identifier arg,
-      identifier tag,
-      message_id value) noexcept final;
+      const identifier arg,
+      const identifier tag,
+      const message_id value) noexcept final;
 
-    void add_bool(identifier arg, identifier tag, bool value) noexcept final;
+    void add_bool(
+      const identifier arg,
+      const identifier tag,
+      const bool value) noexcept final;
 
     void add_integer(
-      identifier arg,
-      identifier tag,
-      std::intmax_t value) noexcept final;
+      const identifier arg,
+      const identifier tag,
+      const std::intmax_t value) noexcept final;
 
     void add_unsigned(
-      identifier arg,
-      identifier tag,
-      std::uintmax_t value) noexcept final;
-
-    void add_float(identifier arg, identifier tag, float value) noexcept final;
+      const identifier arg,
+      const identifier tag,
+      const std::uintmax_t value) noexcept final;
 
     void add_float(
-      identifier arg,
-      identifier tag,
-      float min,
-      float value,
-      float max) noexcept final;
+      const identifier arg,
+      const identifier tag,
+      const float value) noexcept final;
+
+    void add_float(
+      const identifier arg,
+      const identifier tag,
+      const float min,
+      const float value,
+      const float max) noexcept final;
 
     void add_duration(
-      identifier arg,
-      identifier tag,
-      std::chrono::duration<float> value) noexcept final;
+      const identifier arg,
+      const identifier tag,
+      const std::chrono::duration<float> value) noexcept final;
 
-    void add_string(identifier arg, identifier tag, string_view value) noexcept
-      final;
+    void add_string(
+      const identifier arg,
+      const identifier tag,
+      const string_view value) noexcept final;
 
     void add_blob(
-      identifier arg,
-      identifier tag,
-      memory::const_block value) noexcept final;
+      const identifier arg,
+      const identifier tag,
+      const memory::const_block value) noexcept final;
 
     void finish_message() noexcept final;
 
     void finish_log() noexcept final;
 
     void log_chart_sample(
-      identifier source,
-      logger_instance_id instance,
-      identifier series,
-      float value) noexcept final;
+      const identifier source,
+      const logger_instance_id instance,
+      const identifier series,
+      const float value) noexcept final;
 
 private:
     std::unique_ptr<logger_backend> _delegate;

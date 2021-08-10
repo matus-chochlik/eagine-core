@@ -27,12 +27,12 @@ struct scaled_dim_unit_conv {
     using _ndp = bits::dim_pow<nothing_t, 0>;
 
     template <typename T>
-    static constexpr auto to_base(T v) {
+    static constexpr auto to_base(const T v) {
         return _impl::_hlp(std::true_type(), v, bits::dims<_ndp, Dims>());
     }
 
     template <typename T>
-    static constexpr auto from_base(T v) {
+    static constexpr auto from_base(const T v) {
         return _impl::_hlp(std::false_type(), v, bits::dims<_ndp, Dims>());
     }
 };
@@ -74,7 +74,7 @@ struct value_conv<
   scaled_dim_unit<D, add_none_unit_scale_t<AS, US>, System>,
   unit<D, System>> {
     template <typename T>
-    constexpr auto operator()(T v) const {
+    constexpr auto operator()(const T v) const {
         return AS::to_base(v);
     }
 };
@@ -84,7 +84,7 @@ struct value_conv<
   unit<D, System>,
   scaled_dim_unit<D, add_none_unit_scale_t<AS, US>, System>> {
     template <typename T>
-    constexpr auto operator()(T v) const {
+    constexpr auto operator()(const T v) const {
         return AS::from_base(v);
     }
 };
@@ -94,7 +94,7 @@ struct value_conv<
   scaled_dim_unit<D, add_none_unit_scale_t<AS1, US>, System>,
   scaled_dim_unit<D, add_none_unit_scale_t<AS2, US>, System>> {
     template <typename T>
-    constexpr auto operator()(T v) const {
+    constexpr auto operator()(const T v) const {
         return AS2::from_base(AS1::to_base(v));
     }
 };

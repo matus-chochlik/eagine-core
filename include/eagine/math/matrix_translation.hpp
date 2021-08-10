@@ -29,14 +29,14 @@ struct is_matrix_constructor<translation<matrix<T, N, N, RM, V>>>
 template <typename T, bool RM, bool V>
 class translation<matrix<T, 4, 4, RM, V>> {
 public:
-    constexpr translation(vect::data_t<T, 3, V> v) noexcept
-      : _v(v) {}
+    constexpr translation(const vect::data_t<T, 3, V> v) noexcept
+      : _v{v} {}
 
     /// @brief Initializes the matrix constructor.
     /// @param vx is the x-axis translation distance.
     /// @param vy is the y-axis translation distance.
     /// @param vz is the z-axis translation distance.
-    constexpr translation(T vx, T vy, T vz) noexcept
+    constexpr translation(const T vx, const T vy, const T vz) noexcept
       : _v{vx, vy, vz} {}
 
     /// @brief Returns the constructed matrix.
@@ -44,14 +44,14 @@ public:
         return _make(bool_constant<RM>());
     }
 
-    friend constexpr auto
-    reorder_mat_ctr(const translation<matrix<T, 4, 4, RM, V>>& c) noexcept
+    friend constexpr auto reorder_mat_ctr(
+      const translation<matrix<T, 4, 4, RM, V>>& c) noexcept
       -> translation<matrix<T, 4, 4, !RM, V>> {
         return {c._v};
     }
 
 private:
-    constexpr auto _make(std::true_type) const noexcept {
+    constexpr auto _make(const std::true_type) const noexcept {
         return matrix<T, 4, 4, true, V>{
           {{T(1), T(0), T(0), _v[0]},
            {T(0), T(1), T(0), _v[1]},
@@ -59,7 +59,7 @@ private:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-    constexpr auto _make(std::false_type) const noexcept {
+    constexpr auto _make(const std::false_type) const noexcept {
         return matrix<T, 4, 4, false, V>{
           {{T(1), T(0), T(0), T(0)},
            {T(0), T(1), T(0), T(0)},

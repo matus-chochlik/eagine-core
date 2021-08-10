@@ -31,7 +31,7 @@ struct tmat : matrix<T, C, R, RM, V> {
       : base{m} {}
 
     /// @brief Construction from element data pointer and count.
-    tmat(const T* d, int n) noexcept
+    tmat(const T* d, const int n) noexcept
       : base{base::from(d, n)} {}
 
     /// @brief Construction from element data array.

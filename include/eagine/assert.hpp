@@ -48,7 +48,7 @@ inline void assertion_failed(
     const char* expression,
     const char* function,
     const char* filepath,
-    long linenumber) {
+    const long linenumber) {
     std::cerr
         << filepath << ':' << linenumber
         << ": assertion '"

@@ -22,7 +22,7 @@ struct valid_if_indicated_policy {
     constexpr valid_if_indicated_policy() noexcept = default;
 
     constexpr valid_if_indicated_policy(Indicator indicator) noexcept
-      : _indicator(indicator) {}
+      : _indicator{std::move(indicator)} {}
 
     /// @brief Indicates value validity, true if indicator == Value.
     template <typename T>

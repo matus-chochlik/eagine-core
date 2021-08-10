@@ -26,18 +26,18 @@ public:
     /// @brief Constructor setting the backing block and data compressor.
     packed_block_data_source(
       data_compressor compressor,
-      memory::const_block src) noexcept
+      const memory::const_block src) noexcept
       : _compressor{std::move(compressor)} {
         reset(src);
     }
 
-    packed_block_data_source(memory::const_block src) noexcept
+    packed_block_data_source(const memory::const_block src) noexcept
       : packed_block_data_source{{}, src} {}
 
     packed_block_data_source(data_compressor compressor) noexcept
       : packed_block_data_source{std::move(compressor), {}} {}
 
-    void reset(memory::const_block src) {
+    void reset(const memory::const_block src) {
         block_data_source::reset(_compressor.decompress(src));
     }
 

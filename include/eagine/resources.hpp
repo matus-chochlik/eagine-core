@@ -18,17 +18,17 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 auto fetch_resource(
-  string_view description,
-  string_view key,
-  memory::const_block embedded_blk,
+  const string_view description,
+  const string_view key,
+  const memory::const_block embedded_blk,
   memory::buffer& buf,
   application_config& args,
-  logger& log) -> memory::const_block;
+  const logger& log) -> memory::const_block;
 //------------------------------------------------------------------------------
 inline auto fetch_resource(
-  string_view description,
-  string_view key,
-  memory::const_block embedded_blk,
+  const string_view description,
+  const string_view key,
+  const memory::const_block embedded_blk,
   main_ctx& ctx) -> memory::const_block {
     return fetch_resource(
       description,
