@@ -95,10 +95,12 @@ get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_FILE}" PATH)
 get_filename_component(_IMPORT_PREFIX "\${_IMPORT_PREFIX}" PATH)
 get_filename_component(_IMPORT_PREFIX "\${_IMPORT_PREFIX}" PATH)
 get_filename_component(_IMPORT_PREFIX "\${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "\${_IMPORT_PREFIX}" PATH)
 if(_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()
 
+find_package(Threads REQUIRED)
 add_library(EAGine::Core INTERFACE IMPORTED)
 
 target_compile_definitions(
@@ -113,7 +115,10 @@ set_target_properties(
   INTERFACE_LINK_DIRECTORIES "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@"
 )
 target_link_libraries(
-  EAGine::Core INTERFACE "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@/${eagine_core_name}"
+  EAGine::Core
+  INTERFACE
+    "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@/${eagine_core_name}"
+	Threads::Threads
 )
 EOD
 # ------------------------------------------------------------------------------
