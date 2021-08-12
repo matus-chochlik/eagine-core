@@ -11,10 +11,11 @@
 auto main() -> int {
     using namespace eagine;
 
-    basic_string_path cxx("/usr/local/bin/c++", EAGINE_TAG(split_by), "/");
+    const basic_string_path cxx(
+      "/usr/local/bin/c++", EAGINE_TAG(split_by), "/");
 
     std::cout << cxx.size() << std::endl;
-    for(auto& entry : cxx) {
+    for(const auto& entry : cxx) {
         std::cout << '"' << entry << '"' << std::endl;
     }
 

@@ -7,6 +7,7 @@
 ///
 #include <eagine/file_contents.hpp>
 #include <eagine/identifier_ctr.hpp>
+#include <eagine/integer_range.hpp>
 #include <eagine/logging/logger.hpp>
 #include <eagine/main.hpp>
 #include <eagine/math/functions.hpp>
@@ -26,14 +27,14 @@ auto main(main_ctx& ctx) -> int {
     zero(cover(byte_counts));
 
     span_size_t max_count{0};
-    for(auto b : data) {
+    for(const auto b : data) {
         max_count = math::maximum(max_count, ++byte_counts[std_size(b)]);
     }
 
     ctx.log()
       .info("byte histogram")
       .arg_func([max_count, &byte_counts](logger_backend& backend) {
-          for(std::size_t i = 0; i < 256; ++i) {
+          for(const auto i : integer_range(std_size(256))) {
               backend.add_float(
                 byte_to_identifier(i),
                 EAGINE_ID(Histogram),

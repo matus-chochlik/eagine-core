@@ -29,7 +29,7 @@ auto main() -> int {
        "November",
        "December"}};
 
-    for(auto [number, name] : zip_ranges(numbers, names)) {
+    for(const auto [number, name] : zip_ranges(numbers, names)) {
         std::cout << std::setw(2) << std::setfill('0') << number << '|' << name
                   << std::endl;
     }

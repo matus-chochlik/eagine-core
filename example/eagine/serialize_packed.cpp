@@ -30,8 +30,8 @@ struct my_struct {
 //------------------------------------------------------------------------------
 template <identifier_t Id>
 constexpr auto data_member_mapping(
-  type_identity<my_struct>,
-  selector<Id>) noexcept {
+  const type_identity<my_struct>,
+  const selector<Id>) noexcept {
     using S = my_struct;
     return make_data_member_mapping<
       S,
@@ -65,7 +65,7 @@ void baz(const my_struct& instance) {
     std::cout << std::endl;
 }
 //------------------------------------------------------------------------------
-void bar(memory::const_block data) {
+void bar(const memory::const_block data) {
     packed_block_data_source source(data);
     std::cout << hexdump(source.remaining());
     string_deserializer_backend backend(source);

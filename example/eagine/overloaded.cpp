@@ -15,7 +15,7 @@ auto main() -> int {
     using std::endl;
     using v = string_view;
 
-    auto func = overloaded(
+    const auto func = overloaded(
       [](int x) { cout << "int: " << x << endl; },
       [](float x) { cout << "float: " << x << endl; },
       [](double x) { cout << "double: " << x << endl; },

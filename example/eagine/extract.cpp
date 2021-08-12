@@ -12,7 +12,7 @@
 auto main() -> int {
     using namespace eagine;
 
-    if(auto optstr = std::make_unique<std::string>("a string")) {
+    if(const auto optstr{std::make_unique<std::string>("a string")}) {
         std::cout << extract(optstr) << std::endl;
     }
 

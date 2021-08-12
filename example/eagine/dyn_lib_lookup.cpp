@@ -15,7 +15,7 @@ namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
 
-    if(string_view lib_path{ctx.args().find("--library").next()}) {
+    if(const string_view lib_path{ctx.args().find("--library").next()}) {
         if(shared_executable_module module{lib_path}) {
             if(string_view sym_name{ctx.args().find("--symbol").next()}) {
                 if(module.exports(sym_name)) {

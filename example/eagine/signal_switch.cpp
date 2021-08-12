@@ -12,7 +12,7 @@
 auto main() -> int {
     using namespace eagine;
 
-    signal_switch done;
+    const signal_switch done;
 
     int i = 0;
 

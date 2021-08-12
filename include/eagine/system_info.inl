@@ -52,10 +52,10 @@ class system_info_impl {
 public:
     system_info_impl(main_ctx_parent parent)
       : _sysfs{valtree::from_filesystem_path("/sys/devices", parent)} {
-        auto sysfs_scanner = [this](
-                               valtree::compound& c,
-                               const valtree::attribute& a,
-                               const basic_string_path& p) {
+        const auto sysfs_scanner = [this](
+                                     const valtree::compound& c,
+                                     const valtree::attribute& a,
+                                     const basic_string_path& p) {
             if(!c.is_link(a)) {
                 bool is_tz{false};
                 bool is_cd{false};

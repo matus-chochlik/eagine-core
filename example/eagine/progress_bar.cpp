@@ -13,7 +13,7 @@
 
 auto main() -> int {
     using namespace eagine;
-    signal_switch interrupted;
+    const signal_switch interrupted;
 
     float x = 0.F;
 

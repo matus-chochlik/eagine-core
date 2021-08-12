@@ -14,7 +14,7 @@
 namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
-    for(auto& arg : ctx.args()) {
+    for(const auto& arg : ctx.args()) {
         if(!arg.starts_with("-")) {
             if(arg.prev().is_tag("-f", "--file")) {
                 file_contents fc(arg.get());
@@ -26,13 +26,13 @@ auto main(main_ctx& ctx) -> int {
     }
 
     span_size_t i = 0;
-    auto get = [&]() -> optionally_valid<byte> {
+    const auto get = [&]() -> optionally_valid<byte> {
         if(i < 256) {
             return {byte(i++), true};
         }
         return {};
     };
-    auto put = [](char c) {
+    const auto put = [](const char c) {
         std::cout << c;
         return true;
     };

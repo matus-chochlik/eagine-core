@@ -721,21 +721,21 @@ public:
     }
 
     /// @brief Type of traverse/visit handler.
-    using visit_handler =
-      callable_ref<bool(compound&, const attribute&, const basic_string_path&)>;
+    using visit_handler = callable_ref<
+      bool(const compound&, const attribute&, const basic_string_path&)>;
 
     /// @brief Traverses the tree, calls the @p visitor function on each node.
-    void traverse(const visit_handler visitor);
+    void traverse(const visit_handler visitor) const;
 
     /// @brief Type of traverse/visit handler using full attribute stack.
     using stack_visit_handler = callable_ref<bool(
-      compound&,
+      const compound&,
       const attribute&,
       const basic_string_path&,
       span<const attribute>)>;
 
     /// @brief Traverses the tree, calls the @p visitor function on each node.
-    void traverse(const stack_visit_handler visitor);
+    void traverse(const stack_visit_handler visitor) const;
 
 private:
     compound(std::shared_ptr<compound_interface> pimpl) noexcept

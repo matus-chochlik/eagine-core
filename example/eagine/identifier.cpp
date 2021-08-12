@@ -8,7 +8,7 @@
 #include <eagine/identifier.hpp>
 #include <iostream>
 //------------------------------------------------------------------------------
-static inline void print_info(eagine::identifier id) {
+static inline void print_info(const eagine::identifier id) {
     std::cout << id.name() << ':' << std::endl;
     std::cout << "  size: " << id.size() << std::endl;
     std::cout << "  max_size: " << id.max_size() << std::endl;
@@ -17,7 +17,7 @@ static inline void print_info(eagine::identifier id) {
 }
 //------------------------------------------------------------------------------
 #if EAGINE_HAS_LONG_ID
-static inline void print_info(eagine::long_identifier id) {
+static inline void print_info(const eagine::long_identifier id) {
     std::cout << id.name() << ':' << std::endl;
     std::cout << "  size: " << id.size() << std::endl;
     std::cout << "  max_size: " << id.max_size() << std::endl;

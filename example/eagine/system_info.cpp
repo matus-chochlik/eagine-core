@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/integer_range.hpp>
 #include <eagine/main.hpp>
 #include <eagine/reflect/enumerators.hpp>
 #include <eagine/system_info.hpp>
@@ -45,7 +46,7 @@ auto main(main_ctx& ctx) -> int {
     std::cout << "temperatures from " << sys.thermal_sensor_count()
               << " sensors: " << std::endl;
 
-    auto print_temperature = [](auto opt_t_kelvin) {
+    const auto print_temperature = [](auto opt_t_kelvin) {
         if(opt_t_kelvin) {
             const auto t_k{extract(opt_t_kelvin)};
 
@@ -61,7 +62,7 @@ auto main(main_ctx& ctx) -> int {
         }
     };
 
-    for(span_size_t i = 0, n = sys.thermal_sensor_count(); i < n; ++i) {
+    for(const auto i : integer_range(sys.thermal_sensor_count())) {
         std::cout << "  " << i << ": ";
         print_temperature(sys.sensor_temperature(i));
         std::cout << std::endl;
@@ -77,9 +78,9 @@ auto main(main_ctx& ctx) -> int {
     std::cout << "state of " << sys.cooling_device_count()
               << " cooling devices: " << std::endl;
 
-    for(span_size_t i = 0, n = sys.cooling_device_count(); i < n; ++i) {
+    for(const auto i : integer_range(sys.cooling_device_count())) {
         std::cout << "  " << i << ": ";
-        if(auto opt_val{sys.cooling_device_state(i)}) {
+        if(const auto opt_val{sys.cooling_device_state(i)}) {
             std::cout << extract(opt_val) * 100.F << "%";
         } else {
             std::cout << "N/A";
@@ -90,9 +91,9 @@ auto main(main_ctx& ctx) -> int {
     std::cout << "status of " << sys.ac_supply_count()
               << " AC power supplies: " << std::endl;
 
-    for(span_size_t i = 0, n = sys.ac_supply_count(); i < n; ++i) {
+    for(const auto i : integer_range(sys.ac_supply_count())) {
         std::cout << "  " << i << ": ";
-        auto online = sys.ac_supply_online(i);
+        const auto online = sys.ac_supply_online(i);
         if(online) {
             std::cout << "online";
         } else if(!online) {
@@ -106,9 +107,9 @@ auto main(main_ctx& ctx) -> int {
     std::cout << "capacity of " << sys.battery_count()
               << " batteries: " << std::endl;
 
-    for(span_size_t i = 0, n = sys.battery_count(); i < n; ++i) {
+    for(const auto i : integer_range(sys.battery_count())) {
         std::cout << "  " << i << ": ";
-        if(auto opt_val{sys.battery_capacity(i)}) {
+        if(const auto opt_val{sys.battery_capacity(i)}) {
 
             std::cout << extract(opt_val) * 100.F << "%";
         } else {
