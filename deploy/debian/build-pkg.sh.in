@@ -12,6 +12,7 @@ cmk_prefix="${lib_prefix}/cmake/EAGine"
 
 mkdir -p "${pkg_dir}/DEBIAN"
 mkdir -p "${pkg_prefix}/include"
+mkdir -p "${lib_prefix}/eagine"
 mkdir -p "${cmk_prefix}"
 
 # ------------------------------------------------------------------------------
@@ -19,10 +20,10 @@ cp "${src_dir}/config/EAGineEmbedCommon.cmake" \
    "${cmk_prefix}/EAGineEmbedCommon.cmake"
 
 cp "${eagine_core_path}" \
-   "${lib_prefix}/${eagine_core_name}"
+   "${lib_prefix}/eagine/${eagine_core_name}"
 
 cp "${ryml_path}" \
-   "${lib_prefix}/${ryml_name}"
+   "${lib_prefix}/eagine/${ryml_name}"
 
 # ------------------------------------------------------------------------------
 cat "$(dirname ${0})/pkg-headers.txt" |\
@@ -132,14 +133,14 @@ set_target_properties(
 )
 set_target_properties(
   EAGine::Core PROPERTIES
-  INTERFACE_LINK_DIRECTORIES "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@"
+  INTERFACE_LINK_DIRECTORIES "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@/eagine"
 )
 
 target_link_libraries(
   EAGine::Core
   INTERFACE
-    "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@/${eagine_core_name}"
-    "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@/${ryml_name}"
+    "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@/eagine/${eagine_core_name}"
+    "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@/eagine/${ryml_name}"
 	\${ZLIB_LIBRARIES}
 	Threads::Threads
 	systemd
