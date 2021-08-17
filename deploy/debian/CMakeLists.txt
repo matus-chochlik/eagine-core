@@ -50,3 +50,11 @@ add_custom_target(
 	eagine-core-deb
 	DEPENDS ${PKG_NAME}.deb
 )
+install(
+	FILES "${CMAKE_CURRENT_BINARY_DIR}/${PKG_NAME}.deb"
+	DESTINATION opt/eagine/debian/
+	COMPONENT deb-packages
+	EXCLUDE_FROM_ALL
+	OPTIONAL
+)
+
