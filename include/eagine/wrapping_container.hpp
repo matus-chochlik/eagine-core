@@ -113,6 +113,20 @@ public:
         return _transf()(_items.at(range_index<Container>(index)));
     }
 
+    /// @brief Access the first element.
+    /// @see back
+    /// @pre !empty()
+    constexpr auto front() const noexcept {
+        return _transf()(_items.front());
+    }
+
+    /// @brief Access the last element.
+    /// @see front
+    /// @pre !empty()
+    constexpr auto back() const noexcept {
+        return _transf()(_items.back());
+    }
+
     /// @brief Returns an iterator to the first element in this container.
     constexpr auto begin() const noexcept -> const_iterator {
         return {_items.begin()};
