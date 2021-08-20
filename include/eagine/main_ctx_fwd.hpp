@@ -12,6 +12,7 @@
 #include "interface.hpp"
 #include "logging/fwd.hpp"
 #include "memory/buffer_fwd.hpp"
+#include "progress/fwd.hpp"
 #include "string_span.hpp"
 
 namespace eagine {
@@ -83,6 +84,9 @@ struct main_ctx_getters : interface<main_ctx_getters> {
 
     /// @brief Returns a reference to the root logger object.
     virtual auto log() noexcept -> const logger& = 0;
+
+    /// @brief Returns a reference to the root activity object.
+    virtual auto progress() noexcept -> const activity_progress& = 0;
 
     /// @brief Returns a reference to application config object.
     virtual auto config() noexcept -> application_config& = 0;
