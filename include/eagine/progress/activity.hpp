@@ -65,6 +65,13 @@ public:
         return false;
     }
 
+    /// @brief Updates the activity progress.
+    void update_progress(span_size_t current) noexcept {
+        if(auto pbe{backend()}) {
+            extract(pbe).update_progress(_activity_id, current);
+        }
+    }
+
 protected:
     activity_progress(std::shared_ptr<progress_tracker_backend> backend) noexcept
       : _backend{std::move(backend)} {}

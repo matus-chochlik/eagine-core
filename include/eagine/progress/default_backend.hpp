@@ -37,6 +37,14 @@ public:
         // TODO
         EAGINE_MAYBE_UNUSED(activity_id);
         EAGINE_MAYBE_UNUSED(current);
+
+        const auto now = _clock.now();
+        if(_last_call < now) {
+            _last_call = now + _min_interval;
+            if(_callback) {
+                _callback();
+            }
+        }
     }
 
     void finish_activity(
@@ -55,6 +63,7 @@ public:
 private:
     callable_ref<void()> _callback{};
     std::chrono::milliseconds _min_interval{500};
+    std::chrono::steady_clock::time_point _last_call{};
     std::chrono::steady_clock _clock;
 };
 //------------------------------------------------------------------------------
