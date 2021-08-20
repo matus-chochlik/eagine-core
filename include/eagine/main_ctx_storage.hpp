@@ -32,6 +32,7 @@ public:
       main_ctx_options& options) noexcept
       : _args{argc, argv}
       , _log_root{options.app_id, _args, options.logger_opts}
+      , _progress_root{*this}
       , _bld_info{build_info::query()}
       , _watchdog{*this}
       , _app_config{*this}

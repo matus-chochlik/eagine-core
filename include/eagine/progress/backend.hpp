@@ -35,7 +35,7 @@ struct progress_tracker_backend : interface<progress_tracker_backend> {
     /// @brief Specifies the current number of steps in the done in the activity.
     virtual void update_progress(
       const activity_progress_id_t activity_id,
-      span_size_t current) = 0;
+      span_size_t current) noexcept = 0;
 
     /// @brief Indicates that an activity has finished.
     virtual void finish_activity(
