@@ -9,10 +9,12 @@
 #ifndef EAGINE_PROGRESS_BACKEND_HPP
 #define EAGINE_PROGRESS_BACKEND_HPP
 
+#include "../callable_ref.hpp"
 #include "../interface.hpp"
 #include "../string_span.hpp"
 #include "../types.hpp"
 #include "fwd.hpp"
+#include <chrono>
 
 namespace eagine {
 class application_config;
@@ -38,6 +40,11 @@ struct progress_tracker_backend : interface<progress_tracker_backend> {
     /// @brief Indicates that an activity has finished.
     virtual void finish_activity(
       const activity_progress_id_t activity_id) noexcept = 0;
+
+    /// @brief Assigns a function to be called on progress update.
+    virtual void set_update_callback(
+      const callable_ref<void()>,
+      const std::chrono::milliseconds min_interval) = 0;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

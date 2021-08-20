@@ -14,6 +14,8 @@
 #include "memory/buffer_fwd.hpp"
 #include "progress/fwd.hpp"
 #include "string_span.hpp"
+#include "type_traits.hpp"
+#include <chrono>
 
 namespace eagine {
 
@@ -32,6 +34,11 @@ class main_ctx_log_backend_getter;
 class main_ctx_object;
 class main_ctx_object_parent_info;
 
+template <typename FuncSig, bool NoExcept>
+class basic_callable_ref;
+template <typename Sig>
+using callable_ref = basic_callable_ref<Sig, is_noexcept_function_v<Sig>>;
+
 /// @brief Alias for main_ctx_object_parent_info parameter type.
 /// @ingroup main_context
 using main_ctx_parent = const main_ctx_object_parent_info&;
@@ -42,6 +49,11 @@ using main_ctx_parent = const main_ctx_object_parent_info&;
 struct main_ctx_setters : interface<main_ctx_setters> {
     /// @brief Injects the message bus object to main context.
     virtual void inject(std::shared_ptr<message_bus>) = 0;
+
+    /// @brief Assigns a function to be called on progress update.
+    virtual void set_progress_update_callback(
+      const callable_ref<void()>&,
+      const std::chrono::milliseconds min_interval) = 0;
 };
 
 /// @brief Interface for classes providing access to main context singletons.
