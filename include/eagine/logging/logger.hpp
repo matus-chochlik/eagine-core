@@ -69,7 +69,7 @@ public:
     }
 
 protected:
-    basic_logger() noexcept = default;
+    constexpr basic_logger() noexcept = default;
 
     basic_logger(BackendGetter backend_getter) noexcept(
       std::is_nothrow_move_constructible_v<BackendGetter>)
@@ -280,7 +280,7 @@ public:
     }
 
     /// @brief Construct logging object without backend.
-    named_logging_object() noexcept = default;
+    constexpr named_logging_object() noexcept = default;
 
     /// @brief Move constructor.
     named_logging_object(named_logging_object&& temp) noexcept
@@ -444,6 +444,21 @@ class logger : public named_logging_object<logger_shared_backend_getter> {
     using base = named_logging_object<logger_shared_backend_getter>;
 
 public:
+    /// @brief Default constructor.
+    constexpr logger() noexcept = default;
+
+    /// @brief Construction from identifier and backed getter
+    logger(const identifier id, logger_shared_backend_getter getter)
+      : base{id, std::move(getter)} {}
+
+    /// @brief Construction from identifier and reference to parent object.
+    logger(const identifier id, const base& parent)
+      : base{id, parent} {}
+
+    /// @brief Construction from identifier and reference to parent logger.
+    logger(const identifier id, const logger& parent)
+      : base{id, static_cast<const base&>(parent)} {}
+
     /// @brief Returns a log entry with the specified log_event_severity level.
     /// @param format the log message format string.
     /// @see fatal
@@ -572,8 +587,6 @@ public:
     auto backtrace(const string_view format) const noexcept {
         return log_backtrace(format);
     }
-
-    using base::base;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
