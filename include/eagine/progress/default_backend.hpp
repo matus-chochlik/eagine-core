@@ -9,6 +9,7 @@
 #ifndef EAGINE_PROGRESS_DEFAULT_BACKEND_HPP
 #define EAGINE_PROGRESS_DEFAULT_BACKEND_HPP
 
+#include "../logging/logger.hpp"
 #include "../maybe_unused.hpp"
 #include "backend.hpp"
 
@@ -18,7 +19,8 @@ namespace eagine {
 /// @ingroup progress
 class default_progress_tracker_backend : public progress_tracker_backend {
 public:
-    default_progress_tracker_backend(main_ctx_getters&) {}
+    default_progress_tracker_backend(main_ctx_getters& ctx)
+      : _log(EAGINE_ID(Progress), ctx.log()) {}
 
     auto begin_activity(
       const activity_progress_id_t parent_id,
@@ -61,6 +63,7 @@ public:
     }
 
 private:
+    logger _log;
     callable_ref<void()> _callback{};
     std::chrono::milliseconds _min_interval{500};
     std::chrono::steady_clock::time_point _last_call{};

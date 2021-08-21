@@ -42,9 +42,8 @@ public:
     }
 
     /// @brief Creates a sub-activity progress tracker with a title.
-    auto activity(
-      const string_view title,
-      const span_size_t total_steps = 0) noexcept -> activity_progress {
+    auto activity(const string_view title, const span_size_t total_steps = 0)
+      const noexcept -> activity_progress {
         return {*this, title, total_steps};
     }
 
@@ -66,7 +65,7 @@ public:
     }
 
     /// @brief Updates the activity progress.
-    void update_progress(span_size_t current) noexcept {
+    void update_progress(span_size_t current) const noexcept {
         if(auto pbe{backend()}) {
             extract(pbe).update_progress(_activity_id, current);
         }
