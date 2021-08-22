@@ -9,6 +9,7 @@
 // clang-format off
 #include "prologue.inl"
 #include <eagine/main_ctx.hpp>
+#include <eagine/logging/entry.hpp>
 #include <eagine/value_tree/filesystem.hpp>
 
 #include "implement.inl"

@@ -80,6 +80,11 @@ auto main_ctx_object::app_config() const noexcept -> application_config& {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
+auto main_ctx_object::progress() const noexcept -> const activity_progress& {
+    return main_context().progress();
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
 auto main_ctx_object::bus() const noexcept -> message_bus& {
     return main_context().bus();
 }
