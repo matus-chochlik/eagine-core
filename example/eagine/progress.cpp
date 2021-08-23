@@ -14,7 +14,6 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
-    const span_size_t n = 1000000;
 
     const auto callback = [&]() {
         ctx.log().info("Progress callback called");
@@ -22,10 +21,16 @@ auto main(main_ctx& ctx) -> int {
     set_progress_update_callback(
       ctx, {construct_from, callback}, std::chrono::milliseconds{100});
 
-    const auto act = ctx.progress().activity("Counting", n);
+    const span_size_t m = 100;
+    const span_size_t n = 1000;
 
-    for(const auto i : integer_range(n)) {
-        act.update_progress(i);
+    const auto main_act = ctx.progress().activity("Main activity", m);
+    for(const auto i : integer_range(m)) {
+        const auto sub_act = main_act.activity("Sub activity", n);
+        for(const auto j : integer_range(n)) {
+            sub_act.update_progress(j);
+        }
+        main_act.update_progress(i);
     }
 
     return 0;
