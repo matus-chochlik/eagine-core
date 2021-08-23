@@ -376,7 +376,6 @@ set(LIB_INLS
     eagine/hexdump.inl
     eagine/identifier_ctr.inl
     eagine/input_data.inl
-    eagine/logging/entry.inl
     eagine/logging/proxy_backend.inl
     eagine/logging/root_logger.inl
     eagine/main_ctx.inl

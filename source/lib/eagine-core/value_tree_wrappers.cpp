@@ -8,7 +8,6 @@
 
 // clang-format off
 #include "prologue.inl"
-#include <eagine/logging/entry.hpp>
 #include "implement.inl"
 #include <eagine/value_tree/wrappers.hpp>
 #include "epilogue.inl"

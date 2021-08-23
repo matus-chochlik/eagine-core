@@ -16,7 +16,6 @@
 #include <eagine/type_name.hpp>
 
 #include "implement.inl"
-#include <eagine/logging/entry.hpp>
 #include <eagine/logging/root_logger.hpp>
 #include "epilogue.inl"
 // clang-format on
