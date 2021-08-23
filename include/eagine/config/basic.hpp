@@ -53,9 +53,7 @@
 #define EAGINE_CORE_LIBRARY 0
 #endif
 
-#if EAGINE_CORE_LIBRARY
-#define EAGINE_LIB_FUNC
-#else
+#ifndef EAGINE_LIB_FUNC
 #define EAGINE_LIB_FUNC inline
 #endif
 

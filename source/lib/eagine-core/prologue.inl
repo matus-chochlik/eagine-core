@@ -7,3 +7,4 @@
 ///
 
 #define EAGINE_CORE_LIBRARY 1
+#define EAGINE_LIB_FUNC

@@ -21,7 +21,7 @@ void read_file_data(const string_view path, memory::buffer& dest);
 
 } // namespace eagine
 
-#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
 #include <eagine/input_data.inl>
 #endif
 

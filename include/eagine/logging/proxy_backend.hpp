@@ -118,7 +118,7 @@ private:
 //------------------------------------------------------------------------------
 } // namespace eagine
 
-#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
 #include <eagine/logging/proxy_backend.inl>
 #endif
 

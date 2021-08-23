@@ -92,7 +92,7 @@ auto config_git_version_tuple() noexcept -> std::tuple<int, int, int, int>;
 
 } // namespace eagine
 
-#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
 #include <eagine/git_info.inl>
 #endif
 

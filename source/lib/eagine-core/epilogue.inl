@@ -6,4 +6,4 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#undef EAGINE_IMPLEMENTING_LIBRARY
+#undef EAGINE_IMPLEMENTING_CORE_LIBRARY

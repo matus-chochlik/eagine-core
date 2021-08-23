@@ -13,7 +13,7 @@ function(do_add_boost_test LIBRARY TEST_NAME)
 	)
 	target_compile_definitions(
 		test-boost-${LIBRARY}-${TEST_NAME}
-		PRIVATE EAGINE_IMPLEMENTING_LIBRARY=1
+		PRIVATE EAGINE_IMPLEMENTING_CORE_LIBRARY=1
 	)
 	target_link_libraries(
 		test-boost-${LIBRARY}-${TEST_NAME}

@@ -41,7 +41,7 @@ inline auto fetch_resource(
 //------------------------------------------------------------------------------
 } // namespace eagine
 
-#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
 #include <eagine/resources.inl>
 #endif
 

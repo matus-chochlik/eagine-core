@@ -30,7 +30,7 @@ auto dec_to_identifier(const int i) noexcept -> identifier;
 //------------------------------------------------------------------------------
 } // namespace eagine
 
-#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
 #include <eagine/identifier_ctr.inl>
 #endif
 
