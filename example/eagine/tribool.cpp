@@ -9,7 +9,7 @@
 #include <eagine/tribool.hpp>
 #include <iostream>
 
-void print(const char* expr, eagine::weakbool v) {
+void print(const char* expr, const eagine::weakbool v) {
     std::cout << "'" << expr << "': ";
     if(!v) {
         std::cout << "no" << std::endl;
@@ -20,7 +20,7 @@ void print(const char* expr, eagine::weakbool v) {
     }
 }
 
-void print(const char* expr, eagine::tribool v) {
+void print(const char* expr, const eagine::tribool v) {
     std::cout << "'" << expr << "': ";
     if(v) {
         std::cout << "yes" << std::endl;

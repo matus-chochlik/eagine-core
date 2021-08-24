@@ -12,7 +12,7 @@
 #include "main_ctx.hpp"
 #include "main_fwd.hpp"
 
-#ifndef EAGINE_IMPLEMENTING_LIBRARY
+#ifndef EAGINE_IMPLEMENTING_CORE_LIBRARY
 // NOLINTNEXTLINE(misc-definitions-in-headers)
 auto main(int argc, const char** argv) -> int {
     eagine::main_ctx_options options;
@@ -20,7 +20,7 @@ auto main(int argc, const char** argv) -> int {
 }
 #endif
 
-#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
 #include <eagine/main.inl>
 #endif
 

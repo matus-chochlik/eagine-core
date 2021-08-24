@@ -13,7 +13,7 @@
 template <unsigned S>
 void solve_sudoku(const eagine::program_args& args) {
     using namespace eagine;
-    default_sudoku_board_traits<S> traits;
+    const default_sudoku_board_traits<S> traits;
 
     const bool tight = args.find("--tight");
     std::stack<typename decltype(traits)::board_type> solutions;
@@ -30,7 +30,7 @@ void solve_sudoku(const eagine::program_args& args) {
         solutions.push(traits.make_diagonal());
     }
 
-    auto print = [&](const auto& b) {
+    const auto print = [&](const auto& b) {
         (tight ? std::cout << b.tight() : std::cout << b) << std::endl;
     };
     auto board = solutions.top();

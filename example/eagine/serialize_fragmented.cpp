@@ -21,7 +21,7 @@ void use_data(std::vector<T>& data) {
     std::cout << "element count: " << n;
 
     bool data_ok = true;
-    for(auto& v : data) {
+    for(const auto& v : data) {
         data_ok &= are_equal(v, T(--n));
     }
 
@@ -43,7 +43,7 @@ struct deserial_data_state {
 //------------------------------------------------------------------------------
 template <typename T>
 void deserialize_data(
-  memory::const_block fragment,
+  const memory::const_block fragment,
   deserial_data_state<T>& state) {
 
     if(!state.failed) {

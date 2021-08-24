@@ -15,7 +15,7 @@
 template <unsigned S>
 void sudoku_tiling() {
     using namespace eagine;
-    basic_sudoku_board_traits<S> traits;
+    const basic_sudoku_board_traits<S> traits;
 
     basic_sudoku_tile_patch<S> patch(32, 24);
     basic_sudoku_tiling<S> bst{

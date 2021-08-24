@@ -15,11 +15,11 @@ namespace eagine {
 
 template <unsigned S>
 void sudoku_noise(
-  eagine::basic_sudoku_board_traits<S> traits,
+  const eagine::basic_sudoku_board_traits<S> traits,
   application_config& cfg) {
     using namespace eagine;
 
-    auto initial = [&]() {
+    const auto initial = [&]() {
         if(cfg.is_set("gen_one")) {
             return traits.make_generator().generate_one();
         } else if(cfg.is_set("gen_few")) {

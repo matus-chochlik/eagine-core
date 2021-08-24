@@ -12,7 +12,10 @@
 #include "interface.hpp"
 #include "logging/fwd.hpp"
 #include "memory/buffer_fwd.hpp"
+#include "progress/fwd.hpp"
 #include "string_span.hpp"
+#include "type_traits.hpp"
+#include <chrono>
 
 namespace eagine {
 
@@ -31,6 +34,11 @@ class main_ctx_log_backend_getter;
 class main_ctx_object;
 class main_ctx_object_parent_info;
 
+template <typename FuncSig, bool NoExcept>
+class basic_callable_ref;
+template <typename Sig>
+using callable_ref = basic_callable_ref<Sig, is_noexcept_function_v<Sig>>;
+
 /// @brief Alias for main_ctx_object_parent_info parameter type.
 /// @ingroup main_context
 using main_ctx_parent = const main_ctx_object_parent_info&;
@@ -41,6 +49,11 @@ using main_ctx_parent = const main_ctx_object_parent_info&;
 struct main_ctx_setters : interface<main_ctx_setters> {
     /// @brief Injects the message bus object to main context.
     virtual void inject(std::shared_ptr<message_bus>) = 0;
+
+    /// @brief Assigns a function to be called on progress update.
+    virtual void set_progress_update_callback(
+      const callable_ref<void()>& callback,
+      const std::chrono::milliseconds min_interval) = 0;
 };
 
 /// @brief Interface for classes providing access to main context singletons.
@@ -84,6 +97,9 @@ struct main_ctx_getters : interface<main_ctx_getters> {
     /// @brief Returns a reference to the root logger object.
     virtual auto log() noexcept -> const logger& = 0;
 
+    /// @brief Returns a reference to the root activity object.
+    virtual auto progress() noexcept -> const activity_progress& = 0;
+
     /// @brief Returns a reference to application config object.
     virtual auto config() noexcept -> application_config& = 0;
 
@@ -99,6 +115,18 @@ struct main_ctx_getters : interface<main_ctx_getters> {
     /// @brief Returns a reference to shared temporary buffer.
     virtual auto scratch_space() noexcept -> memory::buffer& = 0;
 };
+
+/// @brief Assigns a progress update callback function.
+/// @ingroup main_context
+/// @see main_ctx_setters
+inline void set_progress_update_callback(
+  main_ctx_getters& ctx,
+  const callable_ref<void()>& callback,
+  const std::chrono::milliseconds min_interval) {
+    auto setters{ctx.setters()};
+    EAGINE_ASSERT(setters);
+    extract(setters).set_progress_update_callback(callback, min_interval);
+}
 
 /// @brief Helper class used to initialize main context objects.
 /// @ingroup main_context

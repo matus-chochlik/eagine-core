@@ -15,7 +15,7 @@
 
 auto main() -> int {
     using namespace eagine;
-    signal_switch interrupted;
+    const signal_switch interrupted;
 
     std::default_random_engine gen{std::random_device()()};
     std::uniform_real_distribution<float> dis{0.F, 1.F};

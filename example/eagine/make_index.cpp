@@ -23,13 +23,13 @@ auto main() -> int {
 
     make_index(view(list), cover(index));
 
-    for(auto i : index) {
+    for(const auto i : index) {
         std::cout << list[i] << std::endl;
     }
 
     make_index(view(list), cover(index), std::greater<>());
 
-    for(auto i : index) {
+    for(const auto i : index) {
         std::cout << list[i] << std::endl;
     }
 

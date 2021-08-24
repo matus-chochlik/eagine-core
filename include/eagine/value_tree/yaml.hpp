@@ -21,7 +21,7 @@ auto from_yaml_text(string_view, main_ctx_parent) -> compound;
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree
 
-#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
 #include <eagine/value_tree/yaml.inl>
 #endif
 

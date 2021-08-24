@@ -11,7 +11,7 @@
 using val_t = eagine::value_with_history<int, 3>;
 using var_t = eagine::variable_with_history<int, 3>;
 //------------------------------------------------------------------------------
-static inline void print(val_t& h) {
+static inline void print(const val_t& h) {
     std::cout << h.old_value() << '|' << h.value() << '|' << h.delta() << '|'
               << h.distance() << '|' << h.deltas().delta() << std::endl;
 }

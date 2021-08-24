@@ -8,20 +8,20 @@
 #include <eagine/type_identity.hpp>
 #include <iostream>
 //------------------------------------------------------------------------------
-static inline void func(eagine::type_identity<int>) {
+static inline void func(const eagine::type_identity<int>) {
     std::cout << "called int free func" << std::endl;
 }
 
-static inline void func(eagine::type_identity<float>) {
+static inline void func(const eagine::type_identity<float>) {
     std::cout << "called float free func" << std::endl;
 }
 
-static inline void func(eagine::type_identity<char>) {
+static inline void func(const eagine::type_identity<char>) {
     std::cout << "called char free func" << std::endl;
 }
 
 template <typename T>
-static inline void func(eagine::type_identity<T>) {
+static inline void func(const eagine::type_identity<T>) {
     std::cout << "called other free func" << std::endl;
 }
 //------------------------------------------------------------------------------

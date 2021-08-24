@@ -375,7 +375,7 @@ auto from_string(const string_view src, const selector<V> sel) noexcept {
 //------------------------------------------------------------------------------
 } // namespace eagine
 
-#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
 #include <eagine/from_string.inl>
 #endif
 

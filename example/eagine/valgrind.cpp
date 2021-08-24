@@ -11,7 +11,7 @@
 auto main() -> int {
     using namespace eagine;
 
-    if(auto on_vg = running_on_valgrind()) {
+    if(const auto on_vg{running_on_valgrind()}) {
         std::cout << "running on valgrind" << std::endl;
     } else if(!on_vg) {
         std::cout << "not running on valgrind" << std::endl;

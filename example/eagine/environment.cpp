@@ -13,7 +13,7 @@ auto main() -> int {
 
     using v = string_view;
 
-    for(auto name : view(
+    for(const auto name : view(
           {v("USER"),
            v("HOME"),
            v("PATH"),

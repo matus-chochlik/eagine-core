@@ -194,7 +194,16 @@ public:
     auto arg(
       const identifier name,
       const identifier tag,
-      const span<const std::int64_t>) noexcept -> log_entry&;
+      const span<const std::int64_t> values) noexcept -> log_entry& {
+        if(_backend) {
+            _args.add([=](logger_backend& backend) {
+                for(const auto value : values) {
+                    backend.add_integer(name, tag, value);
+                }
+            });
+        }
+        return *this;
+    }
 
     /// @brief Adds a new message argument with 64-bit signed integer span.
     /// @param name the argument name identifier. Used in message substitution.
@@ -234,7 +243,16 @@ public:
     auto arg(
       const identifier name,
       const identifier tag,
-      const span<const std::int32_t>) noexcept -> log_entry&;
+      const span<const std::int32_t> values) noexcept -> log_entry& {
+        if(_backend) {
+            _args.add([=](logger_backend& backend) {
+                for(const auto value : values) {
+                    backend.add_integer(name, tag, value);
+                }
+            });
+        }
+        return *this;
+    }
 
     /// @brief Adds a new message argument with 32-bit signed integer span.
     /// @param name the argument name identifier. Used in message substitution.
@@ -274,7 +292,16 @@ public:
     auto arg(
       const identifier name,
       const identifier tag,
-      const span<const std::int16_t>) noexcept -> log_entry&;
+      const span<const std::int16_t> values) noexcept -> log_entry& {
+        if(_backend) {
+            _args.add([=](logger_backend& backend) {
+                for(const auto value : values) {
+                    backend.add_integer(name, tag, value);
+                }
+            });
+        }
+        return *this;
+    }
 
     /// @brief Adds a new message argument with 16-bit signed integer span.
     /// @param name the argument name identifier. Used in message substitution.
@@ -314,7 +341,16 @@ public:
     auto arg(
       const identifier name,
       const identifier tag,
-      const span<const std::uint64_t>) noexcept -> log_entry&;
+      const span<const std::uint64_t> values) noexcept -> log_entry& {
+        if(_backend) {
+            _args.add([=](logger_backend& backend) {
+                for(const auto value : values) {
+                    backend.add_unsigned(name, tag, value);
+                }
+            });
+        }
+        return *this;
+    }
 
     /// @brief Adds a new message argument with 64-bit unsigned integer span.
     /// @param name the argument name identifier. Used in message substitution.
@@ -354,7 +390,16 @@ public:
     auto arg(
       const identifier name,
       const identifier tag,
-      const span<const std::uint32_t>) noexcept -> log_entry&;
+      const span<const std::uint32_t> values) noexcept -> log_entry& {
+        if(_backend) {
+            _args.add([=](logger_backend& backend) {
+                for(const auto value : values) {
+                    backend.add_unsigned(name, tag, value);
+                }
+            });
+        }
+        return *this;
+    }
 
     /// @brief Adds a new message argument with 32-bit unsigned integer span.
     /// @param name the argument name identifier. Used in message substitution.
@@ -394,7 +439,16 @@ public:
     auto arg(
       const identifier name,
       const identifier tag,
-      const span<const std::uint16_t>) noexcept -> log_entry&;
+      const span<const std::uint16_t> values) noexcept -> log_entry& {
+        if(_backend) {
+            _args.add([=](logger_backend& backend) {
+                for(const auto value : values) {
+                    backend.add_unsigned(name, tag, value);
+                }
+            });
+        }
+        return *this;
+    }
 
     /// @brief Adds a new message argument with 16-bit unsigned integer span.
     /// @param name the argument name identifier. Used in message substitution.
@@ -439,7 +493,16 @@ public:
     auto arg(
       const identifier name,
       const identifier tag,
-      const span<const float>) noexcept -> log_entry&;
+      const span<const float> values) noexcept -> log_entry& {
+        if(_backend) {
+            for(const auto value : values) {
+                _args.add([=](logger_backend& backend) {
+                    backend.add_float(name, tag, value);
+                });
+            }
+        }
+        return *this;
+    }
 
     /// @brief Adds a new message argument with floating-point span.
     /// @param name the argument name identifier. Used in message substitution.
@@ -796,9 +859,5 @@ private:
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
-
-#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
-#include <eagine/logging/entry.inl>
-#endif
 
 #endif // EAGINE_LOGGING_ENTRY_HPP

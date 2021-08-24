@@ -88,6 +88,9 @@ public:
           application_config_initial(app_config(), key, value, tag), initial);
     }
 
+    /// @brief Returns a reference to the root activity object.
+    auto progress() const noexcept -> const activity_progress&;
+
     /// @brief Returns a reference to the message bus object.
     auto bus() const noexcept -> message_bus&;
 

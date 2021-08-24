@@ -101,6 +101,10 @@ public:
         return _log;
     }
 
+    auto progress() noexcept -> const activity_progress& final {
+        return _progress;
+    }
+
     auto config() noexcept -> application_config& final {
         return _app_config;
     }
@@ -128,6 +132,7 @@ private:
     const compiler_info& _cmplr_info;
     const build_info& _bld_info;
     const logger& _log;
+    const activity_progress& _progress;
     process_watchdog& _watchdog;
     application_config& _app_config;
     system_info& _sys_info;
@@ -142,7 +147,7 @@ private:
 
 } // namespace eagine
 
-#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
 #include <eagine/main_ctx.inl>
 #endif
 

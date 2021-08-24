@@ -7,6 +7,7 @@
 ///
 #include <eagine/logging/logger.hpp>
 #include <eagine/main_ctx_storage.hpp>
+#include <eagine/progress/activity.hpp>
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -24,6 +25,7 @@ main_ctx::main_ctx(main_ctx_getters& src) noexcept
   , _cmplr_info{src.compiler()}
   , _bld_info{src.build()}
   , _log{src.log()}
+  , _progress{src.progress()}
   , _watchdog{src.watchdog()}
   , _app_config{src.config()}
   , _sys_info{src.system()}
@@ -35,6 +37,7 @@ main_ctx::main_ctx(main_ctx_getters& src) noexcept
     EAGINE_ASSERT(!_single_ptr());
     _single_ptr() = this;
     _log.configure(_app_config);
+    _progress.configure(_app_config);
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
@@ -74,6 +77,11 @@ auto main_ctx_object::process_instance_id() const noexcept
 EAGINE_LIB_FUNC
 auto main_ctx_object::app_config() const noexcept -> application_config& {
     return main_context().config();
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+auto main_ctx_object::progress() const noexcept -> const activity_progress& {
+    return main_context().progress();
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC

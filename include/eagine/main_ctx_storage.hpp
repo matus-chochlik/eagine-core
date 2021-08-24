@@ -15,6 +15,7 @@
 #include "logging/root_logger.hpp"
 #include "process.hpp"
 #include "program_args.hpp"
+#include "progress/root_activity.hpp"
 #include "system_info.hpp"
 #include "user_info.hpp"
 #include "watchdog.hpp"
@@ -31,6 +32,7 @@ public:
       main_ctx_options& options) noexcept
       : _args{argc, argv}
       , _log_root{options.app_id, _args, options.logger_opts}
+      , _progress_root{*this}
       , _bld_info{build_info::query()}
       , _watchdog{*this}
       , _app_config{*this}
@@ -66,8 +68,20 @@ public:
         return _args;
     }
 
-    auto log() noexcept -> logger& final {
+    auto log() noexcept -> const logger& final {
         return _log_root;
+    }
+
+    auto progress() noexcept -> const activity_progress& final {
+        return _progress_root;
+    }
+
+    void set_progress_update_callback(
+      const callable_ref<void()>& callback,
+      const std::chrono::milliseconds min_interval) final {
+        if(auto backend{_progress_root.backend()}) {
+            return extract(backend).set_update_callback(callback, min_interval);
+        }
     }
 
     auto watchdog() noexcept -> process_watchdog& final {
@@ -124,6 +138,7 @@ private:
     const process_instance_id_t _instance_id{make_process_instance_id()};
     program_args _args;
     root_logger _log_root;
+    root_activity _progress_root;
     compiler_info _cmplr_info;
     build_info _bld_info;
     process_watchdog _watchdog;

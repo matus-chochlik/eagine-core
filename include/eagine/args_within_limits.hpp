@@ -9,7 +9,6 @@
 #define EAGINE_ARGS_WITHIN_LIMITS_HPP
 
 #include "is_within_limits.hpp"
-#include <algorithm>
 
 namespace eagine {
 //------------------------------------------------------------------------------

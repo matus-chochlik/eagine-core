@@ -16,17 +16,17 @@
 namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
-    auto& log = ctx.log();
+    const auto& log = ctx.log();
     const string_view n_a{"N/A"};
 
-    auto path = [](string_view str) {
+    const auto path = [](string_view str) {
         return basic_string_path(str, EAGINE_TAG(split_by), "/");
     };
 
-    auto visitor = [&ctx](
-                     valtree::compound& c,
-                     const valtree::attribute& a,
-                     const basic_string_path& p) {
+    const auto visitor = [&ctx](
+                           const valtree::compound& c,
+                           const valtree::attribute& a,
+                           const basic_string_path& p) {
         auto ca{c / a};
         ctx.log()
           .info("visit")
@@ -66,7 +66,7 @@ auto main(main_ctx& ctx) -> int {
 		"attribD" : "VGhpcyBpcyBhIGJhc2U2NC1lbmNvZGVkIEJMT0IK"
 	})");
 
-    if(auto json_tree{valtree::from_json_text(json_text, ctx)}) {
+    if(const auto json_tree{valtree::from_json_text(json_text, ctx)}) {
         std::array<byte, 64> temp{};
         log.info("parsed from json")
           .arg(
@@ -106,7 +106,7 @@ auto main(main_ctx& ctx) -> int {
       "    attribB: 123\n"
       "attribC: [45, six, 78.9, zero: false]\n");
 
-    if(auto yaml_tree{valtree::from_yaml_text(yaml_text, ctx)}) {
+    if(const auto yaml_tree{valtree::from_yaml_text(yaml_text, ctx)}) {
         log.info("parsed from yaml")
           .arg(
             EAGINE_ID(attribB),
@@ -137,10 +137,10 @@ auto main(main_ctx& ctx) -> int {
           valtree::compound::visit_handler{construct_from, visitor});
     }
 
-    if(auto path_arg{ctx.args().find("--fs-tree").next()}) {
+    if(const auto path_arg{ctx.args().find("--fs-tree").next()}) {
         log.info("opening ${root} filesystem tree")
           .arg(EAGINE_ID(root), path_arg.get());
-        if(auto fs_tree{valtree::from_filesystem_path(path_arg, ctx)}) {
+        if(const auto fs_tree{valtree::from_filesystem_path(path_arg, ctx)}) {
             fs_tree.traverse(
               valtree::compound::visit_handler{construct_from, visitor});
         }

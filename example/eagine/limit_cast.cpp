@@ -18,11 +18,11 @@ auto main() -> int {
     // would assert if 123 didn't fit into short
     foo(limit_cast<short>(123));
 
-    if(auto converted = convert_if_fits<short>(12345)) {
+    if(const auto converted{convert_if_fits<short>(12345)}) {
         std::cout << extract(converted) << std::endl;
     }
 
-    if(auto converted = convert_if_fits<short>(123456)) {
+    if(const auto converted{convert_if_fits<short>(123456)}) {
         std::cout << extract(converted) << std::endl;
     } else {
         std::cout << "value too big" << std::endl;

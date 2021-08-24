@@ -15,7 +15,7 @@ auto main() -> int {
     using v = string_view;
 
     auto fn1 =
-      interleaved_call([](int i) { cout << i; }, []() { cout << ", "; });
+      interleaved_call([](const int i) { cout << i; }, []() { cout << ", "; });
 
     for(int i = 0; i < 20; ++i) {
         fn1(i);
@@ -23,10 +23,10 @@ auto main() -> int {
     cout << std::endl;
 
     auto fn2 = interleaved_call(
-      [](string_view s) { cout << s; }, []() { cout << "}{"; });
+      [](const string_view s) { cout << s; }, []() { cout << "}{"; });
 
     cout << '{';
-    for(auto name : view(
+    for(const auto name : view(
           {v("January"),
            v("February"),
            v("March"),
