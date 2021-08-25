@@ -32,7 +32,7 @@ struct progress_tracker_backend : interface<progress_tracker_backend> {
       const string_view title,
       span_size_t total_steps) -> activity_progress_id_t = 0;
 
-    /// @brief Specifies the current number of steps in the done in the activity.
+    /// @brief Specifies the current number of steps done in the activity.
     ///
     /// The return value indicates if the activity was canceled, true values
     /// means that the activity should continue, false means that the activity
@@ -40,6 +40,15 @@ struct progress_tracker_backend : interface<progress_tracker_backend> {
     virtual auto update_progress(
       const activity_progress_id_t activity_id,
       span_size_t current) noexcept -> bool = 0;
+
+    /// @brief Advances the current number of steps done in the activity.
+    ///
+    /// The return value indicates if the activity was canceled, true values
+    /// means that the activity should continue, false means that the activity
+    /// was canceled and should discontinue.
+    virtual auto advance_progress(
+      const activity_progress_id_t activity_id,
+      span_size_t increment) noexcept -> bool = 0;
 
     /// @brief Indicates that an activity has finished.
     virtual void finish_activity(

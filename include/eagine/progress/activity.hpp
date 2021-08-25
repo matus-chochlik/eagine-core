@@ -35,10 +35,10 @@ public:
     auto operator=(activity_progress&&) = delete;
     auto operator=(const activity_progress&) = delete;
 
+    /// @brief Marks the activity as finished.
+    /// @see finish
     ~activity_progress() noexcept {
-        if(_backend) {
-            _backend->finish_activity(_activity_id);
-        }
+        finish();
     }
 
     /// @brief Creates a sub-activity progress tracker with a title.
@@ -59,7 +59,9 @@ public:
         return false;
     }
 
-    /// @brief Updates the activity progress.
+    /// @brief Updates the activity progress to the specified current value.
+    /// @see finish
+    /// @see advance_progress
     ///
     /// The return value indicates if the activity was canceled, true values
     /// means that the activity should continue, false means that the activity
@@ -69,6 +71,30 @@ public:
             return extract(pbe).update_progress(_activity_id, current);
         }
         return true;
+    }
+
+    /// @brief Advances the activity progress by the specified increment.
+    /// @see finish
+    /// @see update_progress
+    ///
+    /// The return value indicates if the activity was canceled, true values
+    /// means that the activity should continue, false means that the activity
+    /// was canceled and should discontinue.
+    auto advance_progress(span_size_t increment = 1) const noexcept -> bool {
+        if(auto pbe{backend()}) {
+            return extract(pbe).advance_progress(_activity_id, increment);
+        }
+        return true;
+    }
+
+    /// @brief Explicitly marks the activity as finished.
+    /// @see advance_progress
+    /// @see update_progress
+    void finish() noexcept {
+        if(_backend) {
+            _backend->finish_activity(_activity_id);
+            _backend.reset();
+        }
     }
 
 protected:
