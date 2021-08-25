@@ -12,6 +12,7 @@
 #include "../logging/logger.hpp"
 #include "../maybe_unused.hpp"
 #include "backend.hpp"
+#include <atomic>
 #include <map>
 #include <mutex>
 
@@ -54,14 +55,14 @@ public:
         return reinterpret_cast<activity_progress_id_t>(&info);
     }
 
-    void update_progress(
+    auto update_progress(
       const activity_progress_id_t activity_id,
-      span_size_t current) noexcept final {
+      span_size_t current) noexcept -> bool final {
         const auto now = _clock.now();
         if(_last_call < now) {
             _last_call = now + _min_interval;
             if(_callback) {
-                _callback();
+                _keep_going = _callback() && _keep_going;
             }
         }
 
@@ -74,6 +75,7 @@ public:
                 _do_log(info);
             }
         }
+        return _keep_going;
     }
 
     void finish_activity(
@@ -87,7 +89,7 @@ public:
     }
 
     void set_update_callback(
-      const callable_ref<void()> callback,
+      const callable_ref<bool()> callback,
       const std::chrono::milliseconds min_interval) final {
         _callback = callback;
         _min_interval = min_interval;
@@ -107,13 +109,14 @@ private:
     }
 
     logger _log;
-    callable_ref<void()> _callback{};
+    callable_ref<bool()> _callback{};
     std::chrono::milliseconds _min_interval{500};
     std::chrono::steady_clock::time_point _last_call{};
     std::chrono::steady_clock _clock;
     activity_progress_id_t _id_sequence{0};
     std::map<activity_progress_id_t, default_progress_info> _activities;
     std::mutex _mutex;
+    std::atomic<bool> _keep_going{true};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

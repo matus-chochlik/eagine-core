@@ -77,11 +77,9 @@ public:
     }
 
     void set_progress_update_callback(
-      const callable_ref<void()>& callback,
+      const callable_ref<bool()>& callback,
       const std::chrono::milliseconds min_interval) final {
-        if(auto backend{_progress_root.backend()}) {
-            return extract(backend).set_update_callback(callback, min_interval);
-        }
+        _progress_root.set_update_callback(callback, min_interval);
     }
 
     auto watchdog() noexcept -> process_watchdog& final {

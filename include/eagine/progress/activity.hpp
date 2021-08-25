@@ -47,11 +47,6 @@ public:
         return {*this, title, total_steps};
     }
 
-    /// @brief Returns a pointer to the backend of this activity object.
-    auto backend() const noexcept -> const auto& {
-        return _backend;
-    }
-
     /// @brief Returns the unique id of this logger instance.
     auto activity_id() const noexcept -> activity_progress_id_t {
         return _activity_id;
@@ -65,15 +60,25 @@ public:
     }
 
     /// @brief Updates the activity progress.
-    void update_progress(span_size_t current) const noexcept {
+    ///
+    /// The return value indicates if the activity was canceled, true values
+    /// means that the activity should continue, false means that the activity
+    /// was canceled and should discontinue.
+    auto update_progress(span_size_t current) const noexcept -> bool {
         if(auto pbe{backend()}) {
-            extract(pbe).update_progress(_activity_id, current);
+            return extract(pbe).update_progress(_activity_id, current);
         }
+        return true;
     }
 
 protected:
     activity_progress(std::shared_ptr<progress_tracker_backend> backend) noexcept
       : _backend{std::move(backend)} {}
+
+    auto backend() const noexcept
+      -> const std::shared_ptr<progress_tracker_backend>& {
+        return _backend;
+    }
 
 private:
     std::shared_ptr<progress_tracker_backend> _backend;

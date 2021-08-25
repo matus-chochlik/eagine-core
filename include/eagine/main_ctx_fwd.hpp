@@ -52,7 +52,7 @@ struct main_ctx_setters : interface<main_ctx_setters> {
 
     /// @brief Assigns a function to be called on progress update.
     virtual void set_progress_update_callback(
-      const callable_ref<void()>& callback,
+      const callable_ref<bool()>& callback,
       const std::chrono::milliseconds min_interval) = 0;
 };
 
@@ -121,7 +121,7 @@ struct main_ctx_getters : interface<main_ctx_getters> {
 /// @see main_ctx_setters
 inline void set_progress_update_callback(
   main_ctx_getters& ctx,
-  const callable_ref<void()>& callback,
+  const callable_ref<bool()>& callback,
   const std::chrono::milliseconds min_interval) {
     auto setters{ctx.setters()};
     EAGINE_ASSERT(setters);

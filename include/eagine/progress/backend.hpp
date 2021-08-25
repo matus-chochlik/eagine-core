@@ -33,9 +33,13 @@ struct progress_tracker_backend : interface<progress_tracker_backend> {
       span_size_t total_steps) -> activity_progress_id_t = 0;
 
     /// @brief Specifies the current number of steps in the done in the activity.
-    virtual void update_progress(
+    ///
+    /// The return value indicates if the activity was canceled, true values
+    /// means that the activity should continue, false means that the activity
+    /// was canceled and should discontinue.
+    virtual auto update_progress(
       const activity_progress_id_t activity_id,
-      span_size_t current) noexcept = 0;
+      span_size_t current) noexcept -> bool = 0;
 
     /// @brief Indicates that an activity has finished.
     virtual void finish_activity(
@@ -43,7 +47,7 @@ struct progress_tracker_backend : interface<progress_tracker_backend> {
 
     /// @brief Assigns a function to be called on progress update.
     virtual void set_update_callback(
-      const callable_ref<void()>,
+      const callable_ref<bool()>,
       const std::chrono::milliseconds min_interval) = 0;
 };
 //------------------------------------------------------------------------------
