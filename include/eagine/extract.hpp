@@ -187,6 +187,9 @@ public:
         return _traits::nok_info(_outcome);
     }
 };
+
+template <typename Outcome>
+ok(Outcome&& outcome) -> ok<Outcome>;
 //------------------------------------------------------------------------------
 /// @brief Overload of extract for instantiations of the ok template.
 /// @relates ok

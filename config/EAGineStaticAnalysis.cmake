@@ -32,7 +32,7 @@ macro(eagine_add_exe_analysis TARGETNAME)
 
 	target_compile_options(
 		${TARGETNAME}
-		PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-weak-vtables;-Wno-padded;-Wno-missing-prototypes;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-c++1z-extensions>
+		PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-weak-vtables;-Wno-padded;-Wno-missing-prototypes;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions>
 	)
 
 	target_compile_options(

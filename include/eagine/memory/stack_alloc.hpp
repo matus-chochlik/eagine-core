@@ -131,7 +131,7 @@ private:
 //------------------------------------------------------------------------------
 // stack_byte_allocator
 //------------------------------------------------------------------------------
-class stack_byte_allocator : public byte_allocator {
+class stack_byte_allocator final : public byte_allocator {
 
 public:
     using value_type = byte;
@@ -167,7 +167,7 @@ private:
 //------------------------------------------------------------------------------
 // stack_aligned_byte_allocator
 //------------------------------------------------------------------------------
-class stack_aligned_byte_allocator : public byte_allocator {
+class stack_aligned_byte_allocator final : public byte_allocator {
     using _this_class = stack_aligned_byte_allocator;
 
 public:

@@ -41,11 +41,11 @@ template <identifier_t SerializerId, typename T, typename Selector>
 struct get_serialize_buffer_size;
 
 template <identifier_t SerializerId, typename T, typename Selector>
-constexpr const auto serialize_buffer_size_v =
+static constexpr const auto serialize_buffer_size_v =
   get_serialize_buffer_size<SerializerId, T, Selector>::value;
 
 template <identifier_t SerializerId, typename T, typename Selector>
-constexpr const auto serialize_buffer_is_constant_v =
+static constexpr const auto serialize_buffer_is_constant_v =
   get_serialize_buffer_size<SerializerId, T, Selector>::value;
 //------------------------------------------------------------------------------
 template <identifier_t Sid, typename T, typename Selector>

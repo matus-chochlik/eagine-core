@@ -802,8 +802,8 @@ public:
                         for(const auto bx : integer_range(1U, S - 1U)) {
                             for(const auto cx : integer_range(S)) {
                                 EAGINE_ASSERT(k < patch._cells.size());
-                                patch._cells[k++] =
-                                  board.get({bx, by, cx, cy}).get_index();
+                                patch._cells[k++] = limit_cast<std::uint8_t>(
+                                  board.get({bx, by, cx, cy}).get_index());
                             }
                         }
                     }

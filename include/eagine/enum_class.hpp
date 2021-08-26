@@ -321,7 +321,7 @@ struct is_enum_class : std::false_type {};
 /// @see is_enum_class_value_t
 /// @see enum_class
 template <typename T>
-constexpr bool is_enum_class_v = is_enum_class<T>::value;
+static constexpr const bool is_enum_class_v = is_enum_class<T>::value;
 
 template <typename Self, typename T, identifier_t LibId, identifier_t Id>
 struct is_enum_class<enum_class<Self, T, LibId, Id>> : std::true_type {
@@ -340,7 +340,7 @@ struct is_enum_class_value : std::false_type {};
 /// @see opt_enum_value
 /// @see no_enum_value
 template <typename C, typename V>
-constexpr auto is_enum_class_value_v =
+static constexpr const auto is_enum_class_value_v =
   is_enum_class_value<type_t<C>, type_t<V>>::value;
 
 template <

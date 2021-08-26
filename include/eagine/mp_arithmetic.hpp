@@ -29,7 +29,7 @@ using mp_plus_t = typename mp_plus<T1, T2>::type;
 /// @ingroup metaprogramming
 /// @see mp_plus_t
 template <typename T1, typename T2>
-constexpr auto mp_plus_v = mp_plus<T1, T2>::value;
+static constexpr const auto mp_plus_v = mp_plus<T1, T2>::value;
 
 template <typename Int, Int I1, Int I2>
 struct mp_plus<std::integral_constant<Int, I1>, std::integral_constant<Int, I2>>
@@ -51,7 +51,7 @@ using mp_minus_t = typename mp_minus<T1, T2>::type;
 /// @ingroup metaprogramming
 /// @see mp_minus_t
 template <typename T1, typename T2>
-constexpr auto mp_minus_v = mp_minus<T1, T2>::value;
+static constexpr const auto mp_minus_v = mp_minus<T1, T2>::value;
 
 template <typename Int, Int I1, Int I2>
 struct mp_minus<std::integral_constant<Int, I1>, std::integral_constant<Int, I2>>
@@ -73,7 +73,7 @@ using mp_negate_t = typename mp_negate<T1>::type;
 /// @ingroup metaprogramming
 /// @see mp_negate_t
 template <typename T1>
-constexpr auto mp_negate_v = mp_negate<T1>::value;
+static constexpr const auto mp_negate_v = mp_negate<T1>::value;
 
 template <typename Int, Int I1>
 struct mp_negate<std::integral_constant<Int, I1>>
