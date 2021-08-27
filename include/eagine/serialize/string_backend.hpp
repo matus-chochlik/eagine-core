@@ -44,7 +44,7 @@ public:
         result errors{};
         for(const auto& val : values) {
             errors |= _write_one(val, type_identity<T>{});
-            errors |= sink(';');
+            errors |= do_sink(';');
             if(errors) {
                 break;
             }
@@ -59,19 +59,19 @@ public:
     }
 
     auto begin() -> result final {
-        return sink('<');
+        return do_sink('<');
     }
 
     auto begin_struct(const span_size_t count) -> result final {
-        result errors = sink('{');
+        result errors = do_sink('{');
         errors |= _write_one(count, type_identity<span_size_t>{});
-        errors |= sink('|');
+        errors |= do_sink('|');
         return errors;
     }
 
     auto begin_member(const string_view name) -> result final {
-        result errors = sink(name);
-        errors |= sink(':');
+        result errors = do_sink(name);
+        errors |= do_sink(':');
         return errors;
     }
 
@@ -80,13 +80,13 @@ public:
     }
 
     auto finish_struct() -> result final {
-        return sink("};");
+        return do_sink("};");
     }
 
     auto begin_list(const span_size_t count) -> result final {
-        result errors = sink('[');
+        result errors = do_sink('[');
         errors |= _write_one(count, type_identity<span_size_t>{});
-        errors |= sink('|');
+        errors |= do_sink('|');
         return errors;
     }
 
@@ -99,25 +99,25 @@ public:
     }
 
     auto finish_list() -> result final {
-        return sink("];");
+        return do_sink("];");
     }
 
     auto finish() -> result final {
-        return sink(">\0");
+        return do_sink(">\0");
     }
 
 private:
     auto _write_one(const bool value, const type_identity<bool>) -> result {
         if(value) {
-            return sink("true");
+            return do_sink("true");
         }
-        return sink("false");
+        return do_sink("false");
     }
 
     auto _write_one(const char value, const type_identity<char>) -> result {
-        result errors = sink('\'');
-        errors |= sink(value);
-        errors |= sink('\'');
+        result errors = do_sink('\'');
+        errors |= do_sink(value);
+        errors |= do_sink('\'');
         return errors;
     }
 
@@ -128,7 +128,7 @@ private:
         // NOLINTNEXTLINE(hicpp-vararg)
         std::snprintf(
           temp.data(), temp.size(), static_cast<const char*>(fmt), value);
-        return sink(string_view(temp.data()));
+        return do_sink(string_view(temp.data()));
     }
 
     auto _write_one(const byte value, const type_identity<byte>) -> result {
@@ -190,21 +190,21 @@ private:
 
     auto _write_one(const identifier id, const type_identity<identifier>)
       -> result {
-        return sink(id.name().view());
+        return do_sink(id.name().view());
     }
 
     auto _write_one(const decl_name name, const type_identity<decl_name>)
       -> result {
-        return sink(name);
+        return do_sink(name);
     }
 
     auto _write_one(const string_view str, const type_identity<string_view>)
       -> result {
-        result errors = sink('"');
+        result errors = do_sink('"');
         errors |= _write_one(str.size(), type_identity<span_size_t>{});
-        errors |= sink('|');
-        errors |= sink(str);
-        errors |= sink('"');
+        errors |= do_sink('|');
+        errors |= do_sink(str);
+        errors |= do_sink('"');
         return errors;
     }
 };

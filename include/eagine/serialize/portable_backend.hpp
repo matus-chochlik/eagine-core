@@ -39,7 +39,7 @@ public:
         result errors{};
         for(const auto& val : values) {
             errors |= _write_one(val, type_identity<T>{});
-            errors |= sink(';');
+            errors |= do_sink(';');
             if(errors) {
                 break;
             }
@@ -54,19 +54,19 @@ public:
     }
 
     auto begin() -> result final {
-        return sink('<');
+        return do_sink('<');
     }
 
     auto begin_struct(const span_size_t count) -> result final {
-        result errors = sink('{');
+        result errors = do_sink('{');
         errors |= _write_one(count, type_identity<span_size_t>{});
-        errors |= sink('|');
+        errors |= do_sink('|');
         return errors;
     }
 
     auto begin_member(const string_view name) -> result final {
-        result errors = sink(name);
-        errors |= sink(':');
+        result errors = do_sink(name);
+        errors |= do_sink(':');
         return errors;
     }
 
@@ -75,13 +75,13 @@ public:
     }
 
     auto finish_struct() -> result final {
-        return sink("}");
+        return do_sink("}");
     }
 
     auto begin_list(const span_size_t count) -> result final {
-        result errors = sink('[');
+        result errors = do_sink('[');
         errors |= _write_one(count, type_identity<span_size_t>{});
-        errors |= sink('|');
+        errors |= do_sink('|');
         return errors;
     }
 
@@ -94,32 +94,32 @@ public:
     }
 
     auto finish_list() -> result final {
-        return sink("]");
+        return do_sink("]");
     }
 
     auto finish() -> result final {
-        return sink(">\0");
+        return do_sink(">\0");
     }
 
 private:
     auto _write_one(const bool value, const type_identity<bool>) -> result {
         if(value) {
-            return sink("T");
+            return do_sink("T");
         }
-        return sink("U");
+        return do_sink("U");
     }
 
     template <typename I>
     auto _write_one(I value, const type_identity<I>) noexcept
       -> std::enable_if_t<std::is_integral_v<I> && std::is_unsigned_v<I>, result> {
         result errors{};
-        auto encode = [&]() {
+        const auto encode = [&]() {
             // clang-format off
 			const char c[16] = {
 				'0','1','2','3','4','5','6','7',
 				'8','9','A','B','C','D','E','F'};
             // clang-format on
-            errors |= sink(c[(value & 0xFU)]);
+            errors |= do_sink(c[(value & 0xFU)]);
             value >>= 4U;
         };
         encode();
@@ -132,7 +132,7 @@ private:
     template <typename I>
     auto _write_one(I value, const type_identity<I>) noexcept
       -> std::enable_if_t<std::is_integral_v<I> && std::is_signed_v<I>, result> {
-        result errors = sink(value < 0 ? '-' : '+');
+        result errors = do_sink(value < 0 ? '-' : '+');
         using U = std::make_unsigned_t<I>;
         errors |= _write_one(
           limit_cast<U>(value < 0 ? -value : value), type_identity<U>{});
@@ -145,7 +145,7 @@ private:
         const auto [f, e] = fputils::decompose(value, tid);
         result errors =
           _write_one(f, type_identity<fputils::decompose_fraction_t<F>>{});
-        errors |= sink('`');
+        errors |= do_sink('`');
         errors |=
           _write_one(e, type_identity<fputils::decompose_exponent_t<F>>{});
 
@@ -154,21 +154,21 @@ private:
 
     auto _write_one(const identifier id, const type_identity<identifier>)
       -> result {
-        return sink(id.name().view());
+        return do_sink(id.name().view());
     }
 
     auto _write_one(const decl_name name, const type_identity<decl_name>)
       -> result {
-        return sink(name);
+        return do_sink(name);
     }
 
     auto _write_one(const string_view str, const type_identity<string_view>)
       -> result {
-        result errors = sink('"');
+        result errors = do_sink('"');
         errors |= _write_one(str.size(), type_identity<span_size_t>{});
-        errors |= sink('|');
-        errors |= sink(str);
-        errors |= sink('"');
+        errors |= do_sink('|');
+        errors |= do_sink(str);
+        errors |= do_sink('"');
         return errors;
     }
 };

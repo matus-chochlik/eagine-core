@@ -265,10 +265,19 @@ protected:
         return _sink->remaining_size();
     }
 
-    template <typename... Args>
-    auto sink(Args&&... args) const -> result {
+    auto do_sink(const memory::const_block b) const -> result {
         EAGINE_ASSERT(_sink);
-        return _sink->write(std::forward<Args>(args)...);
+        return _sink->write(b);
+    }
+
+    auto do_sink(const string_view s) const -> result {
+        EAGINE_ASSERT(_sink);
+        return _sink->write(s);
+    }
+
+    auto do_sink(const char c) const -> result {
+        EAGINE_ASSERT(_sink);
+        return _sink->write(c);
     }
 
 private:
