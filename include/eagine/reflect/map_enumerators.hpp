@@ -10,6 +10,7 @@
 #define EAGINE_REFLECT_MAP_ENUMERATORS_HPP
 
 #include "../selector.hpp"
+#include "config.hpp"
 #include "decl_name.hpp"
 #include <array>
 #include <type_traits>
@@ -50,6 +51,39 @@ using has_enumerator_mapping_t =
 template <typename T, typename Selector = default_selector_t>
 constexpr const bool has_enumerator_mapping_v =
   has_enumerator_mapping_t<T, Selector>::value;
+//------------------------------------------------------------------------------
+#if EAGINE_CXX_REFLECTION
+template <typename Enum, typename MetaEnumRange, std::size_t... I>
+constexpr auto _do_make_enumerator_mapping(
+  const type_identity<Enum>,
+  const MetaEnumRange range,
+  std::index_sequence<I...>) noexcept {
+    // TODO
+    return enumerator_map_type<Enum, sizeof...(I)>{
+      {std::experimental::meta::name_of(_meta_range_at(range, I)), {}}...};
+}
+//------------------------------------------------------------------------------
+template <typename Enum, typename MetaEnumRange>
+constexpr auto _make_enumerator_mapping(
+  const type_identity<Enum> tid,
+  const MetaEnumRange range) noexcept {
+    return _do_make_enumerator_mapping(
+      tid, range, std::make_index_sequence<size(range)>{});
+}
+//------------------------------------------------------------------------------
+template <
+  typename Enum,
+  typename Selector,
+  typename = std::enable_if_t<std::is_enum_v<Enum>>>
+constexpr auto enumerator_mapping(
+  const type_identity<Enum> tid,
+  const Selector) noexcept {
+    return _make_enumerator_mapping(
+      tid,
+      std::experimental::meta::members_of(
+        ^Enum, std::experimental::meta::is_enumerator));
+}
+#endif
 //------------------------------------------------------------------------------
 } // namespace eagine
 
