@@ -10,8 +10,8 @@
 #define EAGINE_REFLECT_MAP_ENUMERATORS_HPP
 
 #include "../selector.hpp"
-#include "config.hpp"
 #include "decl_name.hpp"
+#include "meta.hpp"
 #include <array>
 #include <type_traits>
 
@@ -57,11 +57,10 @@ template <typename Enum, std::size_t... I>
 consteval auto _make_enumerator_mapping(
   const std::index_sequence<I...>) noexcept {
     namespace meta = std::experimental::meta;
+    const auto me = meta::members_of(^Enum, meta::is_enumerator);
     return enumerator_map_type<Enum, sizeof...(I)>{
-      {{decl_name{meta::name_of(
-          _meta_range_at(meta::members_of(^Enum, meta::is_enumerator), I))},
-        ([:_meta_range_at(
-             meta::members_of(^Enum, meta::is_enumerator), I):])}...}};
+      {{decl_name{meta::name_of(_meta_range_at(me, I))},
+        ([:_meta_range_at(me, I):])}...}};
 }
 //------------------------------------------------------------------------------
 template <typename Enum>
