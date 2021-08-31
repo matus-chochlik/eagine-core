@@ -19,10 +19,11 @@ struct example_struct {
     unsigned u{0U};
 };
 
-#if EAGINE_CXX_REFLECTION
-template <>
-struct reflect_data_members_of<example_struct> : std::true_type {};
-#else
+// TODO:
+// #if EAGINE_CXX_REFLECTION
+// template <>
+// struct reflect_data_members_of<example_struct> : std::true_type {};
+// #else
 template <typename Selector>
 constexpr auto data_member_mapping(
   const type_identity<example_struct>,
@@ -36,7 +37,7 @@ constexpr auto data_member_mapping(
       {"s", &S::s},
       {"u", &S::u});
 }
-#endif
+//#endif
 
 } // namespace eagine
 

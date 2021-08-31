@@ -59,7 +59,7 @@ consteval auto _make_enumerator_mapping(
     namespace meta = std::experimental::meta;
     const auto me = meta::members_of(^Enum, meta::is_enumerator);
     return enumerator_map_type<Enum, sizeof...(I)>{
-      {{decl_name{meta::name_of(_meta_range_at(me, I))},
+      {{{immediate_function, meta::name_of(_meta_range_at(me, I))},
         ([:_meta_range_at(me, I):])}...}};
 }
 //------------------------------------------------------------------------------

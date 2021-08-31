@@ -26,6 +26,7 @@ enum class power_supply_kind : std::uint8_t {
     ac_supply
 };
 
+#if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
   const type_identity<power_supply_kind>,
@@ -35,6 +36,7 @@ constexpr auto enumerator_mapping(
        {"battery", power_supply_kind::battery},
        {"ac_supply", power_supply_kind::ac_supply}}};
 }
+#endif
 
 } // namespace eagine
 

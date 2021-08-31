@@ -57,4 +57,17 @@
 #define EAGINE_LIB_FUNC inline
 #endif
 
+#ifndef EAGINE_CXX_REFLECTION
+#define EAGINE_CXX_REFLECTION 0
+#endif
+
+#ifndef EAGINE_CXX_CONSTEVAL
+#if EAGINE_CXX_REFLECTION || \
+  (defined(__cpp_consteval) && __cpp_consteval >= 201811L)
+#define EAGINE_CXX_CONSTEVAL 1
+#else
+#define EAGINE_CXX_CONSTEVAL 0
+#endif
+#endif
+
 #endif // EAGINE_CONFIG_BASIC_HPP

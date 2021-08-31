@@ -9,6 +9,8 @@
 #ifndef EAGINE_STRING_SPAN_HPP
 #define EAGINE_STRING_SPAN_HPP
 
+#include "config/basic.hpp"
+#include "selector.hpp"
 #include "span.hpp"
 #include "types.hpp"
 #include <cstring>
@@ -39,6 +41,24 @@ public:
     constexpr basic_string_span(P addr, const S length) noexcept
       : base{addr, length} {}
 
+#if EAGINE_CXX_CONSTEVAL
+    static consteval auto _ce_strlen(const char* str) noexcept {
+        span_size_t len = 0U;
+        while(*str) {
+            ++len;
+            ++str;
+        }
+        return len;
+    }
+
+    template <
+      typename R,
+      typename = std::enable_if_t<
+        !std::is_array_v<R> && std::is_convertible_v<R, P> &&
+        std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>>>
+    consteval basic_string_span(immediate_function_t, R addr) noexcept
+      : base{addr, -static_cast<S>(_ce_strlen(addr))} {}
+#endif
     template <
       typename R,
       typename = std::enable_if_t<

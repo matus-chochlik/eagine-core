@@ -34,6 +34,7 @@ enum class serialization_error_code : std::uint8_t {
     backend_error = 1U << 4U
 };
 //------------------------------------------------------------------------------
+#if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
   const type_identity<serialization_error_code>,
@@ -45,6 +46,7 @@ constexpr auto enumerator_mapping(
        {"data_sink_error", serialization_error_code::data_sink_error},
        {"backend_error", serialization_error_code::backend_error}}};
 }
+#endif
 //------------------------------------------------------------------------------
 /// @brief Deserialization error code bits enumeration.
 /// @ingroup serialization
@@ -76,6 +78,7 @@ enum class deserialization_error_code : std::uint16_t {
     backend_error = 1U << 10U
 };
 //------------------------------------------------------------------------------
+#if EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
   const type_identity<deserialization_error_code>,
@@ -93,6 +96,7 @@ constexpr auto enumerator_mapping(
        {"data_source_error", deserialization_error_code::data_source_error},
        {"backend_error", deserialization_error_code::backend_error}}};
 }
+#endif
 //------------------------------------------------------------------------------
 /// @brief Alias for serialization error bitfield.
 /// @ingroup serialization

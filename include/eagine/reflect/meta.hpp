@@ -9,7 +9,7 @@
 #ifndef EAGINE_REFLECT_META_HPP
 #define EAGINE_REFLECT_META_HPP
 
-#include "config.hpp"
+#include "../config/basic.hpp"
 
 #if EAGINE_CXX_REFLECTION
 

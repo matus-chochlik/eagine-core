@@ -20,17 +20,8 @@ struct decl_name : string_view {
     constexpr decl_name() noexcept = default;
 
 #if EAGINE_CXX_REFLECTION
-    static consteval auto _ce_strlen(const char* str) noexcept {
-        span_size_t len = 0;
-        while(*str) {
-            ++len;
-            ++str;
-        }
-        return len;
-    }
-
-    explicit consteval decl_name(const char* str) noexcept
-      : string_view{str, _ce_strlen(str)} {}
+    consteval decl_name(immediate_function_t t, const char* s) noexcept
+      : string_view{t, s} {}
 #endif
 
     template <

@@ -47,6 +47,7 @@ enum class value_type {
     composite
 };
 //------------------------------------------------------------------------------
+#if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(type_identity<value_type>, Selector) noexcept {
     return enumerator_map_type<value_type, 10>{
@@ -61,6 +62,7 @@ constexpr auto enumerator_mapping(type_identity<value_type>, Selector) noexcept 
        {"string_type", value_type::string_type},
        {"composite", value_type::composite}}};
 }
+#endif
 //------------------------------------------------------------------------------
 struct compound_interface;
 

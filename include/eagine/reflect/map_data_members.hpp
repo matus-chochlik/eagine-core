@@ -59,7 +59,7 @@ consteval auto _make_data_member_mapping(
     return make_data_member_mapping<
       Struct,
       typename[:meta::type_of(_meta_range_at(mdm, I)):]...>(
-      {decl_name{meta::name_of(_meta_range_at(mdm, I))},
+      {{immediate_function, meta::name_of(_meta_range_at(mdm, I))},
        &([:_meta_range_at(mdm, I):])}...); // currently crashes the compiler
 }
 //------------------------------------------------------------------------------

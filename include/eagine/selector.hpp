@@ -46,6 +46,19 @@ using construct_from_t = selector<0xFU>;
 /// @see construct_from_t
 constexpr const construct_from_t construct_from = {};
 
+/// @brief Type alias for immediate function selector.
+/// @ingroup metaprogramming
+/// @see immediate_function
+///
+/// This type is typically used as an additional parameter in consteval
+/// function overloads.
+using immediate_function_t = selector<0x1FU>;
+
+/// @brief The use immediate function tag-dispatch constant
+/// @ingroup metaprogramming
+/// @see immediate_function_t
+constexpr const immediate_function_t immediate_function = {};
+
 } // namespace eagine
 
 #endif // EAGINE_SELECTOR_HPP
