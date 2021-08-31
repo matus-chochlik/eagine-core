@@ -9,6 +9,7 @@
 #ifndef EAGINE_REFLECT_MAP_ENUMERATORS_HPP
 #define EAGINE_REFLECT_MAP_ENUMERATORS_HPP
 
+#include "../config/basic.hpp"
 #include "../selector.hpp"
 #include "decl_name.hpp"
 #include "meta.hpp"

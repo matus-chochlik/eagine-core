@@ -78,7 +78,7 @@ enum class deserialization_error_code : std::uint16_t {
     backend_error = 1U << 10U
 };
 //------------------------------------------------------------------------------
-#if EAGINE_CXX_REFLECTION
+#if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
   const type_identity<deserialization_error_code>,

@@ -44,7 +44,7 @@ static constexpr auto adapt_log_entry_arg(
   const identifier name,
   const bitfield<T> bf) {
     return [=](logger_backend& backend) {
-        auto func = [&backend, name, bf](const auto& info) {
+        const auto func = [&backend, name, bf](const auto& info) {
             if(bf.has(static_cast<T>(info.value))) {
                 backend.add_string(name, EAGINE_ID(bitfield), info.name);
             }

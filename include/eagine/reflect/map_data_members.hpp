@@ -9,6 +9,7 @@
 #ifndef EAGINE_REFLECT_MAP_DATA_MEMBERS_HPP
 #define EAGINE_REFLECT_MAP_DATA_MEMBERS_HPP
 
+#include "../config/basic.hpp"
 #include "../selector.hpp"
 #include "../string_span.hpp"
 #include "decl_name.hpp"
