@@ -243,7 +243,8 @@ private:
       const int i,
       const Parameter t) noexcept {
         using std::pow;
-        return binomial(m, i) * pow(t, i) * pow(1 - t, m - i);
+        return pow(t, Parameter(i)) * pow(1 - t, Parameter(m - i)) *
+               Parameter(binomial(m, i));
     }
 
     static constexpr auto _calc(const int, const int, const Parameter) noexcept {

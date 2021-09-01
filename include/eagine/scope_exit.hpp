@@ -125,7 +125,7 @@ private:
 
 public:
     /// @brief Initialization from the specified callable object.
-    func_on_scope_exit(Func func)
+    func_on_scope_exit(Func func) noexcept
       : _func(std::move(func))
       , _ose(_func) {}
 
@@ -141,7 +141,7 @@ public:
 /// This function takes the specified callable argument and creates an object
 /// which when destroyed, typically when leaving scope block, invokes the callable.
 template <typename Func>
-[[nodiscard]] static inline auto finally(Func func)
+[[nodiscard]] static inline auto finally(Func func) noexcept
   -> func_on_scope_exit<Func> {
     return func;
 }

@@ -19,6 +19,8 @@ EAGINE_DIAG_OFF(disabled-macro-expansion)
 EAGINE_DIAG_OFF(covered-switch-default)
 EAGINE_DIAG_OFF(zero-as-null-pointer-constant)
 EAGINE_DIAG_OFF(shorten-64-to-32)
+EAGINE_DIAG_OFF(suggest-destructor-override)
+EAGINE_DIAG_OFF(suggest-override)
 EAGINE_DIAG_OFF(deprecated)
 EAGINE_DIAG_OFF(shadow)
 #endif

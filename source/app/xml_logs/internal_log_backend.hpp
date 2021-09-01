@@ -16,7 +16,7 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-class internal_log_backend : public logger_backend {
+class internal_log_backend final : public logger_backend {
 public:
     internal_log_backend() noexcept {
         EAGINE_ASSERT(!_single_instance_ptr());
@@ -28,7 +28,7 @@ public:
     auto operator=(internal_log_backend&&) = delete;
     auto operator=(const internal_log_backend&) = delete;
 
-    ~internal_log_backend() noexcept {
+    ~internal_log_backend() noexcept final {
         EAGINE_ASSERT(_single_instance_ptr());
         _single_instance_ptr() = nullptr;
     }

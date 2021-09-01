@@ -168,7 +168,12 @@ set(HEADERS
     eagine/preprocessor.hpp
     eagine/process.hpp
     eagine/program_args.hpp
+    eagine/progress/activity.hpp
+    eagine/progress/backend.hpp
     eagine/progress_bar.hpp
+    eagine/progress/default_backend.hpp
+    eagine/progress/fwd.hpp
+    eagine/progress/root_activity.hpp
     eagine/protected_member.hpp
     eagine/quantities.hpp
     eagine/random_bites.hpp
@@ -180,6 +185,7 @@ set(HEADERS
     eagine/reflect/enumerators.hpp
     eagine/reflect/map_data_members.hpp
     eagine/reflect/map_enumerators.hpp
+    eagine/reflect/meta.hpp
     eagine/resources.hpp
     eagine/scope_exit.hpp
     eagine/selector.hpp
@@ -361,6 +367,7 @@ set(PUB_INLS
     eagine/memory/stack_alloc.inl
     eagine/multi_byte_seq.inl
     eagine/progress_bar.inl
+    eagine/progress/root_activity.inl
 )
 
 set(LIB_INLS

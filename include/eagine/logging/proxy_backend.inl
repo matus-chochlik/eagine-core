@@ -284,7 +284,7 @@ auto proxy_log_choose_backend(
   application_config& config,
   const std::string& name,
   const log_event_severity min_severity) -> std::unique_ptr<logger_backend> {
-    if(name == "null") {
+    if((name == "null") || (name == "none")) {
         return std::make_unique<null_log_backend>();
     } else if(name == "cerr") {
         return std::make_unique<ostream_log_backend<>>(std::cerr, min_severity);

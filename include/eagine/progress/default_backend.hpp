@@ -12,6 +12,7 @@
 #include "../logging/logger.hpp"
 #include "../maybe_unused.hpp"
 #include "backend.hpp"
+#include <atomic>
 #include <map>
 #include <mutex>
 
@@ -54,26 +55,29 @@ public:
         return reinterpret_cast<activity_progress_id_t>(&info);
     }
 
-    void update_progress(
+    auto update_progress(
       const activity_progress_id_t activity_id,
-      span_size_t current) noexcept final {
-        const auto now = _clock.now();
-        if(_last_call < now) {
-            _last_call = now + _min_interval;
-            if(_callback) {
-                _callback();
-            }
+      span_size_t current) noexcept -> bool final {
+        _call_back();
+        if(activity_id) {
+            _update(
+              /// NOLINTNEXTLINE(performance-no-int-to-ptr)
+              *reinterpret_cast<default_progress_info*>(activity_id),
+              current);
         }
+        return _keep_going;
+    }
 
+    auto advance_progress(
+      const activity_progress_id_t activity_id,
+      span_size_t increment) noexcept -> bool final {
+        _call_back();
         if(activity_id) {
             /// NOLINTNEXTLINE(performance-no-int-to-ptr)
             auto& info = *reinterpret_cast<default_progress_info*>(activity_id);
-            info.curr_steps = current;
-            if(info.curr_steps - info.prev_steps >= info.increment) {
-                info.prev_steps = info.curr_steps;
-                _do_log(info);
-            }
+            _update(info, info.curr_steps + increment);
         }
+        return _keep_going;
     }
 
     void finish_activity(
@@ -87,13 +91,31 @@ public:
     }
 
     void set_update_callback(
-      const callable_ref<void()> callback,
+      const callable_ref<bool()> callback,
       const std::chrono::milliseconds min_interval) final {
         _callback = callback;
         _min_interval = min_interval;
     }
 
 private:
+    void _call_back() {
+        const auto now = _clock.now();
+        if(_last_call < now) {
+            _last_call = now + _min_interval;
+            if(_callback) {
+                _keep_going = _callback() && _keep_going;
+            }
+        }
+    }
+
+    void _update(default_progress_info& info, span_size_t current) {
+        info.curr_steps = current;
+        if(info.curr_steps - info.prev_steps >= info.increment) {
+            info.prev_steps = info.curr_steps;
+            _do_log(info);
+        }
+    }
+
     void _do_log(const default_progress_info& info) const {
         _log.log(info.log_level, info.title)
           .arg(EAGINE_ID(current), info.curr_steps)
@@ -107,13 +129,14 @@ private:
     }
 
     logger _log;
-    callable_ref<void()> _callback{};
+    callable_ref<bool()> _callback{};
     std::chrono::milliseconds _min_interval{500};
     std::chrono::steady_clock::time_point _last_call{};
     std::chrono::steady_clock _clock;
     activity_progress_id_t _id_sequence{0};
     std::map<activity_progress_id_t, default_progress_info> _activities;
     std::mutex _mutex;
+    std::atomic<bool> _keep_going{true};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

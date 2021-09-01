@@ -163,7 +163,7 @@ public:
         }
         EAGINE_ASSERT(t >= zero && t < one);
 
-        const auto toffs = t * segment_count();
+        const auto toffs = t * Parameter(segment_count());
         const auto t_sub = toffs - std::floor(toffs);
         const auto poffs = span_size_t(toffs) * segment_step();
         EAGINE_ASSERT(poffs < span_size(_points.size()) - Order);
@@ -186,7 +186,7 @@ public:
         dest.resize(std_size(s * extract(n) + 1));
 
         auto p = dest.begin();
-        const Parameter t_step = Parameter(1) / extract(n);
+        const Parameter t_step = Parameter(1) / Parameter(extract(n));
 
         for(const auto i : integer_range(s)) {
             const auto poffs = i * sstep;

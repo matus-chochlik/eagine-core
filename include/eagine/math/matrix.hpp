@@ -80,7 +80,7 @@ struct is_row_major<matrix<T, C, R, RM, V>> : bool_constant<RM> {};
 /// @brief Trait indicating if a matrix type is row-major.
 /// @ingroup math
 template <typename X>
-const auto is_row_major_v = is_row_major<X>::value;
+static constexpr const auto is_row_major_v = is_row_major<X>::value;
 //------------------------------------------------------------------------------
 /// @brief Returns then number of matrix rows.
 /// @ingroup math
@@ -504,7 +504,8 @@ struct is_matrix_constructor : std::false_type {};
 /// Matrix constructor types define a nullary call operator that can construct
 /// a matrix instantiation.
 template <typename X>
-constexpr auto is_matrix_constructor_v = is_matrix_constructor<X>::value;
+static constexpr const auto is_matrix_constructor_v =
+  is_matrix_constructor<X>::value;
 //------------------------------------------------------------------------------
 template <bool RM, typename T, int C, int R, bool V>
 struct is_matrix_constructor<matrix<T, C, R, RM, V>> : std::true_type {};

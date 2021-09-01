@@ -140,7 +140,7 @@ inline auto from_string(
 //------------------------------------------------------------------------------
 template <typename Function, typename T, typename Selector>
 inline auto for_each_enumerator(
-  Function& function,
+  Function function,
   const type_identity<T> id,
   const Selector sel) noexcept
   -> std::enable_if_t<has_enumerator_mapping_v<T, Selector>> {
@@ -151,7 +151,7 @@ inline auto for_each_enumerator(
 //------------------------------------------------------------------------------
 template <typename Function, typename T>
 inline auto for_each_enumerator(
-  Function& function,
+  Function function,
   const type_identity<T> id) noexcept
   -> std::enable_if_t<has_enumerator_mapping_v<T, default_selector_t>> {
     for_each_enumerator(function, id, default_selector);

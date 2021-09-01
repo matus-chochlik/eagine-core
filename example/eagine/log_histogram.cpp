@@ -36,7 +36,7 @@ auto main(main_ctx& ctx) -> int {
       .arg_func([max_count, &byte_counts](logger_backend& backend) {
           for(const auto i : integer_range(std_size(256))) {
               backend.add_float(
-                byte_to_identifier(i),
+                byte_to_identifier(byte(i)),
                 EAGINE_ID(Histogram),
                 float(0),
                 float(byte_counts[i]),

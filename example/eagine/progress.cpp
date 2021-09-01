@@ -17,6 +17,7 @@ auto main(main_ctx& ctx) -> int {
 
     const auto callback = [&]() {
         ctx.log().info("Progress callback called");
+        return true;
     };
     set_progress_update_callback(
       ctx, {construct_from, callback}, std::chrono::milliseconds{100});

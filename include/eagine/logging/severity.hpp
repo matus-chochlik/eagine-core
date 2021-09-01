@@ -34,6 +34,7 @@ enum class log_event_severity {
     fatal
 };
 
+#if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
   const type_identity<log_event_severity>,
@@ -48,6 +49,7 @@ constexpr auto enumerator_mapping(
        {"error", log_event_severity::error},
        {"fatal", log_event_severity::fatal}}};
 }
+#endif
 //------------------------------------------------------------------------------
 } // namespace eagine
 

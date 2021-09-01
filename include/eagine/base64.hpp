@@ -17,7 +17,7 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 static constexpr auto make_base64_encode_transform() {
-    return [](const byte b) -> always_valid<char> {
+    return [](const auto b) -> always_valid<char> {
         const auto i = int(b);
         if(i < 26) {
             return {char('A' + i)};

@@ -9,8 +9,10 @@
 #ifndef EAGINE_REFLECT_MAP_ENUMERATORS_HPP
 #define EAGINE_REFLECT_MAP_ENUMERATORS_HPP
 
+#include "../config/basic.hpp"
 #include "../selector.hpp"
 #include "decl_name.hpp"
+#include "meta.hpp"
 #include <array>
 #include <type_traits>
 
@@ -27,7 +29,7 @@ struct enumerator_and_name {
 };
 //------------------------------------------------------------------------------
 template <typename T, std::size_t N>
-using enumerator_map_type = std::array<enumerator_and_name<T>, N>;
+using enumerator_map_type = std::array<const enumerator_and_name<T>, N>;
 //------------------------------------------------------------------------------
 template <typename T, typename Selector>
 struct does_have_enumerator_mapping {
@@ -50,6 +52,35 @@ using has_enumerator_mapping_t =
 template <typename T, typename Selector = default_selector_t>
 constexpr const bool has_enumerator_mapping_v =
   has_enumerator_mapping_t<T, Selector>::value;
+//------------------------------------------------------------------------------
+#if EAGINE_CXX_REFLECTION
+template <typename Enum, std::size_t... I>
+consteval auto _make_enumerator_mapping(
+  const std::index_sequence<I...>) noexcept {
+    namespace meta = std::experimental::meta;
+    const auto me = meta::members_of(^Enum, meta::is_enumerator);
+    return enumerator_map_type<Enum, sizeof...(I)>{
+      {{{immediate_function, meta::name_of(_meta_range_at(me, I))},
+        ([:_meta_range_at(me, I):])}...}};
+}
+//------------------------------------------------------------------------------
+template <typename Enum>
+static constexpr const auto _reflected_enumerator_mapping =
+  _make_enumerator_mapping<Enum>(
+    std::make_index_sequence<size(std::experimental::meta::members_of(
+      ^Enum,
+      std::experimental::meta::is_enumerator))>{});
+//------------------------------------------------------------------------------
+template <
+  typename Enum,
+  typename Selector,
+  typename = std::enable_if_t<std::is_enum_v<Enum>>>
+constexpr auto enumerator_mapping(
+  const type_identity<Enum>,
+  const Selector) noexcept -> const auto& {
+    return _reflected_enumerator_mapping<Enum>;
+}
+#endif
 //------------------------------------------------------------------------------
 } // namespace eagine
 

@@ -44,7 +44,7 @@ static constexpr auto adapt_log_entry_arg(
   const identifier name,
   const bitfield<T> bf) {
     return [=](logger_backend& backend) {
-        auto func = [&backend, name, bf](const auto& info) {
+        const auto func = [&backend, name, bf](const auto& info) {
             if(bf.has(static_cast<T>(info.value))) {
                 backend.add_string(name, EAGINE_ID(bitfield), info.name);
             }
@@ -77,9 +77,9 @@ public:
       const log_event_severity severity,
       const string_view format,
       logger_backend* backend) noexcept
-      : _source_id{source_id}
+      : _backend{backend}
+      , _source_id{source_id}
       , _instance_id{instance_id}
-      , _backend{backend}
       , _format{format}
       , _args{_be_alloc(_backend)}
       , _severity{severity} {
@@ -104,18 +104,8 @@ public:
                  _source_id, _entry_tag, _instance_id, _severity, _format))) {
                 _args(*_backend);
                 _backend->finish_message();
-                _backend = nullptr;
             }
         }
-    }
-
-    /// @brief Sets the format string for this log entry.
-    ///
-    /// The format string can contain argument @c ${NAME} placeholders, that
-    /// are later substituted by the value of argument with the specified NAME.
-    auto set_format(const string_view format) noexcept -> auto& {
-        _format = format;
-        return *this;
     }
 
     /// @brief Adds a new message argument with identifier value.
@@ -710,11 +700,11 @@ public:
     }
 
 private:
-    identifier _source_id{};
+    logger_backend* const _backend{nullptr};
+    const identifier _source_id{};
     identifier _entry_tag{};
-    logger_instance_id _instance_id{};
-    logger_backend* _backend{nullptr};
-    string_view _format{};
+    const logger_instance_id _instance_id{};
+    const string_view _format{};
     memory::callable_storage<void(logger_backend&)> _args;
     const log_event_severity _severity{log_event_severity::info};
 

@@ -21,7 +21,7 @@ enum class _tribool_value_t : unsigned char {
 struct indeterminate_t {};
 
 /// @brief Constant representing unspecified @c tribool value.
-constexpr static const indeterminate_t indeterminate = {};
+static constexpr const indeterminate_t indeterminate = {};
 
 class tribool;
 

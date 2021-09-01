@@ -40,7 +40,7 @@ public:
         } else {
             can_do = values.size();
         }
-        errors |= sink(as_bytes(values));
+        errors |= do_sink(as_bytes(values));
         done = can_do;
         return errors;
     }
@@ -50,13 +50,13 @@ public:
       -> result {
         done = 0;
         serialization_errors errors{};
-        for(auto& str : values) {
+        for(const auto& str : values) {
             span_size_t written{0};
             errors |= do_write(view_one(str.size()), written);
             if(errors) {
                 return errors;
             }
-            sink(str);
+            do_sink(str);
             done += written;
         }
         return errors;

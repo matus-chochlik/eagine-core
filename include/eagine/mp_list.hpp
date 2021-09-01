@@ -32,7 +32,7 @@ struct mp_is_empty;
 /// @ingroup metaprogramming
 /// @see mp_list
 template <typename TL>
-constexpr const auto mp_is_empty_v = mp_is_empty<TL>::value;
+static constexpr const auto mp_is_empty_v = mp_is_empty<TL>::value;
 
 template <>
 struct mp_is_empty<mp_list<>> : std::true_type {};
@@ -51,7 +51,7 @@ struct mp_contains;
 /// @see mp_list
 /// @see mp_contains_t
 template <typename TL, typename T>
-constexpr const auto mp_contains_v = mp_contains<TL, T>::value;
+static constexpr const auto mp_contains_v = mp_contains<TL, T>::value;
 
 /// @brief Trait indicating whether a type list contains a specified type.
 /// @ingroup metaprogramming

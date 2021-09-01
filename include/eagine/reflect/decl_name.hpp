@@ -19,6 +19,11 @@ struct decl_name : string_view {
 
     constexpr decl_name() noexcept = default;
 
+#if EAGINE_CXX_REFLECTION
+    consteval decl_name(immediate_function_t t, const char* s) noexcept
+      : string_view{t, s} {}
+#endif
+
     template <
       std::size_t N,
       typename = std::enable_if_t<(N <= span_size_t(max_length))>>
