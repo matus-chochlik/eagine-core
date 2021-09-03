@@ -21,24 +21,12 @@ class format_string_and_list_base {
 
 protected:
     format_string_and_list_base(std::string&& fmt_str) noexcept
-      : _fmt_str(std::move(fmt_str)) {}
+      : _fmt_str{std::move(fmt_str)} {}
 
     format_string_and_list_base(format_string_and_list_base& that) noexcept
-      : _fmt_str(std::move(that._fmt_str)) {}
+      : _fmt_str{std::move(that._fmt_str)} {}
 
-    format_string_and_list_base(format_string_and_list_base&&) noexcept =
-      default;
-    format_string_and_list_base(const format_string_and_list_base&) = default;
-
-    auto operator=(format_string_and_list_base&&) noexcept
-      -> format_string_and_list_base& = default;
-
-    auto operator=(const format_string_and_list_base&)
-      -> format_string_and_list_base& = default;
-
-    ~format_string_and_list_base() noexcept = default;
-
-    auto _fmt(span<const std::string> values) const -> std::string;
+    auto _fmt(span<const std::string> values) const noexcept -> std::string;
 
 private:
     std::string _fmt_str;
@@ -51,9 +39,9 @@ template <>
 class format_string_and_list<0> : public format_string_and_list_base {
 public:
     format_string_and_list(std::string& fmt_str) noexcept
-      : format_string_and_list_base(std::move(fmt_str)) {}
+      : format_string_and_list_base{std::move(fmt_str)} {}
 
-    operator std::string() const {
+    operator std::string() const noexcept {
         return _fmt({});
     }
 };
@@ -64,19 +52,25 @@ public:
 template <span_size_t N>
 class format_string_and_list : public format_string_and_list_base {
 
+    template <std::size_t... I>
+    format_string_and_list(
+      format_string_and_list<N - 1>&& prev,
+      std::string&& val,
+      std::index_sequence<I...>) noexcept
+      : format_string_and_list_base{prev}
+      , _list{{std::move(prev._list[I])..., std::move(val)}} {}
+
 public:
     format_string_and_list(
       format_string_and_list<N - 1>&& prev,
       std::string&& val) noexcept
-      : format_string_and_list_base(prev) {
-        for(const auto i : integer_range(N - 1)) {
-            _list[i] = std::move(prev._list[i]);
-        }
-        _list[N - 1] = std::move(val);
-    }
+      : format_string_and_list{
+          std::move(prev),
+          std::move(val),
+          std::make_index_sequence<N - 1>()} {}
 
     /// @brief Implicit conversion to a string with the variable substituted.
-    operator std::string() const {
+    operator std::string() const noexcept {
         return _fmt(view(_list));
     }
 
@@ -91,11 +85,10 @@ public:
     format_string_and_list(
       format_string_and_list<0>&& prev,
       std::string&& val) noexcept
-      : format_string_and_list_base(prev) {
-        _list[0] = std::move(val);
-    }
+      : format_string_and_list_base{prev}
+      , _list{{val}} {}
 
-    operator std::string() const {
+    operator std::string() const noexcept {
         return _fmt(view(_list));
     }
 

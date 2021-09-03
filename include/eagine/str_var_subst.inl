@@ -17,7 +17,7 @@ auto substitute_variables_into(
   string_view src,
   const callable_ref<optionally_valid<string_view>(const string_view)>&
     translate,
-  const variable_substitution_options opts) -> std::string& {
+  const variable_substitution_options opts) noexcept -> std::string& {
 
     do {
         if(const auto lpos{find_element(src, opts.leading_sign)}) {
@@ -62,7 +62,7 @@ auto substitute_variables(
   const string_view src,
   const callable_ref<optionally_valid<string_view>(const string_view)>&
     translate,
-  const variable_substitution_options opts) -> std::string {
+  const variable_substitution_options opts) noexcept -> std::string {
     std::string result;
     return std::move(substitute_variables_into(result, src, translate, opts));
 }
@@ -71,7 +71,7 @@ EAGINE_LIB_FUNC
 auto substitute_variables(
   const std::string& str,
   const span<const std::string> strings,
-  const variable_substitution_options opts) -> std::string {
+  const variable_substitution_options opts) noexcept -> std::string {
     auto translate_func =
       [&strings](string_view key) -> optionally_valid<string_view> {
         char* e = nullptr; // NOLINT(hicpp-vararg)
@@ -88,7 +88,7 @@ EAGINE_LIB_FUNC
 auto substitute_variables(
   const std::string& str,
   const std::map<std::string, std::string, str_view_less>& dictionary,
-  const variable_substitution_options opts) -> std::string {
+  const variable_substitution_options opts) noexcept -> std::string {
     auto translate_func =
       [&dictionary](string_view key) -> optionally_valid<string_view> {
         if(!dictionary.empty()) {
