@@ -11,6 +11,7 @@
 
 #include "config/basic.hpp"
 #include "integer_range.hpp"
+#include "selector.hpp"
 #include "span.hpp"
 #include <array>
 #include <string>
@@ -23,7 +24,9 @@ protected:
     format_string_and_list_base(std::string&& fmt_str) noexcept
       : _fmt_str{std::move(fmt_str)} {}
 
-    format_string_and_list_base(format_string_and_list_base& that) noexcept
+    format_string_and_list_base(
+      const construct_from_t,
+      format_string_and_list_base& that) noexcept
       : _fmt_str{std::move(that._fmt_str)} {}
 
     auto _fmt(span<const std::string> values) const noexcept -> std::string;
@@ -57,7 +60,7 @@ class format_string_and_list : public format_string_and_list_base {
       format_string_and_list<N - 1>&& prev,
       std::string&& val,
       std::index_sequence<I...>) noexcept
-      : format_string_and_list_base{prev}
+      : format_string_and_list_base{construct_from, prev}
       , _list{{std::move(prev._list[I])..., std::move(val)}} {}
 
 public:
@@ -85,7 +88,7 @@ public:
     format_string_and_list(
       format_string_and_list<0>&& prev,
       std::string&& val) noexcept
-      : format_string_and_list_base{prev}
+      : format_string_and_list_base{construct_from, prev}
       , _list{{val}} {}
 
     operator std::string() const noexcept {
@@ -106,7 +109,7 @@ static inline auto operator%(
     return {std::move(fsal), std::move(val)};
 }
 //------------------------------------------------------------------------------
-/// @brief Function taking a format string, returning an object for variable specification.
+/// @brief Takes a format string, returns an object for variable specification.
 /// @ingroup string_utils
 static inline auto format(std::string&& fmt_str) noexcept
   -> format_string_and_list<0> {
