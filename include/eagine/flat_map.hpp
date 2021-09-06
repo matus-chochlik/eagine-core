@@ -226,8 +226,8 @@ class flat_map
       flat_map_view_crtp<Key, Val, Cmp, flat_map<Key, Val, Cmp, Allocator>>;
     using _base::_ops;
 
-    using _alloc_t =
-      typename Allocator::template rebind<std::pair<Key, Val>>::other;
+    using _alloc_t = typename std::allocator_traits<
+      Allocator>::template rebind_alloc<std::pair<Key, Val>>;
 
     using _vec_t = std::vector<std::pair<Key, Val>, _alloc_t>;
     _vec_t _vec{};
