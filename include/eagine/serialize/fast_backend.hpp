@@ -30,7 +30,7 @@ public:
     using result = serialization_errors;
 
     template <typename T>
-    auto do_write(span<const T> values, span_size_t& done) -> result {
+    auto do_write(span<const T> values, span_size_t& done) noexcept -> result {
         result errors{};
         const span_size_t remaining = remaining_size();
         span_size_t can_do = remaining / span_size(sizeof(T));
@@ -46,8 +46,9 @@ public:
     }
 
     template <typename Str>
-    auto do_write_strings(const span<const Str> values, span_size_t& done)
-      -> result {
+    auto do_write_strings(
+      const span<const Str> values,
+      span_size_t& done) noexcept -> result {
         done = 0;
         serialization_errors errors{};
         for(const auto& str : values) {
@@ -70,12 +71,12 @@ public:
         return do_write_strings(values, done);
     }
 
-    auto begin_struct(const span_size_t size) -> result final {
+    auto begin_struct(const span_size_t size) noexcept -> result final {
         span_size_t written{0};
         return do_write(view_one(size), written);
     }
 
-    auto begin_list(const span_size_t size) -> result final {
+    auto begin_list(const span_size_t size) noexcept -> result final {
         span_size_t written{0};
         return do_write(view_one(size), written);
     }
@@ -97,7 +98,7 @@ public:
     using result = deserialization_errors;
 
     template <typename T>
-    auto do_read(span<T> values, span_size_t& done) -> result {
+    auto do_read(span<T> values, span_size_t& done) noexcept -> result {
         auto dst = as_bytes(values);
         auto src = top(dst.size());
         const auto ts = span_size(sizeof(T));
@@ -117,7 +118,8 @@ public:
         return errors;
     }
 
-    auto do_read(span<decl_name_storage> values, span_size_t& done) -> result {
+    auto do_read(span<decl_name_storage> values, span_size_t& done) noexcept
+      -> result {
         result errors{};
         done = 0;
         for(auto& name : values) {
@@ -138,7 +140,8 @@ public:
         return errors;
     }
 
-    auto do_read(span<std::string> values, span_size_t& done) -> result {
+    auto do_read(span<std::string> values, span_size_t& done) noexcept
+      -> result {
         result errors{};
         done = 0;
         for(auto& str : values) {
@@ -159,12 +162,12 @@ public:
         return errors;
     }
 
-    auto begin_struct(span_size_t& size) -> result final {
+    auto begin_struct(span_size_t& size) noexcept -> result final {
         span_size_t done{0};
         return do_read(cover_one(size), done);
     }
 
-    auto begin_list(span_size_t& size) -> result final {
+    auto begin_list(span_size_t& size) noexcept -> result final {
         span_size_t done{0};
         return do_read(cover_one(size), done);
     }

@@ -28,11 +28,11 @@ struct deserializer_data_source : interface<deserializer_data_source> {
     /// @see pop
     /// @see scan_until
     /// @see scan_for
-    virtual auto top(span_size_t size) -> memory::const_block = 0;
+    virtual auto top(span_size_t size) noexcept -> memory::const_block = 0;
 
     /// @brief Returns the specified amount of data of the top of the source.
     /// @see top
-    virtual void pop(span_size_t size) = 0;
+    virtual void pop(span_size_t size) noexcept = 0;
 
     /// @brief Returns the position of the first byte where predicate is true.
     /// @see scan_for
@@ -43,14 +43,15 @@ struct deserializer_data_source : interface<deserializer_data_source> {
     auto scan_until(
       Function predicate,
       const span_size_t max,
-      const span_size_t step = 256) -> valid_if_nonnegative<span_size_t> {
+      const span_size_t step = 256) noexcept
+      -> valid_if_nonnegative<span_size_t> {
         EAGINE_ASSERT(max > 0);
         EAGINE_ASSERT(step > 0);
         const auto inc{step};
         span_size_t start{0};
         span_size_t total{inc};
-        while(auto blk = top(total)) {
-            if(auto found = find_element_if(skip(blk, start), predicate)) {
+        while(const auto blk = top(total)) {
+            if(const auto found = find_element_if(skip(blk, start), predicate)) {
                 return {start + extract(found)};
             }
             if(blk.size() < total) {
@@ -73,7 +74,8 @@ struct deserializer_data_source : interface<deserializer_data_source> {
     auto scan_for(
       const byte what,
       const span_size_t max,
-      const span_size_t step = 256) -> valid_if_nonnegative<span_size_t> {
+      const span_size_t step = 256) noexcept
+      -> valid_if_nonnegative<span_size_t> {
         EAGINE_ASSERT(max > 0);
         EAGINE_ASSERT(step > 0);
         return scan_until(
@@ -81,7 +83,7 @@ struct deserializer_data_source : interface<deserializer_data_source> {
     }
 
     /// @brief Fetches all the remaining data into a buffer.
-    void fetch_all(memory::buffer& dst, const span_size_t step = 256) {
+    void fetch_all(memory::buffer& dst, const span_size_t step = 256) noexcept {
         EAGINE_ASSERT(step > 0);
         span_size_t offs{dst.size()};
         while(const auto blk{top(step)}) {

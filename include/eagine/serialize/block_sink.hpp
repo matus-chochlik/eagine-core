@@ -64,13 +64,13 @@ public:
     /// @brief Returns the size of the free part of the backing block.
     /// @see free
     /// @see done
-    auto remaining_size() -> span_size_t final {
+    auto remaining_size() noexcept -> span_size_t final {
         return free().size();
     }
 
     using serializer_data_sink::write;
 
-    auto write(memory::const_block blk) -> serialization_errors final {
+    auto write(memory::const_block blk) noexcept -> serialization_errors final {
         auto dst = free();
         if(dst.size() < blk.size()) {
             copy(head(blk, dst.size()), dst);
@@ -84,7 +84,8 @@ public:
 
     /// @brief Replaces the content of the backing block with the content of the argument.
     /// @see reset
-    auto replace_with(const memory::const_block blk) -> serialization_errors {
+    auto replace_with(const memory::const_block blk) noexcept
+      -> serialization_errors {
         if(_dst.size() < blk.size()) {
             return {serialization_error_code::too_much_data};
         }
@@ -93,25 +94,27 @@ public:
         return {};
     }
 
-    auto begin_work() -> transaction_handle final {
+    auto begin_work() noexcept -> transaction_handle final {
         _save_points.push_back(_done);
         return transaction_handle(_save_points.size());
     }
 
-    void commit(const transaction_handle th) final {
+    auto commit(const transaction_handle th) noexcept
+      -> serialization_errors final {
         EAGINE_ASSERT(th == transaction_handle(_save_points.size()));
         EAGINE_MAYBE_UNUSED(th);
         _save_points.pop_back();
+        return {};
     }
 
-    void rollback(const transaction_handle th) final {
+    void rollback(const transaction_handle th) noexcept final {
         EAGINE_ASSERT(th == transaction_handle(_save_points.size()));
         EAGINE_MAYBE_UNUSED(th);
         _done = _save_points.back();
         _save_points.pop_back();
     }
 
-    auto finalize() -> serialization_errors override {
+    auto finalize() noexcept -> serialization_errors override {
         return {};
     }
 

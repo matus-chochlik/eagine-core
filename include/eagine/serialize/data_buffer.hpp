@@ -238,7 +238,7 @@ template <
   identifier_t SerializerId,
   typename T,
   typename Selector = default_selector_t>
-constexpr auto serialize_buffer_for(const T& inst, Selector sel = {}) {
+constexpr auto serialize_buffer_for(const T& inst, Selector sel = {}) noexcept {
     if constexpr(get_serialize_buffer_size<SerializerId, T, Selector>::
                    is_constant) {
         return get_serialize_array_for<SerializerId>(inst, sel);

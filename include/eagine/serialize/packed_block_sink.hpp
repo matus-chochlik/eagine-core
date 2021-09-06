@@ -36,7 +36,7 @@ public:
     packed_block_data_sink(data_compressor compressor) noexcept
       : packed_block_data_sink{std::move(compressor), {}} {}
 
-    auto finalize() -> serialization_errors final {
+    auto finalize() noexcept -> serialization_errors final {
         if(const auto packed{
              _compressor.compress(done(), data_compression_level::normal)}) {
             return this->replace_with(packed);

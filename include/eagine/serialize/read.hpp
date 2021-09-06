@@ -75,13 +75,14 @@ template <typename T>
 struct plain_deserializer {
 
     template <typename Backend>
-    static auto read(T& value, Backend& backend) -> deserialization_errors {
+    static auto read(T& value, Backend& backend) noexcept
+      -> deserialization_errors {
         span_size_t done{0};
         return backend.read(cover_one(value), done);
     }
 
     template <typename Backend>
-    static auto read(span<T> values, Backend& backend)
+    static auto read(span<T> values, Backend& backend) noexcept
       -> deserialization_errors {
         span_size_t done{0};
         return backend.read(values, done);
@@ -129,7 +130,7 @@ template <typename T>
 struct common_deserializer {
 
     template <typename Backend>
-    auto read(span<T> values, Backend& backend) const {
+    auto read(span<T> values, Backend& backend) const noexcept {
         using ec = deserialization_error_code;
         deserialization_errors result{};
         for(auto& elem : values) {
@@ -147,7 +148,7 @@ template <typename Bit>
 struct deserializer<bitfield<Bit>> : common_deserializer<bitfield<Bit>> {
 
     template <typename Backend>
-    auto read(bitfield<Bit>& value, Backend& backend) const {
+    auto read(bitfield<Bit>& value, Backend& backend) const noexcept {
         typename bitfield<Bit>::value_type temp{0};
         auto errors{_deserializer.read(temp, backend)};
         if(EAGINE_LIKELY(!errors)) {
@@ -165,7 +166,8 @@ struct deserializer<std::chrono::duration<Rep>>
   : common_deserializer<std::chrono::duration<Rep>> {
 
     template <typename Backend>
-    auto read(std::chrono::duration<Rep>& value, Backend& backend) const {
+    auto read(std::chrono::duration<Rep>& value, Backend& backend)
+      const noexcept {
         Rep temp{0};
         auto errors{_deserializer.read(temp, backend)};
         if(EAGINE_LIKELY(!errors)) {
@@ -184,7 +186,7 @@ struct deserializer<std::tuple<T...>> : common_deserializer<std::tuple<T...>> {
     using common_deserializer<std::tuple<T...>>::read;
 
     template <typename Backend>
-    auto read(std::tuple<T...>& values, Backend& backend) const {
+    auto read(std::tuple<T...>& values, Backend& backend) const noexcept {
         deserialization_errors errors{};
         span_size_t elem_count{0};
         errors |= backend.begin_list(elem_count);
@@ -208,7 +210,7 @@ private:
       deserialization_errors& errors,
       Tuple& values,
       Backend& backend,
-      const std::index_sequence<I...>) const {
+      const std::index_sequence<I...>) const noexcept {
         (...,
          _read_element(
            errors,
@@ -224,7 +226,7 @@ private:
       const std::size_t index,
       Elem& elem,
       Backend& backend,
-      Serializer& serial) {
+      Serializer& serial) noexcept {
         if(EAGINE_LIKELY(!errors)) {
             errors |= backend.begin_element(span_size(index));
             if(EAGINE_LIKELY(!errors)) {
@@ -247,7 +249,7 @@ struct deserializer<std::tuple<std::pair<const string_view, T>...>>
     template <typename Backend>
     auto read(
       std::tuple<std::pair<const string_view, T>...>& values,
-      Backend& backend) {
+      Backend& backend) noexcept {
         deserialization_errors errors{};
         span_size_t memb_count{0};
         errors |= backend.begin_struct(memb_count);
@@ -271,7 +273,7 @@ private:
       deserialization_errors& errors,
       Tuple& values,
       Backend& backend,
-      const std::index_sequence<I...>) {
+      const std::index_sequence<I...>) noexcept {
         (...,
          _read_member(
            errors,
@@ -287,7 +289,7 @@ private:
       const string_view name,
       Memb& value,
       Backend& backend,
-      Serializer& serial) {
+      Serializer& serial) noexcept {
         if(EAGINE_LIKELY(!errors)) {
             errors |= backend.begin_member(name);
             if(EAGINE_LIKELY(!errors)) {
@@ -308,7 +310,7 @@ struct deserializer<fragment_deserialize_wrapper<span<T>>>
 
     template <typename Backend>
     auto read(fragment_deserialize_wrapper<span<T>>& frag, Backend& backend)
-      const {
+      const noexcept {
         deserialization_errors errors{};
         span_size_t offs{0};
         errors |= _size_deserializer.read(offs, backend);
@@ -333,7 +335,7 @@ struct deserializer<std::array<T, N>> : common_deserializer<std::array<T, N>> {
     using common_deserializer<std::array<T, N>>::read;
 
     template <typename Backend>
-    auto read(std::array<T, N>& values, Backend& backend) const {
+    auto read(std::array<T, N>& values, Backend& backend) const noexcept {
         deserialization_errors errors{};
         span_size_t elem_count{0};
         errors |= backend.begin_list(elem_count);
@@ -359,7 +361,7 @@ struct deserializer<std::vector<T, A>>
   : common_deserializer<std::vector<T, A>> {
 
     template <typename Backend>
-    auto read(std::vector<T, A>& values, Backend& backend) const {
+    auto read(std::vector<T, A>& values, Backend& backend) const noexcept {
         deserialization_errors errors{};
         span_size_t elem_count{0};
         errors |= backend.begin_list(elem_count);
@@ -379,7 +381,7 @@ template <typename T, typename P>
 struct deserializer<valid_if<T, P>> : common_deserializer<valid_if<T, P>> {
 
     template <typename Backend>
-    auto read(valid_if<T, P>& value, Backend& backend) const {
+    auto read(valid_if<T, P>& value, Backend& backend) const noexcept {
         deserialization_errors errors{};
         span_size_t elem_count{0};
         errors |= backend.begin_list(elem_count);
@@ -416,7 +418,7 @@ struct deserializer<tagged_quantity<T, U>>
   : common_deserializer<tagged_quantity<T, U>> {
 
     template <typename Backend>
-    auto read(tagged_quantity<T, U>& value, Backend& backend) const {
+    auto read(tagged_quantity<T, U>& value, Backend& backend) const noexcept {
         deserialization_errors errors{};
         T temp{};
         errors |= _deserializer.read(temp, backend);
@@ -434,7 +436,7 @@ template <typename T>
 struct enum_deserializer {
 
     template <typename Backend>
-    auto read(T& enumerator, Backend& backend) const {
+    auto read(T& enumerator, Backend& backend) const noexcept {
         deserialization_errors errors{};
         if(backend.enum_as_string()) {
             decl_name_storage temp_name{};
@@ -470,7 +472,7 @@ template <typename T>
 struct struct_deserializer {
 public:
     template <typename Backend>
-    auto read(T& instance, Backend& backend) {
+    auto read(T& instance, Backend& backend) noexcept {
         auto member_map = map_data_members(instance);
         return _deserializer.read(member_map, backend);
     }
@@ -494,7 +496,7 @@ struct deserializer
 /// @see serialize
 /// @see deserializer_backend
 template <typename T, typename Backend>
-auto deserialize(T& value, Backend& backend) -> std::enable_if_t<
+auto deserialize(T& value, Backend& backend) noexcept -> std::enable_if_t<
   std::is_base_of_v<deserializer_backend, Backend>,
   deserialization_errors> {
     deserialization_errors errors{};
