@@ -46,14 +46,19 @@ public:
 
     /// @brief Returns the specified buffer back to the pool for further reuse.
     /// @see get
-    void eat(memory::buffer used) {
+    void eat(memory::buffer used) noexcept {
         auto pos = std::lower_bound(
           _pool.begin(),
           _pool.end(),
           used.capacity(),
-          [](auto& buf, auto capacity) { return buf.capacity() < capacity; });
+          [](auto& buf, const auto capacity) {
+              return buf.capacity() < capacity;
+          });
         if(_pool.size() < _max) {
-            _pool.emplace(pos, std::move(used));
+            try {
+                _pool.emplace(pos, std::move(used));
+            } catch(...) {
+            }
         } else if(pos != _pool.end()) {
             *pos = std::move(used);
         } else {

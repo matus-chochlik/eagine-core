@@ -27,29 +27,24 @@ public:
     /// @brief Pointer type.
     using pointer = typename block::pointer;
 
-    /// @brief Constructor with explicit alignment specification.
-    explicit buffer(const span_size_t align)
-      : _align(align)
-      , _alloc(default_byte_allocator()) {}
-
     /// @brief Default constructor.
-    buffer()
-      : buffer(alignof(long double)) {}
+    constexpr buffer() noexcept = default;
+
+    /// @brief Constructor with explicit alignment specification.
+    explicit buffer(const span_size_t align) noexcept
+      : _align{align} {}
 
     /// @brief Move constructor.
     buffer(buffer&& temp) noexcept
-      : _size{temp._size}
-      , _align{temp._align}
+      : _align{temp._align}
+      , _size{std::exchange(temp._size, 0)}
       , _storage{std::move(temp._storage)}
-      , _alloc{std::move(temp._alloc)} {
-        temp._size = 0;
-    }
+      , _alloc{std::move(temp._alloc)} {}
 
     /// @brief Move assignment operator.
     auto operator=(buffer&& temp) noexcept -> buffer& {
-        _size = temp._size;
-        temp._size = 0;
         _align = temp._align;
+        _size = std::exchange(temp._size, 0);
         _storage = std::move(temp._storage);
         _alloc = std::move(temp._alloc);
         return *this;
@@ -78,28 +73,28 @@ public:
     /// @brief Returns the size of the buffer in bytes.
     /// @see empty
     /// @see capacity
-    auto size() const noexcept -> span_size_t {
+    constexpr auto size() const noexcept -> span_size_t {
         return _size;
     }
 
     /// @brief Indicates that the buffer is empty.
     /// @see size
     /// @see capacity
-    auto empty() const noexcept {
+    constexpr auto empty() const noexcept {
         return size() == 0;
     }
 
     /// @brief Returns the capacity of this buffer.
     /// @see reserve
     /// @see resize
-    auto capacity() const noexcept -> span_size_t {
+    constexpr auto capacity() const noexcept -> span_size_t {
         return _storage.size();
     }
 
     /// @brief Pre-allocate the specified number of bytes.
     /// @see capacity
     /// @see resize
-    auto reserve(const span_size_t new_size) -> auto& {
+    auto reserve(const span_size_t new_size) noexcept -> auto& {
         if(capacity() < new_size) {
             _reallocate(new_size);
         }
@@ -111,7 +106,7 @@ public:
     /// @see size
     /// @see ensure
     /// @see reserve
-    auto resize(const span_size_t new_size) -> auto& {
+    auto resize(const span_size_t new_size) noexcept -> auto& {
         reserve(new_size);
         _size = new_size;
         EAGINE_ASSERT(_is_ok());
@@ -123,7 +118,7 @@ public:
     /// @see resize
     /// @see reserve
     /// @see enlarge_by
-    auto ensure(const span_size_t new_size) -> auto& {
+    auto ensure(const span_size_t new_size) noexcept -> auto& {
         if(size() < new_size) {
             return resize(new_size);
         }
@@ -136,7 +131,7 @@ public:
     /// @see resize
     /// @see reserve
     /// @see ensure
-    auto enlarge_by(const span_size_t inc_size) -> auto& {
+    auto enlarge_by(const span_size_t inc_size) noexcept -> auto& {
         return resize(size() + inc_size);
     }
 
@@ -146,7 +141,7 @@ public:
     /// @see reserve
     /// @see free
     /// @post empty()
-    auto clear() -> auto& {
+    auto clear() noexcept -> auto& {
         return resize(0);
     }
 
@@ -156,7 +151,7 @@ public:
     /// @see reserve
     /// @see clear
     /// @post empty() && capacity() == 0
-    void free() {
+    void free() noexcept {
         _alloc.deallocate(std::move(_storage), _align);
         _size = 0;
     }
@@ -174,16 +169,16 @@ public:
     }
 
 private:
+    span_size_t _align{alignof(long double)};
     span_size_t _size{0};
-    span_size_t _align{0};
     owned_block _storage{};
-    shared_byte_allocator _alloc{};
+    shared_byte_allocator _alloc{default_byte_allocator()};
 
     auto _is_ok() const noexcept -> bool {
         return bool(_alloc) && size() <= capacity();
     }
 
-    void _reallocate(const span_size_t new_size) {
+    void _reallocate(const span_size_t new_size) noexcept {
         _alloc.do_reallocate(_storage, new_size, _align);
     }
 };
