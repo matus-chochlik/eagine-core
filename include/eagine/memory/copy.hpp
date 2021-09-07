@@ -33,7 +33,7 @@ static inline auto copy(const const_block source, block dest) noexcept
 /// @see buffer
 static inline auto copy_into(const const_block source, buffer& dest) noexcept
   -> block {
-    return copy(source, cover(dest.ensure(source.size())));
+    return copy(source, cover(dest.resize(source.size())));
 }
 
 } // namespace eagine::memory
