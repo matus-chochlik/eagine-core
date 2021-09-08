@@ -31,16 +31,16 @@ public:
 
     /// @brief Resets the backing block.
     /// @see replace_with
-    void reset(const memory::const_block src) {
+    void reset(const memory::const_block src) noexcept {
         _src = src;
         _done = 0;
     }
 
-    auto top(span_size_t req_size) -> memory::const_block final {
+    auto top(span_size_t req_size) noexcept -> memory::const_block final {
         return head(skip(_src, _done), req_size);
     }
 
-    void pop(span_size_t del_size) final {
+    void pop(span_size_t del_size) noexcept final {
         _done += del_size;
     }
 

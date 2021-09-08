@@ -26,7 +26,7 @@ public:
     istream_data_source(std::istream& in) noexcept
       : _in{in} {}
 
-    auto top(span_size_t req_size) -> memory::const_block final {
+    auto top(span_size_t req_size) noexcept -> memory::const_block final {
         if(_cur_size < req_size) {
             while(_storage.size() < _cur_size + req_size) {
                 _storage.resize(_storage.size() + _chunk_size());
@@ -39,7 +39,7 @@ public:
         return head(head(view(_storage), _cur_size), req_size);
     }
 
-    void pop(span_size_t del_size) final {
+    void pop(span_size_t del_size) noexcept final {
         if(_cur_size <= del_size) {
             _cur_size = 0;
             if(_storage.size() > _chunk_size()) {

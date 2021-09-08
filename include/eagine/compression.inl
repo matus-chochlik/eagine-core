@@ -39,7 +39,7 @@ private:
     }
 
 public:
-    using data_handler = callable_ref<bool(memory::const_block)>;
+    using data_handler = callable_ref<bool(memory::const_block) noexcept>;
 
     data_compressor_impl() noexcept {
         zero(as_bytes(cover_one(_zsd)));
@@ -55,13 +55,13 @@ public:
     auto compress(
       const memory::const_block input,
       const data_handler& handler,
-      const data_compression_level level) -> bool {
+      const data_compression_level level) noexcept -> bool {
         _zsd.next_in = const_cast<byte*>(input.data());
         _zsd.avail_in = limit_cast<unsigned>(input.size());
         _zsd.next_out = _temp.data();
         _zsd.avail_out = limit_cast<unsigned>(_temp.size());
 
-        auto append = [&](span_size_t size) -> bool {
+        const auto append = [&](span_size_t size) -> bool {
             if(handler(head(view(_temp), size))) {
                 _zsd.next_out = _temp.data();
                 _zsd.avail_out = limit_cast<unsigned>(_temp.size());
@@ -112,7 +112,7 @@ public:
     auto compress(
       const memory::const_block input,
       memory::buffer& output,
-      const data_compression_level level) -> memory::const_block {
+      const data_compression_level level) noexcept -> memory::const_block {
         auto append = [&](memory::const_block blk) {
             const auto sk = output.size();
             output.enlarge_by(blk.size());
@@ -129,13 +129,15 @@ public:
         return {};
     }
 
-    auto compress(const memory::const_block input, data_compression_level level)
-      -> memory::const_block {
+    auto compress(
+      const memory::const_block input,
+      data_compression_level level) noexcept -> memory::const_block {
         return compress(input, _buff, level);
     }
 
-    auto decompress(memory::const_block input, const data_handler& handler)
-      -> bool {
+    auto decompress(
+      memory::const_block input,
+      const data_handler& handler) noexcept -> bool {
         if(!input) {
             return false;
         }
@@ -198,8 +200,9 @@ public:
         return true;
     }
 
-    auto decompress(const memory::const_block input, memory::buffer& output)
-      -> memory::const_block {
+    auto decompress(
+      const memory::const_block input,
+      memory::buffer& output) noexcept -> memory::const_block {
         auto append = [&](memory::const_block blk) {
             const auto sk = output.size();
             output.enlarge_by(blk.size());
@@ -216,7 +219,8 @@ public:
         return {};
     }
 
-    auto decompress(const memory::const_block input) -> memory::const_block {
+    auto decompress(const memory::const_block input) noexcept
+      -> memory::const_block {
         if(input.front() == 0x00U) {
             return skip(input, 1);
         }
@@ -231,14 +235,14 @@ public:
     auto compress(
       const memory::const_block,
       const data_handler&,
-      const data_compression_level) -> bool {
+      const data_compression_level) noexcept -> bool {
         return false;
     }
 
     auto compress(
       const memory::const_block input,
       memory::buffer& output,
-      const data_compression_level level) -> memory::const_block {
+      const data_compression_level level) noexcept -> memory::const_block {
         EAGINE_MAYBE_UNUSED(level);
         output.resize(input.size() + 1);
         copy(input, skip(cover(output), 1));
@@ -248,16 +252,17 @@ public:
 
     auto compress(
       const memory::const_block block,
-      const data_compression_level level) -> memory::const_block {
+      const data_compression_level level) noexcept -> memory::const_block {
         return compress(block, _buff, level);
     }
 
-    auto decompress(const memory::const_block, const data_handler&) -> bool {
+    auto decompress(const memory::const_block, const data_handler&) noexcept
+      -> bool {
         return false;
     }
 
     auto decompress(const memory::const_block input, memory::buffer& output)
-      const -> memory::const_block {
+      const noexcept -> memory::const_block {
         if(input.front() == 0x00U) {
             output.resize(input.size() - 1);
             copy(skip(input, 1), cover(output));
@@ -266,7 +271,7 @@ public:
         return {};
     }
 
-    auto decompress(const memory::const_block input) const
+    auto decompress(const memory::const_block input) const noexcept
       -> memory::const_block {
         if(input.front() == 0x00U) {
             return skip(input, 1);
@@ -279,19 +284,19 @@ private:
 };
 #endif
 //------------------------------------------------------------------------------
-static inline auto make_data_compressor_impl() {
+static inline auto make_data_compressor_impl() noexcept {
     return std::make_shared<data_compressor_impl>();
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-data_compressor::data_compressor()
+data_compressor::data_compressor() noexcept
   : _pimpl{make_data_compressor_impl()} {}
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto data_compressor::compress(
   const memory::const_block input,
   const data_handler& handler,
-  const data_compression_level level) -> bool {
+  const data_compression_level level) noexcept -> bool {
     EAGINE_ASSERT(_pimpl);
     return _pimpl->compress(input, handler, level);
 }
@@ -300,7 +305,7 @@ EAGINE_LIB_FUNC
 auto data_compressor::compress(
   const memory::const_block input,
   memory::buffer& output,
-  const data_compression_level level) -> memory::const_block {
+  const data_compression_level level) noexcept -> memory::const_block {
     EAGINE_ASSERT(_pimpl);
     if(auto result{_pimpl->compress(input, output, level)}) {
         return result;
@@ -314,7 +319,7 @@ auto data_compressor::compress(
 EAGINE_LIB_FUNC
 auto data_compressor::compress(
   const memory::const_block input,
-  const data_compression_level level) -> memory::const_block {
+  const data_compression_level level) noexcept -> memory::const_block {
     EAGINE_ASSERT(_pimpl);
     if(auto result{_pimpl->compress(input, level)}) {
         return result;
@@ -325,7 +330,7 @@ auto data_compressor::compress(
 EAGINE_LIB_FUNC
 auto data_compressor::decompress(
   const memory::const_block input,
-  const data_handler& handler) -> bool {
+  const data_handler& handler) noexcept -> bool {
     EAGINE_ASSERT(_pimpl);
     return _pimpl->decompress(input, handler);
 }
@@ -333,7 +338,7 @@ auto data_compressor::decompress(
 EAGINE_LIB_FUNC
 auto data_compressor::decompress(
   const memory::const_block input,
-  memory::buffer& output) -> memory::const_block {
+  memory::buffer& output) noexcept -> memory::const_block {
     if(input) {
         EAGINE_ASSERT(_pimpl);
         if(auto result{_pimpl->decompress(input, output)}) {
@@ -344,7 +349,7 @@ auto data_compressor::decompress(
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto data_compressor::decompress(const memory::const_block input)
+auto data_compressor::decompress(const memory::const_block input) noexcept
   -> memory::const_block {
     if(input) {
         EAGINE_ASSERT(_pimpl);

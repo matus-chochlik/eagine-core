@@ -26,13 +26,13 @@ public:
     ostream_data_sink(std::ostream& out) noexcept
       : _out{out} {}
 
-    auto remaining_size() -> span_size_t final {
+    auto remaining_size() noexcept -> span_size_t final {
         return std::numeric_limits<span_size_t>::max();
     }
 
     using serializer_data_sink::write;
 
-    auto write(memory::const_block blk) -> serialization_errors final {
+    auto write(memory::const_block blk) noexcept -> serialization_errors final {
         write_to_stream(current(), blk);
         if(current().eof()) {
             return {serialization_error_code::too_much_data};
@@ -43,26 +43,28 @@ public:
         return {};
     }
 
-    auto begin_work() -> transaction_handle final {
+    auto begin_work() noexcept -> transaction_handle final {
         _subs.emplace();
         return transaction_handle(_subs.size());
     }
 
-    void commit(const transaction_handle th) final {
+    auto commit(const transaction_handle th) noexcept
+      -> serialization_errors final {
         EAGINE_ASSERT(th == transaction_handle(_subs.size()));
         EAGINE_MAYBE_UNUSED(th);
         std::stringstream top{std::move(_subs.top())};
         _subs.pop();
         current() << top.rdbuf();
+        return {};
     }
 
-    void rollback(const transaction_handle th) final {
+    void rollback(const transaction_handle th) noexcept final {
         EAGINE_ASSERT(th == transaction_handle(_subs.size()));
         EAGINE_MAYBE_UNUSED(th);
         _subs.pop();
     }
 
-    auto finalize() -> serialization_errors final {
+    auto finalize() noexcept -> serialization_errors final {
         return {};
     }
 

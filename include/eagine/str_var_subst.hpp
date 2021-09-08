@@ -45,7 +45,7 @@ auto substitute_variables_into(
   const string_view src,
   const callable_ref<optionally_valid<string_view>(const string_view)>&
     translate,
-  const variable_substitution_options = {}) -> std::string&;
+  const variable_substitution_options = {}) noexcept -> std::string&;
 //------------------------------------------------------------------------------
 /// @brief Substitutes variable values by using translate, from src.
 /// @ingroup string_utils
@@ -58,7 +58,7 @@ auto substitute_variables(
   const string_view src,
   const callable_ref<optionally_valid<string_view>(const string_view)>&
     translate,
-  const variable_substitution_options = {}) -> std::string;
+  const variable_substitution_options = {}) noexcept -> std::string;
 //------------------------------------------------------------------------------
 /// @brief Substitutes variable values by using translate, from src into dst.
 /// @ingroup string_utils
@@ -70,7 +70,7 @@ auto substitute_variables(
 auto substitute_variables(
   const std::string& str,
   const span<const std::string> strings,
-  const variable_substitution_options = {}) -> std::string;
+  const variable_substitution_options = {}) noexcept -> std::string;
 //------------------------------------------------------------------------------
 /// @brief Substitutes variable values by using translate, from src.
 /// @ingroup string_utils
@@ -82,7 +82,7 @@ auto substitute_variables(
 auto substitute_variables(
   const std::string& str,
   const std::map<std::string, std::string, str_view_less>& dictionary,
-  const variable_substitution_options = {}) -> std::string;
+  const variable_substitution_options = {}) noexcept -> std::string;
 //------------------------------------------------------------------------------
 /// @brief Class storing a map of variable names to values, doing string substitution.
 /// @ingroup string_utils
@@ -90,18 +90,19 @@ class string_variable_map {
 
 public:
     /// @brief Set the @p value of a variable with @p name.
-    auto set(std::string name, std::string value) -> string_variable_map& {
+    auto set(std::string name, std::string value) noexcept
+      -> string_variable_map& {
         _dict.emplace(std::move(name), std::move(value));
         return *this;
     }
 
     /// @brief Uses the stored variables to do substitution in the given string.
-    auto subst_variables(const std::string& str) const -> std::string {
+    auto subst_variables(const std::string& str) const noexcept -> std::string {
         return substitute_variables(str, _dict);
     }
 
     /// @brief Uses the stored variables to do substitution in the given string.
-    auto operator()(const std::string& str) const -> std::string {
+    auto operator()(const std::string& str) const noexcept -> std::string {
         return substitute_variables(str, _dict);
     }
 

@@ -21,9 +21,8 @@ inline auto c_byte_reallocator::allocate(size_type n, size_type a) noexcept
     }
 
     // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
-    address p = as_address(std::malloc(std_size(n)));
+    auto p{as_address(std::malloc(std_size(n)))};
 
-    // TODO fix if misaligned ?
     EAGINE_ASSERT(is_aligned_to(p, a));
 
     return this->acquire_block(block(p, n));
@@ -49,11 +48,10 @@ inline auto c_byte_reallocator::reallocate(
     }
 
     // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
-    address p = as_address(std::realloc(b.data(), std_size(n)));
+    auto p{as_address(std::realloc(b.data(), std_size(n)))};
 
     this->release_block(std::move(b));
 
-    // TODO fix if misaligned ?
     EAGINE_ASSERT(is_aligned_to(p, a));
 
     return this->acquire_block({p, n});

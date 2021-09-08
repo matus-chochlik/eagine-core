@@ -20,7 +20,8 @@ namespace eagine::memory {
 /// @ingroup memory
 /// @see const_block
 /// @see block
-static inline auto copy(const const_block source, block dest) -> block {
+static inline auto copy(const const_block source, block dest) noexcept
+  -> block {
     EAGINE_ASSERT(dest.size() >= source.size());
     std::memcpy(dest.data(), source.data(), std_size(source.size()));
     return block(dest.data(), source.size());
@@ -30,8 +31,9 @@ static inline auto copy(const const_block source, block dest) -> block {
 /// @ingroup memory
 /// @see const_block
 /// @see buffer
-static inline auto copy_into(const const_block source, buffer& dest) -> block {
-    return copy(source, cover(dest.ensure(source.size())));
+static inline auto copy_into(const const_block source, buffer& dest) noexcept
+  -> block {
+    return copy(source, cover(dest.resize(source.size())));
 }
 
 } // namespace eagine::memory

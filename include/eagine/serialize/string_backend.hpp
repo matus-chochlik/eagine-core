@@ -39,7 +39,8 @@ public:
     using result = serialization_errors;
 
     template <typename T>
-    auto do_write(const span<const T> values, span_size_t& done) -> result {
+    auto do_write(const span<const T> values, span_size_t& done) noexcept
+      -> result {
         done = 0;
         result errors{};
         for(const auto& val : values) {
@@ -54,67 +55,69 @@ public:
         return errors;
     }
 
-    auto enum_as_string() -> bool final {
+    auto enum_as_string() noexcept -> bool final {
         return true;
     }
 
-    auto begin() -> result final {
+    auto begin() noexcept -> result final {
         return do_sink('<');
     }
 
-    auto begin_struct(const span_size_t count) -> result final {
+    auto begin_struct(const span_size_t count) noexcept -> result final {
         result errors = do_sink('{');
         errors |= _write_one(count, type_identity<span_size_t>{});
         errors |= do_sink('|');
         return errors;
     }
 
-    auto begin_member(const string_view name) -> result final {
+    auto begin_member(const string_view name) noexcept -> result final {
         result errors = do_sink(name);
         errors |= do_sink(':');
         return errors;
     }
 
-    auto finish_member(const string_view) -> result final {
+    auto finish_member(const string_view) noexcept -> result final {
         return {};
     }
 
-    auto finish_struct() -> result final {
+    auto finish_struct() noexcept -> result final {
         return do_sink("};");
     }
 
-    auto begin_list(const span_size_t count) -> result final {
+    auto begin_list(const span_size_t count) noexcept -> result final {
         result errors = do_sink('[');
         errors |= _write_one(count, type_identity<span_size_t>{});
         errors |= do_sink('|');
         return errors;
     }
 
-    auto begin_element(const span_size_t) -> result final {
+    auto begin_element(const span_size_t) noexcept -> result final {
         return {};
     }
 
-    auto finish_element(const span_size_t) -> result final {
+    auto finish_element(const span_size_t) noexcept -> result final {
         return {};
     }
 
-    auto finish_list() -> result final {
+    auto finish_list() noexcept -> result final {
         return do_sink("];");
     }
 
-    auto finish() -> result final {
+    auto finish() noexcept -> result final {
         return do_sink(">\0");
     }
 
 private:
-    auto _write_one(const bool value, const type_identity<bool>) -> result {
+    auto _write_one(const bool value, const type_identity<bool>) noexcept
+      -> result {
         if(value) {
             return do_sink("true");
         }
         return do_sink("false");
     }
 
-    auto _write_one(const char value, const type_identity<char>) -> result {
+    auto _write_one(const char value, const type_identity<char>) noexcept
+      -> result {
         result errors = do_sink('\'');
         errors |= do_sink(value);
         errors |= do_sink('\'');
@@ -122,7 +125,7 @@ private:
     }
 
     template <typename T, std::size_t L>
-    auto _sprintf_one(const T value, const char (&fmt)[L]) -> result {
+    auto _sprintf_one(const T value, const char (&fmt)[L]) noexcept -> result {
         std::array<char, 64> temp{};
         // TODO: to_chars from_chars when available
         // NOLINTNEXTLINE(hicpp-vararg)
@@ -131,75 +134,86 @@ private:
         return do_sink(string_view(temp.data()));
     }
 
-    auto _write_one(const byte value, const type_identity<byte>) -> result {
+    auto _write_one(const byte value, const type_identity<byte>) noexcept
+      -> result {
         return _sprintf_one(value, "%02hhx");
     }
 
-    auto _write_one(const signed char value, const type_identity<signed char>)
-      -> result {
+    auto _write_one(
+      const signed char value,
+      const type_identity<signed char>) noexcept -> result {
         return _sprintf_one(value, "%hhd");
     }
 
-    auto _write_one(const short value, const type_identity<short>) -> result {
+    auto _write_one(const short value, const type_identity<short>) noexcept
+      -> result {
         return _sprintf_one(value, "%hd");
     }
 
     auto _write_one(
       const unsigned short value,
-      const type_identity<unsigned short>) -> result {
+      const type_identity<unsigned short>) noexcept -> result {
         return _sprintf_one(value, "%hu");
     }
 
-    auto _write_one(const int value, const type_identity<int>) -> result {
+    auto _write_one(const int value, const type_identity<int>) noexcept
+      -> result {
         return _sprintf_one(value, "%d");
     }
 
-    auto _write_one(const unsigned value, const type_identity<unsigned>)
+    auto _write_one(const unsigned value, const type_identity<unsigned>) noexcept
       -> result {
         return _sprintf_one(value, "%u");
     }
 
-    auto _write_one(const long value, const type_identity<long>) -> result {
+    auto _write_one(const long value, const type_identity<long>) noexcept
+      -> result {
         return _sprintf_one(value, "%ld");
     }
 
     auto _write_one(
       const unsigned long value,
-      const type_identity<unsigned long>) -> result {
+      const type_identity<unsigned long>) noexcept -> result {
         return _sprintf_one(value, "%lu");
     }
 
-    auto _write_one(const long long value, const type_identity<long long>)
-      -> result {
+    auto _write_one(
+      const long long value,
+      const type_identity<long long>) noexcept -> result {
         return _sprintf_one(value, "%lld");
     }
 
     auto _write_one(
       const unsigned long long value,
-      const type_identity<unsigned long long>) -> result {
+      const type_identity<unsigned long long>) noexcept -> result {
         return _sprintf_one(value, "%llu");
     }
 
-    auto _write_one(const float value, const type_identity<float>) -> result {
+    auto _write_one(const float value, const type_identity<float>) noexcept
+      -> result {
         return _sprintf_one(value, "%f");
     }
 
-    auto _write_one(const double value, const type_identity<double>) -> result {
+    auto _write_one(const double value, const type_identity<double>) noexcept
+      -> result {
         return _sprintf_one(value, "%lf");
     }
 
-    auto _write_one(const identifier id, const type_identity<identifier>)
-      -> result {
+    auto _write_one(
+      const identifier id,
+      const type_identity<identifier>) noexcept -> result {
         return do_sink(id.name().view());
     }
 
-    auto _write_one(const decl_name name, const type_identity<decl_name>)
-      -> result {
+    auto _write_one(
+      const decl_name name,
+      const type_identity<decl_name>) noexcept -> result {
         return do_sink(name);
     }
 
-    auto _write_one(const string_view str, const type_identity<string_view>)
-      -> result {
+    auto _write_one(
+      const string_view str,
+      const type_identity<string_view>) noexcept -> result {
         result errors = do_sink('"');
         errors |= _write_one(str.size(), type_identity<span_size_t>{});
         errors |= do_sink('|');
@@ -228,7 +242,7 @@ public:
     using result = deserialization_errors;
 
     template <typename T>
-    auto do_read(span<T> values, span_size_t& done) -> result {
+    auto do_read(span<T> values, span_size_t& done) noexcept -> result {
         done = 0;
         result errors{};
         for(T& val : values) { // NOLINT(hicpp-vararg)
@@ -242,20 +256,20 @@ public:
         return errors;
     }
 
-    auto enum_as_string() -> bool final {
+    auto enum_as_string() noexcept -> bool final {
         return true;
     }
 
-    void skip_whitespaces() {
+    void skip_whitespaces() noexcept {
         consume_until([](byte b) { return !std::isspace(b); });
     }
 
-    auto begin() -> result final {
+    auto begin() noexcept -> result final {
         skip_whitespaces();
         return require('<');
     }
 
-    auto begin_struct(span_size_t& count) -> result final {
+    auto begin_struct(span_size_t& count) noexcept -> result final {
         result errors = require('{');
         if(!errors) {
             errors |= _read_one(count, '|');
@@ -263,7 +277,7 @@ public:
         return errors;
     }
 
-    auto begin_member(const string_view name) -> result final {
+    auto begin_member(const string_view name) noexcept -> result final {
         result errors = require(name);
         if(!errors) {
             errors |= require(':');
@@ -271,15 +285,15 @@ public:
         return errors;
     }
 
-    auto finish_member(const string_view) -> result final {
+    auto finish_member(const string_view) noexcept -> result final {
         return {};
     }
 
-    auto finish_struct() -> result final {
+    auto finish_struct() noexcept -> result final {
         return require("};");
     }
 
-    auto begin_list(span_size_t& count) -> result final {
+    auto begin_list(span_size_t& count) noexcept -> result final {
         result errors = require('[');
         if(!errors) {
             errors |= _read_one(count, '|');
@@ -287,24 +301,24 @@ public:
         return errors;
     }
 
-    auto begin_element(const span_size_t) -> result final {
+    auto begin_element(const span_size_t) noexcept -> result final {
         return {};
     }
 
-    auto finish_element(const span_size_t) -> result final {
+    auto finish_element(const span_size_t) noexcept -> result final {
         return {};
     }
 
-    auto finish_list() -> result final {
+    auto finish_list() noexcept -> result final {
         return require("];");
     }
 
-    auto finish() -> result final {
+    auto finish() noexcept -> result final {
         return require(">\0");
     }
 
 private:
-    auto _read_one(bool& value, const char delimiter) -> result {
+    auto _read_one(bool& value, const char delimiter) noexcept -> result {
         result temp{};
         if(this->consume("true", temp)) {
             value = true;
@@ -316,7 +330,7 @@ private:
         return require(delimiter);
     }
 
-    auto _read_one(char& value, const char delimiter) -> result {
+    auto _read_one(char& value, const char delimiter) noexcept -> result {
         result errors = require('\'');
         if(!errors) {
             if(auto opt_char = this->top_char()) {
@@ -334,8 +348,10 @@ private:
     }
 
     template <typename T, std::size_t L>
-    auto _sscanf_one(T& value, const char delimiter, const char (&fmt)[L])
-      -> result {
+    auto _sscanf_one(
+      T& value,
+      const char delimiter,
+      const char (&fmt)[L]) noexcept -> result {
         result errors{};
         if(auto src = this->string_before(delimiter, 128)) {
             auto fmtstr = static_cast<const char*>(fmt);
@@ -352,67 +368,70 @@ private:
         return errors;
     }
 
-    auto _read_one(byte& value, const char delimiter) -> result {
+    auto _read_one(byte& value, const char delimiter) noexcept -> result {
         const char fmt[6] = {'%', 'h', 'h', 'x', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(signed char& value, const char delimiter) -> result {
+    auto _read_one(signed char& value, const char delimiter) noexcept
+      -> result {
         const char fmt[6] = {'%', 'h', 'h', 'd', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(short& value, const char delimiter) -> result {
+    auto _read_one(short& value, const char delimiter) noexcept -> result {
         const char fmt[5] = {'%', 'h', 'd', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(unsigned short& value, char delimiter) -> result {
+    auto _read_one(unsigned short& value, char delimiter) noexcept -> result {
         const char fmt[5] = {'%', 'h', 'u', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(int& value, const char delimiter) -> result {
+    auto _read_one(int& value, const char delimiter) noexcept -> result {
         const char fmt[4] = {'%', 'd', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(unsigned& value, const char delimiter) -> result {
+    auto _read_one(unsigned& value, const char delimiter) noexcept -> result {
         const char fmt[4] = {'%', 'u', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(long& value, const char delimiter) -> result {
+    auto _read_one(long& value, const char delimiter) noexcept -> result {
         const char fmt[5] = {'%', 'l', 'd', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(unsigned long& value, const char delimiter) -> result {
+    auto _read_one(unsigned long& value, const char delimiter) noexcept
+      -> result {
         const char fmt[5] = {'%', 'l', 'u', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(long long& value, const char delimiter) -> result {
+    auto _read_one(long long& value, const char delimiter) noexcept -> result {
         const char fmt[6] = {'%', 'l', 'l', 'd', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(unsigned long long& value, const char delimiter) -> result {
+    auto _read_one(unsigned long long& value, const char delimiter) noexcept
+      -> result {
         const char fmt[6] = {'%', 'l', 'l', 'u', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(float& value, const char delimiter) -> result {
+    auto _read_one(float& value, const char delimiter) noexcept -> result {
         const char fmt[4] = {'%', 'f', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(double& value, const char delimiter) -> result {
+    auto _read_one(double& value, const char delimiter) noexcept -> result {
         const char fmt[5] = {'%', 'l', 'f', delimiter, '\0'};
         return _sscanf_one(value, delimiter, fmt);
     }
 
-    auto _read_one(identifier& value, const char delimiter) -> result {
+    auto _read_one(identifier& value, const char delimiter) noexcept -> result {
         result errors{};
         if(auto src = this->string_before(delimiter, 32)) {
             value = identifier(src);
@@ -423,7 +442,8 @@ private:
         return errors;
     }
 
-    auto _read_one(decl_name_storage& value, const char delimiter) -> result {
+    auto _read_one(decl_name_storage& value, const char delimiter) noexcept
+      -> result {
         result errors{};
         const auto max = decl_name_storage::max_length + 1;
         if(auto src = this->string_before(delimiter, max)) {
@@ -435,7 +455,8 @@ private:
         return errors;
     }
 
-    auto _read_one(std::string& value, const char delimiter) -> result {
+    auto _read_one(std::string& value, const char delimiter) noexcept
+      -> result {
         result errors = require('"');
         if(!errors) {
             span_size_t len{0};

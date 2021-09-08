@@ -29,95 +29,106 @@ struct serializer_backend : interface<serializer_backend> {
     using result = serialization_errors;
 
     /// @brief Returns a descriptive identifier of the implementation.
-    virtual auto type_id() -> identifier = 0;
+    virtual auto type_id() noexcept -> identifier = 0;
 
     /// @brief Returns a pointer to the associated data sink, if any.
-    virtual auto sink() -> serializer_data_sink* = 0;
+    virtual auto sink() noexcept -> serializer_data_sink* = 0;
 
     /// @brie Indicates if the backed stores enumerators as strings (or numeric values).
-    virtual auto enum_as_string() -> bool = 0;
+    virtual auto enum_as_string() noexcept -> bool = 0;
 
     /// @brief Starts the serialization of a potentially complex structured value.
-    virtual auto begin() -> result = 0;
+    virtual auto begin() noexcept -> result = 0;
 
     /// @brief Writes boolean values, returns how many were done through second argument.
-    virtual auto write(span<const bool>, span_size_t&) -> result = 0;
+    virtual auto write(span<const bool>, span_size_t&) noexcept -> result = 0;
 
     /// @brief Writes character values, returns how many were done through second argument.
-    virtual auto write(span<const char>, span_size_t&) -> result = 0;
+    virtual auto write(span<const char>, span_size_t&) noexcept -> result = 0;
 
     /// @brief Writes 8-bit int values, returns how many were done through second argument.
-    virtual auto write(span<const std::int8_t>, span_size_t&) -> result = 0;
+    virtual auto write(span<const std::int8_t>, span_size_t&) noexcept
+      -> result = 0;
 
     /// @brief Writes short int values, returns how many were done through second argument.
-    virtual auto write(span<const short>, span_size_t&) -> result = 0;
+    virtual auto write(span<const short>, span_size_t&) noexcept -> result = 0;
 
     /// @brief Writes int values, returns how many were done through second argument.
-    virtual auto write(span<const int>, span_size_t&) -> result = 0;
+    virtual auto write(span<const int>, span_size_t&) noexcept -> result = 0;
 
     /// @brief Writes long values, returns how many were done through second argument.
-    virtual auto write(span<const long>, span_size_t&) -> result = 0;
+    virtual auto write(span<const long>, span_size_t&) noexcept -> result = 0;
 
     /// @brief Writes long long values, returns how many were done through second argument.
-    virtual auto write(span<const long long>, span_size_t&) -> result = 0;
+    virtual auto write(span<const long long>, span_size_t&) noexcept
+      -> result = 0;
 
     /// @brief Writes 8-bit uint values, returns how many were done through second argument.
-    virtual auto write(span<const std::uint8_t>, span_size_t&) -> result = 0;
+    virtual auto write(span<const std::uint8_t>, span_size_t&) noexcept
+      -> result = 0;
 
     /// @brief Writes ushort values, returns how many were done through second argument.
-    virtual auto write(span<const unsigned short>, span_size_t&) -> result = 0;
+    virtual auto write(span<const unsigned short>, span_size_t&) noexcept
+      -> result = 0;
 
     /// @brief Writes uint values, returns how many were done through second argument.
-    virtual auto write(span<const unsigned>, span_size_t&) -> result = 0;
+    virtual auto write(span<const unsigned>, span_size_t&) noexcept
+      -> result = 0;
 
     /// @brief Writes ulong values, returns how many were done through second argument.
-    virtual auto write(span<const unsigned long>, span_size_t&) -> result = 0;
+    virtual auto write(span<const unsigned long>, span_size_t&) noexcept
+      -> result = 0;
 
     /// @brief Writes ulong long values, returns how many were done through second argument.
-    virtual auto write(span<const unsigned long long>, span_size_t&)
+    virtual auto write(span<const unsigned long long>, span_size_t&) noexcept
       -> result = 0;
 
     /// @brief Writes float values, returns how many were done through second argument.
-    virtual auto write(span<const float>, span_size_t&) -> result = 0;
+    virtual auto write(span<const float>, span_size_t&) noexcept -> result = 0;
 
     /// @brief Writes double values, returns how many were done through second argument.
-    virtual auto write(span<const double>, span_size_t&) -> result = 0;
+    virtual auto write(span<const double>, span_size_t&) noexcept -> result = 0;
 
     /// @brief Writes identifier values, returns how many were done through second argument.
-    virtual auto write(span<const identifier>, span_size_t&) -> result = 0;
+    virtual auto write(span<const identifier>, span_size_t&) noexcept
+      -> result = 0;
 
     /// @brief Writes decl_name values, returns how many were done through second argument.
-    virtual auto write(span<const decl_name>, span_size_t&) -> result = 0;
+    virtual auto write(span<const decl_name>, span_size_t&) noexcept
+      -> result = 0;
 
     /// @brief Writes string values, returns how many were done through second argument.
-    virtual auto write(span<const string_view>, span_size_t&) -> result = 0;
+    virtual auto write(span<const string_view>, span_size_t&) noexcept
+      -> result = 0;
 
     /// @brief Begins the serialization of a structure instance.
-    virtual auto begin_struct(const span_size_t member_count) -> result = 0;
+    virtual auto begin_struct(const span_size_t member_count) noexcept
+      -> result = 0;
 
     /// @brief Begins the serialization of a structure data member.
-    virtual auto begin_member(const string_view name) -> result = 0;
+    virtual auto begin_member(const string_view name) noexcept -> result = 0;
 
     /// @brief Finishes the serialization of a structure data member.
-    virtual auto finish_member(const string_view name) -> result = 0;
+    virtual auto finish_member(const string_view name) noexcept -> result = 0;
 
     /// @brief Finishes the serialization of a structure instance.
-    virtual auto finish_struct() -> result = 0;
+    virtual auto finish_struct() noexcept -> result = 0;
 
     /// @brief Begins the serialization of a container instance.
-    virtual auto begin_list(const span_size_t element_count) -> result = 0;
+    virtual auto begin_list(const span_size_t element_count) noexcept
+      -> result = 0;
 
     /// @brief Begins the serialization of a container element.
-    virtual auto begin_element(const span_size_t index) -> result = 0;
+    virtual auto begin_element(const span_size_t index) noexcept -> result = 0;
 
     /// @brief Finishes the serialization of a container element.
-    virtual auto finish_element(const span_size_t index) -> result = 0;
+    virtual auto finish_element(const span_size_t index) noexcept -> result = 0;
 
     /// @brief Finishes the serialization of a container instance.
-    virtual auto finish_list() -> result = 0;
+    virtual auto finish_list() noexcept -> result = 0;
 
     /// @brief Finishes the serialization of a potentially complex structured value.
-    virtual auto finish() -> result = 0;
+    virtual auto finish() noexcept -> result = 0;
 };
 //------------------------------------------------------------------------------
 /// @brief CRTP mixin implementing the common parts of serializer backends.
@@ -140,142 +151,148 @@ public:
         return derived();
     }
 
-    auto sink() -> serializer_data_sink* final {
+    auto sink() noexcept -> serializer_data_sink* final {
         return _sink;
     }
 
-    auto enum_as_string() -> bool override {
+    auto enum_as_string() noexcept -> bool override {
         return false;
     }
 
-    auto begin() -> result override {
+    auto begin() noexcept -> result override {
         return {};
     }
 
-    auto write(span<const bool> values, span_size_t& done) -> result override {
-        return derived().do_write(values, done);
-    }
-
-    auto write(span<const char> values, span_size_t& done) -> result override {
-        return derived().do_write(values, done);
-    }
-
-    auto write(span<const std::int8_t> values, span_size_t& done)
+    auto write(span<const bool> values, span_size_t& done) noexcept
       -> result override {
         return derived().do_write(values, done);
     }
 
-    auto write(span<const short> values, span_size_t& done) -> result override {
-        return derived().do_write(values, done);
-    }
-
-    auto write(span<const int> values, span_size_t& done) -> result override {
-        return derived().do_write(values, done);
-    }
-
-    auto write(span<const long> values, span_size_t& done) -> result override {
-        return derived().do_write(values, done);
-    }
-
-    auto write(span<const long long> values, span_size_t& done)
+    auto write(span<const char> values, span_size_t& done) noexcept
       -> result override {
         return derived().do_write(values, done);
     }
 
-    auto write(span<const std::uint8_t> values, span_size_t& done)
+    auto write(span<const std::int8_t> values, span_size_t& done) noexcept
       -> result override {
         return derived().do_write(values, done);
     }
 
-    auto write(span<const unsigned short> values, span_size_t& done)
+    auto write(span<const short> values, span_size_t& done) noexcept
       -> result override {
         return derived().do_write(values, done);
     }
 
-    auto write(span<const unsigned> values, span_size_t& done)
+    auto write(span<const int> values, span_size_t& done) noexcept
       -> result override {
         return derived().do_write(values, done);
     }
 
-    auto write(span<const unsigned long> values, span_size_t& done)
+    auto write(span<const long> values, span_size_t& done) noexcept
       -> result override {
         return derived().do_write(values, done);
     }
 
-    auto write(span<const unsigned long long> values, span_size_t& done)
+    auto write(span<const long long> values, span_size_t& done) noexcept
       -> result override {
         return derived().do_write(values, done);
     }
 
-    auto write(span<const float> values, span_size_t& done) -> result override {
-        return derived().do_write(values, done);
-    }
-
-    auto write(span<const double> values, span_size_t& done)
+    auto write(span<const std::uint8_t> values, span_size_t& done) noexcept
       -> result override {
         return derived().do_write(values, done);
     }
 
-    auto write(span<const identifier> values, span_size_t& done)
+    auto write(span<const unsigned short> values, span_size_t& done) noexcept
       -> result override {
         return derived().do_write(values, done);
     }
 
-    auto write(span<const decl_name> values, span_size_t& done)
+    auto write(span<const unsigned> values, span_size_t& done) noexcept
       -> result override {
         return derived().do_write(values, done);
     }
 
-    auto write(span<const string_view> values, span_size_t& done)
+    auto write(span<const unsigned long> values, span_size_t& done) noexcept
       -> result override {
         return derived().do_write(values, done);
     }
 
-    auto begin_struct(const span_size_t) -> result override {
+    auto write(span<const unsigned long long> values, span_size_t& done) noexcept
+      -> result override {
+        return derived().do_write(values, done);
+    }
+
+    auto write(span<const float> values, span_size_t& done) noexcept
+      -> result override {
+        return derived().do_write(values, done);
+    }
+
+    auto write(span<const double> values, span_size_t& done) noexcept
+      -> result override {
+        return derived().do_write(values, done);
+    }
+
+    auto write(span<const identifier> values, span_size_t& done) noexcept
+      -> result override {
+        return derived().do_write(values, done);
+    }
+
+    auto write(span<const decl_name> values, span_size_t& done) noexcept
+      -> result override {
+        return derived().do_write(values, done);
+    }
+
+    auto write(span<const string_view> values, span_size_t& done) noexcept
+      -> result override {
+        return derived().do_write(values, done);
+    }
+
+    auto begin_struct(const span_size_t) noexcept -> result override {
         return {};
     }
-    auto begin_member(const string_view) -> result override {
+    auto begin_member(const string_view) noexcept -> result override {
         return {};
     }
-    auto finish_member(const string_view) -> result override {
+    auto finish_member(const string_view) noexcept -> result override {
         return {};
     }
-    auto finish_struct() -> result override {
+    auto finish_struct() noexcept -> result override {
         return {};
     }
-    auto begin_list(const span_size_t) -> result override {
+    auto begin_list(const span_size_t) noexcept -> result override {
         return {};
     }
-    auto begin_element(const span_size_t) -> result override {
+    auto begin_element(const span_size_t) noexcept -> result override {
         return {};
     }
-    auto finish_element(const span_size_t) -> result override {
+    auto finish_element(const span_size_t) noexcept -> result override {
         return {};
     }
-    auto finish_list() -> result override {
+    auto finish_list() noexcept -> result override {
         return {};
     }
-    auto finish() -> result override {
+    auto finish() noexcept -> result override {
         return {};
     }
 
 protected:
-    auto remaining_size() const -> span_size_t {
+    auto remaining_size() const noexcept -> span_size_t {
         EAGINE_ASSERT(_sink);
         return _sink->remaining_size();
     }
 
-    auto do_sink(const memory::const_block b) const -> result {
+    auto do_sink(const memory::const_block b) const noexcept -> result {
         EAGINE_ASSERT(_sink);
         return _sink->write(b);
     }
 
-    auto do_sink(const string_view s) const -> result {
+    auto do_sink(const string_view s) const noexcept -> result {
         EAGINE_ASSERT(_sink);
         return _sink->write(s);
     }
 
-    auto do_sink(const char c) const -> result {
+    auto do_sink(const char c) const noexcept -> result {
         EAGINE_ASSERT(_sink);
         return _sink->write(c);
     }
@@ -299,7 +316,7 @@ public:
 
     static constexpr const identifier_t id_value = Id;
 
-    auto type_id() -> identifier final {
+    auto type_id() noexcept -> identifier final {
         return identifier{Id};
     }
 };
