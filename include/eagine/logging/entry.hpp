@@ -22,7 +22,7 @@ namespace eagine {
 static inline auto adapt_log_entry_arg(
   const identifier name,
   logger_backend* value) {
-    return [name, value](logger_backend& backend) {
+    return [name, value](logger_backend& backend) noexcept {
         if(value) {
             backend.add_identifier(
               name, EAGINE_ID(LogBkEndId), value->type_id());
@@ -33,7 +33,9 @@ static inline auto adapt_log_entry_arg(
 }
 //------------------------------------------------------------------------------
 template <typename T, typename = std::enable_if_t<has_enumerator_mapping_v<T>>>
-static constexpr auto adapt_log_entry_arg(const identifier name, const T value) {
+static constexpr auto adapt_log_entry_arg(
+  const identifier name,
+  const T value) noexcept {
     return [=](logger_backend& backend) {
         backend.add_string(name, EAGINE_ID(enum), enumerator_name(value));
     };
@@ -42,7 +44,7 @@ static constexpr auto adapt_log_entry_arg(const identifier name, const T value) 
 template <typename T, typename = std::enable_if_t<has_enumerator_mapping_v<T>>>
 static constexpr auto adapt_log_entry_arg(
   const identifier name,
-  const bitfield<T> bf) {
+  const bitfield<T> bf) noexcept {
     return [=](logger_backend& backend) {
         const auto func = [&backend, name, bf](const auto& info) {
             if(bf.has(static_cast<T>(info.value))) {

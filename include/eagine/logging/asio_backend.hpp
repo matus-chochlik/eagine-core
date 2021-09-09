@@ -130,7 +130,7 @@ private:
 };
 //------------------------------------------------------------------------------
 template <typename Connection, typename Lockable>
-class asio_ostream_log_backend
+class asio_ostream_log_backend final
   : public Connection
   , public ostream_log_backend<Lockable> {
 
@@ -155,7 +155,7 @@ public:
     auto operator=(asio_ostream_log_backend&&) = delete;
     auto operator=(const asio_ostream_log_backend&) = delete;
 
-    ~asio_ostream_log_backend() noexcept override {
+    ~asio_ostream_log_backend() noexcept final {
         this->finish_log();
     }
 };

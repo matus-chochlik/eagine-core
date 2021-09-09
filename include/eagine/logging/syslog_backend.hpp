@@ -30,7 +30,7 @@ EAGINE_DIAG_OFF(format-nonliteral)
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename Lockable = std::mutex>
-class syslog_log_backend : public logger_backend {
+class syslog_log_backend final : public logger_backend {
 public:
     syslog_log_backend(const log_event_severity min_severity)
       : _min_severity{min_severity} {
