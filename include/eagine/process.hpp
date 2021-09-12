@@ -21,7 +21,8 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-static inline auto make_process_instance_id() -> process_instance_id_t {
+static inline auto make_process_instance_id() noexcept
+  -> process_instance_id_t {
     return
 #if EAGINE_POSIX
       integer_hash<process_instance_id_t>(::getpid()) ^

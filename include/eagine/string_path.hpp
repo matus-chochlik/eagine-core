@@ -57,39 +57,39 @@ public:
 
     ~basic_string_path() noexcept = default;
 
-    basic_string_path(const string_view str, const span_size_t size)
+    basic_string_path(const string_view str, const span_size_t size) noexcept
       : _size{size}
       , _str{str.data(), std_size(str.size())} {}
 
-    basic_string_path(std::string str, const span_size_t size)
+    basic_string_path(std::string str, const span_size_t size) noexcept
       : _size{size}
       , _str{std::move(str)} {}
 
-    basic_string_path(std::tuple<std::string, span_size_t>&& init)
+    basic_string_path(std::tuple<std::string, span_size_t>&& init) noexcept
       : basic_string_path{std::move(std::get<0>(init)), std::get<1>(init)} {}
 
     /// @brief Construction from a path string and a separator string.
     basic_string_path(
       const string_view path,
       EAGINE_TAG_TYPE(split_by),
-      const string_view sep)
+      const string_view sep) noexcept
       : basic_string_path{string_list::split(path, sep)} {}
 
     explicit basic_string_path(
       const basic_string_path& a,
       EAGINE_TAG_TYPE(plus),
-      const basic_string_path& b)
+      const basic_string_path& b) noexcept
       : _size{a._size + b._size}
       , _str{a._str + b._str} {}
 
     /// @brief Construction from a list of path element names.
-    explicit basic_string_path(const span<const string_view> names) {
+    explicit basic_string_path(const span<const string_view> names) noexcept {
         _init(names);
     }
 
     /// @brief Construction from a list of path element names.
     template <std::size_t N>
-    explicit basic_string_path(const std::array<string_view, N>& names)
+    explicit basic_string_path(const std::array<string_view, N>& names) noexcept
       : basic_string_path(view(names)) {}
 
     /// @brief Construction from a pack of path element names.
@@ -97,7 +97,7 @@ public:
     explicit basic_string_path(
       EAGINE_TAG_TYPE(from_pack),
       const string_view name,
-      const Str&... names)
+      const Str&... names) noexcept
       : basic_string_path(_pack_names(name, view(names)...)) {}
 
     /// @brief Equality comparison.
@@ -170,17 +170,17 @@ public:
         return _size;
     }
 
-    static auto required_bytes(const size_type l) -> size_type {
+    static auto required_bytes(const size_type l) noexcept -> size_type {
         using namespace mbs;
         return l + 2 * required_sequence_length(code_point_t(l)).value();
     }
 
-    static auto required_bytes(const string_view str) -> size_type {
+    static auto required_bytes(const string_view str) noexcept -> size_type {
         return required_bytes(size_type(str.size()));
     }
 
     /// @brief Reserves the specified number of bytes in the storage.
-    void reserve_bytes(const size_type s) {
+    void reserve_bytes(const size_type s) noexcept {
         _str.reserve(std_size(s));
     }
 
@@ -203,14 +203,14 @@ public:
         ++_size;
     }
 
-    void push_back_elem(const string_list::element& elem) {
+    void push_back_elem(const string_list::element& elem) noexcept {
         append_to(_str, elem);
         ++_size;
     }
 
     /// @brief Removes a single element from the end of this path.
     /// @see push_back
-    void pop_back() {
+    void pop_back() noexcept {
         EAGINE_ASSERT(!empty());
         _str.resize(std_size(string_list::pop_back(_str).size()));
         --_size;
@@ -270,7 +270,7 @@ public:
     }
 
     /// @brief Returns this path as string with elements separated by @p sep.
-    auto as_string(const string_view sep, const bool trail_sep) const
+    auto as_string(const string_view sep, const bool trail_sep) const noexcept
       -> std::string {
         return string_list::join(view(_str), sep, trail_sep);
     }
@@ -285,7 +285,7 @@ private:
     std::string _str{};
 
     template <typename Str>
-    void _init(const span<Str> names) {
+    void _init(const span<Str> names) noexcept {
         span_size_t len = 2 * names.size();
         for(const auto& name : names) {
             len += span_size(name.size());
