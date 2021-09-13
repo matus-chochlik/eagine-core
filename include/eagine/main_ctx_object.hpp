@@ -19,9 +19,9 @@ namespace eagine {
 template <typename T>
 auto application_config_initial(
   application_config& config,
-  string_view key,
+  const string_view key,
   T& initial,
-  string_view tag) -> T&;
+  const string_view tag) noexcept -> T&;
 
 /// @brief Helper class used in the implementation of logging in main context
 /// object.
@@ -53,7 +53,7 @@ class main_ctx_object
 
 public:
     /// @brief Initialization from object id and parent.
-    main_ctx_object(identifier obj_id, main_ctx_parent parent) noexcept
+    main_ctx_object(const identifier obj_id, main_ctx_parent parent) noexcept
       : base{_make_base(obj_id, parent)} {}
 
     /// @brief Returns this as main_ctx_object_parent_info.
@@ -72,17 +72,20 @@ public:
 
     /// @brief Reads and returns the configuration value identified by @p key.
     template <typename T>
-    auto cfg_init(string_view key, T initial, string_view tag = {}) -> T {
+    auto cfg_init(
+      const string_view key,
+      T initial,
+      const string_view tag = {}) noexcept -> T {
         return application_config_initial(app_config(), key, initial, tag);
     }
 
     /// @brief Reads and returns the configuration value identified by @p key.
     template <typename Extractable, typename T>
     auto cfg_extr(
-      string_view key,
+      const string_view key,
       T initial,
-      string_view tag = {},
-      type_identity<Extractable> = {}) -> T {
+      const string_view tag = {},
+      const type_identity<Extractable> = {}) noexcept -> T {
         Extractable value(initial);
         return extract_or(
           application_config_initial(app_config(), key, value, tag), initial);
@@ -95,8 +98,9 @@ public:
     auto bus() const noexcept -> message_bus&;
 
 private:
-    static auto _make_base(identifier obj_id, main_ctx_parent parent) noexcept
-      -> base {
+    static auto _make_base(
+      const identifier obj_id,
+      main_ctx_parent parent) noexcept -> base {
         if(parent._object) {
             return base{obj_id, static_cast<const base&>(*parent._object)};
         }
