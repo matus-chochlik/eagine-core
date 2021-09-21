@@ -71,7 +71,7 @@ private:
         return state;
     }
 
-    static void _flip(const int sig_num) {
+    static void _flip(const int sig_num) noexcept {
         _state() = sig_num;
     }
 

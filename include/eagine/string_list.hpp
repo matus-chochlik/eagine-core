@@ -21,7 +21,8 @@
 namespace eagine {
 namespace string_list {
 //------------------------------------------------------------------------------
-static inline auto encode_length(const span_size_t len) -> std::string {
+static inline auto encode_length(const span_size_t len) noexcept
+  -> std::string {
     return extract(mbs::encode_code_point(mbs::code_point_t(len)));
 }
 //------------------------------------------------------------------------------
@@ -43,7 +44,7 @@ static inline auto element_value_size(const string_view elem) noexcept
     return element_value_size(elem, elem.size());
 }
 //------------------------------------------------------------------------------
-static inline auto rev_seek_header_start(const string_view elem)
+static inline auto rev_seek_header_start(const string_view elem) noexcept
   -> span_size_t {
     for(auto i = elem.rbegin(); i != elem.rend(); ++i) {
         if(mbs::is_valid_head_byte(byte(*i))) {
@@ -76,7 +77,9 @@ static inline auto pop_back(const string_view list) noexcept -> string_view {
     return head(list, i - k - l);
 }
 //------------------------------------------------------------------------------
-static inline void push_back(std::string& list, const string_view value) {
+static inline void push_back(
+  std::string& list,
+  const string_view value) noexcept {
     const span_size_t vl = value.size();
     const std::string elen = encode_length(vl);
     const std::size_t nl = list.size() + elen.size() * 2 + std_size(vl);
@@ -90,10 +93,10 @@ static inline void push_back(std::string& list, const string_view value) {
 //------------------------------------------------------------------------------
 class element : public string_view {
 private:
-    auto _base() -> string_view {
+    auto _base() noexcept -> string_view {
         return *this;
     }
-    auto _base() const -> string_view {
+    auto _base() const noexcept -> string_view {
         return *this;
     }
 
@@ -214,7 +217,7 @@ static inline void rev_for_each(const string_view list, Func func) noexcept {
 static inline auto split_into(
   std::string& dst,
   const string_view str,
-  const string_view sep) -> span_size_t {
+  const string_view sep) noexcept -> span_size_t {
     span_size_t cnt = 0;
     for_each_delimited(str, sep, [&dst, &cnt](const auto& x) {
         push_back(dst, x);
@@ -223,7 +226,7 @@ static inline auto split_into(
     return cnt;
 }
 //------------------------------------------------------------------------------
-static inline auto split(string_view str, string_view sep)
+static inline auto split(string_view str, string_view sep) noexcept
   -> std::tuple<std::string, span_size_t> {
     std::string res;
     const auto cnt = split_into(res, str, sep);
@@ -234,7 +237,7 @@ template <typename Func>
 static inline auto for_each_separated_c_str(
   const char* str,
   const char sep,
-  Func func) -> span_size_t {
+  Func func) noexcept -> span_size_t {
     span_size_t cnt = 0;
     const char* bgn = str;
     const char* pos = bgn;
@@ -273,12 +276,12 @@ static inline auto for_each_separated_c_str(
 static inline auto split_c_str_into(
   std::string& dst,
   const char* str,
-  const char sep) -> span_size_t {
+  const char sep) noexcept -> span_size_t {
     return for_each_separated_c_str(
       str, sep, [&dst](auto elem) { push_back(dst, elem); });
 }
 //------------------------------------------------------------------------------
-static inline auto split_c_str(const char* str, const char sep)
+static inline auto split_c_str(const char* str, const char sep) noexcept
   -> std::tuple<std::string, span_size_t> {
     std::string res;
     const auto cnt = split_c_str_into(res, str, sep);
@@ -288,10 +291,10 @@ static inline auto split_c_str(const char* str, const char sep)
 static inline auto join(
   const string_view list,
   const string_view sep,
-  const bool trail_sep) -> std::string {
+  const bool trail_sep) noexcept -> std::string {
     const span_size_t slen = sep.size();
     span_size_t len = trail_sep ? slen : 0;
-    auto get_len = [&len, slen](const element& elem, bool first) {
+    const auto get_len = [&len, slen](const element& elem, bool first) {
         if(!first) {
             len += slen;
         }
@@ -318,7 +321,7 @@ static inline auto join(
     return res;
 }
 //------------------------------------------------------------------------------
-static inline auto join(const string_view list, const string_view sep)
+static inline auto join(const string_view list, const string_view sep) noexcept
   -> std::string {
     return join(list, sep, false);
 }
@@ -333,7 +336,7 @@ public:
     using iterator_category = std::forward_iterator_tag;
 
     iterator(Iter pos) noexcept
-      : _pos(pos) {}
+      : _pos{pos} {}
 
     friend auto operator==(iterator a, iterator b) noexcept {
         return a._pos == b._pos;
@@ -391,7 +394,7 @@ private:
           mbs::do_decode_code_point(mbs::make_cbyte_span(el), ll), 0U);
     }
 
-    void _update() const {
+    void _update() const noexcept {
         if(_tmp.size() == 0) {
             span_size_t ll = _len_len();
             span_size_t vl = _val_len(ll);
@@ -410,7 +413,7 @@ public:
     using iterator_category = std::forward_iterator_tag;
 
     rev_iterator(Iter pos) noexcept
-      : _pos(pos) {}
+      : _pos{pos} {}
 
     friend auto operator==(rev_iterator a, rev_iterator b) noexcept {
         return a._pos == b._pos;
@@ -475,7 +478,7 @@ private:
           mbs::do_decode_code_point(mbs::make_cbyte_span(el), ll), 0U);
     }
 
-    void _update() const {
+    void _update() const noexcept {
         if(_tmp.size() == 0) {
             _rseek_head();
             span_size_t ll = _len_len();
@@ -571,7 +574,7 @@ static inline auto make_string_list(std::string str)
 //------------------------------------------------------------------------------
 static inline auto split_into_string_list(
   const string_view src,
-  const char sep) {
+  const char sep) noexcept {
     std::string temp;
     string_list::split_into(temp, src, view_one(sep));
     return make_string_list(std::move(temp));
@@ -579,7 +582,7 @@ static inline auto split_into_string_list(
 //------------------------------------------------------------------------------
 static inline auto split_c_str_into_string_list(
   const char* src,
-  const char sep) {
+  const char sep) noexcept {
     std::string temp;
     string_list::split_c_str_into(temp, src, sep);
     return make_string_list(std::move(temp));

@@ -28,12 +28,12 @@ public:
         // front is empty and is filled out later
         _tag_list.emplace_back();
 
-        if(auto arg{main_context().args().find("--instance")}) {
+        if(const auto arg{main_context().args().find("--instance")}) {
             if(auto inst_arg{arg.next()}) {
                 _tag_list.push_back(inst_arg.get());
             }
         }
-        for(auto arg : main_context().args()) {
+        for(const auto arg : main_context().args()) {
             if(arg.is_tag("--config-tag")) {
                 if(auto tag_arg{arg.next()}) {
                     _tag_list.push_back(tag_arg.get());
@@ -49,8 +49,9 @@ public:
         _config_name.reserve(128);
     }
 
-    auto find_compound_attribute(string_view key, string_view tag) noexcept
-      -> valtree::compound_attribute {
+    auto find_compound_attribute(
+      const string_view key,
+      const string_view tag) noexcept -> valtree::compound_attribute {
         try {
             std::unique_lock<std::mutex> lck{_mutex};
             _tag_list[0] = tag;
@@ -80,25 +81,30 @@ public:
     }
 
 private:
-    auto _cat(string_view l, string_view r) noexcept -> const std::string& {
+    auto _cat(const string_view l, const string_view r) noexcept
+      -> const std::string& {
         return append_to(assign_to(_config_name, l), r);
     }
 
-    auto _cat(string_view a, string_view b, string_view c, string_view d) noexcept
-      -> const std::string& {
+    auto _cat(
+      const string_view a,
+      const string_view b,
+      const string_view c,
+      const string_view d) noexcept -> const std::string& {
         return append_to(
           append_to(append_to(assign_to(_config_name, a), b), c), d);
     }
 
     auto _find_config_of(
-      string_view group,
-      string_view key,
-      span<const string_view> tags) noexcept -> valtree::compound_attribute {
+      const string_view group,
+      const string_view key,
+      const span<const string_view> tags) noexcept
+      -> valtree::compound_attribute {
         for(auto path_kind :
             {config_path_kind::user,
              config_path_kind::system,
              config_path_kind::install}) {
-            for(auto tag : tags) {
+            for(const auto tag : tags) {
                 if(auto found{_find_in(
                      _config_path(_cat(group, "@", tag, ".yaml"), path_kind),
                      key,
@@ -126,8 +132,8 @@ private:
 
     auto _find_in(
       const std::filesystem::path& cfg_path,
-      string_view key,
-      span<const string_view> tags) -> valtree::compound_attribute {
+      const string_view key,
+      const span<const string_view> tags) -> valtree::compound_attribute {
         if(!cfg_path.empty()) {
             if(is_regular_file(cfg_path) || is_fifo(cfg_path)) {
                 if(auto comp{_get_config(cfg_path)}) {
@@ -144,7 +150,7 @@ private:
 
     enum class config_path_kind { user, system, install };
 
-    auto _config_path(string_view name, config_path_kind kind)
+    auto _config_path(const string_view name, const config_path_kind kind)
       -> std::filesystem::path {
         std::filesystem::path config_path;
         if(kind == config_path_kind::user) {
@@ -214,9 +220,9 @@ auto application_config::_impl() noexcept -> application_config_impl* {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto application_config::_find_comp_attr(
-  string_view key,
-  string_view tag) noexcept -> valtree::compound_attribute {
-    if(auto impl{_impl()}) {
+  const string_view key,
+  const string_view tag) noexcept -> valtree::compound_attribute {
+    if(const auto impl{_impl()}) {
         return extract(impl).find_compound_attribute(key, tag);
     }
     return {};
@@ -243,13 +249,13 @@ auto application_config::_prog_arg_name(string_view key) noexcept
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto application_config::_find_prog_arg(string_view key) noexcept
+auto application_config::_find_prog_arg(const string_view key) noexcept
   -> program_arg {
     return _prog_args().find(_prog_arg_name(key));
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto application_config::_eval_env_var(string_view key) noexcept
+auto application_config::_eval_env_var(const string_view key) noexcept
   -> optionally_valid<string_view> {
     std::string arg_name;
     arg_name.reserve(std_size(7 + key.size()));

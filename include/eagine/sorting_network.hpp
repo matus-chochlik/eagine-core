@@ -9,6 +9,7 @@
 #ifndef EAGINE_SORTING_NETWORK_HPP
 #define EAGINE_SORTING_NETWORK_HPP
 
+#include "integer_range.hpp"
 #include "types.hpp"
 #include <array>
 #include <cstdint>
@@ -37,13 +38,13 @@ protected:
     template <std::size_t N>
     static void _fill_idx(std::array<std::size_t, N>* idx) noexcept {
         std::size_t r = 0;
-        for(std::size_t k = 0, l = _next_log(N); k < l; ++k) {
-            for(std::size_t m = 0; m <= k; ++m, ++r) {
-                std::size_t d = 1U << (k - m);
-                std::array<std::size_t, N>& row = idx[r];
+        for(const auto k : integer_range(_next_log(N))) {
+            for(const auto m : integer_range(k + 1)) {
+                const std::size_t d = 1U << (k - m);
+                std::array<std::size_t, N>& row = idx[r++];
 
-                for(std::size_t i = 0; i < N; ++i) {
-                    std::size_t inv = ((i >> k) & 2U) >> 1U;
+                for(const auto i : integer_range(N)) {
+                    const std::size_t inv = ((i >> k) & 2U) >> 1U;
                     std::size_t j = i + ((i & d) == 0 ? d : -d);
 
                     if(j >= N) {
@@ -71,41 +72,43 @@ public:
         return _base::num_rounds_for(N);
     }
 
-    static auto index(const span_size_t r, const span_size_t i) -> span_size_t {
+    static auto index(const span_size_t r, const span_size_t i) noexcept
+      -> span_size_t {
         return span_size(_c(r, i) >> 1U);
     }
 
-    static auto inv(const span_size_t r, const span_size_t i) -> bool {
+    static auto inv(const span_size_t r, const span_size_t i) noexcept -> bool {
         return (_c(r, i) & 1U) == 1U;
     }
 
     static auto min(
       const span_size_t r,
       const span_size_t i,
-      const span_size_t j) -> bool {
+      const span_size_t j) noexcept -> bool {
         return inv(r, i) ? (i > j) : (i < j);
     }
 
     static auto max(
       const span_size_t r,
       const span_size_t i,
-      const span_size_t j) -> bool {
+      const span_size_t j) noexcept -> bool {
         return inv(r, i) ? (i < j) : (i > j);
     }
 
 private:
-    static auto _make_idx() -> _idx_t {
+    static auto _make_idx() noexcept -> _idx_t {
         _idx_t result;
         _base::_fill_idx(result.data());
         return result;
     }
 
-    static auto _get_idx() -> _idx_t& {
+    static auto _get_idx() noexcept -> _idx_t& {
         static _idx_t idx = _make_idx();
         return idx;
     }
 
-    static auto _c(const span_size_t r, const span_size_t i) -> std::size_t& {
+    static auto _c(const span_size_t r, const span_size_t i) noexcept
+      -> std::size_t& {
         return _get_idx()[std_size(r)][std_size(i)];
     }
 };

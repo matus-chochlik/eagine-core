@@ -119,20 +119,20 @@ private:
 /// @note Do not use directly, use the finally function to construct.
 template <typename Func, typename OnException = nothing_t>
 class func_on_scope_exit {
-private:
-    Func _func;
-    on_scope_exit<OnException> _ose;
-
 public:
     /// @brief Initialization from the specified callable object.
     func_on_scope_exit(Func func) noexcept
-      : _func(std::move(func))
-      , _ose(_func) {}
+      : _func{std::move(func)}
+      , _ose{_func} {}
 
     /// @brief Cancels this on scope exit action.
     void cancel() noexcept {
         _ose.cancel();
     }
+
+private:
+    Func _func;
+    on_scope_exit<OnException> _ose;
 };
 
 /// @brief Function constructing on-scope-exit actions.

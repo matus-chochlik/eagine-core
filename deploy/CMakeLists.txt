@@ -5,6 +5,7 @@
 #
 find_program(BASH_COMMAND bash)
 find_program(DPKG_DEB_COMMAND dpkg-deb)
-if(BASH_COMMAND AND DPKG_DEB_COMMAND)
+find_program(DPKG_ARCHITECTURE_COMMAND dpkg-architecture)
+if(BASH_COMMAND AND DPKG_DEB_COMMAND AND DPKG_ARCHITECTURE_COMMAND)
 	add_subdirectory(debian)
 endif()

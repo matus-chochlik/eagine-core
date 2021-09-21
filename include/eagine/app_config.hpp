@@ -38,7 +38,8 @@ public:
     }
 
     /// @brief Checks is the boolean option identified by @p key is set to true.
-    auto is_set(string_view key, string_view tag = {}) noexcept -> bool {
+    auto is_set(const string_view key, const string_view tag = {}) noexcept
+      -> bool {
         if(const auto attr{_find_comp_attr(key, tag)}) {
             bool flag{false};
             if(attr.select_value(flag, application_config_tag())) {
@@ -61,8 +62,10 @@ public:
 
     /// @brief Fetches the configuration value identified by @p key, into @p dest.
     template <typename T>
-    auto fetch(string_view key, T& dest, string_view tag = {}) noexcept
-      -> bool {
+    auto fetch(
+      const string_view key,
+      T& dest,
+      const string_view tag = {}) noexcept -> bool {
         if(const auto arg{_find_prog_arg(key)}) {
             if(arg.parse_next(
                  dest, application_config_tag(), log_error_stream())) {
@@ -97,11 +100,11 @@ public:
     /// @brief Fetches the configuration values identified by @p key, into @p dest.
     template <typename T, typename A>
     auto fetch(
-      string_view key,
+      const string_view key,
       std::vector<T, A>& dest,
-      string_view tag = {}) noexcept {
+      const string_view tag = {}) noexcept {
         const auto arg_name{_prog_arg_name(key)};
-        for(auto arg : _prog_args()) {
+        for(const auto arg : _prog_args()) {
             if(arg.is_tag(arg_name)) {
                 T temp{};
                 if(arg.parse_next(
@@ -142,8 +145,10 @@ public:
 
     /// @brief Fetches the configuration value identified by @p key, into @p dest.
     template <typename T, typename P>
-    auto fetch(string_view key, valid_if<T, P>& dest, string_view tag) noexcept
-      -> bool {
+    auto fetch(
+      const string_view key,
+      valid_if<T, P>& dest,
+      const string_view tag) noexcept -> bool {
         T temp{};
         if(fetch(key, temp, tag)) {
             if(dest.is_valid(temp)) {
@@ -160,7 +165,8 @@ public:
 
     /// @brief Returns the configuration value or type @p T, identified by @p key.
     template <typename T>
-    auto get(string_view key, type_identity<T> = {}) -> optionally_valid<T> {
+    auto get(const string_view key, const type_identity<T> = {}) noexcept
+      -> optionally_valid<T> {
         T temp{};
         const auto fetched = fetch(key, temp);
         return {std::move(temp), fetched};
@@ -168,7 +174,10 @@ public:
 
     /// @brief Fetches the configuration value identified by @p key, into @p init.
     template <typename T>
-    auto init(string_view key, T& initial, string_view tag = {}) -> T {
+    auto init(
+      const string_view key,
+      T& initial,
+      const string_view tag = {}) noexcept -> T {
         fetch(key, initial, tag);
         return initial;
     }
@@ -177,22 +186,22 @@ private:
     std::shared_ptr<application_config_impl> _pimpl;
     auto _impl() noexcept -> application_config_impl*;
 
-    auto _find_comp_attr(string_view key, string_view tag) noexcept
+    auto _find_comp_attr(const string_view key, const string_view tag) noexcept
       -> valtree::compound_attribute;
 
     auto _prog_args() noexcept -> const program_args&;
-    auto _prog_arg_name(string_view key) noexcept -> std::string;
-    auto _find_prog_arg(string_view key) noexcept -> program_arg;
-    auto _eval_env_var(string_view key) noexcept
+    auto _prog_arg_name(const string_view key) noexcept -> std::string;
+    auto _find_prog_arg(const string_view key) noexcept -> program_arg;
+    auto _eval_env_var(const string_view key) noexcept
       -> optionally_valid<string_view>;
 };
 //------------------------------------------------------------------------------
 template <typename T>
 inline auto application_config_initial(
   application_config& config,
-  string_view key,
+  const string_view key,
   T& initial,
-  string_view tag) -> T& {
+  const string_view tag) noexcept -> T& {
     config.init(key, initial, tag);
     return initial;
 }
@@ -205,15 +214,15 @@ public:
     /// @brief Initialization from key, tag and optional initial value.
     application_config_value(
       application_config& config,
-      string_view key,
-      string_view tag,
+      const string_view key,
+      const string_view tag,
       T initial = {}) noexcept
       : _value{application_config_initial(config, key, initial, tag)} {}
 
     /// @brief Initialization from key and optional initial value.
     application_config_value(
       application_config& config,
-      string_view key,
+      const string_view key,
       T initial = {}) noexcept
       : application_config_value{config, key, {}, initial} {}
 

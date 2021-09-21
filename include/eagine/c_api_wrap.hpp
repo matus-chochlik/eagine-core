@@ -1240,11 +1240,6 @@ protected:
         return base::_fake(this->api().*Function);
     }
 
-    constexpr auto _fake_empty_c_str() const noexcept ->
-      typename ApiTraits::template result<const char*> {
-        return {static_cast<const char*>("")};
-    }
-
     template <typename Arg>
     static constexpr auto _conv(Arg arg) noexcept
       -> std::enable_if_t<std::is_scalar_v<Arg>, Arg> {
@@ -1280,6 +1275,11 @@ protected:
 
 public:
     using base::base;
+
+    constexpr auto fake_empty_c_str() const noexcept ->
+      typename ApiTraits::template result<const char*> {
+        return {static_cast<const char*>("")};
+    }
 
     explicit constexpr operator bool() const noexcept {
         return bool((this->api()).*Function);

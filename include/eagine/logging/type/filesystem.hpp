@@ -16,7 +16,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 static inline auto adapt_log_entry_arg(
   const identifier name,
-  const std::filesystem::path& fsp) {
+  const std::filesystem::path& fsp) noexcept {
     return [name, fsps{fsp.native()}](logger_backend& backend) {
         backend.add_string(name, EAGINE_ID(FsPath), string_view(fsps));
     };
@@ -24,7 +24,7 @@ static inline auto adapt_log_entry_arg(
 //------------------------------------------------------------------------------
 static inline auto adapt_log_entry_arg(
   const identifier name,
-  const std::filesystem::filesystem_error& value) {
+  const std::filesystem::filesystem_error& value) noexcept {
     return [name, value](logger_backend& backend) {
         backend.add_string(
           name, EAGINE_ID(FlSysError), string_view(value.what()));

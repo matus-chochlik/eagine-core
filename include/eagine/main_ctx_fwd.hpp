@@ -122,7 +122,7 @@ struct main_ctx_getters : interface<main_ctx_getters> {
 inline void set_progress_update_callback(
   main_ctx_getters& ctx,
   const callable_ref<bool()>& callback,
-  const std::chrono::milliseconds min_interval) {
+  const std::chrono::milliseconds min_interval) noexcept {
     auto setters{ctx.setters()};
     EAGINE_ASSERT(setters);
     extract(setters).set_progress_update_callback(callback, min_interval);
