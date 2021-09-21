@@ -28,7 +28,7 @@ public:
       , _min_severity{min_severity}
       , _start{std::chrono::steady_clock::now()} {
         try {
-            std::unique_lock<Lockable> lock{_lockable};
+            const std::lock_guard<Lockable> lock{_lockable};
             _out << "<?xml version='1.0' encoding='UTF-8'?>\n";
             _out << "<log start='" << _start.time_since_epoch().count()
                  << "'>\n";
@@ -43,8 +43,6 @@ public:
 
     auto allocator() noexcept -> memory::shared_byte_allocator final {
         return memory::default_byte_allocator();
-        // TODO
-        // return {memory::stack_byte_allocator_only<>{_alloc_block}};
     }
 
     auto type_id() noexcept -> identifier final {
@@ -81,7 +79,7 @@ public:
       string_view display_name,
       string_view description) noexcept final {
         try {
-            std::unique_lock<Lockable> lock{_lockable};
+            const std::lock_guard<Lockable> lock{_lockable};
             _out << "<d";
             _out << " src='" << source.name() << "'";
             _out << " iid='" << instance << "'";
@@ -241,7 +239,7 @@ public:
 
     void finish_log() noexcept final {
         try {
-            std::unique_lock<Lockable> lock{_lockable};
+            const std::lock_guard<Lockable> lock{_lockable};
             _out << "</log>\n" << std::flush;
             flush();
         } catch(...) {
@@ -256,7 +254,7 @@ public:
         try {
             const auto now = std::chrono::steady_clock::now();
             const auto sec = std::chrono::duration<float>(now - _start);
-            std::unique_lock<Lockable> lock{_lockable};
+            const std::lock_guard<Lockable> lock{_lockable};
             _out << "<c";
             _out << " src='" << source.name() << "'";
             _out << " iid='" << instance << "'";
@@ -278,9 +276,8 @@ protected:
 private:
     Lockable _lockable{};
     std::ostream& _out;
-    log_event_severity _min_severity;
+    const log_event_severity _min_severity;
     const std::chrono::steady_clock::time_point _start;
-    memory::aligned_block<63 * 1024> _alloc_block{};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
