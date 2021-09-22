@@ -41,10 +41,6 @@ namespace eagine {
 //------------------------------------------------------------------------------
 #if EAGINE_POSIX
 class asio_local_ostream_log_connection {
-    static auto _fix_addr(const string_view addr_str) noexcept {
-        return addr_str ? addr_str : string_view{"/tmp/eagine-xmllog"};
-    }
-
 public:
     asio_local_ostream_log_connection(const string_view addr_str)
       : _endpoint{c_str(_fix_addr(addr_str))}
@@ -72,6 +68,10 @@ protected:
     }
 
 private:
+    static auto _fix_addr(const string_view addr_str) noexcept -> string_view {
+        return addr_str ? addr_str : string_view{"/tmp/eagine-xmllog"};
+    }
+
     asio::io_context _context{};
     asio::local::stream_protocol::endpoint _endpoint{};
     asio::local::stream_protocol::socket _socket;
@@ -87,7 +87,7 @@ public:
       , _resolver{_context}
       , _socket{_context}
       , _out{&_buffer} {
-        for(auto& endpt :
+        for(const auto& endpt :
             _resolver.resolve(std::get<0>(_addr), std::get<1>(_addr))) {
             _socket.connect(endpt);
             break;
@@ -131,14 +131,10 @@ private:
 //------------------------------------------------------------------------------
 template <typename Connection, typename Lockable>
 class asio_ostream_log_backend final
-  : public Connection
+  : private Connection
   , public ostream_log_backend<Lockable> {
 
     using base = ostream_log_backend<Lockable>;
-
-    void flush() noexcept final {
-        Connection::_flush();
-    }
 
 public:
     asio_ostream_log_backend(
@@ -157,6 +153,10 @@ public:
 
     ~asio_ostream_log_backend() noexcept final {
         this->finish_log();
+    }
+
+    void flush() noexcept final {
+        Connection::_flush();
     }
 };
 //------------------------------------------------------------------------------
