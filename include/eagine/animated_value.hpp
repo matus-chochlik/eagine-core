@@ -63,8 +63,8 @@ public:
     }
 
 private:
-    T _curr{0};
-    T _next{0};
+    T _curr{};
+    T _next{};
     F _duration{1};
     F _phase{_duration};
     S _slope{2};
