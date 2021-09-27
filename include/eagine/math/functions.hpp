@@ -120,6 +120,24 @@ static constexpr auto blend(const T v1, const T v2, const A alpha) noexcept {
     return v1 * alpha + v2 * (1 - alpha);
 }
 //------------------------------------------------------------------------------
+template <typename Tuple, typename A, std::size_t... I>
+static constexpr auto do_blend_tuple(
+  const std::index_sequence<I...>,
+  const Tuple& v1,
+  const Tuple& v2,
+  const A alpha) noexcept -> Tuple {
+    return {(std::get<I>(v1) * alpha + std::get<I>(v2) * (1 - alpha))...};
+}
+
+template <typename... T, typename A>
+static constexpr auto blend(
+  const std::tuple<T...>& v1,
+  const std::tuple<T...>& v2,
+  const A alpha) noexcept {
+    return do_blend_tuple(
+      std::make_index_sequence<sizeof...(T)>(), v1, v2, alpha);
+}
+//------------------------------------------------------------------------------
 /// @brief Calculates the inverse logistic (log(x) - log(1 - x)) of @p x.
 /// @ingroup math
 template <typename T>
