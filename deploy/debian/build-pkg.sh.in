@@ -64,7 +64,20 @@ endif()
 
 set(_EAGine_NOTFOUND_MESSAGE)
 
+set(EAGine_USE_COMPONENTS)
 foreach(MODULE \${EAGine_FIND_COMPONENTS})
+	if(EXISTS \${CMAKE_CURRENT_LIST_DIR}/EAGine\${MODULE}Deps.cmake)
+		include(\${CMAKE_CURRENT_LIST_DIR}/EAGine\${MODULE}Deps.cmake)
+		foreach(DEPMOD \${EAGine\${MODULE}Deps})
+			list(APPEND EAGine_USE_COMPONENTS \${DEPMOD})
+		endforeach()
+		list(APPEND EAGine_USE_COMPONENTS \${MODULE})
+	endif()
+endforeach()
+
+list(REMOVE_DUPLICATES EAGine_USE_COMPONENTS)
+
+foreach(MODULE \${EAGine_USE_COMPONENTS})
     find_package(EAGine\${MODULE}
         \${_EAGine_FIND_PARTS_QUIET}
         \${_EAGine_FIND_PARTS_REQUIRED}

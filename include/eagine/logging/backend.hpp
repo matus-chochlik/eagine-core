@@ -29,9 +29,8 @@ struct does_have_log_entry_adapter {
 private:
     template <
       typename X,
-      typename = decltype(adapt_log_entry_arg(
-        std::declval<identifier>(),
-        std::declval<X>()))>
+      typename = decltype(
+        adapt_log_entry_arg(std::declval<identifier>(), std::declval<X>()))>
     static auto _test(X*) -> std::true_type;
     static auto _test(...) -> std::false_type;
 

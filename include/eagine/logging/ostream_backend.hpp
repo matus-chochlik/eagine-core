@@ -28,7 +28,7 @@ public:
       , _min_severity{min_severity}
       , _start{std::chrono::steady_clock::now()} {
         try {
-            std::unique_lock<Lockable> lock{_lockable};
+            const std::lock_guard<Lockable> lock{_lockable};
             _out << "<?xml version='1.0' encoding='UTF-8'?>\n";
             _out << "<log start='" << _start.time_since_epoch().count()
                  << "'>\n";
@@ -43,23 +43,22 @@ public:
 
     auto allocator() noexcept -> memory::shared_byte_allocator final {
         return memory::default_byte_allocator();
-        // TODO
-        // return {memory::stack_byte_allocator_only<>{_alloc_block}};
     }
 
     auto type_id() noexcept -> identifier final {
         return EAGINE_ID(OutStream);
     }
 
-    auto entry_backend(identifier, log_event_severity severity) noexcept
-      -> logger_backend* final {
+    auto entry_backend(
+      const identifier,
+      const log_event_severity severity) noexcept -> logger_backend* final {
         if(severity >= _min_severity) {
             return this;
         }
         return nullptr;
     }
 
-    void enter_scope(identifier scope) noexcept final {
+    void enter_scope(const identifier scope) noexcept final {
         try {
             _lockable.lock();
             _out << "<s name='" << scope.name() << "'>\n";
@@ -67,7 +66,7 @@ public:
         }
     }
 
-    void leave_scope(identifier) noexcept final {
+    void leave_scope(const identifier) noexcept final {
         try {
             _lockable.lock();
             _out << "</s>\n";
@@ -76,12 +75,12 @@ public:
     }
 
     void set_description(
-      identifier source,
-      logger_instance_id instance,
-      string_view display_name,
-      string_view description) noexcept final {
+      const identifier source,
+      const logger_instance_id instance,
+      const string_view display_name,
+      const string_view description) noexcept final {
         try {
-            std::unique_lock<Lockable> lock{_lockable};
+            const std::lock_guard<Lockable> lock{_lockable};
             _out << "<d";
             _out << " src='" << source.name() << "'";
             _out << " iid='" << instance << "'";
@@ -94,20 +93,23 @@ public:
     }
 
     auto begin_message(
-      identifier source,
-      identifier tag,
-      logger_instance_id instance,
-      log_event_severity severity,
-      string_view format) noexcept -> bool final {
+      const identifier source,
+      const identifier tag,
+      const logger_instance_id instance,
+      const log_event_severity severity,
+      const string_view format) noexcept -> bool final {
         try {
             const auto now = std::chrono::steady_clock::now();
             const auto sec = std::chrono::duration<float>(now - _start);
+            const auto severity_name{enumerator_name(severity)};
+            const auto source_name{source.name()};
+            const auto tag_name{tag.name()};
             _lockable.lock();
             _out << "<m";
-            _out << " lvl='" << enumerator_name(severity) << "'";
-            _out << " src='" << source.name() << "'";
+            _out << " lvl='" << severity_name << "'";
+            _out << " src='" << source_name << "'";
             if(tag) {
-                _out << " tag='" << tag.name() << "'";
+                _out << " tag='" << tag_name << "'";
             }
             _out << " iid='" << instance << "'";
             _out << " ts='" << sec.count() << "'";
@@ -118,7 +120,7 @@ public:
         return true;
     }
 
-    void add_nothing(identifier arg, identifier tag) noexcept final {
+    void add_nothing(const identifier arg, const identifier tag) noexcept final {
         try {
             _out << "<a n='" << arg.name() << "' t='" << tag.name() << "'/>";
         } catch(...) {
@@ -126,9 +128,9 @@ public:
     }
 
     void add_identifier(
-      identifier arg,
-      identifier tag,
-      identifier value) noexcept final {
+      const identifier arg,
+      const identifier tag,
+      const identifier value) noexcept final {
         try {
             _out << "<a n='" << arg.name() << "' t='" << tag.name() << "'>"
                  << value.name() << "</a>";
@@ -137,9 +139,9 @@ public:
     }
 
     void add_message_id(
-      identifier arg,
-      identifier tag,
-      message_id msg_id) noexcept final {
+      const identifier arg,
+      const identifier tag,
+      const message_id msg_id) noexcept final {
         try {
             _out << "<a n='" << arg.name() << "' t='" << tag.name() << "'>"
                  << msg_id.class_().name() << "." << msg_id.method().name()
@@ -148,7 +150,10 @@ public:
         }
     }
 
-    void add_bool(identifier arg, identifier tag, bool value) noexcept final {
+    void add_bool(
+      const identifier arg,
+      const identifier tag,
+      const bool value) noexcept final {
         try {
             _out << "<a n='" << arg.name() << "' t='" << tag.name() << "'>"
                  << (value ? "true" : "false") << "</a>";
@@ -157,9 +162,9 @@ public:
     }
 
     void add_integer(
-      identifier arg,
-      identifier tag,
-      std::intmax_t value) noexcept final {
+      const identifier arg,
+      const identifier tag,
+      const std::intmax_t value) noexcept final {
         try {
             _out << "<a n='" << arg.name() << "' t='" << tag.name() << "'>"
                  << value << "</a>";
@@ -168,17 +173,9 @@ public:
     }
 
     void add_unsigned(
-      identifier arg,
-      identifier tag,
-      std::uintmax_t value) noexcept final {
-        try {
-            _out << "<a n='" << arg.name() << "' t='" << tag.name() << "'>"
-                 << value << "</a>";
-        } catch(...) {
-        }
-    }
-
-    void add_float(identifier arg, identifier tag, float value) noexcept final {
+      const identifier arg,
+      const identifier tag,
+      const std::uintmax_t value) noexcept final {
         try {
             _out << "<a n='" << arg.name() << "' t='" << tag.name() << "'>"
                  << value << "</a>";
@@ -187,11 +184,22 @@ public:
     }
 
     void add_float(
-      identifier arg,
-      identifier tag,
-      float min,
-      float value,
-      float max) noexcept final {
+      const identifier arg,
+      const identifier tag,
+      const float value) noexcept final {
+        try {
+            _out << "<a n='" << arg.name() << "' t='" << tag.name() << "'>"
+                 << value << "</a>";
+        } catch(...) {
+        }
+    }
+
+    void add_float(
+      const identifier arg,
+      const identifier tag,
+      const float min,
+      const float value,
+      const float max) noexcept final {
         try {
             _out << "<a n='" << arg.name() << "' t='" << tag.name() << "' min='"
                  << min << "' max='" << max << "'>" << value << "</a>";
@@ -200,9 +208,9 @@ public:
     }
 
     void add_duration(
-      identifier arg,
-      identifier tag,
-      std::chrono::duration<float> value) noexcept final {
+      const identifier arg,
+      const identifier tag,
+      const std::chrono::duration<float> value) noexcept final {
         try {
             _out << "<a n='" << arg.name() << "' t='" << tag.name()
                  << "' u='s'>" << value.count() << "</a>";
@@ -211,9 +219,9 @@ public:
     }
 
     void add_blob(
-      identifier arg,
-      identifier tag,
-      memory::const_block value) noexcept final {
+      const identifier arg,
+      const identifier tag,
+      const memory::const_block value) noexcept final {
         try {
             _out << "<a n='" << arg.name() << "' t='" << tag.name()
                  << "' blob='true'>" << base64dump(value) << "</a>";
@@ -221,8 +229,10 @@ public:
         }
     }
 
-    void add_string(identifier arg, identifier tag, string_view value) noexcept
-      final {
+    void add_string(
+      const identifier arg,
+      const identifier tag,
+      const string_view value) noexcept final {
         try {
             _out << "<a n='" << arg.name() << "' t='" << tag.name() << "'>"
                  << value << "</a>";
@@ -241,7 +251,7 @@ public:
 
     void finish_log() noexcept final {
         try {
-            std::unique_lock<Lockable> lock{_lockable};
+            const std::lock_guard<Lockable> lock{_lockable};
             _out << "</log>\n" << std::flush;
             flush();
         } catch(...) {
@@ -249,18 +259,20 @@ public:
     }
 
     void log_chart_sample(
-      identifier source,
-      logger_instance_id instance,
-      identifier series,
-      float value) noexcept final {
+      const identifier source,
+      const logger_instance_id instance,
+      const identifier series,
+      const float value) noexcept final {
         try {
             const auto now = std::chrono::steady_clock::now();
             const auto sec = std::chrono::duration<float>(now - _start);
-            std::unique_lock<Lockable> lock{_lockable};
+            const auto source_name{source.name()};
+            const auto series_name{series.name()};
+            const std::lock_guard<Lockable> lock{_lockable};
             _out << "<c";
-            _out << " src='" << source.name() << "'";
+            _out << " src='" << source_name << "'";
             _out << " iid='" << instance << "'";
-            _out << " ser='" << series.name() << "'";
+            _out << " ser='" << series_name << "'";
             _out << " ts='" << sec.count() << "'";
             _out << " v='" << value << "'";
             _out << "/>\n";
@@ -278,9 +290,8 @@ protected:
 private:
     Lockable _lockable{};
     std::ostream& _out;
-    log_event_severity _min_severity;
+    const log_event_severity _min_severity;
     const std::chrono::steady_clock::time_point _start;
-    memory::aligned_block<63 * 1024> _alloc_block{};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
