@@ -187,7 +187,7 @@ BOOST_SPIRIT_DEFINE(
 template <typename Iter>
 static inline auto do_parse(Iter i, Iter e, parsed_number_t& n) {
     if(bs::phrase_parse(i, e, numeric_expression, bs::ascii::space, n)) {
-        return true;
+        return i == e;
     }
     return false;
 }

@@ -103,10 +103,12 @@ auto convert_from_string_with(
   const string_view src,
   const type_identity<T> tid) noexcept -> optionally_valid<T> {
     char* end = nullptr; // NOLINT(hicpp-vararg)
-    auto cstr = c_str(src);
+    const auto cstr{c_str(src)};
     errno = 0;
     const N result{converter(cstr, &end)};
-    if((errno != ERANGE) && (end != cstr) && (end != nullptr)) {
+    if(
+      (errno != ERANGE) && (end != cstr) && (end != nullptr) &&
+      (*end == '\0' || *end == ' ' || *end == '\t')) {
         if(auto converted{multiply_and_convert_if_fits<T>(result, end)}) {
             return converted;
         }
@@ -122,10 +124,12 @@ auto convert_from_string_with(
   const string_view src,
   const type_identity<T> tid) noexcept -> optionally_valid<T> {
     char* end = nullptr; // NOLINT(hicpp-vararg)
-    auto cstr = c_str(src);
+    const auto cstr{c_str(src)};
     errno = 0;
     const N result = converter(cstr, &end, base);
-    if((errno != ERANGE) && (end != cstr) && (end != nullptr)) {
+    if(
+      (errno != ERANGE) && (end != cstr) && (end != nullptr) &&
+      (*end == '\0' || *end == ' ' || *end == '\t')) {
         if(auto converted{multiply_and_convert_if_fits<T>(result, end)}) {
             return converted;
         }
