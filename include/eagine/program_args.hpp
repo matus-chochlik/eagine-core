@@ -1190,7 +1190,7 @@ public:
 
     /// @brief Returns first argument.
     auto first() const noexcept -> program_arg {
-        return program_arg(1, _argc, _argv);
+        return {1, _argc, _argv};
     }
 
     /// @brief Returns an iterator to the first argument (not the command name).

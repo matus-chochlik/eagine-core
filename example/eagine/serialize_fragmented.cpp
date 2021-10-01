@@ -146,9 +146,9 @@ auto generate_data(std::size_t n) -> std::vector<T> {
 auto main() -> int {
     using namespace eagine;
 
-    serialize_data(generate_data<int>(8 * 1024));
-    serialize_data(generate_data<short>(4 * 1024));
-    serialize_data(generate_data<char>(2 * 1024));
+    serialize_data(generate_data<int>(std_size(8 * 1024)));
+    serialize_data(generate_data<short>(std_size(4 * 1024)));
+    serialize_data(generate_data<char>(std_size(2 * 1024)));
 
     return 0;
 }

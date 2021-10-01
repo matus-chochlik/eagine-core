@@ -22,8 +22,7 @@
 #include <cstdint>
 #include <string>
 
-namespace eagine {
-namespace mbs {
+namespace eagine::mbs {
 //------------------------------------------------------------------------------
 using code_point_t = std::uint32_t;
 static constexpr code_point_t invalid_code_point = 0x7FFFFFFFU;
@@ -214,8 +213,7 @@ auto encode_code_points(
 auto decode_code_points(const valid_cbyte_span& bytes, span<code_point> cps)
   -> bool;
 //------------------------------------------------------------------------------
-} // namespace mbs
-} // namespace eagine
+} // namespace eagine::mbs
 
 #include <eagine/multi_byte_seq.inl>
 

@@ -710,7 +710,7 @@ class basic_sudoku_tiling;
 template <unsigned S>
 class basic_sudoku_tile_patch {
     static_assert(S > 2U);
-    static constexpr const span_size_t M = S * (S - 2);
+    static constexpr const span_size_t M = span_size(S * (S - 2));
 
 public:
     basic_sudoku_tile_patch(const span_size_t w, const span_size_t h)
