@@ -8,8 +8,7 @@
 #include <eagine/assert.hpp>
 #include <array>
 
-namespace eagine {
-namespace mbs {
+namespace eagine::mbs {
 //------------------------------------------------------------------------------
 inline auto do_decode_sequence_length(const byte b) noexcept
   -> valid_sequence_length {
@@ -275,5 +274,4 @@ inline auto decode_code_points(
     return true;
 }
 //------------------------------------------------------------------------------
-} // namespace mbs
-} // namespace eagine
+} // namespace eagine::mbs

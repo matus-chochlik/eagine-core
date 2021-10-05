@@ -55,7 +55,7 @@ public:
 
 private:
     static constexpr auto _chunk_size() noexcept -> span_size_t {
-        return 8 * 1024;
+        return span_size(8 * 1024);
     }
 
     std::istream& _in;

@@ -19,7 +19,7 @@ namespace eagine {
 class data_compressor_impl {
 private:
     memory::buffer _buff{};
-    std::array<byte, 16 * 1024> _temp{};
+    std::array<byte, std_size(16U * 1024U)> _temp{};
     ::z_stream _zsd{};
     ::z_stream _zsi{};
 

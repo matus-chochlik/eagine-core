@@ -63,11 +63,12 @@ public:
       typename = std::enable_if_t<
         std::is_integral_v<Int> && std::is_convertible_v<Int, std::ptrdiff_t>>>
     constexpr basic_address(basic_address that, Int offs) noexcept
-      : _addr(that.ptr() + offs) {}
+      // NOLINTNEXTLINE(performance-no-int-to-ptr)
+      : _addr{reinterpret_cast<pointer>(that.value() + offs)} {}
 
     template <bool IsConst2, typename = std::enable_if_t<IsConst && !IsConst2>>
     constexpr basic_address(basic_address<IsConst2> a) noexcept
-      : _addr(pointer(a)) {}
+      : _addr{pointer(a)} {}
 
     /// @brief Indicates if the stored address is null.
     constexpr auto is_null() const noexcept {

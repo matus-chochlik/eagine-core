@@ -110,6 +110,11 @@ public:
         return cw ? cross(ac(), ab()) : cross(ab(), ac());
     }
 
+    /// @brief Returns the area of the triangle.
+    constexpr auto area() const noexcept -> T {
+        return length(cross(ab(), ac())) / T(2);
+    }
+
 private:
     std::array<vector<T, N, V>, 3> _vertices{};
 };
