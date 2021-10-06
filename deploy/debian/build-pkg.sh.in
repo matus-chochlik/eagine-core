@@ -8,16 +8,23 @@ pkg_dir=$(realpath "@PKG_DIR@")
 mkdir -p "${pkg_dir}/usr"
 pkg_prefix=$(realpath "@PKG_DIR@/usr")
 lib_prefix="${pkg_prefix}/lib/@PKG_MULTIARCH@"
+bin_prefix="${pkg_prefix}/bin"
 cmk_prefix="${lib_prefix}/cmake/EAGine"
 
 mkdir -p "${pkg_dir}/DEBIAN"
 mkdir -p "${pkg_prefix}/include"
 mkdir -p "${lib_prefix}/eagine"
+mkdir -p "${bin_prefix}"
 mkdir -p "${cmk_prefix}"
 
 # ------------------------------------------------------------------------------
+touch "${cmk_prefix}/empty"
+
 cp "${src_dir}/config/EAGineEmbedCommon.cmake" \
    "${cmk_prefix}/EAGineEmbedCommon.cmake"
+
+cp "${src_dir}/config/tools/embed_generator" \
+   "${bin_prefix}/eagine-embed_generator"
 
 cp "${eagine_core_path}" \
    "${lib_prefix}/eagine/${eagine_core_name}"
@@ -53,6 +60,15 @@ if (NOT EAGine_FIND_COMPONENTS)
     return()
 endif()
 
+get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_IMPORT_PREFIX "\${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "\${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "\${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "\${_IMPORT_PREFIX}" PATH)
+if(_IMPORT_PREFIX STREQUAL "/")
+  set(_IMPORT_PREFIX "")
+endif()
+
 set(_EAGine_FIND_PARTS_REQUIRED)
 if(EAGine_FIND_REQUIRED)
     set(_EAGine_FIND_PARTS_REQUIRED REQUIRED)
@@ -66,13 +82,13 @@ set(_EAGine_NOTFOUND_MESSAGE)
 
 set(EAGine_USE_COMPONENTS)
 foreach(MODULE \${EAGine_FIND_COMPONENTS})
-	if(EXISTS \${CMAKE_CURRENT_LIST_DIR}/EAGine\${MODULE}Deps.cmake)
-		include(\${CMAKE_CURRENT_LIST_DIR}/EAGine\${MODULE}Deps.cmake)
-		foreach(DEPMOD \${EAGine\${MODULE}Deps})
-			list(APPEND EAGine_USE_COMPONENTS \${DEPMOD})
-		endforeach()
-		list(APPEND EAGine_USE_COMPONENTS \${MODULE})
-	endif()
+    if(EXISTS \${CMAKE_CURRENT_LIST_DIR}/EAGine\${MODULE}Deps.cmake)
+        include(\${CMAKE_CURRENT_LIST_DIR}/EAGine\${MODULE}Deps.cmake)
+        foreach(DEPMOD \${EAGine\${MODULE}Deps})
+            list(APPEND EAGine_USE_COMPONENTS \${DEPMOD})
+        endforeach()
+    endif()
+    list(APPEND EAGine_USE_COMPONENTS \${MODULE})
 endforeach()
 
 list(REMOVE_DUPLICATES EAGine_USE_COMPONENTS)
@@ -82,7 +98,7 @@ foreach(MODULE \${EAGine_USE_COMPONENTS})
         \${_EAGine_FIND_PARTS_QUIET}
         \${_EAGine_FIND_PARTS_REQUIRED}
         PATHS \${CMAKE_CURRENT_LIST_DIR}
-		NO_DEFAULT_PATH
+        NO_DEFAULT_PATH
     )
     if(NOT EAGine\${MODULE}_FOUND)
         if(EAGine_FIND_REQUIRED_\${MODULE})
@@ -97,6 +113,37 @@ if (_EAGine_NOTFOUND_MESSAGE)
     set(EAGine_NOT_FOUND_MESSAGE "\${_EAGine_NOTFOUND_MESSAGE}")
     set(EAGine_FOUND False)
 endif()
+
+set(
+    EAGINE_EMBED_GENERATOR
+    "python3" "\${_IMPORT_PREFIX}/bin/eagine-embed_generator"
+)
+
+include(\${CMAKE_CURRENT_LIST_DIR}/EAGineEmbedCommon.cmake)
+
+function(eagine_embed_file RES)
+  if(DEFINED EAGINE_EMBED_\${RES})
+    if(EXISTS \${EAGINE_EMBED_\${RES}})
+      message(
+        STATUS
+        "using \${EAGINE_EMBED_\${RES}} as embedded \${RES}"
+      )
+      set(EAGINE_EMBED_\${RES} "\${EAGINE_EMBED_\${RES}}" PARENT_SCOPE)
+    else()
+      message(
+        WARNING
+        "\${EAGINE_EMBED_\${RES}} set but does not exist"
+      )
+      set(EAGINE_EMBED_\${RES} "\${CMAKE_CURRENT_LIST_FILE}/empty" PARENT_SCOPE)
+    endif()
+  else()
+    message(
+      STATUS
+      "using empty file as embedded \${RES}"
+    )
+    set(EAGINE_EMBED_\${RES} "\${CMAKE_CURRENT_LIST_FILE}/empty" PARENT_SCOPE)
+  endif()
+endfunction()
 EOD
 # ------------------------------------------------------------------------------
 mkdir -p "${cmk_prefix}"
@@ -125,19 +172,19 @@ target_compile_definitions(
   EAGine::Core INTERFACE EAGINE_CORE_LIBRARY=1
 )
 target_compile_definitions(
-	EAGine::Core INTERFACE EAGINE_USE_ZLIB=1
+  EAGine::Core INTERFACE EAGINE_USE_ZLIB=1
 )
 if(ZLIB_INCLUDE_DIRS)
-	target_include_directories(
-		EAGine::Core INTERFACE "\${ZLIB_INCLUDE_DIRS}"
-	)
+  target_include_directories(
+    EAGine::Core INTERFACE "\${ZLIB_INCLUDE_DIRS}"
+  )
 endif()
 
 if(ZLIB_LIBRARY_DIRS)
-	set_target_properties(
-		EAGine::Core PROPERTIES
-		INTERFACE_LINK_DIRECTORIES "\${ZLIB_LIBRARY_DIRS}"
-	)
+  set_target_properties(
+    EAGine::Core PROPERTIES
+    INTERFACE_LINK_DIRECTORIES "\${ZLIB_LIBRARY_DIRS}"
+  )
 endif()
 
 set_target_properties(
@@ -154,9 +201,9 @@ target_link_libraries(
   INTERFACE
     "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@/eagine/${eagine_core_name}"
     "\${_IMPORT_PREFIX}/lib/@PKG_MULTIARCH@/eagine/${ryml_name}"
-	\${ZLIB_LIBRARIES}
-	Threads::Threads
-	systemd
+    \${ZLIB_LIBRARIES}
+    Threads::Threads
+    systemd
 )
 EOD
 # ------------------------------------------------------------------------------
