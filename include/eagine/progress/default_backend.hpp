@@ -91,14 +91,14 @@ public:
     }
 
     void set_update_callback(
-      const callable_ref<bool()> callback,
+      const callable_ref<bool() noexcept> callback,
       const std::chrono::milliseconds min_interval) final {
         _callback = callback;
         _min_interval = min_interval;
     }
 
 private:
-    void _call_back() {
+    void _call_back() noexcept {
         const auto now = _clock.now();
         if(_last_call < now) {
             _last_call = now + _min_interval;
@@ -129,7 +129,7 @@ private:
     }
 
     logger _log;
-    callable_ref<bool()> _callback{};
+    callable_ref<bool() noexcept> _callback{};
     std::chrono::milliseconds _min_interval{500};
     std::chrono::steady_clock::time_point _last_call{};
     std::chrono::steady_clock _clock;

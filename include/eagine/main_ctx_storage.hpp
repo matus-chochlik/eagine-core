@@ -77,7 +77,7 @@ public:
     }
 
     void set_progress_update_callback(
-      const callable_ref<bool()>& callback,
+      const callable_ref<bool() noexcept>& callback,
       const std::chrono::milliseconds min_interval) final {
         _progress_root.set_update_callback(callback, min_interval);
     }

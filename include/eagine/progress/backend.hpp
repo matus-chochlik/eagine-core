@@ -56,7 +56,7 @@ struct progress_tracker_backend : interface<progress_tracker_backend> {
 
     /// @brief Assigns a function to be called on progress update.
     virtual void set_update_callback(
-      const callable_ref<bool()>,
+      const callable_ref<bool() noexcept>,
       const std::chrono::milliseconds min_interval) = 0;
 };
 //------------------------------------------------------------------------------
