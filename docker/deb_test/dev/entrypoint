@@ -5,5 +5,5 @@ cd /tmp/eagine/_build
 cmake /tmp/eagine
 cmake --build /tmp/eagine/_build
 for e in /tmp/eagine/_build/example/eagine-*
-do ${e} --use-null-log
+do test -x ${e} && ${e} --use-null-log
 done
