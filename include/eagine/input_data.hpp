@@ -16,8 +16,9 @@
 
 namespace eagine {
 
-void read_stream_data(std::istream&, memory::buffer& dest);
-void read_file_data(const string_view path, memory::buffer& dest);
+auto read_stream_data(std::istream&, memory::buffer& dest) noexcept -> bool;
+auto read_file_data(const string_view path, memory::buffer& dest) noexcept
+  -> bool;
 
 } // namespace eagine
 
