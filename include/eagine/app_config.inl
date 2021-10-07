@@ -34,7 +34,7 @@ public:
             }
         }
         for(const auto arg : main_context().args()) {
-            if(arg.is_tag("--config-tag")) {
+            if(arg.is_long_tag("config-tag")) {
                 if(auto tag_arg{arg.next()}) {
                     _tag_list.push_back(tag_arg.get());
                 }

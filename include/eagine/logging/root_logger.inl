@@ -35,17 +35,17 @@ auto root_logger_choose_backend(
     std::unique_ptr<logger_backend> result{};
 
     for(auto& arg : args) {
-        if(arg.is_tag("--use-null-log")) {
+        if(arg.is_long_tag("use-null-log")) {
             return std::make_unique<null_log_backend>();
-        } else if(arg.is_tag("--use-cerr-log")) {
+        } else if(arg.is_long_tag("use-cerr-log")) {
             return std::make_unique<ostream_log_backend<>>(
               std::cerr, min_severity);
-        } else if(arg.is_tag("--use-cout-log")) {
+        } else if(arg.is_long_tag("use-cout-log")) {
             return std::make_unique<ostream_log_backend<>>(
               std::cout, min_severity);
-        } else if(arg.is_tag("--use-syslog")) {
+        } else if(arg.is_long_tag("use-syslog")) {
             return std::make_unique<syslog_log_backend<>>(min_severity);
-        } else if(arg.is_tag("--use-asio-nw-log")) {
+        } else if(arg.is_long_tag("use-asio-nw-log")) {
             string_view nw_addr;
             if(arg.next() && !arg.next().starts_with("-")) {
                 nw_addr = arg.next();
@@ -56,7 +56,7 @@ auto root_logger_choose_backend(
             return std::make_unique<asio_tcpipv4_ostream_log_backend<>>(
               nw_addr, min_severity);
 #if EAGINE_HAS_ASIO_LOCAL_LOG_BACKEND
-        } else if(arg.is_tag("--use-asio-log")) {
+        } else if(arg.is_long_tag("use-asio-log")) {
             return std::make_unique<asio_local_ostream_log_backend<>>(
               min_severity);
 #endif
@@ -81,7 +81,7 @@ auto root_logger::_init_backend(
     auto min_severity{default_log_severity()};
 
     for(auto arg = args.first(); arg; arg = arg.next()) {
-        if(arg.is_tag("--min-log-severity")) {
+        if(arg.is_long_tag("min-log-severity")) {
             if(arg.next().parse(min_severity, std::cerr)) {
                 arg = arg.next();
             }

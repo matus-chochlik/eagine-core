@@ -334,25 +334,61 @@ public:
 
     /// @brief Indicates if this argument value starts with the specified string.
     /// @see ends_with
+    /// @see is_short_tag
+    /// @see is_long_tag
     auto starts_with(const string_view str) const noexcept {
         return memory::starts_with(get(), str);
     }
 
     /// @brief Indicates if this argument value ends with the specified string.
     /// @see starts_with
+    /// @see is_short_tag
+    /// @see is_long_tag
     auto ends_with(const string_view str) const noexcept {
         return memory::ends_with(get(), str);
     }
 
     /// @brief Indicates if this argument value is equal to the specified string.
+    /// @see is_short_tag
+    /// @see is_long_tag
     auto is_tag(const string_view tag) const noexcept {
         return are_equal(get(), tag);
+    }
+
+    /// @brief Indicates if argument is same as the specified string prefixed by '-'.
+    /// @see is_tag
+    /// @see is_long_tag
+    /// @see is_prefixed_tag
+    auto is_short_tag(const string_view name) const noexcept {
+        return ((get().size() == 1 + name.size()) && starts_with("-") &&
+                ends_with(name)) ||
+               is_tag(name);
+    }
+
+    /// @brief Indicates if argument is same as the specified string prefixed by '--'.
+    /// @see is_tag
+    /// @see is_short_tag
+    /// @see is_prefixed_tag
+    auto is_long_tag(const string_view name) const noexcept {
+        return ((get().size() == 2 + name.size()) && starts_with("--") &&
+                ends_with(name)) ||
+               is_tag(name);
+    }
+
+    /// @brief Indicates if argument is same as the specified string prefixed by '--'.
+    /// @see is_tag
+    /// @see is_long_tag
+    /// @see is_short_tag
+    auto is_prefixed_tag(const string_view prefix, const string_view name)
+      const noexcept {
+        return (get().size() == prefix.size() + name.size()) &&
+               starts_with(prefix) && ends_with(name);
     }
 
     /// @brief Indicates if this argument value is one of the two specified strings.
     auto is_tag(const string_view short_tag, const string_view long_tag)
       const noexcept {
-        return are_equal(get(), short_tag) || are_equal(get(), long_tag);
+        return is_short_tag(short_tag) || is_long_tag(long_tag);
     }
 
     /// @brief Indicates if this argument value is equal to the one declared in param.
