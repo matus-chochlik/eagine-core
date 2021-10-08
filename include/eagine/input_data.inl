@@ -17,7 +17,7 @@ static inline auto do_read_stream_data(
   std::istream& input,
   memory::buffer& dest) noexcept -> bool {
     try {
-        std::ios_base::iostate oldexc = input.exceptions();
+        const std::ios_base::iostate oldexc = input.exceptions();
         const auto reset_exc =
           finally([&input, oldexc] { input.exceptions(oldexc); });
         input.exceptions(std::ios::failbit | std::ios::badbit);
@@ -25,18 +25,17 @@ static inline auto do_read_stream_data(
         input.seekg(0, std::ios::end);
         dest.resize(memory::buffer::size_type(input.tellg()));
         input.seekg(0, std::ios::beg);
-        return input
-          .read(
-            static_cast<char*>(dest.addr()),
-            static_cast<std::streamsize>(dest.size()))
-          .good();
+        input.read(
+          static_cast<char*>(dest.addr()),
+          static_cast<std::streamsize>(dest.size()));
+        return true;
     } catch(const std::ios_base::failure&) {
         std::vector<char> temp;
         temp.insert(
           temp.begin(),
           std::istreambuf_iterator<char>(input),
           std::istreambuf_iterator<char>());
-        if(input.good()) {
+        if(!input.bad()) {
             dest.resize(span_size(temp.size()));
             memory::copy(as_bytes(cover(temp)), dest);
             return true;
