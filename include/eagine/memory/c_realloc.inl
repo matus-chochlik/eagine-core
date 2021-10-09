@@ -21,11 +21,11 @@ inline auto c_byte_reallocator::allocate(size_type n, size_type a) noexcept
     }
 
     // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
-    auto p{as_address(std::malloc(std_size(n)))};
+    auto p{std::malloc(std_size(n))};
 
-    EAGINE_ASSERT(is_aligned_to(p, a));
+    EAGINE_ASSERT(is_aligned_to(as_address(p), a));
 
-    return this->acquire_block(block(p, n));
+    return this->acquire_block(block(static_cast<byte*>(p), n));
 }
 //------------------------------------------------------------------------------
 inline void c_byte_reallocator::deallocate(owned_block&& b, size_type) noexcept {
@@ -48,13 +48,13 @@ inline auto c_byte_reallocator::reallocate(
     }
 
     // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
-    auto p{as_address(std::realloc(b.data(), std_size(n)))};
+    auto p{std::realloc(b.data(), std_size(n))};
 
     this->release_block(std::move(b));
 
-    EAGINE_ASSERT(is_aligned_to(p, a));
+    EAGINE_ASSERT(is_aligned_to(as_address(p), a));
 
-    return this->acquire_block({p, n});
+    return this->acquire_block({static_cast<byte*>(p), n});
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::memory
