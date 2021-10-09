@@ -296,6 +296,20 @@ public:
     }
 
     template <typename T>
+    auto convert_tribool(_val_t& val, T& dest) -> bool {
+        bool temp{};
+        if(convert_bool(val, temp)) {
+            dest = {temp, false};
+            return true;
+        }
+        if(val.IsNull()) {
+            dest = indeterminate;
+            return true;
+        }
+        return false;
+    }
+
+    template <typename T>
     auto convert_int(_val_t& val, T& dest) -> bool {
         if(val.IsInt()) {
             if(auto converted{convert_if_fits<T>(val.GetInt())}) {
@@ -415,6 +429,10 @@ public:
 
     auto convert(_val_t& val, bool& dest) {
         return convert_bool(val, dest);
+    }
+
+    auto convert(_val_t& val, tribool& dest) {
+        return convert_tribool(val, dest);
     }
 
     auto convert(_val_t& val, byte& dest) {
