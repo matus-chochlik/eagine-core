@@ -5,6 +5,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get --yes update
 RUN apt-get --yes upgrade
 RUN apt-get --yes install pkgconf cmake make g++
+RUN apt-get --yes install python3
 
 RUN mkdir -p /tmp/eagine
 COPY eagine-core-dev.deb /tmp

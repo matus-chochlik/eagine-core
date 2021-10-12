@@ -21,7 +21,7 @@ public:
       : activity_progress{_init_backend(ctx)} {}
 
     void set_update_callback(
-      const callable_ref<bool()> callback,
+      const callable_ref<bool() noexcept> callback,
       const std::chrono::milliseconds min_interval) {
         if(auto pbe{backend()}) {
             extract(pbe).set_update_callback(callback, min_interval);

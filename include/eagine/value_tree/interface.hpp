@@ -15,6 +15,7 @@
 #include "../string_path.hpp"
 #include "../string_span.hpp"
 #include "../tags.hpp"
+#include "../tribool.hpp"
 #include <chrono>
 #include <cstdint>
 #include <memory>
@@ -147,6 +148,12 @@ struct compound_interface : interface<compound_interface> {
       attribute_interface&,
       span_size_t offset,
       span<bool> dest) -> span_size_t = 0;
+
+    /// @brief Fetches boolean values from attribute into dest, starting at offset.
+    virtual auto fetch_values(
+      attribute_interface&,
+      span_size_t offset,
+      span<tribool> dest) -> span_size_t = 0;
 
     /// @brief Fetches char values from attribute into dest, starting at offset.
     virtual auto fetch_values(

@@ -12,3 +12,7 @@ target_link_libraries(eagine-from_string PUBLIC EAGine::Core)
 add_executable(eagine-sudoku_noise sudoku_noise.cpp)
 target_link_libraries(eagine-sudoku_noise PUBLIC EAGine::Core)
 
+add_executable(eagine-embed_self embed_self.cpp)
+target_link_libraries(eagine-embed_self PUBLIC EAGine::Core)
+eagine_embed_target_resources(TARGET eagine-embed_self)
+

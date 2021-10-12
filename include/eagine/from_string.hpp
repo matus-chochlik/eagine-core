@@ -14,6 +14,7 @@
 #include "mp_string.hpp"
 #include "selector.hpp"
 #include "string_span.hpp"
+#include "tribool.hpp"
 #include "type_identity.hpp"
 #include "valid_if/always.hpp"
 #include "valid_if/decl.hpp"
@@ -65,6 +66,24 @@ static inline auto from_string(
       {"false"}, {"False"}, {"0"}, {"f"}, {"F"}};
     if(find_element(view(false_strs), src)) {
         return {false, true};
+    }
+
+    return {};
+}
+
+template <identifier_t V>
+static inline auto from_string(
+  const string_view src,
+  const type_identity<tribool>,
+  const selector<V> sel) noexcept -> optionally_valid<tribool> {
+    if(const auto val{from_string(src, type_identity<bool>{}, sel)}) {
+        return {tribool{extract(val), false}, true};
+    }
+
+    const string_view unknown_strs[] = {
+      {"indeterminate"}, {"Indeterminate"}, {"unknown"}};
+    if(find_element(view(unknown_strs), src)) {
+        return {indeterminate, true};
     }
 
     return {};

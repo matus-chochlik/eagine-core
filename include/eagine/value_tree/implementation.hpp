@@ -33,6 +33,13 @@ public:
     auto fetch_values(
       attribute_interface& attrib,
       span_size_t offset,
+      span<tribool> dest) -> span_size_t final {
+        return derived().do_fetch_values(attrib, offset, dest);
+    }
+
+    auto fetch_values(
+      attribute_interface& attrib,
+      span_size_t offset,
       span<char> dest) -> span_size_t final {
         return derived().do_fetch_values(attrib, offset, dest);
     }
