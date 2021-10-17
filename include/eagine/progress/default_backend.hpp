@@ -39,15 +39,17 @@ public:
       const activity_progress_id_t parent_id,
       const string_view title,
       span_size_t total_steps) -> activity_progress_id_t final {
-        std::lock_guard<std::mutex> lock{_mutex};
-        while(true) {
-            if(++_id_sequence != 0) {
-                if(_activities.find(_id_sequence) == _activities.end()) {
-                    break;
+        auto& info = [&]() -> default_progress_info& {
+            std::lock_guard<std::mutex> lock{_mutex};
+            while(true) {
+                if(++_id_sequence != 0) {
+                    if(_activities.find(_id_sequence) == _activities.end()) {
+                        break;
+                    }
                 }
             }
-        }
-        auto& info = _activities[_id_sequence];
+            return _activities[_id_sequence];
+        }();
         info.title = to_string(title);
         info.total_steps = total_steps;
         info.increment = span_size_t(float(total_steps) * 0.001F);
