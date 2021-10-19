@@ -101,21 +101,33 @@ static inline auto from_string(
 }
 //------------------------------------------------------------------------------
 template <typename T, typename N>
-auto multiply_and_convert_if_fits(const N n, const char* e) noexcept
+constexpr auto multiply_and_convert_if_fits(const N n, string_view t) noexcept
   -> optionally_valid<T> {
-    const auto is_end_sep = [](const char c) {
-        return c == '\0' || c == ' ' || c == '\t' || c == '\n' || c == '\r';
-    };
-    if(is_end_sep(*e)) {
+    if(t.empty()) {
         return convert_if_fits<T>(n);
-    } else if((e[0] == 'k') && (is_end_sep(e[1]))) {
-        return convert_if_fits<T>(n * 1000);
-    } else if((e[0] == 'M') && (is_end_sep(e[1]))) {
-        return convert_if_fits<T>(n * 1000000);
-    } else if((e[0] == 'G') && (is_end_sep(e[1]))) {
-        return convert_if_fits<T>(n * 1000000000);
+    } else if(t.size() == 1) {
+        if(t.back() == 'k') {
+            return convert_if_fits<T>(n * 1000);
+        }
+        if(t.back() == 'M') {
+            return convert_if_fits<T>(n * 1000000);
+        }
+        if(t.back() == 'G') {
+            return convert_if_fits<T>(n * 1000000000);
+        }
+    } else if(t.size() == 2) {
+        if(t.back() == 'i') {
+            if(t.front() == 'K') {
+                return convert_if_fits<T>(n * 1024);
+            }
+            if(t.front() == 'M') {
+                return convert_if_fits<T>(n * 1024 * 1024);
+            }
+            if(t.front() == 'G') {
+                return convert_if_fits<T>(n * 1024 * 1024 * 1024);
+            }
+        }
     }
-
     return {};
 }
 //------------------------------------------------------------------------------
@@ -129,7 +141,8 @@ auto convert_from_string_with(
     errno = 0;
     const N result{converter(cstr, &end)};
     if((errno != ERANGE) && (end != cstr) && (end != nullptr)) {
-        if(auto converted{multiply_and_convert_if_fits<T>(result, end)}) {
+        if(auto converted{multiply_and_convert_if_fits<T>(
+             result, skip_to(cstr.view(), end))}) {
             return converted;
         }
     }
@@ -148,7 +161,8 @@ auto convert_from_string_with(
     errno = 0;
     const N result = converter(cstr, &end, base);
     if((errno != ERANGE) && (end != cstr) && (end != nullptr)) {
-        if(auto converted{multiply_and_convert_if_fits<T>(result, end)}) {
+        if(auto converted{multiply_and_convert_if_fits<T>(
+             result, skip_to(cstr.view(), end))}) {
             return converted;
         }
     }
