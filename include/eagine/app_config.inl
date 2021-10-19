@@ -6,6 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/config/basic.hpp>
+#include <eagine/compiler_info.hpp>
 #include <eagine/environment.hpp>
 #include <eagine/file_contents.hpp>
 #include <eagine/interop/valgrind.hpp>
@@ -31,6 +32,14 @@ public:
       : main_ctx_object{EAGINE_ID(AppCfgImpl), parent} {
         // front is empty and is filled out later
         _tag_list.emplace_back();
+
+        if(auto hostname{main_context().system().hostname()}) {
+            _tag_list.emplace_back(std::move(extract(hostname)));
+        }
+
+        if(const auto architecture{architecture_tag()}) {
+            _tag_list.emplace_back(to_string(extract(architecture)));
+        }
 
         std::array<string_view, 2> tag_labels{
           {{"--instance"}, {"--config-tag"}}};

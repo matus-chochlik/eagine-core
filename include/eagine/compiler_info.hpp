@@ -17,6 +17,7 @@
 
 namespace eagine {
 
+auto architecture_tag() noexcept -> valid_if_not_empty<string_view>;
 auto architecture_name() noexcept -> valid_if_not_empty<string_view>;
 auto compiler_name() noexcept -> valid_if_not_empty<string_view>;
 auto compiler_version_major() noexcept -> valid_if_nonnegative<int>;

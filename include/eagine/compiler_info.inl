@@ -123,6 +123,35 @@ auto compiler_version_patch() noexcept -> valid_if_nonnegative<int> {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
+auto architecture_tag() noexcept -> valid_if_not_empty<string_view> {
+#if defined(__x86_64__) || defined(__amd64__) || defined(_M_AMD64) || \
+  defined(_M_X64)
+    return {"amd64"};
+#elif defined(__i386__) || defined(__i386) || defined(__i486__) || \
+  defined(__i586__) || defined(__i686__) || defined(__X86__) || defined(_X86_)
+    return {"i386"};
+#elif defined(__ia64__) || defined(__ia64) || defined(_M_IA64) || \
+  defined(__itanium__)
+    return {"ia64"};
+#elif defined(__aarch64__)
+    return {"arm64"};
+#elif defined(__arm__) || defined(__thumb__) || defined(_M_ARM) || \
+  defined(_M_ARMT)
+    return {"arm"};
+#elif defined(__powerpc64__) || defined(__powerpc__) || defined(__powerpc) || \
+  defined(_M_PPC) || defined(_ARCH_PPC)
+    return {"powerpc"};
+#elif defined(__sparc__) || defined(__sparc)
+    return {"sparc"};
+#elif defined(__mips__) || defined(__mips) || defined(__MIPS__)
+    return {"mips"};
+#elif defined(__alpha__) || defined(__alpha) || defined(_M_ALPHA)
+    return {"alpha"};
+#endif
+    return {};
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
 auto architecture_name() noexcept -> valid_if_not_empty<string_view> {
 #if defined(__x86_64__) || defined(__amd64__) || defined(_M_AMD64) || \
   defined(_M_X64)
