@@ -85,6 +85,30 @@ public:
         return {};
     }
 
+    void link(
+      const string_view key,
+      const string_view tag,
+      application_config_value_loader& loader) noexcept {
+        EAGINE_MAYBE_UNUSED(key);
+        EAGINE_MAYBE_UNUSED(tag);
+        EAGINE_MAYBE_UNUSED(loader);
+        // TODO
+    }
+
+    void unlink(
+      const string_view key,
+      const string_view tag,
+      application_config_value_loader& loader) noexcept {
+        EAGINE_MAYBE_UNUSED(key);
+        EAGINE_MAYBE_UNUSED(tag);
+        EAGINE_MAYBE_UNUSED(loader);
+        // TODO
+    }
+
+    void reload() noexcept {
+        // TODO
+    }
+
 private:
     auto _cat(const string_view l, const string_view r) noexcept
       -> const std::string& {
@@ -221,6 +245,33 @@ auto application_config::_impl() noexcept -> application_config_impl* {
         }
     }
     return _pimpl.get();
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+void application_config::link(
+  const string_view key,
+  const string_view tag,
+  application_config_value_loader& loader) noexcept {
+    if(const auto impl{_impl()}) {
+        return extract(impl).link(key, tag, loader);
+    }
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+void application_config::unlink(
+  const string_view key,
+  const string_view tag,
+  application_config_value_loader& loader) noexcept {
+    if(const auto impl{_impl()}) {
+        return extract(impl).unlink(key, tag, loader);
+    }
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+void application_config::reload() noexcept {
+    if(const auto impl{_impl()}) {
+        return extract(impl).reload();
+    }
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
