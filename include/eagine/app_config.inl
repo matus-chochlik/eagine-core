@@ -22,8 +22,6 @@
 #include <mutex>
 #include <set>
 
-#include <iostream>
-
 namespace eagine {
 //------------------------------------------------------------------------------
 class application_config_impl : public main_ctx_object {
@@ -34,11 +32,12 @@ public:
         _tag_list.emplace_back();
 
         if(auto hostname{main_context().system().hostname()}) {
-            _tag_list.emplace_back(std::move(extract(hostname)));
+            _hostname = std::move(extract(hostname));
+            _tag_list.emplace_back(_hostname);
         }
 
         if(const auto architecture{architecture_tag()}) {
-            _tag_list.emplace_back(to_string(extract(architecture)));
+            _tag_list.push_back(extract(architecture));
         }
 
         std::array<string_view, 2> tag_labels{
@@ -250,6 +249,7 @@ private:
     std::set<application_config_value_loader*> _loaders;
     std::vector<string_view> _tag_list;
     std::string _config_name;
+    std::string _hostname;
 };
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
