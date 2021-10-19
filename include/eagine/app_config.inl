@@ -19,6 +19,9 @@
 #include <filesystem>
 #include <map>
 #include <mutex>
+#include <set>
+
+#include <iostream>
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -29,18 +32,17 @@ public:
         // front is empty and is filled out later
         _tag_list.emplace_back();
 
-        if(const auto arg{main_context().args().find("--instance")}) {
-            if(auto inst_arg{arg.next()}) {
-                _tag_list.push_back(inst_arg.get());
-            }
-        }
-        for(const auto arg : main_context().args()) {
-            if(arg.is_long_tag("config-tag")) {
+        std::array<string_view, 2> tag_labels{
+          {{"--instance"}, {"--config-tag"}}};
+
+        for(const auto label : tag_labels) {
+            if(const auto arg{main_context().args().find(label)}) {
                 if(auto tag_arg{arg.next()}) {
                     _tag_list.push_back(tag_arg.get());
                 }
             }
         }
+
         if constexpr(EAGINE_DEBUG) {
             _tag_list.emplace_back("debug");
             if(running_on_valgrind()) {
@@ -54,8 +56,8 @@ public:
       const string_view key,
       const string_view tag) noexcept -> valtree::compound_attribute {
         try {
-            std::unique_lock<std::mutex> lck{_mutex};
-            _tag_list[0] = tag;
+            const std::lock_guard<decltype(_mutex)> lck{_mutex};
+            _tag_list.front() = tag;
             const auto tags{skip_until(
               view(_tag_list), [](auto t) { return !t.is_empty(); })};
 
@@ -91,8 +93,7 @@ public:
       application_config_value_loader& loader) noexcept {
         EAGINE_MAYBE_UNUSED(key);
         EAGINE_MAYBE_UNUSED(tag);
-        EAGINE_MAYBE_UNUSED(loader);
-        // TODO
+        _loaders.insert(&loader);
     }
 
     void unlink(
@@ -101,12 +102,17 @@ public:
       application_config_value_loader& loader) noexcept {
         EAGINE_MAYBE_UNUSED(key);
         EAGINE_MAYBE_UNUSED(tag);
-        EAGINE_MAYBE_UNUSED(loader);
-        // TODO
+        _loaders.erase(&loader);
     }
 
     void reload() noexcept {
-        // TODO
+        const std::lock_guard<decltype(_mutex)> lck{_mutex};
+        if(!_loaders.empty()) {
+            _open_configs.clear();
+            for(auto loader : _loaders) {
+                extract(loader).reload();
+            }
+        }
     }
 
 private:
@@ -230,8 +236,9 @@ private:
         return pos->second;
     }
 
-    std::mutex _mutex;
+    std::recursive_mutex _mutex;
     std::map<std::string, valtree::compound> _open_configs;
+    std::set<application_config_value_loader*> _loaders;
     std::vector<string_view> _tag_list;
     std::string _config_name;
 };

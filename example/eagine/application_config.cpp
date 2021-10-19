@@ -7,7 +7,9 @@
 ///
 #include <eagine/app_config.hpp>
 #include <eagine/main.hpp>
+#include <chrono>
 #include <iostream>
+#include <thread>
 
 namespace eagine {
 
@@ -37,6 +39,18 @@ auto main(main_ctx& ctx) -> int {
             std::cout << " " << e;
         }
         std::cout << std::endl;
+    }
+
+    const application_reconfig_value<std::chrono::duration<float>> delay{
+      cfg, "section_a.subsection_b.delay", std::chrono::seconds(1)};
+    const auto start{std::chrono::steady_clock::now()};
+    while(true) {
+        const auto elapsed = std::chrono::steady_clock::now() - start;
+        if(elapsed > delay.value()) {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        cfg.reload();
     }
 
     return 0;
