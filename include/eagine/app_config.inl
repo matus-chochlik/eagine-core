@@ -10,6 +10,7 @@
 #include <eagine/file_contents.hpp>
 #include <eagine/interop/valgrind.hpp>
 #include <eagine/main_ctx.hpp>
+#include <eagine/memory/span_algo.hpp>
 #include <eagine/user_info.hpp>
 #include <eagine/valid_if/not_empty.hpp>
 #include <eagine/value_tree/json.hpp>
@@ -58,8 +59,12 @@ public:
             const auto tags{skip_until(
               view(_tag_list), [](auto t) { return !t.is_empty(); })};
 
-            if(auto found{
-                 _find_config_of(main_context().app_name(), key, tags)}) {
+            auto app_name{main_context().app_name()};
+            if(auto found{_find_config_of(app_name, key, tags)}) {
+                return found;
+            }
+            app_name = strip_prefix(app_name, string_view{"eagine-"});
+            if(auto found{_find_config_of(app_name, key, tags)}) {
                 return found;
             }
             if(auto arg{main_context().args().find("--config-group")}) {
