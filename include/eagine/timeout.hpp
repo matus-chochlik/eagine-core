@@ -18,6 +18,7 @@ namespace eagine {
 /// @brief Class that measures elapsed time since instance construction.
 /// @ingroup time_utils
 /// @see timeout
+/// @see referencing_timeout
 class time_measure {
     using _clock = std::chrono::steady_clock;
 
@@ -53,11 +54,15 @@ constexpr auto adjusted_duration(
 /// @brief Class representing a timeout since construction or reset.
 /// @ingroup time_utils
 /// @see time_measure
+/// @see referencing_timeout
 /// @see resetting_timeout
 class timeout {
     using _clock = std::chrono::steady_clock;
 
 public:
+    /// @brief Alias for the duration type used by this timeout.
+    using duration_type = _clock::duration;
+
     /// @brief Default construction. Saves current time. Immediately expires.
     /// @post is_expired()
     timeout() noexcept
@@ -120,7 +125,7 @@ public:
     }
 
     /// @brief Returns the time since reset as clocks duration type.
-    auto elapsed_time() const noexcept {
+    auto elapsed_time() const noexcept -> duration_type {
         return _clock::now() - _timeout + _duration;
     }
 
@@ -140,7 +145,7 @@ public:
     /// @brief Returns the timeout period.
     /// @see reset
     /// @see is_expired
-    auto period() const noexcept -> auto& {
+    auto period() const noexcept -> const auto& {
         return _duration;
     }
 
@@ -149,9 +154,63 @@ private:
     _clock::time_point _timeout{};
 };
 //------------------------------------------------------------------------------
+/// @brief Class representing a timeout since construction or reset.
+/// @ingroup time_utils
+/// @see time_measure
+/// @see timeout
+/// @see resetting_timeout
+class referencing_timeout {
+    using _clock = std::chrono::steady_clock;
+
+public:
+    /// @brief Alias for the duration type used by this timeout.
+    using duration_type = _clock::duration;
+
+    /// @brief Constructor initializing the reference to the timeout interval.
+    referencing_timeout(const duration_type& interval) noexcept
+      : _duration{interval}
+      , _prev_reset{_clock::now()} {}
+
+    /// @brief Resets the timeout using the referenced specified duration.
+    auto reset() noexcept -> auto& {
+        _prev_reset = std::chrono::steady_clock::now();
+        return *this;
+    }
+
+    /// @brief Returns the time since reset as clocks duration type.
+    auto elapsed_time() const noexcept -> duration_type {
+        return _clock::now() - _prev_reset;
+    }
+
+    /// @brief Indicates if the timeout is expired.
+    /// @see reset
+    /// @see period
+    auto is_expired() const noexcept -> bool {
+        return _clock::now() >= _prev_reset + _duration;
+    }
+
+    /// @brief Indicates if the timeout is expired.
+    /// @see is_expired
+    explicit operator bool() const noexcept {
+        return is_expired();
+    }
+
+    /// @brief Returns the timeout period.
+    /// @see reset
+    /// @see is_expired
+    auto period() const noexcept -> const auto& {
+        return _duration;
+    }
+
+private:
+    const _clock::duration& _duration;
+    _clock::time_point _prev_reset{};
+};
+//------------------------------------------------------------------------------
 /// @brief Specialization of timeout that resets when tested for expiration.
 /// @ingroup time_utils
 /// @see timeout
+/// @see referencing_timeout
 /// @see time_measure
 class resetting_timeout : public timeout {
 public:
