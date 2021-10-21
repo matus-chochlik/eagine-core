@@ -45,7 +45,7 @@ eagine_add_exe_analysis(eagine-xml_logs-gui)
 
 target_compile_options(
 	eagine-xml_logs-gui
-	PRIVATE $<$<BOOL:${EAGINE_GNUCXX_COMPILER}>:-Wno-extra-semi-stmt>
+	PRIVATE $<$<BOOL:${EAGINE_GNUCXX_COMPILER}>:-Wno-extra-semi-stmt;-Wno-redundant-parens>
 )
 target_include_directories(
 	eagine-xml_logs-gui

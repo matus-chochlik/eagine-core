@@ -16,14 +16,14 @@
 
 //------------------------------------------------------------------------------
 class Backend;
-class Connection
+class Connection final
   : public QObject
   , public eagine::main_ctx_object {
     Q_OBJECT
 
 public:
     Connection(QTcpSocket&, Backend&);
-    ~Connection() noexcept;
+    ~Connection() noexcept final;
 
     void adoptSelf(std::shared_ptr<Connection> self) {
         _self = std::move(self);
