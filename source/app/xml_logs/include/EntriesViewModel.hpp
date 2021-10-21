@@ -32,6 +32,7 @@ public:
     auto getEntryListModel() noexcept -> EntryListModel*;
 signals:
 public slots:
+    void onEntriesAdded(int previous, int current);
 
 private:
     EntryLog& _parent;

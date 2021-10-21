@@ -22,3 +22,7 @@ auto EntriesViewModel::getEntryListModel() noexcept -> EntryListModel* {
     return &_entryListModel;
 }
 //------------------------------------------------------------------------------
+void EntriesViewModel::onEntriesAdded(int previous, int current) {
+    _entryListModel.handleEntriesAdded(previous, current);
+}
+//------------------------------------------------------------------------------

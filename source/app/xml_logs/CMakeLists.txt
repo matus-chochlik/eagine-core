@@ -9,6 +9,8 @@ set(XML_LOGS_RESOURCES
 )
 set(XML_LOGS_SOURCES
 	xml_logs.cpp
+	src/Connection.cpp
+	src/Server.cpp
 	src/Theme.cpp
 	src/EntryLog.cpp
 	src/EntriesViewModel.cpp
@@ -20,6 +22,8 @@ set(XML_LOGS_SOURCES
 )
 set(XML_LOGS_HEADERS
 	internal_log_backend.hpp
+	include/Connection.hpp
+	include/Server.hpp
 	include/Theme.hpp
 	include/EntryStorage.hpp
 	include/EntryLog.hpp
@@ -54,6 +58,7 @@ target_link_libraries(
 		EAGine::Core
 		Qt5::Core
 		Qt5::Widgets
+		Qt5::Xml
 		Qt5::Qml
 		Qt5::Quick
 )

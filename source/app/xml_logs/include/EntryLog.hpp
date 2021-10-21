@@ -35,8 +35,11 @@ public:
     auto getEntryData(int index) noexcept -> LogEntryData*;
 
     void assignStorage(std::shared_ptr<LogEntryStorage>);
+    auto cacheString(eagine::string_view) -> eagine::string_view;
+    void addEntry(LogEntryData& entry);
+    void commitEntries();
 signals:
-    void entriesAdded();
+    void entriesAdded(int, int);
 public slots:
 
 private:
@@ -45,6 +48,7 @@ private:
     ChartsViewModel _chartsViewModel;
     ProgressViewModel _progressViewModel;
     std::shared_ptr<LogEntryStorage> _entries;
+    int _prevEntryCount{0};
 };
 //------------------------------------------------------------------------------
 #endif

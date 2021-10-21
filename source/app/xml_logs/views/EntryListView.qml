@@ -25,5 +25,7 @@ ListView {
 	spacing: 2
 	focus: true
 	clip: true
+
+	currentIndex: model.entryCount - 1
 }
 

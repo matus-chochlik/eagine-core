@@ -30,7 +30,7 @@ auto EntryListModel::roleNames() const -> QHash<int, QByteArray> {
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::columnCount(const QModelIndex&) const -> int {
-    return 9;
+    return 1;
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::parent(const QModelIndex&) const -> QModelIndex {
@@ -43,7 +43,11 @@ auto EntryListModel::index(int row, int column, const QModelIndex&) const
       row, column, _parent.entryLog().getEntryData(row));
 }
 //------------------------------------------------------------------------------
-auto EntryListModel::rowCount(const QModelIndex&) const -> int {
+auto EntryListModel::rowCount(const QModelIndex& i) const -> int {
+    return i.isValid() ? 0 : _parent.entryLog().getEntryCount();
+}
+//------------------------------------------------------------------------------
+auto EntryListModel::getEntryCount() const -> int {
     return _parent.entryLog().getEntryCount();
 }
 //------------------------------------------------------------------------------
@@ -94,5 +98,12 @@ auto EntryListModel::data(const QModelIndex& index, int role) const
         }
     }
     return {};
+}
+//------------------------------------------------------------------------------
+void EntryListModel::handleEntriesAdded(int previous, int current) {
+    (void)previous;
+    (void)current;
+    emit modelReset({});
+    emit entryCountChanged();
 }
 //------------------------------------------------------------------------------

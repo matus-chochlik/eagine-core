@@ -18,6 +18,7 @@ class EntryListModel
   , public eagine::main_ctx_object {
     Q_OBJECT
 
+    Q_PROPERTY(int entryCount READ getEntryCount NOTIFY entryCountChanged)
 public:
     EntryListModel(EntriesViewModel& parent);
 
@@ -28,7 +29,11 @@ public:
     auto columnCount(const QModelIndex& parent) const -> int final;
     auto rowCount(const QModelIndex& parent) const -> int final;
     auto data(const QModelIndex& index, int role) const -> QVariant final;
+    auto getEntryCount() const -> int;
+
+    void handleEntriesAdded(int previous, int current);
 signals:
+    void entryCountChanged();
 public slots:
 
 private:
