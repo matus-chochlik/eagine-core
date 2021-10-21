@@ -25,14 +25,84 @@ Connection::~Connection() noexcept {
     _socket.close();
 }
 //------------------------------------------------------------------------------
-auto Connection::_toIdentifier(const QStringRef& s) -> eagine::identifier {
+auto Connection::_toIdentifier(const QStringRef& s) noexcept
+  -> eagine::identifier {
     const auto utf8{s.toUtf8()};
     return eagine::identifier{eagine::view(utf8)};
 }
 //------------------------------------------------------------------------------
-auto Connection::_cacheString(const QStringRef& s) -> eagine::string_view {
+auto Connection::_cacheString(const QStringRef& s) noexcept
+  -> eagine::string_view {
     const auto utf8{s.toUtf8()};
     return _backend.entryLog().cacheString(eagine::view(utf8));
+}
+//------------------------------------------------------------------------------
+auto Connection::_isAtLogTag() const noexcept -> bool {
+    return _xmlReader.name() == QLatin1String("log");
+}
+//------------------------------------------------------------------------------
+auto Connection::_isAtMessageTag() const noexcept -> bool {
+    return _xmlReader.name() == QLatin1String("m");
+}
+//------------------------------------------------------------------------------
+auto Connection::_isAtFormatTag() const noexcept -> bool {
+    return _xmlReader.name() == QLatin1String("f");
+}
+//------------------------------------------------------------------------------
+auto Connection::_isAtArgumentTag() const noexcept -> bool {
+    return _xmlReader.name() == QLatin1String("a");
+}
+//------------------------------------------------------------------------------
+void Connection::_handleStartElement() noexcept {
+    if(_isAtArgumentTag()) {
+        _readingAttribute = true;
+    } else if(_isAtFormatTag()) {
+        _readingFormat = true;
+    } else if(_isAtMessageTag()) {
+        // tag
+        QStringRef s = _xmlReader.attributes().value("tag");
+        if(s.isEmpty()) {
+            _currentEntry.tag = {};
+        } else {
+            _currentEntry.source = _toIdentifier(s);
+        }
+        _readingMessage = true;
+        // id
+        _currentEntry.stream_id = _streamId;
+        // source
+        s = _xmlReader.attributes().value("src");
+        if(s.isEmpty()) {
+            _currentEntry.source = EAGINE_ID(Unknown);
+        } else {
+            _currentEntry.source = _toIdentifier(s);
+        }
+    } else if(_isAtLogTag()) {
+        _readingLog = true;
+    }
+}
+//------------------------------------------------------------------------------
+void Connection::_handleEndElement() noexcept {
+    if(_isAtArgumentTag()) {
+        _readingAttribute = false;
+    } else if(_isAtFormatTag()) {
+        _readingFormat = false;
+    } else if(_isAtMessageTag()) {
+        if(_readingMessage) {
+            _readingMessage = false;
+            _backend.entryLog().addEntry(_currentEntry);
+        }
+    } else if(_isAtLogTag()) {
+        _readingLog = false;
+    }
+}
+//------------------------------------------------------------------------------
+void Connection::_handleElementText() noexcept {
+    if(_readingMessage) {
+        if(_readingFormat) {
+            _currentEntry.format = _cacheString(_xmlReader.text());
+        } else if(_readingAttribute) {
+        }
+    }
 }
 //------------------------------------------------------------------------------
 void Connection::onReadyRead() {
@@ -40,55 +110,15 @@ void Connection::onReadyRead() {
     do {
         switch(_xmlReader.readNext()) {
             case QXmlStreamReader::StartElement: {
-                if(_xmlReader.name() == QLatin1String("a")) {
-                    _readingAttribute = true;
-                } else if(_xmlReader.name() == QLatin1String("f")) {
-                    _readingFormat = true;
-                } else if(_xmlReader.name() == QLatin1String("m")) {
-                    _readingMessage = true;
-                    // id
-                    _currentEntry.stream_id = _streamId;
-                    // source
-                    QStringRef s = _xmlReader.attributes().value("src");
-                    if(s.isEmpty()) {
-                        _currentEntry.source = EAGINE_ID(Unknown);
-                    } else {
-                        _currentEntry.source = _toIdentifier(s);
-                    }
-                    // tag
-                    s = _xmlReader.attributes().value("tag");
-                    if(s.isEmpty()) {
-                        _currentEntry.tag = {};
-                    } else {
-                        _currentEntry.source = _toIdentifier(s);
-                    }
-                } else if(_xmlReader.name() == QLatin1String("log")) {
-                    _readingLog = true;
-                }
+                _handleStartElement();
                 break;
             }
             case QXmlStreamReader::EndElement: {
-                if(_xmlReader.name() == QLatin1String("a")) {
-                    _readingAttribute = false;
-                } else if(_xmlReader.name() == QLatin1String("f")) {
-                    _readingFormat = false;
-                } else if(_xmlReader.name() == QLatin1String("m")) {
-                    if(_readingMessage) {
-                        _readingMessage = false;
-                        _backend.entryLog().addEntry(_currentEntry);
-                    }
-                } else if(_xmlReader.name() == QLatin1String("log")) {
-                    _readingLog = false;
-                }
+                _handleEndElement();
                 break;
             }
             case QXmlStreamReader::Characters: {
-                if(_readingMessage) {
-                    if(_readingFormat) {
-                        _currentEntry.format = _cacheString(_xmlReader.text());
-                    } else if(_readingAttribute) {
-                    }
-                }
+                _handleElementText();
                 break;
             }
             case QXmlStreamReader::StartDocument: {

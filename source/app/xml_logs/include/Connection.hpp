@@ -34,8 +34,17 @@ public slots:
     void onError(QAbstractSocket::SocketError);
 
 private:
-    auto _toIdentifier(const QStringRef&) -> eagine::identifier;
-    auto _cacheString(const QStringRef&) -> eagine::string_view;
+    auto _toIdentifier(const QStringRef&) noexcept -> eagine::identifier;
+    auto _cacheString(const QStringRef&) noexcept -> eagine::string_view;
+
+    auto _isAtLogTag() const noexcept -> bool;
+    auto _isAtMessageTag() const noexcept -> bool;
+    auto _isAtFormatTag() const noexcept -> bool;
+    auto _isAtArgumentTag() const noexcept -> bool;
+
+    void _handleStartElement() noexcept;
+    void _handleEndElement() noexcept;
+    void _handleElementText() noexcept;
 
     Backend& _backend;
     std::shared_ptr<Connection> _self;
