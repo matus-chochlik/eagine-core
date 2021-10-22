@@ -42,8 +42,18 @@ private:
     auto _isAtFormatTag() const noexcept -> bool;
     auto _isAtArgumentTag() const noexcept -> bool;
 
+    auto _isBoolArg() const noexcept -> bool;
+    auto _isIntegerArg() const noexcept -> bool;
+    auto _isUnsignedArg() const noexcept -> bool;
+    auto _isFloatArg() const noexcept -> bool;
+    auto _isDurationArg() const noexcept -> bool;
+
+    auto _handleBeginMessage() noexcept -> bool;
+    auto _handleBeginArgument() noexcept -> bool;
     void _handleStartElement() noexcept;
     void _handleEndElement() noexcept;
+    void _handleFormatText() noexcept;
+    void _handleArgumentValue() noexcept;
     void _handleElementText() noexcept;
 
     Backend& _backend;
@@ -52,10 +62,12 @@ private:
     QXmlStreamReader _xmlReader;
     const std::uintptr_t _streamId;
     LogEntryData _currentEntry;
+    eagine::identifier _currentArgName;
+    eagine::identifier _currentArgTag;
     bool _readingLog{false};
     bool _readingMessage{false};
     bool _readingFormat{false};
-    bool _readingAttribute{false};
+    bool _readingArgument{false};
 };
 //------------------------------------------------------------------------------
 #endif

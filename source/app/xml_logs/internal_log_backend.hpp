@@ -86,43 +86,43 @@ private:
     }
 
     void add_nothing(identifier name, identifier tag) noexcept final {
-        _current.args_str[name] = {tag, nothing};
+        _current.args[name] = {tag, nothing};
     }
 
     void add_identifier(
       identifier name,
       identifier tag,
       identifier value) noexcept final {
-        _current.args_str[name] = {tag, value};
+        _current.args[name] = {tag, value};
     }
 
     void add_message_id(
       identifier name,
       identifier tag,
       message_id value) noexcept final {
-        _current.args_str[name] = {tag, value};
+        _current.args[name] = {tag, value};
     }
 
     void add_bool(identifier name, identifier tag, bool value) noexcept final {
-        _current.args_str[name] = {tag, value};
+        _current.args[name] = {tag, value};
     }
 
     void add_integer(
       identifier name,
       identifier tag,
       std::intmax_t value) noexcept final {
-        _current.args_str[name] = {tag, value};
+        _current.args[name] = {tag, value};
     }
 
     void add_unsigned(
       identifier name,
       identifier tag,
       std::uintmax_t value) noexcept final {
-        _current.args_str[name] = {tag, value};
+        _current.args[name] = {tag, value};
     }
 
     void add_float(identifier name, identifier tag, float value) noexcept final {
-        _current.args_str[name] = {tag, value};
+        _current.args[name] = {tag, value};
     }
 
     void add_float(
@@ -131,19 +131,19 @@ private:
       float min,
       float value,
       float max) noexcept final {
-        _current.args_str[name] = {tag, std::make_tuple(min, value, max)};
+        _current.args[name] = {tag, std::make_tuple(min, value, max)};
     }
 
     void add_duration(
       identifier name,
       identifier tag,
       std::chrono::duration<float> value) noexcept final {
-        _current.args_str[name] = {tag, value};
+        _current.args[name] = {tag, value};
     }
 
     void add_string(identifier name, identifier tag, string_view value) noexcept
       final {
-        _current.args_str[name] = {tag, _entries->cacheString(value)};
+        _current.args[name] = {tag, _entries->cacheString(value)};
     }
 
     void add_blob(identifier, identifier, memory::const_block) noexcept final {}

@@ -52,7 +52,7 @@ struct LogEntryData {
           std::tuple<float, float, float>,
           std::chrono::duration<float>,
           eagine::string_view>>>
-      args_str;
+      args;
 };
 //------------------------------------------------------------------------------
 class LogEntryStorage {
