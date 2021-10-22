@@ -12,10 +12,15 @@
 #include <eagine/is_within_limits.hpp>
 #include <eagine/logging/fwd.hpp>
 #include <eagine/logging/severity.hpp>
+#include <eagine/message_id.hpp>
 #include <eagine/string_span.hpp>
+#include <chrono>
+#include <cstdint>
 #include <map>
 #include <set>
 #include <string>
+#include <tuple>
+#include <variant>
 
 class Backend;
 //------------------------------------------------------------------------------
@@ -34,7 +39,19 @@ struct LogEntryData {
 
     eagine::flat_map<
       eagine::identifier,
-      std::tuple<eagine::identifier, eagine::string_view>>
+      std::tuple<
+        eagine::identifier,
+        std::variant<
+          eagine::nothing_t,
+          eagine::identifier,
+          eagine::message_id,
+          bool,
+          std::intmax_t,
+          std::uintmax_t,
+          float,
+          std::tuple<float, float, float>,
+          std::chrono::duration<float>,
+          eagine::string_view>>>
       args_str;
 };
 //------------------------------------------------------------------------------
