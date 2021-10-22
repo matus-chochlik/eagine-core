@@ -6,7 +6,9 @@
 
 #include "EntryListModel.hpp"
 #include "EntriesViewModel.hpp"
+#include "EntryFormat.hpp"
 #include "EntryLog.hpp"
+#include "Utility.hpp"
 #include <eagine/extract.hpp>
 #include <eagine/is_within_limits.hpp>
 //------------------------------------------------------------------------------
@@ -51,29 +53,33 @@ auto EntryListModel::getEntryCount() const -> int {
     return _parent.entryLog().getEntryCount();
 }
 //------------------------------------------------------------------------------
-auto EntryListModel::getEntryMessage(LogEntryData&) const -> QString {
-    return {};
+auto EntryListModel::getEntryMessage(const LogEntryData& entry) const
+  -> QString {
+    return toQString(EntryFormat().format(entry));
 }
 //------------------------------------------------------------------------------
-auto EntryListModel::getEntryFormat(LogEntryData& entry) const -> QString {
-    return {c_str(entry.format)};
+auto EntryListModel::getEntryFormat(const LogEntryData& entry) const
+  -> QString {
+    return toQString(entry.format);
 }
 //------------------------------------------------------------------------------
-auto EntryListModel::getEntryStreamId(LogEntryData& entry) const -> qlonglong {
+auto EntryListModel::getEntryStreamId(const LogEntryData& entry) const
+  -> qlonglong {
     return eagine::limit_cast<qlonglong>(entry.stream_id);
 }
 //------------------------------------------------------------------------------
-auto EntryListModel::getEntryInstanceId(LogEntryData& entry) const
+auto EntryListModel::getEntryInstanceId(const LogEntryData& entry) const
   -> qlonglong {
     return eagine::limit_cast<qlonglong>(entry.instance);
 }
 //------------------------------------------------------------------------------
-auto EntryListModel::getEntrySourceId(LogEntryData& entry) const -> QString {
-    return {c_str(entry.source.name().view())};
+auto EntryListModel::getEntrySourceId(const LogEntryData& entry) const
+  -> QString {
+    return toQString(entry.source.name().view());
 }
 //------------------------------------------------------------------------------
-auto EntryListModel::getEntryTag(LogEntryData& entry) const -> QString {
-    return {c_str(entry.tag.name().view())};
+auto EntryListModel::getEntryTag(const LogEntryData& entry) const -> QString {
+    return toQString(entry.tag.name().view());
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::data(const QModelIndex& index, int role) const

@@ -48,12 +48,12 @@ private:
         entryArgCount
     };
 
-    auto getEntryMessage(LogEntryData&) const -> QString;
-    auto getEntryFormat(LogEntryData&) const -> QString;
-    auto getEntryStreamId(LogEntryData&) const -> qlonglong;
-    auto getEntryInstanceId(LogEntryData&) const -> qlonglong;
-    auto getEntrySourceId(LogEntryData&) const -> QString;
-    auto getEntryTag(LogEntryData&) const -> QString;
+    auto getEntryMessage(const LogEntryData&) const -> QString;
+    auto getEntryFormat(const LogEntryData&) const -> QString;
+    auto getEntryStreamId(const LogEntryData&) const -> qlonglong;
+    auto getEntryInstanceId(const LogEntryData&) const -> qlonglong;
+    auto getEntrySourceId(const LogEntryData&) const -> QString;
+    auto getEntryTag(const LogEntryData&) const -> QString;
 
     EntriesViewModel& _parent;
 };

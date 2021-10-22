@@ -93,7 +93,7 @@ Control {
 			Layout.preferredWidth: 10
 		}
 		Label {
-			text: format ? format : "-"
+			text: message ? message : format ? format : "-"
 		}
 		Label {
 			text: sourceId ? sourceId : "-"

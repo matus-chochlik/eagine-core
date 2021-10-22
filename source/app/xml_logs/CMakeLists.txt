@@ -12,6 +12,7 @@ set(XML_LOGS_SOURCES
 	src/Connection.cpp
 	src/Server.cpp
 	src/Theme.cpp
+	src/EntryFormat.cpp
 	src/EntryLog.cpp
 	src/EntriesViewModel.cpp
 	src/EntryFilterModel.cpp
@@ -22,10 +23,12 @@ set(XML_LOGS_SOURCES
 )
 set(XML_LOGS_HEADERS
 	internal_log_backend.hpp
+	include/Utility.hpp
 	include/Connection.hpp
 	include/Server.hpp
 	include/Theme.hpp
 	include/EntryStorage.hpp
+	include/EntryFormat.hpp
 	include/EntryLog.hpp
 	include/EntriesViewModel.hpp
 	include/EntryFilterModel.hpp
