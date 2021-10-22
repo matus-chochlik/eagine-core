@@ -19,7 +19,8 @@ auto main(main_ctx& ctx) -> int {
     span_size_t repeats = 10;
     ctx.args().find("--count").parse_next(repeats, ctx.log().error_stream());
 
-    const auto main_act = ctx.progress().activity("Counting", repeats);
+    const auto main_act =
+      ctx.progress().activity("Counting ${progress}", repeats);
     for(const auto i : integer_range(repeats)) {
         ctx.log()
           .info("cycle ${i} of ${count}")

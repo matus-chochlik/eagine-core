@@ -8,6 +8,7 @@
 #include "Backend.hpp"
 #include <eagine/assert.hpp>
 #include <eagine/from_string.hpp>
+#include <eagine/reflect/enumerators.hpp>
 //------------------------------------------------------------------------------
 Connection::Connection(QTcpSocket& socket, Backend& parent)
   : QObject{nullptr}
@@ -29,6 +30,15 @@ Connection::~Connection() noexcept {
 auto Connection::_toIdentifier(const QStringRef& s) noexcept
   -> eagine::identifier {
     return eagine::identifier{eagine::view(s.toUtf8())};
+}
+//------------------------------------------------------------------------------
+auto Connection::_toSeverity(const QStringRef& s) noexcept
+  -> eagine::log_event_severity {
+    if(const auto severity{eagine::from_string<eagine::log_event_severity>(
+         eagine::view(s.toUtf8()))}) {
+        return extract(severity);
+    }
+    return eagine::log_event_severity::info;
 }
 //------------------------------------------------------------------------------
 auto Connection::_cacheString(const QStringRef& s) noexcept
@@ -54,6 +64,8 @@ auto Connection::_isAtArgumentTag() const noexcept -> bool {
 }
 //------------------------------------------------------------------------------
 auto Connection::_handleBeginMessage() noexcept -> bool {
+    // id
+    _currentEntry.stream_id = _streamId;
     // tag
     QStringRef s = _xmlReader.attributes().value("tag");
     if(s.isEmpty()) {
@@ -61,8 +73,6 @@ auto Connection::_handleBeginMessage() noexcept -> bool {
     } else {
         _currentEntry.source = _toIdentifier(s);
     }
-    // id
-    _currentEntry.stream_id = _streamId;
     // source
     s = _xmlReader.attributes().value("src");
     if(s.isEmpty()) {
@@ -70,6 +80,9 @@ auto Connection::_handleBeginMessage() noexcept -> bool {
     } else {
         _currentEntry.source = _toIdentifier(s);
     }
+    // severity
+    s = _xmlReader.attributes().value("lvl");
+    _currentEntry.severity = _toSeverity(s);
 
     return true;
 }

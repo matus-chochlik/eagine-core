@@ -10,17 +10,25 @@
 #include <sstream>
 
 //------------------------------------------------------------------------------
-auto EntryFormat::operator()(const eagine::nothing_t) noexcept -> result_type {
+auto EntryFormat::operator()(
+  const eagine::identifier,
+  const eagine::nothing_t) noexcept -> result_type {
     return {};
 }
 //------------------------------------------------------------------------------
-auto EntryFormat::operator()(const eagine::identifier i) noexcept
-  -> result_type {
-    return {{eagine::assign_to(_arg, i.name().view())}, true};
+auto EntryFormat::operator()(
+  const eagine::identifier,
+  const eagine::identifier i) noexcept -> result_type {
+    _arg.clear();
+    _arg.append("<b>");
+    eagine::append_to(_arg, i.name().view());
+    _arg.append("</b>");
+    return {{_arg}, true};
 }
 //------------------------------------------------------------------------------
-auto EntryFormat::operator()(const eagine::message_id& m) noexcept
-  -> result_type {
+auto EntryFormat::operator()(
+  const eagine::identifier,
+  const eagine::message_id& m) noexcept -> result_type {
     _arg.clear();
     eagine::append_to(_arg, m.class_().name().view());
     _arg.append(".");
@@ -28,42 +36,59 @@ auto EntryFormat::operator()(const eagine::message_id& m) noexcept
     return {{_arg}, true};
 }
 //------------------------------------------------------------------------------
-auto EntryFormat::operator()(const bool b) noexcept -> result_type {
+auto EntryFormat::operator()(const eagine::identifier, const bool b) noexcept
+  -> result_type {
     const eagine::string_view t{"true"};
     const eagine::string_view f{"false"};
     return {b ? t : f, true};
 }
 //------------------------------------------------------------------------------
-auto EntryFormat::operator()(const std::intmax_t i) noexcept -> result_type {
-    _arg = std::to_string(i);
+auto EntryFormat::operator()(
+  const eagine::identifier,
+  const std::intmax_t i) noexcept -> result_type {
+    _arg.clear();
+    _arg.append(std::to_string(i));
     return {{_arg}, true};
 }
 //------------------------------------------------------------------------------
-auto EntryFormat::operator()(const std::uintmax_t i) noexcept -> result_type {
-    _arg = std::to_string(i);
+auto EntryFormat::operator()(
+  const eagine::identifier,
+  const std::uintmax_t i) noexcept -> result_type {
+    _arg.clear();
+    _arg.append(std::to_string(i));
     return {{_arg}, true};
 }
 //------------------------------------------------------------------------------
-auto EntryFormat::operator()(const float f) noexcept -> result_type {
-    _arg = std::to_string(f);
-    return {{_arg}, true};
-}
-//------------------------------------------------------------------------------
-auto EntryFormat::operator()(const std::tuple<float, float, float>&) noexcept
+auto EntryFormat::operator()(const eagine::identifier, const float f) noexcept
   -> result_type {
+    _arg.clear();
+    _arg.append(std::to_string(f));
+    return {{_arg}, true};
+}
+//------------------------------------------------------------------------------
+auto EntryFormat::operator()(
+  const eagine::identifier,
+  const std::tuple<float, float, float>& t) noexcept -> result_type {
+    const auto [min, val, max] = t;
+    _arg.clear();
+    _arg.append("<b>");
+    _arg.append(std::to_string(100.F * (val - min) / (max - min)));
+    _arg.append("%</b>");
     return {};
 }
 //------------------------------------------------------------------------------
-auto EntryFormat::operator()(const std::chrono::duration<float> d) noexcept
-  -> result_type {
+auto EntryFormat::operator()(
+  const eagine::identifier,
+  const std::chrono::duration<float> d) noexcept -> result_type {
     std::stringstream s;
     s << d.count() << "[s]";
     _arg = s.str();
     return {{_arg}, true};
 }
 //------------------------------------------------------------------------------
-auto EntryFormat::operator()(const eagine::string_view s) noexcept
-  -> result_type {
+auto EntryFormat::operator()(
+  const eagine::identifier,
+  const eagine::string_view s) noexcept -> result_type {
     return {s, true};
 }
 //------------------------------------------------------------------------------
@@ -73,8 +98,12 @@ auto EntryFormat::format(const LogEntryData& entry) noexcept
         const eagine::identifier key{arg};
         const auto pos = entry.args.find(key);
         if(pos != entry.args.end()) {
+            const auto& arg_info = std::get<1>(*pos);
             return std::visit<result_type>(
-              *this, std::get<1>(std::get<1>(*pos)));
+              [&](const auto& value) -> result_type {
+                  return (*this)(std::get<0>(arg_info), value);
+              },
+              std::get<1>(arg_info));
         }
         return {};
     };
