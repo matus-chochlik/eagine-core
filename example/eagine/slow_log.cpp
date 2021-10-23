@@ -9,6 +9,7 @@
 #include <eagine/logging/logger.hpp>
 #include <eagine/main.hpp>
 #include <eagine/progress/activity.hpp>
+#include <eagine/reflect/enumerators.hpp>
 #include <iostream>
 #include <thread>
 
@@ -17,13 +18,15 @@ namespace eagine {
 auto main(main_ctx& ctx) -> int {
 
     span_size_t repeats = 10;
+    auto severity = log_event_severity::info;
     ctx.args().find("--count").parse_next(repeats, ctx.log().error_stream());
+    ctx.args().find("--severity").parse_next(severity, ctx.log().error_stream());
 
     const auto main_act =
       ctx.progress().activity("Counting ${progress}", repeats);
     for(const auto i : integer_range(repeats)) {
         ctx.log()
-          .info("cycle ${i} of ${count}")
+          .log(severity, "cycle ${i} of ${count}")
           .arg(EAGINE_ID(i), i)
           .arg(EAGINE_ID(count), repeats);
         main_act.update_progress(i);
