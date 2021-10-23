@@ -28,6 +28,8 @@ public:
     void assignStorage(std::shared_ptr<LogEntryStorage>);
 
     auto entryLog() noexcept -> EntryLog&;
+    auto theme() noexcept -> Theme&;
+
     auto getEntryLog() noexcept -> EntryLog*;
     auto getTheme() noexcept -> Theme*;
 signals:

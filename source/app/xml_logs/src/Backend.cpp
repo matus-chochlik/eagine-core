@@ -21,6 +21,10 @@ auto Backend::entryLog() noexcept -> EntryLog& {
     return _entryLog;
 }
 //------------------------------------------------------------------------------
+auto Backend::theme() noexcept -> Theme& {
+    return _theme;
+}
+//------------------------------------------------------------------------------
 auto Backend::getEntryLog() noexcept -> EntryLog* {
     return &_entryLog;
 }

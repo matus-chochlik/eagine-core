@@ -27,6 +27,10 @@ class EntryLog
 public:
     EntryLog(Backend& backend);
 
+    auto backend() const noexcept -> Backend& {
+        return _backend;
+    }
+
     auto getEntriesViewModel() noexcept -> EntriesViewModel*;
     auto getChartsViewModel() noexcept -> ChartsViewModel*;
     auto getProgressViewModel() noexcept -> ProgressViewModel*;

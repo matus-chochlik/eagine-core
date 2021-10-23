@@ -9,7 +9,9 @@
 
 #include <eagine/main_ctx_object.hpp>
 #include <QAbstractItemModel>
+#include <QColor>
 
+class Backend;
 class EntriesViewModel;
 struct LogEntryData;
 //------------------------------------------------------------------------------
@@ -21,6 +23,8 @@ class EntryListModel
     Q_PROPERTY(int entryCount READ getEntryCount NOTIFY entryCountChanged)
 public:
     EntryListModel(EntriesViewModel& parent);
+
+    auto backend() const noexcept -> Backend&;
 
     auto roleNames() const -> QHash<int, QByteArray> final;
     auto index(int row, int column, const QModelIndex& parent = {}) const
@@ -45,6 +49,7 @@ private:
         entrySourceId,
         entryTag,
         entrySeverity,
+        entrySeverityColor,
         entryArgCount
     };
 
@@ -54,6 +59,8 @@ private:
     auto getEntryInstanceId(const LogEntryData&) const -> qlonglong;
     auto getEntrySourceId(const LogEntryData&) const -> QString;
     auto getEntryTag(const LogEntryData&) const -> QString;
+    auto getEntrySeverity(const LogEntryData&) const -> QString;
+    auto getEntrySeverityColor(const LogEntryData&) const -> QColor;
 
     EntriesViewModel& _parent;
 };

@@ -7,7 +7,9 @@
 #ifndef EAGINE_XML_LOGS_THEME
 #define EAGINE_XML_LOGS_THEME
 
+#include <eagine/logging/severity.hpp>
 #include <eagine/main_ctx_object.hpp>
+#include <QColor>
 #include <QObject>
 
 //------------------------------------------------------------------------------
@@ -17,15 +19,23 @@ class Theme
     Q_OBJECT
 
     Q_PROPERTY(bool light READ getLight WRITE setLight NOTIFY lightChanged)
+    Q_PROPERTY(int entrySourceWidth READ getEntrySourceWidth NOTIFY sizesChanged)
+    Q_PROPERTY(
+      int entrySeverityWidth READ getEntrySeverityWidth NOTIFY sizesChanged)
 
 public:
     Theme(eagine::main_ctx_parent);
 
     void setLight(bool);
     auto getLight() const -> bool;
+    auto getEntrySourceWidth() const -> int;
+    auto getEntrySeverityWidth() const -> int;
+
+    auto getSeverityColor(eagine::log_event_severity) -> QColor;
 
 signals:
     void lightChanged();
+    void sizesChanged();
 public slots:
 private:
     bool _light{false};

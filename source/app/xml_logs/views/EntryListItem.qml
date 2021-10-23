@@ -30,7 +30,8 @@ Control {
 	}
 
 	function makeCurrent() {
-		entryListItem.view.currentIndex = index
+		// TODO
+		// entryListItem.view.currentIndex = index
 	}
 
 	function highlightOpacity() {
@@ -88,15 +89,28 @@ Control {
 		onClicked: makeCurrent()
 	}
 
-	ColumnLayout {
+	RowLayout {
 		Item {
 			Layout.preferredWidth: 10
 		}
 		Label {
-			text: message ? message : format ? format : "-"
+			text: severity ? severity : "info"
+			Layout.preferredWidth: backend.theme.entrySeverityWidth
+			background: Rectangle {
+				color: severityColor
+				opacity: 0.5
+			}
 		}
 		Label {
 			text: sourceId ? sourceId : "-"
+			Layout.preferredWidth: backend.theme.entrySourceWidth
+			background: Rectangle {
+				color: severityColor
+				opacity: 0.5
+			}
+		}
+		Label {
+			text: message ? message : format ? format : "-"
 		}
 	}
 }

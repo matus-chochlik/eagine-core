@@ -14,6 +14,10 @@ EntriesViewModel::EntriesViewModel(EntryLog& parent)
   , _entryFilterModel{*this}
   , _entryListModel{*this} {}
 //------------------------------------------------------------------------------
+auto EntriesViewModel::backend() const noexcept -> Backend& {
+    return entryLog().backend();
+}
+//------------------------------------------------------------------------------
 auto EntriesViewModel::getEntryFilterModel() noexcept -> EntryFilterModel* {
     return &_entryFilterModel;
 }

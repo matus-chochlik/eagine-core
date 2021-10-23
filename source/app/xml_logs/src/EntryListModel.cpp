@@ -5,6 +5,7 @@
 ///
 
 #include "EntryListModel.hpp"
+#include "Backend.hpp"
 #include "EntriesViewModel.hpp"
 #include "EntryFormat.hpp"
 #include "EntryLog.hpp"
@@ -17,6 +18,10 @@ EntryListModel::EntryListModel(EntriesViewModel& parent)
   , eagine::main_ctx_object{EAGINE_ID(EntListMdl), parent}
   , _parent{parent} {}
 //------------------------------------------------------------------------------
+auto EntryListModel::backend() const noexcept -> Backend& {
+    return _parent.backend();
+}
+//------------------------------------------------------------------------------
 auto EntryListModel::roleNames() const -> QHash<int, QByteArray> {
     QHash<int, QByteArray> result;
     result.insert(Qt::DisplayRole, "display");
@@ -27,6 +32,7 @@ auto EntryListModel::roleNames() const -> QHash<int, QByteArray> {
     result.insert(entrySourceId, "sourceId");
     result.insert(entryTag, "tag");
     result.insert(entrySeverity, "severity");
+    result.insert(entrySeverityColor, "severityColor");
     result.insert(entryArgCount, "argCount");
     return result;
 }
@@ -82,6 +88,16 @@ auto EntryListModel::getEntryTag(const LogEntryData& entry) const -> QString {
     return toQString(entry.tag.name().view());
 }
 //------------------------------------------------------------------------------
+auto EntryListModel::getEntrySeverity(const LogEntryData& entry) const
+  -> QString {
+    return toQString(eagine::enumerator_name(entry.severity));
+}
+//------------------------------------------------------------------------------
+auto EntryListModel::getEntrySeverityColor(const LogEntryData& entry) const
+  -> QColor {
+    return backend().theme().getSeverityColor(entry.severity);
+}
+//------------------------------------------------------------------------------
 auto EntryListModel::data(const QModelIndex& index, int role) const
   -> QVariant {
     if(auto optEntry{static_cast<LogEntryData*>(index.internalPointer())}) {
@@ -99,6 +115,10 @@ auto EntryListModel::data(const QModelIndex& index, int role) const
                 return {getEntrySourceId(entry)};
             case entryTag:
                 return {getEntryTag(entry)};
+            case entrySeverity:
+                return {getEntrySeverity(entry)};
+            case entrySeverityColor:
+                return {getEntrySeverityColor(entry)};
             default:
                 break;
         }
