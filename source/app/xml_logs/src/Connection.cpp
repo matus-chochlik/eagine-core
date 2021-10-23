@@ -63,6 +63,15 @@ auto Connection::_isAtArgumentTag() const noexcept -> bool {
     return _xmlReader.name() == QLatin1String("a");
 }
 //------------------------------------------------------------------------------
+auto Connection::_handleBeginLog() noexcept -> bool {
+    _backend.entryLog().beginStream(_streamId);
+    return true;
+}
+//------------------------------------------------------------------------------
+void Connection::_handleEndLog() noexcept {
+    _backend.entryLog().endStream(_streamId);
+}
+//------------------------------------------------------------------------------
 auto Connection::_handleBeginMessage() noexcept -> bool {
     // id
     _currentEntry.stream_id = _streamId;
@@ -85,6 +94,10 @@ auto Connection::_handleBeginMessage() noexcept -> bool {
     _currentEntry.severity = _toSeverity(s);
 
     return true;
+}
+//------------------------------------------------------------------------------
+void Connection::_handleEndMessage() noexcept {
+    _backend.entryLog().addEntry(_currentEntry);
 }
 //------------------------------------------------------------------------------
 auto Connection::_handleBeginArgument() noexcept -> bool {
@@ -120,7 +133,7 @@ void Connection::_handleEndElement() noexcept {
     } else if(_isAtMessageTag()) {
         if(_readingMessage) {
             _readingMessage = false;
-            _backend.entryLog().addEntry(_currentEntry);
+            _handleEndMessage();
         }
     } else if(_isAtFormatTag()) {
         _readingFormat = false;

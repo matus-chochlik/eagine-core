@@ -31,7 +31,8 @@ auto main(main_ctx& ctx) -> int {
       registerId, 1, 0, "EntriesViewModel", {});
 
     Backend backend{ctx};
-    backend.assignStorage(internal_log_backend::storage());
+    backend.entryLog().assignStorage(internal_log_backend::storage());
+    backend.entryLog().assignStorage(std::make_shared<ActivityStorage>());
     QQmlApplicationEngine engine;
 
     engine.rootContext()->setContextProperty("backend", &backend);

@@ -49,7 +49,10 @@ private:
     auto _isFloatArg() const noexcept -> bool;
     auto _isDurationArg() const noexcept -> bool;
 
+    auto _handleBeginLog() noexcept -> bool;
+    void _handleEndLog() noexcept;
     auto _handleBeginMessage() noexcept -> bool;
+    void _handleEndMessage() noexcept;
     auto _handleBeginArgument() noexcept -> bool;
     void _handleStartElement() noexcept;
     void _handleEndElement() noexcept;

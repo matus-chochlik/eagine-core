@@ -10,5 +10,14 @@
 ProgressViewModel::ProgressViewModel(EntryLog& parent)
   : QObject{nullptr}
   , eagine::main_ctx_object{EAGINE_ID(ProgressVM), parent}
-  , _parent{parent} {}
+  , _parent{parent}
+  , _activityListModel{*this} {}
+//------------------------------------------------------------------------------
+auto ProgressViewModel::backend() const noexcept -> Backend& {
+    return entryLog().backend();
+}
+//------------------------------------------------------------------------------
+auto ProgressViewModel::getActivityListModel() noexcept -> ActivityListModel* {
+    return &_activityListModel;
+}
 //------------------------------------------------------------------------------

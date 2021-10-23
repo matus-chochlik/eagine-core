@@ -13,10 +13,6 @@ Backend::Backend(eagine::main_ctx_parent parent)
   , _entryLog{*this}
   , _theme{*this} {}
 //------------------------------------------------------------------------------
-void Backend::assignStorage(std::shared_ptr<LogEntryStorage> entries) {
-    _entryLog.assignStorage(std::move(entries));
-}
-//------------------------------------------------------------------------------
 auto Backend::entryLog() noexcept -> EntryLog& {
     return _entryLog;
 }

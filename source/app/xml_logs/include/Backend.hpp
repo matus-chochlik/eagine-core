@@ -26,6 +26,7 @@ public:
     Backend(eagine::main_ctx_parent);
 
     void assignStorage(std::shared_ptr<LogEntryStorage>);
+    void assignStorage(std::shared_ptr<ActivityStorage>);
 
     auto entryLog() noexcept -> EntryLog&;
     auto theme() noexcept -> Theme&;

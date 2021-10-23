@@ -17,6 +17,7 @@ set(XML_LOGS_SOURCES
 	src/EntriesViewModel.cpp
 	src/EntryFilterModel.cpp
 	src/EntryListModel.cpp
+	src/ActivityListModel.cpp
 	src/ChartsViewModel.cpp
 	src/ProgressViewModel.cpp
 	src/Backend.cpp
@@ -33,6 +34,7 @@ set(XML_LOGS_HEADERS
 	include/EntriesViewModel.hpp
 	include/EntryFilterModel.hpp
 	include/EntryListModel.hpp
+	include/ActivityListModel.hpp
 	include/ChartsViewModel.hpp
 	include/ProgressViewModel.hpp
 	include/Backend.hpp

@@ -28,9 +28,22 @@ void EntryLog::assignStorage(std::shared_ptr<LogEntryStorage> entries) {
     _prevEntryCount = _entries->entryCount();
 }
 //------------------------------------------------------------------------------
+void EntryLog::assignStorage(std::shared_ptr<ActivityStorage> activities) {
+    _activities = std::move(activities);
+    EAGINE_ASSERT(_activities);
+}
+//------------------------------------------------------------------------------
 auto EntryLog::cacheString(eagine::string_view s) -> eagine::string_view {
     EAGINE_ASSERT(_entries);
     return _entries->cacheString(s);
+}
+//------------------------------------------------------------------------------
+void EntryLog::beginStream(std::uintptr_t streamId) {
+    EAGINE_MAYBE_UNUSED(streamId);
+}
+//------------------------------------------------------------------------------
+void EntryLog::endStream(std::uintptr_t streamId) {
+    EAGINE_MAYBE_UNUSED(streamId);
 }
 //------------------------------------------------------------------------------
 void EntryLog::addEntry(LogEntryData& entry) {
@@ -63,5 +76,13 @@ auto EntryLog::getEntryCount() const noexcept -> int {
 auto EntryLog::getEntryData(int index) noexcept -> LogEntryData* {
     EAGINE_ASSERT(_entries);
     return _entries->getEntry(index);
+}
+//------------------------------------------------------------------------------
+auto EntryLog::getActivityCount() const noexcept -> int {
+    return 0; // TODO
+}
+//------------------------------------------------------------------------------
+auto EntryLog::getActivityData(int) noexcept -> ActivityData* {
+    return nullptr; // TODO
 }
 //------------------------------------------------------------------------------

@@ -7,6 +7,7 @@
 #ifndef EAGINE_XML_LOGS_ENTRY_LOG
 #define EAGINE_XML_LOGS_ENTRY_LOG
 
+#include "ActivityStorage.hpp"
 #include "ChartsViewModel.hpp"
 #include "EntriesViewModel.hpp"
 #include "EntryStorage.hpp"
@@ -38,8 +39,15 @@ public:
     auto getEntryCount() const noexcept -> int;
     auto getEntryData(int index) noexcept -> LogEntryData*;
 
+    auto getActivityCount() const noexcept -> int;
+    auto getActivityData(int index) noexcept -> ActivityData*;
+
     void assignStorage(std::shared_ptr<LogEntryStorage>);
+    void assignStorage(std::shared_ptr<ActivityStorage>);
     auto cacheString(eagine::string_view) -> eagine::string_view;
+
+    void beginStream(std::uintptr_t streamId);
+    void endStream(std::uintptr_t streamId);
     void addEntry(LogEntryData& entry);
     void commitEntries();
 signals:
@@ -52,6 +60,7 @@ private:
     ChartsViewModel _chartsViewModel;
     ProgressViewModel _progressViewModel;
     std::shared_ptr<LogEntryStorage> _entries;
+    std::shared_ptr<ActivityStorage> _activities;
     int _prevEntryCount{0};
 };
 //------------------------------------------------------------------------------
