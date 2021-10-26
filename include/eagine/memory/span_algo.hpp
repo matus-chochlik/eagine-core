@@ -323,9 +323,21 @@ static constexpr auto find_element_if(
     return {};
 }
 //------------------------------------------------------------------------------
+/// @brief Returns
+/// @ingroup memory
+/// @see skip_until
+/// @pre spn.begin() <= pos && pos <= spn.end()
+template <typename T, typename P, typename S, typename Pos>
+static constexpr auto skip_to(const basic_span<T, P, S> spn, Pos pos) noexcept
+  -> std::enable_if_t<std::is_convertible_v<Pos, P>, basic_span<T, P, S>> {
+    EAGINE_ASSERT(spn.begin() <= pos && pos <= spn.end());
+    return {pos, spn.end()};
+}
+//------------------------------------------------------------------------------
 /// @brief Skips the elements from the front of a span until @p predicate is satisfied.
 /// @ingroup memory
 /// @see take_until
+/// @see skip_to
 template <typename T, typename P, typename S, typename Predicate>
 static constexpr auto skip_until(
   const basic_span<T, P, S> spn,

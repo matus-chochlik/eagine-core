@@ -43,7 +43,7 @@ struct variable_substitution_options {
 auto substitute_variables_into(
   std::string& dst,
   const string_view src,
-  const callable_ref<optionally_valid<string_view>(const string_view)>&
+  const callable_ref<optionally_valid<string_view>(const string_view) noexcept>&
     translate,
   const variable_substitution_options = {}) noexcept -> std::string&;
 //------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ auto substitute_variables_into(
 /// using the translation function and returns the resulting string.
 auto substitute_variables(
   const string_view src,
-  const callable_ref<optionally_valid<string_view>(const string_view)>&
+  const callable_ref<optionally_valid<string_view>(const string_view) noexcept>&
     translate,
   const variable_substitution_options = {}) noexcept -> std::string;
 //------------------------------------------------------------------------------

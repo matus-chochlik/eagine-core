@@ -251,6 +251,7 @@ public:
       , _str{s.is_zero_terminated() ? string_type{} : s.to_string()} {}
 
     /// @brief Return a zero terminated C-string as pointer_type.
+    /// @see view
     constexpr auto c_str() const noexcept -> pointer_type {
         return _span.empty() ? _str.c_str() : _span.data();
     }
@@ -259,6 +260,12 @@ public:
     /// @see c_str
     constexpr operator pointer_type() const noexcept {
         return c_str();
+    }
+
+    /// @brief Returns a const view of the string.
+    /// @see c_str()
+    constexpr auto view() const noexcept -> basic_string_span<C, P, S> {
+        return _span.empty() ? basic_string_span<C, P, S>{_str} : _span;
     }
 
 private:

@@ -7,14 +7,20 @@
 #ifndef EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 #define EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 
+#include <eagine/flat_map.hpp>
 #include <eagine/identifier.hpp>
 #include <eagine/is_within_limits.hpp>
 #include <eagine/logging/fwd.hpp>
 #include <eagine/logging/severity.hpp>
+#include <eagine/message_id.hpp>
 #include <eagine/string_span.hpp>
+#include <chrono>
+#include <cstdint>
 #include <map>
 #include <set>
 #include <string>
+#include <tuple>
+#include <variant>
 
 class Backend;
 //------------------------------------------------------------------------------
@@ -24,17 +30,29 @@ struct LogSourceInfo {
 };
 //------------------------------------------------------------------------------
 struct LogEntryData {
-    std::size_t stream_id;
+    std::uintptr_t stream_id;
     eagine::identifier source;
     eagine::identifier tag;
     eagine::logger_instance_id instance;
     eagine::log_event_severity severity;
     eagine::string_view format;
 
-    std::map<
+    using argument_value_type = std::variant<
+      eagine::nothing_t,
       eagine::identifier,
-      std::tuple<eagine::identifier, eagine::string_view>>
-      args_str;
+      eagine::message_id,
+      bool,
+      std::intmax_t,
+      std::uintmax_t,
+      float,
+      std::tuple<float, float, float>,
+      std::chrono::duration<float>,
+      eagine::string_view>;
+
+    eagine::flat_map<
+      eagine::identifier,
+      std::tuple<eagine::identifier, argument_value_type>>
+      args;
 };
 //------------------------------------------------------------------------------
 class LogEntryStorage {
@@ -48,7 +66,7 @@ public:
     }
 
     void setDescription(
-      std::size_t stream_id,
+      std::uintptr_t stream_id,
       eagine::identifier source,
       eagine::logger_instance_id instance,
       eagine::string_view display_name,
@@ -67,7 +85,7 @@ public:
     }
 
     auto getEntry(int index) noexcept -> LogEntryData* {
-        if(auto entIdx{eagine::convert_if_fits<std::size_t>(index)}) {
+        if(auto entIdx{eagine::convert_if_fits<std::uintptr_t>(index)}) {
             return &_entries[extract(entIdx)];
         }
         return nullptr;
@@ -76,7 +94,7 @@ public:
 private:
     std::vector<LogEntryData> _entries;
     std::map<
-      std::tuple<std::size_t, eagine::identifier, eagine::logger_instance_id>,
+      std::tuple<std::uintptr_t, eagine::identifier, eagine::logger_instance_id>,
       LogSourceInfo>
       _sources;
     std::set<std::string, eagine::str_view_less> _str_cache;

@@ -9,7 +9,9 @@
 
 #include <eagine/main_ctx_object.hpp>
 #include <QAbstractItemModel>
+#include <QColor>
 
+class Backend;
 class EntriesViewModel;
 struct LogEntryData;
 //------------------------------------------------------------------------------
@@ -18,8 +20,11 @@ class EntryListModel
   , public eagine::main_ctx_object {
     Q_OBJECT
 
+    Q_PROPERTY(int entryCount READ getEntryCount NOTIFY entryCountChanged)
 public:
     EntryListModel(EntriesViewModel& parent);
+
+    auto backend() const noexcept -> Backend&;
 
     auto roleNames() const -> QHash<int, QByteArray> final;
     auto index(int row, int column, const QModelIndex& parent = {}) const
@@ -28,7 +33,11 @@ public:
     auto columnCount(const QModelIndex& parent) const -> int final;
     auto rowCount(const QModelIndex& parent) const -> int final;
     auto data(const QModelIndex& index, int role) const -> QVariant final;
+    auto getEntryCount() const -> int;
+
+    void handleEntriesAdded(int previous, int current);
 signals:
+    void entryCountChanged();
 public slots:
 
 private:
@@ -40,15 +49,18 @@ private:
         entrySourceId,
         entryTag,
         entrySeverity,
+        entrySeverityColor,
         entryArgCount
     };
 
-    auto getEntryMessage(LogEntryData&) const -> QString;
-    auto getEntryFormat(LogEntryData&) const -> QString;
-    auto getEntryStreamId(LogEntryData&) const -> qlonglong;
-    auto getEntryInstanceId(LogEntryData&) const -> qlonglong;
-    auto getEntrySourceId(LogEntryData&) const -> QString;
-    auto getEntryTag(LogEntryData&) const -> QString;
+    auto getEntryMessage(const LogEntryData&) const -> QString;
+    auto getEntryFormat(const LogEntryData&) const -> QString;
+    auto getEntryStreamId(const LogEntryData&) const -> qlonglong;
+    auto getEntryInstanceId(const LogEntryData&) const -> qlonglong;
+    auto getEntrySourceId(const LogEntryData&) const -> QString;
+    auto getEntryTag(const LogEntryData&) const -> QString;
+    auto getEntrySeverity(const LogEntryData&) const -> QString;
+    auto getEntrySeverityColor(const LogEntryData&) const -> QColor;
 
     EntriesViewModel& _parent;
 };

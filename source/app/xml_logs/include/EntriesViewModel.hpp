@@ -12,6 +12,7 @@
 #include <eagine/main_ctx_object.hpp>
 #include <QObject>
 
+class Backend;
 class EntryLog;
 //------------------------------------------------------------------------------
 class EntriesViewModel
@@ -24,6 +25,7 @@ class EntriesViewModel
 public:
     EntriesViewModel(EntryLog& parent);
 
+    auto backend() const noexcept -> Backend&;
     auto entryLog() const noexcept -> EntryLog& {
         return _parent;
     }
@@ -32,6 +34,7 @@ public:
     auto getEntryListModel() noexcept -> EntryListModel*;
 signals:
 public slots:
+    void onEntriesAdded(int previous, int current);
 
 private:
     EntryLog& _parent;

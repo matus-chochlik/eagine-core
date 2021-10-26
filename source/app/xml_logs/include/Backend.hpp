@@ -8,6 +8,7 @@
 #define EAGINE_XML_LOGS_BACKEND
 
 #include "EntryLog.hpp"
+#include "Server.hpp"
 #include "Theme.hpp"
 #include <eagine/main_ctx_object.hpp>
 #include <QObject>
@@ -25,6 +26,10 @@ public:
     Backend(eagine::main_ctx_parent);
 
     void assignStorage(std::shared_ptr<LogEntryStorage>);
+    void assignStorage(std::shared_ptr<ActivityStorage>);
+
+    auto entryLog() noexcept -> EntryLog&;
+    auto theme() noexcept -> Theme&;
 
     auto getEntryLog() noexcept -> EntryLog*;
     auto getTheme() noexcept -> Theme*;
@@ -32,6 +37,7 @@ signals:
 public slots:
 
 private:
+    Server _server;
     EntryLog _entryLog;
     Theme _theme;
 };

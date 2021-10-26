@@ -117,7 +117,7 @@ static constexpr auto ramp(const T x, const S start, const E end) noexcept {
 /// @ingroup math
 template <typename T, typename A>
 static constexpr auto blend(const T v1, const T v2, const A alpha) noexcept {
-    return v1 * alpha + v2 * (1 - alpha);
+    return v1 * (A(1) - alpha) + v2 * alpha;
 }
 //------------------------------------------------------------------------------
 template <typename Tuple, typename A, std::size_t... I>
@@ -126,7 +126,7 @@ static constexpr auto do_blend_tuple(
   const Tuple& v1,
   const Tuple& v2,
   const A alpha) noexcept -> Tuple {
-    return {(std::get<I>(v1) * alpha + std::get<I>(v2) * (1 - alpha))...};
+    return {(std::get<I>(v1) * (A(1) - alpha) + std::get<I>(v2) * alpha)...};
 }
 
 template <typename... T, typename A>

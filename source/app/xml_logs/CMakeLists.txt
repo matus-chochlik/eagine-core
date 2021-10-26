@@ -9,23 +9,32 @@ set(XML_LOGS_RESOURCES
 )
 set(XML_LOGS_SOURCES
 	xml_logs.cpp
+	src/Connection.cpp
+	src/Server.cpp
 	src/Theme.cpp
+	src/EntryFormat.cpp
 	src/EntryLog.cpp
 	src/EntriesViewModel.cpp
 	src/EntryFilterModel.cpp
 	src/EntryListModel.cpp
+	src/ActivityListModel.cpp
 	src/ChartsViewModel.cpp
 	src/ProgressViewModel.cpp
 	src/Backend.cpp
 )
 set(XML_LOGS_HEADERS
 	internal_log_backend.hpp
+	include/Utility.hpp
+	include/Connection.hpp
+	include/Server.hpp
 	include/Theme.hpp
 	include/EntryStorage.hpp
+	include/EntryFormat.hpp
 	include/EntryLog.hpp
 	include/EntriesViewModel.hpp
 	include/EntryFilterModel.hpp
 	include/EntryListModel.hpp
+	include/ActivityListModel.hpp
 	include/ChartsViewModel.hpp
 	include/ProgressViewModel.hpp
 	include/Backend.hpp
@@ -41,7 +50,7 @@ eagine_add_exe_analysis(eagine-xml_logs-gui)
 
 target_compile_options(
 	eagine-xml_logs-gui
-	PRIVATE $<$<BOOL:${EAGINE_GNUCXX_COMPILER}>:-Wno-extra-semi-stmt>
+	PRIVATE $<$<BOOL:${EAGINE_GNUCXX_COMPILER}>:-Wno-extra-semi-stmt;-Wno-redundant-parens>
 )
 target_include_directories(
 	eagine-xml_logs-gui
@@ -54,6 +63,7 @@ target_link_libraries(
 		EAGine::Core
 		Qt5::Core
 		Qt5::Widgets
+		Qt5::Xml
 		Qt5::Qml
 		Qt5::Quick
 )

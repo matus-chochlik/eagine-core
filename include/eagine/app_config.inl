@@ -6,10 +6,12 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/config/basic.hpp>
+#include <eagine/compiler_info.hpp>
 #include <eagine/environment.hpp>
 #include <eagine/file_contents.hpp>
 #include <eagine/interop/valgrind.hpp>
 #include <eagine/main_ctx.hpp>
+#include <eagine/memory/span_algo.hpp>
 #include <eagine/user_info.hpp>
 #include <eagine/valid_if/not_empty.hpp>
 #include <eagine/value_tree/json.hpp>
@@ -18,6 +20,7 @@
 #include <filesystem>
 #include <map>
 #include <mutex>
+#include <set>
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -28,18 +31,26 @@ public:
         // front is empty and is filled out later
         _tag_list.emplace_back();
 
-        if(const auto arg{main_context().args().find("--instance")}) {
-            if(auto inst_arg{arg.next()}) {
-                _tag_list.push_back(inst_arg.get());
-            }
+        if(auto hostname{main_context().system().hostname()}) {
+            _hostname = std::move(extract(hostname));
+            _tag_list.emplace_back(_hostname);
         }
-        for(const auto arg : main_context().args()) {
-            if(arg.is_long_tag("config-tag")) {
+
+        if(const auto architecture{architecture_tag()}) {
+            _tag_list.push_back(extract(architecture));
+        }
+
+        std::array<string_view, 2> tag_labels{
+          {{"--instance"}, {"--config-tag"}}};
+
+        for(const auto label : tag_labels) {
+            if(const auto arg{main_context().args().find(label)}) {
                 if(auto tag_arg{arg.next()}) {
                     _tag_list.push_back(tag_arg.get());
                 }
             }
         }
+
         if constexpr(EAGINE_DEBUG) {
             _tag_list.emplace_back("debug");
             if(running_on_valgrind()) {
@@ -53,13 +64,17 @@ public:
       const string_view key,
       const string_view tag) noexcept -> valtree::compound_attribute {
         try {
-            std::unique_lock<std::mutex> lck{_mutex};
-            _tag_list[0] = tag;
+            const std::lock_guard<decltype(_mutex)> lck{_mutex};
+            _tag_list.front() = tag;
             const auto tags{skip_until(
               view(_tag_list), [](auto t) { return !t.is_empty(); })};
 
-            if(auto found{
-                 _find_config_of(main_context().app_name(), key, tags)}) {
+            auto app_name{main_context().app_name()};
+            if(auto found{_find_config_of(app_name, key, tags)}) {
+                return found;
+            }
+            app_name = strip_prefix(app_name, string_view{"eagine-"});
+            if(auto found{_find_config_of(app_name, key, tags)}) {
                 return found;
             }
             if(auto arg{main_context().args().find("--config-group")}) {
@@ -78,6 +93,34 @@ public:
               .arg(EAGINE_ID(key), key);
         }
         return {};
+    }
+
+    void link(
+      const string_view key,
+      const string_view tag,
+      application_config_value_loader& loader) noexcept {
+        EAGINE_MAYBE_UNUSED(key);
+        EAGINE_MAYBE_UNUSED(tag);
+        _loaders.insert(&loader);
+    }
+
+    void unlink(
+      const string_view key,
+      const string_view tag,
+      application_config_value_loader& loader) noexcept {
+        EAGINE_MAYBE_UNUSED(key);
+        EAGINE_MAYBE_UNUSED(tag);
+        _loaders.erase(&loader);
+    }
+
+    void reload() noexcept {
+        const std::lock_guard<decltype(_mutex)> lck{_mutex};
+        if(!_loaders.empty()) {
+            _open_configs.clear();
+            for(auto loader : _loaders) {
+                extract(loader).reload();
+            }
+        }
     }
 
 private:
@@ -201,10 +244,12 @@ private:
         return pos->second;
     }
 
-    std::mutex _mutex;
+    std::recursive_mutex _mutex;
     std::map<std::string, valtree::compound> _open_configs;
+    std::set<application_config_value_loader*> _loaders;
     std::vector<string_view> _tag_list;
     std::string _config_name;
+    std::string _hostname;
 };
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
@@ -216,6 +261,33 @@ auto application_config::_impl() noexcept -> application_config_impl* {
         }
     }
     return _pimpl.get();
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+void application_config::link(
+  const string_view key,
+  const string_view tag,
+  application_config_value_loader& loader) noexcept {
+    if(const auto impl{_impl()}) {
+        return extract(impl).link(key, tag, loader);
+    }
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+void application_config::unlink(
+  const string_view key,
+  const string_view tag,
+  application_config_value_loader& loader) noexcept {
+    if(const auto impl{_impl()}) {
+        return extract(impl).unlink(key, tag, loader);
+    }
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+void application_config::reload() noexcept {
+    if(const auto impl{_impl()}) {
+        return extract(impl).reload();
+    }
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC

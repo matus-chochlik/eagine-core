@@ -15,7 +15,7 @@ EAGINE_LIB_FUNC
 auto substitute_variables_into(
   std::string& dst,
   string_view src,
-  const callable_ref<optionally_valid<string_view>(const string_view)>&
+  const callable_ref<optionally_valid<string_view>(const string_view) noexcept>&
     translate,
   const variable_substitution_options opts) noexcept -> std::string& {
 
@@ -60,7 +60,7 @@ auto substitute_variables_into(
 EAGINE_LIB_FUNC
 auto substitute_variables(
   const string_view src,
-  const callable_ref<optionally_valid<string_view>(const string_view)>&
+  const callable_ref<optionally_valid<string_view>(const string_view) noexcept>&
     translate,
   const variable_substitution_options opts) noexcept -> std::string {
     std::string result;

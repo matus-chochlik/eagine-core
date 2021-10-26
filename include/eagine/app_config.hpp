@@ -9,6 +9,7 @@
 #ifndef EAGINE_APP_CONFIG_HPP
 #define EAGINE_APP_CONFIG_HPP
 
+#include "interface.hpp"
 #include "main_ctx_object.hpp"
 #include "program_args.hpp"
 #include "valid_if/decl.hpp"
@@ -20,6 +21,18 @@ namespace eagine {
 //------------------------------------------------------------------------------
 class master_ctx;
 class application_config_impl;
+
+/// @brief Internal interface for reloadable configuration values.
+/// @ingroup main_context
+/// @see application_config
+/// @see application_reconfig_value
+/// @note Do not use directly.
+struct application_config_value_loader
+  : interface<application_config_value_loader> {
+
+    /// @brief Reloads the value from the application config.
+    virtual void reload() noexcept = 0;
+};
 
 /// @brief Class for reading application configuration.
 /// @ingroup main_context
@@ -182,6 +195,27 @@ public:
         return initial;
     }
 
+    /// @brief Links a value loader to this configuration instance.
+    /// @see unlink
+    /// @see reload
+    void link(
+      const string_view key,
+      const string_view tag,
+      application_config_value_loader& loader) noexcept;
+
+    /// @brief Unlinks a value loader from this configuration instance.
+    /// @see link
+    /// @see reload
+    void unlink(
+      const string_view key,
+      const string_view tag,
+      application_config_value_loader& loader) noexcept;
+
+    /// @brief Reloads the linked loadable configuration values.
+    /// @see link
+    /// @see unlink
+    void reload() noexcept;
+
 private:
     std::shared_ptr<application_config_impl> _pimpl;
     auto _impl() noexcept -> application_config_impl*;
@@ -208,8 +242,18 @@ inline auto application_config_initial(
 //------------------------------------------------------------------------------
 /// @brief Class wrapping values that can be loaded from application_config.
 /// @ingroup main_context
+template <typename T, typename As = std::add_const_t<T>&, bool Reloadable = false>
+class application_config_value;
+
+/// @brief Class wrapping values that can be reloaded from application_config.
+/// @ingroup main_context
 template <typename T, typename As = std::add_const_t<T>&>
-class application_config_value {
+using application_reconfig_value = application_config_value<T, As, true>;
+//------------------------------------------------------------------------------
+/// @brief Class wrapping values that can be loaded from application_config.
+/// @ingroup main_context
+template <typename T, typename As>
+class application_config_value<T, As, false> {
 public:
     /// @brief Initialization from key, tag and optional initial value.
     application_config_value(
@@ -247,6 +291,72 @@ public:
     }
 
 private:
+    T _value{};
+};
+//------------------------------------------------------------------------------
+/// @brief Class wrapping values that can be reloaded from application_config.
+/// @ingroup main_context
+template <typename T, typename As>
+class application_config_value<T, As, true> final
+  : private application_config_value_loader {
+public:
+    /// @brief Initialization from key, tag and optional initial value.
+    application_config_value(
+      application_config& config,
+      std::string key,
+      std::string tag,
+      T initial = {}) noexcept
+      : _config{config}
+      , _key{std::move(key)}
+      , _tag{std::move(tag)}
+      , _value{application_config_initial(_config, _key, initial, _tag)} {
+        _config.link(_key, _tag, *this);
+    }
+
+    /// @brief Initialization from key and optional initial value.
+    application_config_value(
+      application_config& config,
+      std::string key,
+      T initial = {}) noexcept
+      : application_config_value{config, std::move(key), {}, initial} {}
+
+    application_config_value(application_config_value&&) = delete;
+    application_config_value(const application_config_value&) = delete;
+    auto operator=(application_config_value&&) = delete;
+    auto operator=(const application_config_value&) = delete;
+
+    ~application_config_value() noexcept final {
+        _config.unlink(_key, _tag, *this);
+    }
+
+    auto operator=(T new_value) -> auto& {
+        _value = std::move(new_value);
+        return *this;
+    }
+
+    /// @brief Returns the stored value converted to the @p As type.
+    auto value() const noexcept -> As {
+        return _value;
+    }
+
+    /// @brief Implicit conversion of the stored value to the @p As type.
+    /// @see value
+    operator As() const noexcept {
+        return value();
+    }
+
+    friend auto extract(const application_config_value& that) noexcept -> As {
+        return that.value();
+    }
+
+private:
+    void reload() noexcept final {
+        _config.fetch(_key, _value, _tag);
+    }
+
+    application_config& _config;
+    const std::string _key;
+    const std::string _tag;
     T _value{};
 };
 //------------------------------------------------------------------------------

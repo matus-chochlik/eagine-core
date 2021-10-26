@@ -15,7 +15,7 @@ install(
 	DESTINATION bin
 )
 
-find_package(Qt5 COMPONENTS Core Widgets Qml Quick)
+find_package(Qt5 COMPONENTS Core Widgets Xml Qml Quick)
 if(Qt5_FOUND)
 	set(CMAKE_AUTOMOC ON)
 	set(CMAKE_AUTORCC ON)

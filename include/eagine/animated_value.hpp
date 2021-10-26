@@ -46,8 +46,8 @@ public:
     /// @brief Gets the current value between the current and the next point.
     auto get() const -> T {
         return math::blend(
-          _next,
           _curr,
+          _next,
           math::sigmoid01(math::clamp(_phase / _duration, 0, 1), _slope));
     }
 
