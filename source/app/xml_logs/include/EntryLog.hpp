@@ -38,6 +38,7 @@ public:
 
     auto getEntryCount() const noexcept -> int;
     auto getEntryData(int index) noexcept -> LogEntryData*;
+    auto getEntryConnectors(const LogEntryData&) noexcept -> LogEntryConnectors;
 
     auto getActivityCount() const noexcept -> int;
     auto getActivityData(int index) noexcept -> ActivityData*;

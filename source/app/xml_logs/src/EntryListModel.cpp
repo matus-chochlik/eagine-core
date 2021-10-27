@@ -33,6 +33,8 @@ auto EntryListModel::roleNames() const -> QHash<int, QByteArray> {
     result.insert(entryTag, "tag");
     result.insert(entrySeverity, "severity");
     result.insert(entrySeverityColor, "severityColor");
+    result.insert(entryStreamCount, "streamCount");
+    result.insert(entryStreamIndex, "streamIndex");
     result.insert(entryArgCount, "argCount");
     return result;
 }
@@ -98,6 +100,16 @@ auto EntryListModel::getEntrySeverityColor(const LogEntryData& entry) const
     return backend().theme().getSeverityColor(entry.severity);
 }
 //------------------------------------------------------------------------------
+auto EntryListModel::getEntryStreamCount(const LogEntryData& entry) const
+  -> short {
+    return _parent.entryLog().getEntryConnectors(entry).stream_count;
+}
+//------------------------------------------------------------------------------
+auto EntryListModel::getEntryStreamIndex(const LogEntryData& entry) const
+  -> short {
+    return _parent.entryLog().getEntryConnectors(entry).stream_index;
+}
+//------------------------------------------------------------------------------
 auto EntryListModel::data(const QModelIndex& index, int role) const
   -> QVariant {
     if(auto optEntry{static_cast<LogEntryData*>(index.internalPointer())}) {
@@ -119,6 +131,10 @@ auto EntryListModel::data(const QModelIndex& index, int role) const
                 return {getEntrySeverity(entry)};
             case entrySeverityColor:
                 return {getEntrySeverityColor(entry)};
+            case entryStreamCount:
+                return {getEntryStreamCount(entry)};
+            case entryStreamIndex:
+                return {getEntryStreamIndex(entry)};
             default:
                 break;
         }

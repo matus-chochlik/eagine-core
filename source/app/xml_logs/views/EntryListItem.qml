@@ -6,6 +6,7 @@
 import QtQuick 2.2
 import QtQuick.Controls 2.4
 import QtQuick.Layouts 1.2
+import "qrc:///views"
 
 Control {
 	id: entryListItem
@@ -90,8 +91,29 @@ Control {
 	}
 
 	RowLayout {
-		Item {
-			Layout.preferredWidth: 10
+		spacing: 0
+		Repeater {
+			Layout.preferredWidth: 15 * streamCount
+			model: streamCount
+
+			Image {
+				width: 15
+				height: 50
+
+				function connectorImageSource() {
+					var conn_vert = "c"
+					var conn_horz =
+						index < streamIndex ? "l" :
+						index > streamIndex ? "r" : "c"
+					var conn_thme ="dark"
+
+					return "qrc:/images/conn_%1_%2_%3.png"
+						.arg(conn_vert)
+						.arg(conn_horz)
+						.arg(conn_thme)
+				}
+				source: connectorImageSource()
+			}
 		}
 		Label {
 			text: severity ? severity : "info"

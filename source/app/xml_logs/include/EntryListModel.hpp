@@ -50,6 +50,8 @@ private:
         entryTag,
         entrySeverity,
         entrySeverityColor,
+        entryStreamCount,
+        entryStreamIndex,
         entryArgCount
     };
 
@@ -61,6 +63,8 @@ private:
     auto getEntryTag(const LogEntryData&) const -> QString;
     auto getEntrySeverity(const LogEntryData&) const -> QString;
     auto getEntrySeverityColor(const LogEntryData&) const -> QColor;
+    auto getEntryStreamCount(const LogEntryData&) const -> short;
+    auto getEntryStreamIndex(const LogEntryData&) const -> short;
 
     EntryViewModel& _parent;
 };

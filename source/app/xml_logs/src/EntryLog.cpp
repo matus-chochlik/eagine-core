@@ -80,6 +80,12 @@ auto EntryLog::getEntryData(int index) noexcept -> LogEntryData* {
     return _entries->getEntry(index);
 }
 //------------------------------------------------------------------------------
+auto EntryLog::getEntryConnectors(const LogEntryData& entry) noexcept
+  -> LogEntryConnectors {
+    EAGINE_ASSERT(_entries);
+    return _entries->getEntryConnectors(entry);
+}
+//------------------------------------------------------------------------------
 auto EntryLog::getActivityCount() const noexcept -> int {
     return 0; // TODO
 }

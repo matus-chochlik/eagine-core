@@ -14,6 +14,7 @@
 #include <eagine/logging/severity.hpp>
 #include <eagine/message_id.hpp>
 #include <eagine/string_span.hpp>
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <map>
@@ -59,6 +60,11 @@ struct LogEntryData {
       eagine::identifier,
       std::tuple<eagine::identifier, argument_value_type>>
       args;
+};
+//------------------------------------------------------------------------------
+struct LogEntryConnectors {
+    short stream_count{0};
+    short stream_index{0};
 };
 //------------------------------------------------------------------------------
 class LogEntryStorage {
@@ -110,6 +116,29 @@ public:
             return &_entries[extract(entIdx)];
         }
         return nullptr;
+    }
+
+    auto getEntryConnectors(const LogEntryData& entry) noexcept
+      -> LogEntryConnectors {
+        LogEntryConnectors result;
+        const auto pos = std::lower_bound(
+          _streams.begin(),
+          _streams.end(),
+          entry.entry_uid,
+          [](const auto& current, const auto entry_uid) {
+              return entry_uid < current.entry_uid;
+          });
+        if(pos != _streams.end()) {
+            const auto& si = pos->stream_ids;
+            result.stream_count = eagine::limit_cast<short>(si.size());
+            result.stream_index = eagine::limit_cast<short>(std::distance(
+              si.begin(),
+              std::find_if(
+                si.begin(), si.end(), [&entry](const auto stream_id) {
+                    return stream_id == entry.stream_id;
+                })));
+        }
+        return result;
     }
 
 private:

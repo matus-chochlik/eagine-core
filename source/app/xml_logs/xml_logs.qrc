@@ -9,5 +9,9 @@
 	<file>views/ChartsView.qml</file>
 	<file>views/ProgressView.qml</file>
 
+	<file>images/conn_c_l_dark.png</file>
+	<file>images/conn_c_c_dark.png</file>
+	<file>images/conn_c_r_dark.png</file>
+
 </qresource>
 </RCC>

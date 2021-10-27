@@ -21,6 +21,7 @@ public:
     internal_log_backend() noexcept {
         EAGINE_ASSERT(!_single_instance_ptr());
         _single_instance_ptr() = this;
+        _entries->beginStream(0);
     }
 
     internal_log_backend(internal_log_backend&&) = delete;
@@ -29,6 +30,7 @@ public:
     auto operator=(const internal_log_backend&) = delete;
 
     ~internal_log_backend() noexcept final {
+        _entries->endStream(0);
         EAGINE_ASSERT(_single_instance_ptr());
         _single_instance_ptr() = nullptr;
     }

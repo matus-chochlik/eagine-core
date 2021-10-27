@@ -9,20 +9,10 @@ import QtQuick.Layouts 1.2
 
 ListView {
 	id: entryListView
-	delegate: Loader {
-		id: itemLoader
-
-		function itemViewUrl() {
-			return "qrc:///views/EntryListItem.qml"
-		}
-
-		source: itemViewUrl()
-
-		onLoaded: {
-			itemLoader.item.view = entryListView
-		}
+	delegate: EntryListItem {
+		view: entryListView
 	}
-	spacing: 2
+	spacing: 0
 	focus: true
 	clip: true
 

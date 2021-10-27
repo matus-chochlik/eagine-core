@@ -121,7 +121,7 @@ void Connection::_handleStartElement() noexcept {
     } else if(_isAtFormatTag()) {
         _readingFormat = true;
     } else if(_isAtLogTag()) {
-        _readingLog = true;
+        _readingLog = _handleBeginLog();
     }
 }
 //------------------------------------------------------------------------------
@@ -139,6 +139,7 @@ void Connection::_handleEndElement() noexcept {
         _readingFormat = false;
     } else if(_isAtLogTag()) {
         _readingLog = false;
+        _handleEndLog();
     }
 }
 //------------------------------------------------------------------------------
