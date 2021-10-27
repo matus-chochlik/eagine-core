@@ -93,7 +93,7 @@ public:
 
     void beginStream(std::uintptr_t stream_id) {
         auto& info = _getNextStreamList();
-        info.entry_uid = _uid_sequence;
+        info.entry_uid = ++_uid_sequence;
         info.stream_ids.push_back(stream_id);
         //
         LogEntryData entry{};
@@ -115,7 +115,7 @@ public:
         entry.is_last = true;
         entry.format = "Log finished";
         _entries.emplace_back(std::move(entry));
-
+        //
         auto& info = _getNextStreamList();
         info.entry_uid = ++_uid_sequence;
         const auto pos =

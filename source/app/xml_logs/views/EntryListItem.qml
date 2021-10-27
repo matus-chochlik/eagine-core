@@ -100,17 +100,43 @@ Control {
 				width: 15
 				height: 50
 
-				function connectorImageSource() {
-					var conn_vert = "c"
-					var conn_horz =
-						index < streamIndex ? "l" :
-						index > streamIndex ? "r" : "c"
-					var conn_thme ="dark"
+				function connectorVert() {
+					if(streamPosition < 0) {
+						return "b"
+					}
+					if(streamPosition > 0) {
+						return "e"
+					}
+					return "c"
+				}
 
-					return "qrc:/images/conn_%1_%2_%3.png"
-						.arg(conn_vert)
-						.arg(conn_horz)
-						.arg(conn_thme)
+				function connectorHorz() {
+					if(index < streamIndex) {
+						return "l"
+					}
+					if(index > streamIndex) {
+						return "r"
+					}
+					return "c"
+				}
+
+				function connectorLast() {
+					if(index + 1 == streamCount) {
+						return "t"
+					}
+					return "f"
+				}
+
+				function connectorThme() {
+					return "dark"
+				}
+
+				function connectorImageSource() {
+					return "qrc:/images/conn_%1_%2_%3_%4.png"
+						.arg(connectorVert())
+						.arg(connectorHorz())
+						.arg(connectorLast())
+						.arg(connectorThme())
 				}
 				source: connectorImageSource()
 			}
