@@ -60,6 +60,9 @@ struct LogEntryData {
       eagine::identifier,
       std::tuple<eagine::identifier, argument_value_type>>
       args;
+
+    bool is_first{false};
+    bool is_last{false};
 };
 //------------------------------------------------------------------------------
 struct LogEntryConnectors {
@@ -88,15 +91,35 @@ public:
         info.description = cacheString(description);
     }
 
-    void beginStream(std::uintptr_t id) {
+    void beginStream(std::uintptr_t stream_id) {
         auto& info = _getNextStreamList();
-        info.stream_ids.push_back(id);
+        info.entry_uid = _uid_sequence;
+        info.stream_ids.push_back(stream_id);
+        //
+        LogEntryData entry{};
+        entry.entry_uid = _uid_sequence;
+        entry.stream_id = stream_id;
+        entry.source = EAGINE_ID(XmlLogView);
+        entry.severity = eagine::log_event_severity::info;
+        entry.is_first = true;
+        entry.format = "Log started";
+        _entries.emplace_back(std::move(entry));
     }
 
-    void endStream(std::uintptr_t id) {
+    void endStream(std::uintptr_t stream_id) {
+        LogEntryData entry{};
+        entry.entry_uid = ++_uid_sequence;
+        entry.stream_id = stream_id;
+        entry.source = EAGINE_ID(XmlLogView);
+        entry.severity = eagine::log_event_severity::info;
+        entry.is_last = true;
+        entry.format = "Log finished";
+        _entries.emplace_back(std::move(entry));
+
         auto& info = _getNextStreamList();
+        info.entry_uid = ++_uid_sequence;
         const auto pos =
-          std::find(info.stream_ids.begin(), info.stream_ids.end(), id);
+          std::find(info.stream_ids.begin(), info.stream_ids.end(), stream_id);
         if(EAGINE_LIKELY(pos != info.stream_ids.end())) {
             info.stream_ids.erase(pos);
         }
@@ -121,14 +144,11 @@ public:
     auto getEntryConnectors(const LogEntryData& entry) noexcept
       -> LogEntryConnectors {
         LogEntryConnectors result;
-        const auto pos = std::lower_bound(
-          _streams.begin(),
-          _streams.end(),
-          entry.entry_uid,
-          [](const auto& current, const auto entry_uid) {
-              return entry_uid < current.entry_uid;
+        const auto pos = std::find_if(
+          _streams.rbegin(), _streams.rend(), [&entry](const auto& current) {
+              return entry.entry_uid >= current.entry_uid;
           });
-        if(pos != _streams.end()) {
+        if(pos != _streams.rend()) {
             const auto& si = pos->stream_ids;
             result.stream_count = eagine::limit_cast<short>(si.size());
             result.stream_index = eagine::limit_cast<short>(std::distance(
@@ -149,7 +169,6 @@ private:
             _streams.emplace_back();
         }
         auto& info = _streams.back();
-        info.entry_uid = _uid_sequence;
         return info;
     }
 

@@ -35,6 +35,7 @@ auto EntryListModel::roleNames() const -> QHash<int, QByteArray> {
     result.insert(entrySeverityColor, "severityColor");
     result.insert(entryStreamCount, "streamCount");
     result.insert(entryStreamIndex, "streamIndex");
+    result.insert(entryStreamPosition, "streamPosition");
     result.insert(entryArgCount, "argCount");
     return result;
 }
@@ -110,6 +111,11 @@ auto EntryListModel::getEntryStreamIndex(const LogEntryData& entry) const
     return _parent.entryLog().getEntryConnectors(entry).stream_index;
 }
 //------------------------------------------------------------------------------
+auto EntryListModel::getEntryStreamPosition(const LogEntryData& entry) const
+  -> short {
+    return short(entry.is_first ? -1 : entry.is_last ? 1 : 0);
+}
+//------------------------------------------------------------------------------
 auto EntryListModel::data(const QModelIndex& index, int role) const
   -> QVariant {
     if(auto optEntry{static_cast<LogEntryData*>(index.internalPointer())}) {
@@ -135,6 +141,8 @@ auto EntryListModel::data(const QModelIndex& index, int role) const
                 return {getEntryStreamCount(entry)};
             case entryStreamIndex:
                 return {getEntryStreamIndex(entry)};
+            case entryStreamPosition:
+                return {getEntryStreamPosition(entry)};
             default:
                 break;
         }

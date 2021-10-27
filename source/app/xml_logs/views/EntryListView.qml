@@ -16,6 +16,8 @@ ListView {
 	focus: true
 	clip: true
 
+	ScrollBar.vertical: ScrollBar {}
+
 	currentIndex: model.entryCount - 1
 }
 

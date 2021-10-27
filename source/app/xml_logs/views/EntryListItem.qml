@@ -115,24 +115,32 @@ Control {
 				source: connectorImageSource()
 			}
 		}
-		Label {
-			text: severity ? severity : "info"
-			Layout.preferredWidth: backend.theme.entrySeverityWidth
-			background: Rectangle {
-				color: severityColor
-				opacity: 0.5
+		ColumnLayout {
+			RowLayout {
+				Layout.preferredHeight: 30
+				Label {
+					text: severity ? severity : "info"
+					Layout.preferredWidth: backend.theme.entrySeverityWidth
+					background: Rectangle {
+						color: severityColor
+						opacity: 0.5
+					}
+				}
+				Label {
+					text: sourceId ? sourceId : "-"
+					Layout.preferredWidth: backend.theme.entrySourceWidth
+					background: Rectangle {
+						color: severityColor
+						opacity: 0.5
+					}
+				}
+				Label {
+					text: message ? message : format ? format : "-"
+				}
 			}
-		}
-		Label {
-			text: sourceId ? sourceId : "-"
-			Layout.preferredWidth: backend.theme.entrySourceWidth
-			background: Rectangle {
-				color: severityColor
-				opacity: 0.5
+			Item {
+				Layout.fillHeight: true
 			}
-		}
-		Label {
-			text: message ? message : format ? format : "-"
 		}
 	}
 }
