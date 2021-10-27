@@ -29,7 +29,13 @@ struct LogSourceInfo {
     eagine::string_view description;
 };
 //------------------------------------------------------------------------------
+struct LogStreamList {
+    std::uintmax_t entry_uid;
+    std::vector<std::uintptr_t> stream_ids;
+};
+//------------------------------------------------------------------------------
 struct LogEntryData {
+    std::uintmax_t entry_uid;
     std::uintptr_t stream_id;
     eagine::identifier source;
     eagine::identifier tag;
@@ -76,7 +82,22 @@ public:
         info.description = cacheString(description);
     }
 
+    void beginStream(std::uintptr_t id) {
+        auto& info = _getNextStreamList();
+        info.stream_ids.push_back(id);
+    }
+
+    void endStream(std::uintptr_t id) {
+        auto& info = _getNextStreamList();
+        const auto pos =
+          std::find(info.stream_ids.begin(), info.stream_ids.end(), id);
+        if(EAGINE_LIKELY(pos != info.stream_ids.end())) {
+            info.stream_ids.erase(pos);
+        }
+    }
+
     void addEntry(LogEntryData& entry) {
+        entry.entry_uid = ++_uid_sequence;
         _entries.emplace_back(std::move(entry));
     }
 
@@ -92,7 +113,20 @@ public:
     }
 
 private:
+    auto _getNextStreamList() -> LogStreamList& {
+        if(EAGINE_LIKELY(!_streams.empty())) {
+            _streams.push_back(_streams.back());
+        } else {
+            _streams.emplace_back();
+        }
+        auto& info = _streams.back();
+        info.entry_uid = _uid_sequence;
+        return info;
+    }
+
+    std::uintmax_t _uid_sequence{0U};
     std::vector<LogEntryData> _entries;
+    std::vector<LogStreamList> _streams;
     std::map<
       std::tuple<std::uintptr_t, eagine::identifier, eagine::logger_instance_id>,
       LogSourceInfo>

@@ -12,7 +12,7 @@
 #include <QColor>
 
 class Backend;
-class EntriesViewModel;
+class EntryViewModel;
 struct LogEntryData;
 //------------------------------------------------------------------------------
 class EntryListModel
@@ -22,7 +22,7 @@ class EntryListModel
 
     Q_PROPERTY(int entryCount READ getEntryCount NOTIFY entryCountChanged)
 public:
-    EntryListModel(EntriesViewModel& parent);
+    EntryListModel(EntryViewModel& parent);
 
     auto backend() const noexcept -> Backend&;
 
@@ -62,7 +62,7 @@ private:
     auto getEntrySeverity(const LogEntryData&) const -> QString;
     auto getEntrySeverityColor(const LogEntryData&) const -> QColor;
 
-    EntriesViewModel& _parent;
+    EntryViewModel& _parent;
 };
 //------------------------------------------------------------------------------
 #endif

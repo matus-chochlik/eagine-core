@@ -9,8 +9,8 @@
 
 #include "ActivityStorage.hpp"
 #include "ChartsViewModel.hpp"
-#include "EntriesViewModel.hpp"
 #include "EntryStorage.hpp"
+#include "EntryViewModel.hpp"
 #include "ProgressViewModel.hpp"
 #include <eagine/main_ctx_object.hpp>
 #include <QObject>
@@ -22,7 +22,7 @@ class EntryLog
   , public eagine::main_ctx_object {
     Q_OBJECT
 
-    Q_PROPERTY(EntriesViewModel* entries READ getEntriesViewModel CONSTANT)
+    Q_PROPERTY(EntryViewModel* entries READ getEntryViewModel CONSTANT)
     Q_PROPERTY(ChartsViewModel* charts READ getChartsViewModel CONSTANT)
     Q_PROPERTY(ProgressViewModel* progress READ getProgressViewModel CONSTANT)
 public:
@@ -32,7 +32,7 @@ public:
         return _backend;
     }
 
-    auto getEntriesViewModel() noexcept -> EntriesViewModel*;
+    auto getEntryViewModel() noexcept -> EntryViewModel*;
     auto getChartsViewModel() noexcept -> ChartsViewModel*;
     auto getProgressViewModel() noexcept -> ProgressViewModel*;
 
@@ -56,7 +56,7 @@ public slots:
 
 private:
     Backend& _backend;
-    EntriesViewModel _entriesViewModel;
+    EntryViewModel _entryViewModel;
     ChartsViewModel _chartsViewModel;
     ProgressViewModel _progressViewModel;
     std::shared_ptr<LogEntryStorage> _entries;

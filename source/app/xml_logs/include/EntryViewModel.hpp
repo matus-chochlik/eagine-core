@@ -15,7 +15,7 @@
 class Backend;
 class EntryLog;
 //------------------------------------------------------------------------------
-class EntriesViewModel
+class EntryViewModel
   : public QObject
   , public eagine::main_ctx_object {
     Q_OBJECT
@@ -23,7 +23,7 @@ class EntriesViewModel
     Q_PROPERTY(EntryFilterModel* entryFilter READ getEntryFilterModel CONSTANT)
     Q_PROPERTY(EntryListModel* entryList READ getEntryListModel CONSTANT)
 public:
-    EntriesViewModel(EntryLog& parent);
+    EntryViewModel(EntryLog& parent);
 
     auto backend() const noexcept -> Backend&;
     auto entryLog() const noexcept -> EntryLog& {

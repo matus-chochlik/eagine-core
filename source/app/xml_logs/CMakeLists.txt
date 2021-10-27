@@ -14,7 +14,7 @@ set(XML_LOGS_SOURCES
 	src/Theme.cpp
 	src/EntryFormat.cpp
 	src/EntryLog.cpp
-	src/EntriesViewModel.cpp
+	src/EntryViewModel.cpp
 	src/EntryFilterModel.cpp
 	src/EntryListModel.cpp
 	src/ActivityListModel.cpp
@@ -31,7 +31,7 @@ set(XML_LOGS_HEADERS
 	include/EntryStorage.hpp
 	include/EntryFormat.hpp
 	include/EntryLog.hpp
-	include/EntriesViewModel.hpp
+	include/EntryViewModel.hpp
 	include/EntryFilterModel.hpp
 	include/EntryListModel.hpp
 	include/ActivityListModel.hpp

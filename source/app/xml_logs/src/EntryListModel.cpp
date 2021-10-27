@@ -6,14 +6,14 @@
 
 #include "EntryListModel.hpp"
 #include "Backend.hpp"
-#include "EntriesViewModel.hpp"
 #include "EntryFormat.hpp"
 #include "EntryLog.hpp"
+#include "EntryViewModel.hpp"
 #include "Utility.hpp"
 #include <eagine/extract.hpp>
 #include <eagine/is_within_limits.hpp>
 //------------------------------------------------------------------------------
-EntryListModel::EntryListModel(EntriesViewModel& parent)
+EntryListModel::EntryListModel(EntryViewModel& parent)
   : QAbstractItemModel{nullptr}
   , eagine::main_ctx_object{EAGINE_ID(EntListMdl), parent}
   , _parent{parent} {}

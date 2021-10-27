@@ -11,14 +11,14 @@ EntryLog::EntryLog(Backend& backend)
   : QObject{nullptr}
   , eagine::main_ctx_object{EAGINE_ID(EntryLog), backend}
   , _backend{backend}
-  , _entriesViewModel{*this}
+  , _entryViewModel{*this}
   , _chartsViewModel{*this}
   , _progressViewModel{*this} {
     connect(
       this,
       &EntryLog::entriesAdded,
-      &_entriesViewModel,
-      &EntriesViewModel::onEntriesAdded);
+      &_entryViewModel,
+      &EntryViewModel::onEntriesAdded);
 }
 //------------------------------------------------------------------------------
 void EntryLog::assignStorage(std::shared_ptr<LogEntryStorage> entries) {
@@ -39,11 +39,13 @@ auto EntryLog::cacheString(eagine::string_view s) -> eagine::string_view {
 }
 //------------------------------------------------------------------------------
 void EntryLog::beginStream(std::uintptr_t streamId) {
-    EAGINE_MAYBE_UNUSED(streamId);
+    EAGINE_ASSERT(_entries);
+    return _entries->beginStream(streamId);
 }
 //------------------------------------------------------------------------------
 void EntryLog::endStream(std::uintptr_t streamId) {
-    EAGINE_MAYBE_UNUSED(streamId);
+    EAGINE_ASSERT(_entries);
+    return _entries->endStream(streamId);
 }
 //------------------------------------------------------------------------------
 void EntryLog::addEntry(LogEntryData& entry) {
@@ -57,8 +59,8 @@ void EntryLog::commitEntries() {
     _prevEntryCount = currEntryCount;
 }
 //------------------------------------------------------------------------------
-auto EntryLog::getEntriesViewModel() noexcept -> EntriesViewModel* {
-    return &_entriesViewModel;
+auto EntryLog::getEntryViewModel() noexcept -> EntryViewModel* {
+    return &_entryViewModel;
 }
 //------------------------------------------------------------------------------
 auto EntryLog::getChartsViewModel() noexcept -> ChartsViewModel* {

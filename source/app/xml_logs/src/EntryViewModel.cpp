@@ -4,29 +4,29 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#include "EntriesViewModel.hpp"
 #include "EntryLog.hpp"
+#include "EntryViewModel.hpp"
 //------------------------------------------------------------------------------
-EntriesViewModel::EntriesViewModel(EntryLog& parent)
+EntryViewModel::EntryViewModel(EntryLog& parent)
   : QObject{nullptr}
   , eagine::main_ctx_object{EAGINE_ID(LogVM), parent}
   , _parent{parent}
   , _entryFilterModel{*this}
   , _entryListModel{*this} {}
 //------------------------------------------------------------------------------
-auto EntriesViewModel::backend() const noexcept -> Backend& {
+auto EntryViewModel::backend() const noexcept -> Backend& {
     return entryLog().backend();
 }
 //------------------------------------------------------------------------------
-auto EntriesViewModel::getEntryFilterModel() noexcept -> EntryFilterModel* {
+auto EntryViewModel::getEntryFilterModel() noexcept -> EntryFilterModel* {
     return &_entryFilterModel;
 }
 //------------------------------------------------------------------------------
-auto EntriesViewModel::getEntryListModel() noexcept -> EntryListModel* {
+auto EntryViewModel::getEntryListModel() noexcept -> EntryListModel* {
     return &_entryListModel;
 }
 //------------------------------------------------------------------------------
-void EntriesViewModel::onEntriesAdded(int previous, int current) {
+void EntryViewModel::onEntriesAdded(int previous, int current) {
     _entryListModel.handleEntriesAdded(previous, current);
 }
 //------------------------------------------------------------------------------
