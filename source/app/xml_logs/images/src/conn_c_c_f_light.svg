@@ -13,10 +13,10 @@
     id="path_1" />
   <path
     style="fill:none;stroke:black;stroke-width:1.4"
-    d="M 7 15 L 16 15"
+    d="M 7 25 C 7 25 7 15 15 15 L 16 15"
     id="path_2" />
   <circle
    style="fill:black;stroke:black;stroke-width:1.4"
-   cx="7" cy="15" r="2"
+   cx="7" cy="25" r="2"
    id="circ" />
 </svg>

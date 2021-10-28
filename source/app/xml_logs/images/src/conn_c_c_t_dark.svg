@@ -8,15 +8,15 @@
    version="1.1"
    id="svg_conn_c_c_dark">
   <path
-    style="fill:none;stroke:black;stroke-width:1.4"
+    style="fill:none;stroke:white;stroke-width:1.4"
     d="M 7 -1 L 7 51"
     id="path_1" />
   <path
-    style="fill:none;stroke:black;stroke-width:1.4"
-    d="M 7 15 L 16 15"
+    style="fill:none;stroke:white;stroke-width:1.4"
+    d="M 7 20 C 7 20 7 15 15 15 L 16 15"
     id="path_2" />
   <circle
-   style="fill:black;stroke:black;stroke-width:1.4"
-   cx="7" cy="15" r="2"
+   style="fill:white;stroke:white;stroke-width:1.4"
+   cx="7" cy="20" r="2"
    id="circ" />
 </svg>
