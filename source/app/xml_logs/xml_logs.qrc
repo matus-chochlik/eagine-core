@@ -22,5 +22,18 @@
 	<file>images/conn_e_r_f_dark.png</file>
 	<file>images/conn_e_r_t_dark.png</file>
 
+	<file>images/conn_b_c_t_light.png</file>
+	<file>images/conn_b_l_f_light.png</file>
+	<file>images/conn_c_c_f_light.png</file>
+	<file>images/conn_c_c_t_light.png</file>
+	<file>images/conn_c_l_f_light.png</file>
+	<file>images/conn_c_r_f_light.png</file>
+	<file>images/conn_c_r_t_light.png</file>
+	<file>images/conn_e_c_f_light.png</file>
+	<file>images/conn_e_c_t_light.png</file>
+	<file>images/conn_e_l_f_light.png</file>
+	<file>images/conn_e_r_f_light.png</file>
+	<file>images/conn_e_r_t_light.png</file>
+
 </qresource>
 </RCC>

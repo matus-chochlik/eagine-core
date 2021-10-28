@@ -128,7 +128,7 @@ Control {
 				}
 
 				function connectorThme() {
-					return "dark"
+					return backend.theme.light ? "light" : "dark"
 				}
 
 				function connectorImageSource() {

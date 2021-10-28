@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   width="15"
+   height="50"
+   viewBox="0 0 15 50"
+   version="1.1"
+   id="svg_conn_e_r_dark">
+	<defs>
+		<linearGradient id="grad1" gradientUnits="userSpaceOnUse" x1="7" y1="0" x2="7" y2="50">
+			<stop offset="0%" stop-color="black" stop-opacity="1"/>
+			<stop offset="10%" stop-color="black" stop-opacity="1"/>
+			<stop offset="30%" stop-color="black" stop-opacity="0"/>
+			<stop offset="50%" stop-color="black" stop-opacity="1"/>
+			<stop offset="100%" stop-color="black" stop-opacity="1"/>
+		</linearGradient>
+	</defs>
+  <path
+    style="fill:none;stroke-width:1.4"
+		stroke="url('#grad1')"
+    d="M 7 -1 L 7 25 C 7 25 7 30 0 35 L -1 35"
+    id="path_1" />
+  <path
+    style="fill:none;stroke:black;stroke-width:1.4"
+    d="M 16 35 L 15 35 C 15 35 7 42 7 50 L 7 51"
+    id="path_2" />
+  <path
+    style="fill:none;stroke:black;stroke-width:1.4"
+    d="M -1 15 L 16 15"
+    id="path_3" />
+</svg>
