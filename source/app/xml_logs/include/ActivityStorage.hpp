@@ -13,6 +13,7 @@
 #include <vector>
 
 class Backend;
+struct LogEntryData;
 //------------------------------------------------------------------------------
 struct ActivityData {
     std::uintptr_t stream_id;
@@ -24,8 +25,22 @@ struct ActivityData {
 //------------------------------------------------------------------------------
 class ActivityStorage {
 public:
+    void beginStream(std::uintptr_t stream_id) noexcept;
+    void endStream(std::uintptr_t stream_id) noexcept;
+    void addEntry(LogEntryData& entry) noexcept;
+
+    auto activityCount() const noexcept -> int {
+        return 0;
+    }
+
+    auto getActivity(int index) noexcept -> ActivityData* {
+        // TODO
+        EAGINE_MAYBE_UNUSED(index);
+        return nullptr;
+    }
+
 private:
-    std::vector<ActivityData> _entries;
+    std::vector<ActivityData> _activities;
 };
 //------------------------------------------------------------------------------
 

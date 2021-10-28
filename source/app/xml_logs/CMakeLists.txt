@@ -12,11 +12,13 @@ set(XML_LOGS_SOURCES
 	src/Connection.cpp
 	src/Server.cpp
 	src/Theme.cpp
+	src/EntryStorage.cpp
 	src/EntryFormat.cpp
 	src/EntryLog.cpp
 	src/EntryViewModel.cpp
 	src/EntryFilterModel.cpp
 	src/EntryListModel.cpp
+	src/ActivityStorage.cpp
 	src/ActivityListModel.cpp
 	src/ChartsViewModel.cpp
 	src/ProgressViewModel.cpp
@@ -34,6 +36,7 @@ set(XML_LOGS_HEADERS
 	include/EntryViewModel.hpp
 	include/EntryFilterModel.hpp
 	include/EntryListModel.hpp
+	include/ActivityStorage.hpp
 	include/ActivityListModel.hpp
 	include/ChartsViewModel.hpp
 	include/ProgressViewModel.hpp

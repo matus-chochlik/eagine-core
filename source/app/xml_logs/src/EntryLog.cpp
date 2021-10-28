@@ -41,17 +41,23 @@ auto EntryLog::cacheString(eagine::string_view s) -> eagine::string_view {
 void EntryLog::beginStream(std::uintptr_t streamId) {
     EAGINE_ASSERT(_entries);
     _entries->beginStream(streamId);
+    EAGINE_ASSERT(_activities);
+    _activities->beginStream(streamId);
 }
 //------------------------------------------------------------------------------
 void EntryLog::endStream(std::uintptr_t streamId) {
     EAGINE_ASSERT(_entries);
     _entries->endStream(streamId);
+    EAGINE_ASSERT(_activities);
+    _activities->endStream(streamId);
     commitEntries();
 }
 //------------------------------------------------------------------------------
 void EntryLog::addEntry(LogEntryData& entry) {
     EAGINE_ASSERT(_entries);
     _entries->addEntry(entry);
+    EAGINE_ASSERT(_activities);
+    _activities->addEntry(entry);
 }
 //------------------------------------------------------------------------------
 void EntryLog::commitEntries() {
@@ -88,10 +94,12 @@ auto EntryLog::getEntryConnectors(const LogEntryData& entry) noexcept
 }
 //------------------------------------------------------------------------------
 auto EntryLog::getActivityCount() const noexcept -> int {
-    return 0; // TODO
+    EAGINE_ASSERT(_activities);
+    return _activities->activityCount();
 }
 //------------------------------------------------------------------------------
-auto EntryLog::getActivityData(int) noexcept -> ActivityData* {
-    return nullptr; // TODO
+auto EntryLog::getActivityData(int index) noexcept -> ActivityData* {
+    EAGINE_ASSERT(_activities);
+    return _activities->getActivity(index);
 }
 //------------------------------------------------------------------------------
