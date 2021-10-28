@@ -36,6 +36,8 @@ public slots:
 private:
     auto _toIdentifier(const QStringRef&) noexcept -> eagine::identifier;
     auto _toFloat(const QStringRef&, float) noexcept -> float;
+    auto _toUnsigned64(const QStringRef&, std::uint64_t) noexcept
+      -> std::uint64_t;
     auto _toSeverity(const QStringRef&) noexcept -> eagine::log_event_severity;
     auto _cacheString(const QStringRef&) noexcept -> eagine::string_view;
 
@@ -44,6 +46,7 @@ private:
     auto _isAtFormatTag() const noexcept -> bool;
     auto _isAtArgumentTag() const noexcept -> bool;
 
+    auto _isProgressArg() const noexcept -> bool;
     auto _isBoolArg() const noexcept -> bool;
     auto _isIntegerArg() const noexcept -> bool;
     auto _isUnsignedArg() const noexcept -> bool;
@@ -69,6 +72,8 @@ private:
     LogEntryData _currentEntry;
     eagine::identifier _currentArgName;
     eagine::identifier _currentArgTag;
+    float _currentMin{0.F};
+    float _currentMax{1.F};
     bool _readingLog{false};
     bool _readingMessage{false};
     bool _readingFormat{false};

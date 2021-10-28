@@ -30,7 +30,7 @@ auto ActivityListModel::roleNames() const -> QHash<int, QByteArray> {
     result.insert(activityStreamId, "streamId");
     result.insert(activityInstanceId, "instanceId");
     result.insert(activitySourceId, "sourceId");
-    result.insert(activityTag, "tag");
+    result.insert(activityArg, "arg");
     result.insert(activitySeverity, "severity");
     return result;
 }
@@ -82,9 +82,9 @@ auto ActivityListModel::getActivitySourceId(const ActivityData& entry) const
     return toQString(entry.source.name().view());
 }
 //------------------------------------------------------------------------------
-auto ActivityListModel::getActivityTag(const ActivityData& entry) const
+auto ActivityListModel::getActivityArg(const ActivityData& entry) const
   -> QString {
-    return toQString(entry.tag.name().view());
+    return toQString(entry.arg.name().view());
 }
 //------------------------------------------------------------------------------
 auto ActivityListModel::getActivitySeverity(const ActivityData& entry) const
@@ -107,8 +107,8 @@ auto ActivityListModel::data(const QModelIndex& index, int role) const
                 return {getActivityInstanceId(activity)};
             case activitySourceId:
                 return {getActivitySourceId(activity)};
-            case activityTag:
-                return {getActivityTag(activity)};
+            case activityArg:
+                return {getActivityArg(activity)};
             case activitySeverity:
                 return {getActivitySeverity(activity)};
             default:
@@ -116,5 +116,10 @@ auto ActivityListModel::data(const QModelIndex& index, int role) const
         }
     }
     return {};
+}
+//------------------------------------------------------------------------------
+void ActivityListModel::handleActivitiesChanged() {
+    emit modelReset({});
+    emit activityCountChanged();
 }
 //------------------------------------------------------------------------------

@@ -154,7 +154,7 @@ private:
     void add_blob(identifier, identifier, memory::const_block) noexcept final {}
 
     void finish_message() noexcept final {
-        _entries->addEntry(_current);
+        _entries->addEntry(std::move(_current));
     }
 
     void finish_log() noexcept final {}

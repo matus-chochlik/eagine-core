@@ -37,6 +37,12 @@ auto Connection::_toFloat(const QStringRef& s, float f) noexcept -> float {
     return extract_or(eagine::from_string<float>(eagine::view(s.toUtf8())), f);
 }
 //------------------------------------------------------------------------------
+auto Connection::_toUnsigned64(const QStringRef& s, std::uint64_t f) noexcept
+  -> std::uint64_t {
+    return extract_or(
+      eagine::from_string<std::uint64_t>(eagine::view(s.toUtf8())), f);
+}
+//------------------------------------------------------------------------------
 auto Connection::_toSeverity(const QStringRef& s) noexcept
   -> eagine::log_event_severity {
     if(const auto severity{eagine::from_string<eagine::log_event_severity>(
@@ -80,6 +86,9 @@ void Connection::_handleEndLog() noexcept {
 auto Connection::_handleBeginMessage() noexcept -> bool {
     // id
     _currentEntry.stream_id = _streamId;
+    _currentEntry.has_progress = false;
+    _currentMin = 0.F;
+    _currentMax = 1.F;
     // tag
     QStringRef s = _xmlReader.attributes().value("tag");
     if(s.isEmpty()) {
@@ -94,6 +103,9 @@ auto Connection::_handleBeginMessage() noexcept -> bool {
     } else {
         _currentEntry.source = _toIdentifier(s);
     }
+    // instance
+    s = _xmlReader.attributes().value("iid");
+    _currentEntry.instance = _toUnsigned64(s, 0);
     // severity
     s = _xmlReader.attributes().value("lvl");
     _currentEntry.severity = _toSeverity(s);
@@ -114,9 +126,20 @@ auto Connection::_handleBeginArgument() noexcept -> bool {
         return false;
     }
     _currentArgName = _toIdentifier(s);
+    // tag
     s = _xmlReader.attributes().value("t");
     if(!s.isEmpty()) {
         _currentArgTag = _toIdentifier(s);
+    }
+    // min
+    s = _xmlReader.attributes().value("min");
+    if(!s.isEmpty()) {
+        _currentMin = _toFloat(s, 0.F);
+    }
+    // max
+    s = _xmlReader.attributes().value("max");
+    if(!s.isEmpty()) {
+        _currentMax = _toFloat(s, 1.F);
     }
     return true;
 }
@@ -155,6 +178,10 @@ void Connection::_handleFormatText() noexcept {
     _currentEntry.format = _cacheString(_xmlReader.text());
 }
 //------------------------------------------------------------------------------
+auto Connection::_isProgressArg() const noexcept -> bool {
+    return _currentArgTag == EAGINE_ID(Progress);
+}
+//------------------------------------------------------------------------------
 auto Connection::_isBoolArg() const noexcept -> bool {
     return _currentArgTag == EAGINE_ID(bool);
 }
@@ -181,7 +208,16 @@ auto Connection::_isDurationArg() const noexcept -> bool {
 //------------------------------------------------------------------------------
 void Connection::_handleArgumentValue() noexcept {
     const auto s = _xmlReader.text();
-    if(_isBoolArg()) {
+    if(_isProgressArg()) {
+        _currentEntry.has_progress |= true;
+        if(const auto value{
+             eagine::from_string<std::uintmax_t>(eagine::view(s.toUtf8()))}) {
+            _currentEntry.args[_currentArgName] = {
+              _currentArgTag,
+              std::tuple<float, float, float>{
+                _currentMin, extract(value), _currentMax}};
+        }
+    } else if(_isBoolArg()) {
         _currentEntry.args[_currentArgName] = {
           _currentArgTag, s == QLatin1String("true")};
     } else if(_isUnsignedArg()) {

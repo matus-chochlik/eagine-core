@@ -10,6 +10,7 @@
 #include <eagine/identifier.hpp>
 #include <eagine/logging/fwd.hpp>
 #include <eagine/logging/severity.hpp>
+#include <cstdint>
 #include <vector>
 
 class Backend;
@@ -17,25 +18,31 @@ struct LogEntryData;
 //------------------------------------------------------------------------------
 struct ActivityData {
     std::uintptr_t stream_id;
+    std::uint64_t instance;
     eagine::identifier source;
-    eagine::identifier tag;
-    eagine::logger_instance_id instance;
+    eagine::identifier arg;
     eagine::log_event_severity severity;
+    float min{0.F};
+    float value{0.F};
+    float max{1.F};
 };
 //------------------------------------------------------------------------------
 class ActivityStorage {
 public:
     void beginStream(std::uintptr_t stream_id) noexcept;
     void endStream(std::uintptr_t stream_id) noexcept;
-    void addEntry(LogEntryData& entry) noexcept;
+    void addEntry(const LogEntryData& entry) noexcept;
 
     auto activityCount() const noexcept -> int {
-        return 0;
+        return eagine::limit_cast<int>(_activities.size());
     }
 
     auto getActivity(int index) noexcept -> ActivityData* {
-        // TODO
-        EAGINE_MAYBE_UNUSED(index);
+        if(const auto actIdx{eagine::convert_if_fits<std::size_t>(index)}) {
+            if(extract(actIdx) < _activities.size()) {
+                return &_activities[extract(actIdx)];
+            }
+        }
         return nullptr;
     }
 

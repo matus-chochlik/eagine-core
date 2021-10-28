@@ -39,14 +39,15 @@ struct LogStreamList {
 struct LogEntryData {
     std::uintmax_t entry_uid;
     std::uintptr_t stream_id;
+    std::uint64_t instance;
     eagine::identifier source;
     eagine::identifier tag;
-    eagine::logger_instance_id instance;
     eagine::string_view format;
     float reltime_sec{-1.F};
     eagine::log_event_severity severity;
-    bool is_first{false};
-    bool is_last{false};
+    bool is_first : 1 {false};
+    bool is_last : 1 {false};
+    bool has_progress : 1 {false};
 
     using argument_value_type = std::variant<
       eagine::nothing_t,
@@ -95,7 +96,7 @@ public:
     void beginStream(std::uintptr_t stream_id) noexcept;
     void endStream(std::uintptr_t stream_id) noexcept;
 
-    void addEntry(LogEntryData& entry) noexcept {
+    void addEntry(LogEntryData&& entry) noexcept {
         entry.entry_uid = ++_uid_sequence;
         _emplaceNextEntry(std::move(entry));
     }

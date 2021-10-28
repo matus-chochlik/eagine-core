@@ -33,6 +33,7 @@ public:
 
 signals:
 public slots:
+    void onEntriesAdded(int previous, int current);
 
 private:
     EntryLog& _parent;

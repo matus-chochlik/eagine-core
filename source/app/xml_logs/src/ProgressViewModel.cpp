@@ -21,3 +21,7 @@ auto ProgressViewModel::getActivityListModel() noexcept -> ActivityListModel* {
     return &_activityListModel;
 }
 //------------------------------------------------------------------------------
+void ProgressViewModel::onEntriesAdded(int, int) {
+    _activityListModel.handleActivitiesChanged();
+}
+//------------------------------------------------------------------------------

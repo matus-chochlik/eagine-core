@@ -19,6 +19,11 @@ EntryLog::EntryLog(Backend& backend)
       &EntryLog::entriesAdded,
       &_entryViewModel,
       &EntryViewModel::onEntriesAdded);
+    connect(
+      this,
+      &EntryLog::entriesAdded,
+      &_progressViewModel,
+      &ProgressViewModel::onEntriesAdded);
 }
 //------------------------------------------------------------------------------
 void EntryLog::assignStorage(std::shared_ptr<LogEntryStorage> entries) {
@@ -46,18 +51,20 @@ void EntryLog::beginStream(std::uintptr_t streamId) {
 }
 //------------------------------------------------------------------------------
 void EntryLog::endStream(std::uintptr_t streamId) {
-    EAGINE_ASSERT(_entries);
-    _entries->endStream(streamId);
     EAGINE_ASSERT(_activities);
     _activities->endStream(streamId);
+    EAGINE_ASSERT(_entries);
+    _entries->endStream(streamId);
     commitEntries();
 }
 //------------------------------------------------------------------------------
 void EntryLog::addEntry(LogEntryData& entry) {
+    if(entry.has_progress) {
+        EAGINE_ASSERT(_activities);
+        _activities->addEntry(entry);
+    }
     EAGINE_ASSERT(_entries);
-    _entries->addEntry(entry);
-    EAGINE_ASSERT(_activities);
-    _activities->addEntry(entry);
+    _entries->addEntry(std::move(entry));
 }
 //------------------------------------------------------------------------------
 void EntryLog::commitEntries() {

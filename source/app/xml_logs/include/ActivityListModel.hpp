@@ -35,6 +35,7 @@ public:
     auto data(const QModelIndex& index, int role) const -> QVariant final;
     auto getActivityCount() const -> int;
 
+    void handleActivitiesChanged();
 signals:
     void activityCountChanged();
 public slots:
@@ -46,7 +47,7 @@ private:
         activityStreamId,
         activityInstanceId,
         activitySourceId,
-        activityTag,
+        activityArg,
         activitySeverity
     };
 
@@ -55,7 +56,7 @@ private:
     auto getActivityStreamId(const ActivityData&) const -> qlonglong;
     auto getActivityInstanceId(const ActivityData&) const -> qlonglong;
     auto getActivitySourceId(const ActivityData&) const -> QString;
-    auto getActivityTag(const ActivityData&) const -> QString;
+    auto getActivityArg(const ActivityData&) const -> QString;
     auto getActivitySeverity(const ActivityData&) const -> QString;
 
     ProgressViewModel& _parent;
