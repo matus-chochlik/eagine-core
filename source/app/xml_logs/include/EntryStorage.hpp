@@ -41,8 +41,10 @@ struct LogEntryData {
     eagine::identifier source;
     eagine::identifier tag;
     eagine::logger_instance_id instance;
-    eagine::log_event_severity severity;
     eagine::string_view format;
+    eagine::log_event_severity severity;
+    bool is_first{false};
+    bool is_last{false};
 
     using argument_value_type = std::variant<
       eagine::nothing_t,
@@ -60,9 +62,6 @@ struct LogEntryData {
       eagine::identifier,
       std::tuple<eagine::identifier, argument_value_type>>
       args;
-
-    bool is_first{false};
-    bool is_last{false};
 };
 //------------------------------------------------------------------------------
 struct LogEntryConnectors {
@@ -144,9 +143,12 @@ public:
     auto getEntryConnectors(const LogEntryData& entry) noexcept
       -> LogEntryConnectors {
         LogEntryConnectors result;
-        const auto pos = std::find_if(
-          _streams.rbegin(), _streams.rend(), [&entry](const auto& current) {
-              return entry.entry_uid >= current.entry_uid;
+        const auto pos = std::lower_bound(
+          _streams.rbegin(),
+          _streams.rend(),
+          entry.entry_uid,
+          [](const auto& current, const auto entry_uid) {
+              return entry_uid < current.entry_uid;
           });
         if(pos != _streams.rend()) {
             const auto& si = pos->stream_ids;
