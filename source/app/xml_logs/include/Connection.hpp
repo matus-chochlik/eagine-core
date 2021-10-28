@@ -35,6 +35,7 @@ public slots:
 
 private:
     auto _toIdentifier(const QStringRef&) noexcept -> eagine::identifier;
+    auto _toFloat(const QStringRef&, float) noexcept -> float;
     auto _toSeverity(const QStringRef&) noexcept -> eagine::log_event_severity;
     auto _cacheString(const QStringRef&) noexcept -> eagine::string_view;
 

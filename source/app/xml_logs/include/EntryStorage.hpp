@@ -7,6 +7,7 @@
 #ifndef EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 #define EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 
+#include <eagine/branch_predict.hpp>
 #include <eagine/flat_map.hpp>
 #include <eagine/identifier.hpp>
 #include <eagine/is_within_limits.hpp>
@@ -42,6 +43,7 @@ struct LogEntryData {
     eagine::identifier tag;
     eagine::logger_instance_id instance;
     eagine::string_view format;
+    float reltime_sec{-1.F};
     eagine::log_event_severity severity;
     bool is_first{false};
     bool is_last{false};
@@ -100,9 +102,10 @@ public:
         entry.stream_id = stream_id;
         entry.source = EAGINE_ID(XmlLogView);
         entry.severity = eagine::log_event_severity::info;
+        entry.reltime_sec = 0.F;
         entry.is_first = true;
         entry.format = "Log started";
-        _entries.emplace_back(std::move(entry));
+        _emplaceNextEntry(std::move(entry));
     }
 
     void endStream(std::uintptr_t stream_id) {
@@ -113,7 +116,7 @@ public:
         entry.severity = eagine::log_event_severity::info;
         entry.is_last = true;
         entry.format = "Log finished";
-        _entries.emplace_back(std::move(entry));
+        _emplaceNextEntry(std::move(entry));
         //
         auto& info = _getNextStreamList();
         info.entry_uid = ++_uid_sequence;
@@ -126,16 +129,26 @@ public:
 
     void addEntry(LogEntryData& entry) {
         entry.entry_uid = ++_uid_sequence;
-        _entries.emplace_back(std::move(entry));
+        _emplaceNextEntry(std::move(entry));
     }
 
     auto entryCount() const noexcept -> int {
-        return eagine::limit_cast<int>(_entries.size());
+        if(EAGINE_LIKELY(!_entries.empty())) {
+            return eagine::limit_cast<int>(
+              (_entries.size() - 1U) * _chunkSize() + _entries.back().size());
+        }
+        return 0;
     }
 
     auto getEntry(int index) noexcept -> LogEntryData* {
-        if(auto entIdx{eagine::convert_if_fits<std::uintptr_t>(index)}) {
-            return &_entries[extract(entIdx)];
+        if(EAGINE_LIKELY(!_entries.empty())) {
+            const auto entIdx{eagine::convert_if_fits<std::size_t>(index)};
+            if(EAGINE_LIKELY(entIdx)) {
+                const auto chunkIdx{extract(entIdx) / _chunkSize()};
+                if(EAGINE_LIKELY(chunkIdx < _entries.size())) {
+                    return &_entries[chunkIdx][extract(entIdx) % _chunkSize()];
+                }
+            }
         }
         return nullptr;
     }
@@ -164,6 +177,27 @@ public:
     }
 
 private:
+    static constexpr auto _chunkSize() noexcept -> std::size_t {
+        return 1024;
+    }
+
+    void _emplaceNextEntry(LogEntryData&& entry) noexcept {
+        auto& chunk = [&]() -> std::vector<LogEntryData>& {
+            if(EAGINE_LIKELY(!_entries.empty())) {
+                if(EAGINE_UNLIKELY(_entries.back().size() >= _chunkSize())) {
+                    EAGINE_ASSERT(_entries.back().size() == _chunkSize());
+                    _entries.emplace_back();
+                    _entries.back().reserve(_chunkSize());
+                }
+            } else {
+                _entries.emplace_back();
+                _entries.back().reserve(_chunkSize());
+            }
+            return _entries.back();
+        }();
+        chunk.emplace_back(std::move(entry));
+    }
+
     auto _getNextStreamList() -> LogStreamList& {
         if(EAGINE_LIKELY(!_streams.empty())) {
             _streams.push_back(_streams.back());
@@ -175,7 +209,7 @@ private:
     }
 
     std::uintmax_t _uid_sequence{0U};
-    std::vector<LogEntryData> _entries;
+    std::vector<std::vector<LogEntryData>> _entries;
     std::vector<LogStreamList> _streams;
     std::map<
       std::tuple<std::uintptr_t, eagine::identifier, eagine::logger_instance_id>,

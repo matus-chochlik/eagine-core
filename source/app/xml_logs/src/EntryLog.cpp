@@ -40,12 +40,13 @@ auto EntryLog::cacheString(eagine::string_view s) -> eagine::string_view {
 //------------------------------------------------------------------------------
 void EntryLog::beginStream(std::uintptr_t streamId) {
     EAGINE_ASSERT(_entries);
-    return _entries->beginStream(streamId);
+    _entries->beginStream(streamId);
 }
 //------------------------------------------------------------------------------
 void EntryLog::endStream(std::uintptr_t streamId) {
     EAGINE_ASSERT(_entries);
-    return _entries->endStream(streamId);
+    _entries->endStream(streamId);
+    commitEntries();
 }
 //------------------------------------------------------------------------------
 void EntryLog::addEntry(LogEntryData& entry) {

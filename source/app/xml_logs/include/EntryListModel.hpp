@@ -50,6 +50,7 @@ private:
         entryTag,
         entrySeverity,
         entrySeverityColor,
+        entryReltimeSec,
         entryStreamCount,
         entryStreamIndex,
         entryStreamPosition,
@@ -64,6 +65,7 @@ private:
     auto getEntryTag(const LogEntryData&) const -> QString;
     auto getEntrySeverity(const LogEntryData&) const -> QString;
     auto getEntrySeverityColor(const LogEntryData&) const -> QColor;
+    auto getEntryReltimeSec(const LogEntryData&) const -> QVariant;
     auto getEntryStreamCount(const LogEntryData&) const -> short;
     auto getEntryStreamIndex(const LogEntryData&) const -> short;
     auto getEntryStreamPosition(const LogEntryData&) const -> short;

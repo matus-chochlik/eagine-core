@@ -9,6 +9,7 @@
 #include <eagine/assert.hpp>
 #include <eagine/from_string.hpp>
 #include <eagine/reflect/enumerators.hpp>
+
 //------------------------------------------------------------------------------
 Connection::Connection(QTcpSocket& socket, Backend& parent)
   : QObject{nullptr}
@@ -30,6 +31,10 @@ Connection::~Connection() noexcept {
 auto Connection::_toIdentifier(const QStringRef& s) noexcept
   -> eagine::identifier {
     return eagine::identifier{eagine::view(s.toUtf8())};
+}
+//------------------------------------------------------------------------------
+auto Connection::_toFloat(const QStringRef& s, float f) noexcept -> float {
+    return extract_or(eagine::from_string<float>(eagine::view(s.toUtf8())), f);
 }
 //------------------------------------------------------------------------------
 auto Connection::_toSeverity(const QStringRef& s) noexcept
@@ -92,6 +97,9 @@ auto Connection::_handleBeginMessage() noexcept -> bool {
     // severity
     s = _xmlReader.attributes().value("lvl");
     _currentEntry.severity = _toSeverity(s);
+    // timestamp
+    s = _xmlReader.attributes().value("ts");
+    _currentEntry.reltime_sec = _toFloat(s, -1.F);
 
     return true;
 }

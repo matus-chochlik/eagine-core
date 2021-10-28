@@ -83,6 +83,9 @@ private:
         _current.tag = tag;
         _current.instance = instance;
         _current.severity = severity;
+        _current.reltime_sec = std::chrono::duration<float>(
+                                 std::chrono::steady_clock::now() - _start)
+                                 .count();
         _current.format = _entries->cacheString(format);
         return true;
     }
@@ -162,6 +165,8 @@ private:
       identifier,
       float) noexcept final {}
 
+    const std::chrono::steady_clock::time_point _start{
+      std::chrono::steady_clock::now()};
     LogEntryData _current;
     std::shared_ptr<LogEntryStorage> _entries{
       std::make_shared<LogEntryStorage>()};

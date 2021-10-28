@@ -6,6 +6,7 @@
 import QtQuick 2.2
 import QtQuick.Controls 2.4
 import QtQuick.Layouts 1.2
+import "qrc:///scripts/Format.js" as Format
 import "qrc:///views"
 
 Control {
@@ -142,7 +143,9 @@ Control {
 			}
 		}
 		ColumnLayout {
+			spacing: 0
 			RowLayout {
+				spacing: 0
 				Layout.preferredHeight: 30
 				Label {
 					text: severity ? severity : "info"
@@ -161,11 +164,16 @@ Control {
 					}
 				}
 				Label {
-					text: message ? message : format ? format : "-"
+					text: Format.durationStr(reltimeSec)
+					Layout.preferredWidth: backend.theme.entryReltimeWidth
+					background: Rectangle {
+						color: severityColor
+						opacity: 0.5
+					}
 				}
 			}
-			Item {
-				Layout.fillHeight: true
+			Label {
+				text: message ? message : format ? format : "-"
 			}
 		}
 	}
