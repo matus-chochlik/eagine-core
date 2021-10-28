@@ -6,7 +6,6 @@
 
 #include "ActivityListModel.hpp"
 #include "Backend.hpp"
-#include "EntryFormat.hpp"
 #include "EntryLog.hpp"
 #include "ProgressViewModel.hpp"
 #include "Utility.hpp"
@@ -26,11 +25,13 @@ auto ActivityListModel::roleNames() const -> QHash<int, QByteArray> {
     QHash<int, QByteArray> result;
     result.insert(Qt::DisplayRole, "display");
     result.insert(activityMessage, "message");
-    result.insert(activityFormat, "format");
     result.insert(activityStreamId, "streamId");
     result.insert(activityInstanceId, "instanceId");
     result.insert(activitySourceId, "sourceId");
     result.insert(activityArg, "arg");
+    result.insert(activityMin, "progressMin");
+    result.insert(activityMax, "progressMax");
+    result.insert(activityValue, "progressValue");
     result.insert(activitySeverity, "severity");
     return result;
 }
@@ -57,14 +58,9 @@ auto ActivityListModel::getActivityCount() const -> int {
     return _parent.entryLog().getActivityCount();
 }
 //------------------------------------------------------------------------------
-auto ActivityListModel::getActivityMessage(const ActivityData&) const
+auto ActivityListModel::getActivityMessage(const ActivityData& entry) const
   -> QString {
-    return {}; // TODO
-}
-//------------------------------------------------------------------------------
-auto ActivityListModel::getActivityFormat(const ActivityData&) const
-  -> QString {
-    return {}; // TODO
+    return toQString(entry.message);
 }
 //------------------------------------------------------------------------------
 auto ActivityListModel::getActivityStreamId(const ActivityData& entry) const
@@ -87,6 +83,21 @@ auto ActivityListModel::getActivityArg(const ActivityData& entry) const
     return toQString(entry.arg.name().view());
 }
 //------------------------------------------------------------------------------
+auto ActivityListModel::getActivityMin(const ActivityData& entry) const
+  -> qreal {
+    return entry.min;
+}
+//------------------------------------------------------------------------------
+auto ActivityListModel::getActivityMax(const ActivityData& entry) const
+  -> qreal {
+    return entry.max;
+}
+//------------------------------------------------------------------------------
+auto ActivityListModel::getActivityValue(const ActivityData& entry) const
+  -> qreal {
+    return entry.value;
+}
+//------------------------------------------------------------------------------
 auto ActivityListModel::getActivitySeverity(const ActivityData& entry) const
   -> QString {
     return toQString(eagine::enumerator_name(entry.severity));
@@ -99,8 +110,6 @@ auto ActivityListModel::data(const QModelIndex& index, int role) const
         switch(role) {
             case activityMessage:
                 return {getActivityMessage(activity)};
-            case activityFormat:
-                return {getActivityFormat(activity)};
             case activityStreamId:
                 return {getActivityStreamId(activity)};
             case activityInstanceId:
@@ -109,6 +118,12 @@ auto ActivityListModel::data(const QModelIndex& index, int role) const
                 return {getActivitySourceId(activity)};
             case activityArg:
                 return {getActivityArg(activity)};
+            case activityMin:
+                return {getActivityMin(activity)};
+            case activityMax:
+                return {getActivityMax(activity)};
+            case activityValue:
+                return {getActivityValue(activity)};
             case activitySeverity:
                 return {getActivitySeverity(activity)};
             default:

@@ -5,9 +5,12 @@
 ///
 
 #include "ActivityStorage.hpp"
+#include "EntryFormat.hpp"
 #include "EntryStorage.hpp"
 #include <eagine/overloaded.hpp>
 #include <algorithm>
+
+#include <QDebug>
 //------------------------------------------------------------------------------
 void ActivityStorage::beginStream(std::uintptr_t stream_id) noexcept {
     EAGINE_MAYBE_UNUSED(stream_id);
@@ -51,6 +54,7 @@ void ActivityStorage::addEntry(const LogEntryData& entry) noexcept {
                     result.arg = entry_arg;
                     return result;
                 }();
+                activity.message = EntryFormat().format(entry);
                 activity.min = std::get<0>(mvm);
                 activity.value = std::get<1>(mvm);
                 activity.max = std::get<2>(mvm);

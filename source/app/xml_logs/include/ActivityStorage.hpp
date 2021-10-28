@@ -21,10 +21,11 @@ struct ActivityData {
     std::uint64_t instance;
     eagine::identifier source;
     eagine::identifier arg;
-    eagine::log_event_severity severity;
     float min{0.F};
     float value{0.F};
     float max{1.F};
+    std::string message;
+    eagine::log_event_severity severity;
 };
 //------------------------------------------------------------------------------
 class ActivityStorage {

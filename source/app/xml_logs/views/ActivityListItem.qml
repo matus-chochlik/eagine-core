@@ -26,10 +26,21 @@ Control {
 		color: "gray"
 		opacity: 0.05
 	}
-	RowLayout {
-		Label {
-			text: sourceId ? sourceId : "-"
-			Layout.preferredWidth: backend.theme.entrySourceWidth
+	ColumnLayout {
+		anchors.fill: parent
+		RowLayout {
+			ProgressBar {
+				Layout.fillWidth: true
+				from: progressMin
+				value: progressValue
+				to: progressMax
+			}
+		}
+		RowLayout {
+			Label {
+				text: message ? message : "-"
+				Layout.fillWidth: true
+			}
 		}
 	}
 }
