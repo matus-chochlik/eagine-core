@@ -34,6 +34,8 @@ class main_ctx_log_backend_getter;
 class main_ctx_object;
 class main_ctx_object_parent_info;
 
+struct progress_observer;
+
 template <typename FuncSig, bool NoExcept>
 class basic_callable_ref;
 template <typename Sig>
@@ -49,6 +51,12 @@ using main_ctx_parent = const main_ctx_object_parent_info&;
 struct main_ctx_setters : interface<main_ctx_setters> {
     /// @brief Injects the message bus object to main context.
     virtual void inject(std::shared_ptr<message_bus>) = 0;
+
+    /// @brief Registers a activity progress observer.
+    virtual auto register_observer(progress_observer&) -> bool = 0;
+
+    /// @brief Un-registers a activity progress observer.
+    virtual void unregister_observer(progress_observer&) = 0;
 
     /// @brief Assigns a function to be called on progress update.
     virtual void set_progress_update_callback(
@@ -115,6 +123,28 @@ struct main_ctx_getters : interface<main_ctx_getters> {
     /// @brief Returns a reference to shared temporary buffer.
     virtual auto scratch_space() noexcept -> memory::buffer& = 0;
 };
+
+/// @brief Registers the activity progress observer.
+/// @ingroup main_context
+/// @see main_ctx_setters
+inline auto register_progress_observer(
+  main_ctx_getters& ctx,
+  progress_observer& observer) noexcept -> bool {
+    auto setters{ctx.setters()};
+    EAGINE_ASSERT(setters);
+    return extract(setters).register_observer(observer);
+}
+
+/// @brief Un-registers the activity progress observer.
+/// @ingroup main_context
+/// @see main_ctx_setters
+inline void unregister_progress_observer(
+  main_ctx_getters& ctx,
+  progress_observer& observer) noexcept {
+    auto setters{ctx.setters()};
+    EAGINE_ASSERT(setters);
+    extract(setters).unregister_observer(observer);
+}
 
 /// @brief Assigns a progress update callback function.
 /// @ingroup main_context
