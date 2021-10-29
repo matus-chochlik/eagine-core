@@ -15,6 +15,7 @@
 
 class Backend;
 struct LogEntryData;
+struct LogStreamInfo;
 //------------------------------------------------------------------------------
 struct ActivityData {
     std::uintptr_t stream_id;
@@ -30,7 +31,7 @@ struct ActivityData {
 //------------------------------------------------------------------------------
 class ActivityStorage {
 public:
-    void beginStream(std::uintptr_t stream_id) noexcept;
+    void beginStream(std::uintptr_t stream_id, const LogStreamInfo&) noexcept;
     void endStream(std::uintptr_t stream_id) noexcept;
     void addEntry(const LogEntryData& entry) noexcept;
 

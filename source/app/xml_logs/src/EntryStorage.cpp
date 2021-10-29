@@ -25,19 +25,34 @@ void LogEntryStorage::_emplaceNextEntry(LogEntryData&& entry) noexcept {
 }
 //------------------------------------------------------------------------------
 auto LogEntryStorage::_getNextStreamList() noexcept -> LogStreamList& {
-    if(EAGINE_LIKELY(!_streams.empty())) {
-        _streams.push_back(_streams.back());
+    if(EAGINE_LIKELY(!_streamLists.empty())) {
+        _streamLists.push_back(_streamLists.back());
     } else {
-        _streams.emplace_back();
+        _streamLists.emplace_back();
     }
-    auto& info = _streams.back();
+    auto& info = _streamLists.back();
     return info;
 }
 //------------------------------------------------------------------------------
-void LogEntryStorage::beginStream(std::uintptr_t stream_id) noexcept {
-    auto& info = _getNextStreamList();
-    info.entry_uid = ++_uid_sequence;
-    info.stream_ids.push_back(stream_id);
+void LogEntryStorage::setDescription(
+  std::uintptr_t stream_id,
+  eagine::identifier source_id,
+  eagine::logger_instance_id instance_id,
+  eagine::string_view display_name,
+  eagine::string_view description) noexcept {
+    auto& sourceInfo = _sources[{stream_id, source_id, instance_id}];
+    sourceInfo.display_name = display_name;
+    sourceInfo.description = description;
+}
+//------------------------------------------------------------------------------
+void LogEntryStorage::beginStream(
+  std::uintptr_t stream_id,
+  const LogStreamInfo& info) noexcept {
+    _streams[stream_id] = info;
+    //
+    auto& streamList = _getNextStreamList();
+    streamList.entry_uid = ++_uid_sequence;
+    streamList.stream_ids.push_back(stream_id);
     //
     LogEntryData entry{};
     entry.entry_uid = _uid_sequence;
@@ -73,13 +88,13 @@ auto LogEntryStorage::getEntryConnectors(const LogEntryData& entry) noexcept
   -> LogEntryConnectors {
     LogEntryConnectors result;
     const auto pos = std::lower_bound(
-      _streams.rbegin(),
-      _streams.rend(),
+      _streamLists.rbegin(),
+      _streamLists.rend(),
       entry.entry_uid,
       [](const auto& current, const auto entry_uid) {
           return entry_uid < current.entry_uid;
       });
-    if(pos != _streams.rend()) {
+    if(pos != _streamLists.rend()) {
         const auto& si = pos->stream_ids;
         result.stream_count = eagine::limit_cast<short>(si.size());
         result.stream_index = eagine::limit_cast<short>(std::distance(
@@ -89,5 +104,10 @@ auto LogEntryStorage::getEntryConnectors(const LogEntryData& entry) noexcept
           })));
     }
     return result;
+}
+//------------------------------------------------------------------------------
+auto LogEntryStorage::getStreamInfo(const LogEntryData& entry) noexcept
+  -> const LogStreamInfo& {
+    return _streams[entry.stream_id];
 }
 //------------------------------------------------------------------------------

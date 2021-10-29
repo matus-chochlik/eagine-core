@@ -21,7 +21,9 @@ public:
     internal_log_backend() noexcept {
         EAGINE_ASSERT(!_single_instance_ptr());
         _single_instance_ptr() = this;
-        _entries->beginStream(0);
+        LogStreamInfo info{};
+        info.log_identity = "XML log viewer";
+        _entries->beginStream(0, info);
     }
 
     internal_log_backend(internal_log_backend&&) = delete;

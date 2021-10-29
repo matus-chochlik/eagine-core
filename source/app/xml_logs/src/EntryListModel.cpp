@@ -27,6 +27,7 @@ auto EntryListModel::roleNames() const -> QHash<int, QByteArray> {
     result.insert(Qt::DisplayRole, "display");
     result.insert(entryMessage, "message");
     result.insert(entryFormat, "format");
+    result.insert(entryLogIdentity, "logIdentity");
     result.insert(entryStreamId, "streamId");
     result.insert(entryInstanceId, "instanceId");
     result.insert(entrySourceId, "sourceId");
@@ -71,6 +72,11 @@ auto EntryListModel::getEntryMessage(const LogEntryData& entry) const
 auto EntryListModel::getEntryFormat(const LogEntryData& entry) const
   -> QString {
     return toQString(entry.format);
+}
+//------------------------------------------------------------------------------
+auto EntryListModel::getEntryLogIdentity(const LogEntryData& entry) const
+  -> QString {
+    return toQString(_parent.entryLog().getStreamInfo(entry).log_identity);
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntryStreamId(const LogEntryData& entry) const
@@ -134,6 +140,8 @@ auto EntryListModel::data(const QModelIndex& index, int role) const
                 return {getEntryMessage(entry)};
             case entryFormat:
                 return {getEntryFormat(entry)};
+            case entryLogIdentity:
+                return {getEntryLogIdentity(entry)};
             case entryStreamId:
                 return {getEntryStreamId(entry)};
             case entryInstanceId:

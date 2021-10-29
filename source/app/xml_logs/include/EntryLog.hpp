@@ -47,10 +47,12 @@ public:
     void assignStorage(std::shared_ptr<ActivityStorage>);
     auto cacheString(eagine::string_view) -> eagine::string_view;
 
-    void beginStream(std::uintptr_t streamId);
+    void beginStream(std::uintptr_t streamId, const LogStreamInfo&);
     void endStream(std::uintptr_t streamId);
     void addEntry(LogEntryData& entry);
     void commitEntries();
+
+    auto getStreamInfo(const LogEntryData&) noexcept -> const LogStreamInfo&;
 signals:
     void entriesAdded(int, int);
 public slots:

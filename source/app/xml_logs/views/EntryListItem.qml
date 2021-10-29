@@ -171,6 +171,14 @@ Control {
 						opacity: 0.5
 					}
 				}
+				Label {
+					text: logIdentity
+					Layout.fillWidth: true
+					background: Rectangle {
+						color: severityColor
+						opacity: 0.5
+					}
+				}
 			}
 			Label {
 				text: message ? message : format ? format : "-"

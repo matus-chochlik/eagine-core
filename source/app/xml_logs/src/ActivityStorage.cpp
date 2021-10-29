@@ -12,7 +12,9 @@
 
 #include <QDebug>
 //------------------------------------------------------------------------------
-void ActivityStorage::beginStream(std::uintptr_t stream_id) noexcept {
+void ActivityStorage::beginStream(
+  std::uintptr_t stream_id,
+  const LogStreamInfo&) noexcept {
     EAGINE_MAYBE_UNUSED(stream_id);
 }
 //------------------------------------------------------------------------------

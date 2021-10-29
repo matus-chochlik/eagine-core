@@ -75,7 +75,10 @@ auto Connection::_isAtArgumentTag() const noexcept -> bool {
 }
 //------------------------------------------------------------------------------
 auto Connection::_handleBeginLog() noexcept -> bool {
-    _backend.entryLog().beginStream(_streamId);
+    LogStreamInfo info{};
+    QStringRef log_identity = _xmlReader.attributes().value("identity");
+    info.log_identity = _cacheString(log_identity);
+    _backend.entryLog().beginStream(_streamId, info);
     return true;
 }
 //------------------------------------------------------------------------------

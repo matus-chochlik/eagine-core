@@ -26,6 +26,10 @@
 
 class Backend;
 //------------------------------------------------------------------------------
+struct LogStreamInfo {
+    eagine::string_view log_identity;
+};
+//------------------------------------------------------------------------------
 struct LogSourceInfo {
     eagine::string_view display_name;
     eagine::string_view description;
@@ -84,16 +88,12 @@ public:
 
     void setDescription(
       std::uintptr_t stream_id,
-      eagine::identifier source,
-      eagine::logger_instance_id instance,
+      eagine::identifier source_id,
+      eagine::logger_instance_id instance_id,
       eagine::string_view display_name,
-      eagine::string_view description) noexcept {
-        auto& info = _sources[{stream_id, source, instance}];
-        info.display_name = cacheString(display_name);
-        info.description = cacheString(description);
-    }
+      eagine::string_view description) noexcept;
 
-    void beginStream(std::uintptr_t stream_id) noexcept;
+    void beginStream(std::uintptr_t stream_id, const LogStreamInfo&) noexcept;
     void endStream(std::uintptr_t stream_id) noexcept;
 
     void addEntry(LogEntryData&& entry) noexcept {
@@ -125,6 +125,9 @@ public:
     auto getEntryConnectors(const LogEntryData& entry) noexcept
       -> LogEntryConnectors;
 
+    auto getStreamInfo(const LogEntryData& entry) noexcept
+      -> const LogStreamInfo&;
+
 private:
     static constexpr auto _chunkSize() noexcept -> std::size_t {
         return 1024;
@@ -135,7 +138,8 @@ private:
 
     std::uintmax_t _uid_sequence{0U};
     std::vector<std::vector<LogEntryData>> _entries;
-    std::vector<LogStreamList> _streams;
+    std::vector<LogStreamList> _streamLists;
+    std::map<std::uintptr_t, LogStreamInfo> _streams;
     std::map<
       std::tuple<std::uintptr_t, eagine::identifier, eagine::logger_instance_id>,
       LogSourceInfo>
