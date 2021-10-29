@@ -32,8 +32,8 @@ namespace eagine {
 template <typename Lockable = std::mutex>
 class syslog_log_backend final : public logger_backend {
 public:
-    syslog_log_backend(const log_event_severity min_severity)
-      : _min_severity{min_severity} {
+    syslog_log_backend(const log_stream_info& info)
+      : _min_severity{info.min_severity} {
 #if EAGINE_POSIX
         ::openlog(
           "EAGine",

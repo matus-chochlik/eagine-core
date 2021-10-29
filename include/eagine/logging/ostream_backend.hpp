@@ -21,17 +21,18 @@ namespace eagine {
 template <typename Lockable = std::mutex>
 class ostream_log_backend : public logger_backend {
 public:
-    ostream_log_backend(
-      std::ostream& out,
-      log_event_severity min_severity) noexcept
+    ostream_log_backend(std::ostream& out, const log_stream_info& info) noexcept
       : _out{out}
-      , _min_severity{min_severity}
+      , _min_severity{info.min_severity}
       , _start{std::chrono::steady_clock::now()} {
         try {
             const std::lock_guard<Lockable> lock{_lockable};
             _out << "<?xml version='1.0' encoding='UTF-8'?>\n";
-            _out << "<log start='" << _start.time_since_epoch().count()
-                 << "'>\n";
+            _out << "<log start='" << _start.time_since_epoch().count();
+            if(!info.log_identity.empty()) {
+                _out << "' identity='" << info.log_identity;
+            }
+            _out << "'>\n";
         } catch(...) {
         }
     }
