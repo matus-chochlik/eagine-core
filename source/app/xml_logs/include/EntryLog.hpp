@@ -52,7 +52,8 @@ public:
     void addEntry(LogEntryData& entry);
     void commitEntries();
 
-    auto getStreamInfo(const LogEntryData&) noexcept -> const LogStreamInfo&;
+    auto getStreamInfo(const std::uintptr_t streamId) noexcept
+      -> const LogStreamInfo&;
 signals:
     void entriesAdded(int, int);
 public slots:

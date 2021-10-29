@@ -28,6 +28,26 @@ Control {
 	}
 	ColumnLayout {
 		anchors.fill: parent
+		spacing: 0
+		RowLayout {
+			spacing: 0
+			Label {
+				text: severity ? severity : "info"
+				Layout.preferredWidth: backend.theme.entrySeverityWidth
+				background: Rectangle {
+					color: severityColor
+					opacity: 0.5
+				}
+			}
+			Label {
+				text: logIdentity ? logIdentity : sourceId ? sourceId : "-"
+				Layout.fillWidth: true
+				background: Rectangle {
+					color: severityColor
+					opacity: 0.5
+				}
+			}
+		}
 		RowLayout {
 			ProgressBar {
 				Layout.fillWidth: true

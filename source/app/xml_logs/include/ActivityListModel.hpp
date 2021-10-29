@@ -43,6 +43,7 @@ public slots:
 private:
     enum ProgressAttributes : int {
         activityMessage = Qt::UserRole + 1,
+        activityLogIdentity,
         activityStreamId,
         activityInstanceId,
         activitySourceId,
@@ -50,10 +51,12 @@ private:
         activityMin,
         activityMax,
         activityValue,
-        activitySeverity
+        activitySeverity,
+        activitySeverityColor
     };
 
     auto getActivityMessage(const ActivityData&) const -> QString;
+    auto getActivityLogIdentity(const ActivityData&) const -> QString;
     auto getActivityStreamId(const ActivityData&) const -> qlonglong;
     auto getActivityInstanceId(const ActivityData&) const -> qlonglong;
     auto getActivitySourceId(const ActivityData&) const -> QString;
@@ -62,6 +65,7 @@ private:
     auto getActivityMax(const ActivityData&) const -> qreal;
     auto getActivityValue(const ActivityData&) const -> qreal;
     auto getActivitySeverity(const ActivityData&) const -> QString;
+    auto getActivitySeverityColor(const ActivityData&) const -> QColor;
 
     ProgressViewModel& _parent;
 };

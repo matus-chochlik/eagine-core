@@ -106,8 +106,8 @@ auto LogEntryStorage::getEntryConnectors(const LogEntryData& entry) noexcept
     return result;
 }
 //------------------------------------------------------------------------------
-auto LogEntryStorage::getStreamInfo(const LogEntryData& entry) noexcept
+auto LogEntryStorage::getStreamInfo(const std::uintptr_t streamId) noexcept
   -> const LogStreamInfo& {
-    return _streams[entry.stream_id];
+    return _streams[streamId];
 }
 //------------------------------------------------------------------------------

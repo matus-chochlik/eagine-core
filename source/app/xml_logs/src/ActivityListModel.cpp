@@ -25,6 +25,7 @@ auto ActivityListModel::roleNames() const -> QHash<int, QByteArray> {
     QHash<int, QByteArray> result;
     result.insert(Qt::DisplayRole, "display");
     result.insert(activityMessage, "message");
+    result.insert(activityLogIdentity, "logIdentity");
     result.insert(activityStreamId, "streamId");
     result.insert(activityInstanceId, "instanceId");
     result.insert(activitySourceId, "sourceId");
@@ -33,6 +34,7 @@ auto ActivityListModel::roleNames() const -> QHash<int, QByteArray> {
     result.insert(activityMax, "progressMax");
     result.insert(activityValue, "progressValue");
     result.insert(activitySeverity, "severity");
+    result.insert(activitySeverityColor, "severityColor");
     return result;
 }
 //------------------------------------------------------------------------------
@@ -61,6 +63,12 @@ auto ActivityListModel::getActivityCount() const -> int {
 auto ActivityListModel::getActivityMessage(const ActivityData& entry) const
   -> QString {
     return toQString(entry.message);
+}
+//------------------------------------------------------------------------------
+auto ActivityListModel::getActivityLogIdentity(const ActivityData& entry) const
+  -> QString {
+    return toQString(
+      _parent.entryLog().getStreamInfo(entry.stream_id).log_identity);
 }
 //------------------------------------------------------------------------------
 auto ActivityListModel::getActivityStreamId(const ActivityData& entry) const
@@ -103,6 +111,11 @@ auto ActivityListModel::getActivitySeverity(const ActivityData& entry) const
     return toQString(eagine::enumerator_name(entry.severity));
 }
 //------------------------------------------------------------------------------
+auto ActivityListModel::getActivitySeverityColor(const ActivityData& entry) const
+  -> QColor {
+    return backend().theme().getSeverityColor(entry.severity);
+}
+//------------------------------------------------------------------------------
 auto ActivityListModel::data(const QModelIndex& index, int role) const
   -> QVariant {
     if(auto optActivity{static_cast<ActivityData*>(index.internalPointer())}) {
@@ -110,6 +123,8 @@ auto ActivityListModel::data(const QModelIndex& index, int role) const
         switch(role) {
             case activityMessage:
                 return {getActivityMessage(activity)};
+            case activityLogIdentity:
+                return {getActivityLogIdentity(activity)};
             case activityStreamId:
                 return {getActivityStreamId(activity)};
             case activityInstanceId:
@@ -126,6 +141,8 @@ auto ActivityListModel::data(const QModelIndex& index, int role) const
                 return {getActivityValue(activity)};
             case activitySeverity:
                 return {getActivitySeverity(activity)};
+            case activitySeverityColor:
+                return {getActivitySeverityColor(activity)};
             default:
                 break;
         }
@@ -138,3 +155,4 @@ void ActivityListModel::handleActivitiesChanged() {
     emit activityCountChanged();
 }
 //------------------------------------------------------------------------------
+

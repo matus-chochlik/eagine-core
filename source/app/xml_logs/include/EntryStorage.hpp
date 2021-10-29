@@ -125,7 +125,7 @@ public:
     auto getEntryConnectors(const LogEntryData& entry) noexcept
       -> LogEntryConnectors;
 
-    auto getStreamInfo(const LogEntryData& entry) noexcept
+    auto getStreamInfo(const std::uintptr_t streamId) noexcept
       -> const LogStreamInfo&;
 
 private:

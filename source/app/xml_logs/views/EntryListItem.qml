@@ -92,6 +92,7 @@ Control {
 	}
 
 	RowLayout {
+		anchors.fill: parent
 		spacing: 0
 		Repeater {
 			Layout.preferredWidth: 15 * streamCount
@@ -146,7 +147,6 @@ Control {
 			spacing: 0
 			RowLayout {
 				spacing: 0
-				Layout.preferredHeight: 30
 				Label {
 					text: severity ? severity : "info"
 					Layout.preferredWidth: backend.theme.entrySeverityWidth

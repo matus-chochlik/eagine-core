@@ -110,9 +110,9 @@ auto EntryLog::getActivityData(int index) noexcept -> ActivityData* {
     return _activities->getActivity(index);
 }
 //------------------------------------------------------------------------------
-auto EntryLog::getStreamInfo(const LogEntryData& entry) noexcept
+auto EntryLog::getStreamInfo(const std::uintptr_t streamId) noexcept
   -> const LogStreamInfo& {
     EAGINE_ASSERT(_entries);
-    return _entries->getStreamInfo(entry);
+    return _entries->getStreamInfo(streamId);
 }
 //------------------------------------------------------------------------------

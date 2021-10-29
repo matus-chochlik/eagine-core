@@ -49,6 +49,9 @@ public:
     }
 
 private:
+    auto _getEntryActivity(
+      const LogEntryData& entry,
+      const eagine::identifier entry_arg) noexcept -> ActivityData&;
     std::vector<ActivityData> _activities;
 };
 //------------------------------------------------------------------------------
