@@ -28,7 +28,11 @@ public:
         try {
             const std::lock_guard<Lockable> lock{_lockable};
             _out << "<?xml version='1.0' encoding='UTF-8'?>\n";
-            _out << "<log start='" << _start.time_since_epoch().count();
+            _out << "<log start_tse_us='"
+                 << std::chrono::duration_cast<
+                      std::chrono::duration<std::int64_t, std::micro>>(
+                      _start.time_since_epoch())
+                      .count();
             if(!info.log_identity.empty()) {
                 _out << "' identity='" << info.log_identity;
             }
