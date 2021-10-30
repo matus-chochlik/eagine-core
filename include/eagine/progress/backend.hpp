@@ -92,9 +92,14 @@ struct progress_tracker_backend : interface<progress_tracker_backend> {
       const activity_progress_id_t activity_id) noexcept = 0;
 
     /// @brief Assigns a function to be called on progress update.
+    /// @see reset_update_callback
     virtual void set_update_callback(
       const callable_ref<bool() noexcept>,
       const std::chrono::milliseconds min_interval) = 0;
+
+    /// @brief Resets the function called on progress update.
+    /// @see set_update_callback
+    virtual void reset_update_callback() noexcept = 0;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

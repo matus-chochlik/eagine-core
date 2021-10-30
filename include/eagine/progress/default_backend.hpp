@@ -135,6 +135,10 @@ public:
         _min_interval = min_interval;
     }
 
+    void reset_update_callback() noexcept final {
+        _callback = {};
+    }
+
 private:
     static auto _encode(const default_progress_info& info) noexcept
       -> activity_progress_id_t {

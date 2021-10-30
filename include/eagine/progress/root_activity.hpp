@@ -27,6 +27,8 @@ public:
       const callable_ref<bool() noexcept> callback,
       const std::chrono::milliseconds min_interval) noexcept;
 
+    void reset_update_callback() noexcept;
+
 private:
     static auto _init_backend(main_ctx_getters&)
       -> std::unique_ptr<progress_tracker_backend>;

@@ -62,6 +62,9 @@ struct main_ctx_setters : interface<main_ctx_setters> {
     virtual void set_progress_update_callback(
       const callable_ref<bool() noexcept>& callback,
       const std::chrono::milliseconds min_interval) = 0;
+
+    /// @brief Resets the function called on progress update.
+    virtual void reset_progress_update_callback() noexcept = 0;
 };
 
 /// @brief Interface for classes providing access to main context singletons.
@@ -149,6 +152,7 @@ inline void unregister_progress_observer(
 /// @brief Assigns a progress update callback function.
 /// @ingroup main_context
 /// @see main_ctx_setters
+/// @see reset_progress_update_callback
 inline void set_progress_update_callback(
   main_ctx_getters& ctx,
   const callable_ref<bool() noexcept>& callback,
@@ -156,6 +160,16 @@ inline void set_progress_update_callback(
     auto setters{ctx.setters()};
     EAGINE_ASSERT(setters);
     extract(setters).set_progress_update_callback(callback, min_interval);
+}
+
+/// @brief Resets the progress update callback function.
+/// @ingroup main_context
+/// @see main_ctx_setters
+/// @see set_progress_update_callback
+inline void reset_progress_update_callback(main_ctx_getters& ctx) noexcept {
+    auto setters{ctx.setters()};
+    EAGINE_ASSERT(setters);
+    extract(setters).reset_progress_update_callback();
 }
 
 /// @brief Helper class used to initialize main context objects.

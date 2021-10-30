@@ -37,5 +37,11 @@ void root_activity::set_update_callback(
     }
 }
 //------------------------------------------------------------------------------
+void root_activity::reset_update_callback() noexcept {
+    if(auto pbe{backend()}) {
+        extract(pbe).reset_update_callback();
+    }
+}
+//------------------------------------------------------------------------------
 } // namespace eagine
 
