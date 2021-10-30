@@ -61,6 +61,10 @@ Control {
 				text: message ? message : "-"
 				Layout.fillWidth: true
 			}
+			Label {
+				text: Format.durationStr(remainingTime)
+				Layout.preferredWidth: backend.theme.entryReltimeWidth
+			}
 		}
 	}
 }

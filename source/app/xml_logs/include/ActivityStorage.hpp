@@ -10,6 +10,7 @@
 #include <eagine/identifier.hpp>
 #include <eagine/logging/fwd.hpp>
 #include <eagine/logging/severity.hpp>
+#include <chrono>
 #include <cstdint>
 #include <vector>
 
@@ -27,6 +28,25 @@ struct ActivityData {
     float max{1.F};
     std::string message;
     eagine::log_event_severity severity;
+    std::chrono::steady_clock::time_point start_time;
+    std::chrono::steady_clock::time_point update_time;
+
+    auto init(const LogEntryData&, const eagine::identifier) noexcept
+      -> ActivityData&;
+    auto update(
+      const LogEntryData&,
+      const std::tuple<float, float, float>&) noexcept -> ActivityData&;
+
+    auto doneRatio() const noexcept -> float;
+    auto todoRatio() const noexcept -> float;
+
+    auto timeSinceStart() const noexcept -> std::chrono::steady_clock::duration;
+    auto timeSinceUpdate() const noexcept
+      -> std::chrono::steady_clock::duration;
+
+    auto hasTimeEstimation() const noexcept -> bool;
+    auto estimatedRemainingTime() const noexcept
+      -> std::chrono::duration<float>;
 };
 //------------------------------------------------------------------------------
 class ActivityStorage {

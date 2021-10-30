@@ -10,7 +10,64 @@
 #include <eagine/overloaded.hpp>
 #include <algorithm>
 
-#include <QDebug>
+//------------------------------------------------------------------------------
+auto ActivityData::init(
+  const LogEntryData& entry,
+  const eagine::identifier entry_arg) noexcept -> ActivityData& {
+    stream_id = entry.stream_id;
+    instance = entry.instance;
+    source = entry.source;
+    arg = entry_arg;
+    severity = entry.severity;
+    start_time = std::chrono::steady_clock::now();
+    update_time = start_time;
+    return *this;
+}
+//------------------------------------------------------------------------------
+auto ActivityData::update(
+  const LogEntryData& entry,
+  const std::tuple<float, float, float>& mvm) noexcept -> ActivityData& {
+    message = EntryFormat().format(entry);
+    min = std::get<0>(mvm);
+    value = std::get<1>(mvm);
+    max = std::get<2>(mvm);
+    update_time = std::chrono::steady_clock::now();
+    return *this;
+}
+//------------------------------------------------------------------------------
+auto ActivityData::doneRatio() const noexcept -> float {
+    return (value - min) / (max - min);
+}
+//------------------------------------------------------------------------------
+auto ActivityData::todoRatio() const noexcept -> float {
+    return 1.F - doneRatio();
+}
+//------------------------------------------------------------------------------
+auto ActivityData::timeSinceStart() const noexcept
+  -> std::chrono::steady_clock::duration {
+    return std::chrono::steady_clock::now() - start_time;
+}
+//------------------------------------------------------------------------------
+auto ActivityData::timeSinceUpdate() const noexcept
+  -> std::chrono::steady_clock::duration {
+    return std::chrono::steady_clock::now() - update_time;
+}
+//------------------------------------------------------------------------------
+auto ActivityData::hasTimeEstimation() const noexcept -> bool {
+    return (max > min) && (value > min) &&
+           timeSinceStart() > std::chrono::seconds(5);
+}
+//------------------------------------------------------------------------------
+auto ActivityData::estimatedRemainingTime() const noexcept
+  -> std::chrono::duration<float> {
+    if(hasTimeEstimation()) {
+        return std::chrono::duration<float>(timeSinceStart()) *
+               (todoRatio() / doneRatio());
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+// storage
 //------------------------------------------------------------------------------
 void ActivityStorage::beginStream(
   std::uintptr_t stream_id,
@@ -43,12 +100,7 @@ auto ActivityStorage::_getEntryActivity(
         return *pos;
     }
     _activities.emplace_back();
-    auto& result = _activities.back();
-    result.stream_id = entry.stream_id;
-    result.instance = entry.instance;
-    result.source = entry.source;
-    result.arg = entry_arg;
-    return result;
+    return _activities.back().init(entry, entry_arg);
 }
 //------------------------------------------------------------------------------
 void ActivityStorage::addEntry(const LogEntryData& entry) noexcept {
@@ -56,13 +108,8 @@ void ActivityStorage::addEntry(const LogEntryData& entry) noexcept {
         std::visit<void>(
           eagine::overloaded(
             [&](const std::tuple<float, float, float>& mvm) {
-                auto& activity =
-                  _getEntryActivity(entry, std::get<0>(arg_info));
-                activity.message = EntryFormat().format(entry);
-                activity.min = std::get<0>(mvm);
-                activity.value = std::get<1>(mvm);
-                activity.max = std::get<2>(mvm);
-                activity.severity = entry.severity;
+                _getEntryActivity(entry, std::get<0>(arg_info))
+                  .update(entry, mvm);
             },
             [](const auto&) {}),
           std::get<1>(std::get<1>(arg_info)));

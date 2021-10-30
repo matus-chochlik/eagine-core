@@ -35,6 +35,7 @@ auto ActivityListModel::roleNames() const -> QHash<int, QByteArray> {
     result.insert(activityValue, "progressValue");
     result.insert(activitySeverity, "severity");
     result.insert(activitySeverityColor, "severityColor");
+    result.insert(activityRemainingTime, "remainingTime");
     return result;
 }
 //------------------------------------------------------------------------------
@@ -116,6 +117,14 @@ auto ActivityListModel::getActivitySeverityColor(const ActivityData& entry) cons
     return backend().theme().getSeverityColor(entry.severity);
 }
 //------------------------------------------------------------------------------
+auto ActivityListModel::getActivityRemainingTime(const ActivityData& entry) const
+  -> QVariant {
+    if(entry.hasTimeEstimation()) {
+        return {entry.estimatedRemainingTime().count()};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
 auto ActivityListModel::data(const QModelIndex& index, int role) const
   -> QVariant {
     if(auto optActivity{static_cast<ActivityData*>(index.internalPointer())}) {
@@ -143,6 +152,8 @@ auto ActivityListModel::data(const QModelIndex& index, int role) const
                 return {getActivitySeverity(activity)};
             case activitySeverityColor:
                 return {getActivitySeverityColor(activity)};
+            case activityRemainingTime:
+                return {getActivityRemainingTime(activity)};
             default:
                 break;
         }

@@ -52,7 +52,8 @@ private:
         activityMax,
         activityValue,
         activitySeverity,
-        activitySeverityColor
+        activitySeverityColor,
+        activityRemainingTime
     };
 
     auto getActivityMessage(const ActivityData&) const -> QString;
@@ -66,6 +67,7 @@ private:
     auto getActivityValue(const ActivityData&) const -> qreal;
     auto getActivitySeverity(const ActivityData&) const -> QString;
     auto getActivitySeverityColor(const ActivityData&) const -> QColor;
+    auto getActivityRemainingTime(const ActivityData&) const -> QVariant;
 
     ProgressViewModel& _parent;
 };
