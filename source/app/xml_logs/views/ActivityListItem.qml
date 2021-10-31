@@ -62,7 +62,7 @@ Control {
 				Layout.fillWidth: true
 			}
 			Label {
-				text: Format.durationStr(remainingTime)
+				text: Format.remainingTimeStr(remainingTime)
 				Layout.preferredWidth: backend.theme.entryReltimeWidth
 			}
 		}

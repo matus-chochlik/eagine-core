@@ -18,15 +18,35 @@ function durationStr(seconds) {
 			seconds = seconds - minutes * 60
 
 			if(days > 0) {
+				if(hours == 0) {
+					return "%1 d".arg(days)
+				}
 				return "%1 d %2 hr".arg(days).arg(hours)
 			}
 			if(hours > 0) {
+				if(minutes == 0) {
+					return "%1 hr".arg(hours)
+				}
 				return "%1 hr %2 min".arg(hours).arg(minutes)
 			}
 			if(minutes > 0) {
+				if(seconds == 0) {
+					return "%1 min".arg(minutes)
+				}
 				return "%1 min %2 sec".arg(minutes).arg(seconds)
 			}
 			return "%1 sec".arg(seconds)
+		}
+	}
+	return "-"
+}
+
+function remainingTimeStr(seconds) {
+	if(seconds) {
+		if(seconds < 5.0) {
+			return "less than 5s"
+		} else {
+			return durationStr(seconds);
 		}
 	}
 	return "-"

@@ -10,6 +10,7 @@
 #include <eagine/identifier.hpp>
 #include <eagine/logging/fwd.hpp>
 #include <eagine/logging/severity.hpp>
+#include <array>
 #include <chrono>
 #include <cstdint>
 #include <vector>
@@ -30,6 +31,8 @@ struct ActivityData {
     eagine::log_event_severity severity;
     std::chrono::steady_clock::time_point start_time;
     std::chrono::steady_clock::time_point update_time;
+    std::size_t remainingUpdatePos{0U};
+    std::array<float, 8> remainingTimes{};
 
     auto init(const LogEntryData&, const eagine::identifier) noexcept
       -> ActivityData&;

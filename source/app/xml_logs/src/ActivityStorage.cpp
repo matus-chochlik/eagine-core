@@ -7,6 +7,7 @@
 #include "ActivityStorage.hpp"
 #include "EntryFormat.hpp"
 #include "EntryStorage.hpp"
+#include <eagine/integer_range.hpp>
 #include <eagine/overloaded.hpp>
 #include <algorithm>
 
@@ -32,6 +33,12 @@ auto ActivityData::update(
     value = std::get<1>(mvm);
     max = std::get<2>(mvm);
     update_time = std::chrono::steady_clock::now();
+    if((max > min) && (value > min) && timeSinceStart() > std::chrono::seconds(5)) {
+        remainingTimes[remainingUpdatePos++ % remainingTimes.size()] =
+          std::chrono::duration<float>(timeSinceStart()).count() *
+          (todoRatio() / doneRatio());
+    }
+
     return *this;
 }
 //------------------------------------------------------------------------------
@@ -54,15 +61,17 @@ auto ActivityData::timeSinceUpdate() const noexcept
 }
 //------------------------------------------------------------------------------
 auto ActivityData::hasTimeEstimation() const noexcept -> bool {
-    return (max > min) && (value > min) &&
-           timeSinceStart() > std::chrono::seconds(5);
+    return remainingUpdatePos > remainingTimes.size() / 2U;
 }
 //------------------------------------------------------------------------------
 auto ActivityData::estimatedRemainingTime() const noexcept
   -> std::chrono::duration<float> {
     if(hasTimeEstimation()) {
-        return std::chrono::duration<float>(timeSinceStart()) *
-               (todoRatio() / doneRatio());
+        const auto count = std::min(remainingTimes.size(), remainingUpdatePos);
+        return std::chrono::duration<float>{
+          std::accumulate(
+            remainingTimes.begin(), remainingTimes.begin() + count, 0.F) /
+          float(count)};
     }
     return {};
 }

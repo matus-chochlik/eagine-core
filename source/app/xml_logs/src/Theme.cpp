@@ -32,7 +32,7 @@ auto Theme::getEntrySeverityWidth() const -> int {
 }
 //------------------------------------------------------------------------------
 auto Theme::getEntryReltimeWidth() const -> int {
-    return 80;
+    return 90;
 }
 //------------------------------------------------------------------------------
 auto Theme::getSeverityColor(eagine::log_event_severity severity) -> QColor {
