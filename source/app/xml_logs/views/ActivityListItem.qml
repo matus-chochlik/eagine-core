@@ -40,7 +40,31 @@ Control {
 				}
 			}
 			Label {
-				text: logIdentity ? logIdentity : sourceId ? sourceId : "-"
+				text: Format.durationStr(elapsedTime)
+				Layout.preferredWidth: backend.theme.entryReltimeWidth
+				background: Rectangle {
+					color: severityColor
+					opacity: 0.5
+				}
+			}
+			Label {
+				text: Format.remainingTimeStr(remainingTime)
+				Layout.preferredWidth: backend.theme.entryReltimeWidth
+				background: Rectangle {
+					color: severityColor
+					opacity: 0.5
+				}
+			}
+			Label {
+				text: sourceId ? sourceId : "-"
+				Layout.preferredWidth: backend.theme.entrySourceWidth
+				background: Rectangle {
+					color: severityColor
+					opacity: 0.5
+				}
+			}
+			Label {
+				text: logIdentity ? logIdentity : "-"
 				Layout.fillWidth: true
 				background: Rectangle {
 					color: severityColor
@@ -60,10 +84,6 @@ Control {
 			Label {
 				text: message ? message : "-"
 				Layout.fillWidth: true
-			}
-			Label {
-				text: Format.remainingTimeStr(remainingTime)
-				Layout.preferredWidth: backend.theme.entryReltimeWidth
 			}
 		}
 	}

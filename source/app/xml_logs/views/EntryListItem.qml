@@ -156,16 +156,16 @@ Control {
 					}
 				}
 				Label {
-					text: sourceId ? sourceId : "-"
-					Layout.preferredWidth: backend.theme.entrySourceWidth
+					text: Format.durationStr(reltimeSec)
+					Layout.preferredWidth: backend.theme.entryReltimeWidth
 					background: Rectangle {
 						color: severityColor
 						opacity: 0.5
 					}
 				}
 				Label {
-					text: Format.durationStr(reltimeSec)
-					Layout.preferredWidth: backend.theme.entryReltimeWidth
+					text: sourceId ? sourceId : "-"
+					Layout.preferredWidth: backend.theme.entrySourceWidth
 					background: Rectangle {
 						color: severityColor
 						opacity: 0.5

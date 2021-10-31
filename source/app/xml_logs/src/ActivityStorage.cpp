@@ -35,8 +35,7 @@ auto ActivityData::update(
     update_time = std::chrono::steady_clock::now();
     if((max > min) && (value > min) && timeSinceStart() > std::chrono::seconds(5)) {
         remainingTimes[remainingUpdatePos++ % remainingTimes.size()] =
-          std::chrono::duration<float>(timeSinceStart()).count() *
-          (todoRatio() / doneRatio());
+          timeSinceStart().count() * (todoRatio() / doneRatio());
     }
 
     return *this;
@@ -51,12 +50,12 @@ auto ActivityData::todoRatio() const noexcept -> float {
 }
 //------------------------------------------------------------------------------
 auto ActivityData::timeSinceStart() const noexcept
-  -> std::chrono::steady_clock::duration {
+  -> std::chrono::duration<float> {
     return std::chrono::steady_clock::now() - start_time;
 }
 //------------------------------------------------------------------------------
 auto ActivityData::timeSinceUpdate() const noexcept
-  -> std::chrono::steady_clock::duration {
+  -> std::chrono::duration<float> {
     return std::chrono::steady_clock::now() - update_time;
 }
 //------------------------------------------------------------------------------

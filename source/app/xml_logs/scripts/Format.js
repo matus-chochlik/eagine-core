@@ -49,6 +49,6 @@ function remainingTimeStr(seconds) {
 			return durationStr(seconds);
 		}
 	}
-	return "-"
+	return "estimating..."
 }
 

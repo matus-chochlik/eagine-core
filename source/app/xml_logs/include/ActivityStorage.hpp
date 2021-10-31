@@ -43,9 +43,8 @@ struct ActivityData {
     auto doneRatio() const noexcept -> float;
     auto todoRatio() const noexcept -> float;
 
-    auto timeSinceStart() const noexcept -> std::chrono::steady_clock::duration;
-    auto timeSinceUpdate() const noexcept
-      -> std::chrono::steady_clock::duration;
+    auto timeSinceStart() const noexcept -> std::chrono::duration<float>;
+    auto timeSinceUpdate() const noexcept -> std::chrono::duration<float>;
 
     auto hasTimeEstimation() const noexcept -> bool;
     auto estimatedRemainingTime() const noexcept
