@@ -14,7 +14,7 @@ class Backend;
 class ProgressViewModel;
 struct ActivityData;
 //------------------------------------------------------------------------------
-class ActivityListModel
+class ActivityListModel final
   : public QAbstractItemModel
   , public eagine::main_ctx_object {
     Q_OBJECT
