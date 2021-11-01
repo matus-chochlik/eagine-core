@@ -54,6 +54,8 @@ public:
 
     auto getStreamInfo(const std::uintptr_t streamId) noexcept
       -> const LogStreamInfo&;
+
+    auto cleanupDoneActivities() noexcept -> bool;
 signals:
     void entriesAdded(int, int);
 public slots:

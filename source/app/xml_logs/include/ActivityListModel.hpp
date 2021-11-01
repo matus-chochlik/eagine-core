@@ -23,6 +23,7 @@ class ActivityListModel
       int activityCount READ getActivityCount NOTIFY activityCountChanged)
 public:
     ActivityListModel(ProgressViewModel& parent);
+    ~ActivityListModel() noexcept final;
 
     auto backend() const noexcept -> Backend&;
 
@@ -56,6 +57,7 @@ private:
         activityElapsedTime,
         activityRemainingTime
     };
+    void timerEvent(QTimerEvent*) final;
 
     auto getActivityMessage(const ActivityData&) const -> QString;
     auto getActivityLogIdentity(const ActivityData&) const -> QString;
@@ -72,6 +74,7 @@ private:
     auto getActivityRemainingTime(const ActivityData&) const -> QVariant;
 
     ProgressViewModel& _parent;
+    int _timerId{0};
 };
 //------------------------------------------------------------------------------
 #endif

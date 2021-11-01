@@ -77,7 +77,7 @@ auto ActivityData::estimatedRemainingTime() const noexcept
 //------------------------------------------------------------------------------
 auto ActivityData::isDone() const noexcept -> bool {
     return (todoRatio() < 0.001F) ||
-           (timeSinceUpdate() * 10.F > timeSinceStart());
+           (timeSinceUpdate().count() > todoRatio() * 20.F);
 }
 //------------------------------------------------------------------------------
 // storage
@@ -124,9 +124,9 @@ void ActivityStorage::addEntry(const LogEntryData& entry) noexcept {
     }
 }
 //------------------------------------------------------------------------------
-void ActivityStorage::cleanupDone() noexcept {
-    std::erase_if(_activities, [](const auto& activity) -> bool {
-        return activity.isDone();
-    });
+auto ActivityStorage::cleanupDone() noexcept -> bool {
+    return std::erase_if(_activities, [](const auto& activity) -> bool {
+               return activity.isDone();
+           }) > 0U;
 }
 //------------------------------------------------------------------------------

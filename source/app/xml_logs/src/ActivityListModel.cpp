@@ -15,7 +15,12 @@
 ActivityListModel::ActivityListModel(ProgressViewModel& parent)
   : QAbstractItemModel{nullptr}
   , eagine::main_ctx_object{EAGINE_ID(ActListMdl), parent}
-  , _parent{parent} {}
+  , _parent{parent}
+  , _timerId{startTimer(2000)} {}
+//------------------------------------------------------------------------------
+ActivityListModel::~ActivityListModel() noexcept {
+    killTimer(_timerId);
+}
 //------------------------------------------------------------------------------
 auto ActivityListModel::backend() const noexcept -> Backend& {
     return _parent.backend();
@@ -60,6 +65,13 @@ auto ActivityListModel::rowCount(const QModelIndex& i) const -> int {
 //------------------------------------------------------------------------------
 auto ActivityListModel::getActivityCount() const -> int {
     return _parent.entryLog().getActivityCount();
+}
+//------------------------------------------------------------------------------
+void ActivityListModel::timerEvent(QTimerEvent*) {
+    if(_parent.entryLog().cleanupDoneActivities()) {
+        emit modelReset({});
+        emit activityCountChanged();
+    }
 }
 //------------------------------------------------------------------------------
 auto ActivityListModel::getActivityMessage(const ActivityData& entry) const

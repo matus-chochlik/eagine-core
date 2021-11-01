@@ -72,7 +72,7 @@ public:
         return nullptr;
     }
 
-    void cleanupDone() noexcept;
+    auto cleanupDone() noexcept -> bool;
 
 private:
     auto _getEntryActivity(

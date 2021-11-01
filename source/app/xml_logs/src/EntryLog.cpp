@@ -116,3 +116,8 @@ auto EntryLog::getStreamInfo(const std::uintptr_t streamId) noexcept
     return _entries->getStreamInfo(streamId);
 }
 //------------------------------------------------------------------------------
+auto EntryLog::cleanupDoneActivities() noexcept -> bool {
+    EAGINE_ASSERT(_activities);
+    return _activities->cleanupDone();
+}
+//------------------------------------------------------------------------------
