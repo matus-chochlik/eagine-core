@@ -22,6 +22,7 @@ auto ActivityData::init(
     severity = entry.severity;
     start_time = std::chrono::steady_clock::now();
     update_time = start_time;
+    remainingUpdatePos = 0U;
     return *this;
 }
 //------------------------------------------------------------------------------
@@ -29,10 +30,17 @@ auto ActivityData::update(
   const LogEntryData& entry,
   const std::tuple<float, float, float>& mvm) noexcept -> ActivityData& {
     message = EntryFormat().format(entry);
+    if(value > std::get<1>(mvm)) {
+        start_time = std::chrono::steady_clock::now();
+        update_time = start_time;
+        severity = entry.severity;
+        remainingUpdatePos = 0U;
+    } else {
+        update_time = std::chrono::steady_clock::now();
+    }
     min = std::get<0>(mvm);
     value = std::get<1>(mvm);
     max = std::get<2>(mvm);
-    update_time = std::chrono::steady_clock::now();
     if((max > min) && (value > min) && timeSinceStart() > std::chrono::seconds(5)) {
         remainingTimes[remainingUpdatePos++ % remainingTimes.size()] =
           timeSinceStart().count() * (todoRatio() / doneRatio());
@@ -76,8 +84,7 @@ auto ActivityData::estimatedRemainingTime() const noexcept
 }
 //------------------------------------------------------------------------------
 auto ActivityData::isDone() const noexcept -> bool {
-    return (todoRatio() < 0.001F) ||
-           (timeSinceUpdate().count() > todoRatio() * 20.F);
+    return (todoRatio() < 0.001F);
 }
 //------------------------------------------------------------------------------
 // storage
