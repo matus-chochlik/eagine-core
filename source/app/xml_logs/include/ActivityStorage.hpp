@@ -49,6 +49,8 @@ struct ActivityData {
     auto hasTimeEstimation() const noexcept -> bool;
     auto estimatedRemainingTime() const noexcept
       -> std::chrono::duration<float>;
+
+    auto isDone() const noexcept -> bool;
 };
 //------------------------------------------------------------------------------
 class ActivityStorage {
@@ -69,6 +71,8 @@ public:
         }
         return nullptr;
     }
+
+    void cleanupDone() noexcept;
 
 private:
     auto _getEntryActivity(

@@ -374,10 +374,7 @@ public:
 
     template <typename Predicate>
     auto erase_if(const Predicate& predicate) -> size_type {
-        const auto p = std::remove_if(_vec.begin(), _vec.end(), predicate);
-        const auto res = size_type(std::distance(p, _vec.end()));
-        _vec.erase(p, _vec.end());
-        return res;
+        return std::erase_if(_vec, predicate);
     }
 
 private:

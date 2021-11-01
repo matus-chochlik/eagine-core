@@ -75,6 +75,11 @@ auto ActivityData::estimatedRemainingTime() const noexcept
     return {};
 }
 //------------------------------------------------------------------------------
+auto ActivityData::isDone() const noexcept -> bool {
+    return (todoRatio() < 0.001F) ||
+           (timeSinceUpdate() * 10.F > timeSinceStart());
+}
+//------------------------------------------------------------------------------
 // storage
 //------------------------------------------------------------------------------
 void ActivityStorage::beginStream(
@@ -84,14 +89,9 @@ void ActivityStorage::beginStream(
 }
 //------------------------------------------------------------------------------
 void ActivityStorage::endStream(std::uintptr_t stream_id) noexcept {
-    _activities.erase(
-      std::remove_if(
-        _activities.begin(),
-        _activities.end(),
-        [stream_id](const auto& activity) -> bool {
-            return activity.stream_id == stream_id;
-        }),
-      _activities.end());
+    std::erase_if(_activities, [stream_id](const auto& activity) -> bool {
+        return activity.stream_id == stream_id;
+    });
 }
 //------------------------------------------------------------------------------
 auto ActivityStorage::_getEntryActivity(
@@ -122,5 +122,11 @@ void ActivityStorage::addEntry(const LogEntryData& entry) noexcept {
             [](const auto&) {}),
           std::get<1>(std::get<1>(arg_info)));
     }
+}
+//------------------------------------------------------------------------------
+void ActivityStorage::cleanupDone() noexcept {
+    std::erase_if(_activities, [](const auto& activity) -> bool {
+        return activity.isDone();
+    });
 }
 //------------------------------------------------------------------------------
