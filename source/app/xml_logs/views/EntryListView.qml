@@ -8,16 +8,16 @@ import QtQuick.Controls 2.4
 import QtQuick.Layouts 1.2
 
 ListView {
-	id: entryListView
-	delegate: EntryListItem {
-		view: entryListView
-	}
-	spacing: 0
-	focus: true
-	clip: true
+    id: entryListView
+    delegate: EntryListItem {
+        view: entryListView
+    }
+    spacing: 0
+    focus: true
+    clip: true
 
-	ScrollBar.vertical: ScrollBar {}
+    ScrollBar.vertical: ScrollBar {}
 
-	currentIndex: model.entryCount - 1
+    currentIndex: model.entryCount - 1
 }
 
