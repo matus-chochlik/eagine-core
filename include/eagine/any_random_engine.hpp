@@ -15,7 +15,7 @@ namespace eagine {
 
 /// @brief Type-erasing reference for standard random engine types.
 /// @ingroup type_utils
-template <typename Result>
+template <typename Result, Result Min, Result Max>
 class any_random_engine : public callable_ref<Result()> {
 public:
     /// @brief Alias for the engine result type.
@@ -24,28 +24,26 @@ public:
     /// @brief Constructor initializing reference to the actual engine.
     template <typename Engine>
     any_random_engine(Engine& engine) noexcept
-      : callable_ref<Result()>{construct_from, engine}
-      , _min{engine.min()}
-      , _max{engine.max()} {}
+      : callable_ref<Result()>{construct_from, engine} {}
 
     /// @brief The minimal result value.
-    auto min() const noexcept -> result_type {
-        return _min;
+    static constexpr auto min() noexcept -> result_type {
+        return Min;
     }
 
     /// @brief The maximal result value.
-    auto max() const noexcept -> result_type {
-        return _max;
+    static constexpr auto max() noexcept -> result_type {
+        return Max;
     }
-
-private:
-    result_type _min{0};
-    result_type _max{0};
 };
 
 /// @brief Deduction guide for any_random_engine.
-template <typename Engine>
-any_random_engine(Engine&) -> any_random_engine<typename Engine::result_type>;
+template <
+  typename Engine,
+  typename Engine::result_type Min,
+  typename Engine::result_type Max>
+any_random_engine(Engine&)
+  -> any_random_engine<typename Engine::result_type, Engine::min(), Engine::max()>;
 
 } // namespace eagine
 

@@ -20,7 +20,6 @@ add_library(
 	input_data.cpp
 	compression.cpp
 	str_var_subst.cpp
-	random.cpp
 	resources.cpp
 	url.cpp
 	value_tree_json.cpp
