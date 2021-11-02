@@ -1,5 +1,17 @@
 .pragma library
 
+var lc = Qt.locale("C")
+
+function progressStr(min, value, max) {
+	var progress = null
+	if((min != null) && (value != null) && (max != null) && (max - min > 0)) {
+		progress = (value - min) / (max - min);
+	}
+	return progress
+		? "%1 %".arg(Number(progress * 100.0).toLocaleString(lc, "f", 1))
+		: "-"
+}
+
 function durationStr(seconds) {
 	if(seconds) {
 		if(seconds < 5.0) {

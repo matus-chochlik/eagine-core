@@ -4,20 +4,20 @@ import QtQuick.Layouts 1.2
 import "qrc:///views"
 
 Pane {
-    id: entriesView
-    property variant model: null
-    leftPadding: 0
+	id: entriesView
+	property variant model: null
+	leftPadding: 0
 
-    ColumnLayout {
-        anchors.fill: parent
+	ColumnLayout {
+		anchors.fill: parent
 
-        EntryListView {
-            id: entryListView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+		EntryListView {
+			id: entryListView
+			Layout.fillWidth: true
+			Layout.fillHeight: true
 
-            model: entriesView.model.entryList
-        }
-    }
+			model: entriesView.model.entryList
+		}
+	}
 }
 

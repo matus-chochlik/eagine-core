@@ -4,20 +4,20 @@ import QtQuick.Layouts 1.2
 import "qrc:///views"
 
 Pane {
-    id: progressView
-    property variant model: null
-    leftPadding: 0
+	id: progressView
+	property variant model: null
+	leftPadding: 0
 
-    ColumnLayout {
-        anchors.fill: parent
+	ColumnLayout {
+		anchors.fill: parent
 
-        ActivityListView {
-            id: activityListView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+		ActivityListView {
+			id: activityListView
+			Layout.fillWidth: true
+			Layout.fillHeight: true
 
-            model: progressView.model.activityList
-        }
-    }
+			model: progressView.model.activityList
+		}
+	}
 }
 

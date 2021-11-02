@@ -3,6 +3,6 @@ import QtQuick.Controls 2.4
 import "qrc:///views"
 
 Pane {
-    property variant model: null
+	property variant model: null
 }
 

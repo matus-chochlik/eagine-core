@@ -8,14 +8,14 @@ import QtQuick.Controls 2.4
 import QtQuick.Layouts 1.2
 
 ListView {
-    id: activityListView
-    delegate: ActivityListItem {
-        view: activityListView
-    }
-    spacing: 0
-    focus: true
-    clip: true
+	id: activityListView
+	delegate: ActivityListItem {
+		view: activityListView
+	}
+	spacing: 0
+	focus: true
+	clip: true
 
-    ScrollBar.vertical: ScrollBar {}
+	ScrollBar.vertical: ScrollBar {}
 }
 
