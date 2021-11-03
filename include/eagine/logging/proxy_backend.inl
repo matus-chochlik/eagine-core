@@ -314,7 +314,10 @@ auto proxy_log_choose_backend(
     }
 #endif
     try {
-        return std::make_unique<asio_tcpipv4_ostream_log_backend<>>(info);
+        std::string nw_addr;
+        config.fetch("log.network.address", nw_addr);
+        return std::make_unique<asio_tcpipv4_ostream_log_backend<>>(
+          nw_addr, info);
     } catch(const std::system_error& err) {
         if(err.code().value() != ENOENT) {
             throw;
