@@ -91,33 +91,14 @@ struct LogEntryConnectors {
 //------------------------------------------------------------------------------
 class LogEntryStorage {
 public:
-    auto cacheString(eagine::string_view s) -> eagine::string_view {
-        auto pos = _str_cache.find(s);
-        if(pos == _str_cache.end()) {
-            pos = _str_cache.emplace(to_string(s)).first;
-        }
-        return {*pos};
-    }
+    auto cacheString(eagine::string_view s) -> eagine::string_view;
 
     void beginStream(stream_id_t stream_id, const LogStreamInfo&) noexcept;
     void endStream(stream_id_t stream_id) noexcept;
+    auto streamInfoRef(const stream_id_t streamId) noexcept -> LogStreamInfo&;
 
-    auto getStreamInfo(const stream_id_t streamId) noexcept -> LogStreamInfo&;
-
-    auto streamCount() const noexcept -> int {
-        if(EAGINE_LIKELY(!_streams.empty())) {
-            return eagine::limit_cast<int>(_streams.size());
-        }
-        return 0;
-    }
-
-    auto getStreamInfo(int index) noexcept -> const LogStreamInfo* {
-        const auto streamIdx{eagine::convert_if_fits<std::size_t>(index)};
-        if(streamIdx) {
-            return &_streams[extract(streamIdx)];
-        }
-        return 0;
-    }
+    auto streamCount() const noexcept -> int;
+    auto getStreamInfo(int index) noexcept -> LogStreamInfo*;
 
     void setDescription(
       stream_id_t stream_id,
@@ -131,26 +112,8 @@ public:
         _emplaceNextEntry(std::move(entry));
     }
 
-    auto entryCount() const noexcept -> int {
-        if(EAGINE_LIKELY(!_entries.empty())) {
-            return eagine::limit_cast<int>(
-              (_entries.size() - 1U) * _chunkSize() + _entries.back().size());
-        }
-        return 0;
-    }
-
-    auto getEntry(int index) noexcept -> LogEntryData* {
-        if(EAGINE_LIKELY(!_entries.empty())) {
-            const auto entIdx{eagine::convert_if_fits<std::size_t>(index)};
-            if(EAGINE_LIKELY(entIdx)) {
-                const auto chunkIdx{extract(entIdx) / _chunkSize()};
-                if(EAGINE_LIKELY(chunkIdx < _entries.size())) {
-                    return &_entries[chunkIdx][extract(entIdx) % _chunkSize()];
-                }
-            }
-        }
-        return nullptr;
-    }
+    auto entryCount() const noexcept -> int;
+    auto getEntry(int index) noexcept -> LogEntryData*;
 
     auto getEntryConnectors(const LogEntryData& entry) noexcept
       -> LogEntryConnectors;

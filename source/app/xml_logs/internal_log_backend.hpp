@@ -11,6 +11,8 @@
 
 #include "EntryStorage.hpp"
 #include <eagine/assert.hpp>
+#include <eagine/compiler_info.hpp>
+#include <eagine/git_info.hpp>
 #include <eagine/logging/backend.hpp>
 #include <eagine/memory/default_alloc.hpp>
 
@@ -23,6 +25,11 @@ public:
         _single_instance_ptr() = this;
         LogStreamInfo info{};
         info.logIdentity = "XML log viewer";
+        info.architecture = extract_or(architecture_name(), string_view{});
+        info.compilerName = extract_or(compiler_name(), string_view{});
+        info.compilerVersionMajor = extract_or(compiler_version_major(), -1);
+        info.compilerVersionMinor = extract_or(compiler_version_minor(), -1);
+        info.compilerVersionPatch = extract_or(compiler_version_patch(), -1);
         _entries->beginStream(0, info);
     }
 

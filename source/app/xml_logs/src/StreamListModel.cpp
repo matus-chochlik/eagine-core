@@ -44,7 +44,7 @@ auto StreamListModel::parent(const QModelIndex&) const -> QModelIndex {
 auto StreamListModel::index(int row, int column, const QModelIndex&) const
   -> QModelIndex {
     return QAbstractItemModel::createIndex(
-      row, column, &_parent.entryLog().getStreamInfo(row));
+      row, column, _parent.entryLog().getStreamInfo(row));
 }
 //------------------------------------------------------------------------------
 auto StreamListModel::rowCount(const QModelIndex& i) const -> int {

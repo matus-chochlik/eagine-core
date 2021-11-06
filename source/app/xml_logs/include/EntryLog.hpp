@@ -35,7 +35,8 @@ public:
     }
 
     auto getStreamCount() const noexcept -> int;
-    auto getStreamData(int index) noexcept -> const LogStreamInfo*;
+    auto getStreamInfo(int index) noexcept -> LogStreamInfo*;
+    auto streamInfoRef(const stream_id_t streamId) noexcept -> LogStreamInfo&;
 
     auto getEntryViewModel() noexcept -> EntryViewModel*;
     auto getProgressViewModel() noexcept -> ProgressViewModel*;
@@ -57,8 +58,6 @@ public:
     void endStream(stream_id_t streamId);
     void addEntry(LogEntryData& entry);
     void commitEntries();
-
-    auto getStreamInfo(const stream_id_t streamId) noexcept -> LogStreamInfo&;
 
     auto cleanupDoneActivities() noexcept -> bool;
 signals:

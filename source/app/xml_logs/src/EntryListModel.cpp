@@ -77,7 +77,7 @@ auto EntryListModel::getEntryFormat(const LogEntryData& entry) const
 auto EntryListModel::getEntryLogIdentity(const LogEntryData& entry) const
   -> QString {
     return toQString(
-      _parent.entryLog().getStreamInfo(entry.streamId).logIdentity);
+      _parent.entryLog().streamInfoRef(entry.streamId).logIdentity);
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntryStreamId(const LogEntryData& entry) const

@@ -58,9 +58,21 @@ function remainingTimeStr(seconds) {
 		if(seconds < 5.0) {
 			return "less than 5s"
 		} else {
-			return durationStr(seconds);
+			return durationStr(seconds)
 		}
 	}
 	return "estimating..."
 }
 
+function version(major, minor, patch) {
+	if(major != null) {
+		if(minor != null) {
+			if(patch != null) {
+				return "%1.%2.%3".arg(major).arg(minor).arg(patch)
+			}
+			return "%1.%2".arg(major).arg(minor)
+		}
+		return "%1".arg(major)
+	}
+	return "-"
+}

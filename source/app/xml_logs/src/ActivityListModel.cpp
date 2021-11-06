@@ -82,7 +82,7 @@ auto ActivityListModel::getActivityMessage(const ActivityData& entry) const
 auto ActivityListModel::getActivityLogIdentity(const ActivityData& entry) const
   -> QString {
     return toQString(
-      _parent.entryLog().getStreamInfo(entry.streamId).logIdentity);
+      _parent.entryLog().streamInfoRef(entry.streamId).logIdentity);
 }
 //------------------------------------------------------------------------------
 auto ActivityListModel::getActivityStreamId(const ActivityData& entry) const

@@ -129,12 +129,12 @@ void Connection::_handleEndMessage() noexcept {
 //------------------------------------------------------------------------------
 void Connection::_handleSpecialArgument() noexcept {
     if(_currentEntry.tag == EAGINE_ID(ProgArgs)) {
-        auto& info = _backend.entryLog().getStreamInfo(_streamId);
+        auto& info = _backend.entryLog().streamInfoRef(_streamId);
         if(_isArgName(EAGINE_ID(arg))) {
             info.args.push_back(_cacheString(_xmlReader.text()));
         }
     } else if(_currentEntry.tag == EAGINE_ID(GitInfo)) {
-        auto& info = _backend.entryLog().getStreamInfo(_streamId);
+        auto& info = _backend.entryLog().streamInfoRef(_streamId);
         if(_isArgName(EAGINE_ID(gitBranch))) {
             info.gitBranch = _cacheString(_xmlReader.text());
         } else if(_isArgName(EAGINE_ID(gitHashId))) {
@@ -146,12 +146,12 @@ void Connection::_handleSpecialArgument() noexcept {
             info.gitVersion = _cacheString(_xmlReader.text());
         }
     } else if(_currentEntry.tag == EAGINE_ID(Instance)) {
-        auto& info = _backend.entryLog().getStreamInfo(_streamId);
+        auto& info = _backend.entryLog().streamInfoRef(_streamId);
         if(_isArgName(EAGINE_ID(instanceId))) {
             info.instanceId = _cacheString(_xmlReader.text());
         }
     } else if(_currentEntry.tag == EAGINE_ID(Compiler)) {
-        auto& info = _backend.entryLog().getStreamInfo(_streamId);
+        auto& info = _backend.entryLog().streamInfoRef(_streamId);
         if(_isArgName(EAGINE_ID(archtcture))) {
             info.architecture = _cacheString(_xmlReader.text());
         } else if(_isArgName(EAGINE_ID(complrName))) {

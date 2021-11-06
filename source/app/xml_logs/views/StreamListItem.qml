@@ -14,7 +14,7 @@ Control {
 	property variant view: null
 
 	width: view.width
-	height: 50
+	height: 80
 	leftPadding: 0
 	topPadding: 0
 	rightPadding: 0
@@ -41,13 +41,33 @@ Control {
 				spacing: 1
 				Label {
 					text: logIdentity ? logIdentity : "-"
-					Layout.preferredWidth: backend.theme.entrySeverityWidth
+					Layout.preferredWidth: backend.theme.entrySourceWidth
 				}
 			}
 		}
-		RowLayout {
+		GridLayout {
+			columns: 4
+			Layout.fillWidth: true
+			Layout.fillHeight: true
+
+			Label { text: "Architecture" }
 			Label {
-				text: "-"
+				text: architecture ? architecture : "-"
+				Layout.fillWidth: true
+			}
+
+			Label { text: "Compiler" }
+			Label {
+				text: compilerName ? compilerName : "-"
+				Layout.fillWidth: true
+			}
+
+			Label { text: "Version" }
+			Label {
+				text: Format.version(
+					compilerVersionMajor,
+					compilerVersionMinor,
+					compilerVersionPatch)
 				Layout.fillWidth: true
 			}
 		}

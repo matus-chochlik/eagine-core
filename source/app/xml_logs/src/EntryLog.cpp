@@ -81,16 +81,6 @@ void EntryLog::commitEntries() {
     _prevEntryCount = currEntryCount;
 }
 //------------------------------------------------------------------------------
-auto EntryLog::getStreamCount() const noexcept -> int {
-    EAGINE_ASSERT(_entries);
-    return _entries->streamCount();
-}
-//------------------------------------------------------------------------------
-auto EntryLog::getStreamData(int index) noexcept -> const LogStreamInfo* {
-    EAGINE_ASSERT(_entries);
-    return _entries->getStreamInfo(index);
-}
-//------------------------------------------------------------------------------
 auto EntryLog::getEntryViewModel() noexcept -> EntryViewModel* {
     return &_entryViewModel;
 }
@@ -105,6 +95,22 @@ auto EntryLog::getChartsViewModel() noexcept -> ChartsViewModel* {
 //------------------------------------------------------------------------------
 auto EntryLog::getStreamViewModel() noexcept -> StreamViewModel* {
     return &_streamViewModel;
+}
+//------------------------------------------------------------------------------
+auto EntryLog::getStreamCount() const noexcept -> int {
+    EAGINE_ASSERT(_entries);
+    return _entries->streamCount();
+}
+//------------------------------------------------------------------------------
+auto EntryLog::getStreamInfo(int index) noexcept -> LogStreamInfo* {
+    EAGINE_ASSERT(_entries);
+    return _entries->getStreamInfo(index);
+}
+//------------------------------------------------------------------------------
+auto EntryLog::streamInfoRef(const stream_id_t streamId) noexcept
+  -> LogStreamInfo& {
+    EAGINE_ASSERT(_entries);
+    return _entries->streamInfoRef(streamId);
 }
 //------------------------------------------------------------------------------
 auto EntryLog::getEntryCount() const noexcept -> int {
@@ -130,12 +136,6 @@ auto EntryLog::getActivityCount() const noexcept -> int {
 auto EntryLog::getActivityData(int index) noexcept -> ActivityData* {
     EAGINE_ASSERT(_activities);
     return _activities->getActivity(index);
-}
-//------------------------------------------------------------------------------
-auto EntryLog::getStreamInfo(const stream_id_t streamId) noexcept
-  -> LogStreamInfo& {
-    EAGINE_ASSERT(_entries);
-    return _entries->getStreamInfo(streamId);
 }
 //------------------------------------------------------------------------------
 auto EntryLog::cleanupDoneActivities() noexcept -> bool {

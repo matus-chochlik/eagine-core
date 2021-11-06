@@ -7,6 +7,15 @@
 #include "EntryStorage.hpp"
 
 //------------------------------------------------------------------------------
+auto LogEntryStorage::cacheString(eagine::string_view s)
+  -> eagine::string_view {
+    auto pos = _str_cache.find(s);
+    if(pos == _str_cache.end()) {
+        pos = _str_cache.emplace(to_string(s)).first;
+    }
+    return {*pos};
+}
+//------------------------------------------------------------------------------
 void LogEntryStorage::_emplaceNextEntry(LogEntryData&& entry) noexcept {
     auto& chunk = [&]() -> std::vector<LogEntryData>& {
         if(EAGINE_LIKELY(!_entries.empty())) {
@@ -84,9 +93,49 @@ void LogEntryStorage::endStream(stream_id_t streamId) noexcept {
     }
 }
 //------------------------------------------------------------------------------
-auto LogEntryStorage::getStreamInfo(const stream_id_t streamId) noexcept
+auto LogEntryStorage::streamInfoRef(const stream_id_t streamId) noexcept
   -> LogStreamInfo& {
     return _streams[streamId];
+}
+//------------------------------------------------------------------------------
+auto LogEntryStorage::streamCount() const noexcept -> int {
+    if(EAGINE_LIKELY(!_streams.empty())) {
+        return eagine::limit_cast<int>(_streams.size());
+    }
+    return 0;
+}
+//------------------------------------------------------------------------------
+auto LogEntryStorage::getStreamInfo(int index) noexcept -> LogStreamInfo* {
+    const auto streamIdx{eagine::convert_if_fits<std::size_t>(index)};
+    if(streamIdx) {
+        if(extract(streamIdx) < _streams.size()) {
+            auto pos = _streams.begin();
+            std::advance(pos, extract(streamIdx));
+            return &pos->second;
+        }
+    }
+    return nullptr;
+}
+//------------------------------------------------------------------------------
+auto LogEntryStorage::entryCount() const noexcept -> int {
+    if(EAGINE_LIKELY(!_entries.empty())) {
+        return eagine::limit_cast<int>(
+          (_entries.size() - 1U) * _chunkSize() + _entries.back().size());
+    }
+    return 0;
+}
+//------------------------------------------------------------------------------
+auto LogEntryStorage::getEntry(int index) noexcept -> LogEntryData* {
+    if(EAGINE_LIKELY(!_entries.empty())) {
+        const auto entIdx{eagine::convert_if_fits<std::size_t>(index)};
+        if(EAGINE_LIKELY(entIdx)) {
+            const auto chunkIdx{extract(entIdx) / _chunkSize()};
+            if(EAGINE_LIKELY(chunkIdx < _entries.size())) {
+                return &_entries[chunkIdx][extract(entIdx) % _chunkSize()];
+            }
+        }
+    }
+    return nullptr;
 }
 //------------------------------------------------------------------------------
 auto LogEntryStorage::getEntryConnectors(const LogEntryData& entry) noexcept
