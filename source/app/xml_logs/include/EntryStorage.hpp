@@ -26,32 +26,39 @@
 
 class Backend;
 //------------------------------------------------------------------------------
+using stream_id_t = std::uintptr_t;
+//------------------------------------------------------------------------------
 struct LogStreamInfo {
-    eagine::string_view log_identity;
+    eagine::string_view logIdentity;
+    eagine::string_view gitBranch;
+    eagine::string_view gitHashId;
+    eagine::string_view gitVersion;
+    eagine::string_view architecture;
+    eagine::string_view compilerName;
 };
 //------------------------------------------------------------------------------
 struct LogSourceInfo {
-    eagine::string_view display_name;
+    eagine::string_view displayName;
     eagine::string_view description;
 };
 //------------------------------------------------------------------------------
 struct LogStreamList {
-    std::uintmax_t entry_uid;
-    std::vector<std::uintptr_t> stream_ids;
+    std::uintmax_t entryUid;
+    std::vector<stream_id_t> streamIds;
 };
 //------------------------------------------------------------------------------
 struct LogEntryData {
-    std::uintmax_t entry_uid;
-    std::uintptr_t stream_id;
+    std::uintmax_t entryUid;
+    stream_id_t streamId;
     std::uint64_t instance;
     eagine::identifier source;
     eagine::identifier tag;
     eagine::string_view format;
-    float reltime_sec{-1.F};
+    float reltimeSec{-1.F};
     eagine::log_event_severity severity;
-    bool is_first : 1 {false};
-    bool is_last : 1 {false};
-    bool has_progress : 1 {false};
+    bool isFirst : 1 {false};
+    bool isLast : 1 {false};
+    bool hasProgress : 1 {false};
 
     using argument_value_type = std::variant<
       eagine::nothing_t,
@@ -72,8 +79,8 @@ struct LogEntryData {
 };
 //------------------------------------------------------------------------------
 struct LogEntryConnectors {
-    short stream_count{0};
-    short stream_index{0};
+    short streamCount{0};
+    short streamIndex{0};
 };
 //------------------------------------------------------------------------------
 class LogEntryStorage {
@@ -86,18 +93,20 @@ public:
         return {*pos};
     }
 
+    void beginStream(stream_id_t stream_id, const LogStreamInfo&) noexcept;
+    void endStream(stream_id_t stream_id) noexcept;
+
+    auto getStreamInfo(const stream_id_t streamId) noexcept -> LogStreamInfo&;
+
     void setDescription(
-      std::uintptr_t stream_id,
+      stream_id_t stream_id,
       eagine::identifier source_id,
       eagine::logger_instance_id instance_id,
       eagine::string_view display_name,
       eagine::string_view description) noexcept;
 
-    void beginStream(std::uintptr_t stream_id, const LogStreamInfo&) noexcept;
-    void endStream(std::uintptr_t stream_id) noexcept;
-
     void addEntry(LogEntryData&& entry) noexcept {
-        entry.entry_uid = ++_uid_sequence;
+        entry.entryUid = ++_uidSequence;
         _emplaceNextEntry(std::move(entry));
     }
 
@@ -125,9 +134,6 @@ public:
     auto getEntryConnectors(const LogEntryData& entry) noexcept
       -> LogEntryConnectors;
 
-    auto getStreamInfo(const std::uintptr_t streamId) noexcept
-      -> const LogStreamInfo&;
-
 private:
     static constexpr auto _chunkSize() noexcept -> std::size_t {
         return 1024;
@@ -136,12 +142,12 @@ private:
     void _emplaceNextEntry(LogEntryData&& entry) noexcept;
     auto _getNextStreamList() noexcept -> LogStreamList&;
 
-    std::uintmax_t _uid_sequence{0U};
+    std::uintmax_t _uidSequence{0U};
     std::vector<std::vector<LogEntryData>> _entries;
     std::vector<LogStreamList> _streamLists;
-    std::map<std::uintptr_t, LogStreamInfo> _streams;
+    std::map<stream_id_t, LogStreamInfo> _streams;
     std::map<
-      std::tuple<std::uintptr_t, eagine::identifier, eagine::logger_instance_id>,
+      std::tuple<stream_id_t, eagine::identifier, eagine::logger_instance_id>,
       LogSourceInfo>
       _sources;
     std::set<std::string, eagine::str_view_less> _str_cache;

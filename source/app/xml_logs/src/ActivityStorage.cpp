@@ -14,14 +14,14 @@
 //------------------------------------------------------------------------------
 auto ActivityData::init(
   const LogEntryData& entry,
-  const eagine::identifier entry_arg) noexcept -> ActivityData& {
-    stream_id = entry.stream_id;
+  const eagine::identifier entryArg) noexcept -> ActivityData& {
+    streamId = entry.streamId;
     instance = entry.instance;
     source = entry.source;
-    arg = entry_arg;
+    arg = entryArg;
     severity = entry.severity;
-    start_time = std::chrono::steady_clock::now();
-    update_time = start_time;
+    startTime = std::chrono::steady_clock::now();
+    updateTime = startTime;
     remainingUpdatePos = 0U;
     return *this;
 }
@@ -31,12 +31,12 @@ auto ActivityData::update(
   const std::tuple<float, float, float>& mvm) noexcept -> ActivityData& {
     message = EntryFormat().format(entry);
     if(value > std::get<1>(mvm)) {
-        start_time = std::chrono::steady_clock::now();
-        update_time = start_time;
+        startTime = std::chrono::steady_clock::now();
+        updateTime = startTime;
         severity = entry.severity;
         remainingUpdatePos = 0U;
     } else {
-        update_time = std::chrono::steady_clock::now();
+        updateTime = std::chrono::steady_clock::now();
     }
     min = std::get<0>(mvm);
     value = std::get<1>(mvm);
@@ -59,12 +59,12 @@ auto ActivityData::todoRatio() const noexcept -> float {
 //------------------------------------------------------------------------------
 auto ActivityData::timeSinceStart() const noexcept
   -> std::chrono::duration<float> {
-    return std::chrono::steady_clock::now() - start_time;
+    return std::chrono::steady_clock::now() - startTime;
 }
 //------------------------------------------------------------------------------
 auto ActivityData::timeSinceUpdate() const noexcept
   -> std::chrono::duration<float> {
-    return std::chrono::steady_clock::now() - update_time;
+    return std::chrono::steady_clock::now() - updateTime;
 }
 //------------------------------------------------------------------------------
 auto ActivityData::hasTimeEstimation() const noexcept -> bool {
@@ -90,32 +90,32 @@ auto ActivityData::isDone() const noexcept -> bool {
 // storage
 //------------------------------------------------------------------------------
 void ActivityStorage::beginStream(
-  std::uintptr_t stream_id,
+  stream_id_t streamId,
   const LogStreamInfo&) noexcept {
-    EAGINE_MAYBE_UNUSED(stream_id);
+    EAGINE_MAYBE_UNUSED(streamId);
 }
 //------------------------------------------------------------------------------
-void ActivityStorage::endStream(std::uintptr_t stream_id) noexcept {
-    std::erase_if(_activities, [stream_id](const auto& activity) -> bool {
-        return activity.stream_id == stream_id;
+void ActivityStorage::endStream(stream_id_t streamId) noexcept {
+    std::erase_if(_activities, [streamId](const auto& activity) -> bool {
+        return activity.streamId == streamId;
     });
 }
 //------------------------------------------------------------------------------
 auto ActivityStorage::_getEntryActivity(
   const LogEntryData& entry,
-  const eagine::identifier entry_arg) noexcept -> ActivityData& {
+  const eagine::identifier entryArg) noexcept -> ActivityData& {
     const auto pos = std::find_if(
       _activities.begin(), _activities.end(), [&](const auto& existing) {
-          return (existing.stream_id == entry.stream_id) &&
+          return (existing.streamId == entry.streamId) &&
                  (existing.instance == entry.instance) &&
                  (existing.source == entry.source) &&
-                 (existing.arg == entry_arg);
+                 (existing.arg == entryArg);
       });
     if(pos != _activities.end()) {
         return *pos;
     }
     _activities.emplace_back();
-    return _activities.back().init(entry, entry_arg);
+    return _activities.back().init(entry, entryArg);
 }
 //------------------------------------------------------------------------------
 void ActivityStorage::addEntry(const LogEntryData& entry) noexcept {

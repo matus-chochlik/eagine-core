@@ -22,7 +22,7 @@ public:
         EAGINE_ASSERT(!_single_instance_ptr());
         _single_instance_ptr() = this;
         LogStreamInfo info{};
-        info.log_identity = "XML log viewer";
+        info.logIdentity = "XML log viewer";
         _entries->beginStream(0, info);
     }
 
@@ -80,14 +80,14 @@ private:
       logger_instance_id instance,
       log_event_severity severity,
       string_view format) noexcept -> bool final {
-        _current.stream_id = 0U;
+        _current.streamId = 0U;
         _current.source = source;
         _current.tag = tag;
         _current.instance = instance;
         _current.severity = severity;
-        _current.reltime_sec = std::chrono::duration<float>(
-                                 std::chrono::steady_clock::now() - _start)
-                                 .count();
+        _current.reltimeSec = std::chrono::duration<float>(
+                                std::chrono::steady_clock::now() - _start)
+                                .count();
         _current.format = _entries->cacheString(format);
         return true;
     }

@@ -35,53 +35,58 @@ auto LogEntryStorage::_getNextStreamList() noexcept -> LogStreamList& {
 }
 //------------------------------------------------------------------------------
 void LogEntryStorage::setDescription(
-  std::uintptr_t stream_id,
-  eagine::identifier source_id,
-  eagine::logger_instance_id instance_id,
-  eagine::string_view display_name,
+  stream_id_t streamId,
+  eagine::identifier sourceId,
+  eagine::logger_instance_id instanceId,
+  eagine::string_view displayName,
   eagine::string_view description) noexcept {
-    auto& sourceInfo = _sources[{stream_id, source_id, instance_id}];
-    sourceInfo.display_name = display_name;
+    auto& sourceInfo = _sources[{streamId, sourceId, instanceId}];
+    sourceInfo.displayName = displayName;
     sourceInfo.description = description;
 }
 //------------------------------------------------------------------------------
 void LogEntryStorage::beginStream(
-  std::uintptr_t stream_id,
+  stream_id_t streamId,
   const LogStreamInfo& info) noexcept {
-    _streams[stream_id] = info;
+    _streams[streamId] = info;
     //
     auto& streamList = _getNextStreamList();
-    streamList.entry_uid = ++_uid_sequence;
-    streamList.stream_ids.push_back(stream_id);
+    streamList.entryUid = ++_uidSequence;
+    streamList.streamIds.push_back(streamId);
     //
     LogEntryData entry{};
-    entry.entry_uid = _uid_sequence;
-    entry.stream_id = stream_id;
+    entry.entryUid = _uidSequence;
+    entry.streamId = streamId;
     entry.source = EAGINE_ID(XmlLogView);
     entry.severity = eagine::log_event_severity::info;
-    entry.reltime_sec = 0.F;
-    entry.is_first = true;
+    entry.reltimeSec = 0.F;
+    entry.isFirst = true;
     entry.format = "Log started";
     _emplaceNextEntry(std::move(entry));
 }
 //------------------------------------------------------------------------------
-void LogEntryStorage::endStream(std::uintptr_t stream_id) noexcept {
+void LogEntryStorage::endStream(stream_id_t streamId) noexcept {
     LogEntryData entry{};
-    entry.entry_uid = ++_uid_sequence;
-    entry.stream_id = stream_id;
+    entry.entryUid = ++_uidSequence;
+    entry.streamId = streamId;
     entry.source = EAGINE_ID(XmlLogView);
     entry.severity = eagine::log_event_severity::info;
-    entry.is_last = true;
+    entry.isLast = true;
     entry.format = "Log finished";
     _emplaceNextEntry(std::move(entry));
     //
     auto& info = _getNextStreamList();
-    info.entry_uid = ++_uid_sequence;
+    info.entryUid = ++_uidSequence;
     const auto pos =
-      std::find(info.stream_ids.begin(), info.stream_ids.end(), stream_id);
-    if(EAGINE_LIKELY(pos != info.stream_ids.end())) {
-        info.stream_ids.erase(pos);
+      std::find(info.streamIds.begin(), info.streamIds.end(), streamId);
+    if(EAGINE_LIKELY(pos != info.streamIds.end())) {
+        info.streamIds.erase(pos);
     }
+}
+//------------------------------------------------------------------------------
+auto LogEntryStorage::getStreamInfo(const stream_id_t streamId) noexcept
+  -> LogStreamInfo& {
+    return _streams[streamId];
 }
 //------------------------------------------------------------------------------
 auto LogEntryStorage::getEntryConnectors(const LogEntryData& entry) noexcept
@@ -90,24 +95,20 @@ auto LogEntryStorage::getEntryConnectors(const LogEntryData& entry) noexcept
     const auto pos = std::lower_bound(
       _streamLists.rbegin(),
       _streamLists.rend(),
-      entry.entry_uid,
-      [](const auto& current, const auto entry_uid) {
-          return entry_uid < current.entry_uid;
+      entry.entryUid,
+      [](const auto& current, const auto entryUid) {
+          return entryUid < current.entryUid;
       });
     if(pos != _streamLists.rend()) {
-        const auto& si = pos->stream_ids;
-        result.stream_count = eagine::limit_cast<short>(si.size());
-        result.stream_index = eagine::limit_cast<short>(std::distance(
+        const auto& si = pos->streamIds;
+        result.streamCount = eagine::limit_cast<short>(si.size());
+        result.streamIndex = eagine::limit_cast<short>(std::distance(
           si.begin(),
-          std::find_if(si.begin(), si.end(), [&entry](const auto stream_id) {
-              return stream_id == entry.stream_id;
+          std::find_if(si.begin(), si.end(), [&entry](const auto streamId) {
+              return streamId == entry.streamId;
           })));
     }
     return result;
 }
 //------------------------------------------------------------------------------
-auto LogEntryStorage::getStreamInfo(const std::uintptr_t streamId) noexcept
-  -> const LogStreamInfo& {
-    return _streams[streamId];
-}
-//------------------------------------------------------------------------------
+

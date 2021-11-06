@@ -43,14 +43,14 @@ auto EntryLog::cacheString(eagine::string_view s) -> eagine::string_view {
     return _entries->cacheString(s);
 }
 //------------------------------------------------------------------------------
-void EntryLog::beginStream(std::uintptr_t streamId, const LogStreamInfo& info) {
+void EntryLog::beginStream(stream_id_t streamId, const LogStreamInfo& info) {
     EAGINE_ASSERT(_entries);
     _entries->beginStream(streamId, info);
     EAGINE_ASSERT(_activities);
     _activities->beginStream(streamId, info);
 }
 //------------------------------------------------------------------------------
-void EntryLog::endStream(std::uintptr_t streamId) {
+void EntryLog::endStream(stream_id_t streamId) {
     EAGINE_ASSERT(_activities);
     _activities->endStream(streamId);
     EAGINE_ASSERT(_entries);
@@ -59,7 +59,7 @@ void EntryLog::endStream(std::uintptr_t streamId) {
 }
 //------------------------------------------------------------------------------
 void EntryLog::addEntry(LogEntryData& entry) {
-    if(entry.has_progress) {
+    if(entry.hasProgress) {
         EAGINE_ASSERT(_activities);
         _activities->addEntry(entry);
     }
@@ -110,8 +110,8 @@ auto EntryLog::getActivityData(int index) noexcept -> ActivityData* {
     return _activities->getActivity(index);
 }
 //------------------------------------------------------------------------------
-auto EntryLog::getStreamInfo(const std::uintptr_t streamId) noexcept
-  -> const LogStreamInfo& {
+auto EntryLog::getStreamInfo(const stream_id_t streamId) noexcept
+  -> LogStreamInfo& {
     EAGINE_ASSERT(_entries);
     return _entries->getStreamInfo(streamId);
 }

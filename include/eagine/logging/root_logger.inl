@@ -126,7 +126,7 @@ auto root_logger::_log_instance_info() -> void {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto root_logger::_log_compiler_info() -> void {
-    info("built with ${complrName} compiler for ${Archtcture} architecture")
+    info("built with ${complrName} compiler for ${archtcture} architecture")
       .tag(EAGINE_ID(Compiler))
       .arg(
         EAGINE_ID(complrName),
@@ -134,7 +134,7 @@ auto root_logger::_log_compiler_info() -> void {
         compiler_name(),
         string_view{"unknown"})
       .arg(
-        EAGINE_ID(Archtcture),
+        EAGINE_ID(archtcture),
         EAGINE_ID(string),
         architecture_name(),
         string_view{"unknown"})

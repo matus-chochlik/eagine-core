@@ -18,9 +18,10 @@
 class Backend;
 struct LogEntryData;
 struct LogStreamInfo;
+using stream_id_t = std::uintptr_t;
 //------------------------------------------------------------------------------
 struct ActivityData {
-    std::uintptr_t stream_id;
+    stream_id_t streamId;
     std::uint64_t instance;
     eagine::identifier source;
     eagine::identifier arg;
@@ -29,8 +30,8 @@ struct ActivityData {
     float max{1.F};
     std::string message;
     eagine::log_event_severity severity;
-    std::chrono::steady_clock::time_point start_time;
-    std::chrono::steady_clock::time_point update_time;
+    std::chrono::steady_clock::time_point startTime;
+    std::chrono::steady_clock::time_point updateTime;
     std::size_t remainingUpdatePos{0U};
     std::array<float, 8> remainingTimes{};
 
@@ -55,8 +56,8 @@ struct ActivityData {
 //------------------------------------------------------------------------------
 class ActivityStorage {
 public:
-    void beginStream(std::uintptr_t stream_id, const LogStreamInfo&) noexcept;
-    void endStream(std::uintptr_t stream_id) noexcept;
+    void beginStream(stream_id_t stream_id, const LogStreamInfo&) noexcept;
+    void endStream(stream_id_t stream_id) noexcept;
     void addEntry(const LogEntryData& entry) noexcept;
 
     auto activityCount() const noexcept -> int {
@@ -77,7 +78,7 @@ public:
 private:
     auto _getEntryActivity(
       const LogEntryData& entry,
-      const eagine::identifier entry_arg) noexcept -> ActivityData&;
+      const eagine::identifier entryArg) noexcept -> ActivityData&;
     std::vector<ActivityData> _activities;
 };
 //------------------------------------------------------------------------------

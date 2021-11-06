@@ -82,12 +82,12 @@ auto ActivityListModel::getActivityMessage(const ActivityData& entry) const
 auto ActivityListModel::getActivityLogIdentity(const ActivityData& entry) const
   -> QString {
     return toQString(
-      _parent.entryLog().getStreamInfo(entry.stream_id).log_identity);
+      _parent.entryLog().getStreamInfo(entry.streamId).logIdentity);
 }
 //------------------------------------------------------------------------------
 auto ActivityListModel::getActivityStreamId(const ActivityData& entry) const
   -> qlonglong {
-    return eagine::limit_cast<qlonglong>(entry.stream_id);
+    return eagine::limit_cast<qlonglong>(entry.streamId);
 }
 //------------------------------------------------------------------------------
 auto ActivityListModel::getActivityInstanceId(const ActivityData& entry) const

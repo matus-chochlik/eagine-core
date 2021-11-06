@@ -46,6 +46,8 @@ private:
     auto _isAtFormatTag() const noexcept -> bool;
     auto _isAtArgumentTag() const noexcept -> bool;
 
+    auto _isArgName(eagine::identifier) const noexcept -> bool;
+    auto _isArgTag(eagine::identifier) const noexcept -> bool;
     auto _isProgressArg() const noexcept -> bool;
     auto _isBoolArg() const noexcept -> bool;
     auto _isIntegerArg() const noexcept -> bool;
@@ -57,6 +59,7 @@ private:
     void _handleEndLog() noexcept;
     auto _handleBeginMessage() noexcept -> bool;
     void _handleEndMessage() noexcept;
+    void _handleSpecialArgument() noexcept;
     auto _handleBeginArgument() noexcept -> bool;
     void _handleStartElement() noexcept;
     void _handleEndElement() noexcept;
@@ -68,7 +71,7 @@ private:
     std::shared_ptr<Connection> _self;
     QTcpSocket& _socket;
     QXmlStreamReader _xmlReader;
-    const std::uintptr_t _streamId;
+    const stream_id_t _streamId;
     LogEntryData _currentEntry;
     eagine::identifier _currentArgName;
     eagine::identifier _currentArgTag;

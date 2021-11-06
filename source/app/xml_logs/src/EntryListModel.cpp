@@ -77,12 +77,12 @@ auto EntryListModel::getEntryFormat(const LogEntryData& entry) const
 auto EntryListModel::getEntryLogIdentity(const LogEntryData& entry) const
   -> QString {
     return toQString(
-      _parent.entryLog().getStreamInfo(entry.stream_id).log_identity);
+      _parent.entryLog().getStreamInfo(entry.streamId).logIdentity);
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntryStreamId(const LogEntryData& entry) const
   -> qlonglong {
-    return eagine::limit_cast<qlonglong>(entry.stream_id);
+    return eagine::limit_cast<qlonglong>(entry.streamId);
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntryInstanceId(const LogEntryData& entry) const
@@ -111,25 +111,25 @@ auto EntryListModel::getEntrySeverityColor(const LogEntryData& entry) const
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntryReltimeSec(const LogEntryData& entry) const
   -> QVariant {
-    if(entry.reltime_sec >= 0.F) {
-        return {entry.reltime_sec};
+    if(entry.reltimeSec >= 0.F) {
+        return {entry.reltimeSec};
     }
     return {};
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntryStreamCount(const LogEntryData& entry) const
   -> short {
-    return _parent.entryLog().getEntryConnectors(entry).stream_count;
+    return _parent.entryLog().getEntryConnectors(entry).streamCount;
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntryStreamIndex(const LogEntryData& entry) const
   -> short {
-    return _parent.entryLog().getEntryConnectors(entry).stream_index;
+    return _parent.entryLog().getEntryConnectors(entry).streamIndex;
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntryStreamPosition(const LogEntryData& entry) const
   -> short {
-    return short(entry.is_first ? -1 : entry.is_last ? 1 : 0);
+    return short(entry.isFirst ? -1 : entry.isLast ? 1 : 0);
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::data(const QModelIndex& index, int role) const
