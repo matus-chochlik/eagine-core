@@ -100,7 +100,7 @@ auto root_logger::_log_args(const program_args& args) -> void {
     auto args_entry{info("program arguments:")};
     args_entry.tag(EAGINE_ID(ProgArgs));
     args_entry.arg(EAGINE_ID(cmd), args.command());
-    for(auto& arg : args) {
+    for(const auto& arg : args) {
         args_entry.arg(EAGINE_ID(arg), arg);
     }
 }

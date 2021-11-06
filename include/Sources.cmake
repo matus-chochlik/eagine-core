@@ -91,7 +91,6 @@ set(HEADERS
     eagine/main_ctx_storage.hpp
     eagine/main_fwd.hpp
     eagine/main.hpp
-    eagine/make_array.hpp
     eagine/math/constants.hpp
     eagine/math/coordinates.hpp
     eagine/math/curve.hpp
