@@ -12,6 +12,9 @@
 	<file>views/ProgressView.qml</file>
 	<file>views/ActivityListView.qml</file>
 	<file>views/ActivityListItem.qml</file>
+	<file>views/StreamView.qml</file>
+	<file>views/StreamListView.qml</file>
+	<file>views/StreamListItem.qml</file>
 
 	<file>images/conn_b_c_t_dark.png</file>
 	<file>images/conn_b_l_f_dark.png</file>

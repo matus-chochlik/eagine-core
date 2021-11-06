@@ -29,12 +29,18 @@ class Backend;
 using stream_id_t = std::uintptr_t;
 //------------------------------------------------------------------------------
 struct LogStreamInfo {
+    std::vector<eagine::string_view> args;
     eagine::string_view logIdentity;
+    eagine::string_view instanceId;
     eagine::string_view gitBranch;
     eagine::string_view gitHashId;
     eagine::string_view gitVersion;
+    eagine::string_view gitDescription;
     eagine::string_view architecture;
     eagine::string_view compilerName;
+    int compilerVersionMajor{-1};
+    int compilerVersionMinor{-1};
+    int compilerVersionPatch{-1};
 };
 //------------------------------------------------------------------------------
 struct LogSourceInfo {
@@ -97,6 +103,21 @@ public:
     void endStream(stream_id_t stream_id) noexcept;
 
     auto getStreamInfo(const stream_id_t streamId) noexcept -> LogStreamInfo&;
+
+    auto streamCount() const noexcept -> int {
+        if(EAGINE_LIKELY(!_streams.empty())) {
+            return eagine::limit_cast<int>(_streams.size());
+        }
+        return 0;
+    }
+
+    auto getStreamInfo(int index) noexcept -> const LogStreamInfo* {
+        const auto streamIdx{eagine::convert_if_fits<std::size_t>(index)};
+        if(streamIdx) {
+            return &_streams[extract(streamIdx)];
+        }
+        return 0;
+    }
 
     void setDescription(
       stream_id_t stream_id,

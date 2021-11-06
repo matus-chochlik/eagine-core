@@ -20,8 +20,10 @@ set(XML_LOGS_SOURCES
 	src/EntryListModel.cpp
 	src/ActivityStorage.cpp
 	src/ActivityListModel.cpp
-	src/ChartsViewModel.cpp
+	src/StreamListModel.cpp
 	src/ProgressViewModel.cpp
+	src/ChartsViewModel.cpp
+	src/StreamViewModel.cpp
 	src/Backend.cpp
 )
 set(XML_LOGS_HEADERS
@@ -38,8 +40,10 @@ set(XML_LOGS_HEADERS
 	include/EntryListModel.hpp
 	include/ActivityStorage.hpp
 	include/ActivityListModel.hpp
-	include/ChartsViewModel.hpp
+	include/StreamListModel.hpp
 	include/ProgressViewModel.hpp
+	include/ChartsViewModel.hpp
+	include/StreamViewModel.hpp
 	include/Backend.hpp
 )
 add_executable(

@@ -36,6 +36,7 @@ public slots:
 private:
     auto _toIdentifier(const QStringRef&) noexcept -> eagine::identifier;
     auto _toFloat(const QStringRef&, float) noexcept -> float;
+    auto _toInt(const QStringRef&, int) noexcept -> int;
     auto _toUnsigned64(const QStringRef&, std::uint64_t) noexcept
       -> std::uint64_t;
     auto _toSeverity(const QStringRef&) noexcept -> eagine::log_event_severity;

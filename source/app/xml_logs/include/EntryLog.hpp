@@ -12,6 +12,7 @@
 #include "EntryStorage.hpp"
 #include "EntryViewModel.hpp"
 #include "ProgressViewModel.hpp"
+#include "StreamViewModel.hpp"
 #include <eagine/main_ctx_object.hpp>
 #include <QObject>
 
@@ -23,8 +24,9 @@ class EntryLog
     Q_OBJECT
 
     Q_PROPERTY(EntryViewModel* entries READ getEntryViewModel CONSTANT)
-    Q_PROPERTY(ChartsViewModel* charts READ getChartsViewModel CONSTANT)
     Q_PROPERTY(ProgressViewModel* progress READ getProgressViewModel CONSTANT)
+    Q_PROPERTY(ChartsViewModel* charts READ getChartsViewModel CONSTANT)
+    Q_PROPERTY(StreamViewModel* streams READ getStreamViewModel CONSTANT)
 public:
     EntryLog(Backend& backend);
 
@@ -32,9 +34,13 @@ public:
         return _backend;
     }
 
+    auto getStreamCount() const noexcept -> int;
+    auto getStreamData(int index) noexcept -> const LogStreamInfo*;
+
     auto getEntryViewModel() noexcept -> EntryViewModel*;
-    auto getChartsViewModel() noexcept -> ChartsViewModel*;
     auto getProgressViewModel() noexcept -> ProgressViewModel*;
+    auto getChartsViewModel() noexcept -> ChartsViewModel*;
+    auto getStreamViewModel() noexcept -> StreamViewModel*;
 
     auto getEntryCount() const noexcept -> int;
     auto getEntryData(int index) noexcept -> LogEntryData*;
@@ -56,14 +62,16 @@ public:
 
     auto cleanupDoneActivities() noexcept -> bool;
 signals:
+    void streamsAdded();
     void entriesAdded(int, int);
 public slots:
 
 private:
     Backend& _backend;
     EntryViewModel _entryViewModel;
-    ChartsViewModel _chartsViewModel;
     ProgressViewModel _progressViewModel;
+    ChartsViewModel _chartsViewModel;
+    StreamViewModel _streamViewModel;
     std::shared_ptr<LogEntryStorage> _entries;
     std::shared_ptr<ActivityStorage> _activities;
     int _prevEntryCount{0};

@@ -12,8 +12,14 @@ EntryLog::EntryLog(Backend& backend)
   , eagine::main_ctx_object{EAGINE_ID(EntryLog), backend}
   , _backend{backend}
   , _entryViewModel{*this}
+  , _progressViewModel{*this}
   , _chartsViewModel{*this}
-  , _progressViewModel{*this} {
+  , _streamViewModel{*this} {
+    connect(
+      this,
+      &EntryLog::streamsAdded,
+      &_streamViewModel,
+      &StreamViewModel::onStreamsAdded);
     connect(
       this,
       &EntryLog::entriesAdded,
@@ -29,6 +35,7 @@ EntryLog::EntryLog(Backend& backend)
 void EntryLog::assignStorage(std::shared_ptr<LogEntryStorage> entries) {
     _entries = std::move(entries);
     EAGINE_ASSERT(_entries);
+    emit streamsAdded();
     emit entriesAdded(0, _entries->entryCount());
     _prevEntryCount = _entries->entryCount();
 }
@@ -68,21 +75,36 @@ void EntryLog::addEntry(LogEntryData& entry) {
 }
 //------------------------------------------------------------------------------
 void EntryLog::commitEntries() {
+    emit streamsAdded();
     const auto currEntryCount = _entries->entryCount();
     emit entriesAdded(_prevEntryCount, currEntryCount);
     _prevEntryCount = currEntryCount;
+}
+//------------------------------------------------------------------------------
+auto EntryLog::getStreamCount() const noexcept -> int {
+    EAGINE_ASSERT(_entries);
+    return _entries->streamCount();
+}
+//------------------------------------------------------------------------------
+auto EntryLog::getStreamData(int index) noexcept -> const LogStreamInfo* {
+    EAGINE_ASSERT(_entries);
+    return _entries->getStreamInfo(index);
 }
 //------------------------------------------------------------------------------
 auto EntryLog::getEntryViewModel() noexcept -> EntryViewModel* {
     return &_entryViewModel;
 }
 //------------------------------------------------------------------------------
+auto EntryLog::getProgressViewModel() noexcept -> ProgressViewModel* {
+    return &_progressViewModel;
+}
+//------------------------------------------------------------------------------
 auto EntryLog::getChartsViewModel() noexcept -> ChartsViewModel* {
     return &_chartsViewModel;
 }
 //------------------------------------------------------------------------------
-auto EntryLog::getProgressViewModel() noexcept -> ProgressViewModel* {
-    return &_progressViewModel;
+auto EntryLog::getStreamViewModel() noexcept -> StreamViewModel* {
+    return &_streamViewModel;
 }
 //------------------------------------------------------------------------------
 auto EntryLog::getEntryCount() const noexcept -> int {

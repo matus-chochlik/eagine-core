@@ -37,6 +37,10 @@ auto Connection::_toFloat(const QStringRef& s, float f) noexcept -> float {
     return extract_or(eagine::from_string<float>(eagine::view(s.toUtf8())), f);
 }
 //------------------------------------------------------------------------------
+auto Connection::_toInt(const QStringRef& s, int i) noexcept -> int {
+    return extract_or(eagine::from_string<int>(eagine::view(s.toUtf8())), i);
+}
+//------------------------------------------------------------------------------
 auto Connection::_toUnsigned64(const QStringRef& s, std::uint64_t f) noexcept
   -> std::uint64_t {
     return extract_or(
@@ -125,7 +129,9 @@ void Connection::_handleEndMessage() noexcept {
 //------------------------------------------------------------------------------
 void Connection::_handleSpecialArgument() noexcept {
     if(_currentEntry.tag == EAGINE_ID(ProgArgs)) {
+        auto& info = _backend.entryLog().getStreamInfo(_streamId);
         if(_isArgName(EAGINE_ID(arg))) {
+            info.args.push_back(_cacheString(_xmlReader.text()));
         }
     } else if(_currentEntry.tag == EAGINE_ID(GitInfo)) {
         auto& info = _backend.entryLog().getStreamInfo(_streamId);
@@ -135,11 +141,14 @@ void Connection::_handleSpecialArgument() noexcept {
             info.gitHashId = _cacheString(_xmlReader.text());
         } else if(_isArgName(EAGINE_ID(gitDate))) {
         } else if(_isArgName(EAGINE_ID(gitDescrib))) {
+            info.gitDescription = _cacheString(_xmlReader.text());
         } else if(_isArgName(EAGINE_ID(gitVersion))) {
             info.gitVersion = _cacheString(_xmlReader.text());
         }
     } else if(_currentEntry.tag == EAGINE_ID(Instance)) {
+        auto& info = _backend.entryLog().getStreamInfo(_streamId);
         if(_isArgName(EAGINE_ID(instanceId))) {
+            info.instanceId = _cacheString(_xmlReader.text());
         }
     } else if(_currentEntry.tag == EAGINE_ID(Compiler)) {
         auto& info = _backend.entryLog().getStreamInfo(_streamId);
@@ -148,8 +157,11 @@ void Connection::_handleSpecialArgument() noexcept {
         } else if(_isArgName(EAGINE_ID(complrName))) {
             info.compilerName = _cacheString(_xmlReader.text());
         } else if(_isArgName(EAGINE_ID(complrMajr))) {
+            info.compilerVersionMajor = _toInt(_xmlReader.text(), -1);
         } else if(_isArgName(EAGINE_ID(complrMinr))) {
+            info.compilerVersionMinor = _toInt(_xmlReader.text(), -1);
         } else if(_isArgName(EAGINE_ID(complrPtch))) {
+            info.compilerVersionPatch = _toInt(_xmlReader.text(), -1);
         }
     }
 }
