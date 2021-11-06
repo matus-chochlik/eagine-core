@@ -4,7 +4,6 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 #
 set(HEADERS
-    eagine/all_are_same.hpp
     eagine/animated_value.hpp
     eagine/anything.hpp
     eagine/app_config.hpp

@@ -8,8 +8,8 @@
 #ifndef EAGINE_MATH_TVEC_HPP
 #define EAGINE_MATH_TVEC_HPP
 
-#include "../all_are_same.hpp"
 #include "../memory/flatten_fwd.hpp"
+#include "../type_traits.hpp"
 #include "vector.hpp"
 
 namespace eagine {

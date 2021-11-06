@@ -9,7 +9,7 @@
 #ifndef EAGINE_MEMORY_FLATTEN_HPP
 #define EAGINE_MEMORY_FLATTEN_HPP
 
-#include "../all_are_same.hpp"
+#include "../type_traits.hpp"
 #include "flatten_fwd.hpp"
 #include "span_algo.hpp"
 #include <array>

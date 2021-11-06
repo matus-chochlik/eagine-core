@@ -8,7 +8,7 @@
 #ifndef EAGINE_MATH_TMAT_HPP
 #define EAGINE_MATH_TMAT_HPP
 
-#include "../all_are_same.hpp"
+#include "../type_traits.hpp"
 #include "matrix.hpp"
 #include "matrix_identity.hpp"
 
