@@ -42,6 +42,10 @@ public slots:
 private:
     enum StreamAttributes : int {
         streamLogIdentity,
+        streamGitBranch,
+        streamGitHashId,
+        streamGitVersion,
+        streamGitDescribe,
         streamArchitecture,
         streamCompilerName,
         streamCompilerVersionMajor,
@@ -50,6 +54,10 @@ private:
     };
 
     auto getStreamLogIdentity(const LogStreamInfo&) const -> QString;
+    auto getGitBranch(const LogStreamInfo&) const -> QVariant;
+    auto getGitHashId(const LogStreamInfo&) const -> QVariant;
+    auto getGitVersion(const LogStreamInfo&) const -> QVariant;
+    auto getGitDescribe(const LogStreamInfo&) const -> QVariant;
     auto getArchitecture(const LogStreamInfo&) const -> QVariant;
     auto getCompilerName(const LogStreamInfo&) const -> QVariant;
     auto getCompilerVersionMajor(const LogStreamInfo&) const -> QVariant;

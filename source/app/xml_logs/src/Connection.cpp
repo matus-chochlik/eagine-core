@@ -141,7 +141,7 @@ void Connection::_handleSpecialArgument() noexcept {
             info.gitHashId = _cacheString(_xmlReader.text());
         } else if(_isArgName(EAGINE_ID(gitDate))) {
         } else if(_isArgName(EAGINE_ID(gitDescrib))) {
-            info.gitDescription = _cacheString(_xmlReader.text());
+            info.gitDescribe = _cacheString(_xmlReader.text());
         } else if(_isArgName(EAGINE_ID(gitVersion))) {
             info.gitVersion = _cacheString(_xmlReader.text());
         }

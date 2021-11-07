@@ -25,6 +25,10 @@ public:
         _single_instance_ptr() = this;
         LogStreamInfo info{};
         info.logIdentity = "XML log viewer";
+        info.gitBranch = extract_or(config_git_branch(), string_view{});
+        info.gitHashId = extract_or(config_git_hash_id(), string_view{});
+        info.gitVersion = extract_or(config_git_version(), string_view{});
+        info.gitDescribe = extract_or(config_git_describe(), string_view{});
         info.architecture = extract_or(architecture_name(), string_view{});
         info.compilerName = extract_or(compiler_name(), string_view{});
         info.compilerVersionMajor = extract_or(compiler_version_major(), -1);

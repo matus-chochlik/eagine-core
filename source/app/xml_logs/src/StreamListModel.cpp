@@ -25,6 +25,10 @@ auto StreamListModel::roleNames() const -> QHash<int, QByteArray> {
     QHash<int, QByteArray> result;
     result.insert(Qt::DisplayRole, "display");
     result.insert(streamLogIdentity, "logIdentity");
+    result.insert(streamGitBranch, "gitBranch");
+    result.insert(streamGitHashId, "gitHashId");
+    result.insert(streamGitVersion, "gitVersion");
+    result.insert(streamGitDescribe, "gitDescribe");
     result.insert(streamArchitecture, "architecture");
     result.insert(streamCompilerName, "compilerName");
     result.insert(streamCompilerVersionMajor, "compilerVersionMajor");
@@ -58,6 +62,38 @@ auto StreamListModel::getStreamCount() const -> int {
 auto StreamListModel::getStreamLogIdentity(const LogStreamInfo& info) const
   -> QString {
     return toQString(info.logIdentity);
+}
+//------------------------------------------------------------------------------
+auto StreamListModel::getGitBranch(const LogStreamInfo& info) const
+  -> QVariant {
+    if(!info.gitBranch.empty()) {
+        return toQString(info.gitBranch);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto StreamListModel::getGitHashId(const LogStreamInfo& info) const
+  -> QVariant {
+    if(!info.gitHashId.empty()) {
+        return toQString(info.gitHashId);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto StreamListModel::getGitVersion(const LogStreamInfo& info) const
+  -> QVariant {
+    if(!info.gitVersion.empty()) {
+        return toQString(info.gitVersion);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto StreamListModel::getGitDescribe(const LogStreamInfo& info) const
+  -> QVariant {
+    if(!info.gitDescribe.empty()) {
+        return toQString(info.gitDescribe);
+    }
+    return {};
 }
 //------------------------------------------------------------------------------
 auto StreamListModel::getArchitecture(const LogStreamInfo& info) const
@@ -107,6 +143,14 @@ auto StreamListModel::data(const QModelIndex& index, int role) const
         switch(role) {
             case streamLogIdentity:
                 return {getStreamLogIdentity(stream)};
+            case streamGitBranch:
+                return getGitBranch(stream);
+            case streamGitHashId:
+                return getGitHashId(stream);
+            case streamGitVersion:
+                return getGitVersion(stream);
+            case streamGitDescribe:
+                return getGitDescribe(stream);
             case streamArchitecture:
                 return getArchitecture(stream);
             case streamCompilerName:

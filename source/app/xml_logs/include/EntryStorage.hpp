@@ -35,7 +35,7 @@ struct LogStreamInfo {
     eagine::string_view gitBranch;
     eagine::string_view gitHashId;
     eagine::string_view gitVersion;
-    eagine::string_view gitDescription;
+    eagine::string_view gitDescribe;
     eagine::string_view architecture;
     eagine::string_view compilerName;
     int compilerVersionMajor{-1};

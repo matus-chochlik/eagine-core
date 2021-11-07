@@ -46,23 +46,60 @@ Control {
 			}
 		}
 		GridLayout {
-			columns: 4
+			columns: 6
 			Layout.fillWidth: true
 			Layout.fillHeight: true
 
-			Label { text: "Architecture" }
+			Label {
+				text: "Branch"
+				font.bold: true
+			}
+			Label {
+				text: gitBranch ? gitBranch : "-"
+				Layout.fillWidth: true
+			}
+
+			Label {
+				text: "EAGine revision"
+				font.bold: true
+			}
+			Label {
+				text: gitDescribe? gitDescribe : "-"
+				Layout.fillWidth: true
+			}
+
+			Label {
+				text: "EAGine version"
+				font.bold: true
+			}
+
+			Label {
+				text: gitVersion ? gitVersion : "-"
+				Layout.fillWidth: true
+			}
+
+			Label {
+				text: "Architecture"
+				font.bold: true
+			}
 			Label {
 				text: architecture ? architecture : "-"
 				Layout.fillWidth: true
 			}
 
-			Label { text: "Compiler" }
+			Label {
+				text: "Compiler"
+				font.bold: true
+			}
 			Label {
 				text: compilerName ? compilerName : "-"
 				Layout.fillWidth: true
 			}
 
-			Label { text: "Version" }
+			Label {
+				text: "Compiler version"
+				font.bold: true
+			}
 			Label {
 				text: Format.version(
 					compilerVersionMajor,
