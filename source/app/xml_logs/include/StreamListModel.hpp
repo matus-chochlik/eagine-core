@@ -12,7 +12,7 @@
 
 class Backend;
 class StreamViewModel;
-class LogStreamInfo;
+struct LogStreamInfo;
 //------------------------------------------------------------------------------
 class StreamListModel final
   : public QAbstractItemModel
