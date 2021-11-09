@@ -23,7 +23,7 @@ auto main(main_ctx& ctx) -> int {
     ctx.args().find("--severity").parse_next(severity, ctx.log().error_stream());
 
     const auto main_act =
-      ctx.progress().activity("Counting ${progress}", repeats);
+      ctx.progress().activity("Counting ${current} / ${total}", repeats);
     for(const auto i : integer_range(repeats)) {
         ctx.log()
           .log(severity, "cycle ${i} of ${count}")

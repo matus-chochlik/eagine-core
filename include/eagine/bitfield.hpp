@@ -9,7 +9,7 @@
 #ifndef EAGINE_BITFIELD_HPP
 #define EAGINE_BITFIELD_HPP
 
-#include "all_are_same.hpp"
+#include "type_traits.hpp"
 
 namespace eagine {
 

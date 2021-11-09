@@ -27,8 +27,8 @@ auto main(main_ctx& ctx) -> int {
 
     qmlRegisterUncreatableType<Theme>(registerId, 1, 0, "Theme", {});
     qmlRegisterUncreatableType<EntryLog>(registerId, 1, 0, "EntryLog", {});
-    qmlRegisterUncreatableType<EntriesViewModel>(
-      registerId, 1, 0, "EntriesViewModel", {});
+    qmlRegisterUncreatableType<EntryViewModel>(
+      registerId, 1, 0, "EntryViewModel", {});
 
     Backend backend{ctx};
     backend.entryLog().assignStorage(internal_log_backend::storage());

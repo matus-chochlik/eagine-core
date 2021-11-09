@@ -20,13 +20,14 @@ public:
     root_activity(main_ctx_getters& ctx) noexcept
       : activity_progress{_init_backend(ctx)} {}
 
+    auto register_observer(progress_observer&) noexcept -> bool;
+    void unregister_observer(progress_observer&) noexcept;
+
     void set_update_callback(
       const callable_ref<bool() noexcept> callback,
-      const std::chrono::milliseconds min_interval) {
-        if(auto pbe{backend()}) {
-            extract(pbe).set_update_callback(callback, min_interval);
-        }
-    }
+      const std::chrono::milliseconds min_interval) noexcept;
+
+    void reset_update_callback() noexcept;
 
 private:
     static auto _init_backend(main_ctx_getters&)

@@ -8,26 +8,31 @@
 #ifndef EAGINE_RANDOM_BYTES_HPP
 #define EAGINE_RANDOM_BYTES_HPP
 
-#include "any_random_engine.hpp"
+#include "memory/span_algo.hpp"
 #include "span.hpp"
 #include "types.hpp"
+#include <random>
 
 namespace eagine {
 
-auto fill_with_random_bytes(
-  span<byte> dst,
-  any_random_engine<std::uint32_t> engine) -> span<byte>;
+template <typename Engine>
+inline auto fill_with_random_bytes(span<byte> dst, Engine& engine)
+  -> span<byte> {
+    using ui_t = typename Engine::result_type;
 
-auto fill_with_random_bytes(
-  span<byte> dst,
-  any_random_engine<std::uint64_t> engine) -> span<byte>;
+    const ui_t mask = ((1U << unsigned(CHAR_BIT)) - 1U);
+    std::independent_bits_engine<Engine, CHAR_BIT, ui_t> ibe(engine);
 
-auto fill_with_random_bytes(span<byte> dst) -> span<byte>;
+    generate(dst, [&] { return static_cast<byte>(ibe() & mask); });
+    return dst;
+}
+
+static inline auto fill_with_random_bytes(span<byte> dst) -> span<byte> {
+    std::random_device rd;
+    std::default_random_engine re{rd()};
+    return fill_with_random_bytes(dst, re);
+}
 
 } // namespace eagine
-
-#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
-#include <eagine/random_bytes.inl>
-#endif
 
 #endif // EAGINE_RANDOM_BYTES_HPP

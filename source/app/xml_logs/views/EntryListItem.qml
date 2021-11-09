@@ -6,6 +6,8 @@
 import QtQuick 2.2
 import QtQuick.Controls 2.4
 import QtQuick.Layouts 1.2
+import "qrc:///scripts/Format.js" as Format
+import "qrc:///views"
 
 Control {
 	id: entryListItem
@@ -90,27 +92,90 @@ Control {
 	}
 
 	RowLayout {
-		Item {
-			Layout.preferredWidth: 10
-		}
-		Label {
-			text: severity ? severity : "info"
-			Layout.preferredWidth: backend.theme.entrySeverityWidth
-			background: Rectangle {
-				color: severityColor
-				opacity: 0.5
+		anchors.fill: parent
+		spacing: 0
+		Repeater {
+			Layout.preferredWidth: 15 * streamCount
+			model: streamCount
+
+			Image {
+				width: 15
+				height: 50
+
+				function connectorVert() {
+					if(streamPosition < 0) {
+						return "b"
+					}
+					if(streamPosition > 0) {
+						return "e"
+					}
+					return "c"
+				}
+
+				function connectorHorz() {
+					if(index < streamIndex) {
+						return "l"
+					}
+					if(index > streamIndex) {
+						return "r"
+					}
+					return "c"
+				}
+
+				function connectorLast() {
+					if(index + 1 == streamCount) {
+						return "t"
+					}
+					return "f"
+				}
+
+				function connectorThme() {
+					return backend.theme.light ? "light" : "dark"
+				}
+
+				function connectorImageSource() {
+					return "qrc:/images/conn_%1_%2_%3_%4.png"
+						.arg(connectorVert())
+						.arg(connectorHorz())
+						.arg(connectorLast())
+						.arg(connectorThme())
+				}
+				source: connectorImageSource()
 			}
 		}
-		Label {
-			text: sourceId ? sourceId : "-"
-			Layout.preferredWidth: backend.theme.entrySourceWidth
-			background: Rectangle {
-				color: severityColor
-				opacity: 0.5
+		ColumnLayout {
+			spacing: 0
+			Control {
+				Layout.fillWidth: true
+				Layout.preferredHeight: backend.theme.entryHeaderHeight
+				background: Rectangle {
+					color: severityColor
+					opacity: 0.5
+				}
+				RowLayout {
+					anchors.fill: parent
+					spacing: 1
+					Label {
+						text: severity ? severity : "info"
+						Layout.preferredWidth: backend.theme.entrySeverityWidth
+					}
+					Label {
+						text: Format.durationStr(reltimeSec)
+						Layout.preferredWidth: backend.theme.entryReltimeWidth
+					}
+					Label {
+						text: sourceId ? sourceId : "-"
+						Layout.preferredWidth: backend.theme.entrySourceWidth
+					}
+					Label {
+						text: logIdentity
+						Layout.fillWidth: true
+					}
+				}
 			}
-		}
-		Label {
-			text: message ? message : format ? format : "-"
+			Label {
+				text: message ? message : format ? format : "-"
+			}
 		}
 	}
 }

@@ -14,7 +14,7 @@ class Backend;
 class ProgressViewModel;
 struct ActivityData;
 //------------------------------------------------------------------------------
-class ActivityListModel
+class ActivityListModel final
   : public QAbstractItemModel
   , public eagine::main_ctx_object {
     Q_OBJECT
@@ -23,6 +23,7 @@ class ActivityListModel
       int activityCount READ getActivityCount NOTIFY activityCountChanged)
 public:
     ActivityListModel(ProgressViewModel& parent);
+    ~ActivityListModel() noexcept final;
 
     auto backend() const noexcept -> Backend&;
 
@@ -35,6 +36,7 @@ public:
     auto data(const QModelIndex& index, int role) const -> QVariant final;
     auto getActivityCount() const -> int;
 
+    void handleActivitiesChanged();
 signals:
     void activityCountChanged();
 public slots:
@@ -42,23 +44,37 @@ public slots:
 private:
     enum ProgressAttributes : int {
         activityMessage = Qt::UserRole + 1,
-        activityFormat,
+        activityLogIdentity,
         activityStreamId,
         activityInstanceId,
         activitySourceId,
-        activityTag,
-        activitySeverity
+        activityArg,
+        activityMin,
+        activityMax,
+        activityValue,
+        activitySeverity,
+        activitySeverityColor,
+        activityElapsedTime,
+        activityRemainingTime
     };
+    void timerEvent(QTimerEvent*) final;
 
     auto getActivityMessage(const ActivityData&) const -> QString;
-    auto getActivityFormat(const ActivityData&) const -> QString;
+    auto getActivityLogIdentity(const ActivityData&) const -> QString;
     auto getActivityStreamId(const ActivityData&) const -> qlonglong;
     auto getActivityInstanceId(const ActivityData&) const -> qlonglong;
     auto getActivitySourceId(const ActivityData&) const -> QString;
-    auto getActivityTag(const ActivityData&) const -> QString;
+    auto getActivityArg(const ActivityData&) const -> QString;
+    auto getActivityMin(const ActivityData&) const -> qreal;
+    auto getActivityMax(const ActivityData&) const -> qreal;
+    auto getActivityValue(const ActivityData&) const -> qreal;
     auto getActivitySeverity(const ActivityData&) const -> QString;
+    auto getActivitySeverityColor(const ActivityData&) const -> QColor;
+    auto getActivityElapsedTime(const ActivityData&) const -> QVariant;
+    auto getActivityRemainingTime(const ActivityData&) const -> QVariant;
 
     ProgressViewModel& _parent;
+    int _timerId{0};
 };
 //------------------------------------------------------------------------------
 #endif

@@ -12,7 +12,7 @@
 #include <QColor>
 
 class Backend;
-class EntriesViewModel;
+class EntryViewModel;
 struct LogEntryData;
 //------------------------------------------------------------------------------
 class EntryListModel
@@ -22,7 +22,7 @@ class EntryListModel
 
     Q_PROPERTY(int entryCount READ getEntryCount NOTIFY entryCountChanged)
 public:
-    EntryListModel(EntriesViewModel& parent);
+    EntryListModel(EntryViewModel& parent);
 
     auto backend() const noexcept -> Backend&;
 
@@ -44,25 +44,35 @@ private:
     enum EntryAttributes : int {
         entryMessage = Qt::UserRole + 1,
         entryFormat,
+        entryLogIdentity,
         entryStreamId,
         entryInstanceId,
         entrySourceId,
         entryTag,
         entrySeverity,
         entrySeverityColor,
+        entryReltimeSec,
+        entryStreamCount,
+        entryStreamIndex,
+        entryStreamPosition,
         entryArgCount
     };
 
     auto getEntryMessage(const LogEntryData&) const -> QString;
     auto getEntryFormat(const LogEntryData&) const -> QString;
+    auto getEntryLogIdentity(const LogEntryData&) const -> QString;
     auto getEntryStreamId(const LogEntryData&) const -> qlonglong;
     auto getEntryInstanceId(const LogEntryData&) const -> qlonglong;
     auto getEntrySourceId(const LogEntryData&) const -> QString;
     auto getEntryTag(const LogEntryData&) const -> QString;
     auto getEntrySeverity(const LogEntryData&) const -> QString;
     auto getEntrySeverityColor(const LogEntryData&) const -> QColor;
+    auto getEntryReltimeSec(const LogEntryData&) const -> QVariant;
+    auto getEntryStreamCount(const LogEntryData&) const -> short;
+    auto getEntryStreamIndex(const LogEntryData&) const -> short;
+    auto getEntryStreamPosition(const LogEntryData&) const -> short;
 
-    EntriesViewModel& _parent;
+    EntryViewModel& _parent;
 };
 //------------------------------------------------------------------------------
 #endif

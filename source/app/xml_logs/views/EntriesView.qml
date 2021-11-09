@@ -5,7 +5,7 @@ import "qrc:///views"
 
 Pane {
 	id: entriesView
-    property variant model: null
+	property variant model: null
 	leftPadding: 0
 
 	ColumnLayout {

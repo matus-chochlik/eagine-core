@@ -22,6 +22,12 @@ class Theme
     Q_PROPERTY(int entrySourceWidth READ getEntrySourceWidth NOTIFY sizesChanged)
     Q_PROPERTY(
       int entrySeverityWidth READ getEntrySeverityWidth NOTIFY sizesChanged)
+    Q_PROPERTY(
+      int entryReltimeWidth READ getEntryReltimeWidth NOTIFY sizesChanged)
+    Q_PROPERTY(
+      int entryProgressWidth READ getEntryProgressWidth NOTIFY sizesChanged)
+    Q_PROPERTY(
+      int entryHeaderHeight READ getEntryHeaderHeight NOTIFY sizesChanged)
 
 public:
     Theme(eagine::main_ctx_parent);
@@ -30,6 +36,9 @@ public:
     auto getLight() const -> bool;
     auto getEntrySourceWidth() const -> int;
     auto getEntrySeverityWidth() const -> int;
+    auto getEntryReltimeWidth() const -> int;
+    auto getEntryProgressWidth() const -> int;
+    auto getEntryHeaderHeight() const -> int;
 
     auto getSeverityColor(eagine::log_event_severity) -> QColor;
 

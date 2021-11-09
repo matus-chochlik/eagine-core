@@ -17,8 +17,8 @@ namespace eagine {
 //------------------------------------------------------------------------------
 class proxy_log_backend : public logger_backend {
 public:
-    proxy_log_backend(const log_event_severity min_severity) noexcept
-      : _min_severity{min_severity} {}
+    proxy_log_backend(log_stream_info info) noexcept
+      : _info{std::move(info)} {}
 
     auto configure(application_config&) -> bool final;
 
@@ -113,7 +113,7 @@ private:
     std::unique_ptr<logger_backend> _delegate;
     std::unique_ptr<std::vector<std::function<void()>>> _delayed{
       std::make_unique<std::vector<std::function<void()>>>()};
-    log_event_severity _min_severity;
+    log_stream_info _info;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

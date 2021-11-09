@@ -12,14 +12,18 @@ set(XML_LOGS_SOURCES
 	src/Connection.cpp
 	src/Server.cpp
 	src/Theme.cpp
+	src/EntryStorage.cpp
 	src/EntryFormat.cpp
 	src/EntryLog.cpp
-	src/EntriesViewModel.cpp
+	src/EntryViewModel.cpp
 	src/EntryFilterModel.cpp
 	src/EntryListModel.cpp
+	src/ActivityStorage.cpp
 	src/ActivityListModel.cpp
-	src/ChartsViewModel.cpp
+	src/StreamListModel.cpp
 	src/ProgressViewModel.cpp
+	src/ChartsViewModel.cpp
+	src/StreamViewModel.cpp
 	src/Backend.cpp
 )
 set(XML_LOGS_HEADERS
@@ -31,12 +35,15 @@ set(XML_LOGS_HEADERS
 	include/EntryStorage.hpp
 	include/EntryFormat.hpp
 	include/EntryLog.hpp
-	include/EntriesViewModel.hpp
+	include/EntryViewModel.hpp
 	include/EntryFilterModel.hpp
 	include/EntryListModel.hpp
+	include/ActivityStorage.hpp
 	include/ActivityListModel.hpp
-	include/ChartsViewModel.hpp
+	include/StreamListModel.hpp
 	include/ProgressViewModel.hpp
+	include/ChartsViewModel.hpp
+	include/StreamViewModel.hpp
 	include/Backend.hpp
 )
 add_executable(

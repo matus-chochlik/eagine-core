@@ -10,10 +10,46 @@
 #include <eagine/main.hpp>
 #include <eagine/main_ctx.hpp>
 #include <eagine/progress/activity.hpp>
+#include <eagine/progress/backend.hpp>
+#include <iostream>
 
 namespace eagine {
 //------------------------------------------------------------------------------
+class example_observer final : public progress_observer {
+public:
+    void activity_begun(
+      const activity_progress_id_t parent_id,
+      const activity_progress_id_t activity_id,
+      const string_view title,
+      const span_size_t total_steps) noexcept final {
+        std::cout << "activity " << parent_id << "/" << activity_id
+                  << " has begun: '" << title << "' (total=" << total_steps
+                  << ")" << std::endl;
+    }
+
+    void activity_finished(
+      const activity_progress_id_t parent_id,
+      const activity_progress_id_t activity_id,
+      const string_view title,
+      const span_size_t total_steps) noexcept final {
+        std::cout << "activity " << parent_id << "/" << activity_id
+                  << " has has ended: '" << title << "' (total=" << total_steps
+                  << ")" << std::endl;
+    }
+
+    void activity_updated(
+      const activity_progress_id_t parent_id,
+      const activity_progress_id_t activity_id,
+      const span_size_t current,
+      const span_size_t total) noexcept final {
+        std::cout << "activity " << parent_id << "/" << activity_id
+                  << " was updated: " << (100 * current / total) << std::endl;
+    }
+};
+//------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
+    example_observer observer;
+    register_progress_observer(ctx, observer);
 
     const auto callback = [&]() {
         ctx.log().info("Progress callback called");

@@ -1,6 +1,8 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
 	<file>qtquickcontrols2.conf</file>
+	<file>scripts/Format.js</file>
+
 	<file>xml_logs.qml</file>
 
 	<file>views/EntriesView.qml</file>
@@ -8,6 +10,37 @@
 	<file>views/EntryListItem.qml</file>
 	<file>views/ChartsView.qml</file>
 	<file>views/ProgressView.qml</file>
+	<file>views/ActivityListView.qml</file>
+	<file>views/ActivityListItem.qml</file>
+	<file>views/StreamView.qml</file>
+	<file>views/StreamListView.qml</file>
+	<file>views/StreamListItem.qml</file>
+
+	<file>images/conn_b_c_t_dark.png</file>
+	<file>images/conn_b_l_f_dark.png</file>
+	<file>images/conn_c_c_f_dark.png</file>
+	<file>images/conn_c_c_t_dark.png</file>
+	<file>images/conn_c_l_f_dark.png</file>
+	<file>images/conn_c_r_f_dark.png</file>
+	<file>images/conn_c_r_t_dark.png</file>
+	<file>images/conn_e_c_f_dark.png</file>
+	<file>images/conn_e_c_t_dark.png</file>
+	<file>images/conn_e_l_f_dark.png</file>
+	<file>images/conn_e_r_f_dark.png</file>
+	<file>images/conn_e_r_t_dark.png</file>
+
+	<file>images/conn_b_c_t_light.png</file>
+	<file>images/conn_b_l_f_light.png</file>
+	<file>images/conn_c_c_f_light.png</file>
+	<file>images/conn_c_c_t_light.png</file>
+	<file>images/conn_c_l_f_light.png</file>
+	<file>images/conn_c_r_f_light.png</file>
+	<file>images/conn_c_r_t_light.png</file>
+	<file>images/conn_e_c_f_light.png</file>
+	<file>images/conn_e_c_t_light.png</file>
+	<file>images/conn_e_l_f_light.png</file>
+	<file>images/conn_e_r_f_light.png</file>
+	<file>images/conn_e_r_t_light.png</file>
 
 </qresource>
 </RCC>

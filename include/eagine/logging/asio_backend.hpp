@@ -139,12 +139,12 @@ class asio_ostream_log_backend final
 public:
     asio_ostream_log_backend(
       const string_view addr_str,
-      const log_event_severity min_severity)
+      const log_stream_info& info)
       : Connection{addr_str}
-      , ostream_log_backend<Lockable>{Connection::out(), min_severity} {}
+      , ostream_log_backend<Lockable>{Connection::out(), info} {}
 
-    asio_ostream_log_backend(const log_event_severity min_severity)
-      : asio_ostream_log_backend{string_view{}, min_severity} {}
+    asio_ostream_log_backend(const log_stream_info& info)
+      : asio_ostream_log_backend{string_view{}, info} {}
 
     asio_ostream_log_backend(asio_ostream_log_backend&&) = delete;
     asio_ostream_log_backend(const asio_ostream_log_backend&) = delete;

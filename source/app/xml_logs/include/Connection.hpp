@@ -35,6 +35,10 @@ public slots:
 
 private:
     auto _toIdentifier(const QStringRef&) noexcept -> eagine::identifier;
+    auto _toFloat(const QStringRef&, float) noexcept -> float;
+    auto _toInt(const QStringRef&, int) noexcept -> int;
+    auto _toUnsigned64(const QStringRef&, std::uint64_t) noexcept
+      -> std::uint64_t;
     auto _toSeverity(const QStringRef&) noexcept -> eagine::log_event_severity;
     auto _cacheString(const QStringRef&) noexcept -> eagine::string_view;
 
@@ -43,6 +47,9 @@ private:
     auto _isAtFormatTag() const noexcept -> bool;
     auto _isAtArgumentTag() const noexcept -> bool;
 
+    auto _isArgName(eagine::identifier) const noexcept -> bool;
+    auto _isArgTag(eagine::identifier) const noexcept -> bool;
+    auto _isProgressArg() const noexcept -> bool;
     auto _isBoolArg() const noexcept -> bool;
     auto _isIntegerArg() const noexcept -> bool;
     auto _isUnsignedArg() const noexcept -> bool;
@@ -53,6 +60,7 @@ private:
     void _handleEndLog() noexcept;
     auto _handleBeginMessage() noexcept -> bool;
     void _handleEndMessage() noexcept;
+    void _handleSpecialArgument() noexcept;
     auto _handleBeginArgument() noexcept -> bool;
     void _handleStartElement() noexcept;
     void _handleEndElement() noexcept;
@@ -64,10 +72,12 @@ private:
     std::shared_ptr<Connection> _self;
     QTcpSocket& _socket;
     QXmlStreamReader _xmlReader;
-    const std::uintptr_t _streamId;
+    const stream_id_t _streamId;
     LogEntryData _currentEntry;
     eagine::identifier _currentArgName;
     eagine::identifier _currentArgTag;
+    float _currentMin{0.F};
+    float _currentMax{1.F};
     bool _readingLog{false};
     bool _readingMessage{false};
     bool _readingFormat{false};

@@ -43,20 +43,10 @@ auto get_random_identifier(Engine& engine) -> identifier {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto random_identifier(any_random_engine<std::uint32_t> engine) -> identifier {
-    return get_random_identifier(engine);
-}
-//------------------------------------------------------------------------------
-EAGINE_LIB_FUNC
-auto random_identifier(any_random_engine<std::uint64_t> engine) -> identifier {
-    return get_random_identifier(engine);
-}
-//------------------------------------------------------------------------------
-EAGINE_LIB_FUNC
 auto random_identifier() -> identifier {
-    std::random_device engine;
-    return random_identifier(
-      any_random_engine<std::random_device::result_type>{engine});
+    std::random_device rd;
+    std::default_random_engine re{rd()};
+    return get_random_identifier(re);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

@@ -37,6 +37,20 @@ public:
     default_progress_tracker_backend(main_ctx_getters& ctx)
       : _log{EAGINE_ID(Progress), ctx.log()} {}
 
+    auto register_observer(progress_observer& observer) noexcept -> bool final {
+        if(!_observer) {
+            _observer = &observer;
+            return true;
+        }
+        return false;
+    }
+
+    void unregister_observer(progress_observer& observer) noexcept final {
+        if(_observer == &observer) {
+            _observer = nullptr;
+        }
+    }
+
     auto begin_activity(
       const activity_progress_id_t parent_id,
       const string_view title,
@@ -54,6 +68,10 @@ public:
             auto& result = _activities[_id_sequence];
             const auto activity_id = _encode(result);
             _index[activity_id] = _id_sequence;
+            if(auto observer{_observer.load()}) {
+                extract(observer).activity_begun(
+                  parent_id, activity_id, title, total_steps);
+            }
             return {activity_id, result};
         }();
         const auto activity_id = std::get<0>(id_and_info);
@@ -70,7 +88,7 @@ public:
       span_size_t current) noexcept -> bool final {
         _call_back();
         if(activity_id) {
-            _update(_decode(activity_id), current);
+            _update(activity_id, _decode(activity_id), current);
         }
         return _keep_going;
     }
@@ -81,7 +99,7 @@ public:
         _call_back();
         if(activity_id) {
             auto& info = _decode(activity_id);
-            _update(info, info.curr_steps + increment);
+            _update(activity_id, info, info.curr_steps + increment);
         }
         return _keep_going;
     }
@@ -93,6 +111,17 @@ public:
             const std::lock_guard<std::mutex> lock{_mutex};
             const auto ipos = _index.find(activity_id);
             if(ipos != _index.end()) {
+                if(auto observer{_observer.load()}) {
+                    const auto apos = _activities.find(ipos->second);
+                    if(apos != _activities.end()) {
+                        auto& activity = apos->second;
+                        extract(observer).activity_finished(
+                          activity.parent_id,
+                          activity_id,
+                          activity.title,
+                          activity.total_steps);
+                    }
+                }
                 _activities.erase(ipos->second);
                 _index.erase(ipos);
             }
@@ -104,6 +133,10 @@ public:
       const std::chrono::milliseconds min_interval) final {
         _callback = callback;
         _min_interval = min_interval;
+    }
+
+    void reset_update_callback() noexcept final {
+        _callback = {};
     }
 
 private:
@@ -128,11 +161,18 @@ private:
         }
     }
 
-    void _update(default_progress_info& info, span_size_t current) {
+    void _update(
+      const activity_progress_id_t activity_id,
+      default_progress_info& info,
+      span_size_t current) {
         info.curr_steps = current;
         if(info.curr_steps - info.prev_steps >= info.increment) {
             info.prev_steps = info.curr_steps;
             _do_log(info);
+        }
+        if(auto observer{_observer.load()}) {
+            extract(observer).activity_updated(
+              info.parent_id, activity_id, info.curr_steps, info.total_steps);
         }
     }
 
@@ -148,15 +188,16 @@ private:
             float(info.total_steps));
     }
 
+    std::mutex _mutex;
     logger _log;
     callable_ref<bool() noexcept> _callback{};
+    std::atomic<progress_observer*> _observer{nullptr};
     std::chrono::milliseconds _min_interval{500};
     std::chrono::steady_clock::time_point _last_call{};
     std::chrono::steady_clock _clock;
     activity_progress_id_t _id_sequence{0};
     flat_map<activity_progress_id_t, activity_progress_id_t> _index;
     std::map<activity_progress_id_t, default_progress_info> _activities;
-    std::mutex _mutex;
     std::atomic<bool> _keep_going{true};
 };
 //------------------------------------------------------------------------------

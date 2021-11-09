@@ -76,10 +76,22 @@ public:
         return _progress_root;
     }
 
+    auto register_observer(progress_observer& observer) -> bool final {
+        return _progress_root.register_observer(observer);
+    }
+
+    void unregister_observer(progress_observer& observer) final {
+        _progress_root.unregister_observer(observer);
+    }
+
     void set_progress_update_callback(
       const callable_ref<bool() noexcept>& callback,
       const std::chrono::milliseconds min_interval) final {
         _progress_root.set_update_callback(callback, min_interval);
+    }
+
+    void reset_progress_update_callback() noexcept final {
+        _progress_root.reset_update_callback();
     }
 
     auto watchdog() noexcept -> process_watchdog& final {

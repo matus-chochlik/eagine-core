@@ -31,20 +31,18 @@ EAGINE_LIB_FUNC
 auto root_logger_choose_backend(
   const program_args& args,
   const root_logger_options& opts,
-  log_event_severity min_severity) -> std::unique_ptr<logger_backend> {
+  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
     std::unique_ptr<logger_backend> result{};
 
     for(auto& arg : args) {
         if(arg.is_long_tag("use-null-log")) {
             return std::make_unique<null_log_backend>();
         } else if(arg.is_long_tag("use-cerr-log")) {
-            return std::make_unique<ostream_log_backend<>>(
-              std::cerr, min_severity);
+            return std::make_unique<ostream_log_backend<>>(std::cerr, info);
         } else if(arg.is_long_tag("use-cout-log")) {
-            return std::make_unique<ostream_log_backend<>>(
-              std::cout, min_severity);
+            return std::make_unique<ostream_log_backend<>>(std::cout, info);
         } else if(arg.is_long_tag("use-syslog")) {
-            return std::make_unique<syslog_log_backend<>>(min_severity);
+            return std::make_unique<syslog_log_backend<>>(info);
         } else if(arg.is_long_tag("use-asio-nw-log")) {
             string_view nw_addr;
             if(arg.next() && !arg.next().starts_with("-")) {
@@ -54,11 +52,10 @@ auto root_logger_choose_backend(
                 nw_addr = extract(env_var);
             }
             return std::make_unique<asio_tcpipv4_ostream_log_backend<>>(
-              nw_addr, min_severity);
+              nw_addr, info);
 #if EAGINE_HAS_ASIO_LOCAL_LOG_BACKEND
         } else if(arg.is_long_tag("use-asio-log")) {
-            return std::make_unique<asio_local_ostream_log_backend<>>(
-              min_severity);
+            return std::make_unique<asio_local_ostream_log_backend<>>(info);
 #endif
         }
     }
@@ -67,7 +64,7 @@ auto root_logger_choose_backend(
         return std::make_unique<null_log_backend>();
     }
 
-    return std::make_unique<proxy_log_backend>(min_severity);
+    return std::make_unique<proxy_log_backend>(info);
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
@@ -78,17 +75,22 @@ auto root_logger::_init_backend(
         return std::move(opts.forced_backend);
     }
 
-    auto min_severity{default_log_severity()};
+    log_stream_info info{};
+    info.min_severity = default_log_severity();
 
     for(auto arg = args.first(); arg; arg = arg.next()) {
         if(arg.is_long_tag("min-log-severity")) {
-            if(arg.next().parse(min_severity, std::cerr)) {
+            if(arg.next().parse(info.min_severity, std::cerr)) {
+                arg = arg.next();
+            }
+        } else if(arg.is_long_tag("log-identity")) {
+            if(arg.next().parse(info.log_identity, std::cerr)) {
                 arg = arg.next();
             }
         }
     }
 
-    auto backend = root_logger_choose_backend(args, opts, min_severity);
+    auto backend = root_logger_choose_backend(args, opts, info);
 
     return backend;
 }
@@ -98,7 +100,7 @@ auto root_logger::_log_args(const program_args& args) -> void {
     auto args_entry{info("program arguments:")};
     args_entry.tag(EAGINE_ID(ProgArgs));
     args_entry.arg(EAGINE_ID(cmd), args.command());
-    for(auto& arg : args) {
+    for(const auto& arg : args) {
         args_entry.arg(EAGINE_ID(arg), arg);
     }
 }
@@ -124,7 +126,7 @@ auto root_logger::_log_instance_info() -> void {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto root_logger::_log_compiler_info() -> void {
-    info("built with ${complrName} compiler for ${Archtcture} architecture")
+    info("built with ${complrName} compiler for ${archtcture} architecture")
       .tag(EAGINE_ID(Compiler))
       .arg(
         EAGINE_ID(complrName),
@@ -132,7 +134,7 @@ auto root_logger::_log_compiler_info() -> void {
         compiler_name(),
         string_view{"unknown"})
       .arg(
-        EAGINE_ID(Archtcture),
+        EAGINE_ID(archtcture),
         EAGINE_ID(string),
         architecture_name(),
         string_view{"unknown"})

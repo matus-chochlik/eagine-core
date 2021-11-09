@@ -31,6 +31,18 @@ auto Theme::getEntrySeverityWidth() const -> int {
     return 80;
 }
 //------------------------------------------------------------------------------
+auto Theme::getEntryReltimeWidth() const -> int {
+    return 100;
+}
+//------------------------------------------------------------------------------
+auto Theme::getEntryProgressWidth() const -> int {
+    return 60;
+}
+//------------------------------------------------------------------------------
+auto Theme::getEntryHeaderHeight() const -> int {
+    return 19;
+}
+//------------------------------------------------------------------------------
 auto Theme::getSeverityColor(eagine::log_event_severity severity) -> QColor {
     if(_light) {
         switch(severity) {

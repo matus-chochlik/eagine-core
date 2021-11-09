@@ -11,6 +11,8 @@
 
 #include "EntryStorage.hpp"
 #include <eagine/assert.hpp>
+#include <eagine/compiler_info.hpp>
+#include <eagine/git_info.hpp>
 #include <eagine/logging/backend.hpp>
 #include <eagine/memory/default_alloc.hpp>
 
@@ -21,6 +23,18 @@ public:
     internal_log_backend() noexcept {
         EAGINE_ASSERT(!_single_instance_ptr());
         _single_instance_ptr() = this;
+        LogStreamInfo info{};
+        info.logIdentity = "XML log viewer";
+        info.gitBranch = extract_or(config_git_branch(), string_view{});
+        info.gitHashId = extract_or(config_git_hash_id(), string_view{});
+        info.gitVersion = extract_or(config_git_version(), string_view{});
+        info.gitDescribe = extract_or(config_git_describe(), string_view{});
+        info.architecture = extract_or(architecture_name(), string_view{});
+        info.compilerName = extract_or(compiler_name(), string_view{});
+        info.compilerVersionMajor = extract_or(compiler_version_major(), -1);
+        info.compilerVersionMinor = extract_or(compiler_version_minor(), -1);
+        info.compilerVersionPatch = extract_or(compiler_version_patch(), -1);
+        _entries->beginStream(0, info);
     }
 
     internal_log_backend(internal_log_backend&&) = delete;
@@ -29,6 +43,7 @@ public:
     auto operator=(const internal_log_backend&) = delete;
 
     ~internal_log_backend() noexcept final {
+        _entries->endStream(0);
         EAGINE_ASSERT(_single_instance_ptr());
         _single_instance_ptr() = nullptr;
     }
@@ -76,11 +91,14 @@ private:
       logger_instance_id instance,
       log_event_severity severity,
       string_view format) noexcept -> bool final {
-        _current.stream_id = 0U;
+        _current.streamId = 0U;
         _current.source = source;
         _current.tag = tag;
         _current.instance = instance;
         _current.severity = severity;
+        _current.reltimeSec = std::chrono::duration<float>(
+                                std::chrono::steady_clock::now() - _start)
+                                .count();
         _current.format = _entries->cacheString(format);
         return true;
     }
@@ -149,7 +167,7 @@ private:
     void add_blob(identifier, identifier, memory::const_block) noexcept final {}
 
     void finish_message() noexcept final {
-        _entries->addEntry(_current);
+        _entries->addEntry(std::move(_current));
     }
 
     void finish_log() noexcept final {}
@@ -160,6 +178,8 @@ private:
       identifier,
       float) noexcept final {}
 
+    const std::chrono::steady_clock::time_point _start{
+      std::chrono::steady_clock::now()};
     LogEntryData _current;
     std::shared_ptr<LogEntryStorage> _entries{
       std::make_shared<LogEntryStorage>()};

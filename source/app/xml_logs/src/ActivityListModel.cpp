@@ -6,7 +6,6 @@
 
 #include "ActivityListModel.hpp"
 #include "Backend.hpp"
-#include "EntryFormat.hpp"
 #include "EntryLog.hpp"
 #include "ProgressViewModel.hpp"
 #include "Utility.hpp"
@@ -16,7 +15,12 @@
 ActivityListModel::ActivityListModel(ProgressViewModel& parent)
   : QAbstractItemModel{nullptr}
   , eagine::main_ctx_object{EAGINE_ID(ActListMdl), parent}
-  , _parent{parent} {}
+  , _parent{parent}
+  , _timerId{startTimer(2000)} {}
+//------------------------------------------------------------------------------
+ActivityListModel::~ActivityListModel() noexcept {
+    killTimer(_timerId);
+}
 //------------------------------------------------------------------------------
 auto ActivityListModel::backend() const noexcept -> Backend& {
     return _parent.backend();
@@ -26,12 +30,18 @@ auto ActivityListModel::roleNames() const -> QHash<int, QByteArray> {
     QHash<int, QByteArray> result;
     result.insert(Qt::DisplayRole, "display");
     result.insert(activityMessage, "message");
-    result.insert(activityFormat, "format");
+    result.insert(activityLogIdentity, "logIdentity");
     result.insert(activityStreamId, "streamId");
     result.insert(activityInstanceId, "instanceId");
     result.insert(activitySourceId, "sourceId");
-    result.insert(activityTag, "tag");
+    result.insert(activityArg, "arg");
+    result.insert(activityMin, "progressMin");
+    result.insert(activityMax, "progressMax");
+    result.insert(activityValue, "progressValue");
     result.insert(activitySeverity, "severity");
+    result.insert(activitySeverityColor, "severityColor");
+    result.insert(activityElapsedTime, "elapsedTime");
+    result.insert(activityRemainingTime, "remainingTime");
     return result;
 }
 //------------------------------------------------------------------------------
@@ -57,19 +67,27 @@ auto ActivityListModel::getActivityCount() const -> int {
     return _parent.entryLog().getActivityCount();
 }
 //------------------------------------------------------------------------------
-auto ActivityListModel::getActivityMessage(const ActivityData&) const
-  -> QString {
-    return {}; // TODO
+void ActivityListModel::timerEvent(QTimerEvent*) {
+    if(_parent.entryLog().cleanupDoneActivities()) {
+        emit modelReset({});
+        emit activityCountChanged();
+    }
 }
 //------------------------------------------------------------------------------
-auto ActivityListModel::getActivityFormat(const ActivityData&) const
+auto ActivityListModel::getActivityMessage(const ActivityData& entry) const
   -> QString {
-    return {}; // TODO
+    return toQString(entry.message);
+}
+//------------------------------------------------------------------------------
+auto ActivityListModel::getActivityLogIdentity(const ActivityData& entry) const
+  -> QString {
+    return toQString(
+      _parent.entryLog().streamInfoRef(entry.streamId).logIdentity);
 }
 //------------------------------------------------------------------------------
 auto ActivityListModel::getActivityStreamId(const ActivityData& entry) const
   -> qlonglong {
-    return eagine::limit_cast<qlonglong>(entry.stream_id);
+    return eagine::limit_cast<qlonglong>(entry.streamId);
 }
 //------------------------------------------------------------------------------
 auto ActivityListModel::getActivityInstanceId(const ActivityData& entry) const
@@ -82,14 +100,47 @@ auto ActivityListModel::getActivitySourceId(const ActivityData& entry) const
     return toQString(entry.source.name().view());
 }
 //------------------------------------------------------------------------------
-auto ActivityListModel::getActivityTag(const ActivityData& entry) const
+auto ActivityListModel::getActivityArg(const ActivityData& entry) const
   -> QString {
-    return toQString(entry.tag.name().view());
+    return toQString(entry.arg.name().view());
+}
+//------------------------------------------------------------------------------
+auto ActivityListModel::getActivityMin(const ActivityData& entry) const
+  -> qreal {
+    return entry.min;
+}
+//------------------------------------------------------------------------------
+auto ActivityListModel::getActivityMax(const ActivityData& entry) const
+  -> qreal {
+    return entry.max;
+}
+//------------------------------------------------------------------------------
+auto ActivityListModel::getActivityValue(const ActivityData& entry) const
+  -> qreal {
+    return entry.value;
 }
 //------------------------------------------------------------------------------
 auto ActivityListModel::getActivitySeverity(const ActivityData& entry) const
   -> QString {
     return toQString(eagine::enumerator_name(entry.severity));
+}
+//------------------------------------------------------------------------------
+auto ActivityListModel::getActivitySeverityColor(const ActivityData& entry) const
+  -> QColor {
+    return backend().theme().getSeverityColor(entry.severity);
+}
+//------------------------------------------------------------------------------
+auto ActivityListModel::getActivityElapsedTime(const ActivityData& entry) const
+  -> QVariant {
+    return {entry.timeSinceStart().count()};
+}
+//------------------------------------------------------------------------------
+auto ActivityListModel::getActivityRemainingTime(const ActivityData& entry) const
+  -> QVariant {
+    if(entry.hasTimeEstimation()) {
+        return {entry.estimatedRemainingTime().count()};
+    }
+    return {};
 }
 //------------------------------------------------------------------------------
 auto ActivityListModel::data(const QModelIndex& index, int role) const
@@ -99,18 +150,30 @@ auto ActivityListModel::data(const QModelIndex& index, int role) const
         switch(role) {
             case activityMessage:
                 return {getActivityMessage(activity)};
-            case activityFormat:
-                return {getActivityFormat(activity)};
+            case activityLogIdentity:
+                return {getActivityLogIdentity(activity)};
             case activityStreamId:
                 return {getActivityStreamId(activity)};
             case activityInstanceId:
                 return {getActivityInstanceId(activity)};
             case activitySourceId:
                 return {getActivitySourceId(activity)};
-            case activityTag:
-                return {getActivityTag(activity)};
+            case activityArg:
+                return {getActivityArg(activity)};
+            case activityMin:
+                return {getActivityMin(activity)};
+            case activityMax:
+                return {getActivityMax(activity)};
+            case activityValue:
+                return {getActivityValue(activity)};
             case activitySeverity:
                 return {getActivitySeverity(activity)};
+            case activitySeverityColor:
+                return {getActivitySeverityColor(activity)};
+            case activityElapsedTime:
+                return {getActivityElapsedTime(activity)};
+            case activityRemainingTime:
+                return {getActivityRemainingTime(activity)};
             default:
                 break;
         }
@@ -118,3 +181,9 @@ auto ActivityListModel::data(const QModelIndex& index, int role) const
     return {};
 }
 //------------------------------------------------------------------------------
+void ActivityListModel::handleActivitiesChanged() {
+    emit modelReset({});
+    emit activityCountChanged();
+}
+//------------------------------------------------------------------------------
+

@@ -11,19 +11,31 @@ EntryLog::EntryLog(Backend& backend)
   : QObject{nullptr}
   , eagine::main_ctx_object{EAGINE_ID(EntryLog), backend}
   , _backend{backend}
-  , _entriesViewModel{*this}
+  , _entryViewModel{*this}
+  , _progressViewModel{*this}
   , _chartsViewModel{*this}
-  , _progressViewModel{*this} {
+  , _streamViewModel{*this} {
+    connect(
+      this,
+      &EntryLog::streamsAdded,
+      &_streamViewModel,
+      &StreamViewModel::onStreamsAdded);
     connect(
       this,
       &EntryLog::entriesAdded,
-      &_entriesViewModel,
-      &EntriesViewModel::onEntriesAdded);
+      &_entryViewModel,
+      &EntryViewModel::onEntriesAdded);
+    connect(
+      this,
+      &EntryLog::entriesAdded,
+      &_progressViewModel,
+      &ProgressViewModel::onEntriesAdded);
 }
 //------------------------------------------------------------------------------
 void EntryLog::assignStorage(std::shared_ptr<LogEntryStorage> entries) {
     _entries = std::move(entries);
     EAGINE_ASSERT(_entries);
+    emit streamsAdded();
     emit entriesAdded(0, _entries->entryCount());
     _prevEntryCount = _entries->entryCount();
 }
@@ -38,35 +50,67 @@ auto EntryLog::cacheString(eagine::string_view s) -> eagine::string_view {
     return _entries->cacheString(s);
 }
 //------------------------------------------------------------------------------
-void EntryLog::beginStream(std::uintptr_t streamId) {
-    EAGINE_MAYBE_UNUSED(streamId);
+void EntryLog::beginStream(stream_id_t streamId, const LogStreamInfo& info) {
+    EAGINE_ASSERT(_entries);
+    _entries->beginStream(streamId, info);
+    EAGINE_ASSERT(_activities);
+    _activities->beginStream(streamId, info);
 }
 //------------------------------------------------------------------------------
-void EntryLog::endStream(std::uintptr_t streamId) {
-    EAGINE_MAYBE_UNUSED(streamId);
+void EntryLog::endStream(stream_id_t streamId) {
+    EAGINE_ASSERT(_activities);
+    _activities->endStream(streamId);
+    EAGINE_ASSERT(_entries);
+    _entries->endStream(streamId);
+    commitEntries();
 }
 //------------------------------------------------------------------------------
 void EntryLog::addEntry(LogEntryData& entry) {
+    if(entry.hasProgress) {
+        EAGINE_ASSERT(_activities);
+        _activities->addEntry(entry);
+    }
     EAGINE_ASSERT(_entries);
-    _entries->addEntry(entry);
+    _entries->addEntry(std::move(entry));
 }
 //------------------------------------------------------------------------------
 void EntryLog::commitEntries() {
+    emit streamsAdded();
     const auto currEntryCount = _entries->entryCount();
     emit entriesAdded(_prevEntryCount, currEntryCount);
     _prevEntryCount = currEntryCount;
 }
 //------------------------------------------------------------------------------
-auto EntryLog::getEntriesViewModel() noexcept -> EntriesViewModel* {
-    return &_entriesViewModel;
+auto EntryLog::getEntryViewModel() noexcept -> EntryViewModel* {
+    return &_entryViewModel;
+}
+//------------------------------------------------------------------------------
+auto EntryLog::getProgressViewModel() noexcept -> ProgressViewModel* {
+    return &_progressViewModel;
 }
 //------------------------------------------------------------------------------
 auto EntryLog::getChartsViewModel() noexcept -> ChartsViewModel* {
     return &_chartsViewModel;
 }
 //------------------------------------------------------------------------------
-auto EntryLog::getProgressViewModel() noexcept -> ProgressViewModel* {
-    return &_progressViewModel;
+auto EntryLog::getStreamViewModel() noexcept -> StreamViewModel* {
+    return &_streamViewModel;
+}
+//------------------------------------------------------------------------------
+auto EntryLog::getStreamCount() const noexcept -> int {
+    EAGINE_ASSERT(_entries);
+    return _entries->streamCount();
+}
+//------------------------------------------------------------------------------
+auto EntryLog::getStreamInfo(int index) noexcept -> LogStreamInfo* {
+    EAGINE_ASSERT(_entries);
+    return _entries->getStreamInfo(index);
+}
+//------------------------------------------------------------------------------
+auto EntryLog::streamInfoRef(const stream_id_t streamId) noexcept
+  -> LogStreamInfo& {
+    EAGINE_ASSERT(_entries);
+    return _entries->streamInfoRef(streamId);
 }
 //------------------------------------------------------------------------------
 auto EntryLog::getEntryCount() const noexcept -> int {
@@ -78,11 +122,24 @@ auto EntryLog::getEntryData(int index) noexcept -> LogEntryData* {
     return _entries->getEntry(index);
 }
 //------------------------------------------------------------------------------
-auto EntryLog::getActivityCount() const noexcept -> int {
-    return 0; // TODO
+auto EntryLog::getEntryConnectors(const LogEntryData& entry) noexcept
+  -> LogEntryConnectors {
+    EAGINE_ASSERT(_entries);
+    return _entries->getEntryConnectors(entry);
 }
 //------------------------------------------------------------------------------
-auto EntryLog::getActivityData(int) noexcept -> ActivityData* {
-    return nullptr; // TODO
+auto EntryLog::getActivityCount() const noexcept -> int {
+    EAGINE_ASSERT(_activities);
+    return _activities->activityCount();
+}
+//------------------------------------------------------------------------------
+auto EntryLog::getActivityData(int index) noexcept -> ActivityData* {
+    EAGINE_ASSERT(_activities);
+    return _activities->getActivity(index);
+}
+//------------------------------------------------------------------------------
+auto EntryLog::cleanupDoneActivities() noexcept -> bool {
+    EAGINE_ASSERT(_activities);
+    return _activities->cleanupDone();
 }
 //------------------------------------------------------------------------------

@@ -65,10 +65,13 @@ ApplicationWindow {
                 text: qsTr("Entries")
             }
             TabButton {
+                text: qsTr("Progress")
+            }
+            TabButton {
                 text: qsTr("Charts")
             }
             TabButton {
-                text: qsTr("Progress")
+                text: qsTr("Streams")
             }
         }
 
@@ -86,6 +89,14 @@ ApplicationWindow {
                 model: backend.entryLog.entries
             }
 
+            ProgressView {
+				id: progressView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                model: backend.entryLog.progress
+            }
+
             ChartsView {
 				id: chartsView
                 Layout.fillWidth: true
@@ -94,12 +105,12 @@ ApplicationWindow {
                 model: backend.entryLog.charts
             }
 
-            ProgressView {
-				id: progressView
+            StreamView {
+				id: streamView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                model: backend.entryLog.progress
+                model: backend.entryLog.streams
             }
         }
     }

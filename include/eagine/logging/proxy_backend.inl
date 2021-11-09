@@ -283,30 +283,30 @@ void proxy_log_backend::log_chart_sample(
 auto proxy_log_choose_backend(
   application_config& config,
   const std::string& name,
-  const log_event_severity min_severity) -> std::unique_ptr<logger_backend> {
+  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
     if((name == "null") || (name == "none")) {
         return std::make_unique<null_log_backend>();
     } else if(name == "cerr") {
-        return std::make_unique<ostream_log_backend<>>(std::cerr, min_severity);
+        return std::make_unique<ostream_log_backend<>>(std::cerr, info);
     } else if(name == "cout") {
-        return std::make_unique<ostream_log_backend<>>(std::cout, min_severity);
+        return std::make_unique<ostream_log_backend<>>(std::cout, info);
     } else if(name == "syslog") {
-        return std::make_unique<syslog_log_backend<>>(min_severity);
+        return std::make_unique<syslog_log_backend<>>(info);
     } else if(name == "network") {
         std::string nw_addr;
         config.fetch("log.network.address", nw_addr);
         return std::make_unique<asio_tcpipv4_ostream_log_backend<>>(
-          nw_addr, min_severity);
+          nw_addr, info);
 #if EAGINE_HAS_ASIO_LOCAL_LOG_BACKEND
     } else if(name == "local") {
-        return std::make_unique<asio_local_ostream_log_backend<>>(min_severity);
+        return std::make_unique<asio_local_ostream_log_backend<>>(info);
 #endif
     }
 
 #if EAGINE_DEBUG
 #if EAGINE_HAS_ASIO_LOCAL_LOG_BACKEND
     try {
-        return std::make_unique<asio_local_ostream_log_backend<>>(min_severity);
+        return std::make_unique<asio_local_ostream_log_backend<>>(info);
     } catch(const std::system_error& err) {
         if(err.code().value() != ENOENT) {
             throw;
@@ -314,8 +314,10 @@ auto proxy_log_choose_backend(
     }
 #endif
     try {
+        std::string nw_addr;
+        config.fetch("log.network.address", nw_addr);
         return std::make_unique<asio_tcpipv4_ostream_log_backend<>>(
-          min_severity);
+          nw_addr, info);
     } catch(const std::system_error& err) {
         if(err.code().value() != ENOENT) {
             throw;
@@ -323,16 +325,15 @@ auto proxy_log_choose_backend(
     }
 #endif
 
-    return std::make_unique<ostream_log_backend<>>(std::clog, min_severity);
+    return std::make_unique<ostream_log_backend<>>(std::clog, info);
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto proxy_log_backend::configure(application_config& config) -> bool {
     std::string backend_name;
     config.fetch("log.backend", backend_name);
-    log_event_severity min_severity = _min_severity;
-    config.fetch("log.severity", min_severity);
-    _delegate = proxy_log_choose_backend(config, backend_name, min_severity);
+    config.fetch("log.severity", _info.min_severity);
+    _delegate = proxy_log_choose_backend(config, backend_name, _info);
     if(_delegate) {
         _delegate->configure(config);
         if(_delayed) {

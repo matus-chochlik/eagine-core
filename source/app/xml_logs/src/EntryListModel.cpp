@@ -6,14 +6,14 @@
 
 #include "EntryListModel.hpp"
 #include "Backend.hpp"
-#include "EntriesViewModel.hpp"
 #include "EntryFormat.hpp"
 #include "EntryLog.hpp"
+#include "EntryViewModel.hpp"
 #include "Utility.hpp"
 #include <eagine/extract.hpp>
 #include <eagine/is_within_limits.hpp>
 //------------------------------------------------------------------------------
-EntryListModel::EntryListModel(EntriesViewModel& parent)
+EntryListModel::EntryListModel(EntryViewModel& parent)
   : QAbstractItemModel{nullptr}
   , eagine::main_ctx_object{EAGINE_ID(EntListMdl), parent}
   , _parent{parent} {}
@@ -27,12 +27,17 @@ auto EntryListModel::roleNames() const -> QHash<int, QByteArray> {
     result.insert(Qt::DisplayRole, "display");
     result.insert(entryMessage, "message");
     result.insert(entryFormat, "format");
+    result.insert(entryLogIdentity, "logIdentity");
     result.insert(entryStreamId, "streamId");
     result.insert(entryInstanceId, "instanceId");
     result.insert(entrySourceId, "sourceId");
     result.insert(entryTag, "tag");
     result.insert(entrySeverity, "severity");
     result.insert(entrySeverityColor, "severityColor");
+    result.insert(entryReltimeSec, "reltimeSec");
+    result.insert(entryStreamCount, "streamCount");
+    result.insert(entryStreamIndex, "streamIndex");
+    result.insert(entryStreamPosition, "streamPosition");
     result.insert(entryArgCount, "argCount");
     return result;
 }
@@ -69,9 +74,15 @@ auto EntryListModel::getEntryFormat(const LogEntryData& entry) const
     return toQString(entry.format);
 }
 //------------------------------------------------------------------------------
+auto EntryListModel::getEntryLogIdentity(const LogEntryData& entry) const
+  -> QString {
+    return toQString(
+      _parent.entryLog().streamInfoRef(entry.streamId).logIdentity);
+}
+//------------------------------------------------------------------------------
 auto EntryListModel::getEntryStreamId(const LogEntryData& entry) const
   -> qlonglong {
-    return eagine::limit_cast<qlonglong>(entry.stream_id);
+    return eagine::limit_cast<qlonglong>(entry.streamId);
 }
 //------------------------------------------------------------------------------
 auto EntryListModel::getEntryInstanceId(const LogEntryData& entry) const
@@ -98,6 +109,29 @@ auto EntryListModel::getEntrySeverityColor(const LogEntryData& entry) const
     return backend().theme().getSeverityColor(entry.severity);
 }
 //------------------------------------------------------------------------------
+auto EntryListModel::getEntryReltimeSec(const LogEntryData& entry) const
+  -> QVariant {
+    if(entry.reltimeSec >= 0.F) {
+        return {entry.reltimeSec};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto EntryListModel::getEntryStreamCount(const LogEntryData& entry) const
+  -> short {
+    return _parent.entryLog().getEntryConnectors(entry).streamCount;
+}
+//------------------------------------------------------------------------------
+auto EntryListModel::getEntryStreamIndex(const LogEntryData& entry) const
+  -> short {
+    return _parent.entryLog().getEntryConnectors(entry).streamIndex;
+}
+//------------------------------------------------------------------------------
+auto EntryListModel::getEntryStreamPosition(const LogEntryData& entry) const
+  -> short {
+    return short(entry.isFirst ? -1 : entry.isLast ? 1 : 0);
+}
+//------------------------------------------------------------------------------
 auto EntryListModel::data(const QModelIndex& index, int role) const
   -> QVariant {
     if(auto optEntry{static_cast<LogEntryData*>(index.internalPointer())}) {
@@ -107,6 +141,8 @@ auto EntryListModel::data(const QModelIndex& index, int role) const
                 return {getEntryMessage(entry)};
             case entryFormat:
                 return {getEntryFormat(entry)};
+            case entryLogIdentity:
+                return {getEntryLogIdentity(entry)};
             case entryStreamId:
                 return {getEntryStreamId(entry)};
             case entryInstanceId:
@@ -119,6 +155,14 @@ auto EntryListModel::data(const QModelIndex& index, int role) const
                 return {getEntrySeverity(entry)};
             case entrySeverityColor:
                 return {getEntrySeverityColor(entry)};
+            case entryReltimeSec:
+                return {getEntryReltimeSec(entry)};
+            case entryStreamCount:
+                return {getEntryStreamCount(entry)};
+            case entryStreamIndex:
+                return {getEntryStreamIndex(entry)};
+            case entryStreamPosition:
+                return {getEntryStreamPosition(entry)};
             default:
                 break;
         }

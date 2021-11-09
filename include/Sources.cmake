@@ -4,9 +4,7 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 #
 set(HEADERS
-    eagine/all_are_same.hpp
     eagine/animated_value.hpp
-    eagine/any_random_engine.hpp
     eagine/anything.hpp
     eagine/app_config.hpp
     eagine/args_within_limits.hpp
@@ -93,7 +91,6 @@ set(HEADERS
     eagine/main_ctx_storage.hpp
     eagine/main_fwd.hpp
     eagine/main.hpp
-    eagine/make_array.hpp
     eagine/math/constants.hpp
     eagine/math/coordinates.hpp
     eagine/math/curve.hpp
@@ -387,7 +384,6 @@ set(LIB_INLS
     eagine/logging/root_logger.inl
     eagine/main_ctx.inl
     eagine/main.inl
-    eagine/random_bytes.inl
     eagine/random_identifier.inl
     eagine/resources.inl
     eagine/str_format.inl

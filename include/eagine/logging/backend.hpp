@@ -52,6 +52,15 @@ template <typename T>
 constexpr const bool has_log_entry_adapter_v =
   has_log_entry_adapter_t<T>::value;
 //------------------------------------------------------------------------------
+/// @brief Structure used to supply initial log stream information to a logger.
+/// @ingroup logging
+struct log_stream_info {
+    /// @brief Unique stream identity name.
+    std::string log_identity;
+    /// @brief The minimum severity of log messages.
+    log_event_severity min_severity;
+};
+//------------------------------------------------------------------------------
 /// @brief Interface for logging backend implementations.
 /// @ingroup logging
 struct logger_backend : interface<logger_backend> {
