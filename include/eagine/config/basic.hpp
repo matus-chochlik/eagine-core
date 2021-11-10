@@ -50,7 +50,11 @@
 #endif
 
 #ifndef EAGINE_CORE_LIBRARY
+#if defined(__clang_analyzer__)
+#define EAGINE_CORE_LIBRARY 1
+#else
 #define EAGINE_CORE_LIBRARY 0
+#endif
 #endif
 
 #ifndef EAGINE_LIB_FUNC
