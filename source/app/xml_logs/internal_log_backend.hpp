@@ -15,6 +15,7 @@
 #include <eagine/git_info.hpp>
 #include <eagine/logging/backend.hpp>
 #include <eagine/memory/default_alloc.hpp>
+#include <eagine/os_info.hpp>
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -25,6 +26,8 @@ public:
         _single_instance_ptr() = this;
         LogStreamInfo info{};
         info.logIdentity = "XML log viewer";
+        info.osName = extract_or(config_os_name(), string_view{});
+        info.osCodeName = extract_or(config_os_code_name(), string_view{});
         info.gitBranch = extract_or(config_git_branch(), string_view{});
         info.gitHashId = extract_or(config_git_hash_id(), string_view{});
         info.gitVersion = extract_or(config_git_version(), string_view{});
