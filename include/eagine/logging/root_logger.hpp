@@ -30,6 +30,7 @@ public:
         _log_args(args);
         _log_instance_info();
         _log_git_info();
+        _log_os_info();
         _log_compiler_info();
     }
 
@@ -41,6 +42,7 @@ private:
     static auto _init_backend(const program_args&, root_logger_options&)
       -> std::unique_ptr<logger_backend>;
 
+    auto _log_os_info() -> void;
     auto _log_git_info() -> void;
     auto _log_compiler_info() -> void;
     auto _log_instance_info() -> void;

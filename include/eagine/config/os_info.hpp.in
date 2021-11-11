@@ -1,0 +1,18 @@
+/// @file
+/// @brief Build config OS information
+///
+/// Copyright Matus Chochlik.
+/// Distributed under the Boost Software License, Version 1.0.
+/// See accompanying file LICENSE_1_0.txt or copy at
+/// http://www.boost.org/LICENSE_1_0.txt
+///
+///
+#ifndef EAGINE_CONFIG_OS_INFO_HPP
+#define EAGINE_CONFIG_OS_INFO_HPP
+
+// clang-format off
+#define EAGINE_OS_NAME "@EAGINE_OS_NAME@"
+#define EAGINE_OS_CODE_NAME "@EAGINE_OS_CODE_NAME@"
+// clang-format on
+
+#endif

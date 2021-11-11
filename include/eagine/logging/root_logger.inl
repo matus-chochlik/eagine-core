@@ -14,6 +14,7 @@
 #include <eagine/logging/proxy_backend.hpp>
 #include <eagine/logging/syslog_backend.hpp>
 #include <eagine/logging/type/program_args.hpp>
+#include <eagine/os_info.hpp>
 #include <eagine/process.hpp>
 #include <cerrno>
 #include <iostream>
@@ -103,6 +104,19 @@ auto root_logger::_log_args(const program_args& args) -> void {
     for(const auto& arg : args) {
         args_entry.arg(EAGINE_ID(arg), arg);
     }
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+auto root_logger::_log_os_info() -> void {
+    const string_view n_a{"N/A"};
+    info("build OS information")
+      .tag(EAGINE_ID(OSInfo))
+      .arg(EAGINE_ID(osName), EAGINE_ID(OSName), config_os_name(), n_a)
+      .arg(
+        EAGINE_ID(osCodeName),
+        EAGINE_ID(OSCodeName),
+        config_os_code_name(),
+        n_a);
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
