@@ -8,11 +8,54 @@
 #ifndef EAGINE_BUFFER_DATA_HPP
 #define EAGINE_BUFFER_DATA_HPP
 
-#include "buffer_size.hpp"
 #include "memory/block.hpp"
+#include "span.hpp"
+#include "type_identity.hpp"
 #include "types.hpp"
+#include <type_traits>
 
 namespace eagine {
+
+template <typename S>
+class buffer_size {
+public:
+    constexpr buffer_size() noexcept = default;
+
+    explicit constexpr buffer_size(const S v) noexcept
+      : _v{v} {}
+
+    template <typename T>
+    constexpr buffer_size(
+      const type_identity<T>,
+      const span_size_t count) noexcept
+      : _v{S(span_size_of<T>() * count)} {}
+
+    template <typename T, typename P, typename Z>
+    constexpr buffer_size(const memory::basic_span<T, P, Z> s) noexcept
+      : _v{S(span_size_of<T>() * span_size(s.size()))} {}
+
+    constexpr auto get() const noexcept -> S {
+        return _v;
+    }
+
+    constexpr operator S() const noexcept {
+        return _v;
+    }
+
+    template <typename T>
+    explicit constexpr operator T() const {
+        return T(_v);
+    }
+
+    friend constexpr auto operator+(buffer_size a, buffer_size b) noexcept
+      -> buffer_size {
+        return {a._v + b._v};
+    }
+
+private:
+    static_assert(std::is_integral_v<S>);
+    S _v{0};
+};
 
 template <typename S>
 class buffer_data_spec {
