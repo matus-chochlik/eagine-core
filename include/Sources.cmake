@@ -19,7 +19,6 @@ set(HEADERS
     eagine/bool_aggregate.hpp
     eagine/branch_predict.hpp
     eagine/buffer_data.hpp
-    eagine/buffer_size.hpp
     eagine/build_info.hpp
     eagine/byteset.hpp
     eagine/callable_ref.hpp
