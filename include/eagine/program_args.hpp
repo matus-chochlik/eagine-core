@@ -1210,7 +1210,7 @@ public:
     /// @pre is_valid(pos)
     auto get(const valid_index& pos) const noexcept -> value_type {
         EAGINE_ASSERT(is_valid(pos));
-        return value_type(_argv[pos.value_anyway(*this)]);
+        return value_type(_argv[pos.value_anyway()]);
     }
 
     /// @brief Returns the command line argument value at the specified position.

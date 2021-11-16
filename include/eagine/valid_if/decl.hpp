@@ -54,8 +54,6 @@ private:
         return *this;
     }
 
-    using _base_t::_get_value;
-
 public:
     using _base_t::_base_t;
     using _base_t::is_valid;
@@ -87,7 +85,7 @@ public:
       !std::is_same_v<std::result_of_t<Func(T)>, void>,
       valid_if<std::result_of_t<Func(T)>, valid_flag_policy>> {
         if(is_valid()) {
-            return {func(_get_value()), true};
+            return {func(this->value_anyway()), true};
         }
         return {};
     }
@@ -122,32 +120,32 @@ public:
 
     /// @brief Equality comparison of the stored value with @p v.
     constexpr auto operator==(const T& v) const -> tribool {
-        return {_get_value() == v, !is_valid()};
+        return {this->value_anyway() == v, !is_valid()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     constexpr auto operator!=(const T& v) const -> tribool {
-        return {_get_value() != v, !is_valid()};
+        return {this->value_anyway() != v, !is_valid()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     constexpr auto operator<(const T& v) const -> tribool {
-        return {_get_value() < v, !is_valid()};
+        return {this->value_anyway() < v, !is_valid()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     constexpr auto operator>(const T& v) const -> tribool {
-        return {_get_value() > v, !is_valid()};
+        return {this->value_anyway() > v, !is_valid()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     constexpr auto operator<=(const T& v) const -> tribool {
-        return {_get_value() <= v, !is_valid()};
+        return {this->value_anyway() <= v, !is_valid()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     constexpr auto operator>=(const T& v) const -> tribool {
-        return {_get_value() >= v, !is_valid()};
+        return {this->value_anyway() >= v, !is_valid()};
     }
 };
 //------------------------------------------------------------------------------

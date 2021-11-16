@@ -23,7 +23,7 @@ inline auto do_decode_sequence_length(const byte b) noexcept
 inline auto is_valid_encoding(const valid_cbyte_span& vseq) noexcept -> bool {
     if(auto len = decode_sequence_length(vseq)) {
         const span_size_t l = len.value_anyway();
-        span<const byte> seq = vseq.value_anyway(l - 1);
+        span<const byte> seq = vseq.value_anyway();
 
         if(!is_valid_head_byte(seq[0], l)) {
             return false;
@@ -84,7 +84,7 @@ inline auto do_decode_code_point(
     if(vl.is_valid()) {
         const span_size_t l = vl.value_anyway();
         if(vsrc.is_valid(l - 1)) {
-            span<const byte> src = vsrc.value_anyway(l - 1);
+            span<const byte> src = vsrc.value_anyway();
 
             if(const auto h = decode_code_point_head(src[0], vl)) {
                 code_point_t cp = h.value_anyway();
@@ -140,7 +140,7 @@ inline auto do_encode_code_point(
     if(cp && vl) {
         const span_size_t l = vl.value_anyway();
         if(vdest.is_valid(l - 1)) {
-            span<byte> dest = vdest.value_anyway(l - 1);
+            span<byte> dest = vdest.value_anyway();
 
             code_point_t val = cp.value_anyway();
 
