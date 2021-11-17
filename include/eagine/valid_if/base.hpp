@@ -323,7 +323,7 @@ public:
 
 private:
     T _value{};
-    [[no_unique_address]] Policy _policy{};
+    [[no_unique_address]] Policy _policy;
     [[no_unique_address]] DoLog _do_log{_policy};
 };
 //------------------------------------------------------------------------------
