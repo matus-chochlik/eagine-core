@@ -661,11 +661,11 @@ public:
     /// @param tag the argument type identifier. Used in value formatting.
     /// @param opt the value of the argument.
     /// @see valid_if_or_fallback
-    template <typename T, typename P, typename F>
+    template <typename F, typename T, typename P, typename L>
     auto arg(
       const identifier name,
       const identifier tag,
-      valid_if_or_fallback<T, P, F>&& opt) noexcept
+      valid_if_or_fallback<F, T, P, L>&& opt) noexcept
       -> std::enable_if_t<
         has_log_entry_function_v<std::decay_t<T>> &&
           has_log_entry_function_v<std::decay_t<F>>,
@@ -682,11 +682,11 @@ public:
     /// @param opt the primary optional value of the argument.
     /// @param fbck the fallback value of opt is not valid.
     /// @see valid_if_or_fallback
-    template <typename T, typename P, typename F>
+    template <typename F, typename T, typename P, typename L>
     auto arg(
       const identifier name,
       const identifier tag,
-      valid_if<T, P> opt,
+      basic_valid_if<T, P, L> opt,
       F fbck) noexcept
       -> std::enable_if_t<
         has_log_entry_function_v<std::decay_t<T>> &&

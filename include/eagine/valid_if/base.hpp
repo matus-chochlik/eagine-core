@@ -11,13 +11,41 @@
 
 #include "../assert.hpp"
 #include "../branch_predict.hpp"
+#include "../tribool.hpp"
+#include "../type_traits.hpp"
 #include <sstream>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
 
 namespace eagine {
+//------------------------------------------------------------------------------
+/// @brief Policy for optionally valid values, indicated by a boolean flag.
+/// @ingroup valid_if
+struct valid_flag_policy {
+    bool _is_valid{false};
 
+    constexpr valid_flag_policy() noexcept = default;
+
+    constexpr valid_flag_policy(const bool is_valid) noexcept
+      : _is_valid{is_valid} {}
+
+    /// @brief Returns value validity depending on internally stored flag.
+    template <typename T>
+    auto operator()(const T&) const noexcept -> bool {
+        return _is_valid;
+    }
+
+    struct do_log {
+        template <typename X>
+        constexpr do_log(const X&) noexcept {}
+
+        template <typename Log, typename T>
+        void operator()(Log& log, const T&) const {
+            log << "Getting the value of an empty optional";
+        }
+    };
+};
+//------------------------------------------------------------------------------
 /// @brief Basic template for conditionally-valid values.
 /// @ingroup valid_if
 /// @tparam T type of the stored, conditionally valid value.
@@ -127,11 +155,47 @@ public:
         return is_valid(p...);
     }
 
+    /// @brief Indicates if the stored value is valid according to policy.
+    /// @see is_valid
+    explicit operator bool() const noexcept {
+        return is_valid();
+    }
+
     /// @brief Equality comparison.
     constexpr friend auto operator==(
       const basic_valid_if& a,
       const basic_valid_if& b) noexcept -> bool {
         return (a._value == b._value) && a.is_valid() && b.is_valid();
+    }
+
+    /// @brief Equality comparison of the stored value with @p v.
+    constexpr auto operator==(const T& v) const -> tribool {
+        return {this->value_anyway() == v, !is_valid()};
+    }
+
+    /// @brief Non-equality comparison of the stored value with @p v.
+    constexpr auto operator!=(const T& v) const -> tribool {
+        return {this->value_anyway() != v, !is_valid()};
+    }
+
+    /// @brief Less-than comparison of the stored value with @p v.
+    constexpr auto operator<(const T& v) const -> tribool {
+        return {this->value_anyway() < v, !is_valid()};
+    }
+
+    /// @brief Greater-than comparison of the stored value with @p v.
+    constexpr auto operator>(const T& v) const -> tribool {
+        return {this->value_anyway() > v, !is_valid()};
+    }
+
+    /// @brief Less-equal comparison of the stored value with @p v.
+    constexpr auto operator<=(const T& v) const -> tribool {
+        return {this->value_anyway() <= v, !is_valid()};
+    }
+
+    /// @brief Greater-equal comparison of the stored value with @p v.
+    constexpr auto operator>=(const T& v) const -> tribool {
+        return {this->value_anyway() >= v, !is_valid()};
     }
 
     template <typename Log>
@@ -209,11 +273,24 @@ public:
     /// @param func the function to be called.
     /// @param p additional parameters for the policy validity check function.
     template <typename Func>
-    auto then(const Func& func, P... p) const
-      -> std::enable_if_t<std::is_same_v<std::result_of_t<Func(T)>, void>> {
-        if(EAGINE_LIKELY(is_valid(p...))) {
-            func(value(p...));
+    auto then(const Func& func) const -> std::enable_if_t<
+      !std::is_same_v<std::result_of_t<Func(T)>, void>,
+      basic_valid_if<
+        std::result_of_t<Func(T)>,
+        valid_flag_policy,
+        typename valid_flag_policy::do_log>> {
+        if(is_valid()) {
+            return {func(this->value_anyway()), true};
         }
+        return {};
+    }
+
+    /// @brief Calls the specified function if the stored valus is valid.
+    /// @param func the function to call.
+    /// @see then
+    template <typename Func>
+    auto operator|(const Func& func) const {
+        return then(func);
     }
 
     /// @brief Calls a binary transforming function on {value, is_valid()} pair.
@@ -224,12 +301,98 @@ public:
         return func(_value, is_valid(p...));
     }
 
+    /// @brief Returns the stored value if valid, returns fallback otherwise.
+    /// @see basic_valid_if::value_or
+    auto operator/(const T& fallback) const noexcept -> const T& {
+        return value_or(fallback);
+    }
+
+    /// @brief Returns the stored value, throws if it is invalid.
+    /// @see basic_valid_if::value
+    /// @throws std::runtime_error
+    auto operator*() const noexcept -> const T& {
+        return value();
+    }
+
+    /// @brief Returns pointer to the stored value, throws if it is invalid.
+    /// @see basic_valid_if::value
+    /// @throws std::runtime_error
+    auto operator->() const noexcept -> const T* {
+        return &value();
+    }
+
 private:
     T _value{};
     [[no_unique_address]] Policy _policy{};
     [[no_unique_address]] DoLog _do_log{_policy};
 };
+//------------------------------------------------------------------------------
+/// @brief Equality comparison of two conditionally valid values.
+/// @ingroup valid_if
+template <typename T, typename Po1, typename Po2, typename L1, typename L2>
+static constexpr auto operator==(
+  const basic_valid_if<T, Po1, L1>& v1,
+  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
+    return {
+      (v1.value_anyway() == v2.value_anyway()),
+      (!v1.is_valid() || !v2.is_valid())};
+}
 
+/// @brief Non-equality comparison of two conditionally valid values.
+/// @ingroup valid_if
+template <typename T, typename Po1, typename Po2, typename L1, typename L2>
+static constexpr auto operator!=(
+  const basic_valid_if<T, Po1, L1>& v1,
+  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
+    return {
+      (v1.value_anyway() != v2.value_anyway()),
+      (!v1.is_valid() || !v2.is_valid())};
+}
+
+/// @brief Less-than comparison of two conditionally valid values.
+/// @ingroup valid_if
+template <typename T, typename Po1, typename Po2, typename L1, typename L2>
+static constexpr auto operator<(
+  const basic_valid_if<T, Po1, L1>& v1,
+  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
+    return {
+      (v1.value_anyway() < v2.value_anyway()),
+      (!v1.is_valid() || !v2.is_valid())};
+}
+
+/// @brief Greater-than comparison of two conditionally valid values.
+/// @ingroup valid_if
+template <typename T, typename Po1, typename Po2, typename L1, typename L2>
+static constexpr auto operator>(
+  const basic_valid_if<T, Po1, L1>& v1,
+  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
+    return {
+      (v1.value_anyway() > v2.value_anyway()),
+      (!v1.is_valid() || !v2.is_valid())};
+}
+
+/// @brief Less-equal comparison of two conditionally valid values.
+/// @ingroup valid_if
+template <typename T, typename Po1, typename Po2, typename L1, typename L2>
+static constexpr auto operator<=(
+  const basic_valid_if<T, Po1, L1>& v1,
+  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
+    return {
+      (v1.value_anyway() <= v2.value_anyway()),
+      (!v1.is_valid() || !v2.is_valid())};
+}
+
+/// @brief Greater-equal comparison of two conditionally valid values.
+/// @ingroup valid_if
+template <typename T, typename Po1, typename Po2, typename L1, typename L2>
+static constexpr auto operator>=(
+  const basic_valid_if<T, Po1, L1>& v1,
+  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
+    return {
+      (v1.value_anyway() >= v2.value_anyway()),
+      (!v1.is_valid() || !v2.is_valid())};
+}
+//------------------------------------------------------------------------------
 } // namespace eagine
 
 #endif // EAGINE_VALID_IF_BASE_HPP
