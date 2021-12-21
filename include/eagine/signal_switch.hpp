@@ -9,6 +9,7 @@
 #ifndef EAGINE_SIGNAL_SWITCH_HPP
 #define EAGINE_SIGNAL_SWITCH_HPP
 
+#include "maybe_unused.hpp"
 #include <csignal>
 
 namespace eagine {
@@ -30,8 +31,8 @@ public:
 
     /// @brief Destructor. Restores the original signal handlers.
     ~signal_switch() noexcept {
-        std::signal(SIGINT, _intr_handler);
-        std::signal(SIGTERM, _term_handler);
+        EAGINE_MAYBE_UNUSED(std::signal(SIGINT, _intr_handler));
+        EAGINE_MAYBE_UNUSED(std::signal(SIGTERM, _term_handler));
     }
 
     /// @brief Not moveable.
