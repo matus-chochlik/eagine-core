@@ -711,7 +711,7 @@ public:
 
     /// @brief Indicates if this argument's value is different than the specified string.
     auto operator!=(const value_type& v) const noexcept {
-        return are_equal(get(), v);
+        return !are_equal(get(), v);
     }
 
 private:
