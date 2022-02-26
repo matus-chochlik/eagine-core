@@ -19,6 +19,15 @@ namespace eagine {
 template <typename T, typename Policy, typename DoLog = typename Policy::do_log>
 using valid_if = basic_valid_if<T, Policy, DoLog>;
 //------------------------------------------------------------------------------
+template <typename T>
+struct extract_traits;
+
+template <typename T, typename P, typename L>
+struct extract_traits<basic_valid_if<T, P, L>> {
+    using value_type = T;
+    using result_type = T&;
+};
+
 /// @brief Overload of extract for conditionally valid values.
 /// @pre opt.is_valid()
 template <typename T, typename P, typename L>
@@ -50,17 +59,6 @@ static constexpr auto extract_or(
         return opt.value_anyway();
     }
     return T{std::forward<F>(fallback)};
-}
-//------------------------------------------------------------------------------
-/// @brief Overload of extract_or for conditionally valid values.
-template <typename T, typename P, typename L, typename F>
-static constexpr auto extract_or(
-  basic_valid_if<T, P, L>& opt,
-  T& fallback) noexcept -> T& {
-    if(bool(opt)) {
-        return opt.value_anyway();
-    }
-    return fallback;
 }
 //------------------------------------------------------------------------------
 /// @brief Helper class storing both conditionally valid value and fallback.

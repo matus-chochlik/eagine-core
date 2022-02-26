@@ -201,6 +201,13 @@ enum class api_result_validity {
 template <typename Result, api_result_validity>
 class api_result_value;
 
+template <typename Result, api_result_validity validity>
+struct extracted_traits<api_result_value<Result, validity>> {
+    using value_type = Result;
+    using result_type = Result&;
+    using const_result_type = std::add_const_t<Result>&;
+};
+
 /// @brief Class wrapping the result of a C-API function call.
 /// @ingroup c_api_wrap
 template <
@@ -208,6 +215,13 @@ template <
   typename Info,
   api_result_validity = api_result_validity::always>
 class api_result;
+
+template <typename Result, typename Info, api_result_validity validity>
+struct extracted_traits<api_result<Result, Info, validity>> {
+    using value_type = Result;
+    using result_type = Result&;
+    using const_result_type = std::add_const_t<Result>&;
+};
 
 /// @brief Alias for conditionally-valid result of a C-API function call.
 /// @ingroup c_api_wrap
@@ -376,13 +390,6 @@ struct ok_traits<api_result<Result, Info, api_result_validity::never>> {
         return r;
     }
 };
-//------------------------------------------------------------------------------
-template <typename Result, typename Info, typename Fallback>
-static constexpr auto extract_or(
-  const api_result<Result, Info, api_result_validity::never>&,
-  Fallback&& fallback) noexcept -> Result {
-    return {std::forward<Fallback>(fallback)};
-}
 //------------------------------------------------------------------------------
 // api_result
 //------------------------------------------------------------------------------
@@ -571,16 +578,6 @@ struct ok_traits<api_result<Result, Info, api_result_validity::always>> {
         return r;
     }
 };
-//------------------------------------------------------------------------------
-template <typename Result, typename Info, typename Fallback>
-static constexpr auto extract_or(
-  const api_result<Result, Info, api_result_validity::always>& result,
-  Fallback&& fallback) noexcept -> Result {
-    if(result) {
-        return extract(result);
-    }
-    return {std::forward<Fallback>(fallback)};
-}
 //------------------------------------------------------------------------------
 // api opt result
 //------------------------------------------------------------------------------
@@ -787,16 +784,6 @@ struct ok_traits<api_result<Result, Info, api_result_validity::maybe>> {
         return r;
     }
 };
-//------------------------------------------------------------------------------
-template <typename Result, typename Info, typename Fallback>
-static constexpr auto extract_or(
-  const api_result<Result, Info, api_result_validity::maybe>& result,
-  Fallback&& fallback) noexcept -> Result {
-    if(result) {
-        return extract(result);
-    }
-    return {std::forward<Fallback>(fallback)};
-}
 //------------------------------------------------------------------------------
 // api_combined_result
 //------------------------------------------------------------------------------

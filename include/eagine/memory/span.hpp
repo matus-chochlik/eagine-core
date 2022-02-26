@@ -586,6 +586,11 @@ static constexpr auto accommodate(
 //------------------------------------------------------------------------------
 // extract
 //------------------------------------------------------------------------------
+template <typename T, typename P, typename S>
+static constexpr auto has_value(basic_span<T, P, S> spn) noexcept -> bool {
+    return spn.size() >= 1;
+}
+
 /// @brief Overload of extract for spans. Returns the first element,
 /// @pre spn.size() >= 1
 /// @ingroup memory
@@ -594,24 +599,18 @@ static constexpr auto extract(basic_span<T, P, S> spn) noexcept -> T& {
     return EAGINE_CONSTEXPR_ASSERT(spn.size() >= 1, spn.front());
 }
 //------------------------------------------------------------------------------
-/// @brief Overload of extract_or for spans. Returns the first element,
-/// @ingroup memory
-template <typename T, typename P, typename S>
-static constexpr auto extract_or(basic_span<T, P, S> spn, T& fallback) noexcept
-  -> T& {
-    return (spn.size() >= 1) ? spn.front() : fallback;
-}
-//------------------------------------------------------------------------------
-/// @brief Overload of extract_or for spans. Returns the first element,
-/// @ingroup memory
-template <typename T, typename P, typename S, typename F>
-static constexpr auto extract_or(basic_span<T, P, S> spn, F&& fallback)
-  -> std::enable_if_t<std::is_convertible_v<F, T>, T> {
-    return (spn.size() >= 1) ? spn.front() : T{std::forward<F>(fallback)};
-}
-//------------------------------------------------------------------------------
 } // namespace memory
 //------------------------------------------------------------------------------
+template <typename>
+struct extracted_traits;
+
+template <typename T, typename P, typename S>
+struct extracted_traits<memory::basic_span<T, P, S>> {
+    using value_type = T;
+    using result_type = T&;
+    using const_result_type = std::add_const_t<T>&;
+};
+
 template <
   typename Tl,
   typename Tr,

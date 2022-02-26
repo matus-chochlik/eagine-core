@@ -780,6 +780,12 @@ private:
     }
 };
 //------------------------------------------------------------------------------
+template <>
+struct extract_traits<program_arg> {
+    using value_type = typename program_arg::value_type;
+    using result_type = value_type;
+};
+
 static inline auto extract(const program_arg& arg) noexcept {
     return arg.get();
 }
