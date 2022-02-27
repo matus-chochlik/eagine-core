@@ -26,6 +26,7 @@ template <typename T, typename P, typename L>
 struct extract_traits<basic_valid_if<T, P, L>> {
     using value_type = T;
     using result_type = T&;
+    using const_result_type = std::add_const_t<T>&;
 };
 
 /// @brief Overload of extract for conditionally valid values.
@@ -48,17 +49,6 @@ static constexpr auto extract(basic_valid_if<T, P, L>& opt) noexcept -> T& {
 template <typename T, typename P, typename L>
 static constexpr auto extract(basic_valid_if<T, P, L>&& opt) noexcept -> T&& {
     return EAGINE_CONSTEXPR_ASSERT(bool(opt), std::move(opt.value_anyway()));
-}
-//------------------------------------------------------------------------------
-/// @brief Overload of extract_or for conditionally valid values.
-template <typename T, typename P, typename L, typename F>
-static constexpr auto extract_or(
-  const basic_valid_if<T, P, L>& opt,
-  F&& fallback) noexcept -> std::enable_if_t<std::is_convertible_v<F, T>, T> {
-    if(bool(opt)) {
-        return opt.value_anyway();
-    }
-    return T{std::forward<F>(fallback)};
 }
 //------------------------------------------------------------------------------
 /// @brief Helper class storing both conditionally valid value and fallback.

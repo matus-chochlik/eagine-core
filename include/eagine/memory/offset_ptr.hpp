@@ -254,26 +254,21 @@ private:
 //------------------------------------------------------------------------------
 // extract
 //------------------------------------------------------------------------------
+template <typename T>
+struct extract_traits;
+
+template <typename P, typename O>
+struct extract_traits<basic_offset_ptr<P, O>> {
+    using value_type = P;
+    using result_type = P&;
+    using const_result_type = std::add_const_t<P>&;
+};
+
 /// @brief Overload of extract for basic_offset_ptr.
 /// @pre bool(ptr)
 template <typename P, typename O>
 static constexpr auto extract(basic_offset_ptr<P, O> ptr) noexcept -> P& {
     return EAGINE_CONSTEXPR_ASSERT(!ptr.is_null(), ptr.get());
-}
-//------------------------------------------------------------------------------
-/// @brief Overload of extract_or for basic_offset_ptr.
-template <typename P, typename O>
-static constexpr auto extract_or(
-  basic_offset_ptr<P, O> ptr,
-  P& fallback) noexcept -> P& {
-    return ptr.is_null() ? fallback : ptr.get();
-}
-//------------------------------------------------------------------------------
-/// @brief Overload of extract_or for basic_offset_ptr.
-template <typename P, typename O, typename F>
-static constexpr auto extract_or(basic_offset_ptr<P, O> ptr, P& fallback)
-  -> std::enable_if_t<std::is_convertible_v<F, P>, P> {
-    return ptr.is_null() ? P{std::forward<F>(fallback)} : ptr.get();
 }
 //------------------------------------------------------------------------------
 // rebind_pointer

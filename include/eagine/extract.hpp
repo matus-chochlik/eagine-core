@@ -12,26 +12,27 @@
 #include "assert.hpp"
 #include "nothing.hpp"
 #include <memory>
+#include <optional>
 #include <type_traits>
 
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename T>
-struct extracted_traits;
+struct extract_traits;
 
 /// @brief Returns the value type of an extractable.
 /// @ingroup utilities
 /// @see extract
 template <typename T>
-using extracted_type_t = std::remove_cv_t<typename extracted_traits<
+using extracted_type_t = std::remove_cv_t<typename extract_traits<
   std::remove_cv_t<std::remove_reference_t<T>>>::value_type>;
 
 template <typename T>
-using extract_result_type_t = typename extracted_traits<
+using extract_result_type_t = typename extract_traits<
   std::remove_cv_t<std::remove_reference_t<T>>>::result_type;
 
 template <typename T>
-using const_extract_result_type_t = typename extracted_traits<
+using const_extract_result_type_t = typename extract_traits<
   std::remove_cv_t<std::remove_reference_t<T>>>::const_result_type;
 
 template <typename E, typename V>
@@ -40,7 +41,7 @@ static constinit const auto has_value_type_v =
 //------------------------------------------------------------------------------
 // pointers
 template <typename T>
-struct extracted_traits<T*> {
+struct extract_traits<T*> {
     using value_type = T;
     using result_type = T&;
     using const_result_type = std::add_const_t<T>&;
@@ -54,7 +55,7 @@ static constexpr auto extract(T* ptr) noexcept -> T& {
 }
 //------------------------------------------------------------------------------
 template <typename T>
-struct extracted_traits<std::shared_ptr<T>> {
+struct extract_traits<std::shared_ptr<T>> {
     using value_type = T;
     using result_type = T&;
     using const_result_type = std::add_const_t<T>&;
@@ -68,32 +69,53 @@ static constexpr auto extract(std::shared_ptr<T>& ptr) noexcept -> auto& {
 }
 
 /// @brief Checks @p ptr and dereferences it.
-/// @pre bool(ptr)
+/// @pre has_value(ptr)
 template <typename T>
 static constexpr auto extract(const std::shared_ptr<T>& ptr) noexcept -> auto& {
     return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
 }
 //------------------------------------------------------------------------------
 template <typename T, typename D>
-struct extracted_traits<std::unique_ptr<T, D>> {
+struct extract_traits<std::unique_ptr<T, D>> {
     using value_type = T;
     using result_type = T&;
     using const_result_type = std::add_const_t<T>&;
 };
 
 /// @brief Checks @p ptr and dereferences it.
-/// @pre bool(ptr)
+/// @pre has_value(ptr)
 template <typename T, typename D>
 static constexpr auto extract(std::unique_ptr<T, D>& ptr) noexcept -> T& {
     return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
 }
 
 /// @brief Checks @p ptr and dereferences it.
-/// @pre bool(ptr)
+/// @pre has_value(ptr)
 template <typename T, typename D>
 static constexpr auto extract(const std::unique_ptr<T, D>& ptr) noexcept
   -> const T& {
     return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+struct extract_traits<std::optional<T>> {
+    using value_type = T;
+    using result_type = T&;
+    using const_result_type = std::add_const_t<T>&;
+};
+
+/// @brief Checks @p ptr and dereferences it.
+/// @pre has_value(opt)
+template <typename T>
+static constexpr auto extract(std::optional<T>& opt) noexcept -> auto& {
+    return EAGINE_CONSTEXPR_ASSERT(bool(opt), *opt);
+}
+
+/// @brief Checks @p ptr and dereferences it.
+/// @pre has_value(opt)
+template <typename T>
+static constexpr auto extract(const std::optional<T>& opt) noexcept -> auto& {
+    return EAGINE_CONSTEXPR_ASSERT(bool(opt), *opt);
 }
 //------------------------------------------------------------------------------
 /// @brief Traits used for customization of class ok for the specified Outcome.

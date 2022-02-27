@@ -602,10 +602,10 @@ static constexpr auto extract(basic_span<T, P, S> spn) noexcept -> T& {
 } // namespace memory
 //------------------------------------------------------------------------------
 template <typename>
-struct extracted_traits;
+struct extract_traits;
 
 template <typename T, typename P, typename S>
-struct extracted_traits<memory::basic_span<T, P, S>> {
+struct extract_traits<memory::basic_span<T, P, S>> {
     using value_type = T;
     using result_type = T&;
     using const_result_type = std::add_const_t<T>&;

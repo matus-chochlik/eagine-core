@@ -202,7 +202,7 @@ template <typename Result, api_result_validity>
 class api_result_value;
 
 template <typename Result, api_result_validity validity>
-struct extracted_traits<api_result_value<Result, validity>> {
+struct extract_traits<api_result_value<Result, validity>> {
     using value_type = Result;
     using result_type = Result&;
     using const_result_type = std::add_const_t<Result>&;
@@ -217,7 +217,7 @@ template <
 class api_result;
 
 template <typename Result, typename Info, api_result_validity validity>
-struct extracted_traits<api_result<Result, Info, validity>> {
+struct extract_traits<api_result<Result, Info, validity>> {
     using value_type = Result;
     using result_type = Result&;
     using const_result_type = std::add_const_t<Result>&;
