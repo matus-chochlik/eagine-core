@@ -6,6 +6,7 @@
 add_library(
 	eagine-core
 	debug.cpp
+	memory.cpp
 	main_wrap.cpp
 	git_info.cpp
 	build_info.cpp

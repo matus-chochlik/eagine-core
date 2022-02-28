@@ -8,9 +8,8 @@
 
 // clang-format off
 #include "prologue.inl"
-#include <eagine/memory/shared_alloc.hpp>
 
 #include "implement.inl"
-#include <eagine/input_data.hpp>
+#include <eagine/memory/shared_alloc.hpp>
 #include "epilogue.inl"
 // clang-format on

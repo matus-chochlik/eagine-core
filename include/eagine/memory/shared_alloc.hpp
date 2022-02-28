@@ -118,7 +118,7 @@ public:
     template <typename ByteAlloc>
     auto as() -> ByteAlloc& {
         auto* pa = dynamic_cast<ByteAlloc*>(_pballoc);
-        if(pa == nullptr) {
+        if(EAGINE_UNLIKELY(pa == nullptr)) {
             throw std::bad_cast();
         }
         return *pa;
@@ -130,6 +130,12 @@ private:
 
 using shared_byte_allocator = basic_shared_byte_alloc<nothing_t>;
 
+auto default_shared_allocator() -> shared_byte_allocator;
+
 } // namespace eagine::memory
+
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
+#include <eagine/memory/shared_alloc.inl>
+#endif
 
 #endif // EAGINE_MEMORY_SHARED_ALLOC_HPP

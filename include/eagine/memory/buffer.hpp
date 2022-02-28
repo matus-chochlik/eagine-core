@@ -11,7 +11,6 @@
 
 #include "../assert.hpp"
 #include "block.hpp"
-#include "default_alloc.hpp"
 #include "shared_alloc.hpp"
 
 namespace eagine::memory {
@@ -33,6 +32,15 @@ public:
     /// @brief Constructor with explicit alignment specification.
     explicit buffer(const span_size_t align) noexcept
       : _align{align} {}
+
+    /// @brief Constructor with injected allocator.
+    explicit buffer(shared_byte_allocator alloc) noexcept
+      : _alloc{std::move(alloc)} {}
+
+    /// @brief Constructor with explicit alignment specification and allocator.
+    buffer(const span_size_t align, shared_byte_allocator alloc) noexcept
+      : _align{align}
+      , _alloc{std::move(alloc)} {}
 
     /// @brief Move constructor.
     buffer(buffer&& temp) noexcept
@@ -172,7 +180,7 @@ private:
     span_size_t _align{alignof(long double)};
     span_size_t _size{0};
     owned_block _storage{};
-    shared_byte_allocator _alloc{default_byte_allocator()};
+    shared_byte_allocator _alloc{default_shared_allocator()};
 
     auto _is_ok() const noexcept -> bool {
         return bool(_alloc) && size() <= capacity();

@@ -71,7 +71,7 @@ public:
 
     /// @brief Move constructor.
     owned_block(owned_block&& temp) noexcept
-      : block(static_cast<const block&>(temp)) {
+      : block{static_cast<const block&>(temp)} {
         temp.reset();
     }
 

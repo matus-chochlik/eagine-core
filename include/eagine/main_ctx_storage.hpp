@@ -13,6 +13,7 @@
 #include "compiler_info.hpp"
 #include "compression.hpp"
 #include "logging/root_logger.hpp"
+#include "memory/default_alloc.hpp"
 #include "process.hpp"
 #include "program_args.hpp"
 #include "progress/root_activity.hpp"
@@ -146,6 +147,8 @@ public:
 
 private:
     const process_instance_id_t _instance_id{make_process_instance_id()};
+    memory::shared_byte_allocator _default_alloc{
+      memory::default_byte_allocator()};
     program_args _args;
     root_logger _log_root;
     root_activity _progress_root;
@@ -155,7 +158,7 @@ private:
     application_config _app_config;
     system_info _sys_info;
     user_info _usr_info;
-    memory::buffer _scratch_space{};
+    memory::buffer _scratch_space{_default_alloc};
     data_compressor _compressor{};
     std::string _exe_path{};
     std::string _app_name{};

@@ -8,6 +8,7 @@
 
 // clang-format off
 #include "prologue.inl"
+#include <eagine/memory/shared_alloc.hpp>
 
 #include "implement.inl"
 #include <eagine/compression.hpp>
