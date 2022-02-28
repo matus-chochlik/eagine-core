@@ -11,7 +11,7 @@
 #include "identifier_t.hpp"
 #include "interface.hpp"
 #include "logging/fwd.hpp"
-#include "memory/buffer_fwd.hpp"
+#include "memory/fwd.hpp"
 #include "progress/fwd.hpp"
 #include "string_span.hpp"
 #include "type_traits.hpp"
@@ -80,6 +80,10 @@ struct main_ctx_getters : interface<main_ctx_getters> {
     /// @brief Returns this process instance id. Not equal to system PID.
     virtual auto instance_id() const noexcept -> process_instance_id_t = 0;
 
+    /// @brief Returns the default allocator.
+    virtual auto default_allocator() const noexcept
+      -> const memory::shared_byte_allocator& = 0;
+
     /// @brief Returns the executable path.
     virtual auto exe_path() const noexcept -> string_view = 0;
 
@@ -126,6 +130,8 @@ struct main_ctx_getters : interface<main_ctx_getters> {
     /// @brief Returns a reference to shared temporary buffer.
     virtual auto scratch_space() noexcept -> memory::buffer& = 0;
 };
+
+auto try_get_main_ctx() noexcept -> main_ctx_getters*;
 
 /// @brief Registers the activity progress observer.
 /// @ingroup main_context

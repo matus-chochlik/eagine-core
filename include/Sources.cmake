@@ -126,7 +126,7 @@ set(HEADERS
     eagine/memory/align.hpp
     eagine/memory/alloc_arena.hpp
     eagine/memory/block.hpp
-    eagine/memory/buffer_fwd.hpp
+    eagine/memory/fwd.hpp
     eagine/memory/buffer.hpp
     eagine/memory/buffer_pool.hpp
     eagine/memory/byte_alloc.hpp

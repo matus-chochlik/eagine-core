@@ -21,6 +21,7 @@ EAGINE_LIB_FUNC
 main_ctx::main_ctx(main_ctx_getters& src) noexcept
   : _instance_id{src.instance_id()}
   , _source{src}
+  , _default_alloc{src.default_allocator()}
   , _args{src.args()}
   , _cmplr_info{src.compiler()}
   , _bld_info{src.build()}
@@ -50,6 +51,11 @@ EAGINE_LIB_FUNC
 auto main_ctx::preinitialize() noexcept -> main_ctx& {
     _source.preinitialize();
     return *this;
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+auto try_get_main_ctx() noexcept -> main_ctx_getters* {
+    return main_ctx::try_get();
 }
 //------------------------------------------------------------------------------
 // main_ctx_object-related

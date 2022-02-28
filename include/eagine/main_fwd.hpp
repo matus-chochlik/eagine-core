@@ -14,9 +14,7 @@ namespace eagine {
 
 struct main_ctx_options;
 
-#if !EAGINE_IMPLEMENTING_CORE_LIBRARY
-extern auto main_impl(int, const char**, main_ctx_options&) -> int;
-#endif
+auto main_impl(int, const char**, main_ctx_options&) -> int;
 
 } // namespace eagine
 

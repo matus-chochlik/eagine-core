@@ -53,8 +53,12 @@ public:
 
     ~main_ctx() noexcept override;
 
+    static auto try_get() noexcept -> main_ctx* {
+        return _single_ptr();
+    }
+
     /// @brief Returns the single instance.
-    static inline auto get() noexcept -> main_ctx& {
+    static auto get() noexcept -> main_ctx& {
         EAGINE_ASSERT(_single_ptr());
         return *_single_ptr();
     }
@@ -67,6 +71,11 @@ public:
 
     auto instance_id() const noexcept -> process_instance_id_t final {
         return _instance_id;
+    }
+
+    auto default_allocator() const noexcept
+      -> const memory::shared_byte_allocator& final {
+        return _default_alloc;
     }
 
     auto exe_path() const noexcept -> string_view final {
@@ -128,6 +137,7 @@ public:
 private:
     const process_instance_id_t _instance_id;
     main_ctx_getters& _source;
+    const memory::shared_byte_allocator& _default_alloc;
     const program_args& _args;
     const compiler_info& _cmplr_info;
     const build_info& _bld_info;

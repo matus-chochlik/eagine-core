@@ -20,6 +20,7 @@
 #include "system_info.hpp"
 #include "user_info.hpp"
 #include "watchdog.hpp"
+#include <filesystem>
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -63,6 +64,11 @@ public:
 
     auto instance_id() const noexcept -> process_instance_id_t final {
         return _instance_id;
+    }
+
+    auto default_allocator() const noexcept
+      -> const memory::shared_byte_allocator& final {
+        return _default_alloc;
     }
 
     auto args() const noexcept -> const program_args& final {
