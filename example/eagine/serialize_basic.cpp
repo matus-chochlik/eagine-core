@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/main.hpp>
 #include <eagine/reflect/data_members.hpp>
 #include <eagine/serialize/fast_backend.hpp>
 #include <eagine/serialize/istream_source.hpp>
@@ -68,11 +69,7 @@ void foo(const my_struct& instance) {
     bar(data);
 }
 //------------------------------------------------------------------------------
-} // namespace eagine
-
-auto main() -> int {
-    using namespace eagine;
-
+auto main(main_ctx&) -> int {
     my_struct x;
     x.b = true;
     x.c = '2';
@@ -85,3 +82,6 @@ auto main() -> int {
 
     return 0;
 }
+
+} // namespace eagine
+
