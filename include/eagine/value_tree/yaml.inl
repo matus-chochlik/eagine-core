@@ -293,7 +293,7 @@ public:
         try {
             rapidyaml_callbacks cbks{};
             c4::csubstr src{yaml_text.data(), std_size(yaml_text.size())};
-            auto tree{ryml::parse(src)};
+            auto tree{ryml::parse_in_arena(src)};
             tree.resolve();
             return std::make_shared<rapidyaml_tree_compound>(
               std::move(tree), parent);
