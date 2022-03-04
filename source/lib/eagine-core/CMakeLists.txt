@@ -23,6 +23,7 @@ add_library(
 	str_var_subst.cpp
 	resources.cpp
 	url.cpp
+	value_tree_empty.cpp
 	value_tree_json.cpp
 	value_tree_yaml.cpp
 	value_tree_filesystem.cpp

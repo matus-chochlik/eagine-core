@@ -7,6 +7,7 @@
 ///
 #include <eagine/logging/logger.hpp>
 #include <eagine/main.hpp>
+#include <eagine/value_tree/empty.hpp>
 #include <eagine/value_tree/filesystem.hpp>
 #include <eagine/value_tree/json.hpp>
 #include <eagine/value_tree/yaml.hpp>
@@ -144,6 +145,11 @@ auto main(main_ctx& ctx) -> int {
             fs_tree.traverse(
               valtree::compound::visit_handler{construct_from, visitor});
         }
+    }
+
+    if(const auto empty_tree{valtree::empty(ctx)}) {
+        empty_tree.traverse(
+          valtree::compound::visit_handler{construct_from, visitor});
     }
 
     return 0;
