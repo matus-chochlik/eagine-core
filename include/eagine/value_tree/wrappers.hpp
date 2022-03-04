@@ -106,6 +106,13 @@ public:
         return {};
     }
 
+    template <typename Implementation>
+    auto as() noexcept -> std::enable_if_t<
+      std::is_base_of_v<attribute_interface, Implementation>,
+      Implementation*> {
+        return dynamic_cast<Implementation*>(_pimpl);
+    }
+
 private:
     friend class compound;
 
@@ -737,6 +744,13 @@ public:
     /// @brief Traverses the tree, calls the @p visitor function on each node.
     void traverse(const stack_visit_handler visitor) const;
 
+    template <typename Implementation>
+    auto as() noexcept -> std::enable_if_t<
+      std::is_base_of_v<compound_interface, Implementation>,
+      Implementation*> {
+        return dynamic_cast<Implementation*>(_pimpl.get());
+    }
+
 private:
     compound(std::shared_ptr<compound_interface> pimpl) noexcept
       : _pimpl{std::move(pimpl)} {}
@@ -759,7 +773,7 @@ public:
     compound_attribute(compound c, attribute a) noexcept
       : _c{std::move(c)}
       , _a{std::move(a)} {
-        EAGINE_ASSERT(_c.type_id() == _a.type_id());
+        EAGINE_ASSERT(!_c || !_a || (_c.type_id() == _a.type_id()));
     }
 
     /// @brief Indicates if this attribute actually refers to something.
