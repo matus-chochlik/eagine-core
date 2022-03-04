@@ -27,6 +27,7 @@ add_library(
 	value_tree_json.cpp
 	value_tree_yaml.cpp
 	value_tree_filesystem.cpp
+	value_tree_overlay.cpp
 	value_tree_wrappers.cpp
 	watchdog.cpp
 )
