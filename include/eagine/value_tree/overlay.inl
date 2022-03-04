@@ -37,23 +37,31 @@ class overlay_attribute : public attribute_interface {
 
     std::map<std::string, _child_info, str_view_less> _children;
     basic_string_path _path{};
+    bool _needs_scan{true};
 
     auto _scan(overlay_compound& owner) -> decltype(_children)& {
-        const auto& overlays = get_context(owner).overlays;
-        for(const auto index : integer_range(overlays.size())) {
-            const auto& overlay = overlays[index];
-            if(auto found{overlay.find(_path)}) {
-                for(auto c : integer_range(found.nested_count())) {
-                    auto name{to_string(found.nested(c).name())};
-                    if(name.empty()) {
-                        name = std::to_string(c);
-                    }
-                    auto pos = _children.find(name);
-                    if(pos == _children.end()) {
-                        pos = _children.try_emplace(std::move(name)).first;
-                        pos->second.index = index;
+        if(_needs_scan) {
+            bool all_immutable = true;
+            const auto& overlays = get_context(owner).overlays;
+            for(const auto index : integer_range(overlays.size())) {
+                const auto& overlay = overlays[index];
+                all_immutable &= overlay.is_immutable();
+                if(auto found{overlay.find(_path)}) {
+                    for(auto c : integer_range(found.nested_count())) {
+                        auto name{to_string(found.nested(c).name())};
+                        if(name.empty()) {
+                            name = std::to_string(c);
+                        }
+                        auto pos = _children.find(name);
+                        if(pos == _children.end()) {
+                            pos = _children.try_emplace(std::move(name)).first;
+                            pos->second.index = index;
+                        }
                     }
                 }
+            }
+            if(all_immutable) {
+                _needs_scan = false;
             }
         }
         return _children;
@@ -81,10 +89,8 @@ class overlay_attribute : public attribute_interface {
     }
 
 public:
-    overlay_attribute(overlay_compound& owner, basic_string_path path) noexcept
-      : _path{std::move(path)} {
-        _scan(owner);
-    }
+    overlay_attribute(basic_string_path path) noexcept
+      : _path{std::move(path)} {}
 
     auto type_id() const noexcept -> identifier_t final {
         return EAGINE_ID_V(overlay);
@@ -96,6 +102,15 @@ public:
         return l._path == r._path;
     }
 
+    void mark_for_scan() {
+        _needs_scan = true;
+        for(auto& entry : _children) {
+            if(auto child{entry.second.cached}) {
+                extract(child).mark_for_scan();
+            }
+        }
+    }
+
     auto name() -> string_view {
         if(EAGINE_UNLIKELY(_path.empty())) {
             return {};
@@ -105,6 +120,10 @@ public:
 
     auto canonical_type(overlay_compound& owner) -> value_type {
         return _find_source(owner).canonical_type();
+    }
+
+    auto is_immutable(overlay_compound& owner) const -> bool {
+        return _find_source(owner).is_immutable();
     }
 
     auto is_link(overlay_compound& owner) const -> bool {
@@ -165,7 +184,7 @@ class overlay_compound
     using base::_unwrap;
 
     overlay_context _context;
-    overlay_attribute _root{*this, {}};
+    overlay_attribute _root{{}};
 
 public:
     overlay_compound(
@@ -195,6 +214,10 @@ public:
 
     auto canonical_type(attribute_interface& attrib) -> value_type final {
         return _unwrap(attrib).canonical_type(*this);
+    }
+
+    auto is_immutable(attribute_interface& attrib) -> bool final {
+        return _unwrap(attrib).is_immutable(*this);
     }
 
     auto is_link(attribute_interface& attrib) -> bool final {
@@ -235,6 +258,7 @@ public:
     }
 
     void add_overlay(compound_attribute overlay) {
+        _root.mark_for_scan();
         _context.overlays.insert(_context.overlays.begin(), std::move(overlay));
     }
 
@@ -247,7 +271,7 @@ public:
 static auto overlay_make_new_node(
   overlay_compound& owner,
   basic_string_path path) noexcept -> overlay_attribute* {
-    return owner.make_node(owner, std::move(path));
+    return owner.make_node(std::move(path));
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC

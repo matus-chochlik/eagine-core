@@ -606,6 +606,10 @@ public:
         return _unwrap(attrib).canonical_type();
     }
 
+    auto is_immutable(attribute_interface&) -> bool final {
+        return true;
+    }
+
     auto is_link(attribute_interface&) -> bool final {
         return false;
     }

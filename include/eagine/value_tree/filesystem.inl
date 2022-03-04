@@ -268,6 +268,10 @@ public:
         return value_type::byte_type;
     }
 
+    auto is_immutable(attribute_interface&) -> bool final {
+        return false;
+    }
+
     auto is_link(attribute_interface& attrib) -> bool final {
         return _unwrap(attrib).is_link();
     }

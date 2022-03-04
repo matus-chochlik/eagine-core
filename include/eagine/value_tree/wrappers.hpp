@@ -292,6 +292,15 @@ public:
         return value_type::unknown;
     }
 
+    /// @brief Indicates if the specified attribute is immutable.
+    /// @pre this->type_id() == attrib.type_id()
+    auto is_immutable(const attribute& attrib) const -> bool {
+        if(_pimpl && attrib._pimpl) {
+            return _pimpl->is_immutable(*attrib._pimpl);
+        }
+        return false;
+    }
+
     /// @brief Indicates if the specified attribute is a reference or link in the tree.
     /// @pre this->type_id() == attrib.type_id()
     auto is_link(const attribute& attrib) const -> bool {
@@ -789,6 +798,11 @@ public:
     /// @brief Returns the name of this attribute.
     auto name() const noexcept -> string_view {
         return _c.attribute_name(_a);
+    }
+
+    /// @brief Indicates if the specified attribute is immutable.
+    auto is_immutable() const noexcept -> bool {
+        return _c.is_immutable(_a);
     }
 
     /// @brief Indicates if the specified attribute is a reference or link in the tree.

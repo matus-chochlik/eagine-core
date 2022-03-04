@@ -42,6 +42,10 @@ public:
         return value_type::byte_type;
     }
 
+    auto is_immutable(attribute_interface&) -> bool final {
+        return true;
+    }
+
     auto is_link(attribute_interface&) -> bool final {
         return false;
     }
