@@ -213,6 +213,7 @@ set(HEADERS
     eagine/sorting_network.hpp
     eagine/sorting_network_io.hpp
     eagine/span.hpp
+    eagine/stacktrace.hpp
     eagine/str_format.hpp
     eagine/string_algo.hpp
     eagine/string_list.hpp
