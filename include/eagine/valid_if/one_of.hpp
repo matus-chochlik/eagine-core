@@ -46,8 +46,9 @@ struct valid_if_one_of_policy {
     };
 };
 
-template <typename T, T... C>
-using valid_if_one_of = valid_if<T, valid_if_one_of_policy<T, C...>>;
+template <typename T, auto... C>
+using valid_if_one_of =
+  valid_if<T, valid_if_one_of_policy<std::remove_reference_t<T>, C...>>;
 
 } // namespace eagine
 

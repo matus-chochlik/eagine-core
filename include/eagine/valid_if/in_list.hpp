@@ -56,7 +56,8 @@ struct valid_if_in_list_policy {
 /// @brief Specialization of valid_if, for values valid in Range.
 /// @ingroup valid_if
 template <typename T, typename Range>
-using valid_if_in_list = valid_if<T, valid_if_in_list_policy<T, Range>>;
+using valid_if_in_list =
+  valid_if<T, valid_if_in_list_policy<std::remove_reference_t<T>, Range>>;
 
 } // namespace eagine
 

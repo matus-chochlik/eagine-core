@@ -38,7 +38,8 @@ struct valid_if_ne_policy {
 /// @ingroup valid_if
 /// @see valid_if_not_zero
 template <typename T, T Cmp>
-using valid_if_not = valid_if<T, valid_if_ne_policy<T, Cmp>>;
+using valid_if_not =
+  valid_if<T, valid_if_ne_policy<std::remove_reference_t<T>, Cmp>>;
 
 } // namespace eagine
 

@@ -42,8 +42,11 @@ struct valid_if_within_limits_policy {
 /// @see valid_if_between
 /// @see is_within_limits
 template <typename Dst, typename Src>
-using valid_if_within_limits =
-  valid_if<Src, valid_if_within_limits_policy<Dst, Src>>;
+using valid_if_within_limits = valid_if<
+  Src,
+  valid_if_within_limits_policy<
+    std::remove_reference_t<Dst>,
+    std::remove_reference_t<Src>>>;
 
 } // namespace eagine
 

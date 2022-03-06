@@ -41,7 +41,8 @@ struct valid_if_positive_policy {
 /// @see valid_if_nonnegative
 /// @see valid_if_less_than
 template <typename T>
-using valid_if_positive = valid_if<T, valid_if_positive_policy<T>>;
+using valid_if_positive =
+  valid_if<T, valid_if_positive_policy<std::remove_reference_t<T>>>;
 
 } // namespace eagine
 

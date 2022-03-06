@@ -34,7 +34,8 @@ struct valid_if_gt_policy {
 };
 
 template <typename T, T Cmp>
-using valid_if_greater_than = valid_if<T, valid_if_gt_policy<T, Cmp>>;
+using valid_if_greater_than =
+  valid_if<T, valid_if_gt_policy<std::remove_reference_t<T>, Cmp>>;
 
 } // namespace eagine
 

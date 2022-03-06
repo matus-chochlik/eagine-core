@@ -33,7 +33,8 @@ struct valid_if_gt0_lt1_policy {
 };
 
 template <typename T>
-using valid_if_gt0_lt1 = valid_if<T, valid_if_gt0_lt1_policy<T>>;
+using valid_if_gt0_lt1 =
+  valid_if<T, valid_if_gt0_lt1_policy<std::remove_reference_t<T>>>;
 
 } // namespace eagine
 

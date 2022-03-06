@@ -57,6 +57,12 @@ class basic_valid_if {
       std::is_nothrow_move_constructible_v<Policy>);
 
 public:
+    using value_type = std::remove_cv_t<std::remove_reference_t<T>>;
+    using reference = std::conditional_t<std::is_reference_v<T>, T, T&>;
+    using const_reference = const value_type&;
+    using pointer = value_type*;
+    using const_pointer = const value_type*;
+
     /// @brief Returns a reference to this object's policy.
     [[nodiscard]] auto policy() noexcept -> Policy& {
         return _policy;
@@ -73,19 +79,29 @@ public:
 
     /// @brief Constructor initializing the stored value by @p val.
     constexpr basic_valid_if(T val) noexcept(
-      std::is_nothrow_move_constructible_v<T>)
+      std::is_nothrow_move_constructible_v<T>) requires(!std::is_reference_v<T>)
       : _value{std::move(val)} {}
+
+    constexpr basic_valid_if(T val) noexcept requires(std::is_reference_v<T>)
+      : _value{val} {}
 
     /// @brief Constructor initializing the stored value and policy.
     constexpr basic_valid_if(T val, Policy plcy) noexcept(
-      noexcept(std::is_nothrow_move_constructible_v<T>&&
-                 std::is_nothrow_move_constructible_v<Policy>))
+      noexcept(std::is_nothrow_move_constructible_v<value_type>&&
+                 std::is_nothrow_move_constructible_v<
+                   Policy>)) requires(!std::is_reference_v<T>)
       : _value{std::move(val)}
+      , _policy{std::move(plcy)} {}
+
+    constexpr basic_valid_if(T val, Policy plcy) noexcept(
+      noexcept(std::is_nothrow_move_constructible_v<
+               Policy>)) requires(std::is_reference_v<T>)
+      : _value{val}
       , _policy{std::move(plcy)} {}
 
     /// @brief Move constructor.
     basic_valid_if(basic_valid_if&& that) noexcept(
-      std::is_nothrow_move_constructible_v<T>&&
+      std::is_nothrow_move_constructible_v<value_type>&&
         std::is_nothrow_move_constructible_v<Policy>)
       : _value{std::move(that._value)}
       , _policy{std::move(that._policy)} {}
@@ -99,7 +115,7 @@ public:
 
     /// @brief Move assignment operator.
     auto operator=(basic_valid_if&& that) noexcept(
-      std::is_nothrow_move_assignable_v<T>&&
+      std::is_nothrow_move_assignable_v<value_type>&&
         std::is_nothrow_move_assignable_v<Policy>) -> auto& {
         if(this != std::addressof(that)) {
             _value = std::move(that._value);
@@ -112,7 +128,7 @@ public:
     /// @brief Copy assignment operator.
     // NOLINTNEXTLINE(bugprone-unhandled-self-assignment,cert-oop54-cpp)
     auto operator=(const basic_valid_if& that) noexcept(
-      std::is_nothrow_copy_constructible_v<T>&&
+      std::is_nothrow_copy_constructible_v<value_type>&&
         std::is_nothrow_copy_constructible_v<Policy>) -> auto& {
         if(this != std::addressof(that)) {
             basic_valid_if temp{that};
@@ -122,14 +138,14 @@ public:
     }
 
     /// @brief Copies @p value into this instance.
-    auto operator=(const T& value) noexcept(std::is_nothrow_copy_assignable_v<T>)
-      -> auto& {
+    auto operator=(const value_type& value) noexcept(
+      std::is_nothrow_copy_assignable_v<value_type>) -> auto& {
         _value = value;
         return *this;
     }
 
-    auto operator=(T&& value) noexcept(std::is_nothrow_copy_assignable_v<T>)
-      -> auto& {
+    auto operator=(value_type&& value) noexcept(
+      std::is_nothrow_copy_assignable_v<value_type>) -> auto& {
         _value = std::move(value);
         return *this;
     }
@@ -169,37 +185,37 @@ public:
     }
 
     /// @brief Equality comparison of the stored value with @p v.
-    constexpr auto operator==(const T& v) const -> tribool {
+    constexpr auto operator==(const value_type& v) const -> tribool {
         return {this->value_anyway() == v, !is_valid()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
-    constexpr auto operator!=(const T& v) const -> tribool {
+    constexpr auto operator!=(const value_type& v) const -> tribool {
         return {this->value_anyway() != v, !is_valid()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
-    constexpr auto operator<(const T& v) const -> tribool {
+    constexpr auto operator<(const value_type& v) const -> tribool {
         return {this->value_anyway() < v, !is_valid()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
-    constexpr auto operator>(const T& v) const -> tribool {
+    constexpr auto operator>(const value_type& v) const -> tribool {
         return {this->value_anyway() > v, !is_valid()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
-    constexpr auto operator<=(const T& v) const -> tribool {
+    constexpr auto operator<=(const value_type& v) const -> tribool {
         return {this->value_anyway() <= v, !is_valid()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
-    constexpr auto operator>=(const T& v) const -> tribool {
+    constexpr auto operator>=(const value_type& v) const -> tribool {
         return {this->value_anyway() >= v, !is_valid()};
     }
 
     template <typename Log>
-    void log_invalid(Log& log, const T& v, P... p) const {
+    void log_invalid(Log& log, const value_type& v, P... p) const {
         EAGINE_ASSERT(!is_valid(v, p...));
         _do_log(log, v, p...);
     }
@@ -249,13 +265,14 @@ public:
 
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     /// @param p additional parameters for the policy validity check function.
-    auto value_or(T& fallback, P... p) noexcept -> auto& {
+    auto value_or(reference fallback, P... p) noexcept -> auto& {
         return EAGINE_LIKELY(is_valid(p...)) ? _value : fallback;
     }
 
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     /// @param p additional parameters for the policy validity check function.
-    constexpr auto value_or(const T& fallback, P... p) const noexcept -> auto& {
+    constexpr auto value_or(const_reference fallback, P... p) const noexcept
+      -> auto& {
         return EAGINE_LIKELY(is_valid(p...)) ? _value : fallback;
     }
 
@@ -303,21 +320,21 @@ public:
 
     /// @brief Returns the stored value if valid, returns fallback otherwise.
     /// @see basic_valid_if::value_or
-    auto operator/(const T& fallback) const noexcept -> const T& {
+    auto operator/(const_reference fallback) const noexcept -> const_reference {
         return value_or(fallback);
     }
 
     /// @brief Returns the stored value, throws if it is invalid.
     /// @see basic_valid_if::value
     /// @throws std::runtime_error
-    auto operator*() const noexcept -> const T& {
+    auto operator*() const noexcept -> const_reference {
         return value();
     }
 
     /// @brief Returns pointer to the stored value, throws if it is invalid.
     /// @see basic_valid_if::value
     /// @throws std::runtime_error
-    auto operator->() const noexcept -> const T* {
+    auto operator->() const noexcept -> const_pointer {
         return &value();
     }
 
@@ -327,6 +344,13 @@ private:
     [[no_unique_address]] DoLog _do_log{_policy};
 };
 //------------------------------------------------------------------------------
+template <typename T, typename P, typename L, typename... A>
+static constexpr auto has_value(
+  const basic_valid_if<T, P, L>& v,
+  A&&... a) noexcept -> bool {
+    return v.has_value(std::forward<A>(a)...);
+}
+
 /// @brief Equality comparison of two conditionally valid values.
 /// @ingroup valid_if
 template <typename T, typename Po1, typename Po2, typename L1, typename L2>

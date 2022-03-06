@@ -40,7 +40,8 @@ struct valid_if_ge0_le1_policy {
 /// @see valid_if_between
 /// @see valid_if_ge0_lt1
 template <typename T>
-using valid_if_between_0_1 = valid_if<T, valid_if_ge0_le1_policy<T>>;
+using valid_if_between_0_1 =
+  valid_if<T, valid_if_ge0_le1_policy<std::remove_reference_t<T>>>;
 
 } // namespace eagine
 

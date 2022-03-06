@@ -41,7 +41,8 @@ struct valid_if_lt_policy {
 /// @see valid_if_between
 /// @see valid_if_lt_size
 template <typename T, T Cmp>
-using valid_if_less_than = valid_if<T, valid_if_lt_policy<T, Cmp>>;
+using valid_if_less_than =
+  valid_if<T, valid_if_lt_policy<std::remove_reference_t<T>, Cmp>>;
 
 } // namespace eagine
 
