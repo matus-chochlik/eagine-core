@@ -14,6 +14,7 @@
 #include "memory/block.hpp"
 #include "span.hpp"
 #include "string_list.hpp"
+#include <iosfwd>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -74,6 +75,9 @@ public:
       EAGINE_TAG_TYPE(split_by),
       const string_view sep) noexcept
       : basic_string_path{string_list::split(path, sep)} {}
+
+    basic_string_path(const string_view path) noexcept
+      : basic_string_path(path, EAGINE_TAG(split_by), {"/"}) {}
 
     explicit basic_string_path(
       const basic_string_path& a,
@@ -275,6 +279,11 @@ public:
         return string_list::join(view(_str), sep, trail_sep);
     }
 
+    /// @brief Returns this path as string with elements separated by '/'
+    auto as_string() const noexcept {
+        return as_string({"/"}, false);
+    }
+
     /// @brief Returns a block covering the internal representation of this path.
     auto block() noexcept -> memory::const_block {
         return as_bytes(view(_str));
@@ -315,6 +324,15 @@ private:
         return {{_fix(n)...}};
     }
 };
+//------------------------------------------------------------------------------
+static inline auto to_string(const basic_string_path& path) -> std::string {
+    return path.as_string();
+}
+//------------------------------------------------------------------------------
+static inline auto operator<<(std::ostream& out, const basic_string_path& path)
+  -> std::ostream& {
+    return out << to_string(path);
+}
 //------------------------------------------------------------------------------
 } // namespace eagine
 
