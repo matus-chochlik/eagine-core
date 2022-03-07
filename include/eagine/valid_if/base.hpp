@@ -155,7 +155,8 @@ public:
 
     /// @brief Checks if @p val is valid according to this object's policy.
     /// @param p additional parameters for the policy validity check function.
-    constexpr auto is_valid(const T& val, P... p) const noexcept -> bool {
+    constexpr auto is_valid(const_reference val, P... p) const noexcept
+      -> bool {
         return _policy(val, p...);
     }
 

@@ -111,6 +111,18 @@ public:
     using base::empty;
     using base::size;
 
+    friend constexpr auto operator==(
+      basic_string_span l,
+      basic_string_span r) noexcept -> bool {
+        return are_equal(l, r);
+    }
+
+    friend constexpr auto operator!=(
+      basic_string_span l,
+      basic_string_span r) noexcept -> bool {
+        return !are_equal(l, r);
+    }
+
     /// @brief Named conversion to the corresponding standard string view.
     constexpr auto std_view() const noexcept -> std_view_type {
         return {data(), std_size_t(size())};

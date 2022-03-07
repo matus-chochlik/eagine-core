@@ -398,7 +398,7 @@ private:
       valid_if<T, P, L>& dest,
       const selector<V> sel,
       std::ostream& parse_log) const -> bool {
-        T value{};
+        typename valid_if<T, P, L>::value_type value{};
         if(parse(value, sel, parse_log)) {
             if(dest.is_valid(value)) {
                 dest = std::move(value);
