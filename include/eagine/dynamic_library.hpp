@@ -9,10 +9,10 @@
 #ifndef EAGINE_DYNAMIC_LIBRARY_HPP
 #define EAGINE_DYNAMIC_LIBRARY_HPP
 
+#include "c_str.hpp"
 #include "callable_ref.hpp"
 #include "config/platform.hpp"
 #include "nothing.hpp"
-#include "string_span.hpp"
 #include <dlfcn.h>
 #include <string>
 #include <type_traits>

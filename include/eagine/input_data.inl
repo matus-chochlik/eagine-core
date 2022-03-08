@@ -6,6 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
+#include <eagine/c_str.hpp>
 #include <eagine/memory/copy.hpp>
 #include <eagine/scope_exit.hpp>
 #include <fstream>

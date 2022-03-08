@@ -30,7 +30,7 @@ struct file_contents_intf : interface<file_contents_intf> {
 class file_contents {
 public:
     /// @brief Default constructor.
-    file_contents() = default;
+    file_contents() noexcept = default;
 
     /// @brief Constructor that opens and loads contents of file at the given path.
     file_contents(const string_view path);

@@ -10,6 +10,7 @@
 #define EAGINE_C_API_WRAP_HPP
 
 #include "assert.hpp"
+#include "c_str.hpp"
 #include "cleanup_group.hpp"
 #include "enum_bitfield.hpp"
 #include "enum_class.hpp"
@@ -18,7 +19,6 @@
 #include "int_constant.hpp"
 #include "is_within_limits.hpp"
 #include "nothing.hpp"
-#include "string_span.hpp"
 #include "type_identity.hpp"
 #include "unreachable_reference.hpp"
 #include "valid_if/always.hpp"

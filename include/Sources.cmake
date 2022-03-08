@@ -23,6 +23,7 @@ set(HEADERS
     eagine/byteset.hpp
     eagine/callable_ref.hpp
     eagine/c_api_wrap.hpp
+    eagine/c_str.hpp
     eagine/cleanup_group.hpp
     eagine/compare.hpp
     eagine/compiler_info.hpp

@@ -9,10 +9,10 @@
 #ifndef EAGINE_FROM_STRING_HPP
 #define EAGINE_FROM_STRING_HPP
 
+#include "c_str.hpp"
 #include "is_within_limits.hpp"
 #include "memory/span_algo.hpp"
 #include "selector.hpp"
-#include "string_span.hpp"
 #include "tribool.hpp"
 #include "type_identity.hpp"
 #include "valid_if/always.hpp"

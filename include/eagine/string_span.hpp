@@ -241,60 +241,6 @@ struct basic_str_view_less : basic_view_less<Spn> {
 /// @ingroup string_utils
 using str_view_less = basic_str_view_less<std::string, string_view>;
 //------------------------------------------------------------------------------
-// c_str
-//------------------------------------------------------------------------------
-/// @brief Helper template for getting zero-terminated strings from string spans.
-/// @ingroup string_utils
-/// @see c_str
-///
-/// String spans can in many cases internally know if the element past the end
-/// is zero or not. There are cases where string spans or generally spans are
-/// not zero terminated. Because of this whenever a zero-terminated C-string
-/// is used, for example as an argument to a C-API call, instantiations of this
-/// template should be used the obtain a valid C-string.
-template <typename C, typename P, typename S>
-class basic_c_str {
-public:
-    using string_type = std::basic_string<std::remove_const_t<C>>;
-    using pointer_type = P;
-
-    constexpr basic_c_str(const basic_string_span<C, P, S> s)
-      : _span{s.is_zero_terminated() ? s : basic_string_span<C, P, S>{}}
-      , _str{s.is_zero_terminated() ? string_type{} : s.to_string()} {}
-
-    /// @brief Return a zero terminated C-string as pointer_type.
-    /// @see view
-    constexpr auto c_str() const noexcept -> pointer_type {
-        return _span.empty() ? _str.c_str() : _span.data();
-    }
-
-    /// @brief Implicit conversion to character pointer_type.
-    /// @see c_str
-    constexpr operator pointer_type() const noexcept {
-        return c_str();
-    }
-
-    /// @brief Returns a const view of the string.
-    /// @see c_str()
-    constexpr auto view() const noexcept -> basic_string_span<C, P, S> {
-        return _span.empty() ? basic_string_span<C, P, S>{_str} : _span;
-    }
-
-private:
-    const basic_string_span<C, P, S> _span{};
-    const string_type _str{};
-};
-//------------------------------------------------------------------------------
-/// @brief Functions that construct a basic_c_str from a basic_string_span.
-/// @ingroup string_utils
-template <typename C, typename P, typename S>
-static constexpr auto
-c_str(const memory::basic_span<C, P, S> s) -> std::enable_if_t<
-  std::is_convertible_v<memory::basic_span<C, P, S>, basic_string_span<C, P, S>>,
-  basic_c_str<C, P, S>> {
-    return {s};
-}
-//------------------------------------------------------------------------------
 template <typename C, typename T, typename A, typename Transform>
 static inline auto make_span_putter(
   span_size_t& i,
