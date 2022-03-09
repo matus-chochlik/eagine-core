@@ -6,13 +6,14 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/assert.hpp>
+#include <eagine/integer_range.hpp>
 #include <array>
 
 namespace eagine::mbs {
 //------------------------------------------------------------------------------
 inline auto do_decode_sequence_length(const byte b) noexcept
   -> valid_sequence_length {
-    for(span_size_t l = 1; l <= 6; ++l) {
+    for(const auto l : integer_range(1, 7)) {
         if(is_valid_head_byte(b, l)) {
             return l;
         }
@@ -29,7 +30,7 @@ inline auto is_valid_encoding(const valid_cbyte_span& vseq) noexcept -> bool {
             return false;
         }
 
-        for(span_size_t i = 1; i < l; ++i) {
+        for(const auto i : integer_range(1, l)) {
             if(!is_valid_tail_byte(seq[i], i, l)) {
                 return false;
             }
@@ -89,7 +90,7 @@ inline auto do_decode_code_point(
             if(const auto h = decode_code_point_head(src[0], vl)) {
                 code_point_t cp = h.value_anyway();
 
-                for(span_size_t i = 1; i < l; ++i) {
+                for(const auto i : integer_range(1, l)) {
                     if(const auto t{decode_code_point_tail(src[i], i, vl)}) {
                         cp |= t.value_anyway();
                     } else {
@@ -147,7 +148,7 @@ inline auto do_encode_code_point(
             if(const auto h = encode_code_point_head(val, vl)) {
                 dest[0] = h.value_anyway();
 
-                for(span_size_t i = 1; i < l; ++i) {
+                for(const auto i : integer_range(1, l)) {
                     if(const auto t{encode_code_point_tail(val, i, vl)}) {
                         dest[i] = t.value_anyway();
                     } else {

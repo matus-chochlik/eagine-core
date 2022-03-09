@@ -6,6 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
+#include <eagine/integer_range.hpp>
 #include <eagine/memory/address.hpp>
 #include <eagine/span.hpp>
 #include <cctype>
@@ -20,7 +21,7 @@ namespace eagine {
 template <typename Putter>
 void _bindump_to_bin_b(Putter& put_char, byte b) {
     static const char bd[2] = {'0', '1'};
-    for(unsigned o = 0; o < 4; ++o) {
+    for(const auto o : integer_range(4U)) {
         byte c = (b >> ((4 - o - 1) * 2));
         put_char(' ');
         put_char(bd[(c >> 1U) & 0x01U]); // NOLINT(hicpp-signed-bitwise)
@@ -43,7 +44,7 @@ void _bindump_do_bin_dump(
     while(!done) {
         span_size_t pos = row;
         bool empty_row = true;
-        for(int b = 0; b < 4; ++b) {
+        for(const auto b : integer_range(4)) {
             if(pos < bgn || done) {
                 row_none[b] = true;
             } else {
@@ -71,7 +72,7 @@ void _bindump_do_bin_dump(
         put_char('|');
 
         pos = row;
-        for(int b = 0; b < 4; ++b) {
+        for(const auto b : integer_range(4)) {
             if(b == 8) {
                 put_char(' ');
             }
@@ -91,7 +92,7 @@ void _bindump_do_bin_dump(
         put_char('|');
 
         pos = row;
-        for(span_size_t b = 0; b < 4; ++b) {
+        for(const auto b : integer_range(4)) {
             if(b == 8) {
                 put_char(' ');
             }
