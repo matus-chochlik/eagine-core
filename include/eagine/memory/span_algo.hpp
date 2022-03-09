@@ -342,7 +342,7 @@ template <typename T, typename P, typename S, typename Predicate>
 static constexpr auto skip_until(
   const basic_span<T, P, S> spn,
   Predicate predicate) noexcept -> basic_span<T, P, S> {
-    if(auto found{find_element_if(spn, predicate)}) {
+    if(const auto found{find_element_if(spn, predicate)}) {
         return skip(spn, extract(found));
     }
     return spn;
@@ -355,7 +355,7 @@ template <typename T, typename P, typename S, typename Predicate>
 static constexpr auto take_until(
   const basic_span<T, P, S> spn,
   Predicate predicate) noexcept -> basic_span<T, P, S> {
-    if(auto found{find_element_if(spn, predicate)}) {
+    if(const auto found{find_element_if(spn, predicate)}) {
         return head(spn, extract(found));
     }
     return spn;
@@ -400,7 +400,7 @@ template <
 static inline auto find(
   const basic_span<T1, P1, S1> where,
   const basic_span<T2, P2, S2> what) -> basic_span<T1, P1, S1> {
-    if(auto pos = find_position(where, what)) {
+    if(const auto pos{find_position(where, what)}) {
         return skip(where, extract(pos));
     }
     return {};
@@ -520,7 +520,7 @@ static inline auto slice_inside_brackets(
   const B left,
   const B right) noexcept -> basic_span<T, P, S> {
 
-    if(auto found = find_element(spn, left)) {
+    if(const auto found{find_element(spn, left)}) {
         spn = skip(spn, extract(found));
         int depth = 1;
         auto pos = S(1);

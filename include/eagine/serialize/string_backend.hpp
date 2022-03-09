@@ -334,7 +334,7 @@ private:
     auto _read_one(char& value, const char delimiter) noexcept -> result {
         result errors = require('\'');
         if(!errors) {
-            if(auto opt_char = this->top_char()) {
+            if(const auto opt_char{this->top_char()}) {
                 value = extract(opt_char);
                 pop(1);
             } else {
@@ -354,7 +354,7 @@ private:
       const char delimiter,
       const char (&fmt)[L]) noexcept -> result {
         result errors{};
-        if(auto src = this->string_before(delimiter, 128)) {
+        if(const auto src{this->string_before(delimiter, 128)}) {
             auto fmtstr = static_cast<const char*>(fmt);
             // TODO: to_chars from_chars when available
             // NOLINTNEXTLINE(hicpp-vararg)
@@ -434,7 +434,7 @@ private:
 
     auto _read_one(identifier& value, const char delimiter) noexcept -> result {
         result errors{};
-        if(auto src = this->string_before(delimiter, 32)) {
+        if(const auto src{this->string_before(delimiter, 32)}) {
             value = identifier(src);
             pop(src.size() + 1);
         } else {
@@ -447,7 +447,7 @@ private:
       -> result {
         result errors{};
         const auto max = decl_name_storage::max_length + 1;
-        if(auto src = this->string_before(delimiter, max)) {
+        if(const auto src{this->string_before(delimiter, max)}) {
             value.assign(src);
             pop(src.size() + 1);
         } else {

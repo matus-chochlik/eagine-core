@@ -46,8 +46,8 @@ class overlay_attribute : public attribute_interface {
             for(const auto index : integer_range(overlays.size())) {
                 const auto& overlay = overlays[index];
                 all_immutable &= overlay.is_immutable();
-                if(auto found{overlay.find(_path)}) {
-                    for(auto c : integer_range(found.nested_count())) {
+                if(const auto found{overlay.find(_path)}) {
+                    for(const auto c : integer_range(found.nested_count())) {
                         auto name{to_string(found.nested(c).name())};
                         if(name.empty()) {
                             name = std::to_string(c);

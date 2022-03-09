@@ -150,7 +150,7 @@ public:
     /// @see find
     auto exports(const string_view name) const noexcept -> bool {
         if(is_open()) {
-            if(auto found{_module->find_symbol(name)}) {
+            if(_module->find_symbol(name)) {
                 return true;
             }
         }

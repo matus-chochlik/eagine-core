@@ -69,7 +69,7 @@ static inline auto do_dissolve_bits(
 
     while(true) {
         if(r < bits) {
-            if(auto src = get()) {
+            if(const auto src{get()}) {
                 w <<= byte_bits(); // NOLINT(hicpp-signed-bitwise)
                 w |= double_byte(extract(src));
                 r += byte_bits();
@@ -107,7 +107,7 @@ static inline auto do_concentrate_bits(
 
     while(!done) {
         while(r < byte_bits()) {
-            if(auto src = get()) {
+            if(const auto src{get()}) {
                 w <<= bits; // NOLINT(hicpp-signed-bitwise)
                 // NOLINTNEXTLINE(hicpp-signed-bitwise)
                 w = (w & ~m) | (double_byte(extract(src)) & m);

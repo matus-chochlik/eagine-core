@@ -47,7 +47,7 @@ void _bindump_do_bin_dump(
             if(pos < bgn || done) {
                 row_none[b] = true;
             } else {
-                if(auto got = get_byte()) {
+                if(const auto got{get_byte()}) {
                     row_none[b] = false;
                     row_byte[b] = got.value();
                     empty_row = false;

@@ -160,7 +160,7 @@ public:
 
     template <identifier_t V>
     auto apply(const selector<V> sel) const {
-        if(auto converted{from_string(_temp, type_identity<T>(), sel)}) {
+        if(const auto converted{from_string(_temp, type_identity<T>(), sel)}) {
             _dest = extract(converted);
             return true;
         }

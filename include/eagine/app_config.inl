@@ -45,7 +45,7 @@ public:
 
         for(const auto label : tag_labels) {
             if(const auto arg{main_context().args().find(label)}) {
-                if(auto tag_arg{arg.next()}) {
+                if(const auto tag_arg{arg.next()}) {
                     _tag_list.push_back(tag_arg.get());
                 }
             }
@@ -78,7 +78,7 @@ public:
                 return found;
             }
             if(auto arg{main_context().args().find("--config-group")}) {
-                if(auto group_arg{arg.next()}) {
+                if(const auto group_arg{arg.next()}) {
                     if(auto found{
                          _find_config_of(group_arg.get(), key, tags)}) {
                         return found;

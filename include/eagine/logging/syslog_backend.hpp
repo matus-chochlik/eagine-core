@@ -287,7 +287,7 @@ private:
             const string_view prev{head(format, extract(pos))};
             msg.format.append(prev);
             format = skip(format, extract(pos) + 2);
-            if(auto end{find_position(format, string_view{"}"})}) {
+            if(const auto end{find_position(format, string_view{"}"})}) {
                 msg.arg_idx[msg.arg_count++] =
                   identifier(head(format, extract(end))).value();
                 msg.format.append("%s");

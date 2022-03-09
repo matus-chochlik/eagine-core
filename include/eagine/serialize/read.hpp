@@ -442,7 +442,7 @@ struct enum_deserializer {
             decl_name_storage temp_name{};
             errors |= _name_deserializer.read(temp_name, backend);
             if(EAGINE_LIKELY(!errors)) {
-                if(auto found{from_string(
+                if(const auto found{from_string(
                      temp_name.get(), type_identity<T>{}, default_selector)}) {
                     enumerator = extract(found);
                 } else {
@@ -453,7 +453,8 @@ struct enum_deserializer {
             std::underlying_type_t<T> temp_value{};
             errors |= _value_deserializer.read(temp_value, backend);
             if(EAGINE_LIKELY(!errors)) {
-                if(auto found = from_value(temp_value, type_identity<T>{})) {
+                if(const auto found{
+                     from_value(temp_value, type_identity<T>{})}) {
                     enumerator = extract(found);
                 } else {
                     errors |= deserialization_error_code::unexpected_data;

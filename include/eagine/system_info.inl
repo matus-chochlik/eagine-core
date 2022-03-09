@@ -60,7 +60,7 @@ public:
                 bool is_tz{false};
                 bool is_cd{false};
                 bool is_ps{false};
-                for(auto& entry : p) {
+                for(const auto& entry : p) {
                     if(starts_with(entry, string_view("thermal_zone"))) {
                         is_tz = true;
                         break;
@@ -75,8 +75,8 @@ public:
                     }
                 }
                 if(is_tz) {
-                    if(auto temp_a{c.nested(a, "temp")}) {
-                        if(auto type_a{c.nested(a, "type")}) {
+                    if(const auto temp_a{c.nested(a, "temp")}) {
+                        if(const auto type_a{c.nested(a, "type")}) {
                             if(!_cpu_temp_i) {
                                 if(c.has_value(type_a, "cpu-thermal")) {
                                     _cpu_temp_i = tz_count();
@@ -89,20 +89,20 @@ public:
                     }
                 }
                 if(is_cd) {
-                    if(auto cur_a{c.nested(a, "cur_state")}) {
-                        if(auto max_a{c.nested(a, "max_state")}) {
+                    if(const auto cur_a{c.nested(a, "cur_state")}) {
+                        if(const auto max_a{c.nested(a, "max_state")}) {
                             _cd_cm_a.emplace_back(cur_a, max_a);
                         }
                     }
                 }
                 if(is_ps) {
-                    if(auto type_a{c.nested(a, "type")}) {
+                    if(const auto type_a{c.nested(a, "type")}) {
                         if(c.has_value(type_a, "Battery")) {
-                            if(auto cap_a{c.nested(a, "capacity")}) {
+                            if(const auto cap_a{c.nested(a, "capacity")}) {
                                 _bat_cap_a.emplace_back(cap_a);
                             }
                         } else if(c.has_value(type_a, "Mains")) {
-                            if(auto onl_a{c.nested(a, "online")}) {
+                            if(const auto onl_a{c.nested(a, "online")}) {
                                 _ac_online_a.emplace_back(onl_a);
                             }
                         }
@@ -115,11 +115,11 @@ public:
         _sysfs.traverse(
           valtree::compound::visit_handler{construct_from, sysfs_scanner});
 
-        if(file_contents machine_id{"/etc/machine-id"}) {
+        if(const file_contents machine_id{"/etc/machine-id"}) {
             memory::for_each_chunk(
               as_chars(machine_id.block()),
               span_size_of<host_id_t>() * 2,
-              [this](auto hexstr) {
+              [this](const auto hexstr) {
                   if(const auto mi{from_string(
                        hexstr,
                        type_identity<host_id_t>(),
@@ -193,7 +193,7 @@ public:
     auto cd_state(const span_size_t index) noexcept
       -> valid_if_between_0_1<float> {
         EAGINE_ASSERT((index >= 0) && (index < cd_count()));
-        auto& [cur_a, max_a] = _cd_cm_a[index];
+        const auto& [cur_a, max_a] = _cd_cm_a[index];
         if(cur_a && max_a) {
             float cur_s{-1.F};
             float max_s{-1.F};
@@ -215,7 +215,7 @@ public:
     auto bat_capacity(const span_size_t index) noexcept
       -> valid_if_between_0_1<float> {
         EAGINE_ASSERT((index >= 0) && (index < bat_count()));
-        auto& cap_a = _bat_cap_a[index];
+        const auto& cap_a = _bat_cap_a[index];
         if(cap_a) {
             float capacity{-1.F};
             if(_sysfs.fetch_value(cap_a, capacity)) {
@@ -231,7 +231,7 @@ public:
 
     auto acps_online(const span_size_t index) noexcept -> tribool {
         EAGINE_ASSERT((index >= 0) && (index < acps_count()));
-        auto& onl_a = _ac_online_a[index];
+        const auto& onl_a = _ac_online_a[index];
         if(onl_a) {
             int online{0};
             if(_sysfs.fetch_value(onl_a, online)) {
@@ -280,7 +280,7 @@ auto system_info::preinitialize() noexcept -> system_info& {
 EAGINE_LIB_FUNC
 auto system_info::host_id() noexcept -> valid_if_positive<host_id_type> {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return {extract(impl).host_id()};
     }
 #endif
@@ -396,7 +396,7 @@ auto system_info::total_swap_size() noexcept
 EAGINE_LIB_FUNC
 auto system_info::thermal_sensor_count() noexcept -> span_size_t {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return extract(impl).tz_count();
     }
 #endif
@@ -407,7 +407,7 @@ EAGINE_LIB_FUNC
 auto system_info::sensor_temperature(const span_size_t index) noexcept
   -> valid_if_positive<kelvins_t<float>> {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return extract(impl).tz_temperature(index);
     }
 #endif
@@ -420,7 +420,7 @@ auto system_info::temperature_min_max() noexcept -> std::tuple<
   valid_if_positive<kelvins_t<float>>,
   valid_if_positive<kelvins_t<float>>> {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return extract(impl).tz_min_max();
     }
 #endif
@@ -431,7 +431,7 @@ EAGINE_LIB_FUNC
 auto system_info::cpu_temperature() noexcept
   -> valid_if_positive<kelvins_t<float>> {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return extract(impl).cpu_temperature();
     }
 #endif
@@ -442,7 +442,7 @@ EAGINE_LIB_FUNC
 auto system_info::gpu_temperature() noexcept
   -> valid_if_positive<kelvins_t<float>> {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return extract(impl).gpu_temperature();
     }
 #endif
@@ -452,7 +452,7 @@ auto system_info::gpu_temperature() noexcept
 EAGINE_LIB_FUNC
 auto system_info::cooling_device_count() noexcept -> span_size_t {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return extract(impl).cd_count();
     }
 #endif
@@ -463,7 +463,7 @@ EAGINE_LIB_FUNC
 auto system_info::cooling_device_state(const span_size_t index) noexcept
   -> valid_if_between_0_1<float> {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return extract(impl).cd_state(index);
     }
 #endif
@@ -474,7 +474,7 @@ auto system_info::cooling_device_state(const span_size_t index) noexcept
 EAGINE_LIB_FUNC
 auto system_info::battery_count() noexcept -> span_size_t {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return extract(impl).bat_count();
     }
 #endif
@@ -485,7 +485,7 @@ EAGINE_LIB_FUNC
 auto system_info::battery_capacity(const span_size_t index) noexcept
   -> valid_if_between_0_1<float> {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return extract(impl).bat_capacity(index);
     }
 #endif
@@ -496,7 +496,7 @@ auto system_info::battery_capacity(const span_size_t index) noexcept
 EAGINE_LIB_FUNC
 auto system_info::ac_supply_count() noexcept -> span_size_t {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return extract(impl).acps_count();
     }
 #endif
@@ -507,7 +507,7 @@ EAGINE_LIB_FUNC
 auto system_info::ac_supply_online(const span_size_t index) noexcept
   -> tribool {
 #if EAGINE_LINUX
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return extract(impl).acps_online(index);
     }
 #endif

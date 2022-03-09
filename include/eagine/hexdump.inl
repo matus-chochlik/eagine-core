@@ -58,7 +58,7 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
             if(pos < bgn || done) {
                 row_none[b] = true;
             } else {
-                if(auto got = get_byte()) {
+                if(const auto got{get_byte()}) {
                     row_none[b] = false;
                     row_byte[b] = got.value();
                     empty_row = false;

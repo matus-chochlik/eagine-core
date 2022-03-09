@@ -48,7 +48,7 @@ auto root_logger_choose_backend(
             string_view nw_addr;
             if(arg.next() && !arg.next().starts_with("-")) {
                 nw_addr = arg.next();
-            } else if(auto env_var{get_environment_variable(
+            } else if(const auto env_var{get_environment_variable(
                         "EAGINE_LOG_NETWORK_ADDRESS")}) {
                 nw_addr = extract(env_var);
             }
@@ -153,19 +153,19 @@ auto root_logger::_log_compiler_info() -> void {
         architecture_name(),
         string_view{"unknown"})
       .arg_func([](logger_backend& backend) {
-          if(auto version_major{compiler_version_major()}) {
+          if(const auto version_major{compiler_version_major()}) {
               backend.add_integer(
                 EAGINE_ID(complrMajr),
                 EAGINE_ID(VrsnMajor),
                 extract(version_major));
           }
-          if(auto version_minor{compiler_version_minor()}) {
+          if(const auto version_minor{compiler_version_minor()}) {
               backend.add_integer(
                 EAGINE_ID(complrMinr),
                 EAGINE_ID(VrsnMinor),
                 extract(version_minor));
           }
-          if(auto version_patch{compiler_version_patch()}) {
+          if(const auto version_patch{compiler_version_patch()}) {
               backend.add_integer(
                 EAGINE_ID(complrPtch),
                 EAGINE_ID(VrsnPatch),

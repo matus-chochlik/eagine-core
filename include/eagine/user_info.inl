@@ -29,7 +29,7 @@ public:
 private:
     static auto _get_username() -> std::string {
 #if EAGINE_POSIX
-        if(auto pw{::getpwuid(::getuid())}) {
+        if(const auto pw{::getpwuid(::getuid())}) {
             return {extract(pw).pw_name};
         }
         std::array<char, 128> temp{};
@@ -45,7 +45,7 @@ private:
 
     static auto _get_home_dir_path() -> std::string {
 #if EAGINE_POSIX
-        if(auto pw{::getpwuid(::getuid())}) {
+        if(const auto pw{::getpwuid(::getuid())}) {
             return {extract(pw).pw_dir};
         }
 #endif
@@ -78,7 +78,7 @@ auto user_info::_impl() noexcept -> user_info_impl* {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto user_info::login_name() noexcept -> valid_if_not_empty<string_view> {
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return {extract(impl).login_name};
     }
     return {};
@@ -86,7 +86,7 @@ auto user_info::login_name() noexcept -> valid_if_not_empty<string_view> {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto user_info::home_dir_path() noexcept -> valid_if_not_empty<string_view> {
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return {extract(impl).home_dir_path};
     }
     return {};
@@ -94,7 +94,7 @@ auto user_info::home_dir_path() noexcept -> valid_if_not_empty<string_view> {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto user_info::config_dir_path() noexcept -> valid_if_not_empty<string_view> {
-    if(auto impl{_impl()}) {
+    if(const auto impl{_impl()}) {
         return {extract(impl).config_dir_path};
     }
     return {};

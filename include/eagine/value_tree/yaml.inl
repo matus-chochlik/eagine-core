@@ -191,7 +191,7 @@ public:
                         result = result.find_child(rapidyaml_cstrref(entry));
                     }
                 } else if(result.is_seq()) {
-                    if(auto opt_idx{from_string<span_size_t>(entry)}) {
+                    if(const auto opt_idx{from_string<span_size_t>(entry)}) {
                         result = result[extract(opt_idx)];
                     } else {
                         result = {};
