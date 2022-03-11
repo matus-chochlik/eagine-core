@@ -40,7 +40,7 @@ public:
     }
 
     /// @brief Indicates if the encoded value is invalid.
-    static constexpr auto invalid(const std::uint8_t c) noexcept {
+    static constexpr auto is_invalid(const std::uint8_t c) noexcept {
         return c >= invalid();
     }
 
@@ -95,9 +95,9 @@ template <std::size_t M>
 class identifier_name {
 public:
     template <typename... C>
-    identifier_name(span_size_t len, C... c) noexcept
-      : _len{std::uint8_t(len)}
-      , _str{c...} {}
+    constexpr identifier_name(span_size_t len, C... c) noexcept
+      : _str{c...}
+      , _len{std::uint8_t(len)} {}
 
     /// @brief Alias for the string lenght type.
     using size_type = span_size_t;
@@ -112,46 +112,46 @@ public:
     using const_iterator = iterator;
 
     /// @brief Returns the pointer to the start of the unpacked identifier name.
-    auto data() const noexcept {
+    constexpr auto data() const noexcept {
         return _str.data();
     }
 
     /// @brief Returns the length of the unpacked character string.
-    auto size() const noexcept {
+    constexpr auto size() const noexcept {
         return size_type(_len);
     }
 
     /// @brief Returns an iterator to the start of the unpacked identifier name.
-    auto begin() const -> const_iterator {
+    constexpr auto begin() const noexcept -> const_iterator {
         return _str.data();
     }
 
     /// @brief Returns an iterator past the end of the unpacked identifier name.
-    auto end() const -> const_iterator {
+    constexpr auto end() const noexcept -> const_iterator {
         return _str.data() + size();
     }
 
     /// @brief Returns a string view covering the unpacked identifier name.
-    auto view() const -> string_view {
+    constexpr auto view() const noexcept -> string_view {
         // negative size indicates that the data is zero terminated
         return {data(), -size()};
     }
 
     /// @brief Returns the unpacked identifier name as a standard string.
-    auto str() const -> std::string {
+    auto str() const noexcept -> std::string {
         return {_str.data(), _len};
     }
 
     /// @brief Assigns the unpacked identifier name into a standard string.
     /// @returns s
-    auto str(std::string& s) const -> std::string& {
+    auto str(std::string& s) const noexcept -> std::string& {
         s.assign(_str.data(), _len);
         return s;
     }
 
 private:
-    std::uint8_t _len{0};
     fixed_size_string<M> _str{};
+    std::uint8_t _len{0};
 };
 //------------------------------------------------------------------------------
 /// @brief Operator for writing identifier_name into output streams.
@@ -333,7 +333,7 @@ private:
     }
 
     constexpr auto _get_size(std::size_t s) const noexcept -> std::size_t {
-        return (s < M) ? encoding::invalid(_bites[size_type(s)])
+        return (s < M) ? encoding::is_invalid(_bites[size_type(s)])
                            ? s
                            : _get_size(s + 1)
                        : M;

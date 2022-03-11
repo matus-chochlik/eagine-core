@@ -81,7 +81,7 @@ public:
 
     /// @brief Returns a pointer to the byte sequence start.
     /// @see size
-    auto data() noexcept -> pointer {
+    constexpr auto data() noexcept -> pointer {
         return _bytes;
     }
 
@@ -137,12 +137,12 @@ public:
     }
 
     /// @brief Returns an iterator to the start of the byte sequence.
-    auto begin() noexcept -> iterator {
+    constexpr auto begin() noexcept -> iterator {
         return _bytes + 0;
     }
 
     /// @brief Returns an iterator past the end of the byte sequence.
-    auto end() noexcept -> iterator {
+    constexpr auto end() noexcept -> iterator {
         return _bytes + N;
     }
 

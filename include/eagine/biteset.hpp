@@ -79,7 +79,7 @@ public:
 
     /// @brief Sets the value of the referenced biteset element.
     /// @pre is_valid()
-    void set(value_type val) noexcept {
+    constexpr void set(value_type val) noexcept {
         EAGINE_CONSTEXPR_ASSERT(is_valid(), _ptr->set(_pos, val));
     }
 
@@ -222,51 +222,57 @@ public:
         swap(_pos, other._pos);
     }
 
-    auto operator++() noexcept -> auto& {
+    constexpr auto operator++() noexcept -> auto& {
         ++_pos;
         return *static_cast<derived*>(this);
     }
 
-    auto operator++(int) noexcept -> const derived {
+    constexpr auto operator++(int) noexcept -> const derived {
         derived that = *static_cast<derived*>(this);
         ++_pos;
         return that;
     }
 
-    auto operator--() noexcept -> auto& {
+    constexpr auto operator--() noexcept -> auto& {
         --_pos;
         return *static_cast<derived*>(this);
     }
 
-    auto operator--(int) noexcept -> const derived {
+    constexpr auto operator--(int) noexcept -> const derived {
         derived that = *static_cast<derived*>(this);
         --_pos;
         return that;
     }
 
-    auto operator+=(const size_type n) noexcept -> auto& {
+    constexpr auto operator+=(const size_type n) noexcept -> auto& {
         _pos += n;
         return *static_cast<derived*>(this);
     }
 
-    auto operator-=(const size_type n) noexcept -> auto& {
+    constexpr auto operator-=(const size_type n) noexcept -> auto& {
         _pos -= n;
         return *static_cast<derived*>(this);
     }
 
-    friend auto operator+(const self& a, const difference_type n) noexcept {
+    friend constexpr auto operator+(
+      const self& a,
+      const difference_type n) noexcept {
         return derived(*a._ptr, a._pos + n);
     }
 
-    friend auto operator+(const difference_type n, const self& a) noexcept {
+    friend constexpr auto operator+(
+      const difference_type n,
+      const self& a) noexcept {
         return derived(*a._ptr, n + a._pos);
     }
 
-    friend auto operator-(const self& a, const difference_type n) noexcept {
+    friend constexpr auto operator-(
+      const self& a,
+      const difference_type n) noexcept {
         return derived(*a._ptr, a._pos - n);
     }
 
-    friend auto operator-(const self& a, const self& b) noexcept
+    friend constexpr auto operator-(const self& a, const self& b) noexcept
       -> difference_type {
         return a._pos - b._pos;
     }
@@ -486,27 +492,27 @@ public:
 
     /// @brief Sets the i-th element in this biteset.
     /// @pre i < size()
-    void set(const size_type i, const T value) noexcept {
+    constexpr void set(const size_type i, const T value) noexcept {
         _set_cell(std::size_t(i), value);
     }
 
     /// @brief Returns an iterator to the start of the sequence.
-    auto begin() const noexcept -> const_iterator {
+    constexpr auto begin() const noexcept -> const_iterator {
         return {*this, 0};
     }
 
     /// @brief Returns an iterator past the end of the sequence.
-    auto end() const noexcept -> const_iterator {
+    constexpr auto end() const noexcept -> const_iterator {
         return {*this, N};
     }
 
     /// @brief Returns a const iterator to the start of the sequence.
-    auto begin() noexcept -> iterator {
+    constexpr auto begin() noexcept -> iterator {
         return {*this, 0};
     }
 
     /// @brief Returns a const iterator past the end of the sequence.
-    auto end() noexcept -> iterator {
+    constexpr auto end() noexcept -> iterator {
         return {*this, N};
     }
 
@@ -744,7 +750,7 @@ private:
     }
 
     template <std::size_t L>
-    void _do_set_cell_bits(
+    constexpr void _do_set_cell_bits(
       const T state,
       const std::size_t bo,
       const std::size_t bl,
@@ -768,7 +774,7 @@ private:
       const size_constant<_byte_s>) noexcept {}
 
     template <std::size_t L>
-    void _set_cell_bits(
+    constexpr void _set_cell_bits(
       const T state,
       const std::size_t bb,
       const std::size_t be,
@@ -788,7 +794,7 @@ private:
         }
     }
 
-    void _set_cell_bits(
+    constexpr void _set_cell_bits(
       const T state,
       const std::size_t bb,
       const std::size_t be) noexcept {
@@ -796,7 +802,7 @@ private:
           state, bb, be, bb / _byte_s, be / _byte_s, size_constant<1>{});
     }
 
-    void _set_cell(const std::size_t i, const T value) noexcept {
+    constexpr void _set_cell(const std::size_t i, const T value) noexcept {
         if(B == _byte_s) {
             _bytes[size_type(i)] = byte(value);
         } else {
