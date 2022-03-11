@@ -61,10 +61,11 @@ static constexpr auto construct_matrix(const MC& c) noexcept
 /// This is typically more efficient than constructing the two matrices and
 /// multiplying them.
 template <typename MC1, typename MC2>
-static inline auto multiply(const MC1& mc1, const MC2& mc2) noexcept requires(
-  is_matrix_constructor_v<MC1>&& is_matrix_constructor_v<MC2>&&
-    are_multiplicable<constructed_matrix_t<MC1>, constructed_matrix_t<MC2>>::
-      value) {
+static constexpr auto multiply(const MC1& mc1, const MC2& mc2) noexcept
+  requires(
+    is_matrix_constructor_v<MC1>&& is_matrix_constructor_v<MC2>&&
+      are_multiplicable<constructed_matrix_t<MC1>, constructed_matrix_t<MC2>>::
+        value) {
     return multiply(construct_matrix<true>(mc1), construct_matrix<false>(mc2));
 }
 

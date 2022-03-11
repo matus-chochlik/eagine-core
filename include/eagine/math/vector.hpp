@@ -281,7 +281,7 @@ static constexpr auto dimension(const vector<T, N, V>&) noexcept {
 /// @brief Tests if a vector has zero lenght.
 /// @ingroup math
 template <typename T, int N, bool V>
-static inline auto is_zero(const vector<T, N, V>& v) noexcept -> bool {
+static constexpr auto is_zero(const vector<T, N, V>& v) noexcept -> bool {
     return vect::is_zero<T, N, V>::apply(v._v);
 }
 
@@ -313,14 +313,14 @@ static constexpr auto dot(
 /// @brief Returns a vector perpendicular to argument.
 /// @ingroup math
 template <typename T, bool V>
-static inline auto perpendicular(const vector<T, 2, V>& a) noexcept {
+static constexpr auto perpendicular(const vector<T, 2, V>& a) noexcept {
     return vector<T, 2, V>{{-a._v[1], a._v[0]}};
 }
 
 /// @brief 3D vector cross product.
 /// @ingroup math
 template <typename T, bool V>
-static inline auto cross(
+static constexpr auto cross(
   const vector<T, 3, V>& a,
   const vector<T, 3, V>& b) noexcept {
     using _sh = vect::shuffle<T, 3, V>;
@@ -360,7 +360,7 @@ static constexpr auto length(const vector<T, N, V>& a) noexcept {
 }
 
 template <typename T, int N, bool V>
-static inline auto _nmld(
+static constexpr auto _nmld(
   const vector<T, N, V>& a,
   const scalar<T, N, V>& l,
   const std::true_type) noexcept {
@@ -368,7 +368,7 @@ static inline auto _nmld(
 }
 
 template <typename T, int N, bool V>
-static inline auto _nmld(
+static constexpr auto _nmld(
   const vector<T, N, V>& a,
   const scalar<T, N, V>& l,
   const std::false_type) noexcept {
@@ -379,7 +379,7 @@ static inline auto _nmld(
 /// @brief Returns normalized argument.
 /// @ingroup math
 template <typename T, int N, bool V>
-static inline auto normalized(const vector<T, N, V>& a) noexcept {
+static constexpr auto normalized(const vector<T, N, V>& a) noexcept {
     scalar<T, N, V> l = length(a);
     return _nmld(a, l, vect::has_vect_data<T, N, V>());
 }
@@ -404,7 +404,7 @@ struct canonical_compound_type<math::vector<T, N, V>>
 
 template <typename T, int N, bool V>
 struct compound_view_maker<math::vector<T, N, V>> {
-    inline auto operator()(const math::vector<T, N, V>& v) const noexcept {
+    constexpr auto operator()(const math::vector<T, N, V>& v) const noexcept {
         return vect::view<T, N, V>::apply(v._v);
     }
 };

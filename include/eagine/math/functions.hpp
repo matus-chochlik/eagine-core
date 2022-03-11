@@ -173,7 +173,7 @@ static constexpr auto sigmoid01(const T x) noexcept {
 /// @ingroup math
 /// @pre 0 <= x <= 1
 template <typename T>
-static inline auto sine_sigmoid01(const T x) -> T {
+static constexpr auto sine_sigmoid01(const T x) noexcept -> T {
 
 #ifdef __clang__
     EAGINE_DIAG_PUSH()
@@ -287,7 +287,7 @@ private:
 };
 //------------------------------------------------------------------------------
 template <typename Parameter, typename... CP>
-static constexpr inline auto bezier_point(const Parameter t, const CP... cps)
+static constexpr auto bezier_point(const Parameter t, const CP... cps) noexcept
   -> std::common_type_t<CP...> {
     using bt = bezier_t<std::common_type_t<CP...>, Parameter, sizeof...(CP)>;
     return bt{}(t, cps...);
