@@ -60,8 +60,8 @@ public:
 
     /// @brief Adds the specified value to the constant (it it IsIndexed).
     template <typename I>
-    constexpr auto operator+(const I) const noexcept -> std::
-      enable_if_t<(IsIndexed && std::is_integral_v<I>), no_enum_value<T, Tag>> {
+    constexpr auto operator+(const I) const noexcept
+      -> no_enum_value<T, Tag> requires(IsIndexed&& std::is_integral_v<I>) {
         return {};
     }
 };
@@ -85,9 +85,9 @@ public:
 
     /// @brief Adds the specified value to the constant (it it IsIndexed).
     template <typename I>
-    constexpr auto operator+(const I index) const noexcept -> std::enable_if_t<
-      (IsIndexed && std::is_integral_v<I>),
-      enum_value<T, ClassList, Tag>> {
+    constexpr auto operator+(const I index) const noexcept
+      -> enum_value<T, ClassList, Tag> requires(
+        IsIndexed&& std::is_integral_v<I>) {
         using O = std::conditional_t<
           std::is_signed_v<T>,
           std::make_signed_t<I>,
@@ -120,9 +120,9 @@ public:
 
     /// @brief Adds the specified value to the constant (it it IsIndexed).
     template <typename I>
-    constexpr auto operator+(const I index) const noexcept -> std::enable_if_t<
-      (IsIndexed && std::is_integral_v<I>),
-      opt_enum_value<T, ClassList, Tag>> {
+    constexpr auto operator+(const I index) const noexcept
+      -> opt_enum_value<T, ClassList, Tag> requires(
+        IsIndexed&& std::is_integral_v<I>) {
         using O = std::conditional_t<
           std::is_signed_v<T>,
           std::make_signed_t<I>,
@@ -979,8 +979,8 @@ public:
       : base(name) {}
 
     template <typename... Args>
-    constexpr auto operator()(Args&&...) const noexcept
-      -> std::enable_if_t<sizeof...(Params) == sizeof...(Args), RV> {
+    constexpr auto operator()(Args&&...) const noexcept -> RV
+      requires(sizeof...(Params) == sizeof...(Args)) {
         return ApiTraits::fallback(Tag(), type_identity<RV>());
     }
 };
@@ -1012,8 +1012,8 @@ public:
 
     /// @brief Calls the wrapped function.
     template <typename... Args>
-    constexpr auto operator()(Args&&... args) const noexcept
-      -> std::enable_if_t<sizeof...(Params) == sizeof...(Args), RV> {
+    constexpr auto operator()(Args&&... args) const noexcept -> RV
+      requires(sizeof...(Params) == sizeof...(Args)) {
         return ApiTraits::call_static(
           Tag(), function, std::forward<Args>(args)...);
     }
@@ -1053,8 +1053,8 @@ public:
 
     /// @brief Calls the wrapped function.
     template <typename... Args>
-    constexpr auto operator()(Args&&... args) const noexcept
-      -> std::enable_if_t<sizeof...(Params) == sizeof...(Args), RV> {
+    constexpr auto operator()(Args&&... args) const noexcept -> RV
+      requires(sizeof...(Params) == sizeof...(Args)) {
         return ApiTraits::call_dynamic(
           Tag(), _function, std::forward<Args>(args)...);
     }
@@ -1108,8 +1108,8 @@ protected:
       RV (*Func)(Params...)>
     static constexpr auto _call(
       static_c_api_function<ApiTraits, Tag, RV(Params...), Func>& function,
-      Args&&... args) noexcept -> std::
-      enable_if_t<!std::is_void_v<RV>, typename ApiTraits::template result<RV>> {
+      Args&&... args) noexcept ->
+      typename ApiTraits::template result<RV> requires(!std::is_void_v<RV>) {
         return {std::move(function(std::forward<Args>(args)...))};
     }
 
@@ -1228,8 +1228,8 @@ protected:
     }
 
     template <typename Arg>
-    static constexpr auto _conv(Arg arg) noexcept
-      -> std::enable_if_t<std::is_scalar_v<Arg>, Arg> {
+    static constexpr auto _conv(Arg arg) noexcept -> Arg
+      requires(std::is_scalar_v<Arg>) {
         return arg;
     }
 

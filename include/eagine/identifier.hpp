@@ -201,8 +201,9 @@ public:
     constexpr basic_identifier() noexcept = default;
 
     /// @brief Construction from a C-string literal.
-    template <std::size_t L, typename = std::enable_if_t<(L <= M + 1)>>
+    template <std::size_t L>
     explicit constexpr basic_identifier(const char (&init)[L]) noexcept
+      requires(L <= M + 1)
       : _bites{_make_bites(
           static_cast<const char*>(init),
           L,

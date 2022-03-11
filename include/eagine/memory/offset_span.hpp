@@ -31,9 +31,9 @@ auto view_one(basic_offset_ptr<T, O> ptr) -> memory::
 }
 //------------------------------------------------------------------------------
 template <typename T, typename O>
-auto cover_one(basic_offset_ptr<T, O> ptr) -> std::enable_if_t<
-  !std::is_const_v<T>,
-  memory::basic_span<T, basic_offset_ptr<T, O>, O>> {
+auto cover_one(basic_offset_ptr<T, O> ptr)
+  -> memory::basic_span<T, basic_offset_ptr<T, O>, O> requires(
+    !std::is_const_v<T>) {
     return {ptr, O(1)};
 }
 //------------------------------------------------------------------------------

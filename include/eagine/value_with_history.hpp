@@ -61,8 +61,9 @@ public:
     constexpr value_with_history_storage() = default;
 
     /// @brief Initializes the individual revisions of the value.
-    template <typename... I, typename = std::enable_if_t<sizeof...(I) == N>>
-    constexpr value_with_history_storage(I&&... initial)
+    template <typename... I>
+    constexpr value_with_history_storage(I&&... initial) requires(
+      sizeof...(I) == N)
       : _values{T(initial)...} {}
 
     /// @brief Initializes all revisions with the same initial value.

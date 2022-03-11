@@ -21,10 +21,9 @@ class memoized;
 template <typename R, typename... P>
 class memoized<R(P...)> {
 public:
-    template <
-      typename Func,
-      typename = std::enable_if_t<!std::is_same_v<std::decay_t<Func>, memoized>>>
-    memoized(Func&& func)
+    template <typename Func>
+    memoized(Func&& func) noexcept
+      requires(!std::is_same_v<std::decay_t<Func>, memoized>)
       : _func(std::forward<Func>(func)) {}
 
     template <typename F>

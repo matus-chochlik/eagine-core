@@ -491,9 +491,9 @@ struct serializer
 /// @see deserialize
 /// @see serializer_backend
 template <typename T, typename Backend>
-auto serialize(const T& value, Backend& backend) noexcept -> std::enable_if_t<
-  std::is_base_of_v<serializer_backend, Backend>,
-  serialization_errors> {
+auto serialize(const T& value, Backend& backend) noexcept
+  -> serialization_errors
+  requires(std::is_base_of_v<serializer_backend, Backend>) {
     serialization_errors errors = backend.begin();
     if(EAGINE_LIKELY(!errors)) {
         serializer<std::remove_cv_t<T>> writer;

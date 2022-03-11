@@ -75,8 +75,8 @@ static inline auto write_to_stream(
 template <typename T, typename P, typename S>
 static inline auto operator<<(
   std::ostream& out,
-  const memory::basic_span<T, P, S> s) -> std::
-  enable_if_t<!std::is_same_v<std::remove_const_t<T>, char>, std::ostream&> {
+  const memory::basic_span<T, P, S> s)
+  -> std::ostream& requires(!std::is_same_v<std::remove_const_t<T>, char>) {
     return list_to_stream(out, s);
 }
 //------------------------------------------------------------------------------
@@ -87,8 +87,8 @@ static inline auto operator<<(
 template <typename T, typename P, typename S>
 static inline auto operator<<(
   std::ostream& out,
-  const memory::basic_span<T, P, S> s) -> std::
-  enable_if_t<std::is_same_v<std::remove_const_t<T>, char>, std::ostream&> {
+  const memory::basic_span<T, P, S> s)
+  -> std::ostream& requires(std::is_same_v<std::remove_const_t<T>, char>) {
     return write_to_stream(out, absolute(s));
 }
 //------------------------------------------------------------------------------

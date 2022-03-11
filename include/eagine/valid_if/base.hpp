@@ -291,12 +291,11 @@ public:
     /// @param func the function to be called.
     /// @param p additional parameters for the policy validity check function.
     template <typename Func>
-    auto then(const Func& func) const -> std::enable_if_t<
-      !std::is_same_v<std::result_of_t<Func(T)>, void>,
-      basic_valid_if<
-        std::result_of_t<Func(T)>,
-        valid_flag_policy,
-        typename valid_flag_policy::do_log>> {
+    auto then(const Func& func) const -> basic_valid_if<
+      std::result_of_t<Func(T)>,
+      valid_flag_policy,
+      typename valid_flag_policy::
+        do_log> requires(!std::is_same_v<std::result_of_t<Func(T)>, void>) {
         if(is_valid()) {
             return {func(this->value_anyway()), true};
         }

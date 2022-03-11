@@ -60,8 +60,8 @@ struct matrix {
 
     /// @brief Creates a matrix from another matrix type.
     template <typename P, int M, int N, bool W>
-    static auto from(const matrix<P, M, N, RM, W>& m) noexcept
-      -> std::enable_if_t<(C <= M) && (R <= N), matrix> {
+    static auto from(const matrix<P, M, N, RM, W>& m) noexcept -> matrix
+      requires((C <= M) && (R <= N)) {
         return _from_hlp(m, _make_iseq < RM ? R : C > ());
     }
 
@@ -113,16 +113,16 @@ static constexpr auto dimension(const matrix<T, N, N, RM, V>&) noexcept {
 /// @brief Returns the matrix element at [CI, RI]. Column-major implementation.
 /// @ingroup math
 template <int CI, int RI, typename T, int C, int R, bool V>
-static constexpr auto get_cm(const matrix<T, C, R, false, V>& m) noexcept
-  -> std::enable_if_t<(CI < C && RI < R), T> {
+static constexpr auto get_cm(const matrix<T, C, R, false, V>& m) noexcept -> T
+  requires(CI < C && RI < R) {
     return m._v[CI][RI];
 }
 //------------------------------------------------------------------------------
 /// @brief Returns the matrix element at [CI, RI]. Row-major implementation.
 /// @ingroup math
 template <int CI, int RI, typename T, int C, int R, bool V>
-static constexpr auto get_cm(const matrix<T, C, R, true, V>& m) noexcept
-  -> std::enable_if_t<(CI < C && RI < R), T> {
+static constexpr auto get_cm(const matrix<T, C, R, true, V>& m) noexcept -> T
+  requires(CI < C && RI < R) {
     return m._v[RI][CI];
 }
 //------------------------------------------------------------------------------
@@ -151,16 +151,16 @@ static constexpr auto get_cm(
 /// @brief Returns the matrix element at [RI, CI]. Column-major implementation.
 /// @ingroup math
 template <int RI, int CI, typename T, int C, int R, bool V>
-static constexpr auto get_rm(const matrix<T, C, R, false, V>& m) noexcept
-  -> std::enable_if_t<(CI < C && RI < R), T> {
+static constexpr auto get_rm(const matrix<T, C, R, false, V>& m) noexcept -> T
+  requires(CI < C && RI < R) {
     return m._v[CI][RI];
 }
 //------------------------------------------------------------------------------
 /// @brief Returns the matrix element at [RI, CI]. Row-major implementation.
 /// @ingroup math
 template <int RI, int CI, typename T, int C, int R, bool V>
-static constexpr auto get_rm(const matrix<T, C, R, true, V>& m) noexcept
-  -> std::enable_if_t<(CI < C && RI < R), T> {
+static constexpr auto get_rm(const matrix<T, C, R, true, V>& m) noexcept -> T
+  requires(CI < C && RI < R) {
     return m._v[RI][CI];
 }
 //------------------------------------------------------------------------------
@@ -189,16 +189,16 @@ static constexpr auto get_rm(
 /// @brief Sets the matrix element at [CI, RI]. Column-major implementation.
 /// @ingroup math
 template <int CI, int RI, typename T, int C, int R, bool V>
-static inline auto set_cm(matrix<T, C, R, false, V>& m, const T v) noexcept
-  -> std::enable_if_t<(CI < C && RI < R)> {
+static inline void set_cm(matrix<T, C, R, false, V>& m, const T v) noexcept
+  requires(CI < C && RI < R) {
     m._v[CI][RI] = v;
 }
 //------------------------------------------------------------------------------
 /// @brief Sets the matrix element at [CI, RI]. Row-major implementation.
 /// @ingroup math
 template <int CI, int RI, typename T, int C, int R, bool V>
-static inline auto set_cm(matrix<T, C, R, true, V>& m, const T v) noexcept
-  -> std::enable_if_t<(CI < C && RI < R)> {
+static inline void set_cm(matrix<T, C, R, true, V>& m, const T v) noexcept
+  requires(CI < C && RI < R) {
     m._v[RI][CI] = v;
 }
 //------------------------------------------------------------------------------
@@ -229,16 +229,16 @@ static inline void set_cm(
 /// @brief Sets the matrix element at [RI, CI]. Column-major implementation.
 /// @ingroup math
 template <int RI, int CI, typename T, int C, int R, bool V>
-static inline auto set_rm(matrix<T, C, R, false, V>& m, const T v) noexcept
-  -> std::enable_if_t<(CI < C && RI < R)> {
+static inline void set_rm(matrix<T, C, R, false, V>& m, const T v) noexcept
+  requires(CI < C && RI < R) {
     m._v[CI][RI] = v;
 }
 //------------------------------------------------------------------------------
 /// @brief Sets the matrix element at [RI, CI]. Row-major implementation.
 /// @ingroup math
 template <int RI, int CI, typename T, int C, int R, bool V>
-static inline auto set_rm(matrix<T, C, R, true, V>& m, const T v) noexcept
-  -> std::enable_if_t<(CI < C && RI < R)> {
+static inline void set_rm(matrix<T, C, R, true, V>& m, const T v) noexcept
+  requires(CI < C && RI < R) {
     m._v[RI][CI] = v;
 }
 //------------------------------------------------------------------------------
@@ -373,7 +373,7 @@ static inline auto make_column_major(const matrix<T, C, R, true, V>& m) noexcept
 /// @ingroup math
 template <int I, typename T, int C, int R, bool RM, bool V>
 static constexpr auto major_vector(const matrix<T, C, R, RM, V>& m) noexcept
-  -> std::enable_if_t<(I < (RM ? R : C)), vector<T, (RM ? C : R), V>> {
+  -> vector<T, (RM ? C : R), V> requires(I < (RM ? R : C)) {
     return {m._v[I]};
 }
 //------------------------------------------------------------------------------
@@ -381,14 +381,14 @@ static constexpr auto major_vector(const matrix<T, C, R, RM, V>& m) noexcept
 /// @ingroup math
 template <int I, typename T, int C, int R, bool RM, bool V>
 static inline auto minor_vector(const matrix<T, C, R, RM, V>& m) noexcept
-  -> std::enable_if_t<(I < (RM ? C : R)), vector<T, (RM ? R : C), V>> {
+  -> vector<T, (RM ? R : C), V> requires(I < (RM ? C : R)) {
     return major_vector<I>(reorder(m));
 }
 //------------------------------------------------------------------------------
 // minor_vector mat4x4
 template <int I, typename T, bool RM, bool V>
 static inline auto minor_vector(const matrix<T, 4, 4, RM, V>& m) noexcept
-  -> std::enable_if_t<(I < 4), vector<T, 4, V>> {
+  -> vector<T, 4, V> requires(I < 4) {
     return {vect::shuffle2<T, 4, V>::template apply<0, 1, 4, 5>(
       vect::shuffle2<T, 4, V>::template apply<0 + I, 4 + I, -1, -1>(
         m._v[0], m._v[1]),
@@ -605,13 +605,11 @@ static inline auto multiply(
 /// Doing multiplication on matrix constructors is typically more efficient
 /// than doing multiplication on the constructed matrices, because it can
 /// save row/column reordering operations.
-template <
-  typename MC1,
-  typename MC2,
-  typename = std::enable_if_t<
-    is_matrix_constructor<MC1>::value && is_matrix_constructor<MC2>::value &&
-    are_multiplicable<constructed_matrix_t<MC1>, constructed_matrix_t<MC2>>::value>>
-static inline auto operator*(const MC1& mc1, const MC2& mc2) noexcept {
+template <typename MC1, typename MC2>
+static inline auto operator*(const MC1& mc1, const MC2& mc2) noexcept requires(
+  is_matrix_constructor<MC1>::value&& is_matrix_constructor<MC2>::value&&
+    are_multiplicable<constructed_matrix_t<MC1>, constructed_matrix_t<MC2>>::
+      value) {
     return multiply(mc1, mc2);
 }
 //------------------------------------------------------------------------------

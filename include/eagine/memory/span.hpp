@@ -378,7 +378,7 @@ public:
     /// @pre 0 <= index < size()
     template <typename Int>
     constexpr auto element(const Int index) const noexcept
-      -> std::enable_if_t<std::is_integral_v<Int>, std::add_const_t<value_type>&> {
+      -> std::add_const_t<value_type>& requires(std::is_integral_v<Int>) {
         return ref(span_size(index));
     }
 
@@ -386,7 +386,7 @@ public:
     /// @pre 0 <= index < size()
     template <typename Int>
     auto element(const Int index) noexcept
-      -> std::enable_if_t<std::is_integral_v<Int>, value_type&> {
+      -> value_type& requires(std::is_integral_v<Int>) {
         return ref(span_size(index));
     }
 
@@ -394,7 +394,7 @@ public:
     /// @see element
     template <typename Int>
     auto operator[](const Int index) noexcept
-      -> std::enable_if_t<std::is_integral_v<Int>, value_type&> {
+      -> value_type& requires(std::is_integral_v<Int>) {
         return element(index);
     }
 
@@ -402,7 +402,7 @@ public:
     /// @see element
     template <typename Int>
     constexpr auto operator[](const Int index) const noexcept
-      -> std::enable_if_t<std::is_integral_v<Int>, std::add_const_t<value_type>&> {
+      -> std::add_const_t<value_type>& requires(std::is_integral_v<Int>) {
         return element(index);
     }
 
@@ -521,21 +521,17 @@ static constexpr auto view(std::initializer_list<T> il) noexcept
 //------------------------------------------------------------------------------
 /// @brief Creates a const view over a compatible contiguous container.
 /// @ingroup memory
-template <
-  typename C,
-  typename =
-    std::enable_if_t<has_span_data_member_v<C> && has_span_size_member_v<C>>>
-static constexpr auto view(const C& container) noexcept {
+template <typename C>
+static constexpr auto view(const C& container) noexcept
+  requires(has_span_data_member_v<C>&& has_span_size_member_v<C>) {
     return view(container.data(), container.size());
 }
 //------------------------------------------------------------------------------
 /// @brief Creates a mutable span covering a compatible contiguous container.
 /// @ingroup memory
-template <
-  typename C,
-  typename =
-    std::enable_if_t<has_span_data_member_v<C> && has_span_size_member_v<C>>>
-static constexpr auto cover(C& container) noexcept {
+template <typename C>
+static constexpr auto cover(C& container) noexcept
+  requires(has_span_data_member_v<C>&& has_span_size_member_v<C>) {
     return cover(container.data(), container.size());
 }
 //------------------------------------------------------------------------------

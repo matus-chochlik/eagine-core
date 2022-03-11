@@ -107,9 +107,8 @@ public:
     }
 
     template <typename Implementation>
-    auto as() noexcept -> std::enable_if_t<
-      std::is_base_of_v<attribute_interface, Implementation>,
-      Implementation*> {
+    auto as() noexcept -> Implementation* requires(
+      std::is_base_of_v<attribute_interface, Implementation>) {
         return dynamic_cast<Implementation*>(_pimpl);
     }
 
@@ -236,8 +235,8 @@ public:
     /// @note Do not use directly in client code. Use one of the constructor
     /// functions that know which implementation to pick and how to initialize it.
     template <typename Compound, typename... Args>
-    static auto make(Args&&... args) -> std::
-      enable_if_t<std::is_base_of_v<compound_interface, Compound>, compound> {
+    static auto make(Args&&... args) -> compound
+      requires(std::is_base_of_v<compound_interface, Compound>) {
         return {Compound::make_shared(std::forward<Args>(args)...)};
     }
 
@@ -754,9 +753,8 @@ public:
     void traverse(const stack_visit_handler visitor) const;
 
     template <typename Implementation>
-    auto as() noexcept -> std::enable_if_t<
-      std::is_base_of_v<compound_interface, Implementation>,
-      Implementation*> {
+    auto as() noexcept -> Implementation* requires(
+      std::is_base_of_v<compound_interface, Implementation>) {
         return dynamic_cast<Implementation*>(_pimpl.get());
     }
 

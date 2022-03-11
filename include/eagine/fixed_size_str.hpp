@@ -29,8 +29,9 @@ public:
     }
 
     /// @brief Construction from a pack of characters.
-    template <typename... C, typename = std::enable_if_t<sizeof...(C) == N>>
+    template <typename... C>
     constexpr fixed_size_string(const C... c) noexcept
+      requires(sizeof...(C) == N)
       : _str{c...} {}
 
     /// @brief Construction from a C-string literal.
@@ -38,13 +39,10 @@ public:
         std::copy(std::begin(s), std::end(s), std::begin(_str));
     }
 
-    template <
-      span_size_t N1,
-      span_size_t N2,
-      typename = std::enable_if_t<N1 + N2 == N + 1>>
+    template <span_size_t N1, span_size_t N2>
     constexpr fixed_size_string(
       const fixed_size_string<N1>& s1,
-      const fixed_size_string<N2>& s2) noexcept {
+      const fixed_size_string<N2>& s2) noexcept requires(N1 + N2 == N + 1) {
         std::copy(std::begin(s1._str), std::end(s1._str), _str);
         std::copy(std::begin(s2._str), std::end(s1._str), _str + N1 - 1);
     }
@@ -139,18 +137,16 @@ static constexpr auto operator+(
 /// @brief Converts a single-digit decimal number into fixed_size_string.
 /// @ingroup string_utils
 template <int I>
-static constexpr auto to_fixed_size_string(
-  const int_constant<I>,
-  std::enable_if_t<(I >= 0) && (I < 10)>* = nullptr) noexcept {
+static constexpr auto to_fixed_size_string(const int_constant<I>) noexcept
+  requires((I >= 0) && (I < 10)) {
     return fixed_size_string<2>(char('0' + I), '\0');
 }
 
 /// @brief Converts a multi-digit decimal number into fixed_size_string.
 /// @ingroup string_utils
 template <int I>
-static constexpr auto to_fixed_size_string(
-  const int_constant<I>,
-  std::enable_if_t<(I > 9)>* = nullptr) noexcept {
+static constexpr auto to_fixed_size_string(const int_constant<I>) noexcept
+  requires(I > 9) {
     return to_fixed_size_string(int_constant<I / 10>()) +
            fixed_size_string<2>(char('0' + I % 10), '\0');
 }
@@ -158,9 +154,8 @@ static constexpr auto to_fixed_size_string(
 /// @brief Converts a negative decimal number into fixed_size_string.
 /// @ingroup string_utils
 template <int I>
-static constexpr auto to_fixed_size_string(
-  const int_constant<I>,
-  std::enable_if_t<(I < 0)>* = nullptr) noexcept {
+static constexpr auto to_fixed_size_string(const int_constant<I>) noexcept
+  requires(I < 0) {
     return fixed_size_string<2>("-") + to_fixed_size_string(int_constant<-I>());
 }
 

@@ -461,12 +461,10 @@ public:
     constexpr biteset() noexcept = default;
 
     /// @brief Construction from a pack of integer values.
-    template <
-      typename... P,
-      typename = std::enable_if_t<
-        (sizeof...(P) == N) &&
-        std::conjunction_v<std::true_type, std::is_convertible<P, T>...>>>
-    explicit constexpr biteset(P... p) noexcept
+    template <typename... P>
+    explicit constexpr biteset(P... p) noexcept requires(
+      sizeof...(P) == N &&
+      std::conjunction_v<std::true_type, std::is_convertible<P, T>...>)
       : _bytes{_make_bytes(T(p)...)} {}
 
     explicit constexpr biteset(_bytes_t init) noexcept

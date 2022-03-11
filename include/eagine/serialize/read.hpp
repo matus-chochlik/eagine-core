@@ -497,9 +497,8 @@ struct deserializer
 /// @see serialize
 /// @see deserializer_backend
 template <typename T, typename Backend>
-auto deserialize(T& value, Backend& backend) noexcept -> std::enable_if_t<
-  std::is_base_of_v<deserializer_backend, Backend>,
-  deserialization_errors> {
+auto deserialize(T& value, Backend& backend) noexcept -> deserialization_errors
+  requires(std::is_base_of_v<deserializer_backend, Backend>) {
     deserialization_errors errors{};
     errors |= backend.begin();
     if(EAGINE_LIKELY(!errors)) {

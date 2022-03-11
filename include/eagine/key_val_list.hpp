@@ -89,15 +89,13 @@ struct key_value_list_base {
     using conv_type = typename Traits::conv_type;
     using value_type = typename Traits::value_type;
 
-    template <
-      std::size_t M,
-      std::size_t... I,
-      typename = std::enable_if_t<(M + 2 == N) && (sizeof...(I) == M)>>
+    template <std::size_t M, std::size_t... I>
     constexpr key_value_list_base(
       const key_value_list_base<Traits, M>& head,
       const key_type key,
       const value_type value,
       const std::index_sequence<I...>) noexcept
+      requires((M + 2 == N) && (sizeof...(I) == M))
       : _elements{
           {head._elements[I]...,
            value_type(conv_type(key)),
@@ -125,11 +123,11 @@ public:
     /// @brief Default constructor.
     key_value_list() = default;
 
-    template <std::size_t M, typename = std::enable_if_t<M + 2 == N>>
+    template <std::size_t M>
     constexpr key_value_list(
       const key_value_list_base<Traits, M>& head,
       const key_type key,
-      const value_type value) noexcept
+      const value_type value) noexcept requires(M + 2 == N)
       : _base(head, key, value, std::make_index_sequence<M>()) {}
 
     key_value_list(const key_value_list_element<Traits>& head) noexcept

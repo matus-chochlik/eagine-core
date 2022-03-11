@@ -161,9 +161,9 @@ public:
     /// @see is_open
     /// @see exports
     template <typename Signature>
-    auto find(const string_view name) const noexcept -> std::enable_if_t<
-      std::is_function_v<std::remove_pointer_t<Signature>>,
-      callable_ref<std::remove_pointer_t<Signature>>> {
+    auto find(const string_view name) const noexcept
+      -> callable_ref<std::remove_pointer_t<Signature>> requires(
+        std::is_function_v<std::remove_pointer_t<Signature>>) {
         if(is_open()) {
             if(auto found{_module->find_symbol(name)}) {
                 return {

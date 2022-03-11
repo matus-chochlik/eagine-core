@@ -71,13 +71,10 @@ static constexpr const auto _reflected_enumerator_mapping =
       ^Enum,
       std::experimental::meta::is_enumerator))>{});
 //------------------------------------------------------------------------------
-template <
-  typename Enum,
-  typename Selector,
-  typename = std::enable_if_t<std::is_enum_v<Enum>>>
+template <typename Enum, typename Selector>
 constexpr auto enumerator_mapping(
   const type_identity<Enum>,
-  const Selector) noexcept -> const auto& {
+  const Selector) noexcept -> const auto& requires(std::is_enum_v<Enum>) {
     return _reflected_enumerator_mapping<Enum>;
 }
 #endif

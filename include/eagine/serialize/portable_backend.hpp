@@ -12,6 +12,7 @@
 #include "fputils.hpp"
 #include "read_backend.hpp"
 #include "write_backend.hpp"
+#include <concepts>
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -111,9 +112,8 @@ private:
         return do_sink("U");
     }
 
-    template <typename I>
-    auto _write_one(I value, const type_identity<I>) noexcept
-      -> std::enable_if_t<std::is_integral_v<I> && std::is_unsigned_v<I>, result> {
+    template <std::unsigned_integral I>
+    auto _write_one(I value, const type_identity<I>) noexcept -> result {
         result errors{};
         const auto encode = [&]() {
             // clang-format off
@@ -131,9 +131,8 @@ private:
         return errors;
     }
 
-    template <typename I>
-    auto _write_one(I value, const type_identity<I>) noexcept
-      -> std::enable_if_t<std::is_integral_v<I> && std::is_signed_v<I>, result> {
+    template <std::signed_integral I>
+    auto _write_one(I value, const type_identity<I>) noexcept -> result {
         result errors = do_sink(value < 0 ? '-' : '+');
         using U = std::make_unsigned_t<I>;
         errors |= _write_one(
@@ -143,7 +142,7 @@ private:
 
     template <typename F>
     auto _write_one(const F value, const type_identity<F> tid) noexcept
-      -> std::enable_if_t<std::is_floating_point_v<F>, result> {
+      -> result requires(std::is_floating_point_v<F>) {
         const auto [f, e] = fputils::decompose(value, tid);
         result errors =
           _write_one(f, type_identity<fputils::decompose_fraction_t<F>>{});
@@ -285,9 +284,8 @@ private:
         return require(delimiter);
     }
 
-    template <typename I>
-    auto _read_one(I& value, const char delimiter) noexcept
-      -> std::enable_if_t<std::is_integral_v<I> && std::is_unsigned_v<I>, result> {
+    template <std::unsigned_integral I>
+    auto _read_one(I& value, const char delimiter) noexcept -> result {
         value = I(0);
         result errors{};
         if(auto src{this->string_before(delimiter, 48)}) {
@@ -316,9 +314,8 @@ private:
         return errors;
     }
 
-    template <typename I>
-    auto _read_one(I& value, const char delimiter) noexcept
-      -> std::enable_if_t<std::is_integral_v<I> && std::is_signed_v<I>, result> {
+    template <std::signed_integral I>
+    auto _read_one(I& value, const char delimiter) noexcept -> result {
         using U = std::make_unsigned_t<I>;
         const char sign = extract_or(top_char(), '\0');
         result errors{};
@@ -337,9 +334,8 @@ private:
         return errors;
     }
 
-    template <typename F>
-    auto _read_one(F& value, const char delimiter) noexcept
-      -> std::enable_if_t<std::is_floating_point_v<F>, result> {
+    template <std::floating_point F>
+    auto _read_one(F& value, const char delimiter) noexcept -> result {
         fputils::decompose_fraction_t<F> f{};
 
         result errors = _read_one(f, '`');

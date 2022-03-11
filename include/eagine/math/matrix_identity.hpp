@@ -57,35 +57,23 @@ static constexpr auto multiply(
 }
 
 // multiply
-template <
-  typename MC,
-  typename T,
-  int C,
-  int R,
-  bool RM,
-  bool V,
-  typename = std::enable_if_t<
-    is_matrix_constructor_v<MC> &&
-    are_multiplicable<constructed_matrix_t<MC>, matrix<T, C, R, RM, V>>::value>>
+template <typename MC, typename T, int C, int R, bool RM, bool V>
 static constexpr auto multiply(
   const MC& mc,
-  const identity<matrix<T, C, R, RM, V>>&) noexcept -> MC {
+  const identity<matrix<T, C, R, RM, V>>&) noexcept -> MC
+  requires(is_matrix_constructor_v<MC>&& are_multiplicable<
+           constructed_matrix_t<MC>,
+           matrix<T, C, R, RM, V>>::value) {
     return mc;
 }
 
-template <
-  typename T,
-  int C,
-  int R,
-  bool RM,
-  bool V,
-  typename MC,
-  typename = std::enable_if_t<
-    is_matrix_constructor_v<MC> &&
-    are_multiplicable<matrix<T, C, R, RM, V>, constructed_matrix_t<MC>>::value>>
+template <typename T, int C, int R, bool RM, bool V, typename MC>
 static constexpr auto multiply(
   const identity<matrix<T, C, R, RM, V>>&,
-  const MC& mc) noexcept -> MC {
+  const MC& mc) noexcept -> MC
+  requires(is_matrix_constructor_v<MC>&& are_multiplicable<
+           matrix<T, C, R, RM, V>,
+           constructed_matrix_t<MC>>::value) {
     return mc;
 }
 

@@ -29,13 +29,11 @@ constexpr auto data_member_tuple_from_mapping(
     return std::tuple<std::remove_cv_t<std::remove_reference_t<M>>...>{};
 }
 
-template <
-  typename T,
-  typename Selector,
-  typename = std::enable_if_t<has_data_member_mapping_v<T, Selector>>>
+template <typename T, typename Selector>
 constexpr auto data_member_tuple(
   const type_identity<T> tid,
-  const Selector sel) noexcept {
+  const Selector sel) noexcept
+  requires(has_data_member_mapping_v<T, Selector>) {
     return data_member_tuple_from_mapping(data_member_mapping(tid, sel));
 }
 //------------------------------------------------------------------------------

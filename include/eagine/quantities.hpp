@@ -90,10 +90,9 @@ static constexpr auto turns_(const T value) noexcept {
 /// @see right_angles_
 /// @see turns_
 /// @relates tagged_quantity
-template <
-  typename Qty,
-  typename = std::enable_if_t<is_convertible_quantity_v<Qty, units::radian>>>
-static constexpr auto sin(const Qty& qty) {
+template <typename Qty>
+static constexpr auto sin(const Qty& qty) requires(
+  is_convertible_quantity_v<Qty, units::radian>) {
     using std::sin;
     return sin(value(convert_to<units::radian>(qty)));
 }
@@ -105,10 +104,9 @@ static constexpr auto sin(const Qty& qty) {
 /// @see right_angles_
 /// @see turns_
 /// @relates tagged_quantity
-template <
-  typename Qty,
-  typename = std::enable_if_t<is_convertible_quantity_v<Qty, units::radian>>>
-static constexpr auto cos(const Qty& qty) {
+template <typename Qty>
+static constexpr auto cos(const Qty& qty) requires(
+  is_convertible_quantity_v<Qty, units::radian>) {
     using std::cos;
     return cos(value(convert_to<units::radian>(qty)));
 }
@@ -120,10 +118,9 @@ static constexpr auto cos(const Qty& qty) {
 /// @see right_angles_
 /// @see turns_
 /// @relates tagged_quantity
-template <
-  typename Qty,
-  typename = std::enable_if_t<is_convertible_quantity_v<Qty, units::radian>>>
-static constexpr auto tan(const Qty& qty) {
+template <typename Qty>
+static constexpr auto tan(const Qty& qty) requires(
+  is_convertible_quantity_v<Qty, units::radian>) {
     using std::tan;
     return tan(value(convert_to<units::radian>(qty)));
 }

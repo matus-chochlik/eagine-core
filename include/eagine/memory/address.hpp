@@ -58,16 +58,15 @@ public:
     constexpr explicit basic_address(pointer addr) noexcept
       : _addr{addr} {}
 
-    template <
-      typename Int,
-      typename = std::enable_if_t<
-        std::is_integral_v<Int> && std::is_convertible_v<Int, std::ptrdiff_t>>>
-    constexpr basic_address(basic_address that, Int offs) noexcept
+    template <typename Int>
+    constexpr basic_address(basic_address that, Int offs) noexcept requires(
+      std::is_integral_v<Int>&& std::is_convertible_v<Int, std::ptrdiff_t>)
       // NOLINTNEXTLINE(performance-no-int-to-ptr)
       : _addr{reinterpret_cast<pointer>(that.value() + offs)} {}
 
-    template <bool IsConst2, typename = std::enable_if_t<IsConst && !IsConst2>>
+    template <bool IsConst2>
     constexpr basic_address(basic_address<IsConst2> a) noexcept
+      requires(IsConst && !IsConst2)
       : _addr{pointer(a)} {}
 
     /// @brief Indicates if the stored address is null.
@@ -105,11 +104,9 @@ public:
     /// @see ptr
     /// @see is_aligned_as
     /// @pre is_aligned_as<T>()
-    template <
-      typename T,
-      typename =
-        std::enable_if_t<!std::is_void_v<T> && (std::is_const_v<T> || !IsConst)>>
-    constexpr explicit operator T*() const noexcept {
+    template <typename T>
+    constexpr explicit operator T*() const noexcept
+      requires(!std::is_void_v<T> && (std::is_const_v<T> || !IsConst)) {
         return EAGINE_CONSTEXPR_ASSERT(
           is_aligned_as<T>(), static_cast<T*>(_addr));
     }

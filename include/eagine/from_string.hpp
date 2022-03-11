@@ -18,17 +18,17 @@
 #include "valid_if/always.hpp"
 #include "valid_if/decl.hpp"
 #include <chrono>
+#include <concepts>
 #include <cstdlib>
 
 namespace eagine {
 //------------------------------------------------------------------------------
 auto _parse_from_string(const string_view src, long long int&) noexcept -> bool;
 //------------------------------------------------------------------------------
-template <typename T>
+template <std::integral T>
 static inline auto parse_from_string(
   const string_view src,
-  type_identity<T>) noexcept
-  -> std::enable_if_t<std::is_integral_v<T>, optionally_valid<T>> {
+  type_identity<T>) noexcept -> optionally_valid<T> {
     long long int parsed{};
     if(_parse_from_string(src, parsed)) {
         return convert_if_fits<T>(parsed);
@@ -38,11 +38,10 @@ static inline auto parse_from_string(
 //------------------------------------------------------------------------------
 auto _parse_from_string(const string_view src, long double&) noexcept -> bool;
 //------------------------------------------------------------------------------
-template <typename T>
+template <std::floating_point T>
 static inline auto parse_from_string(
   const string_view src,
-  type_identity<T>) noexcept
-  -> std::enable_if_t<std::is_floating_point_v<T>, optionally_valid<T>> {
+  type_identity<T>) noexcept -> optionally_valid<T> {
     long double parsed{};
     if(_parse_from_string(src, parsed)) {
         return convert_if_fits<T>(parsed);

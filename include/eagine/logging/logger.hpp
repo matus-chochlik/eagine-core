@@ -393,8 +393,8 @@ public:
     template <typename T, typename U>
     auto log_chart_sample(
       const identifier series,
-      const tagged_quantity<T, U>& qty) const noexcept -> std::
-      enable_if_t<std::is_convertible_v<T, float>, const named_logging_object&> {
+      const tagged_quantity<T, U>& qty) const noexcept
+      -> const named_logging_object& requires(std::is_convertible_v<T, float>) {
         log_chart_sample(series, qty.value());
         return *this;
     }
@@ -515,9 +515,10 @@ public:
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename U>
-    auto chart_sample(const identifier series, const tagged_quantity<T, U>& qty)
-      const noexcept
-      -> std::enable_if_t<std::is_convertible_v<T, float>, logger&> {
+    auto chart_sample(
+      const identifier series,
+      const tagged_quantity<T, U>& qty) noexcept
+      -> const logger& requires(std::is_convertible_v<T, float>) {
         log_chart_sample(series, qty.value());
         return *this;
     }

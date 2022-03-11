@@ -32,19 +32,19 @@ static inline auto adapt_log_entry_arg(
     };
 }
 //------------------------------------------------------------------------------
-template <typename T, typename = std::enable_if_t<has_enumerator_mapping_v<T>>>
+template <typename T>
 static constexpr auto adapt_log_entry_arg(
   const identifier name,
-  const T value) noexcept {
+  const T value) noexcept requires(has_enumerator_mapping_v<T>) {
     return [=](logger_backend& backend) {
         backend.add_string(name, EAGINE_ID(enum), enumerator_name(value));
     };
 }
 //------------------------------------------------------------------------------
-template <typename T, typename = std::enable_if_t<has_enumerator_mapping_v<T>>>
+template <typename T>
 static constexpr auto adapt_log_entry_arg(
   const identifier name,
-  const bitfield<T> bf) noexcept {
+  const bitfield<T> bf) noexcept requires(has_enumerator_mapping_v<T>) {
     return [=](logger_backend& backend) {
         const auto func = [&backend, name, bf](const auto& info) {
             if(bf.has(static_cast<T>(info.value))) {
@@ -649,7 +649,7 @@ public:
     /// @see has_log_entry_adapter_v
     template <typename T>
     auto arg(const identifier name, T&& value) noexcept
-      -> std::enable_if_t<has_log_entry_adapter_v<std::decay_t<T>>, log_entry&> {
+      -> log_entry& requires(has_log_entry_adapter_v<std::decay_t<T>>) {
         if(_backend) {
             _args.add(adapt_log_entry_arg(name, std::forward<T>(value)));
         }
@@ -666,10 +666,8 @@ public:
       const identifier name,
       const identifier tag,
       valid_if_or_fallback<F, T, P, L>&& opt) noexcept
-      -> std::enable_if_t<
-        has_log_entry_function_v<std::decay_t<T>> &&
-          has_log_entry_function_v<std::decay_t<F>>,
-        log_entry&> {
+      -> log_entry& requires(has_log_entry_function_v<std::decay_t<T>>&&
+                               has_log_entry_function_v<std::decay_t<F>>) {
         if(opt.is_valid()) {
             return arg(name, tag, std::move(opt.value()));
         }
@@ -688,10 +686,8 @@ public:
       const identifier tag,
       basic_valid_if<T, P, L> opt,
       F fbck) noexcept
-      -> std::enable_if_t<
-        has_log_entry_function_v<std::decay_t<T>> &&
-          has_log_entry_function_v<std::decay_t<F>>,
-        log_entry&> {
+      -> log_entry& requires(has_log_entry_function_v<std::decay_t<T>>&&
+                               has_log_entry_function_v<std::decay_t<F>>) {
         return arg(name, tag, either_or(std::move(opt), std::move(fbck)));
     }
 

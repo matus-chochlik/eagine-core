@@ -249,19 +249,15 @@ struct enum_class {
     enum_class() = default;
 
     /// @brief Construction from a related enum_value.
-    template <
-      typename Classes,
-      typename Tag,
-      typename = std::enable_if_t<mp_contains_v<Classes, Self>>>
+    template <typename Classes, typename Tag>
     constexpr enum_class(const enum_value<T, Classes, Tag> ev) noexcept
+      requires(mp_contains_v<Classes, Self>)
       : _value{ev.value} {}
 
     /// @brief Construction from a related opt_enum_value.
-    template <
-      typename Classes,
-      typename Tag,
-      typename = std::enable_if_t<mp_contains_v<Classes, Self>>>
+    template <typename Classes, typename Tag>
     constexpr enum_class(const opt_enum_value<T, Classes, Tag> ev) noexcept
+      requires(mp_contains_v<Classes, Self>)
       : _value{ev.value} {
         EAGINE_ASSERT(ev.is_valid);
     }

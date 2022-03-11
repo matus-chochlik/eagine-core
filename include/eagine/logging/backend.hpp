@@ -209,8 +209,8 @@ struct logger_backend : interface<logger_backend> {
     /// @param value the value of the argument.
     /// @see has_log_entry_adapter_v
     template <typename T>
-    auto add_adapted(const identifier arg, const T& value)
-      -> std::enable_if_t<has_log_entry_adapter_v<T>> {
+    void add_adapted(const identifier arg, const T& value) requires(
+      has_log_entry_adapter_v<T>) {
         adapt_log_entry_arg(arg, value)(*this);
     }
 

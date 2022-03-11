@@ -24,26 +24,20 @@ struct enum_bits<T, mp_list<Classes...>> {
       : _bits{bits} {}
 };
 
-template <
-  typename T,
-  typename TL1,
-  typename TL2,
-  typename = std::enable_if_t<!mp_is_empty_v<mp_union_t<TL1, TL2>>>>
+template <typename T, typename TL1, typename TL2>
 static constexpr auto operator|(
   const enum_value<T, TL1> a,
-  const enum_value<T, TL2> b) noexcept {
+  const enum_value<T, TL2> b) noexcept
+  requires(!mp_is_empty_v<mp_union_t<TL1, TL2>>) {
     // NOLINTNEXTLINE(hicpp-signed-bitwise)
     return enum_bits<T, mp_union_t<TL1, TL2>>{a.value | b.value};
 }
 
-template <
-  typename T,
-  typename TL1,
-  typename TL2,
-  typename = std::enable_if_t<!mp_is_empty_v<mp_union_t<TL1, TL2>>>>
+template <typename T, typename TL1, typename TL2>
 static constexpr auto operator|(
   const enum_bits<T, TL1> eb,
-  const enum_value<T, TL2> ev) noexcept {
+  const enum_value<T, TL2> ev) noexcept
+  requires(!mp_is_empty_v<mp_union_t<TL1, TL2>>) {
     return enum_bits<T, mp_union_t<TL1, TL2>>{eb._bits | ev.value};
 }
 //------------------------------------------------------------------------------
@@ -61,16 +55,14 @@ struct enum_bitfield {
     constexpr enum_bitfield(const EnumClass e) noexcept
       : _value{e._value} {}
 
-    template <
-      typename Classes,
-      typename = std::enable_if_t<mp_contains_v<Classes, EnumClass>>>
+    template <typename Classes>
     constexpr enum_bitfield(const enum_value<value_type, Classes> ev) noexcept
+      requires(mp_contains_v<Classes, EnumClass>)
       : _value{ev.value} {}
 
-    template <
-      typename Classes,
-      typename = std::enable_if_t<mp_contains_v<Classes, EnumClass>>>
+    template <typename Classes>
     constexpr enum_bitfield(const enum_bits<value_type, Classes> eb) noexcept
+      requires(mp_contains_v<Classes, EnumClass>)
       : _value{eb._bits} {}
 
     explicit constexpr operator value_type() const noexcept {

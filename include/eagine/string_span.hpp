@@ -51,20 +51,16 @@ public:
         return len;
     }
 
-    template <
-      typename R,
-      typename = std::enable_if_t<
-        !std::is_array_v<R> && std::is_convertible_v<R, P> &&
-        std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>>>
-    consteval basic_string_span(immediate_function_t, R addr) noexcept
+    template <typename R>
+    consteval basic_string_span(immediate_function_t, R addr) noexcept requires(
+      !std::is_array_v<R> && std::is_convertible_v<R, P> &&
+      std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>)
       : base{addr, -static_cast<S>(_ce_strlen(addr))} {}
 #endif
-    template <
-      typename R,
-      typename = std::enable_if_t<
-        !std::is_array_v<R> && std::is_convertible_v<R, P> &&
-        std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>>>
-    constexpr explicit basic_string_span(R addr) noexcept
+    template <typename R>
+    constexpr explicit basic_string_span(R addr) noexcept requires(
+      !std::is_array_v<R> && std::is_convertible_v<R, P> &&
+      std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>)
       : base{addr, -limit_cast<S>(std::strlen(addr))} {}
 
     /// @brief Construction from C string literal
@@ -87,24 +83,20 @@ public:
     ///
     /// The container passed as argument should have @c data and @c size
     /// member functions with the same semantics as std::string does.
-    template <
-      typename Str,
-      typename = std::enable_if_t<
-        memory::has_span_data_member_v<Str, C> &&
-        memory::has_span_size_member_v<Str>>>
+    template <typename Str>
     constexpr basic_string_span(Str& str) noexcept
+      requires(memory::has_span_data_member_v<Str, C>&&
+                 memory::has_span_size_member_v<Str>)
       : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
 
     /// @brief Construction from compatible container const reference.
     ///
     /// The container passed as argument should have @c data and @c size
     /// member functions with the same semantics as std::string does.
-    template <
-      typename Str,
-      typename = std::enable_if_t<
-        memory::has_span_data_member_v<Str, C> &&
-        memory::has_span_size_member_v<Str>>>
+    template <typename Str>
     constexpr basic_string_span(const Str& str) noexcept
+      requires(memory::has_span_data_member_v<Str, C>&&
+                 memory::has_span_size_member_v<Str>)
       : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
 
     using base::data;
