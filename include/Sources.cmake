@@ -356,7 +356,6 @@ set(HEADERS
     eagine/watchdog.hpp
     eagine/workshop.hpp
     eagine/wrapping_container.hpp
-    eagine/zip_iterator.hpp
 )
 
 set(PUB_INLS
