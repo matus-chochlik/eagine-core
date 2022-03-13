@@ -49,7 +49,7 @@ private:
 //------------------------------------------------------------------------------
 /// @brief Class wrapping a constant with missing or unknown value.
 /// @ingroup c_api_wrap
-template <typename T, typename Tag = nothing_t, bool IsIndexed = false>
+template <typename T, typename Tag = nothing_t, bool isIndexed = false>
 struct no_c_api_constant
   : c_api_constant_base
   , no_enum_value<T, Tag> {
@@ -58,10 +58,10 @@ public:
     constexpr no_c_api_constant(const string_view name, ApiTraits&, Api&) noexcept
       : c_api_constant_base{name} {}
 
-    /// @brief Adds the specified value to the constant (it it IsIndexed).
+    /// @brief Adds the specified value to the constant (it it isIndexed).
     template <typename I>
     constexpr auto operator+(const I) const noexcept
-      -> no_enum_value<T, Tag> requires(IsIndexed&& std::is_integral_v<I>) {
+      -> no_enum_value<T, Tag> requires(isIndexed&& std::is_integral_v<I>) {
         return {};
     }
 };
@@ -73,7 +73,7 @@ template <
   typename T,
   T value,
   typename Tag = nothing_t,
-  bool IsIndexed = false>
+  bool isIndexed = false>
 struct static_c_api_constant
   : c_api_constant_base
   , enum_value<T, ClassList, Tag> {
@@ -83,11 +83,11 @@ public:
       : c_api_constant_base{name}
       , enum_value<T, ClassList, Tag>{value} {}
 
-    /// @brief Adds the specified value to the constant (it it IsIndexed).
+    /// @brief Adds the specified value to the constant (it it isIndexed).
     template <typename I>
     constexpr auto operator+(const I index) const noexcept
       -> enum_value<T, ClassList, Tag> requires(
-        IsIndexed&& std::is_integral_v<I>) {
+        isIndexed&& std::is_integral_v<I>) {
         using O = std::conditional_t<
           std::is_signed_v<T>,
           std::make_signed_t<I>,
@@ -102,7 +102,7 @@ template <
   typename ClassList,
   typename T,
   typename Tag = nothing_t,
-  bool IsIndexed = false>
+  bool isIndexed = false>
 struct dynamic_c_api_constant
   : c_api_constant_base
   , opt_enum_value<T, ClassList, Tag> {
@@ -118,11 +118,11 @@ public:
       , opt_enum_value<T, ClassList, Tag>{
           traits.load_constant(api, name, type_identity<T>())} {}
 
-    /// @brief Adds the specified value to the constant (it it IsIndexed).
+    /// @brief Adds the specified value to the constant (it it isIndexed).
     template <typename I>
     constexpr auto operator+(const I index) const noexcept
       -> opt_enum_value<T, ClassList, Tag> requires(
-        IsIndexed&& std::is_integral_v<I>) {
+        isIndexed&& std::is_integral_v<I>) {
         using O = std::conditional_t<
           std::is_signed_v<T>,
           std::make_signed_t<I>,
@@ -131,21 +131,21 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-template <typename ClassList, typename Constant, typename Tag, bool IsIndexed>
+template <typename ClassList, typename Constant, typename Tag, bool isIndexed>
 struct get_opt_c_api_constant;
 
-template <typename ClassList, typename T, T value, typename Tag, bool IsIndexed>
+template <typename ClassList, typename T, T value, typename Tag, bool isIndexed>
 struct get_opt_c_api_constant<
   ClassList,
   std::integral_constant<T, value>,
   Tag,
-  IsIndexed>
-  : type_identity<static_c_api_constant<ClassList, T, value, Tag, IsIndexed>> {
+  isIndexed>
+  : type_identity<static_c_api_constant<ClassList, T, value, Tag, isIndexed>> {
 };
 
-template <typename ClassList, typename T, typename Tag, bool IsIndexed>
-struct get_opt_c_api_constant<ClassList, type_identity<T>, Tag, IsIndexed>
-  : type_identity<dynamic_c_api_constant<ClassList, T, Tag, IsIndexed>> {};
+template <typename ClassList, typename T, typename Tag, bool isIndexed>
+struct get_opt_c_api_constant<ClassList, type_identity<T>, Tag, isIndexed>
+  : type_identity<dynamic_c_api_constant<ClassList, T, Tag, isIndexed>> {};
 
 /// @brief Template alias used for switching between static and dynamic constants.
 /// @tparam ClassList a list of enum_class types into which the constant can
@@ -153,7 +153,7 @@ struct get_opt_c_api_constant<ClassList, type_identity<T>, Tag, IsIndexed>
 /// @tparam Constant integral constant specifying the value or a placeholder.
 /// @tparam Tag a tag type that can be used in custiomization of some operations
 ///         on the constant.
-/// @tparam IsIndexed indicates if the constant is indexed, which enables
+/// @tparam isIndexed indicates if the constant is indexed, which enables
 ///         additional operations on the constants.
 /// @ingroup c_api_wrap
 ///
@@ -170,9 +170,9 @@ template <
   typename ClassList,
   typename Constant,
   typename Tag = nothing_t,
-  bool IsIndexed = false>
+  bool isIndexed = false>
 using opt_c_api_constant =
-  typename get_opt_c_api_constant<ClassList, Constant, Tag, IsIndexed>::type;
+  typename get_opt_c_api_constant<ClassList, Constant, Tag, isIndexed>::type;
 //------------------------------------------------------------------------------
 /// @brief Exception wrapping information about failed C-API function call result.
 /// @ingroup c_api_wrap
@@ -945,14 +945,14 @@ struct default_c_api_traits {
     using result = always_valid<RV>;
 };
 //------------------------------------------------------------------------------
-template <bool IsAvailable>
-class c_api_function_base : public bool_constant<IsAvailable> {
+template <bool isAvailable>
+class c_api_function_base : public bool_constant<isAvailable> {
 public:
     constexpr c_api_function_base(const string_view name) noexcept
       : _name{name} {}
 
     constexpr explicit operator bool() const noexcept {
-        return IsAvailable;
+        return isAvailable;
     }
 
     constexpr auto name() const noexcept -> string_view {
@@ -1081,12 +1081,12 @@ template <
   typename Tag,
   typename Signature,
   c_api_function_ptr<ApiTraits, Tag, Signature> function,
-  bool IsAvailable,
-  bool IsStatic>
+  bool isAvailable,
+  bool isStatic>
 using opt_c_api_function = std::conditional_t<
-  IsAvailable,
+  isAvailable,
   std::conditional_t<
-    IsStatic,
+    isStatic,
     static_c_api_function<ApiTraits, Tag, Signature, function>,
     dynamic_c_api_function<ApiTraits, Tag, Signature>>,
   unimplemented_c_api_function<ApiTraits, Tag, Signature>>;
