@@ -10,6 +10,7 @@
 #define EAGINE_C_API_ADAPTED_FUNCION_HPP
 
 #include "parameter_map.hpp"
+#include "result.hpp"
 #include <utility>
 
 namespace eagine::c_api {
@@ -62,10 +63,11 @@ class basic_adapted_function<
     template <std::size_t... I>
     constexpr auto _call(CppParam... param, std::index_sequence<I...>)
       const noexcept {
+        using Ftw = function_traits<Wrapper>;
         const Map map{};
         return map(
           size_constant<0>{},
-          (_api.*function)(map(size_constant<I + 1>{}, param...)...),
+          Ftw::call(_api.*function, map(size_constant<I + 1>{}, param...)...),
           param...);
     }
 
@@ -80,7 +82,8 @@ public:
     }
 
     constexpr auto operator()(CppParam... param) const noexcept {
-        return _call(param..., std::make_index_sequence<sizeof...(CParam)>{});
+        using S = std::make_index_sequence<sizeof...(CParam)>;
+        return _call(param..., S{});
     }
 };
 
