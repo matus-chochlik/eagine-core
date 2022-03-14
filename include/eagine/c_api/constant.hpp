@@ -156,40 +156,6 @@ template <
 using opt_constant =
   typename get_opt_constant<ClassList, Constant, Tag, isIndexed>::type;
 //------------------------------------------------------------------------------
-
 } // namespace eagine::c_api
-
-namespace eagine {
-// TODO: replace all usage of the old names and remove these aliases
-
-template <typename T, typename Tag = nothing_t, bool isIndexed = false>
-using no_c_api_constant = c_api::no_constant<T, Tag, isIndexed>;
-
-template <
-  typename ClassList,
-  typename T,
-  T value,
-  typename Tag = nothing_t,
-  bool isIndexed = false>
-using c_api_static_constant =
-  c_api::static_constant<ClassList, T, value, Tag, isIndexed>;
-
-template <
-  typename ClassList,
-  typename T,
-  typename Tag = nothing_t,
-  bool isIndexed = false>
-using dynamic_c_api_constant =
-  c_api::dynamic_constant<ClassList, T, Tag, isIndexed>;
-
-template <
-  typename ClassList,
-  typename Constant,
-  typename Tag = nothing_t,
-  bool isIndexed = false>
-using opt_c_api_constant =
-  c_api::opt_constant<ClassList, Constant, Tag, isIndexed>;
-
-} // namespace eagine
 
 #endif

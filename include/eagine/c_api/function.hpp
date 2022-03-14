@@ -259,40 +259,4 @@ using opt_function = std::conditional_t<
 //------------------------------------------------------------------------------
 } // namespace eagine::c_api
 
-namespace eagine {
-// TODO: replace all usage of the old names and remove these aliases
-
-template <typename ApiTraits, typename Tag, typename Signature>
-using c_api_function_ptr = c_api::function_ptr<ApiTraits, Tag, Signature>;
-
-template <
-  typename ApiTraits,
-  typename Tag,
-  typename Signature,
-  c_api::function_ptr<ApiTraits, Tag, Signature> function,
-  bool isAvailable,
-  bool isStatic>
-using opt_c_api_function =
-  c_api::opt_function<ApiTraits, Tag, Signature, function, isAvailable, isStatic>;
-
-template <
-  typename ApiTraits,
-  typename Tag,
-  typename Signature,
-  c_api::function_ptr<ApiTraits, Tag, Signature> function>
-using static_c_api_function =
-  c_api::static_function<ApiTraits, Tag, Signature, function>;
-
-template <typename ApiTraits, typename Tag, typename Signature>
-using dynamic_c_api_function =
-  c_api::dynamic_function<ApiTraits, Tag, Signature>;
-
-template <typename ApiTraits, typename Tag, typename Signature>
-using unimplemented_c_api_function =
-  c_api::unimplemented_function<ApiTraits, Tag, Signature>;
-
-using default_c_api_traits = c_api::default_traits;
-
-} // namespace eagine
-
 #endif

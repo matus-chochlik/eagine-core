@@ -9,24 +9,12 @@
 #ifndef EAGINE_C_API_WRAP_HPP
 #define EAGINE_C_API_WRAP_HPP
 
-#include "assert.hpp"
 #include "c_api/constant.hpp"
 #include "c_api/function.hpp"
 #include "c_str.hpp"
 #include "cleanup_group.hpp"
 #include "enum_bitfield.hpp"
-#include "enum_class.hpp"
-#include "extract.hpp"
 #include "handle.hpp"
-#include "int_constant.hpp"
-#include "is_within_limits.hpp"
-#include "nothing.hpp"
-#include "type_identity.hpp"
-#include "unreachable_reference.hpp"
-#include "valid_if/always.hpp"
-#include "valid_if/never.hpp"
-#include <tuple>
-#include <type_traits>
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -35,7 +23,7 @@ class derived_c_api_function {
 protected:
     template <typename RV, typename... Params, typename... Args>
     static constexpr auto _call(
-      const unimplemented_c_api_function<ApiTraits, Tag, RV(Params...)>&,
+      const c_api::unimplemented_function<ApiTraits, Tag, RV(Params...)>&,
       Args&&...) noexcept -> typename ApiTraits::template no_result<RV> {
         return {};
     }
@@ -46,7 +34,7 @@ protected:
       typename... Args,
       RV (*Func)(Params...)>
     static constexpr auto _call(
-      static_c_api_function<ApiTraits, Tag, RV(Params...), Func>& function,
+      c_api::static_function<ApiTraits, Tag, RV(Params...), Func>& function,
       Args&&... args) noexcept ->
       typename ApiTraits::template result<RV> requires(!std::is_void_v<RV>) {
         return {std::move(function(std::forward<Args>(args)...))};
@@ -54,7 +42,7 @@ protected:
 
     template <typename... Params, typename... Args, void (*Func)(Params...)>
     static constexpr auto _call(
-      static_c_api_function<ApiTraits, Tag, void(Params...), Func>& function,
+      c_api::static_function<ApiTraits, Tag, void(Params...), Func>& function,
       Args&&... args) noexcept -> typename ApiTraits::template result<void> {
         function(std::forward<Args>(args)...);
         return {};
@@ -62,7 +50,7 @@ protected:
 
     template <typename RV, typename... Params, typename... Args>
     static constexpr auto _call(
-      dynamic_c_api_function<ApiTraits, Tag, RV(Params...)>& function,
+      c_api::dynamic_function<ApiTraits, Tag, RV(Params...)>& function,
       Args&&... args) noexcept -> typename ApiTraits::template opt_result<RV> {
         return {
           std::move(function(std::forward<Args>(args)...)), bool(function)};
@@ -70,7 +58,7 @@ protected:
 
     template <typename... Params, typename... Args>
     static constexpr auto _call(
-      dynamic_c_api_function<ApiTraits, Tag, void(Params...)>& function,
+      c_api::dynamic_function<ApiTraits, Tag, void(Params...)>& function,
       Args&&... args) noexcept ->
       typename ApiTraits::template opt_result<void> {
         function(std::forward<Args>(args)...);
@@ -79,42 +67,42 @@ protected:
 
     template <typename RV, typename... Params>
     static constexpr auto _fake(
-      const unimplemented_c_api_function<ApiTraits, Tag, RV(Params...)>&,
+      const c_api::unimplemented_function<ApiTraits, Tag, RV(Params...)>&,
       RV fallback) noexcept -> typename ApiTraits::template result<RV> {
         return {std::move(fallback)};
     }
 
     template <typename RV, typename... Params>
     static constexpr auto _fake(
-      const unimplemented_c_api_function<ApiTraits, Tag, RV(Params...)>&) noexcept
+      const c_api::unimplemented_function<ApiTraits, Tag, RV(Params...)>&) noexcept
       -> typename ApiTraits::template result<RV> {
         return {RV{}};
     }
 
     template <typename RV, typename... Params, RV (*Func)(Params...), typename F>
     static constexpr auto _fake(
-      const static_c_api_function<ApiTraits, Tag, RV(Params...), Func>&,
+      const c_api::static_function<ApiTraits, Tag, RV(Params...), Func>&,
       F&& fallback) noexcept -> typename ApiTraits::template result<RV> {
         return {std::forward<F>(fallback)};
     }
 
     template <typename RV, typename... Params, RV (*Func)(Params...)>
     static constexpr auto _fake(
-      const static_c_api_function<ApiTraits, Tag, RV(Params...), Func>&) noexcept
+      const c_api::static_function<ApiTraits, Tag, RV(Params...), Func>&) noexcept
       -> typename ApiTraits::template result<RV> {
         return {RV{}};
     }
 
     template <typename RV, typename... Params, typename F>
     static constexpr auto _fake(
-      const dynamic_c_api_function<ApiTraits, Tag, RV(Params...)>&,
+      const c_api::dynamic_function<ApiTraits, Tag, RV(Params...)>&,
       F&& fallback) noexcept -> typename ApiTraits::template result<RV> {
         return {std::forward<F>(fallback)};
     }
 
     template <typename RV, typename... Params>
     static constexpr auto _fake(
-      const dynamic_c_api_function<ApiTraits, Tag, RV(Params...)>&) noexcept ->
+      const c_api::dynamic_function<ApiTraits, Tag, RV(Params...)>&) noexcept ->
       typename ApiTraits::template result<RV> {
         return {RV{}};
     }
