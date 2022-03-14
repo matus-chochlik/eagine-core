@@ -5,12 +5,15 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/c_api/adapted_function.hpp>
+
 #include <eagine/config/platform.hpp>
 #include <eagine/c_api_wrap.hpp>
 #include <eagine/extract.hpp>
 #include <eagine/hexdump.hpp>
 #include <eagine/maybe_unused.hpp>
 #include <eagine/memory/block.hpp>
+#include <eagine/memory/span_algo.hpp>
 #include <iostream>
 
 #if EAGINE_POSIX
@@ -26,7 +29,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 struct example_sets_errno {};
 //------------------------------------------------------------------------------
-struct example_api_traits : default_c_api_traits {};
+struct example_api_traits : c_api::default_traits {};
 //------------------------------------------------------------------------------
 struct example_file_api {
 
@@ -36,7 +39,7 @@ struct example_file_api {
     template <typename Tag = example_sets_errno>
     using derived_func = derived_c_api_function<this_api, api_traits, Tag>;
 
-    opt_c_api_function<
+    c_api::opt_function<
       api_traits,
       example_sets_errno,
       int(int[2]),
@@ -64,7 +67,7 @@ struct example_file_api {
         }
     } open_file;
 
-    opt_c_api_function<
+    c_api::opt_function<
       api_traits,
       example_sets_errno,
       ssize_t(int, void*, size_t),
@@ -73,24 +76,20 @@ struct example_file_api {
       true>
       read_file;
 
-    struct : derived_func<> {
-        using base = derived_func<>;
-        using base::api;
-        using base::base;
+    c_api::adapted_function<
+      example_file_api,
+      decltype(read_file),
+      &example_file_api::read_file,
+      ssize_t(int, void*, size_t),
+      ssize_t(int, memory::block),
+      c_api::combined_map<
+        c_api::trivial_arg_map<0>,
+        c_api::trivial_arg_map<1>,
+        c_api::get_data_map<2, 2>,
+        c_api::get_size_map<3, 2>>>
+      read_block{*this};
 
-        explicit constexpr operator bool() const noexcept {
-            return bool(api().read_file);
-        }
-
-        auto operator()(int fd, memory::block blk) noexcept -> ssize_t {
-            return api().read_file(
-              fd,
-              static_cast<void*>(blk.data()),
-              static_cast<size_t>(blk.size()));
-        }
-    } read_block;
-
-    opt_c_api_function<
+    c_api::opt_function<
       api_traits,
       example_sets_errno,
       ssize_t(int, const void*, size_t),
@@ -99,41 +98,33 @@ struct example_file_api {
       true>
       write_file;
 
-    struct : derived_func<> {
-        using base = derived_func<>;
-        using base::api;
-        using base::base;
+    c_api::adapted_function<
+      example_file_api,
+      decltype(write_file),
+      &example_file_api::write_file,
+      ssize_t(int, const void*, size_t),
+      ssize_t(int, memory::const_block),
+      c_api::combined_map<
+        c_api::trivial_arg_map<0>,
+        c_api::trivial_arg_map<1>,
+        c_api::get_data_map<2, 2>,
+        c_api::get_size_map<3, 2>>>
+      write_block{*this};
 
-        explicit constexpr operator bool() const noexcept {
-            return bool(api().write_file);
-        }
+    c_api::adapted_function<
+      example_file_api,
+      decltype(write_file),
+      &example_file_api::write_file,
+      ssize_t(int, const void*, size_t),
+      ssize_t(int, string_view),
+      c_api::combined_map<
+        c_api::trivial_arg_map<0>,
+        c_api::trivial_arg_map<1>,
+        c_api::get_data_map<2, 2>,
+        c_api::get_size_map<3, 2>>>
+      write_string{*this};
 
-        auto operator()(int fd, memory::const_block blk) noexcept -> ssize_t {
-            return api().write_file(
-              fd,
-              static_cast<const void*>(blk.data()),
-              static_cast<size_t>(blk.size()));
-        }
-    } write_block;
-
-    struct : derived_func<> {
-        using base = derived_func<>;
-        using base::api;
-        using base::base;
-
-        explicit constexpr operator bool() const noexcept {
-            return bool(api().write_file);
-        }
-
-        auto operator()(int fd, string_view str) noexcept -> ssize_t {
-            return api().write_file(
-              fd,
-              static_cast<const void*>(str.data()),
-              static_cast<size_t>(str.size()));
-        }
-    } write_string;
-
-    opt_c_api_function<
+    c_api::opt_function<
       api_traits,
       example_sets_errno,
       int(int),
@@ -146,10 +137,7 @@ struct example_file_api {
       : make_pipe{"pipe", traits, *this}
       , open_file{"open", traits, *this}
       , read_file{"read", traits, *this}
-      , read_block("read", traits, *this)
       , write_file{"write", traits, *this}
-      , write_block("write", traits, *this)
-      , write_string("write", traits, *this)
       , close_file{"close", traits, *this} {}
 };
 //------------------------------------------------------------------------------
@@ -157,6 +145,8 @@ struct example_file_api {
 
 auto main(int, const char** argv) -> int {
     using namespace eagine;
+    using namespace eagine::c_api;
+
     example_api_traits traits;
     example_file_api api(traits);
 
