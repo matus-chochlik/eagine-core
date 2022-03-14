@@ -9,6 +9,7 @@
 #ifndef EAGINE_C_API_ADAPTED_FUNCION_HPP
 #define EAGINE_C_API_ADAPTED_FUNCION_HPP
 
+#include "function.hpp"
 #include "parameter_map.hpp"
 #include "result.hpp"
 #include <utility>
@@ -16,29 +17,28 @@
 namespace eagine::c_api {
 
 template <typename T>
-struct function_traits;
+struct method_traits;
 
 template <typename Api, typename Wrapper>
-struct function_traits<Wrapper Api::*> {
+struct method_traits<Wrapper Api::*> {
     using api_type = Api;
     using wrapper_type = Wrapper;
     using signature = typename Wrapper::signature;
 };
 
 template <auto ptr>
-using function_api_t = typename function_traits<decltype(ptr)>::api_type;
+using method_api_t = typename method_traits<decltype(ptr)>::api_type;
 
 template <auto ptr>
-using function_wrapper_t =
-  typename function_traits<decltype(ptr)>::wrapper_type;
+using method_wrapper_t = typename method_traits<decltype(ptr)>::wrapper_type;
 
 template <auto ptr>
-using function_signature_t = typename function_traits<decltype(ptr)>::signature;
+using method_signature_t = typename method_traits<decltype(ptr)>::signature;
 
 template <
   typename Api,
   typename Wrapper,
-  Wrapper Api::*function,
+  Wrapper Api::*method,
   typename CSignature = typename Wrapper::signature,
   typename CppSignature = CSignature,
   typename Map = trivial_map>
@@ -47,7 +47,7 @@ class basic_adapted_function;
 template <
   typename Api,
   typename Wrapper,
-  Wrapper Api::*function,
+  Wrapper Api::*method,
   typename CRV,
   typename... CParam,
   typename CppRV,
@@ -56,7 +56,7 @@ template <
 class basic_adapted_function<
   Api,
   Wrapper,
-  function,
+  method,
   CRV(CParam...),
   CppRV(CppParam...),
   Map> {
@@ -67,7 +67,7 @@ class basic_adapted_function<
         const Map map{};
         return map(
           size_constant<0>{},
-          Ftw::call(_api.*function, map(size_constant<I + 1>{}, param...)...),
+          Ftw::call(_api.*method, map(size_constant<I + 1>{}, param...)...),
           param...);
     }
 
@@ -78,7 +78,7 @@ public:
       : _api{api} {}
 
     explicit constexpr operator bool() const noexcept {
-        return bool(_api.*function);
+        return bool(_api.*method);
     }
 
     constexpr auto operator()(CppParam... param) const noexcept {
@@ -88,14 +88,14 @@ public:
 };
 
 template <
-  auto function,
-  typename CppSignature = function_signature_t<function>,
+  auto method,
+  typename CppSignature = method_signature_t<method>,
   typename Map = trivial_map>
 using adapted_function = basic_adapted_function<
-  function_api_t<function>,
-  function_wrapper_t<function>,
-  function,
-  function_signature_t<function>,
+  method_api_t<method>,
+  method_wrapper_t<method>,
+  method,
+  method_signature_t<method>,
   CppSignature,
   Map>;
 

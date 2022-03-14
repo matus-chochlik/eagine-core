@@ -9,6 +9,7 @@
 #ifndef EAGINE_C_API_FUNCTION_HPP
 #define EAGINE_C_API_FUNCTION_HPP
 
+#include "../string_span.hpp"
 #include "../valid_if/always.hpp"
 #include "../valid_if/never.hpp"
 #include "result.hpp"
