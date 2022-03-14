@@ -6,8 +6,8 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#ifndef EAGINE_C_API_FNCTION_HPP
-#define EAGINE_C_API_FNCTION_HPP
+#ifndef EAGINE_C_API_FUNCTION_HPP
+#define EAGINE_C_API_FUNCTION_HPP
 
 #include "../valid_if/always.hpp"
 #include "../valid_if/never.hpp"
@@ -256,6 +256,81 @@ using opt_function = std::conditional_t<
     static_function<ApiTraits, Tag, Signature, function>,
     dynamic_function<ApiTraits, Tag, Signature>>,
   unimplemented_function<ApiTraits, Tag, Signature>>;
+//------------------------------------------------------------------------------
+template <typename W>
+struct function_traits;
+
+template <typename ApiTraits, typename Tag, typename RV, typename... P>
+struct function_traits<unimplemented_function<ApiTraits, Tag, RV(P...)>> {
+    template <typename T = RV>
+    using type = typename ApiTraits::template opt_result<T>;
+
+    template <typename... Args>
+    static constexpr auto call(
+      const c_api::unimplemented_function<ApiTraits, Tag, RV(P...)>&,
+      Args&&...) noexcept -> typename ApiTraits::template no_result<RV> {
+        return {};
+    }
+};
+
+template <typename ApiTraits, typename Tag, typename RV, typename... P, auto f>
+struct function_traits<static_function<ApiTraits, Tag, RV(P...), f>> {
+    template <typename T = RV>
+    using type = typename ApiTraits::template result<T>;
+
+    template <typename... Args>
+    static constexpr auto call(
+      c_api::static_function<ApiTraits, Tag, RV(P...), f>& function,
+      Args&&... args) noexcept -> typename ApiTraits::template result<RV> {
+        return {std::move(function(std::forward<Args>(args)...))};
+    }
+};
+
+template <typename ApiTraits, typename Tag, typename... P, auto f>
+struct function_traits<static_function<ApiTraits, Tag, void(P...), f>> {
+    template <typename T = void>
+    using type = typename ApiTraits::template result<T>;
+
+    template <typename... Args>
+    static constexpr auto call(
+      c_api::static_function<ApiTraits, Tag, void(P...), f>& function,
+      Args&&... args) noexcept -> typename ApiTraits::template result<void> {
+        function(std::forward<Args>(args)...);
+        return {};
+    }
+};
+
+template <typename ApiTraits, typename Tag, typename RV, typename... P>
+struct function_traits<dynamic_function<ApiTraits, Tag, RV(P...)>> {
+    template <typename T = RV>
+    using type = typename ApiTraits::template opt_result<T>;
+
+    template <typename... Args>
+    static constexpr auto call(
+      c_api::dynamic_function<ApiTraits, Tag, RV(P...)>& function,
+      Args&&... args) noexcept -> typename ApiTraits::template opt_result<RV> {
+        return {
+          std::move(function(std::forward<Args>(args)...)), bool(function)};
+    }
+};
+
+template <typename ApiTraits, typename Tag, typename... P>
+struct function_traits<dynamic_function<ApiTraits, Tag, void(P...)>> {
+    template <typename T = void>
+    using type = typename ApiTraits::template opt_result<T>;
+
+    template <typename... Args>
+    static constexpr auto call(
+      c_api::dynamic_function<ApiTraits, Tag, void(P...)>& function,
+      Args&&... args) noexcept ->
+      typename ApiTraits::template opt_result<void> {
+        function(std::forward<Args>(args)...);
+        return {bool(function)};
+    }
+};
+
+template <typename T, typename W>
+using function_result_t = typename function_traits<W>::template type<T>;
 //------------------------------------------------------------------------------
 } // namespace eagine::c_api
 
