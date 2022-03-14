@@ -14,27 +14,47 @@
 
 namespace eagine::c_api {
 
-template <
-  typename Api,
-  typename WrapperType,
-  WrapperType Api::*function,
-  typename CSignature = typename WrapperType::signature,
-  typename CppSignature = CSignature,
-  typename Map = trivial_map>
-class adapted_function;
+template <typename T>
+struct function_traits;
+
+template <typename Api, typename Wrapper>
+struct function_traits<Wrapper Api::*> {
+    using api_type = Api;
+    using wrapper_type = Wrapper;
+    using signature = typename Wrapper::signature;
+};
+
+template <auto ptr>
+using function_api_t = typename function_traits<decltype(ptr)>::api_type;
+
+template <auto ptr>
+using function_wrapper_t =
+  typename function_traits<decltype(ptr)>::wrapper_type;
+
+template <auto ptr>
+using function_signature_t = typename function_traits<decltype(ptr)>::signature;
 
 template <
   typename Api,
-  typename WrapperType,
-  WrapperType Api::*function,
+  typename Wrapper,
+  Wrapper Api::*function,
+  typename CSignature = typename Wrapper::signature,
+  typename CppSignature = CSignature,
+  typename Map = trivial_map>
+class basic_adapted_function;
+
+template <
+  typename Api,
+  typename Wrapper,
+  Wrapper Api::*function,
   typename CRV,
   typename... CParam,
   typename CppRV,
   typename... CppParam,
   typename Map>
-class adapted_function<
+class basic_adapted_function<
   Api,
-  WrapperType,
+  Wrapper,
   function,
   CRV(CParam...),
   CppRV(CppParam...),
@@ -52,7 +72,7 @@ class adapted_function<
     Api& _api;
 
 public:
-    adapted_function(Api& api) noexcept
+    basic_adapted_function(Api& api) noexcept
       : _api{api} {}
 
     explicit constexpr operator bool() const noexcept {
@@ -63,6 +83,18 @@ public:
         return _call(param..., std::make_index_sequence<sizeof...(CParam)>{});
     }
 };
+
+template <
+  auto function,
+  typename CppSignature = function_signature_t<function>,
+  typename Map = trivial_map>
+using adapted_function = basic_adapted_function<
+  function_api_t<function>,
+  function_wrapper_t<function>,
+  function,
+  function_signature_t<function>,
+  CppSignature,
+  Map>;
 
 } // namespace eagine::c_api
 

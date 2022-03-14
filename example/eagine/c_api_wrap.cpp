@@ -77,16 +77,12 @@ struct example_file_api {
       read_file;
 
     c_api::adapted_function<
-      example_file_api,
-      decltype(read_file),
       &example_file_api::read_file,
-      ssize_t(int, void*, size_t),
       ssize_t(int, memory::block),
       c_api::combined_map<
-        c_api::trivial_arg_map<0>,
-        c_api::trivial_arg_map<1>,
+        c_api::trivial_arg_map<0, 1>,
         c_api::get_data_map<2, 2>,
-        c_api::get_size_map<3, 2>>>
+        c_api::convert<int, c_api::get_size_map<3, 2>>>>
       read_block{*this};
 
     c_api::opt_function<
@@ -99,29 +95,21 @@ struct example_file_api {
       write_file;
 
     c_api::adapted_function<
-      example_file_api,
-      decltype(write_file),
       &example_file_api::write_file,
-      ssize_t(int, const void*, size_t),
       ssize_t(int, memory::const_block),
       c_api::combined_map<
-        c_api::trivial_arg_map<0>,
-        c_api::trivial_arg_map<1>,
+        c_api::trivial_arg_map<0, 1>,
         c_api::get_data_map<2, 2>,
-        c_api::get_size_map<3, 2>>>
+        c_api::convert<int, c_api::get_size_map<3, 2>>>>
       write_block{*this};
 
     c_api::adapted_function<
-      example_file_api,
-      decltype(write_file),
       &example_file_api::write_file,
-      ssize_t(int, const void*, size_t),
       ssize_t(int, string_view),
       c_api::combined_map<
-        c_api::trivial_arg_map<0>,
-        c_api::trivial_arg_map<1>,
+        c_api::trivial_arg_map<0, 1>,
         c_api::get_data_map<2, 2>,
-        c_api::get_size_map<3, 2>>>
+        c_api::convert<int, c_api::get_size_map<3, 2>>>>
       write_string{*this};
 
     c_api::opt_function<
