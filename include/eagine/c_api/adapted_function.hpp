@@ -55,6 +55,10 @@ public:
     adapted_function(Api& api) noexcept
       : _api{api} {}
 
+    explicit constexpr operator bool() const noexcept {
+        return bool(_api.*function);
+    }
+
     constexpr auto operator()(CppParam... param) const noexcept {
         return _call(param..., std::make_index_sequence<sizeof...(CParam)>{});
     }
