@@ -39,11 +39,11 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-template <std::size_t I>
+template <std::size_t... J>
 struct trivial_arg_map {
-    template <typename... Params>
+    template <std::size_t I, typename... Params>
     constexpr auto operator()(size_constant<I> i, Params... params)
-      const noexcept {
+      const noexcept requires(... || (I == J)) {
         return trivial_map{}(i, params...);
     }
 };
@@ -65,14 +65,49 @@ struct get_size_map {
         return trivial_map{}(size_constant<CppI>{}, params...).size();
     }
 };
-//------------------------------------------------------------------------------
-template <std::size_t I, typename T>
-struct convert_arg_map {
+
+template <std::size_t CDI, std::size_t CSI, std::size_t CppI>
+struct get_data_size_map {
     template <typename... Params>
-    constexpr auto operator()(size_constant<I>, Params... params)
+    constexpr auto operator()(size_constant<CDI>, Params... params)
       const noexcept {
-        constexpr trivial_map map;
-        return T(map(size_constant<I>{}, params...));
+        return trivial_map{}(size_constant<CppI>{}, params...).data();
+    }
+
+    template <typename... Params>
+    constexpr auto operator()(size_constant<CSI>, Params... params)
+      const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, params...).size();
+    }
+};
+//------------------------------------------------------------------------------
+template <typename T, typename M>
+struct convert;
+
+template <typename T, std::size_t... J>
+struct convert<T, trivial_arg_map<J...>> {
+    template <std::size_t I, typename... Params>
+    constexpr auto operator()(size_constant<I> i, Params... params)
+      const noexcept requires(... || (I == J)) {
+        return static_cast<T>(trivial_map{}(i, params...));
+    }
+};
+
+template <typename T, std::size_t CI, std::size_t CppI>
+struct convert<T, get_data_map<CI, CppI>> {
+    template <typename... Params>
+    constexpr auto operator()(size_constant<CI> i, Params... params)
+      const noexcept {
+        return static_cast<T>(get_data_map<CI, CppI>{}(i, params...));
+    }
+};
+
+template <typename T, std::size_t CI, std::size_t CppI>
+struct convert<T, get_size_map<CI, CppI>> {
+    template <typename... Params>
+    constexpr auto operator()(size_constant<CI> i, Params... params)
+      const noexcept {
+        return static_cast<T>(get_size_map<CI, CppI>{}(i, params...));
     }
 };
 //------------------------------------------------------------------------------
