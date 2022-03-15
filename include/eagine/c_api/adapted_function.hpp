@@ -67,7 +67,7 @@ class basic_adapted_function<
         const Map map{};
         return map(
           size_constant<0>{},
-          Ftw::call(_api.*method, map(size_constant<I + 1>{}, param...)...),
+          Ftw::call(_api.*method, map(size_constant<I + 1>{}, 0, param...)...),
           param...);
     }
 

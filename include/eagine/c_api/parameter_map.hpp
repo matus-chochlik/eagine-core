@@ -15,14 +15,15 @@ namespace eagine::c_api {
 //------------------------------------------------------------------------------
 class trivial_map {
 
-    template <typename P1, typename... Params>
-    constexpr auto _get(size_constant<1>, P1 p1, Params...) const noexcept {
+    template <typename U, typename P1, typename... Params>
+    constexpr auto _get(size_constant<1>, U, P1 p1, Params...) const noexcept {
         return p1;
     }
 
-    template <std::size_t I, typename P1, typename... Params>
-    constexpr auto _get(size_constant<I>, P1, Params... params) const noexcept {
-        return _get(size_constant<I - 1>(), params...);
+    template <std::size_t I, typename U, typename Pi, typename... Params>
+    constexpr auto _get(size_constant<I>, U u, Pi, Params... params)
+      const noexcept {
+        return _get(size_constant<I - 1>(), u, params...);
     }
 
 public:
