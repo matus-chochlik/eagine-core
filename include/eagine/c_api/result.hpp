@@ -89,7 +89,7 @@ protected:
     auto _transformed(
       const result<Result, Info, result_validity::never>& src,
       Transform& transform) const {
-        using T = decltype(transform(std::declval<Result>()));
+        using T = decltype(transform(std::declval<Result>(), false));
         result<T, Info, result_validity::never> result{};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
@@ -123,7 +123,7 @@ protected:
     auto _transformed(
       const result<void, Info, result_validity::never>& src,
       Transform& transform) const {
-        using T = decltype(transform());
+        using T = decltype(transform(false));
         result<T, Info, result_validity::never> result{};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
@@ -214,8 +214,9 @@ protected:
     auto _transformed(
       const result<Result, Info, result_validity::always>& src,
       Transform& transform) const {
-        using T = decltype(transform(std::declval<Result>()));
-        result<T, Info, result_validity::always> result{transform(_value)};
+        using T = decltype(transform(std::declval<Result>(), true));
+        result<T, Info, result_validity::always> result{
+          transform(_value, true)};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
     }
@@ -258,8 +259,8 @@ protected:
     auto _transformed(
       const result<void, Info, result_validity::always>& src,
       Transform& transform) const {
-        using T = decltype(transform());
-        result<T, Info, result_validity::always> result{transform()};
+        using T = decltype(transform(true));
+        result<T, Info, result_validity::always> result{transform(true)};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
     }
@@ -355,9 +356,9 @@ protected:
     auto _transformed(
       const result<Result, Info, result_validity::maybe>& src,
       Transform& transform) const {
-        using T = decltype(transform(std::declval<Result>()));
+        using T = decltype(transform(std::declval<Result>(), true));
         result<T, Info, result_validity::maybe> res{
-          transform(_value), src.is_valid()};
+          transform(_value, src.is_valid()), src.is_valid()};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
         return res;
     }
@@ -406,9 +407,9 @@ protected:
     auto _transformed(
       const result<void, Info, result_validity::maybe>& src,
       Transform& transform) const {
-        using T = decltype(transform());
+        using T = decltype(transform(true));
         result<T, Info, result_validity::maybe> res{
-          transform(), src.is_valid()};
+          transform(src.is_valid()), src.is_valid()};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
         return res;
     }
