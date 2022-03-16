@@ -11,6 +11,7 @@
 
 #include "../assert.hpp"
 #include "../branch_predict.hpp"
+#include "../extractable.hpp"
 #include "../tribool.hpp"
 #include "../type_traits.hpp"
 #include <sstream>
@@ -314,8 +315,18 @@ public:
     /// @param func the function to be called.
     /// @param p additional parameters for the policy validity check function.
     template <typename Func>
-    constexpr auto transformed(Func func, P... p) const noexcept {
-        return func(_value, is_valid(p...));
+    constexpr auto transformed(Func func, P... p) const noexcept
+      -> basic_valid_if<
+        std::result_of_t<Func(T, bool)>,
+        valid_flag_policy,
+        typename valid_flag_policy::do_log> {
+        const auto v{is_valid(p...)};
+        auto r{func(_value, v)};
+        if constexpr(extractable<decltype(r)>) {
+            return r;
+        } else {
+            return {std::move(r), v};
+        }
     }
 
     /// @brief Returns the stored value if valid, returns fallback otherwise.
