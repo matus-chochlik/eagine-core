@@ -39,6 +39,17 @@ struct example_file_api {
     template <typename Tag = example_sets_errno>
     using derived_func = derived_c_api_function<this_api, api_traits, Tag>;
 
+    c_api::combined_function<
+      api_traits,
+      example_sets_errno,
+      char*(),
+      string_view(),
+      c_api::c_string_view_map,
+      EXAMPLE_API_STATIC_FUNC(getlogin),
+      EAGINE_POSIX,
+      true>
+      get_login;
+
     c_api::opt_function<
       api_traits,
       example_sets_errno,
@@ -80,7 +91,8 @@ struct example_file_api {
       &example_file_api::read_file,
       ssize_t(int, memory::block),
       c_api::combined_map<
-        c_api::trivial_arg_map<0, 1>,
+        c_api::head_transform_map<2>,
+        c_api::trivial_arg_map<1>,
         c_api::get_data_map<2, 2>,
         c_api::convert<int, c_api::get_size_map<3, 2>>>>
       read_block{*this};
@@ -98,7 +110,8 @@ struct example_file_api {
       &example_file_api::write_file,
       ssize_t(int, memory::const_block),
       c_api::combined_map<
-        c_api::trivial_arg_map<0, 1>,
+        c_api::skip_transform_map<2>,
+        c_api::trivial_arg_map<1>,
         c_api::get_data_map<2, 2>,
         c_api::convert<int, c_api::get_size_map<3, 2>>>>
       write_block{*this};
@@ -107,7 +120,8 @@ struct example_file_api {
       &example_file_api::write_file,
       ssize_t(int, string_view),
       c_api::combined_map<
-        c_api::trivial_arg_map<0, 1>,
+        c_api::skip_transform_map<2>,
+        c_api::trivial_arg_map<1>,
         c_api::get_data_map<2, 2>,
         c_api::convert<int, c_api::get_size_map<3, 2>>>>
       write_string{*this};
@@ -122,7 +136,8 @@ struct example_file_api {
       close_file;
 
     example_file_api(api_traits& traits)
-      : make_pipe{"pipe", traits, *this}
+      : get_login{"getlogin", traits, *this}
+      , make_pipe{"pipe", traits, *this}
       , open_file{"open", traits, *this}
       , read_file{"read", traits, *this}
       , write_file{"write", traits, *this}
@@ -138,6 +153,12 @@ auto main(int, const char** argv) -> int {
     example_api_traits traits;
     example_file_api api(traits);
 
+    /*
+    if(api.get_login) {
+        std::cout << api.get_login() << std::endl;
+    }
+    */
+
     if(api.make_pipe && api.write_block && api.read_block && api.close_file) {
         int pfd[2] = {-1, -1};
 
@@ -146,7 +167,7 @@ auto main(int, const char** argv) -> int {
         auto make_getbyte = [&api](int fd) {
             return [&api, fd]() -> optionally_valid<byte> {
                 byte b{};
-                if(api.read_block(fd, cover_one(b)) > 0) {
+                if(!extract_or(api.read_block(fd, cover_one(b))).is_empty()) {
                     return {b, true};
                 }
                 api.close_file(fd);

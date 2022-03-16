@@ -10,6 +10,7 @@
 #define EAGINE_C_API_PARAMETER_MAP_HPP
 
 #include "../int_constant.hpp"
+#include "../string_span.hpp"
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------
@@ -79,6 +80,53 @@ struct get_data_size_map {
     constexpr auto operator()(size_constant<CSI>, Params... params)
       const noexcept {
         return trivial_map{}(size_constant<CppI>{}, params...).size();
+    }
+};
+
+struct c_string_view_map {
+    template <typename... Params>
+    constexpr auto operator()(size_constant<0> i, Params... params)
+      const noexcept {
+        const trivial_map map;
+        return map(i, params...)
+          .transformed([=](const char* cstr, bool is_valid) -> string_view {
+              if(is_valid && cstr) {
+                  return string_view{cstr};
+              }
+              return {};
+          });
+    }
+};
+
+template <std::size_t CppI>
+struct head_transform_map {
+    template <typename... Params>
+    constexpr auto operator()(size_constant<0> i, Params... params)
+      const noexcept {
+        const trivial_map map;
+        return map(i, params...).transformed([=](auto len, bool is_valid) {
+            auto res{map(size_constant<CppI>{}, params...)};
+            if(is_valid) {
+                return head(res, len);
+            }
+            return head(res, 0);
+        });
+    }
+};
+
+template <std::size_t CppI>
+struct skip_transform_map {
+    template <typename... Params>
+    constexpr auto operator()(size_constant<0> i, Params... params)
+      const noexcept {
+        const trivial_map map;
+        return map(i, params...).transformed([=](auto len, bool is_valid) {
+            auto res{map(size_constant<CppI>{}, params...)};
+            if(is_valid) {
+                return skip(res, len);
+            }
+            return skip(res, 0);
+        });
     }
 };
 //------------------------------------------------------------------------------
