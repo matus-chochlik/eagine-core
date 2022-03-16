@@ -10,34 +10,11 @@
 #define EAGINE_EXTRACT_HPP
 
 #include "assert.hpp"
-#include "nothing.hpp"
+#include "extractable.hpp"
 #include <memory>
 #include <optional>
-#include <type_traits>
 
 namespace eagine {
-//------------------------------------------------------------------------------
-template <typename T>
-struct extract_traits;
-
-/// @brief Returns the value type of an extractable.
-/// @ingroup utilities
-/// @see extract
-template <typename T>
-using extracted_type_t = std::remove_cv_t<typename extract_traits<
-  std::remove_cv_t<std::remove_reference_t<T>>>::value_type>;
-
-template <typename T>
-using extract_result_type_t = typename extract_traits<
-  std::remove_cv_t<std::remove_reference_t<T>>>::result_type;
-
-template <typename T>
-using const_extract_result_type_t = typename extract_traits<
-  std::remove_cv_t<std::remove_reference_t<T>>>::const_result_type;
-
-template <typename E, typename V>
-static constinit const auto has_value_type_v =
-  std::is_convertible_v<extracted_type_t<E>, V>;
 //------------------------------------------------------------------------------
 // pointers
 template <typename T>
@@ -236,20 +213,6 @@ auto end(
     return x.get().end();
 }
 //------------------------------------------------------------------------------
-// clang-format off
-template <typename T>
-concept basic_extractable = requires(T v) {
-	{ std::declval<eagine::extracted_type_t<T>>() };
-	{ std::declval<eagine::extract_result_type_t<T>>() };
-	extract(v);
-};
-
-template <typename T>
-concept extractable = basic_extractable<T> && requires(T v) {
-    { has_value(v) } -> std::convertible_to<bool>;
-};
-// clang-format on
-//------------------------------------------------------------------------------
 template <basic_extractable T>
 static constexpr auto has_value(const T& v) noexcept {
     return bool(v);
@@ -258,14 +221,14 @@ static constexpr auto has_value(const T& v) noexcept {
 template <extractable T>
 static constexpr auto extract_or(
   T& opt_val,
-  extract_result_type_t<T> fallback) noexcept -> extract_result_type_t<T> {
+  extract_result_type_t<T> fallback = {}) noexcept -> extract_result_type_t<T> {
     return has_value(opt_val) ? extract(opt_val) : fallback;
 }
 
 template <extractable T>
 static constexpr auto extract_or(
   const T& opt_val,
-  const_extract_result_type_t<T> fallback) noexcept
+  const_extract_result_type_t<T> fallback = {}) noexcept
   -> const_extract_result_type_t<T> {
     return has_value(opt_val) ? extract(opt_val) : fallback;
 }
