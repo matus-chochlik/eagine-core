@@ -83,12 +83,20 @@ struct get_data_size_map {
     }
 };
 
+template <typename T>
+struct cast_to_map {
+    template <typename... Params>
+    constexpr auto operator()(size_constant<0> i, Params... params)
+      const noexcept {
+        return trivial_map{}(i, params...).cast_to(type_identity<T>{});
+    }
+};
+
 struct c_string_view_map {
     template <typename... Params>
     constexpr auto operator()(size_constant<0> i, Params... params)
       const noexcept {
-        const trivial_map map;
-        return map(i, params...)
+        return trivial_map{}(i, params...)
           .transformed([=](const char* cstr, bool is_valid) -> string_view {
               if(is_valid && cstr) {
                   return string_view{cstr};

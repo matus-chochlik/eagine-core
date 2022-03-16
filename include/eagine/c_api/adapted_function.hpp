@@ -36,44 +36,52 @@ template <auto ptr>
 using method_signature_t = typename method_traits<decltype(ptr)>::signature;
 
 template <
-  typename Wrapper,
-  typename CSignature = typename Wrapper::signature,
+  auto method,
+  typename CSignature,
   typename CppSignature = CSignature,
   typename Map = trivial_map>
 class basic_adapted_function;
 
 template <
-  typename Wrapper,
+  auto method,
   typename CRV,
   typename... CParam,
   typename CppRV,
   typename... CppParam,
   typename Map>
-class basic_adapted_function<Wrapper, CRV(CParam...), CppRV(CppParam...), Map> {
+class basic_adapted_function<method, CRV(CParam...), CppRV(CppParam...), Map> {
     template <std::size_t... I>
     constexpr auto _call(CppParam... param, std::index_sequence<I...>)
       const noexcept {
-        using Ftw = function_traits<Wrapper>;
+        using Ftw = function_traits<method_wrapper_t<method>>;
         const Map map{};
         return map(
           size_constant<0>{},
-          Ftw::call(_func, map(size_constant<I + 1>{}, 0, param...)...),
+          Ftw::call(_api.*method, map(size_constant<I + 1>{}, 0, param...)...),
           param...);
     }
 
-    Wrapper& _func;
+    method_api_t<method>& _api;
 
 public:
-    basic_adapted_function(Wrapper& func) noexcept
-      : _func{func} {}
+    basic_adapted_function(method_api_t<method>& api) noexcept
+      : _api{api} {}
 
     explicit constexpr operator bool() const noexcept {
-        return bool(_func);
+        return bool(_api.*method);
     }
 
     constexpr auto operator()(CppParam... param) const noexcept {
         using S = std::make_index_sequence<sizeof...(CParam)>;
         return _call(param..., S{});
+    }
+
+    constexpr auto api() const noexcept -> const auto& {
+        return _api;
+    }
+
+    constexpr auto api() noexcept -> auto& {
+        return _api;
     }
 };
 
@@ -82,17 +90,13 @@ template <
   typename CppSignature = method_signature_t<method>,
   typename Map = trivial_map>
 struct adapted_function
-  : basic_adapted_function<
-      method_wrapper_t<method>,
-      method_signature_t<method>,
-      CppSignature,
-      Map> {
+  : basic_adapted_function<method, method_signature_t<method>, CppSignature, Map> {
     adapted_function(method_api_t<method>& api)
       : basic_adapted_function<
-          method_wrapper_t<method>,
+          method,
           method_signature_t<method>,
           CppSignature,
-          Map>{api.*method} {}
+          Map>{api} {}
 };
 
 template <
@@ -109,7 +113,7 @@ public:
     template <typename Api>
     combined_function(string_view name, ApiTraits& api_traits, Api& api)
       : _basic{name, api_traits, api}
-      , _adapted{_basic} {}
+      , _adapted{*this} {}
 
     constexpr explicit operator bool() const noexcept {
         return bool(_basic);
@@ -118,11 +122,7 @@ public:
 private:
     opt_function<ApiTraits, Tag, CSignature, function, isAvailable, isStatic>
       _basic;
-    basic_adapted_function<
-      opt_function<ApiTraits, Tag, CSignature, function, isAvailable, isStatic>,
-      CSignature,
-      CppSignature,
-      Map>
+    basic_adapted_function<&combined_function::_basic, CSignature, CppSignature, Map>
       _adapted;
 };
 
