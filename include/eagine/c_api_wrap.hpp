@@ -9,6 +9,7 @@
 #ifndef EAGINE_C_API_WRAP_HPP
 #define EAGINE_C_API_WRAP_HPP
 
+#include "c_api/adapted_function.hpp"
 #include "c_api/api_traits.hpp"
 #include "c_api/constant.hpp"
 #include "c_api/function.hpp"

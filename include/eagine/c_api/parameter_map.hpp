@@ -10,6 +10,7 @@
 #define EAGINE_C_API_PARAMETER_MAP_HPP
 
 #include "../int_constant.hpp"
+#include "../mp_list.hpp"
 #include "../string_span.hpp"
 
 namespace eagine::c_api {
@@ -172,6 +173,52 @@ template <typename... M>
 struct combined_map : M... {
     using M::operator()...;
 };
+//------------------------------------------------------------------------------
+template <std::size_t I, typename CP, typename CppP>
+struct make_arg_map : convert<CP, trivial_arg_map<I>> {};
+
+template <std::size_t I, typename P>
+struct make_arg_map<I, P, P> : trivial_arg_map<I> {};
+//------------------------------------------------------------------------------
+template <std::size_t I, typename CP, typename CppP>
+struct make_args_map;
+
+template <std::size_t I>
+struct make_args_map<I, mp_list<>, mp_list<>> {
+protected:
+    void operator()() const noexcept {};
+};
+
+template <std::size_t I, typename CH, typename... CT, typename CppH, typename... CppT>
+struct make_args_map<I, mp_list<CH, CT...>, mp_list<CppH, CppT...>>
+  : make_arg_map<I, CH, CppH>
+  , make_args_map<I + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using make_arg_map<I, CH, CppH>::operator();
+    using make_args_map<I + 1, mp_list<CT...>, mp_list<CppT...>>::operator();
+};
+//------------------------------------------------------------------------------
+template <typename CSignature, typename CppSignature>
+static auto make_map(CSignature*, CppSignature*) -> trivial_map;
+
+template <typename CRV, typename CppRV>
+static auto make_map(CRV (*)(), CppRV (*)())
+  -> cast_to_map<CppRV> requires(!std::is_same_v<CRV, CppRV>);
+
+template <typename RV, typename... CParam, typename... CppParam>
+static auto make_map(RV (*)(CParam...), RV (*)(CppParam...))
+  -> make_args_map<0, mp_list<RV, CParam...>, mp_list<RV, CppParam...>> requires(
+    (sizeof...(CParam) > 0) && (sizeof...(CParam) == sizeof...(CppParam)));
+
+template <typename CRV, typename CppRV, typename... CParam, typename... CppParam>
+static auto make_map(CRV (*)(CParam...), CppRV (*)(CppParam...))
+  -> combined_map<cast_to_map<CppRV>, make_args_map<1, mp_list<CParam...>, mp_list<CppParam...>>> requires(
+    !std::is_same_v<CRV, CppRV> && (sizeof...(CParam) > 0) &&
+    (sizeof...(CParam) == sizeof...(CppParam)));
+
+template <typename CSignature, typename CppSignature>
+using make_map_t = decltype(make_map(
+  static_cast<CSignature*>(nullptr),
+  static_cast<CppSignature*>(nullptr)));
 //------------------------------------------------------------------------------
 } // namespace eagine::c_api
 

@@ -93,7 +93,7 @@ public:
 template <
   auto method,
   typename CppSignature = method_signature_t<method>,
-  typename Map = trivial_map>
+  typename Map = make_map_t<method_signature_t<method>, CppSignature>>
 struct adapted_function
   : basic_adapted_function<
       method_api_t<method>,
