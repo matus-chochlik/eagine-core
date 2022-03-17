@@ -198,8 +198,10 @@ struct function_traits;
 
 template <typename ApiTraits, typename Tag, typename RV, typename... P>
 struct function_traits<unimplemented_function<ApiTraits, Tag, RV(P...)>> {
+    using api_traits = ApiTraits;
+
     template <typename T = RV>
-    using type = typename ApiTraits::template opt_result<T>;
+    using result = typename ApiTraits::template opt_result<T>;
 
     template <typename... Args>
     static constexpr auto call(
@@ -211,8 +213,10 @@ struct function_traits<unimplemented_function<ApiTraits, Tag, RV(P...)>> {
 
 template <typename ApiTraits, typename Tag, typename RV, typename... P, auto f>
 struct function_traits<static_function<ApiTraits, Tag, RV(P...), f>> {
+    using api_traits = ApiTraits;
+
     template <typename T = RV>
-    using type = typename ApiTraits::template result<T>;
+    using result = typename ApiTraits::template result<T>;
 
     template <typename... Args>
     static constexpr auto call(
@@ -224,8 +228,10 @@ struct function_traits<static_function<ApiTraits, Tag, RV(P...), f>> {
 
 template <typename ApiTraits, typename Tag, typename... P, auto f>
 struct function_traits<static_function<ApiTraits, Tag, void(P...), f>> {
+    using api_traits = ApiTraits;
+
     template <typename T = void>
-    using type = typename ApiTraits::template result<T>;
+    using result = typename ApiTraits::template result<T>;
 
     template <typename... Args>
     static constexpr auto call(
@@ -238,8 +244,10 @@ struct function_traits<static_function<ApiTraits, Tag, void(P...), f>> {
 
 template <typename ApiTraits, typename Tag, typename RV, typename... P>
 struct function_traits<dynamic_function<ApiTraits, Tag, RV(P...)>> {
+    using api_traits = ApiTraits;
+
     template <typename T = RV>
-    using type = typename ApiTraits::template opt_result<T>;
+    using result = typename ApiTraits::template opt_result<T>;
 
     template <typename... Args>
     static constexpr auto call(
@@ -252,8 +260,10 @@ struct function_traits<dynamic_function<ApiTraits, Tag, RV(P...)>> {
 
 template <typename ApiTraits, typename Tag, typename... P>
 struct function_traits<dynamic_function<ApiTraits, Tag, void(P...)>> {
+    using api_traits = ApiTraits;
+
     template <typename T = void>
-    using type = typename ApiTraits::template opt_result<T>;
+    using result = typename ApiTraits::template opt_result<T>;
 
     template <typename... Args>
     static constexpr auto call(
@@ -266,7 +276,10 @@ struct function_traits<dynamic_function<ApiTraits, Tag, void(P...)>> {
 };
 
 template <typename T, typename W>
-using function_result_t = typename function_traits<W>::template type<T>;
+using function_result_t = typename function_traits<W>::template result<T>;
+
+template <typename T, typename W>
+using function_api_traits_t = typename function_traits<W>::api_traits;
 //------------------------------------------------------------------------------
 } // namespace eagine::c_api
 
