@@ -9,6 +9,7 @@
 #ifndef EAGINE_C_API_ADAPTED_FUNCION_HPP
 #define EAGINE_C_API_ADAPTED_FUNCION_HPP
 
+#include "../scope_exit.hpp"
 #include "function.hpp"
 #include "parameter_map.hpp"
 #include "result.hpp"
@@ -66,7 +67,16 @@ class basic_adapted_function<Api, method, CRV(CParam...), CppRV(CppParam...), Ma
             param...));
     }
 
-    Api& _api;
+    template <std::size_t... I>
+    constexpr auto _lazy(CppParam... param, std::index_sequence<I...>)
+      const noexcept {
+        using Ftw = function_traits<method_wrapper_t<method>>;
+        const Map map{};
+        return
+          [&api{_api}, ... args{map(size_constant<I + 1>{}, 0, param...)}]() {
+              Ftw::call(api.*method, args...);
+          };
+    }
 
 public:
     basic_adapted_function(Api& api) noexcept
@@ -81,6 +91,11 @@ public:
         return _call(param..., S{});
     }
 
+    auto raii(CppParam... param) const noexcept {
+        using S = std::make_index_sequence<sizeof...(CParam)>;
+        return eagine::finally(_lazy(param..., S{}));
+    }
+
     constexpr auto api() const noexcept -> const auto& {
         return _api;
     }
@@ -88,6 +103,9 @@ public:
     constexpr auto api() noexcept -> auto& {
         return _api;
     }
+
+private:
+    Api& _api;
 };
 
 template <

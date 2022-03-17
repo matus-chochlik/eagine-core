@@ -26,7 +26,7 @@ class trivial_map {
 
     template <std::size_t I, typename U, typename Pi, typename... P>
     constexpr auto _get(size_constant<I>, U u, Pi, P&... p) const noexcept
-      -> decltype(_get(size_constant<I - 1>(), u, p...)) {
+      -> decltype(auto) {
         return _get(size_constant<I - 1>(), u, p...);
     }
 
@@ -38,7 +38,7 @@ public:
 
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
-      -> decltype(_get(i, std::forward<P>(p)...)) {
+      -> decltype(auto) {
         return _get(i, std::forward<P>(p)...);
     }
 };
@@ -47,8 +47,7 @@ template <std::size_t... J>
 struct trivial_arg_map {
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
-      -> decltype(trivial_map{}(i, std::forward<P>(p)...)) requires(
-        ... || (I == J)) {
+      -> decltype(auto) requires(... || (I == J)) {
         return trivial_map{}(i, std::forward<P>(p)...);
     }
 };
@@ -80,7 +79,7 @@ struct get_data_size_map {
     }
 
     template <typename... P>
-    constexpr auto operator()(size_constant<CSI>, P... p) const noexcept {
+    constexpr auto operator()(size_constant<CSI>, P&&... p) const noexcept {
         return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...)
           .size();
     }
