@@ -9,6 +9,7 @@
 #ifndef EAGINE_C_API_PARAMETER_MAP_HPP
 #define EAGINE_C_API_PARAMETER_MAP_HPP
 
+#include "../handle.hpp"
 #include "../int_constant.hpp"
 #include "../mp_list.hpp"
 #include "../string_span.hpp"
@@ -17,87 +18,87 @@ namespace eagine::c_api {
 //------------------------------------------------------------------------------
 class trivial_map {
 
-    template <typename U, typename P1, typename... Params>
-    constexpr auto _get(size_constant<1>, U, P1 p1, Params...) const noexcept {
+    template <typename U, typename P1, typename... P>
+    constexpr auto _get(size_constant<1>, U, P1& p1, P&...) const noexcept
+      -> P1& {
         return p1;
     }
 
-    template <std::size_t I, typename U, typename Pi, typename... Params>
-    constexpr auto _get(size_constant<I>, U u, Pi, Params... params)
-      const noexcept {
-        return _get(size_constant<I - 1>(), u, params...);
+    template <std::size_t I, typename U, typename Pi, typename... P>
+    constexpr auto _get(size_constant<I>, U u, Pi, P&... p) const noexcept
+      -> decltype(_get(size_constant<I - 1>(), u, p...)) {
+        return _get(size_constant<I - 1>(), u, p...);
     }
 
 public:
-    template <typename RV, typename... Params>
-    constexpr auto operator()(size_constant<0>, RV rv, Params...)
-      const noexcept {
+    template <typename RV, typename... P>
+    constexpr auto operator()(size_constant<0>, RV rv, P&...) const noexcept {
         return rv;
     }
 
-    template <std::size_t I, typename... Params>
-    constexpr auto operator()(size_constant<I> i, Params... params)
-      const noexcept {
-        return _get(i, params...);
+    template <std::size_t I, typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
+      -> decltype(_get(i, std::forward<P>(p)...)) {
+        return _get(i, std::forward<P>(p)...);
     }
 };
 //------------------------------------------------------------------------------
 template <std::size_t... J>
 struct trivial_arg_map {
-    template <std::size_t I, typename... Params>
-    constexpr auto operator()(size_constant<I> i, Params... params)
-      const noexcept requires(... || (I == J)) {
-        return trivial_map{}(i, params...);
+    template <std::size_t I, typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
+      -> decltype(trivial_map{}(i, std::forward<P>(p)...)) requires(
+        ... || (I == J)) {
+        return trivial_map{}(i, std::forward<P>(p)...);
     }
 };
 //------------------------------------------------------------------------------
 template <std::size_t CI, std::size_t CppI>
 struct get_data_map {
-    template <typename... Params>
-    constexpr auto operator()(size_constant<CI>, Params... params)
-      const noexcept {
-        return trivial_map{}(size_constant<CppI>{}, params...).data();
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...)
+          .data();
     }
 };
 
 template <std::size_t CI, std::size_t CppI>
 struct get_size_map {
-    template <typename... Params>
-    constexpr auto operator()(size_constant<CI>, Params... params)
-      const noexcept {
-        return trivial_map{}(size_constant<CppI>{}, params...).size();
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...)
+          .size();
     }
 };
 
 template <std::size_t CDI, std::size_t CSI, std::size_t CppI>
 struct get_data_size_map {
-    template <typename... Params>
-    constexpr auto operator()(size_constant<CDI>, Params... params)
-      const noexcept {
-        return trivial_map{}(size_constant<CppI>{}, params...).data();
+    template <typename... P>
+    constexpr auto operator()(size_constant<CDI>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...)
+          .data();
     }
 
-    template <typename... Params>
-    constexpr auto operator()(size_constant<CSI>, Params... params)
-      const noexcept {
-        return trivial_map{}(size_constant<CppI>{}, params...).size();
+    template <typename... P>
+    constexpr auto operator()(size_constant<CSI>, P... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...)
+          .size();
     }
 };
 
 template <typename T>
 struct cast_to_map {
-    template <typename... Params>
-    constexpr auto operator()(size_constant<0> i, Params... params)
-      const noexcept {
-        return trivial_map{}(i, params...).cast_to(type_identity<T>{});
+    template <typename... P>
+    constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...)
+          .cast_to(type_identity<T>{});
     }
 };
 
 struct c_string_view_map {
-    template <typename... Params>
-    constexpr auto operator()(size_constant<0> i, Params... params)
-      const noexcept {
-        return trivial_map{}(i, params...)
+    template <typename... P>
+    constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...)
           .transformed([=](const char* cstr, bool is_valid) -> string_view {
               if(is_valid && cstr) {
                   return string_view{cstr};
@@ -109,12 +110,11 @@ struct c_string_view_map {
 
 template <std::size_t CppI>
 struct head_transform_map {
-    template <typename... Params>
-    constexpr auto operator()(size_constant<0> i, Params... params)
-      const noexcept {
+    template <typename... P>
+    constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
-        return map(i, params...).transformed([=](auto len, bool is_valid) {
-            auto res{map(size_constant<CppI>{}, params...)};
+        return map(i, p...).transformed([=](auto len, bool is_valid) {
+            auto res{map(size_constant<CppI>{}, p...)};
             if(is_valid) {
                 return head(res, len);
             }
@@ -125,12 +125,11 @@ struct head_transform_map {
 
 template <std::size_t CppI>
 struct skip_transform_map {
-    template <typename... Params>
-    constexpr auto operator()(size_constant<0> i, Params... params)
-      const noexcept {
+    template <typename... P>
+    constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
-        return map(i, params...).transformed([=](auto len, bool is_valid) {
-            auto res{map(size_constant<CppI>{}, params...)};
+        return map(i, p...).transformed([=](auto len, bool is_valid) {
+            auto res{map(size_constant<CppI>{}, p...)};
             if(is_valid) {
                 return skip(res, len);
             }
@@ -144,28 +143,28 @@ struct convert;
 
 template <typename T, std::size_t... J>
 struct convert<T, trivial_arg_map<J...>> {
-    template <std::size_t I, typename... Params>
-    constexpr auto operator()(size_constant<I> i, Params... params)
-      const noexcept requires(... || (I == J)) {
-        return static_cast<T>(trivial_map{}(i, params...));
+    template <std::size_t I, typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
+      requires(... || (I == J)) {
+        return static_cast<T>(trivial_map{}(i, std::forward<P>(p)...));
     }
 };
 
 template <typename T, std::size_t CI, std::size_t CppI>
 struct convert<T, get_data_map<CI, CppI>> {
-    template <typename... Params>
-    constexpr auto operator()(size_constant<CI> i, Params... params)
-      const noexcept {
-        return static_cast<T>(get_data_map<CI, CppI>{}(i, params...));
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return static_cast<T>(
+          get_data_map<CI, CppI>{}(i, std::forward<P>(p)...));
     }
 };
 
 template <typename T, std::size_t CI, std::size_t CppI>
 struct convert<T, get_size_map<CI, CppI>> {
-    template <typename... Params>
-    constexpr auto operator()(size_constant<CI> i, Params... params)
-      const noexcept {
-        return static_cast<T>(get_size_map<CI, CppI>{}(i, params...));
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return static_cast<T>(
+          get_size_map<CI, CppI>{}(i, std::forward<P>(p)...));
     }
 };
 //------------------------------------------------------------------------------
@@ -179,6 +178,22 @@ struct make_arg_map : convert<CP, trivial_arg_map<I>> {};
 
 template <std::size_t I, typename P>
 struct make_arg_map<I, P, P> : trivial_arg_map<I> {};
+
+template <std::size_t I>
+struct make_arg_map<I, const char*, string_view> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
+        return c_str(trivial_map{}(i, std::forward<P>(p)...));
+    }
+};
+
+template <std::size_t I, typename Tag, typename Handle, Handle invalid>
+struct make_arg_map<I, Handle*, basic_owned_handle<Tag, Handle, invalid>&> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...).release();
+    }
+};
 //------------------------------------------------------------------------------
 template <std::size_t I, typename CP, typename CppP>
 struct make_args_map;
