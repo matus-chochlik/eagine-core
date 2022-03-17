@@ -36,6 +36,7 @@ template <auto ptr>
 using method_signature_t = typename method_traits<decltype(ptr)>::signature;
 
 template <
+  typename Api,
   auto method,
   typename CSignature,
   typename CppSignature = CSignature,
@@ -43,28 +44,32 @@ template <
 class basic_adapted_function;
 
 template <
+  typename Api,
   auto method,
   typename CRV,
   typename... CParam,
   typename CppRV,
   typename... CppParam,
   typename Map>
-class basic_adapted_function<method, CRV(CParam...), CppRV(CppParam...), Map> {
+class basic_adapted_function<Api, method, CRV(CParam...), CppRV(CppParam...), Map> {
     template <std::size_t... I>
     constexpr auto _call(CppParam... param, std::index_sequence<I...>)
       const noexcept {
         using Ftw = function_traits<method_wrapper_t<method>>;
         const Map map{};
-        return map(
-          size_constant<0>{},
-          Ftw::call(_api.*method, map(size_constant<I + 1>{}, 0, param...)...),
-          param...);
+        return Ftw::api_traits::check_result(
+          _api,
+          map(
+            size_constant<0>{},
+            Ftw::call(
+              _api.*method, map(size_constant<I + 1>{}, 0, param...)...),
+            param...));
     }
 
-    method_api_t<method>& _api;
+    Api& _api;
 
 public:
-    basic_adapted_function(method_api_t<method>& api) noexcept
+    basic_adapted_function(Api& api) noexcept
       : _api{api} {}
 
     explicit constexpr operator bool() const noexcept {
@@ -90,9 +95,15 @@ template <
   typename CppSignature = method_signature_t<method>,
   typename Map = trivial_map>
 struct adapted_function
-  : basic_adapted_function<method, method_signature_t<method>, CppSignature, Map> {
+  : basic_adapted_function<
+      method_api_t<method>,
+      method,
+      method_signature_t<method>,
+      CppSignature,
+      Map> {
     adapted_function(method_api_t<method>& api)
       : basic_adapted_function<
+          method_api_t<method>,
           method,
           method_signature_t<method>,
           CppSignature,
@@ -100,6 +111,7 @@ struct adapted_function
 };
 
 template <
+  typename Api,
   typename ApiTraits,
   typename Tag,
   typename CSignature,
@@ -110,10 +122,9 @@ template <
   bool isStatic>
 class combined_function {
 public:
-    template <typename Api>
     combined_function(string_view name, ApiTraits& api_traits, Api& api)
       : _basic{name, api_traits, api}
-      , _adapted{*this} {}
+      , _adapted{api} {}
 
     constexpr explicit operator bool() const noexcept {
         return bool(_basic);
@@ -122,7 +133,12 @@ public:
 private:
     opt_function<ApiTraits, Tag, CSignature, function, isAvailable, isStatic>
       _basic;
-    basic_adapted_function<&combined_function::_basic, CSignature, CppSignature, Map>
+    basic_adapted_function<
+      Api,
+      &combined_function::_basic,
+      CSignature,
+      CppSignature,
+      Map>
       _adapted;
 };
 

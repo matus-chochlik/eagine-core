@@ -40,6 +40,7 @@ struct example_file_api {
     using derived_func = derived_c_api_function<this_api, api_traits, Tag>;
 
     c_api::combined_function<
+      this_api,
       api_traits,
       example_sets_errno,
       char*(),
