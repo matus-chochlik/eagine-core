@@ -23,6 +23,7 @@ set(HEADERS
     eagine/byteset.hpp
     eagine/callable_ref.hpp
     eagine/c_api/adapted_function.hpp
+    eagine/c_api/api_traits.hpp
     eagine/c_api/constant.hpp
     eagine/c_api/function.hpp
     eagine/c_api/parameter_map.hpp
@@ -48,6 +49,7 @@ set(HEADERS
     eagine/enum_map.hpp
     eagine/enum_span.hpp
     eagine/environment.hpp
+    eagine/extractable.hpp
     eagine/extract.hpp
     eagine/file_contents.hpp
     eagine/file_magic_number.hpp
