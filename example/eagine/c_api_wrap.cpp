@@ -46,6 +46,7 @@ struct example_file_api {
       char*(),
       string_view(),
       c_api::c_string_view_map,
+      c_api::trivial_map,
       EXAMPLE_API_STATIC_FUNC(getlogin),
       EAGINE_POSIX,
       true>
@@ -91,11 +92,7 @@ struct example_file_api {
     c_api::adapted_function<
       &example_file_api::read_file,
       ssize_t(int, memory::block),
-      c_api::combined_map<
-        c_api::head_transform_map<2>,
-        c_api::trivial_arg_map<1>,
-        c_api::get_data_map<2, 2>,
-        c_api::convert<int, c_api::get_size_map<3, 2>>>>
+      c_api::head_transform_map<2>>
       read_block{*this};
 
     c_api::opt_function<
@@ -110,21 +107,13 @@ struct example_file_api {
     c_api::adapted_function<
       &example_file_api::write_file,
       ssize_t(int, memory::const_block),
-      c_api::combined_map<
-        c_api::skip_transform_map<2>,
-        c_api::trivial_arg_map<1>,
-        c_api::get_data_map<2, 2>,
-        c_api::convert<int, c_api::get_size_map<3, 2>>>>
+      c_api::skip_transform_map<2>>
       write_block{*this};
 
     c_api::adapted_function<
       &example_file_api::write_file,
       ssize_t(int, string_view),
-      c_api::combined_map<
-        c_api::skip_transform_map<2>,
-        c_api::trivial_arg_map<1>,
-        c_api::get_data_map<2, 2>,
-        c_api::convert<int, c_api::get_size_map<3, 2>>>>
+      c_api::skip_transform_map<2>>
       write_string{*this};
 
     c_api::opt_function<

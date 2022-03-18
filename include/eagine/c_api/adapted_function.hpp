@@ -41,7 +41,8 @@ template <
   auto method,
   typename CSignature,
   typename CppSignature = CSignature,
-  typename Map = trivial_map>
+  typename RvMap = trivial_map,
+  typename ArgMap = trivial_map>
 class basic_adapted_function;
 
 template <
@@ -51,19 +52,25 @@ template <
   typename... CParam,
   typename CppRV,
   typename... CppParam,
-  typename Map>
-class basic_adapted_function<Api, method, CRV(CParam...), CppRV(CppParam...), Map> {
+  typename RvMap,
+  typename ArgMap>
+class basic_adapted_function<
+  Api,
+  method,
+  CRV(CParam...),
+  CppRV(CppParam...),
+  RvMap,
+  ArgMap> {
     template <std::size_t... I>
     constexpr auto _call(CppParam... param, std::index_sequence<I...>)
       const noexcept {
         using Ftw = function_traits<method_wrapper_t<method>>;
-        const Map map{};
         return Ftw::api_traits::check_result(
           _api,
-          map(
+          RvMap{}(
             size_constant<0>{},
             Ftw::call(
-              _api.*method, map(size_constant<I + 1>{}, 0, param...)...),
+              _api.*method, ArgMap{}(size_constant<I + 1>{}, 0, param...)...),
             param...));
     }
 
@@ -71,7 +78,7 @@ class basic_adapted_function<Api, method, CRV(CParam...), CppRV(CppParam...), Ma
     constexpr auto _lazy(CppParam... param, std::index_sequence<I...>)
       const noexcept {
         using Ftw = function_traits<method_wrapper_t<method>>;
-        const Map map{};
+        const ArgMap map{};
         return
           [&api{_api}, ... args{map(size_constant<I + 1>{}, 0, param...)}]() {
               Ftw::call(api.*method, args...);
@@ -111,21 +118,24 @@ private:
 template <
   auto method,
   typename CppSignature = method_signature_t<method>,
-  typename Map = make_map_t<method_signature_t<method>, CppSignature>>
+  typename RvMap = make_map_t<method_signature_t<method>, CppSignature>,
+  typename ArgMap = make_map_t<method_signature_t<method>, CppSignature>>
 struct adapted_function
   : basic_adapted_function<
       method_api_t<method>,
       method,
       method_signature_t<method>,
       CppSignature,
-      Map> {
+      RvMap,
+      ArgMap> {
     adapted_function(method_api_t<method>& api)
       : basic_adapted_function<
           method_api_t<method>,
           method,
           method_signature_t<method>,
           CppSignature,
-          Map>{api} {}
+          RvMap,
+          ArgMap>{api} {}
 };
 
 template <
@@ -134,7 +144,8 @@ template <
   typename Tag,
   typename CSignature,
   typename CppSignature,
-  typename Map,
+  typename RvMap,
+  typename ArgMap,
   function_ptr<ApiTraits, Tag, CSignature> function,
   bool isAvailable,
   bool isStatic>
@@ -156,7 +167,8 @@ private:
       &combined_function::_basic,
       CSignature,
       CppSignature,
-      Map>
+      RvMap,
+      ArgMap>
       _adapted;
 };
 
