@@ -172,43 +172,110 @@ struct combined_map : M... {
     using M::operator()...;
 };
 //------------------------------------------------------------------------------
+template <std::size_t CI, std::size_t CppI, typename CP, typename CppP>
+struct make_arg_map;
+
 template <std::size_t I, typename CP, typename CppP>
-struct make_arg_map : convert<CP, trivial_arg_map<I>> {};
+struct make_arg_map<I, I, CP, CppP> : convert<CP, trivial_arg_map<I>> {};
 
 template <std::size_t I, typename P>
-struct make_arg_map<I, P, P> : trivial_arg_map<I> {};
+struct make_arg_map<I, I, P, P> : trivial_arg_map<I> {};
 
 template <std::size_t I>
-struct make_arg_map<I, const char*, string_view> {
+struct make_arg_map<I, I, const char*, string_view> {
     template <typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
         return c_str(trivial_map{}(i, std::forward<P>(p)...));
     }
 };
 
-template <std::size_t I, typename Tag, typename Handle, Handle invalid>
-struct make_arg_map<I, Handle*, basic_owned_handle<Tag, Handle, invalid>&> {
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename Tag,
+  typename Handle,
+  Handle invalid>
+struct make_arg_map<CI, CppI, Handle*, basic_owned_handle<Tag, Handle, invalid>&> {
     template <typename... P>
-    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
-        return trivial_map{}(i, std::forward<P>(p)...).release();
+    constexpr auto operator()(size_constant<CI>, P&&... p) const noexcept {
+        return trivial_map{}(CppI, std::forward<P>(p)...).release();
     }
 };
 //------------------------------------------------------------------------------
-template <std::size_t I, typename CP, typename CppP>
+template <std::size_t CI, std::size_t CppI, typename CP, typename CppP>
 struct make_args_map;
 
-template <std::size_t I>
-struct make_args_map<I, mp_list<>, mp_list<>> {
+template <std::size_t CI, std::size_t CppI>
+struct make_args_map<CI, CppI, mp_list<>, mp_list<>> {
 protected:
     void operator()() const noexcept {};
 };
 
-template <std::size_t I, typename CH, typename... CT, typename CppH, typename... CppT>
-struct make_args_map<I, mp_list<CH, CT...>, mp_list<CppH, CppT...>>
-  : make_arg_map<I, CH, CppH>
-  , make_args_map<I + 1, mp_list<CT...>, mp_list<CppT...>> {
-    using make_arg_map<I, CH, CppH>::operator();
-    using make_args_map<I + 1, mp_list<CT...>, mp_list<CppT...>>::operator();
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CH,
+  typename... CT,
+  typename CppH,
+  typename... CppT>
+struct make_args_map<CI, CppI, mp_list<CH, CT...>, mp_list<CppH, CppT...>>
+  : make_arg_map<CI, CppI, CH, CppH>
+  , make_args_map<CI + 1, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using make_arg_map<CI, CppI, CH, CppH>::operator();
+    using make_args_map<CI + 1, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CP,
+  typename CS,
+  typename... CT,
+  typename CppV,
+  typename CppP,
+  typename CppS,
+  typename... CppT>
+requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
+           std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct
+  make_args_map<
+    CI,
+    CppI,
+    mp_list<CP, CS, CT...>,
+    mp_list<memory::basic_span<CppV, CppP, CppS>, CppT...>>
+  : convert<CP, get_data_map<CI, CppI>>
+  , convert<CS, get_size_map<CI + 1, CppI>>
+  , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using convert<CP, get_data_map<CI, CppI>>::operator();
+    using convert<CS, get_size_map<CI + 1, CppI>>::operator();
+    using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CP,
+  typename CS,
+  typename... CT,
+  typename CppV,
+  typename CppP,
+  typename CppS,
+  typename... CppT>
+requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
+           std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct
+  make_args_map<
+    CI,
+    CppI,
+    mp_list<CP, CS, CT...>,
+    mp_list<basic_string_span<CppV, CppP, CppS>, CppT...>>
+  : convert<CP, get_data_map<CI, CppI>>
+  , convert<CS, get_size_map<CI + 1, CppI>>
+  , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using convert<CP, get_data_map<CI, CppI>>::operator();
+    using convert<CS, get_size_map<CI + 1, CppI>>::operator();
+    using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
 };
 //------------------------------------------------------------------------------
 template <typename CSignature, typename CppSignature>
@@ -220,14 +287,18 @@ static auto make_map(CRV (*)(), CppRV (*)())
 
 template <typename RV, typename... CParam, typename... CppParam>
 static auto make_map(RV (*)(CParam...), RV (*)(CppParam...))
-  -> make_args_map<0, mp_list<RV, CParam...>, mp_list<RV, CppParam...>> requires(
-    (sizeof...(CParam) > 0) && (sizeof...(CParam) == sizeof...(CppParam)));
+  -> make_args_map<0, 0, mp_list<RV, CParam...>, mp_list<RV, CppParam...>> requires(
+    (sizeof...(CParam) > 0));
 
 template <typename CRV, typename CppRV, typename... CParam, typename... CppParam>
-static auto make_map(CRV (*)(CParam...), CppRV (*)(CppParam...))
-  -> combined_map<cast_to_map<CppRV>, make_args_map<1, mp_list<CParam...>, mp_list<CppParam...>>> requires(
-    !std::is_same_v<CRV, CppRV> && (sizeof...(CParam) > 0) &&
-    (sizeof...(CParam) == sizeof...(CppParam)));
+static auto make_map(CRV (*)(CParam...), CppRV (*)(CppParam...)) -> combined_map<
+  cast_to_map<CppRV>,
+  make_args_map<
+    1,
+    1,
+    mp_list<CParam...>,
+    mp_list<
+      CppParam...>>> requires(!std::is_same_v<CRV, CppRV> && (sizeof...(CParam) > 0));
 
 template <typename CSignature, typename CppSignature>
 using make_map_t = decltype(make_map(
