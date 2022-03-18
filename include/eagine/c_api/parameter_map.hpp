@@ -42,13 +42,22 @@ public:
         return _get(i, std::forward<P>(p)...);
     }
 };
-//------------------------------------------------------------------------------
+
 template <std::size_t... J>
 struct trivial_arg_map {
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
       -> decltype(auto) requires(... || (I == J)) {
         return trivial_map{}(i, std::forward<P>(p)...);
+    }
+};
+//------------------------------------------------------------------------------
+template <std::size_t... J>
+struct nullptr_arg_map {
+    template <std::size_t I, typename... P>
+    constexpr auto operator()(size_constant<I>, P&&...) const noexcept
+      -> decltype(auto) requires(... || (I == J)) {
+        return nullptr;
     }
 };
 //------------------------------------------------------------------------------
@@ -91,6 +100,16 @@ struct cast_to_map {
     constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
         return trivial_map{}(i, std::forward<P>(p)...)
           .cast_to(type_identity<T>{});
+    }
+};
+
+template <std::size_t CppI>
+struct replaced_with_map {
+    template <typename... P>
+    constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...)
+          .replaced_with(
+            trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...));
     }
 };
 
@@ -219,11 +238,26 @@ template <
   typename CppH,
   typename... CppT>
 struct make_args_map<CI, CppI, mp_list<CH, CT...>, mp_list<CppH, CppT...>>
-  : make_arg_map<CI, CppI, CH, CppH>
+  : make_arg_map<
+      CI,
+      CppI,
+      std::remove_cv_t<CH>,
+      std::remove_cv_t<std::remove_reference_t<CppH>>>
   , make_args_map<CI + 1, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
-    using make_arg_map<CI, CppI, CH, CppH>::operator();
+    using make_arg_map<
+      CI,
+      CppI,
+      std::remove_cv_t<CH>,
+      std::remove_cv_t<std::remove_reference_t<CppH>>>::operator();
     using make_args_map<CI + 1, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();
+};
+
+template <std::size_t CI, std::size_t CppI, typename CH>
+requires(
+  std::is_pointer_v<CH>) struct make_args_map<CI, CppI, mp_list<CH>, mp_list<>>
+  : nullptr_arg_map<CI> {
+    using nullptr_arg_map<CI>::operator();
 };
 
 template <

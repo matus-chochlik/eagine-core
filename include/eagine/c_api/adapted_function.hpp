@@ -89,8 +89,12 @@ public:
     basic_adapted_function(Api& api) noexcept
       : _api{api} {}
 
+    constexpr auto underlying() const noexcept -> decltype(auto) {
+        return _api.*method;
+    }
+
     explicit constexpr operator bool() const noexcept {
-        return bool(_api.*method);
+        return bool(underlying());
     }
 
     constexpr auto operator()(CppParam... param) const noexcept {
