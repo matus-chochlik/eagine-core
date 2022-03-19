@@ -639,11 +639,25 @@ struct extract_traits<c_api::result_value<Result, validity>> {
     using const_result_type = std::add_const_t<Result>&;
 };
 
+template <c_api::result_validity validity>
+struct extract_traits<c_api::result_value<void, validity>> {
+    using value_type = void;
+    using result_type = void;
+    using const_result_type = void;
+};
+
 template <typename Result, typename Info, c_api::result_validity validity>
 struct extract_traits<c_api::result<Result, Info, validity>> {
     using value_type = Result;
     using result_type = Result&;
     using const_result_type = std::add_const_t<Result>&;
+};
+
+template <typename Info, c_api::result_validity validity>
+struct extract_traits<c_api::result<void, Info, validity>> {
+    using value_type = void;
+    using result_type = void;
+    using const_result_type = void;
 };
 
 template <typename Result, typename Info>

@@ -11,6 +11,7 @@
 
 #include "../handle.hpp"
 #include "../int_constant.hpp"
+#include "../is_within_limits.hpp"
 #include "../mp_list.hpp"
 #include "../string_span.hpp"
 
@@ -181,6 +182,21 @@ struct skip_transform_map {
     }
 };
 //------------------------------------------------------------------------------
+template <typename Dst, typename Src>
+static constexpr auto c_arg_cast(Src&& src) noexcept -> Dst {
+    if constexpr(std::is_integral_v<Dst> || std::is_floating_point_v<Dst>) {
+        if constexpr(std::is_same_v<
+                       std::remove_cv_t<std::remove_reference_t<Src>>,
+                       bool>) {
+            return std::forward<Src>(src) ? 1 : 0;
+        } else {
+            return limit_cast<Dst>(std::forward<Src>(src));
+        }
+    } else {
+        return static_cast<Dst>(std::forward<Src>(src));
+    }
+}
+//------------------------------------------------------------------------------
 template <typename T, typename M>
 struct convert;
 
@@ -193,7 +209,7 @@ template <
 struct convert<T, Map<CI, CppI>> {
     template <typename... P>
     constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
-        return static_cast<T>(Map<CI, CppI>{}(i, std::forward<P>(p)...));
+        return c_arg_cast<T>(Map<CI, CppI>{}(i, std::forward<P>(p)...));
     }
 };
 
@@ -202,7 +218,7 @@ struct convert<T, trivial_arg_map<J...>> {
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
       requires(... || (I == J)) {
-        return static_cast<T>(trivial_map{}(i, std::forward<P>(p)...));
+        return c_arg_cast<T>(trivial_map{}(i, std::forward<P>(p)...));
     }
 };
 //------------------------------------------------------------------------------
