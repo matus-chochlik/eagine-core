@@ -61,24 +61,38 @@ class basic_adapted_function<
   CppRV(CppParam...),
   RvMap,
   ArgMap> {
+    using Ftw = function_traits<method_wrapper_t<method>>;
+
     template <std::size_t... I>
     constexpr auto _call(CppParam... param, std::index_sequence<I...>)
-      const noexcept {
-        using Ftw = function_traits<method_wrapper_t<method>>;
+      const noexcept requires(std::is_same_v<RvMap, ArgMap>) {
+        ArgMap map{};
+        return Ftw::api_traits::check_result(
+          _api,
+          map(
+            size_constant<0>{},
+            Ftw::call(
+              _api.*method, map(size_constant<I + 1>{}, 0, param...)...),
+            param...));
+    }
+
+    template <std::size_t... I>
+    constexpr auto _call(CppParam... param, std::index_sequence<I...>)
+      const noexcept requires(!std::is_same_v<RvMap, ArgMap>) {
+        ArgMap map{};
         return Ftw::api_traits::check_result(
           _api,
           RvMap{}(
             size_constant<0>{},
             Ftw::call(
-              _api.*method, ArgMap{}(size_constant<I + 1>{}, 0, param...)...),
+              _api.*method, map(size_constant<I + 1>{}, 0, param...)...),
             param...));
     }
 
     template <std::size_t... I>
     constexpr auto _lazy(CppParam... param, std::index_sequence<I...>)
       const noexcept {
-        using Ftw = function_traits<method_wrapper_t<method>>;
-        const ArgMap map{};
+        ArgMap map{};
         return
           [&api{_api}, ... args{map(size_constant<I + 1>{}, 0, param...)}]() {
               Ftw::call(api.*method, args...);
