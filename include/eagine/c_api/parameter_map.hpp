@@ -62,6 +62,31 @@ struct nullptr_arg_map {
 };
 //------------------------------------------------------------------------------
 template <std::size_t CI, std::size_t CppI>
+struct reorder_arg_map {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI>, P&&... p) const noexcept
+      -> decltype(auto) {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...);
+    }
+};
+//------------------------------------------------------------------------------
+template <std::size_t CI, typename T>
+struct get_ptr_arg_map {
+    template <typename... P>
+    constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...).replaced_with(_value);
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI>, P&&...) noexcept -> T* {
+        return &_value;
+    }
+
+private:
+    T _value{};
+};
+//------------------------------------------------------------------------------
+template <std::size_t CI, std::size_t CppI>
 struct get_data_map {
     template <typename... P>
     constexpr auto operator()(size_constant<CI>, P&&... p) const noexcept {
@@ -159,30 +184,25 @@ struct skip_transform_map {
 template <typename T, typename M>
 struct convert;
 
+template <
+  typename T,
+  std::size_t CI,
+  std::size_t CppI,
+  template <std::size_t, std::size_t>
+  class Map>
+struct convert<T, Map<CI, CppI>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return static_cast<T>(Map<CI, CppI>{}(i, std::forward<P>(p)...));
+    }
+};
+
 template <typename T, std::size_t... J>
 struct convert<T, trivial_arg_map<J...>> {
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
       requires(... || (I == J)) {
         return static_cast<T>(trivial_map{}(i, std::forward<P>(p)...));
-    }
-};
-
-template <typename T, std::size_t CI, std::size_t CppI>
-struct convert<T, get_data_map<CI, CppI>> {
-    template <typename... P>
-    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
-        return static_cast<T>(
-          get_data_map<CI, CppI>{}(i, std::forward<P>(p)...));
-    }
-};
-
-template <typename T, std::size_t CI, std::size_t CppI>
-struct convert<T, get_size_map<CI, CppI>> {
-    template <typename... P>
-    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
-        return static_cast<T>(
-          get_size_map<CI, CppI>{}(i, std::forward<P>(p)...));
     }
 };
 //------------------------------------------------------------------------------
@@ -333,6 +353,12 @@ static auto make_map(CRV (*)(CParam...), CppRV (*)(CppParam...)) -> combined_map
     mp_list<CParam...>,
     mp_list<
       CppParam...>>> requires(!std::is_same_v<CRV, CppRV> && (sizeof...(CParam) > 0));
+
+template <typename CRV, typename CppRV, typename CParam, typename CppParam>
+static auto make_map(CRV (*)(CppRV*, CParam), CppRV (*)(CppParam))
+  -> combined_map<
+    get_ptr_arg_map<1, CppRV>,
+    convert<CParam, reorder_arg_map<2, 1>>>;
 
 template <typename CSignature, typename CppSignature>
 using make_map_t = decltype(make_map(
