@@ -88,35 +88,40 @@ private:
 };
 //------------------------------------------------------------------------------
 template <std::size_t CI, std::size_t CppI>
+struct addressof_map {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return std::addressof(
+          reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...));
+    }
+};
+
+template <std::size_t CI, std::size_t CppI>
 struct get_data_map {
     template <typename... P>
-    constexpr auto operator()(size_constant<CI>, P&&... p) const noexcept {
-        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...)
-          .data();
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).data();
     }
 };
 
 template <std::size_t CI, std::size_t CppI>
 struct get_size_map {
     template <typename... P>
-    constexpr auto operator()(size_constant<CI>, P&&... p) const noexcept {
-        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...)
-          .size();
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).size();
     }
 };
 
 template <std::size_t CDI, std::size_t CSI, std::size_t CppI>
 struct get_data_size_map {
     template <typename... P>
-    constexpr auto operator()(size_constant<CDI>, P&&... p) const noexcept {
-        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...)
-          .data();
+    constexpr auto operator()(size_constant<CDI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CDI, CppI>{}(i, std::forward<P>(p)...).data();
     }
 
     template <typename... P>
-    constexpr auto operator()(size_constant<CSI>, P&&... p) const noexcept {
-        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...)
-          .size();
+    constexpr auto operator()(size_constant<CSI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CSI, CppI>{}(i, std::forward<P>(p)...).size();
     }
 };
 
@@ -228,10 +233,13 @@ struct combined_map : M... {
 };
 //------------------------------------------------------------------------------
 template <std::size_t CI, std::size_t CppI, typename CP, typename CppP>
-struct make_arg_map;
+struct make_arg_map : convert<CP, reorder_arg_map<CI, CppI>> {};
 
 template <std::size_t I, typename CP, typename CppP>
 struct make_arg_map<I, I, CP, CppP> : convert<CP, trivial_arg_map<I>> {};
+
+template <std::size_t CI, std::size_t CppI, typename P>
+struct make_arg_map<CI, CppI, P, P> : reorder_arg_map<CI, CppI> {};
 
 template <std::size_t I, typename P>
 struct make_arg_map<I, I, P, P> : trivial_arg_map<I> {};
@@ -285,6 +293,20 @@ struct make_args_map<CI, CppI, mp_list<CH, CT...>, mp_list<CppH, CppT...>>
       CppI,
       std::remove_cv_t<CH>,
       std::remove_cv_t<std::remove_reference_t<CppH>>>::operator();
+    using make_args_map<CI + 1, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename H,
+  typename... CT,
+  typename... CppT>
+struct make_args_map<CI, CppI, mp_list<H*, CT...>, mp_list<H&, CppT...>>
+  : addressof_map<CI, CppI>
+  , make_args_map<CI + 1, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using addressof_map<CI, CppI>::operator();
     using make_args_map<CI + 1, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();
 };
