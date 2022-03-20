@@ -235,6 +235,7 @@ protected:
     }
 
 public:
+    friend class result_value<Result, result_validity::maybe>;
     Result _value{};
 };
 //------------------------------------------------------------------------------
@@ -336,6 +337,14 @@ public:
     constexpr result_value(Result value, const bool valid) noexcept
       : _value{std::move(value)}
       , _valid{valid} {}
+
+    constexpr result_value(
+      const result_value<Result, result_validity::never>&) noexcept {}
+
+    constexpr result_value(
+      result_value<Result, result_validity::always> that) noexcept
+      : _value{std::move(that._value)}
+      , _valid{true} {}
 
     /// @brief Indicates if the result value is valid.
     constexpr auto is_valid() const noexcept {
