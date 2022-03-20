@@ -73,6 +73,11 @@ public:
         return _name;
     }
 
+    /// @brief Explicit conversion to a pointer to the underlying handle type.
+    explicit constexpr operator Handle*() noexcept {
+        return &_name;
+    }
+
     struct transform {
         constexpr auto operator()(Handle hndl) const noexcept {
             return basic_handle<Tag, Handle, invalid>{hndl};
