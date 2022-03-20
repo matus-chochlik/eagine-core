@@ -129,7 +129,9 @@ template <typename CP, typename CppP>
 struct cast_to_map {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
-        if constexpr(std::is_convertible_v<CP, CppP>) {
+        if constexpr(
+          std::is_convertible_v<CP, CppP> ||
+          std::is_constructible_v<CppP, CP>) {
             return trivial_map{}(i, std::forward<P>(p)...)
               .cast_to(type_identity<CppP>{});
         } else if constexpr(std::is_default_constructible_v<CppP>) {
