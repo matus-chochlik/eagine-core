@@ -42,7 +42,7 @@ public:
         for(const auto& val : values) {
             errors |= _write_one(val, type_identity<T>{});
             errors |= do_sink(';');
-            if(errors) {
+            if(EAGINE_UNLIKELY(errors)) {
                 break;
             }
             ++done;
@@ -201,7 +201,7 @@ public:
         result errors{};
         for(T& val : values) { // NOLINT(hicpp-vararg)
             errors |= _read_one(val, ';');
-            if(errors) {
+            if(EAGINE_UNLIKELY(errors)) {
                 break;
             }
             ++done;
@@ -225,7 +225,7 @@ public:
 
     auto begin_struct(span_size_t& count) noexcept -> result final {
         result errors = require('{');
-        if(!errors) {
+        if(EAGINE_LIKELY(!errors)) {
             errors |= _read_one(count, '|');
         }
         return errors;
@@ -233,7 +233,7 @@ public:
 
     auto begin_member(const string_view name) noexcept -> result final {
         result errors = require(name);
-        if(!errors) {
+        if(EAGINE_LIKELY(!errors)) {
             errors |= require(':');
         }
         return errors;
@@ -249,7 +249,7 @@ public:
 
     auto begin_list(span_size_t& count) noexcept -> result final {
         result errors = require('[');
-        if(!errors) {
+        if(EAGINE_LIKELY(!errors)) {
             errors |= _read_one(count, '|');
         }
         return errors;
@@ -288,7 +288,8 @@ private:
     auto _read_one(I& value, const char delimiter) noexcept -> result {
         value = I(0);
         result errors{};
-        if(auto src{this->string_before(delimiter, 48)}) {
+        auto src{this->string_before(delimiter, 48)};
+        if(EAGINE_LIKELY(src)) {
             const auto skip_len = src.size() + 1;
             unsigned shift = 0U;
             while(src) {
@@ -323,7 +324,8 @@ private:
             pop(1);
             U temp{};
             errors |= _read_one(temp, delimiter);
-            if(const auto conv{convert_if_fits<I>(temp)}) {
+            const auto conv{convert_if_fits<I>(temp)};
+            if(EAGINE_LIKELY(conv)) {
                 value = (sign == '-') ? -extract(conv) : extract(conv);
             } else {
                 errors |= deserialization_error_code::invalid_format;
@@ -351,7 +353,8 @@ private:
 
     auto _read_one(identifier& value, const char delimiter) noexcept -> result {
         result errors{};
-        if(const auto src{this->string_before(delimiter, 32)}) {
+        const auto src{this->string_before(delimiter, 32)};
+        if(EAGINE_LIKELY(src)) {
             value = identifier(src);
             pop(src.size() + 1);
         } else {
@@ -364,7 +367,8 @@ private:
       -> result {
         result errors{};
         const auto max = decl_name_storage::max_length + 1;
-        if(const auto src{this->string_before(delimiter, max)}) {
+        const auto src{this->string_before(delimiter, max)};
+        if(EAGINE_LIKELY(src)) {
             value.assign(src);
             pop(src.size() + 1);
         } else {
