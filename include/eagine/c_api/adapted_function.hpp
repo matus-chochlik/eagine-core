@@ -116,6 +116,10 @@ public:
         return _call(param..., S{});
     }
 
+    auto fake() const noexcept {
+        return Ftw::template fake<CppRV>();
+    }
+
     auto raii(CppParam... param) const noexcept {
         using S = std::make_index_sequence<sizeof...(CParam)>;
         return eagine::finally(_lazy(param..., S{}));

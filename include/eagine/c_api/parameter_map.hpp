@@ -125,12 +125,16 @@ struct get_data_size_map {
     }
 };
 
-template <typename T>
+template <typename CP, typename CppP>
 struct cast_to_map {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
-        return trivial_map{}(i, std::forward<P>(p)...)
-          .cast_to(type_identity<T>{});
+        if constexpr(std::is_convertible_v<CP, CppP>) {
+            return trivial_map{}(i, std::forward<P>(p)...)
+              .cast_to(type_identity<CppP>{});
+        } else if constexpr(std::is_default_constructible_v<CppP>) {
+            return trivial_map{}(i, std::forward<P>(p)...).replaced_with(CppP{});
+        }
     }
 };
 
@@ -213,7 +217,8 @@ template <
   class Map>
 struct convert<T, Map<CI, CppI>> {
     template <typename... P>
-    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept
+      -> decltype(auto) {
         return c_arg_cast<T>(Map<CI, CppI>{}(i, std::forward<P>(p)...));
     }
 };
@@ -222,7 +227,7 @@ template <typename T, std::size_t... J>
 struct convert<T, trivial_arg_map<J...>> {
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
-      requires(... || (I == J)) {
+      -> decltype(auto) requires(... || (I == J)) {
         return c_arg_cast<T>(trivial_map{}(i, std::forward<P>(p)...));
     }
 };
@@ -252,16 +257,46 @@ struct make_arg_map<I, I, const char*, string_view> {
     }
 };
 
+template <std::size_t CI, std::size_t CppI, typename V, typename R, typename S>
+struct make_arg_map<CI, CppI, V*, memory::basic_span<V, R, S>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).data();
+    }
+};
+
+template <std::size_t I, typename V, typename R, typename S>
+struct make_arg_map<I, I, V*, memory::basic_span<V, R, S>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...).data();
+    }
+};
+
 template <
   std::size_t CI,
   std::size_t CppI,
   typename Tag,
   typename Handle,
   Handle invalid>
-struct make_arg_map<CI, CppI, Handle*, basic_owned_handle<Tag, Handle, invalid>&> {
+struct make_arg_map<CI, CppI, Handle*, basic_handle<Tag, Handle, invalid>&> {
     template <typename... P>
-    constexpr auto operator()(size_constant<CI>, P&&... p) const noexcept {
-        return trivial_map{}(CppI, std::forward<P>(p)...).release();
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return static_cast<Handle*>(
+          reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...));
+    }
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename Tag,
+  typename Handle,
+  Handle invalid>
+struct make_arg_map<CI, CppI, Handle, basic_owned_handle<Tag, Handle, invalid>&> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).release();
     }
 };
 //------------------------------------------------------------------------------
@@ -375,7 +410,7 @@ static auto make_map(CSignature*, CppSignature*) -> trivial_map;
 
 template <typename CRV, typename CppRV>
 static auto make_map(CRV (*)(), CppRV (*)())
-  -> cast_to_map<CppRV> requires(!std::is_same_v<CRV, CppRV>);
+  -> cast_to_map<CRV, CppRV> requires(!std::is_same_v<CRV, CppRV>);
 
 template <typename RV, typename... CParam, typename... CppParam>
 static auto make_map(RV (*)(CParam...), RV (*)(CppParam...))
@@ -384,7 +419,7 @@ static auto make_map(RV (*)(CParam...), RV (*)(CppParam...))
 
 template <typename CRV, typename CppRV, typename... CParam, typename... CppParam>
 static auto make_map(CRV (*)(CParam...), CppRV (*)(CppParam...)) -> combined_map<
-  cast_to_map<CppRV>,
+  cast_to_map<CRV, CppRV>,
   make_args_map<
     1,
     1,

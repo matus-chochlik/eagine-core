@@ -201,12 +201,37 @@ struct function_traits<unimplemented_function<ApiTraits, Tag, RV(P...)>> {
     using api_traits = ApiTraits;
 
     template <typename T = RV>
-    using result = typename ApiTraits::template opt_result<T>;
+    using result_type = typename ApiTraits::template no_result<T>;
 
     template <typename... Args>
     static constexpr auto call(
       const c_api::unimplemented_function<ApiTraits, Tag, RV(P...)>&,
-      Args&&...) noexcept -> typename ApiTraits::template no_result<RV> {
+      Args&&...) noexcept -> result_type<RV> {
+        return {};
+    }
+
+    template <typename R = RV>
+    static constexpr auto fake(const R& = {}) noexcept -> result_type<R> {
+        return {};
+    }
+};
+
+template <typename ApiTraits, typename Tag, typename... P>
+struct function_traits<unimplemented_function<ApiTraits, Tag, void(P...)>> {
+    using api_traits = ApiTraits;
+
+    template <typename T = void>
+    using result_type = typename ApiTraits::template no_result<T>;
+
+    template <typename... Args>
+    static constexpr auto call(
+      const c_api::unimplemented_function<ApiTraits, Tag, void(P...)>&,
+      Args&&...) noexcept -> result_type<void> {
+        return {};
+    }
+
+    template <typename R = void>
+    static constexpr auto fake() noexcept -> result_type<R> {
         return {};
     }
 };
@@ -216,13 +241,18 @@ struct function_traits<static_function<ApiTraits, Tag, RV(P...), f>> {
     using api_traits = ApiTraits;
 
     template <typename T = RV>
-    using result = typename ApiTraits::template result<T>;
+    using result_type = typename ApiTraits::template result<T>;
 
     template <typename... Args>
     static constexpr auto call(
       c_api::static_function<ApiTraits, Tag, RV(P...), f>& function,
-      Args&&... args) noexcept -> typename ApiTraits::template result<RV> {
+      Args&&... args) noexcept -> result_type<RV> {
         return {std::move(function(std::forward<Args>(args)...))};
+    }
+
+    template <typename R = RV>
+    static constexpr auto fake(R res = {}) noexcept -> result_type<R> {
+        return {std::move(res)};
     }
 };
 
@@ -231,13 +261,18 @@ struct function_traits<static_function<ApiTraits, Tag, void(P...), f>> {
     using api_traits = ApiTraits;
 
     template <typename T = void>
-    using result = typename ApiTraits::template result<T>;
+    using result_type = typename ApiTraits::template result<T>;
 
     template <typename... Args>
     static constexpr auto call(
       c_api::static_function<ApiTraits, Tag, void(P...), f>& function,
-      Args&&... args) noexcept -> typename ApiTraits::template result<void> {
+      Args&&... args) noexcept -> result_type<void> {
         function(std::forward<Args>(args)...);
+        return {};
+    }
+
+    template <typename R = void>
+    static constexpr auto fake() noexcept -> result_type<R> {
         return {};
     }
 };
@@ -247,14 +282,19 @@ struct function_traits<dynamic_function<ApiTraits, Tag, RV(P...)>> {
     using api_traits = ApiTraits;
 
     template <typename T = RV>
-    using result = typename ApiTraits::template opt_result<T>;
+    using result_type = typename ApiTraits::template opt_result<T>;
 
     template <typename... Args>
     static constexpr auto call(
       c_api::dynamic_function<ApiTraits, Tag, RV(P...)>& function,
-      Args&&... args) noexcept -> typename ApiTraits::template opt_result<RV> {
+      Args&&... args) noexcept -> result_type<RV> {
         return {
           std::move(function(std::forward<Args>(args)...)), bool(function)};
+    }
+
+    template <typename R = RV>
+    static constexpr auto fake(R res = {}) noexcept -> result_type<R> {
+        return {std::move(res)};
     }
 };
 
@@ -263,20 +303,24 @@ struct function_traits<dynamic_function<ApiTraits, Tag, void(P...)>> {
     using api_traits = ApiTraits;
 
     template <typename T = void>
-    using result = typename ApiTraits::template opt_result<T>;
+    using result_type = typename ApiTraits::template opt_result<T>;
 
     template <typename... Args>
     static constexpr auto call(
       c_api::dynamic_function<ApiTraits, Tag, void(P...)>& function,
-      Args&&... args) noexcept ->
-      typename ApiTraits::template opt_result<void> {
+      Args&&... args) noexcept -> result_type<void> {
         function(std::forward<Args>(args)...);
         return {bool(function)};
+    }
+
+    template <typename R = void>
+    static constexpr auto fake() noexcept -> result_type<R> {
+        return {};
     }
 };
 
 template <typename T, typename W>
-using function_result_t = typename function_traits<W>::template result<T>;
+using function_result_t = typename function_traits<W>::template result_type<T>;
 
 template <typename T, typename W>
 using function_api_traits_t = typename function_traits<W>::api_traits;
