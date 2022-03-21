@@ -6,8 +6,8 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#ifndef EAGINE_C_API_ADAPTED_FUNCION_HPP
-#define EAGINE_C_API_ADAPTED_FUNCION_HPP
+#ifndef EAGINE_C_API_ADAPTED_FUNCTION_HPP
+#define EAGINE_C_API_ADAPTED_FUNCTION_HPP
 
 #include "../scope_exit.hpp"
 #include "function.hpp"
