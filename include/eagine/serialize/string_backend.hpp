@@ -128,10 +128,9 @@ private:
     auto _sprintf_one(const T value, const char (&fmt)[L]) noexcept -> result {
         std::array<char, 64> temp{};
         // TODO: to_chars from_chars when available
-        EAGINE_MAYBE_UNUSED(
-          // NOLINTNEXTLINE(hicpp-vararg)
-          std::snprintf(
-            temp.data(), temp.size(), static_cast<const char*>(fmt), value));
+        // NOLINTNEXTLINE(hicpp-vararg)
+        [[maybe_unused]] std::snprintf(
+          temp.data(), temp.size(), static_cast<const char*>(fmt), value);
         return do_sink(string_view(temp.data()));
     }
 

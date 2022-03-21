@@ -11,7 +11,6 @@
 #include "branch_predict.hpp"
 #include "config/basic.hpp"
 #include "diagnostic.hpp"
-#include "maybe_unused.hpp"
 #include "stacktrace.hpp"
 #include <cassert>
 
@@ -92,8 +91,7 @@ EAGINE_DIAG_POP()
 #endif
 
 #if EAGINE_CHECK_LIMIT_CAST
-#define EAGINE_CONSTEXPR_ASSERT(UNUSED, RESULT) \
-    (EAGINE_MAYBE_UNUSED(UNUSED), RESULT)
+#define EAGINE_CONSTEXPR_ASSERT(UNUSED, RESULT) ((void)(UNUSED), RESULT)
 #else
 #define EAGINE_CONSTEXPR_ASSERT(CHECK, RESULT) \
     ((EAGINE_LIKELY(CHECK) ? void(0)                                  \

@@ -6,15 +6,14 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/assert.hpp>
-#include <eagine/maybe_unused.hpp>
 #include <cstdlib>
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
-inline auto c_byte_reallocator::allocate(size_type n, size_type a) noexcept
-  -> owned_block {
+inline auto c_byte_reallocator::allocate(
+  size_type n,
+  [[maybe_unused]] size_type a) noexcept -> owned_block {
     EAGINE_ASSERT(a > 0);
-    EAGINE_MAYBE_UNUSED(a);
 
     if(n == 0) {
         return {};

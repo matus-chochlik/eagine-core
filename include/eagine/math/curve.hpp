@@ -191,8 +191,7 @@ public:
         for(const auto i : integer_range(s)) {
             const auto poffs = i * sstep;
             auto t_sub = Parameter(0);
-            for(const auto j : integer_range(extract(n))) {
-                EAGINE_MAYBE_UNUSED(j);
+            for([[maybe_unused]] const auto j : integer_range(extract(n))) {
                 EAGINE_ASSERT(p != dest.end());
                 *p = Type(_bezier(t_sub, skip(view(_points), poffs)));
                 ++p;

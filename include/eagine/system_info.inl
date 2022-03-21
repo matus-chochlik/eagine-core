@@ -404,14 +404,14 @@ auto system_info::thermal_sensor_count() noexcept -> span_size_t {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto system_info::sensor_temperature(const span_size_t index) noexcept
+auto system_info::sensor_temperature(
+  [[maybe_unused]] const span_size_t index) noexcept
   -> valid_if_positive<kelvins_t<float>> {
 #if EAGINE_LINUX
     if(const auto impl{_impl()}) {
         return extract(impl).tz_temperature(index);
     }
 #endif
-    EAGINE_MAYBE_UNUSED(index);
     return {kelvins_(0.F)};
 }
 //------------------------------------------------------------------------------
@@ -467,7 +467,6 @@ auto system_info::cooling_device_state(const span_size_t index) noexcept
         return extract(impl).cd_state(index);
     }
 #endif
-    EAGINE_MAYBE_UNUSED(index);
     return {-1.F};
 }
 //------------------------------------------------------------------------------
@@ -482,14 +481,14 @@ auto system_info::battery_count() noexcept -> span_size_t {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto system_info::battery_capacity(const span_size_t index) noexcept
+auto system_info::battery_capacity(
+  [[maybe_unused]] const span_size_t index) noexcept
   -> valid_if_between_0_1<float> {
 #if EAGINE_LINUX
     if(const auto impl{_impl()}) {
         return extract(impl).bat_capacity(index);
     }
 #endif
-    EAGINE_MAYBE_UNUSED(index);
     return {-1.F};
 }
 //------------------------------------------------------------------------------
@@ -504,14 +503,13 @@ auto system_info::ac_supply_count() noexcept -> span_size_t {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto system_info::ac_supply_online(const span_size_t index) noexcept
-  -> tribool {
+auto system_info::ac_supply_online(
+  [[maybe_unused]] const span_size_t index) noexcept -> tribool {
 #if EAGINE_LINUX
     if(const auto impl{_impl()}) {
         return extract(impl).acps_online(index);
     }
 #endif
-    EAGINE_MAYBE_UNUSED(index);
     return indeterminate;
 }
 //------------------------------------------------------------------------------

@@ -26,8 +26,7 @@ struct units_unit_add_tester {
         using D = dimension<BD, 1>;
 
         unit<D, mock_system> a, b;
-        unit<D, mock_system> c = a + b;
-        EAGINE_MAYBE_UNUSED(c);
+        [[maybe_unused]] unit<D, mock_system> c = a + b;
     }
 };
 
@@ -45,8 +44,7 @@ struct units_unit_sub_tester {
         using D = dimension<BD, 1>;
 
         unit<D, mock_system> a, b;
-        unit<D, mock_system> c = a - b;
-        EAGINE_MAYBE_UNUSED(c);
+        [[maybe_unused]] unit<D, mock_system> c = a - b;
     }
 };
 
@@ -68,8 +66,7 @@ struct units_unit_mul_tester {
 
         unit<D1, mock_system> a;
         unit<D2, mock_system> b;
-        unit<D, mock_system> c = a * b;
-        EAGINE_MAYBE_UNUSED(c);
+        [[maybe_unused]] unit<D, mock_system> c = a * b;
     }
 };
 
@@ -100,8 +97,7 @@ struct units_unit_div_tester {
 
         unit<D1, mock_system> a;
         unit<D2, mock_system> b;
-        unit<D, mock_system> c = a / b;
-        EAGINE_MAYBE_UNUSED(c);
+        [[maybe_unused]] unit<D, mock_system> c = a / b;
     }
 };
 

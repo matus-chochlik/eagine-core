@@ -115,9 +115,7 @@ BOOST_AUTO_TEST_CASE(enum_class_3) {
 
     ec_A a = ev_1;
 
-    any_enum_value<0> aev = a;
-
-    EAGINE_MAYBE_UNUSED(aev);
+    [[maybe_unused]] any_enum_value<0> aev = a;
 }
 
 BOOST_AUTO_TEST_SUITE_END()

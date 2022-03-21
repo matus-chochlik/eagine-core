@@ -740,10 +740,8 @@ public:
       std::ostream& out,
       const basic_sudoku_tile_patch& that) -> std::ostream& {
         std::size_t k = 0;
-        for(const auto y : integer_range(that._height)) {
-            for(const auto x : integer_range(that._width)) {
-                EAGINE_MAYBE_UNUSED(x);
-                EAGINE_MAYBE_UNUSED(y);
+        for([[maybe_unused]] const auto y : integer_range(that._height)) {
+            for([[maybe_unused]] const auto x : integer_range(that._width)) {
                 EAGINE_ASSERT(k < that._cells.size());
                 out << std::setw(3) << unsigned(that._cells[k++]);
             }

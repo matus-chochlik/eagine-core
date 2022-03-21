@@ -36,23 +36,14 @@ static inline void _check_close(T a, T b) {
 
 template <typename T, bool V>
 void test_vect_data_default_construct_TV() {
-    typename eagine::vect::data<T, 1, V>::type v1;
-    typename eagine::vect::data<T, 2, V>::type v2;
-    typename eagine::vect::data<T, 3, V>::type v3;
-    typename eagine::vect::data<T, 4, V>::type v4;
-    typename eagine::vect::data<T, 5, V>::type v5;
-    typename eagine::vect::data<T, 6, V>::type v6;
-    typename eagine::vect::data<T, 7, V>::type v7;
-    typename eagine::vect::data<T, 8, V>::type v8;
-
-    EAGINE_MAYBE_UNUSED(v1);
-    EAGINE_MAYBE_UNUSED(v2);
-    EAGINE_MAYBE_UNUSED(v3);
-    EAGINE_MAYBE_UNUSED(v4);
-    EAGINE_MAYBE_UNUSED(v5);
-    EAGINE_MAYBE_UNUSED(v6);
-    EAGINE_MAYBE_UNUSED(v7);
-    EAGINE_MAYBE_UNUSED(v8);
+    [[maybe_unused]] typename eagine::vect::data<T, 1, V>::type v1;
+    [[maybe_unused]] typename eagine::vect::data<T, 2, V>::type v2;
+    [[maybe_unused]] typename eagine::vect::data<T, 3, V>::type v3;
+    [[maybe_unused]] typename eagine::vect::data<T, 4, V>::type v4;
+    [[maybe_unused]] typename eagine::vect::data<T, 5, V>::type v5;
+    [[maybe_unused]] typename eagine::vect::data<T, 6, V>::type v6;
+    [[maybe_unused]] typename eagine::vect::data<T, 7, V>::type v7;
+    [[maybe_unused]] typename eagine::vect::data<T, 8, V>::type v8;
 }
 
 template <typename T>
@@ -69,27 +60,21 @@ BOOST_AUTO_TEST_CASE(vect_data_default_construct) {
 
 template <typename T, bool V>
 void test_vect_data_initialization_TV() {
-    typename eagine::vect::data<T, 1, V>::type v1 = {T(1)};
+    [[maybe_unused]] typename eagine::vect::data<T, 1, V>::type v1 = {T(1)};
+    [[maybe_unused]]
     typename eagine::vect::data<T, 2, V>::type v2 = {T(1), T(2)};
+    [[maybe_unused]]
     typename eagine::vect::data<T, 3, V>::type v3 = {T(1), T(2), T(3)};
+    [[maybe_unused]]
     typename eagine::vect::data<T, 4, V>::type v4 = {T(1), T(2), T(3), T(4)};
-    typename eagine::vect::data<T, 5, V>::type v5 = {
+    [[maybe_unused]] typename eagine::vect::data<T, 5, V>::type v5 = {
       T(1), T(2), T(3), T(4), T(5)};
-    typename eagine::vect::data<T, 6, V>::type v6 = {
+    [[maybe_unused]] typename eagine::vect::data<T, 6, V>::type v6 = {
       T(1), T(2), T(3), T(4), T(5), T(6)};
-    typename eagine::vect::data<T, 7, V>::type v7 = {
+    [[maybe_unused]] typename eagine::vect::data<T, 7, V>::type v7 = {
       T(1), T(2), T(3), T(4), T(5), T(6), T(7)};
-    typename eagine::vect::data<T, 8, V>::type v8 = {
+    [[maybe_unused]] typename eagine::vect::data<T, 8, V>::type v8 = {
       T(1), T(2), T(3), T(4), T(5), T(6), T(7), T(8)};
-
-    EAGINE_MAYBE_UNUSED(v1);
-    EAGINE_MAYBE_UNUSED(v2);
-    EAGINE_MAYBE_UNUSED(v3);
-    EAGINE_MAYBE_UNUSED(v4);
-    EAGINE_MAYBE_UNUSED(v5);
-    EAGINE_MAYBE_UNUSED(v6);
-    EAGINE_MAYBE_UNUSED(v7);
-    EAGINE_MAYBE_UNUSED(v8);
 }
 
 template <typename T>
@@ -106,31 +91,22 @@ BOOST_AUTO_TEST_CASE(vect_data_initialization) {
 
 template <typename T, bool V1, bool V2>
 void test_vect_data_copy_construct_TV() {
-    typename eagine::vect::data<T, 1, V1>::type v1 = {};
-    typename eagine::vect::data<T, 1, V2>::type v1c = v1;
-    typename eagine::vect::data<T, 2, V1>::type v2 = {};
-    typename eagine::vect::data<T, 2, V2>::type v2c = v2;
-    typename eagine::vect::data<T, 3, V1>::type v3 = {};
-    typename eagine::vect::data<T, 3, V2>::type v3c = v3;
-    typename eagine::vect::data<T, 4, V1>::type v4 = {};
-    typename eagine::vect::data<T, 4, V2>::type v4c = v4;
-    typename eagine::vect::data<T, 5, V1>::type v5 = {};
-    typename eagine::vect::data<T, 5, V2>::type v5c = v5;
-    typename eagine::vect::data<T, 6, V1>::type v6 = {};
-    typename eagine::vect::data<T, 6, V2>::type v6c = v6;
-    typename eagine::vect::data<T, 7, V1>::type v7 = {};
-    typename eagine::vect::data<T, 7, V2>::type v7c = v7;
-    typename eagine::vect::data<T, 8, V1>::type v8 = {};
-    typename eagine::vect::data<T, 8, V2>::type v8c = v8;
-
-    EAGINE_MAYBE_UNUSED(v1c);
-    EAGINE_MAYBE_UNUSED(v2c);
-    EAGINE_MAYBE_UNUSED(v3c);
-    EAGINE_MAYBE_UNUSED(v4c);
-    EAGINE_MAYBE_UNUSED(v5c);
-    EAGINE_MAYBE_UNUSED(v6c);
-    EAGINE_MAYBE_UNUSED(v7c);
-    EAGINE_MAYBE_UNUSED(v8c);
+    [[maybe_unused]] typename eagine::vect::data<T, 1, V1>::type v1 = {};
+    [[maybe_unused]] typename eagine::vect::data<T, 1, V2>::type v1c = v1;
+    [[maybe_unused]] typename eagine::vect::data<T, 2, V1>::type v2 = {};
+    [[maybe_unused]] typename eagine::vect::data<T, 2, V2>::type v2c = v2;
+    [[maybe_unused]] typename eagine::vect::data<T, 3, V1>::type v3 = {};
+    [[maybe_unused]] typename eagine::vect::data<T, 3, V2>::type v3c = v3;
+    [[maybe_unused]] typename eagine::vect::data<T, 4, V1>::type v4 = {};
+    [[maybe_unused]] typename eagine::vect::data<T, 4, V2>::type v4c = v4;
+    [[maybe_unused]] typename eagine::vect::data<T, 5, V1>::type v5 = {};
+    [[maybe_unused]] typename eagine::vect::data<T, 5, V2>::type v5c = v5;
+    [[maybe_unused]] typename eagine::vect::data<T, 6, V1>::type v6 = {};
+    [[maybe_unused]] typename eagine::vect::data<T, 6, V2>::type v6c = v6;
+    [[maybe_unused]] typename eagine::vect::data<T, 7, V1>::type v7 = {};
+    [[maybe_unused]] typename eagine::vect::data<T, 7, V2>::type v7c = v7;
+    [[maybe_unused]] typename eagine::vect::data<T, 8, V1>::type v8 = {};
+    [[maybe_unused]] typename eagine::vect::data<T, 8, V2>::type v8c = v8;
 }
 
 template <typename T>

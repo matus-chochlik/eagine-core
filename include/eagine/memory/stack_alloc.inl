@@ -6,7 +6,6 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/assert.hpp>
-#include <eagine/maybe_unused.hpp>
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
@@ -253,8 +252,7 @@ inline auto stack_aligned_byte_allocator::has_allocated(
 //------------------------------------------------------------------------------
 inline auto stack_aligned_byte_allocator::allocate(
   size_type n,
-  size_type a) noexcept -> owned_block {
-    EAGINE_MAYBE_UNUSED(a);
+  [[maybe_unused]] size_type a) noexcept -> owned_block {
     auto b = _alloc.allocate(n);
 
     EAGINE_ASSERT(is_aligned_to(b.addr(), a));
@@ -264,8 +262,7 @@ inline auto stack_aligned_byte_allocator::allocate(
 //------------------------------------------------------------------------------
 inline void stack_aligned_byte_allocator::deallocate(
   owned_block&& b,
-  size_type a) noexcept {
-    EAGINE_MAYBE_UNUSED(a);
+  [[maybe_unused]] size_type a) noexcept {
     EAGINE_ASSERT(is_aligned_to(b.addr(), a));
     _alloc.deallocate(std::move(b));
 }

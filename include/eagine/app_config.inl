@@ -96,20 +96,16 @@ public:
     }
 
     void link(
-      const string_view key,
-      const string_view tag,
+      [[maybe_unused]] const string_view key,
+      [[maybe_unused]] const string_view tag,
       application_config_value_loader& loader) noexcept {
-        EAGINE_MAYBE_UNUSED(key);
-        EAGINE_MAYBE_UNUSED(tag);
         _loaders.insert(&loader);
     }
 
     void unlink(
-      const string_view key,
-      const string_view tag,
+      [[maybe_unused]] const string_view key,
+      [[maybe_unused]] const string_view tag,
       application_config_value_loader& loader) noexcept {
-        EAGINE_MAYBE_UNUSED(key);
-        EAGINE_MAYBE_UNUSED(tag);
         _loaders.erase(&loader);
     }
 

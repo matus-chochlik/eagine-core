@@ -64,11 +64,10 @@ public:
     void leave_scope(const identifier) noexcept final {}
 
     void set_description(
-      const identifier src,
+      [[maybe_unused]] const identifier src,
       const logger_instance_id inst,
       const string_view name,
       const string_view desc) noexcept final {
-        EAGINE_MAYBE_UNUSED(src);
 #if EAGINE_POSIX
         const auto idn{src.name()};
         ::syslog( // NOLINT(hicpp-vararg)
@@ -242,9 +241,8 @@ private:
     auto _new_message() noexcept -> auto& {
         _lockable.lock();
         _the_message.arg_count = 0;
-        for(auto& [idx, idv] : _the_message.arg_idx) {
-            EAGINE_MAYBE_UNUSED(idx);
-            idv = 0;
+        for(auto& entry : _the_message.arg_idx) {
+            std::get<1>(entry) = 0;
         }
         return _the_message;
     }
@@ -257,8 +255,8 @@ private:
         _lockable.unlock();
     }
 
-    static constexpr auto _translate(const log_event_severity severity) noexcept
-      -> int {
+    static constexpr auto _translate(
+      [[maybe_unused]] const log_event_severity severity) noexcept -> int {
 #if EAGINE_POSIX
         switch(severity) {
             case log_event_severity::fatal:
@@ -278,7 +276,6 @@ private:
                 break;
         }
 #endif
-        EAGINE_MAYBE_UNUSED(severity);
         return 0;
     }
 

@@ -9,7 +9,6 @@
 #define EAGINE_MATH_MATRIX_HPP
 
 #include "../assert.hpp"
-#include "../maybe_unused.hpp"
 #include "vector.hpp"
 #include <utility>
 
@@ -419,9 +418,8 @@ template <typename T, int C, int R, bool RM, bool V>
 static constexpr auto _row_hlp(
   const matrix<T, C, R, RM, V>& m,
   const int_constant<0U>,
-  const int i) noexcept -> vector<T, C, V> {
+  [[maybe_unused]] const int i) noexcept -> vector<T, C, V> {
     EAGINE_ASSERT(i == 0U);
-    EAGINE_MAYBE_UNUSED(i);
     return row<0U>(m);
 }
 //------------------------------------------------------------------------------
@@ -466,9 +464,8 @@ template <typename T, int C, int R, bool RM, bool V>
 static constexpr auto _col_hlp(
   const matrix<T, C, R, RM, V>& m,
   int_constant<0U>,
-  const int i) noexcept -> vector<T, R, V> {
+  [[maybe_unused]] const int i) noexcept -> vector<T, R, V> {
     EAGINE_ASSERT(i == 0);
-    EAGINE_MAYBE_UNUSED(i);
     return column<0>(m);
 }
 //------------------------------------------------------------------------------

@@ -125,7 +125,6 @@ set(HEADERS
     eagine/math/tmat.hpp
     eagine/math/tvec.hpp
     eagine/math/vector.hpp
-    eagine/maybe_unused.hpp
     eagine/mem_func_const.hpp
     eagine/memoized.hpp
     eagine/memory/address.hpp

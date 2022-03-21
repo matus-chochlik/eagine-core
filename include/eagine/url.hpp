@@ -10,7 +10,6 @@
 #define EAGINE_URL_HPP
 
 #include "flat_map.hpp"
-#include "maybe_unused.hpp"
 #include "memory/span_algo.hpp"
 #include "string_path.hpp"
 #include "string_span.hpp"
@@ -92,8 +91,7 @@ public:
     /// @brief Returns the port.
     auto port() const noexcept -> valid_if_not_zero<int> {
         int result = 0;
-        EAGINE_MAYBE_UNUSED(
-          std::from_chars(_port.begin(), _port.end(), result));
+        [[maybe_unused]] std::from_chars(_port.begin(), _port.end(), result);
         return {result};
     }
 

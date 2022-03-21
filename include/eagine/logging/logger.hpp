@@ -206,12 +206,9 @@ protected:
     }
 
     void log_chart_sample(
-      const identifier source,
-      const identifier series,
-      const float value) const noexcept {
-        EAGINE_MAYBE_UNUSED(source);
-        EAGINE_MAYBE_UNUSED(series);
-        EAGINE_MAYBE_UNUSED(value);
+      [[maybe_unused]] const identifier source,
+      [[maybe_unused]] const identifier series,
+      [[maybe_unused]] const float value) const noexcept {
         if constexpr(is_log_level_enabled_v<log_event_severity::stat>) {
             if(auto lbe{_entry_backend(source, log_event_severity::stat)}) {
                 extract(lbe).log_chart_sample(

@@ -11,7 +11,6 @@
 #include <eagine/c_api_wrap.hpp>
 #include <eagine/extract.hpp>
 #include <eagine/hexdump.hpp>
-#include <eagine/maybe_unused.hpp>
 #include <eagine/memory/block.hpp>
 #include <eagine/memory/span_algo.hpp>
 #include <iostream>
@@ -69,9 +68,9 @@ struct example_file_api {
             return EAGINE_POSIX != 0;
         }
 
-        auto operator()(const char* path, int flags) noexcept -> int {
-            EAGINE_MAYBE_UNUSED(path);
-            EAGINE_MAYBE_UNUSED(flags);
+        auto operator()(
+          [[maybe_unused]] const char* path,
+          [[maybe_unused]] int flags) noexcept -> int {
 #if EAGINE_POSIX
             return ::open(path, flags); // NOLINT(hicpp-vararg)
 #else

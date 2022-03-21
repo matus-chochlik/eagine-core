@@ -71,9 +71,8 @@ void eagine_test_memory_block_2() {
 
     span_size_t s = 0;
 
-    for(byte b : bmb) {
+    for([[maybe_unused]] byte b : bmb) {
         ++s;
-        EAGINE_MAYBE_UNUSED(b);
     }
 
     BOOST_CHECK(bmb.size() == s);
@@ -102,9 +101,8 @@ void eagine_test_memory_block_3() {
 
     span_size_t s = 0;
 
-    for(byte b : bmb) {
+    for([[maybe_unused]] byte b : bmb) {
         ++s;
-        EAGINE_MAYBE_UNUSED(b);
     }
 
     BOOST_CHECK(bmb.size() == s);
@@ -133,9 +131,8 @@ void eagine_test_memory_block_4() {
 
     span_size_t s = 0;
 
-    for(byte b : bmb) {
+    for([[maybe_unused]] byte b : bmb) {
         ++s;
-        EAGINE_MAYBE_UNUSED(b);
     }
 
     BOOST_CHECK(bmb.size() == s);

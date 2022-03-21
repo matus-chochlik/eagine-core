@@ -28,8 +28,7 @@ void test_math_matrix_mult_TCRRMV() {
     auto m1 = eagine::math::matrix<T, N, M, RM1, V>::from(d1, M * N);
     auto m2 = eagine::math::matrix<T, K, N, RM2, V>::from(d2, N * K);
 
-    eagine::math::matrix<T, K, M, RM1, V> m = multiply(m1, m2);
-    EAGINE_MAYBE_UNUSED(m);
+    [[maybe_unused]] eagine::math::matrix<T, K, M, RM1, V> m = multiply(m1, m2);
 
     for(int i = 0; i < M; ++i)
         for(int j = 0; j < K; ++j) {

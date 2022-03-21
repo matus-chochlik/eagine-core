@@ -242,8 +242,8 @@ public:
     auto compress(
       const memory::const_block input,
       memory::buffer& output,
-      const data_compression_level level) noexcept -> memory::const_block {
-        EAGINE_MAYBE_UNUSED(level);
+      [[maybe_unused]] const data_compression_level level) noexcept
+      -> memory::const_block {
         output.resize(input.size() + 1);
         copy(input, skip(cover(output), 1));
         cover(output).front() = 0x00U;

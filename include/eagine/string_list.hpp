@@ -10,7 +10,6 @@
 #define EAGINE_STRING_LIST_HPP
 
 #include "assert.hpp"
-#include "maybe_unused.hpp"
 #include "memory/span_algo.hpp"
 #include "multi_byte_seq.hpp"
 #include "string_span.hpp"
@@ -114,11 +113,10 @@ private:
 
     static inline auto _rev_fit(
       const string_view s,
-      const span_size_t rev_sz) noexcept -> string_view {
+      [[maybe_unused]] const span_size_t rev_sz) noexcept -> string_view {
         const span_size_t hs = element_header_size(s);
         const span_size_t vs = element_value_size(s, hs);
         EAGINE_ASSERT(rev_sz >= hs + vs);
-        EAGINE_MAYBE_UNUSED(rev_sz);
         return {s.data() - hs - vs, hs + vs + hs};
     }
 

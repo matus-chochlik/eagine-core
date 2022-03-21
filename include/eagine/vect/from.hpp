@@ -9,7 +9,6 @@
 #define EAGINE_VECT_FROM_HPP
 
 #include "../assert.hpp"
-#include "../maybe_unused.hpp"
 #include "../types.hpp"
 #include "data.hpp"
 
@@ -17,10 +16,9 @@ namespace eagine::vect {
 
 template <typename T, int N, bool V>
 struct from_array {
-    static auto apply(const T* d, const span_size_t n) noexcept
+    static auto apply(const T* d, [[maybe_unused]] const span_size_t n) noexcept
       -> data_t<T, N, V> {
         EAGINE_ASSERT(N <= int(n));
-        EAGINE_MAYBE_UNUSED(n);
         data_t<T, N, V> r;
         for(int i = 0; i < N; ++i) {
             r[i] = d[i];

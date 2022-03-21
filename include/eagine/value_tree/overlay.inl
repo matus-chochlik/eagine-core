@@ -156,12 +156,9 @@ public:
     }
 
     auto find(
-      overlay_compound& owner,
-      const basic_string_path& path,
-      span<const string_view> tags) -> attribute_interface* {
-        EAGINE_MAYBE_UNUSED(owner);
-        EAGINE_MAYBE_UNUSED(path);
-        EAGINE_MAYBE_UNUSED(tags);
+      [[maybe_unused]] overlay_compound& owner,
+      [[maybe_unused]] const basic_string_path& path,
+      [[maybe_unused]] span<const string_view> tags) -> attribute_interface* {
         return nullptr;
     }
 

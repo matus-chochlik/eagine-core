@@ -99,17 +99,15 @@ public:
         return transaction_handle(_save_points.size());
     }
 
-    auto commit(const transaction_handle th) noexcept
+    auto commit([[maybe_unused]] const transaction_handle th) noexcept
       -> serialization_errors final {
         EAGINE_ASSERT(th == transaction_handle(_save_points.size()));
-        EAGINE_MAYBE_UNUSED(th);
         _save_points.pop_back();
         return {};
     }
 
-    void rollback(const transaction_handle th) noexcept final {
+    void rollback([[maybe_unused]] const transaction_handle th) noexcept final {
         EAGINE_ASSERT(th == transaction_handle(_save_points.size()));
-        EAGINE_MAYBE_UNUSED(th);
         _done = _save_points.back();
         _save_points.pop_back();
     }
