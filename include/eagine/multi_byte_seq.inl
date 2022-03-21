@@ -167,7 +167,7 @@ inline auto encode_code_point(
   const valid_byte_span& dest) noexcept -> valid_sequence_length {
     const auto len{required_sequence_length(cp.value())};
     do_encode_code_point(cp, dest, len);
-    return len;
+    return len; // NOLINT(performance-no-automatic-move)
 }
 //------------------------------------------------------------------------------
 inline auto encode_code_point(const code_point& cp)

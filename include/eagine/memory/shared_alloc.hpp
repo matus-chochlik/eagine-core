@@ -125,7 +125,7 @@ public:
     }
 
 private:
-    std::shared_ptr<byte_allocator> _pballoc;
+    std::shared_ptr<byte_allocator> _pballoc{};
 };
 
 using shared_byte_allocator = basic_shared_byte_alloc<nothing_t>;

@@ -28,6 +28,7 @@ public:
     auto operator=(overwrite_guard&&) noexcept -> overwrite_guard& = default;
     auto operator=(const overwrite_guard&) noexcept
       -> overwrite_guard& = default;
+    // NOLINTNEXTLINE(hicpp-use-equals-default,modernize-use-equals-default)
     ~overwrite_guard() noexcept {
         EAGINE_ASSERT(_token == Token);
     }

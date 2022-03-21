@@ -58,7 +58,7 @@ struct numeric_literal_tag;
 // NOLINTNEXTLINE(cert-err58-cpp)
 const bs::rule<numeric_literal_tag, parsed_number_t> numeric_literal =
   "numeric-literal";
-// NOLINTNEXTLINE(cert-err58-cpp)
+// NOLINTNEXTLINE(cert-err58-cpp,hicpp-signed-bitwise)
 const auto numeric_literal_def = bs::double_ | bs::int_;
 
 //------------------------------------------------------------------------------
