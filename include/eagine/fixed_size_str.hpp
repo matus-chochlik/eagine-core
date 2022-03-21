@@ -24,9 +24,7 @@ class fixed_size_string {
 public:
     /// @brief Default construction.
     /// @post empty
-    constexpr fixed_size_string() noexcept {
-        std::fill(std::begin(_str), std::end(_str), '\0');
-    }
+    constexpr fixed_size_string() noexcept = default;
 
     /// @brief Construction from a pack of characters.
     template <typename... C>
@@ -112,7 +110,7 @@ public:
 private:
     static_assert(N > 0, "Zero-length fixed size strings are not supported");
 
-    char _str[N] = {};
+    char _str[N]{};
 
     template <span_size_t>
     friend class fixed_size_string;
