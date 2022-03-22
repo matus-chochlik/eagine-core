@@ -117,7 +117,7 @@ public:
     }
 
     auto fail() const noexcept {
-        return Ftw::template fail<CppRV>();
+        return RvMap{}(size_constant<0>{}, Ftw::template fail<CppRV>());
     }
 
     auto raii(CppParam... param) const noexcept {

@@ -398,6 +398,14 @@ public:
     constexpr result_value(const bool valid) noexcept
       : _valid{valid} {}
 
+    constexpr result_value(
+      const result_value<void, result_validity::never>&) noexcept
+      : _valid{false} {}
+
+    constexpr result_value(
+      const result_value<void, result_validity::always>&) noexcept
+      : _valid{true} {}
+
     constexpr auto is_valid() const noexcept {
         return _valid;
     }
