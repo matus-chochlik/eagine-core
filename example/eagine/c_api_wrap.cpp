@@ -35,6 +35,11 @@ struct example_file_api {
     using this_api = example_file_api;
     using api_traits = example_api_traits;
 
+    template <typename Result>
+    static constexpr auto check_result(Result result) noexcept {
+        return result;
+    }
+
     template <typename Tag = example_sets_errno>
     using derived_func = derived_c_api_function<this_api, api_traits, Tag>;
 

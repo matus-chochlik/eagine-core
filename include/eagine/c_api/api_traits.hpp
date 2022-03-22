@@ -69,11 +69,6 @@ struct default_traits {
         return fallback(tag, type_identity<RV>());
     }
 
-    template <typename Api, typename Result>
-    static constexpr auto check_result(const Api&, Result result) noexcept {
-        return result;
-    }
-
     template <typename RV>
     using no_result = never_valid<RV>;
 
