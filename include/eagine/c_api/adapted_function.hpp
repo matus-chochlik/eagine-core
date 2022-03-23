@@ -84,6 +84,32 @@ class basic_adapted_function<
     }
 
     template <std::size_t... I>
+    constexpr auto _bind(CppParam... param, std::index_sequence<I...>)
+      const noexcept requires(std::is_same_v<RvMap, ArgMap>) {
+        return [&api{_api}, param...]() {
+            ArgMap map{};
+            return api.check_result(map(
+              size_constant<0>{},
+              Ftw::call(
+                api.*method, map(size_constant<I + 1>{}, 0, param...)...),
+              param...));
+        };
+    }
+
+    template <std::size_t... I>
+    constexpr auto _bind(CppParam... param, std::index_sequence<I...>)
+      const noexcept requires(!std::is_same_v<RvMap, ArgMap>) {
+        return [&api{_api}, param...]() {
+            ArgMap map{};
+            return api.check_result(RvMap{}(
+              size_constant<0>{},
+              Ftw::call(
+                api.*method, map(size_constant<I + 1>{}, 0, param...)...),
+              param...));
+        };
+    }
+
+    template <std::size_t... I>
     constexpr auto _lazy(CppParam... param, std::index_sequence<I...>)
       const noexcept {
         ArgMap map{};
@@ -117,6 +143,11 @@ public:
     auto raii(CppParam... param) const noexcept {
         using S = std::make_index_sequence<sizeof...(CParam)>;
         return eagine::finally(_lazy(param..., S{}));
+    }
+
+    auto bind(CppParam... param) const noexcept {
+        using S = std::make_index_sequence<sizeof...(CParam)>;
+        return _bind(param..., S{});
     }
 
     constexpr auto api() const noexcept -> const auto& {
