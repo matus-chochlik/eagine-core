@@ -198,8 +198,8 @@ template <
   bool isStatic>
 class combined_function {
 public:
-    combined_function(string_view name, ApiTraits& api_traits, Api& api)
-      : _basic{name, api_traits, api}
+    combined_function(string_view name, Api& api)
+      : _basic{name, api}
       , _adapted{api} {}
 
     constexpr explicit operator bool() const noexcept {

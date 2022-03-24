@@ -31,7 +31,9 @@ struct example_sets_errno {};
 struct example_api_traits : c_api::default_traits {};
 //------------------------------------------------------------------------------
 struct example_file_api {
+    example_api_traits _traits;
 
+public:
     using this_api = example_file_api;
     using api_traits = example_api_traits;
 
@@ -129,13 +131,17 @@ struct example_file_api {
       true>
       close_file;
 
-    example_file_api(api_traits& traits)
-      : get_login{"getlogin", traits, *this}
-      , make_pipe{"pipe", traits, *this}
-      , open_file{"open", traits, *this}
-      , read_file{"read", traits, *this}
-      , write_file{"write", traits, *this}
-      , close_file{"close", traits, *this} {}
+    example_file_api()
+      : get_login{"getlogin", *this}
+      , make_pipe{"pipe", *this}
+      , open_file{"open", *this}
+      , read_file{"read", *this}
+      , write_file{"write", *this}
+      , close_file{"close", *this} {}
+
+    auto traits() noexcept -> api_traits& {
+        return _traits;
+    }
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
@@ -144,8 +150,7 @@ auto main(int, const char** argv) -> int {
     using namespace eagine;
     using namespace eagine::c_api;
 
-    example_api_traits traits;
-    example_file_api api(traits);
+    example_file_api api;
 
     /*
     if(api.get_login) {

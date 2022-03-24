@@ -110,9 +110,16 @@ protected:
     }
 
 public:
+    // TODO: remove this when all APIs have traits reference
     constexpr derived_c_api_function(
       const string_view name,
       ApiTraits&,
+      Api& parent) noexcept
+      : _name{name}
+      , _parent{parent} {}
+
+    constexpr derived_c_api_function(
+      const string_view name,
       Api& parent) noexcept
       : _name{name}
       , _parent{parent} {}

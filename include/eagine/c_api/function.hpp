@@ -77,10 +77,7 @@ public:
     using signature = RV(Params...);
 
     template <typename Api>
-    constexpr unimplemented_function(
-      const string_view name,
-      const ApiTraits&,
-      Api&)
+    constexpr unimplemented_function(const string_view name, Api&)
       : base(name) {}
 
     template <typename... Args>
@@ -109,7 +106,7 @@ public:
     using signature = RV(Params...);
 
     template <typename Api>
-    constexpr static_function(const string_view name, const ApiTraits&, Api&)
+    constexpr static_function(const string_view name, Api&)
       : base(name) {}
 
     /// @brief Calls the wrapped function.
@@ -137,12 +134,9 @@ public:
     using signature = RV(Params...);
 
     template <typename Api>
-    constexpr dynamic_function(
-      const string_view name,
-      ApiTraits& traits,
-      Api& api)
+    constexpr dynamic_function(const string_view name, Api& api)
       : base(name)
-      , _function{traits.link_function(
+      , _function{api.traits().link_function(
           api,
           Tag(),
           name,
