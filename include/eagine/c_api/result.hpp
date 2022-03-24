@@ -229,7 +229,7 @@ protected:
       IfFalse& if_false) const {
         result<void, Info, result_validity::always> result{};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
-        if(EAGINE_UNLIKELY(!check(_value))) {
+        if(!check(_value)) [[unlikely]] {
             if_false(static_cast<Info&>(result));
         }
         return result;
@@ -380,7 +380,7 @@ protected:
       IfFalse& if_false) const {
         result<void, Info, result_validity::maybe> res{};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
-        if(EAGINE_UNLIKELY(src.is_valid() && !check(_value))) {
+        if(src.is_valid() && !check(_value)) [[unlikely]] {
             if_false(static_cast<Info&>(res));
         }
         return res;

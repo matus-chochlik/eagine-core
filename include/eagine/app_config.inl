@@ -250,7 +250,7 @@ private:
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto application_config::_impl() noexcept -> application_config_impl* {
-    if(EAGINE_UNLIKELY(!_pimpl)) {
+    if(!_pimpl) [[unlikely]] {
         try {
             _pimpl = std::make_shared<application_config_impl>(*this);
         } catch(...) {

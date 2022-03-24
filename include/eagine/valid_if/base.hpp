@@ -268,14 +268,20 @@ public:
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     /// @param p additional parameters for the policy validity check function.
     auto value_or(reference fallback, P... p) noexcept -> auto& {
-        return EAGINE_LIKELY(is_valid(p...)) ? _value : fallback;
+        if(is_valid(p...)) [[likely]] {
+            return _value;
+        }
+        return fallback;
     }
 
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     /// @param p additional parameters for the policy validity check function.
     constexpr auto value_or(const_reference fallback, P... p) const noexcept
       -> auto& {
-        return EAGINE_LIKELY(is_valid(p...)) ? _value : fallback;
+        if(is_valid(p...)) [[likely]] {
+            return _value;
+        }
+        return fallback;
     }
 
     /// @brief Returns the stored value regardless of its validity.

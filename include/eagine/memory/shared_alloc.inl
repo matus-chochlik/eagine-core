@@ -15,7 +15,7 @@ namespace eagine::memory {
 EAGINE_LIB_FUNC
 auto default_shared_allocator() -> shared_byte_allocator {
     const auto ctx{try_get_main_ctx()};
-    if(EAGINE_LIKELY(ctx)) {
+    if(ctx) [[likely]] {
         return extract(ctx).default_allocator();
     }
     return shared_byte_allocator{default_byte_allocator()};

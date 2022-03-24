@@ -32,7 +32,7 @@ struct deserializer<build_info> : common_deserializer<build_info> {
     auto read(build_info& value, Backend& backend) const {
         typename build_info::_data_tuple temp{};
         const auto errors{_deserializer.read(temp, backend)};
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             value = {std::move(temp)};
         }
         return errors;

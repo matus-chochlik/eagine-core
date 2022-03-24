@@ -112,7 +112,7 @@ public:
     }
 
     auto name() -> string_view {
-        if(EAGINE_UNLIKELY(_path.empty())) {
+        if(_path.empty()) [[unlikely]] {
             return {};
         }
         return _path.back();

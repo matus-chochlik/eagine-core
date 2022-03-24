@@ -33,7 +33,7 @@ enum class memory_access_rate {
 static inline auto temporal_slowdown_factor(
   const memory_access_rate mem_access = memory_access_rate::medium) noexcept
   -> int {
-    if(EAGINE_UNLIKELY(running_on_valgrind())) {
+    if(running_on_valgrind()) [[unlikely]] {
         switch(mem_access) {
             case memory_access_rate::minimal:
                 return 5;

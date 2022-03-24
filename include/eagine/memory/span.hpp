@@ -249,9 +249,15 @@ public:
     /// @see is_empty
     constexpr auto size() const noexcept -> size_type {
         if constexpr(std::is_same_v<std::remove_const_t<ValueType>, char>) {
-            return EAGINE_LIKELY(_size < 0) ? -_size : _size;
+            if(_size < 0) [[likely]] {
+                return -_size;
+            }
+            return _size;
         } else {
-            return EAGINE_LIKELY(_size >= 0) ? _size : -_size;
+            if(_size >= 0) [[likely]] {
+                return _size;
+            }
+            return -_size;
         }
     }
 

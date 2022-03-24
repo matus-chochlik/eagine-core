@@ -50,8 +50,11 @@ public:
     /// @brief Returns the block viewing the loaded file contents.
     /// @see is_loaded
     auto block() const noexcept -> memory::const_block {
-        return bool(EAGINE_LIKELY(_pimpl)) ? _pimpl->block()
-                                           : memory::const_block();
+        if(_pimpl) [[likely]] {
+            return _pimpl->block();
+        } else {
+            return memory::const_block();
+        }
     }
 
     /// @brief Implicit conversion to the block viewing the loaded file contents.

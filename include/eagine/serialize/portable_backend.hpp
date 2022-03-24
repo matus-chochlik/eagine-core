@@ -42,7 +42,7 @@ public:
         for(const auto& val : values) {
             errors |= _write_one(val, type_identity<T>{});
             errors |= do_sink(';');
-            if(EAGINE_UNLIKELY(errors)) {
+            if(errors) [[unlikely]] {
                 break;
             }
             ++done;
@@ -201,7 +201,7 @@ public:
         result errors{};
         for(T& val : values) { // NOLINT(hicpp-vararg)
             errors |= _read_one(val, ';');
-            if(EAGINE_UNLIKELY(errors)) {
+            if(errors) [[unlikely]] {
                 break;
             }
             ++done;
@@ -225,7 +225,7 @@ public:
 
     auto begin_struct(span_size_t& count) noexcept -> result final {
         result errors = require('{');
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             errors |= _read_one(count, '|');
         }
         return errors;
@@ -233,7 +233,7 @@ public:
 
     auto begin_member(const string_view name) noexcept -> result final {
         result errors = require(name);
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             errors |= require(':');
         }
         return errors;
@@ -249,7 +249,7 @@ public:
 
     auto begin_list(span_size_t& count) noexcept -> result final {
         result errors = require('[');
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             errors |= _read_one(count, '|');
         }
         return errors;
@@ -289,7 +289,7 @@ private:
         value = I(0);
         result errors{};
         auto src{this->string_before(delimiter, 48)};
-        if(EAGINE_LIKELY(src)) {
+        if(src) [[likely]] {
             const auto skip_len = src.size() + 1;
             unsigned shift = 0U;
             while(src) {
@@ -320,12 +320,12 @@ private:
         using U = std::make_unsigned_t<I>;
         const char sign = extract_or(top_char(), '\0');
         result errors{};
-        if(EAGINE_LIKELY((sign == '+') || (sign == '-'))) {
+        if((sign == '+') || (sign == '-')) [[likely]] {
             pop(1);
             U temp{};
             errors |= _read_one(temp, delimiter);
             const auto conv{convert_if_fits<I>(temp)};
-            if(EAGINE_LIKELY(conv)) {
+            if(conv) [[likely]] {
                 value = (sign == '-') ? -extract(conv) : extract(conv);
             } else {
                 errors |= deserialization_error_code::invalid_format;
@@ -341,10 +341,10 @@ private:
         fputils::decompose_fraction_t<F> f{};
 
         result errors = _read_one(f, '`');
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             fputils::decompose_exponent_t<F> e{};
             errors |= _read_one(e, delimiter);
-            if(EAGINE_LIKELY(!errors)) {
+            if(!errors) [[likely]] {
                 value = fputils::compose({f, e}, type_identity<F>{});
             }
         }
@@ -354,7 +354,7 @@ private:
     auto _read_one(identifier& value, const char delimiter) noexcept -> result {
         result errors{};
         const auto src{this->string_before(delimiter, 32)};
-        if(EAGINE_LIKELY(src)) {
+        if(src) [[likely]] {
             value = identifier(src);
             pop(src.size() + 1);
         } else {
@@ -368,7 +368,7 @@ private:
         result errors{};
         const auto max = decl_name_storage::max_length + 1;
         const auto src{this->string_before(delimiter, max)};
-        if(EAGINE_LIKELY(src)) {
+        if(src) [[likely]] {
             value.assign(src);
             pop(src.size() + 1);
         } else {

@@ -136,7 +136,7 @@ public:
 
     auto enqueue(work_unit& work) -> workshop& {
         std::unique_lock lock{_mutex};
-        if(EAGINE_UNLIKELY(_workers.empty())) {
+        if(_workers.empty()) [[unlikely]] {
             add_worker();
         }
         _work_queue.push(&work);

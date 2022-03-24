@@ -102,8 +102,9 @@ public:
     /// @brief Destructor. Passed the actual entry to the backend.
     ~log_entry() noexcept {
         if(_backend) {
-            if(EAGINE_LIKELY(_backend->begin_message(
-                 _source_id, _entry_tag, _instance_id, _severity, _format))) {
+            if(_backend->begin_message(
+                 _source_id, _entry_tag, _instance_id, _severity, _format))
+              [[likely]] {
                 _args(*_backend);
                 _backend->finish_message();
             }
@@ -817,12 +818,12 @@ public:
             auto fmt_str(_out.str());
             if(!fmt_str.empty()) {
                 if(_backend) {
-                    if(EAGINE_LIKELY(_backend->begin_message(
+                    if(_backend->begin_message(
                          _source_id,
                          _entry_tag,
                          _instance_id,
                          _severity,
-                         fmt_str))) {
+                         fmt_str)) [[likely]] {
                         _backend->finish_message();
                         _backend = nullptr;
                     }

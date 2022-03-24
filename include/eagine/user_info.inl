@@ -67,7 +67,7 @@ private:
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto user_info::_impl() noexcept -> user_info_impl* {
-    if(EAGINE_UNLIKELY(!_pimpl)) {
+    if(!_pimpl) [[unlikely]] {
         try {
             _pimpl = std::make_shared<user_info_impl>(*this);
         } catch(...) {

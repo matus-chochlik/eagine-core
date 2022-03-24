@@ -87,7 +87,7 @@ constexpr inline auto compose(
   const decomposed_t<F>& f,
   const type_identity<F> = {}) noexcept -> F {
     const auto fre = std::get<0>(f);
-    if(EAGINE_UNLIKELY(!fre)) {
+    if(!fre) [[unlikely]] {
         switch(std::get<1>(f)) {
             case 0:
                 return static_cast<F>(0);

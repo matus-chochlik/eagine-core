@@ -7,7 +7,6 @@
 #ifndef EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 #define EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 
-#include <eagine/branch_predict.hpp>
 #include <eagine/flat_map.hpp>
 #include <eagine/identifier.hpp>
 #include <eagine/is_within_limits.hpp>

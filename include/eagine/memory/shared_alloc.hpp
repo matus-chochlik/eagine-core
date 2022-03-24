@@ -56,35 +56,46 @@ public:
     }
 
     auto max_size(size_type a) const noexcept -> size_type {
-        return EAGINE_LIKELY(_pballoc) ? _pballoc->max_size(a) : 0;
+        if(_pballoc) [[likely]] {
+            return _pballoc->max_size(a);
+        }
+        return 0;
     }
 
     auto has_allocated(const owned_block& b, size_type a) noexcept -> tribool {
-        return EAGINE_LIKELY(_pballoc) ? _pballoc->has_allocated(b, a)
-               : bool(b)               ? tribool{false}
-                                       : tribool{indeterminate};
+        if(_pballoc) [[likely]] {
+            return _pballoc->has_allocated(b, a);
+        }
+        if(b) {
+            return false;
+        }
+        return indeterminate;
     }
 
     auto allocate(size_type n, size_type a) noexcept -> owned_block {
-        return EAGINE_LIKELY(_pballoc) ? _pballoc->allocate(n, a)
-                                       : owned_block{};
+        if(_pballoc) [[likely]] {
+            return _pballoc->allocate(n, a);
+        }
+        return owned_block{};
     }
 
     void deallocate(owned_block&& b, size_type a) noexcept {
-        if(EAGINE_LIKELY(_pballoc)) {
+        if(_pballoc) [[likely]] {
             _pballoc->deallocate(std::move(b), a);
         }
     }
 
     auto can_reallocate(const owned_block& b, size_type n, size_type a) noexcept
       -> bool {
-        return EAGINE_LIKELY(_pballoc) ? _pballoc->can_reallocate(b, n, a)
-                                       : (n == b.size());
+        if(_pballoc) [[likely]] {
+            return _pballoc->can_reallocate(b, n, a);
+        }
+        return n == b.size();
     }
 
     auto reallocate(owned_block&& b, size_type n, size_type a) noexcept
       -> owned_block {
-        if(EAGINE_LIKELY(_pballoc)) {
+        if(_pballoc) [[likely]] {
             return _pballoc->reallocate(std::move(b), n, a);
         }
         EAGINE_ASSERT(n == b.size());
@@ -92,7 +103,7 @@ public:
     }
 
     void do_reallocate(owned_block& b, size_type n, size_type a) noexcept {
-        if(EAGINE_LIKELY(_pballoc)) {
+        if(_pballoc) [[likely]] {
             return _pballoc->do_reallocate(b, n, a);
         }
         EAGINE_ASSERT(n == b.size());
@@ -118,7 +129,7 @@ public:
     template <typename ByteAlloc>
     auto as() -> ByteAlloc& {
         auto* pa = dynamic_cast<ByteAlloc*>(_pballoc);
-        if(EAGINE_UNLIKELY(pa == nullptr)) {
+        if(pa == nullptr) [[unlikely]] {
             throw std::bad_cast();
         }
         return *pa;

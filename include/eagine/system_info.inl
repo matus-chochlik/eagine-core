@@ -260,7 +260,7 @@ private:
 EAGINE_LIB_FUNC
 auto system_info::_impl() noexcept -> system_info_impl* {
 #if EAGINE_LINUX
-    if(EAGINE_UNLIKELY(!_pimpl)) {
+    if(!_pimpl) [[unlikely]] {
         try {
             _pimpl = std::make_shared<system_info_impl>(*this);
         } catch(...) {
