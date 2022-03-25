@@ -9,7 +9,6 @@
 #ifndef EAGINE_INTERLEAVED_CALL_HPP
 #define EAGINE_INTERLEAVED_CALL_HPP
 
-#include "branch_predict.hpp"
 #include <utility>
 
 namespace eagine {

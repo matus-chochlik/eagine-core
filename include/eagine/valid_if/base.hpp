@@ -10,7 +10,6 @@
 #define EAGINE_VALID_IF_BASE_HPP
 
 #include "../assert.hpp"
-#include "../branch_predict.hpp"
 #include "../extractable.hpp"
 #include "../tribool.hpp"
 #include "../type_traits.hpp"

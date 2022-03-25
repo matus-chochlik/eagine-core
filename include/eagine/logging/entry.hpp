@@ -10,7 +10,6 @@
 #define EAGINE_LOGGING_ENTRY_HPP
 
 #include "../bitfield.hpp"
-#include "../branch_predict.hpp"
 #include "../memory/object_storage.hpp"
 #include "../message_id.hpp"
 #include "../valid_if/decl.hpp"

@@ -9,7 +9,6 @@
 #ifndef EAGINE_SERIALIZE_SIZE_AND_DATA_HPP
 #define EAGINE_SERIALIZE_SIZE_AND_DATA_HPP
 
-#include "../branch_predict.hpp"
 #include "../is_within_limits.hpp"
 #include "../memory/span_algo.hpp"
 #include "../multi_byte_seq.hpp"
