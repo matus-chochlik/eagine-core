@@ -8,7 +8,6 @@
 #ifndef EAGINE_ASSERT_HPP
 #define EAGINE_ASSERT_HPP
 
-#include "branch_predict.hpp"
 #include "config/basic.hpp"
 #include "diagnostic.hpp"
 #include "stacktrace.hpp"
@@ -20,6 +19,12 @@
 #else
 #define EAGINE_CHECK_LIMIT_CAST 1
 #endif
+#endif
+
+#if defined __GNUC__
+#define EAGINE_LIKELY(EXPR) __builtin_expect(!!(EXPR), 1)
+#else
+#define EAGINE_LIKELY(EXPR) (!!(EXPR))
 #endif
 
 #if EAGINE_USE_STACKTRACE

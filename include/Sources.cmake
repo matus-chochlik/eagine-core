@@ -17,7 +17,6 @@ set(HEADERS
     eagine/biteset.hpp
     eagine/bitfield.hpp
     eagine/bool_aggregate.hpp
-    eagine/branch_predict.hpp
     eagine/buffer_data.hpp
     eagine/build_info.hpp
     eagine/byteset.hpp
