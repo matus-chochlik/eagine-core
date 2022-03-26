@@ -65,7 +65,7 @@ struct enum_int_value_and_name {
     constexpr enum_int_value_and_name() noexcept = default;
 
     template <typename T>
-    constexpr enum_int_value_and_name(const enumerator_and_name<T>& src) noexcept
+    constexpr enum_int_value_and_name(const name_and_enumerator<T>& src) noexcept
       : name{src.name}
       , value{static_cast<value_type>(src.enumerator)} {}
 
