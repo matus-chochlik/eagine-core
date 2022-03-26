@@ -257,6 +257,11 @@ public:
         return value() == what;
     }
 
+    constexpr auto matches(string_view what) const noexcept {
+        // TODO: this could be optimized: compare char-by-char and bail early
+        return name() == what;
+    }
+
     /// @brief Returns this identifier as unpacked identifier_name.
     /// @see identifier_name
     constexpr auto name() const noexcept -> name_type {
