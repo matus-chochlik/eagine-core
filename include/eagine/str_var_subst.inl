@@ -12,6 +12,36 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
+auto substitute_variable_into(
+  std::string& dst,
+  string_view src,
+  const string_view name,
+  const string_view value,
+  const variable_substitution_options opts) noexcept -> std::string& {
+    do {
+        if(const auto found{find_position(src, name)}) {
+            const auto npos{extract(found)};
+            if(
+              (npos >= 2) && (npos + name.size() < src.size()) &&
+              (src[npos - 1] == opts.opening_bracket) &&
+              (src[npos - 2] == opts.leading_sign) &&
+              (src[npos + name.size()] == opts.closing_bracket)) {
+                append_to(dst, head(src, npos - 2));
+                append_to(dst, value);
+                src = skip(src, npos + name.size() + 1);
+            } else {
+                append_to(dst, src);
+                src.reset();
+            }
+        } else {
+            append_to(dst, src);
+            src.reset();
+        }
+    } while(!src.empty());
+    return dst;
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
 auto substitute_variables_into(
   std::string& dst,
   string_view src,
