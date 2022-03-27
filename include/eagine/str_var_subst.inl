@@ -30,8 +30,8 @@ auto substitute_variable_into(
                 append_to(dst, value);
                 src = skip(src, npos + name.size() + 1);
             } else {
-                append_to(dst, src);
-                src.reset();
+                append_to(dst, head(src, npos + name.size()));
+                src = skip(src, npos + name.size());
             }
         } else {
             append_to(dst, src);
