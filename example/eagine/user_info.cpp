@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/console/console.hpp>
 #include <eagine/main.hpp>
 #include <eagine/user_info.hpp>
 #include <iostream>
@@ -16,10 +17,13 @@ auto main(main_ctx& ctx) -> int {
 
     auto& usr = ctx.user();
 
-    std::cout << "login name: " << extract_or(usr.login_name(), na)
-              << std::endl;
-    std::cout << "home dir: " << extract_or(usr.home_dir_path(), na)
-              << std::endl;
+    ctx.cio()
+      .print(EAGINE_ID(user), "login name: ${login}")
+      .arg(EAGINE_ID(login), extract_or(usr.login_name(), na));
+
+    ctx.cio()
+      .print(EAGINE_ID(user), "home path: ${home}")
+      .arg(EAGINE_ID(home), extract_or(usr.home_dir_path(), na));
 
     return 0;
 }
