@@ -12,6 +12,7 @@
 #include "build_info.hpp"
 #include "compiler_info.hpp"
 #include "compression.hpp"
+#include "console/console.hpp"
 #include "logging/root_logger.hpp"
 #include "memory/default_alloc.hpp"
 #include "process.hpp"
@@ -33,6 +34,7 @@ public:
       const char** argv,
       main_ctx_options& options) noexcept
       : _args{argc, argv}
+      , _console{options.app_id, _args, options.console_opts}
       , _log_root{options.app_id, _args, options.logger_opts}
       , _progress_root{*this}
       , _bld_info{build_info::query()}
@@ -73,6 +75,10 @@ public:
 
     auto args() const noexcept -> const program_args& final {
         return _args;
+    }
+
+    auto cio() noexcept -> const console& final {
+        return _console;
     }
 
     auto log() noexcept -> const logger& final {
@@ -156,6 +162,7 @@ private:
     memory::shared_byte_allocator _default_alloc{
       memory::default_byte_allocator()};
     program_args _args;
+    console _console;
     root_logger _log_root;
     root_activity _progress_root;
     compiler_info _cmplr_info;

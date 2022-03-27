@@ -8,6 +8,7 @@
 #ifndef EAGINE_MAIN_CTX_HPP
 #define EAGINE_MAIN_CTX_HPP
 
+#include "console/console_opts.hpp"
 #include "identifier.hpp"
 #include "logging/root_logger_opts.hpp"
 #include "main_ctx_fwd.hpp"
@@ -27,9 +28,12 @@ struct main_ctx_options {
 
     /// @brief Options for the root logger.
     root_logger_options logger_opts{};
+
+    /// @brief Options for the console.
+    console_options console_opts{};
 };
 
-/// @brief Class for a single-instance object providing useful information ans services.
+/// @brief Class for a singleton object providing useful information and services.
 /// @ingroup main_context
 ///
 /// A single instance of this class is initialized in the main function
@@ -106,6 +110,10 @@ public:
         return _usr_info;
     }
 
+    auto cio() noexcept -> const console& final {
+        return _cio;
+    }
+
     auto log() noexcept -> const logger& final {
         return _log;
     }
@@ -141,6 +149,7 @@ private:
     const program_args& _args;
     const compiler_info& _cmplr_info;
     const build_info& _bld_info;
+    const console& _cio;
     const logger& _log;
     const activity_progress& _progress;
     process_watchdog& _watchdog;

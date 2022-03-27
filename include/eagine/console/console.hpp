@@ -9,14 +9,22 @@
 #ifndef EAGINE_CONSOLE_CONSOLE_HPP
 #define EAGINE_CONSOLE_CONSOLE_HPP
 
+#include "../config/basic.hpp"
+#include "../program_args.hpp"
+#include "console_opts.hpp"
 #include "entry.hpp"
+#include <memory>
 
 namespace eagine {
 
 class console {
 public:
-    console(console_backend& backend) noexcept
-      : _backend{backend} {}
+    console(
+      identifier app_id,
+      const program_args& args,
+      console_options& opts) noexcept
+      : _backend{_init_backend(args, opts)}
+      , _app_id{app_id} {}
 
     auto print(
       const identifier source,
@@ -31,6 +39,9 @@ public:
     }
 
 private:
+    static auto _init_backend(const program_args&, console_options&)
+      -> std::unique_ptr<console_backend>;
+
     auto make_log_entry(
       const identifier source,
       const console_entry_kind kind,
@@ -40,11 +51,20 @@ private:
 
     auto _entry_backend(const identifier source, const console_entry_kind kind)
       const noexcept -> console_backend* {
-        return _backend.entry_backend(source, kind);
+        if(_backend) [[likely]] {
+            return _backend->entry_backend(source, kind);
+        }
+        return nullptr;
     }
 
-    console_backend& _backend;
+    std::unique_ptr<console_backend> _backend;
+    identifier _app_id;
 };
 
 } // namespace eagine
+
+#if !EAGINE_CORE_LIBRARY || defined(EAGINE_IMPLEMENTING_CORE_LIBRARY)
+#include <eagine/console/console.inl>
+#endif
+
 #endif

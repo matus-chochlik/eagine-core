@@ -25,6 +25,7 @@ main_ctx::main_ctx(main_ctx_getters& src) noexcept
   , _args{src.args()}
   , _cmplr_info{src.compiler()}
   , _bld_info{src.build()}
+  , _cio{src.cio()}
   , _log{src.log()}
   , _progress{src.progress()}
   , _watchdog{src.watchdog()}

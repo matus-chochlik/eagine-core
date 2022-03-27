@@ -17,6 +17,7 @@ add_library(
 	from_string.cpp
 	edit_distance.cpp
 	progress.cpp
+	console.cpp
 	logging.cpp
 	input_data.cpp
 	compression.cpp

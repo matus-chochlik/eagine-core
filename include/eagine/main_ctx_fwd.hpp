@@ -8,6 +8,7 @@
 #ifndef EAGINE_MAIN_CTX_FWD_HPP
 #define EAGINE_MAIN_CTX_FWD_HPP
 
+#include "console/fwd.hpp"
 #include "identifier_t.hpp"
 #include "interface.hpp"
 #include "logging/fwd.hpp"
@@ -108,6 +109,9 @@ struct main_ctx_getters : interface<main_ctx_getters> {
     /// @brief Returns a reference to user information object.
     /// @see system
     virtual auto user() noexcept -> user_info& = 0;
+
+    /// @brief Returns a reference to the console object.
+    virtual auto cio() noexcept -> const console& = 0;
 
     /// @brief Returns a reference to the root logger object.
     virtual auto log() noexcept -> const logger& = 0;

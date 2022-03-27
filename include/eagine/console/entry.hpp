@@ -15,8 +15,8 @@
 
 namespace eagine {
 /// @brief Class representing a single log entry / message.
-/// @ingroup logging
-/// @note Do not use directly, use logger instead.
+/// @ingroup console
+/// @note Do not use directly, use console instead.
 class console_entry {
 public:
     /// @brief Constructor.
@@ -160,8 +160,8 @@ public:
         return arg(name, EAGINE_ID(str), value);
     }
 
-    template <std::size_t L>
-    auto arg(const identifier name, const char (&value)[L]) noexcept -> auto& {
+    auto arg(const identifier name, const std::string& value) noexcept
+      -> auto& {
         return arg(name, string_view{value});
     }
 
