@@ -5,8 +5,9 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/console/console.hpp>
+#include <eagine/main.hpp>
 #include <eagine/reflect/enumerators.hpp>
-#include <iostream>
 
 namespace eagine {
 
@@ -61,19 +62,24 @@ constexpr auto enumerator_mapping(
 }
 #endif
 
-} // namespace eagine
-
-auto main() -> int {
+auto main(main_ctx& ctx) -> int {
     using namespace eagine;
 
     const type_identity<example_enum> tid{};
-    std::cout << "count: " << enumerator_count(tid) << std::endl;
+    ctx.cio()
+      .print(EAGINE_ID(enums), "enumerator count: ${count}")
+      .arg(EAGINE_ID(count), enumerator_count(tid));
 
     for_each_enumerator(
-      [](const auto& info) {
-          std::cout << info.name << ": " << info.value << std::endl;
+      [&](const auto& info) {
+          ctx.cio()
+            .print(EAGINE_ID(enums), "${name}: ${value}")
+            .arg(EAGINE_ID(name), info.name)
+            .arg(EAGINE_ID(value), info.value);
       },
       type_identity<example_enum>{});
 
     return 0;
 }
+} // namespace eagine
+

@@ -9,6 +9,7 @@
 #define EAGINE_MAIN_CTX_OBJECT_HPP
 
 #include "assert.hpp"
+#include "console/entry.hpp"
 #include "identifier_t.hpp"
 #include "logging/logger.hpp"
 #include "main_ctx_fwd.hpp"
@@ -90,6 +91,14 @@ public:
         return extract_or(
           application_config_initial(app_config(), key, value, tag), initial);
     }
+
+    /// @brief Returns a reference to the console object.
+    auto cio() const noexcept -> const console&;
+
+    auto cio_print(const console_entry_kind kind, const string_view format)
+      const noexcept -> console_entry;
+
+    auto cio_print(const string_view format) const noexcept -> console_entry;
 
     /// @brief Returns a reference to the root activity object.
     auto progress() const noexcept -> const activity_progress&;

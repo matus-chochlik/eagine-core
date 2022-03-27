@@ -5,6 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/console/console.hpp>
+#include <eagine/main.hpp>
 #include <eagine/reflect/data_members.hpp>
 #include <iostream>
 
@@ -19,11 +21,6 @@ struct example_struct {
     unsigned u{0U};
 };
 
-// TODO:
-// #if EAGINE_CXX_REFLECTION
-// template <>
-// struct reflect_data_members_of<example_struct> : std::true_type {};
-// #else
 template <typename Selector>
 constexpr auto data_member_mapping(
   const type_identity<example_struct>,
@@ -37,11 +34,8 @@ constexpr auto data_member_mapping(
       {"s", &S::s},
       {"u", &S::u});
 }
-//#endif
 
-} // namespace eagine
-
-auto main() -> int {
+auto main(main_ctx& ctx) -> int {
     using namespace eagine;
     using std::get;
 
@@ -51,9 +45,11 @@ auto main() -> int {
     std::get<1>(get<1>(m)) = 'R';
     std::get<1>(get<2>(m)) = 3.F;
 
-    std::cout << s.b << std::endl;
-    std::cout << s.c << std::endl;
-    std::cout << s.f << std::endl;
+    ctx.cio().print(EAGINE_ID(struct), "b: ${b}").arg(EAGINE_ID(b), s.b);
+    ctx.cio().print(EAGINE_ID(struct), "c: ${c}").arg(EAGINE_ID(c), s.c);
+    ctx.cio().print(EAGINE_ID(struct), "f: ${f}").arg(EAGINE_ID(f), s.f);
 
     return 0;
 }
+} // namespace eagine
+
