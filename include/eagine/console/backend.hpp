@@ -74,6 +74,24 @@ struct console_backend : interface<console_backend> {
       const identifier tag,
       const std::uintmax_t value) noexcept = 0;
 
+    /// @brief Add argument with floating-point value.
+    /// @param arg the argument name identifier.
+    /// @param tag the argument type identifier.
+    /// @param value the value of the argument.
+    virtual void add_float(
+      const identifier arg,
+      const identifier tag,
+      const double value) noexcept = 0;
+
+    /// @brief Add argument with string value.
+    /// @param arg the argument name identifier.
+    /// @param tag the argument type identifier.
+    /// @param value the value of the argument.
+    virtual void add_string(
+      const identifier arg,
+      const identifier tag,
+      const string_view value) noexcept = 0;
+
     /// @brief Finishes the current console message.
     virtual void finish_message() noexcept = 0;
 };
