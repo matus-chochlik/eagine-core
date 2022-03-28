@@ -16,21 +16,21 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename Self, typename T, identifier_t LibId, identifier_t Id>
-static constexpr auto adapt_log_entry_arg(
+static constexpr auto adapt_entry_arg(
   const identifier name,
   const enum_class<Self, T, LibId, Id> ec,
   const T = {}) noexcept requires(std::is_signed_v<T>) {
-    return [=](logger_backend& backend) {
+    return [=](auto& backend) {
         backend.add_integer(name, identifier{Id}, ec._value);
     };
 }
 //------------------------------------------------------------------------------
 template <typename Self, typename T, identifier_t LibId, identifier_t Id>
-static constexpr auto adapt_log_entry_arg(
+static constexpr auto adapt_entry_arg(
   const identifier name,
   const enum_class<Self, T, LibId, Id> ec,
   const T = {}) noexcept requires(std::is_unsigned_v<T>) {
-    return [=](logger_backend& backend) {
+    return [=](auto& backend) {
         backend.add_unsigned(name, identifier{Id}, ec._value);
     };
 }

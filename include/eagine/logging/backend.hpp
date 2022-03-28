@@ -14,6 +14,7 @@
 #include "../memory/shared_alloc.hpp"
 #include "../message_id.hpp"
 #include "../string_span.hpp"
+#include "entry_arg.hpp"
 #include "fwd.hpp"
 #include "severity.hpp"
 #include <chrono>
@@ -21,36 +22,6 @@
 
 namespace eagine {
 class application_config;
-//------------------------------------------------------------------------------
-/// @brief Helper class used in implementation of has_log_entry_adapter_t.
-/// @ingroup logging
-template <typename T>
-struct does_have_log_entry_adapter {
-private:
-    template <
-      typename X,
-      typename = decltype(
-        adapt_log_entry_arg(std::declval<identifier>(), std::declval<X>()))>
-    static auto _test(X*) -> std::true_type;
-    static auto _test(...) -> std::false_type;
-
-public:
-    // NOLINTNEXTLINE(hicpp-vararg)
-    using type = decltype(_test(static_cast<T*>(nullptr)));
-};
-
-/// @brief Trait indicating if there is a log entry adapter for type T.
-/// @ingroup logging
-/// @see has_log_entry_adapter_v
-template <typename T>
-using has_log_entry_adapter_t = typename does_have_log_entry_adapter<T>::type;
-
-/// @brief Trait indicating if there is a log entry adapter for type T.
-/// @ingroup logging
-/// @see has_log_entry_adapter_t
-template <typename T>
-constexpr const bool has_log_entry_adapter_v =
-  has_log_entry_adapter_t<T>::value;
 //------------------------------------------------------------------------------
 /// @brief Structure used to supply initial log stream information to a logger.
 /// @ingroup logging
@@ -207,11 +178,11 @@ struct logger_backend : interface<logger_backend> {
     /// @brief Add argument with value having type adaptable to log entry.
     /// @param arg the argument name identifier.
     /// @param value the value of the argument.
-    /// @see has_log_entry_adapter_v
+    /// @see has_entry_adapter_v
     template <typename T>
     void add_adapted(const identifier arg, const T& value) requires(
-      has_log_entry_adapter_v<T>) {
-        adapt_log_entry_arg(arg, value)(*this);
+      has_entry_adapter_v<T>) {
+        adapt_entry_arg(arg, value)(*this);
     }
 
     /// @brief Finishes the current logging message.

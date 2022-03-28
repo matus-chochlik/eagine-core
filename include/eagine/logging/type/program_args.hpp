@@ -10,14 +10,14 @@
 #define EAGINE_LOGGING_TYPE_PROGRAM_ARGS_HPP
 
 #include "../../program_args.hpp"
-#include "../entry.hpp"
+#include "../entry_arg.hpp"
 
 namespace eagine {
 //------------------------------------------------------------------------------
-static inline auto adapt_log_entry_arg(
+static inline auto adapt_entry_arg(
   const identifier name,
   const program_arg& value) noexcept {
-    return [name, value](logger_backend& backend) {
+    return [name, value](auto& backend) {
         backend.add_string(name, EAGINE_ID(ProgramArg), string_view(value));
     };
 }

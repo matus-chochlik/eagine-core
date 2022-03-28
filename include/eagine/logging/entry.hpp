@@ -18,7 +18,7 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-static inline auto adapt_log_entry_arg(
+static inline auto adapt_entry_arg(
   const identifier name,
   logger_backend* value) {
     return [name, value](logger_backend& backend) noexcept {
@@ -28,29 +28,6 @@ static inline auto adapt_log_entry_arg(
         } else {
             backend.add_nothing(name, EAGINE_ID(LogBkEndId));
         }
-    };
-}
-//------------------------------------------------------------------------------
-template <typename T>
-static constexpr auto adapt_log_entry_arg(
-  const identifier name,
-  const T value) noexcept requires(has_enumerator_mapping_v<T>) {
-    return [=](logger_backend& backend) {
-        backend.add_string(name, EAGINE_ID(enum), enumerator_name(value));
-    };
-}
-//------------------------------------------------------------------------------
-template <typename T>
-static constexpr auto adapt_log_entry_arg(
-  const identifier name,
-  const bitfield<T> bf) noexcept requires(has_enumerator_mapping_v<T>) {
-    return [=](logger_backend& backend) {
-        const auto func = [&backend, name, bf](const auto& info) {
-            if(bf.has(static_cast<T>(info.value))) {
-                backend.add_string(name, EAGINE_ID(bitfield), info.name);
-            }
-        };
-        for_each_enumerator(func, type_identity<T>{});
     };
 }
 //------------------------------------------------------------------------------
@@ -649,9 +626,9 @@ public:
     /// @see has_log_entry_adapter_v
     template <typename T>
     auto arg(const identifier name, T&& value) noexcept
-      -> log_entry& requires(has_log_entry_adapter_v<std::decay_t<T>>) {
+      -> log_entry& requires(has_entry_adapter_v<std::decay_t<T>>) {
         if(_backend) {
-            _args.add(adapt_log_entry_arg(name, std::forward<T>(value)));
+            _args.add(adapt_entry_arg(name, std::forward<T>(value)));
         }
         return *this;
     }
