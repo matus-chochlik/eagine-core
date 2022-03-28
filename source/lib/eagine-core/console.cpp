@@ -9,6 +9,7 @@
 // clang-format off
 #include "prologue.inl"
 #include <eagine/app_config.hpp>
+#include <eagine/hexdump.hpp>
 #include <eagine/str_var_subst.hpp>
 
 #include "implement.inl"

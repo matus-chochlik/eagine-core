@@ -110,6 +110,15 @@ struct console_backend : interface<console_backend> {
       const identifier tag,
       const string_view value) noexcept = 0;
 
+    /// @brief Add argument with BLOB `value.
+    /// @param arg the argument name identifier.
+    /// @param tag the argument type identifier.
+    /// @param value the value of the argument.
+    virtual void add_blob(
+      const identifier arg,
+      const identifier tag,
+      const memory::const_block value) noexcept = 0;
+
     /// @brief Finishes the current console message.
     virtual void finish_message() noexcept = 0;
 };

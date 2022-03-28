@@ -598,7 +598,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const memory::const_block value) noexcept
       -> auto& {
-        return arg(name, EAGINE_ID(blk), value);
+        return arg(name, EAGINE_ID(block), value);
     }
 
     /// @brief Adds a new message argument adapted by the specified function.

@@ -210,6 +210,30 @@ public:
         return arg(name, string_view{value});
     }
 
+    /// @brief Adds a new message argument with BLOB value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    /// @param value the value of the argument.
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      const memory::const_block value) noexcept -> auto& {
+        if(_backend) {
+            _args.add([=](console_backend& backend) {
+                backend.add_blob(name, tag, value);
+            });
+        }
+        return *this;
+    }
+
+    /// @brief Adds a new message argument with BLOB value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param value the value of the argument.
+    auto arg(const identifier name, const memory::const_block value) noexcept
+      -> auto& {
+        return arg(name, EAGINE_ID(block), value);
+    }
+
     /// @brief Adds a new message argument adapted by the specified function.
     template <typename Func>
     auto arg_func(Func function) -> auto& {

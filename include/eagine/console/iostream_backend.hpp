@@ -10,6 +10,7 @@
 #define EAGINE_CONSOLE_IOSTREAM_BACKEND_HPP
 
 #include "../double_buffer.hpp"
+#include "../hexdump.hpp"
 #include "../str_var_subst.hpp"
 #include "backend.hpp"
 #include <array>
@@ -103,6 +104,13 @@ public:
       const identifier,
       const string_view value) noexcept final {
         _add(arg, value);
+    }
+
+    void add_blob(
+      const identifier arg,
+      const identifier,
+      const memory::const_block value) noexcept final {
+        _out << arg.name() << hexdump(value) << '\n';
     }
 
     void finish_message() noexcept final {
