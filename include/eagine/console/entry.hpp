@@ -10,6 +10,7 @@
 #define EAGINE_CONSOLE_ENTRY_HPP
 
 #include "../memory/object_storage.hpp"
+#include "../valid_if/decl.hpp"
 #include "backend.hpp"
 #include <concepts>
 
@@ -207,6 +208,60 @@ public:
     auto arg(const identifier name, const std::string& value) noexcept
       -> auto& {
         return arg(name, string_view{value});
+    }
+
+    /// @brief Adds a new message argument adapted by the specified function.
+    template <typename Func>
+    auto arg_func(Func function) -> auto& {
+        if(_backend) {
+            _args.add(std::move(function));
+        }
+        return *this;
+    }
+
+    /// @brief Adds a new message argument with adaptable-type value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param value the value of the argument.
+    /// @see has_log_entry_adapter_v
+    template <typename T>
+    auto arg(const identifier name, T&& value) noexcept
+      -> console_entry& requires(has_entry_adapter_v<std::decay_t<T>>) {
+        if(_backend) {
+            _args.add(adapt_entry_arg(name, std::forward<T>(value)));
+        }
+        return *this;
+    }
+
+    /// @brief Adds a new message argument with valid_if_or_fallback value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    /// @param opt the value of the argument.
+    /// @see valid_if_or_fallback
+    template <typename F, typename T, typename P, typename L>
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      valid_if_or_fallback<F, T, P, L>&& opt) noexcept
+      -> console_entry& requires(
+        has_entry_function_v<console_entry, std::decay_t<T>>&&
+          has_entry_function_v<console_entry, std::decay_t<F>>) {
+        if(opt.is_valid()) {
+            return arg(name, tag, std::move(opt.value()));
+        }
+        return arg(name, std::move(opt.fallback()));
+    }
+
+    template <typename F, typename T, typename P, typename L>
+    auto arg(
+      const identifier name,
+      valid_if_or_fallback<F, T, P, L>&& opt) noexcept
+      -> console_entry& requires(
+        has_entry_function_v<console_entry, std::decay_t<T>>&&
+          has_entry_function_v<console_entry, std::decay_t<F>>) {
+        if(opt.is_valid()) {
+            return arg(name, std::move(opt.value()));
+        }
+        return arg(name, std::move(opt.fallback()));
     }
 
 private:

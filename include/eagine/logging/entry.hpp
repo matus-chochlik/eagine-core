@@ -31,16 +31,6 @@ static inline auto adapt_entry_arg(
     };
 }
 //------------------------------------------------------------------------------
-template <typename T>
-struct does_have_log_entry_function;
-
-template <typename T>
-using has_log_entry_function_t = typename does_have_log_entry_function<T>::type;
-
-template <typename T>
-constexpr const bool has_log_entry_function_v =
-  has_log_entry_function_t<T>::value;
-//------------------------------------------------------------------------------
 class logger;
 
 /// @brief Class representing a single log entry / message.
@@ -643,8 +633,9 @@ public:
       const identifier name,
       const identifier tag,
       valid_if_or_fallback<F, T, P, L>&& opt) noexcept
-      -> log_entry& requires(has_log_entry_function_v<std::decay_t<T>>&&
-                               has_log_entry_function_v<std::decay_t<F>>) {
+      -> log_entry& requires(
+        has_entry_function_v<log_entry, std::decay_t<T>>&&
+          has_entry_function_v<log_entry, std::decay_t<F>>) {
         if(opt.is_valid()) {
             return arg(name, tag, std::move(opt.value()));
         }
@@ -663,8 +654,9 @@ public:
       const identifier tag,
       basic_valid_if<T, P, L> opt,
       F fbck) noexcept
-      -> log_entry& requires(has_log_entry_function_v<std::decay_t<T>>&&
-                               has_log_entry_function_v<std::decay_t<F>>) {
+      -> log_entry& requires(
+        has_entry_function_v<log_entry, std::decay_t<T>>&&
+          has_entry_function_v<log_entry, std::decay_t<F>>) {
         return arg(name, tag, either_or(std::move(opt), std::move(fbck)));
     }
 
@@ -745,23 +737,6 @@ struct no_log_entry {
     constexpr auto tag(const identifier) noexcept -> auto& {
         return *this;
     }
-};
-//------------------------------------------------------------------------------
-template <typename T>
-struct does_have_log_entry_function {
-private:
-    template <
-      typename X,
-      typename = decltype(std::declval<log_entry>().arg(
-        std::declval<identifier>(),
-        std::declval<identifier>(),
-        std::declval<X>()))>
-    static auto _test(X*) -> std::true_type;
-    static auto _test(...) -> std::false_type;
-
-public:
-    // NOLINTNEXTLINE(hicpp-vararg)
-    using type = decltype(_test(static_cast<T*>(nullptr)));
 };
 //------------------------------------------------------------------------------
 /// @brief Log entry helper containing an istream for creating the log message.

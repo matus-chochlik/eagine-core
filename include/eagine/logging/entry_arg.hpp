@@ -10,10 +10,34 @@
 #define EAGINE_LOGGING_ENTRY_ARG_HPP
 
 #include "../bitfield.hpp"
-#include "../reflect/map_enumerators.hpp"
+#include "../identifier.hpp"
+#include "../reflect/enumerators.hpp"
 #include <type_traits>
 
 namespace eagine {
+//------------------------------------------------------------------------------
+template <typename E, typename T>
+struct does_have_entry_function {
+private:
+    template <
+      typename X,
+      typename = decltype(std::declval<E>().arg(
+        std::declval<identifier>(),
+        std::declval<identifier>(),
+        std::declval<X>()))>
+    static auto _test(X*) -> std::true_type;
+    static auto _test(...) -> std::false_type;
+
+public:
+    // NOLINTNEXTLINE(hicpp-vararg)
+    using type = decltype(_test(static_cast<T*>(nullptr)));
+};
+
+template <typename E, typename T>
+using has_entry_function_t = typename does_have_entry_function<E, T>::type;
+
+template <typename E, typename T>
+constexpr const bool has_entry_function_v = has_entry_function_t<E, T>::value;
 //------------------------------------------------------------------------------
 /// @brief Helper class used in implementation of has_entry_adapter_t.
 /// @ingroup logging

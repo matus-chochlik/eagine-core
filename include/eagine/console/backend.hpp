@@ -9,8 +9,7 @@
 #ifndef EAGINE_CONSOLE_BACKEND_HPP
 #define EAGINE_CONSOLE_BACKEND_HPP
 
-#include "../identifier.hpp"
-#include "../interface.hpp"
+#include "../logging/entry_arg.hpp"
 #include "../memory/shared_alloc.hpp"
 #include "../string_span.hpp"
 #include "entry_kind.hpp"
