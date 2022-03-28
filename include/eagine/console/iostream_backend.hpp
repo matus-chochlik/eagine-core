@@ -51,6 +51,13 @@ public:
         return true;
     }
 
+    void add_identifier(
+      const identifier arg,
+      const identifier,
+      const identifier value) noexcept final {
+        _add(arg, value.name().view());
+    }
+
     void add_bool(
       const identifier arg,
       const identifier,
@@ -81,6 +88,14 @@ public:
       const identifier,
       const double value) noexcept final {
         return _add(arg, value);
+    }
+
+    void add_duration(
+      const identifier arg,
+      const identifier,
+      const std::chrono::duration<float> value) noexcept final {
+        // TODO
+        return _add(arg, value.count());
     }
 
     void add_string(
@@ -117,13 +132,14 @@ private:
         _message.swap();
     }
 
+    void _add(const identifier arg, const std::string& value) noexcept {
+        _add(arg, string_view{value});
+    }
+
     template <typename T>
     void _add(const identifier arg, T value) noexcept {
         if(const auto str_val{_to_str(value)}) {
-            _message.back().clear();
-            substitute_variable_into(
-              _message.back(), _message.front(), arg.name(), extract(str_val));
-            _message.swap();
+            _add(arg, extract(str_val));
         }
     }
 

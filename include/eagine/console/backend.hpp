@@ -9,11 +9,12 @@
 #ifndef EAGINE_CONSOLE_BACKEND_HPP
 #define EAGINE_CONSOLE_BACKEND_HPP
 
+#include "../identifier.hpp"
 #include "../interface.hpp"
 #include "../memory/shared_alloc.hpp"
-#include "../message_id.hpp"
 #include "../string_span.hpp"
 #include "entry_kind.hpp"
+#include <chrono>
 
 namespace eagine {
 class application_config;
@@ -46,6 +47,15 @@ struct console_backend : interface<console_backend> {
       const identifier source,
       const console_entry_kind kind,
       const string_view format) noexcept -> bool = 0;
+
+    /// @brief Add argument with identifier value.
+    /// @param arg the argument name identifier.
+    /// @param tag the argument type identifier.
+    /// @param value the value of the argument.
+    virtual void add_identifier(
+      const identifier arg,
+      const identifier tag,
+      const identifier value) noexcept = 0;
 
     /// @brief Add argument with boolean value.
     /// @param arg the argument name identifier.
@@ -82,6 +92,15 @@ struct console_backend : interface<console_backend> {
       const identifier arg,
       const identifier tag,
       const double value) noexcept = 0;
+
+    /// @brief Add argument with time duration value.
+    /// @param arg the argument name identifier.
+    /// @param tag the argument type identifier.
+    /// @param value the value of the argument.
+    virtual void add_duration(
+      const identifier arg,
+      const identifier tag,
+      const std::chrono::duration<float> value) noexcept = 0;
 
     /// @brief Add argument with string value.
     /// @param arg the argument name identifier.

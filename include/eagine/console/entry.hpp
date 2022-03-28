@@ -54,6 +54,29 @@ public:
         }
     }
 
+    /// @brief Adds a new message argument with identifier value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    /// @param value the value of the argument.
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      const identifier value) noexcept -> auto& {
+        if(_backend) {
+            _args.add([=](console_backend& backend) {
+                backend.add_identifier(name, tag, value);
+            });
+        }
+        return *this;
+    }
+
+    /// @brief Adds a new message argument with identifier value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param value the value of the argument.
+    auto arg(const identifier name, const identifier value) noexcept -> auto& {
+        return arg(name, EAGINE_ID(Identifier), value);
+    }
+
     /// @brief Adds a new message argument with boolean value.
     /// @param name the argument name identifier. Used in message substitution.
     /// @param tag the argument type identifier. Used in value formatting.
@@ -138,6 +161,27 @@ public:
       const identifier name,
       const std::floating_point auto value) noexcept -> auto& {
         return arg(name, EAGINE_ID(float), value);
+    }
+
+    /// @brief Adds a new message argument with time duration value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    /// @param value the value of the argument.
+    template <typename R, typename P>
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      const std::chrono::duration<R, P> value) noexcept -> auto& {
+        if(_backend) {
+            _args.add([=](console_backend& backend) {
+                backend.add_duration(
+                  name,
+                  tag,
+                  std::chrono::duration_cast<std::chrono::duration<float>>(
+                    value));
+            });
+        }
+        return *this;
     }
 
     /// @brief Adds a new message argument with string value.
