@@ -46,7 +46,7 @@ public:
 
     /// @brief Do potentially expensive pre-initialization and caching.
     auto preinitialize() noexcept -> application_config& {
-        [[maybe_unused]] _impl();
+        [[maybe_unused]] auto unused{_impl()};
         return *this;
     }
 
