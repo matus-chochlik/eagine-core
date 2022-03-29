@@ -151,7 +151,7 @@ struct deserializer<bitfield<Bit>> : common_deserializer<bitfield<Bit>> {
     auto read(bitfield<Bit>& value, Backend& backend) const noexcept {
         typename bitfield<Bit>::value_type temp{0};
         auto errors{_deserializer.read(temp, backend)};
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             value = bitfield<Bit>{temp};
         }
         return errors;
@@ -170,7 +170,7 @@ struct deserializer<std::chrono::duration<Rep>>
       const noexcept {
         Rep temp{0};
         auto errors{_deserializer.read(temp, backend)};
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             value = std::chrono::duration<Rep>{temp};
         }
         return errors;
@@ -190,13 +190,13 @@ struct deserializer<std::tuple<T...>> : common_deserializer<std::tuple<T...>> {
         deserialization_errors errors{};
         span_size_t elem_count{0};
         errors |= backend.begin_list(elem_count);
-        if(EAGINE_UNLIKELY(elem_count < span_size(sizeof...(T)))) {
+        if(elem_count < span_size(sizeof...(T))) [[unlikely]] {
             errors |= deserialization_error_code::missing_element;
-        } else if(EAGINE_UNLIKELY(elem_count > span_size(sizeof...(T)))) {
+        } else if(elem_count > span_size(sizeof...(T))) [[unlikely]] {
             errors |= deserialization_error_code::excess_element;
         }
-        if(EAGINE_LIKELY(
-             errors.has_at_most(deserialization_error_code::excess_element))) {
+        if(errors.has_at_most(deserialization_error_code::excess_element))
+          [[likely]] {
             _read_elements(
               errors, values, backend, std::make_index_sequence<sizeof...(T)>());
             errors |= backend.finish_list();
@@ -227,9 +227,9 @@ private:
       Elem& elem,
       Backend& backend,
       Serializer& serial) noexcept {
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             errors |= backend.begin_element(span_size(index));
-            if(EAGINE_LIKELY(!errors)) {
+            if(!errors) [[likely]] {
                 errors |= serial.read(elem, backend);
                 errors |= backend.finish_element(span_size(index));
             }
@@ -253,13 +253,13 @@ struct deserializer<std::tuple<std::pair<const string_view, T>...>>
         deserialization_errors errors{};
         span_size_t memb_count{0};
         errors |= backend.begin_struct(memb_count);
-        if(EAGINE_UNLIKELY(memb_count < span_size(sizeof...(T)))) {
+        if(memb_count < span_size(sizeof...(T))) [[unlikely]] {
             errors |= deserialization_error_code::missing_member;
-        } else if(EAGINE_UNLIKELY(memb_count > span_size(sizeof...(T)))) {
+        } else if(memb_count > span_size(sizeof...(T))) [[unlikely]] {
             errors |= deserialization_error_code::excess_member;
         }
-        if(EAGINE_LIKELY(
-             errors.has_at_most(deserialization_error_code::excess_member))) {
+        if(errors.has_at_most(deserialization_error_code::excess_member))
+          [[likely]] {
             _read_members(
               errors, values, backend, std::make_index_sequence<sizeof...(T)>());
             errors |= backend.finish_struct();
@@ -290,9 +290,9 @@ private:
       Memb& value,
       Backend& backend,
       Serializer& serial) noexcept {
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             errors |= backend.begin_member(name);
-            if(EAGINE_LIKELY(!errors)) {
+            if(!errors) [[likely]] {
                 errors |= serial.read(value, backend);
                 errors |= backend.finish_member(name);
             }
@@ -314,10 +314,10 @@ struct deserializer<fragment_deserialize_wrapper<span<T>>>
         deserialization_errors errors{};
         span_size_t offs{0};
         errors |= _size_deserializer.read(offs, backend);
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             span_size_t size{0};
             errors |= _size_deserializer.read(size, backend);
-            if(EAGINE_LIKELY(!errors)) {
+            if(!errors) [[likely]] {
                 span_size_t done{0};
                 errors |= backend.read(frag.slice(offs, size), done);
                 frag.mark_done(offs, done);
@@ -339,13 +339,13 @@ struct deserializer<std::array<T, N>> : common_deserializer<std::array<T, N>> {
         deserialization_errors errors{};
         span_size_t elem_count{0};
         errors |= backend.begin_list(elem_count);
-        if(EAGINE_UNLIKELY(elem_count < span_size(N))) {
+        if(elem_count < span_size(N)) [[unlikely]] {
             errors |= deserialization_error_code::missing_element;
-        } else if(EAGINE_UNLIKELY(elem_count > span_size(N))) {
+        } else if(elem_count > span_size(N)) [[unlikely]] {
             errors |= deserialization_error_code::excess_element;
         }
-        if(EAGINE_LIKELY(
-             errors.has_at_most(deserialization_error_code::excess_element))) {
+        if(errors.has_at_most(deserialization_error_code::excess_element))
+          [[likely]] {
             errors |= _elem_deserializer.read(cover(values), backend);
             errors |= backend.finish_list();
         }
@@ -365,7 +365,7 @@ struct deserializer<std::vector<T, A>>
         deserialization_errors errors{};
         span_size_t elem_count{0};
         errors |= backend.begin_list(elem_count);
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             values.resize(std_size(elem_count));
             errors |= _elem_deserializer.read(cover(values), backend);
             errors |= backend.finish_list();
@@ -385,16 +385,16 @@ struct deserializer<valid_if<T, P>> : common_deserializer<valid_if<T, P>> {
         deserialization_errors errors{};
         span_size_t elem_count{0};
         errors |= backend.begin_list(elem_count);
-        if(EAGINE_UNLIKELY(elem_count < 0)) {
+        if(elem_count < 0) [[unlikely]] {
             errors |= deserialization_error_code::missing_element;
-        } else if(EAGINE_UNLIKELY(elem_count > 1)) {
+        } else if(elem_count > 1) [[unlikely]] {
             errors |= deserialization_error_code::excess_element;
         }
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             T temp{};
             errors |= _deserializer.read(temp, backend);
             errors |= backend.finish_list();
-            if(EAGINE_LIKELY(!errors)) {
+            if(!errors) [[likely]] {
                 _assign(value, std::move(temp));
             }
         }
@@ -422,7 +422,7 @@ struct deserializer<tagged_quantity<T, U>>
         deserialization_errors errors{};
         T temp{};
         errors |= _deserializer.read(temp, backend);
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             value = tagged_quantity<T, U>{std::move(temp)};
         }
         return errors;
@@ -441,8 +441,8 @@ struct enum_deserializer {
         if(backend.enum_as_string()) {
             decl_name_storage temp_name{};
             errors |= _name_deserializer.read(temp_name, backend);
-            if(EAGINE_LIKELY(!errors)) {
-                if(auto found{from_string(
+            if(!errors) [[likely]] {
+                if(const auto found{from_string(
                      temp_name.get(), type_identity<T>{}, default_selector)}) {
                     enumerator = extract(found);
                 } else {
@@ -452,8 +452,9 @@ struct enum_deserializer {
         } else {
             std::underlying_type_t<T> temp_value{};
             errors |= _value_deserializer.read(temp_value, backend);
-            if(EAGINE_LIKELY(!errors)) {
-                if(auto found = from_value(temp_value, type_identity<T>{})) {
+            if(!errors) [[likely]] {
+                if(const auto found{
+                     from_value(temp_value, type_identity<T>{})}) {
                     enumerator = extract(found);
                 } else {
                     errors |= deserialization_error_code::unexpected_data;
@@ -496,12 +497,11 @@ struct deserializer
 /// @see serialize
 /// @see deserializer_backend
 template <typename T, typename Backend>
-auto deserialize(T& value, Backend& backend) noexcept -> std::enable_if_t<
-  std::is_base_of_v<deserializer_backend, Backend>,
-  deserialization_errors> {
+auto deserialize(T& value, Backend& backend) noexcept -> deserialization_errors
+  requires(std::is_base_of_v<deserializer_backend, Backend>) {
     deserialization_errors errors{};
     errors |= backend.begin();
-    if(EAGINE_LIKELY(!errors)) {
+    if(!errors) [[likely]] {
         deserializer<T> reader;
         errors |= reader.read(value, backend);
         errors |= backend.finish();

@@ -45,7 +45,7 @@ public:
     friend auto operator<<(std::ostream&, const hexdump&) -> std::ostream&;
 
 private:
-    memory::const_block _mb;
+    memory::const_block _mb{};
 };
 
 } // namespace eagine

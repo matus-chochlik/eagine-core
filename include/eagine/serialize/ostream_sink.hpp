@@ -48,19 +48,17 @@ public:
         return transaction_handle(_subs.size());
     }
 
-    auto commit(const transaction_handle th) noexcept
+    auto commit([[maybe_unused]] const transaction_handle th) noexcept
       -> serialization_errors final {
         EAGINE_ASSERT(th == transaction_handle(_subs.size()));
-        EAGINE_MAYBE_UNUSED(th);
         std::stringstream top{std::move(_subs.top())};
         _subs.pop();
         current() << top.rdbuf();
         return {};
     }
 
-    void rollback(const transaction_handle th) noexcept final {
+    void rollback([[maybe_unused]] const transaction_handle th) noexcept final {
         EAGINE_ASSERT(th == transaction_handle(_subs.size()));
-        EAGINE_MAYBE_UNUSED(th);
         _subs.pop();
     }
 

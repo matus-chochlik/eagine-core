@@ -9,7 +9,6 @@
 #ifndef EAGINE_WORKSHOP_HPP
 #define EAGINE_WORKSHOP_HPP
 
-#include "branch_predict.hpp"
 #include "extract.hpp"
 #include "integer_range.hpp"
 #include "interface.hpp"
@@ -111,8 +110,7 @@ public:
 
     auto add_workers(span_size_t n) -> workshop& {
         _workers.reserve(_workers.size() + std_size(n));
-        for(const auto i : integer_range(n)) {
-            EAGINE_MAYBE_UNUSED(i);
+        for([[maybe_unused]] const auto i : integer_range(n)) {
             add_worker();
         }
         return *this;
@@ -137,7 +135,7 @@ public:
 
     auto enqueue(work_unit& work) -> workshop& {
         std::unique_lock lock{_mutex};
-        if(EAGINE_UNLIKELY(_workers.empty())) {
+        if(_workers.empty()) [[unlikely]] {
             add_worker();
         }
         _work_queue.push(&work);

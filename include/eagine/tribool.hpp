@@ -135,12 +135,28 @@ constexpr auto operator&&(const tribool a, const tribool b) noexcept {
                 : tribool{indeterminate};
 }
 
+constexpr auto operator&&(const bool a, const tribool b) noexcept {
+    return tribool(a) && b;
+}
+
+constexpr auto operator&&(const tribool a, const bool b) noexcept {
+    return a && tribool(b);
+}
+
 /// @brief Tri-state boolean or operator.
 constexpr auto operator||(const tribool a, const tribool b) noexcept {
     return a    ? tribool{true}
            : !a ? b
            : b  ? tribool{true}
                 : tribool{indeterminate};
+}
+
+constexpr auto operator||(const bool a, const tribool b) noexcept {
+    return tribool(a) || b;
+}
+
+constexpr auto operator||(const tribool a, const bool b) noexcept {
+    return a || tribool(b);
 }
 
 } // namespace eagine

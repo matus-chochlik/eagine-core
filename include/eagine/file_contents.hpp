@@ -9,7 +9,6 @@
 #ifndef EAGINE_FILE_CONTENTS_HPP
 #define EAGINE_FILE_CONTENTS_HPP
 
-#include "branch_predict.hpp"
 #include "config/basic.hpp"
 #include "interface.hpp"
 #include "protected_member.hpp"
@@ -30,7 +29,7 @@ struct file_contents_intf : interface<file_contents_intf> {
 class file_contents {
 public:
     /// @brief Default constructor.
-    file_contents() = default;
+    file_contents() noexcept = default;
 
     /// @brief Constructor that opens and loads contents of file at the given path.
     file_contents(const string_view path);
@@ -50,8 +49,11 @@ public:
     /// @brief Returns the block viewing the loaded file contents.
     /// @see is_loaded
     auto block() const noexcept -> memory::const_block {
-        return bool(EAGINE_LIKELY(_pimpl)) ? _pimpl->block()
-                                           : memory::const_block();
+        if(_pimpl) [[likely]] {
+            return _pimpl->block();
+        } else {
+            return memory::const_block();
+        }
     }
 
     /// @brief Implicit conversion to the block viewing the loaded file contents.

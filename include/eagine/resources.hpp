@@ -12,7 +12,7 @@
 #include "embed.hpp"
 #include "logging/logger.hpp"
 #include "main_ctx.hpp"
-#include "memory/buffer_fwd.hpp"
+#include "memory/fwd.hpp"
 #include "string_span.hpp"
 
 namespace eagine {

@@ -7,7 +7,6 @@
 #ifndef EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 #define EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 
-#include <eagine/branch_predict.hpp>
 #include <eagine/flat_map.hpp>
 #include <eagine/identifier.hpp>
 #include <eagine/is_within_limits.hpp>
@@ -32,6 +31,8 @@ struct LogStreamInfo {
     std::vector<eagine::string_view> args;
     eagine::string_view logIdentity;
     eagine::string_view instanceId;
+    eagine::string_view osName;
+    eagine::string_view osCodeName;
     eagine::string_view gitBranch;
     eagine::string_view gitHashId;
     eagine::string_view gitVersion;

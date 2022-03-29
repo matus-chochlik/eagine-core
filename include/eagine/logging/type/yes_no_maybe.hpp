@@ -19,10 +19,10 @@ struct yes_no_maybe : tribool {
       : tribool{v} {}
 };
 //------------------------------------------------------------------------------
-static inline auto adapt_log_entry_arg(
+static inline auto adapt_entry_arg(
   const identifier name,
   yes_no_maybe value) noexcept {
-    return [name, value](logger_backend& backend) {
+    return [name, value](auto& backend) {
         backend.add_string(
           name,
           EAGINE_ID(YesNoMaybe),

@@ -19,17 +19,20 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename T>
-struct enumerator_and_name {
-    constexpr enumerator_and_name(const decl_name n, const T e) noexcept
+struct name_and_enumerator {
+    constexpr name_and_enumerator(const decl_name n, const T e) noexcept
       : name{n}
       , enumerator{e} {}
 
     const decl_name name;
     const T enumerator;
 };
+
+template <typename T>
+name_and_enumerator(const decl_name, const T) -> name_and_enumerator<T>;
 //------------------------------------------------------------------------------
 template <typename T, std::size_t N>
-using enumerator_map_type = std::array<const enumerator_and_name<T>, N>;
+using enumerator_map_type = std::array<const name_and_enumerator<T>, N>;
 //------------------------------------------------------------------------------
 template <typename T, typename Selector>
 struct does_have_enumerator_mapping {
@@ -71,13 +74,10 @@ static constexpr const auto _reflected_enumerator_mapping =
       ^Enum,
       std::experimental::meta::is_enumerator))>{});
 //------------------------------------------------------------------------------
-template <
-  typename Enum,
-  typename Selector,
-  typename = std::enable_if_t<std::is_enum_v<Enum>>>
+template <typename Enum, typename Selector>
 constexpr auto enumerator_mapping(
   const type_identity<Enum>,
-  const Selector) noexcept -> const auto& {
+  const Selector) noexcept -> const auto& requires(std::is_enum_v<Enum>) {
     return _reflected_enumerator_mapping<Enum>;
 }
 #endif

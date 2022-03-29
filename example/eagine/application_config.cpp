@@ -6,9 +6,9 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/app_config.hpp>
+#include <eagine/console/console.hpp>
 #include <eagine/main.hpp>
 #include <chrono>
-#include <iostream>
 #include <thread>
 
 namespace eagine {
@@ -22,23 +22,21 @@ auto main(main_ctx& ctx) -> int {
     std::vector<float> v;
 
     if(cfg.fetch("value_1", s)) {
-        std::cout << "string: " << s << std::endl;
+        cfg.cio_print("string: ${s}").arg(EAGINE_ID(s), s);
     }
 
     if(cfg.fetch("value_2", s)) {
-        std::cout << "string: " << s << std::endl;
+        cfg.cio_print("string: ${s}").arg(EAGINE_ID(s), s);
     }
 
     if(cfg.fetch("section_a.subsection_b.value_c", i)) {
-        std::cout << "integer: " << i << std::endl;
+        cfg.cio_print("integer : ${i}").arg(EAGINE_ID(i), i);
     }
 
     if(cfg.fetch("section_a.subsection_b.values", v)) {
-        std::cout << "floats:";
         for(auto e : v) {
-            std::cout << " " << e;
+            cfg.cio_print("float : ${f}").arg(EAGINE_ID(f), e);
         }
-        std::cout << std::endl;
     }
 
     const application_reconfig_value<std::chrono::duration<float>> delay{

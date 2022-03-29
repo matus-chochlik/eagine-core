@@ -133,6 +133,13 @@ void Connection::_handleSpecialArgument() noexcept {
         if(_isArgName(EAGINE_ID(arg))) {
             info.args.push_back(_cacheString(_xmlReader.text()));
         }
+    } else if(_currentEntry.tag == EAGINE_ID(OSInfo)) {
+        auto& info = _backend.entryLog().streamInfoRef(_streamId);
+        if(_isArgName(EAGINE_ID(osName))) {
+            info.osName = _cacheString(_xmlReader.text());
+        } else if(_isArgName(EAGINE_ID(osCodeName))) {
+            info.osCodeName = _cacheString(_xmlReader.text());
+        }
     } else if(_currentEntry.tag == EAGINE_ID(GitInfo)) {
         auto& info = _backend.entryLog().streamInfoRef(_streamId);
         if(_isArgName(EAGINE_ID(gitBranch))) {

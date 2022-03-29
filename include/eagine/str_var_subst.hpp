@@ -33,6 +33,20 @@ struct variable_substitution_options {
     char closing_bracket{'}'};
 };
 //------------------------------------------------------------------------------
+/// @brief Substitutes variable value from src into dst.
+/// @ingroup string_utils
+/// @see substitute_variables
+///
+/// This function takes the format string @p src, finds variable reference
+/// using substitution options and substitutes the variable with the specified
+/// @p value into @p dst.
+auto substitute_variable_into(
+  std::string& dst,
+  string_view src,
+  const string_view name,
+  const string_view value,
+  const variable_substitution_options = {}) noexcept -> std::string&;
+//------------------------------------------------------------------------------
 /// @brief Substitutes variable values by using translate, from src into dst.
 /// @ingroup string_utils
 /// @see substitute_variables
@@ -42,7 +56,7 @@ struct variable_substitution_options {
 /// using the translation function into @p dst.
 auto substitute_variables_into(
   std::string& dst,
-  const string_view src,
+  string_view src,
   const callable_ref<optionally_valid<string_view>(const string_view) noexcept>&
     translate,
   const variable_substitution_options = {}) noexcept -> std::string&;

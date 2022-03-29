@@ -53,7 +53,7 @@ private:
 EAGINE_LIB_FUNC
 auto process_watchdog::_impl() noexcept -> process_watchdog_impl* {
 #if EAGINE_USE_SYSTEMD
-    if(EAGINE_UNLIKELY(!_pimpl)) {
+    if(!_pimpl) [[unlikely]] {
         try {
             _pimpl = std::make_shared<process_watchdog_impl>();
         } catch(...) {

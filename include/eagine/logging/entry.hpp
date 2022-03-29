@@ -10,7 +10,6 @@
 #define EAGINE_LOGGING_ENTRY_HPP
 
 #include "../bitfield.hpp"
-#include "../branch_predict.hpp"
 #include "../memory/object_storage.hpp"
 #include "../message_id.hpp"
 #include "../valid_if/decl.hpp"
@@ -19,7 +18,7 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-static inline auto adapt_log_entry_arg(
+static inline auto adapt_entry_arg(
   const identifier name,
   logger_backend* value) {
     return [name, value](logger_backend& backend) noexcept {
@@ -31,39 +30,6 @@ static inline auto adapt_log_entry_arg(
         }
     };
 }
-//------------------------------------------------------------------------------
-template <typename T, typename = std::enable_if_t<has_enumerator_mapping_v<T>>>
-static constexpr auto adapt_log_entry_arg(
-  const identifier name,
-  const T value) noexcept {
-    return [=](logger_backend& backend) {
-        backend.add_string(name, EAGINE_ID(enum), enumerator_name(value));
-    };
-}
-//------------------------------------------------------------------------------
-template <typename T, typename = std::enable_if_t<has_enumerator_mapping_v<T>>>
-static constexpr auto adapt_log_entry_arg(
-  const identifier name,
-  const bitfield<T> bf) noexcept {
-    return [=](logger_backend& backend) {
-        const auto func = [&backend, name, bf](const auto& info) {
-            if(bf.has(static_cast<T>(info.value))) {
-                backend.add_string(name, EAGINE_ID(bitfield), info.name);
-            }
-        };
-        for_each_enumerator(func, type_identity<T>{});
-    };
-}
-//------------------------------------------------------------------------------
-template <typename T>
-struct does_have_log_entry_function;
-
-template <typename T>
-using has_log_entry_function_t = typename does_have_log_entry_function<T>::type;
-
-template <typename T>
-constexpr const bool has_log_entry_function_v =
-  has_log_entry_function_t<T>::value;
 //------------------------------------------------------------------------------
 class logger;
 
@@ -102,8 +68,9 @@ public:
     /// @brief Destructor. Passed the actual entry to the backend.
     ~log_entry() noexcept {
         if(_backend) {
-            if(EAGINE_LIKELY(_backend->begin_message(
-                 _source_id, _entry_tag, _instance_id, _severity, _format))) {
+            if(_backend->begin_message(
+                 _source_id, _entry_tag, _instance_id, _severity, _format))
+              [[likely]] {
                 _args(*_backend);
                 _backend->finish_message();
             }
@@ -631,7 +598,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const memory::const_block value) noexcept
       -> auto& {
-        return arg(name, EAGINE_ID(blk), value);
+        return arg(name, EAGINE_ID(block), value);
     }
 
     /// @brief Adds a new message argument adapted by the specified function.
@@ -649,9 +616,9 @@ public:
     /// @see has_log_entry_adapter_v
     template <typename T>
     auto arg(const identifier name, T&& value) noexcept
-      -> std::enable_if_t<has_log_entry_adapter_v<std::decay_t<T>>, log_entry&> {
+      -> log_entry& requires(has_entry_adapter_v<std::decay_t<T>>) {
         if(_backend) {
-            _args.add(adapt_log_entry_arg(name, std::forward<T>(value)));
+            _args.add(adapt_entry_arg(name, std::forward<T>(value)));
         }
         return *this;
     }
@@ -661,15 +628,14 @@ public:
     /// @param tag the argument type identifier. Used in value formatting.
     /// @param opt the value of the argument.
     /// @see valid_if_or_fallback
-    template <typename T, typename P, typename F>
+    template <typename F, typename T, typename P, typename L>
     auto arg(
       const identifier name,
       const identifier tag,
-      valid_if_or_fallback<T, P, F>&& opt) noexcept
-      -> std::enable_if_t<
-        has_log_entry_function_v<std::decay_t<T>> &&
-          has_log_entry_function_v<std::decay_t<F>>,
-        log_entry&> {
+      valid_if_or_fallback<F, T, P, L>&& opt) noexcept
+      -> log_entry& requires(
+        has_entry_function_v<log_entry, std::decay_t<T>>&&
+          has_entry_function_v<log_entry, std::decay_t<F>>) {
         if(opt.is_valid()) {
             return arg(name, tag, std::move(opt.value()));
         }
@@ -682,16 +648,15 @@ public:
     /// @param opt the primary optional value of the argument.
     /// @param fbck the fallback value of opt is not valid.
     /// @see valid_if_or_fallback
-    template <typename T, typename P, typename F>
+    template <typename F, typename T, typename P, typename L>
     auto arg(
       const identifier name,
       const identifier tag,
-      valid_if<T, P> opt,
+      basic_valid_if<T, P, L> opt,
       F fbck) noexcept
-      -> std::enable_if_t<
-        has_log_entry_function_v<std::decay_t<T>> &&
-          has_log_entry_function_v<std::decay_t<F>>,
-        log_entry&> {
+      -> log_entry& requires(
+        has_entry_function_v<log_entry, std::decay_t<T>>&&
+          has_entry_function_v<log_entry, std::decay_t<F>>) {
         return arg(name, tag, either_or(std::move(opt), std::move(fbck)));
     }
 
@@ -774,23 +739,6 @@ struct no_log_entry {
     }
 };
 //------------------------------------------------------------------------------
-template <typename T>
-struct does_have_log_entry_function {
-private:
-    template <
-      typename X,
-      typename = decltype(std::declval<log_entry>().arg(
-        std::declval<identifier>(),
-        std::declval<identifier>(),
-        std::declval<X>()))>
-    static auto _test(X*) -> std::true_type;
-    static auto _test(...) -> std::false_type;
-
-public:
-    // NOLINTNEXTLINE(hicpp-vararg)
-    using type = decltype(_test(static_cast<T*>(nullptr)));
-};
-//------------------------------------------------------------------------------
 /// @brief Log entry helper containing an istream for creating the log message.
 /// @ingroup logging
 /// @note Do not use directly, use logger instead.
@@ -821,12 +769,12 @@ public:
             auto fmt_str(_out.str());
             if(!fmt_str.empty()) {
                 if(_backend) {
-                    if(EAGINE_LIKELY(_backend->begin_message(
+                    if(_backend->begin_message(
                          _source_id,
                          _entry_tag,
                          _instance_id,
                          _severity,
-                         fmt_str))) {
+                         fmt_str)) [[likely]] {
                         _backend->finish_message();
                         _backend = nullptr;
                     }

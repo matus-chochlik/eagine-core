@@ -433,6 +433,7 @@ class XmlLogFormatter(object):
     def __init__(self, options):
         self._options = options
         self._start_time = time.time()
+        self._src_times = dict()
         self._re_var = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
         self._lock = threading.Lock()
         self._out = options.log_output
@@ -476,6 +477,7 @@ class XmlLogFormatter(object):
     # --------------------------------------------------------------------------
     def beginLog(self, srcid, info):
         self._backend_count += 1
+        self._src_times[srcid] = time.time();
         with self._lock:
             #
             self._out.write("┊")
@@ -504,11 +506,13 @@ class XmlLogFormatter(object):
     # --------------------------------------------------------------------------
     def finishLog(self, srcid):
         with self._lock:
+            total_time = time.time() - self._src_times[srcid]
+            del self._src_times[srcid]
             # L0
             self._out.write("┊")
             for sid in self._sources:
                 self._out.write(" │")
-            self._out.write(" ╭────────────╮\n")
+            self._out.write(" ╭─────────┬────────────╮\n")
             # L1
             self._out.write("┊")
             conn = False
@@ -521,6 +525,7 @@ class XmlLogFormatter(object):
                 else:
                     self._out.write(" │")
             self._out.write("━┥")
+            self._out.write("%9s│" % formatRelTime(float(total_time)))
             self._out.write(self._ttyBlue())
             self._out.write("closing  log")
             self._out.write(self._ttyReset())
@@ -537,7 +542,7 @@ class XmlLogFormatter(object):
                     self._out.write("╭╯")
                 else:
                     self._out.write(" │")
-            self._out.write(" ╰────────────╯\n")
+            self._out.write(" ╰─────────┴────────────╯\n")
             # L3
             self._out.write("┊")
             conn = False

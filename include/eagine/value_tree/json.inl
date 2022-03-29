@@ -178,7 +178,7 @@ public:
                       owner, found->value, &found->name);
                 }
             }
-            if(auto opt_idx{from_string<span_size_t>(name)}) {
+            if(const auto opt_idx{from_string<span_size_t>(name)}) {
                 return nested(owner, extract(opt_idx));
             }
         }
@@ -226,7 +226,7 @@ public:
                         result = nullptr;
                     }
                 } else if(result->IsArray()) {
-                    if(auto opt_idx{from_string<span_size_t>(entry)}) {
+                    if(const auto opt_idx{from_string<span_size_t>(entry)}) {
                         const auto index{extract(opt_idx)};
                         if(index < span_size(result->Size())) {
                             result = &(*result)[rapidjson_size(index)];
@@ -275,19 +275,19 @@ public:
     template <typename T>
     auto convert_bool(_val_t& val, T& dest) -> bool {
         if(val.IsBool()) {
-            if(auto converted{convert_if_fits<T>(val.GetBool())}) {
+            if(const auto converted{convert_if_fits<T>(val.GetBool())}) {
                 dest = extract(converted);
                 return true;
             }
         }
         if(val.IsInt()) {
-            if(auto converted{convert_if_fits<T>(val.GetInt())}) {
+            if(const auto converted{convert_if_fits<T>(val.GetInt())}) {
                 dest = extract(converted);
                 return true;
             }
         }
         if(val.IsString()) {
-            if(auto converted{from_string<T>(view(val))}) {
+            if(const auto converted{from_string<T>(view(val))}) {
                 dest = extract(converted);
                 return true;
             }
@@ -312,19 +312,19 @@ public:
     template <typename T>
     auto convert_int(_val_t& val, T& dest) -> bool {
         if(val.IsInt()) {
-            if(auto converted{convert_if_fits<T>(val.GetInt())}) {
+            if(const auto converted{convert_if_fits<T>(val.GetInt())}) {
                 dest = extract(converted);
                 return true;
             }
         }
         if(val.IsInt64()) {
-            if(auto converted{convert_if_fits<T>(val.GetInt64())}) {
+            if(const auto converted{convert_if_fits<T>(val.GetInt64())}) {
                 dest = extract(converted);
                 return true;
             }
         }
         if(val.IsString()) {
-            if(auto converted{from_string<T>(view(val))}) {
+            if(const auto converted{from_string<T>(view(val))}) {
                 dest = extract(converted);
                 return true;
             }
@@ -335,19 +335,19 @@ public:
     template <typename T>
     auto convert_uint(_val_t& val, T& dest) -> bool {
         if(val.IsUint()) {
-            if(auto converted{convert_if_fits<T>(val.GetUint())}) {
+            if(const auto converted{convert_if_fits<T>(val.GetUint())}) {
                 dest = extract(converted);
                 return true;
             }
         }
         if(val.IsUint64()) {
-            if(auto converted{convert_if_fits<T>(val.GetUint64())}) {
+            if(const auto converted{convert_if_fits<T>(val.GetUint64())}) {
                 dest = extract(converted);
                 return true;
             }
         }
         if(val.IsString()) {
-            if(auto converted{from_string<T>(view(val))}) {
+            if(const auto converted{from_string<T>(view(val))}) {
                 dest = extract(converted);
                 return true;
             }
@@ -358,31 +358,31 @@ public:
     template <typename T>
     auto convert_real(_val_t& val, T& dest) -> bool {
         if(val.IsFloat()) {
-            if(auto converted{convert_if_fits<T>(val.GetFloat())}) {
+            if(const auto converted{convert_if_fits<T>(val.GetFloat())}) {
                 dest = extract(converted);
                 return true;
             }
         }
         if(val.IsDouble()) {
-            if(auto converted{convert_if_fits<T>(val.GetDouble())}) {
+            if(const auto converted{convert_if_fits<T>(val.GetDouble())}) {
                 dest = extract(converted);
                 return true;
             }
         }
         if(val.IsInt()) {
-            if(auto converted{convert_if_fits<T>(val.GetInt())}) {
+            if(const auto converted{convert_if_fits<T>(val.GetInt())}) {
                 dest = extract(converted);
                 return true;
             }
         }
         if(val.IsInt64()) {
-            if(auto converted{convert_if_fits<T>(val.GetInt64())}) {
+            if(const auto converted{convert_if_fits<T>(val.GetInt64())}) {
                 dest = extract(converted);
                 return true;
             }
         }
         if(val.IsString()) {
-            if(auto converted{from_string<T>(view(val))}) {
+            if(const auto converted{from_string<T>(view(val))}) {
                 dest = extract(converted);
                 return true;
             }
@@ -395,31 +395,31 @@ public:
       -> bool {
         using _dur_t = std::chrono::duration<R, P>;
         if(val.IsFloat()) {
-            if(auto converted{convert_if_fits<R>(val.GetFloat())}) {
+            if(const auto converted{convert_if_fits<R>(val.GetFloat())}) {
                 dest = _dur_t{extract(converted)};
                 return true;
             }
         }
         if(val.IsDouble()) {
-            if(auto converted{convert_if_fits<R>(val.GetDouble())}) {
+            if(const auto converted{convert_if_fits<R>(val.GetDouble())}) {
                 dest = _dur_t{extract(converted)};
                 return true;
             }
         }
         if(val.IsInt()) {
-            if(auto converted{convert_if_fits<R>(val.GetInt())}) {
+            if(const auto converted{convert_if_fits<R>(val.GetInt())}) {
                 dest = _dur_t{extract(converted)};
                 return true;
             }
         }
         if(val.IsInt64()) {
-            if(auto converted{convert_if_fits<R>(val.GetInt64())}) {
+            if(const auto converted{convert_if_fits<R>(val.GetInt64())}) {
                 dest = _dur_t{extract(converted)};
                 return true;
             }
         }
         if(val.IsString()) {
-            if(auto converted{from_string<_dur_t>(view(val))}) {
+            if(const auto converted{from_string<_dur_t>(view(val))}) {
                 dest = extract(converted);
                 return true;
             }
@@ -527,7 +527,7 @@ public:
                 if(dest.size() < req_size) {
                     std::vector<byte> temp{};
                     if(const auto dec{base64_decode(view(val), temp)}) {
-                        if(auto src{
+                        if(const auto src{
                              head(skip(cover(extract(dec)), offset), dest)}) {
                             copy(src, dest);
                             return src.size();
@@ -604,6 +604,10 @@ public:
 
     auto canonical_type(attribute_interface& attrib) -> value_type final {
         return _unwrap(attrib).canonical_type();
+    }
+
+    auto is_immutable(attribute_interface&) -> bool final {
+        return true;
     }
 
     auto is_link(attribute_interface&) -> bool final {

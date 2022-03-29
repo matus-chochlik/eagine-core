@@ -6,6 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
+#include <eagine/integer_range.hpp>
 #include <eagine/memory/address.hpp>
 #include <eagine/span.hpp>
 #include <cctype>
@@ -54,11 +55,11 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
     while(!done) {
         span_size_t pos = row;
         bool empty_row = true;
-        for(int b = 0; b < 16; ++b) {
+        for(const auto b : integer_range(16)) {
             if(pos < bgn || done) {
                 row_none[b] = true;
             } else {
-                if(auto got = get_byte()) {
+                if(const auto got{get_byte()}) {
                     row_none[b] = false;
                     row_byte[b] = got.value();
                     empty_row = false;
@@ -82,7 +83,7 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
         put_char('|');
 
         pos = row;
-        for(int b = 0; b < 16; ++b) {
+        for(const auto b : integer_range(16)) {
             if(b == 8) {
                 put_char(' ');
             }
@@ -101,7 +102,7 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
         put_char('|');
 
         pos = row;
-        for(span_size_t b = 0; b < 16; ++b) {
+        for(const auto b : integer_range(16)) {
             if(b == 8) {
                 put_char(' ');
             }

@@ -206,12 +206,9 @@ protected:
     }
 
     void log_chart_sample(
-      const identifier source,
-      const identifier series,
-      const float value) const noexcept {
-        EAGINE_MAYBE_UNUSED(source);
-        EAGINE_MAYBE_UNUSED(series);
-        EAGINE_MAYBE_UNUSED(value);
+      [[maybe_unused]] const identifier source,
+      [[maybe_unused]] const identifier series,
+      [[maybe_unused]] const float value) const noexcept {
         if constexpr(is_log_level_enabled_v<log_event_severity::stat>) {
             if(auto lbe{_entry_backend(source, log_event_severity::stat)}) {
                 extract(lbe).log_chart_sample(
@@ -262,7 +259,7 @@ public:
     named_logging_object(
       const identifier id,
       BackendGetter backend_getter) noexcept
-      : base(BackendGetter(std::move(backend_getter)))
+      : base{BackendGetter(std::move(backend_getter))}
       , _object_id{id} {
         log_lifetime(_object_id, "${self} created with ${backend} backend")
           .arg(EAGINE_ID(backend), this->backend())
@@ -273,7 +270,7 @@ public:
     named_logging_object(
       const identifier id,
       const named_logging_object& parent) noexcept
-      : base(static_cast<const base&>(parent))
+      : base{static_cast<const base&>(parent)}
       , _object_id{id} {
         log_lifetime(_object_id, "created as a child of ${parent}")
           .arg(EAGINE_ID(parent), EAGINE_ID(LogId), parent._object_id);
@@ -284,14 +281,14 @@ public:
 
     /// @brief Move constructor.
     named_logging_object(named_logging_object&& temp) noexcept
-      : base(static_cast<base&&>(temp))
+      : base{static_cast<base&&>(temp)}
       , _object_id{temp._object_id} {
         log_lifetime(_object_id, "being moved");
     }
 
     /// @brief Copy constructor.
     named_logging_object(const named_logging_object& that) noexcept
-      : base(static_cast<const base&>(that))
+      : base{static_cast<const base&>(that)}
       , _object_id{that._object_id} {
         log_lifetime(_object_id, "being copied");
     }
@@ -393,8 +390,8 @@ public:
     template <typename T, typename U>
     auto log_chart_sample(
       const identifier series,
-      const tagged_quantity<T, U>& qty) const noexcept -> std::
-      enable_if_t<std::is_convertible_v<T, float>, const named_logging_object&> {
+      const tagged_quantity<T, U>& qty) const noexcept
+      -> const named_logging_object& requires(std::is_convertible_v<T, float>) {
         log_chart_sample(series, qty.value());
         return *this;
     }
@@ -515,9 +512,10 @@ public:
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename U>
-    auto chart_sample(const identifier series, const tagged_quantity<T, U>& qty)
-      const noexcept
-      -> std::enable_if_t<std::is_convertible_v<T, float>, logger&> {
+    auto chart_sample(
+      const identifier series,
+      const tagged_quantity<T, U>& qty) noexcept
+      -> const logger& requires(std::is_convertible_v<T, float>) {
         log_chart_sample(series, qty.value());
         return *this;
     }

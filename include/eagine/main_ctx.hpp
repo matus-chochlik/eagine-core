@@ -8,6 +8,7 @@
 #ifndef EAGINE_MAIN_CTX_HPP
 #define EAGINE_MAIN_CTX_HPP
 
+#include "console/console_opts.hpp"
 #include "identifier.hpp"
 #include "logging/root_logger_opts.hpp"
 #include "main_ctx_fwd.hpp"
@@ -27,9 +28,12 @@ struct main_ctx_options {
 
     /// @brief Options for the root logger.
     root_logger_options logger_opts{};
+
+    /// @brief Options for the console.
+    console_options console_opts{};
 };
 
-/// @brief Class for a single-instance object providing useful information ans services.
+/// @brief Class for a singleton object providing useful information and services.
 /// @ingroup main_context
 ///
 /// A single instance of this class is initialized in the main function
@@ -53,8 +57,12 @@ public:
 
     ~main_ctx() noexcept override;
 
+    static auto try_get() noexcept -> main_ctx* {
+        return _single_ptr();
+    }
+
     /// @brief Returns the single instance.
-    static inline auto get() noexcept -> main_ctx& {
+    static auto get() noexcept -> main_ctx& {
         EAGINE_ASSERT(_single_ptr());
         return *_single_ptr();
     }
@@ -67,6 +75,11 @@ public:
 
     auto instance_id() const noexcept -> process_instance_id_t final {
         return _instance_id;
+    }
+
+    auto default_allocator() const noexcept
+      -> const memory::shared_byte_allocator& final {
+        return _default_alloc;
     }
 
     auto exe_path() const noexcept -> string_view final {
@@ -95,6 +108,10 @@ public:
 
     auto user() noexcept -> user_info& final {
         return _usr_info;
+    }
+
+    auto cio() noexcept -> const console& final {
+        return _cio;
     }
 
     auto log() noexcept -> const logger& final {
@@ -128,9 +145,11 @@ public:
 private:
     const process_instance_id_t _instance_id;
     main_ctx_getters& _source;
+    const memory::shared_byte_allocator& _default_alloc;
     const program_args& _args;
     const compiler_info& _cmplr_info;
     const build_info& _bld_info;
+    const console& _cio;
     const logger& _log;
     const activity_progress& _progress;
     process_watchdog& _watchdog;

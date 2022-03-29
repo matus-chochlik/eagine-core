@@ -10,14 +10,14 @@
 #define EAGINE_LOGGING_TYPE_BUILD_INFO_HPP
 
 #include "../../build_info.hpp"
-#include "../entry.hpp"
+#include "../entry_arg.hpp"
 
 namespace eagine {
 //------------------------------------------------------------------------------
-static inline auto adapt_log_entry_arg(
+static inline auto adapt_entry_arg(
   const identifier name,
   const build_info& value) noexcept {
-    return [name, value](logger_backend& backend) {
+    return [name, value](auto& backend) {
         if(const auto opt_maj{value.version_major()}) {
             backend.add_integer(name, EAGINE_ID(VerMajor), extract(opt_maj));
             if(const auto opt_min{value.version_minor()}) {

@@ -203,13 +203,13 @@ public:
     auto fetch_values(span_size_t offset, span<T> dest) -> span_size_t {
         if(dest.size() == 1) {
             char temp[64];
-            if(auto len{fetch_values(offset, cover(temp))}) {
+            if(const auto len{fetch_values(offset, cover(temp))}) {
                 auto issep = [](char c) {
                     return !c || std::isspace(c);
                 };
                 if(auto src{take_until(head(memory::view(temp), len), issep)}) {
                     if(auto fetched{from_string<T>(src)}) {
-                        dest.front() = extract(fetched);
+                        dest.front() = std::move(extract(fetched));
                         return 1;
                     }
                 }
@@ -266,6 +266,10 @@ public:
 
     auto canonical_type(attribute_interface&) -> value_type final {
         return value_type::byte_type;
+    }
+
+    auto is_immutable(attribute_interface&) -> bool final {
+        return false;
     }
 
     auto is_link(attribute_interface& attrib) -> bool final {

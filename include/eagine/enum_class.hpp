@@ -11,6 +11,7 @@
 
 #include "assert.hpp"
 #include "identifier_t.hpp"
+#include "is_within_limits.hpp"
 #include "iterator.hpp"
 #include "mp_list.hpp"
 #include "nothing.hpp"
@@ -84,6 +85,11 @@ struct enum_value<bool, mp_list<Classes...>, Tag> {
         return value;
     }
 };
+template <typename Dst, typename Src, typename... Classes, typename Tag>
+static constexpr auto limit_cast(enum_value<Src, Classes..., Tag> val) noexcept
+  -> Dst requires(std::is_convertible_v<Src, Dst>) {
+    return limit_cast<Dst>(val.value);
+}
 //------------------------------------------------------------------------------
 /// @brief Class holding optional value of a (typically C-API) symbolic constant.
 /// @tparam T the constant or enumerator value type.
@@ -164,6 +170,13 @@ struct opt_enum_value<bool, mp_list<Classes...>, Tag> {
         return is_valid && value;
     }
 };
+template <typename Dst, typename Src, typename... Classes, typename Tag>
+static constexpr auto limit_cast(
+  opt_enum_value<Src, Classes..., Tag> val) noexcept -> Dst
+  requires(std::is_convertible_v<Src, Dst>) {
+    EAGINE_ASSERT(bool(val));
+    return limit_cast<Dst>(val.value);
+}
 //------------------------------------------------------------------------------
 /// @brief Class representing undefined value of a (typically C-API) symbolic constant.
 /// @tparam T the constant or enumerator value type.
@@ -207,6 +220,12 @@ struct no_enum_value<bool, Tag> {
         return false;
     }
 };
+template <typename Dst, typename Src, typename Tag>
+static constexpr auto limit_cast(no_enum_value<Src, Tag> val) noexcept -> Dst
+  requires(std::is_convertible_v<Src, Dst>) {
+    EAGINE_ASSERT(bool(val));
+    return limit_cast<Dst>(val.value);
+}
 //------------------------------------------------------------------------------
 template <identifier_t LibId>
 struct any_enum_value;
@@ -249,19 +268,15 @@ struct enum_class {
     enum_class() = default;
 
     /// @brief Construction from a related enum_value.
-    template <
-      typename Classes,
-      typename Tag,
-      typename = std::enable_if_t<mp_contains_v<Classes, Self>>>
+    template <typename Classes, typename Tag>
     constexpr enum_class(const enum_value<T, Classes, Tag> ev) noexcept
+      requires(mp_contains_v<Classes, Self>)
       : _value{ev.value} {}
 
     /// @brief Construction from a related opt_enum_value.
-    template <
-      typename Classes,
-      typename Tag,
-      typename = std::enable_if_t<mp_contains_v<Classes, Self>>>
+    template <typename Classes, typename Tag>
     constexpr enum_class(const opt_enum_value<T, Classes, Tag> ev) noexcept
+      requires(mp_contains_v<Classes, Self>)
       : _value{ev.value} {
         EAGINE_ASSERT(ev.is_valid);
     }
@@ -310,6 +325,16 @@ struct enum_class {
         }
     };
 };
+template <
+  typename Dst,
+  typename Self,
+  typename Src,
+  identifier_t LibId,
+  identifier_t Id>
+static constexpr auto limit_cast(enum_class<Self, Src, LibId, Id> val) noexcept
+  -> Dst requires(std::is_convertible_v<Src, Dst>) {
+    return limit_cast<Dst>(val._value);
+}
 //------------------------------------------------------------------------------
 /// @brief Implementation of is_enum_class trait.
 /// @ingroup c_api_wrap

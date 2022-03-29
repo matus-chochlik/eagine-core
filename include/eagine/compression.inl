@@ -242,8 +242,8 @@ public:
     auto compress(
       const memory::const_block input,
       memory::buffer& output,
-      const data_compression_level level) noexcept -> memory::const_block {
-        EAGINE_MAYBE_UNUSED(level);
+      [[maybe_unused]] const data_compression_level level) noexcept
+      -> memory::const_block {
         output.resize(input.size() + 1);
         copy(input, skip(cover(output), 1));
         cover(output).front() = 0x00U;
@@ -307,7 +307,7 @@ auto data_compressor::compress(
   memory::buffer& output,
   const data_compression_level level) noexcept -> memory::const_block {
     EAGINE_ASSERT(_pimpl);
-    if(auto result{_pimpl->compress(input, output, level)}) {
+    if(const auto result{_pimpl->compress(input, output, level)}) {
         return result;
     }
     output.resize(input.size() + 1);
@@ -321,7 +321,7 @@ auto data_compressor::compress(
   const memory::const_block input,
   const data_compression_level level) noexcept -> memory::const_block {
     EAGINE_ASSERT(_pimpl);
-    if(auto result{_pimpl->compress(input, level)}) {
+    if(const auto result{_pimpl->compress(input, level)}) {
         return result;
     }
     return {};
@@ -341,7 +341,7 @@ auto data_compressor::decompress(
   memory::buffer& output) noexcept -> memory::const_block {
     if(input) {
         EAGINE_ASSERT(_pimpl);
-        if(auto result{_pimpl->decompress(input, output)}) {
+        if(const auto result{_pimpl->decompress(input, output)}) {
             return result;
         }
     }
@@ -353,7 +353,7 @@ auto data_compressor::decompress(const memory::const_block input) noexcept
   -> memory::const_block {
     if(input) {
         EAGINE_ASSERT(_pimpl);
-        if(auto result{_pimpl->decompress(input)}) {
+        if(const auto result{_pimpl->decompress(input)}) {
             return result;
         }
     }

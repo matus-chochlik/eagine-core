@@ -21,7 +21,7 @@ namespace eagine {
 class format_string_and_list_base {
 
 protected:
-    format_string_and_list_base(std::string&& fmt_str) noexcept
+    format_string_and_list_base(std::string fmt_str) noexcept
       : _fmt_str{std::move(fmt_str)} {}
 
     format_string_and_list_base(
@@ -32,7 +32,7 @@ protected:
     auto _fmt(span<const std::string> values) const noexcept -> std::string;
 
 private:
-    std::string _fmt_str;
+    std::string _fmt_str{};
 };
 //------------------------------------------------------------------------------
 template <span_size_t N>

@@ -39,17 +39,19 @@ struct constructed_matrix<MC<matrix<T, C, R, RM, V>, I>>
 /// @brief Uses the specified matrix constructor @p c to construct a matrix.
 /// @ingroup math
 template <bool RM, typename MC>
-static constexpr auto construct_matrix(const MC& c) noexcept -> std::enable_if_t<
-  is_matrix_constructor_v<MC> && is_row_major_v<constructed_matrix_t<MC>> == RM,
-  constructed_matrix_t<MC>> {
+static constexpr auto construct_matrix(const MC& c) noexcept
+  -> constructed_matrix_t<MC> requires(
+    is_matrix_constructor_v<MC>&& is_row_major_v<constructed_matrix_t<MC>> ==
+    RM) {
     return c();
 }
 
 // construct_matrix (reorder)
 template <bool RM, typename MC>
-static constexpr auto construct_matrix(const MC& c) noexcept -> std::enable_if_t<
-  is_matrix_constructor_v<MC> && is_row_major_v<constructed_matrix_t<MC>> != RM,
-  reordered_matrix_t<constructed_matrix_t<MC>>> {
+static constexpr auto construct_matrix(const MC& c) noexcept
+  -> reordered_matrix_t<constructed_matrix_t<MC>> requires(
+    is_matrix_constructor_v<MC>&& is_row_major_v<constructed_matrix_t<MC>> !=
+    RM) {
     return reorder_mat_ctr(c)();
 }
 
@@ -58,13 +60,12 @@ static constexpr auto construct_matrix(const MC& c) noexcept -> std::enable_if_t
 ///
 /// This is typically more efficient than constructing the two matrices and
 /// multiplying them.
-template <
-  typename MC1,
-  typename MC2,
-  typename = std::enable_if_t<
-    is_matrix_constructor_v<MC1> && is_matrix_constructor_v<MC2> &&
-    are_multiplicable<constructed_matrix_t<MC1>, constructed_matrix_t<MC2>>::value>>
-static inline auto multiply(const MC1& mc1, const MC2& mc2) noexcept {
+template <typename MC1, typename MC2>
+static constexpr auto multiply(const MC1& mc1, const MC2& mc2) noexcept
+  requires(
+    is_matrix_constructor_v<MC1>&& is_matrix_constructor_v<MC2>&&
+      are_multiplicable<constructed_matrix_t<MC1>, constructed_matrix_t<MC2>>::
+        value) {
     return multiply(construct_matrix<true>(mc1), construct_matrix<false>(mc2));
 }
 

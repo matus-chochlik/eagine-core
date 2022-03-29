@@ -6,13 +6,19 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#ifndef EAGINE_MEMORY_BUFFER_FWD_HPP
-#define EAGINE_MEMORY_BUFFER_FWD_HPP
+#ifndef EAGINE_MEMORY_FWD_HPP
+#define EAGINE_MEMORY_FWD_HPP
+
+#include "../nothing.hpp"
 
 namespace eagine::memory {
 
 class buffer;
 
+template <typename Base>
+class basic_shared_byte_alloc;
+using shared_byte_allocator = basic_shared_byte_alloc<nothing_t>;
+
 } // namespace eagine::memory
 
-#endif // EAGINE_MEMORY_BUFFER_FWD_HPP
+#endif

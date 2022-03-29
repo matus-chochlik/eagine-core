@@ -39,7 +39,8 @@ struct valid_if_not_empty_policy {
 /// @see valid_if_size_gt
 /// @see valid_if_lt_size
 template <typename T>
-using valid_if_not_empty = valid_if<T, valid_if_not_empty_policy<T>>;
+using valid_if_not_empty =
+  valid_if<T, valid_if_not_empty_policy<std::remove_reference_t<T>>>;
 
 } // namespace eagine
 

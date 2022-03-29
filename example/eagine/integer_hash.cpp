@@ -5,19 +5,33 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/console/console.hpp>
 #include <eagine/integer_hash.hpp>
-#include <iostream>
+#include <eagine/main.hpp>
 
-auto main() -> int {
+namespace eagine {
+
+template <typename T, typename V>
+void print(const console& cio, V value) {
+    cio.print(EAGINE_ID(hash), "hash(${value}) = ${hash}")
+      .arg(EAGINE_ID(value), value)
+      .arg(EAGINE_ID(hash), integer_hash<T>(value));
+}
+
+auto main(main_ctx& ctx) -> int {
     using namespace eagine;
 
-    std::cout << integer_hash<std::uint16_t>(0) << std::endl;
-    std::cout << integer_hash<std::uint32_t>(1) << std::endl;
-    std::cout << integer_hash<std::uint64_t>(2) << std::endl;
+    auto& cio = ctx.cio();
 
-    std::cout << integer_hash<std::uint16_t>(sizeof(short)) << std::endl;
-    std::cout << integer_hash<std::uint32_t>(sizeof(int)) << std::endl;
-    std::cout << integer_hash<std::uint64_t>(sizeof(long)) << std::endl;
+    print<std::uint16_t>(cio, 0);
+    print<std::uint32_t>(cio, 1);
+    print<std::uint64_t>(cio, 2);
+
+    print<std::uint16_t>(cio, sizeof(short));
+    print<std::uint32_t>(cio, sizeof(int));
+    print<std::uint64_t>(cio, sizeof(long));
 
     return 0;
 }
+
+} // namespace eagine

@@ -17,7 +17,7 @@ namespace eagine::math {
 /// @brief Returns the inverse matrix to the matrix passed as argument.
 /// @ingroup math
 template <typename T, int N, bool RM, bool V>
-static inline auto inverse_matrix(matrix<T, N, N, RM, V> m) noexcept
+static constexpr auto inverse_matrix(matrix<T, N, N, RM, V> m) noexcept
   -> optionally_valid<matrix<T, N, N, RM, V>> {
     auto i = identity<matrix<T, N, N, RM, V>>()();
     if(gauss_jordan_elimination(m, i)) {
@@ -28,8 +28,9 @@ static inline auto inverse_matrix(matrix<T, N, N, RM, V> m) noexcept
 //------------------------------------------------------------------------------
 /// @brief Returns the inverse matrix to the matrix constructed by the argument.
 /// @ingroup math
-template <typename Ctr, typename = std::enable_if_t<is_matrix_constructor_v<Ctr>>>
-static inline auto inverse_matrix(const Ctr& ctr) noexcept {
+template <typename Ctr>
+static constexpr auto inverse_matrix(const Ctr& ctr) noexcept
+  requires(is_matrix_constructor_v<Ctr>) {
     // TODO: reorder to row major?
     return inverse_matrix(ctr());
 }

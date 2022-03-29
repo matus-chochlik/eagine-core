@@ -249,9 +249,15 @@ public:
     /// @see is_empty
     constexpr auto size() const noexcept -> size_type {
         if constexpr(std::is_same_v<std::remove_const_t<ValueType>, char>) {
-            return EAGINE_LIKELY(_size < 0) ? -_size : _size;
+            if(_size < 0) [[likely]] {
+                return -_size;
+            }
+            return _size;
         } else {
-            return EAGINE_LIKELY(_size >= 0) ? _size : -_size;
+            if(_size >= 0) [[likely]] {
+                return _size;
+            }
+            return -_size;
         }
     }
 
@@ -378,7 +384,7 @@ public:
     /// @pre 0 <= index < size()
     template <typename Int>
     constexpr auto element(const Int index) const noexcept
-      -> std::enable_if_t<std::is_integral_v<Int>, std::add_const_t<value_type>&> {
+      -> std::add_const_t<value_type>& requires(std::is_integral_v<Int>) {
         return ref(span_size(index));
     }
 
@@ -386,7 +392,7 @@ public:
     /// @pre 0 <= index < size()
     template <typename Int>
     auto element(const Int index) noexcept
-      -> std::enable_if_t<std::is_integral_v<Int>, value_type&> {
+      -> value_type& requires(std::is_integral_v<Int>) {
         return ref(span_size(index));
     }
 
@@ -394,7 +400,7 @@ public:
     /// @see element
     template <typename Int>
     auto operator[](const Int index) noexcept
-      -> std::enable_if_t<std::is_integral_v<Int>, value_type&> {
+      -> value_type& requires(std::is_integral_v<Int>) {
         return element(index);
     }
 
@@ -402,7 +408,7 @@ public:
     /// @see element
     template <typename Int>
     constexpr auto operator[](const Int index) const noexcept
-      -> std::enable_if_t<std::is_integral_v<Int>, std::add_const_t<value_type>&> {
+      -> std::add_const_t<value_type>& requires(std::is_integral_v<Int>) {
         return element(index);
     }
 
@@ -521,21 +527,17 @@ static constexpr auto view(std::initializer_list<T> il) noexcept
 //------------------------------------------------------------------------------
 /// @brief Creates a const view over a compatible contiguous container.
 /// @ingroup memory
-template <
-  typename C,
-  typename =
-    std::enable_if_t<has_span_data_member_v<C> && has_span_size_member_v<C>>>
-static constexpr auto view(const C& container) noexcept {
+template <typename C>
+static constexpr auto view(const C& container) noexcept
+  requires(has_span_data_member_v<C>&& has_span_size_member_v<C>) {
     return view(container.data(), container.size());
 }
 //------------------------------------------------------------------------------
 /// @brief Creates a mutable span covering a compatible contiguous container.
 /// @ingroup memory
-template <
-  typename C,
-  typename =
-    std::enable_if_t<has_span_data_member_v<C> && has_span_size_member_v<C>>>
-static constexpr auto cover(C& container) noexcept {
+template <typename C>
+static constexpr auto cover(C& container) noexcept
+  requires(has_span_data_member_v<C>&& has_span_size_member_v<C>) {
     return cover(container.data(), container.size());
 }
 //------------------------------------------------------------------------------
@@ -586,6 +588,11 @@ static constexpr auto accommodate(
 //------------------------------------------------------------------------------
 // extract
 //------------------------------------------------------------------------------
+template <typename T, typename P, typename S>
+static constexpr auto has_value(basic_span<T, P, S> spn) noexcept -> bool {
+    return spn.size() >= 1;
+}
+
 /// @brief Overload of extract for spans. Returns the first element,
 /// @pre spn.size() >= 1
 /// @ingroup memory
@@ -594,24 +601,18 @@ static constexpr auto extract(basic_span<T, P, S> spn) noexcept -> T& {
     return EAGINE_CONSTEXPR_ASSERT(spn.size() >= 1, spn.front());
 }
 //------------------------------------------------------------------------------
-/// @brief Overload of extract_or for spans. Returns the first element,
-/// @ingroup memory
-template <typename T, typename P, typename S>
-static constexpr auto extract_or(basic_span<T, P, S> spn, T& fallback) noexcept
-  -> T& {
-    return (spn.size() >= 1) ? spn.front() : fallback;
-}
-//------------------------------------------------------------------------------
-/// @brief Overload of extract_or for spans. Returns the first element,
-/// @ingroup memory
-template <typename T, typename P, typename S, typename F>
-static constexpr auto extract_or(basic_span<T, P, S> spn, F&& fallback)
-  -> std::enable_if_t<std::is_convertible_v<F, T>, T> {
-    return (spn.size() >= 1) ? spn.front() : T{std::forward<F>(fallback)};
-}
-//------------------------------------------------------------------------------
 } // namespace memory
 //------------------------------------------------------------------------------
+template <typename>
+struct extract_traits;
+
+template <typename T, typename P, typename S>
+struct extract_traits<memory::basic_span<T, P, S>> {
+    using value_type = T;
+    using result_type = T&;
+    using const_result_type = std::add_const_t<T>&;
+};
+
 template <
   typename Tl,
   typename Tr,

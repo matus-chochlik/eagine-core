@@ -79,10 +79,10 @@ public:
     static_enum_map() = default;
 
     /// @brief Explicit construction from arguments that are passed to the units.
-    template <
-      typename... Args,
-      typename = std::enable_if_t<(sizeof...(Args) > 1)>>
-    explicit static_enum_map(const construct_from_t, const Args&... args)
+    template <typename... Args>
+    explicit static_enum_map(
+      const construct_from_t,
+      const Args&... args) requires(sizeof...(Args) > 1)
       : static_enum_map_unit<Enum, Unit, Keys>{args...}... {}
 
     /// @brief Returns a reference to the unit with the specified enumerator key.

@@ -52,7 +52,7 @@ using decomposed_t =
 //------------------------------------------------------------------------------
 template <typename F>
 constexpr auto max_fraction(type_identity<F> = {}) noexcept
-  -> std::enable_if_t<std::is_floating_point_v<F>, decompose_fraction_t<F>> {
+  -> decompose_fraction_t<F> requires(std::is_floating_point_v<F>) {
     using T = decompose_fraction_t<F>;
     return 1 + std::numeric_limits<T>::max() / T(2);
 }
@@ -87,7 +87,7 @@ constexpr inline auto compose(
   const decomposed_t<F>& f,
   const type_identity<F> = {}) noexcept -> F {
     const auto fre = std::get<0>(f);
-    if(EAGINE_UNLIKELY(!fre)) {
+    if(!fre) [[unlikely]] {
         switch(std::get<1>(f)) {
             case 0:
                 return static_cast<F>(0);

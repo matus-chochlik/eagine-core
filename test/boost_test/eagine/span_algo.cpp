@@ -433,7 +433,7 @@ template <typename T>
 void test_range_find_pos_1(eagine::span<T> rng1, eagine::span<T> rng2) {
     using namespace eagine;
 
-    if(auto f = find_position(rng1, rng2)) {
+    if(const auto f{find_position(rng1, rng2)}) {
         span_size_t p = f.value();
         span_size_t n = rng2.size();
 
@@ -505,7 +505,7 @@ template <typename T>
 void test_range_rfind_pos_1(eagine::span<T> rng1, eagine::span<T> rng2) {
     using namespace eagine;
 
-    if(auto f = reverse_find_position(rng1, rng2)) {
+    if(const auto f{reverse_find_position(rng1, rng2)}) {
         span_size_t p = f.value();
         span_size_t n = rng2.size();
 

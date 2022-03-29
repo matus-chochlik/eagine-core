@@ -11,7 +11,6 @@
 
 #include "../flat_map.hpp"
 #include "../logging/logger.hpp"
-#include "../maybe_unused.hpp"
 #include "backend.hpp"
 #include <atomic>
 #include <map>

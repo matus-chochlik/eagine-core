@@ -17,12 +17,16 @@ set(HEADERS
     eagine/biteset.hpp
     eagine/bitfield.hpp
     eagine/bool_aggregate.hpp
-    eagine/branch_predict.hpp
     eagine/buffer_data.hpp
-    eagine/buffer_size.hpp
     eagine/build_info.hpp
     eagine/byteset.hpp
     eagine/callable_ref.hpp
+    eagine/c_api/adapted_function.hpp
+    eagine/c_api/api_traits.hpp
+    eagine/c_api/constant.hpp
+    eagine/c_api/function.hpp
+    eagine/c_api/parameter_map.hpp
+    eagine/c_api/result.hpp
     eagine/c_api_wrap.hpp
     eagine/cleanup_group.hpp
     eagine/compare.hpp
@@ -31,6 +35,7 @@ set(HEADERS
     eagine/config/basic.hpp
     eagine/config/platform.hpp
     eagine/count.hpp
+    eagine/c_str.hpp
     eagine/data_baking.hpp
     eagine/diagnostic.hpp
     eagine/double_buffer.hpp
@@ -43,6 +48,7 @@ set(HEADERS
     eagine/enum_map.hpp
     eagine/enum_span.hpp
     eagine/environment.hpp
+    eagine/extractable.hpp
     eagine/extract.hpp
     eagine/file_contents.hpp
     eagine/file_magic_number.hpp
@@ -118,7 +124,6 @@ set(HEADERS
     eagine/math/tmat.hpp
     eagine/math/tvec.hpp
     eagine/math/vector.hpp
-    eagine/maybe_unused.hpp
     eagine/mem_func_const.hpp
     eagine/memoized.hpp
     eagine/memory/address.hpp
@@ -127,7 +132,6 @@ set(HEADERS
     eagine/memory/align.hpp
     eagine/memory/alloc_arena.hpp
     eagine/memory/block.hpp
-    eagine/memory/buffer_fwd.hpp
     eagine/memory/buffer.hpp
     eagine/memory/buffer_pool.hpp
     eagine/memory/byte_alloc.hpp
@@ -137,6 +141,7 @@ set(HEADERS
     eagine/memory/fallback_alloc.hpp
     eagine/memory/flatten_fwd.hpp
     eagine/memory/flatten.hpp
+    eagine/memory/fwd.hpp
     eagine/memory/null_alloc.hpp
     eagine/memory/null_ptr.hpp
     eagine/memory/object_storage.hpp
@@ -159,6 +164,7 @@ set(HEADERS
     eagine/nothing.hpp
     eagine/offset_ptr.hpp
     eagine/optional_ref.hpp
+    eagine/os_info.hpp
     eagine/overloaded.hpp
     eagine/overwrite_guard.hpp
     eagine/power_supply_kind.hpp
@@ -214,6 +220,7 @@ set(HEADERS
     eagine/sorting_network.hpp
     eagine/sorting_network_io.hpp
     eagine/span.hpp
+    eagine/stacktrace.hpp
     eagine/str_format.hpp
     eagine/string_algo.hpp
     eagine/string_list.hpp
@@ -303,6 +310,7 @@ set(HEADERS
     eagine/valid_if/base.hpp
     eagine/valid_if/between.hpp
     eagine/valid_if/decl.hpp
+    eagine/valid_if/filesystem.hpp
     eagine/valid_if/ge0_le1.hpp
     eagine/valid_if/ge0_lt1.hpp
     eagine/valid_if/greater_than.hpp
@@ -326,10 +334,12 @@ set(HEADERS
     eagine/valid_if/size_gt.hpp
     eagine/valid_if/within_limits.hpp
     eagine/value_tracker.hpp
+    eagine/value_tree/empty.hpp
     eagine/value_tree/filesystem.hpp
     eagine/value_tree/implementation.hpp
     eagine/value_tree/interface.hpp
     eagine/value_tree/json.hpp
+    eagine/value_tree/overlay.hpp
     eagine/value_tree/wrappers.hpp
     eagine/value_tree/yaml.hpp
     eagine/value_with_history.hpp
@@ -355,7 +365,6 @@ set(HEADERS
     eagine/watchdog.hpp
     eagine/workshop.hpp
     eagine/wrapping_container.hpp
-    eagine/zip_iterator.hpp
 )
 
 set(PUB_INLS
@@ -384,6 +393,8 @@ set(LIB_INLS
     eagine/logging/root_logger.inl
     eagine/main_ctx.inl
     eagine/main.inl
+    eagine/memory/shared_alloc.inl
+    eagine/os_info.inl
     eagine/random_identifier.inl
     eagine/resources.inl
     eagine/str_format.inl
@@ -392,8 +403,10 @@ set(LIB_INLS
     eagine/type_name.inl
     eagine/url.inl
     eagine/user_info.inl
+    eagine/value_tree/empty.inl
     eagine/value_tree/filesystem.inl
     eagine/value_tree/json.inl
+    eagine/value_tree/overlay.inl
     eagine/value_tree/wrappers.inl
     eagine/value_tree/yaml.inl
     eagine/watchdog.inl

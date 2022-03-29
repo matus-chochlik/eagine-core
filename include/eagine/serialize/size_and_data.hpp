@@ -9,7 +9,6 @@
 #ifndef EAGINE_SERIALIZE_SIZE_AND_DATA_HPP
 #define EAGINE_SERIALIZE_SIZE_AND_DATA_HPP
 
-#include "../branch_predict.hpp"
 #include "../is_within_limits.hpp"
 #include "../memory/span_algo.hpp"
 #include "../multi_byte_seq.hpp"
@@ -24,13 +23,13 @@ static inline auto store_data_with_size(
   memory::block dst) noexcept -> memory::block {
 
     const auto opt_size_cp = limit_cast<mbs::code_point>(src.size());
-    if(EAGINE_LIKELY(opt_size_cp)) {
+    if(opt_size_cp) [[likely]] {
         const auto size_cp = extract(opt_size_cp);
         const auto opt_size_len = mbs::required_sequence_length(size_cp);
-        if(EAGINE_LIKELY(opt_size_len)) {
+        if(opt_size_len) [[likely]] {
             if(extract(opt_size_len) + src.size() <= dst.size()) {
                 const auto opt_skip_len = mbs::encode_code_point(size_cp, dst);
-                if(EAGINE_LIKELY(opt_skip_len)) {
+                if(opt_skip_len) [[likely]] {
                     const auto skip_len =
                       limit_cast<span_size_t>(extract(opt_skip_len));
                     copy(src, skip(dst, skip_len));

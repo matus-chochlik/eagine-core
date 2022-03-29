@@ -39,20 +39,15 @@ struct tvec : vector<T, N, V> {
       : base{base::from(static_cast<const T*>(d), N)} {}
 
     /// @brief Construction from coordinates.
-    template <
-      typename... P,
-      typename = std::enable_if_t<
-        (sizeof...(P) == N) && all_are_convertible_to<T, P...>::value>>
+    template <typename... P>
     constexpr tvec(P&&... p) noexcept
+      requires((sizeof...(P) == N) && all_are_convertible_to<T, P...>::value)
       : base{base::make(std::forward<P>(p)...)} {}
 
     /// @brief Construction from vector of different dimensionality.
-    template <
-      typename P,
-      int M,
-      bool W,
-      typename = std::enable_if_t<!std::is_same_v<P, T> || !(M == N)>>
+    template <typename P, int M, bool W>
     constexpr tvec(const vector<P, M, W>& v) noexcept
+      requires(!std::is_same_v<P, T> || !(M == N))
       : base{base::from(v)} {}
 
     /// @brief Construction from vector of different dimensionality.
@@ -61,15 +56,10 @@ struct tvec : vector<T, N, V> {
       : base{base::from(v, d)} {}
 
     /// @brief Construction from vector of different dimensionality.
-    template <
-      typename P,
-      int M,
-      bool W,
-      typename... R,
-      typename = std::enable_if_t<
-        (sizeof...(R) > 1) && (M + sizeof...(R) == N) &&
-        all_are_convertible_to<T, R...>::value>>
-    constexpr tvec(const vector<P, M, W>& v, R&&... r) noexcept
+    template <typename P, int M, bool W, typename... R>
+    constexpr tvec(const vector<P, M, W>& v, R&&... r) noexcept requires(
+      (sizeof...(R) > 1) && (M + sizeof...(R) == N) &&
+      all_are_convertible_to<T, R...>::value)
       : base{base::from(v, vector<T, N - M, W>::make(std::forward<R>(r)...))} {}
 
     /// @brief Construction from a pair of vectors of different dimensionality.

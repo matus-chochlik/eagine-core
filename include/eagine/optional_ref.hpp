@@ -78,8 +78,8 @@ public:
     /// @brief Returns the stored value if valid or @p fallback otherwise.
     /// @see is_valid
     template <typename U>
-    auto value_or(U&& fallback) const noexcept
-      -> std::enable_if_t<std::is_convertible_v<U, T>, T> {
+    auto value_or(U&& fallback) const noexcept -> T
+      requires(std::is_convertible_v<U, T>) {
         if(is_valid()) {
             return *_ptr;
         }
@@ -114,34 +114,21 @@ private:
     T* _ptr{nullptr};
 };
 //------------------------------------------------------------------------------
+template <typename T>
+struct extract_traits;
+
+template <typename T>
+struct extract_traits<optional_reference_wrapper<T>> {
+    using value_type = T;
+    using result_type = T&;
+    using const_result_type = std::add_const_t<T>&;
+};
+
 /// @brief Overload of extract for optional_reference_wrapper.
 /// @ingroup valid_if
 template <typename T>
 static inline auto extract(optional_reference_wrapper<T> ref) noexcept -> T& {
     return ref.get();
-}
-//------------------------------------------------------------------------------
-/// @brief Overload of extract_or for optional_reference_wrapper.
-/// @ingroup valid_if
-template <typename T>
-static inline auto extract_or(
-  optional_reference_wrapper<T> ref,
-  T& fallback) noexcept -> T& {
-    if(ref) {
-        return ref.get();
-    }
-    return fallback;
-}
-//------------------------------------------------------------------------------
-/// @brief Overload of extract_or for optional_reference_wrapper.
-/// @ingroup valid_if
-template <typename T, typename F>
-static inline auto extract_or(optional_reference_wrapper<T> ref, F&& fallback)
-  -> std::enable_if_t<std::is_convertible_v<F, T>, T> {
-    if(ref) {
-        return ref.get();
-    }
-    return T{std::forward<F>(fallback)}; // NOLINT(hicpp-no-array-decay)
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

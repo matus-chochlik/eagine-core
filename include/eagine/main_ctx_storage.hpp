@@ -12,13 +12,16 @@
 #include "build_info.hpp"
 #include "compiler_info.hpp"
 #include "compression.hpp"
+#include "console/console.hpp"
 #include "logging/root_logger.hpp"
+#include "memory/default_alloc.hpp"
 #include "process.hpp"
 #include "program_args.hpp"
 #include "progress/root_activity.hpp"
 #include "system_info.hpp"
 #include "user_info.hpp"
 #include "watchdog.hpp"
+#include <filesystem>
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -31,6 +34,7 @@ public:
       const char** argv,
       main_ctx_options& options) noexcept
       : _args{argc, argv}
+      , _console{options.app_id, _args, options.console_opts}
       , _log_root{options.app_id, _args, options.logger_opts}
       , _progress_root{*this}
       , _bld_info{build_info::query()}
@@ -64,8 +68,17 @@ public:
         return _instance_id;
     }
 
+    auto default_allocator() const noexcept
+      -> const memory::shared_byte_allocator& final {
+        return _default_alloc;
+    }
+
     auto args() const noexcept -> const program_args& final {
         return _args;
+    }
+
+    auto cio() noexcept -> const console& final {
+        return _console;
     }
 
     auto log() noexcept -> const logger& final {
@@ -146,7 +159,10 @@ public:
 
 private:
     const process_instance_id_t _instance_id{make_process_instance_id()};
+    memory::shared_byte_allocator _default_alloc{
+      memory::default_byte_allocator()};
     program_args _args;
+    console _console;
     root_logger _log_root;
     root_activity _progress_root;
     compiler_info _cmplr_info;
@@ -155,7 +171,7 @@ private:
     application_config _app_config;
     system_info _sys_info;
     user_info _usr_info;
-    memory::buffer _scratch_space{};
+    memory::buffer _scratch_space{_default_alloc};
     data_compressor _compressor{};
     std::string _exe_path{};
     std::string _app_name{};

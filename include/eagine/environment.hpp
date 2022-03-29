@@ -9,7 +9,7 @@
 #ifndef EAGINE_ENVIRONMENT_HPP
 #define EAGINE_ENVIRONMENT_HPP
 
-#include "string_span.hpp"
+#include "c_str.hpp"
 #include "valid_if/decl.hpp"
 #include <cstdlib>
 

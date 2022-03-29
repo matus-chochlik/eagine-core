@@ -14,7 +14,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 template <typename... Params, typename... Args>
 static constexpr auto args_within_limits_of(const Args&... args) noexcept
-  -> std::enable_if_t<sizeof...(Params) == sizeof...(Args), bool> {
+  -> bool requires(sizeof...(Params) == sizeof...(Args)) {
     return (... && is_within_limits<std::decay_t<Params>>(args));
 }
 //------------------------------------------------------------------------------

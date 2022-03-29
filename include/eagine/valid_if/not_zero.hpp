@@ -39,7 +39,8 @@ struct valid_if_nz_policy {
 /// @see valid_if_not
 /// @see nonzero_t
 template <typename T>
-using valid_if_not_zero = valid_if<T, valid_if_nz_policy<T>>;
+using valid_if_not_zero =
+  valid_if<T, valid_if_nz_policy<std::remove_reference_t<T>>>;
 
 /// @brief Alias for valid_if_not_zero.
 /// @ingroup valid_if

@@ -88,18 +88,16 @@ public:
       , _func{reinterpret_cast<_func_t>(func)} {}
 
     /// @brief Construction a reference to object with a call operator.
-    template <
-      typename C,
-      typename = std::enable_if_t<!std::is_same_v<C, basic_callable_ref>>>
+    template <typename C>
     basic_callable_ref(construct_from_t, C& obj) noexcept
+      requires(!std::is_same_v<C, basic_callable_ref>)
       : _data{static_cast<void*>(&obj)}
       , _func{reinterpret_cast<_func_t>(&_cls_fn_call_op<C>)} {}
 
     /// @brief Construction a const reference to object with a call operator.
-    template <
-      typename C,
-      typename = std::enable_if_t<!std::is_same_v<C, basic_callable_ref>>>
+    template <typename C>
     basic_callable_ref(construct_from_t, const C& obj) noexcept
+      requires(!std::is_same_v<C, basic_callable_ref>)
       : _data{static_cast<void*>(const_cast<C*>(&obj))}
       , _func{reinterpret_cast<_func_t>(&_cls_fn_call_op_c<C>)} {}
 
@@ -145,8 +143,8 @@ public:
         if(_data == nullptr) {
             return (reinterpret_cast<_func_pt>(_func))(std::forward<A>(a)...);
         } else {
-            return (
-              reinterpret_cast<_func_vpt>(_func))(_data, std::forward<A>(a)...);
+            return (reinterpret_cast<_func_vpt>(_func))(
+              _data, std::forward<A>(a)...);
         }
     }
 

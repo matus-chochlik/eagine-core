@@ -107,6 +107,24 @@ Control {
 					compilerVersionPatch)
 				Layout.fillWidth: true
 			}
+
+			Label {
+				text: "OS name"
+				font.bold: true
+			}
+			Label {
+				text: osName ? osName : "-"
+				Layout.fillWidth: true
+			}
+
+			Label {
+				text: "OS code name"
+				font.bold: true
+			}
+			Label {
+				text: osCodeName ? osCodeName : "-"
+				Layout.fillWidth: true
+			}
 		}
 	}
 }

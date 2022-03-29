@@ -5,10 +5,12 @@
 #
 configure_file(eagine/config/site.hpp.in eagine/config/site.hpp)
 configure_file(eagine/config/build_info.hpp.in eagine/config/build_info.hpp @ONLY)
+configure_file(eagine/config/os_info.hpp.in eagine/config/os_info.hpp @ONLY)
 configure_file(eagine/config/git_info.hpp.in eagine/config/git_info.hpp @ONLY)
 set(GEN_HPPS
 	eagine/config/site.hpp
 	eagine/config/build_info.hpp 
+	eagine/config/os_info.hpp
 	eagine/config/git_info.hpp
 )
 include(./Sources.cmake)

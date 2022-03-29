@@ -51,20 +51,16 @@ public:
         return len;
     }
 
-    template <
-      typename R,
-      typename = std::enable_if_t<
-        !std::is_array_v<R> && std::is_convertible_v<R, P> &&
-        std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>>>
-    consteval basic_string_span(immediate_function_t, R addr) noexcept
+    template <typename R>
+    consteval basic_string_span(immediate_function_t, R addr) noexcept requires(
+      !std::is_array_v<R> && std::is_convertible_v<R, P> &&
+      std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>)
       : base{addr, -static_cast<S>(_ce_strlen(addr))} {}
 #endif
-    template <
-      typename R,
-      typename = std::enable_if_t<
-        !std::is_array_v<R> && std::is_convertible_v<R, P> &&
-        std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>>>
-    constexpr explicit basic_string_span(R addr) noexcept
+    template <typename R>
+    constexpr explicit basic_string_span(R addr) noexcept requires(
+      !std::is_array_v<R> && std::is_convertible_v<R, P> &&
+      std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>)
       : base{addr, -limit_cast<S>(std::strlen(addr))} {}
 
     /// @brief Construction from C string literal
@@ -87,29 +83,37 @@ public:
     ///
     /// The container passed as argument should have @c data and @c size
     /// member functions with the same semantics as std::string does.
-    template <
-      typename Str,
-      typename = std::enable_if_t<
-        memory::has_span_data_member_v<Str, C> &&
-        memory::has_span_size_member_v<Str>>>
+    template <typename Str>
     constexpr basic_string_span(Str& str) noexcept
+      requires(memory::has_span_data_member_v<Str, C>&&
+                 memory::has_span_size_member_v<Str>)
       : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
 
     /// @brief Construction from compatible container const reference.
     ///
     /// The container passed as argument should have @c data and @c size
     /// member functions with the same semantics as std::string does.
-    template <
-      typename Str,
-      typename = std::enable_if_t<
-        memory::has_span_data_member_v<Str, C> &&
-        memory::has_span_size_member_v<Str>>>
+    template <typename Str>
     constexpr basic_string_span(const Str& str) noexcept
+      requires(memory::has_span_data_member_v<Str, C>&&
+                 memory::has_span_size_member_v<Str>)
       : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
 
     using base::data;
     using base::empty;
     using base::size;
+
+    friend constexpr auto operator==(
+      basic_string_span l,
+      basic_string_span r) noexcept -> bool {
+        return are_equal(l, r);
+    }
+
+    friend constexpr auto operator!=(
+      basic_string_span l,
+      basic_string_span r) noexcept -> bool {
+        return !are_equal(l, r);
+    }
 
     /// @brief Named conversion to the corresponding standard string view.
     constexpr auto std_view() const noexcept -> std_view_type {
@@ -228,60 +232,6 @@ struct basic_str_view_less : basic_view_less<Spn> {
 /// @brief Comparator template for standard string - string_view comparisons.
 /// @ingroup string_utils
 using str_view_less = basic_str_view_less<std::string, string_view>;
-//------------------------------------------------------------------------------
-// c_str
-//------------------------------------------------------------------------------
-/// @brief Helper template for getting zero-terminated strings from string spans.
-/// @ingroup string_utils
-/// @see c_str
-///
-/// String spans can in many cases internally know if the element past the end
-/// is zero or not. There are cases where string spans or generally spans are
-/// not zero terminated. Because of this whenever a zero-terminated C-string
-/// is used, for example as an argument to a C-API call, instantiations of this
-/// template should be used the obtain a valid C-string.
-template <typename C, typename P, typename S>
-class basic_c_str {
-public:
-    using string_type = std::basic_string<std::remove_const_t<C>>;
-    using pointer_type = P;
-
-    constexpr basic_c_str(const basic_string_span<C, P, S> s)
-      : _span{s.is_zero_terminated() ? s : basic_string_span<C, P, S>{}}
-      , _str{s.is_zero_terminated() ? string_type{} : s.to_string()} {}
-
-    /// @brief Return a zero terminated C-string as pointer_type.
-    /// @see view
-    constexpr auto c_str() const noexcept -> pointer_type {
-        return _span.empty() ? _str.c_str() : _span.data();
-    }
-
-    /// @brief Implicit conversion to character pointer_type.
-    /// @see c_str
-    constexpr operator pointer_type() const noexcept {
-        return c_str();
-    }
-
-    /// @brief Returns a const view of the string.
-    /// @see c_str()
-    constexpr auto view() const noexcept -> basic_string_span<C, P, S> {
-        return _span.empty() ? basic_string_span<C, P, S>{_str} : _span;
-    }
-
-private:
-    const basic_string_span<C, P, S> _span{};
-    const string_type _str{};
-};
-//------------------------------------------------------------------------------
-/// @brief Functions that construct a basic_c_str from a basic_string_span.
-/// @ingroup string_utils
-template <typename C, typename P, typename S>
-static constexpr auto
-c_str(const memory::basic_span<C, P, S> s) -> std::enable_if_t<
-  std::is_convertible_v<memory::basic_span<C, P, S>, basic_string_span<C, P, S>>,
-  basic_c_str<C, P, S>> {
-    return {s};
-}
 //------------------------------------------------------------------------------
 template <typename C, typename T, typename A, typename Transform>
 static inline auto make_span_putter(

@@ -12,6 +12,7 @@
 #include "fputils.hpp"
 #include "read_backend.hpp"
 #include "write_backend.hpp"
+#include <concepts>
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -41,7 +42,7 @@ public:
         for(const auto& val : values) {
             errors |= _write_one(val, type_identity<T>{});
             errors |= do_sink(';');
-            if(errors) {
+            if(errors) [[unlikely]] {
                 break;
             }
             ++done;
@@ -111,9 +112,8 @@ private:
         return do_sink("U");
     }
 
-    template <typename I>
-    auto _write_one(I value, const type_identity<I>) noexcept
-      -> std::enable_if_t<std::is_integral_v<I> && std::is_unsigned_v<I>, result> {
+    template <std::unsigned_integral I>
+    auto _write_one(I value, const type_identity<I>) noexcept -> result {
         result errors{};
         const auto encode = [&]() {
             // clang-format off
@@ -131,9 +131,8 @@ private:
         return errors;
     }
 
-    template <typename I>
-    auto _write_one(I value, const type_identity<I>) noexcept
-      -> std::enable_if_t<std::is_integral_v<I> && std::is_signed_v<I>, result> {
+    template <std::signed_integral I>
+    auto _write_one(I value, const type_identity<I>) noexcept -> result {
         result errors = do_sink(value < 0 ? '-' : '+');
         using U = std::make_unsigned_t<I>;
         errors |= _write_one(
@@ -143,7 +142,7 @@ private:
 
     template <typename F>
     auto _write_one(const F value, const type_identity<F> tid) noexcept
-      -> std::enable_if_t<std::is_floating_point_v<F>, result> {
+      -> result requires(std::is_floating_point_v<F>) {
         const auto [f, e] = fputils::decompose(value, tid);
         result errors =
           _write_one(f, type_identity<fputils::decompose_fraction_t<F>>{});
@@ -202,7 +201,7 @@ public:
         result errors{};
         for(T& val : values) { // NOLINT(hicpp-vararg)
             errors |= _read_one(val, ';');
-            if(errors) {
+            if(errors) [[unlikely]] {
                 break;
             }
             ++done;
@@ -226,7 +225,7 @@ public:
 
     auto begin_struct(span_size_t& count) noexcept -> result final {
         result errors = require('{');
-        if(!errors) {
+        if(!errors) [[likely]] {
             errors |= _read_one(count, '|');
         }
         return errors;
@@ -234,7 +233,7 @@ public:
 
     auto begin_member(const string_view name) noexcept -> result final {
         result errors = require(name);
-        if(!errors) {
+        if(!errors) [[likely]] {
             errors |= require(':');
         }
         return errors;
@@ -250,7 +249,7 @@ public:
 
     auto begin_list(span_size_t& count) noexcept -> result final {
         result errors = require('[');
-        if(!errors) {
+        if(!errors) [[likely]] {
             errors |= _read_one(count, '|');
         }
         return errors;
@@ -285,12 +284,12 @@ private:
         return require(delimiter);
     }
 
-    template <typename I>
-    auto _read_one(I& value, const char delimiter) noexcept
-      -> std::enable_if_t<std::is_integral_v<I> && std::is_unsigned_v<I>, result> {
+    template <std::unsigned_integral I>
+    auto _read_one(I& value, const char delimiter) noexcept -> result {
         value = I(0);
         result errors{};
-        if(auto src{this->string_before(delimiter, 48)}) {
+        auto src{this->string_before(delimiter, 48)};
+        if(src) [[likely]] {
             const auto skip_len = src.size() + 1;
             unsigned shift = 0U;
             while(src) {
@@ -316,17 +315,17 @@ private:
         return errors;
     }
 
-    template <typename I>
-    auto _read_one(I& value, const char delimiter) noexcept
-      -> std::enable_if_t<std::is_integral_v<I> && std::is_signed_v<I>, result> {
+    template <std::signed_integral I>
+    auto _read_one(I& value, const char delimiter) noexcept -> result {
         using U = std::make_unsigned_t<I>;
         const char sign = extract_or(top_char(), '\0');
         result errors{};
-        if(EAGINE_LIKELY((sign == '+') || (sign == '-'))) {
+        if((sign == '+') || (sign == '-')) [[likely]] {
             pop(1);
             U temp{};
             errors |= _read_one(temp, delimiter);
-            if(const auto conv{convert_if_fits<I>(temp)}) {
+            const auto conv{convert_if_fits<I>(temp)};
+            if(conv) [[likely]] {
                 value = (sign == '-') ? -extract(conv) : extract(conv);
             } else {
                 errors |= deserialization_error_code::invalid_format;
@@ -337,16 +336,15 @@ private:
         return errors;
     }
 
-    template <typename F>
-    auto _read_one(F& value, const char delimiter) noexcept
-      -> std::enable_if_t<std::is_floating_point_v<F>, result> {
+    template <std::floating_point F>
+    auto _read_one(F& value, const char delimiter) noexcept -> result {
         fputils::decompose_fraction_t<F> f{};
 
         result errors = _read_one(f, '`');
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             fputils::decompose_exponent_t<F> e{};
             errors |= _read_one(e, delimiter);
-            if(EAGINE_LIKELY(!errors)) {
+            if(!errors) [[likely]] {
                 value = fputils::compose({f, e}, type_identity<F>{});
             }
         }
@@ -355,7 +353,8 @@ private:
 
     auto _read_one(identifier& value, const char delimiter) noexcept -> result {
         result errors{};
-        if(auto src{this->string_before(delimiter, 32)}) {
+        const auto src{this->string_before(delimiter, 32)};
+        if(src) [[likely]] {
             value = identifier(src);
             pop(src.size() + 1);
         } else {
@@ -368,7 +367,8 @@ private:
       -> result {
         result errors{};
         const auto max = decl_name_storage::max_length + 1;
-        if(auto src{this->string_before(delimiter, max)}) {
+        const auto src{this->string_before(delimiter, max)};
+        if(src) [[likely]] {
             value.assign(src);
             pop(src.size() + 1);
         } else {

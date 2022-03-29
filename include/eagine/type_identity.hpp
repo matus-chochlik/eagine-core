@@ -21,10 +21,9 @@ struct type_identity {
     using type = T;
 
     /// @brief Call operator returning a copy of its argument unchanged.
-    template <
-      typename X,
-      typename = std::enable_if_t<std::is_same_v<T, X> && !std::is_array_v<X>>>
-    constexpr auto operator()(const X v) const -> X {
+    template <typename X>
+    constexpr auto operator()(const X v) const -> X
+      requires(std::is_same_v<T, X> && !std::is_array_v<X>) {
         return v;
     }
 };

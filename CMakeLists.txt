@@ -22,6 +22,7 @@ find_package(EAGineZLIB)
 find_package(EAGineBoostSpirit)
 find_package(EAGineStacktrace)
 
+include(EAGineOSInfo)
 include(EAGineGitInfo)
 
 add_subdirectory(submodules)

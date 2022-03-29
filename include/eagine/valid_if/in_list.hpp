@@ -17,10 +17,10 @@ namespace eagine {
 /// @ingroup valid_if
 template <typename T, typename Range>
 struct valid_if_in_list_policy {
-    Range _choices = {};
+    Range _choices;
 
-    valid_if_in_list_policy(const Range& choices)
-      : _choices(choices) {}
+    valid_if_in_list_policy(Range choices) noexcept
+      : _choices{std::move(choices)} {}
 
     /// @brief Indicates value validity, true if value is one of the specified choices.
     auto operator()(const T& value) const noexcept -> bool {
@@ -56,7 +56,8 @@ struct valid_if_in_list_policy {
 /// @brief Specialization of valid_if, for values valid in Range.
 /// @ingroup valid_if
 template <typename T, typename Range>
-using valid_if_in_list = valid_if<T, valid_if_in_list_policy<T, Range>>;
+using valid_if_in_list =
+  valid_if<T, valid_if_in_list_policy<std::remove_reference_t<T>, Range>>;
 
 } // namespace eagine
 

@@ -49,19 +49,15 @@ public:
       : _v{std::move(v)} {}
 
     /// @brief Converting constructor from another tagged quantity.
-    template <
-      typename X,
-      typename UX,
-      typename = std::enable_if_t<
-        std::is_convertible_v<X, T> && units::is_convertible_v<UX, U>>>
+    template <typename X, typename UX>
     constexpr tagged_quantity(const tagged_quantity<X, UX>& tq) noexcept
+      requires(std::is_convertible_v<X, T>&& units::is_convertible_v<UX, U>)
       : _v(T(units::value_conv<UX, U>()(tq._v))) {}
 
     /// @brief Conversion to a quantity in another unit type.
-    template <
-      typename UX,
-      typename = std::enable_if_t<units::is_convertible_v<U, UX>>>
-    constexpr auto to() const noexcept {
+    template <typename UX>
+    constexpr auto to() const noexcept
+      requires(units::is_convertible_v<U, UX>) {
         return make_tagged_quantity<UX>(units::value_conv<U, UX>()(_v));
     }
 
@@ -76,31 +72,24 @@ public:
     }
 
     /// Brief Explicit conversion of the value to the specified.
-    template <
-      typename X,
-      typename = std::enable_if_t<std::is_convertible_v<T, X>>>
-    explicit constexpr operator X() const noexcept {
+    template <typename X>
+    explicit constexpr operator X() const noexcept
+      requires(std::is_convertible_v<T, X>) {
         return X(_v);
     }
 
     /// @brief Addition of another tagged quantity.
-    template <
-      typename X,
-      typename UX,
-      typename = std::enable_if_t<
-        std::is_convertible_v<X, T> && units::is_convertible_v<UX, U>>>
-    auto operator+=(const tagged_quantity<X, UX>& q) noexcept -> auto& {
+    template <typename X, typename UX>
+    auto operator+=(const tagged_quantity<X, UX>& q) noexcept -> auto& requires(
+      std::is_convertible_v<X, T>&& units::is_convertible_v<UX, U>) {
         _v += T(units::value_conv<UX, U>()(q._v));
         return *this;
     }
 
     /// @brief Subtraction of another tagged quantity.
-    template <
-      typename X,
-      typename UX,
-      typename = std::enable_if_t<
-        std::is_convertible_v<X, T> && units::is_convertible_v<UX, U>>>
-    auto operator-=(const tagged_quantity<X, UX>& q) noexcept -> auto& {
+    template <typename X, typename UX>
+    auto operator-=(const tagged_quantity<X, UX>& q) noexcept -> auto& requires(
+      std::is_convertible_v<X, T>&& units::is_convertible_v<UX, U>) {
         _v -= T(units::value_conv<UX, U>()(q._v));
         return *this;
     }
@@ -147,12 +136,9 @@ static constexpr auto make_tagged_quantity(const T& value)
     return tagged_quantity<T, U>{value};
 }
 //------------------------------------------------------------------------------
-template <
-  typename T,
-  typename U,
-  typename = std::enable_if_t<
-    !is_tagged_quantity_v<T> && !units::is_unit_v<T> && units::is_unit_v<U>>>
-static constexpr auto operator*(const T& v, U) {
+template <typename T, typename U>
+static constexpr auto operator*(const T& v, U) requires(
+  !is_tagged_quantity_v<T> && !units::is_unit_v<T> && units::is_unit_v<U>) {
     return make_tagged_quantity<U>(v);
 }
 //------------------------------------------------------------------------------
@@ -185,7 +171,7 @@ template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator==(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
-  -> std::enable_if_t<units::is_convertible_v<U2, U1>, bool> {
+  -> bool requires(units::is_convertible_v<U2, U1>) {
     return value(a) == units::value_conv<U2, U1>()(value(b));
 }
 //------------------------------------------------------------------------------
@@ -196,7 +182,7 @@ template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator!=(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
-  -> std::enable_if_t<units::is_convertible_v<U2, U1>, bool> {
+  -> bool requires(units::is_convertible_v<U2, U1>) {
     return value(a) != units::value_conv<U2, U1>()(value(b));
 }
 //------------------------------------------------------------------------------
@@ -207,7 +193,7 @@ template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator<(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
-  -> std::enable_if_t<units::is_convertible_v<U2, U1>, bool> {
+  -> bool requires(units::is_convertible_v<U2, U1>) {
     return value(a) < units::value_conv<U2, U1>()(value(b));
 }
 //------------------------------------------------------------------------------
@@ -218,7 +204,7 @@ template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator<=(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
-  -> std::enable_if_t<units::is_convertible_v<U2, U1>, bool> {
+  -> bool requires(units::is_convertible_v<U2, U1>) {
     return value(a) <= units::value_conv<U2, U1>()(value(b));
 }
 //------------------------------------------------------------------------------
@@ -229,7 +215,7 @@ template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator>(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
-  -> std::enable_if_t<units::is_convertible_v<U2, U1>, bool> {
+  -> bool requires(units::is_convertible_v<U2, U1>) {
     return value(a) > units::value_conv<U2, U1>()(value(b));
 }
 //------------------------------------------------------------------------------
@@ -240,7 +226,7 @@ template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator>=(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
-  -> std::enable_if_t<units::is_convertible_v<U2, U1>, bool> {
+  -> bool requires(units::is_convertible_v<U2, U1>) {
     return value(a) >= units::value_conv<U2, U1>()(value(b));
 }
 //------------------------------------------------------------------------------
@@ -304,12 +290,9 @@ constexpr auto operator*(
 /// @brief Multiplication by constant operator.
 /// @ingroup units
 /// @relates tagged_quantity
-template <
-  typename T1,
-  typename U,
-  typename T2,
-  typename = std::enable_if_t<!units::is_unit_v<T2> && !is_tagged_quantity_v<T2>>>
-constexpr auto operator*(const tagged_quantity<T1, U>& a, const T2& c) {
+template <typename T1, typename U, typename T2>
+constexpr auto operator*(const tagged_quantity<T1, U>& a, const T2& c) requires(
+  !units::is_unit_v<T2> && !is_tagged_quantity_v<T2>) {
     return make_tagged_quantity<U>(value(a) * c);
 }
 //------------------------------------------------------------------------------
@@ -324,12 +307,9 @@ constexpr auto operator*(const T1& c, const tagged_quantity<T2, U>& a) {
 /// @brief Multiplication by unit operator.
 /// @ingroup units
 /// @relates tagged_quantity
-template <
-  typename T1,
-  typename U1,
-  typename U2,
-  typename = std::enable_if_t<units::is_unit_v<U2>>>
-constexpr auto operator*(const tagged_quantity<T1, U1>& a, U2) {
+template <typename T1, typename U1, typename U2>
+constexpr auto operator*(const tagged_quantity<T1, U1>& a, U2) requires(
+  units::is_unit_v<U2>) {
     return a * make_tagged_quantity<U2>(1);
 }
 //------------------------------------------------------------------------------
@@ -351,24 +331,18 @@ constexpr auto operator/(
 /// @brief Division by constant operator
 /// @ingroup units
 /// @relates tagged_quantity
-template <
-  typename T1,
-  typename U,
-  typename T2,
-  typename = std::enable_if_t<!units::is_unit_v<T2>>>
-constexpr auto operator/(const tagged_quantity<T1, U>& a, const T2& c) {
+template <typename T1, typename U, typename T2>
+constexpr auto operator/(const tagged_quantity<T1, U>& a, const T2& c) requires(
+  !units::is_unit_v<T2>) {
     return make_tagged_quantity<U>((1.F * value(a)) / c);
 }
 //------------------------------------------------------------------------------
 /// @brief Constant division operator
 /// @ingroup units
 /// @relates tagged_quantity
-template <
-  typename T1,
-  typename U1,
-  typename U2,
-  typename = std::enable_if_t<units::is_unit_v<U2>>>
-constexpr auto operator/(const tagged_quantity<T1, U1>& a, U2) {
+template <typename T1, typename U1, typename U2>
+constexpr auto operator/(const tagged_quantity<T1, U1>& a, U2) requires(
+  units::is_unit_v<U2>) {
     return a / make_tagged_quantity<U2>(1);
 }
 //------------------------------------------------------------------------------

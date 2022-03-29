@@ -5,11 +5,41 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/c_str.hpp>
 #include <eagine/memory/span_algo.hpp>
-#include <eagine/string_span.hpp>
 #include <cstdlib>
 
 namespace eagine {
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+auto substitute_variable_into(
+  std::string& dst,
+  string_view src,
+  const string_view name,
+  const string_view value,
+  const variable_substitution_options opts) noexcept -> std::string& {
+    do {
+        if(const auto found{find_position(src, name)}) {
+            const auto npos{extract(found)};
+            if(
+              (npos >= 2) && (npos + name.size() < src.size()) &&
+              (src[npos - 1] == opts.opening_bracket) &&
+              (src[npos - 2] == opts.leading_sign) &&
+              (src[npos + name.size()] == opts.closing_bracket)) {
+                append_to(dst, head(src, npos - 2));
+                append_to(dst, value);
+                src = skip(src, npos + name.size() + 1);
+            } else {
+                append_to(dst, head(src, npos + name.size()));
+                src = skip(src, npos + name.size());
+            }
+        } else {
+            append_to(dst, src);
+            src.reset();
+        }
+    } while(!src.empty());
+    return dst;
+}
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto substitute_variables_into(
@@ -72,7 +102,7 @@ auto substitute_variables(
   const std::string& str,
   const span<const std::string> strings,
   const variable_substitution_options opts) noexcept -> std::string {
-    auto translate_func =
+    const auto translate_func =
       [&strings](string_view key) -> optionally_valid<string_view> {
         char* e = nullptr; // NOLINT(hicpp-vararg)
         const span_size_t idx = span_size(std::strtol(c_str(key), &e, 10));
@@ -89,7 +119,7 @@ auto substitute_variables(
   const std::string& str,
   const std::map<std::string, std::string, str_view_less>& dictionary,
   const variable_substitution_options opts) noexcept -> std::string {
-    auto translate_func =
+    const auto translate_func =
       [&dictionary](string_view key) -> optionally_valid<string_view> {
         if(!dictionary.empty()) {
             auto i = dictionary.find(key);

@@ -34,7 +34,7 @@ public:
     void announce_shutdown() noexcept;
 
 private:
-    std::shared_ptr<process_watchdog_impl> _pimpl;
+    std::shared_ptr<process_watchdog_impl> _pimpl{};
     auto _impl() noexcept -> process_watchdog_impl*;
 };
 

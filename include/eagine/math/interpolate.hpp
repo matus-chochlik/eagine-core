@@ -22,7 +22,10 @@ namespace eagine::math {
 /// @ingroup math
 /// @see lerp
 template <typename T, typename C>
-static inline auto interpolate_linear(const T& a, const T& b, const C coef) {
+static constexpr auto interpolate_linear(
+  const T& a,
+  const T& b,
+  const C coef) noexcept {
     return T((1 - coef) * a + coef * b);
 }
 //------------------------------------------------------------------------------
@@ -30,7 +33,7 @@ static inline auto interpolate_linear(const T& a, const T& b, const C coef) {
 /// @ingroup math
 /// @see interpolate_linear
 template <typename T, typename C>
-static inline auto lerp(const T& a, const T& b, const C coef) {
+static constexpr auto lerp(const T& a, const T& b, const C coef) noexcept {
     return interpolate_linear(a, b, coef);
 }
 //------------------------------------------------------------------------------
@@ -39,7 +42,7 @@ static inline auto lerp(const T& a, const T& b, const C coef) {
 /// @see interpolate_linear
 /// @see sine_sigmoid01
 template <typename T, typename C>
-static inline auto smooth_lerp(const T& a, const T& b, const C coef) {
+static constexpr auto smooth_lerp(const T& a, const T& b, const C coef) noexcept {
     return lerp(a, b, sine_sigmoid01(coef));
 }
 //------------------------------------------------------------------------------
@@ -47,7 +50,7 @@ static inline auto smooth_lerp(const T& a, const T& b, const C coef) {
 /// @ingroup math
 /// @see smooth_lerp
 template <typename T, typename C>
-static inline auto smooth_oscillate(const T& a, const C coef) {
+static constexpr auto smooth_oscillate(const T& a, const C coef) noexcept {
     return smooth_lerp(-a, a, coef);
 }
 //------------------------------------------------------------------------------

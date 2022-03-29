@@ -150,10 +150,8 @@ public:
         _clrs.reserve(std_size(n));
     }
 
-    template <
-      typename T,
-      typename = std::enable_if_t<std::is_invocable_v<T, Params...>>>
-    auto add(T x) -> auto& {
+    template <typename T>
+    auto add(T x) -> auto& requires(std::is_invocable_v<T, Params...>) {
         using A = std::remove_const_t<T>;
         auto& result = base::template emplace<A>(std::move(x));
         _clrs.push_back(&_call<A>);

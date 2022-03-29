@@ -5,9 +5,11 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#ifndef EAGINE_MAYBE_UNUSED_HPP
-#define EAGINE_MAYBE_UNUSED_HPP
 
-#define EAGINE_MAYBE_UNUSED(EXPR) (void)(EXPR)
-
-#endif // EAGINE_MAYBE_UNUSED_HPP
+// clang-format off
+#include "prologue.inl"
+#include <eagine/memory/shared_alloc.hpp>
+#include "implement.inl"
+#include <eagine/value_tree/empty.hpp>
+#include "epilogue.inl"
+// clang-format on

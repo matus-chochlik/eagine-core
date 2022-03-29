@@ -46,7 +46,7 @@ public:
 
     /// @brief Do potentially expensive pre-initialization and caching.
     auto preinitialize() noexcept -> application_config& {
-        EAGINE_MAYBE_UNUSED(_impl());
+        [[maybe_unused]] auto unused{_impl()};
         return *this;
     }
 
@@ -66,7 +66,7 @@ public:
             return result;
         }
         if(const auto opt_val{_eval_env_var(key)}) {
-            if(auto converted{from_string<bool>(extract(opt_val))}) {
+            if(const auto converted{from_string<bool>(extract(opt_val))}) {
                 return extract(converted);
             }
         }

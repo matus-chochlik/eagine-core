@@ -9,71 +9,21 @@
 #ifndef EAGINE_INTEGER_RANGE_HPP
 #define EAGINE_INTEGER_RANGE_HPP
 
-#include "iterator.hpp"
+#include <concepts>
+#include <ranges>
 
 namespace eagine {
 
-/// @brief Integer range type template usable in range-based loops.
-/// @ingroup type_utils
-///
-/// Instances of this class can be used as the range in range-based for loops
-/// instead of using, comparing and incrementing a for loop variable.
-template <typename T>
-class integer_range {
-public:
-    /// @brief Default constructor.
-    /// @post empty()
-    /// @post begin() == end()
-    constexpr integer_range() noexcept = default;
+template <std::integral I>
+constexpr auto integer_range(I c) noexcept {
+    return std::views::iota(I(0), c);
+}
 
-    /// @brief Initialization specifying the past the end integer value.
-    /// @post size() == e
-    constexpr integer_range(const T e) noexcept
-      : _end{e} {}
-
-    /// @brief Initialization specifying the begin and past the end integer values.
-    /// @post size() == e - b
-    constexpr integer_range(const T b, const T e) noexcept
-      : _begin{b}
-      , _end{e} {}
-
-    /// @brief Iterator type alias.
-    using iterator = selfref_iterator<T>;
-
-    /// @brief Iteration count type alias.
-    using size_type = decltype(std::declval<T>() - std::declval<T>());
-
-    /// @brief Indicates that the range is empty.
-    /// @see size
-    constexpr auto empty() const noexcept {
-        return _end == _begin;
-    }
-
-    /// @brief Returns the number of iteration steps in this range.
-    /// @see empty
-    constexpr auto size() const noexcept {
-        return _end - _begin;
-    }
-
-    /// @brief Returns the iterator to the start of the range.
-    constexpr auto begin() const noexcept -> iterator {
-        return {_begin};
-    }
-
-    /// @brief Returns the iterator past the end of the range.
-    constexpr auto end() const noexcept -> iterator {
-        return {_end};
-    }
-
-private:
-    const T _begin{0};
-    const T _end{0};
-};
-
-/// @brief Deduction guide for integer_range.
-/// @ingroup type_utils
-template <typename B, typename E>
-integer_range(B, E) -> integer_range<std::common_type_t<B, E>>;
+template <std::integral B, std::integral E>
+constexpr auto integer_range(B b, E e) noexcept {
+    using I = std::common_type_t<B, E>;
+    return std::views::iota(I(b), I(e));
+}
 
 } // namespace eagine
 

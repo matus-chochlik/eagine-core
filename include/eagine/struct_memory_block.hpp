@@ -20,8 +20,8 @@ class structured_memory_block {
 private:
     memory::basic_block<std::is_const_v<T>> _blk;
 
-    template <typename X = T, typename = std::enable_if_t<!std::is_const_v<X>>>
-    auto _ptr() noexcept {
+    template <typename X = T>
+    auto _ptr() noexcept requires(!std::is_const_v<X>) {
         EAGINE_ASSERT(is_valid_block(_blk));
         return static_cast<X*>(_blk.addr());
     }
@@ -42,17 +42,15 @@ public:
         EAGINE_ASSERT(is_valid_block(_blk));
     }
 
-    template <
-      typename X = T,
-      typename = std::enable_if_t<!std::is_const_v<X> && std::is_same_v<X, T>>>
-    auto get() noexcept -> X& {
+    template <typename X = T>
+    auto get() noexcept
+      -> X& requires(!std::is_const_v<X> && std::is_same_v<X, T>) {
         return *_ptr();
     }
 
-    template <
-      typename X = T,
-      typename = std::enable_if_t<!std::is_const_v<X> && std::is_same_v<X, T>>>
-    auto operator->() noexcept -> X* {
+    template <typename X = T>
+    auto operator->() noexcept
+      -> X* requires(!std::is_const_v<X> && std::is_same_v<X, T>) {
         return _ptr();
     }
 

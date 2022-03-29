@@ -9,7 +9,6 @@
 #include "../random.hpp"
 #include <eagine/diagnostic.hpp>
 #include <eagine/interop/valgrind.hpp>
-#include <eagine/maybe_unused.hpp>
 
 #ifdef __clang__
 EAGINE_DIAG_PUSH()

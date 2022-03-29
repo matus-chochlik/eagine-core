@@ -1,4 +1,5 @@
 /INSTALL_PREFIX
 /BINARY_DIR
+/toolchain.cmake
 .*.swp
 *.deb

@@ -11,28 +11,17 @@ BOOST_AUTO_TEST_SUITE(math_scalar_tests)
 
 template <typename T, bool V>
 void test_math_scalar_default_ctr_TV() {
-    eagine::math::scalar<T, 1, V> s1;
-    EAGINE_MAYBE_UNUSED(s1);
-    eagine::math::scalar<T, 2, V> s2;
-    EAGINE_MAYBE_UNUSED(s2);
-    eagine::math::scalar<T, 3, V> s3;
-    EAGINE_MAYBE_UNUSED(s3);
-    eagine::math::scalar<T, 4, V> s4;
-    EAGINE_MAYBE_UNUSED(s4);
-    eagine::math::scalar<T, 5, V> s5;
-    EAGINE_MAYBE_UNUSED(s5);
-    eagine::math::scalar<T, 6, V> s6;
-    EAGINE_MAYBE_UNUSED(s6);
-    eagine::math::scalar<T, 7, V> s7;
-    EAGINE_MAYBE_UNUSED(s7);
-    eagine::math::scalar<T, 8, V> s8;
-    EAGINE_MAYBE_UNUSED(s8);
-    eagine::math::scalar<T, 11, V> s11;
-    EAGINE_MAYBE_UNUSED(s11);
-    eagine::math::scalar<T, 17, V> s17;
-    EAGINE_MAYBE_UNUSED(s17);
-    eagine::math::scalar<T, 23, V> s23;
-    EAGINE_MAYBE_UNUSED(s23);
+    [[maybe_unused]] eagine::math::scalar<T, 1, V> s1;
+    [[maybe_unused]] eagine::math::scalar<T, 2, V> s2;
+    [[maybe_unused]] eagine::math::scalar<T, 3, V> s3;
+    [[maybe_unused]] eagine::math::scalar<T, 4, V> s4;
+    [[maybe_unused]] eagine::math::scalar<T, 5, V> s5;
+    [[maybe_unused]] eagine::math::scalar<T, 6, V> s6;
+    [[maybe_unused]] eagine::math::scalar<T, 7, V> s7;
+    [[maybe_unused]] eagine::math::scalar<T, 8, V> s8;
+    [[maybe_unused]] eagine::math::scalar<T, 11, V> s11;
+    [[maybe_unused]] eagine::math::scalar<T, 17, V> s17;
+    [[maybe_unused]] eagine::math::scalar<T, 23, V> s23;
 }
 
 template <typename T>

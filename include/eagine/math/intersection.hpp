@@ -25,8 +25,8 @@ namespace eagine::math {
 // utils
 //------------------------------------------------------------------------------
 template <typename T, typename P, typename L>
-static inline auto nearest_ray_param(
-  const std::pair<valid_if<T, P, L>, valid_if<T, P, L>>& params)
+static constexpr auto nearest_ray_param(
+  const std::pair<valid_if<T, P, L>, valid_if<T, P, L>>& params) noexcept
   -> valid_if<T, P, L> {
 
     const auto& t0 = std::get<0>(params);
@@ -92,7 +92,7 @@ static constexpr auto _line_sphere_intersection_t(
 template <typename T, bool V>
 static constexpr auto _line_sphere_intersection_p(
   const line<T, V>& ray,
-  const std::pair<optionally_valid<T>, optionally_valid<T>>& ts) {
+  const std::pair<optionally_valid<T>, optionally_valid<T>>& ts) noexcept {
     using E = optionally_valid<vector<T, 3, V>>;
     using R = std::pair<E, E>;
     return R{
@@ -128,7 +128,7 @@ static constexpr auto line_sphere_intersection(
 template <typename T, bool V>
 static constexpr auto _line_sphere_intersection_n_p(
   const line<T, V>& ray,
-  const std::pair<optionally_valid<T>, optionally_valid<T>>& ts) {
+  const std::pair<optionally_valid<T>, optionally_valid<T>>& ts) noexcept {
     using R = optionally_valid<vector<T, 3, V>>;
     using std::abs;
 
@@ -155,7 +155,7 @@ static constexpr auto nearest_line_sphere_intersection(
 // line-triangle
 //------------------------------------------------------------------------------
 template <typename T, bool V>
-static inline auto line_triangle_intersection_param(
+static constexpr auto line_triangle_intersection_param(
   const line<T, V>& ray,
   const triangle<T, V>& tri) noexcept -> optionally_valid<T> {
 
@@ -183,7 +183,7 @@ static inline auto line_triangle_intersection_param(
 /// @brief Finds line-triangle intersection point.
 /// @ingroup math
 template <typename T, bool V>
-static inline auto line_triangle_intersection(
+static constexpr auto line_triangle_intersection(
   const line<T, V>& ray,
   const triangle<T, V>& tri) noexcept -> optionally_valid<vector<T, 3, V>> {
     if(const auto t = line_triangle_intersection_param(ray, tri)) {

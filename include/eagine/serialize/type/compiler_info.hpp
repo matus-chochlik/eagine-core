@@ -32,7 +32,7 @@ struct deserializer<compiler_info> : common_deserializer<compiler_info> {
     auto read(compiler_info& value, Backend& backend) const {
         typename compiler_info::_data_tuple temp{};
         const auto errors{_deserializer.read(temp, backend)};
-        if(EAGINE_LIKELY(!errors)) {
+        if(!errors) [[likely]] {
             value = {std::move(temp)};
         }
         return errors;

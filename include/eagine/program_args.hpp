@@ -30,238 +30,6 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 class program_args;
-//------------------------------------------------------------------------------
-/// @brief Base class for pre-declared program parameter.
-/// @ingroup main_context
-/// @see program_parameter
-///
-/// This is a base class for application-specific program parameters that are
-/// typically parsed from the program command-line arguments list.
-/// A declared parameter has a short tag like "-h" and a long tag like "--help".
-class basic_program_parameter {
-public:
-    /// @brief Get the short tag string for this parameter.
-    constexpr auto short_tag() const noexcept -> string_view {
-        return _short_tag;
-    }
-
-    /// @brief Get the long tag string for this parameter.
-    constexpr auto long_tag() const noexcept -> string_view {
-        return _long_tag;
-    }
-
-    /// @brief Returns a human-readable description for this program parameter.
-    constexpr auto description() const noexcept -> string_view {
-        return _description;
-    }
-
-    /// @brief Specifies a human-readable description for this program parameter.
-    constexpr auto description(const string_view help_str) noexcept -> auto& {
-        _description = help_str;
-        return *this;
-    }
-
-protected:
-    string_view _short_tag;
-    string_view _long_tag;
-    string_view _description;
-
-    constexpr basic_program_parameter(
-      string_view short_tag,
-      string_view long_tag) noexcept
-      : _short_tag{short_tag}
-      , _long_tag{long_tag} {}
-};
-//------------------------------------------------------------------------------
-/// @brief Class template for pre-declared program parameter.
-/// @ingroup main_context
-/// @see program_parameter_alias
-///
-/// This is a class for application-specific program parameters that are
-/// typically parsed from the program command-line arguments list.
-/// A declared parameter has a short tag like "-h" and a long tag like "--help"
-/// and has storage for a value of the type @p T.
-template <typename T>
-class program_parameter : public basic_program_parameter {
-public:
-    /// @brief Construction from short and long tag strings.
-    constexpr program_parameter(
-      const string_view short_tag,
-      const string_view long_tag) noexcept
-      : basic_program_parameter{short_tag, long_tag} {}
-
-    /// @brief Construction from short and long tag strings and the initial value.
-    constexpr program_parameter(
-      const string_view short_tag,
-      const string_view long_tag,
-      const T initial) noexcept
-      : basic_program_parameter{short_tag, long_tag}
-      , _value{std::move(initial)} {}
-
-    /// @brief Returns a reference to the parameter value.
-    constexpr auto ref() noexcept -> T& {
-        return _value;
-    }
-
-    /// @brief Indicates if the current value is valid.
-    /// @see valid_if
-    auto has_valid_value() const noexcept -> bool {
-        return _is_valid(_value);
-    }
-
-    auto log_invalid_value(std::ostream& log) const -> auto& {
-        log << "Invalid value of parameter " << long_tag() << ": ";
-        _log_invalid(_value, log);
-        return log << ". ";
-    }
-
-    /// @brief Validate the current value, print potential error messages to log.
-    auto validate(std::ostream& log) const -> bool {
-        if(!has_valid_value()) {
-            log_invalid_value(log) << std::endl;
-            return false;
-        }
-        return true;
-    }
-
-    /// @brief Returns the current parameter value.
-    auto value() const -> auto& {
-        return _get_value(_value);
-    }
-
-    /// @brief Returns the current parameter value.
-    /// @see value
-    operator const T&() const noexcept {
-        return _value;
-    }
-
-private:
-    T _value{};
-
-    template <typename X>
-    static auto _is_valid(const X&) noexcept -> bool {
-        return true;
-    }
-
-    template <typename X, typename P, typename L>
-    static auto _is_valid(const valid_if<X, P, L>& vi) noexcept -> bool {
-        return vi.is_valid();
-    }
-
-    template <typename X>
-    static void _log_invalid(const X&, const std::ostream&) noexcept {}
-
-    template <typename X, typename P, typename L>
-    static void _log_invalid(
-      const valid_if<X, P, L>& vi,
-      std::ostream& log) noexcept {
-        vi.log_invalid(log);
-    }
-
-    template <typename X>
-    static auto _get_value(X& val) noexcept -> X& {
-        return val;
-    }
-
-    template <typename X>
-    static auto _get_value(const X& val) noexcept -> const X& {
-        return val;
-    }
-
-    template <typename X, typename P, typename L>
-    static auto _get_value(valid_if<X, P, L>& vi) -> X& {
-        return vi.value();
-    }
-
-    template <typename X, typename P, typename L>
-    static auto _get_value(const valid_if<X, P, L>& vi) -> const X& {
-        return vi.value();
-    }
-};
-//------------------------------------------------------------------------------
-/// @brief Template specialization for pre-declared program parameter without value.
-/// @ingroup main_context
-/// @see program_parameter_alias
-///
-/// This specialization instead of containing an initial or parsed parameter
-/// value holds the count of times the parameter appeared in the command-line
-/// argument list.
-template <>
-class program_parameter<void> : public basic_program_parameter {
-public:
-    /// @brief Construction from the short and long tag strings.
-    program_parameter(
-      const string_view short_tag,
-      const string_view long_tag) noexcept
-      : basic_program_parameter{short_tag, long_tag} {}
-
-    void increment() noexcept {
-        ++_count;
-    }
-
-    auto has_valid_value() const noexcept -> bool {
-        return true;
-    }
-
-    auto log_invalid_value(std::ostream& log) const noexcept -> std::ostream& {
-        return log;
-    }
-
-    auto validate(std::ostream&) const noexcept -> bool {
-        return true;
-    }
-
-    /// @brief Returns the number of times the option has been found in arguments.
-    auto value() const noexcept -> span_size_t {
-        return _count;
-    }
-
-private:
-    span_size_t _count{0};
-};
-
-using program_option = program_parameter<void>;
-//------------------------------------------------------------------------------
-/// @brief Alias (alternative tags) for another declared program parameter.
-/// @ingroup main_context
-/// @see program_parameter.
-template <typename T>
-class program_parameter_alias : public basic_program_parameter {
-public:
-    ~program_parameter_alias() noexcept = default;
-    program_parameter_alias(const program_parameter_alias&) = delete;
-    program_parameter_alias(program_parameter_alias&&) noexcept = delete;
-    auto operator=(const program_parameter_alias&) = delete;
-    auto operator=(program_parameter_alias&&) noexcept = delete;
-
-    /// @brief Construction from alternative short and long tags and parameter reference.
-    program_parameter_alias(
-      const string_view short_tag,
-      const string_view long_tag,
-      program_parameter<T>& that) noexcept
-      : basic_program_parameter{short_tag, long_tag}
-      , _aliased{that} {}
-
-    /// @brief Returns a reference to the value in the aliased program parameter.
-    auto ref() noexcept -> auto& {
-        return _aliased.ref();
-    }
-
-    /// @brief Returns the value in the aliased program parameter.
-    auto value() const noexcept -> auto& {
-        return _aliased.value();
-    }
-
-    /// @brief Returns the value in the aliased program parameter.
-    /// @see value
-    operator const T&() const noexcept {
-        return static_cast<const T&>(_aliased);
-    }
-
-private:
-    program_parameter<T>& _aliased;
-};
-//------------------------------------------------------------------------------
 class program_arg_iterator;
 
 /// @brief Class representing a single main function (command-line) argument.
@@ -391,11 +159,6 @@ public:
         return is_short_tag(short_tag) || is_long_tag(long_tag);
     }
 
-    /// @brief Indicates if this argument value is equal to the one declared in param.
-    auto is_tag_param(const basic_program_parameter& param) const {
-        return is_tag(param.short_tag(), param.long_tag());
-    }
-
     /// @brief Indicates if this argument is a "show help" argument (like "--help").
     auto is_help_arg() const noexcept {
         return is_tag(string_view("-h"), string_view("--help"));
@@ -496,39 +259,6 @@ public:
     }
 
     template <typename T, typename MissingFunc, typename InvalidFunc>
-    auto do_parse_param(
-      program_parameter<T>& param,
-      MissingFunc handle_missing,
-      InvalidFunc handle_invalid) -> bool {
-        if(is_tag_param(param)) {
-            return do_consume_next(param.ref(), handle_missing, handle_invalid);
-        }
-        return false;
-    }
-
-    template <typename MissingFunc, typename InvalidFunc>
-    auto do_parse_param(
-      program_parameter<void>& param,
-      const MissingFunc&,
-      const InvalidFunc&) {
-        if(is_tag_param(param)) {
-            param.increment();
-            return true;
-        }
-        return false;
-    }
-
-    /// @brief Tries to parse the specified parameter starting from this argument.
-    /// @returns True if the parse is successful, false otherwise.
-    template <typename T>
-    auto parse_param(program_parameter<T>& param, std::ostream& errorlog)
-      -> bool {
-        auto if_missing{missing_handler(errorlog)};
-        auto if_invalid{invalid_handler(errorlog)};
-        return do_parse_param(param, if_missing, if_invalid);
-    }
-
-    template <typename T, typename MissingFunc, typename InvalidFunc>
     auto do_consume_next(
       T& dest,
       const span<const T> choices,
@@ -566,29 +296,6 @@ public:
         auto if_missing{missing_handler(errorlog)};
         auto if_invalid{invalid_handler(errorlog)};
         return do_consume_next(dest, choices, if_missing, if_invalid);
-    }
-
-    template <typename T, typename C, class MissingFunc, class InvalidFunc>
-    auto do_parse_param(
-      program_parameter<T>& param,
-      const span<const C> choices,
-      MissingFunc handle_missing,
-      InvalidFunc handle_invalid) {
-        if(is_tag_param(param)) {
-            return do_consume_next(
-              param.ref(), choices, handle_missing, handle_invalid);
-        }
-        return false;
-    }
-
-    template <typename T, typename C>
-    auto parse_param(
-      program_parameter<T>& param,
-      const span<const C> choices,
-      std::ostream& errorlog) -> bool {
-        auto if_missing{missing_handler(errorlog)};
-        auto if_invalid{invalid_handler(errorlog)};
-        return do_parse_param(param, choices, if_missing, if_invalid);
     }
 
     template <typename T, typename MissingFunc, typename InvalidFunc>
@@ -644,66 +351,6 @@ public:
           dest, symbols, translations, if_missing, if_invalid);
     }
 
-    template <typename T, typename R, class MissingFunc, class InvalidFunc>
-    auto do_parse_param(
-      program_parameter<T>& param,
-      const span<const string_view> symbols,
-      const span<const R> translations,
-      MissingFunc handle_missing,
-      InvalidFunc handle_invalid) {
-        if(is_tag_param(param)) {
-            return do_consume_next(
-              param.ref(),
-              symbols,
-              translations,
-              handle_missing,
-              handle_invalid);
-        }
-        return false;
-    }
-
-    template <typename T, typename R>
-    auto parse_param(
-      program_parameter<T>& param,
-      const span<const string_view> symbols,
-      const span<const R> translations,
-      std::ostream& errorlog) -> bool {
-        auto if_missing{missing_handler(errorlog)};
-        auto if_invalid{invalid_handler(errorlog)};
-        return do_parse_param(
-          param, symbols, translations, if_missing, if_invalid);
-    }
-
-    template <typename T, typename R, class MissingFunc, class InvalidFunc>
-    auto do_parse_param(
-      program_parameter_alias<T>& param,
-      const span<const string_view> symbols,
-      const span<const R> translations,
-      MissingFunc handle_missing,
-      InvalidFunc handle_invalid) {
-        if(is_tag_param(param)) {
-            return do_consume_next(
-              param.ref(),
-              symbols,
-              translations,
-              handle_missing,
-              handle_invalid);
-        }
-        return false;
-    }
-
-    template <typename T, typename R>
-    auto parse_param(
-      program_parameter_alias<T>& param,
-      const span<const string_view> symbols,
-      const span<const R> translations,
-      std::ostream& errorlog) -> bool {
-        auto if_missing{missing_handler(errorlog)};
-        auto if_invalid{invalid_handler(errorlog)};
-        return do_parse_param(
-          param, symbols, translations, if_missing, if_invalid);
-    }
-
     /// @brief Indicates if this argument's value is equal to the specified string.
     auto operator==(const value_type& v) const noexcept {
         return are_equal(get(), v);
@@ -711,7 +358,7 @@ public:
 
     /// @brief Indicates if this argument's value is different than the specified string.
     auto operator!=(const value_type& v) const noexcept {
-        return are_equal(get(), v);
+        return !are_equal(get(), v);
     }
 
 private:
@@ -751,7 +398,7 @@ private:
       valid_if<T, P, L>& dest,
       const selector<V> sel,
       std::ostream& parse_log) const -> bool {
-        T value{};
+        typename valid_if<T, P, L>::value_type value{};
         if(parse(value, sel, parse_log)) {
             if(dest.is_valid(value)) {
                 dest = std::move(value);
@@ -780,6 +427,13 @@ private:
     }
 };
 //------------------------------------------------------------------------------
+template <>
+struct extract_traits<program_arg> {
+    using value_type = typename program_arg::value_type;
+    using result_type = value_type;
+    using const_result_type = value_type;
+};
+
 static inline auto extract(const program_arg& arg) noexcept {
     return arg.get();
 }
@@ -947,204 +601,6 @@ private:
     program_arg _a{};
 };
 //------------------------------------------------------------------------------
-class program_parameters {
-public:
-    template <typename... T>
-    program_parameters(program_parameter<T>&... params)
-      : _params(_make(std::unique_ptr<_intf>(new _impl<T>(params))...)) {}
-
-    auto size() const noexcept -> span_size_t {
-        return span_size(_params.size());
-    }
-
-    auto parse(program_arg& arg, std::ostream& log) -> bool {
-        for(auto& param : _params) {
-            EAGINE_ASSERT(param != nullptr);
-            if(param->parse(arg, log)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    auto validate(std::ostream& log) const -> bool {
-        bool all_ok = true;
-        for(const auto& param : _params) {
-            EAGINE_ASSERT(param != nullptr);
-            all_ok &= param->validate(log);
-        }
-        return all_ok;
-    }
-
-    auto print_usage(std::ostream& out, const string_view command)
-      -> std::ostream& {
-        out << "Usage: " << command;
-
-        span_size_t stag_maxl = 0;
-        span_size_t ltag_maxl = 0;
-
-        for(const auto& param : _params) {
-            EAGINE_ASSERT(param != nullptr);
-
-            out << " ";
-
-            bool mandatory = !param->has_valid_value();
-
-            out << (mandatory ? '<' : '[');
-
-            out << param->short_tag() << "|" << param->long_tag();
-            out << " " << param->placeholder();
-
-            out << (mandatory ? '>' : ']');
-
-            if(stag_maxl < param->short_tag().size()) {
-                stag_maxl = param->short_tag().size();
-            }
-
-            if(ltag_maxl < param->long_tag().size()) {
-                ltag_maxl = param->long_tag().size();
-            }
-        }
-        out << std::endl;
-        out << "  Options:" << std::endl;
-
-        span_size_t padl;
-
-        for(const auto& param : _params) {
-            padl = 4 + stag_maxl - param->short_tag().size();
-            while(padl-- > 0) {
-                out << " ";
-            }
-            out << param->short_tag() << "|";
-
-            out << param->long_tag();
-            padl = ltag_maxl - param->long_tag().size();
-            while(padl-- > 0) {
-                out << " ";
-            }
-            out << ": " << param->description() << std::endl;
-        }
-
-        return out;
-    }
-
-private:
-    struct _intf : interface<_intf> {
-        virtual auto parse(program_arg&, std::ostream&) -> bool = 0;
-
-        virtual auto has_valid_value() const -> bool = 0;
-        virtual auto validate(std::ostream&) const -> bool = 0;
-
-        virtual auto short_tag() const -> string_view = 0;
-        virtual auto long_tag() const -> string_view = 0;
-        virtual auto description() const -> string_view = 0;
-        virtual auto placeholder() const -> string_view = 0;
-    };
-
-    template <typename T>
-    struct _impl : _intf {
-        program_parameter<T>* _pparam;
-        string_view _plchldr;
-
-        auto _param() noexcept -> auto& {
-            EAGINE_ASSERT(_pparam != nullptr);
-            return *_pparam;
-        }
-
-        auto _param() const noexcept -> auto& {
-            EAGINE_ASSERT(_pparam != nullptr);
-            return *_pparam;
-        }
-
-        template <typename X>
-        static auto _plchldr_name(const type_identity<X>) noexcept
-          -> string_view {
-            if(std::is_same_v<X, bool>) {
-                return {"BOOLEAN"};
-            }
-            if(std::is_same_v<X, string_view>) {
-                return {"STRING"};
-            }
-            if(std::is_integral_v<X>) {
-                return {"INTEGER"};
-            }
-            if(std::is_floating_point_v<X>) {
-                return {"FLOAT"};
-            }
-            // TODO: be more precise depending on X
-            return {"VALUE"};
-        }
-
-        template <typename X, typename P, typename L>
-        static auto _plchldr_name(
-          const type_identity<valid_if<X, P, L>>) noexcept {
-            return _plchldr_name(type_identity<X>());
-        }
-
-        template <typename X, typename A>
-        static auto _plchldr_name(
-          const type_identity<std::vector<X, A>>) noexcept {
-            return _plchldr_name(type_identity<X>());
-        }
-
-        _impl(program_parameter<T>& param) noexcept
-          : _pparam{&param}
-          , _plchldr{_plchldr_name(type_identity<T>())} {}
-
-        auto parse(program_arg& arg, std::ostream& log) -> bool override {
-            return arg.parse_param(_param(), log);
-        }
-
-        auto has_valid_value() const -> bool override {
-            return _param().has_valid_value();
-        }
-
-        auto validate(std::ostream& log) const -> bool override {
-            return _param().validate(log);
-        }
-
-        auto short_tag() const -> string_view override {
-            return _param().short_tag();
-        }
-
-        auto long_tag() const -> string_view override {
-            return _param().long_tag();
-        }
-
-        auto description() const -> string_view override {
-            return _param().description();
-        }
-
-        auto placeholder() const -> string_view override {
-            return _plchldr;
-        }
-    };
-
-    std::vector<std::unique_ptr<_intf>> _params;
-
-    static auto _insert(std::vector<std::unique_ptr<_intf>>& dest) noexcept
-      -> auto& {
-        return dest;
-    }
-
-    template <typename... Intf>
-    static auto _insert(
-      std::vector<std::unique_ptr<_intf>>& dest,
-      std::unique_ptr<_intf>&& param,
-      std::unique_ptr<Intf>&&... params) noexcept -> auto& {
-        EAGINE_ASSERT(param != nullptr);
-        dest.push_back(std::move(param));
-        return _insert(dest, std::move(params)...);
-    }
-
-    template <typename... Intf>
-    static auto _make(std::unique_ptr<Intf>&&... params) {
-        std::vector<std::unique_ptr<_intf>> result;
-        result.reserve(sizeof...(params));
-        return std::move(_insert(result, std::move(params)...));
-    }
-};
-//------------------------------------------------------------------------------
 /// @brief Class wrapping the main function arguments, providing a convenient API.
 /// @ingroup main_context
 class program_args {
@@ -1210,7 +666,7 @@ public:
     /// @pre is_valid(pos)
     auto get(const valid_index& pos) const noexcept -> value_type {
         EAGINE_ASSERT(is_valid(pos));
-        return value_type(_argv[pos.value_anyway(*this)]);
+        return value_type(_argv[pos.value_anyway()]);
     }
 
     /// @brief Returns the command line argument value at the specified position.
@@ -1251,18 +707,6 @@ public:
             ++i;
         }
         return {i, _argc, _argv};
-    }
-
-    /// @brief Parses the specified parameter, using @p errlog for error output.
-    template <typename T>
-    auto parse_param(program_parameter<T>& param, std::ostream& errlog) const
-      -> bool {
-        for(program_arg a = first(); a; a = a.next()) {
-            if(a.parse_param(param, errlog)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 private:

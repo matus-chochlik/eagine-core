@@ -5,12 +5,14 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/c_api/adapted_function.hpp>
+
 #include <eagine/config/platform.hpp>
 #include <eagine/c_api_wrap.hpp>
 #include <eagine/extract.hpp>
 #include <eagine/hexdump.hpp>
-#include <eagine/maybe_unused.hpp>
 #include <eagine/memory/block.hpp>
+#include <eagine/memory/span_algo.hpp>
 #include <iostream>
 
 #if EAGINE_POSIX
@@ -26,17 +28,37 @@ namespace eagine {
 //------------------------------------------------------------------------------
 struct example_sets_errno {};
 //------------------------------------------------------------------------------
-struct example_api_traits : default_c_api_traits {};
+struct example_api_traits : c_api::default_traits {};
 //------------------------------------------------------------------------------
 struct example_file_api {
+    example_api_traits _traits;
 
+public:
     using this_api = example_file_api;
     using api_traits = example_api_traits;
+
+    template <typename Result>
+    static constexpr auto check_result(Result result) noexcept {
+        return result;
+    }
 
     template <typename Tag = example_sets_errno>
     using derived_func = derived_c_api_function<this_api, api_traits, Tag>;
 
-    opt_c_api_function<
+    c_api::combined_function<
+      this_api,
+      api_traits,
+      example_sets_errno,
+      char*(),
+      string_view(),
+      c_api::c_string_view_map,
+      c_api::trivial_map,
+      EXAMPLE_API_STATIC_FUNC(getlogin),
+      EAGINE_POSIX,
+      true>
+      get_login;
+
+    c_api::opt_function<
       api_traits,
       example_sets_errno,
       int(int[2]),
@@ -53,9 +75,9 @@ struct example_file_api {
             return EAGINE_POSIX != 0;
         }
 
-        auto operator()(const char* path, int flags) noexcept -> int {
-            EAGINE_MAYBE_UNUSED(path);
-            EAGINE_MAYBE_UNUSED(flags);
+        auto operator()(
+          [[maybe_unused]] const char* path,
+          [[maybe_unused]] int flags) noexcept -> int {
 #if EAGINE_POSIX
             return ::open(path, flags); // NOLINT(hicpp-vararg)
 #else
@@ -64,7 +86,7 @@ struct example_file_api {
         }
     } open_file;
 
-    opt_c_api_function<
+    c_api::opt_function<
       api_traits,
       example_sets_errno,
       ssize_t(int, void*, size_t),
@@ -73,24 +95,13 @@ struct example_file_api {
       true>
       read_file;
 
-    struct : derived_func<> {
-        using base = derived_func<>;
-        using base::api;
-        using base::base;
+    c_api::adapted_function<
+      &example_file_api::read_file,
+      ssize_t(int, memory::block),
+      c_api::head_transform_map<2>>
+      read_block{*this};
 
-        explicit constexpr operator bool() const noexcept {
-            return bool(api().read_file);
-        }
-
-        auto operator()(int fd, memory::block blk) noexcept -> ssize_t {
-            return api().read_file(
-              fd,
-              static_cast<void*>(blk.data()),
-              static_cast<size_t>(blk.size()));
-        }
-    } read_block;
-
-    opt_c_api_function<
+    c_api::opt_function<
       api_traits,
       example_sets_errno,
       ssize_t(int, const void*, size_t),
@@ -99,41 +110,19 @@ struct example_file_api {
       true>
       write_file;
 
-    struct : derived_func<> {
-        using base = derived_func<>;
-        using base::api;
-        using base::base;
+    c_api::adapted_function<
+      &example_file_api::write_file,
+      ssize_t(int, memory::const_block),
+      c_api::skip_transform_map<2>>
+      write_block{*this};
 
-        explicit constexpr operator bool() const noexcept {
-            return bool(api().write_file);
-        }
+    c_api::adapted_function<
+      &example_file_api::write_file,
+      ssize_t(int, string_view),
+      c_api::skip_transform_map<2>>
+      write_string{*this};
 
-        auto operator()(int fd, memory::const_block blk) noexcept -> ssize_t {
-            return api().write_file(
-              fd,
-              static_cast<const void*>(blk.data()),
-              static_cast<size_t>(blk.size()));
-        }
-    } write_block;
-
-    struct : derived_func<> {
-        using base = derived_func<>;
-        using base::api;
-        using base::base;
-
-        explicit constexpr operator bool() const noexcept {
-            return bool(api().write_file);
-        }
-
-        auto operator()(int fd, string_view str) noexcept -> ssize_t {
-            return api().write_file(
-              fd,
-              static_cast<const void*>(str.data()),
-              static_cast<size_t>(str.size()));
-        }
-    } write_string;
-
-    opt_c_api_function<
+    c_api::opt_function<
       api_traits,
       example_sets_errno,
       int(int),
@@ -142,23 +131,32 @@ struct example_file_api {
       true>
       close_file;
 
-    example_file_api(api_traits& traits)
-      : make_pipe{"pipe", traits, *this}
-      , open_file{"open", traits, *this}
-      , read_file{"read", traits, *this}
-      , read_block("read", traits, *this)
-      , write_file{"write", traits, *this}
-      , write_block("write", traits, *this)
-      , write_string("write", traits, *this)
-      , close_file{"close", traits, *this} {}
+    example_file_api()
+      : get_login{"getlogin", *this}
+      , make_pipe{"pipe", *this}
+      , open_file{"open", *this}
+      , read_file{"read", *this}
+      , write_file{"write", *this}
+      , close_file{"close", *this} {}
+
+    auto traits() noexcept -> api_traits& {
+        return _traits;
+    }
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
 
 auto main(int, const char** argv) -> int {
     using namespace eagine;
-    example_api_traits traits;
-    example_file_api api(traits);
+    using namespace eagine::c_api;
+
+    example_file_api api;
+
+    /*
+    if(api.get_login) {
+        std::cout << api.get_login() << std::endl;
+    }
+    */
 
     if(api.make_pipe && api.write_block && api.read_block && api.close_file) {
         int pfd[2] = {-1, -1};
@@ -168,7 +166,7 @@ auto main(int, const char** argv) -> int {
         auto make_getbyte = [&api](int fd) {
             return [&api, fd]() -> optionally_valid<byte> {
                 byte b{};
-                if(api.read_block(fd, cover_one(b)) > 0) {
+                if(!extract_or(api.read_block(fd, cover_one(b))).is_empty()) {
                     return {b, true};
                 }
                 api.close_file(fd);

@@ -191,7 +191,7 @@ public:
                         result = result.find_child(rapidyaml_cstrref(entry));
                     }
                 } else if(result.is_seq()) {
-                    if(auto opt_idx{from_string<span_size_t>(entry)}) {
+                    if(const auto opt_idx{from_string<span_size_t>(entry)}) {
                         result = result[extract(opt_idx)];
                     } else {
                         result = {};
@@ -293,7 +293,7 @@ public:
         try {
             rapidyaml_callbacks cbks{};
             c4::csubstr src{yaml_text.data(), std_size(yaml_text.size())};
-            auto tree{ryml::parse(src)};
+            auto tree{ryml::parse_in_arena(src)};
             tree.resolve();
             return std::make_shared<rapidyaml_tree_compound>(
               std::move(tree), parent);
@@ -319,6 +319,10 @@ public:
 
     auto canonical_type(attribute_interface& attrib) -> value_type final {
         return _unwrap(attrib).canonical_type();
+    }
+
+    auto is_immutable(attribute_interface&) -> bool final {
+        return true;
     }
 
     auto is_link(attribute_interface&) -> bool final {

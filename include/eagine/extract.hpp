@@ -10,92 +10,89 @@
 #define EAGINE_EXTRACT_HPP
 
 #include "assert.hpp"
-#include "nothing.hpp"
+#include "extractable.hpp"
 #include <memory>
-#include <type_traits>
+#include <optional>
 
 namespace eagine {
 //------------------------------------------------------------------------------
+// pointers
+template <typename T>
+struct extract_traits<T*> {
+    using value_type = T;
+    using result_type = T&;
+    using const_result_type = std::add_const_t<T>&;
+};
+
 /// @brief Checks @p ptr and dereferences it.
-/// @pre bool(ptr)
+/// @pre has_value(ptr)
 template <typename T>
 static constexpr auto extract(T* ptr) noexcept -> T& {
     return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
 }
 //------------------------------------------------------------------------------
-/// @brief Checks @p ptr and dereferences it if not null, otherwise returns fallback.
 template <typename T>
-static constexpr auto extract_or(
-  T* ptr,
-  std::remove_const_t<T>& fallback) noexcept -> T& {
-    return bool(ptr) ? *ptr : fallback;
-}
-//------------------------------------------------------------------------------
-/// @brief Checks @p ptr and dereferences it if not null, otherwise returns fallback.
-template <typename T, typename F>
-static constexpr auto extract_or(T* ptr, F&& fallback)
-  -> std::enable_if_t<std::is_convertible_v<F, T>, T> {
-    return bool(ptr) ? *ptr : T{std::forward<F>(fallback)};
-}
-//------------------------------------------------------------------------------
+struct extract_traits<std::shared_ptr<T>> {
+    using value_type = T;
+    using result_type = T&;
+    using const_result_type = std::add_const_t<T>&;
+};
+
 /// @brief Checks @p ptr and dereferences it.
-/// @pre bool(ptr)
+/// @pre has_value(ptr)
 template <typename T>
-static constexpr auto extract(std::shared_ptr<T>& ptr) noexcept -> T& {
+static constexpr auto extract(std::shared_ptr<T>& ptr) noexcept -> auto& {
+    return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
+}
+
+/// @brief Checks @p ptr and dereferences it.
+/// @pre has_value(ptr)
+template <typename T>
+static constexpr auto extract(const std::shared_ptr<T>& ptr) noexcept -> auto& {
     return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
 }
 //------------------------------------------------------------------------------
+template <typename T, typename D>
+struct extract_traits<std::unique_ptr<T, D>> {
+    using value_type = T;
+    using result_type = T&;
+    using const_result_type = std::add_const_t<T>&;
+};
+
 /// @brief Checks @p ptr and dereferences it.
-/// @pre bool(ptr)
-template <typename T>
-static constexpr auto extract(const std::shared_ptr<T>& ptr) noexcept
-  -> const T& {
-    return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
-}
-//------------------------------------------------------------------------------
-/// @brief Checks @p ptr and dereferences it if not null, otherwise returns fallback.
-template <typename T>
-static constexpr auto extract_or(
-  std::shared_ptr<T>& ptr,
-  std::remove_const_t<T>& fallback) noexcept -> T& {
-    return bool(ptr) ? *ptr : fallback;
-}
-//------------------------------------------------------------------------------
-/// @brief Checks @p ptr and dereferences it if not null, otherwise returns fallback.
-template <typename T, typename F>
-static constexpr auto extract_or(std::shared_ptr<T>& ptr, F&& fallback)
-  -> std::enable_if_t<std::is_convertible_v<F, T>, T> {
-    return bool(ptr) ? *ptr : T{std::forward<F>(fallback)};
-}
-//------------------------------------------------------------------------------
-/// @brief Checks @p ptr and dereferences it.
-/// @pre bool(ptr)
+/// @pre has_value(ptr)
 template <typename T, typename D>
 static constexpr auto extract(std::unique_ptr<T, D>& ptr) noexcept -> T& {
     return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
 }
-//------------------------------------------------------------------------------
+
 /// @brief Checks @p ptr and dereferences it.
-/// @pre bool(ptr)
+/// @pre has_value(ptr)
 template <typename T, typename D>
 static constexpr auto extract(const std::unique_ptr<T, D>& ptr) noexcept
   -> const T& {
     return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
 }
 //------------------------------------------------------------------------------
-/// @brief Checks @p ptr and dereferences it if not null, otherwise returns fallback.
-template <typename T, typename D>
-static constexpr auto extract_or(
-  std::unique_ptr<T, D>& ptr,
-  std::remove_const_t<T>& fallback) noexcept -> T& {
-    return bool(ptr) ? *ptr : fallback;
+template <typename T>
+struct extract_traits<std::optional<T>> {
+    using value_type = T;
+    using result_type = T&;
+    using const_result_type = std::add_const_t<T>&;
+};
+
+/// @brief Checks @p ptr and dereferences it.
+/// @pre has_value(opt)
+template <typename T>
+static constexpr auto extract(std::optional<T>& opt) noexcept -> auto& {
+    return EAGINE_CONSTEXPR_ASSERT(bool(opt), *opt);
 }
-//------------------------------------------------------------------------------
-/// @brief Checks @p ptr and dereferences it if not null, otherwise returns fallback.
-template <typename T, typename D, typename F>
-static constexpr auto extract_or(std::unique_ptr<T, D>& ptr, F&& fallback)
-  -> std::enable_if_t<std::is_convertible_v<F, T>, T> {
-    return bool(ptr) ? *ptr : T{std::forward<F>(fallback)};
+
+/// @brief Checks @p ptr and dereferences it.
+/// @pre has_value(opt)
+template <typename T>
+static constexpr auto extract(const std::optional<T>& opt) noexcept -> auto& {
+    return EAGINE_CONSTEXPR_ASSERT(bool(opt), *opt);
 }
 //------------------------------------------------------------------------------
 /// @brief Traits used for customization of class ok for the specified Outcome.
@@ -214,6 +211,26 @@ auto end(
   const ok<Outcome>& x,
   decltype(std::declval<const ok<Outcome>&>().get().end())* = nullptr) {
     return x.get().end();
+}
+//------------------------------------------------------------------------------
+template <basic_extractable T>
+static constexpr auto has_value(const T& v) noexcept {
+    return bool(v);
+}
+
+template <extractable T>
+static constexpr auto extract_or(
+  T& opt_val,
+  extract_result_type_t<T> fallback = {}) noexcept -> extract_result_type_t<T> {
+    return has_value(opt_val) ? extract(opt_val) : fallback;
+}
+
+template <extractable T>
+static constexpr auto extract_or(
+  const T& opt_val,
+  const_extract_result_type_t<T> fallback = {}) noexcept
+  -> const_extract_result_type_t<T> {
+    return has_value(opt_val) ? extract(opt_val) : fallback;
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

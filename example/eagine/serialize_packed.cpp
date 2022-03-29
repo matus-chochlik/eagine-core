@@ -6,6 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/hexdump.hpp>
+#include <eagine/main.hpp>
 #include <eagine/reflect/data_members.hpp>
 #include <eagine/serialize/packed_block_sink.hpp>
 #include <eagine/serialize/packed_block_source.hpp>
@@ -86,9 +87,7 @@ void foo(const my_struct& instance) {
     bar(sink.done());
 }
 //------------------------------------------------------------------------------
-} // namespace eagine
-
-auto main() -> int {
+auto main(main_ctx&) -> int {
     using namespace eagine;
 
     my_struct x;
@@ -112,3 +111,5 @@ auto main() -> int {
 
     return 0;
 }
+} // namespace eagine
+

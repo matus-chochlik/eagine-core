@@ -27,17 +27,17 @@ public:
 
     template <typename... P>
     explicit basic_allocation_arena(P&&... p)
-      : _alloc(std::forward<P>(p)...) {}
+      : _alloc{std::forward<P>(p)...} {}
 
     explicit basic_allocation_arena(Alloc&& alloc)
-      : _alloc(std::move(alloc)) {}
+      : _alloc{std::move(alloc)} {}
 
     basic_allocation_arena(basic_allocation_arena&&) noexcept = default;
     basic_allocation_arena(const basic_allocation_arena&) = delete;
     auto operator=(basic_allocation_arena&&) = delete;
     auto operator=(const basic_allocation_arena&) = delete;
 
-    ~basic_allocation_arena() {
+    ~basic_allocation_arena() noexcept {
         clear();
     }
 

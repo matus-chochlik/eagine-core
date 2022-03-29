@@ -6,6 +6,7 @@
 add_library(
 	eagine-core
 	debug.cpp
+	memory.cpp
 	main_wrap.cpp
 	git_info.cpp
 	build_info.cpp
@@ -16,15 +17,18 @@ add_library(
 	from_string.cpp
 	edit_distance.cpp
 	progress.cpp
+	console.cpp
 	logging.cpp
 	input_data.cpp
 	compression.cpp
 	str_var_subst.cpp
 	resources.cpp
 	url.cpp
+	value_tree_empty.cpp
 	value_tree_json.cpp
 	value_tree_yaml.cpp
 	value_tree_filesystem.cpp
+	value_tree_overlay.cpp
 	value_tree_wrappers.cpp
 	watchdog.cpp
 )

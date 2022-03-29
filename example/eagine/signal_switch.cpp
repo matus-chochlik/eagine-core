@@ -23,7 +23,7 @@ auto main() -> int {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         if(i++ >= 10) {
-            std::raise(SIGINT);
+            [[maybe_unused]] std::raise(SIGINT);
         }
     }
 

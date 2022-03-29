@@ -71,13 +71,11 @@ static constexpr const auto _reflected_data_member_mapping =
       ^Struct,
       std::experimental::meta::is_data_member))>{});
 //------------------------------------------------------------------------------
-template <
-  typename Struct,
-  typename Selector,
-  typename = std::enable_if_t<reflect_data_members_of<Struct>::value>>
+template <typename Struct, typename Selector>
 constexpr auto data_member_mapping(
   const type_identity<Struct>,
-  const Selector) noexcept -> const auto& {
+  const Selector) noexcept -> const
+  auto& requires(reflect_data_members_of<Struct>::value) {
     return _reflected_data_member_mapping<Struct>;
 }
 #endif

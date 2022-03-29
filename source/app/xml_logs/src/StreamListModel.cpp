@@ -25,6 +25,8 @@ auto StreamListModel::roleNames() const -> QHash<int, QByteArray> {
     QHash<int, QByteArray> result;
     result.insert(Qt::DisplayRole, "display");
     result.insert(streamLogIdentity, "logIdentity");
+    result.insert(streamOSName, "osName");
+    result.insert(streamOSCodeName, "osCodeName");
     result.insert(streamGitBranch, "gitBranch");
     result.insert(streamGitHashId, "gitHashId");
     result.insert(streamGitVersion, "gitVersion");
@@ -62,6 +64,21 @@ auto StreamListModel::getStreamCount() const -> int {
 auto StreamListModel::getStreamLogIdentity(const LogStreamInfo& info) const
   -> QString {
     return toQString(info.logIdentity);
+}
+//------------------------------------------------------------------------------
+auto StreamListModel::getOSName(const LogStreamInfo& info) const -> QVariant {
+    if(!info.osName.empty()) {
+        return toQString(info.osName);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto StreamListModel::getOSCodeName(const LogStreamInfo& info) const
+  -> QVariant {
+    if(!info.osCodeName.empty()) {
+        return toQString(info.osCodeName);
+    }
+    return {};
 }
 //------------------------------------------------------------------------------
 auto StreamListModel::getGitBranch(const LogStreamInfo& info) const
@@ -143,6 +160,10 @@ auto StreamListModel::data(const QModelIndex& index, int role) const
         switch(role) {
             case streamLogIdentity:
                 return {getStreamLogIdentity(stream)};
+            case streamOSName:
+                return getOSName(stream);
+            case streamOSCodeName:
+                return getOSCodeName(stream);
             case streamGitBranch:
                 return getGitBranch(stream);
             case streamGitHashId:

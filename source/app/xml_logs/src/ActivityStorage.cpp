@@ -90,10 +90,8 @@ auto ActivityData::isDone() const noexcept -> bool {
 // storage
 //------------------------------------------------------------------------------
 void ActivityStorage::beginStream(
-  stream_id_t streamId,
-  const LogStreamInfo&) noexcept {
-    EAGINE_MAYBE_UNUSED(streamId);
-}
+  [[maybe_unused]] stream_id_t streamId,
+  const LogStreamInfo&) noexcept {}
 //------------------------------------------------------------------------------
 void ActivityStorage::endStream(stream_id_t streamId) noexcept {
     std::erase_if(_activities, [streamId](const auto& activity) -> bool {

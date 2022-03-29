@@ -85,32 +85,26 @@ struct vector {
         return r;
     }
 
-    template <
-      typename P,
-      typename = std::enable_if_t<(N == 1) && (std::is_convertible_v<P, T>)>>
-    static constexpr auto make(P&& p) noexcept {
+    template <typename P>
+    static constexpr auto make(P&& p) noexcept
+      requires((N == 1) && (std::is_convertible_v<P, T>)) {
         return vector{{T(std::forward<P>(p))}};
     }
 
     /// @brief Creates vector instance with the specified elements.
-    template <
-      typename... P,
-      typename = std::enable_if_t<(N > 1) && (sizeof...(P) == N)>>
-    static constexpr auto make(P&&... p) noexcept {
+    template <typename... P>
+    static constexpr auto make(P&&... p) noexcept
+      requires((N > 1) && (sizeof...(P) == N)) {
         return vector{{T(std::forward<P>(p))...}};
     }
 
     /// @brief Creates vector instance from vector of another dimension.
     /// @param d specifies the value for additional elements if M < N.
-    template <
-      typename P,
-      int M,
-      bool W,
-      typename =
-        std::enable_if_t<(!std::is_same_v<T, P> || (N != M) || (V != W))>>
+    template <typename P, int M, bool W>
     static constexpr auto from(
       const vector<P, M, W>& v,
-      const T d = T(0)) noexcept {
+      const T d = T(0)) noexcept
+      requires(!std::is_same_v<T, P> || (N != M) || (V != W)) {
         return vector{vect::cast<P, M, W, T, N, V>::apply(v._v, d)};
     }
 
@@ -140,7 +134,7 @@ struct vector {
     /// @brief Returns the x-coordinate value.
     /// @pre N >= 1
     template <int M = N>
-    constexpr auto x() const noexcept -> std::enable_if_t<(M > 0), T> {
+    constexpr auto x() const noexcept -> T requires(M > 0) {
         static_assert(M == N);
         return _v[0];
     }
@@ -148,7 +142,7 @@ struct vector {
     /// @brief Returns the y-coordinate value.
     /// @pre N >= 2
     template <int M = N>
-    constexpr auto y() const noexcept -> std::enable_if_t<(M > 1), T> {
+    constexpr auto y() const noexcept -> T requires(M > 1) {
         static_assert(M == N);
         return _v[1];
     }
@@ -156,7 +150,7 @@ struct vector {
     /// @brief Returns the z-coordinate value.
     /// @pre N >= 3
     template <int M = N>
-    constexpr auto z() const noexcept -> std::enable_if_t<(M > 2), T> {
+    constexpr auto z() const noexcept -> T requires(M > 2) {
         static_assert(M == N);
         return _v[2];
     }
@@ -164,7 +158,7 @@ struct vector {
     /// @brief Returns the w-coordinate value.
     /// @pre N >= 4
     template <int M = N>
-    constexpr auto w() const noexcept -> std::enable_if_t<(M > 3), T> {
+    constexpr auto w() const noexcept -> T requires(M > 3) {
         static_assert(M == N);
         return _v[3];
     }
@@ -287,7 +281,7 @@ static constexpr auto dimension(const vector<T, N, V>&) noexcept {
 /// @brief Tests if a vector has zero lenght.
 /// @ingroup math
 template <typename T, int N, bool V>
-static inline auto is_zero(const vector<T, N, V>& v) noexcept -> bool {
+static constexpr auto is_zero(const vector<T, N, V>& v) noexcept -> bool {
     return vect::is_zero<T, N, V>::apply(v._v);
 }
 
@@ -319,14 +313,14 @@ static constexpr auto dot(
 /// @brief Returns a vector perpendicular to argument.
 /// @ingroup math
 template <typename T, bool V>
-static inline auto perpendicular(const vector<T, 2, V>& a) noexcept {
+static constexpr auto perpendicular(const vector<T, 2, V>& a) noexcept {
     return vector<T, 2, V>{{-a._v[1], a._v[0]}};
 }
 
 /// @brief 3D vector cross product.
 /// @ingroup math
 template <typename T, bool V>
-static inline auto cross(
+static constexpr auto cross(
   const vector<T, 3, V>& a,
   const vector<T, 3, V>& b) noexcept {
     using _sh = vect::shuffle<T, 3, V>;
@@ -366,7 +360,7 @@ static constexpr auto length(const vector<T, N, V>& a) noexcept {
 }
 
 template <typename T, int N, bool V>
-static inline auto _nmld(
+static constexpr auto _nmld(
   const vector<T, N, V>& a,
   const scalar<T, N, V>& l,
   const std::true_type) noexcept {
@@ -374,7 +368,7 @@ static inline auto _nmld(
 }
 
 template <typename T, int N, bool V>
-static inline auto _nmld(
+static constexpr auto _nmld(
   const vector<T, N, V>& a,
   const scalar<T, N, V>& l,
   const std::false_type) noexcept {
@@ -385,7 +379,7 @@ static inline auto _nmld(
 /// @brief Returns normalized argument.
 /// @ingroup math
 template <typename T, int N, bool V>
-static inline auto normalized(const vector<T, N, V>& a) noexcept {
+static constexpr auto normalized(const vector<T, N, V>& a) noexcept {
     scalar<T, N, V> l = length(a);
     return _nmld(a, l, vect::has_vect_data<T, N, V>());
 }
@@ -410,7 +404,7 @@ struct canonical_compound_type<math::vector<T, N, V>>
 
 template <typename T, int N, bool V>
 struct compound_view_maker<math::vector<T, N, V>> {
-    inline auto operator()(const math::vector<T, N, V>& v) const noexcept {
+    constexpr auto operator()(const math::vector<T, N, V>& v) const noexcept {
         return vect::view<T, N, V>::apply(v._v);
     }
 };

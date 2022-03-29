@@ -11,26 +11,25 @@
 #include "../memory/span.hpp"
 #include "../valid_if/decl.hpp"
 #include "constants.hpp"
-#include <cassert>
 #include <cmath>
+#include <concepts>
 #include <type_traits>
 
 namespace eagine::math {
 //------------------------------------------------------------------------------
 /// @brief Indicates if @p value is a positive integral power of two.
 /// @ingroup math
-template <typename T>
-static constexpr auto is_positive_power_of_2(const T value) noexcept
-  -> std::enable_if_t<std::is_integral_v<T>, bool> {
+template <std::integral T>
+static constexpr auto is_positive_power_of_2(const T value) noexcept -> bool {
     using U = std::make_unsigned_t<T>;
     return (value > 0) && ((U(value) & (U(value) - 1)) == 0);
 }
 //------------------------------------------------------------------------------
 /// @brief Returns the greates common divisor of arguments @p l and @p r.
 /// @ingroup math
-template <typename T>
+template <std::integral T>
 static constexpr auto greatest_common_divisor(const T l, const T r) noexcept
-  -> std::enable_if_t<std::is_integral_v<T>, T> {
+  -> T {
     return (r == T(0)) ? l : greatest_common_divisor(r, T(l % r));
 }
 //------------------------------------------------------------------------------
@@ -174,7 +173,7 @@ static constexpr auto sigmoid01(const T x) noexcept {
 /// @ingroup math
 /// @pre 0 <= x <= 1
 template <typename T>
-static inline auto sine_sigmoid01(const T x) -> T {
+static constexpr auto sine_sigmoid01(const T x) noexcept -> T {
 
 #ifdef __clang__
     EAGINE_DIAG_PUSH()
@@ -215,17 +214,15 @@ static constexpr auto saw(const T x, const U u = T(1)) noexcept -> T {
 //------------------------------------------------------------------------------
 /// @brief Calculates factorial of @p n.
 /// @ingroup math
-template <typename T>
-static constexpr auto factorial(const T n) noexcept
-  -> std::enable_if_t<std::is_integral_v<T>, T> {
+template <std::integral T>
+static constexpr auto factorial(const T n) noexcept -> T {
     return n > 0 ? n * factorial(n - 1) : 1;
 }
 //------------------------------------------------------------------------------
 /// @brief Calculates binomial coefficient of @p n over @p k.
 /// @ingroup math
-template <typename T>
-static constexpr auto binomial(const T n, const T k) noexcept
-  -> std::enable_if_t<std::is_integral_v<T>, T> {
+template <std::integral T>
+static constexpr auto binomial(const T n, const T k) noexcept -> T {
     return ((n >= 0) && (k >= 0) && (k <= n))
              ? (factorial(n) / (factorial(k) * factorial(n - k)))
              : 0;
@@ -241,10 +238,9 @@ template <typename Type, typename Parameter, int N>
 struct bezier_t {
 public:
     /// @brief Interpolate from control points in pack @p p at position @p t.
-    template <
-      typename... Points,
-      typename = std::enable_if_t<sizeof...(Points) == N>>
-    constexpr auto operator()(const Parameter t, Points&&... p) const noexcept {
+    template <typename... Points>
+    constexpr auto operator()(const Parameter t, Points&&... p) const noexcept
+      requires(sizeof...(Points) == N) {
         return _calc(N - 1, 0, t, std::forward<Points>(p)...);
     }
 
@@ -291,7 +287,7 @@ private:
 };
 //------------------------------------------------------------------------------
 template <typename Parameter, typename... CP>
-static constexpr inline auto bezier_point(const Parameter t, const CP... cps)
+static constexpr auto bezier_point(const Parameter t, const CP... cps) noexcept
   -> std::common_type_t<CP...> {
     using bt = bezier_t<std::common_type_t<CP...>, Parameter, sizeof...(CP)>;
     return bt{}(t, cps...);

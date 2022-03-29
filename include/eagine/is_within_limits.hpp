@@ -131,8 +131,8 @@ static constexpr auto is_within_limits(const Src value) noexcept {
 /// @see signedness_cast
 /// @pre is_within_limits<Dst>(value)
 template <typename Dst, typename Src>
-static constexpr auto limit_cast(Src value) noexcept
-  -> std::enable_if_t<std::is_convertible_v<Src, Dst>, Dst> {
+static constexpr auto limit_cast(Src value) noexcept -> Dst
+  requires(std::is_convertible_v<Src, Dst>) {
     return EAGINE_CONSTEXPR_ASSERT(
       is_within_limits<Dst>(value), Dst(std::move(value)));
 }
@@ -156,7 +156,7 @@ static constexpr auto signedness_cast(Src value) noexcept {
 /// @see limit_cast
 template <typename Dst, typename Src>
 static constexpr auto convert_if_fits(Src value) noexcept
-  -> std::enable_if_t<std::is_convertible_v<Src, Dst>, optionally_valid<Dst>> {
+  -> optionally_valid<Dst> requires(std::is_convertible_v<Src, Dst>) {
 
     if(is_within_limits<Dst>(value)) {
         return {Dst(std::move(value)), true};

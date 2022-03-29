@@ -79,7 +79,7 @@ public:
     }
 
 private:
-    action_type _action;
+    action_type _action{};
 
     void _invoke(const std::true_type) const {
         if(_action) {

@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/console/console.hpp>
 #include <eagine/logging/logger.hpp>
 #include <eagine/main_ctx_storage.hpp>
 #include <eagine/progress/activity.hpp>
@@ -21,9 +22,11 @@ EAGINE_LIB_FUNC
 main_ctx::main_ctx(main_ctx_getters& src) noexcept
   : _instance_id{src.instance_id()}
   , _source{src}
+  , _default_alloc{src.default_allocator()}
   , _args{src.args()}
   , _cmplr_info{src.compiler()}
   , _bld_info{src.build()}
+  , _cio{src.cio()}
   , _log{src.log()}
   , _progress{src.progress()}
   , _watchdog{src.watchdog()}
@@ -52,6 +55,11 @@ auto main_ctx::preinitialize() noexcept -> main_ctx& {
     return *this;
 }
 //------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+auto try_get_main_ctx() noexcept -> main_ctx_getters* {
+    return main_ctx::try_get();
+}
+//------------------------------------------------------------------------------
 // main_ctx_object-related
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
@@ -77,6 +85,24 @@ auto main_ctx_object::process_instance_id() const noexcept
 EAGINE_LIB_FUNC
 auto main_ctx_object::app_config() const noexcept -> application_config& {
     return main_context().config();
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
+auto main_ctx_object::cio() const noexcept -> const console& {
+    return main_context().cio();
+}
+
+EAGINE_LIB_FUNC
+auto main_ctx_object::cio_print(
+  const console_entry_kind kind,
+  const string_view format) const noexcept -> console_entry {
+    return cio().print(object_id(), kind, format);
+}
+
+EAGINE_LIB_FUNC
+auto main_ctx_object::cio_print(const string_view format) const noexcept
+  -> console_entry {
+    return cio().print(object_id(), format);
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC

@@ -46,18 +46,14 @@ struct _ary_data {
 
     ~_ary_data() noexcept = default;
 
-    template <
-      typename P,
-      typename = std::enable_if_t<(N == 1) && (std::is_convertible_v<P, T>)>>
-    constexpr _ary_data(P&& p)
+    template <typename P>
+    constexpr _ary_data(P&& p) noexcept
+      requires((N == 1) && (std::is_convertible_v<P, T>))
       : _v{T(std::forward<P>(p))} {}
 
-    template <
-      typename P1,
-      typename P2,
-      typename... Pn,
-      typename = std::enable_if_t<(sizeof...(Pn) + 2) == N>>
-    constexpr _ary_data(P1&& p1, P2&& p2, Pn&&... pn)
+    template <typename P1, typename P2, typename... Pn>
+    constexpr _ary_data(P1&& p1, P2&& p2, Pn&&... pn) noexcept
+      requires((sizeof...(Pn) + 2) == N)
       : _v{
           T(std::forward<P1>(p1)),
           T(std::forward<P2>(p2)),

@@ -61,8 +61,9 @@ public:
     constexpr value_with_history_storage() = default;
 
     /// @brief Initializes the individual revisions of the value.
-    template <typename... I, typename = std::enable_if_t<sizeof...(I) == N>>
-    constexpr value_with_history_storage(I&&... initial)
+    template <typename... I>
+    constexpr value_with_history_storage(I&&... initial) requires(
+      sizeof...(I) == N)
       : _values{T(initial)...} {}
 
     /// @brief Initializes all revisions with the same initial value.
@@ -229,8 +230,8 @@ public:
         return value();
     }
 
-    template <typename U, typename... P>
-    operator valid_if<U, P...>() const noexcept {
+    template <typename U, typename Po, typename L, typename... P>
+    operator basic_valid_if<U, Po, L, P...>() const noexcept {
         return {U(value())};
     }
 
@@ -363,14 +364,15 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-template <typename T, typename... P, std::size_t N>
-class variable_with_history<valid_if<T, P...>, N>
+template <typename T, typename Po, typename L, typename... P, std::size_t N>
+class variable_with_history<basic_valid_if<T, Po, L, P...>, N>
   : public value_with_history<T, N> {
 public:
-    constexpr variable_with_history(const valid_if<T, P...>& initial) noexcept
+    constexpr variable_with_history(
+      const basic_valid_if<T, Po, L, P...>& initial) noexcept
       : value_with_history<T, N>(initial.value()) {}
 
-    auto assign(const valid_if<T, P...>& new_value) -> bool {
+    auto assign(const basic_valid_if<T, Po, L, P...>& new_value) -> bool {
         return this->_update_value(new_value.value());
     }
 
@@ -379,7 +381,7 @@ public:
         return *this;
     }
 
-    auto advance(const valid_if<T, P...>& delta_value) -> bool {
+    auto advance(const basic_valid_if<T, Po, L, P...>& delta_value) -> bool {
         return this->_advance_value(delta_value.value());
     }
 };

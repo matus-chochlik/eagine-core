@@ -65,17 +65,10 @@ struct units_scaled_unit_add_tester {
         S1U s1a, s1b;
         S2U s2b;
 
-        U ca1b = a + s1b;
-        EAGINE_MAYBE_UNUSED(ca1b);
-
-        U c1ab = s1a + b;
-        EAGINE_MAYBE_UNUSED(c1ab);
-
-        S1U s1c = s1a + s1b;
-        EAGINE_MAYBE_UNUSED(s1c);
-
-        auto s12c = s1a + s2b;
-        EAGINE_MAYBE_UNUSED(s12c);
+        [[maybe_unused]] U ca1b = a + s1b;
+        [[maybe_unused]] U c1ab = s1a + b;
+        [[maybe_unused]] S1U s1c = s1a + s1b;
+        [[maybe_unused]] auto s12c = s1a + s2b;
     }
 };
 
@@ -109,17 +102,10 @@ struct units_scaled_unit_sub_tester {
         S1U s1a, s1b;
         S2U s2b;
 
-        U ca1b = a - s1b;
-        EAGINE_MAYBE_UNUSED(ca1b);
-
-        U c1ab = s1a - b;
-        EAGINE_MAYBE_UNUSED(c1ab);
-
-        S1U s1c = s1a - s1b;
-        EAGINE_MAYBE_UNUSED(s1c);
-
-        auto s12c = s1a - s2b;
-        EAGINE_MAYBE_UNUSED(s12c);
+        [[maybe_unused]] U ca1b = a - s1b;
+        [[maybe_unused]] U c1ab = s1a - b;
+        [[maybe_unused]] S1U s1c = s1a - s1b;
+        [[maybe_unused]] auto s12c = s1a - s2b;
     }
 };
 
@@ -161,17 +147,10 @@ struct units_scaled_unit_mul_tester {
             S1U1 s1a, s1b;
             S2U2 s2b;
 
-            auto ca1b = a * s1b;
-            EAGINE_MAYBE_UNUSED(ca1b);
-
-            auto c1ab = s1a * b;
-            EAGINE_MAYBE_UNUSED(c1ab);
-
-            auto s1c = s1a * s1b;
-            EAGINE_MAYBE_UNUSED(s1c);
-
-            auto s12c = s1a * s2b;
-            EAGINE_MAYBE_UNUSED(s12c);
+            [[maybe_unused]] auto ca1b = a * s1b;
+            [[maybe_unused]] auto c1ab = s1a * b;
+            [[maybe_unused]] auto s1c = s1a * s1b;
+            [[maybe_unused]] auto s12c = s1a * s2b;
         }
     };
 };
@@ -223,17 +202,10 @@ struct units_scaled_unit_div_tester {
             S1U1 s1a, s1b;
             S2U2 s2b;
 
-            auto ca1b = a / s1b;
-            EAGINE_MAYBE_UNUSED(ca1b);
-
-            auto c1ab = s1a / b;
-            EAGINE_MAYBE_UNUSED(c1ab);
-
-            auto s1c = s1a / s1b;
-            EAGINE_MAYBE_UNUSED(s1c);
-
-            auto s12c = s1a / s2b;
-            EAGINE_MAYBE_UNUSED(s12c);
+            [[maybe_unused]] auto ca1b = a / s1b;
+            [[maybe_unused]] auto c1ab = s1a / b;
+            [[maybe_unused]] auto s1c = s1a / s1b;
+            [[maybe_unused]] auto s12c = s1a / s2b;
         }
     };
 };

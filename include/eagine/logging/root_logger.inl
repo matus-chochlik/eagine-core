@@ -14,6 +14,7 @@
 #include <eagine/logging/proxy_backend.hpp>
 #include <eagine/logging/syslog_backend.hpp>
 #include <eagine/logging/type/program_args.hpp>
+#include <eagine/os_info.hpp>
 #include <eagine/process.hpp>
 #include <cerrno>
 #include <iostream>
@@ -47,7 +48,7 @@ auto root_logger_choose_backend(
             string_view nw_addr;
             if(arg.next() && !arg.next().starts_with("-")) {
                 nw_addr = arg.next();
-            } else if(auto env_var{get_environment_variable(
+            } else if(const auto env_var{get_environment_variable(
                         "EAGINE_LOG_NETWORK_ADDRESS")}) {
                 nw_addr = extract(env_var);
             }
@@ -106,6 +107,19 @@ auto root_logger::_log_args(const program_args& args) -> void {
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
+auto root_logger::_log_os_info() -> void {
+    const string_view n_a{"N/A"};
+    info("build OS information")
+      .tag(EAGINE_ID(OSInfo))
+      .arg(EAGINE_ID(osName), EAGINE_ID(OSName), config_os_name(), n_a)
+      .arg(
+        EAGINE_ID(osCodeName),
+        EAGINE_ID(OSCodeName),
+        config_os_code_name(),
+        n_a);
+}
+//------------------------------------------------------------------------------
+EAGINE_LIB_FUNC
 auto root_logger::_log_git_info() -> void {
     const string_view n_a{"N/A"};
     info("source version information")
@@ -139,19 +153,19 @@ auto root_logger::_log_compiler_info() -> void {
         architecture_name(),
         string_view{"unknown"})
       .arg_func([](logger_backend& backend) {
-          if(auto version_major{compiler_version_major()}) {
+          if(const auto version_major{compiler_version_major()}) {
               backend.add_integer(
                 EAGINE_ID(complrMajr),
                 EAGINE_ID(VrsnMajor),
                 extract(version_major));
           }
-          if(auto version_minor{compiler_version_minor()}) {
+          if(const auto version_minor{compiler_version_minor()}) {
               backend.add_integer(
                 EAGINE_ID(complrMinr),
                 EAGINE_ID(VrsnMinor),
                 extract(version_minor));
           }
-          if(auto version_patch{compiler_version_patch()}) {
+          if(const auto version_patch{compiler_version_patch()}) {
               backend.add_integer(
                 EAGINE_ID(complrPtch),
                 EAGINE_ID(VrsnPatch),

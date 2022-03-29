@@ -91,7 +91,7 @@ public:
     /// @see has_at_most
     template <typename... B>
     constexpr auto has_all(const bit_type bit, B... bits) const noexcept
-      -> std::enable_if_t<all_are_same_v<bit_type, B...>, bool> {
+      -> bool requires(all_are_same_v<bit_type, B...>) {
         return (has(bit) && ... && has(bits));
     }
 
@@ -104,7 +104,7 @@ public:
     /// @see has_at_most
     template <typename... B>
     constexpr auto has_any(const bit_type bit, B... bits) const noexcept
-      -> std::enable_if_t<all_are_same_v<bit_type, B...>, bool> {
+      -> bool requires(all_are_same_v<bit_type, B...>) {
         return (has(bit) || ... || has(bits));
     }
 
@@ -117,7 +117,7 @@ public:
     /// @see has_at_most
     template <typename... B>
     constexpr auto has_none(const bit_type bit, B... bits) const noexcept
-      -> std::enable_if_t<all_are_same_v<bit_type, B...>, bool> {
+      -> bool requires(all_are_same_v<bit_type, B...>) {
         return (has_not(bit) && ... && has_not(bits));
     }
 

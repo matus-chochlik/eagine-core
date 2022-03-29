@@ -35,7 +35,7 @@ public:
         do_dissolve_bits(
           make_span_getter(i, src._mb),
           [&out](byte b) {
-              if(auto opt_c = make_base64_encode_transform()(b)) {
+              if(const auto opt_c{make_base64_encode_transform()(b)}) {
                   out << extract(opt_c);
                   return true;
               }

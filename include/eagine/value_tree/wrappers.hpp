@@ -106,6 +106,12 @@ public:
         return {};
     }
 
+    template <typename Implementation>
+    auto as() noexcept -> Implementation* requires(
+      std::is_base_of_v<attribute_interface, Implementation>) {
+        return dynamic_cast<Implementation*>(_pimpl);
+    }
+
 private:
     friend class compound;
 
@@ -153,7 +159,7 @@ public:
 
     template <identifier_t V>
     auto apply(const selector<V> sel) const {
-        if(auto converted{from_string(_temp, type_identity<T>(), sel)}) {
+        if(const auto converted{from_string(_temp, type_identity<T>(), sel)}) {
             _dest = extract(converted);
             return true;
         }
@@ -229,8 +235,8 @@ public:
     /// @note Do not use directly in client code. Use one of the constructor
     /// functions that know which implementation to pick and how to initialize it.
     template <typename Compound, typename... Args>
-    static auto make(Args&&... args) -> std::
-      enable_if_t<std::is_base_of_v<compound_interface, Compound>, compound> {
+    static auto make(Args&&... args) -> compound
+      requires(std::is_base_of_v<compound_interface, Compound>) {
         return {Compound::make_shared(std::forward<Args>(args)...)};
     }
 
@@ -283,6 +289,15 @@ public:
             return _pimpl->canonical_type(*attrib._pimpl);
         }
         return value_type::unknown;
+    }
+
+    /// @brief Indicates if the specified attribute is immutable.
+    /// @pre this->type_id() == attrib.type_id()
+    auto is_immutable(const attribute& attrib) const -> bool {
+        if(_pimpl && attrib._pimpl) {
+            return _pimpl->is_immutable(*attrib._pimpl);
+        }
+        return false;
     }
 
     /// @brief Indicates if the specified attribute is a reference or link in the tree.
@@ -737,6 +752,12 @@ public:
     /// @brief Traverses the tree, calls the @p visitor function on each node.
     void traverse(const stack_visit_handler visitor) const;
 
+    template <typename Implementation>
+    auto as() noexcept -> Implementation* requires(
+      std::is_base_of_v<compound_interface, Implementation>) {
+        return dynamic_cast<Implementation*>(_pimpl.get());
+    }
+
 private:
     compound(std::shared_ptr<compound_interface> pimpl) noexcept
       : _pimpl{std::move(pimpl)} {}
@@ -759,7 +780,7 @@ public:
     compound_attribute(compound c, attribute a) noexcept
       : _c{std::move(c)}
       , _a{std::move(a)} {
-        EAGINE_ASSERT(_c.type_id() == _a.type_id());
+        EAGINE_ASSERT(!_c || !_a || (_c.type_id() == _a.type_id()));
     }
 
     /// @brief Indicates if this attribute actually refers to something.
@@ -775,6 +796,11 @@ public:
     /// @brief Returns the name of this attribute.
     auto name() const noexcept -> string_view {
         return _c.attribute_name(_a);
+    }
+
+    /// @brief Indicates if the specified attribute is immutable.
+    auto is_immutable() const noexcept -> bool {
+        return _c.is_immutable(_a);
     }
 
     /// @brief Indicates if the specified attribute is a reference or link in the tree.

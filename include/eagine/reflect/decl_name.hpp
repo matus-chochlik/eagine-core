@@ -24,10 +24,9 @@ struct decl_name : string_view {
       : string_view{t, s} {}
 #endif
 
-    template <
-      std::size_t N,
-      typename = std::enable_if_t<(N <= span_size_t(max_length))>>
+    template <std::size_t N>
     constexpr decl_name(const char (&array)[N]) noexcept
+      requires(N <= span_size_t(max_length))
       : string_view{array} {}
 };
 //------------------------------------------------------------------------------

@@ -10,6 +10,7 @@
 
 #include "span.hpp"
 #include <algorithm>
+#include <concepts>
 #include <numeric>
 #include <tuple>
 #include <type_traits>
@@ -29,21 +30,18 @@ static constexpr auto clamp_span_iterator(
     return (p < s.begin()) ? s.begin() : (p > s.end()) ? s.end() : p;
 }
 //------------------------------------------------------------------------------
-template <typename T, typename P, typename S, typename I>
+template <typename T, typename P, typename S, std::integral I>
 static constexpr auto clamp_span_position(
   const basic_span<T, P, S> s,
-  const I p) noexcept -> std::enable_if_t<std::is_integral_v<I>, P> {
+  const I p) noexcept -> P {
     return clamp_span_iterator(s, s.begin() + p);
 }
 //------------------------------------------------------------------------------
-template <typename T, typename P, typename S, typename B, typename E>
+template <typename T, typename P, typename S, std::integral B, std::integral E>
 static constexpr auto subspan(
   const basic_span<T, P, S> s,
   const B b,
-  const E e) noexcept
-  -> std::enable_if_t<
-    std::is_integral_v<B> && std::is_integral_v<E>,
-    basic_span<T, P, S>> {
+  const E e) noexcept -> basic_span<T, P, S> {
     return {clamp_span_position(s, b), clamp_span_position(s, e)};
 }
 //------------------------------------------------------------------------------
@@ -329,7 +327,7 @@ static constexpr auto find_element_if(
 /// @pre spn.begin() <= pos && pos <= spn.end()
 template <typename T, typename P, typename S, typename Pos>
 static constexpr auto skip_to(const basic_span<T, P, S> spn, Pos pos) noexcept
-  -> std::enable_if_t<std::is_convertible_v<Pos, P>, basic_span<T, P, S>> {
+  -> basic_span<T, P, S> requires(std::is_convertible_v<Pos, P>) {
     EAGINE_ASSERT(spn.begin() <= pos && pos <= spn.end());
     return {pos, spn.end()};
 }
@@ -342,7 +340,7 @@ template <typename T, typename P, typename S, typename Predicate>
 static constexpr auto skip_until(
   const basic_span<T, P, S> spn,
   Predicate predicate) noexcept -> basic_span<T, P, S> {
-    if(auto found{find_element_if(spn, predicate)}) {
+    if(const auto found{find_element_if(spn, predicate)}) {
         return skip(spn, extract(found));
     }
     return spn;
@@ -355,7 +353,7 @@ template <typename T, typename P, typename S, typename Predicate>
 static constexpr auto take_until(
   const basic_span<T, P, S> spn,
   Predicate predicate) noexcept -> basic_span<T, P, S> {
-    if(auto found{find_element_if(spn, predicate)}) {
+    if(const auto found{find_element_if(spn, predicate)}) {
         return head(spn, extract(found));
     }
     return spn;
@@ -400,7 +398,7 @@ template <
 static inline auto find(
   const basic_span<T1, P1, S1> where,
   const basic_span<T2, P2, S2> what) -> basic_span<T1, P1, S1> {
-    if(auto pos = find_position(where, what)) {
+    if(const auto pos{find_position(where, what)}) {
         return skip(where, extract(pos));
     }
     return {};
@@ -520,7 +518,7 @@ static inline auto slice_inside_brackets(
   const B left,
   const B right) noexcept -> basic_span<T, P, S> {
 
-    if(auto found = find_element(spn, left)) {
+    if(const auto found{find_element(spn, left)}) {
         spn = skip(spn, extract(found));
         int depth = 1;
         auto pos = S(1);
@@ -576,9 +574,9 @@ static inline auto fill(const basic_span<T, P, S> spn, const V& v)
 /// @see fill
 /// @see generate
 template <typename T, typename P, typename S>
-static inline auto zero(basic_span<T, P, S> spn) -> std::enable_if_t<
-  std::is_integral_v<T> || std::is_floating_point_v<T>,
-  basic_span<T, P, S>> {
+static inline auto zero(basic_span<T, P, S> spn)
+  -> basic_span<T, P, S> requires(
+    std::is_integral_v<T> || std::is_floating_point_v<T>) {
     std::fill(spn.begin(), spn.end(), T(0));
     return spn;
 }

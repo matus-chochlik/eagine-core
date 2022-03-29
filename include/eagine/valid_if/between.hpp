@@ -42,7 +42,8 @@ struct valid_if_btwn_policy {
 /// @brief Specialization of valid_if, for values valid if between Min and Max.
 /// @ingroup valid_if
 template <typename T, typename C, C Min, C Max>
-using valid_if_between_c = valid_if<T, valid_if_btwn_policy<T, C, Min, Max>>;
+using valid_if_between_c =
+  valid_if<T, valid_if_btwn_policy<std::remove_reference_t<T>, C, Min, Max>>;
 
 /// @brief Specialization of valid_if, for values valid if between Min and Max.
 /// @ingroup valid_if

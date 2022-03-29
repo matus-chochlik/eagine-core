@@ -45,7 +45,7 @@ public:
 
         for(const auto label : tag_labels) {
             if(const auto arg{main_context().args().find(label)}) {
-                if(auto tag_arg{arg.next()}) {
+                if(const auto tag_arg{arg.next()}) {
                     _tag_list.push_back(tag_arg.get());
                 }
             }
@@ -78,7 +78,7 @@ public:
                 return found;
             }
             if(auto arg{main_context().args().find("--config-group")}) {
-                if(auto group_arg{arg.next()}) {
+                if(const auto group_arg{arg.next()}) {
                     if(auto found{
                          _find_config_of(group_arg.get(), key, tags)}) {
                         return found;
@@ -96,20 +96,16 @@ public:
     }
 
     void link(
-      const string_view key,
-      const string_view tag,
+      [[maybe_unused]] const string_view key,
+      [[maybe_unused]] const string_view tag,
       application_config_value_loader& loader) noexcept {
-        EAGINE_MAYBE_UNUSED(key);
-        EAGINE_MAYBE_UNUSED(tag);
         _loaders.insert(&loader);
     }
 
     void unlink(
-      const string_view key,
-      const string_view tag,
+      [[maybe_unused]] const string_view key,
+      [[maybe_unused]] const string_view tag,
       application_config_value_loader& loader) noexcept {
-        EAGINE_MAYBE_UNUSED(key);
-        EAGINE_MAYBE_UNUSED(tag);
         _loaders.erase(&loader);
     }
 
@@ -254,7 +250,7 @@ private:
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto application_config::_impl() noexcept -> application_config_impl* {
-    if(EAGINE_UNLIKELY(!_pimpl)) {
+    if(!_pimpl) [[unlikely]] {
         try {
             _pimpl = std::make_shared<application_config_impl>(*this);
         } catch(...) {

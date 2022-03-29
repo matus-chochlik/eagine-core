@@ -107,6 +107,10 @@ struct compound_interface : interface<compound_interface> {
     /// @pre this->type_id() == attr.type_id()
     virtual auto canonical_type(attribute_interface& attr) -> value_type = 0;
 
+    /// @brief Indicates if the attribute value and structure is immutable.
+    /// @pre this->type_id() == attr.type_id()
+    virtual auto is_immutable(attribute_interface& attr) -> bool = 0;
+
     /// @brief Indicates if the specified attribute is a reference or link in the tree.
     /// @pre this->type_id() == attr.type_id()
     virtual auto is_link(attribute_interface& attr) -> bool = 0;

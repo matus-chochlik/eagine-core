@@ -33,17 +33,15 @@ public:
       : _positive{pos} {}
 
     /// @brief Construction taking the sign from the specified numeric @p value.
-    template <
-      typename X,
-      typename = std::enable_if_t<!std::is_same_v<X, sign<T>>>>
+    template <typename X>
     constexpr explicit sign(const X& value) noexcept
+      requires(!std::is_same_v<X, sign<T>>)
       : _positive{value >= X(0)} {}
 
     /// @brief Assignment taking the sign from the specified numeric @p value.
-    template <
-      typename X,
-      typename = std::enable_if_t<!std::is_same_v<X, sign<T>>>>
-    auto operator=(const X& value) noexcept -> auto& {
+    template <typename X>
+    auto operator=(const X& value) noexcept
+      -> auto& requires(!std::is_same_v<X, sign<T>>) {
         _positive = (value >= X(0));
         return *this;
     }

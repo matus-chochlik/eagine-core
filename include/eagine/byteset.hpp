@@ -54,34 +54,27 @@ public:
     constexpr byteset() noexcept = default;
 
     /// @brief Construction from a pack of integer values.
-    template <
-      typename... B,
-      typename = std::enable_if_t<
-        (sizeof...(B) == N) && (sizeof...(B) != 0) &&
-        std::conjunction_v<std::true_type, std::is_convertible<B, value_type>...>>>
-    explicit constexpr byteset(const B... b) noexcept
+    template <typename... B>
+    explicit constexpr byteset(const B... b) noexcept requires(
+      (sizeof...(B) == N) && (sizeof...(B) != 0) &&
+      std::conjunction_v<std::true_type, std::is_convertible<B, value_type>...>)
       : _bytes{value_type{b}...} {}
 
-    template <
-      std::size_t... I,
-      typename UInt,
-      typename =
-        std::enable_if_t<(sizeof(UInt) >= N) && std::is_integral_v<UInt>>>
+    template <std::size_t... I, typename UInt>
     constexpr byteset(const std::index_sequence<I...>, const UInt init) noexcept
+      requires((sizeof(UInt) >= N) && std::is_integral_v<UInt>)
       : _bytes{value_type((init >> (8 * (N - I - 1))) & 0xFFU)...} {}
 
     /// @brief Construiction from unsigned integer that is then split into bytes.
-    template <
-      typename UInt,
-      typename = std::enable_if_t<
-        (sizeof(UInt) >= N) && std::is_integral_v<UInt> &&
-        std::is_unsigned_v<UInt>>>
-    explicit constexpr byteset(const UInt init) noexcept
+    template <typename UInt>
+    explicit constexpr byteset(const UInt init) noexcept requires(
+      (sizeof(UInt) >= N) && std::is_integral_v<UInt> &&
+      std::is_unsigned_v<UInt>)
       : byteset(std::make_index_sequence<N>(), init) {}
 
     /// @brief Returns a pointer to the byte sequence start.
     /// @see size
-    auto data() noexcept -> pointer {
+    constexpr auto data() noexcept -> pointer {
         return _bytes;
     }
 
@@ -137,12 +130,12 @@ public:
     }
 
     /// @brief Returns an iterator to the start of the byte sequence.
-    auto begin() noexcept -> iterator {
+    constexpr auto begin() noexcept -> iterator {
         return _bytes + 0;
     }
 
     /// @brief Returns an iterator past the end of the byte sequence.
-    auto end() noexcept -> iterator {
+    constexpr auto end() noexcept -> iterator {
         return _bytes + N;
     }
 
@@ -203,16 +196,14 @@ public:
     }
 
     /// @brief Converts the byte sequence into an unsigned integer value.
-    template <
-      typename UInt,
-      typename = std::enable_if_t<
-        (sizeof(UInt) >= N) && (
+    template <typename UInt>
+    constexpr auto as(const UInt i = 0) const noexcept requires(
+      (sizeof(UInt) >= N) &&
+      (
 #if __SIZEOF_INT128__
-                                 std::is_same_v<UInt, __uint128_t> ||
-                                 std::is_same_v<UInt, __int128_t> ||
+        std::is_same_v<UInt, __uint128_t> || std::is_same_v<UInt, __int128_t> ||
 #endif
-                                 std::is_integral_v<UInt>)>>
-    constexpr auto as(const UInt i = 0) const noexcept {
+        std::is_integral_v<UInt>)) {
         return _push_back_to(i, 0);
     }
 

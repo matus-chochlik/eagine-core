@@ -6,13 +6,14 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/assert.hpp>
+#include <eagine/integer_range.hpp>
 #include <array>
 
 namespace eagine::mbs {
 //------------------------------------------------------------------------------
 inline auto do_decode_sequence_length(const byte b) noexcept
   -> valid_sequence_length {
-    for(span_size_t l = 1; l <= 6; ++l) {
+    for(const auto l : integer_range(1, 7)) {
         if(is_valid_head_byte(b, l)) {
             return l;
         }
@@ -21,15 +22,15 @@ inline auto do_decode_sequence_length(const byte b) noexcept
 }
 //------------------------------------------------------------------------------
 inline auto is_valid_encoding(const valid_cbyte_span& vseq) noexcept -> bool {
-    if(auto len = decode_sequence_length(vseq)) {
+    if(const auto len{decode_sequence_length(vseq)}) {
         const span_size_t l = len.value_anyway();
-        span<const byte> seq = vseq.value_anyway(l - 1);
+        span<const byte> seq = vseq.value_anyway();
 
         if(!is_valid_head_byte(seq[0], l)) {
             return false;
         }
 
-        for(span_size_t i = 1; i < l; ++i) {
+        for(const auto i : integer_range(1, l)) {
             if(!is_valid_tail_byte(seq[i], i, l)) {
                 return false;
             }
@@ -84,13 +85,13 @@ inline auto do_decode_code_point(
     if(vl.is_valid()) {
         const span_size_t l = vl.value_anyway();
         if(vsrc.is_valid(l - 1)) {
-            span<const byte> src = vsrc.value_anyway(l - 1);
+            span<const byte> src = vsrc.value_anyway();
 
             if(const auto h = decode_code_point_head(src[0], vl)) {
                 code_point_t cp = h.value_anyway();
 
-                for(span_size_t i = 1; i < l; ++i) {
-                    if(const auto t = decode_code_point_tail(src[i], i, vl)) {
+                for(const auto i : integer_range(1, l)) {
+                    if(const auto t{decode_code_point_tail(src[i], i, vl)}) {
                         cp |= t.value_anyway();
                     } else {
                         return {invalid_code_point};
@@ -140,15 +141,15 @@ inline auto do_encode_code_point(
     if(cp && vl) {
         const span_size_t l = vl.value_anyway();
         if(vdest.is_valid(l - 1)) {
-            span<byte> dest = vdest.value_anyway(l - 1);
+            span<byte> dest = vdest.value_anyway();
 
-            code_point_t val = cp.value_anyway();
+            const code_point_t val = cp.value_anyway();
 
             if(const auto h = encode_code_point_head(val, vl)) {
                 dest[0] = h.value_anyway();
 
-                for(span_size_t i = 1; i < l; ++i) {
-                    if(const auto t = encode_code_point_tail(val, i, vl)) {
+                for(const auto i : integer_range(1, l)) {
+                    if(const auto t{encode_code_point_tail(val, i, vl)}) {
                         dest[i] = t.value_anyway();
                     } else {
                         return false;
@@ -164,14 +165,14 @@ inline auto do_encode_code_point(
 inline auto encode_code_point(
   const code_point& cp,
   const valid_byte_span& dest) noexcept -> valid_sequence_length {
-    auto len = required_sequence_length(cp.value());
+    const auto len{required_sequence_length(cp.value())};
     do_encode_code_point(cp, dest, len);
-    return len;
+    return len; // NOLINT(performance-no-automatic-move)
 }
 //------------------------------------------------------------------------------
 inline auto encode_code_point(const code_point& cp)
   -> valid_if_not_empty<std::string> {
-    if(auto len = required_sequence_length(cp.value())) {
+    if(const auto len{required_sequence_length(cp.value())}) {
         std::array<byte, 7> tmp{};
         do_encode_code_point(cp, make_byte_span(cover(tmp)), len.value());
         return {std::string(
@@ -183,8 +184,8 @@ inline auto encode_code_point(const code_point& cp)
 inline auto encoding_bytes_required(span<const code_point_t> cps) noexcept
   -> optionally_valid<span_size_t> {
     span_size_t result = 0;
-    for(code_point_t cp : cps) {
-        if(const auto len = required_sequence_length(cp)) {
+    for(const code_point_t cp : cps) {
+        if(const auto len{required_sequence_length(cp)}) {
             result += len.value_anyway();
         } else {
             return {0, false};
@@ -196,9 +197,9 @@ inline auto encoding_bytes_required(span<const code_point_t> cps) noexcept
 inline auto encoding_bytes_required(span<const code_point> cps) noexcept
   -> optionally_valid<span_size_t> {
     span_size_t result = 0;
-    for(code_point cp : cps) {
+    for(const code_point& cp : cps) {
         if(cp.is_valid()) {
-            if(const auto len = required_sequence_length(cp.value())) {
+            if(const auto len{required_sequence_length(cp.value())}) {
                 result += len.value_anyway();
             } else {
                 return {0, false};
@@ -215,10 +216,10 @@ inline auto decoding_code_points_required(const valid_cbyte_span& bytes) noexcep
     span_size_t result = 0;
 
     auto i = bytes.value(0).begin();
-    auto e = bytes.value(0).end();
+    const auto e = bytes.value(0).end();
 
     while(i != e) {
-        if(auto len = do_decode_sequence_length(*i)) {
+        if(const auto len{do_decode_sequence_length(*i)}) {
             ++result;
             i += span_size(len.value());
             EAGINE_ASSERT(!(i > e));
@@ -235,13 +236,13 @@ inline auto encode_code_points(
   const valid_byte_span& bytes) noexcept -> bool {
     span_size_t i = 0;
 
-    for(code_point cp : cps) {
+    for(const code_point& cp : cps) {
         if(!cp.is_valid()) {
             return false;
         }
 
         span<byte> sub{bytes.value(i).data() + i, bytes.value(i).size() - i};
-        auto len = encode_code_point(cp.value(), sub);
+        const auto len{encode_code_point(cp.value(), sub)};
 
         if(!len.is_valid()) {
             return false;
@@ -258,10 +259,10 @@ inline auto decode_code_points(
     span_size_t i = 0;
 
     for(code_point& cp : cps) {
-        span<const byte> sub{
+        const span<const byte> sub{
           bytes.value(i).data() + i, bytes.value(i).size() - i};
-        if(auto len = decode_sequence_length(sub)) {
-            if(const auto tcp = do_decode_code_point(sub, len.value())) {
+        if(const auto len{decode_sequence_length(sub)}) {
+            if(const auto tcp{do_decode_code_point(sub, len.value())}) {
                 cp = tcp;
                 i += span_size(len.value());
             } else {

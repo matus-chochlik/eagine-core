@@ -8,10 +8,9 @@
 #ifndef EAGINE_ASSERT_HPP
 #define EAGINE_ASSERT_HPP
 
-#include "branch_predict.hpp"
 #include "config/basic.hpp"
 #include "diagnostic.hpp"
-#include "maybe_unused.hpp"
+#include "stacktrace.hpp"
 #include <cassert>
 
 #ifndef EAGINE_CHECK_LIMIT_CAST
@@ -22,23 +21,17 @@
 #endif
 #endif
 
+#if defined __GNUC__
+#define EAGINE_LIKELY(EXPR) __builtin_expect(!!(EXPR), 1)
+#else
+#define EAGINE_LIKELY(EXPR) (!!(EXPR))
+#endif
+
 #if EAGINE_USE_STACKTRACE
-#include <iostream>
-
-#ifdef __clang__
-EAGINE_DIAG_PUSH()
-EAGINE_DIAG_OFF(shadow)
-EAGINE_DIAG_OFF(missing-noreturn)
-#endif
-
-#if EAGINE_USE_BACKTRACE
-#define BOOST_STACKTRACE_USE_BACKTRACE 1
-#endif
 
 #define BOOST_ENABLE_ASSERT_DEBUG_HANDLER 1
 
 #include <boost/assert.hpp>
-#include <boost/stacktrace/stacktrace.hpp>
 
 // clang-format off
 
@@ -57,7 +50,7 @@ inline void assertion_failed(
         << function
         << "`\n"
         << "Backtrace:\n"
-        << ::boost::stacktrace::stacktrace()
+        << eagine::stacktrace
         << std::endl;
     std::abort();
 }
@@ -78,7 +71,7 @@ inline void assertion_failed_msg(
         << (message ? message : "<...>")
         << '\n'
         << "Backtrace:\n"
-        << ::boost::stacktrace::stacktrace()
+        << eagine::stacktrace
         << std::endl;
     std::abort();
 }
@@ -103,8 +96,7 @@ EAGINE_DIAG_POP()
 #endif
 
 #if EAGINE_CHECK_LIMIT_CAST
-#define EAGINE_CONSTEXPR_ASSERT(UNUSED, RESULT) \
-    (EAGINE_MAYBE_UNUSED(UNUSED), RESULT)
+#define EAGINE_CONSTEXPR_ASSERT(UNUSED, RESULT) ((void)(UNUSED), RESULT)
 #else
 #define EAGINE_CONSTEXPR_ASSERT(CHECK, RESULT) \
     ((EAGINE_LIKELY(CHECK) ? void(0)                                  \

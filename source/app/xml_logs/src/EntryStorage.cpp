@@ -18,8 +18,8 @@ auto LogEntryStorage::cacheString(eagine::string_view s)
 //------------------------------------------------------------------------------
 void LogEntryStorage::_emplaceNextEntry(LogEntryData&& entry) noexcept {
     auto& chunk = [&]() -> std::vector<LogEntryData>& {
-        if(EAGINE_LIKELY(!_entries.empty())) {
-            if(EAGINE_UNLIKELY(_entries.back().size() >= _chunkSize())) {
+        if(!_entries.empty()) [[likely]] {
+            if(_entries.back().size() >= _chunkSize()) [[unlikely]] {
                 EAGINE_ASSERT(_entries.back().size() == _chunkSize());
                 _entries.emplace_back();
                 _entries.back().reserve(_chunkSize());
@@ -34,7 +34,7 @@ void LogEntryStorage::_emplaceNextEntry(LogEntryData&& entry) noexcept {
 }
 //------------------------------------------------------------------------------
 auto LogEntryStorage::_getNextStreamList() noexcept -> LogStreamList& {
-    if(EAGINE_LIKELY(!_streamLists.empty())) {
+    if(!_streamLists.empty()) [[likely]] {
         _streamLists.push_back(_streamLists.back());
     } else {
         _streamLists.emplace_back();
@@ -88,7 +88,7 @@ void LogEntryStorage::endStream(stream_id_t streamId) noexcept {
     info.entryUid = ++_uidSequence;
     const auto pos =
       std::find(info.streamIds.begin(), info.streamIds.end(), streamId);
-    if(EAGINE_LIKELY(pos != info.streamIds.end())) {
+    if(pos != info.streamIds.end()) [[likely]] {
         info.streamIds.erase(pos);
     }
 }
@@ -99,7 +99,7 @@ auto LogEntryStorage::streamInfoRef(const stream_id_t streamId) noexcept
 }
 //------------------------------------------------------------------------------
 auto LogEntryStorage::streamCount() const noexcept -> int {
-    if(EAGINE_LIKELY(!_streams.empty())) {
+    if(!_streams.empty()) [[likely]] {
         return eagine::limit_cast<int>(_streams.size());
     }
     return 0;
@@ -118,7 +118,7 @@ auto LogEntryStorage::getStreamInfo(int index) noexcept -> LogStreamInfo* {
 }
 //------------------------------------------------------------------------------
 auto LogEntryStorage::entryCount() const noexcept -> int {
-    if(EAGINE_LIKELY(!_entries.empty())) {
+    if(!_entries.empty()) [[likely]] {
         return eagine::limit_cast<int>(
           (_entries.size() - 1U) * _chunkSize() + _entries.back().size());
     }
@@ -126,11 +126,11 @@ auto LogEntryStorage::entryCount() const noexcept -> int {
 }
 //------------------------------------------------------------------------------
 auto LogEntryStorage::getEntry(int index) noexcept -> LogEntryData* {
-    if(EAGINE_LIKELY(!_entries.empty())) {
+    if(!_entries.empty()) [[likely]] {
         const auto entIdx{eagine::convert_if_fits<std::size_t>(index)};
-        if(EAGINE_LIKELY(entIdx)) {
+        if(entIdx) [[likely]] {
             const auto chunkIdx{extract(entIdx) / _chunkSize()};
-            if(EAGINE_LIKELY(chunkIdx < _entries.size())) {
+            if(chunkIdx < _entries.size()) [[likely]] {
                 return &_entries[chunkIdx][extract(entIdx) % _chunkSize()];
             }
         }

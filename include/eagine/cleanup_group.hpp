@@ -19,19 +19,15 @@ private:
     memory::object_storage _storage;
 
 public:
-    template <
-      typename Func,
-      typename = std::enable_if_t<std::is_invocable_v<Func>>,
-      typename = std::enable_if_t<std::is_void_v<std::invoke_result_t<Func>>>>
-    auto add(Func func) -> auto& {
+    template <typename Func>
+    auto add(Func func) -> auto& requires(
+      std::is_invocable_v<Func>&& std::is_void_v<std::invoke_result_t<Func>>) {
         return _storage.template emplace<func_on_scope_exit<Func>>(
           std::move(func));
     }
 
-    template <
-      typename Func,
-      typename = std::enable_if_t<std::is_invocable_v<Func>>>
-    auto add_ret(Func func) -> auto& {
+    template <typename Func>
+    auto add_ret(Func func) -> auto& requires(std::is_invocable_v<Func>) {
         return add([func{std::move(func)}]() { func(); });
     }
 
