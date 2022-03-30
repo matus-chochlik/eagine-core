@@ -15,7 +15,7 @@ inline auto c_byte_reallocator::allocate(
   [[maybe_unused]] size_type a) noexcept -> owned_block {
     EAGINE_ASSERT(a > 0);
 
-    if(n == 0) {
+    if(n == 0) [[unlikely]] {
         return {};
     }
 
@@ -28,7 +28,7 @@ inline auto c_byte_reallocator::allocate(
 }
 //------------------------------------------------------------------------------
 inline void c_byte_reallocator::deallocate(owned_block&& b, size_type) noexcept {
-    if(!b.empty()) {
+    if(!b.empty()) [[likely]] {
         // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
         std::free(b.data());
         this->release_block(std::move(b));
@@ -41,7 +41,7 @@ inline auto c_byte_reallocator::reallocate(
   size_type a) noexcept -> owned_block {
     EAGINE_ASSERT(a > 0);
 
-    if(n == 0) {
+    if(n == 0) [[unlikely]] {
         deallocate(std::move(b), a);
         return {};
     }
