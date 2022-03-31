@@ -112,7 +112,7 @@ class basic_adapted_function<
     template <std::size_t... I>
     constexpr auto _lazy(CppParam... param, std::index_sequence<I...>)
       const noexcept {
-        ArgMap map{};
+        [[maybe_unused]] ArgMap map{};
         return
           [&api{_api}, ... args{map(size_constant<I + 1>{}, 0, param...)}]() {
               Ftw::call(api.*method, args...);
