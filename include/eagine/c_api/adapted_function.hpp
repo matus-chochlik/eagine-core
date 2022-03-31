@@ -67,20 +67,26 @@ class basic_adapted_function<
     constexpr auto _call(CppParam... param, std::index_sequence<I...>)
       const noexcept requires(std::is_same_v<RvMap, ArgMap>) {
         ArgMap map{};
-        return _api.check_result(map(
-          size_constant<0>{},
-          Ftw::call(_api.*method, map(size_constant<I + 1>{}, 0, param...)...),
-          param...));
+        return _api.check_result(
+          map(
+            size_constant<0>{},
+            Ftw::call(
+              _api.*method, map(size_constant<I + 1>{}, 0, param...)...),
+            param...),
+          param...);
     }
 
     template <std::size_t... I>
     constexpr auto _call(CppParam... param, std::index_sequence<I...>)
       const noexcept requires(!std::is_same_v<RvMap, ArgMap>) {
         ArgMap map{};
-        return _api.check_result(RvMap{}(
-          size_constant<0>{},
-          Ftw::call(_api.*method, map(size_constant<I + 1>{}, 0, param...)...),
-          param...));
+        return _api.check_result(
+          RvMap{}(
+            size_constant<0>{},
+            Ftw::call(
+              _api.*method, map(size_constant<I + 1>{}, 0, param...)...),
+            param...),
+          param...);
     }
 
     template <std::size_t... I>
@@ -88,11 +94,13 @@ class basic_adapted_function<
       const noexcept requires(std::is_same_v<RvMap, ArgMap>) {
         return [&api{_api}, param...]() {
             ArgMap map{};
-            return api.check_result(map(
-              size_constant<0>{},
-              Ftw::call(
-                api.*method, map(size_constant<I + 1>{}, 0, param...)...),
-              param...));
+            return api.check_result(
+              map(
+                size_constant<0>{},
+                Ftw::call(
+                  api.*method, map(size_constant<I + 1>{}, 0, param...)...),
+                param...),
+              param...);
         };
     }
 
@@ -101,11 +109,13 @@ class basic_adapted_function<
       const noexcept requires(!std::is_same_v<RvMap, ArgMap>) {
         return [&api{_api}, param...]() {
             ArgMap map{};
-            return api.check_result(RvMap{}(
-              size_constant<0>{},
-              Ftw::call(
-                api.*method, map(size_constant<I + 1>{}, 0, param...)...),
-              param...));
+            return api.check_result(
+              RvMap{}(
+                size_constant<0>{},
+                Ftw::call(
+                  api.*method, map(size_constant<I + 1>{}, 0, param...)...),
+                param...),
+              param...);
         };
     }
 

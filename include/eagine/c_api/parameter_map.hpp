@@ -275,19 +275,18 @@ struct make_arg_map<I, I, V*, memory::basic_span<V, R, S>> {
     }
 };
 
+template <std::size_t I, typename Tag, typename Handle, Handle invalid>
+struct make_arg_map<I, I, Handle, basic_handle<Tag, Handle, invalid>>
+  : convert<Handle, trivial_arg_map<I>> {};
+
 template <
   std::size_t CI,
   std::size_t CppI,
   typename Tag,
   typename Handle,
   Handle invalid>
-struct make_arg_map<CI, CppI, Handle*, basic_handle<Tag, Handle, invalid>&> {
-    template <typename... P>
-    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
-        return static_cast<Handle*>(
-          reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...));
-    }
-};
+struct make_arg_map<CI, CppI, Handle, basic_handle<Tag, Handle, invalid>>
+  : convert<Handle, reorder_arg_map<CI, CppI>> {};
 
 template <
   std::size_t CI,
