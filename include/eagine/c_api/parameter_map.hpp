@@ -21,19 +21,20 @@ class trivial_map {
 
     template <typename U, typename P1, typename... P>
     constexpr auto _get(size_constant<1>, U, P1& p1, P&...) const noexcept
-      -> P1& {
+      -> decltype(auto) {
         return p1;
     }
 
     template <std::size_t I, typename U, typename Pi, typename... P>
-    constexpr auto _get(size_constant<I>, U u, Pi, P&... p) const noexcept
+    constexpr auto _get(size_constant<I>, U u, Pi&, P&... p) const noexcept
       -> decltype(auto) {
         return _get(size_constant<I - 1>(), u, p...);
     }
 
 public:
     template <typename RV, typename... P>
-    constexpr auto operator()(size_constant<0>, RV rv, P&...) const noexcept {
+    constexpr auto operator()(size_constant<0>, RV rv, P&...) const noexcept
+      -> decltype(auto) {
         return rv;
     }
 
@@ -288,13 +289,21 @@ template <
 struct make_arg_map<CI, CppI, Handle, basic_handle<Tag, Handle, invalid>>
   : convert<Handle, reorder_arg_map<CI, CppI>> {};
 
+template <std::size_t I, typename Tag, typename Handle, Handle invalid>
+struct make_arg_map<I, I, Handle, basic_owned_handle<Tag, Handle, invalid>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...).release();
+    }
+};
+
 template <
   std::size_t CI,
   std::size_t CppI,
   typename Tag,
   typename Handle,
   Handle invalid>
-struct make_arg_map<CI, CppI, Handle, basic_owned_handle<Tag, Handle, invalid>&> {
+struct make_arg_map<CI, CppI, Handle, basic_owned_handle<Tag, Handle, invalid>> {
     template <typename... P>
     constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
         return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).release();
