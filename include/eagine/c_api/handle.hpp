@@ -6,15 +6,15 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#ifndef EAGINE_HANDLE_HPP
-#define EAGINE_HANDLE_HPP
+#ifndef EAGINE_C_API_HANDLE_HPP
+#define EAGINE_C_API_HANDLE_HPP
 
-#include "span.hpp"
-#include "wrapping_container.hpp"
+#include "../span.hpp"
+#include "../wrapping_container.hpp"
 #include <array>
 #include <vector>
 
-namespace eagine {
+namespace eagine::c_api {
 //------------------------------------------------------------------------------
 /// @brief Non-owning wrapper for C-API opaque handle types.
 /// @ingroup c_api_wrap
@@ -212,6 +212,6 @@ using basic_handle_vector = basic_handle_container<
   BasicHandle,
   std::vector<typename BasicHandle::handle_type>>;
 //------------------------------------------------------------------------------
-} // namespace eagine
+} // namespace eagine::c_api
 
 #endif // EAGINE_HANDLE_HPP

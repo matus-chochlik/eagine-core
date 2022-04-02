@@ -25,6 +25,7 @@ set(HEADERS
     eagine/c_api/api_traits.hpp
     eagine/c_api/constant.hpp
     eagine/c_api/function.hpp
+    eagine/c_api/handle.hpp
     eagine/c_api/parameter_map.hpp
     eagine/c_api/result.hpp
     eagine/c_api_wrap.hpp
@@ -57,7 +58,6 @@ set(HEADERS
     eagine/flat_set.hpp
     eagine/from_string.hpp
     eagine/git_info.hpp
-    eagine/handle.hpp
     eagine/hexdump.hpp
     eagine/identifier_ctr.hpp
     eagine/identifier.hpp

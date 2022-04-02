@@ -9,11 +9,11 @@
 #ifndef EAGINE_C_API_PARAMETER_MAP_HPP
 #define EAGINE_C_API_PARAMETER_MAP_HPP
 
-#include "../handle.hpp"
 #include "../int_constant.hpp"
 #include "../is_within_limits.hpp"
 #include "../mp_list.hpp"
 #include "../string_span.hpp"
+#include "handle.hpp"
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------
