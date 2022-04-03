@@ -26,6 +26,7 @@ set(HEADERS
     eagine/c_api/constant.hpp
     eagine/c_api/function.hpp
     eagine/c_api/handle.hpp
+    eagine/c_api/key_value_list.hpp
     eagine/c_api/parameter_map.hpp
     eagine/c_api/result.hpp
     eagine/c_api_wrap.hpp
@@ -72,7 +73,6 @@ set(HEADERS
     eagine/interop/valgrind.hpp
     eagine/is_within_limits.hpp
     eagine/iterator.hpp
-    eagine/key_val_list.hpp
     eagine/logging/asio_backend.hpp
     eagine/logging/backend.hpp
     eagine/logging/config.hpp
