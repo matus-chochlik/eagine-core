@@ -14,6 +14,7 @@
 #include "../mp_list.hpp"
 #include "../string_span.hpp"
 #include "handle.hpp"
+#include "key_value_list.hpp"
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------
@@ -270,6 +271,26 @@ struct make_arg_map<CI, CppI, V*, memory::basic_span<V, R, S>> {
 
 template <std::size_t I, typename V, typename R, typename S>
 struct make_arg_map<I, I, V*, memory::basic_span<V, R, S>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...).data();
+    }
+};
+
+template <std::size_t CI, std::size_t CppI, typename V, typename Tr>
+requires(std::is_convertible_v<
+         typename Tr::value_type*,
+         V*>) struct make_arg_map<CI, CppI, V*, key_value_list<Tr>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).data();
+    }
+};
+
+template <std::size_t I, typename V, typename Tr>
+requires(std::is_convertible_v<
+         typename Tr::value_type*,
+         V*>) struct make_arg_map<I, I, V*, key_value_list<Tr>> {
     template <typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
         return trivial_map{}(i, std::forward<P>(p)...).data();
