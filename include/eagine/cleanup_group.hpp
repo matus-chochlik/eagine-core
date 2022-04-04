@@ -28,7 +28,7 @@ public:
 
     template <typename Func>
     auto add_ret(Func func) -> auto& requires(std::is_invocable_v<Func>) {
-        return add([func{std::move(func)}]() { func(); });
+        return add([func{std::move(func)}]() mutable { func(); });
     }
 
     void reserve(span_size_t n) {
