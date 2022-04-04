@@ -9,7 +9,7 @@
 #ifndef EAGINE_C_API_ADAPTED_FUNCTION_HPP
 #define EAGINE_C_API_ADAPTED_FUNCTION_HPP
 
-#include "../scope_exit.hpp"
+#include "../cleanup_group.hpp"
 #include "function.hpp"
 #include "parameter_map.hpp"
 #include "result.hpp"
@@ -149,6 +149,17 @@ public:
         using CS = std::make_index_sequence<sizeof...(CParam)>;
         using CppS = std::make_index_sequence<sizeof...(CppParam)>;
         return eagine::finally(
+          _raii(CS{}, CppS{}, std::forward<decltype(param)>(param)...));
+    }
+
+    auto later_by(
+      cleanup_group& cleanup,
+      adapted_function_raii_parameter_t<CppParam>... param) const noexcept
+      -> decltype(auto) {
+        using CS = std::make_index_sequence<sizeof...(CParam)>;
+        using CppS = std::make_index_sequence<sizeof...(CppParam)>;
+
+        return cleanup.add_ret(
           _raii(CS{}, CppS{}, std::forward<decltype(param)>(param)...));
     }
 
