@@ -332,7 +332,6 @@ set(HEADERS
     eagine/valid_if/positive.hpp
     eagine/valid_if/size_gt.hpp
     eagine/valid_if/within_limits.hpp
-    eagine/value_tracker.hpp
     eagine/value_tree/empty.hpp
     eagine/value_tree/filesystem.hpp
     eagine/value_tree/implementation.hpp
