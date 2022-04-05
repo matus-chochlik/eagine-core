@@ -197,7 +197,8 @@ struct skip_transform_map {
 //------------------------------------------------------------------------------
 template <typename Dst, typename Src>
 static constexpr auto c_arg_cast(Src&& src) noexcept -> Dst {
-    if constexpr(std::is_integral_v<Dst> || std::is_floating_point_v<Dst>) {
+    if constexpr((std::is_integral_v<Dst> || std::is_floating_point_v<Dst>)&&(
+                   std::is_integral_v<Src> || std::is_floating_point_v<Src>)) {
         if constexpr(std::is_same_v<
                        std::remove_cv_t<std::remove_reference_t<Src>>,
                        bool>) {
