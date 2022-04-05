@@ -85,11 +85,6 @@ struct enum_value<bool, mp_list<Classes...>, Tag> {
         return value;
     }
 };
-template <typename Dst, typename Src, typename... Classes, typename Tag>
-static constexpr auto limit_cast(enum_value<Src, Classes..., Tag> val) noexcept
-  -> Dst requires(std::is_convertible_v<Src, Dst>) {
-    return limit_cast<Dst>(val.value);
-}
 //------------------------------------------------------------------------------
 /// @brief Class holding optional value of a (typically C-API) symbolic constant.
 /// @tparam T the constant or enumerator value type.

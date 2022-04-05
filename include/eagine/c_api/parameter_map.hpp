@@ -9,11 +9,12 @@
 #ifndef EAGINE_C_API_PARAMETER_MAP_HPP
 #define EAGINE_C_API_PARAMETER_MAP_HPP
 
-#include "../handle.hpp"
 #include "../int_constant.hpp"
 #include "../is_within_limits.hpp"
 #include "../mp_list.hpp"
 #include "../string_span.hpp"
+#include "handle.hpp"
+#include "key_value_list.hpp"
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------
@@ -21,19 +22,20 @@ class trivial_map {
 
     template <typename U, typename P1, typename... P>
     constexpr auto _get(size_constant<1>, U, P1& p1, P&...) const noexcept
-      -> P1& {
+      -> decltype(auto) {
         return p1;
     }
 
     template <std::size_t I, typename U, typename Pi, typename... P>
-    constexpr auto _get(size_constant<I>, U u, Pi, P&... p) const noexcept
+    constexpr auto _get(size_constant<I>, U u, Pi&, P&... p) const noexcept
       -> decltype(auto) {
         return _get(size_constant<I - 1>(), u, p...);
     }
 
 public:
     template <typename RV, typename... P>
-    constexpr auto operator()(size_constant<0>, RV rv, P&...) const noexcept {
+    constexpr auto operator()(size_constant<0>, RV rv, P&...) const noexcept
+      -> decltype(auto) {
         return rv;
     }
 
@@ -195,7 +197,8 @@ struct skip_transform_map {
 //------------------------------------------------------------------------------
 template <typename Dst, typename Src>
 static constexpr auto c_arg_cast(Src&& src) noexcept -> Dst {
-    if constexpr(std::is_integral_v<Dst> || std::is_floating_point_v<Dst>) {
+    if constexpr((std::is_integral_v<Dst> || std::is_floating_point_v<Dst>)&&(
+                   std::is_integral_v<Src> || std::is_floating_point_v<Src>)) {
         if constexpr(std::is_same_v<
                        std::remove_cv_t<std::remove_reference_t<Src>>,
                        bool>) {
@@ -275,17 +278,44 @@ struct make_arg_map<I, I, V*, memory::basic_span<V, R, S>> {
     }
 };
 
+template <std::size_t CI, std::size_t CppI, typename V, typename Tr>
+requires(std::is_convertible_v<
+         typename Tr::value_type*,
+         V*>) struct make_arg_map<CI, CppI, V*, key_value_list<Tr>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).data();
+    }
+};
+
+template <std::size_t I, typename V, typename Tr>
+requires(std::is_convertible_v<
+         typename Tr::value_type*,
+         V*>) struct make_arg_map<I, I, V*, key_value_list<Tr>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...).data();
+    }
+};
+
+template <std::size_t I, typename Tag, typename Handle, Handle invalid>
+struct make_arg_map<I, I, Handle, basic_handle<Tag, Handle, invalid>>
+  : convert<Handle, trivial_arg_map<I>> {};
+
 template <
   std::size_t CI,
   std::size_t CppI,
   typename Tag,
   typename Handle,
   Handle invalid>
-struct make_arg_map<CI, CppI, Handle*, basic_handle<Tag, Handle, invalid>&> {
+struct make_arg_map<CI, CppI, Handle, basic_handle<Tag, Handle, invalid>>
+  : convert<Handle, reorder_arg_map<CI, CppI>> {};
+
+template <std::size_t I, typename Tag, typename Handle, Handle invalid>
+struct make_arg_map<I, I, Handle, basic_owned_handle<Tag, Handle, invalid>> {
     template <typename... P>
-    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
-        return static_cast<Handle*>(
-          reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...));
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...).release();
     }
 };
 
@@ -295,7 +325,7 @@ template <
   typename Tag,
   typename Handle,
   Handle invalid>
-struct make_arg_map<CI, CppI, Handle, basic_owned_handle<Tag, Handle, invalid>&> {
+struct make_arg_map<CI, CppI, Handle, basic_owned_handle<Tag, Handle, invalid>> {
     template <typename... P>
     constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
         return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).release();

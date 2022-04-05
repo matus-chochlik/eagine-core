@@ -37,8 +37,8 @@ public:
     using this_api = example_file_api;
     using api_traits = example_api_traits;
 
-    template <typename Result>
-    static constexpr auto check_result(Result result) noexcept {
+    template <typename Result, typename... U>
+    static constexpr auto check_result(Result result, U&&...) noexcept {
         return result;
     }
 

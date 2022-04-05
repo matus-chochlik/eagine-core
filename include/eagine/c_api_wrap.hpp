@@ -13,10 +13,10 @@
 #include "c_api/api_traits.hpp"
 #include "c_api/constant.hpp"
 #include "c_api/function.hpp"
+#include "c_api/handle.hpp"
 #include "c_str.hpp"
 #include "cleanup_group.hpp"
 #include "enum_bitfield.hpp"
-#include "handle.hpp"
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -172,7 +172,7 @@ protected:
     }
 
     template <typename Tg, typename T, T inv>
-    static constexpr auto _conv(basic_handle<Tg, T, inv> hndl) noexcept {
+    static constexpr auto _conv(c_api::basic_handle<Tg, T, inv> hndl) noexcept {
         return T(hndl);
     }
 

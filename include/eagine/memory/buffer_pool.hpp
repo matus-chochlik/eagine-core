@@ -9,11 +9,50 @@
 #ifndef EAGINE_MEMORY_BUFFER_POOL_HPP
 #define EAGINE_MEMORY_BUFFER_POOL_HPP
 
+#include "../config/basic.hpp"
+#include "../optional_ref.hpp"
 #include "buffer.hpp"
 #include <algorithm>
 #include <vector>
 
 namespace eagine::memory {
+//------------------------------------------------------------------------------
+class buffer_pool;
+class buffer_pool_stats {
+public:
+    auto number_of_gets() const noexcept {
+        return _gets;
+    }
+
+    auto number_of_hits() const noexcept {
+        return _hits;
+    }
+
+    auto number_of_eats() const noexcept {
+        return _eats;
+    }
+
+    auto number_of_discards() const noexcept {
+        return _dscs;
+    }
+
+    auto max_buffer_count() const noexcept {
+        return _maxc;
+    }
+
+    auto max_buffer_size() const noexcept {
+        return _maxs;
+    }
+
+private:
+    friend class buffer_pool;
+    std::uintmax_t _hits{0};
+    std::uintmax_t _gets{0};
+    std::uintmax_t _eats{0};
+    std::uintmax_t _dscs{0};
+    std::size_t _maxc{0};
+    std::size_t _maxs{0};
+};
 //------------------------------------------------------------------------------
 /// @brief Class storing multiple reusable memory buffer instances.
 /// @ingroup memory
@@ -31,14 +70,17 @@ public:
     /// @param req_size The returned buffer will have at least this number of bytes.
     /// @see eat
     auto get(const span_size_t req_size = 0) -> memory::buffer {
-        auto pos = std::lower_bound(
-          _pool.begin(), _pool.end(), req_size, [](auto& buf, auto req) {
-              return buf.capacity() < req;
-          });
         memory::buffer result{};
-        if(pos != _pool.end()) {
-            result = std::move(*pos);
-            _pool.erase(pos);
+#if !EAGINE_LOW_PROFILE
+        _stats._maxc = std::max(_stats._maxc, _pool.size());
+        ++_stats._gets;
+#endif
+        if(!_pool.empty()) [[likely]] {
+#if !EAGINE_LOW_PROFILE
+            ++_stats._hits;
+#endif
+            result = std::move(_pool.back());
+            _pool.pop_back();
         }
         result.resize(req_size);
         return result;
@@ -47,28 +89,37 @@ public:
     /// @brief Returns the specified buffer back to the pool for further reuse.
     /// @see get
     void eat(memory::buffer used) noexcept {
-        auto pos = std::lower_bound(
-          _pool.begin(),
-          _pool.end(),
-          used.capacity(),
-          [](auto& buf, const auto capacity) {
-              return buf.capacity() < capacity;
-          });
-        if(_pool.size() < _max) {
+        if(_pool.size() < _max) [[likely]] {
             try {
-                _pool.emplace(pos, std::move(used));
+                _pool.emplace_back(std::move(used));
             } catch(...) {
             }
-        } else if(pos != _pool.end()) {
-            *pos = std::move(used);
         } else {
-            _pool.back() = std::move(used);
+#if !EAGINE_LOW_PROFILE
+            ++_stats._dscs;
+#endif
         }
+#if !EAGINE_LOW_PROFILE
+        ++_stats._eats;
+        _stats._maxs = std::max(_stats._maxs, std_size(used.capacity()));
+#endif
+    }
+
+    auto stats() const noexcept
+      -> optional_reference_wrapper<const buffer_pool_stats> {
+#if !EAGINE_LOW_PROFILE
+        return {_stats};
+#else
+        return {};
+#endif
     }
 
 private:
+    const std::size_t _max{1024};
     std::vector<memory::buffer> _pool;
-    std::size_t _max{64};
+#if !EAGINE_LOW_PROFILE
+    buffer_pool_stats _stats{};
+#endif
 };
 //------------------------------------------------------------------------------
 } // namespace eagine::memory

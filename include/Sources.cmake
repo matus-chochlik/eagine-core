@@ -25,6 +25,8 @@ set(HEADERS
     eagine/c_api/api_traits.hpp
     eagine/c_api/constant.hpp
     eagine/c_api/function.hpp
+    eagine/c_api/handle.hpp
+    eagine/c_api/key_value_list.hpp
     eagine/c_api/parameter_map.hpp
     eagine/c_api/result.hpp
     eagine/c_api_wrap.hpp
@@ -57,7 +59,6 @@ set(HEADERS
     eagine/flat_set.hpp
     eagine/from_string.hpp
     eagine/git_info.hpp
-    eagine/handle.hpp
     eagine/hexdump.hpp
     eagine/identifier_ctr.hpp
     eagine/identifier.hpp
@@ -72,7 +73,6 @@ set(HEADERS
     eagine/interop/valgrind.hpp
     eagine/is_within_limits.hpp
     eagine/iterator.hpp
-    eagine/key_val_list.hpp
     eagine/logging/asio_backend.hpp
     eagine/logging/backend.hpp
     eagine/logging/config.hpp
@@ -315,7 +315,6 @@ set(HEADERS
     eagine/valid_if/ge0_lt1.hpp
     eagine/valid_if/greater_than.hpp
     eagine/valid_if/gt0_lt1.hpp
-    eagine/valid_if.hpp
     eagine/valid_if/in_class.hpp
     eagine/valid_if/indicated.hpp
     eagine/valid_if/in_list.hpp
@@ -333,7 +332,6 @@ set(HEADERS
     eagine/valid_if/positive.hpp
     eagine/valid_if/size_gt.hpp
     eagine/valid_if/within_limits.hpp
-    eagine/value_tracker.hpp
     eagine/value_tree/empty.hpp
     eagine/value_tree/filesystem.hpp
     eagine/value_tree/implementation.hpp
