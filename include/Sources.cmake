@@ -315,7 +315,6 @@ set(HEADERS
     eagine/valid_if/ge0_lt1.hpp
     eagine/valid_if/greater_than.hpp
     eagine/valid_if/gt0_lt1.hpp
-    eagine/valid_if.hpp
     eagine/valid_if/in_class.hpp
     eagine/valid_if/indicated.hpp
     eagine/valid_if/in_list.hpp
