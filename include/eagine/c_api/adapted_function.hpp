@@ -179,28 +179,83 @@ private:
     Api& _api;
 };
 
+template <typename... BasicAdaptedFunction>
+class combined;
+
+template <
+  typename Api,
+  auto... methods,
+  typename... CSignatures,
+  typename... CppSignatures,
+  typename... RvMaps,
+  typename... ArgMaps>
+class combined<
+  basic_adapted_function<Api, methods, CSignatures, CppSignatures, RvMaps, ArgMaps>...>
+  : public basic_adapted_function<
+      Api,
+      methods,
+      CSignatures,
+      CppSignatures,
+      RvMaps,
+      ArgMaps>... {
+public:
+    constexpr combined(Api& api) noexcept
+      : basic_adapted_function<
+          Api,
+          methods,
+          CSignatures,
+          CppSignatures,
+          RvMaps,
+          ArgMaps>{api}... {}
+
+    constexpr explicit operator bool() const noexcept {
+        return (
+          ... && basic_adapted_function<
+                   Api,
+                   methods,
+                   CSignatures,
+                   CppSignatures,
+                   RvMaps,
+                   ArgMaps>::operator bool());
+    }
+
+    using basic_adapted_function<
+      Api,
+      methods,
+      CSignatures,
+      CppSignatures,
+      RvMaps,
+      ArgMaps>::operator()...;
+
+    using basic_adapted_function<
+      Api,
+      methods,
+      CSignatures,
+      CppSignatures,
+      RvMaps,
+      ArgMaps>::raii...;
+
+    using basic_adapted_function<
+      Api,
+      methods,
+      CSignatures,
+      CppSignatures,
+      RvMaps,
+      ArgMaps>::later_by...;
+};
+
 template <
   auto method,
   typename CppSignature = method_signature_t<method>,
   typename RvMap = make_map_t<method_signature_t<method>, CppSignature>,
   typename ArgMap = make_map_t<method_signature_t<method>, CppSignature>>
-struct adapted_function
-  : basic_adapted_function<
-      method_api_t<method>,
-      method,
-      method_signature_t<method>,
-      CppSignature,
-      RvMap,
-      ArgMap> {
-    adapted_function(method_api_t<method>& api)
-      : basic_adapted_function<
-          method_api_t<method>,
-          method,
-          method_signature_t<method>,
-          CppSignature,
-          RvMap,
-          ArgMap>{api} {}
-};
+using adapted_function = basic_adapted_function<
+  method_api_t<method>,
+  method,
+  method_signature_t<method>,
+  CppSignature,
+  RvMap,
+  ArgMap>;
 
 template <
   typename Api,

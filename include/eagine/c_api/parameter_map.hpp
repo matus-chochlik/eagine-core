@@ -440,6 +440,100 @@ requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
 template <
   std::size_t CI,
   std::size_t CppI,
+  typename CS,
+  typename CH,
+  typename... CT,
+  typename Tag,
+  CH invalid,
+  typename... CppT>
+requires(std::is_integral_v<CS>) struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CS, CH*, CT...>,
+  mp_list<basic_handle<Tag, CH, invalid>, CppT...>>
+  : make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI>, P&&...) const noexcept {
+        return static_cast<CS>(1);
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 1> i, P&&... p) const noexcept {
+        return static_cast<CH*>(
+          reorder_arg_map<CI + 1, CppI>{}(i, std::forward<P>(p)...));
+    }
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CS,
+  typename CH,
+  typename... CT,
+  typename Tag,
+  CH invalid,
+  typename... CppT>
+requires(std::is_integral_v<CS>) struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CS, const CH*, CT...>,
+  mp_list<basic_handle<Tag, CH, invalid>, CppT...>>
+  : make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI>, P&&...) const noexcept {
+        return static_cast<CS>(1);
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 1> i, P&&... p) const noexcept {
+        return static_cast<const CH*>(
+          reorder_arg_map<CI + 1, CppI>{}(i, std::forward<P>(p)...));
+    }
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CS,
+  typename CH,
+  typename... CT,
+  typename Tag,
+  CH invalid,
+  typename... CppT>
+requires(std::is_integral_v<CS>) struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CS, const CH*, CT...>,
+  mp_list<basic_owned_handle<Tag, CH, invalid>, CppT...>>
+  : make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI>, P&&...) const noexcept {
+        return static_cast<CS>(1);
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 1> i, P&&... p) noexcept {
+        _handle =
+          reorder_arg_map<CI + 1, CppI>{}(i, std::forward<P>(p)...).release();
+        return &_handle;
+    }
+
+private:
+    CH _handle{invalid};
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
   typename CP,
   typename CS,
   typename... CT,
