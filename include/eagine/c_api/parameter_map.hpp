@@ -332,6 +332,9 @@ struct make_arg_map<CI, CppI, Handle, basic_owned_handle<Tag, Handle, invalid>> 
     }
 };
 //------------------------------------------------------------------------------
+template <auto>
+struct substituted;
+
 template <std::size_t CI, std::size_t CppI, typename CP, typename CppP>
 struct make_args_map;
 
@@ -362,6 +365,28 @@ struct make_args_map<CI, CppI, mp_list<CH, CT...>, mp_list<CppH, CppT...>>
       std::remove_cv_t<std::remove_reference_t<CppH>>>::operator();
     using make_args_map<CI + 1, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CH,
+  typename... CT,
+  auto value,
+  typename... CppT>
+requires(std::is_convertible_v<decltype(value), CH>) struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CH, CT...>,
+  mp_list<substituted<value>, CppT...>>
+  : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI>, P&&...) const noexcept {
+        return value;
+    }
 };
 
 template <

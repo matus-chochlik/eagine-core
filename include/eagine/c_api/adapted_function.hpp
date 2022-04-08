@@ -179,6 +179,32 @@ private:
     Api& _api;
 };
 
+template <typename Result, typename Remain>
+struct get_transformed_signature;
+
+template <typename Rv, typename... P>
+struct get_transformed_signature<Rv(P...), mp_list<>> {
+    using type = Rv(P...);
+};
+
+template <typename Rv, typename... P, auto value, typename... T>
+struct get_transformed_signature<Rv(P...), mp_list<substituted<value>, T...>>
+  : get_transformed_signature<Rv(P...), mp_list<T...>> {};
+
+template <typename Rv, typename... P, typename H, typename... T>
+struct get_transformed_signature<Rv(P...), mp_list<H, T...>>
+  : get_transformed_signature<Rv(P..., H), mp_list<T...>> {};
+
+template <typename CppSignature>
+struct transform_signature;
+
+template <typename CppSignature>
+using transform_signature_t = typename transform_signature<CppSignature>::type;
+
+template <typename Rv, typename... P>
+struct transform_signature<Rv(P...)>
+  : get_transformed_signature<Rv(), mp_list<P...>> {};
+
 template <typename... BasicAdaptedFunction>
 class combined;
 
@@ -253,7 +279,7 @@ using adapted_function = basic_adapted_function<
   method_api_t<method>,
   method,
   method_signature_t<method>,
-  CppSignature,
+  transform_signature_t<CppSignature>,
   RvMap,
   ArgMap>;
 
