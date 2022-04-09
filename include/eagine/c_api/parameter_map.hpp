@@ -581,6 +581,32 @@ requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
     using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();
 };
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CS,
+  typename CP,
+  typename... CT,
+  typename CppV,
+  typename CppP,
+  typename CppS,
+  typename... CppT>
+requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
+           std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct
+  make_args_map<
+    CI,
+    CppI,
+    mp_list<CS, CP, CT...>,
+    mp_list<basic_string_span<CppV, CppP, CppS>, CppT...>>
+  : convert<CS, get_size_map<CI, CppI>>
+  , convert<CP, get_data_map<CI + 1, CppI>>
+  , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using convert<CS, get_size_map<CI, CppI>>::operator();
+    using convert<CP, get_data_map<CI + 1, CppI>>::operator();
+    using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+};
 //------------------------------------------------------------------------------
 template <typename CSignature, typename CppSignature>
 static auto make_map(CSignature*, CppSignature*) -> trivial_map;
