@@ -368,6 +368,9 @@ struct make_arg_map<CI, CppI, Handle, basic_owned_handle<Tag, Handle, invalid>> 
 template <auto>
 struct substituted;
 
+template <typename>
+struct returned;
+
 template <std::size_t CI, std::size_t CppI, typename CP, typename CppP>
 struct make_args_map;
 
@@ -420,6 +423,38 @@ requires(std::is_convertible_v<decltype(value), CH>) struct make_args_map<
     constexpr auto operator()(size_constant<CI>, P&&...) const noexcept {
         return value;
     }
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CH,
+  typename... CT,
+  typename CppH,
+  typename... CppT>
+requires(std::is_convertible_v<CH, CppH>) struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CH*, CT...>,
+  mp_list<returned<CppH>, CppT...>>
+  : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...)
+          .replaced_with(_value)
+          .cast_to(type_identity<CppH>{});
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI>, P&&...) noexcept -> CH* {
+        return &_value;
+    }
+
+private:
+    CH _value{};
 };
 
 template <
@@ -689,6 +724,10 @@ static auto make_map(CRV (*)(CppRV*, CParam), CppRV (*)(CppParam))
   -> combined_map<
     get_ptr_arg_map<1, CppRV>,
     convert<CParam, reorder_arg_map<2, 1>>>;
+
+template <typename CRV, typename CppRV, typename... CParam, typename... CppParam>
+static auto make_map(CRV (*)(CParam...), returned<CppRV> (*)(CppParam...))
+  -> make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>;
 
 template <typename CSignature, typename CppSignature>
 using make_map_t = decltype(make_map(
