@@ -279,6 +279,38 @@ struct make_arg_map<I, I, V*, memory::basic_span<V, R, S>> {
     }
 };
 
+template <std::size_t CI, std::size_t CppI>
+struct make_arg_map<CI, CppI, void*, memory::block> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).data();
+    }
+};
+
+template <std::size_t I>
+struct make_arg_map<I, I, void*, memory::block> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...).data();
+    }
+};
+
+template <std::size_t CI, std::size_t CppI>
+struct make_arg_map<CI, CppI, const void*, memory::const_block> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).data();
+    }
+};
+
+template <std::size_t I>
+struct make_arg_map<I, I, const void*, memory::const_block> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...).data();
+    }
+};
+
 template <std::size_t CI, std::size_t CppI, typename V, typename Tr>
 requires(std::is_convertible_v<
          typename Tr::value_type*,
