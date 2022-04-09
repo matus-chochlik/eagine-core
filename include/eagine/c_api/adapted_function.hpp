@@ -103,6 +103,14 @@ class basic_adapted_function<
           param...);
     }
 
+    template <std::size_t... CI, std::size_t... CppI>
+    constexpr auto _call(
+      std::index_sequence<CI...> s,
+      std::index_sequence<CppI...>,
+      std::tuple<CppParam...> params) const noexcept {
+        return _call(s, std::move(std::get<CppI>(params))...);
+    }
+
     template <std::size_t... I>
     constexpr auto _bind(std::index_sequence<I...> i, CppParam... param) {
         return [i, ... p{std::forward<CppParam>(param)}, this]() {
@@ -137,6 +145,12 @@ public:
     constexpr auto operator()(CppParam... param) const noexcept {
         using S = std::make_index_sequence<sizeof...(CParam)>;
         return _call(S{}, std::forward<CppParam>(param)...);
+    }
+
+    constexpr auto operator[](std::tuple<CppParam...> params) const noexcept {
+        using CS = std::make_index_sequence<sizeof...(CParam)>;
+        using CppS = std::make_index_sequence<sizeof...(CppParam)>;
+        return _call(CS{}, CppS{}, std::move(params));
     }
 
     [[nodiscard]] auto bind(CppParam... param) const noexcept {
@@ -252,6 +266,14 @@ public:
       CppSignatures,
       RvMaps,
       ArgMaps>::operator()...;
+
+    using basic_adapted_function<
+      Api,
+      methods,
+      CSignatures,
+      CppSignatures,
+      RvMaps,
+      ArgMaps>::operator[]...;
 
     using basic_adapted_function<
       Api,
