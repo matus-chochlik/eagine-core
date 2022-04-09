@@ -9,6 +9,7 @@
 #ifndef EAGINE_C_API_PARAMETER_MAP_HPP
 #define EAGINE_C_API_PARAMETER_MAP_HPP
 
+#include "../buffer_data.hpp"
 #include "../int_constant.hpp"
 #include "../is_within_limits.hpp"
 #include "../mp_list.hpp"
@@ -604,6 +605,27 @@ requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
   , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
     using convert<CS, get_size_map<CI, CppI>>::operator();
     using convert<CP, get_data_map<CI + 1, CppI>>::operator();
+    using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CS,
+  typename... CT,
+  typename CppS,
+  typename... CppT>
+requires(std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CS, const void*, CT...>,
+  mp_list<buffer_data_spec<CppS>, CppT...>>
+  : convert<CS, get_size_map<CI, CppI>>
+  , get_data_map<CI + 1, CppI>
+  , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using convert<CS, get_size_map<CI, CppI>>::operator();
+    using get_data_map<CI + 1, CppI>::operator();
     using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();
 };
