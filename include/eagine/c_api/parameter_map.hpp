@@ -115,6 +115,15 @@ struct get_size_map {
     }
 };
 
+template <std::size_t CI, std::size_t CppI, auto chunkSize>
+struct get_chunk_size_map {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).size() /
+               chunkSize;
+    }
+};
+
 template <std::size_t CDI, std::size_t CSI, std::size_t CppI>
 struct get_data_size_map {
     template <typename... P>
@@ -226,6 +235,21 @@ struct convert<T, Map<CI, CppI>> {
     constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept
       -> decltype(auto) {
         return c_arg_cast<T>(Map<CI, CppI>{}(i, std::forward<P>(p)...));
+    }
+};
+
+template <
+  typename T,
+  std::size_t CI,
+  std::size_t CppI,
+  auto CS,
+  template <std::size_t, std::size_t, auto>
+  class Map>
+struct convert<T, Map<CI, CppI, CS>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept
+      -> decltype(auto) {
+        return c_arg_cast<T>(Map<CI, CppI, CS>{}(i, std::forward<P>(p)...));
     }
 };
 
@@ -525,6 +549,33 @@ requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
   , convert<CP, get_data_map<CI + 1, CppI>>
   , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
     using convert<CS, get_size_map<CI, CppI>>::operator();
+    using convert<CP, get_data_map<CI + 1, CppI>>::operator();
+    using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CS,
+  typename CP,
+  typename... CT,
+  typename CppV,
+  typename CppP,
+  typename CppS,
+  CppS chunkSize,
+  typename... CppT>
+requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
+           std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct
+  make_args_map<
+    CI,
+    CppI,
+    mp_list<CS, CP, CT...>,
+    mp_list<memory::basic_chunk_span<CppV, CppP, CppS, chunkSize>, CppT...>>
+  : convert<CS, get_chunk_size_map<CI, CppI, chunkSize>>
+  , convert<CP, get_data_map<CI + 1, CppI>>
+  , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using convert<CS, get_chunk_size_map<CI, CppI, chunkSize>>::operator();
     using convert<CP, get_data_map<CI + 1, CppI>>::operator();
     using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();
