@@ -5,16 +5,16 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#ifndef EAGINE_BUFFER_DATA_HPP
-#define EAGINE_BUFFER_DATA_HPP
+#ifndef EAGINE_C_API_BUFFER_DATA_HPP
+#define EAGINE_C_API_BUFFER_DATA_HPP
 
-#include "memory/block.hpp"
-#include "span.hpp"
-#include "type_identity.hpp"
-#include "types.hpp"
+#include "../memory/block.hpp"
+#include "../span.hpp"
+#include "../type_identity.hpp"
+#include "../types.hpp"
 #include <type_traits>
 
-namespace eagine {
+namespace eagine::c_api {
 
 template <typename S>
 class buffer_size {
@@ -103,6 +103,6 @@ private:
     const void* _data{nullptr};
 };
 
-} // namespace eagine
+} // namespace eagine::c_api
 
-#endif // EAGINE_BUFFER_DATA_HPP
+#endif
