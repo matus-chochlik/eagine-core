@@ -175,13 +175,37 @@ struct c_string_view_map {
     }
 };
 
-template <std::size_t CppI>
+template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
 struct head_transform_map {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
+        return map(i, p...).transformed([=, this](auto, bool is_valid) {
+            auto res{map(size_constant<CppSpanI>{}, p...)};
+            if(is_valid) {
+                return head(res, _len);
+            }
+            return head(res, 0);
+        });
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CSizeI> i, P... p) noexcept -> S* {
+        _len = limit_cast<S>(get_size_map<CSizeI, CppSpanI>{}(i, p...));
+        return &_len;
+    }
+
+private:
+    S _len{};
+};
+
+template <typename S, std::size_t CppSpanI>
+struct head_transform_map<S, CppSpanI, 0> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
+        const trivial_map map;
         return map(i, p...).transformed([=](auto len, bool is_valid) {
-            auto res{map(size_constant<CppI>{}, p...)};
+            auto res{map(size_constant<CppSpanI>{}, p...)};
             if(is_valid) {
                 return head(res, len);
             }
@@ -392,8 +416,13 @@ struct make_arg_map<CI, CppI, Handle, basic_owned_handle<Tag, Handle, invalid>> 
 template <auto>
 struct substituted;
 
+struct skipped;
+
 template <typename>
 struct returned;
+
+template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
+struct head_transformed;
 
 template <std::size_t CI, std::size_t CppI, typename CP, typename CppP>
 struct make_args_map;
@@ -424,6 +453,18 @@ struct make_args_map<CI, CppI, mp_list<CH, CT...>, mp_list<CppH, CppT...>>
       std::remove_cv_t<CH>,
       std::remove_cv_t<std::remove_reference_t<CppH>>>::operator();
     using make_args_map<CI + 1, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CH,
+  typename... CT,
+  typename... CppT>
+struct make_args_map<CI, CppI, mp_list<CH, CT...>, mp_list<skipped, CppT...>>
+  : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>::
     operator();
 };
 
@@ -779,6 +820,20 @@ static auto make_map(CRV (*)(CppRV*, CParam), CppRV (*)(CppParam))
 template <typename CRV, typename CppRV, typename... CParam, typename... CppParam>
 static auto make_map(CRV (*)(CParam...), returned<CppRV> (*)(CppParam...))
   -> make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>;
+
+template <
+  typename CRV,
+  typename HTS,
+  std::size_t CppSpanI,
+  std::size_t CSizeI,
+  typename... CParam,
+  typename... CppParam>
+static auto make_map(
+  CRV (*)(CParam...),
+  head_transformed<HTS, CppSpanI, CSizeI> (*)(CppParam...))
+  -> combined_map<
+    head_transform_map<HTS, CppSpanI, CSizeI>,
+    make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>>;
 
 template <typename CSignature, typename CppSignature>
 using make_map_t = decltype(make_map(
