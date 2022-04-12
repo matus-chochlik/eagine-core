@@ -15,8 +15,9 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
+using memory::chunk_span;
 using memory::span;
-//------------------------------------------------------------------------------
+
 using memory::cover;
 using memory::cover_one;
 using memory::view;

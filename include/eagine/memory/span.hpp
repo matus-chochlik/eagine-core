@@ -601,6 +601,38 @@ static constexpr auto extract(basic_span<T, P, S> spn) noexcept -> T& {
     return EAGINE_CONSTEXPR_ASSERT(spn.size() >= 1, spn.front());
 }
 //------------------------------------------------------------------------------
+// basic_chunk_span
+//------------------------------------------------------------------------------
+/// @brief Non-owning view of a contiguous range of memory with ValueType elements.
+/// @ingroup type_utils
+/// @tparam ValueType the type of elements assumed in the covered memory range.
+/// @tparam Pointer the pointer type used to point to the start of the span.
+/// @tparam SizeType the integer type used to count the elements in the span.
+/// @see basic_span
+/// @see basic_split_span
+///
+/// This template is similar to std::span but allows to specify other pointer
+/// types besides ValueType*, for example basic_offset_ptr, etc. and to specify
+/// the size type.
+template <
+  typename ValueType,
+  typename Pointer,
+  typename SizeType,
+  SizeType chunkSize>
+class basic_chunk_span : public basic_span<ValueType, Pointer, SizeType> {
+    using base = basic_span<ValueType, Pointer, SizeType>;
+
+public:
+    constexpr basic_chunk_span() noexcept = default;
+    constexpr basic_chunk_span(base that) noexcept
+      : base{that} {}
+};
+//------------------------------------------------------------------------------
+/// @brief Default alias for basic memory chunk spans with native pointer type.
+/// @ingroup memory
+template <typename T, span_size_t chunkSize>
+using chunk_span = basic_chunk_span<T, T*, span_size_t, chunkSize>;
+//------------------------------------------------------------------------------
 } // namespace memory
 //------------------------------------------------------------------------------
 template <typename>

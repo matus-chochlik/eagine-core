@@ -103,6 +103,14 @@ class basic_adapted_function<
           param...);
     }
 
+    template <std::size_t... CI, std::size_t... CppI>
+    constexpr auto _call(
+      std::index_sequence<CI...> s,
+      std::index_sequence<CppI...>,
+      std::tuple<CppParam...> params) const noexcept {
+        return _call(s, std::move(std::get<CppI>(params))...);
+    }
+
     template <std::size_t... I>
     constexpr auto _bind(std::index_sequence<I...> i, CppParam... param) {
         return [i, ... p{std::forward<CppParam>(param)}, this]() {
@@ -137,6 +145,12 @@ public:
     constexpr auto operator()(CppParam... param) const noexcept {
         using S = std::make_index_sequence<sizeof...(CParam)>;
         return _call(S{}, std::forward<CppParam>(param)...);
+    }
+
+    constexpr auto operator[](std::tuple<CppParam...> params) const noexcept {
+        using CS = std::make_index_sequence<sizeof...(CParam)>;
+        using CppS = std::make_index_sequence<sizeof...(CppParam)>;
+        return _call(CS{}, CppS{}, std::move(params));
     }
 
     [[nodiscard]] auto bind(CppParam... param) const noexcept {
@@ -179,28 +193,125 @@ private:
     Api& _api;
 };
 
+template <typename Result, typename Remain>
+struct get_transformed_signature;
+
+template <typename Rv, typename... P>
+struct get_transformed_signature<Rv(P...), mp_list<>> {
+    using type = Rv(P...);
+};
+
+template <typename Rv, typename... P, typename... T>
+struct get_transformed_signature<Rv(P...), mp_list<skipped, T...>>
+  : get_transformed_signature<Rv(P...), mp_list<T...>> {};
+
+template <typename Rv, typename... P, auto value, typename... T>
+struct get_transformed_signature<Rv(P...), mp_list<substituted<value>, T...>>
+  : get_transformed_signature<Rv(P...), mp_list<T...>> {};
+
+template <typename Rv, typename... P, typename... T>
+struct get_transformed_signature<returned<Rv>(P...), mp_list<returned<Rv>, T...>>
+  : get_transformed_signature<returned<Rv>(P...), mp_list<T...>> {};
+
+template <typename Rv, typename... P, typename H, typename... T>
+struct get_transformed_signature<Rv(P...), mp_list<H, T...>>
+  : get_transformed_signature<Rv(P..., H), mp_list<T...>> {};
+
+template <typename CppSignature>
+struct transform_signature;
+
+template <typename CppSignature>
+using transform_signature_t = typename transform_signature<CppSignature>::type;
+
+template <typename Rv, typename... P>
+struct transform_signature<Rv(P...)>
+  : get_transformed_signature<Rv(), mp_list<P...>> {};
+
+template <typename... BasicAdaptedFunction>
+class combined;
+
+template <
+  typename Api,
+  auto... methods,
+  typename... CSignatures,
+  typename... CppSignatures,
+  typename... RvMaps,
+  typename... ArgMaps>
+class combined<
+  basic_adapted_function<Api, methods, CSignatures, CppSignatures, RvMaps, ArgMaps>...>
+  : public basic_adapted_function<
+      Api,
+      methods,
+      CSignatures,
+      CppSignatures,
+      RvMaps,
+      ArgMaps>... {
+public:
+    constexpr combined(Api& api) noexcept
+      : basic_adapted_function<
+          Api,
+          methods,
+          CSignatures,
+          CppSignatures,
+          RvMaps,
+          ArgMaps>{api}... {}
+
+    constexpr explicit operator bool() const noexcept {
+        return (
+          ... && basic_adapted_function<
+                   Api,
+                   methods,
+                   CSignatures,
+                   CppSignatures,
+                   RvMaps,
+                   ArgMaps>::operator bool());
+    }
+
+    using basic_adapted_function<
+      Api,
+      methods,
+      CSignatures,
+      CppSignatures,
+      RvMaps,
+      ArgMaps>::operator()...;
+
+    using basic_adapted_function<
+      Api,
+      methods,
+      CSignatures,
+      CppSignatures,
+      RvMaps,
+      ArgMaps>::operator[]...;
+
+    using basic_adapted_function<
+      Api,
+      methods,
+      CSignatures,
+      CppSignatures,
+      RvMaps,
+      ArgMaps>::raii...;
+
+    using basic_adapted_function<
+      Api,
+      methods,
+      CSignatures,
+      CppSignatures,
+      RvMaps,
+      ArgMaps>::later_by...;
+};
+
 template <
   auto method,
   typename CppSignature = method_signature_t<method>,
   typename RvMap = make_map_t<method_signature_t<method>, CppSignature>,
   typename ArgMap = make_map_t<method_signature_t<method>, CppSignature>>
-struct adapted_function
-  : basic_adapted_function<
-      method_api_t<method>,
-      method,
-      method_signature_t<method>,
-      CppSignature,
-      RvMap,
-      ArgMap> {
-    adapted_function(method_api_t<method>& api)
-      : basic_adapted_function<
-          method_api_t<method>,
-          method,
-          method_signature_t<method>,
-          CppSignature,
-          RvMap,
-          ArgMap>{api} {}
-};
+using adapted_function = basic_adapted_function<
+  method_api_t<method>,
+  method,
+  method_signature_t<method>,
+  transform_signature_t<CppSignature>,
+  RvMap,
+  ArgMap>;
 
 template <
   typename Api,

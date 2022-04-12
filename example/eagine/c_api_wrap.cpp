@@ -97,8 +97,7 @@ public:
 
     c_api::adapted_function<
       &example_file_api::read_file,
-      ssize_t(int, memory::block),
-      c_api::head_transform_map<2>>
+      c_api::head_transformed<ssize_t, 2>(int, memory::block)>
       read_block{*this};
 
     c_api::opt_function<

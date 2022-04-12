@@ -17,12 +17,12 @@ set(HEADERS
     eagine/biteset.hpp
     eagine/bitfield.hpp
     eagine/bool_aggregate.hpp
-    eagine/buffer_data.hpp
     eagine/build_info.hpp
     eagine/byteset.hpp
     eagine/callable_ref.hpp
     eagine/c_api/adapted_function.hpp
     eagine/c_api/api_traits.hpp
+    eagine/c_api/buffer_data.hpp
     eagine/c_api/constant.hpp
     eagine/c_api/function.hpp
     eagine/c_api/handle.hpp
