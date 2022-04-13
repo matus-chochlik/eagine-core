@@ -34,15 +34,15 @@ class trivial_map {
     }
 
 public:
-    template <typename RV, typename... P>
-    constexpr auto operator()(size_constant<0>, RV rv, P&...) const noexcept
-      -> decltype(auto) {
+    template <typename A, typename RV, typename... P>
+    constexpr auto operator()(size_constant<0>, const A&, RV rv, P&...)
+      const noexcept -> decltype(auto) {
         return rv;
     }
 
-    template <std::size_t I, typename... P>
-    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
-      -> decltype(auto) {
+    template <std::size_t I, typename A, typename... P>
+    constexpr auto operator()(size_constant<I> i, const A&, P&&... p)
+      const noexcept -> decltype(auto) {
         return _get(i, std::forward<P>(p)...);
     }
 };
@@ -149,6 +149,15 @@ struct cast_to_map {
         } else if constexpr(std::is_default_constructible_v<CppP>) {
             return trivial_map{}(i, std::forward<P>(p)...).replaced_with(CppP{});
         }
+    }
+};
+
+struct collapse_map {
+    template <typename A, typename... P>
+    constexpr auto operator()(size_constant<0> i, A& api, P&&... p)
+      const noexcept {
+        return api.collapse(
+          c_api::trivial_map{}(i, api, std::forward<P>(p)...));
     }
 };
 
@@ -444,6 +453,9 @@ struct skipped;
 
 template <typename>
 struct returned;
+
+template <typename>
+struct collapsed;
 
 template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
 struct head_transformed;
@@ -847,6 +859,15 @@ static auto make_map(CRV (*)(CppRV*, CParam), CppRV (*)(CppParam))
 template <typename CRV, typename CppRV, typename... CParam, typename... CppParam>
 static auto make_map(CRV (*)(CParam...), returned<CppRV> (*)(CppParam...))
   -> make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>;
+
+template <typename RV, typename... CParam, typename... CppParam>
+static auto make_map(RV (*)(CParam...), collapsed<RV> (*)(CppParam...))
+  -> combined_map<
+    collapse_map,
+    make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>>;
+
+template <typename RV>
+static auto make_map(RV (*)(), collapsed<RV> (*)()) -> collapse_map;
 
 template <
   typename CRV,

@@ -84,8 +84,9 @@ class basic_adapted_function<
         return _api.check_result(
           map(
             size_constant<0>{},
+            _api,
             Ftw::call(
-              _api.*method, map(size_constant<I + 1>{}, 0, param...)...),
+              _api.*method, map(size_constant<I + 1>{}, _api, 0, param...)...),
             param...),
           param...);
     }
@@ -97,8 +98,9 @@ class basic_adapted_function<
         return _api.check_result(
           RvMap{}(
             size_constant<0>{},
+            _api,
             Ftw::call(
-              _api.*method, map(size_constant<I + 1>{}, 0, param...)...),
+              _api.*method, map(size_constant<I + 1>{}, _api, 0, param...)...),
             param...),
           param...);
     }
@@ -178,7 +180,7 @@ public:
     }
 
     auto fail() const noexcept {
-        return RvMap{}(size_constant<0>{}, Ftw::template fail<CppRV>());
+        return RvMap{}(size_constant<0>{}, _api, Ftw::template fail<CppRV>());
     }
 
     [[nodiscard]] constexpr auto api() const noexcept -> const auto& {
@@ -199,6 +201,11 @@ struct get_transformed_signature;
 template <typename Rv, typename... P>
 struct get_transformed_signature<Rv(P...), mp_list<>> {
     using type = Rv(P...);
+};
+
+template <typename Rv, typename... P>
+struct get_transformed_signature<collapsed<Rv>(P...), mp_list<>> {
+    using type = void(P...);
 };
 
 template <typename Rv, typename... P, typename... T>
