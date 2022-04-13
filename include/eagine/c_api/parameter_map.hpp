@@ -214,13 +214,37 @@ struct head_transform_map<S, CppSpanI, 0> {
     }
 };
 
-template <std::size_t CppI>
+template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
 struct skip_transform_map {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
+        return map(i, p...).transformed([=, this](auto, bool is_valid) {
+            auto res{map(size_constant<CppSpanI>{}, p...)};
+            if(is_valid) {
+                return skip(res, _len);
+            }
+            return skip(res, 0);
+        });
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CSizeI> i, P... p) noexcept -> S* {
+        _len = limit_cast<S>(get_size_map<CSizeI, CppSpanI>{}(i, p...));
+        return &_len;
+    }
+
+private:
+    S _len{};
+};
+
+template <typename S, std::size_t CppSpanI>
+struct skip_transform_map<S, CppSpanI, 0> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
+        const trivial_map map;
         return map(i, p...).transformed([=](auto len, bool is_valid) {
-            auto res{map(size_constant<CppI>{}, p...)};
+            auto res{map(size_constant<CppSpanI>{}, p...)};
             if(is_valid) {
                 return skip(res, len);
             }
@@ -423,6 +447,9 @@ struct returned;
 
 template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
 struct head_transformed;
+
+template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
+struct skip_transformed;
 
 template <std::size_t CI, std::size_t CppI, typename CP, typename CppP>
 struct make_args_map;
@@ -833,6 +860,20 @@ static auto make_map(
   head_transformed<HTS, CppSpanI, CSizeI> (*)(CppParam...))
   -> combined_map<
     head_transform_map<HTS, CppSpanI, CSizeI>,
+    make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>>;
+
+template <
+  typename CRV,
+  typename HTS,
+  std::size_t CppSpanI,
+  std::size_t CSizeI,
+  typename... CParam,
+  typename... CppParam>
+static auto make_map(
+  CRV (*)(CParam...),
+  skip_transformed<HTS, CppSpanI, CSizeI> (*)(CppParam...))
+  -> combined_map<
+    skip_transform_map<HTS, CppSpanI, CSizeI>,
     make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>>;
 
 template <typename CSignature, typename CppSignature>
