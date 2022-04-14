@@ -51,8 +51,7 @@ public:
       example_sets_errno,
       char*(),
       string_view(),
-      c_api::c_string_view_map,
-      c_api::trivial_map,
+      c_api::combined<c_api::c_string_view_map, c_api::trivial_map>,
       EXAMPLE_API_STATIC_FUNC(getlogin),
       EAGINE_POSIX,
       true>
