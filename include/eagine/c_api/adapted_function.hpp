@@ -188,6 +188,11 @@ struct get_transformed_signature<Rv(P...), mp_list<>> {
 };
 
 template <typename Rv, typename... P>
+struct get_transformed_signature<returned<Rv>(P...), mp_list<>> {
+    using type = Rv(P...);
+};
+
+template <typename Rv, typename... P>
 struct get_transformed_signature<collapsed<Rv>(P...), mp_list<>> {
     using type = void(P...);
 };

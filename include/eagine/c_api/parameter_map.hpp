@@ -621,6 +621,38 @@ private:
 template <
   std::size_t CI,
   std::size_t CppI,
+  typename Tag,
+  typename Handle,
+  Handle invalid,
+  typename... CT,
+  typename... CppT>
+struct make_args_map<
+  CI,
+  CppI,
+  mp_list<Handle*, CT...>,
+  mp_list<returned<basic_handle<Tag, Handle, invalid>>, CppT...>>
+  : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...)
+          .replaced_with(basic_handle<Tag, Handle, invalid>{_value});
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI>, P&&...) noexcept -> Handle* {
+        return &_value;
+    }
+
+private:
+    Handle _value{};
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
   typename H,
   typename... CT,
   typename... CppT>
