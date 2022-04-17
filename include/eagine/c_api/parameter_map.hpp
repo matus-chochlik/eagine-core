@@ -500,10 +500,11 @@ struct make_arg_map<CI, CppI, Handle, basic_owned_handle<Tag, Handle, invalid>> 
     }
 };
 //------------------------------------------------------------------------------
+struct defaulted;
+struct skipped;
+
 template <auto>
 struct substituted;
-
-struct skipped;
 
 template <typename>
 struct returned;
@@ -562,6 +563,29 @@ struct make_args_map<CI, CppI, mp_list<CH, CT...>, mp_list<skipped, CppT...>>
   : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>> {
     using make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>::
     operator();
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CH,
+  typename... CT,
+  typename... CppT>
+struct make_args_map<CI, CppI, mp_list<CH, CT...>, mp_list<defaulted, CppT...>>
+  : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI>, P&&...) const noexcept -> CH {
+        if constexpr(std::is_pointer_v<CH>) {
+            return nullptr;
+        } else if constexpr(std::is_integral_v<CH>) {
+            return static_cast<CH>(0);
+        } else {
+            return {};
+        }
+    }
 };
 
 template <

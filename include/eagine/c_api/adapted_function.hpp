@@ -201,6 +201,10 @@ template <typename Rv, typename... P, typename... T>
 struct get_transformed_signature<Rv(P...), mp_list<skipped, T...>>
   : get_transformed_signature<Rv(P...), mp_list<T...>> {};
 
+template <typename Rv, typename... P, typename... T>
+struct get_transformed_signature<Rv(P...), mp_list<defaulted, T...>>
+  : get_transformed_signature<Rv(P...), mp_list<T...>> {};
+
 template <typename Rv, typename... P, auto value, typename... T>
 struct get_transformed_signature<Rv(P...), mp_list<substituted<value>, T...>>
   : get_transformed_signature<Rv(P...), mp_list<T...>> {};
