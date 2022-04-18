@@ -185,7 +185,7 @@ struct c_string_view_map {
     }
 };
 
-template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
+template <typename S, std::size_t CSizeI, std::size_t CppSpanI>
 struct head_transform_map {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
@@ -193,9 +193,9 @@ struct head_transform_map {
         return map(i, p...).transformed([=, this](auto, bool is_valid) {
             auto res{map(size_constant<CppSpanI>{}, p...)};
             if(is_valid) {
-                return head(res, _len);
+                return memory::head(res, _len);
             }
-            return head(res, 0);
+            return memory::head(res, 0);
         });
     }
 
@@ -210,21 +210,21 @@ private:
 };
 
 template <typename S, std::size_t CppSpanI>
-struct head_transform_map<S, CppSpanI, 0> {
+struct head_transform_map<S, 0, CppSpanI> {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
         return map(i, p...).transformed([=](auto len, bool is_valid) {
             auto res{map(size_constant<CppSpanI>{}, p...)};
             if(is_valid) {
-                return head(res, len);
+                return memory::head(res, len);
             }
-            return head(res, 0);
+            return memory::head(res, 0);
         });
     }
 };
 
-template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
+template <typename S, std::size_t CSizeI, std::size_t CppSpanI>
 struct skip_transform_map {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
@@ -232,9 +232,9 @@ struct skip_transform_map {
         return map(i, p...).transformed([=, this](auto, bool is_valid) {
             auto res{map(size_constant<CppSpanI>{}, p...)};
             if(is_valid) {
-                return skip(res, _len);
+                return memory::skip(res, _len);
             }
-            return skip(res, 0);
+            return memory::skip(res, 0);
         });
     }
 
@@ -249,21 +249,21 @@ private:
 };
 
 template <typename S, std::size_t CppSpanI>
-struct skip_transform_map<S, CppSpanI, 0> {
+struct skip_transform_map<S, 0, CppSpanI> {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
         return map(i, p...).transformed([=](auto len, bool is_valid) {
             auto res{map(size_constant<CppSpanI>{}, p...)};
             if(is_valid) {
-                return skip(res, len);
+                return memory::skip(res, len);
             }
-            return skip(res, 0);
+            return memory::skip(res, 0);
         });
     }
 };
 
-template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
+template <typename S, std::size_t CSizeI, std::size_t CppSpanI>
 struct split_transform_map {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
@@ -284,7 +284,7 @@ private:
 };
 
 template <typename S, std::size_t CppSpanI>
-struct split_transform_map<S, CppSpanI, 0> {
+struct split_transform_map<S, 0, CppSpanI> {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
@@ -512,13 +512,13 @@ struct returned;
 template <typename>
 struct collapsed;
 
-template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
+template <typename S, std::size_t CSizeI, std::size_t CppSpanI>
 struct head_transformed;
 
-template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
+template <typename S, std::size_t CSizeI, std::size_t CppSpanI>
 struct skip_transformed;
 
-template <typename S, std::size_t CppSpanI, std::size_t CSizeI = 0>
+template <typename S, std::size_t CSizeI, std::size_t CppSpanI>
 struct split_transformed;
 
 template <std::size_t CI, std::size_t CppI, typename CP, typename CppP>
@@ -985,43 +985,43 @@ static auto make_map(RV (*)(), collapsed<RV> (*)()) -> collapse_map;
 template <
   typename CRV,
   typename HTS,
-  std::size_t CppSpanI,
   std::size_t CSizeI,
+  std::size_t CppSpanI,
   typename... CParam,
   typename... CppParam>
 static auto make_map(
   CRV (*)(CParam...),
-  head_transformed<HTS, CppSpanI, CSizeI> (*)(CppParam...))
+  head_transformed<HTS, CSizeI, CppSpanI> (*)(CppParam...))
   -> combined_map<
-    head_transform_map<HTS, CppSpanI, CSizeI>,
+    head_transform_map<HTS, CSizeI, CppSpanI>,
     make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>>;
 
 template <
   typename CRV,
   typename HTS,
-  std::size_t CppSpanI,
   std::size_t CSizeI,
+  std::size_t CppSpanI,
   typename... CParam,
   typename... CppParam>
 static auto make_map(
   CRV (*)(CParam...),
-  skip_transformed<HTS, CppSpanI, CSizeI> (*)(CppParam...))
+  skip_transformed<HTS, CSizeI, CppSpanI> (*)(CppParam...))
   -> combined_map<
-    skip_transform_map<HTS, CppSpanI, CSizeI>,
+    skip_transform_map<HTS, CSizeI, CppSpanI>,
     make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>>;
 
 template <
   typename CRV,
   typename STS,
-  std::size_t CppSpanI,
   std::size_t CSizeI,
+  std::size_t CppSpanI,
   typename... CParam,
   typename... CppParam>
 static auto make_map(
   CRV (*)(CParam...),
-  split_transformed<STS, CppSpanI, CSizeI> (*)(CppParam...))
+  split_transformed<STS, CSizeI, CppSpanI> (*)(CppParam...))
   -> combined_map<
-    split_transform_map<STS, CppSpanI, CSizeI>,
+    split_transform_map<STS, CSizeI, CppSpanI>,
     make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>>;
 
 template <typename CSignature, typename CppSignature>
