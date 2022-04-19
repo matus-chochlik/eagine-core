@@ -51,8 +51,7 @@ public:
       example_sets_errno,
       char*(),
       string_view(),
-      c_api::c_string_view_map,
-      c_api::trivial_map,
+      c_api::combined<c_api::c_string_view_map, c_api::trivial_map>,
       EXAMPLE_API_STATIC_FUNC(getlogin),
       EAGINE_POSIX,
       true>
@@ -97,7 +96,7 @@ public:
 
     c_api::adapted_function<
       &example_file_api::read_file,
-      c_api::head_transformed<ssize_t, 2>(int, memory::block)>
+      c_api::head_transformed<ssize_t, 0, 2>(int, memory::block)>
       read_block{*this};
 
     c_api::opt_function<
@@ -111,14 +110,12 @@ public:
 
     c_api::adapted_function<
       &example_file_api::write_file,
-      ssize_t(int, memory::const_block),
-      c_api::skip_transform_map<2>>
+      c_api::skip_transformed<ssize_t, 0, 2>(int, memory::const_block)>
       write_block{*this};
 
     c_api::adapted_function<
       &example_file_api::write_file,
-      ssize_t(int, string_view),
-      c_api::skip_transform_map<2>>
+      c_api::skip_transformed<ssize_t, 0, 2>(int, string_view)>
       write_string{*this};
 
     c_api::opt_function<
