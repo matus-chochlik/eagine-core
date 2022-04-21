@@ -9,8 +9,8 @@
 #ifndef EAGINE_C_API_CONSTANT_HPP
 #define EAGINE_C_API_CONSTANT_HPP
 
-#include "../enum_class.hpp"
 #include "../string_span.hpp"
+#include "enum_class.hpp"
 #include <concepts>
 
 namespace eagine::c_api {
@@ -79,6 +79,7 @@ public:
           std::is_signed_v<T>,
           std::make_signed_t<I>,
           std::make_unsigned_t<I>>;
+        using eagine::limit_cast;
         return {limit_cast<T>(value + limit_cast<O>(index))};
     }
 };

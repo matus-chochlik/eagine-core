@@ -6,21 +6,21 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#ifndef EAGINE_ENUM_CLASS_HPP
-#define EAGINE_ENUM_CLASS_HPP
+#ifndef EAGINE_C_API_ENUM_CLASS_HPP
+#define EAGINE_C_API_ENUM_CLASS_HPP
 
-#include "assert.hpp"
-#include "identifier_t.hpp"
-#include "is_within_limits.hpp"
-#include "iterator.hpp"
-#include "mp_list.hpp"
-#include "nothing.hpp"
-#include "type_identity.hpp"
-#include "wrapping_container.hpp"
+#include "../assert.hpp"
+#include "../identifier_t.hpp"
+#include "../is_within_limits.hpp"
+#include "../iterator.hpp"
+#include "../mp_list.hpp"
+#include "../nothing.hpp"
+#include "../type_identity.hpp"
+#include "../wrapping_container.hpp"
 #include <tuple>
 #include <type_traits>
 
-namespace eagine {
+namespace eagine::c_api {
 //------------------------------------------------------------------------------
 /// @brief Class holding the value of a (typically C-API) symbolic constant.
 /// @tparam T the constant or enumerator value type.
@@ -165,13 +165,6 @@ struct opt_enum_value<bool, mp_list<Classes...>, Tag> {
         return is_valid && value;
     }
 };
-template <typename Dst, typename Src, typename... Classes, typename Tag>
-static constexpr auto limit_cast(
-  opt_enum_value<Src, Classes..., Tag> val) noexcept -> Dst
-  requires(std::is_convertible_v<Src, Dst>) {
-    EAGINE_ASSERT(bool(val));
-    return limit_cast<Dst>(val.value);
-}
 //------------------------------------------------------------------------------
 /// @brief Class representing undefined value of a (typically C-API) symbolic constant.
 /// @tparam T the constant or enumerator value type.
@@ -215,12 +208,6 @@ struct no_enum_value<bool, Tag> {
         return false;
     }
 };
-template <typename Dst, typename Src, typename Tag>
-static constexpr auto limit_cast(no_enum_value<Src, Tag> val) noexcept -> Dst
-  requires(std::is_convertible_v<Src, Dst>) {
-    EAGINE_ASSERT(bool(val));
-    return limit_cast<Dst>(val.value);
-}
 //------------------------------------------------------------------------------
 template <identifier_t LibId>
 struct any_enum_value;
@@ -298,6 +285,12 @@ struct enum_class {
     /// @brief Explicit conversion to value type.
     explicit constexpr operator value_type() const noexcept {
         return _value;
+    }
+
+    template <typename V>
+    explicit constexpr operator V() const noexcept requires(
+      !std::is_same_v<bool, V> && std::is_convertible_v<value_type, V>) {
+        return limit_cast<T>(_value);
     }
 
     /// @brief Equality comparison.
@@ -548,6 +541,21 @@ template <typename EnumClass, std::size_t N>
 using enum_class_array =
   enum_class_container<EnumClass, std::array<typename EnumClass::value_type, N>>;
 //------------------------------------------------------------------------------
-} // namespace eagine
+template <typename Dst, typename Src, typename... Classes, typename Tag>
+static constexpr auto limit_cast(
+  c_api::opt_enum_value<Src, Classes..., Tag> val) noexcept -> Dst
+  requires(std::is_convertible_v<Src, Dst>) {
+    EAGINE_ASSERT(bool(val));
+    return limit_cast<Dst>(val.value);
+}
+
+template <typename Dst, typename Src, typename Tag>
+static constexpr auto limit_cast(c_api::no_enum_value<Src, Tag> val) noexcept
+  -> Dst requires(std::is_convertible_v<Src, Dst>) {
+    EAGINE_ASSERT(bool(val));
+    return limit_cast<Dst>(val.value);
+}
+//------------------------------------------------------------------------------
+} // namespace eagine::c_api
 
 #endif // EAGINE_ENUM_CLASS_HPP

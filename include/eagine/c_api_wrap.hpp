@@ -12,11 +12,11 @@
 #include "c_api/adapted_function.hpp"
 #include "c_api/api_traits.hpp"
 #include "c_api/constant.hpp"
+#include "c_api/enum_bitfield.hpp"
 #include "c_api/function.hpp"
 #include "c_api/handle.hpp"
 #include "c_str.hpp"
 #include "cleanup_group.hpp"
-#include "enum_bitfield.hpp"
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -162,12 +162,13 @@ protected:
     }
 
     template <typename S, typename T, identifier_t L, identifier_t I>
-    static constexpr auto _conv(const enum_class<S, T, L, I> value) noexcept {
+    static constexpr auto _conv(
+      const c_api::enum_class<S, T, L, I> value) noexcept {
         return T(value);
     }
 
     template <typename EC>
-    static constexpr auto _conv(const enum_bitfield<EC> bits) noexcept {
+    static constexpr auto _conv(const c_api::enum_bitfield<EC> bits) noexcept {
         return _conv(bits._value);
     }
 

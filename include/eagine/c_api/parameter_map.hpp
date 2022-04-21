@@ -201,7 +201,7 @@ struct head_transform_map {
 
     template <typename... P>
     constexpr auto operator()(size_constant<CSizeI> i, P... p) noexcept -> S* {
-        _len = limit_cast<S>(get_size_map<CSizeI, CppSpanI>{}(i, p...));
+        _len = eagine::limit_cast<S>(get_size_map<CSizeI, CppSpanI>{}(i, p...));
         return &_len;
     }
 
@@ -240,7 +240,7 @@ struct skip_transform_map {
 
     template <typename... P>
     constexpr auto operator()(size_constant<CSizeI> i, P... p) noexcept -> S* {
-        _len = limit_cast<S>(get_size_map<CSizeI, CppSpanI>{}(i, p...));
+        _len = eagine::limit_cast<S>(get_size_map<CSizeI, CppSpanI>{}(i, p...));
         return &_len;
     }
 
@@ -275,7 +275,8 @@ struct split_transform_map {
     template <typename... P>
     constexpr auto operator()(size_constant<CSizeI>, P... p) noexcept -> S* {
         const trivial_map map;
-        _len = limit_cast<S>(map(size_constant<CppSpanI>{}, p...).tail.size());
+        _len = eagine::limit_cast<S>(
+          map(size_constant<CppSpanI>{}, p...).tail.size());
         return &_len;
     }
 
@@ -307,6 +308,7 @@ static constexpr auto c_arg_cast(Src&& src) noexcept -> Dst {
                        bool>) {
             return std::forward<Src>(src) ? 1 : 0;
         } else {
+            using eagine::limit_cast;
             return limit_cast<Dst>(std::forward<Src>(src));
         }
     } else {
