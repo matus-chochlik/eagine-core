@@ -380,6 +380,14 @@ struct make_arg_map<I, I, const char*, string_view> {
     }
 };
 
+template <std::size_t CI, std::size_t CppI>
+struct make_arg_map<CI, CppI, const char*, string_view> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return c_str(reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...));
+    }
+};
+
 template <std::size_t CI, std::size_t CppI, typename V, typename R, typename S>
 struct make_arg_map<CI, CppI, V*, memory::basic_span<V, R, S>> {
     template <typename... P>
