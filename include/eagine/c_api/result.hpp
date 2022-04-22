@@ -123,7 +123,7 @@ protected:
     auto _transformed(
       const result<void, Info, result_validity::never>& src,
       Transform& transform) const {
-        using T = decltype(transform(false));
+        using T = decltype(transform(nothing, false));
         result<T, Info, result_validity::never> result{};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
@@ -260,8 +260,9 @@ protected:
     auto _transformed(
       const result<void, Info, result_validity::always>& src,
       Transform& transform) const {
-        using T = decltype(transform(true));
-        result<T, Info, result_validity::always> result{transform(true)};
+        using T = decltype(transform(nothing, true));
+        result<T, Info, result_validity::always> result{
+          transform(nothing, true)};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
     }
@@ -424,9 +425,9 @@ protected:
     auto _transformed(
       const result<void, Info, result_validity::maybe>& src,
       Transform& transform) const {
-        using T = decltype(transform(true));
+        using T = decltype(transform(nothing, true));
         result<T, Info, result_validity::maybe> res{
-          transform(src.is_valid()), src.is_valid()};
+          transform(nothing, src.is_valid()), src.is_valid()};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
         return res;
     }

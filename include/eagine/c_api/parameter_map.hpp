@@ -101,6 +101,14 @@ struct addressof_map {
 };
 
 template <std::size_t CI, std::size_t CppI>
+struct get_index_map {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).index();
+    }
+};
+
+template <std::size_t CI, std::size_t CppI>
 struct get_data_map {
     template <typename... P>
     constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
