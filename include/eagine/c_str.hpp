@@ -24,12 +24,14 @@ namespace eagine {
 /// not zero terminated. Because of this whenever a zero-terminated C-string
 /// is used, for example as an argument to a C-API call, instantiations of this
 /// template should be used the obtain a valid C-string.
-template <typename C, typename P, typename S>
+template <typename C, typename P = C*, typename S = span_size_t, bool isConst = true>
 class basic_c_str {
 public:
     using span_type = basic_string_span<C, P, S>;
     using string_type = std::basic_string<std::remove_const_t<C>>;
     using pointer_type = P;
+
+    constexpr basic_c_str() noexcept = default;
 
     constexpr basic_c_str(const span_type s) noexcept
       : _span{_get_span(s)}
@@ -80,8 +82,8 @@ private:
         return has_value(e) ? _get_str(extract(e)) : string_type{};
     }
 
-    const span_type _span{};
-    const string_type _str{};
+    std::conditional_t<isConst, const span_type, span_type> _span{};
+    std::conditional_t<isConst, const string_type, string_type> _str{};
 };
 
 template <typename>

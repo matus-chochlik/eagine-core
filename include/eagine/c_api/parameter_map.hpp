@@ -9,6 +9,7 @@
 #ifndef EAGINE_C_API_PARAMETER_MAP_HPP
 #define EAGINE_C_API_PARAMETER_MAP_HPP
 
+#include "../c_str.hpp"
 #include "../int_constant.hpp"
 #include "../is_within_limits.hpp"
 #include "../memory/split_span.hpp"
@@ -385,17 +386,25 @@ struct make_arg_map<I, I, P, P> : trivial_arg_map<I> {};
 template <std::size_t I>
 struct make_arg_map<I, I, const char*, string_view> {
     template <typename... P>
-    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
-        return c_str(trivial_map{}(i, std::forward<P>(p)...));
+    constexpr auto operator()(size_constant<I> i, P&&... p) noexcept {
+        _result = trivial_map{}(i, std::forward<P>(p)...);
+        return static_cast<const char*>(_result);
     }
+
+private:
+    basic_c_str<const char, const char*, span_size_t, false> _result{};
 };
 
 template <std::size_t CI, std::size_t CppI>
 struct make_arg_map<CI, CppI, const char*, string_view> {
     template <typename... P>
-    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
-        return c_str(reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...));
+    constexpr auto operator()(size_constant<CI> i, P&&... p) noexcept {
+        _result = reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...);
+        return static_cast<const char*>(_result);
     }
+
+private:
+    basic_c_str<const char, const char*, span_size_t, false> _result{};
 };
 
 template <std::size_t CI, std::size_t CppI, typename V, typename R, typename S>
