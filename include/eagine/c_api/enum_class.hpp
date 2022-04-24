@@ -212,6 +212,106 @@ struct no_enum_value<bool, Tag> {
 template <identifier_t LibId>
 struct any_enum_value;
 
+template <typename Self, typename T, identifier_t LibId, identifier_t Id>
+struct enum_class;
+
+/// @brief Implementation of is_enum_class trait.
+/// @ingroup c_api_wrap
+template <typename T>
+struct is_enum_class : std::false_type {};
+
+/// @brief Trait indicating if type T is an enum_class.
+/// @ingroup c_api_wrap
+/// @see is_enum_class_value_t
+/// @see enum_class
+template <typename T>
+static constexpr const bool is_enum_class_v = is_enum_class<T>::value;
+
+template <typename Self, typename T, identifier_t LibId, identifier_t Id>
+struct is_enum_class<enum_class<Self, T, LibId, Id>> : std::true_type {
+    static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
+};
+//------------------------------------------------------------------------------
+/// @brief Implementation of is_enum_class_value trait.
+/// @ingroup c_api_wrap
+template <typename Class, typename Value>
+struct is_enum_class_value : std::false_type {};
+
+/// @brief Trait indicating if type T is an enum_value, opt_enum_value or no_enum_value.
+/// @ingroup c_api_wrap
+/// @see is_enum_class_t
+/// @see enum_value
+/// @see opt_enum_value
+/// @see no_enum_value
+template <typename C, typename V>
+static constexpr const auto is_enum_class_value_v =
+  is_enum_class_value<type_t<C>, type_t<V>>::value;
+
+template <
+  typename Self,
+  typename T,
+  typename Tag,
+  identifier_t LibId,
+  identifier_t Id>
+struct is_enum_class_value<enum_class<Self, T, LibId, Id>, no_enum_value<T, Tag>>
+  : std::true_type {
+    static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
+};
+
+template <
+  typename Self,
+  typename T,
+  typename Classes,
+  typename Tag,
+  identifier_t LibId,
+  identifier_t Id>
+struct is_enum_class_value<
+  enum_class<Self, T, LibId, Id>,
+  enum_value<T, Classes, Tag>> : mp_contains<Classes, Self> {
+    static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
+};
+
+template <
+  typename Self,
+  typename T,
+  typename Classes,
+  typename Tag,
+  identifier_t LibId,
+  identifier_t Id>
+struct is_enum_class_value<
+  enum_class<Self, T, LibId, Id>,
+  opt_enum_value<T, Classes, Tag>> : mp_contains<Classes, Self> {
+    static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
+};
+//------------------------------------------------------------------------------
+template <
+  typename ParameterEnumClass,
+  typename Parameter,
+  typename ValueType,
+  typename Value>
+constexpr static bool is_enum_parameter_value_v =
+  c_api::is_enum_class_value_v<ParameterEnumClass, Parameter>&&
+      std::is_same_v<typename Parameter::tag_type, nothing_t>
+    ? std::is_convertible_v<Value, ValueType>
+    : c_api::is_enum_class_value_v<typename Parameter::tag_type, Value>;
+//------------------------------------------------------------------------------
+template <typename ParameterEnumClass, typename ValueType>
+struct enum_parameter_value {
+    template <typename Parameter, typename Value>
+    requires(
+      is_enum_parameter_value_v<
+        ParameterEnumClass,
+        Parameter,
+        ValueType,
+        Value>) constexpr enum_parameter_value(Parameter param, Value val) noexcept
+      : parameter{param.value}
+      , value{eagine::limit_cast<ValueType>(val.value)} {}
+
+    typename ParameterEnumClass::value_type parameter{};
+    ValueType value{};
+};
+//------------------------------------------------------------------------------
+
 /// @brief Enum class for constants or enumerators (typically from a C-API).
 /// @tparam Self the actual derived class based on this template.
 /// @tparam T the type of the constant or enumerator value.
@@ -323,75 +423,6 @@ static constexpr auto limit_cast(enum_class<Self, Src, LibId, Id> val) noexcept
   -> Dst requires(std::is_convertible_v<Src, Dst>) {
     return limit_cast<Dst>(val._value);
 }
-//------------------------------------------------------------------------------
-/// @brief Implementation of is_enum_class trait.
-/// @ingroup c_api_wrap
-template <typename T>
-struct is_enum_class : std::false_type {};
-
-/// @brief Trait indicating if type T is an enum_class.
-/// @ingroup c_api_wrap
-/// @see is_enum_class_value_t
-/// @see enum_class
-template <typename T>
-static constexpr const bool is_enum_class_v = is_enum_class<T>::value;
-
-template <typename Self, typename T, identifier_t LibId, identifier_t Id>
-struct is_enum_class<enum_class<Self, T, LibId, Id>> : std::true_type {
-    static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
-};
-//------------------------------------------------------------------------------
-/// @brief Implementation of is_enum_class_value trait.
-/// @ingroup c_api_wrap
-template <typename Class, typename Value>
-struct is_enum_class_value : std::false_type {};
-
-/// @brief Trait indicating if type T is an enum_value, opt_enum_value or no_enum_value.
-/// @ingroup c_api_wrap
-/// @see is_enum_class_t
-/// @see enum_value
-/// @see opt_enum_value
-/// @see no_enum_value
-template <typename C, typename V>
-static constexpr const auto is_enum_class_value_v =
-  is_enum_class_value<type_t<C>, type_t<V>>::value;
-
-template <
-  typename Self,
-  typename T,
-  typename Tag,
-  identifier_t LibId,
-  identifier_t Id>
-struct is_enum_class_value<enum_class<Self, T, LibId, Id>, no_enum_value<T, Tag>>
-  : std::true_type {
-    static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
-};
-
-template <
-  typename Self,
-  typename T,
-  typename Classes,
-  typename Tag,
-  identifier_t LibId,
-  identifier_t Id>
-struct is_enum_class_value<
-  enum_class<Self, T, LibId, Id>,
-  enum_value<T, Classes, Tag>> : mp_contains<Classes, Self> {
-    static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
-};
-
-template <
-  typename Self,
-  typename T,
-  typename Classes,
-  typename Tag,
-  identifier_t LibId,
-  identifier_t Id>
-struct is_enum_class_value<
-  enum_class<Self, T, LibId, Id>,
-  opt_enum_value<T, Classes, Tag>> : mp_contains<Classes, Self> {
-    static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
-};
 //------------------------------------------------------------------------------
 /// @brief Type erasure for instantiations of enum_class from a specified library.
 /// @tparam LibId unique identifier of a "library" or API the enums belong to.

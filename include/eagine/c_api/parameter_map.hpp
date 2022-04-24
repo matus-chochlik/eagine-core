@@ -16,6 +16,7 @@
 #include "../mp_list.hpp"
 #include "../string_span.hpp"
 #include "buffer_data.hpp"
+#include "enum_class.hpp"
 #include "handle.hpp"
 #include "key_value_list.hpp"
 
@@ -945,6 +946,34 @@ requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
     using convert<CP, get_data_map<CI + 1, CppI>>::operator();
     using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CP,
+  typename PV,
+  typename... CT,
+  typename CppP,
+  typename... CppT>
+requires(std::is_same_v<CP, typename CppP::value_type>) struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CP, PV, CT...>,
+  mp_list<enum_parameter_value<CppP, PV>, CppT...>>
+  : make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).parameter;
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 1> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI + 1, CppI>{}(i, std::forward<P>(p)...).value;
+    }
 };
 
 template <
