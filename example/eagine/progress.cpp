@@ -9,22 +9,31 @@
 #include <eagine/logging/logger.hpp>
 #include <eagine/main.hpp>
 #include <eagine/main_ctx.hpp>
+#include <eagine/main_ctx_object.hpp>
 #include <eagine/progress/activity.hpp>
 #include <eagine/progress/backend.hpp>
-#include <iostream>
 
 namespace eagine {
 //------------------------------------------------------------------------------
-class example_observer final : public progress_observer {
+class example_observer final
+  : public main_ctx_object
+  , public progress_observer {
 public:
+    example_observer(main_ctx_parent parent) noexcept
+      : main_ctx_object{EAGINE_ID(Observer), parent} {}
+
     void activity_begun(
       const activity_progress_id_t parent_id,
       const activity_progress_id_t activity_id,
       const string_view title,
       const span_size_t total_steps) noexcept final {
-        std::cout << "activity " << parent_id << "/" << activity_id
-                  << " has begun: '" << title << "' (total=" << total_steps
-                  << ")" << std::endl;
+        cio_print(
+          "activity ${parent}/${activity} has begun: '${title}' "
+          "(total=${total})")
+          .arg(EAGINE_ID(parent), parent_id)
+          .arg(EAGINE_ID(activity), activity_id)
+          .arg(EAGINE_ID(total), total_steps)
+          .arg(EAGINE_ID(title), title);
     }
 
     void activity_finished(
@@ -32,9 +41,13 @@ public:
       const activity_progress_id_t activity_id,
       const string_view title,
       const span_size_t total_steps) noexcept final {
-        std::cout << "activity " << parent_id << "/" << activity_id
-                  << " has has ended: '" << title << "' (total=" << total_steps
-                  << ")" << std::endl;
+        cio_print(
+          "activity ${parent}/${activity} has ended: '${title}' "
+          "(total=${total})")
+          .arg(EAGINE_ID(parent), parent_id)
+          .arg(EAGINE_ID(activity), activity_id)
+          .arg(EAGINE_ID(total), total_steps)
+          .arg(EAGINE_ID(title), title);
     }
 
     void activity_updated(
@@ -42,13 +55,17 @@ public:
       const activity_progress_id_t activity_id,
       const span_size_t current,
       const span_size_t total) noexcept final {
-        std::cout << "activity " << parent_id << "/" << activity_id
-                  << " was updated: " << (100 * current / total) << std::endl;
+        cio_print(
+          "activity ${parent}/${activity} was updated: "
+          "${current}")
+          .arg(EAGINE_ID(parent), parent_id)
+          .arg(EAGINE_ID(activity), activity_id)
+          .arg(EAGINE_ID(current), current, total);
     }
 };
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
-    example_observer observer;
+    example_observer observer{ctx};
     register_progress_observer(ctx, observer);
 
     const auto callback = [&]() {

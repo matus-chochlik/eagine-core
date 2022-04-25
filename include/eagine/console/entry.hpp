@@ -164,6 +164,13 @@ public:
         return arg(name, EAGINE_ID(float), value);
     }
 
+    auto arg(
+      const identifier name,
+      const std::integral auto value,
+      const std::integral auto max) noexcept -> auto& {
+        return arg(name, EAGINE_ID(Ration), double(value) / double(max));
+    }
+
     /// @brief Adds a new message argument with time duration value.
     /// @param name the argument name identifier. Used in message substitution.
     /// @param tag the argument type identifier. Used in value formatting.
