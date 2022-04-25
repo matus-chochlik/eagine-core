@@ -6,11 +6,11 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#ifndef EAGINE_ENUM_LOG_HPP
-#define EAGINE_ENUM_LOG_HPP
+#ifndef EAGINE_LOGGING_TYPE_ENUM_HPP
+#define EAGINE_LOGGING_TYPE_ENUM_HPP
 
-#include "enum_class.hpp"
-#include "logging/backend.hpp"
+#include "../../c_api/enum_class.hpp"
+#include "../backend.hpp"
 #include <type_traits>
 
 namespace eagine {
@@ -37,4 +37,4 @@ static constexpr auto adapt_entry_arg(
 //------------------------------------------------------------------------------
 } // namespace eagine
 
-#endif // EAGINE_ENUM_LOG_HPP
+#endif

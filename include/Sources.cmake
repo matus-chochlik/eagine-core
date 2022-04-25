@@ -46,7 +46,6 @@ set(HEADERS
     eagine/dynamic_library.hpp
     eagine/edit_distance.hpp
     eagine/embed.hpp
-    eagine/enum_log.hpp
     eagine/enum_map.hpp
     eagine/environment.hpp
     eagine/extractable.hpp
@@ -86,6 +85,7 @@ set(HEADERS
     eagine/logging/severity.hpp
     eagine/logging/syslog_backend.hpp
     eagine/logging/type/build_info.hpp
+    eagine/logging/type/enum.hpp
     eagine/logging/type/exception.hpp
     eagine/logging/type/filesystem.hpp
     eagine/logging/type/program_args.hpp
