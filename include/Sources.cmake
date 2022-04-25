@@ -48,7 +48,6 @@ set(HEADERS
     eagine/embed.hpp
     eagine/enum_log.hpp
     eagine/enum_map.hpp
-    eagine/enum_span.hpp
     eagine/environment.hpp
     eagine/extractable.hpp
     eagine/extract.hpp
