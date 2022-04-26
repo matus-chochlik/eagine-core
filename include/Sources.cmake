@@ -24,6 +24,8 @@ set(HEADERS
     eagine/c_api/api_traits.hpp
     eagine/c_api/buffer_data.hpp
     eagine/c_api/constant.hpp
+    eagine/c_api/enum_bitfield.hpp
+    eagine/c_api/enum_class.hpp
     eagine/c_api/function.hpp
     eagine/c_api/handle.hpp
     eagine/c_api/key_value_list.hpp
@@ -44,11 +46,7 @@ set(HEADERS
     eagine/dynamic_library.hpp
     eagine/edit_distance.hpp
     eagine/embed.hpp
-    eagine/enum_bitfield.hpp
-    eagine/enum_class.hpp
-    eagine/enum_log.hpp
     eagine/enum_map.hpp
-    eagine/enum_span.hpp
     eagine/environment.hpp
     eagine/extractable.hpp
     eagine/extract.hpp
@@ -87,6 +85,7 @@ set(HEADERS
     eagine/logging/severity.hpp
     eagine/logging/syslog_backend.hpp
     eagine/logging/type/build_info.hpp
+    eagine/logging/type/enum.hpp
     eagine/logging/type/exception.hpp
     eagine/logging/type/filesystem.hpp
     eagine/logging/type/program_args.hpp

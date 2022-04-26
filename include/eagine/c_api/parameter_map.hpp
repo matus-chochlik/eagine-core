@@ -9,12 +9,14 @@
 #ifndef EAGINE_C_API_PARAMETER_MAP_HPP
 #define EAGINE_C_API_PARAMETER_MAP_HPP
 
+#include "../c_str.hpp"
 #include "../int_constant.hpp"
 #include "../is_within_limits.hpp"
 #include "../memory/split_span.hpp"
 #include "../mp_list.hpp"
 #include "../string_span.hpp"
 #include "buffer_data.hpp"
+#include "enum_class.hpp"
 #include "handle.hpp"
 #include "key_value_list.hpp"
 
@@ -97,6 +99,14 @@ struct addressof_map {
     constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
         return std::addressof(
           reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...));
+    }
+};
+
+template <std::size_t CI, std::size_t CppI>
+struct get_index_map {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).index();
     }
 };
 
@@ -201,7 +211,7 @@ struct head_transform_map {
 
     template <typename... P>
     constexpr auto operator()(size_constant<CSizeI> i, P... p) noexcept -> S* {
-        _len = limit_cast<S>(get_size_map<CSizeI, CppSpanI>{}(i, p...));
+        _len = eagine::limit_cast<S>(get_size_map<CSizeI, CppSpanI>{}(i, p...));
         return &_len;
     }
 
@@ -240,7 +250,7 @@ struct skip_transform_map {
 
     template <typename... P>
     constexpr auto operator()(size_constant<CSizeI> i, P... p) noexcept -> S* {
-        _len = limit_cast<S>(get_size_map<CSizeI, CppSpanI>{}(i, p...));
+        _len = eagine::limit_cast<S>(get_size_map<CSizeI, CppSpanI>{}(i, p...));
         return &_len;
     }
 
@@ -275,7 +285,8 @@ struct split_transform_map {
     template <typename... P>
     constexpr auto operator()(size_constant<CSizeI>, P... p) noexcept -> S* {
         const trivial_map map;
-        _len = limit_cast<S>(map(size_constant<CppSpanI>{}, p...).tail.size());
+        _len = eagine::limit_cast<S>(
+          map(size_constant<CppSpanI>{}, p...).tail.size());
         return &_len;
     }
 
@@ -307,6 +318,7 @@ static constexpr auto c_arg_cast(Src&& src) noexcept -> Dst {
                        bool>) {
             return std::forward<Src>(src) ? 1 : 0;
         } else {
+            using eagine::limit_cast;
             return limit_cast<Dst>(std::forward<Src>(src));
         }
     } else {
@@ -375,9 +387,25 @@ struct make_arg_map<I, I, P, P> : trivial_arg_map<I> {};
 template <std::size_t I>
 struct make_arg_map<I, I, const char*, string_view> {
     template <typename... P>
-    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
-        return c_str(trivial_map{}(i, std::forward<P>(p)...));
+    constexpr auto operator()(size_constant<I> i, P&&... p) noexcept {
+        _result = trivial_map{}(i, std::forward<P>(p)...);
+        return static_cast<const char*>(_result);
     }
+
+private:
+    basic_c_str<const char, const char*, span_size_t, false> _result{};
+};
+
+template <std::size_t CI, std::size_t CppI>
+struct make_arg_map<CI, CppI, const char*, string_view> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) noexcept {
+        _result = reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...);
+        return static_cast<const char*>(_result);
+    }
+
+private:
+    basic_c_str<const char, const char*, span_size_t, false> _result{};
 };
 
 template <std::size_t CI, std::size_t CppI, typename V, typename R, typename S>
@@ -918,6 +946,34 @@ requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
     using convert<CP, get_data_map<CI + 1, CppI>>::operator();
     using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();
+};
+
+template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename CP,
+  typename PV,
+  typename... CT,
+  typename CppP,
+  typename... CppT>
+requires(std::is_same_v<CP, typename CppP::value_type>) struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CP, PV, CT...>,
+  mp_list<enum_parameter_value<CppP, PV>, CppT...>>
+  : make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).parameter;
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 1> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI + 1, CppI>{}(i, std::forward<P>(p)...).value;
+    }
 };
 
 template <

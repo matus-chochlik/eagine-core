@@ -176,7 +176,7 @@ public:
     }
 
 private:
-    Api& _api;
+    [[no_unique_address]] Api& _api;
 };
 
 template <typename Result, typename Remain>

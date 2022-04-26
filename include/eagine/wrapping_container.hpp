@@ -151,6 +151,12 @@ public:
         return view(_items);
     }
 
+    /// @brief Returns a pointer to raw items data.
+    /// @see raw_items
+    constexpr auto data() const noexcept {
+        return raw_items().data();
+    }
+
 private:
     constexpr auto _transf() const noexcept -> const Transform& {
         return *this;

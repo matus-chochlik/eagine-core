@@ -6,12 +6,12 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#ifndef EAGINE_ENUM_BITFIELD_HPP
-#define EAGINE_ENUM_BITFIELD_HPP
+#ifndef EAGINE_C_API_ENUM_BITFIELD_HPP
+#define EAGINE_C_API_ENUM_BITFIELD_HPP
 
 #include "enum_class.hpp"
 
-namespace eagine {
+namespace eagine::c_api {
 //------------------------------------------------------------------------------
 template <typename T, typename ClassList>
 struct enum_bits;
@@ -109,6 +109,6 @@ struct enum_bitfield {
     }
 };
 
-} // namespace eagine
+} // namespace eagine::c_api
 
 #endif // EAGINE_ENUM_BITFIELD_HPP

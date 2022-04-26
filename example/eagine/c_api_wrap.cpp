@@ -27,7 +27,6 @@
 namespace eagine {
 //------------------------------------------------------------------------------
 struct example_sets_errno {};
-//------------------------------------------------------------------------------
 struct example_api_traits : c_api::default_traits {};
 //------------------------------------------------------------------------------
 struct example_file_api {
@@ -41,9 +40,6 @@ public:
     static constexpr auto check_result(Result result, U&&...) noexcept {
         return result;
     }
-
-    template <typename Tag = example_sets_errno>
-    using derived_func = derived_c_api_function<this_api, api_traits, Tag>;
 
     c_api::combined_function<
       this_api,
@@ -66,24 +62,24 @@ public:
       true>
       make_pipe;
 
-    struct : derived_func<> {
-        using base = derived_func<>;
-        using base::base;
-
-        explicit constexpr operator bool() const noexcept {
-            return EAGINE_POSIX != 0;
-        }
-
-        auto operator()(
-          [[maybe_unused]] const char* path,
-          [[maybe_unused]] int flags) noexcept -> int {
+    static auto _open(
+      [[maybe_unused]] const char* path,
+      [[maybe_unused]] int flags) -> int {
 #if EAGINE_POSIX
-            return ::open(path, flags); // NOLINT(hicpp-vararg)
+        return ::open(path, flags); // NOLINT(hicpp-vararg)
 #else
-            return -1;
+        return -1;
 #endif
-        }
-    } open_file;
+    }
+
+    c_api::opt_function<
+      api_traits,
+      example_sets_errno,
+      int(const char*, int),
+      &_open,
+      EAGINE_POSIX,
+      true>
+      open_file;
 
     c_api::opt_function<
       api_traits,
