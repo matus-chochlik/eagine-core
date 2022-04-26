@@ -15,6 +15,7 @@
 #include "../type_traits.hpp"
 #include <sstream>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 namespace eagine {
@@ -295,13 +296,12 @@ public:
 
     /// @brief Calls the specified function if the stored value is valid.
     /// @param func the function to be called.
-    /// @param p additional parameters for the policy validity check function.
     template <typename Func>
     auto then(const Func& func) const -> basic_valid_if<
-      std::result_of_t<Func(T)>,
+      std::invoke_result_t<Func, T>,
       valid_flag_policy,
       typename valid_flag_policy::
-        do_log> requires(!std::is_same_v<std::result_of_t<Func(T)>, void>) {
+        do_log> requires(!std::is_same_v<std::invoke_result_t<Func, T>, void>) {
         if(is_valid()) {
             return {func(this->value_anyway()), true};
         }
@@ -322,7 +322,7 @@ public:
     template <typename Func>
     constexpr auto transformed(Func func, P... p) const noexcept
       -> basic_valid_if<
-        std::result_of_t<Func(T, bool)>,
+        std::invoke_result_t<Func, T, bool>,
         valid_flag_policy,
         typename valid_flag_policy::do_log> {
         const auto v{is_valid(p...)};
