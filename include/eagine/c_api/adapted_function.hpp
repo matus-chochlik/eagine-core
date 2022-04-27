@@ -111,6 +111,7 @@ class basic_adapted_function<
         std::tuple<adapted_function_raii_parameter_t<CppParam>...> params{
           std::forward<decltype(param)>(param)...};
         return [ci, params, this]() mutable {
+            (void)params;
             _call(ci, std::move(std::get<CppI>(params))...);
         };
     }

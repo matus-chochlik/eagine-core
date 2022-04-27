@@ -129,8 +129,8 @@ private:
         std::array<char, 64> temp{};
         // TODO: to_chars from_chars when available
         // NOLINTNEXTLINE(hicpp-vararg)
-        [[maybe_unused]] std::snprintf(
-          temp.data(), temp.size(), static_cast<const char*>(fmt), value);
+        [[maybe_unused]] const auto unused{std::snprintf(
+          temp.data(), temp.size(), static_cast<const char*>(fmt), value)};
         return do_sink(string_view(temp.data()));
     }
 

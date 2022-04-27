@@ -19,6 +19,7 @@ EAGINE_DIAG_OFF(extra-semi-stmt)
 EAGINE_DIAG_OFF(final-dtor-non-final-class)
 EAGINE_DIAG_OFF(newline-eof)
 EAGINE_DIAG_OFF(reserved-id-macro)
+EAGINE_DIAG_OFF(reserved-identifier)
 #endif
 #include <ryml.hpp>
 EAGINE_DIAG_POP()

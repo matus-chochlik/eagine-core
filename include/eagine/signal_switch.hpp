@@ -30,8 +30,10 @@ public:
 
     /// @brief Destructor. Restores the original signal handlers.
     ~signal_switch() noexcept {
-        [[maybe_unused]] std::signal(SIGINT, _intr_handler);
-        [[maybe_unused]] std::signal(SIGTERM, _term_handler);
+        [[maybe_unused]] const auto unused_int{
+          std::signal(SIGINT, _intr_handler)};
+        [[maybe_unused]] const auto unused_trm{
+          std::signal(SIGTERM, _term_handler)};
     }
 
     /// @brief Not moveable.

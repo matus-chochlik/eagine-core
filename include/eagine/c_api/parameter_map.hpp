@@ -555,7 +555,7 @@ struct make_args_map;
 template <std::size_t CI, std::size_t CppI>
 struct make_args_map<CI, CppI, mp_list<>, mp_list<>> {
 protected:
-    void operator()() const noexcept {};
+    void operator()() const noexcept {}
 };
 
 template <
@@ -998,19 +998,19 @@ requires(std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct make_a
 };
 //------------------------------------------------------------------------------
 template <typename CSignature, typename CppSignature>
-static auto make_map(CSignature*, CppSignature*) -> trivial_map;
+auto make_map(CSignature*, CppSignature*) -> trivial_map;
 
 template <typename CRV, typename CppRV>
-static auto make_map(CRV (*)(), CppRV (*)())
+auto make_map(CRV (*)(), CppRV (*)())
   -> cast_to_map<CRV, CppRV> requires(!std::is_same_v<CRV, CppRV>);
 
 template <typename RV, typename... CParam, typename... CppParam>
-static auto make_map(RV (*)(CParam...), RV (*)(CppParam...))
+auto make_map(RV (*)(CParam...), RV (*)(CppParam...))
   -> make_args_map<0, 0, mp_list<RV, CParam...>, mp_list<RV, CppParam...>> requires(
     (sizeof...(CParam) > 0));
 
 template <typename CRV, typename CppRV, typename... CParam, typename... CppParam>
-static auto make_map(CRV (*)(CParam...), CppRV (*)(CppParam...)) -> combined_map<
+auto make_map(CRV (*)(CParam...), CppRV (*)(CppParam...)) -> combined_map<
   cast_to_map<CRV, CppRV>,
   make_args_map<
     1,
@@ -1020,23 +1020,22 @@ static auto make_map(CRV (*)(CParam...), CppRV (*)(CppParam...)) -> combined_map
       CppParam...>>> requires(!std::is_same_v<CRV, CppRV> && (sizeof...(CParam) > 0));
 
 template <typename CRV, typename CppRV, typename CParam, typename CppParam>
-static auto make_map(CRV (*)(CppRV*, CParam), CppRV (*)(CppParam))
-  -> combined_map<
-    get_ptr_arg_map<1, CppRV>,
-    convert<CParam, reorder_arg_map<2, 1>>>;
+auto make_map(CRV (*)(CppRV*, CParam), CppRV (*)(CppParam)) -> combined_map<
+  get_ptr_arg_map<1, CppRV>,
+  convert<CParam, reorder_arg_map<2, 1>>>;
 
 template <typename CRV, typename CppRV, typename... CParam, typename... CppParam>
-static auto make_map(CRV (*)(CParam...), returned<CppRV> (*)(CppParam...))
+auto make_map(CRV (*)(CParam...), returned<CppRV> (*)(CppParam...))
   -> make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>;
 
 template <typename RV, typename... CParam, typename... CppParam>
-static auto make_map(RV (*)(CParam...), collapsed<RV> (*)(CppParam...))
+auto make_map(RV (*)(CParam...), collapsed<RV> (*)(CppParam...))
   -> combined_map<
     collapse_map,
     make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>>;
 
 template <typename RV>
-static auto make_map(RV (*)(), collapsed<RV> (*)()) -> collapse_map;
+auto make_map(RV (*)(), collapsed<RV> (*)()) -> collapse_map;
 
 template <
   typename CRV,
@@ -1045,7 +1044,7 @@ template <
   std::size_t CppSpanI,
   typename... CParam,
   typename... CppParam>
-static auto make_map(
+auto make_map(
   CRV (*)(CParam...),
   head_transformed<HTS, CSizeI, CppSpanI> (*)(CppParam...))
   -> combined_map<
@@ -1059,7 +1058,7 @@ template <
   std::size_t CppSpanI,
   typename... CParam,
   typename... CppParam>
-static auto make_map(
+auto make_map(
   CRV (*)(CParam...),
   skip_transformed<HTS, CSizeI, CppSpanI> (*)(CppParam...))
   -> combined_map<
@@ -1073,7 +1072,7 @@ template <
   std::size_t CppSpanI,
   typename... CParam,
   typename... CppParam>
-static auto make_map(
+auto make_map(
   CRV (*)(CParam...),
   split_transformed<STS, CSizeI, CppSpanI> (*)(CppParam...))
   -> combined_map<

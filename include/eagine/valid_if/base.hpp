@@ -318,7 +318,6 @@ public:
 
     /// @brief Calls a binary transforming function on {value, is_valid()} pair.
     /// @param func the function to be called.
-    /// @param p additional parameters for the policy validity check function.
     template <typename Func>
     constexpr auto transformed(Func func, P... p) const noexcept
       -> basic_valid_if<
