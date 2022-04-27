@@ -14,7 +14,7 @@ if(${EAGINE_DEBUG})
         boost/stacktrace/stacktrace.hpp
     )
 
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 		# TODO: do something better here?
 		string(
 			REGEX REPLACE
@@ -34,49 +34,49 @@ if(${EAGINE_DEBUG})
 			STACKTRACE_BACKTRACE_LIBRARY
 			boost_stacktrace_backtrace
 		)
-	endif()
 
-    if(
-        STACKTRACE_BACKTRACE_LIBRARY AND
-        EXISTS "${STACKTRACE_BACKTRACE_LIBRARY}"
-        AND BACKTRACE_LIBRARY
-        AND EXISTS "${BACKTRACE_LIBRARY}"
-    )
-		set(EAGINE_USE_STACKTRACE 1)
-		set(EAGINE_USE_BACKTRACE 1)
-		set(
-			STACKTRACE_LIBRARIES
-			${BACKTRACE_LIBRARY}
-			${STACKTRACE_BACKTRACE_LIBRARY}
+		if(
+			STACKTRACE_BACKTRACE_LIBRARY AND
+			EXISTS "${STACKTRACE_BACKTRACE_LIBRARY}"
+			AND BACKTRACE_LIBRARY
+			AND EXISTS "${BACKTRACE_LIBRARY}"
 		)
-	else()
-        find_library(
-            STACKTRACE_LIBRARIES
-            boost_stacktrace_basic
-        )
-		if(STACKTRACE_LIBRARIES)
 			set(EAGINE_USE_STACKTRACE 1)
+			set(EAGINE_USE_BACKTRACE 1)
+			set(
+				STACKTRACE_LIBRARIES
+				${BACKTRACE_LIBRARY}
+				${STACKTRACE_BACKTRACE_LIBRARY}
+			)
+		else()
+			find_library(
+				STACKTRACE_LIBRARIES
+				boost_stacktrace_basic
+			)
+			if(STACKTRACE_LIBRARIES)
+				set(EAGINE_USE_STACKTRACE 1)
+			endif()
 		endif()
-    endif()
 
-	if(STACKTRACE_INCLUDE_DIRS)
-		foreach(DIR ${STACKTRACE_INCLUDE_DIRS})
-			if(EXISTS ${DIR})
+		if(STACKTRACE_INCLUDE_DIRS)
+			foreach(DIR ${STACKTRACE_INCLUDE_DIRS})
+				if(EXISTS ${DIR})
+					set_target_properties(
+						EAGine::Deps::Stacktrace 
+						PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${DIR}"
+					)
+				endif()
+			endforeach()
+		endif()
+
+		if(STACKTRACE_LIBRARIES)
+			message(STATUS "Found Stacktrace: ${STACKTRACE_LIBRARIES}")
+			foreach(LIB ${STACKTRACE_LIBRARIES})
 				set_target_properties(
 					EAGine::Deps::Stacktrace 
-					PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${DIR}"
+					PROPERTIES INTERFACE_LINK_LIBRARIES "${LIB}"
 				)
-			endif()
-		endforeach()
-	endif()
-
-	if(STACKTRACE_LIBRARIES)
-		message(STATUS "Found Stacktrace: ${STACKTRACE_LIBRARIES}")
-		foreach(LIB ${STACKTRACE_LIBRARIES})
-			set_target_properties(
-				EAGine::Deps::Stacktrace 
-				PROPERTIES INTERFACE_LINK_LIBRARIES "${LIB}"
-			)
-		endforeach()
+			endforeach()
+		endif()
 	endif()
 endif()
