@@ -89,6 +89,7 @@ public:
     /// @brief Returns the specified buffer back to the pool for further reuse.
     /// @see get
     void eat(memory::buffer used) noexcept {
+        const auto old_cap{std_size(used.capacity())};
         if(_pool.size() < _max) [[likely]] {
             try {
                 _pool.emplace_back(std::move(used));
@@ -101,7 +102,7 @@ public:
         }
 #if !EAGINE_LOW_PROFILE
         ++_stats._eats;
-        _stats._maxs = std::max(_stats._maxs, std_size(used.capacity()));
+        _stats._maxs = std::max(_stats._maxs, old_cap);
 #endif
     }
 

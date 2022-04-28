@@ -27,11 +27,11 @@ EAGINE_DIAG_POP()
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
 static inline auto rapidyaml_cstrref(string_view str) noexcept {
-    return c4::csubstr(str.data(), std_size(str.size()));
+    return c4::csubstr(str.data(), integer(str.size()));
 }
 //------------------------------------------------------------------------------
 static inline auto view(c4::csubstr str) noexcept {
-    return string_view{str.data(), span_size(str.size())};
+    return string_view{str.data(), integer(str.size())};
 }
 //------------------------------------------------------------------------------
 class rapidyaml_callbacks {
@@ -143,7 +143,7 @@ public:
     auto nested(rapidyaml_tree_compound& owner, span_size_t index) const noexcept
       -> attribute_interface* {
         if(_usable(_node)) {
-            auto child{_node[std_size(index)]};
+            auto child{_node[integer(index)]};
             if(_usable(child)) {
                 return rapidyaml_make_new_node(owner, child);
             }
@@ -293,7 +293,7 @@ public:
       -> std::shared_ptr<rapidyaml_tree_compound> {
         try {
             rapidyaml_callbacks cbks{};
-            c4::csubstr src{yaml_text.data(), std_size(yaml_text.size())};
+            c4::csubstr src{yaml_text.data(), integer(yaml_text.size())};
             auto tree{ryml::parse_in_arena(src)};
             tree.resolve();
             return std::make_shared<rapidyaml_tree_compound>(

@@ -10,6 +10,7 @@
 #define EAGINE_MEMORY_NULL_PTR_HPP
 
 #include "../types.hpp"
+#include <concepts>
 #include <cstdint>
 
 namespace eagine::memory {
@@ -27,7 +28,7 @@ constexpr typed_nullptr_t<T> typed_nullptr = {};
 //------------------------------------------------------------------------------
 /// @brief Pointer arithmetic addition operator for null pointers.
 /// @ingroup type_utils
-template <typename T, typename N>
+template <typename T, std::integral N>
 static constexpr auto operator+(const typed_nullptr_t<T>, const N n) noexcept
   -> T* {
     // NOLINTNEXTLINE(performance-no-int-to-ptr)

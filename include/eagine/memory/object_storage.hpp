@@ -49,7 +49,7 @@ public:
     }
 
     void reserve(span_size_t n) {
-        const auto sz{std_size(n)};
+        const integer sz{n};
         _blks.reserve(sz);
         _alns.reserve(sz);
         _dtrs.reserve(sz);
@@ -150,7 +150,7 @@ public:
 
     void reserve(span_size_t n) {
         base::reserve(n);
-        _clrs.reserve(std_size(n));
+        _clrs.reserve(integer(n));
     }
 
     template <typename T>

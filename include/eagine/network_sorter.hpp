@@ -32,11 +32,8 @@ public:
       span_size_t r,
       span_size_t i) const {
         span_size_t j = _sn.index(r, i);
-        dst[std_size(i)] = _min_max_cpy(
-          src[std_size(i)],
-          src[std_size(j)],
-          _sn.min(r, i, j),
-          _sn.max(r, i, j));
+        dst[integer(i)] = _min_max_cpy(
+          src[integer(i)], src[integer(j)], _sn.min(r, i, j), _sn.max(r, i, j));
     }
 
     auto size() const noexcept -> span_size_t {
@@ -88,7 +85,7 @@ public:
     auto sort_single(span_size_t r, span_size_t i) -> auto& {
         span_size_t src = (r + 0) % 2;
         span_size_t dst = (r + 1) % 2;
-        this->single_sort_step(_a[std_size(src)], _a[std_size(dst)], r, i);
+        this->single_sort_step(_a[integer(src)], _a[integer(dst)], r, i);
         return *this;
     }
 

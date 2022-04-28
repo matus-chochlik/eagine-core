@@ -52,7 +52,7 @@ public:
         if(_pimpl) [[likely]] {
             return _pimpl->block();
         } else {
-            return memory::const_block();
+            return {};
         }
     }
 

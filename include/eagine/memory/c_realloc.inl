@@ -20,7 +20,7 @@ inline auto c_byte_reallocator::allocate(
     }
 
     // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
-    auto p{std::malloc(std_size(n))};
+    auto p{std::malloc(integer(n))};
 
     EAGINE_ASSERT(is_aligned_to(as_address(p), a));
 
@@ -47,7 +47,7 @@ inline auto c_byte_reallocator::reallocate(
     }
 
     // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
-    auto p{std::realloc(b.data(), std_size(n))};
+    auto p{std::realloc(b.data(), integer(n))};
 
     this->release_block(std::move(b));
 

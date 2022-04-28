@@ -19,8 +19,8 @@ auto byte_to_identifier(const byte b) noexcept -> identifier {
     const char src[5] = {
       '0',
       'x',
-      hd[std_size((b >> 4) & 0xFU)], // NOLINT(hicpp-signed-bitwise)
-      hd[std_size(b & 0xFU)],        // NOLINT(hicpp-signed-bitwise)
+      hd[integer((b >> 4U) & 0xFU)], // NOLINT(hicpp-signed-bitwise)
+      hd[integer(b & 0xFU)],         // NOLINT(hicpp-signed-bitwise)
       '\0'};
     return identifier{src};
 }

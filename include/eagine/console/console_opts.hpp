@@ -6,8 +6,8 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#ifndef EAGINE_LOGGING_CONSOLE_OPTS_HPP
-#define EAGINE_LOGGING_CONSOLE_OPTS_HPP
+#ifndef EAGINE_CONSOLE_CONSOLE_OPTS_HPP
+#define EAGINE_CONSOLE_CONSOLE_OPTS_HPP
 
 #include "backend.hpp"
 #include <memory>
@@ -23,4 +23,4 @@ struct console_options {
 //------------------------------------------------------------------------------
 } // namespace eagine
 
-#endif // EAGINE_LOGGING_CONSOLE_OPTS_HPP
+#endif

@@ -48,7 +48,7 @@ template <typename Ts, typename Ps, typename Ss, typename Td, typename A>
 auto flatten(const basic_span<Ts, Ps, Ss> src, std::vector<Td, A>& dst)
   -> auto& {
     flatten_traits<std::remove_cv_t<Ts>, Td> traits{};
-    dst.resize(std_size(traits.required_size(src)));
+    dst.resize(integer(traits.required_size(src)));
     flatten(src, cover(dst));
     return dst;
 }

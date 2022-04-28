@@ -400,8 +400,7 @@ public:
       : _valid{valid} {}
 
     constexpr result_value(
-      const result_value<void, result_validity::never>&) noexcept
-      : _valid{false} {}
+      const result_value<void, result_validity::never>&) noexcept {}
 
     constexpr result_value(
       const result_value<void, result_validity::always>&) noexcept

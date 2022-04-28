@@ -22,7 +22,7 @@ auto main(int argc, const char** argv) -> int {
     }
     vi = 0;
     if(has_value(vi)) {
-        std::cout << "C" << std::endl;
+        std::cout << "C|" << i << std::endl;
     }
 
     eagine::valid_if_existing_file<eagine::basic_string_path> vf{

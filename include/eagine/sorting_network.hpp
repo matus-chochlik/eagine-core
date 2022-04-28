@@ -21,7 +21,7 @@ class bitonic_sorting_network_base {
 public:
     static constexpr auto num_rounds_for(const span_size_t n) noexcept
       -> span_size_t {
-        return span_size(_hlp(_next_log(std_size(n))));
+        return integer(_hlp(_next_log(integer(n))));
     }
 
 protected:
@@ -74,7 +74,7 @@ public:
 
     static auto index(const span_size_t r, const span_size_t i) noexcept
       -> span_size_t {
-        return span_size(_c(r, i) >> 1U);
+        return integer(_c(r, i) >> 1U);
     }
 
     static auto inv(const span_size_t r, const span_size_t i) noexcept -> bool {
@@ -109,7 +109,7 @@ private:
 
     static auto _c(const span_size_t r, const span_size_t i) noexcept
       -> std::size_t& {
-        return _get_idx()[std_size(r)][std_size(i)];
+        return _get_idx()[integer(r)][integer(i)];
     }
 };
 

@@ -111,4 +111,4 @@ struct enum_bitfield {
 
 } // namespace eagine::c_api
 
-#endif // EAGINE_ENUM_BITFIELD_HPP
+#endif

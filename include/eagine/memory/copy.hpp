@@ -23,7 +23,7 @@ namespace eagine::memory {
 static inline auto copy(const const_block source, block dest) noexcept
   -> block {
     EAGINE_ASSERT(dest.size() >= source.size());
-    std::memcpy(dest.data(), source.data(), std_size(source.size()));
+    std::memcpy(dest.data(), source.data(), integer(source.size()));
     return {dest.data(), source.size()};
 }
 

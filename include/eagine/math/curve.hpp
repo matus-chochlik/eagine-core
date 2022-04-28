@@ -183,7 +183,7 @@ public:
         const auto sstep = segment_step();
         const auto s = segment_count();
 
-        dest.resize(std_size(s * extract(n) + 1));
+        dest.resize(integer(s * extract(n) + 1));
 
         auto p = dest.begin();
         const Parameter t_step = Parameter(1) / Parameter(extract(n));
@@ -219,14 +219,14 @@ public:
         const auto sstep = segment_step();
         const auto s = segment_count();
 
-        std::vector<Type> new_points(std_size(s * Order));
+        std::vector<Type> new_points(integer(s * Order));
         auto p = new_points.begin();
 
         for(const auto i : integer_range(s)) {
             for(const auto j : integer_range(Order)) {
                 const auto k = i * sstep + j;
                 EAGINE_ASSERT(p != new_points.end());
-                *p = (_points[std_size(k + 1)] - _points[std_size(k)]) * Order;
+                *p = (_points[integer(k + 1)] - _points[integer(k)]) * Order;
                 ++p;
             }
         }
@@ -268,7 +268,7 @@ private:
         span_size_t i = 0, n = points.size();
         EAGINE_ASSERT(n != 0);
 
-        std::vector<Type> result(std_size(n * 3 + 1));
+        std::vector<Type> result(integer(n * 3 + 1));
         auto ir = result.begin();
 
         while(i != n) {

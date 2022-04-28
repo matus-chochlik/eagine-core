@@ -83,6 +83,27 @@ static constexpr auto span_size_of(
     return span_size(sizeof(T)) * span_size(n);
 }
 
+template <std::integral T>
+class integer {
+public:
+    constexpr integer() noexcept = default;
+    constexpr integer(T value) noexcept
+      : _value{value} {}
+
+    constexpr operator T() const noexcept {
+        return _value;
+    }
+
+    template <std::integral I>
+    requires(!std::is_same_v<T, I>) constexpr operator I() const noexcept {
+        return EAGINE_CONSTEXPR_ASSERT(
+          is_within_limits<I>(_value), static_cast<I>(_value));
+    }
+
+private:
+    T _value{};
+};
+
 } // namespace eagine
 
 #endif // EAGINE_TYPES_HPP
