@@ -9,9 +9,15 @@
 #ifndef EAGINE_CONSOLE_FWD_HPP
 #define EAGINE_CONSOLE_FWD_HPP
 
+#include <cstdint>
+
 namespace eagine {
 //------------------------------------------------------------------------------
 class console;
+
+/// @brief Console entry instance id type.
+/// @ingroup console
+using console_entry_id_t = std::uintptr_t;
 //------------------------------------------------------------------------------
 } // namespace eagine
 

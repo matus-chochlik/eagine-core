@@ -42,6 +42,8 @@ public:
 
     auto begin_message(
       const identifier source,
+      const console_entry_id_t,
+      const console_entry_id_t,
       const console_entry_kind kind,
       const string_view format) noexcept -> bool final {
         _lockable.lock();
@@ -120,6 +122,9 @@ public:
         } catch(...) {
         }
     }
+
+    void to_be_continued(const console_entry_id_t) noexcept final {}
+    void concluded(const console_entry_id_t) noexcept final {}
 
 private:
     template <typename T>

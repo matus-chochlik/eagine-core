@@ -46,7 +46,7 @@ private:
       const identifier source,
       const console_entry_kind kind,
       const string_view format) const noexcept -> console_entry {
-        return {source, kind, format, _entry_backend(source, kind)};
+        return {source, 0U, kind, format, _entry_backend(source, kind)};
     }
 
     auto _entry_backend(const identifier source, const console_entry_kind kind)

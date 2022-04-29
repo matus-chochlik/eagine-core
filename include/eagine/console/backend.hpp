@@ -13,6 +13,7 @@
 #include "../memory/shared_alloc.hpp"
 #include "../string_span.hpp"
 #include "entry_kind.hpp"
+#include "fwd.hpp"
 #include <chrono>
 
 namespace eagine {
@@ -44,6 +45,8 @@ struct console_backend : interface<console_backend> {
     /// @param format the format string of the message. May contain argument placeholders.
     virtual auto begin_message(
       const identifier source,
+      const console_entry_id_t parent_id,
+      const console_entry_id_t entry_id,
       const console_entry_kind kind,
       const string_view format) noexcept -> bool = 0;
 
@@ -121,6 +124,14 @@ struct console_backend : interface<console_backend> {
 
     /// @brief Finishes the current console message.
     virtual void finish_message() noexcept = 0;
+
+    /// @brief Indicates that the entry will be followed by some sub-entries.
+    /// @see concluded
+    virtual void to_be_continued(const console_entry_id_t) noexcept = 0;
+
+    /// @brief Indicates that no other sub entries will be appended to previous entry.
+    /// @see to_be_continued
+    virtual void concluded(const console_entry_id_t) noexcept = 0;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
