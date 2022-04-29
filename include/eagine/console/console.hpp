@@ -46,15 +46,16 @@ private:
       const identifier source,
       const console_entry_kind kind,
       const string_view format) const noexcept -> console_entry {
-        return {source, 0U, kind, format, _entry_backend(source, kind)};
+        const auto [backend, entry_id] = _entry_backend(source, kind);
+        return {source, 0U, entry_id, kind, format, backend};
     }
 
     auto _entry_backend(const identifier source, const console_entry_kind kind)
-      const noexcept -> console_backend* {
+      const noexcept -> std::tuple<console_backend*, console_entry_id_t> {
         if(_backend) [[likely]] {
             return _backend->entry_backend(source, kind);
         }
-        return nullptr;
+        return {nullptr, 0};
     }
 
     std::unique_ptr<console_backend> _backend;

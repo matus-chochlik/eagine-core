@@ -37,7 +37,8 @@ struct console_backend : interface<console_backend> {
     /// @param kind the kind of the entry.
     virtual auto entry_backend(
       const identifier source,
-      const console_entry_kind kind) noexcept -> console_backend* = 0;
+      const console_entry_kind kind) noexcept
+      -> std::tuple<console_backend*, console_entry_id_t> = 0;
 
     /// @brief Begins a new console message.
     /// @param source the identifier of the entry source object.
@@ -127,7 +128,9 @@ struct console_backend : interface<console_backend> {
 
     /// @brief Indicates that the entry will be followed by some sub-entries.
     /// @see concluded
-    virtual void to_be_continued(const console_entry_id_t) noexcept = 0;
+    virtual void to_be_continued(
+      const console_entry_id_t parent_id,
+      const console_entry_id_t id) noexcept = 0;
 
     /// @brief Indicates that no other sub entries will be appended to previous entry.
     /// @see to_be_continued

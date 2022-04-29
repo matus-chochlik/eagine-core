@@ -32,8 +32,16 @@ public:
     auto print(const string_view format) const noexcept -> console_entry;
 
 private:
+    auto _entry_backend(const identifier source, const console_entry_kind kind)
+      const noexcept -> std::tuple<console_backend*, console_entry_id_t>;
+
+    auto _make_log_entry(
+      const console_entry_kind kind,
+      const string_view format) const noexcept -> console_entry;
+
     console_backend* const _backend{};
-    const console_entry_id_t _id{};
+    const console_entry_id_t _parent_id{};
+    const console_entry_id_t _entry_id{};
     const identifier _source_id{};
     const console_entry_kind _kind{};
 };
@@ -47,11 +55,13 @@ public:
     console_entry(
       const identifier source_id,
       const console_entry_id_t parent_id,
+      const console_entry_id_t entry_id,
       const console_entry_kind kind,
       const string_view format,
       console_backend* backend) noexcept
       : _backend{backend}
       , _parent_id{parent_id}
+      , _entry_id{entry_id}
       , _source_id{source_id}
       , _format{format}
       , _args{_be_alloc(_backend)}
@@ -342,6 +352,7 @@ private:
 
     console_backend* const _backend{nullptr};
     const console_entry_id_t _parent_id{};
+    const console_entry_id_t _entry_id{};
     const identifier _source_id{};
     const string_view _format{};
     memory::callable_storage<void(console_backend&)> _args;
@@ -359,24 +370,42 @@ private:
 inline console_entry_continuation::console_entry_continuation(
   const console_entry& entry) noexcept
   : _backend{entry._backend}
-  , _id{entry.id()}
+  , _parent_id{entry._parent_id}
+  , _entry_id{entry._entry_id}
   , _source_id{entry._source_id}
   , _kind{entry._kind} {
     if(_backend) {
-        _backend->to_be_continued(_id);
+        _backend->to_be_continued(_parent_id, _entry_id);
     }
 }
 
 inline console_entry_continuation::~console_entry_continuation() noexcept {
     if(_backend) {
-        _backend->concluded(_id);
+        _backend->concluded(_entry_id);
     }
+}
+
+inline auto console_entry_continuation::_entry_backend(
+  const identifier source,
+  const console_entry_kind kind) const noexcept
+  -> std::tuple<console_backend*, console_entry_id_t> {
+    if(_backend) [[likely]] {
+        return _backend->entry_backend(source, kind);
+    }
+    return {nullptr, 0};
+}
+
+inline auto console_entry_continuation::_make_log_entry(
+  const console_entry_kind kind,
+  const string_view format) const noexcept -> console_entry {
+    const auto [backend, new_id] = _entry_backend(_source_id, kind);
+    return {_source_id, _entry_id, new_id, kind, format, backend};
 }
 
 inline auto console_entry_continuation::print(
   console_entry_kind kind,
   const string_view format) const noexcept -> console_entry {
-    return {_source_id, _id, kind, format, _backend};
+    return _make_log_entry(kind, format);
 }
 
 inline auto console_entry_continuation::print(
