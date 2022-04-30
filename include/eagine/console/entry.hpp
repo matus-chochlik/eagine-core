@@ -31,6 +31,10 @@ public:
 
     auto print(const string_view format) const noexcept -> console_entry;
 
+    auto warning(const string_view format) const noexcept -> console_entry;
+
+    auto error(const string_view format) const noexcept -> console_entry;
+
 private:
     auto _entry_backend(const identifier source, const console_entry_kind kind)
       const noexcept -> std::tuple<console_backend*, console_entry_id_t>;
@@ -101,6 +105,14 @@ public:
     /// @see id
     auto parent_id() const noexcept -> console_entry_id_t {
         return _parent_id;
+    }
+
+    /// @brief Adds a separator after this entry message is printed.
+    auto separate() noexcept -> auto& {
+        if(_backend) {
+            _backend->add_separator();
+        }
+        return *this;
     }
 
     /// @brief Adds a new message argument with identifier value.
@@ -411,6 +423,16 @@ inline auto console_entry_continuation::print(
 inline auto console_entry_continuation::print(
   const string_view format) const noexcept -> console_entry {
     return print(_kind, format);
+}
+
+inline auto console_entry_continuation::warning(
+  const string_view format) const noexcept -> console_entry {
+    return print(console_entry_kind::warning, format);
+}
+
+inline auto console_entry_continuation::error(
+  const string_view format) const noexcept -> console_entry {
+    return print(console_entry_kind::error, format);
 }
 
 } // namespace eagine

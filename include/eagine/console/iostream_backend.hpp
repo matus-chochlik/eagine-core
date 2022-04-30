@@ -56,6 +56,7 @@ public:
         _message.swap();
         _source = source;
         _kind = kind;
+        _separate = false;
         if(const auto pos{_hierarchy.find(parent_id)};
            pos != _hierarchy.end()) {
             _depth = std::get<1>(*pos);
@@ -126,9 +127,16 @@ public:
         _out << arg.name() << hexdump(value) << '\n';
     }
 
+    void add_separator() noexcept final {
+        _separate = true;
+    }
+
     void finish_message() noexcept final {
         try {
             _out << std::string(_depth * 2, ' ') << _message.front() << '\n';
+            if(_separate) {
+                _out << '\n';
+            }
             _lockable.unlock();
         } catch(...) {
         }
@@ -188,6 +196,7 @@ private:
     std::size_t _depth{0};
     flat_map<console_entry_id_t, std::size_t> _hierarchy{};
     console_entry_kind _kind{console_entry_kind::info};
+    bool _separate{false};
 };
 } // namespace eagine
 #endif

@@ -38,6 +38,16 @@ public:
         return make_log_entry(source, console_entry_kind::info, format);
     }
 
+    auto error(const identifier source, const string_view format) const noexcept
+      -> console_entry {
+        return make_log_entry(source, console_entry_kind::error, format);
+    }
+
+    auto warning(const identifier source, const string_view format)
+      const noexcept -> console_entry {
+        return make_log_entry(source, console_entry_kind::warning, format);
+    }
+
 private:
     static auto _init_backend(const program_args&, console_options&)
       -> std::unique_ptr<console_backend>;

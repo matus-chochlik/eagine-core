@@ -93,12 +93,32 @@ public:
     }
 
     /// @brief Returns a reference to the console object.
+    /// @see cio_warning
+    /// @see cio_error
     auto cio() const noexcept -> const console&;
 
+    /// @brief Shorthand for cio().print(...)
+    /// @see cio
     auto cio_print(const console_entry_kind kind, const string_view format)
       const noexcept -> console_entry;
 
+    /// @brief Shorthand for cio().print(...)
+    /// @see cio
+    /// @see cio_warning
+    /// @see cio_error
     auto cio_print(const string_view format) const noexcept -> console_entry;
+
+    /// @brief Shorthand for cio().warning(...)
+    /// @see cio
+    /// @see cio_print
+    /// @see cio_error
+    auto cio_warning(const string_view format) const noexcept -> console_entry;
+
+    /// @brief Shorthand for cio().error(...)
+    /// @see cio
+    /// @see cio_print
+    /// @see cio_warning
+    auto cio_error(const string_view format) const noexcept -> console_entry;
 
     /// @brief Returns a reference to the root activity object.
     auto progress() const noexcept -> const activity_progress&;

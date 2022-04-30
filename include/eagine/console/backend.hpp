@@ -44,6 +44,8 @@ struct console_backend : interface<console_backend> {
     /// @param source the identifier of the entry source object.
     /// @param kind the kind of the entry message.
     /// @param format the format string of the message. May contain argument placeholders.
+    /// @see finish_message
+    /// @see add_separator
     virtual auto begin_message(
       const identifier source,
       const console_entry_id_t parent_id,
@@ -123,7 +125,14 @@ struct console_backend : interface<console_backend> {
       const identifier tag,
       const memory::const_block value) noexcept = 0;
 
+    /// @brief Prints a message separator.
+    /// @see begin_message
+    /// @see finish_message
+    virtual void add_separator() noexcept = 0;
+
     /// @brief Finishes the current console message.
+    /// @see begin_message
+    /// @see add_separator
     virtual void finish_message() noexcept = 0;
 
     /// @brief Indicates that the entry will be followed by some sub-entries.

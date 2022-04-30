@@ -104,6 +104,18 @@ auto main_ctx_object::cio_print(const string_view format) const noexcept
   -> console_entry {
     return cio().print(object_id(), format);
 }
+
+EAGINE_LIB_FUNC
+auto main_ctx_object::cio_warning(const string_view format) const noexcept
+  -> console_entry {
+    return cio().warning(object_id(), format);
+}
+
+EAGINE_LIB_FUNC
+auto main_ctx_object::cio_error(const string_view format) const noexcept
+  -> console_entry {
+    return cio().error(object_id(), format);
+}
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto main_ctx_object::progress() const noexcept -> const activity_progress& {
