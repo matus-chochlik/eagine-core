@@ -17,9 +17,9 @@ include(./Sources.cmake)
 # - regular headers ------------------------------------------------------------
 add_library(eagine-core-headers INTERFACE)
 
-target_include_directories(
-	eagine-core-headers
-	INTERFACE
+set_property(
+	TARGET eagine-core-headers
+	APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
 		$<INSTALL_INTERFACE:include>
 		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
@@ -30,12 +30,23 @@ foreach(FILENAME ${HEADERS} ${PUB_INLS})
 		APPEND PROPERTY PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}
 	)
 endforeach()
+
+if(${EAGINE_CLANGXX_COMPILER})
+	set_property(
+		TARGET eagine-core-headers
+		APPEND PROPERTY INTERFACE_COMPILE_OPTIONS -stdlib=libc++
+	)
+	set_property(
+		TARGET eagine-core-headers
+		APPEND PROPERTY INTERFACE_LINK_OPTIONS -stdlib=libc++
+	)
+endif()
 # - private headers or implementation files ------------------------------------
 add_library(eagine-core-private-headers INTERFACE)
 
-target_include_directories(
-	eagine-core-private-headers
-	INTERFACE
+set_property(
+	TARGET eagine-core-private-headers
+	APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
 		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/submodules/asio/asio/include>"
 		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/submodules/rapidjson/include>"
@@ -50,10 +61,10 @@ endforeach()
 # - generated headers or implementation files ----------------------------------
 add_library(eagine-core-generated-headers INTERFACE)
 
-target_include_directories(
-	eagine-core-generated-headers
-	INTERFACE
-	$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+set_property(
+	TARGET eagine-core-generated-headers
+	APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+		$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
 )
 
 foreach(FILENAME ${GEN_HPPS})

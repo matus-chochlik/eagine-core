@@ -6,19 +6,14 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#ifndef EAGINE_CONSOLE_FWD_HPP
-#define EAGINE_CONSOLE_FWD_HPP
+#ifndef EAGINE_CONVERTIBLE_HPP
+#define EAGINE_CONVERTIBLE_HPP
 
-#include <cstdint>
+#include "is_within_limits.hpp"
 
 namespace eagine {
 //------------------------------------------------------------------------------
-class console;
-
-/// @brief Console entry instance id type.
-/// @ingroup console
-using console_entry_id_t = std::uintptr_t;
-//------------------------------------------------------------------------------
 } // namespace eagine
 
-#endif // EAGINE_CONSOLE_FWD_HPP
+#endif
+

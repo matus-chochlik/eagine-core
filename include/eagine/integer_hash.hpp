@@ -23,48 +23,33 @@ constexpr auto integer_rotate_right(
     return I(x << N) | I(x >> (-N & (sizeof(I) * 8U - 1U)));
 }
 //------------------------------------------------------------------------------
-template <typename H>
-constexpr auto integer_hash_init(
-  const H x,
-  const type_identity<H> = {},
-  const type_identity<H> = {}) noexcept -> H {
-    return x;
-}
-//------------------------------------------------------------------------------
 template <typename H, typename I>
 constexpr auto integer_hash_init(
   const I x,
-  const type_identity<H> hid = {},
+  const type_identity<H> = {},
   const type_identity<I> = {}) noexcept -> H {
     using std::is_same_v;
 
-    if constexpr(is_same_v<I, std::uint16_t>) {
-        if constexpr(is_same_v<H, std::uint32_t>) {
-            return H(x) ^ (H(x) << 16U);
-        }
-        if constexpr(is_same_v<H, std::uint64_t>) {
-            return H(x) ^ (H(x) << 16U) ^ (H(x) << 32U) ^ (H(x) << 48U);
-        }
-    }
-    if constexpr(is_same_v<I, std::uint32_t>) {
-        if constexpr(is_same_v<H, std::uint16_t>) {
-            return H(x ^ (x >> 16U));
-        }
-        if constexpr(is_same_v<H, std::uint64_t>) {
-            return H(x) ^ (H(x) << 32U);
-        }
-    }
-    if constexpr(is_same_v<I, std::uint64_t>) {
-        if constexpr(is_same_v<H, std::uint16_t>) {
-            return H(x ^ (x >> 16U) ^ (x >> 32U) ^ (x >> 48U));
-        }
-        if constexpr(is_same_v<H, std::uint32_t>) {
-            return H(x ^ (x >> 32U));
-        }
-    }
-
     using UI = std::make_unsigned_t<I>;
-    return integer_hash_init(UI(x), hid, type_identity<UI>());
+    UI ux(x);
+
+    if constexpr(sizeof(H) > sizeof(UI)) {
+        H result{};
+        for(std::size_t i = 0; i < sizeof(H) / sizeof(UI); ++i) {
+            result <<= 8U * sizeof(UI);
+            result ^= H(ux);
+        }
+        return result;
+    } else if constexpr(sizeof(H) < sizeof(UI)) {
+        H result{};
+        for(std::size_t i = 0; i < sizeof(UI) / sizeof(H); ++i) {
+            result ^= H(ux);
+            ux >>= 8U * sizeof(H);
+        }
+        return result;
+    } else {
+        return ux;
+    }
 }
 //------------------------------------------------------------------------------
 /// @brief Creates a hash value with type @p H from an integer value of type @p I.

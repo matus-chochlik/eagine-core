@@ -214,4 +214,4 @@ using basic_handle_vector = basic_handle_container<
 //------------------------------------------------------------------------------
 } // namespace eagine::c_api
 
-#endif // EAGINE_HANDLE_HPP
+#endif

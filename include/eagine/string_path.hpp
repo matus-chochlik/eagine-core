@@ -216,7 +216,7 @@ public:
     /// @see push_back
     void pop_back() noexcept {
         EAGINE_ASSERT(!empty());
-        _str.resize(std_size(string_list::pop_back(_str).size()));
+        _str.resize(integer(string_list::pop_back(_str).size()));
         --_size;
     }
 

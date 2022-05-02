@@ -176,7 +176,7 @@ inline auto encode_code_point(const code_point& cp)
         std::array<byte, 7> tmp{};
         do_encode_code_point(cp, make_byte_span(cover(tmp)), len.value());
         return {std::string(
-          reinterpret_cast<const char*>(tmp.data()), std_size(len.value()))};
+          reinterpret_cast<const char*>(tmp.data()), integer(len.value()))};
     }
     return {};
 }

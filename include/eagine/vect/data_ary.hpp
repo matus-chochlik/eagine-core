@@ -47,8 +47,8 @@ struct _ary_data {
     ~_ary_data() noexcept = default;
 
     template <typename P>
-    constexpr _ary_data(P&& p) noexcept
-      requires((N == 1) && (std::is_convertible_v<P, T>))
+    constexpr _ary_data( // NOLINT(bugprone-forwarding-reference-overload)
+      P&& p) noexcept requires((N == 1) && (std::is_convertible_v<P, T>))
       : _v{T(std::forward<P>(p))} {}
 
     template <typename P1, typename P2, typename... Pn>

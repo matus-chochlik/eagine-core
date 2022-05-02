@@ -91,7 +91,8 @@ public:
     /// @brief Returns the port.
     auto port() const noexcept -> valid_if_not_zero<int> {
         int result = 0;
-        [[maybe_unused]] std::from_chars(_port.begin(), _port.end(), result);
+        [[maybe_unused]] const auto unused{
+          std::from_chars(_port.begin(), _port.end(), result)};
         return {result};
     }
 

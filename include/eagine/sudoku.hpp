@@ -718,7 +718,7 @@ public:
       , _height{h % M ? (1 + w / M) * M : h} {
         EAGINE_ASSERT(_width > 0);
         EAGINE_ASSERT(_height > 0);
-        _cells.resize(std_size(_width * _height));
+        _cells.resize(integer(_width * _height));
     }
 
     auto width() const noexcept -> span_size_t {
@@ -733,7 +733,7 @@ public:
       -> unsigned {
         EAGINE_ASSERT((x >= 0) && (x < width()));
         EAGINE_ASSERT((y >= 0) && (y < height()));
-        return _cells[std_size(y * _width + x)];
+        return _cells[integer(y * _width + x)];
     }
 
     friend auto operator<<(

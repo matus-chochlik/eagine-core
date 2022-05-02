@@ -142,7 +142,7 @@ public:
     auto tz_temperature(const span_size_t index) noexcept
       -> valid_if_positive<kelvins_t<float>> {
         EAGINE_ASSERT((index >= 0) && (index < tz_count()));
-        auto& temp_a = _tz_temp_a[std_size(index)];
+        auto& temp_a = _tz_temp_a[integer(index)];
         if(temp_a) {
             float millicelsius{0.F};
             if(_sysfs.fetch_value(temp_a, millicelsius)) {

@@ -796,7 +796,8 @@ static auto basic_edit_distance(
     const auto l1 = s1.size();
     const auto l2 = s2.size();
 
-    std::vector<Result> column(std_size(l1 + 1));
+    std::vector<Result> column;
+    column.resize(integer(l1 + 1));
     std::iota(column.begin(), column.end(), Result(0));
 
     for(span_size_t x = 1; x <= l2; x++) {

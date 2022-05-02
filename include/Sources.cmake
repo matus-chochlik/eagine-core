@@ -182,6 +182,7 @@ set(HEADERS
     eagine/random_bytes.hpp
     eagine/random_identifier.hpp
     eagine/range_types.hpp
+    eagine/reflect/bitfield.hpp
     eagine/reflect/data_members.hpp
     eagine/reflect/decl_name.hpp
     eagine/reflect/enumerators.hpp

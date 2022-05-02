@@ -15,6 +15,41 @@
 #include <concepts>
 
 namespace eagine {
+class console_entry;
+
+class console_entry_continuation {
+public:
+    console_entry_continuation(const console_entry& entry) noexcept;
+    console_entry_continuation(console_entry_continuation&&) = delete;
+    console_entry_continuation(const console_entry_continuation&) = delete;
+    auto operator=(console_entry_continuation&&) = delete;
+    auto operator=(const console_entry_continuation&) = delete;
+    ~console_entry_continuation() noexcept;
+
+    auto print(console_entry_kind kind, const string_view format) const noexcept
+      -> console_entry;
+
+    auto print(const string_view format) const noexcept -> console_entry;
+
+    auto warning(const string_view format) const noexcept -> console_entry;
+
+    auto error(const string_view format) const noexcept -> console_entry;
+
+private:
+    auto _entry_backend(const identifier source, const console_entry_kind kind)
+      const noexcept -> std::tuple<console_backend*, console_entry_id_t>;
+
+    auto _make_log_entry(
+      const console_entry_kind kind,
+      const string_view format) const noexcept -> console_entry;
+
+    console_backend* const _backend{};
+    const console_entry_id_t _parent_id{};
+    const console_entry_id_t _entry_id{};
+    const identifier _source_id{};
+    const console_entry_kind _kind{};
+};
+
 /// @brief Class representing a single log entry / message.
 /// @ingroup console
 /// @note Do not use directly, use console instead.
@@ -23,10 +58,14 @@ public:
     /// @brief Constructor.
     console_entry(
       const identifier source_id,
+      const console_entry_id_t parent_id,
+      const console_entry_id_t entry_id,
       const console_entry_kind kind,
       const string_view format,
       console_backend* backend) noexcept
       : _backend{backend}
+      , _parent_id{parent_id}
+      , _entry_id{entry_id}
       , _source_id{source_id}
       , _format{format}
       , _args{_be_alloc(_backend)}
@@ -48,11 +87,32 @@ public:
     /// @brief Destructor. Passed the actual entry to the backend.
     ~console_entry() noexcept {
         if(_backend) {
-            if(_backend->begin_message(_source_id, _kind, _format)) {
+            if(_backend->begin_message(
+                 _source_id, parent_id(), id(), _kind, _format)) {
                 _args(*_backend);
                 _backend->finish_message();
             }
         }
+    }
+
+    /// @brief Returns the id of this entry.
+    /// @see parent_id
+    auto id() const noexcept -> console_entry_id_t {
+        return reinterpret_cast<console_entry_id_t>(this);
+    }
+
+    /// @brief Returns the id of the parent entry.
+    /// @see id
+    auto parent_id() const noexcept -> console_entry_id_t {
+        return _parent_id;
+    }
+
+    /// @brief Adds a separator after this entry message is printed.
+    auto separate() noexcept -> auto& {
+        if(_backend) {
+            _backend->add_separator();
+        }
+        return *this;
     }
 
     /// @brief Adds a new message argument with identifier value.
@@ -295,9 +355,17 @@ public:
         return arg(name, std::move(opt.fallback()));
     }
 
+    auto to_be_continued() const noexcept -> console_entry_continuation {
+        return {*this};
+    }
+
 private:
+    friend class console_entry_continuation;
+
     console_backend* const _backend{nullptr};
-    identifier _source_id{};
+    const console_entry_id_t _parent_id{};
+    const console_entry_id_t _entry_id{};
+    const identifier _source_id{};
     const string_view _format{};
     memory::callable_storage<void(console_backend&)> _args;
     const console_entry_kind _kind{console_entry_kind::info};
@@ -310,6 +378,63 @@ private:
         return {};
     }
 };
+
+inline console_entry_continuation::console_entry_continuation(
+  const console_entry& entry) noexcept
+  : _backend{entry._backend}
+  , _parent_id{entry._parent_id}
+  , _entry_id{entry._entry_id}
+  , _source_id{entry._source_id}
+  , _kind{entry._kind} {
+    if(_backend) {
+        _backend->to_be_continued(_parent_id, _entry_id);
+    }
+}
+
+inline console_entry_continuation::~console_entry_continuation() noexcept {
+    if(_backend) {
+        _backend->concluded(_entry_id);
+    }
+}
+
+inline auto console_entry_continuation::_entry_backend(
+  const identifier source,
+  const console_entry_kind kind) const noexcept
+  -> std::tuple<console_backend*, console_entry_id_t> {
+    if(_backend) [[likely]] {
+        return _backend->entry_backend(source, kind);
+    }
+    return {nullptr, 0};
+}
+
+inline auto console_entry_continuation::_make_log_entry(
+  const console_entry_kind kind,
+  const string_view format) const noexcept -> console_entry {
+    const auto [backend, new_id] = _entry_backend(_source_id, kind);
+    return {_source_id, _entry_id, new_id, kind, format, backend};
+}
+
+inline auto console_entry_continuation::print(
+  console_entry_kind kind,
+  const string_view format) const noexcept -> console_entry {
+    return _make_log_entry(kind, format);
+}
+
+inline auto console_entry_continuation::print(
+  const string_view format) const noexcept -> console_entry {
+    return print(_kind, format);
+}
+
+inline auto console_entry_continuation::warning(
+  const string_view format) const noexcept -> console_entry {
+    return print(console_entry_kind::warning, format);
+}
+
+inline auto console_entry_continuation::error(
+  const string_view format) const noexcept -> console_entry {
+    return print(console_entry_kind::error, format);
+}
+
 } // namespace eagine
 
 #endif

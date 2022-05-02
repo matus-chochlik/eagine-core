@@ -10,6 +10,7 @@
 #define EAGINE_CONSOLE_IOSTREAM_BACKEND_HPP
 
 #include "../double_buffer.hpp"
+#include "../flat_map.hpp"
 #include "../hexdump.hpp"
 #include "../str_var_subst.hpp"
 #include "backend.hpp"
@@ -36,12 +37,18 @@ public:
     }
 
     auto entry_backend(const identifier, const console_entry_kind) noexcept
-      -> console_backend* override {
-        return this;
+      -> std::tuple<console_backend*, console_entry_id_t> override {
+        const std::lock_guard lock{_lockable};
+        do {
+            ++_entry_id_seq;
+        } while(_entry_id_seq == 0);
+        return {this, _entry_id_seq};
     }
 
     auto begin_message(
       const identifier source,
+      const console_entry_id_t parent_id,
+      const console_entry_id_t,
       const console_entry_kind kind,
       const string_view format) noexcept -> bool final {
         _lockable.lock();
@@ -49,6 +56,13 @@ public:
         _message.swap();
         _source = source;
         _kind = kind;
+        _separate = false;
+        if(const auto pos{_hierarchy.find(parent_id)};
+           pos != _hierarchy.end()) {
+            _depth = std::get<1>(*pos);
+        } else {
+            _depth = 0;
+        }
         return true;
     }
 
@@ -113,12 +127,34 @@ public:
         _out << arg.name() << hexdump(value) << '\n';
     }
 
+    void add_separator() noexcept final {
+        _separate = true;
+    }
+
     void finish_message() noexcept final {
         try {
-            _out << _message.front() << '\n';
+            _out << std::string(_depth * 2, ' ') << _message.front() << '\n';
+            if(_separate) {
+                _out << '\n';
+            }
             _lockable.unlock();
         } catch(...) {
         }
+    }
+
+    void to_be_continued(
+      const console_entry_id_t parent_id,
+      const console_entry_id_t id) noexcept final {
+        std::size_t depth{0};
+        if(const auto pos{_hierarchy.find(parent_id)};
+           pos != _hierarchy.end()) {
+            depth = std::get<1>(*pos);
+        }
+        _hierarchy.emplace(id, depth + 1);
+    }
+
+    void concluded(const console_entry_id_t id) noexcept final {
+        _hierarchy.erase(id);
     }
 
 private:
@@ -155,8 +191,12 @@ private:
     std::ostream& _out;
     std::array<char, 64> _temp{};
     double_buffer<std::string> _message;
+    console_entry_id_t _entry_id_seq{0};
     identifier _source{};
+    std::size_t _depth{0};
+    flat_map<console_entry_id_t, std::size_t> _hierarchy{};
     console_entry_kind _kind{console_entry_kind::info};
+    bool _separate{false};
 };
 } // namespace eagine
 #endif

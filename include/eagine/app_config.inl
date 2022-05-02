@@ -305,7 +305,7 @@ EAGINE_LIB_FUNC
 auto application_config::_prog_arg_name(string_view key) noexcept
   -> std::string {
     std::string arg_name;
-    arg_name.reserve(std_size(3 + key.size()));
+    arg_name.reserve(integer(3 + key.size()));
     arg_name.append("--");
     for(auto c : key) {
         if(c == '.' || c == '_') {
@@ -326,7 +326,7 @@ EAGINE_LIB_FUNC
 auto application_config::_eval_env_var(const string_view key) noexcept
   -> optionally_valid<string_view> {
     std::string arg_name;
-    arg_name.reserve(std_size(7 + key.size()));
+    arg_name.reserve(integer(7 + key.size()));
     arg_name.append("EAGINE_");
     for(auto c : key) {
         if(c == '.') {

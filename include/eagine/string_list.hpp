@@ -86,7 +86,7 @@ static inline void push_back(
         list.reserve(nl);
     }
     list.append(elen);
-    list.append(value.data(), std_size(vl));
+    list.append(value.data(), integer(vl));
     list.append(elen);
 }
 //------------------------------------------------------------------------------
@@ -301,13 +301,13 @@ static inline auto join(
     for_each_elem(list, get_len);
 
     std::string res;
-    res.reserve(std_size(len));
+    res.reserve(integer(len));
 
     auto fill = [&res, sep](const element& elem, bool first) {
         if(!first) {
             append_to(res, sep);
         }
-        res.append(elem.value_data(), std_size(elem.value_size()));
+        res.append(elem.value_data(), integer(elem.value_size()));
     };
     for_each_elem(list, fill);
 

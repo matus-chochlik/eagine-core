@@ -54,7 +54,7 @@ template <typename T>
 inline auto basic_allocation_arena<Alloc>::_make_n(
   const span_size_t count,
   const span_size_t align) -> T* {
-    return new(_allocate<T>(count, align).data()) T[std_size(count)]{};
+    return new(_allocate<T>(count, align).data()) T[integer(count)]{};
 }
 //------------------------------------------------------------------------------
 template <typename Alloc>

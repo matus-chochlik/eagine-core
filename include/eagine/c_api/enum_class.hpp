@@ -589,4 +589,4 @@ static constexpr auto limit_cast(c_api::no_enum_value<Src, Tag> val) noexcept
 //------------------------------------------------------------------------------
 } // namespace eagine::c_api
 
-#endif // EAGINE_ENUM_CLASS_HPP
+#endif

@@ -21,8 +21,10 @@ public:
     /// @brief The enumeration type specifying individual bit values.
     using bit_type = Bit;
 
+    static_assert(std::is_unsigned_v<std::underlying_type_t<bit_type>>);
+
     /// @brief The Integral type used to store the bits.
-    using value_type = std::make_unsigned_t<std::underlying_type_t<bit_type>>;
+    using value_type = std::underlying_type_t<bit_type>;
 
     /// @brief Default constructor.
     constexpr bitfield() noexcept = default;

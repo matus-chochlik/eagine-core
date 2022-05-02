@@ -10,6 +10,7 @@
 #define EAGINE_MEMORY_OBJECT_STORAGE_HPP
 
 #include "../assert.hpp"
+#include "../integer_range.hpp"
 #include "../types.hpp"
 #include "block.hpp"
 #include "default_alloc.hpp"
@@ -48,7 +49,7 @@ public:
     }
 
     void reserve(span_size_t n) {
-        const auto sz{std_size(n)};
+        const integer sz{n};
         _blks.reserve(sz);
         _alns.reserve(sz);
         _dtrs.reserve(sz);
@@ -87,11 +88,13 @@ public:
         EAGINE_ASSERT(_blks.size() == _alns.size());
         EAGINE_ASSERT(_blks.size() == _dtrs.size());
 
-        for(std_size_t i = _blks.size(); i > 0; --i) {
-            _dtrs[i - 1](_blks[i - 1]);
+        const auto n{_blks.size()};
+
+        for(const auto i : integer_range(_blks.size())) {
+            _dtrs[n - i - 1](_blks[n - i - 1]);
         }
 
-        for(std_size_t i = 0; i < _blks.size(); ++i) {
+        for(const auto i : integer_range(_blks.size())) {
             _alloc.deallocate(std::move(_blks[i]), _alns[i]);
         }
 
@@ -117,7 +120,7 @@ protected:
 
     template <typename Func>
     void for_each_block(Func& func) noexcept {
-        for(std_size_t i = 0; i < _blks.size(); ++i) {
+        for(const auto i : integer_range(_blks.size())) {
             func(i, block(_blks[i]));
         }
     }
@@ -147,7 +150,7 @@ public:
 
     void reserve(span_size_t n) {
         base::reserve(n);
-        _clrs.reserve(std_size(n));
+        _clrs.reserve(integer(n));
     }
 
     template <typename T>

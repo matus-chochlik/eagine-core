@@ -10,6 +10,7 @@
 #define EAGINE_C_STR_HPP
 
 #include "extract.hpp"
+#include "selector.hpp"
 #include "string_span.hpp"
 
 namespace eagine {
@@ -38,7 +39,7 @@ public:
       , _str{_get_str(s)} {}
 
     template <extractable E>
-    constexpr basic_c_str(const E& e) noexcept
+    constexpr basic_c_str(construct_from_t, const E& e) noexcept
       requires(has_value_type_v<E, span_type>)
       : _span{_xtr_span(e)}
       , _str{_xtr_str(e)} {}
@@ -109,7 +110,7 @@ static constexpr auto c_str(const memory::basic_span<C, P, S> s)
 
 template <extractable E>
 static constexpr auto c_str(const E& e) -> typename get_basic_c_str<E>::type {
-    return {e};
+    return {construct_from, e};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

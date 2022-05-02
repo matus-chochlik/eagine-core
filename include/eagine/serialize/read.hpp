@@ -38,7 +38,7 @@ public:
 
     void set_target(span<T> dst) noexcept {
         _dst = dst;
-        _done_bits.resize(std_size(dst.size()), false);
+        _done_bits.resize(integer(dst.size()), false);
         _done_size = 0;
     }
 
@@ -366,7 +366,7 @@ struct deserializer<std::vector<T, A>>
         span_size_t elem_count{0};
         errors |= backend.begin_list(elem_count);
         if(!errors) [[likely]] {
-            values.resize(std_size(elem_count));
+            values.resize(integer(elem_count));
             errors |= _elem_deserializer.read(cover(values), backend);
             errors |= backend.finish_list();
         }

@@ -266,7 +266,7 @@ public:
 
     auto convert(_val_t& val, std::string& dest) -> bool {
         if(val.IsString()) {
-            dest.assign(val.GetString(), std_size(val.GetStringLength()));
+            dest.assign(val.GetString(), integer(val.GetStringLength()));
             return true;
         }
         return false;

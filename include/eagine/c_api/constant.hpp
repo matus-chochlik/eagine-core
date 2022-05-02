@@ -70,7 +70,7 @@ public:
       : constant_base{name}
       , enum_value<T, ClassList, Tag>{value} {}
 
-    /// @brief Adds the specified value to the constant (it it isIndexed).
+    /// @brief Adds the specified value to the constant (if it isIndexed).
     template <typename I>
     constexpr auto operator+(const I index) const noexcept
       -> enum_value<T, ClassList, Tag> requires(

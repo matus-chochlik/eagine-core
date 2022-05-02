@@ -27,8 +27,7 @@ struct message_id : std::tuple<identifier_t, identifier_t> {
 
     ///	@brief Default constructor.
     /// @post !is_valid()
-    constexpr message_id() noexcept
-      : base{0U, 0U} {}
+    constexpr message_id() noexcept = default;
 
     ///	@brief Construction from two identifier values.
     constexpr message_id(const identifier_t c, const identifier_t m) noexcept
