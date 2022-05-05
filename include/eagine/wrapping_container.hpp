@@ -181,7 +181,7 @@ private:
 
     auto _release_items() noexcept {
         Container items{std::move(_items)};
-        _intialize(_items);
+        _initialize(_items);
         return items;
     }
 };
