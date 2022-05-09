@@ -188,7 +188,15 @@ public:
         return bitfield{value_type(~b._bits)};
     }
 
+    /// @brief Sets the specified bit.
+    /// @see clear
+    auto set(const bit_type b) noexcept -> bitfield& {
+        _bits |= value_type(b); // NOLINT(hicpp-signed-bitwise)
+        return *this;
+    }
+
     /// @brief Clears the specified bit.
+    /// @see set
     auto clear(const bit_type b) noexcept -> bitfield& {
         _bits &= ~value_type(b); // NOLINT(hicpp-signed-bitwise)
         return *this;

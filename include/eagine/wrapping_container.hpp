@@ -97,9 +97,17 @@ public:
     }
 
     /// @brief Returns the number of elements in this container.
+    /// @see resize
     /// @see empty
     constexpr auto size() const noexcept {
         return span_size(_items.size());
+    }
+
+    /// @brief Resizes the space for elements in this container to new_size.
+    /// @see size
+    /// @see emoty
+    auto resize(span_size_t new_size) noexcept {
+        return _items.resize(integer(new_size));
     }
 
     /// @brief Subscript access.
@@ -173,7 +181,7 @@ private:
 
     auto _release_items() noexcept {
         Container items{std::move(_items)};
-        _intialize(_items);
+        _initialize(_items);
         return items;
     }
 };
