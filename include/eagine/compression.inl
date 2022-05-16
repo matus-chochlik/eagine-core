@@ -78,11 +78,14 @@ public:
         while(_zsd.avail_in > 0) {
             if((zres = ::deflate(&_zsd, Z_NO_FLUSH)) != Z_OK) {
                 if(zres != Z_STREAM_END) {
+                    //maybe onScopeExit could be used
+                    ::deflateEnd(&_zsd);
                     return false;
                 }
             }
             if(_zsd.avail_out == 0) {
                 if(!append(span_size(_temp.size()))) {
+                    ::deflateEnd(&_zsd);
                     return false;
                 }
             }
@@ -91,6 +94,7 @@ public:
         while(zres == Z_OK) {
             if(_zsd.avail_out == 0) {
                 if(!append(span_size(_temp.size()))) {
+                    ::deflateEnd(&_zsd);
                     return false;
                 }
             }
@@ -98,10 +102,12 @@ public:
         }
 
         if((zres != Z_OK) && (zres != Z_STREAM_END)) {
+            ::deflateEnd(&_zsd);
             return false;
         }
 
         if(!append(span_size(_temp.size() - _zsd.avail_out))) {
+            ::deflateEnd(&_zsd);
             return false;
         }
         ::deflateEnd(&_zsd);
@@ -169,11 +175,14 @@ public:
         while(_zsi.avail_in > 0) {
             if((zres = ::inflate(&_zsi, Z_NO_FLUSH)) != Z_OK) {
                 if(zres != Z_STREAM_END) {
+                    //MAybe onScopeExit could be used
+                    ::inflateEnd(&_zsi);
                     return false;
                 }
             }
             if(_zsi.avail_out == 0) {
                 if(!append(span_size(_temp.size()))) {
+                    ::inflateEnd(&_zsi);
                     return false;
                 }
             }
@@ -182,6 +191,7 @@ public:
         while(zres == Z_OK) {
             if(_zsd.avail_out == 0) {
                 if(!append(span_size(_temp.size()))) {
+                    ::inflateEnd(&_zsi);
                     return false;
                 }
             }
@@ -189,10 +199,12 @@ public:
         }
 
         if((zres != Z_OK) && (zres != Z_STREAM_END)) {
+            ::inflateEnd(&_zsi);
             return false;
         }
 
         if(!append(span_size(_temp.size() - _zsi.avail_out))) {
+            ::inflateEnd(&_zsi);
             return false;
         }
         ::inflateEnd(&_zsi);
