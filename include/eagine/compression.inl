@@ -9,6 +9,7 @@
 #include <eagine/memory/span_algo.hpp>
 #include <array>
 #if EAGINE_USE_ZLIB
+#include <eagine/scope_exit.hpp>
 #include <eagine/span.hpp>
 #include <zlib.h>
 #endif
@@ -74,6 +75,7 @@ public:
         if((zres = ::deflateInit(&_zsd, _translate(level))) != Z_OK) {
             return false;
         }
+        const auto cleanup_later{finally([this]() { ::deflateEnd(&_zsd); })};
 
         while(_zsd.avail_in > 0) {
             if((zres = ::deflate(&_zsd, Z_NO_FLUSH)) != Z_OK) {
@@ -104,7 +106,6 @@ public:
         if(!append(span_size(_temp.size() - _zsd.avail_out))) {
             return false;
         }
-        ::deflateEnd(&_zsd);
 
         return true;
     }
@@ -165,6 +166,7 @@ public:
         if((zres = ::inflateInit(&_zsi)) != Z_OK) {
             return false;
         }
+        const auto cleanup_later{finally([this]() { ::inflateEnd(&_zsd); })};
 
         while(_zsi.avail_in > 0) {
             if((zres = ::inflate(&_zsi, Z_NO_FLUSH)) != Z_OK) {
@@ -195,7 +197,6 @@ public:
         if(!append(span_size(_temp.size() - _zsi.avail_out))) {
             return false;
         }
-        ::inflateEnd(&_zsi);
 
         return true;
     }
