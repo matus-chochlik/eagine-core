@@ -346,7 +346,7 @@ private:
     }
 };
 //------------------------------------------------------------------------------
-/// @brief Default identifier type used throughout the project.
+/// @brief Default short string identifier type used throughout the project.
 /// @ingroup identifiers
 /// @see basic_identifier
 /// @see default_identifier_char_set
@@ -356,7 +356,7 @@ private:
 /// @see random_identifier
 /// @see EAGINE_ID
 ///
-/// Allows to store constant short string identifiers with maximum length of 10.
+/// Allows to store short constant string identifiers with maximum length of 10 characters.
 using identifier =
   basic_identifier<10, 6, default_identifier_char_set, identifier_t>;
 //------------------------------------------------------------------------------
