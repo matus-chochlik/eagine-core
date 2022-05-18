@@ -63,7 +63,7 @@ public:
         _zsd.avail_out = limit_cast<unsigned>(_temp.size());
 
         const auto append = [&](span_size_t size) -> bool {
-            if(handler(head(view(_temp), size))) {
+            if(handler(head(view(_temp), size))) [[likely]] {
                 _zsd.next_out = _temp.data();
                 _zsd.avail_out = limit_cast<unsigned>(_temp.size());
                 return true;
@@ -84,7 +84,7 @@ public:
                 }
             }
             if(_zsd.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) {
+                if(!append(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
@@ -92,7 +92,7 @@ public:
 
         while(zres == Z_OK) {
             if(_zsd.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) {
+                if(!append(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
@@ -103,7 +103,7 @@ public:
             return false;
         }
 
-        if(!append(span_size(_temp.size() - _zsd.avail_out))) {
+        if(!append(span_size(_temp.size() - _zsd.avail_out))) [[unlikely]] {
             return false;
         }
 
@@ -154,7 +154,7 @@ public:
         _zsi.avail_out = limit_cast<unsigned>(_temp.size());
 
         auto append = [&](span_size_t size) -> bool {
-            if(handler(head(view(_temp), size))) {
+            if(handler(head(view(_temp), size))) [[likely]] {
                 _zsi.next_out = _temp.data();
                 _zsi.avail_out = limit_cast<unsigned>(_temp.size());
                 return true;
@@ -175,7 +175,7 @@ public:
                 }
             }
             if(_zsi.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) {
+                if(!append(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
@@ -183,7 +183,7 @@ public:
 
         while(zres == Z_OK) {
             if(_zsd.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) {
+                if(!append(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
@@ -194,7 +194,7 @@ public:
             return false;
         }
 
-        if(!append(span_size(_temp.size() - _zsi.avail_out))) {
+        if(!append(span_size(_temp.size() - _zsi.avail_out))) [[unlikely]] {
             return false;
         }
 
