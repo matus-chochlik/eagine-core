@@ -223,17 +223,20 @@ static constexpr auto safe_add(A a, B b, C c, D d, E e, P... p) noexcept {
 //------------------------------------------------------------------------------
 template <std::integral L, std::integral R, std::integral C>
 static constexpr auto safe_add_eq(L l, R r, C c) noexcept -> bool {
-    return are_safe_to_add(l, r) && (l + r == c);
+    using T = std::common_type_t<L, R>;
+    return are_safe_to_add<T>(l, r) && (l + r == c);
 }
 //------------------------------------------------------------------------------
 template <std::integral L, std::integral R, std::integral C>
 static constexpr auto safe_add_lt(L l, R r, C c) noexcept -> bool {
-    return are_safe_to_add(l, r) && (l + r < c);
+    using T = std::common_type_t<L, R>;
+    return are_safe_to_add<T>(l, r) && (l + r < c);
 }
 //------------------------------------------------------------------------------
 template <std::integral L, std::integral R, std::integral C>
 static constexpr auto safe_add_gt(L l, R r, C c) noexcept -> bool {
-    return are_safe_to_add(l, r) && (l + r > c);
+    using T = std::common_type_t<L, R>;
+    return are_safe_to_add<T>(l, r) && (l + r > c);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

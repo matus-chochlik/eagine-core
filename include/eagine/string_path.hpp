@@ -83,7 +83,7 @@ public:
       const basic_string_path& a,
       EAGINE_TAG_TYPE(plus),
       const basic_string_path& b) noexcept
-      : _size{a._size + b._size}
+      : _size{safe_add(a._size, b._size)}
       , _str{a._str + b._str} {}
 
     /// @brief Construction from a list of path element names.
@@ -176,7 +176,8 @@ public:
 
     static auto required_bytes(const size_type l) noexcept -> size_type {
         using namespace mbs;
-        return l + 2 * required_sequence_length(code_point_t(l)).value();
+        return safe_add(
+          l, 2 * required_sequence_length(code_point_t(l)).value());
     }
 
     static auto required_bytes(const string_view str) noexcept -> size_type {
