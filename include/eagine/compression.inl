@@ -245,7 +245,7 @@ public:
       memory::buffer& output,
       [[maybe_unused]] const data_compression_level level) noexcept
       -> memory::const_block {
-        output.resize(input.size() + 1);
+        output.resize(safe_add(input.size(), 1));
         copy(input, skip(cover(output), 1));
         cover(output).front() = 0x00U;
         return view(output);
@@ -311,7 +311,7 @@ auto data_compressor::compress(
     if(const auto result{_pimpl->compress(input, output, level)}) {
         return result;
     }
-    output.resize(input.size() + 1);
+    output.resize(safe_add(input.size(), 1));
     copy(input, skip(cover(output), 1));
     cover(output).front() = 0x00U;
     return view(output);

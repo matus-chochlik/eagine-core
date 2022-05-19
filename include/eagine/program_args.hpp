@@ -149,7 +149,7 @@ public:
     /// @see is_short_tag
     auto is_prefixed_tag(const string_view prefix, const string_view name)
       const noexcept {
-        return (get().size() == prefix.size() + name.size()) &&
+        return safe_add_eq(prefix.size(), name.size(), get().size()) &&
                starts_with(prefix) && ends_with(name);
     }
 

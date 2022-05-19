@@ -98,7 +98,7 @@ private:
     constexpr key_value_list(
       const key_value_list& base,
       const key_value_list_element<Traits>& key_val) noexcept {
-        _values.reserve(base._values.size() + 2);
+        _values.reserve(safe_add(base._values.size(), 2));
         for(const auto i : integer_range(_values.size() - 1)) {
             _values.push_back(base._values[i]);
         }

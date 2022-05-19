@@ -232,7 +232,7 @@ inline void stack_byte_allocator::deallocate(
 
     EAGINE_ASSERT(reinterpret_cast<std::intptr_t>(p) >= m);
 
-    _alloc.deallocate(this->acquire_block({p - m, b.size() + m}));
+    _alloc.deallocate(this->acquire_block({p - m, safe_add(b.size(), m)}));
 
     this->release_block(std::move(b));
 }

@@ -28,13 +28,13 @@ public:
 
     auto top(span_size_t req_size) noexcept -> memory::const_block final {
         if(_cur_size < req_size) {
-            while(_storage.size() < _cur_size + req_size) {
-                _storage.resize(_storage.size() + _chunk_size());
+            while(safe_add_gt(_cur_size, req_size, _storage.size())) {
+                _storage.resize(safe_add(_storage.size(), _chunk_size()));
             }
             read_from_stream(
               _in,
               head(skip(cover(_storage), _cur_size), req_size - _cur_size));
-            _cur_size += span_size(_in.gcount());
+            _cur_size = safe_add(_cur_size, span_size(_in.gcount()));
         }
         return head(head(view(_storage), _cur_size), req_size);
     }

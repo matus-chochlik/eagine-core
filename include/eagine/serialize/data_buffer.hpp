@@ -33,7 +33,7 @@ struct serialize_size_constant : size_constant<S> {
 
     template <typename X>
     static constexpr auto get(string_view s, const X&) noexcept {
-        return std_size(12 + s.size() + 2 + span_size(S));
+        return std_size(safe_add(12, s.size(), 2, span_size(S)));
     }
 };
 //------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ struct get_serialize_buffer_size<Sid, string_view, Selector>
   : serialize_size_constant<0, false> {
 
     static constexpr auto get(string_view s, string_view v) noexcept {
-        return std_size(12 + s.size() + 2 + v.size());
+        return std_size(safe_add(12, s.size(), 2, v.size()));
     }
 };
 
@@ -130,7 +130,7 @@ struct get_serialize_buffer_size<Sid, std::string, Selector>
   : serialize_size_constant<0, false> {
 
     static constexpr auto get(string_view s, const std::string& v) noexcept {
-        return std_size(12 + s.size() + 2 + span_size(v.size()));
+        return std_size(safe_add(12, s.size(), 2, span_size(v.size())));
     }
 };
 //------------------------------------------------------------------------------
@@ -160,9 +160,11 @@ struct get_serialize_buffer_size<Sid, std::tuple<T...>, Selector>
 
     template <typename Tup>
     static constexpr auto get(string_view s, const Tup& v) noexcept {
-        return std_size(
-          12 + s.size() + 2 +
-          _do_get(v, std::make_index_sequence<sizeof...(T)>()));
+        return std_size(safe_add(
+          12,
+          s.size(),
+          2,
+          _do_get(v, std::make_index_sequence<sizeof...(T)>())));
     }
 
 private:
@@ -170,10 +172,10 @@ private:
     static constexpr auto _do_get(
       const Tup& t,
       std::index_sequence<I...>) noexcept {
-        return (
-          0 + ... +
-          (2 + get_serialize_buffer_size<Sid, T, Selector>::get(
-                 {}, std::get<I>(t))));
+        return safe_add(safe_add(
+          2,
+          get_serialize_buffer_size<Sid, T, Selector>::get(
+            {}, std::get<I>(t)))...);
     }
 };
 //------------------------------------------------------------------------------
@@ -181,7 +183,7 @@ template <identifier_t Sid, typename T, typename Selector>
 struct get_struct_serialize_buffer_size : serialize_size_constant<0, false> {
 
     static constexpr auto get(string_view s, const T& v) noexcept {
-        return std_size(12 + s.size() + 2 + _get(map_data_members(v)));
+        return std_size(safe_add(12, s.size(), 2, _get(map_data_members(v))));
     }
 
 private:
@@ -195,10 +197,10 @@ private:
     static constexpr auto _do_get(
       const std::tuple<std::pair<const string_view, const M&>...>& mapped,
       std::index_sequence<I...>) noexcept {
-        return span_size(
-          (0 + ... +
-           (2 + get_serialize_buffer_size<Sid, M, Selector>::get(
-                  std::get<I>(mapped).first, std::get<I>(mapped).second))));
+        return span_size(safe_add(safe_add(
+          2,
+          get_serialize_buffer_size<Sid, M, Selector>::get(
+            std::get<I>(mapped).first, std::get<I>(mapped).second))...));
     }
 };
 //------------------------------------------------------------------------------

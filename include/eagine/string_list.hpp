@@ -81,7 +81,7 @@ static inline void push_back(
   const string_view value) noexcept {
     const span_size_t vl = value.size();
     const std::string elen = encode_length(vl);
-    const std::size_t nl = list.size() + elen.size() * 2 + std_size(vl);
+    const std::size_t nl = safe_add(list.size(), elen.size() * 2, std_size(vl));
     if(list.capacity() < nl) {
         list.reserve(nl);
     }
@@ -162,7 +162,7 @@ public:
     }
 
     auto footer() const noexcept -> string_view {
-        return {data() + header_size() + value_size(), header_size()};
+        return {data() + safe_add(header_size(), value_size()), header_size()};
     }
 };
 //------------------------------------------------------------------------------
@@ -199,7 +199,7 @@ static inline void rev_for_each_elem(
         }
         element elem(list.data() + i, i, list.size() - i);
         func(elem, first);
-        i -= elem.header_size() + elem.value_size() + 1;
+        i -= safe_add(elem.header_size(), elem.value_size(), 1);
         first = false;
     }
 }

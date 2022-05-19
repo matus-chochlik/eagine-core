@@ -22,16 +22,16 @@ auto substitute_variable_into(
         if(const auto found{find_position(src, name)}) {
             const auto npos{extract(found)};
             if(
-              (npos >= 2) && (npos + name.size() < src.size()) &&
+              (npos >= 2) && (safe_add_lt(npos, name.size(), src.size())) &&
               (src[npos - 1] == opts.opening_bracket) &&
               (src[npos - 2] == opts.leading_sign) &&
               (src[npos + name.size()] == opts.closing_bracket)) {
                 append_to(dst, head(src, npos - 2));
                 append_to(dst, value);
-                src = skip(src, npos + name.size() + 1);
+                src = skip(src, safe_add(npos, name.size(), 1));
             } else {
-                append_to(dst, head(src, npos + name.size()));
-                src = skip(src, npos + name.size());
+                append_to(dst, head(src, safe_add(npos, name.size())));
+                src = skip(src, safe_add(npos, name.size()));
             }
         } else {
             append_to(dst, src);
@@ -66,13 +66,14 @@ auto substitute_variables_into(
                         if(const auto translation2 = translate(temp)) {
                             append_to(dst, translation2.value());
                         } else if(opts.keep_untranslated) {
-                            append_to(dst, head(src, inner.size() + 3));
+                            append_to(
+                              dst, head(src, safe_add(inner.size(), 3)));
                         }
                     } else if(opts.keep_untranslated) {
-                        append_to(dst, head(src, inner.size() + 3));
+                        append_to(dst, head(src, safe_add(inner.size(), 3)));
                     }
                 }
-                src = skip(src, inner.size() + 3);
+                src = skip(src, safe_add(inner.size(), 3));
             } else {
                 append_to(dst, head(src, 3));
                 src = skip(src, 3);

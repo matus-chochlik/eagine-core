@@ -144,7 +144,7 @@ public:
         if(const auto attr{_find_comp_attr(key, tag)}) {
             const auto count = attr.value_count();
             if(count > 0) {
-                dest.resize(dest.size() + std_size(count));
+                dest.resize(safe_add(dest.size(), std_size(count)));
                 if(!attr.select_values(
                      tail(cover(dest), count), application_config_tag())) {
                     log_error("could not fetch configuration values '${key}'")

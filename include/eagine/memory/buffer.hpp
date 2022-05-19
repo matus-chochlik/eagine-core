@@ -140,7 +140,7 @@ public:
     /// @see reserve
     /// @see ensure
     auto enlarge_by(const span_size_t inc_size) noexcept -> auto& {
-        return resize(size() + inc_size);
+        return resize(safe_add(size(), inc_size));
     }
 
     /// @brief Clears the buffer.
