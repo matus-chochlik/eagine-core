@@ -166,7 +166,7 @@ public:
         if((zres = ::inflateInit(&_zsi)) != Z_OK) {
             return false;
         }
-        const auto cleanup_later{finally([this]() { ::inflateEnd(&_zsd); })};
+        const auto cleanup_later{finally([this]() { ::inflateEnd(&_zsi); })};
 
         while(_zsi.avail_in > 0) {
             if((zres = ::inflate(&_zsi, Z_NO_FLUSH)) != Z_OK) {
