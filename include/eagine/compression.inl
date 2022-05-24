@@ -9,6 +9,7 @@
 #include <eagine/memory/span_algo.hpp>
 #include <array>
 #if EAGINE_USE_ZLIB
+#include <eagine/scope_exit.hpp>
 #include <eagine/span.hpp>
 #include <zlib.h>
 #endif
@@ -62,7 +63,7 @@ public:
         _zsd.avail_out = limit_cast<unsigned>(_temp.size());
 
         const auto append = [&](span_size_t size) -> bool {
-            if(handler(head(view(_temp), size))) {
+            if(handler(head(view(_temp), size))) [[likely]] {
                 _zsd.next_out = _temp.data();
                 _zsd.avail_out = limit_cast<unsigned>(_temp.size());
                 return true;
@@ -74,6 +75,7 @@ public:
         if((zres = ::deflateInit(&_zsd, _translate(level))) != Z_OK) {
             return false;
         }
+        const auto cleanup_later{finally([this]() { ::deflateEnd(&_zsd); })};
 
         while(_zsd.avail_in > 0) {
             if((zres = ::deflate(&_zsd, Z_NO_FLUSH)) != Z_OK) {
@@ -82,7 +84,7 @@ public:
                 }
             }
             if(_zsd.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) {
+                if(!append(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
@@ -90,7 +92,7 @@ public:
 
         while(zres == Z_OK) {
             if(_zsd.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) {
+                if(!append(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
@@ -101,10 +103,9 @@ public:
             return false;
         }
 
-        if(!append(span_size(_temp.size() - _zsd.avail_out))) {
+        if(!append(span_size(_temp.size() - _zsd.avail_out))) [[unlikely]] {
             return false;
         }
-        ::deflateEnd(&_zsd);
 
         return true;
     }
@@ -153,7 +154,7 @@ public:
         _zsi.avail_out = limit_cast<unsigned>(_temp.size());
 
         auto append = [&](span_size_t size) -> bool {
-            if(handler(head(view(_temp), size))) {
+            if(handler(head(view(_temp), size))) [[likely]] {
                 _zsi.next_out = _temp.data();
                 _zsi.avail_out = limit_cast<unsigned>(_temp.size());
                 return true;
@@ -165,6 +166,7 @@ public:
         if((zres = ::inflateInit(&_zsi)) != Z_OK) {
             return false;
         }
+        const auto cleanup_later{finally([this]() { ::inflateEnd(&_zsi); })};
 
         while(_zsi.avail_in > 0) {
             if((zres = ::inflate(&_zsi, Z_NO_FLUSH)) != Z_OK) {
@@ -173,7 +175,7 @@ public:
                 }
             }
             if(_zsi.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) {
+                if(!append(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
@@ -181,7 +183,7 @@ public:
 
         while(zres == Z_OK) {
             if(_zsd.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) {
+                if(!append(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
@@ -192,10 +194,9 @@ public:
             return false;
         }
 
-        if(!append(span_size(_temp.size() - _zsi.avail_out))) {
+        if(!append(span_size(_temp.size() - _zsi.avail_out))) [[unlikely]] {
             return false;
         }
-        ::inflateEnd(&_zsi);
 
         return true;
     }
@@ -244,7 +245,7 @@ public:
       memory::buffer& output,
       [[maybe_unused]] const data_compression_level level) noexcept
       -> memory::const_block {
-        output.resize(input.size() + 1);
+        output.resize(safe_add(input.size(), 1));
         copy(input, skip(cover(output), 1));
         cover(output).front() = 0x00U;
         return view(output);
@@ -310,7 +311,7 @@ auto data_compressor::compress(
     if(const auto result{_pimpl->compress(input, output, level)}) {
         return result;
     }
-    output.resize(input.size() + 1);
+    output.resize(safe_add(input.size(), 1));
     copy(input, skip(cover(output), 1));
     cover(output).front() = 0x00U;
     return view(output);

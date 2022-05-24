@@ -133,8 +133,13 @@ static constexpr auto is_within_limits(const Src value) noexcept {
 template <typename Dst, typename Src>
 static constexpr auto limit_cast(Src value) noexcept -> Dst
   requires(std::is_convertible_v<Src, Dst>) {
-    return EAGINE_CONSTEXPR_ASSERT(
-      is_within_limits<Dst>(value), Dst(std::move(value)));
+    if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<Dst>) {
+        return EAGINE_CONSTEXPR_ASSERT(
+          is_within_limits<Dst>(value), Dst(value));
+    } else {
+        return EAGINE_CONSTEXPR_ASSERT(
+          is_within_limits<Dst>(value), Dst(std::move(value)));
+    }
 }
 //------------------------------------------------------------------------------
 /// @brief Casts @p value to a type with the opposite signedness.
@@ -159,9 +164,79 @@ static constexpr auto convert_if_fits(Src value) noexcept
   -> optionally_valid<Dst> requires(std::is_convertible_v<Src, Dst>) {
 
     if(is_within_limits<Dst>(value)) {
-        return {Dst(std::move(value)), true};
+        if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<Dst>) {
+            return {Dst(value), true};
+        } else {
+            return {Dst(std::move(value)), true};
+        }
     }
     return {};
+}
+//------------------------------------------------------------------------------
+template <std::integral Int>
+static constexpr auto are_safe_to_add(Int l, Int r) noexcept -> bool {
+    if constexpr(std::is_signed_v<Int>) {
+        if((l < 0) != (r < 0)) {
+            return true;
+        }
+        using std::abs;
+        l = abs(l);
+        r = abs(r);
+    }
+    if(std::numeric_limits<Int>::max() - l > r) [[likely]] {
+        return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+template <std::integral I>
+static constexpr auto safe_add(I i) noexcept {
+    return i;
+}
+//------------------------------------------------------------------------------
+template <std::integral L, std::integral R>
+static constexpr auto safe_add(L l, R r) noexcept {
+    using T = std::common_type_t<L, R>;
+    return EAGINE_CONSTEXPR_ASSERT(are_safe_to_add<T>(l, r), l + r);
+}
+//------------------------------------------------------------------------------
+template <std::integral A, std::integral B, std::integral C>
+static constexpr auto safe_add(A a, B b, C c) noexcept {
+    return safe_add(safe_add(a, b), c);
+}
+//------------------------------------------------------------------------------
+template <std::integral A, std::integral B, std::integral C, std::integral D>
+static constexpr auto safe_add(A a, B b, C c, D d) noexcept {
+    return safe_add(safe_add(a, b), safe_add(c, d));
+}
+//------------------------------------------------------------------------------
+template <
+  std::integral A,
+  std::integral B,
+  std::integral C,
+  std::integral D,
+  std::integral E,
+  std::integral... P>
+static constexpr auto safe_add(A a, B b, C c, D d, E e, P... p) noexcept {
+    return safe_add(safe_add(a, b, c, d), safe_add(e, p...));
+}
+//------------------------------------------------------------------------------
+template <std::integral L, std::integral R, std::integral C>
+static constexpr auto safe_add_eq(L l, R r, C c) noexcept -> bool {
+    using T = std::common_type_t<L, R>;
+    return are_safe_to_add<T>(l, r) && (l + r == c);
+}
+//------------------------------------------------------------------------------
+template <std::integral L, std::integral R, std::integral C>
+static constexpr auto safe_add_lt(L l, R r, C c) noexcept -> bool {
+    using T = std::common_type_t<L, R>;
+    return are_safe_to_add<T>(l, r) && (l + r < c);
+}
+//------------------------------------------------------------------------------
+template <std::integral L, std::integral R, std::integral C>
+static constexpr auto safe_add_gt(L l, R r, C c) noexcept -> bool {
+    using T = std::common_type_t<L, R>;
+    return are_safe_to_add<T>(l, r) && (l + r > c);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

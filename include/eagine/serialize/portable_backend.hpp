@@ -290,7 +290,7 @@ private:
         result errors{};
         auto src{this->string_before(delimiter, 48)};
         if(src) [[likely]] {
-            const auto skip_len = src.size() + 1;
+            const auto skip_len = safe_add(src.size(), 1);
             unsigned shift = 0U;
             while(src) {
                 const char c = extract(src);
@@ -356,7 +356,7 @@ private:
         const auto src{this->string_before(delimiter, 32)};
         if(src) [[likely]] {
             value = identifier(src);
-            pop(src.size() + 1);
+            pop(safe_add(src.size(), 1));
         } else {
             errors |= error_code::not_enough_data;
         }
@@ -370,7 +370,7 @@ private:
         const auto src{this->string_before(delimiter, max)};
         if(src) [[likely]] {
             value.assign(src);
-            pop(src.size() + 1);
+            pop(safe_add(src.size(), 1));
         } else {
             errors |= error_code::not_enough_data;
         }

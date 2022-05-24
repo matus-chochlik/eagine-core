@@ -109,7 +109,7 @@ public:
     }
 
     auto add_workers(span_size_t n) -> workshop& {
-        _workers.reserve(_workers.size() + std_size(n));
+        _workers.reserve(safe_add(_workers.size(), std_size(n)));
         for([[maybe_unused]] const auto i : integer_range(n)) {
             add_worker();
         }

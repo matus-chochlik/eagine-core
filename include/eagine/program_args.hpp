@@ -128,7 +128,7 @@ public:
     /// @see is_long_tag
     /// @see is_prefixed_tag
     auto is_short_tag(const string_view name) const noexcept {
-        return ((get().size() == 1 + name.size()) && starts_with("-") &&
+        return (safe_add_eq(1, name.size(), get().size()) && starts_with("-") &&
                 ends_with(name)) ||
                is_tag(name);
     }
@@ -138,8 +138,8 @@ public:
     /// @see is_short_tag
     /// @see is_prefixed_tag
     auto is_long_tag(const string_view name) const noexcept {
-        return ((get().size() == 2 + name.size()) && starts_with("--") &&
-                ends_with(name)) ||
+        return (safe_add_eq(2, name.size(), get().size()) &&
+                starts_with("--") && ends_with(name)) ||
                is_tag(name);
     }
 
@@ -149,7 +149,7 @@ public:
     /// @see is_short_tag
     auto is_prefixed_tag(const string_view prefix, const string_view name)
       const noexcept {
-        return (get().size() == prefix.size() + name.size()) &&
+        return safe_add_eq(prefix.size(), name.size(), get().size()) &&
                starts_with(prefix) && ends_with(name);
     }
 

@@ -53,7 +53,7 @@ public:
             }
         }
 
-        _fbk_size += n;
+        _fbk_size = safe_add(_fbk_size, n);
         if(_fbk_max < _fbk_size) {
             _fbk_max = _fbk_size;
         }

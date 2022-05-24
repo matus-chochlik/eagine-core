@@ -49,7 +49,7 @@ public:
 
     friend constexpr auto operator+(buffer_size a, buffer_size b) noexcept
       -> buffer_size {
-        return {a._v + b._v};
+        return {safe_add(a._v, b._v)};
     }
 
 private:

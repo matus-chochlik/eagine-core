@@ -358,7 +358,7 @@ private:
             // TODO: to_chars from_chars when available
             // NOLINTNEXTLINE(hicpp-vararg)
             if(std::sscanf(src.data(), fmtstr, &value) == 1) {
-                pop(src.size() + 1);
+                pop(safe_add(src.size(), 1));
             } else {
                 errors |= error_code::invalid_format;
             }
@@ -435,7 +435,7 @@ private:
         result errors{};
         if(const auto src{this->string_before(delimiter, 32)}) {
             value = identifier(src);
-            pop(src.size() + 1);
+            pop(safe_add(src.size(), 1));
         } else {
             errors |= error_code::not_enough_data;
         }
@@ -445,10 +445,10 @@ private:
     auto _read_one(decl_name_storage& value, const char delimiter) noexcept
       -> result {
         result errors{};
-        const auto max = decl_name_storage::max_length + 1;
+        const auto max = safe_add(decl_name_storage::max_length, 1);
         if(const auto src{this->string_before(delimiter, max)}) {
             value.assign(src);
-            pop(src.size() + 1);
+            pop(safe_add(src.size(), 1));
         } else {
             errors |= error_code::not_enough_data;
         }

@@ -80,7 +80,7 @@ public:
           std::make_signed_t<I>,
           std::make_unsigned_t<I>>;
         using eagine::limit_cast;
-        return {limit_cast<T>(value + limit_cast<O>(index))};
+        return {limit_cast<T>(safe_add(value, limit_cast<O>(index)))};
     }
 };
 //------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ public:
           std::is_signed_v<T>,
           std::make_signed_t<I>,
           std::make_unsigned_t<I>>;
-        return {limit_cast<T>(this->value + limit_cast<O>(index))};
+        return {limit_cast<T>(safe_add(this->value, limit_cast<O>(index)))};
     }
 };
 //------------------------------------------------------------------------------
