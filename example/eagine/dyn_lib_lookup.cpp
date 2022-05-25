@@ -6,10 +6,10 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
+#include <eagine/console/console.hpp>
 #include <eagine/dynamic_library.hpp>
 #include <eagine/logging/logger.hpp>
 #include <eagine/main.hpp>
-#include <iostream>
 
 namespace eagine {
 
@@ -19,9 +19,15 @@ auto main(main_ctx& ctx) -> int {
         if(shared_executable_module module{lib_path}) {
             if(string_view sym_name{ctx.args().find("--symbol").next()}) {
                 if(module.exports(sym_name)) {
-                    std::cout << "symbol found" << std::endl;
+                    ctx.cio()
+                      .print(EAGINE_ID(DynLib), "symbol found")
+                      .arg(EAGINE_ID(library), lib_path)
+                      .arg(EAGINE_ID(symbol), sym_name);
                 } else {
-                    std::cout << "symbol not found" << std::endl;
+                    ctx.cio()
+                      .print(EAGINE_ID(DynLib), "symbol not found")
+                      .arg(EAGINE_ID(library), lib_path)
+                      .arg(EAGINE_ID(symbol), sym_name);
                 }
             } else {
                 ctx.log().error("missing symbol name argument");

@@ -10,7 +10,6 @@
 #include <eagine/main.hpp>
 #include <eagine/progress/activity.hpp>
 #include <eagine/reflect/enumerators.hpp>
-#include <iostream>
 #include <thread>
 
 namespace eagine {

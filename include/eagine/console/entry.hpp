@@ -228,7 +228,7 @@ public:
       const identifier name,
       const std::integral auto value,
       const std::integral auto max) noexcept -> auto& {
-        return arg(name, EAGINE_ID(Ration), double(value) / double(max));
+        return arg(name, EAGINE_ID(Ratio), double(value) / double(max));
     }
 
     /// @brief Adds a new message argument with time duration value.
@@ -250,6 +250,13 @@ public:
             });
         }
         return *this;
+    }
+
+    template <typename R, typename P>
+    auto arg(
+      const identifier name,
+      const std::chrono::duration<R, P> value) noexcept -> auto& {
+        return arg(name, EAGINE_ID(seconds), value);
     }
 
     /// @brief Adds a new message argument with string value.
