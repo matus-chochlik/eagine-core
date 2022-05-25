@@ -18,7 +18,7 @@ auto main(main_ctx& ctx) -> int {
 
     auto& cfg = ctx.config();
     std::string s;
-    int i;
+    int i{0};
     std::vector<float> v;
 
     if(cfg.fetch("value_1", s)) {
