@@ -54,6 +54,21 @@ public:
     constexpr basic_wrapping_container(const basic_wrapping_container&) =
       default;
 
+    template <typename Other>
+        requires(std::is_same_v<
+                 Container,
+                 span<std::add_const_t<typename Other::value_type>>>)
+    constexpr basic_wrapping_container(
+      const basic_wrapping_container<Other, Wrapper, T, initial, Transform>&
+        that)
+      : _items{that.raw_items()} {}
+
+    template <typename Other>
+        requires(std::is_same_v<Container, span<typename Other::value_type>>)
+    constexpr basic_wrapping_container(
+      basic_wrapping_container<Other, Wrapper, T, initial, Transform>& that)
+      : _items{that.raw_items()} {}
+
     /// @brief Move assignable.
     auto operator=(basic_wrapping_container&& temp) noexcept
       -> basic_wrapping_container& {
@@ -86,7 +101,7 @@ public:
       Wrapper,
       T,
       initial,
-      Transform>() noexcept {
+      Transform>() const noexcept {
         return {view(_items)};
     }
 
