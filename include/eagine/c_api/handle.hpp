@@ -18,7 +18,7 @@ namespace eagine::c_api {
 //------------------------------------------------------------------------------
 /// @brief Non-owning wrapper for C-API opaque handle types.
 /// @ingroup c_api_wrap
-/// @tparam Tag type distinguisihing various handler with the same underlying type.
+/// @tparam Tag type distinguishing various handler with the same underlying type.
 /// @tparam Handle the underlying handle type.
 /// @tparam invalid the invalid value for this particular handle type.
 /// @see basic_owned_handle
@@ -99,6 +99,7 @@ private:
 /// @tparam Handle the underlying handle type.
 /// @tparam invalid the invalid value for this particular handle type.
 /// @see basic_handle
+/// @see object
 template <typename Tag, typename Handle, Handle invalid = ~Handle(0)>
 class basic_owned_handle : public basic_handle<Tag, Handle, invalid> {
     using base = basic_handle<Tag, Handle, invalid>;

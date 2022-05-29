@@ -29,6 +29,7 @@ set(HEADERS
     eagine/c_api/function.hpp
     eagine/c_api/handle.hpp
     eagine/c_api/key_value_list.hpp
+    eagine/c_api/object.hpp
     eagine/c_api/parameter_map.hpp
     eagine/c_api/result.hpp
     eagine/c_api_wrap.hpp
@@ -38,6 +39,14 @@ set(HEADERS
     eagine/compression.hpp
     eagine/config/basic.hpp
     eagine/config/platform.hpp
+    eagine/console/backend.hpp
+    eagine/console/console.hpp
+    eagine/console/console_opts.hpp
+    eagine/console/entry.hpp
+    eagine/console/entry_kind.hpp
+    eagine/console/fwd.hpp
+    eagine/console/iostream_backend.hpp
+    eagine/convertible.hpp
     eagine/count.hpp
     eagine/c_str.hpp
     eagine/data_baking.hpp
@@ -74,6 +83,7 @@ set(HEADERS
     eagine/logging/asio_backend.hpp
     eagine/logging/backend.hpp
     eagine/logging/config.hpp
+    eagine/logging/entry_arg.hpp
     eagine/logging/entry.hpp
     eagine/logging/fwd.hpp
     eagine/logging/logger.hpp
@@ -380,6 +390,7 @@ set(LIB_INLS
     eagine/build_info.inl
     eagine/compiler_info.inl
     eagine/compression.inl
+    eagine/console/console.inl
     eagine/edit_distance.inl
     eagine/file_contents.inl
     eagine/from_string.inl
