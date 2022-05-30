@@ -122,30 +122,27 @@ template <
   typename RvArgMap = trivial_map>
 class basic_adapted_function;
 
-template <
-  typename Api,
-  auto method,
-  typename CRV,
-  typename... CParam,
-  typename CppRV,
-  typename... CppParam,
-  typename RvArgMap>
-class basic_adapted_function<
-  Api,
-  method,
-  CRV(CParam...),
-  CppRV(CppParam...),
-  RvArgMap> {
+template <typename Api, auto method, typename CppSignature, typename RvArgMap>
+class adapted_function_base {
     [[no_unique_address]] Api& _api;
+
     [[no_unique_address]] adapted_function_utils<
-      CppRV(CppParam...),
+      CppSignature,
       RvArgMap,
       function_traits<method_wrapper_t<method>>>
       _utils;
 
 public:
-    basic_adapted_function(Api& api) noexcept
+    adapted_function_base(Api& api) noexcept
       : _api{api} {}
+
+    [[nodiscard]] constexpr auto api() const noexcept -> const auto& {
+        return _api;
+    }
+
+    [[nodiscard]] constexpr auto api() noexcept -> auto& {
+        return _api;
+    }
 
     [[nodiscard]] constexpr auto underlying() const noexcept -> decltype(auto) {
         return _api.*method;
@@ -155,31 +152,63 @@ public:
         return bool(underlying());
     }
 
+    [[nodiscard]] auto fail() const noexcept {
+        return _utils.fail(api());
+    }
+
+protected:
+    constexpr auto utils() const noexcept -> auto& {
+        return _utils;
+    }
+};
+
+template <
+  typename Api,
+  auto method,
+  typename CRV,
+  typename... CParam,
+  typename CppRV,
+  typename... CppParam,
+  typename RvArgMap>
+class basic_adapted_function<Api, method, CRV(CParam...), CppRV(CppParam...), RvArgMap>
+  : public adapted_function_base<Api, method, CppRV(CppParam...), RvArgMap> {
+    using base =
+      adapted_function_base<Api, method, CppRV(CppParam...), RvArgMap>;
+
+public:
+    basic_adapted_function(Api& a) noexcept
+      : base{a} {}
+
+    using base::api;
+    using base::underlying;
+    using base::utils;
+
     constexpr auto operator()(CppParam... param) const noexcept {
         using S = std::make_index_sequence<sizeof...(CParam)>;
-        return _utils.call(
-          _api, _api.*method, S{}, std::forward<CppParam>(param)...);
+        return utils().call(
+          api(), underlying(), S{}, std::forward<CppParam>(param)...);
     }
 
     constexpr auto operator[](std::tuple<CppParam...> params) const noexcept {
         using CS = std::make_index_sequence<sizeof...(CParam)>;
         using CppS = std::make_index_sequence<sizeof...(CppParam)>;
-        return _utils.call(_api, _api.*method, CS{}, CppS{}, std::move(params));
+        return utils().call(
+          api(), underlying(), CS{}, CppS{}, std::move(params));
     }
 
     [[nodiscard]] auto bind(CppParam... param) const noexcept {
         using S = std::make_index_sequence<sizeof...(CParam)>;
-        return _utils.bind(
-          _api, _api.*method, S{}, std::forward<CppParam>(param)...);
+        return utils().bind(
+          api(), underlying(), S{}, std::forward<CppParam>(param)...);
     }
 
     [[nodiscard]] auto raii(
       adapted_function_raii_parameter_t<CppParam>... param) const noexcept {
         using CS = std::make_index_sequence<sizeof...(CParam)>;
         using CppS = std::make_index_sequence<sizeof...(CppParam)>;
-        return eagine::finally(_utils.raii(
-          _api,
-          _api.*method,
+        return eagine::finally(utils().raii(
+          api(),
+          underlying(),
           CS{},
           CppS{},
           std::forward<decltype(param)>(param)...));
@@ -192,24 +221,12 @@ public:
         using CS = std::make_index_sequence<sizeof...(CParam)>;
         using CppS = std::make_index_sequence<sizeof...(CppParam)>;
 
-        return cleanup.add_ret(_utils.raii(
-          _api,
-          _api.*method,
+        return cleanup.add_ret(utils().raii(
+          api(),
+          underlying(),
           CS{},
           CppS{},
           std::forward<decltype(param)>(param)...));
-    }
-
-    [[nodiscard]] auto fail() const noexcept {
-        return _utils.fail(_api);
-    }
-
-    [[nodiscard]] constexpr auto api() const noexcept -> const auto& {
-        return _api;
-    }
-
-    [[nodiscard]] constexpr auto api() noexcept -> auto& {
-        return _api;
     }
 };
 

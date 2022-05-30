@@ -54,7 +54,9 @@ template <std::size_t... J>
 struct trivial_arg_map {
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
-      -> decltype(auto) requires(... || (I == J)) {
+      -> decltype(auto)
+        requires(... || (I == J))
+    {
         return trivial_map{}(i, std::forward<P>(p)...);
     }
 };
@@ -63,7 +65,9 @@ template <std::size_t... J>
 struct nullptr_arg_map {
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I>, P&&...) const noexcept
-      -> decltype(auto) requires(... || (I == J)) {
+      -> decltype(auto)
+        requires(... || (I == J))
+    {
         return nullptr;
     }
 };
@@ -362,7 +366,9 @@ template <typename T, std::size_t... J>
 struct convert<T, trivial_arg_map<J...>> {
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
-      -> decltype(auto) requires(... || (I == J)) {
+      -> decltype(auto)
+        requires(... || (I == J))
+    {
         return c_arg_cast<T>(trivial_map{}(i, std::forward<P>(p)...));
     }
 };
@@ -475,9 +481,8 @@ struct make_arg_map<I, I, const void*, memory::const_block> {
 };
 
 template <std::size_t CI, std::size_t CppI, typename V, typename Tr>
-requires(std::is_convertible_v<
-         typename Tr::value_type*,
-         V*>) struct make_arg_map<CI, CppI, V*, key_value_list<Tr>> {
+    requires(std::is_convertible_v<typename Tr::value_type*, V*>)
+struct make_arg_map<CI, CppI, V*, key_value_list<Tr>> {
     template <typename... P>
     constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
         return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).data();
@@ -485,9 +490,8 @@ requires(std::is_convertible_v<
 };
 
 template <std::size_t I, typename V, typename Tr>
-requires(std::is_convertible_v<
-         typename Tr::value_type*,
-         V*>) struct make_arg_map<I, I, V*, key_value_list<Tr>> {
+    requires(std::is_convertible_v<typename Tr::value_type*, V*>)
+struct make_arg_map<I, I, V*, key_value_list<Tr>> {
     template <typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
         return trivial_map{}(i, std::forward<P>(p)...).data();
@@ -623,7 +627,8 @@ template <
   typename... CT,
   auto value,
   typename... CppT>
-requires(std::is_convertible_v<decltype(value), CH>) struct make_args_map<
+    requires(std::is_convertible_v<decltype(value), CH>)
+struct make_args_map<
   CI,
   CppI,
   mp_list<CH, CT...>,
@@ -645,7 +650,8 @@ template <
   typename... CT,
   typename CppH,
   typename... CppT>
-requires(std::is_convertible_v<CH, CppH>) struct make_args_map<
+    requires(std::is_convertible_v<CH, CppH>)
+struct make_args_map<
   CI,
   CppI,
   mp_list<CH*, CT...>,
@@ -717,9 +723,8 @@ struct make_args_map<CI, CppI, mp_list<H*, CT...>, mp_list<H&, CppT...>>
 };
 
 template <std::size_t CI, std::size_t CppI, typename CH>
-requires(
-  std::is_pointer_v<CH>) struct make_args_map<CI, CppI, mp_list<CH>, mp_list<>>
-  : nullptr_arg_map<CI> {
+    requires(std::is_pointer_v<CH>)
+struct make_args_map<CI, CppI, mp_list<CH>, mp_list<>> : nullptr_arg_map<CI> {
     using nullptr_arg_map<CI>::operator();
 };
 
@@ -733,13 +738,13 @@ template <
   typename CppP,
   typename CppS,
   typename... CppT>
-requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
-           std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct
-  make_args_map<
-    CI,
-    CppI,
-    mp_list<CP, CS, CT...>,
-    mp_list<memory::basic_span<CppV, CppP, CppS>, CppT...>>
+    requires(std::is_pointer_v<CP> && std::is_convertible_v<CppP, CP> &&
+             std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CP, CS, CT...>,
+  mp_list<memory::basic_span<CppV, CppP, CppS>, CppT...>>
   : convert<CP, get_data_map<CI, CppI>>
   , convert<CS, get_size_map<CI + 1, CppI>>
   , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
@@ -759,13 +764,13 @@ template <
   typename CppP,
   typename CppS,
   typename... CppT>
-requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
-           std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct
-  make_args_map<
-    CI,
-    CppI,
-    mp_list<CS, CP, CT...>,
-    mp_list<memory::basic_span<CppV, CppP, CppS>, CppT...>>
+    requires(std::is_pointer_v<CP> && std::is_convertible_v<CppP, CP> &&
+             std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CS, CP, CT...>,
+  mp_list<memory::basic_span<CppV, CppP, CppS>, CppT...>>
   : convert<CS, get_size_map<CI, CppI>>
   , convert<CP, get_data_map<CI + 1, CppI>>
   , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
@@ -786,13 +791,13 @@ template <
   typename CppS,
   CppS chunkSize,
   typename... CppT>
-requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
-           std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct
-  make_args_map<
-    CI,
-    CppI,
-    mp_list<CS, CP, CT...>,
-    mp_list<memory::basic_chunk_span<CppV, CppP, CppS, chunkSize>, CppT...>>
+    requires(std::is_pointer_v<CP> && std::is_convertible_v<CppP, CP> &&
+             std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CS, CP, CT...>,
+  mp_list<memory::basic_chunk_span<CppV, CppP, CppS, chunkSize>, CppT...>>
   : convert<CS, get_chunk_size_map<CI, CppI, chunkSize>>
   , convert<CP, get_data_map<CI + 1, CppI>>
   , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
@@ -811,7 +816,8 @@ template <
   typename Tag,
   CH invalid,
   typename... CppT>
-requires(std::is_integral_v<CS>) struct make_args_map<
+    requires(std::is_integral_v<CS>)
+struct make_args_map<
   CI,
   CppI,
   mp_list<CS, CH*, CT...>,
@@ -841,7 +847,8 @@ template <
   typename Tag,
   CH invalid,
   typename... CppT>
-requires(std::is_integral_v<CS>) struct make_args_map<
+    requires(std::is_integral_v<CS>)
+struct make_args_map<
   CI,
   CppI,
   mp_list<CS, const CH*, CT...>,
@@ -871,7 +878,8 @@ template <
   typename Tag,
   CH invalid,
   typename... CppT>
-requires(std::is_integral_v<CS>) struct make_args_map<
+    requires(std::is_integral_v<CS>)
+struct make_args_map<
   CI,
   CppI,
   mp_list<CS, const CH*, CT...>,
@@ -906,13 +914,13 @@ template <
   typename CppP,
   typename CppS,
   typename... CppT>
-requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
-           std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct
-  make_args_map<
-    CI,
-    CppI,
-    mp_list<CP, CS, CT...>,
-    mp_list<basic_string_span<CppV, CppP, CppS>, CppT...>>
+    requires(std::is_pointer_v<CP> && std::is_convertible_v<CppP, CP> &&
+             std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CP, CS, CT...>,
+  mp_list<basic_string_span<CppV, CppP, CppS>, CppT...>>
   : convert<CP, get_data_map<CI, CppI>>
   , convert<CS, get_size_map<CI + 1, CppI>>
   , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
@@ -932,13 +940,13 @@ template <
   typename CppP,
   typename CppS,
   typename... CppT>
-requires(std::is_pointer_v<CP>&& std::is_convertible_v<CppP, CP>&&
-           std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct
-  make_args_map<
-    CI,
-    CppI,
-    mp_list<CS, CP, CT...>,
-    mp_list<basic_string_span<CppV, CppP, CppS>, CppT...>>
+    requires(std::is_pointer_v<CP> && std::is_convertible_v<CppP, CP> &&
+             std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+struct make_args_map<
+  CI,
+  CppI,
+  mp_list<CS, CP, CT...>,
+  mp_list<basic_string_span<CppV, CppP, CppS>, CppT...>>
   : convert<CS, get_size_map<CI, CppI>>
   , convert<CP, get_data_map<CI + 1, CppI>>
   , make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
@@ -956,7 +964,8 @@ template <
   typename... CT,
   typename CppP,
   typename... CppT>
-requires(std::is_same_v<CP, typename CppP::value_type>) struct make_args_map<
+    requires(std::is_same_v<CP, typename CppP::value_type>)
+struct make_args_map<
   CI,
   CppI,
   mp_list<CP, PV, CT...>,
@@ -983,7 +992,8 @@ template <
   typename... CT,
   typename CppS,
   typename... CppT>
-requires(std::is_integral_v<CS>&& std::is_convertible_v<CppS, CS>) struct make_args_map<
+    requires(std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+struct make_args_map<
   CI,
   CppI,
   mp_list<CS, const void*, CT...>,
@@ -1001,23 +1011,19 @@ template <typename CSignature, typename CppSignature>
 auto make_map(CSignature*, CppSignature*) -> trivial_map;
 
 template <typename CRV, typename CppRV>
-auto make_map(CRV (*)(), CppRV (*)())
-  -> cast_to_map<CRV, CppRV> requires(!std::is_same_v<CRV, CppRV>);
+auto make_map(CRV (*)(), CppRV (*)()) -> cast_to_map<CRV, CppRV>
+    requires(!std::is_same_v<CRV, CppRV>);
 
 template <typename RV, typename... CParam, typename... CppParam>
 auto make_map(RV (*)(CParam...), RV (*)(CppParam...))
-  -> make_args_map<0, 0, mp_list<RV, CParam...>, mp_list<RV, CppParam...>> requires(
-    (sizeof...(CParam) > 0));
+  -> make_args_map<0, 0, mp_list<RV, CParam...>, mp_list<RV, CppParam...>>
+    requires((sizeof...(CParam) > 0));
 
 template <typename CRV, typename CppRV, typename... CParam, typename... CppParam>
 auto make_map(CRV (*)(CParam...), CppRV (*)(CppParam...)) -> combined_map<
   cast_to_map<CRV, CppRV>,
-  make_args_map<
-    1,
-    1,
-    mp_list<CParam...>,
-    mp_list<
-      CppParam...>>> requires(!std::is_same_v<CRV, CppRV> && (sizeof...(CParam) > 0));
+  make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>>
+    requires(!std::is_same_v<CRV, CppRV> && (sizeof...(CParam) > 0));
 
 template <typename CRV, typename CppRV, typename CParam, typename CppParam>
 auto make_map(CRV (*)(CppRV*, CParam), CppRV (*)(CppParam)) -> combined_map<
