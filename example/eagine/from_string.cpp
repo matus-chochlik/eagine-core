@@ -6,35 +6,41 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
+#include <eagine/console/console.hpp>
 #include <eagine/from_string.hpp>
 #include <eagine/main.hpp>
+#include <eagine/main_ctx_object.hpp>
 #include <eagine/program_args.hpp>
 #include <chrono>
-#include <iomanip>
-#include <iostream>
 
 namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
     using duration = std::chrono::duration<float, std::milli>;
 
+    main_ctx_object out{EAGINE_ID(fromString), ctx};
+
     for(auto& arg : ctx.args()) {
         if(const auto opt_int{from_string<int>(arg)}) {
-            std::cout << "integer: " << extract(opt_int) << std::endl;
+            out.cio_print("integer: ${value}")
+              .arg(EAGINE_ID(value), extract(opt_int));
         } else if(const auto opt_float{from_string<float>(arg)}) {
-            std::cout << "float: " << extract(opt_float) << std::endl;
+            out.cio_print("float: ${value}")
+              .arg(EAGINE_ID(value), extract(opt_float));
         } else if(const auto opt_double{from_string<double>(arg)}) {
-            std::cout << "double: " << extract(opt_double) << std::endl;
+            out.cio_print("double: ${value}")
+              .arg(EAGINE_ID(value), extract(opt_double));
         } else if(const auto opt_char{from_string<char>(arg)}) {
-            std::cout << "character: " << extract(opt_char) << std::endl;
+            out.cio_print("character: ${value}")
+              .arg(EAGINE_ID(value), extract(opt_char));
         } else if(const auto opt_bool{from_string<bool>(arg)}) {
-            std::cout << "boolean: " << std::boolalpha << extract(opt_bool)
-                      << std::endl;
+            out.cio_print("boolean: ${value}")
+              .arg(EAGINE_ID(value), extract(opt_bool));
         } else if(const auto opt_dur{from_string<duration>(arg)}) {
-            std::cout << "duration: " << extract(opt_dur).count() << "ms"
-                      << std::endl;
+            out.cio_print("duration: ${value}")
+              .arg(EAGINE_ID(value), extract(opt_dur));
         } else {
-            std::cout << "other: " << arg << std::endl;
+            out.cio_print("other: ${value}").arg(EAGINE_ID(value), arg.get());
         }
     }
 

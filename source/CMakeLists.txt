@@ -3,6 +3,9 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 
+if(${WITH_MODULES})
+	add_subdirectory(modules)
+endif()
 add_subdirectory(lib)
 add_subdirectory(app)
 

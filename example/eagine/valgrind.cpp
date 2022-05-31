@@ -5,19 +5,25 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/console/console.hpp>
 #include <eagine/interop/valgrind.hpp>
+#include <eagine/main.hpp>
 #include <iostream>
 
-auto main() -> int {
+namespace eagine {
+
+auto main(main_ctx& ctx) -> int {
     using namespace eagine;
 
     if(const auto on_vg{running_on_valgrind()}) {
-        std::cout << "running on valgrind" << std::endl;
+        ctx.cio().print(EAGINE_ID(valgrind), "running on valgrind");
     } else if(!on_vg) {
-        std::cout << "not running on valgrind" << std::endl;
+        ctx.cio().print(EAGINE_ID(valgrind), "not running on valgrind");
     } else {
-        std::cout << "maybe running on valgrind" << std::endl;
+        ctx.cio().print(EAGINE_ID(valgrind), "maybe running on valgrind");
     }
 
     return 0;
 }
+
+} // namespace eagine

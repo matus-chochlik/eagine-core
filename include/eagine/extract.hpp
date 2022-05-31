@@ -194,6 +194,13 @@ template <typename Outcome>
 auto extract(const ok<Outcome>& x) noexcept -> const auto& {
     return x.get();
 }
+
+/// @brief Overload of extract for instantiations of the ok template.
+/// @relates ok
+template <typename Outcome>
+auto extract(ok<Outcome>& x) noexcept -> auto& {
+    return x.get();
+}
 //------------------------------------------------------------------------------
 /// @brief Overload of begin for instantiations of the ok template.
 /// @relates ok

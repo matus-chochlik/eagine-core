@@ -6,16 +6,20 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/compare.hpp>
+#include <eagine/console/console.hpp>
 #include <eagine/edit_distance.hpp>
 #include <eagine/integer_range.hpp>
+#include <eagine/main.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <vector>
 
-auto main() -> int {
-    using namespace eagine;
+namespace eagine {
 
+auto main(main_ctx& ctx) -> int {
+
+    const identifier cioid{EAGINE_ID(words)};
     std::ifstream input("/usr/share/dict/words");
     std::vector<std::string> words;
     std::string word;
@@ -38,15 +42,22 @@ auto main() -> int {
         }
         if(min_idx < words.size()) {
             if(are_equal(min_dist, 0.F)) {
-                std::cout << "Found: " << words[min_idx] << std::endl;
+                ctx.cio()
+                  .print(cioid, "found: ${word}")
+                  .arg(EAGINE_ID(word), words[min_idx]);
             } else {
-                std::cout << "Did you mean " << words[min_idx] << '?'
-                          << std::endl;
+                ctx.cio()
+                  .print(cioid, "did you mean ${word}?")
+                  .arg(EAGINE_ID(word), words[min_idx]);
             }
         } else {
-            std::cout << "Did not find nothing similar" << std::endl;
+            ctx.cio()
+              .print(cioid, "did not find anything similar to ${word}")
+              .arg(EAGINE_ID(word), word);
         }
     }
 
     return 0;
 }
+
+} // namespace eagine
