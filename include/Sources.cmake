@@ -46,7 +46,6 @@ set(HEADERS
     eagine/console/entry_kind.hpp
     eagine/console/fwd.hpp
     eagine/console/iostream_backend.hpp
-    eagine/convertible.hpp
     eagine/count.hpp
     eagine/c_str.hpp
     eagine/data_baking.hpp
