@@ -9,14 +9,14 @@
 #ifndef EAGINE_PROTECTED_MEMBER_HPP
 #define EAGINE_PROTECTED_MEMBER_HPP
 
-#include "type_identity.hpp"
+#include <type_traits>
 #include <utility>
 
 namespace eagine {
 
 /// @brief Class holding a single tagged data member.
 /// @ingroup type_utils
-template <typename T, typename Selector = type_identity<T>>
+template <typename T, typename Selector = std::type_identity<T>>
 class protected_member {
 public:
     /// @brief Returns a reference to the stored member.

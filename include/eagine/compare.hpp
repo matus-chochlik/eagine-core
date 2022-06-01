@@ -8,7 +8,6 @@
 #ifndef EAGINE_COMPARE_HPP
 #define EAGINE_COMPARE_HPP
 
-#include "type_identity.hpp"
 #include <limits>
 #include <type_traits>
 #include <utility>
@@ -81,7 +80,7 @@ struct equal_cmp_obj : equal_cmp<L, R> {
 };
 //------------------------------------------------------------------------------
 template <typename T>
-struct cmp_decay_to : type_identity<T> {};
+struct cmp_decay_to : std::type_identity<T> {};
 template <typename T>
 using cmp_decay_to_t = typename cmp_decay_to<T>::type;
 //------------------------------------------------------------------------------
