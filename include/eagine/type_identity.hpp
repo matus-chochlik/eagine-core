@@ -15,18 +15,7 @@ namespace eagine {
 
 /// @brief Template type used mostly for function type-tag dispatching.
 /// @ingroup metaprogramming
-template <typename T>
-struct type_identity {
-    /// @brief Alias for the argument of this template.
-    using type = T;
-
-    /// @brief Call operator returning a copy of its argument unchanged.
-    template <typename X>
-    constexpr auto operator()(const X v) const -> X
-      requires(std::is_same_v<T, X> && !std::is_array_v<X>) {
-        return v;
-    }
-};
+using std::type_identity;
 
 /// @brief Implementation detail of the @c type_t template.
 /// @ingroup metaprogramming
