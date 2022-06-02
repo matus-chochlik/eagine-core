@@ -39,7 +39,8 @@ struct does_have_enumerator_mapping {
 private:
     template <
       typename X,
-      typename = decltype(enumerator_mapping(type_identity<X>{}, Selector{}))>
+      typename =
+        decltype(enumerator_mapping(std::type_identity<X>{}, Selector{}))>
     static auto _test(X*) -> std::true_type;
     static auto _test(...) -> std::false_type;
 
@@ -76,8 +77,10 @@ static constexpr const auto _reflected_enumerator_mapping =
 //------------------------------------------------------------------------------
 template <typename Enum, typename Selector>
 constexpr auto enumerator_mapping(
-  const type_identity<Enum>,
-  const Selector) noexcept -> const auto& requires(std::is_enum_v<Enum>) {
+  const std::type_identity<Enum>,
+  const Selector) noexcept -> const auto&
+    requires(std::is_enum_v<Enum>)
+{
     return _reflected_enumerator_mapping<Enum>;
 }
 #endif

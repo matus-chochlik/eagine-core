@@ -37,7 +37,7 @@ enum class log_event_severity {
 #if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
-  const type_identity<log_event_severity>,
+  const std::type_identity<log_event_severity>,
   const Selector) noexcept {
     return enumerator_map_type<log_event_severity, 8>{
       {{"backtrace", log_event_severity::backtrace},

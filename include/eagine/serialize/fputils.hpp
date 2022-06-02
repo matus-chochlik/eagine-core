@@ -10,7 +10,6 @@
 #define EAGINE_SERIALIZE_FPUTILS_HPP
 
 #include "../is_within_limits.hpp"
-#include "../type_identity.hpp"
 #include <cmath>
 #include <cstdint>
 #include <limits>
@@ -51,15 +50,18 @@ using decomposed_t =
   std::tuple<decompose_fraction_t<F>, decompose_exponent_t<F>>;
 //------------------------------------------------------------------------------
 template <typename F>
-constexpr auto max_fraction(type_identity<F> = {}) noexcept
-  -> decompose_fraction_t<F> requires(std::is_floating_point_v<F>) {
+constexpr auto max_fraction(std::type_identity<F> = {}) noexcept
+  -> decompose_fraction_t<F>
+    requires(std::is_floating_point_v<F>)
+{
     using T = decompose_fraction_t<F>;
     return 1 + std::numeric_limits<T>::max() / T(2);
 }
 //------------------------------------------------------------------------------
 template <typename F>
-constexpr inline auto decompose(const F f, const type_identity<F> = {}) noexcept
-  -> decomposed_t<F> {
+constexpr inline auto decompose(
+  const F f,
+  const std::type_identity<F> = {}) noexcept -> decomposed_t<F> {
     switch(std::fpclassify(f)) {
         case FP_ZERO:
             return {0, std::signbit(f) ? 1 : 0};
@@ -85,7 +87,7 @@ constexpr inline auto decompose(const F f, const type_identity<F> = {}) noexcept
 template <typename F>
 constexpr inline auto compose(
   const decomposed_t<F>& f,
-  const type_identity<F> = {}) noexcept -> F {
+  const std::type_identity<F> = {}) noexcept -> F {
     const auto fre = std::get<0>(f);
     if(!fre) [[unlikely]] {
         switch(std::get<1>(f)) {

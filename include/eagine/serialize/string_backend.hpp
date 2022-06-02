@@ -44,7 +44,7 @@ public:
         done = 0;
         result errors{};
         for(const auto& val : values) {
-            errors |= _write_one(val, type_identity<T>{});
+            errors |= _write_one(val, std::type_identity<T>{});
             errors |= do_sink(';');
             if(errors) {
                 break;
@@ -65,7 +65,7 @@ public:
 
     auto begin_struct(const span_size_t count) noexcept -> result final {
         result errors = do_sink('{');
-        errors |= _write_one(count, type_identity<span_size_t>{});
+        errors |= _write_one(count, std::type_identity<span_size_t>{});
         errors |= do_sink('|');
         return errors;
     }
@@ -86,7 +86,7 @@ public:
 
     auto begin_list(const span_size_t count) noexcept -> result final {
         result errors = do_sink('[');
-        errors |= _write_one(count, type_identity<span_size_t>{});
+        errors |= _write_one(count, std::type_identity<span_size_t>{});
         errors |= do_sink('|');
         return errors;
     }
@@ -108,7 +108,7 @@ public:
     }
 
 private:
-    auto _write_one(const bool value, const type_identity<bool>) noexcept
+    auto _write_one(const bool value, const std::type_identity<bool>) noexcept
       -> result {
         if(value) {
             return do_sink("true");
@@ -116,7 +116,7 @@ private:
         return do_sink("false");
     }
 
-    auto _write_one(const char value, const type_identity<char>) noexcept
+    auto _write_one(const char value, const std::type_identity<char>) noexcept
       -> result {
         result errors = do_sink('\'');
         errors |= do_sink(value);
@@ -134,88 +134,90 @@ private:
         return do_sink(string_view(temp.data()));
     }
 
-    auto _write_one(const byte value, const type_identity<byte>) noexcept
+    auto _write_one(const byte value, const std::type_identity<byte>) noexcept
       -> result {
         return _sprintf_one(value, "%02hhx");
     }
 
     auto _write_one(
       const signed char value,
-      const type_identity<signed char>) noexcept -> result {
+      const std::type_identity<signed char>) noexcept -> result {
         return _sprintf_one(value, "%hhd");
     }
 
-    auto _write_one(const short value, const type_identity<short>) noexcept
+    auto _write_one(const short value, const std::type_identity<short>) noexcept
       -> result {
         return _sprintf_one(value, "%hd");
     }
 
     auto _write_one(
       const unsigned short value,
-      const type_identity<unsigned short>) noexcept -> result {
+      const std::type_identity<unsigned short>) noexcept -> result {
         return _sprintf_one(value, "%hu");
     }
 
-    auto _write_one(const int value, const type_identity<int>) noexcept
+    auto _write_one(const int value, const std::type_identity<int>) noexcept
       -> result {
         return _sprintf_one(value, "%d");
     }
 
-    auto _write_one(const unsigned value, const type_identity<unsigned>) noexcept
-      -> result {
+    auto _write_one(
+      const unsigned value,
+      const std::type_identity<unsigned>) noexcept -> result {
         return _sprintf_one(value, "%u");
     }
 
-    auto _write_one(const long value, const type_identity<long>) noexcept
+    auto _write_one(const long value, const std::type_identity<long>) noexcept
       -> result {
         return _sprintf_one(value, "%ld");
     }
 
     auto _write_one(
       const unsigned long value,
-      const type_identity<unsigned long>) noexcept -> result {
+      const std::type_identity<unsigned long>) noexcept -> result {
         return _sprintf_one(value, "%lu");
     }
 
     auto _write_one(
       const long long value,
-      const type_identity<long long>) noexcept -> result {
+      const std::type_identity<long long>) noexcept -> result {
         return _sprintf_one(value, "%lld");
     }
 
     auto _write_one(
       const unsigned long long value,
-      const type_identity<unsigned long long>) noexcept -> result {
+      const std::type_identity<unsigned long long>) noexcept -> result {
         return _sprintf_one(value, "%llu");
     }
 
-    auto _write_one(const float value, const type_identity<float>) noexcept
+    auto _write_one(const float value, const std::type_identity<float>) noexcept
       -> result {
         return _sprintf_one(value, "%f");
     }
 
-    auto _write_one(const double value, const type_identity<double>) noexcept
-      -> result {
+    auto _write_one(
+      const double value,
+      const std::type_identity<double>) noexcept -> result {
         return _sprintf_one(value, "%lf");
     }
 
     auto _write_one(
       const identifier id,
-      const type_identity<identifier>) noexcept -> result {
+      const std::type_identity<identifier>) noexcept -> result {
         return do_sink(id.name().view());
     }
 
     auto _write_one(
       const decl_name name,
-      const type_identity<decl_name>) noexcept -> result {
+      const std::type_identity<decl_name>) noexcept -> result {
         return do_sink(name);
     }
 
     auto _write_one(
       const string_view str,
-      const type_identity<string_view>) noexcept -> result {
+      const std::type_identity<string_view>) noexcept -> result {
         result errors = do_sink('"');
-        errors |= _write_one(str.size(), type_identity<span_size_t>{});
+        errors |= _write_one(str.size(), std::type_identity<span_size_t>{});
         errors |= do_sink('|');
         errors |= do_sink(str);
         errors |= do_sink('"');

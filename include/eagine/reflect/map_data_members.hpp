@@ -31,7 +31,8 @@ struct does_have_data_member_mapping {
 private:
     template <
       typename X,
-      typename = decltype(data_member_mapping(type_identity<X>{}, Selector{}))>
+      typename =
+        decltype(data_member_mapping(std::type_identity<X>{}, Selector{}))>
     static auto _test(X*) -> std::true_type;
     static auto _test(...) -> std::false_type;
 
@@ -73,9 +74,10 @@ static constexpr const auto _reflected_data_member_mapping =
 //------------------------------------------------------------------------------
 template <typename Struct, typename Selector>
 constexpr auto data_member_mapping(
-  const type_identity<Struct>,
-  const Selector) noexcept -> const
-  auto& requires(reflect_data_members_of<Struct>::value) {
+  const std::type_identity<Struct>,
+  const Selector) noexcept -> const auto&
+    requires(reflect_data_members_of<Struct>::value)
+{
     return _reflected_data_member_mapping<Struct>;
 }
 #endif

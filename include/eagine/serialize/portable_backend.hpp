@@ -40,7 +40,7 @@ public:
         done = 0;
         result errors{};
         for(const auto& val : values) {
-            errors |= _write_one(val, type_identity<T>{});
+            errors |= _write_one(val, std::type_identity<T>{});
             errors |= do_sink(';');
             if(errors) [[unlikely]] {
                 break;
@@ -61,7 +61,7 @@ public:
 
     auto begin_struct(const span_size_t count) noexcept -> result final {
         result errors = do_sink('{');
-        errors |= _write_one(count, type_identity<span_size_t>{});
+        errors |= _write_one(count, std::type_identity<span_size_t>{});
         errors |= do_sink('|');
         return errors;
     }
@@ -82,7 +82,7 @@ public:
 
     auto begin_list(const span_size_t count) noexcept -> result final {
         result errors = do_sink('[');
-        errors |= _write_one(count, type_identity<span_size_t>{});
+        errors |= _write_one(count, std::type_identity<span_size_t>{});
         errors |= do_sink('|');
         return errors;
     }
@@ -104,7 +104,7 @@ public:
     }
 
 private:
-    auto _write_one(const bool value, const type_identity<bool>) noexcept
+    auto _write_one(const bool value, const std::type_identity<bool>) noexcept
       -> result {
         if(value) {
             return do_sink("T");
@@ -113,7 +113,7 @@ private:
     }
 
     template <std::unsigned_integral I>
-    auto _write_one(I value, const type_identity<I>) noexcept -> result {
+    auto _write_one(I value, const std::type_identity<I>) noexcept -> result {
         result errors{};
         const auto encode = [&]() {
             // clang-format off
@@ -132,44 +132,45 @@ private:
     }
 
     template <std::signed_integral I>
-    auto _write_one(I value, const type_identity<I>) noexcept -> result {
+    auto _write_one(I value, const std::type_identity<I>) noexcept -> result {
         result errors = do_sink(value < 0 ? '-' : '+');
         using U = std::make_unsigned_t<I>;
         errors |= _write_one(
-          limit_cast<U>(value < 0 ? -value : value), type_identity<U>{});
+          limit_cast<U>(value < 0 ? -value : value), std::type_identity<U>{});
         return errors;
     }
 
     template <typename F>
-    auto _write_one(const F value, const type_identity<F> tid) noexcept
-      -> result requires(std::is_floating_point_v<F>) {
-        const auto [f, e] = fputils::decompose(value, tid);
-        result errors =
-          _write_one(f, type_identity<fputils::decompose_fraction_t<F>>{});
-        errors |= do_sink('`');
-        errors |=
-          _write_one(e, type_identity<fputils::decompose_exponent_t<F>>{});
+    auto _write_one(const F value, const std::type_identity<F> tid) noexcept
+      -> result
+      requires(std::is_floating_point_v<F>) {
+          const auto [f, e] = fputils::decompose(value, tid);
+          result errors = _write_one(
+            f, std::type_identity<fputils::decompose_fraction_t<F>>{});
+          errors |= do_sink('`');
+          errors |= _write_one(
+            e, std::type_identity<fputils::decompose_exponent_t<F>>{});
 
-        return errors;
-    }
+          return errors;
+      }
 
     auto _write_one(
       const identifier id,
-      const type_identity<identifier>) noexcept -> result {
+      const std::type_identity<identifier>) noexcept -> result {
         return do_sink(id.name().view());
     }
 
     auto _write_one(
       const decl_name name,
-      const type_identity<decl_name>) noexcept -> result {
+      const std::type_identity<decl_name>) noexcept -> result {
         return do_sink(name);
     }
 
     auto _write_one(
       const string_view str,
-      const type_identity<string_view>) noexcept -> result {
+      const std::type_identity<string_view>) noexcept -> result {
         result errors = do_sink('"');
-        errors |= _write_one(str.size(), type_identity<span_size_t>{});
+        errors |= _write_one(str.size(), std::type_identity<span_size_t>{});
         errors |= do_sink('|');
         errors |= do_sink(str);
         errors |= do_sink('"');
@@ -345,7 +346,7 @@ private:
             fputils::decompose_exponent_t<F> e{};
             errors |= _read_one(e, delimiter);
             if(!errors) [[likely]] {
-                value = fputils::compose({f, e}, type_identity<F>{});
+                value = fputils::compose({f, e}, std::type_identity<F>{});
             }
         }
         return errors;
