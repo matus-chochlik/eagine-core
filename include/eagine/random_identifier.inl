@@ -6,8 +6,8 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/int_constant.hpp>
-#include <eagine/type_identity.hpp>
 #include <random>
+#include <type_traits>
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ template <
   typename UIntT,
   typename Engine>
 auto make_random_basic_identifier(
-  type_identity<basic_identifier<M, B, CharSet, UIntT>>,
+  std::type_identity<basic_identifier<M, B, CharSet, UIntT>>,
   Engine& engine) {
     char temp[M + 1];
     fill_random_charset_string(
@@ -39,7 +39,8 @@ auto make_random_basic_identifier(
 //------------------------------------------------------------------------------
 template <typename Engine>
 auto get_random_identifier(Engine& engine) -> identifier {
-    return make_random_basic_identifier(type_identity<identifier>(), engine);
+    return make_random_basic_identifier(
+      std::type_identity<identifier>(), engine);
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC

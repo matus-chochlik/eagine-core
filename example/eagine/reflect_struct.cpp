@@ -23,7 +23,7 @@ struct example_struct {
 
 template <typename Selector>
 constexpr auto data_member_mapping(
-  const type_identity<example_struct>,
+  const std::type_identity<example_struct>,
   const Selector) noexcept {
     using S = example_struct;
     return make_data_member_mapping<S, bool, char, float, int, std::string, unsigned>(

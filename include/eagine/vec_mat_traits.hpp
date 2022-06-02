@@ -11,7 +11,6 @@
 
 #include "nothing.hpp"
 #include "span.hpp"
-#include "type_identity.hpp"
 #include <type_traits>
 
 namespace eagine {
@@ -32,7 +31,7 @@ template <typename T>
 constexpr const bool is_known_matrix_type_v = is_known_matrix_type<T>::value;
 
 template <typename T, span_size_t C, span_size_t R>
-struct is_known_matrix_type<T[C][R]> : std::is_scalar<T> {};
+struct is_known_matrix_type<T[C][R]> : std::is_scalar<T>{};
 
 template <typename T>
 struct canonical_compound_type : nothing_t {};
@@ -44,20 +43,22 @@ template <typename C, typename CT>
 struct has_canonical_type : std::is_same<canonical_compound_type_t<C>, CT> {};
 
 template <typename T, span_size_t N>
-struct canonical_compound_type<T[N]> : type_identity<std::remove_cv_t<T[N]>> {};
+struct canonical_compound_type<T[N]>
+  : std::type_identity<std::remove_cv_t<T[N]>> {};
 
 template <typename T, span_size_t C, span_size_t R>
 struct canonical_compound_type<T[C][R]>
-  : type_identity<std::remove_cv_t<T[C][R]>> {};
+  : std::type_identity<std::remove_cv_t<T[C][R]>>{};
 
 template <typename T>
-struct compound_element_type : type_identity<std::remove_cv_t<T>> {};
+struct compound_element_type : std::type_identity<std::remove_cv_t<T>> {};
 
 template <typename T, span_size_t N>
-struct compound_element_type<T[N]> : type_identity<std::remove_cv_t<T>> {};
+struct compound_element_type<T[N]> : std::type_identity<std::remove_cv_t<T>> {};
 
 template <typename T, span_size_t C, span_size_t R>
-struct compound_element_type<T[C][R]> : type_identity<std::remove_cv_t<T>> {};
+struct compound_element_type<T[C][R]>
+  : std::type_identity<std::remove_cv_t<T>>{};
 
 template <typename T>
 struct canonical_element_type
@@ -87,11 +88,11 @@ static inline auto element_view(T (&v)[N]) noexcept {
 }
 
 template <typename T, span_size_t C, span_size_t R>
-struct compound_view_maker<T[C][R]> {
-    auto operator()(T (&v)[C][R]) const noexcept -> span<T> {
-        return {v[0], C * R};
-    }
-};
+struct compound_view_maker<T[C][R]>{auto operator()(T (&v)[C][R]) const noexcept
+                                    -> span<T>{return {v[0], C* R};
+} // namespace eagine
+}
+;
 
 template <typename T, span_size_t C, span_size_t R>
 static inline auto element_view(T (&m)[C][R]) noexcept {

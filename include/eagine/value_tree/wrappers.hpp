@@ -13,9 +13,9 @@
 #include "../callable_ref.hpp"
 #include "../memory/span_algo.hpp"
 #include "../reflect/enumerators.hpp"
-#include "../type_identity.hpp"
 #include "../valid_if/decl.hpp"
 #include "interface.hpp"
+#include <type_traits>
 #include <utility>
 
 namespace eagine::valtree {
@@ -107,13 +107,13 @@ public:
     }
 
     template <typename Implementation>
-    auto as() noexcept -> Implementation* requires(
-      std::is_base_of_v<attribute_interface, Implementation>) {
-        return dynamic_cast<Implementation*>(_pimpl);
-    }
+    auto as() noexcept
+      -> Implementation* requires(
+        std::is_base_of_v<attribute_interface, Implementation>) {
+                             return dynamic_cast<Implementation*>(_pimpl);
+                         }
 
-private:
-    friend class compound;
+    private : friend class compound;
 
     attribute(
       std::shared_ptr<compound_interface> owner,
@@ -159,7 +159,8 @@ public:
 
     template <identifier_t V>
     auto apply(const selector<V> sel) const {
-        if(const auto converted{from_string(_temp, type_identity<T>(), sel)}) {
+        if(const auto converted{
+             from_string(_temp, std::type_identity<T>(), sel)}) {
             _dest = extract(converted);
             return true;
         }
@@ -237,11 +238,12 @@ public:
     template <typename Compound, typename... Args>
     static auto make(Args&&... args) -> compound
       requires(std::is_base_of_v<compound_interface, Compound>) {
-        return {Compound::make_shared(std::forward<Args>(args)...)};
-    }
+          return {Compound::make_shared(std::forward<Args>(args)...)};
+      }
 
     /// @brief Indicates if this compound actually refers to some tree.
-    explicit operator bool() const noexcept {
+    explicit
+    operator bool() const noexcept {
         return bool(_pimpl);
     }
 
@@ -623,7 +625,7 @@ public:
     auto get(
       const attribute& attrib,
       const span_size_t offset,
-      const type_identity<T>,
+      const std::type_identity<T>,
       const selector<V> sel) const -> optionally_valid<T> {
         T temp{};
         if(select_value(attrib, offset, temp, sel)) {
@@ -637,7 +639,7 @@ public:
     auto get(
       const attribute& attrib,
       const span_size_t offset,
-      const type_identity<T> tid = {}) const -> optionally_valid<T> {
+      const std::type_identity<T> tid = {}) const -> optionally_valid<T> {
         return get<T>(attrib, offset, tid, default_selector);
     }
 
@@ -646,7 +648,7 @@ public:
     auto get(
       const basic_string_path& path,
       const span_size_t offset,
-      const type_identity<T>,
+      const std::type_identity<T>,
       const selector<V> sel) const -> optionally_valid<T> {
         T temp{};
         if(select_value(path, offset, temp, sel)) {
@@ -660,7 +662,7 @@ public:
     auto get(
       const basic_string_path& path,
       const span_size_t offset,
-      const type_identity<T> tid = {}) const -> optionally_valid<T> {
+      const std::type_identity<T> tid = {}) const -> optionally_valid<T> {
         return get<T>(path, offset, tid, default_selector);
     }
 
@@ -669,7 +671,7 @@ public:
     auto get(
       const string_view name,
       const span_size_t offset,
-      const type_identity<T>,
+      const std::type_identity<T>,
       const selector<V> sel) const -> optionally_valid<T> {
         T temp{};
         if(select_value(name, offset, temp, sel)) {
@@ -683,7 +685,7 @@ public:
     auto get(
       const string_view name,
       const span_size_t offset,
-      const type_identity<T> tid = {}) const -> optionally_valid<T> {
+      const std::type_identity<T> tid = {}) const -> optionally_valid<T> {
         return get<T>(name, offset, tid, default_selector);
     }
 
@@ -691,14 +693,14 @@ public:
     template <typename T, identifier_t V>
     auto get(
       const attribute& attrib,
-      const type_identity<T> tid,
+      const std::type_identity<T> tid,
       const selector<V> sel) const -> optionally_valid<T> {
         return get<T>(attrib, 0, tid, sel);
     }
 
     /// @brief Returns the value of type T at an attribute.
     template <typename T>
-    auto get(const attribute& attrib, const type_identity<T> tid = {}) const
+    auto get(const attribute& attrib, const std::type_identity<T> tid = {}) const
       -> optionally_valid<T> {
         return get<T>(attrib, tid, default_selector);
     }
@@ -707,15 +709,16 @@ public:
     template <typename T, identifier_t V>
     auto get(
       const basic_string_path& path,
-      const type_identity<T> tid,
+      const std::type_identity<T> tid,
       const selector<V> sel) const -> optionally_valid<T> {
         return get<T>(path, 0, tid, sel);
     }
 
     /// @brief Returns the value of type T at path.
     template <typename T>
-    auto get(const basic_string_path& path, const type_identity<T> tid = {})
-      const -> optionally_valid<T> {
+    auto get(
+      const basic_string_path& path,
+      const std::type_identity<T> tid = {}) const -> optionally_valid<T> {
         return get<T>(path, tid, default_selector);
     }
 
@@ -723,14 +726,14 @@ public:
     template <typename T, identifier_t V>
     auto get(
       const string_view name,
-      const type_identity<T> tid,
+      const std::type_identity<T> tid,
       const selector<V> sel) const -> optionally_valid<T> {
         return get<T>(name, 0, tid, sel);
     }
 
     /// @brief Returns the value of type T at name.
     template <typename T>
-    auto get(const string_view name, const type_identity<T> tid = {}) const
+    auto get(const string_view name, const std::type_identity<T> tid = {}) const
       -> optionally_valid<T> {
         return get<T>(name, tid, default_selector);
     }
@@ -753,13 +756,14 @@ public:
     void traverse(const stack_visit_handler visitor) const;
 
     template <typename Implementation>
-    auto as() noexcept -> Implementation* requires(
-      std::is_base_of_v<compound_interface, Implementation>) {
-        return dynamic_cast<Implementation*>(_pimpl.get());
-    }
+    auto as() noexcept
+      -> Implementation* requires(
+        std::is_base_of_v<compound_interface, Implementation>) {
+                             return dynamic_cast<Implementation*>(_pimpl.get());
+                         }
 
-private:
-    compound(std::shared_ptr<compound_interface> pimpl) noexcept
+    private
+      : compound(std::shared_ptr<compound_interface> pimpl) noexcept
       : _pimpl{std::move(pimpl)} {}
 
     std::shared_ptr<compound_interface> _pimpl{};
@@ -898,13 +902,14 @@ public:
 
     /// @brief Returns a value of type T, from this attribute, at offset.
     template <typename T>
-    auto get(const span_size_t offset, const type_identity<T> tid = {}) const {
+    auto get(const span_size_t offset, const std::type_identity<T> tid = {})
+      const {
         return _c.get(_a, offset, tid);
     }
 
     /// @brief Returns a value of type T, from this attribute.
     template <typename T>
-    auto get(const type_identity<T> tid = {}) const {
+    auto get(const std::type_identity<T> tid = {}) const {
         return _c.get(_a, tid);
     }
 

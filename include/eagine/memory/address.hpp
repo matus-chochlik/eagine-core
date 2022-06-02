@@ -59,15 +59,16 @@ public:
       : _addr{addr} {}
 
     template <typename Int>
-    constexpr basic_address(basic_address that, Int offs) noexcept requires(
-      std::is_integral_v<Int>&& std::is_convertible_v<Int, std::ptrdiff_t>)
-      // NOLINTNEXTLINE(performance-no-int-to-ptr)
-      : _addr{reinterpret_cast<pointer>(that.value() + offs)} {}
+    constexpr basic_address(basic_address that, Int offs) noexcept
+        requires(
+          std::is_integral_v<Int> && std::is_convertible_v<Int, std::ptrdiff_t>)
+    // NOLINTNEXTLINE(performance-no-int-to-ptr)
+    : _addr{reinterpret_cast<pointer>(that.value() + offs)} {}
 
     template <bool IsConst2>
     constexpr basic_address(basic_address<IsConst2> a) noexcept
-      requires(IsConst && !IsConst2)
-      : _addr{pointer(a)} {}
+        requires(IsConst && !IsConst2)
+    : _addr{pointer(a)} {}
 
     /// @brief Indicates if the stored address is null.
     constexpr auto is_null() const noexcept {
@@ -106,7 +107,8 @@ public:
     /// @pre is_aligned_as<T>()
     template <typename T>
     constexpr explicit operator T*() const noexcept
-      requires(!std::is_void_v<T> && (std::is_const_v<T> || !IsConst)) {
+        requires(!std::is_void_v<T> && (std::is_const_v<T> || !IsConst))
+    {
         return EAGINE_CONSTEXPR_ASSERT(
           is_aligned_as<T>(), static_cast<T*>(_addr));
     }
@@ -137,7 +139,7 @@ public:
     /// @see is_aligned_to
     template <typename T>
     constexpr auto is_aligned_as(
-      const type_identity<T> tid = {}) const noexcept {
+      const std::type_identity<T> tid = {}) const noexcept {
         return memory::is_aligned_as<T>(value(), tid);
     }
 
@@ -260,7 +262,7 @@ static constexpr auto is_aligned_to(
 template <typename T>
 static constexpr auto is_aligned_as(
   const_address addr,
-  const type_identity<T> tid = {}) noexcept {
+  const std::type_identity<T> tid = {}) noexcept {
     return addr.is_aligned_as(tid);
 }
 //------------------------------------------------------------------------------
@@ -341,7 +343,7 @@ static inline auto align_down(const byte* ptr, const span_size_t align)
 template <typename T>
 static constexpr auto align_up_to(
   const basic_address<std::is_const_v<T>> addr,
-  const type_identity<T> = {},
+  const std::type_identity<T> = {},
   span_size_t align = span_align_of<T>(),
   const span_size_t max = span_size_of<T>()) noexcept {
 
@@ -358,7 +360,7 @@ static constexpr auto align_up_to(
 template <typename T>
 static constexpr auto align_down_to(
   const basic_address<std::is_const_v<T>> addr,
-  const type_identity<T> = {},
+  const std::type_identity<T> = {},
   span_size_t align = span_align_of<T>(),
   const span_size_t max = span_size_of<T>()) noexcept {
     if(align < span_align_of<T>()) {

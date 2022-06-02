@@ -61,12 +61,12 @@ struct matrix {
     template <typename P, int M, int N, bool W>
     static auto from(const matrix<P, M, N, RM, W>& m) noexcept -> matrix
       requires((C <= M) && (R <= N)) {
-        return _from_hlp(m, _make_iseq < RM ? R : C > ());
-    }
+          return _from_hlp(m, _make_iseq < RM ? R : C > ());
+      }
 
     /// @brief Subscript operator.
-    auto operator[](const int i) const noexcept
-      -> const vector<T, RM ? C : R, V> {
+    auto
+    operator[](const int i) const noexcept -> const vector<T, RM ? C : R, V> {
         return {_v[i]};
     }
 };
@@ -113,17 +113,13 @@ static constexpr auto dimension(const matrix<T, N, N, RM, V>&) noexcept {
 /// @ingroup math
 template <int CI, int RI, typename T, int C, int R, bool V>
 static constexpr auto get_cm(const matrix<T, C, R, false, V>& m) noexcept -> T
-  requires(CI < C && RI < R) {
-    return m._v[CI][RI];
-}
+  requires(CI < C && RI < R) { return m._v[CI][RI]; }
 //------------------------------------------------------------------------------
 /// @brief Returns the matrix element at [CI, RI]. Row-major implementation.
 /// @ingroup math
 template <int CI, int RI, typename T, int C, int R, bool V>
 static constexpr auto get_cm(const matrix<T, C, R, true, V>& m) noexcept -> T
-  requires(CI < C && RI < R) {
-    return m._v[RI][CI];
-}
+  requires(CI < C && RI < R) { return m._v[RI][CI]; }
 //------------------------------------------------------------------------------
 /// @brief Returns the matrix element at [ci, ri]. Column-major implementation.
 /// @ingroup math
@@ -151,17 +147,13 @@ static constexpr auto get_cm(
 /// @ingroup math
 template <int RI, int CI, typename T, int C, int R, bool V>
 static constexpr auto get_rm(const matrix<T, C, R, false, V>& m) noexcept -> T
-  requires(CI < C && RI < R) {
-    return m._v[CI][RI];
-}
+  requires(CI < C && RI < R) { return m._v[CI][RI]; }
 //------------------------------------------------------------------------------
 /// @brief Returns the matrix element at [RI, CI]. Row-major implementation.
 /// @ingroup math
 template <int RI, int CI, typename T, int C, int R, bool V>
 static constexpr auto get_rm(const matrix<T, C, R, true, V>& m) noexcept -> T
-  requires(CI < C && RI < R) {
-    return m._v[RI][CI];
-}
+  requires(CI < C && RI < R) { return m._v[RI][CI]; }
 //------------------------------------------------------------------------------
 /// @brief Returns the matrix element at [ri, ci]. Column-major implementation.
 /// @ingroup math
@@ -189,7 +181,8 @@ static constexpr auto get_rm(
 /// @ingroup math
 template <int CI, int RI, typename T, int C, int R, bool V>
 static constexpr void set_cm(matrix<T, C, R, false, V>& m, const T v) noexcept
-  requires(CI < C && RI < R) {
+    requires(CI < C && RI < R)
+{
     m._v[CI][RI] = v;
 }
 //------------------------------------------------------------------------------
@@ -197,7 +190,8 @@ static constexpr void set_cm(matrix<T, C, R, false, V>& m, const T v) noexcept
 /// @ingroup math
 template <int CI, int RI, typename T, int C, int R, bool V>
 static constexpr void set_cm(matrix<T, C, R, true, V>& m, const T v) noexcept
-  requires(CI < C && RI < R) {
+    requires(CI < C && RI < R)
+{
     m._v[RI][CI] = v;
 }
 //------------------------------------------------------------------------------
@@ -229,7 +223,8 @@ static constexpr void set_cm(
 /// @ingroup math
 template <int RI, int CI, typename T, int C, int R, bool V>
 static constexpr void set_rm(matrix<T, C, R, false, V>& m, const T v) noexcept
-  requires(CI < C && RI < R) {
+    requires(CI < C && RI < R)
+{
     m._v[CI][RI] = v;
 }
 //------------------------------------------------------------------------------
@@ -237,7 +232,8 @@ static constexpr void set_rm(matrix<T, C, R, false, V>& m, const T v) noexcept
 /// @ingroup math
 template <int RI, int CI, typename T, int C, int R, bool V>
 static constexpr void set_rm(matrix<T, C, R, true, V>& m, const T v) noexcept
-  requires(CI < C && RI < R) {
+    requires(CI < C && RI < R)
+{
     m._v[RI][CI] = v;
 }
 //------------------------------------------------------------------------------
@@ -372,7 +368,9 @@ static constexpr auto make_column_major(
 /// @ingroup math
 template <int I, typename T, int C, int R, bool RM, bool V>
 static constexpr auto major_vector(const matrix<T, C, R, RM, V>& m) noexcept
-  -> vector<T, (RM ? C : R), V> requires(I < (RM ? R : C)) {
+  -> vector<T, (RM ? C : R), V>
+    requires(I < (RM ? R : C))
+{
     return {m._v[I]};
 }
 //------------------------------------------------------------------------------
@@ -380,14 +378,18 @@ static constexpr auto major_vector(const matrix<T, C, R, RM, V>& m) noexcept
 /// @ingroup math
 template <int I, typename T, int C, int R, bool RM, bool V>
 static constexpr auto minor_vector(const matrix<T, C, R, RM, V>& m) noexcept
-  -> vector<T, (RM ? R : C), V> requires(I < (RM ? C : R)) {
+  -> vector<T, (RM ? R : C), V>
+    requires(I < (RM ? C : R))
+{
     return major_vector<I>(reorder(m));
 }
 //------------------------------------------------------------------------------
 // minor_vector mat4x4
 template <int I, typename T, bool RM, bool V>
 static constexpr auto minor_vector(const matrix<T, 4, 4, RM, V>& m) noexcept
-  -> vector<T, 4, V> requires(I < 4) {
+  -> vector<T, 4, V>
+    requires(I < 4)
+{
     return {vect::shuffle2<T, 4, V>::template apply<0, 1, 4, 5>(
       vect::shuffle2<T, 4, V>::template apply<0 + I, 4 + I, -1, -1>(
         m._v[0], m._v[1]),
@@ -605,10 +607,11 @@ static constexpr auto multiply(
 /// save row/column reordering operations.
 template <typename MC1, typename MC2>
 static constexpr auto operator*(const MC1& mc1, const MC2& mc2) noexcept
-  requires(
-    is_matrix_constructor<MC1>::value&& is_matrix_constructor<MC2>::value&&
+    requires(
+      is_matrix_constructor<MC1>::value && is_matrix_constructor<MC2>::value &&
       are_multiplicable<constructed_matrix_t<MC1>, constructed_matrix_t<MC2>>::
-        value) {
+        value)
+{
     return multiply(mc1, mc2);
 }
 //------------------------------------------------------------------------------
@@ -620,7 +623,7 @@ struct is_known_matrix_type<math::matrix<T, C, R, RM, V>>
 //------------------------------------------------------------------------------
 template <typename T, int C, int R, bool RM, bool V>
 struct canonical_compound_type<math::matrix<T, C, R, RM, V>>
-  : type_identity<std::remove_cv_t<T[C][R]>> {};
+  : std::type_identity<std::remove_cv_t<T[C][R]>>{};
 //------------------------------------------------------------------------------
 template <typename T, int C, int R, bool RM, bool V>
 struct compound_view_maker<math::matrix<T, C, R, RM, V>> {

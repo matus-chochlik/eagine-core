@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -50,7 +51,9 @@ enum class value_type {
 //------------------------------------------------------------------------------
 #if !EAGINE_CXX_REFLECTION
 template <typename Selector>
-constexpr auto enumerator_mapping(type_identity<value_type>, Selector) noexcept {
+constexpr auto enumerator_mapping(
+  std::type_identity<value_type>,
+  Selector) noexcept {
     return enumerator_map_type<value_type, 10>{
       {{"unknown", value_type::unknown},
        {"bool_type", value_type::bool_type},

@@ -243,7 +243,6 @@ set(HEADERS
     eagine/tags.hpp
     eagine/timeout.hpp
     eagine/tribool.hpp
-    eagine/type_identity.hpp
     eagine/type_name.hpp
     eagine/types.hpp
     eagine/type_traits.hpp

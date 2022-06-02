@@ -15,6 +15,7 @@
 #include "../iterator.hpp"
 #include "../mp_list.hpp"
 #include "../nothing.hpp"
+#include "../type_traits.hpp"
 #include "../wrapping_container.hpp"
 #include <tuple>
 #include <type_traits>

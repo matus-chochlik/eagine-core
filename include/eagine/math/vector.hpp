@@ -87,14 +87,16 @@ struct vector {
 
     template <typename P>
     static constexpr auto make(P&& p) noexcept
-      requires((N == 1) && (std::is_convertible_v<P, T>)) {
+        requires((N == 1) && (std::is_convertible_v<P, T>))
+    {
         return vector{{T(std::forward<P>(p))}};
     }
 
     /// @brief Creates vector instance with the specified elements.
     template <typename... P>
     static constexpr auto make(P&&... p) noexcept
-      requires((N > 1) && (sizeof...(P) == N)) {
+        requires((N > 1) && (sizeof...(P) == N))
+    {
         return vector{{T(std::forward<P>(p))...}};
     }
 
@@ -104,7 +106,8 @@ struct vector {
     static constexpr auto from(
       const vector<P, M, W>& v,
       const T d = T(0)) noexcept
-      requires(!std::is_same_v<T, P> || (N != M) || (V != W)) {
+        requires(!std::is_same_v<T, P> || (N != M) || (V != W))
+    {
         return vector{vect::cast<P, M, W, T, N, V>::apply(v._v, d)};
     }
 
@@ -135,36 +138,37 @@ struct vector {
     /// @pre N >= 1
     template <int M = N>
     constexpr auto x() const noexcept -> T requires(M > 0) {
-        static_assert(M == N);
-        return _v[0];
-    }
+                                               static_assert(M == N);
+                                               return _v[0];
+                                           }
 
     /// @brief Returns the y-coordinate value.
     /// @pre N >= 2
     template <int M = N>
     constexpr auto y() const noexcept -> T requires(M > 1) {
-        static_assert(M == N);
-        return _v[1];
-    }
+                                               static_assert(M == N);
+                                               return _v[1];
+                                           }
 
     /// @brief Returns the z-coordinate value.
     /// @pre N >= 3
     template <int M = N>
     constexpr auto z() const noexcept -> T requires(M > 2) {
-        static_assert(M == N);
-        return _v[2];
-    }
+                                               static_assert(M == N);
+                                               return _v[2];
+                                           }
 
     /// @brief Returns the w-coordinate value.
     /// @pre N >= 4
     template <int M = N>
     constexpr auto w() const noexcept -> T requires(M > 3) {
-        static_assert(M == N);
-        return _v[3];
-    }
+                                               static_assert(M == N);
+                                               return _v[3];
+                                           }
 
     /// @brief Unary plus operator.
-    friend constexpr auto operator+(vector_param a) noexcept {
+    friend constexpr auto
+    operator+(vector_param a) noexcept {
         return a;
     }
 
@@ -400,7 +404,7 @@ struct is_known_vector_type<math::vector<T, N, V>> : std::is_scalar<T> {};
 
 template <typename T, int N, bool V>
 struct canonical_compound_type<math::vector<T, N, V>>
-  : type_identity<std::remove_cv_t<T[N]>> {};
+  : std::type_identity<std::remove_cv_t<T[N]>> {};
 
 template <typename T, int N, bool V>
 struct compound_view_maker<math::vector<T, N, V>> {

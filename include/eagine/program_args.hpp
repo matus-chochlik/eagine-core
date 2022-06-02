@@ -18,7 +18,6 @@
 #include "selector.hpp"
 #include "span.hpp"
 #include "string_span.hpp"
-#include "type_identity.hpp"
 #include "type_name.hpp"
 #include "valid_if/in_list.hpp"
 #include <memory>

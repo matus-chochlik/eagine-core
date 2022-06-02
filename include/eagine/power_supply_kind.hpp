@@ -29,7 +29,7 @@ enum class power_supply_kind : std::uint8_t {
 #if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
-  const type_identity<power_supply_kind>,
+  const std::type_identity<power_supply_kind>,
   const Selector) noexcept {
     return enumerator_map_type<power_supply_kind, 3>{
       {{"unknown", power_supply_kind::unknown},

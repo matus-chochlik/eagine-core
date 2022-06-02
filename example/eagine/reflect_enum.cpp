@@ -43,7 +43,7 @@ enum class example_enum {
 #if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
-  const type_identity<example_enum>,
+  const std::type_identity<example_enum>,
   const Selector) noexcept {
     return enumerator_map_type<example_enum, 26>{
       {{"value_a", example_enum::value_a}, {"value_b", example_enum::value_b},
@@ -65,7 +65,7 @@ constexpr auto enumerator_mapping(
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;
 
-    const type_identity<example_enum> tid{};
+    const std::type_identity<example_enum> tid{};
     ctx.cio()
       .print(EAGINE_ID(enums), "enumerator count: ${count}")
       .arg(EAGINE_ID(count), enumerator_count(tid));
@@ -77,7 +77,7 @@ auto main(main_ctx& ctx) -> int {
             .arg(EAGINE_ID(name), info.name)
             .arg(EAGINE_ID(value), info.value);
       },
-      type_identity<example_enum>{});
+      std::type_identity<example_enum>{});
 
     return 0;
 }
