@@ -47,8 +47,9 @@ public:
 
     /// @brief Adds the specified value to the constant (if it isIndexed).
     template <std::integral I>
-    constexpr auto operator+(const I) const noexcept
-      -> no_enum_value<T, Tag> requires(isIndexed) {
+    constexpr auto operator+(const I) const noexcept -> no_enum_value<T, Tag>
+        requires(isIndexed)
+    {
         return {};
     }
 };
@@ -73,8 +74,9 @@ public:
     /// @brief Adds the specified value to the constant (if it isIndexed).
     template <typename I>
     constexpr auto operator+(const I index) const noexcept
-      -> enum_value<T, ClassList, Tag> requires(
-        isIndexed&& std::is_integral_v<I>) {
+      -> enum_value<T, ClassList, Tag>
+        requires(isIndexed && std::is_integral_v<I>)
+    {
         using O = std::conditional_t<
           std::is_signed_v<T>,
           std::make_signed_t<I>,
@@ -104,13 +106,14 @@ public:
       Api& api) noexcept
       : constant_base{name}
       , opt_enum_value<T, ClassList, Tag>{
-          traits.load_constant(api, name, type_identity<T>())} {}
+          traits.load_constant(api, name, std::type_identity<T>())} {}
 
     /// @brief Adds the specified value to the constant (it it isIndexed).
     template <typename I>
     constexpr auto operator+(const I index) const noexcept
-      -> opt_enum_value<T, ClassList, Tag> requires(
-        isIndexed&& std::is_integral_v<I>) {
+      -> opt_enum_value<T, ClassList, Tag>
+        requires(isIndexed && std::is_integral_v<I>)
+    {
         using O = std::conditional_t<
           std::is_signed_v<T>,
           std::make_signed_t<I>,
@@ -124,11 +127,11 @@ struct get_opt_constant;
 
 template <typename ClassList, typename T, T value, typename Tag, bool isIndexed>
 struct get_opt_constant<ClassList, std::integral_constant<T, value>, Tag, isIndexed>
-  : type_identity<static_constant<ClassList, T, value, Tag, isIndexed>> {};
+  : std::type_identity<static_constant<ClassList, T, value, Tag, isIndexed>> {};
 
 template <typename ClassList, typename T, typename Tag, bool isIndexed>
-struct get_opt_constant<ClassList, type_identity<T>, Tag, isIndexed>
-  : type_identity<dynamic_constant<ClassList, T, Tag, isIndexed>> {};
+struct get_opt_constant<ClassList, std::type_identity<T>, Tag, isIndexed>
+  : std::type_identity<dynamic_constant<ClassList, T, Tag, isIndexed>> {};
 
 /// @brief Template alias used for switching between static and dynamic constants.
 /// @tparam ClassList a list of enum_class types into which the constant can

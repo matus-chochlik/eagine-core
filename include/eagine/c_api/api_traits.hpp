@@ -10,9 +10,9 @@
 #define EAGINE_C_API_API_TRAITS_HPP
 
 #include "../string_span.hpp"
-#include "../type_identity.hpp"
 #include "../valid_if/always.hpp"
 #include "../valid_if/never.hpp"
+#include <type_traits>
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ struct default_traits {
     using function_pointer = std::add_pointer<Signature>;
 
     template <typename Api, typename Type>
-    auto load_constant(Api&, const string_view, const type_identity<Type>)
+    auto load_constant(Api&, const string_view, const std::type_identity<Type>)
       -> std::tuple<Type, bool> {
         return {{}, false};
     }
@@ -33,17 +33,18 @@ struct default_traits {
       Api&,
       const Tag,
       const string_view,
-      const type_identity<Signature>) -> std::add_pointer_t<Signature> {
+      const std::type_identity<Signature>) -> std::add_pointer_t<Signature> {
         return nullptr;
     }
 
     template <typename Tag, typename RV>
-    static constexpr auto fallback(const Tag, const type_identity<RV>) -> RV {
+    static constexpr auto fallback(const Tag, const std::type_identity<RV>)
+      -> RV {
         return {};
     }
 
     template <typename Tag>
-    static constexpr void fallback(const Tag, const type_identity<void>) {}
+    static constexpr void fallback(const Tag, const std::type_identity<void>) {}
 
     template <typename RV, typename Tag, typename... Params, typename... Args>
     static constexpr auto call_static(
@@ -54,7 +55,7 @@ struct default_traits {
             return function(
               std::forward<Args>(args)...); // NOLINT(hicpp-no-array-decay)
         }
-        return fallback(tag, type_identity<RV>());
+        return fallback(tag, std::type_identity<RV>());
     }
 
     template <typename RV, typename Tag, typename... Params, typename... Args>
@@ -66,7 +67,7 @@ struct default_traits {
             return function(
               std::forward<Args>(args)...); // NOLINT(hicpp-no-array-decay)
         }
-        return fallback(tag, type_identity<RV>());
+        return fallback(tag, std::type_identity<RV>());
     }
 
     template <typename RV>

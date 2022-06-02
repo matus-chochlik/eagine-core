@@ -83,8 +83,8 @@ public:
     template <typename... Args>
     constexpr auto operator()(Args&&...) const noexcept -> RV
       requires(sizeof...(Params) == sizeof...(Args)) {
-        return ApiTraits::fallback(Tag(), type_identity<RV>());
-    }
+          return ApiTraits::fallback(Tag(), std::type_identity<RV>());
+      }
 };
 //------------------------------------------------------------------------------
 /// @brief Wrapper for statically-linked C-API functions.
@@ -113,9 +113,9 @@ public:
     template <typename... Args>
     constexpr auto operator()(Args&&... args) const noexcept -> RV
       requires(sizeof...(Params) == sizeof...(Args)) {
-        return ApiTraits::call_static(
-          Tag(), function, std::forward<Args>(args)...);
-    }
+          return ApiTraits::call_static(
+            Tag(), function, std::forward<Args>(args)...);
+      }
 };
 //------------------------------------------------------------------------------
 /// @brief Wrapper for dynamically -linked C-API functions.
@@ -140,7 +140,7 @@ public:
           api,
           Tag(),
           name,
-          type_identity<RV(Params...)>())} {}
+          std::type_identity<RV(Params...)>())} {}
 
     /// @brief Indicates if the function is linked (and can be used).
     constexpr explicit operator bool() const noexcept {
@@ -151,12 +151,11 @@ public:
     template <typename... Args>
     constexpr auto operator()(Args&&... args) const noexcept -> RV
       requires(sizeof...(Params) == sizeof...(Args)) {
-        return ApiTraits::call_dynamic(
-          Tag(), _function, std::forward<Args>(args)...);
-    }
+          return ApiTraits::call_dynamic(
+            Tag(), _function, std::forward<Args>(args)...);
+      }
 
-private:
-    function_pointer _function{nullptr};
+    private : function_pointer _function{nullptr};
 };
 //------------------------------------------------------------------------------
 /// @brief Template alias used for switching between static and dynamic function.

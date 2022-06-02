@@ -10,7 +10,6 @@
 
 #include "../memory/block.hpp"
 #include "../span.hpp"
-#include "../type_identity.hpp"
 #include "../types.hpp"
 #include <type_traits>
 
@@ -26,7 +25,7 @@ public:
 
     template <typename T>
     constexpr buffer_size(
-      const type_identity<T>,
+      const std::type_identity<T>,
       const span_size_t count) noexcept
       : _v{S(span_size_of<T>() * count)} {}
 
@@ -68,12 +67,12 @@ public:
 
     template <typename T, span_size_t N>
     buffer_data_spec(const T (&data)[N]) noexcept
-      : _size{type_identity<T>(), N}
+      : _size{std::type_identity<T>(), N}
       , _data{static_cast<const void*>(data)} {}
 
     template <typename T>
     buffer_data_spec(const T* data, span_size_t n) noexcept
-      : _size(type_identity<T>(), n)
+      : _size(std::type_identity<T>(), n)
       , _data(data) {}
 
     template <typename T>
