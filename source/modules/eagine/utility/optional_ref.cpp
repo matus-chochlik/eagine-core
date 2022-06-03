@@ -8,7 +8,7 @@
 module;
 #include <cassert>
 
-export module eagine.core.utils:optional_ref;
+export module eagine.core.utility:optional_ref;
 
 import eagine.core.types;
 import <cstddef>;

@@ -3,36 +3,35 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.utils FRAGMENT optional_ref
+	eagine.core.utility FRAGMENT optional_ref
 	IMPORTS eagine.core.types
 )
 
 eagine_add_module(
-	eagine.core.utils FRAGMENT callable_ref
+	eagine.core.utility FRAGMENT callable_ref
 	IMPORTS eagine.core.types
 )
 
 eagine_add_module(
-	eagine.core.utils FRAGMENT scope_exit
+	eagine.core.utility FRAGMENT scope_exit
 	IMPORTS callable_ref eagine.core.types
 )
 
 eagine_add_module(
-	eagine.core.utils FRAGMENT timeout
+	eagine.core.utility FRAGMENT timeout
 	IMPORTS
 		eagine.core.types
 		eagine.core.debug
 )
 
 eagine_add_module(
-	eagine.core.utils
+	eagine.core.utility
 	INTERFACES
-		utils
+		utility
 	FRAGMENTS
 		count
 		bool_aggregate
 		double_buffer
-		interface
 		iterator
 		integer_hash
 		integer_range

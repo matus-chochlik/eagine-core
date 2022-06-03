@@ -18,6 +18,26 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.memory FRAGMENT offset_ptr
+	IMPORTS address eagine.core.types
+)
+
+eagine_add_module(
+	eagine.core.memory FRAGMENT span
+	IMPORTS address eagine.core.types
+)
+
+eagine_add_module(
+	eagine.core.memory FRAGMENT block
+	IMPORTS span eagine.core.types
+)
+
+eagine_add_module(
+	eagine.core.memory FRAGMENT byte_allocator
+	IMPORTS block eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.memory
 	INTERFACES
 		memory
@@ -25,5 +45,9 @@ eagine_add_module(
 		align
 		address
 		null_ptr
+		offset_ptr
+		span
+		block
+		byte_allocator
 )
 

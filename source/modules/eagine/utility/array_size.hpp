@@ -5,7 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-export eagine.core.utils : array_size;
+export module eagine.core.utility:array_size;
 
 namespace eagine {
 

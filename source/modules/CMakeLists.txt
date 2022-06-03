@@ -7,4 +7,3 @@ include(EAGineCXXModules)
 
 add_subdirectory(eagine)
 
-

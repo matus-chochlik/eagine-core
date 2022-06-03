@@ -3,6 +3,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(eagine.core.types FRAGMENT basic)
+eagine_add_module(eagine.core.types FRAGMENT interface)
 
 eagine_add_module(
 	eagine.core.types FRAGMENT bitfield
@@ -15,8 +16,23 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.types FRAGMENT compare
+	IMPORTS basic
+)
+
+eagine_add_module(
+	eagine.core.types FRAGMENT limits
+	IMPORTS basic
+)
+
+eagine_add_module(
 	eagine.core.types FRAGMENT selector
 	IMPORTS basic
+)
+
+eagine_add_module(
+	eagine.core.types FRAGMENT enum_map
+	IMPORTS bitfield selector
 )
 
 eagine_add_module(
@@ -24,12 +40,16 @@ eagine_add_module(
 	INTERFACES types
 	FRAGMENTS
 		basic
-		anything
 		nothing
+		anything
+		interface
+		compare
+		limits
+		extract
 		tribool
 		bitfield
-		extract
 		function_constant
 		selector
+		enum_map
 )
 

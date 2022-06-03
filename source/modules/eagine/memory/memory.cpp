@@ -10,3 +10,7 @@ export module eagine.core.memory;
 export import :align;
 export import :address;
 export import :null_ptr;
+export import :offset_ptr;
+export import :span;
+export import :block;
+export import :byte_allocator;

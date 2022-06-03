@@ -8,10 +8,13 @@
 export module eagine.core.types;
 
 export import :basic;
-export import :anything;
 export import :nothing;
+export import :anything;
+export import :interface;
+export import :compare;
+export import :limits;
+export import :extract;
 export import :tribool;
 export import :bitfield;
 export import :function_constant;
-export import :extract;
 export import :selector;

@@ -9,7 +9,7 @@ module;
 
 #include <cassert>
 
-export module eagine.core.utils:callable_ref;
+export module eagine.core.utility:callable_ref;
 
 import eagine.core.concepts;
 import eagine.core.types;

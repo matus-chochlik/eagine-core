@@ -111,8 +111,8 @@ public:
     constexpr explicit operator T*() const noexcept
         requires(!std::is_void_v<T> && (std::is_const_v<T> || !IsConst))
     {
-        return EAGINE_CONSTEXPR_ASSERT(
-          is_aligned_as<T>(), static_cast<T*>(_addr));
+        assert(is_aligned_as<T>());
+        return static_cast<T*>(_addr);
     }
 
     /// @brief Returns this address as an signed integer.
@@ -279,8 +279,8 @@ constexpr auto align_up_by(
   const basic_address<IsConst> addr,
   const span_size_t offs,
   const span_size_t max) noexcept {
-    return EAGINE_CONSTEXPR_ASSERT(
-      (offs <= max), basic_address<IsConst>(addr, offs));
+    assert(offs <= max);
+    return basic_address<IsConst>(addr, offs);
 }
 //------------------------------------------------------------------------------
 /// @brief Aligns a memory address up to the specified alignment.
