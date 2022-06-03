@@ -13,7 +13,10 @@ export module eagine.core.memory:byte_allocator;
 
 import eagine.core.types;
 import :block;
+import :address;
 import <cstdint>;
+import <cstdlib>;
+import <limits>;
 import <utility>;
 
 namespace eagine::memory {
@@ -59,6 +62,72 @@ export struct byte_allocator
                 b = allocate(n, a);
             }
         }
+    }
+};
+
+class c_byte_reallocator : public byte_allocator {
+public:
+    using size_type = span_size_t;
+
+    auto equal(byte_allocator* a) const noexcept -> bool final {
+        return dynamic_cast<c_byte_reallocator*>(a) != nullptr;
+    }
+
+    auto max_size(size_type) noexcept -> size_type final {
+        return std::numeric_limits<size_type>::max();
+    }
+
+    auto has_allocated(const owned_block&, size_type) noexcept
+      -> tribool final {
+        return indeterminate;
+    }
+
+    auto allocate(size_type n, [[maybe_unused]] size_type a) noexcept
+      -> owned_block final {
+        assert(a > 0);
+
+        if(n == 0) [[unlikely]] {
+            return {};
+        }
+
+        // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
+        auto p{std::malloc(std_size(n))};
+
+        assert(is_aligned_to(as_address(p), a));
+
+        return this->acquire_block(block(static_cast<byte*>(p), n));
+    }
+
+    void deallocate(owned_block&& b, size_type) noexcept final {
+        if(!b.empty()) [[likely]] {
+            // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
+            std::free(b.data());
+            this->release_block(std::move(b));
+        }
+    }
+
+    auto can_reallocate(const owned_block&, size_type, size_type) noexcept
+      -> bool final {
+        return true;
+    }
+
+    auto reallocate(owned_block&& b, size_type n, size_type a) noexcept
+      -> owned_block final {
+        assert(a > 0);
+
+        if(n == 0) [[unlikely]] {
+            deallocate(std::move(b), a);
+            return {};
+        }
+
+        // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
+        auto p{std::realloc(b.data(), std_size(n))};
+
+        this->release_block(std::move(b));
+
+        assert(is_aligned_to(as_address(p), a));
+
+        return this->acquire_block({static_cast<byte*>(p), n});
     }
 };
 

@@ -5,8 +5,8 @@
 add_subdirectory(concepts)
 add_subdirectory(types)
 add_subdirectory(debug)
-add_subdirectory(utility)
 add_subdirectory(memory)
+add_subdirectory(utility)
 add_subdirectory(valid_if)
 
 add_subdirectory(math)
@@ -18,8 +18,8 @@ eagine_add_module(
 		eagine.core.concepts
 		eagine.core.types
 		eagine.core.debug
-		eagine.core.utility
 		eagine.core.memory
+		eagine.core.utility
 		eagine.core.valid_if
 		eagine.core.math
 )

@@ -5,36 +5,25 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+export module eagine.core.memory:span_io;
 
-#ifndef EAGINE_SPAN_HPP
-#define EAGINE_SPAN_HPP
+import eagine.core.types;
+import :span;
+import <iostream>;
+import <optional>;
 
-#include "memory/span.hpp"
-#include "valid_if/decl.hpp"
-#include <iosfwd>
-
-namespace eagine {
-//------------------------------------------------------------------------------
-using memory::chunk_span;
-using memory::span;
-
-using memory::cover;
-using memory::cover_one;
-using memory::view;
-using memory::view_one;
+namespace eagine::memory {
 //------------------------------------------------------------------------------
 /// @brief Helper function for pretty-printing spans as lists into output streams.
 /// @ingroup memory
 /// @see write_to_stream
-/// @relates memory::basic_span
-template <typename T, typename P, typename S, typename Output>
-static inline auto list_to_stream(
-  Output& out,
-  const memory::basic_span<T, P, S> s) -> Output& {
+/// @relates basic_span
+export template <typename T, typename P, typename S, typename Output>
+auto list_to_stream(Output& out, const basic_span<T, P, S> s) -> Output& {
     out << '[';
     bool first = true;
     for(const auto& e : s) {
-        if(first) {
+        if(first) [[unlikely]] {
             first = false;
         } else {
             out << ',';
@@ -47,10 +36,9 @@ static inline auto list_to_stream(
 /// @brief Helper function for raw-reading spans from output streams.
 /// @ingroup memory
 /// @see write_to_stream
-/// @relates memory::basic_span
-template <typename Input, typename T, typename P, typename S>
-static inline auto read_from_stream(Input& in, memory::basic_span<T, P, S> s)
-  -> auto& {
+/// @relates basic_span
+export template <typename Input, typename T, typename P, typename S>
+auto read_from_stream(Input& in, basic_span<T, P, S> s) -> auto& {
     return in.read(
       reinterpret_cast<char*>(s.data()), limit_cast<std::streamsize>(s.size()));
 }
@@ -59,11 +47,9 @@ static inline auto read_from_stream(Input& in, memory::basic_span<T, P, S> s)
 /// @ingroup memory
 /// @see read_from_stream
 /// @see list_to_stream
-/// @relates memory::basic_span
-template <typename Output, typename T, typename P, typename S>
-static inline auto write_to_stream(
-  Output& out,
-  const memory::basic_span<T, P, S> s) -> auto& {
+/// @relates basic_span
+export template <typename Output, typename T, typename P, typename S>
+auto write_to_stream(Output& out, const basic_span<T, P, S> s) -> auto& {
     return out.write(
       reinterpret_cast<const char*>(s.data()),
       limit_cast<std::streamsize>(s.size()));
@@ -72,39 +58,35 @@ static inline auto write_to_stream(
 /// @brief Operator for printing generic element spans into output streams.
 /// @ingroup memory
 /// @see list_to_stream
-/// @relates memory::basic_span
-template <typename T, typename P, typename S>
-static inline auto operator<<(
-  std::ostream& out,
-  const memory::basic_span<T, P, S> s)
-  -> std::ostream& requires(!std::is_same_v<std::remove_const_t<T>, char>) {
-                       return list_to_stream(out, s);
-                   }
+/// @relates basic_span
+export template <typename T, typename P, typename S>
+    requires(!std::is_same_v<std::remove_const_t<T>, char>)
+auto operator<<(std::ostream& out, const basic_span<T, P, S> s)
+  -> std::ostream& {
+    return list_to_stream(out, s);
+}
 //------------------------------------------------------------------------------
 /// @brief Operator for printing spans of string characters into output streams.
 /// @ingroup memory
 /// @see write_to_stream
-/// @relates memory::basic_span
-template <typename T, typename P, typename S>
-static inline auto operator<<(
-  std::ostream& out,
-  const memory::basic_span<T, P, S> s)
-  -> std::ostream& requires(std::is_same_v<std::remove_const_t<T>, char>) {
-                       return write_to_stream(out, absolute(s));
-                   }
+/// @relates basic_span
+export template <typename T, typename P, typename S>
+    requires(std::is_same_v<std::remove_const_t<T>, char>)
+auto operator<<(std::ostream& out, const basic_span<T, P, S> s)
+  -> std::ostream& {
+    return write_to_stream(out, absolute(s));
+}
 //------------------------------------------------------------------------------
 /// @brief Makes a callable that returns consecutive span elements starting at i.
 /// @ingroup memory
 /// @see make_span_putter
-/// @relates memory::basic_span
+/// @relates basic_span
 ///
 /// The constructed callable object does not take any arguments in the call
 /// operator and returns optional values of T.
-template <typename T, typename P, typename S>
-static inline auto make_span_getter(
-  span_size_t& i,
-  const memory::basic_span<T, P, S> spn) {
-    return [&i, spn]() -> optionally_valid<std::remove_const_t<T>> {
+export template <typename T, typename P, typename S>
+auto make_span_getter(span_size_t& i, const basic_span<T, P, S> spn) noexcept {
+    return [&i, spn]() -> std::optional<std::remove_const_t<T>> {
         if(i < spn.size()) {
             return {spn[i++], true};
         }
@@ -113,23 +95,23 @@ static inline auto make_span_getter(
 }
 //------------------------------------------------------------------------------
 template <typename Src>
-static inline auto make_span_getter(span_size_t& i, const Src& src) {
+static inline auto make_span_getter(span_size_t& i, const Src& src) noexcept {
     return make_span_getter(i, view(src));
 }
 //------------------------------------------------------------------------------
 /// @brief Makes a callable getting consecutive, transformed span elements starting at i.
 /// @ingroup memory
 /// @see make_span_putter
-/// @relates memory::basic_span
+/// @relates basic_span
 ///
 /// The constructed callable object does not take any arguments in the call
 /// operator and returns the result of the transform function.
 /// The transform function takes a single optional value of T.
-template <typename T, typename P, typename S, typename Transform>
-static inline auto make_span_getter(
+export template <typename T, typename P, typename S, typename Transform>
+auto make_span_getter(
   span_size_t& i,
-  const memory::basic_span<T, P, S> spn,
-  const Transform transform) {
+  const basic_span<T, P, S> spn,
+  const Transform transform) noexcept {
     return [&i, spn, transform]() -> decltype(transform(std::declval<T>())) {
         if(i < spn.size()) {
             return transform(spn[i++]);
@@ -138,24 +120,22 @@ static inline auto make_span_getter(
     };
 }
 //------------------------------------------------------------------------------
-template <typename Src, typename Transform>
-static inline auto make_span_getter(
+export template <typename Src, typename Transform>
+auto make_span_getter(
   span_size_t& i,
   const Src& src,
-  Transform transform) {
+  Transform transform) noexcept {
     return make_span_getter(i, view(src), std::move(transform));
 }
 //------------------------------------------------------------------------------
 /// @brief Makes a callable setting consecutive elements of a span starting at i.
 /// @ingroup memory
 /// @see make_span_getter
-/// @relates memory::basic_span
+/// @relates basic_span
 ///
 /// The constructed callable takes a single value explicitly convertible to T.
-template <typename T, typename P, typename S>
-static inline auto make_span_putter(
-  span_size_t& i,
-  memory::basic_span<T, P, S> spn) {
+export template <typename T, typename P, typename S>
+auto make_span_putter(span_size_t& i, basic_span<T, P, S> spn) noexcept {
     return [&i, spn](auto value) mutable -> bool {
         if(i < spn.size()) {
             spn[i++] = T(std::move(value));
@@ -165,8 +145,8 @@ static inline auto make_span_putter(
     };
 }
 //------------------------------------------------------------------------------
-template <typename Dst>
-static inline auto make_span_putter(span_size_t& o, Dst& dst) {
+export template <typename Dst>
+auto make_span_putter(span_size_t& o, Dst& dst) noexcept {
     return make_span_putter(o, cover(dst));
 }
 //------------------------------------------------------------------------------
@@ -174,14 +154,14 @@ static inline auto make_span_putter(span_size_t& o, Dst& dst) {
 /// @ingroup memory
 /// @param transform transformation operation to be applied
 /// @see make_span_getter
-/// @relates memory::basic_span
+/// @relates basic_span
 /// The constructed callable takes a single value explicitly convertible to the
 /// argument of the transform function.
-template <typename T, typename P, typename S, typename Transform>
-static inline auto make_span_putter(
+export template <typename T, typename P, typename S, typename Transform>
+auto make_span_putter(
   span_size_t& i,
-  memory::basic_span<T, P, S> spn,
-  Transform transform) {
+  basic_span<T, P, S> spn,
+  Transform transform) noexcept {
     return [&i, spn, transform](auto value) mutable -> bool {
         if(i < spn.size()) {
             if(auto transformed{transform(value)}) {
@@ -193,14 +173,10 @@ static inline auto make_span_putter(
     };
 }
 //------------------------------------------------------------------------------
-template <typename Dst, typename Transform>
-static inline auto make_span_putter(
-  span_size_t& o,
-  Dst& dst,
-  Transform transform) {
+export template <typename Dst, typename Transform>
+auto make_span_putter(span_size_t& o, Dst& dst, Transform transform) noexcept {
     return make_span_putter(o, cover(dst), std::move(transform));
 }
 //------------------------------------------------------------------------------
-} // namespace eagine
+} // namespace eagine::memory
 
-#endif // EAGINE_SPAN_HPP

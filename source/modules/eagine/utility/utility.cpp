@@ -18,3 +18,4 @@ export import :callable_ref;
 export import :scope_exit;
 export import :overloaded;
 export import :timeout;
+export import :program_args;

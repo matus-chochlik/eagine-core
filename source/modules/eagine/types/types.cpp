@@ -13,6 +13,7 @@ export import :anything;
 export import :interface;
 export import :compare;
 export import :limits;
+export import :integer;
 export import :extract;
 export import :tribool;
 export import :bitfield;

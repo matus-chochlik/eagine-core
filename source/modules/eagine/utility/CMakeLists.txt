@@ -25,6 +25,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.utility FRAGMENT program_args
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+)
+
+eagine_add_module(
 	eagine.core.utility
 	INTERFACES
 		utility
@@ -40,5 +47,6 @@ eagine_add_module(
 		scope_exit
 		overloaded
 		timeout
+		program_args
 )
 

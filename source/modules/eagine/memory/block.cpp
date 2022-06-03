@@ -13,10 +13,10 @@ export module eagine.core.memory:block;
 
 import eagine.core.types;
 import :address;
-import :span;
-#include <cstddef>
-#include <memory>
-#include <utility>
+export import :span;
+import <cstddef>;
+import <memory>;
+import <utility>;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

@@ -26,6 +26,11 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.types FRAGMENT integer
+	IMPORTS limits
+)
+
+eagine_add_module(
 	eagine.core.types FRAGMENT selector
 	IMPORTS basic
 )
@@ -45,6 +50,7 @@ eagine_add_module(
 		interface
 		compare
 		limits
+		integer
 		extract
 		tribool
 		bitfield
