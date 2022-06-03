@@ -393,8 +393,8 @@ constexpr auto absolute(const basic_span<T, P, S> spn) noexcept
 //------------------------------------------------------------------------------
 /// @brief Default alias for basic memory spans with native pointer type.
 /// @ingroup memory
-export template <typename T, typename S = span_size_t>
-using span = basic_span<T, T*, S>;
+export template <typename T>
+using span = basic_span<T, T*, span_size_t>;
 //------------------------------------------------------------------------------
 /// @brief Alias for span<T> if T is mutable type. Ill defined otherwise.
 /// @ingroup memory

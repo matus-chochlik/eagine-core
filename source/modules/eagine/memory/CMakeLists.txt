@@ -58,6 +58,16 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.memory FRAGMENT byteset
+	IMPORTS block eagine.core.types
+)
+
+eagine_add_module(
+	eagine.core.memory FRAGMENT biteset
+	IMPORTS byteset eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.memory FRAGMENT byte_allocator
 	IMPORTS block eagine.core.types
 )
@@ -79,9 +89,11 @@ eagine_add_module(
 		span
 		block
 		string_span
-		fixed_size_string
 		span_io
 		span_algorithm
+		byteset
+		biteset
+		fixed_size_string
 		edit_distance
 		byte_allocator
 		shared_allocator

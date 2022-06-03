@@ -8,6 +8,7 @@ add_subdirectory(debug)
 add_subdirectory(memory)
 add_subdirectory(utility)
 add_subdirectory(valid_if)
+add_subdirectory(identifier)
 
 add_subdirectory(math)
 
@@ -21,6 +22,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.utility
 		eagine.core.valid_if
+		eagine.core.identifier
 		eagine.core.math
 )
 

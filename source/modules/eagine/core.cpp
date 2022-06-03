@@ -12,5 +12,6 @@ export import eagine.core.types;
 export import eagine.core.debug;
 export import eagine.core.utility;
 export import eagine.core.memory;
+export import eagine.core.identifier;
 export import eagine.core.math;
 export import eagine.core.valid_if;
