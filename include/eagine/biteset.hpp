@@ -462,10 +462,11 @@ public:
 
     /// @brief Construction from a pack of integer values.
     template <typename... P>
-    explicit constexpr biteset(P... p) noexcept requires(
-      sizeof...(P) == N &&
-      std::conjunction_v<std::true_type, std::is_convertible<P, T>...>)
-      : _bytes{_make_bytes(T(p)...)} {}
+    explicit constexpr biteset(P... p) noexcept
+        requires(
+          (sizeof...(P) == N) &&
+          std::conjunction_v<std::is_convertible<P, T>...>)
+    : _bytes{_make_bytes(T(p)...)} {}
 
     explicit constexpr biteset(_bytes_t init) noexcept
       : _bytes{init} {}
@@ -515,9 +516,8 @@ public:
     }
 
     /// @brief Subscript operator.
-    constexpr auto operator[](const size_type i) const noexcept
-      -> biteset_value_proxy<const biteset> {
-        return {*this, i};
+    constexpr auto operator[](const size_type i) const noexcept -> T {
+        return _get_cell(i);
     }
 
     /// @brief Subscript operator.

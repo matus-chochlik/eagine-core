@@ -470,8 +470,8 @@ public:
     template <typename... P>
     explicit constexpr biteset(P... p) noexcept
         requires(
-          sizeof...(P) == N &&
-          std::conjunction_v<std::true_type, std::is_convertible<P, T>...>)
+          (sizeof...(P) == N) &&
+          std::conjunction_v<std::is_convertible<P, T>...>)
     : _bytes{_make_bytes(T(p)...)} {}
 
     explicit constexpr biteset(_bytes_t init) noexcept
