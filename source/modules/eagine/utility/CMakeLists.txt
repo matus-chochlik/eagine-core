@@ -3,6 +3,11 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
+	eagine.core.utility FRAGMENT bit_density
+	IMPORTS eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.utility FRAGMENT optional_ref
 	IMPORTS eagine.core.types
 )
@@ -42,11 +47,13 @@ eagine_add_module(
 		iterator
 		integer_hash
 		integer_range
+		bit_density
 		optional_ref
 		callable_ref
 		scope_exit
 		overloaded
 		timeout
+		signal_switch
 		program_args
 )
 
