@@ -8,3 +8,4 @@
 export module eagine.core.identifier;
 
 export import :decl;
+export import :message_id;

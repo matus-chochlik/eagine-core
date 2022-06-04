@@ -10,10 +10,16 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.identifier FRAGMENT message_id
+	IMPORTS decl eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.identifier
 	INTERFACES
 		identifier
 	FRAGMENTS
 		decl
+		message_id
 )
 

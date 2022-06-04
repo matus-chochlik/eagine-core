@@ -16,6 +16,7 @@ export import :integer_range;
 export import :bit_density;
 export import :optional_ref;
 export import :callable_ref;
+export import :memoized;
 export import :scope_exit;
 export import :overloaded;
 export import :timeout;

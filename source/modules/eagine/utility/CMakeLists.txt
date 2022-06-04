@@ -20,6 +20,11 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.utility FRAGMENT memoized
+	IMPORTS callable_ref
+)
+
+eagine_add_module(
 	eagine.core.utility FRAGMENT scope_exit
 	IMPORTS callable_ref eagine.core.types
 )
@@ -52,6 +57,7 @@ eagine_add_module(
 		bit_density
 		optional_ref
 		callable_ref
+		memoized
 		scope_exit
 		overloaded
 		timeout
