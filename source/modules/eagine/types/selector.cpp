@@ -55,6 +55,32 @@ export using immediate_function_t = selector<0x1FU>;
 /// @brief The use immediate function tag-dispatch constant
 /// @ingroup metaprogramming
 /// @see immediate_function_t
-export constexpr const immediate_function_t immediate_function = {};
+export constexpr const immediate_function_t immediate_function{};
+
+/// @brief Type alias for split-by function selector.
+/// @ingroup metaprogramming
+/// @see split_by
+///
+/// This type is typically used as an additional parameter some string function
+/// function overloads.
+export using split_by_t = selector<0x58U>;
+
+/// @brief The select split-by function tag-dispatch constant
+/// @ingroup metaprogramming
+/// @see split_by_t
+export constexpr const split_by_t split_by{};
+
+/// @brief Type alias for from-pack function selector.
+/// @ingroup metaprogramming
+/// @see from_pack
+///
+/// This type is typically used as an additional parameter some string function
+/// function overloads.
+export using from_pack_t = selector<0xACU>;
+
+/// @brief The select from by function tag-dispatch constant
+/// @ingroup metaprogramming
+/// @see from_pack_t
+export constexpr const from_pack_t from_pack{};
 
 } // namespace eagine

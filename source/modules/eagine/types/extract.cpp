@@ -20,6 +20,21 @@ namespace eagine {
 export template <typename T>
 struct extract_traits;
 
+export template <extractable T>
+constexpr auto extract_or(
+  T& opt_val,
+  extract_result_type_t<T> fallback = {}) noexcept -> extract_result_type_t<T> {
+    return has_value(opt_val) ? extract(opt_val) : fallback;
+}
+
+export template <extractable T>
+constexpr auto extract_or(
+  const T& opt_val,
+  const_extract_result_type_t<T> fallback = {}) noexcept
+  -> const_extract_result_type_t<T> {
+    return has_value(opt_val) ? extract(opt_val) : fallback;
+}
+//------------------------------------------------------------------------------
 // pointers
 export template <typename T>
 struct extract_traits<T*> {
@@ -100,7 +115,7 @@ constexpr auto extract(std::optional<T>& opt) noexcept -> auto& {
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(opt)
 export template <typename T>
-constexpr auto extract(const std::optional<T>& opt) noexcept -> auto& {
+constexpr auto extract(const std::optional<T>& opt) noexcept -> const auto& {
     assert(opt);
     return *opt;
 }

@@ -221,26 +221,6 @@ auto end(
     return x.get().end();
 }
 //------------------------------------------------------------------------------
-template <basic_extractable T>
-static constexpr auto has_value(const T& v) noexcept {
-    return bool(v);
-}
-
-template <extractable T>
-static constexpr auto extract_or(
-  T& opt_val,
-  extract_result_type_t<T> fallback = {}) noexcept -> extract_result_type_t<T> {
-    return has_value(opt_val) ? extract(opt_val) : fallback;
-}
-
-template <extractable T>
-static constexpr auto extract_or(
-  const T& opt_val,
-  const_extract_result_type_t<T> fallback = {}) noexcept
-  -> const_extract_result_type_t<T> {
-    return has_value(opt_val) ? extract(opt_val) : fallback;
-}
-//------------------------------------------------------------------------------
 } // namespace eagine
 
 #endif // EAGINE_EXTRACT_HPP

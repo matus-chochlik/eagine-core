@@ -22,7 +22,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 /// @brief Policy for optionally valid values, indicated by a boolean flag.
 /// @ingroup valid_if
-struct valid_flag_policy {
+export struct valid_flag_policy {
     bool _is_valid{false};
 
     constexpr valid_flag_policy() noexcept = default;
@@ -220,7 +220,7 @@ public:
 
     template <typename Log>
     void log_invalid(Log& log, const value_type& v, P... p) const {
-        EAGINE_ASSERT(!is_valid(v, p...));
+        assert(!is_valid(v, p...));
         _do_log(log, v, p...);
     }
 
@@ -439,10 +439,10 @@ constexpr auto operator>=(
 export template <typename T, typename Policy>
 using valid_if = basic_valid_if<T, Policy, typename Policy::do_log>;
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct extract_traits;
 
-template <typename T, typename P, typename L>
+export template <typename T, typename P, typename L>
 struct extract_traits<basic_valid_if<T, P, L>> {
     using value_type = T;
     using result_type = T&;

@@ -13,7 +13,7 @@ import :decl;
 namespace eagine {
 /// @brief Policy for always valid values.
 /// @ingroup valid_if
-struct always_valid_policy {
+export struct always_valid_policy {
 
     /// @brief Indicates value validity. Always returns true.
     template <typename T>

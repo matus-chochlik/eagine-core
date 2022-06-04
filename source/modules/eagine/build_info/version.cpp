@@ -10,6 +10,7 @@ export module eagine.core.build_info:version;
 import eagine.core.types;
 import eagine.core.valid_if;
 import :git;
+import :compiler;
 
 import <tuple>;
 import <type_traits>;
@@ -20,11 +21,25 @@ namespace eagine {
 /// @ingroup main_context
 export class version_info {
 public:
-    version_info() noexcept
-      : _data{config_git_version_tuple()} {}
+    version_info() noexcept = default;
 
     constexpr version_info(std::tuple<int, int, int, int> data) noexcept
       : _data{std::move(data)} {}
+
+    constexpr version_info(std::tuple<int, int, int> data) noexcept
+      : _data{std::get<0>(data), std::get<1>(data), std::get<2>(data), -1} {}
+
+    /// @brief Creates an instance of git source version info.
+    /// @see compiler
+    static auto git() noexcept -> version_info {
+        return {config_git_version_tuple()};
+    }
+
+    /// @brief Creates an instance of git source version info.
+    /// @see git
+    static auto compiler() noexcept -> version_info {
+        return {compiler_version_tuple()};
+    }
 
     /// @brief Returns the project version numbers in a single tuple.
     /// @see version_major

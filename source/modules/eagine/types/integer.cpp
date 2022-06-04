@@ -17,7 +17,7 @@ import <type_traits>;
 
 namespace eagine {
 
-template <std::integral T>
+export template <std::integral T>
 class integer {
 public:
     constexpr integer() noexcept = default;

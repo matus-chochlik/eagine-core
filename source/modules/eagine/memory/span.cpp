@@ -557,7 +557,8 @@ constexpr auto has_value(basic_span<T, P, S> spn) noexcept -> bool {
 /// @ingroup memory
 export template <typename T, typename P, typename S>
 constexpr auto extract(basic_span<T, P, S> spn) noexcept -> T& {
-    return EAGINE_CONSTEXPR_ASSERT(spn.size() >= 1, spn.front());
+    assert(spn.size() >= 1);
+    return spn.front();
 }
 //------------------------------------------------------------------------------
 // basic_chunk_span
@@ -634,5 +635,11 @@ struct equal_cmp<memory::basic_span<Tl, Pl, Sl>, memory::basic_span<Tr, Pr, Sr>>
         return false;
     }
 };
+//------------------------------------------------------------------------------
+export using memory::cover;
+export using memory::cover_one;
+export using memory::span;
+export using memory::view;
+export using memory::view_one;
 //------------------------------------------------------------------------------
 } // namespace eagine

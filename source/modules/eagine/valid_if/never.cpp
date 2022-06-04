@@ -14,7 +14,7 @@ namespace eagine {
 
 /// @brief Policy for never-valid values.
 /// @ingroup valid_if
-struct never_valid_policy {
+export struct never_valid_policy {
 
     /// @brief Indicates value validity. Always returns false.
     template <typename T>
