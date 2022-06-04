@@ -34,7 +34,10 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.memory FRAGMENT string_span
-	IMPORTS span eagine.core.types
+	IMPORTS
+		span
+		eagine.core.concepts
+		eagine.core.types
 )
 
 eagine_add_module(
@@ -74,7 +77,10 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.memory FRAGMENT shared_allocator
-	IMPORTS byte_allocator eagine.core.types
+	IMPORTS
+		byte_allocator
+		eagine.core.concepts
+		eagine.core.types
 )
 
 eagine_add_module(

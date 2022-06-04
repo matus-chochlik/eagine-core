@@ -15,7 +15,7 @@ namespace eagine {
 
 /// @brief Policy class for containers valid if their empty() member function return false.
 /// @ingroup valid_if
-template <typename T>
+export template <typename T>
 struct valid_if_not_empty_policy {
 
     /// @brief Indicates value validity, true if !range.empty().

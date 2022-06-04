@@ -5,6 +5,10 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#include <cassert>
+
 export module eagine.core.valid_if:decl;
 
 import eagine.core.types;
@@ -432,11 +436,8 @@ constexpr auto operator>=(
 //------------------------------------------------------------------------------
 /// @brief Primary template for conditionally valid values.
 /// @ingroup valid_if
-export template <
-  typename T,
-  typename Policy,
-  typename DoLog = typename Policy::do_log>
-using valid_if = basic_valid_if<T, Policy, DoLog>;
+export template <typename T, typename Policy>
+using valid_if = basic_valid_if<T, Policy, typename Policy::do_log>;
 //------------------------------------------------------------------------------
 template <typename T>
 struct extract_traits;

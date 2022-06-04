@@ -50,6 +50,32 @@ function(eagine_append_module_pcms)
 		SOURCE ${EAGINE_MODULE_SOURCE}
 	)
 
+	unset(EAGINE_MODULE_IMPORTS)
+	get_property(
+		EAGINE_MODULE_IMPORTS
+		TARGET ${EAGINE_MODULE_SOURCE}
+		PROPERTY EAGINE_MODULE_IMPORTS)
+	foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
+		eagine_append_module_pcms(
+			TARGET ${EAGINE_MODULE_TARGET}
+			SOURCE ${IMPORT}
+		)
+		eagine_depend_single_module_pcms(
+			TARGET ${EAGINE_MODULE_TARGET}
+			SOURCE ${IMPORT}
+		)
+	endforeach()
+endfunction()
+
+function(eagine_append_all_module_pcms)
+	set(ARG_VALUES SOURCE TARGET)
+	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
+
+	eagine_append_module_pcms(
+		SOURCE ${EAGINE_MODULE_SOURCE}
+		TARGET ${EAGINE_MODULE_TARGET}
+	)
+
 	unset(EAGINE_MODULE_FRAGMENTS)
 	get_property(
 		EAGINE_MODULE_FRAGMENTS
@@ -64,22 +90,6 @@ function(eagine_append_module_pcms)
 		eagine_depend_single_module_pcms(
 			TARGET ${EAGINE_MODULE_TARGET}
 			SOURCE ${EAGINE_MODULE_SOURCE}.${FRAGMENT}
-		)
-	endforeach()
-
-	unset(EAGINE_MODULE_FRAGMENTS)
-	get_property(
-		EAGINE_MODULE_IMPORTS
-		TARGET ${EAGINE_MODULE_SOURCE}
-		PROPERTY EAGINE_MODULE_IMPORTS)
-	foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
-		eagine_append_module_pcms(
-			TARGET ${EAGINE_MODULE_TARGET}
-			SOURCE ${IMPORT}
-		)
-		eagine_depend_single_module_pcms(
-			TARGET ${EAGINE_MODULE_TARGET}
-			SOURCE ${IMPORT}
 		)
 	endforeach()
 endfunction()
@@ -224,7 +234,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 
 	add_custom_target(${EAGINE_MODULE_TARGET}-imports)
 
-	eagine_append_module_pcms(
+	eagine_append_all_module_pcms(
 		SOURCE ${EAGINE_MODULE_TARGET}
 		TARGET ${EAGINE_MODULE_TARGET}
 	)

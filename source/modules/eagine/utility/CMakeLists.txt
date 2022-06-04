@@ -14,7 +14,9 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.utility FRAGMENT callable_ref
-	IMPORTS eagine.core.types
+	IMPORTS
+		eagine.core.concepts
+		eagine.core.types
 )
 
 eagine_add_module(

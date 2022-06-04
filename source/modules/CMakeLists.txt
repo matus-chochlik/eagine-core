@@ -7,7 +7,7 @@ include(EAGineCXXModules)
 
 add_subdirectory(eagine)
 
-if(EXISTS mod_test.cpp)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/mod_test.cpp")
 	add_executable(mod_test mod_test.cpp)
 	eagine_target_module(mod_test eagine.core)
 endif()

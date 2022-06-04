@@ -8,3 +8,4 @@
 export module eagine.core.math;
 
 export import :constants;
+export import :functions;

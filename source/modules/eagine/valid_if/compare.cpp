@@ -15,7 +15,7 @@ namespace eagine {
 
 /// @brief Policy class for values valid when they are positive.
 /// @ingroup valid_if
-template <typename T>
+export template <typename T>
 struct valid_if_positive_policy {
 
     /// @brief Indicates value validity, true if 0 < value.
@@ -46,7 +46,7 @@ using valid_if_positive =
 
 /// @brief Policy class for values valid when they are non-negative.
 /// @ingroup valid_if
-template <typename T>
+export template <typename T>
 struct valid_if_nonneg_policy {
 
     /// @brief Indicates value validity, true if 0 <= value.
@@ -81,7 +81,7 @@ using valid_if_nonnegative =
 /// @tparam Min the minimal valid value.
 /// @tparam Max the maximal valid value.
 /// @ingroup valid_if
-template <typename T, typename C, C Min, C Max>
+export template <typename T, typename C, C Min, C Max>
 struct valid_if_btwn_policy {
 
     /// @brief Indicates @p value validity, true if between Min and Max.
@@ -112,12 +112,12 @@ using valid_if_between_c =
 /// @see valid_if_between_0_1
 /// @see valid_if_less_than
 /// @see valid_if_within_limits
-template <typename T, T Min, T Max>
+export template <typename T, T Min, T Max>
 using valid_if_between = valid_if_between_c<T, T, Min, Max>;
 
 /// @brief Policy class for values valid if not equal to Cmp.
 /// @ingroup valid_if
-template <typename T, T Cmp>
+export template <typename T, T Cmp>
 struct valid_if_ne_policy {
 
     /// @brief Indicates value validity, true if value != Cmp.
