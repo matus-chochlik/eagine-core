@@ -10,7 +10,6 @@ export module eagine.core.logging:null_backend;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
-import :severity;
 import :backend;
 import <cstdint>;
 import <chrono>;

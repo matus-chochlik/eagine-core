@@ -103,5 +103,7 @@ eagine_add_module(
 		edit_distance
 		byte_allocator
 		shared_allocator
+	SOURCES
+		memory_impl
 )
 

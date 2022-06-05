@@ -35,6 +35,27 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.logging FRAGMENT proxy_backend
+	IMPORTS
+		backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.string
+)
+
+eagine_add_module(
+	eagine.core.logging FRAGMENT ostream_backend
+	IMPORTS
+		backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.string
+		eagine.core.reflection
+)
+
+eagine_add_module(
 	eagine.core.logging
 	INTERFACES
 		logging
@@ -43,6 +64,10 @@ eagine_add_module(
 		severity
 		backend
 		null_backend
+		proxy_backend
+		ostream_backend
+	SOURCES
+		proxy_backend_impl
 )
 
 

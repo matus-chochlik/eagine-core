@@ -138,7 +138,6 @@ private:
 
 export using shared_byte_allocator = basic_shared_byte_alloc<nothing_t>;
 
-// TODO
-// export auto default_shared_allocator() -> shared_byte_allocator;
+export auto default_shared_allocator() -> shared_byte_allocator;
 
 } // namespace eagine::memory

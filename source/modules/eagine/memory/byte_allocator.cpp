@@ -20,7 +20,7 @@ import <limits>;
 import <utility>;
 
 namespace eagine::memory {
-
+//------------------------------------------------------------------------------
 // byte_allocator
 export struct byte_allocator
   : interface<byte_allocator>
@@ -64,8 +64,8 @@ export struct byte_allocator
         }
     }
 };
-
-class c_byte_reallocator : public byte_allocator {
+//------------------------------------------------------------------------------
+export class c_byte_reallocator : public byte_allocator {
 public:
     using size_type = span_size_t;
 
@@ -130,5 +130,7 @@ public:
         return this->acquire_block({static_cast<byte*>(p), n});
     }
 };
+//------------------------------------------------------------------------------
+export using default_byte_allocator = c_byte_reallocator;
 
 } // namespace eagine::memory
