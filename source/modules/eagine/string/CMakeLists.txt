@@ -3,7 +3,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.string FRAGMENT multi_byte
+	eagine.core.string PARTITION multi_byte
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
@@ -12,7 +12,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string FRAGMENT list
+	eagine.core.string PARTITION list
 	IMPORTS
 		multi_byte
 		eagine.core.types
@@ -20,7 +20,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string FRAGMENT path
+	eagine.core.string PARTITION path
 	IMPORTS
 		list
 		eagine.core.types
@@ -29,7 +29,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string FRAGMENT c_str
+	eagine.core.string PARTITION c_str
 	IMPORTS
 		eagine.core.concepts
 		eagine.core.types
@@ -37,7 +37,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string FRAGMENT substitution
+	eagine.core.string PARTITION substitution
 	IMPORTS
 		c_str
 		eagine.core.types
@@ -47,7 +47,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string FRAGMENT format
+	eagine.core.string PARTITION format
 	IMPORTS
 		substitution
 		eagine.core.types
@@ -56,7 +56,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string FRAGMENT base64
+	eagine.core.string PARTITION base64
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
@@ -65,7 +65,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string FRAGMENT base64dump
+	eagine.core.string PARTITION base64dump
 	IMPORTS
 		base64
 		eagine.core.types
@@ -75,7 +75,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string FRAGMENT bindump
+	eagine.core.string PARTITION bindump
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
@@ -83,7 +83,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string FRAGMENT hexdump
+	eagine.core.string PARTITION hexdump
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
@@ -94,7 +94,7 @@ eagine_add_module(
 	eagine.core.string
 	INTERFACES
 		string
-	FRAGMENTS
+	PARTITIONS
 		multi_byte
 		list
 		path

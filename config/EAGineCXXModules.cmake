@@ -7,19 +7,19 @@ define_property(
 	TARGET
 	PROPERTY EAGINE_MODULE_PROPER
 	BRIEF_DOCS "Main module name"
-	FULL_DOCS "Name of a module or the name of the main module of a fragment"
+	FULL_DOCS "Name of a module or the name of the main module of a partition"
 )
 define_property(
 	TARGET
-	PROPERTY EAGINE_MODULE_FRAGMENT
-	BRIEF_DOCS "Module fragment name"
-	FULL_DOCS "Name of a module fragment"
+	PROPERTY EAGINE_MODULE_PARTITION
+	BRIEF_DOCS "Module partition name"
+	FULL_DOCS "Name of a module partition"
 )
 define_property(
 	TARGET
 	PROPERTY EAGINE_MODULE_ID
 	BRIEF_DOCS "Full module name"
-	FULL_DOCS "Full name of a module or a module fragment"
+	FULL_DOCS "Full name of a module or a module partition"
 )
 
 define_property(
@@ -30,9 +30,9 @@ define_property(
 )
 define_property(
 	TARGET
-	PROPERTY EAGINE_MODULE_FRAGMENTS
-	BRIEF_DOCS "Module fragments"
-	FULL_DOCS "List of C++ module fragment source names"
+	PROPERTY EAGINE_MODULE_PARTITIONS
+	BRIEF_DOCS "Module partitions"
+	FULL_DOCS "List of C++ module partition source names"
 )
 define_property(
 	TARGET

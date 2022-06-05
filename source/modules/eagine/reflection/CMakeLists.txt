@@ -3,14 +3,14 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.reflection FRAGMENT decl_name
+	eagine.core.reflection PARTITION decl_name
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
 )
 
 eagine_add_module(
-	eagine.core.reflection FRAGMENT enumerators
+	eagine.core.reflection PARTITION enumerators
 	IMPORTS
 		decl_name
 		eagine.core.types
@@ -21,7 +21,7 @@ eagine_add_module(
 	eagine.core.reflection
 	INTERFACES
 		reflection
-	FRAGMENTS
+	PARTITIONS
 		decl_name
 		enumerators
 )

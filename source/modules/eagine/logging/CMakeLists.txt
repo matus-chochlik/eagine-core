@@ -3,12 +3,12 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.logging FRAGMENT severity
+	eagine.core.logging PARTITION severity
 	IMPORTS eagine.core.reflection
 )
 
 eagine_add_module(
-	eagine.core.logging FRAGMENT entry_arg
+	eagine.core.logging PARTITION entry_arg
 	IMPORTS
 		eagine.core.types
 		eagine.core.reflection
@@ -16,7 +16,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging FRAGMENT backend
+	eagine.core.logging PARTITION backend
 	IMPORTS
 		entry_arg
 		severity
@@ -26,7 +26,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging FRAGMENT null_backend
+	eagine.core.logging PARTITION null_backend
 	IMPORTS
 		backend
 		eagine.core.types
@@ -35,7 +35,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging FRAGMENT proxy_backend
+	eagine.core.logging PARTITION proxy_backend
 	IMPORTS
 		backend
 		eagine.core.types
@@ -45,7 +45,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging FRAGMENT ostream_backend
+	eagine.core.logging PARTITION ostream_backend
 	IMPORTS
 		backend
 		eagine.core.types
@@ -59,7 +59,7 @@ eagine_add_module(
 	eagine.core.logging
 	INTERFACES
 		logging
-	FRAGMENTS
+	PARTITIONS
 		entry_arg
 		severity
 		backend

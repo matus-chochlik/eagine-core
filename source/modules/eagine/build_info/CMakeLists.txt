@@ -3,22 +3,14 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.build_info FRAGMENT os
+	eagine.core.build_info PARTITION os
 	IMPORTS
 		eagine.core.memory
 		eagine.core.valid_if
 )
 
 eagine_add_module(
-	eagine.core.build_info FRAGMENT compiler
-	IMPORTS
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.valid_if
-)
-
-eagine_add_module(
-	eagine.core.build_info FRAGMENT git
+	eagine.core.build_info PARTITION compiler
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
@@ -26,7 +18,15 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.build_info FRAGMENT version
+	eagine.core.build_info PARTITION git
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.valid_if
+)
+
+eagine_add_module(
+	eagine.core.build_info PARTITION version
 	IMPORTS
 		git compiler
 		eagine.core.types
@@ -37,7 +37,7 @@ eagine_add_module(
 	eagine.core.build_info
 	INTERFACES
 		build_info
-	FRAGMENTS
+	PARTITIONS
 		os
 		git
 		compiler

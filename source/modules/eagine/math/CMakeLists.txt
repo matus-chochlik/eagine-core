@@ -3,12 +3,12 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.math FRAGMENT constants
+	eagine.core.math PARTITION constants
 	IMPORTS eagine.core.types
 )
 
 eagine_add_module(
-	eagine.core.math FRAGMENT functions
+	eagine.core.math PARTITION functions
 	IMPORTS constants
 )
 
@@ -16,7 +16,7 @@ eagine_add_module(
 	eagine.core.math
 	INTERFACES
 		math
-	FRAGMENTS
+	PARTITIONS
 		functions
 )
 

@@ -3,18 +3,18 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.concepts FRAGMENT utils
+	eagine.core.concepts PARTITION utils
 )
 
 eagine_add_module(
-	eagine.core.concepts FRAGMENT type_traits
+	eagine.core.concepts PARTITION type_traits
 	IMPORTS utils
 )
 
 eagine_add_module(
 	eagine.core.concepts
 	INTERFACES concepts
-	FRAGMENTS
+	PARTITIONS
 		utils
 		type_traits
 		does_not_hide

@@ -3,12 +3,12 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.debug FRAGMENT valgrind
+	eagine.core.debug PARTITION valgrind
 	IMPORTS eagine.core.types
 )
 
 eagine_add_module(
-	eagine.core.debug FRAGMENT slow_exec
+	eagine.core.debug PARTITION slow_exec
 	IMPORTS valgrind eagine.core.types
 )
 
@@ -16,7 +16,7 @@ eagine_add_module(
 	eagine.core.debug
 	INTERFACES
 		debug
-	FRAGMENTS
+	PARTITIONS
 		type_name
 		valgrind
 		slow_exec

@@ -4,26 +4,26 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
 	eagine.core.valid_if
-	FRAGMENT decl
+	PARTITION decl
 	IMPORTS
 		eagine.core.types
 		eagine.core.concepts
 )
 
 eagine_add_module(
-	eagine.core.valid_if FRAGMENT always
+	eagine.core.valid_if PARTITION always
 	IMPORTS decl eagine.core.concepts
 )
 eagine_add_module(
-	eagine.core.valid_if FRAGMENT never
+	eagine.core.valid_if PARTITION never
 	IMPORTS decl eagine.core.concepts
 )
 eagine_add_module(
-	eagine.core.valid_if FRAGMENT not_empty
+	eagine.core.valid_if PARTITION not_empty
 	IMPORTS decl eagine.core.concepts
 )
 eagine_add_module(
-	eagine.core.valid_if FRAGMENT compare
+	eagine.core.valid_if PARTITION compare
 	IMPORTS decl eagine.core.concepts
 )
 
@@ -31,7 +31,7 @@ eagine_add_module(
 	eagine.core.valid_if
 	INTERFACES
 		valid_if
-	FRAGMENTS
+	PARTITIONS
 		decl
 		always
 		never
