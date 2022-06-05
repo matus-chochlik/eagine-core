@@ -24,11 +24,19 @@ function(eagine_append_single_module_pcms)
 		TARGET ${EAGINE_MODULE_SOURCE}
 		PROPERTY EAGINE_MODULE_ID
 	)
-	set_property(
-		TARGET ${EAGINE_MODULE_TARGET}
-		APPEND PROPERTY COMPILE_OPTIONS
-		"-fmodule-file=${MODULE_ID}=${PCM_PATH}"
-	)
+	if("${PCM_PATH}" MATCHES "${MODULE_ID}.pcm$")
+		set_property(
+			TARGET ${EAGINE_MODULE_TARGET}
+			APPEND PROPERTY COMPILE_OPTIONS
+			"-fmodule-file=${PCM_PATH}"
+		)
+	else()
+		set_property(
+			TARGET ${EAGINE_MODULE_TARGET}
+			APPEND PROPERTY COMPILE_OPTIONS
+			"-fmodule-file=${MODULE_ID}=${PCM_PATH}"
+		)
+	endif()
 endfunction()
 
 function(eagine_depend_single_module_pcms)
@@ -67,14 +75,25 @@ function(eagine_append_module_pcms)
 	endforeach()
 endfunction()
 
-function(eagine_append_all_module_pcms)
+function(eagine_append_own_module_pcms)
 	set(ARG_VALUES SOURCE TARGET)
 	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
 
-	eagine_append_module_pcms(
-		SOURCE ${EAGINE_MODULE_SOURCE}
-		TARGET ${EAGINE_MODULE_TARGET}
-	)
+	unset(EAGINE_MODULE_IMPORTS)
+	get_property(
+		EAGINE_MODULE_IMPORTS
+		TARGET ${EAGINE_MODULE_SOURCE}
+		PROPERTY EAGINE_MODULE_IMPORTS)
+	foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
+		eagine_append_module_pcms(
+			TARGET ${EAGINE_MODULE_TARGET}
+			SOURCE ${IMPORT}
+		)
+		eagine_depend_single_module_pcms(
+			TARGET ${EAGINE_MODULE_TARGET}
+			SOURCE ${IMPORT}
+		)
+	endforeach()
 
 	unset(EAGINE_MODULE_FRAGMENTS)
 	get_property(
@@ -125,18 +144,41 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 
 	unset(EAGINE_MODULE_SOURCE_FILES)
 	foreach(SOURCE ${EAGINE_MODULE_SOURCES})
-		list(
-			APPEND EAGINE_MODULE_SOURCE_FILES
-			"${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp"
-		)
+		if("${EAGINE_MODULE_FRAGMENT}" STREQUAL "")
+			list(
+				APPEND EAGINE_MODULE_SOURCE_FILES
+				"${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp"
+			)
+		else()
+			message(
+				FATAL_ERROR
+				"SOURCES hould not be specified with module FRAGMENT "
+				"(${EAGINE_MODULE_PROPER}:${EAGINE_MODULE_FRAGMENT})"
+			)
+		endif()
 	endforeach()
 
 	if("${EAGINE_MODULE_FRAGMENT}" STREQUAL "")
 		add_library(
 			${EAGINE_MODULE_TARGET} STATIC
 			${EAGINE_MODULE_INTERFACE_FILES}
-			${EAGINE_MODULE_SOURCE_FILES}
 		)
+		if(NOT "${EAGINE_MODULE_SOURCE_FILES}" STREQUAL "")
+			add_library(
+				${EAGINE_MODULE_TARGET}-implement OBJECT
+				${EAGINE_MODULE_SOURCE_FILES}
+			)
+			set_property(
+				TARGET ${EAGINE_MODULE_TARGET}-implement
+				APPEND PROPERTY COMPILE_OPTIONS
+				"-fmodules"
+				"-fbuiltin-module-map"
+			)
+			target_link_libraries(
+				${EAGINE_MODULE_TARGET}
+				PUBLIC ${EAGINE_MODULE_TARGET}-implement
+			)
+		endif()
 		set_property(
 			TARGET ${EAGINE_MODULE_TARGET}
 			APPEND PROPERTY EAGINE_MODULE_ID
@@ -233,11 +275,20 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	endforeach()
 
 	add_custom_target(${EAGINE_MODULE_TARGET}-imports)
-
-	eagine_append_all_module_pcms(
+	eagine_append_own_module_pcms(
 		SOURCE ${EAGINE_MODULE_TARGET}
 		TARGET ${EAGINE_MODULE_TARGET}
 	)
+	if(TARGET ${EAGINE_MODULE_TARGET}-implement)
+		add_custom_target(
+			${EAGINE_MODULE_TARGET}-implement-imports
+			DEPENDS ${EAGINE_MODULE_TARGET}-imports
+		)
+		eagine_append_module_pcms(
+			SOURCE ${EAGINE_MODULE_TARGET}
+			TARGET ${EAGINE_MODULE_TARGET}-implement
+		)
+	endif()
 
 	get_property(
 		PCM_COMPILE_OPTIONS
@@ -281,7 +332,16 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		${EAGINE_MODULE_TARGET}-pcm
 		DEPENDS ${EAGINE_MODULE_TARGET}.pcm
 	)
-	add_dependencies(${EAGINE_MODULE_TARGET} ${EAGINE_MODULE_TARGET}-pcm)
+	add_dependencies(
+		${EAGINE_MODULE_TARGET}
+		${EAGINE_MODULE_TARGET}-pcm
+	)
+	if(TARGET ${EAGINE_MODULE_TARGET}-implement)
+		add_dependencies(
+			${EAGINE_MODULE_TARGET}-implement
+			${EAGINE_MODULE_TARGET}-pcm
+		)
+	endif()
 endfunction()
 
 function(eagine_target_module TARGET_NAME EAGINE_MODULE_SOURCE)
