@@ -56,6 +56,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.string FRAGMENT hexdump
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.utility
+)
+
+eagine_add_module(
 	eagine.core.string
 	INTERFACES
 		string
@@ -66,6 +74,9 @@ eagine_add_module(
 		c_str
 		substitution
 		format
+		hexdump
+	SOURCES
+		hexdump_impl
 )
 
 

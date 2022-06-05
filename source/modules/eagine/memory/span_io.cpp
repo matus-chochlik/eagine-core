@@ -88,7 +88,7 @@ export template <typename T, typename P, typename S>
 auto make_span_getter(span_size_t& i, const basic_span<T, P, S> spn) noexcept {
     return [&i, spn]() -> std::optional<std::remove_const_t<T>> {
         if(i < spn.size()) {
-            return {spn[i++], true};
+            return {spn[i++]};
         }
         return {};
     };
