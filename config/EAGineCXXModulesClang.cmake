@@ -116,7 +116,7 @@ endfunction()
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
 	set(ARG_VALUES FRAGMENT)
-	set(ARG_LISTS INTERFACES SOURCES FRAGMENTS IMPORTS)
+	set(ARG_LISTS INTERFACES SOURCES FRAGMENTS IMPORTS PRIVATE_LINK_LIBRARIES)
 	cmake_parse_arguments(
 		EAGINE_MODULE
 		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
@@ -178,6 +178,12 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				${EAGINE_MODULE_TARGET}
 				PUBLIC ${EAGINE_MODULE_TARGET}-implement
 			)
+			foreach(LIBRARY ${EAGINE_MODULE_PRIVATE_LINK_LIBRARIES})
+				target_link_libraries(
+					${EAGINE_MODULE_TARGET}-implement
+					PRIVATE ${LIBRARY}
+				)
+			endforeach()
 		endif()
 		set_property(
 			TARGET ${EAGINE_MODULE_TARGET}

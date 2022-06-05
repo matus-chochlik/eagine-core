@@ -8,10 +8,6 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.valid_if
 )
-target_link_libraries(
-	eagine.core.build_info.os
-	PUBLIC eagine-core-generated-headers
-)
 
 eagine_add_module(
 	eagine.core.build_info FRAGMENT compiler
@@ -20,10 +16,6 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.valid_if
 )
-target_link_libraries(
-	eagine.core.build_info.compiler
-	PUBLIC eagine-core-generated-headers
-)
 
 eagine_add_module(
 	eagine.core.build_info FRAGMENT git
@@ -31,10 +23,6 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.valid_if
-)
-target_link_libraries(
-	eagine.core.build_info.git
-	PUBLIC eagine-core-generated-headers
 )
 
 eagine_add_module(
@@ -58,5 +46,7 @@ eagine_add_module(
 		os_impl
 		git_impl
 		compiler_impl
+	PRIVATE_LINK_LIBRARIES
+		eagine-core-generated-headers
 )
 
