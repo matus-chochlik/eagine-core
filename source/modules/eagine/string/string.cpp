@@ -13,4 +13,7 @@ export import :path;
 export import :c_str;
 export import :substitution;
 export import :format;
+export import :base64;
+export import :base64dump;
+export import :bindump;
 export import :hexdump;

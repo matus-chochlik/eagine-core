@@ -56,6 +56,33 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.string FRAGMENT base64
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.utility
+		eagine.core.valid_if
+)
+
+eagine_add_module(
+	eagine.core.string FRAGMENT base64dump
+	IMPORTS
+		base64
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.utility
+		eagine.core.valid_if
+)
+
+eagine_add_module(
+	eagine.core.string FRAGMENT bindump
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.utility
+)
+
+eagine_add_module(
 	eagine.core.string FRAGMENT hexdump
 	IMPORTS
 		eagine.core.types
@@ -74,8 +101,12 @@ eagine_add_module(
 		c_str
 		substitution
 		format
+		base64
+		base64dump
+		bindump
 		hexdump
 	SOURCES
+		bindump_impl
 		hexdump_impl
 )
 

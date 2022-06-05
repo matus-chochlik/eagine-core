@@ -18,43 +18,32 @@ import <sstream>;
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename Putter>
-void _hexdump_to_hex_b(Putter& put_char, byte b) {
-    static const char hd[16] = {
-      '0',
-      '1',
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9',
-      'a',
-      'b',
-      'c',
-      'd',
-      'e',
-      'f'};
-    put_char(' ');
-    // NOLINTNEXTLINE(hicpp-signed-bitwise)
-    put_char(hd[(b >> 4U) & 0x0FU]);
-    put_char(hd[b & 0x0FU]);
+void _bindump_to_bin_b(Putter& put_char, byte b) {
+    static const char bd[2] = {'0', '1'};
+    for(const auto o : integer_range(4U)) {
+        byte c = (b >> ((4 - o - 1) * 2));
+        put_char(' ');
+        put_char(bd[(c >> 1U) & 0x01U]); // NOLINT(hicpp-signed-bitwise)
+        put_char(bd[c & 0x01U]);
+    }
 }
 //------------------------------------------------------------------------------
 template <typename Getter, typename Putter>
-void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
+void _bindump_do_bin_dump(
+  const span_size_t bgn,
+  Getter get_byte,
+  Putter put_char) {
 
     bool done = false;
-    span_size_t row = bgn - (bgn % 16);
+    span_size_t row = bgn - (bgn % 4);
 
-    bool row_none[16]{};
-    byte row_byte[16]{};
+    bool row_none[4]{};
+    byte row_byte[4]{};
 
     while(!done) {
         span_size_t pos = row;
         bool empty_row = true;
-        for(const auto b : integer_range(16)) {
+        for(const auto b : integer_range(4)) {
             if(pos < bgn || done) {
                 row_none[b] = true;
             } else {
@@ -82,7 +71,7 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
         put_char('|');
 
         pos = row;
-        for(const auto b : integer_range(16)) {
+        for(const auto b : integer_range(4)) {
             if(b == 8) {
                 put_char(' ');
             }
@@ -92,7 +81,8 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
                 put_char('.');
                 put_char('.');
             } else {
-                _hexdump_to_hex_b(put_char, row_byte[b]);
+                put_char(' ');
+                _bindump_to_bin_b(put_char, row_byte[b]);
             }
             ++pos;
         }
@@ -101,26 +91,7 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
         put_char('|');
 
         pos = row;
-        for(const auto b : integer_range(16)) {
-            if(b == 8) {
-                put_char(' ');
-            }
-
-            if(row_none[b]) {
-                put_char(' ');
-                put_char('.');
-                put_char('.');
-            } else {
-                _hexdump_to_hex_b(put_char, row_byte[b]);
-            }
-            ++pos;
-        }
-
-        put_char(' ');
-        put_char('|');
-
-        pos = row;
-        for(const auto b : integer_range(16)) {
+        for(const auto b : integer_range(4)) {
             if(b == 8) {
                 put_char(' ');
             }
@@ -133,27 +104,27 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
             ++pos;
         }
 
-        row += 16;
+        row += 4;
         put_char('|');
         put_char('\n');
     }
 }
 //------------------------------------------------------------------------------
-// ostream << hexdump
+// ostream << bindump
 //------------------------------------------------------------------------------
-void hexdump::apply(
-  const hexdump::byte_getter get_byte,
-  const hexdump::char_putter put_char) {
+void bindump::apply(
+  const bindump::byte_getter get_byte,
+  const bindump::char_putter put_char) {
 
-    _hexdump_do_hex_dump(0, get_byte, put_char);
+    _bindump_do_bin_dump(0, get_byte, put_char);
 }
 //------------------------------------------------------------------------------
-auto operator<<(std::ostream& out, const hexdump& hd) -> std::ostream& {
+auto operator<<(std::ostream& out, const bindump& hd) -> std::ostream& {
     out << '\n';
 
     span_size_t i = 0;
 
-    _hexdump_do_hex_dump(
+    _bindump_do_bin_dump(
       memory::const_address(hd._mb.begin()).value(),
       make_span_getter(i, hd._mb),
       [&out](char c) { out << c; });
