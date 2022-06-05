@@ -84,6 +84,24 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.memory PARTITION std_allocator
+	IMPORTS
+		block
+		byte_allocator
+		shared_allocator
+		eagine.core.types
+)
+
+eagine_add_module(
+	eagine.core.memory PARTITION buffer
+	IMPORTS
+		address
+		block
+		shared_allocator
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.memory
 	INTERFACES
 		memory
@@ -103,6 +121,8 @@ eagine_add_module(
 		edit_distance
 		byte_allocator
 		shared_allocator
+		std_allocator
+		buffer
 	SOURCES
 		memory_impl
 )
