@@ -21,6 +21,12 @@ define_property(
 	BRIEF_DOCS "Full module name"
 	FULL_DOCS "Full name of a module or a module partition"
 )
+define_property(
+	TARGET
+	PROPERTY EAGINE_MODULE_PP_NAME
+	BRIEF_DOCS "Module preprocessor name"
+	FULL_DOCS "Preprocessor name of a module"
+)
 
 define_property(
 	TARGET

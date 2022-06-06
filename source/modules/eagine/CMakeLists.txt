@@ -19,6 +19,7 @@ add_subdirectory(math)
 
 eagine_add_module(
 	eagine.core
+	PP_NAME CORE
 	INTERFACES core
 	IMPORTS
 		eagine.core.build_config
