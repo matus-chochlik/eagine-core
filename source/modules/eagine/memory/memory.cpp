@@ -17,6 +17,7 @@ export import :string_span;
 export import :span_io;
 export import :span_algorithm;
 export import :split_span;
+export import :aligned_block;
 export import :byteset;
 export import :biteset;
 export import :fixed_size_string;

@@ -58,6 +58,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.memory PARTITION aligned_block
+	IMPORTS
+		block span_algorithm
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.memory PARTITION edit_distance
 	IMPORTS span eagine.core.types
 )
@@ -131,6 +138,7 @@ eagine_add_module(
 		span_io
 		span_algorithm
 		split_span
+		aligned_block
 		byteset
 		biteset
 		fixed_size_string

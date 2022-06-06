@@ -56,6 +56,6 @@ eagine_add_module(
 		overloaded
 		timeout
 		signal_switch
+		protected_member
 		program_args
 )
-
