@@ -11,6 +11,7 @@ export import :multi_byte;
 export import :list;
 export import :path;
 export import :c_str;
+export import :algorithm;
 export import :substitution;
 export import :format;
 export import :base64;

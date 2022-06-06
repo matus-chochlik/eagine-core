@@ -23,7 +23,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 template <typename Dst, typename Src>
 struct implicitly_within_limits
-  : bool_constant<(
+  : std::bool_constant<(
       ((std::is_integral_v<Dst> && std::is_integral_v<Src>) ||
        (std::is_floating_point_v<Dst> && std::is_floating_point_v<Src>)) &&
       (std::is_signed_v<Dst> ==

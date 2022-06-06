@@ -13,7 +13,7 @@ import <type_traits>;
 namespace eagine {
 
 // all_are_same
-template <typename T, typename... P>
+export template <typename T, typename... P>
 using all_are_same = std::conjunction<std::true_type, std::is_same<T, P>...>;
 
 export template <typename T, typename... P>
@@ -23,7 +23,7 @@ export template <typename T, typename... P>
 constexpr bool all_are_same_v = all_are_same<T, P...>::value;
 
 // all_are_derived_from
-template <typename T, typename... P>
+export template <typename T, typename... P>
 using all_are_derived_from =
   std::conjunction<std::true_type, std::is_base_of<T, P>...>;
 
@@ -34,7 +34,7 @@ export template <typename T, typename... P>
 constexpr bool all_are_derived_from_v = all_are_derived_from<T, P...>::value;
 
 // all_are_convertible_to
-template <typename T, typename... P>
+export template <typename T, typename... P>
 using all_are_convertible_to =
   std::conjunction<std::true_type, std::is_convertible<P, T>...>;
 

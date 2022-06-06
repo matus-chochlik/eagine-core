@@ -10,6 +10,7 @@ add_subdirectory(memory)
 add_subdirectory(identifier)
 add_subdirectory(utility)
 add_subdirectory(valid_if)
+add_subdirectory(vectorization)
 add_subdirectory(reflection)
 add_subdirectory(build_info)
 add_subdirectory(container)
@@ -31,6 +32,7 @@ eagine_add_module(
 		eagine.core.identifier
 		eagine.core.utility
 		eagine.core.valid_if
+		eagine.core.vectorization
 		eagine.core.reflection
 		eagine.core.build_info
 		eagine.core.container

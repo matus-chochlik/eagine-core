@@ -37,6 +37,12 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.string PARTITION algorithm
+	IMPORTS
+		eagine.core.memory
+)
+
+eagine_add_module(
 	eagine.core.string PARTITION substitution
 	IMPORTS
 		c_str
@@ -99,6 +105,7 @@ eagine_add_module(
 		list
 		path
 		c_str
+		algorithm
 		substitution
 		format
 		base64

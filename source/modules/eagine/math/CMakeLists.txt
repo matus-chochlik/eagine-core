@@ -13,11 +13,27 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.math PARTITION scalar
+	IMPORTS eagine.core.vectorization
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION vector
+	IMPORTS scalar
+		eagine.core.concepts
+		eagine.core.types
+		eagine.core.vectorization
+)
+
+eagine_add_module(
 	eagine.core.math
 	INTERFACES
 		math
 	PARTITIONS
+		constants
 		functions
+		scalar
+		vector
 )
 
 

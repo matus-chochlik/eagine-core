@@ -48,11 +48,6 @@ export using process_instance_id_t = std::uint32_t;
 /// @brief Unique host identifier type.
 export using host_id_t = std::uint32_t;
 //------------------------------------------------------------------------------
-/// @brief Alias for boolean constant type.
-/// @ingroup type_utils
-export template <bool B>
-using bool_constant = std::integral_constant<bool, B>;
-
 /// @brief Alias for signed int constant type.
 /// @ingroup type_utils
 export template <int I>
