@@ -12,8 +12,8 @@ module;
 export module eagine.core.memory:buffer;
 
 import eagine.core.types;
+export import :block;
 import :address;
-import :block;
 import :shared_allocator;
 import <utility>;
 

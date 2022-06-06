@@ -8,11 +8,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.utility PARTITION optional_ref
-	IMPORTS eagine.core.types
-)
-
-eagine_add_module(
 	eagine.core.utility PARTITION callable_ref
 	IMPORTS
 		eagine.core.concepts
@@ -55,7 +50,6 @@ eagine_add_module(
 		integer_hash
 		integer_range
 		bit_density
-		optional_ref
 		callable_ref
 		memoized
 		scope_exit

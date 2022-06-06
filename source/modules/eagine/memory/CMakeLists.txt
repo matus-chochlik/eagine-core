@@ -51,6 +51,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.memory PARTITION split_span
+	IMPORTS
+		span block span_algorithm
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.memory PARTITION edit_distance
 	IMPORTS span eagine.core.types
 )
@@ -102,6 +109,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.memory PARTITION buffer_pool
+	IMPORTS
+		buffer
+		shared_allocator
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.memory
 	INTERFACES
 		memory
@@ -115,6 +130,7 @@ eagine_add_module(
 		string_span
 		span_io
 		span_algorithm
+		split_span
 		byteset
 		biteset
 		fixed_size_string
@@ -123,6 +139,7 @@ eagine_add_module(
 		shared_allocator
 		std_allocator
 		buffer
+		buffer_pool
 	SOURCES
 		memory_impl
 )

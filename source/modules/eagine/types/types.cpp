@@ -16,6 +16,7 @@ export import :limits;
 export import :integer;
 export import :extract;
 export import :tribool;
+export import :optional_ref;
 export import :bitfield;
 export import :function_constant;
 export import :selector;

@@ -6,12 +6,15 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 export module eagine.core.types:nothing;
+import eagine.core.build_config;
+import <type_traits>;
 
 namespace eagine {
 
 /// @brief Class representing "none" / "nothing" values.
 /// @ingroup type_utils
 /// @see nothing
+/// @see not_in_low_profile
 export struct nothing_t {
 
     /// @brief Type alias to self.
@@ -26,5 +29,11 @@ export struct nothing_t {
 /// @ingroup type_utils
 /// @see nothing_t
 export constexpr nothing_t nothing{};
+
+/// @brief Alias that results in T in non low-profile builds and in nothing_t otherwise.
+/// @ingroup type_utils
+/// @see nothing_t
+export template <typename T>
+using not_in_low_profile = std::conditional_t<low_profile_build, nothing_t, T>;
 
 } // namespace eagine

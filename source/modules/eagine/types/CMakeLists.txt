@@ -3,7 +3,13 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(eagine.core.types PARTITION basic)
+eagine_add_module(eagine.core.types PARTITION tribool)
 eagine_add_module(eagine.core.types PARTITION interface)
+
+eagine_add_module(
+	eagine.core.types PARTITION nothing
+	IMPORTS eagine.core.build_config
+)
 
 eagine_add_module(
 	eagine.core.types PARTITION bitfield
@@ -13,6 +19,11 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.types PARTITION extract
 	IMPORTS eagine.core.concepts
+)
+
+eagine_add_module(
+	eagine.core.types PARTITION optional_ref
+	IMPORTS nothing tribool
 )
 
 eagine_add_module(
@@ -53,6 +64,7 @@ eagine_add_module(
 		integer
 		extract
 		tribool
+		optional_ref
 		bitfield
 		function_constant
 		selector

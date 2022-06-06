@@ -8,9 +8,10 @@
 module;
 #include <cassert>
 
-export module eagine.core.utility:optional_ref;
+export module eagine.core.types:optional_ref;
 
-import eagine.core.types;
+import :nothing;
+import :tribool;
 import <cstddef>;
 import <utility>;
 import <type_traits>;
