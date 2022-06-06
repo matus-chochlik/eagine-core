@@ -2,6 +2,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
+add_subdirectory(build_config)
 add_subdirectory(concepts)
 add_subdirectory(types)
 add_subdirectory(debug)
@@ -20,6 +21,7 @@ eagine_add_module(
 	eagine.core
 	INTERFACES core
 	IMPORTS
+		eagine.core.build_config
 		eagine.core.concepts
 		eagine.core.types
 		eagine.core.debug

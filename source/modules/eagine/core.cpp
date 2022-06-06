@@ -7,6 +7,7 @@
 ///
 export module eagine.core;
 
+export import eagine.core.build_config;
 export import eagine.core.concepts;
 export import eagine.core.types;
 export import eagine.core.debug;

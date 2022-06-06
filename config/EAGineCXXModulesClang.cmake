@@ -174,6 +174,12 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				"-fmodules"
 				"-fbuiltin-module-map"
 			)
+			set_property(
+				TARGET ${EAGINE_MODULE_TARGET}-implement
+				APPEND PROPERTY COMPILE_DEFINITIONS
+				EAGINE_DEBUG=${EAGINE_DEBUG}
+				EAGINE_LOW_PROFILE=${LOW_PROFILE}
+			)
 			target_link_libraries(
 				${EAGINE_MODULE_TARGET}
 				PUBLIC ${EAGINE_MODULE_TARGET}-implement
@@ -218,6 +224,12 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		APPEND PROPERTY COMPILE_OPTIONS
 		"-fmodules"
 		"-fbuiltin-module-map"
+	)
+	set_property(
+		TARGET ${EAGINE_MODULE_TARGET}
+		APPEND PROPERTY COMPILE_DEFINITIONS
+		EAGINE_DEBUG=${EAGINE_DEBUG}
+		EAGINE_LOW_PROFILE=${LOW_PROFILE}
 	)
 	set_property(
 		TARGET ${EAGINE_MODULE_TARGET}
@@ -312,10 +324,10 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		PROPERTY COMPILE_DEFINITIONS
 	)
 	unset(PCM_COMPILE_DEFINITIONS)
-	foreach(DEF ${DIR_COMPILE_DEFINITIONS})
+	foreach(DEF ${TGT_COMPILE_DEFINITIONS})
 		list(APPEND PCM_COMPILE_DEFINITIONS "-D${DEF}")
 	endforeach()
-	foreach(DEF ${TGT_COMPILE_DEFINITIONS})
+	foreach(DEF ${DIR_COMPILE_DEFINITIONS})
 		list(APPEND PCM_COMPILE_DEFINITIONS "-D${DEF}")
 	endforeach()
 
@@ -358,6 +370,12 @@ function(eagine_target_module TARGET_NAME EAGINE_MODULE_SOURCE)
 		APPEND PROPERTY COMPILE_OPTIONS
 		"-fmodules"
 		"-fbuiltin-module-map"
+	)
+	set_property(
+		TARGET ${TARGET_NAME}
+		APPEND PROPERTY COMPILE_DEFINITIONS
+		EAGINE_DEBUG=${EAGINE_DEBUG}
+		EAGINE_LOW_PROFILE=${LOW_PROFILE}
 	)
 	add_custom_target(${TARGET_NAME}-imports)
 
