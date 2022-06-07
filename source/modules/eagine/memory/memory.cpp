@@ -13,6 +13,7 @@ export import :null_ptr;
 export import :offset_ptr;
 export import :span;
 export import :block;
+export import :offset_span;
 export import :string_span;
 export import :span_io;
 export import :span_algorithm;

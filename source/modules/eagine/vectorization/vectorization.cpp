@@ -7,6 +7,8 @@
 ///
 export module eagine.core.vectorization;
 
+export import :data_array;
+export import :data_simd;
 export import :data;
 export import :shuffle;
 export import :from;

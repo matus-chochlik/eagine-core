@@ -12,12 +12,12 @@ add_subdirectory(utility)
 add_subdirectory(valid_if)
 add_subdirectory(vectorization)
 add_subdirectory(reflection)
+add_subdirectory(math)
 add_subdirectory(build_info)
 add_subdirectory(container)
 add_subdirectory(string)
 add_subdirectory(logging)
 
-add_subdirectory(math)
 
 eagine_add_module(
 	eagine.core
@@ -35,9 +35,9 @@ eagine_add_module(
 		eagine.core.vectorization
 		eagine.core.reflection
 		eagine.core.build_info
+		eagine.core.math
 		eagine.core.container
 		eagine.core.string
 		eagine.core.logging
-		eagine.core.math
 )
 

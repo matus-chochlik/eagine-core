@@ -19,10 +19,18 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.math PARTITION vector
-	IMPORTS scalar
+	IMPORTS
+		scalar
 		eagine.core.concepts
 		eagine.core.types
 		eagine.core.vectorization
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION animated_value
+	IMPORTS
+		functions
+		eagine.core.valid_if
 )
 
 eagine_add_module(
@@ -34,6 +42,7 @@ eagine_add_module(
 		functions
 		scalar
 		vector
+		animated_value
 )
 
 

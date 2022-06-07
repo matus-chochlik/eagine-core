@@ -97,6 +97,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.string PARTITION keyboard_distance
+	IMPORTS
+		eagine.core.math
+		eagine.core.memory
+		eagine.core.container
+)
+
+eagine_add_module(
 	eagine.core.string
 	INTERFACES
 		string
@@ -112,9 +120,11 @@ eagine_add_module(
 		base64dump
 		bindump
 		hexdump
+		keyboard_distance
 	SOURCES
 		bindump_impl
 		hexdump_impl
+		keyboard_distance_impl
 )
 
 

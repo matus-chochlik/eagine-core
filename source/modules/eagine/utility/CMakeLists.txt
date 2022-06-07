@@ -46,9 +46,7 @@ eagine_add_module(
 		count
 		bool_aggregate
 		double_buffer
-		iterator
 		integer_hash
-		integer_range
 		bit_density
 		callable_ref
 		memoized

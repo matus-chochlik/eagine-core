@@ -16,7 +16,7 @@ import <algorithm>;
 import <functional>;
 import <stdexcept>;
 import <utility>;
-import <vector>;
+export import <vector>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ struct flat_map_value_compare : Cmp {
     }
 };
 //------------------------------------------------------------------------------
-template <typename Key, typename Val, typename Cmp>
+export template <typename Key, typename Val, typename Cmp>
 struct flat_map_ops : flat_map_value_compare<Key, Val, Cmp> {
     using value_type = std::pair<const Key, Val>;
 
@@ -83,7 +83,7 @@ struct flat_map_ops : flat_map_value_compare<Key, Val, Cmp> {
     }
 
     template <typename I, typename K>
-    auto find(I b, const I e, const K& key) const noexcept {
+    auto find(I b, const I e, const K& key) const noexcept -> I {
         b = lower_bound(b, e, key);
         if((b != e) && value_comp()(key, *b)) {
             b = e;
@@ -108,7 +108,7 @@ struct flat_map_ops : flat_map_value_compare<Key, Val, Cmp> {
     }
 };
 //------------------------------------------------------------------------------
-template <typename Key, typename Val, typename Cmp, typename Derived>
+export template <typename Key, typename Val, typename Cmp, typename Derived>
 class flat_map_view_crtp : flat_map_ops<Key, Val, Cmp> {
     using _ops_t = flat_map_ops<Key, Val, Cmp>;
 
@@ -134,47 +134,47 @@ public:
         return _ops().empty(_b(), _e());
     }
 
-    auto size() const {
+    auto size() const noexcept {
         return _ops().size(_b(), _e());
     }
 
     template <typename K>
-    auto find(const K& key) {
+    auto find(const K& key) noexcept {
         return _ops().find(_b(), _e(), key);
     }
 
     template <typename K>
-    auto find(const K& key) const {
+    auto find(const K& key) const noexcept {
         return _ops().find(_b(), _e(), key);
     }
 
     template <typename K>
-    auto lower_bound(const K& key) {
+    auto lower_bound(const K& key) noexcept {
         return _ops().lower_bound(_b(), _e(), key);
     }
 
     template <typename K>
-    auto lower_bound(const K& key) const {
+    auto lower_bound(const K& key) const noexcept {
         return _ops().lower_bound(_b(), _e(), key);
     }
 
     template <typename K>
-    auto upper_bound(const K& key) {
+    auto upper_bound(const K& key) noexcept {
         return _ops().upper_bound(_b(), _e(), key);
     }
 
     template <typename K>
-    auto upper_bound(const K& key) const {
+    auto upper_bound(const K& key) const noexcept {
         return _ops().upper_bound(_b(), _e(), key);
     }
 
     template <typename K>
-    auto equal_range(const K& key) {
+    auto equal_range(const K& key) noexcept {
         return _ops().equal_range(_b(), _e(), key);
     }
 
     template <typename K>
-    auto equal_range(const K& key) const {
+    auto equal_range(const K& key) const noexcept {
         return _ops().equal_range(_b(), _e(), key);
     }
 

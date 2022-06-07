@@ -17,9 +17,9 @@ namespace eagine::vect {
 export template <typename T, int N, bool V>
 struct data
   : std::conditional_t<
-      _has_vec_data<T, N>::value && V,
-      _vec_data<T, N>,
-      _ary_data<T, N>> {
+      _has_simd_data<T, N>::value && V,
+      data_simd<T, N>,
+      data_array<T, N>> {
     using value_type = T;
     static constexpr int size = N;
 };
@@ -29,7 +29,7 @@ using data_t = typename data<T, N, V>::type;
 
 // has_simd_data
 export template <typename T, int N, bool V>
-struct has_simd_data : std::bool_constant<V && _has_vec_data<T, N>::value> {};
+struct has_simd_data : std::bool_constant<V && _has_simd_data<T, N>::value> {};
 
 export template <typename T, int N, bool V>
 using has_simd_data_t = typename has_simd_data<T, N, V>::type;
@@ -38,9 +38,9 @@ using has_simd_data_t = typename has_simd_data<T, N, V>::type;
 export template <typename T, int N, bool V>
 struct data_param
   : std::conditional_t<
-      V && _has_vec_data<T, N>::value,
-      const _vec_data<T, N>,
-      const _ary_param<T, N>> {};
+      V && _has_simd_data<T, N>::value,
+      const data_simd<T, N>,
+      const data_array_param<T, N>> {};
 
 // param
 export template <typename Data>

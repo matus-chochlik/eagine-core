@@ -18,3 +18,4 @@ export import :base64;
 export import :base64dump;
 export import :bindump;
 export import :hexdump;
+export import :keyboard_distance;

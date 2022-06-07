@@ -62,6 +62,7 @@ eagine_add_module(
 		compare
 		limits
 		integer
+		integer_range
 		extract
 		tribool
 		optional_ref
