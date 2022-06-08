@@ -37,7 +37,13 @@ constexpr auto adapt_entry_arg(
 //------------------------------------------------------------------------------
 export template <typename T>
 concept adapted_for_log_entry =
-  requires(identifier id, T v) { adapt_entry_arg(id, v); };
+  requires(identifier id, T value) { adapt_entry_arg(id, value); };
+
+export template <typename T, typename E>
+concept argument_of_log =
+  requires(E entry, identifier id, identifier tag, T value) {
+      entry.arg(id, tag, value);
+  };
 //------------------------------------------------------------------------------
 } // namespace eagine
 

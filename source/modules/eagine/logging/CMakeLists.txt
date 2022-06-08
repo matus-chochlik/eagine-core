@@ -56,6 +56,17 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.logging PARTITION entry
+	IMPORTS
+		entry_arg
+		backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.valid_if
+)
+
+eagine_add_module(
 	eagine.core.logging
 	INTERFACES
 		logging
@@ -66,6 +77,7 @@ eagine_add_module(
 		null_backend
 		proxy_backend
 		ostream_backend
+		entry
 	SOURCES
 		proxy_backend_impl
 )

@@ -20,7 +20,7 @@ import <memory>;
 namespace eagine::memory {
 
 // std_allocator
-template <typename T>
+export template <typename T>
 class std_allocator : public block_owner {
 
 public:
