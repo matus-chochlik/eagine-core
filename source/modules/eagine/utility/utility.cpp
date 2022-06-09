@@ -18,4 +18,5 @@ export import :scope_exit;
 export import :overloaded;
 export import :timeout;
 export import :signal_switch;
+export import :process;
 export import :program_args;

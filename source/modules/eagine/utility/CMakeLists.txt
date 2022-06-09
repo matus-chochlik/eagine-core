@@ -2,6 +2,8 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
+eagine_add_module(eagine.core.utility PARTITION integer_hash)
+
 eagine_add_module(
 	eagine.core.utility PARTITION bit_density
 	IMPORTS eagine.core.types
@@ -32,6 +34,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.utility PARTITION process
+	IMPORTS
+		integer_hash
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.utility PARTITION program_args
 	IMPORTS
 		eagine.core.types
@@ -55,5 +64,6 @@ eagine_add_module(
 		timeout
 		signal_switch
 		protected_member
+		process
 		program_args
 )

@@ -15,11 +15,11 @@ namespace eagine {
 /// @brief Returns the name of the OS on which the executable is built.
 /// @ingroup main_ctx
 /// @see config_os_code_name
-auto config_os_name() noexcept -> valid_if_not_empty<string_view>;
+export auto config_os_name() noexcept -> valid_if_not_empty<string_view>;
 
 /// @brief Returns the code-name of the OS on which the executable is built.
 /// @ingroup main_ctx
 /// @see config_os_name
-auto config_os_code_name() noexcept -> valid_if_not_empty<string_view>;
+export auto config_os_code_name() noexcept -> valid_if_not_empty<string_view>;
 
 } // namespace eagine

@@ -9,3 +9,5 @@ export module eagine.core.build_info;
 
 export import :git;
 export import :version;
+export import :compiler;
+export import :os;

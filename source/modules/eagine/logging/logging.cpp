@@ -8,8 +8,11 @@
 export module eagine.core.logging;
 
 export import :severity;
+export import :config;
 export import :backend;
 export import :entry_arg;
 export import :null_backend;
 export import :proxy_backend;
 export import :ostream_backend;
+export import :logger;
+export import :root_logger;

@@ -43,6 +43,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.string PARTITION environment
+	IMPORTS
+		c_str
+		eagine.core.memory
+)
+
+eagine_add_module(
 	eagine.core.string PARTITION substitution
 	IMPORTS
 		c_str
@@ -114,6 +121,7 @@ eagine_add_module(
 		path
 		c_str
 		algorithm
+		environment
 		substitution
 		format
 		base64
