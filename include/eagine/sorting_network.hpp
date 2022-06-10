@@ -189,8 +189,6 @@ struct manual_sorting_network_base<3> {
     }
 };
 
-constexpr span_size_t manual_sorting_network_base<3>::idx[3][3];
-
 template <>
 struct manual_sorting_network_base<4> {
     static constexpr bool is_specialized = true;
@@ -214,8 +212,6 @@ struct manual_sorting_network_base<4> {
         return idx[round][elem];
     }
 };
-
-constexpr span_size_t manual_sorting_network_base<4>::idx[3][4];
 
 template <>
 struct manual_sorting_network_base<5> {
@@ -243,8 +239,6 @@ struct manual_sorting_network_base<5> {
     }
 };
 
-constexpr span_size_t manual_sorting_network_base<5>::idx[5][5];
-
 template <>
 struct manual_sorting_network_base<6> {
     static constexpr bool is_specialized = true;
@@ -270,8 +264,6 @@ struct manual_sorting_network_base<6> {
         return idx[round][elem];
     }
 };
-
-constexpr span_size_t manual_sorting_network_base<6>::idx[5][6];
 
 template <>
 struct manual_sorting_network_base<7> {
@@ -300,8 +292,6 @@ struct manual_sorting_network_base<7> {
     }
 };
 
-constexpr span_size_t manual_sorting_network_base<7>::idx[6][7];
-
 template <>
 struct manual_sorting_network_base<8> {
     static constexpr bool is_specialized = true;
@@ -328,8 +318,6 @@ struct manual_sorting_network_base<8> {
         return idx[round][elem];
     }
 };
-
-constexpr span_size_t manual_sorting_network_base<8>::idx[6][8];
 
 template <>
 struct manual_sorting_network_base<9> {
@@ -359,8 +347,6 @@ struct manual_sorting_network_base<9> {
     }
 };
 
-constexpr span_size_t manual_sorting_network_base<9>::idx[7][9];
-
 template <>
 struct manual_sorting_network_base<10> {
     static constexpr bool is_specialized = true;
@@ -389,8 +375,6 @@ struct manual_sorting_network_base<10> {
         return idx[round][elem];
     }
 };
-
-constexpr span_size_t manual_sorting_network_base<10>::idx[7][10];
 
 template <>
 struct manual_sorting_network_base<11> {
@@ -422,8 +406,6 @@ struct manual_sorting_network_base<11> {
     }
 };
 
-constexpr span_size_t manual_sorting_network_base<11>::idx[8][11];
-
 template <>
 struct manual_sorting_network_base<12> {
     static constexpr bool is_specialized = true;
@@ -452,8 +434,6 @@ struct manual_sorting_network_base<12> {
         return idx[round][elem];
     }
 };
-
-constexpr span_size_t manual_sorting_network_base<12>::idx[8][12];
 
 template <>
 struct manual_sorting_network_base<14> {
@@ -485,8 +465,6 @@ struct manual_sorting_network_base<14> {
     }
 };
 
-constexpr span_size_t manual_sorting_network_base<14>::idx[9][14];
-
 template <>
 struct manual_sorting_network_base<16> {
     static constexpr bool is_specialized = true;
@@ -516,8 +494,6 @@ struct manual_sorting_network_base<16> {
         return idx[round][elem];
     }
 };
-
-constexpr span_size_t manual_sorting_network_base<16>::idx[9][16];
 
 template <span_size_t N>
 struct sorting_network
