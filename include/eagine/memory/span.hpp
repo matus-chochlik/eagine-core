@@ -25,6 +25,14 @@
 namespace eagine {
 namespace memory {
 //------------------------------------------------------------------------------
+// clang-format off
+template <typename T, typename P = anything, typename S = span_size_t>
+concept span_source = requires(T v) {
+	{ v.data() } -> std::convertible_to<P>;
+    { v.size() } -> std::convertible_to<S>;
+};
+// clang-format on
+//------------------------------------------------------------------------------
 // rebind_pointer
 //------------------------------------------------------------------------------
 template <typename Ptr, typename U>
@@ -35,52 +43,6 @@ using rebind_pointer_t = typename rebind_pointer<Ptr, U>::type;
 //------------------------------------------------------------------------------
 template <typename T, typename U>
 struct rebind_pointer<T*, U> : std::type_identity<U*> {};
-//------------------------------------------------------------------------------
-// has_span_size_member
-//------------------------------------------------------------------------------
-struct _has_span_size_member_base {
-    template <typename X, typename S = decltype(std::declval<X>().size())>
-
-    static auto _detect(X*) -> bool_constant<std::is_integral_v<S>>;
-    static auto _detect(...) -> std::false_type;
-};
-//------------------------------------------------------------------------------
-/// @brief Helper class detecting if type T has x.size() member function.
-/// @ingroup type_utils
-template <typename T>
-struct has_span_size_member
-  : public decltype(_has_span_size_member_base::_detect(
-      static_cast<T*>(nullptr))) {};
-//------------------------------------------------------------------------------
-/// @brief Trait indicating if type T has x.size() member function.
-/// @ingroup type_utils
-template <typename T>
-constexpr bool has_span_size_member_v = has_span_size_member<T>::value;
-//------------------------------------------------------------------------------
-// has_span_data_member
-//------------------------------------------------------------------------------
-template <typename Elem>
-struct _has_span_data_member_base {
-    template <
-      typename X,
-      typename P = decltype(std::declval<X>().data()),
-      typename PT = typename std::pointer_traits<P>::element_type>
-    static auto _detect(X*) -> std::is_convertible<PT, Elem>;
-
-    static auto _detect(...) -> std::false_type;
-};
-//------------------------------------------------------------------------------
-/// @brief Helper class detecting if type T has x.data() member function.
-/// @ingroup type_utils
-template <typename T, typename E>
-struct has_span_data_member
-  : public decltype(_has_span_data_member_base<E>::_detect(
-      static_cast<T*>(nullptr))) {};
-//------------------------------------------------------------------------------
-/// @brief Trait indicating if type T has x.size() member function.
-/// @ingroup type_utils
-template <typename T, typename E = anything>
-constexpr bool has_span_data_member_v = has_span_data_member<T, E>::value;
 //------------------------------------------------------------------------------
 // basic_span
 //------------------------------------------------------------------------------
@@ -532,19 +494,15 @@ static constexpr auto view(std::initializer_list<T> il) noexcept
 //------------------------------------------------------------------------------
 /// @brief Creates a const view over a compatible contiguous container.
 /// @ingroup memory
-template <typename C>
-static constexpr auto view(const C& container) noexcept
-    requires(has_span_data_member_v<C> && has_span_size_member_v<C>)
-{
+template <span_source C>
+static constexpr auto view(const C& container) noexcept {
     return view(container.data(), container.size());
 }
 //------------------------------------------------------------------------------
 /// @brief Creates a mutable span covering a compatible contiguous container.
 /// @ingroup memory
-template <typename C>
-static constexpr auto cover(C& container) noexcept
-    requires(has_span_data_member_v<C> && has_span_size_member_v<C>)
-{
+template <span_source C>
+static constexpr auto cover(C& container) noexcept {
     return cover(container.data(), container.size());
 }
 //------------------------------------------------------------------------------

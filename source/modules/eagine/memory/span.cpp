@@ -488,9 +488,7 @@ constexpr auto view(std::initializer_list<T> il) noexcept -> const_span<T> {
 /// @brief Creates a const view over a compatible contiguous container.
 /// @ingroup memory
 export template <span_source C>
-constexpr auto view(const C& container) noexcept
-    requires(span_source<C>)
-{
+constexpr auto view(const C& container) noexcept {
     return view(container.data(), container.size());
 }
 //------------------------------------------------------------------------------

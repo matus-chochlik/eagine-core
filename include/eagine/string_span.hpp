@@ -85,23 +85,17 @@ public:
     ///
     /// The container passed as argument should have @c data and @c size
     /// member functions with the same semantics as std::string does.
-    template <typename Str>
+    template <memory::span_source<P, S> Str>
     constexpr basic_string_span(Str& str) noexcept
-        requires(
-          memory::has_span_data_member_v<Str, C> &&
-          memory::has_span_size_member_v<Str>)
-    : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
+      : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
 
     /// @brief Construction from compatible container const reference.
     ///
     /// The container passed as argument should have @c data and @c size
     /// member functions with the same semantics as std::string does.
-    template <typename Str>
+    template <memory::span_source<P, S> Str>
     constexpr basic_string_span(const Str& str) noexcept
-        requires(
-          memory::has_span_data_member_v<Str, C> &&
-          memory::has_span_size_member_v<Str>)
-    : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
+      : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
 
     using base::data;
     using base::empty;
