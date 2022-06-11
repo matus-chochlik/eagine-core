@@ -331,7 +331,7 @@ constexpr auto skip_to(const basic_span<T, P, S> spn, Pos pos) noexcept
   -> basic_span<T, P, S>
     requires(std::is_convertible_v<Pos, P>)
 {
-    EAGINE_ASSERT(spn.begin() <= pos && pos <= spn.end());
+    assert(spn.begin() <= pos && pos <= spn.end());
     return {pos, spn.end()};
 }
 //------------------------------------------------------------------------------
