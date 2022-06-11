@@ -7,117 +7,12 @@
 ///
 export module eagine.core.logging:proxy_backend;
 
-import eagine.core.types;
-import eagine.core.memory;
-import eagine.core.identifier;
-import eagine.core.string;
 import :backend;
-import <chrono>;
-import <functional>;
 import <memory>;
-import <vector>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export class proxy_log_backend : public logger_backend {
-public:
-    proxy_log_backend(log_stream_info info) noexcept
-      : _info{std::move(info)} {}
-
-    auto configure(application_config&) -> bool final;
-
-    auto entry_backend(
-      const identifier source,
-      const log_event_severity severity) noexcept -> logger_backend* final;
-
-    auto allocator() noexcept -> memory::shared_byte_allocator final;
-    auto type_id() noexcept -> identifier final;
-
-    void enter_scope(const identifier source) noexcept final;
-    void leave_scope(const identifier source) noexcept final;
-
-    void set_description(
-      const identifier source,
-      const logger_instance_id instance,
-      const string_view name,
-      const string_view desc) noexcept final;
-
-    auto begin_message(
-      const identifier source,
-      const identifier tag,
-      const logger_instance_id instance,
-      const log_event_severity severity,
-      const string_view format) noexcept -> bool final;
-
-    void add_nothing(const identifier arg, const identifier tag) noexcept final;
-
-    void add_identifier(
-      const identifier arg,
-      const identifier tag,
-      const identifier value) noexcept final;
-
-    void add_message_id(
-      const identifier arg,
-      const identifier tag,
-      const message_id value) noexcept final;
-
-    void add_bool(
-      const identifier arg,
-      const identifier tag,
-      const bool value) noexcept final;
-
-    void add_integer(
-      const identifier arg,
-      const identifier tag,
-      const std::intmax_t value) noexcept final;
-
-    void add_unsigned(
-      const identifier arg,
-      const identifier tag,
-      const std::uintmax_t value) noexcept final;
-
-    void add_float(
-      const identifier arg,
-      const identifier tag,
-      const float value) noexcept final;
-
-    void add_float(
-      const identifier arg,
-      const identifier tag,
-      const float min,
-      const float value,
-      const float max) noexcept final;
-
-    void add_duration(
-      const identifier arg,
-      const identifier tag,
-      const std::chrono::duration<float> value) noexcept final;
-
-    void add_string(
-      const identifier arg,
-      const identifier tag,
-      const string_view value) noexcept final;
-
-    void add_blob(
-      const identifier arg,
-      const identifier tag,
-      const memory::const_block value) noexcept final;
-
-    void finish_message() noexcept final;
-
-    void finish_log() noexcept final;
-
-    void log_chart_sample(
-      const identifier source,
-      const logger_instance_id instance,
-      const identifier series,
-      const float value) noexcept final;
-
-private:
-    std::unique_ptr<logger_backend> _delegate;
-    std::unique_ptr<std::vector<std::function<void()>>> _delayed{
-      std::make_unique<std::vector<std::function<void()>>>()};
-    log_stream_info _info;
-};
+export auto make_proxy_log_backend(log_stream_info info)
+  -> std::unique_ptr<logger_backend>;
 //------------------------------------------------------------------------------
 } // namespace eagine

@@ -23,6 +23,7 @@ import :severity;
 import :entry;
 import :null_backend;
 import :ostream_backend;
+import :syslog_backend;
 import :proxy_backend;
 import <cerrno>;
 import <iostream>;
@@ -45,38 +46,38 @@ auto root_logger_choose_backend(
 
     for(auto& arg : args) {
         if(arg.is_long_tag("use-null-log")) {
-            return std::make_unique<null_log_backend>();
+            return make_null_log_backend();
         } else if(arg.is_long_tag("use-cerr-log")) {
             return std::make_unique<ostream_log_backend<std::mutex>>(
               std::cerr, info);
         } else if(arg.is_long_tag("use-cout-log")) {
             return std::make_unique<ostream_log_backend<std::mutex>>(
               std::cout, info);
-            /* TODO
         } else if(arg.is_long_tag("use-syslog")) {
             return std::make_unique<syslog_log_backend<std::mutex>>(info);
-                    } else if(arg.is_long_tag("use-asio-nw-log")) {
-                        string_view nw_addr;
-                        if(arg.next() && !arg.next().starts_with("-")) {
-                            nw_addr = arg.next();
-                        } else if(const auto env_var{get_environment_variable(
-                                    "EAGINE_LOG_NETWORK_ADDRESS")}) {
-                            nw_addr = extract(env_var);
-                        }
-                        return
-            std::make_unique<asio_tcpipv4_ostream_log_backend<>>( nw_addr,
-            info); #if EAGINE_HAS_ASIO_LOCAL_LOG_BACKEND } else
-            if(arg.is_long_tag("use-asio-log")) { return
-            std::make_unique<asio_local_ostream_log_backend<>>(info); #endif
-            */
+            /* TODO
+                                } else if(arg.is_long_tag("use-asio-nw-log")) {
+                                    string_view nw_addr;
+                                    if(arg.next() &&
+               !arg.next().starts_with("-")) { nw_addr = arg.next(); } else
+               if(const auto env_var{get_environment_variable(
+               "EAGINE_LOG_NETWORK_ADDRESS")}) { nw_addr = extract(env_var);
+                                    }
+                                    return
+                        std::make_unique<asio_tcpipv4_ostream_log_backend<>>(
+               nw_addr, info); #if EAGINE_HAS_ASIO_LOCAL_LOG_BACKEND } else
+                        if(arg.is_long_tag("use-asio-log")) { return
+                        std::make_unique<asio_local_ostream_log_backend<>>(info);
+               #endif
+                        */
         }
     }
 
     if(opts.default_no_log) {
-        return std::make_unique<null_log_backend>();
+        return make_null_log_backend();
     }
 
-    return std::make_unique<proxy_log_backend>(info);
+    return make_proxy_log_backend(info);
 }
 //------------------------------------------------------------------------------
 auto root_logger::_init_backend(

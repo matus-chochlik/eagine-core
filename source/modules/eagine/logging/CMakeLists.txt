@@ -40,16 +40,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION proxy_backend
-	IMPORTS
-		backend
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.identifier
-		eagine.core.string
-)
-
-eagine_add_module(
 	eagine.core.logging PARTITION ostream_backend
 	IMPORTS
 		backend
@@ -58,6 +48,27 @@ eagine_add_module(
 		eagine.core.identifier
 		eagine.core.string
 		eagine.core.reflection
+)
+
+eagine_add_module(
+	eagine.core.logging PARTITION syslog_backend
+	IMPORTS
+		backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.string
+		eagine.core.container
+)
+
+eagine_add_module(
+	eagine.core.logging PARTITION proxy_backend
+	IMPORTS
+		backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.string
 )
 
 eagine_add_module(
@@ -103,12 +114,14 @@ eagine_add_module(
 		entry_arg
 		backend
 		null_backend
-		proxy_backend
 		ostream_backend
+		syslog_backend
+		proxy_backend
 		entry
 		logger
 		root_logger
 	SOURCES
+		null_backend_impl
 		proxy_backend_impl
 		root_logger_impl
 )
