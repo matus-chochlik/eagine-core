@@ -16,5 +16,6 @@ export import :ostream_backend;
 export import :syslog_backend;
 export import :asio_backend;
 export import :proxy_backend;
+export import :entry;
 export import :logger;
 export import :root_logger;

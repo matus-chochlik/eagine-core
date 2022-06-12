@@ -29,6 +29,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.utility PARTITION progress_bar
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+)
+
+eagine_add_module(
 	eagine.core.utility
 	INTERFACES
 		utility
@@ -43,4 +50,5 @@ eagine_add_module(
 		overloaded
 		timeout
 		protected_member
+		progress_bar
 )

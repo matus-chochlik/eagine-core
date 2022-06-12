@@ -442,7 +442,8 @@ private:
 /// @see named_logging_object
 ///
 /// Consider using named_logging_object instead of logger where appropriate.
-class logger : public named_logging_object<logger_shared_backend_getter> {
+export class logger
+  : public named_logging_object<logger_shared_backend_getter> {
     using base = named_logging_object<logger_shared_backend_getter>;
 
 public:

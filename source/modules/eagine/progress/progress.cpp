@@ -5,9 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-export module eagine.core.runtime;
+export module eagine.core.progress;
 
-export import :signal_switch;
-export import :process;
-export import :program_args;
-export import :main_ctx;
+export import :backend;
+export import :activity;

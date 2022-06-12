@@ -22,7 +22,7 @@ namespace eagine::memory {
 /// @brief Reallocatable owning byte buffer.
 /// @ingroup memory
 /// @see block
-class buffer {
+export class buffer {
 public:
     /// @brief Buffer size type.
     using size_type = typename block::size_type;

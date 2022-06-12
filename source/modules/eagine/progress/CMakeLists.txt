@@ -3,35 +3,43 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.runtime PARTITION process
+	eagine.core.progress PARTITION backend
 	IMPORTS
 		eagine.core.types
+		eagine.core.memory
 		eagine.core.utility
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION program_args
+	eagine.core.progress PARTITION default_backend
 	IMPORTS
+		backend
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.string
-		eagine.core.valid_if
+		eagine.core.utility
+		eagine.core.identifier
+		eagine.core.container
+		eagine.core.runtime
+		eagine.core.logging
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION main_ctx
+	eagine.core.progress PARTITION activity
 	IMPORTS
-		program_args
+		backend
 		eagine.core.types
+		eagine.core.memory
 )
 
 eagine_add_module(
-	eagine.core.runtime
+	eagine.core.progress
 	INTERFACES
-		runtime
+		progress
 	PARTITIONS
-		signal_switch
-		process
-		program_args
-		main_ctx
+		backend
+		default_backend
+		activity
+	SOURCES
+		default_backend_impl
 )
+
