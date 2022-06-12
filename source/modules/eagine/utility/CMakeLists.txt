@@ -5,11 +5,6 @@
 eagine_add_module(eagine.core.utility PARTITION integer_hash)
 
 eagine_add_module(
-	eagine.core.utility PARTITION bit_density
-	IMPORTS eagine.core.types
-)
-
-eagine_add_module(
 	eagine.core.utility PARTITION callable_ref
 	IMPORTS
 		eagine.core.concepts
@@ -34,20 +29,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.utility PARTITION process
-	IMPORTS
-		integer_hash
-		eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.utility PARTITION program_args
-	IMPORTS
-		eagine.core.types
-		eagine.core.memory
-)
-
-eagine_add_module(
 	eagine.core.utility
 	INTERFACES
 		utility
@@ -56,14 +37,10 @@ eagine_add_module(
 		bool_aggregate
 		double_buffer
 		integer_hash
-		bit_density
 		callable_ref
 		memoized
 		scope_exit
 		overloaded
 		timeout
-		signal_switch
 		protected_member
-		process
-		program_args
 )

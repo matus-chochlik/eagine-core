@@ -18,9 +18,9 @@ module;
 #endif
 #endif
 
-export module eagine.core.utility:process;
+export module eagine.core.runtime:process;
 import eagine.core.types;
-import :integer_hash;
+import eagine.core.utility;
 import <chrono>;
 import <cstdint>;
 

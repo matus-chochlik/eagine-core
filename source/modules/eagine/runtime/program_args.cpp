@@ -9,11 +9,15 @@ module;
 
 #include <cassert>
 
-export module eagine.core.utility:program_args;
+export module eagine.core.runtime:program_args;
 
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.string;
+import eagine.core.valid_if;
+import <iostream>;
 import <string>;
+import <optional>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -174,6 +178,43 @@ public:
         return {_argi - 1, _argc, _argv};
     }
 
+    /// @brief Tries to parse this argument's value into @p dest.
+    /// @returns True if the parse is successful, false otherwise.
+    template <typename T, identifier_t V>
+    auto parse(T& dest, const selector<V> sel, std::ostream& parse_log) const
+      -> bool {
+        if(is_valid()) {
+            T temp = dest;
+            if(_do_parse(temp, sel, parse_log)) {
+                dest = std::move(temp);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// @brief Tries to parse this argument's value into @p dest.
+    /// @returns True if the parse is successful, false otherwise.
+    template <typename T>
+    auto parse(T& dest, std::ostream& parse_log) const {
+        return parse(dest, default_selector, parse_log);
+    }
+
+    /// @brief Tries to parse the following argument's value into @p dest.
+    /// @returns True if the parse is successful, false otherwise.
+    template <typename T, identifier_t V>
+    auto parse_next(T& dest, const selector<V> sel, std::ostream& parse_log)
+      const {
+        return next().parse(dest, sel, parse_log);
+    }
+
+    /// @brief Tries to parse the following argument's value into @p dest.
+    /// @returns True if the parse is successful, false otherwise.
+    template <typename T>
+    auto parse_next(T& dest, std::ostream& parse_log) const {
+        return parse_next(dest, default_selector, parse_log);
+    }
+
 private:
     int _argi{0};
     int _argc{0};
@@ -181,6 +222,63 @@ private:
 
     friend class program_arg_iterator;
     friend class program_args;
+
+    template <typename T, identifier_t V>
+    auto _do_parse(T& dest, const selector<V> sel, const std::ostream&)
+      const noexcept -> bool {
+        if(auto opt_val{from_string<T>(get(), sel)}) {
+            dest = std::move(extract(opt_val));
+            return true;
+        }
+        return false;
+    }
+
+    template <identifier_t V>
+    auto _do_parse(string_view& dest, const selector<V>, const std::ostream&)
+      const noexcept -> bool {
+        dest = get();
+        return true;
+    }
+
+    template <identifier_t V>
+    auto _do_parse(std::string& dest, const selector<V>, const std::ostream&)
+      const -> bool {
+        dest = get_string();
+        return true;
+    }
+
+    template <typename T, typename P, typename L, identifier_t V>
+    auto _do_parse(
+      basic_valid_if<T, P, L>& dest,
+      const selector<V> sel,
+      std::ostream& parse_log) const -> bool {
+        typename basic_valid_if<T, P, L>::value_type value{};
+        if(parse(value, sel, parse_log)) {
+            if(dest.is_valid(value)) {
+                dest = std::move(value);
+                return true;
+            } else {
+                dest.log_invalid(parse_log, value);
+            }
+        } else {
+            parse_log << "'" << get() << "' "
+                      << "is not a valid `" << type_name<T>() << "` value";
+        }
+        return false;
+    }
+
+    template <typename T, typename A, identifier_t V>
+    auto _do_parse(
+      std::vector<T, A>& dest,
+      const selector<V> sel,
+      std::ostream& parse_log) const -> bool {
+        T value{};
+        if(parse(value, sel, parse_log)) {
+            dest.push_back(std::move(value));
+            return true;
+        }
+        return false;
+    }
 };
 //------------------------------------------------------------------------------
 export template <typename>

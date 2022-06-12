@@ -13,6 +13,11 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.memory PARTITION bit_density
+	IMPORTS eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.memory PARTITION null_ptr
 	IMPORTS eagine.core.types
 )
@@ -144,6 +149,7 @@ eagine_add_module(
 	PARTITIONS
 		align
 		address
+		bit_density
 		null_ptr
 		offset_ptr
 		span

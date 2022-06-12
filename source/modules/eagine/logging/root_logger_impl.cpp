@@ -14,10 +14,12 @@ module eagine.core.logging;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
-import eagine.core.utility;
 import eagine.core.identifier;
+import eagine.core.reflection;
 import eagine.core.build_info;
 import eagine.core.valid_if;
+import eagine.core.utility;
+import eagine.core.runtime;
 import :config;
 import :severity;
 import :entry;
@@ -92,17 +94,13 @@ auto root_logger::_init_backend(
 
     for(auto arg = args.first(); arg; arg = arg.next()) {
         if(arg.is_long_tag("min-log-severity")) {
-            /* TODO
             if(arg.next().parse(info.min_severity, std::cerr)) {
                 arg = arg.next();
             }
-            */
         } else if(arg.is_long_tag("log-identity")) {
-            /* TODO
             if(arg.next().parse(info.log_identity, std::cerr)) {
                 arg = arg.next();
             }
-            */
         }
     }
 

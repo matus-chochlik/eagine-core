@@ -102,6 +102,7 @@ eagine_add_module(
 		eagine.core.build_info
 		eagine.core.valid_if
 		eagine.core.utility
+		eagine.core.runtime
 )
 
 eagine_add_module(

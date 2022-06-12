@@ -17,6 +17,7 @@ add_subdirectory(units)
 add_subdirectory(math)
 add_subdirectory(container)
 add_subdirectory(string)
+add_subdirectory(runtime)
 add_subdirectory(logging)
 
 
@@ -40,6 +41,7 @@ eagine_add_module(
 		eagine.core.math
 		eagine.core.container
 		eagine.core.string
+		eagine.core.runtime
 		eagine.core.logging
 )
 

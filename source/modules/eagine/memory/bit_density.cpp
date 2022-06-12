@@ -10,7 +10,7 @@ module;
 #include <cassert>
 #include <climits>
 
-export module eagine.core.utility:bit_density;
+export module eagine.core.memory:bit_density;
 
 import eagine.core.types;
 import <cstdint>;

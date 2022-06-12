@@ -9,7 +9,6 @@ export module eagine.core.string:base64;
 
 import eagine.core.types;
 import eagine.core.memory;
-import eagine.core.utility;
 import eagine.core.valid_if;
 
 namespace eagine {
