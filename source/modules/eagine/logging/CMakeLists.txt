@@ -62,9 +62,21 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.logging PARTITION asio_backend
+	IMPORTS
+		backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.string
+		eagine.core.container
+)
+
+eagine_add_module(
 	eagine.core.logging PARTITION proxy_backend
 	IMPORTS
 		backend
+		eagine.core.build_config
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -117,14 +129,18 @@ eagine_add_module(
 		null_backend
 		ostream_backend
 		syslog_backend
+		asio_backend
 		proxy_backend
 		entry
 		logger
 		root_logger
 	SOURCES
 		null_backend_impl
+		asio_backend_impl
 		proxy_backend_impl
 		root_logger_impl
+	PRIVATE_INCLUDE_DIRECTORIES
+		"${PROJECT_SOURCE_DIR}/submodules/asio/asio/include"
 )
 
 

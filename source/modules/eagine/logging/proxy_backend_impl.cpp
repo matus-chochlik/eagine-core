@@ -11,12 +11,14 @@ module;
 
 module eagine.core.logging;
 
+import eagine.core.build_config;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import :null_backend;
 import :ostream_backend;
 import :syslog_backend;
+import :asio_backend;
 import <chrono>;
 import <functional>;
 import <iostream>;
@@ -376,42 +378,34 @@ auto proxy_log_choose_backend(
           std::cout, info);
     } else if(name == "syslog") {
         return std::make_unique<syslog_log_backend<std::mutex>>(info);
-        /* TODO
     } else if(name == "network") {
         std::string nw_addr;
-        config.fetch("log.network.address", nw_addr);
-        return std::make_unique<asio_tcpipv4_ostream_log_backend<std::mutex>>(
-          nw_addr, info);
-#if EAGINE_HAS_ASIO_LOCAL_LOG_BACKEND
+        // TODO
+        // config.fetch("log.network.address", nw_addr);
+        return make_asio_tcpipv4_ostream_log_backend(nw_addr, info);
     } else if(name == "local") {
-        return
-std::make_unique<asio_local_ostream_log_backend<std::mutex>>(info); #endif
-*/
+        return make_asio_local_ostream_log_backend(info);
     }
 
-    /*
-#if EAGINE_DEBUG
-#if EAGINE_HAS_ASIO_LOCAL_LOG_BACKEND
-    try {
-        return std::make_unique<asio_local_ostream_log_backend<>>(info);
-    } catch(const std::system_error& err) {
-        if(err.code().value() != ENOENT) {
-            throw;
+    if constexpr(debug_build) {
+        try {
+            return make_asio_local_ostream_log_backend(info);
+        } catch(const std::system_error& err) {
+            if(err.code().value() != ENOENT) {
+                throw;
+            }
+        }
+        try {
+            std::string nw_addr;
+            // TODO
+            // config.fetch("log.network.address", nw_addr);
+            return make_asio_tcpipv4_ostream_log_backend(nw_addr, info);
+        } catch(const std::system_error& err) {
+            if(err.code().value() != ENOENT) {
+                throw;
+            }
         }
     }
-#endif
-    try {
-        std::string nw_addr;
-        config.fetch("log.network.address", nw_addr);
-        return std::make_unique<asio_tcpipv4_ostream_log_backend<>>(
-          nw_addr, info);
-    } catch(const std::system_error& err) {
-        if(err.code().value() != ENOENT) {
-            throw;
-        }
-    }
-#endif
-*/
 
     return std::make_unique<ostream_log_backend<std::mutex>>(std::clog, info);
 }

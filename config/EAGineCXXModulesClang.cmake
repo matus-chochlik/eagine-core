@@ -116,7 +116,14 @@ endfunction()
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
 	set(ARG_VALUES PARTITION PP_NAME)
-	set(ARG_LISTS INTERFACES SOURCES PARTITIONS IMPORTS PRIVATE_LINK_LIBRARIES)
+	set(ARG_LISTS
+		INTERFACES
+		SOURCES
+		PARTITIONS
+		IMPORTS
+		PRIVATE_INCLUDE_DIRECTORIES
+		PRIVATE_LINK_LIBRARIES
+	)
 	cmake_parse_arguments(
 		EAGINE_MODULE
 		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
@@ -180,6 +187,12 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				EAGINE_DEBUG=${EAGINE_DEBUG}
 				EAGINE_LOW_PROFILE=${LOW_PROFILE}
 			)
+			foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
+				target_include_directories(
+					${EAGINE_MODULE_TARGET}-implement
+					PRIVATE ${DIR}
+				)
+			endforeach()
 			target_link_libraries(
 				${EAGINE_MODULE_TARGET}
 				PUBLIC ${EAGINE_MODULE_TARGET}-implement
@@ -213,6 +226,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			"${EAGINE_MODULE_PROPER}:${EAGINE_MODULE_PARTITION}"
 		)
 	endif()
+
 	if(NOT "${EAGINE_MODULE_PP_NAME}" STREQUAL "")
 		set_property(
 			TARGET ${EAGINE_MODULE_TARGET}
@@ -329,12 +343,18 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		DIRECTORY
 		PROPERTY COMPILE_DEFINITIONS
 	)
+
 	unset(PCM_COMPILE_DEFINITIONS)
 	foreach(DEF ${TGT_COMPILE_DEFINITIONS})
 		list(APPEND PCM_COMPILE_DEFINITIONS "-D${DEF}")
 	endforeach()
 	foreach(DEF ${DIR_COMPILE_DEFINITIONS})
 		list(APPEND PCM_COMPILE_DEFINITIONS "-D${DEF}")
+	endforeach()
+
+	unset(PCM_INCLUDE_DIRECTORIES)
+	foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
+		list(APPEND PCM_COMPILE_DEFINITIONS "-I${DIR}")
 	endforeach()
 
 	add_custom_command(
@@ -345,6 +365,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			${CMAKE_CXX_FLAGS}
 			${PCM_COMPILE_OPTIONS}
 			${PCM_COMPILE_DEFINITIONS}
+			${PCM_INCLUDE_DIRECTORIES}
 			-Xclang -emit-module-interface
 			-c ${EAGINE_MODULE_INTERFACE_FILES}
 			-o ${EAGINE_MODULE_TARGET}.pcm
