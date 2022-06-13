@@ -23,7 +23,9 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.types PARTITION optional_ref
-	IMPORTS nothing tribool
+	IMPORTS
+		nothing tribool
+		eagine.core.concepts
 )
 
 eagine_add_module(

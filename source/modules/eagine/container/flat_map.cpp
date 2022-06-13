@@ -103,7 +103,7 @@ struct flat_map_ops : flat_map_value_compare<Key, Val, Cmp> {
     template <typename I, typename K>
     auto get(const I b, const I e, const K& key) const noexcept -> auto& {
         const auto p = find(b, e, key);
-        EAGINE_ASSERT(p != e);
+        assert(p != e);
         return p->second;
     }
 };
@@ -368,7 +368,7 @@ public:
     auto erase(const K& key) -> size_type {
         const auto p = _ops().equal_range(_vec.begin(), _vec.end(), key);
         const auto res = size_type(std::distance(p.first, p.second));
-        EAGINE_ASSERT(res <= 1);
+        assert(res <= 1);
         _vec.erase(p.first, p.second);
         return res;
     }

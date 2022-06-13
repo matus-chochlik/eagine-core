@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.memory:span;
 
+import eagine.core.concepts;
 import eagine.core.types;
 import :address;
 
@@ -593,9 +594,6 @@ using chunk_span = basic_chunk_span<T, T*, span_size_t, chunkSize>;
 //------------------------------------------------------------------------------
 } // namespace memory
 //------------------------------------------------------------------------------
-export template <typename>
-struct extract_traits;
-
 export template <typename T, typename P, typename S>
 struct extract_traits<memory::basic_span<T, P, S>> {
     using value_type = T;

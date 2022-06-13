@@ -18,31 +18,26 @@ import <chrono>;
 import <memory>;
 
 namespace eagine {
+//------------------------------------------------------------------------------
+class application_config;
+class build_info;
+class compiler_info;
+class system_info;
+class user_info;
+class activity_progress;
+class console;
+class logger;
+class data_compressor;
+class program_args;
+class process_watchdog;
+class message_bus;
+class main_ctx;
+class main_ctx_storage;
+class main_ctx_log_backend_getter;
+class main_ctx_object;
 
-export class application_config;
-export class build_info;
-export class compiler_info;
-export class system_info;
-export class user_info;
-export class activity_progress;
-export class console;
-export class logger;
-export class data_compressor;
-export class program_args;
-export class process_watchdog;
-export class message_bus;
-export class main_ctx;
-export class main_ctx_storage;
-export class main_ctx_log_backend_getter;
-export class main_ctx_object;
-export class main_ctx_object_parent_info;
-
-export struct progress_observer;
-
-/// @brief Alias for main_ctx_object_parent_info parameter type.
-/// @ingroup main_context
-export using main_ctx_parent = const main_ctx_object_parent_info&;
-
+struct progress_observer;
+//------------------------------------------------------------------------------
 /// @brief Interface for classes providing access to main context singletons.
 /// @ingroup main_context
 /// @see main_ctx_setters
@@ -133,7 +128,7 @@ export struct main_ctx_getters : interface<main_ctx_getters> {
 };
 
 export auto try_get_main_ctx() noexcept -> main_ctx_getters*;
-
+//------------------------------------------------------------------------------
 /// @brief Registers the activity progress observer.
 /// @ingroup main_context
 /// @see main_ctx_setters
@@ -178,28 +173,5 @@ export void reset_progress_update_callback(main_ctx_getters& ctx) noexcept {
     assert(setters);
     extract(setters).reset_progress_update_callback();
 }
-
-/// @brief Helper class used to initialize main context objects.
-/// @ingroup main_context
-/// @see main_ctx_object
-export class main_ctx_object_parent_info {
-public:
-    /// @brief Construction from main_ctx instance.
-    main_ctx_object_parent_info(main_ctx_getters& ctx) noexcept
-      : _context{&ctx} {}
-
-    /// @brief Construction from main context object.
-    main_ctx_object_parent_info(const main_ctx_object& obj) noexcept
-      : _object{&obj} {}
-
-protected:
-    main_ctx_object_parent_info() noexcept = default;
-
-private:
-    friend class main_ctx_object;
-
-    main_ctx_getters* _context{nullptr};
-    const main_ctx_object* _object{nullptr};
-};
-
+//------------------------------------------------------------------------------
 } // namespace eagine

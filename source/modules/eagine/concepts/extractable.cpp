@@ -14,7 +14,7 @@ import <utility>;
 namespace eagine {
 
 export template <typename T>
-struct extract_traits;
+struct extract_traits {};
 
 export template <typename T>
 constexpr auto has_value(T&& xtr) noexcept -> bool {

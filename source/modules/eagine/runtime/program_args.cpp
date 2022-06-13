@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.runtime:program_args;
 
+import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -281,9 +282,6 @@ private:
     }
 };
 //------------------------------------------------------------------------------
-export template <typename>
-struct extract_traits;
-
 export template <>
 struct extract_traits<program_arg> {
     using value_type = typename program_arg::value_type;

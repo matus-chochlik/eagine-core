@@ -245,7 +245,7 @@ private:
 ///
 /// This class is used as the base class for other classes that need to do
 /// logging. Prefer using this class instead of logger in such cases.
-template <typename BackendGetter>
+export template <typename BackendGetter>
 class named_logging_object : public basic_logger<BackendGetter> {
     using base = basic_logger<BackendGetter>;
 

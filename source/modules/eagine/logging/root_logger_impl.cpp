@@ -23,6 +23,7 @@ import eagine.core.runtime;
 import :config;
 import :severity;
 import :entry;
+import :backend;
 import :null_backend;
 import :ostream_backend;
 import :syslog_backend;

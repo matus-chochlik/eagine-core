@@ -439,9 +439,6 @@ constexpr auto operator>=(
 export template <typename T, typename Policy>
 using valid_if = basic_valid_if<T, Policy, typename Policy::do_log>;
 //------------------------------------------------------------------------------
-export template <typename T>
-struct extract_traits;
-
 export template <typename T, typename P, typename L>
 struct extract_traits<basic_valid_if<T, P, L>> {
     using value_type = T;

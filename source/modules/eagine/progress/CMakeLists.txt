@@ -32,6 +32,15 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.progress PARTITION root_activity
+	IMPORTS
+		backend activity
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.runtime
+)
+
+eagine_add_module(
 	eagine.core.progress
 	INTERFACES
 		progress
@@ -39,7 +48,9 @@ eagine_add_module(
 		backend
 		default_backend
 		activity
+		root_activity
 	SOURCES
 		default_backend_impl
+		root_activity_impl
 )
 

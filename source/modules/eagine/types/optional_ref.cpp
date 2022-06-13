@@ -10,6 +10,7 @@ module;
 
 export module eagine.core.types:optional_ref;
 
+import eagine.core.concepts;
 import :nothing;
 import :tribool;
 import <cstddef>;
@@ -117,9 +118,6 @@ private:
     T* _ptr{nullptr};
 };
 //------------------------------------------------------------------------------
-template <typename T>
-struct extract_traits;
-
 template <typename T>
 struct extract_traits<optional_reference_wrapper<T>> {
     using value_type = T;

@@ -11,13 +11,15 @@ module;
 
 export module eagine.core.memory:offset_ptr;
 
+import eagine.core.concepts;
 import eagine.core.types;
 import :address;
 import <memory>;
 import <type_traits>;
 import <concepts>;
 
-namespace eagine::memory {
+namespace eagine {
+namespace memory {
 //------------------------------------------------------------------------------
 // basic_offset_ptr
 //------------------------------------------------------------------------------
@@ -243,18 +245,6 @@ private:
     }
 };
 //------------------------------------------------------------------------------
-// extract
-//------------------------------------------------------------------------------
-export template <typename T>
-struct extract_traits;
-
-export template <typename P, typename O>
-struct extract_traits<basic_offset_ptr<P, O>> {
-    using value_type = P;
-    using result_type = P&;
-    using const_result_type = std::add_const_t<P>&;
-};
-//------------------------------------------------------------------------------
 // rebind_pointer
 //------------------------------------------------------------------------------
 export template <typename Ptr, typename U>
@@ -282,4 +272,14 @@ using offset_ptr = basic_offset_ptr<Pointee, std::ptrdiff_t>;
 export template <typename Pointee>
 using short_offset_ptr = basic_offset_ptr<Pointee, short>;
 //------------------------------------------------------------------------------
-} // namespace eagine::memory
+} // namespace memory
+// extract
+//------------------------------------------------------------------------------
+export template <typename P, typename O>
+struct extract_traits<memory::basic_offset_ptr<P, O>> {
+    using value_type = P;
+    using result_type = P&;
+    using const_result_type = std::add_const_t<P>&;
+};
+//------------------------------------------------------------------------------
+} // namespace eagine

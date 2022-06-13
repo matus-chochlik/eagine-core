@@ -19,7 +19,9 @@ add_subdirectory(container)
 add_subdirectory(string)
 add_subdirectory(runtime)
 add_subdirectory(logging)
+add_subdirectory(console)
 add_subdirectory(progress)
+add_subdirectory(main_ctx)
 
 
 eagine_add_module(
@@ -44,6 +46,8 @@ eagine_add_module(
 		eagine.core.string
 		eagine.core.runtime
 		eagine.core.logging
+		eagine.core.console
 		eagine.core.progress
+		eagine.core.main_ctx
 )
 

@@ -29,7 +29,10 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.memory PARTITION span
-	IMPORTS address eagine.core.types
+	IMPORTS
+		address
+		eagine.core.concepts
+		eagine.core.types
 )
 
 eagine_add_module(
@@ -39,7 +42,10 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.memory PARTITION offset_span
-	IMPORTS span offset_ptr eagine.core.types
+	IMPORTS
+		span offset_ptr
+		eagine.core.concepts
+		eagine.core.types
 )
 
 eagine_add_module(

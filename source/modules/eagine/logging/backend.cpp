@@ -35,7 +35,7 @@ export struct log_stream_info {
 //------------------------------------------------------------------------------
 /// @brief Interface for logging backend implementations.
 /// @ingroup logging
-struct logger_backend : interface<logger_backend> {
+export struct logger_backend : interface<logger_backend> {
     virtual auto configure(application_config&) -> bool {
         return false;
     }

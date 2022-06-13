@@ -17,9 +17,6 @@ import <optional>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export template <typename T>
-struct extract_traits;
-
 export template <extractable T>
 constexpr auto extract_or(
   T& opt_val,

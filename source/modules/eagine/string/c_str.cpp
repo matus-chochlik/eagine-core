@@ -93,9 +93,8 @@ template <typename>
 struct get_basic_c_str;
 
 template <typename C, typename P, typename S>
-struct get_basic_c_str<memory::basic_string_span<C, P, S>> {
-    using type = basic_c_str<C, P, S>;
-};
+struct get_basic_c_str<memory::basic_string_span<C, P, S>>
+  : std::type_identity<basic_c_str<C, P, S>> {};
 
 template <extractable E>
 struct get_basic_c_str<E> : get_basic_c_str<extracted_type_t<E>> {};
