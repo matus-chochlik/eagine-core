@@ -3,13 +3,16 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-export module eagine.core.units.framework:base;
+export module eagine.core.units:base;
 
 import eagine.core.types;
 import <cmath>;
 import <type_traits>;
 
 namespace eagine::units {
+//------------------------------------------------------------------------------
+export template <typename>
+struct system_id;
 //------------------------------------------------------------------------------
 template <typename X>
 struct dimension_of : X::dimension {};
@@ -22,13 +25,13 @@ using dimension_of_t = typename dimension_of<X>::type;
 //------------------------------------------------------------------------------
 namespace scales {
 //------------------------------------------------------------------------------
-template <typename X>
+export template <typename X>
 struct scale_of : std::type_identity<scale_of<X>> {};
 
-template <typename X>
+export template <typename X>
 using scale_of_t = typename scale_of<X>::type;
 //------------------------------------------------------------------------------
-struct one : std::type_identity<one> {
+export struct one : std::type_identity<one> {
 
     template <typename T>
     static constexpr auto to_base(const T v) noexcept {
@@ -41,10 +44,10 @@ struct one : std::type_identity<one> {
     }
 };
 
-template <>
+export template <>
 struct scale_of<nothing_t> : one {};
 //------------------------------------------------------------------------------
-template <int I>
+export template <int I>
 struct constant : std::type_identity<constant<I>> {
 
     template <typename T>
@@ -58,7 +61,29 @@ struct constant : std::type_identity<constant<I>> {
     }
 };
 //------------------------------------------------------------------------------
-template <int Num, int Den>
+export struct pi {
+    using type = pi;
+
+    static constexpr auto _pi() noexcept {
+#ifdef M_PI
+        return M_PI;
+#else
+        return 3.14159265358979323846;
+#endif
+    }
+
+    template <typename T>
+    static constexpr auto to_base(const T v) noexcept {
+        return v * T(_pi());
+    }
+
+    template <typename T>
+    static constexpr auto from_base(const T v) noexcept {
+        return v / T(_pi());
+    }
+};
+//------------------------------------------------------------------------------
+export template <int Num, int Den>
 struct rational : std::type_identity<rational<Num, Den>> {
 
     template <typename T>
@@ -72,7 +97,7 @@ struct rational : std::type_identity<rational<Num, Den>> {
     }
 };
 //------------------------------------------------------------------------------
-template <int X, int Y>
+export template <int X, int Y>
 struct power : std::type_identity<power<X, Y>> {
 
     template <typename T>
@@ -88,7 +113,7 @@ struct power : std::type_identity<power<X, Y>> {
     }
 };
 //------------------------------------------------------------------------------
-template <typename S>
+export template <typename S>
 struct inverted : std::type_identity<inverted<S>> {
 
     template <typename T>
@@ -102,7 +127,7 @@ struct inverted : std::type_identity<inverted<S>> {
     }
 };
 //------------------------------------------------------------------------------
-template <typename S1, typename S2>
+export template <typename S1, typename S2>
 struct multiplied : std::type_identity<multiplied<S1, S2>> {
 
     template <typename T>
@@ -116,7 +141,7 @@ struct multiplied : std::type_identity<multiplied<S1, S2>> {
     }
 };
 //------------------------------------------------------------------------------
-template <typename S1, typename S2>
+export template <typename S1, typename S2>
 struct divided : std::type_identity<divided<S1, S2>> {
 
     template <typename T>
@@ -130,10 +155,41 @@ struct divided : std::type_identity<divided<S1, S2>> {
     }
 };
 //------------------------------------------------------------------------------
-template <typename S1, typename S2>
+export template <typename S1, typename S2>
 struct recombined : multiplied<S1, S2> {
     using type = recombined;
 };
+//------------------------------------------------------------------------------
+// nano
+export using nano = power<1000, -3>;
+// micro
+export using micro = power<1000, -2>;
+// milli
+export using milli = power<1000, -1>;
+// centi
+export using centi = power<10, -2>;
+// deci
+export using deci = power<10, -1>;
+// deca
+export using deca = power<10, 1>;
+// hecto
+export using hecto = power<10, 2>;
+// kilo
+export using kilo = power<1000, 1>;
+// mega
+export using mega = power<1000, 2>;
+// giga
+export using giga = power<1000, 3>;
+// tera
+export using tera = power<1000, 4>;
+// kibi
+export using kibi = power<1024, 1>;
+// mebi
+export using mebi = power<1024, 2>;
+// gibi
+export using gibi = power<1024, 3>;
+// tebi
+export using tebi = power<1024, 4>;
 //------------------------------------------------------------------------------
 } // namespace scales
 namespace base {
@@ -141,11 +197,17 @@ namespace base {
 export template <typename Derived>
 struct dimension : std::type_identity<Derived> {};
 
-template <typename Dimension, typename Derived>
-struct unit;
+export template <typename Dimension, typename Derived>
+struct unit : std::type_identity<Derived> {
+    using dimension = Dimension;
+    using scale = scales::one;
+};
 
-template <typename Scale, typename Unit>
-struct scaled_unit;
+export template <typename Scale, typename Unit>
+struct scaled_unit : std::type_identity<scaled_unit<Scale, Unit>> {
+    using dimension = dimension_of_t<Unit>;
+    using scale = Scale;
+};
 //------------------------------------------------------------------------------
 template <typename Dimension>
 struct dim_num;
@@ -155,11 +217,77 @@ struct dim_num<dimension<Dim>> : dim_num<Dim> {};
 
 template <typename Dimension>
 const int dim_num_v = dim_num<Dimension>::value;
+//------------------------------------------------------------------------------
+struct angle : dimension<angle> {};
+struct solid_angle : dimension<solid_angle> {};
+
+struct length : dimension<length> {};
+struct mass : dimension<mass> {};
+struct time : dimension<time> {};
+
+struct temperature : dimension<temperature> {};
+struct electric_current : dimension<electric_current> {};
+struct number_of_cycles : dimension<number_of_cycles> {};
+struct number_of_decays : dimension<number_of_decays> {};
+struct luminous_intensity : dimension<luminous_intensity> {};
+struct amount_of_substance : dimension<amount_of_substance> {};
+struct amount_of_information : dimension<amount_of_information> {};
+
+template <typename Func>
+auto for_each_dim(Func func) -> Func {
+    func(angle());
+    func(solid_angle());
+    func(length());
+    func(mass());
+    func(time());
+    func(temperature());
+    func(electric_current());
+    func(number_of_cycles());
+    func(number_of_decays());
+    func(luminous_intensity());
+    func(amount_of_substance());
+    func(amount_of_information());
+
+    return func;
+}
 
 template <>
 struct dim_num<nothing_t> : int_constant<0> {};
+
+template <>
+struct dim_num<angle> : int_constant<1> {};
+template <>
+struct dim_num<solid_angle> : int_constant<2> {};
+template <>
+struct dim_num<mass> : int_constant<3> {};
+template <>
+struct dim_num<length> : int_constant<4> {};
+template <>
+struct dim_num<time> : int_constant<5> {};
+
+template <>
+struct dim_num<temperature> : int_constant<6> {};
+template <>
+struct dim_num<electric_current> : int_constant<7> {};
+template <>
+struct dim_num<number_of_cycles> : int_constant<8> {};
+template <>
+struct dim_num<number_of_decays> : int_constant<9> {};
+template <>
+struct dim_num<luminous_intensity> : int_constant<10> {};
+template <>
+struct dim_num<amount_of_substance> : int_constant<11> {};
+template <>
+struct dim_num<amount_of_information> : int_constant<12> {};
+
+// get_number
+template <typename Derived>
+static constexpr auto get_number(const dimension<Derived>) noexcept -> int {
+    return dim_num_v<Derived>;
+}
 //------------------------------------------------------------------------------
 } // namespace base
+
 namespace bits {
 //------------------------------------------------------------------------------
 template <typename X>
@@ -182,7 +310,7 @@ using dimless = dims<nothing_t, nothing_t>;
 template <>
 struct collapse_tail<dims<nothing_t, nothing_t>> : nothing_t {};
 
-template <typename Head, typename Tail>
+export template <typename Head, typename Tail>
 struct unit_scales : std::type_identity<unit_scales<Head, Tail>> {};
 
 template <>
@@ -334,7 +462,7 @@ struct get_pow<dims<H, T>, Dim> : get_pow<T, Dim> {};
 template <typename Dim, int Pow, typename T>
 struct get_pow<dims<dim_pow<Dim, Pow>, T>, Dim> : int_constant<Pow> {};
 //------------------------------------------------------------------------------
-template <typename Unit, typename Scale>
+export template <typename Unit, typename Scale>
 struct uni_sca;
 //------------------------------------------------------------------------------
 template <typename UnitScales, typename Unit, typename Scale>
@@ -445,6 +573,63 @@ struct merge<unit_scales<uni_sca<U1, S1>, T1>, unit_scales<uni_sca<U2, S2>, T2>>
         uni_sca<U2, S2>,
         collapse_tail_t<merge_t<unit_scales<uni_sca<U1, S1>, T1>, T2>>>> {};
 //------------------------------------------------------------------------------
+// _sc_unit_sc_hlp
+template <typename Scales, typename System>
+struct _sc_unit_sc_hlp {
+
+    template <typename T, typename SV>
+    static constexpr auto _pow(const T v, const SV, const int_constant<0>) {
+        return v;
+    }
+
+    template <typename T, typename S, int E>
+    static constexpr auto _pow(const T v, const S s, const int_constant<E>) {
+        return _pow(
+          (E > 0) ? S::to_base(v) : S::from_base(v),
+          s,
+          int_constant<E + ((E > 0) ? -1 : 1)>());
+    }
+
+    template <typename Dir, typename T>
+    static constexpr auto _hlp(const Dir, const T v) noexcept -> T {
+        return v;
+    }
+
+    template <typename Dir, typename T>
+    static constexpr auto _hlp(const Dir d, const T v, const nothing_t) noexcept
+      -> T {
+        return _hlp(d, v);
+    }
+
+    template <typename Dir, typename T>
+    static constexpr auto _hlp(const Dir d, const T v, const dimless) noexcept
+      -> T {
+        return _hlp(d, v);
+    }
+
+    template <typename Dir, typename T, typename D, int E>
+    static constexpr auto _hlp2(
+      const Dir,
+      const T v,
+      const dim_pow<D, E>) noexcept {
+        using SBU = typename System ::template base_unit<D>::type;
+        using BS = scales::scale_of_t<SBU>;
+
+        return _pow(
+          v,
+          get_scale_t<Scales, SBU, BS>(),
+          int_constant<(Dir::value ? E : -E)>());
+    }
+
+    template <typename Dir, typename T, typename D, int P, typename Dims>
+    static constexpr auto _hlp(
+      const Dir dir,
+      const T v,
+      const dims<dim_pow<D, P>, Dims>) noexcept {
+        return _hlp(dir, _hlp2(dir, v, dim_pow<D, P>()), Dims());
+    }
+};
+//------------------------------------------------------------------------------
 } // namespace bits
 //------------------------------------------------------------------------------
 export template <typename BaseDim, int Pow>
@@ -456,7 +641,7 @@ struct unit;
 export template <typename Dims, typename Scales, typename System>
 struct custom_dim_unit;
 
-template <typename Dims, typename Scales, typename System>
+export template <typename Dims, typename Scales, typename System>
 struct scaled_dim_unit_conv;
 
 export template <typename Dims, typename Scales, typename System>
@@ -592,9 +777,222 @@ struct name_of {
     static constexpr nothing_t mp_str{};
 };
 
+export template <>
+struct name_of<base::angle> {
+    static constexpr const char mp_str[] = "angle";
+};
+
+export template <>
+struct name_of<base::solid_angle> {
+    static constexpr const char mp_str[] = "solid angle";
+};
+
+export template <>
+struct name_of<base::mass> {
+    static constexpr const char mp_str[] = "mass";
+};
+
+export template <>
+struct name_of<base::length> {
+    static constexpr const char mp_str[] = "length";
+};
+
+export template <>
+struct name_of<base::time> {
+    static constexpr const char mp_str[] = "time";
+};
+
+export template <>
+struct name_of<base::temperature> {
+    static constexpr const char mp_str[] = "temperature";
+};
+
+export template <>
+struct name_of<base::electric_current> {
+    static constexpr const char mp_str[] = "electric current";
+};
+
+export template <>
+struct name_of<base::number_of_cycles> {
+    static constexpr const char mp_str[] = "number of cycles";
+};
+
+export template <>
+struct name_of<base::number_of_decays> {
+    static constexpr const char mp_str[] = "number of decays";
+};
+
+export template <>
+struct name_of<base::luminous_intensity> {
+    static constexpr const char mp_str[] = "luminous intensity";
+};
+
+export template <>
+struct name_of<base::amount_of_substance> {
+    static constexpr const char mp_str[] = "amount of substance";
+};
+
+export template <>
+struct name_of<base::amount_of_information> {
+    static constexpr const char mp_str[] = "amount of information";
+};
+//------------------------------------------------------------------------------
 export template <typename Item>
 struct symbol_of {
     static constexpr nothing_t mp_str{};
+};
+//------------------------------------------------------------------------------
+export template <>
+struct name_of<scales::one> {
+    static constexpr const char mp_str[] = "";
+};
+export template <>
+struct symbol_of<scales::one> {
+    static constexpr const char mp_str[] = "";
+};
+//------------------------------------------------------------------------------
+export template <>
+struct name_of<scales::nano> {
+    static constexpr const char mp_str[] = "nano";
+};
+export template <>
+struct symbol_of<scales::nano> {
+    static constexpr const char mp_str[] = "n";
+};
+//------------------------------------------------------------------------------
+export template <>
+struct name_of<scales::micro> {
+    static constexpr const char mp_str[] = "micro";
+};
+export template <>
+struct symbol_of<scales::micro> {
+    static constexpr const char mp_str[3] = {char(0xCE), char(0xBC), '\0'};
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::milli> {
+    static constexpr const char mp_str[] = "milli";
+};
+template <>
+struct symbol_of<scales::milli> {
+    static constexpr const char mp_str[] = "m";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::centi> {
+    static constexpr const char mp_str[] = "centi";
+};
+template <>
+struct symbol_of<scales::centi> {
+    static constexpr const char mp_str[] = "c";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::deci> {
+    static constexpr const char mp_str[] = "deci";
+};
+template <>
+struct symbol_of<scales::deci> {
+    static constexpr const char mp_str[] = "d";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::deca> {
+    static constexpr const char mp_str[] = "deca";
+};
+template <>
+struct symbol_of<scales::deca> {
+    static constexpr const char mp_str[] = "dc";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::hecto> {
+    static constexpr const char mp_str[] = "hecto";
+};
+template <>
+struct symbol_of<scales::hecto> {
+    static constexpr const char mp_str[] = "h";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::kilo> {
+    static constexpr const char mp_str[] = "kilo";
+};
+template <>
+struct symbol_of<scales::kilo> {
+    static constexpr const char mp_str[] = "k";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::mega> {
+    static constexpr const char mp_str[] = "mega";
+};
+template <>
+struct symbol_of<scales::mega> {
+    static constexpr const char mp_str[] = "M";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::giga> {
+    static constexpr const char mp_str[] = "giga";
+};
+template <>
+struct symbol_of<scales::giga> {
+    static constexpr const char mp_str[] = "G";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::tera> {
+    static constexpr const char mp_str[] = "tera";
+};
+template <>
+struct symbol_of<scales::tera> {
+    static constexpr const char mp_str[] = "T";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::kibi> {
+    static constexpr const char mp_str[] = "kibi";
+};
+template <>
+struct symbol_of<scales::kibi> {
+    static constexpr const char mp_str[] = "Ki";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::mebi> {
+    static constexpr const char mp_str[] = "mebi";
+};
+template <>
+struct symbol_of<scales::mebi> {
+    static constexpr const char mp_str[] = "Mi";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::gibi> {
+    static constexpr const char mp_str[] = "gibi";
+};
+template <>
+struct symbol_of<scales::gibi> {
+    static constexpr const char mp_str[] = "Gi";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::tebi> {
+    static constexpr const char mp_str[] = "tebi";
+};
+template <>
+struct symbol_of<scales::tebi> {
+    static constexpr const char mp_str[] = "Ti";
+};
+//------------------------------------------------------------------------------
+template <>
+struct name_of<scales::pi> {
+    static constexpr const char mp_str[3] = {char(0xCF), char(0x80), '\0'};
+};
+template <>
+struct symbol_of<scales::pi> {
+    static constexpr const char mp_str[] = {char(0xCF), char(0x80), '\0'};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine::units

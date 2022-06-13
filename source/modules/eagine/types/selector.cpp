@@ -65,7 +65,7 @@ export constexpr const immediate_function_t immediate_function{};
 /// function overloads.
 export using split_by_t = selector<0x58U>;
 
-/// @brief The select split-by function tag-dispatch constant
+/// @brief The split-by function tag-dispatch constant
 /// @ingroup metaprogramming
 /// @see split_by_t
 export constexpr const split_by_t split_by{};
@@ -75,12 +75,25 @@ export constexpr const split_by_t split_by{};
 /// @see from_pack
 ///
 /// This type is typically used as an additional parameter some string function
-/// function overloads.
-export using from_pack_t = selector<0xACU>;
+/// overloads.
+export using from_pack_t = selector<0xF9U>;
 
-/// @brief The select from by function tag-dispatch constant
+/// @brief The from-pack function tag-dispatch constant
 /// @ingroup metaprogramming
 /// @see from_pack_t
 export constexpr const from_pack_t from_pack{};
+
+/// @brief Type alias for application-config function selector.
+/// @ingroup metaprogramming
+/// @see from_config
+///
+/// This type is typically used as an additional parameter some function
+/// overloads.
+export using from_config_t = selector<0xACU>;
+
+/// @brief The from-config function tag-dispatch constant
+/// @ingroup metaprogramming
+/// @see from_config_t
+export constexpr const from_config_t from_config{};
 
 } // namespace eagine

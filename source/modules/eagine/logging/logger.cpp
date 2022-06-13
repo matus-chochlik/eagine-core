@@ -11,7 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.valid_if;
-import eagine.core.units.framework;
+import eagine.core.units;
 export import :severity;
 import :config;
 import :backend;

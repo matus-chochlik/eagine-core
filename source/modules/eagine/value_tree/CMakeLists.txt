@@ -3,58 +3,53 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.runtime PARTITION process
+	eagine.core.value_tree PARTITION interface
 	IMPORTS
-		eagine.core.types
-		eagine.core.utility
-)
-
-eagine_add_module(
-	eagine.core.runtime PARTITION program_args
-	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
-		eagine.core.valid_if
-)
-
-eagine_add_module(
-	eagine.core.runtime PARTITION system_info
-	IMPORTS
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.valid_if
 		eagine.core.reflection
-		eagine.core.units
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION compression
+	eagine.core.value_tree PARTITION wrappers
 	IMPORTS
+		interface
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.utility
+		eagine.core.reflection
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION main_ctx
+	eagine.core.value_tree PARTITION implementation
 	IMPORTS
-		program_args
+		interface wrappers
 		eagine.core.types
+		eagine.core.memory
+		eagine.core.logging
 )
 
 eagine_add_module(
-	eagine.core.runtime
-	INTERFACES
-		runtime
-	PARTITIONS
-		signal_switch
-		process
-		program_args
-		system_info
-		compression
-		main_ctx
-	SOURCES
-		compression_impl
+	eagine.core.value_tree PARTITION app_config
+	IMPORTS
+		wrappers
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.valid_if
+		eagine.core.logging
+		eagine.core.runtime
 )
+
+eagine_add_module(
+	eagine.core.value_tree
+	INTERFACES
+		value_tree
+	PARTITIONS
+		interface
+		wrappers
+		implementation
+		#app_config
+	SOURCES
+		#app_config_impl
+)
+

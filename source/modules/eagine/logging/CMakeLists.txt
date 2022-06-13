@@ -101,7 +101,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.identifier
 		eagine.core.valid_if
-		eagine.core.units.framework
+		eagine.core.units
 )
 
 eagine_add_module(
