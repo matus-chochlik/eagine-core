@@ -89,8 +89,8 @@ auto base64_encode(const memory::basic_span<const byte, P, S> src, Dst& dst)
     span_size_t o = 0;
 
     if(do_dissolve_bits(
-         make_span_getter(i, src),
-         make_span_putter(o, dst, make_base64_encode_transform()),
+         memory::make_span_getter(i, src),
+         memory::make_span_putter(o, dst, make_base64_encode_transform()),
          6)) {
         dst.resize(Ds(o));
         return {dst};
@@ -106,8 +106,8 @@ auto base64_decode(
     span_size_t o = 0;
 
     if(do_concentrate_bits(
-         make_span_getter(i, src, make_base64_decode_transform()),
-         make_span_putter(o, dst),
+         memory::make_span_getter(i, src, make_base64_decode_transform()),
+         memory::make_span_putter(o, dst),
          6)) {
         return head(dst, o);
     }
@@ -123,8 +123,8 @@ auto base64_decode(const memory::basic_span<const char, P, S> src, Dst& dst)
     span_size_t o = 0;
 
     if(do_concentrate_bits(
-         make_span_getter(i, src, make_base64_decode_transform()),
-         make_span_putter(o, dst),
+         memory::make_span_getter(i, src, make_base64_decode_transform()),
+         memory::make_span_putter(o, dst),
          6)) {
         dst.resize(Ds(o));
         return {dst};

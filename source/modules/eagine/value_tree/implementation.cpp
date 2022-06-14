@@ -5,6 +5,10 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#include <cassert>
+
 export module eagine.core.value_tree:implementation;
 
 import eagine.core.types;
@@ -136,8 +140,8 @@ private:
 
 protected:
     inline auto _unwrap(attribute_interface& attrib) const noexcept -> auto& {
-        EAGINE_ASSERT(attrib.type_id() == this->type_id());
-        EAGINE_ASSERT(dynamic_cast<Node*>(&attrib));
+        assert(attrib.type_id() == this->type_id());
+        assert(dynamic_cast<Node*>(&attrib));
         return static_cast<Node&>(attrib);
     }
 

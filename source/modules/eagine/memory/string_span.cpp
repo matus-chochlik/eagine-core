@@ -232,7 +232,7 @@ export using str_view_less =
   basic_str_view_less<std::string, memory::string_view>;
 //------------------------------------------------------------------------------
 export template <typename C, typename T, typename A, typename Transform>
-inline auto make_span_putter(
+auto make_span_putter(
   span_size_t& i,
   std::basic_string<C, T, A>& str,
   Transform transform) {

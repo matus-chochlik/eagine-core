@@ -94,8 +94,8 @@ auto make_span_getter(span_size_t& i, const basic_span<T, P, S> spn) noexcept {
     };
 }
 //------------------------------------------------------------------------------
-template <typename Src>
-static inline auto make_span_getter(span_size_t& i, const Src& src) noexcept {
+export template <typename Src>
+auto make_span_getter(span_size_t& i, const Src& src) noexcept {
     return make_span_getter(i, view(src));
 }
 //------------------------------------------------------------------------------

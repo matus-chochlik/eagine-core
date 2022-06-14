@@ -32,6 +32,15 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.value_tree PARTITION overlay
+	IMPORTS
+		interface wrappers
+		eagine.core.types
+		eagine.core.logging
+)
+
+
+eagine_add_module(
 	eagine.core.value_tree
 	INTERFACES
 		value_tree
@@ -39,13 +48,17 @@ eagine_add_module(
 		interface
 		wrappers
 		implementation
+		#overlay
 	SOURCES
 		empty_impl
+		json_impl
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.identifier
 		eagine.core.logging
+	PRIVATE_INCLUDE_DIRECTORIES
+		"${PROJECT_SOURCE_DIR}/submodules/rapidjson/include"
 )
 

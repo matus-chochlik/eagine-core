@@ -312,7 +312,7 @@ auto convert_from_string(
         if(
           const auto opt_val = from_string(
             snip(src, symbol.size()), std::type_identity<Rep>(), sel)) {
-            return {std::chrono::duration<Rep, Period>(extract(opt_val)), true};
+            return {std::chrono::duration<Rep, Period>(extract(opt_val))};
         }
     }
     return {};
@@ -331,63 +331,63 @@ auto from_string(
          std::type_identity<std::chrono::duration<Rep, std::ratio<1>>>(),
          sel,
          "s")}) {
-        return {std::chrono::duration_cast<dur_t>(extract(d)), true};
+        return {std::chrono::duration_cast<dur_t>(extract(d))};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::milli>>(),
          sel,
          "ms")}) {
-        return {std::chrono::duration_cast<dur_t>(extract(d)), true};
+        return {std::chrono::duration_cast<dur_t>(extract(d))};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::micro>>(),
          sel,
          "μs")}) {
-        return {std::chrono::duration_cast<dur_t>(extract(d)), true};
+        return {std::chrono::duration_cast<dur_t>(extract(d))};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::nano>>(),
          sel,
          "ns")}) {
-        return {std::chrono::duration_cast<dur_t>(extract(d)), true};
+        return {std::chrono::duration_cast<dur_t>(extract(d))};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::ratio<60>>>(),
          sel,
          "min")}) {
-        return {std::chrono::duration_cast<dur_t>(extract(d)), true};
+        return {std::chrono::duration_cast<dur_t>(extract(d))};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::ratio<3600>>>(),
          sel,
          "hr")}) {
-        return {std::chrono::duration_cast<dur_t>(extract(d)), true};
+        return {std::chrono::duration_cast<dur_t>(extract(d))};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::ratio<86400LL>>>(),
          sel,
          "dy")}) {
-        return {std::chrono::duration_cast<dur_t>(extract(d)), true};
+        return {std::chrono::duration_cast<dur_t>(extract(d))};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::ratio<31556952LL>>>(),
          sel,
          "yr")}) {
-        return {std::chrono::duration_cast<dur_t>(extract(d)), true};
+        return {std::chrono::duration_cast<dur_t>(extract(d))};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::ratio<31556952LL>>>(),
          sel,
          "a")}) {
-        return {std::chrono::duration_cast<dur_t>(extract(d)), true};
+        return {std::chrono::duration_cast<dur_t>(extract(d))};
     }
     return {};
 }
