@@ -8,6 +8,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
+		eagine.core.identifier
 		eagine.core.reflection
 )
 
@@ -17,6 +18,7 @@ eagine_add_module(
 		interface
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.identifier
 		eagine.core.reflection
 )
 
@@ -30,17 +32,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.value_tree PARTITION app_config
-	IMPORTS
-		wrappers
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.valid_if
-		eagine.core.logging
-		eagine.core.runtime
-)
-
-eagine_add_module(
 	eagine.core.value_tree
 	INTERFACES
 		value_tree
@@ -48,8 +39,13 @@ eagine_add_module(
 		interface
 		wrappers
 		implementation
-		#app_config
 	SOURCES
-		#app_config_impl
+		empty_impl
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.identifier
+		eagine.core.logging
 )
 

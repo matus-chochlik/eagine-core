@@ -315,7 +315,7 @@ constexpr auto find_element_if(
     auto pos = S(0);
     while(pos < spn.size()) {
         if(predicate(spn[pos])) {
-            return {pos, true};
+            return {pos};
         }
         ++pos;
     }

@@ -10,11 +10,10 @@ module;
 #include <cassert>
 
 export module eagine.core.main_ctx:parent;
-import eagine.core.runtime;
+import :interface;
 import <variant>;
 
 namespace eagine {
-export class main_ctx_object;
 //------------------------------------------------------------------------------
 /// @brief Helper class used to initialize main context objects.
 /// @ingroup main_context

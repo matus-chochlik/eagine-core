@@ -3,6 +3,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(eagine.core.utility PARTITION integer_hash)
+eagine_add_module(eagine.core.utility PARTITION protected_member)
 
 eagine_add_module(
 	eagine.core.utility PARTITION callable_ref
@@ -36,6 +37,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.utility PARTITION file_contents
+	IMPORTS
+		protected_member
+		eagine.core.types
+		eagine.core.memory
+)
+
+eagine_add_module(
 	eagine.core.utility
 	INTERFACES
 		utility
@@ -51,4 +60,5 @@ eagine_add_module(
 		timeout
 		protected_member
 		progress_bar
+		file_contents
 )

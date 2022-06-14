@@ -36,8 +36,8 @@ struct default_progress_info {
 /// @ingroup progress
 class default_progress_tracker_backend : public progress_tracker_backend {
 public:
-    default_progress_tracker_backend(main_ctx_getters& ctx)
-      : _log{identifier{"Progress"}, ctx.log()} {}
+    default_progress_tracker_backend(logger& parent)
+      : _log{identifier{"Progress"}, parent} {}
 
     auto register_observer(progress_observer& observer) noexcept -> bool final {
         if(!_observer) {
@@ -202,5 +202,10 @@ private:
     std::map<activity_progress_id_t, default_progress_info> _activities;
     std::atomic<bool> _keep_going{true};
 };
+//------------------------------------------------------------------------------
+auto make_default_progress_tracker_backend(logger& parent)
+  -> std::unique_ptr<progress_tracker_backend> {
+    return std::make_unique<default_progress_tracker_backend>(parent);
+}
 //------------------------------------------------------------------------------
 } // namespace eagine

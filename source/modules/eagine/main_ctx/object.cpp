@@ -18,17 +18,16 @@ import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.console;
 import eagine.core.progress;
+import :interface;
 import :parent;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 class application_config;
-class data_compressor;
 class process_watchdog;
 class message_bus;
 class main_ctx_storage;
 
-export class main_ctx_log_backend_getter;
 export class main_ctx;
 export class main_ctx_object;
 //------------------------------------------------------------------------------

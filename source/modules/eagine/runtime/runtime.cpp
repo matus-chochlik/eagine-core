@@ -10,6 +10,4 @@ export module eagine.core.runtime;
 export import :signal_switch;
 export import :process;
 export import :program_args;
-export import :system_info;
 export import :compression;
-export import :main_ctx;

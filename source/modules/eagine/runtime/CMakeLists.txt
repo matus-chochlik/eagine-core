@@ -20,28 +20,11 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION system_info
-	IMPORTS
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.valid_if
-		eagine.core.reflection
-		eagine.core.units
-)
-
-eagine_add_module(
 	eagine.core.runtime PARTITION compression
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
-)
-
-eagine_add_module(
-	eagine.core.runtime PARTITION main_ctx
-	IMPORTS
-		program_args
-		eagine.core.types
 )
 
 eagine_add_module(
@@ -52,9 +35,7 @@ eagine_add_module(
 		signal_switch
 		process
 		program_args
-		system_info
 		compression
-		main_ctx
 	SOURCES
 		compression_impl
 )

@@ -9,34 +9,32 @@ module;
 
 #include <cassert>
 
-export module eagine.core.runtime:main_ctx;
+export module eagine.core.main_ctx:interface;
 
+import eagine.core.build_info;
 import eagine.core.types;
+import eagine.core.identifier;
 import eagine.core.memory;
 import eagine.core.utility;
+import eagine.core.runtime;
+import eagine.core.logging;
+import eagine.core.progress;
+import eagine.core.console;
 import <chrono>;
 import <memory>;
+import <string>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 class application_config;
-class build_info;
 class compiler_info;
-class system_info;
 class user_info;
-class activity_progress;
-class console;
-class logger;
-class data_compressor;
-class program_args;
 class process_watchdog;
 class message_bus;
-class main_ctx;
-class main_ctx_storage;
-class main_ctx_log_backend_getter;
-class main_ctx_object;
 
-struct progress_observer;
+export class system_info;
+export class main_ctx_log_backend_getter;
+export class main_ctx_object;
 //------------------------------------------------------------------------------
 /// @brief Interface for classes providing access to main context singletons.
 /// @ingroup main_context
@@ -173,5 +171,22 @@ export void reset_progress_update_callback(main_ctx_getters& ctx) noexcept {
     assert(setters);
     extract(setters).reset_progress_update_callback();
 }
+//------------------------------------------------------------------------------
+/// @brief Structure storing customization options for main context.
+/// @ingroup main_context
+struct main_ctx_options {
+
+    /// @brief The application name. Defaults to the executable name.
+    std::string app_name{};
+
+    /// @brief The application root logger identifier.
+    identifier app_id{"RootLogger"};
+
+    /// @brief Options for the root logger.
+    root_logger_options logger_opts{};
+
+    /// @brief Options for the console.
+    console_options console_opts{};
+};
 //------------------------------------------------------------------------------
 } // namespace eagine

@@ -7,5 +7,10 @@
 ///
 export module eagine.core.main_ctx;
 
+export import :interface;
 export import :parent;
 export import :object;
+export import :system_info;
+export import :user_info;
+export import :watchdog;
+export import :app_config;

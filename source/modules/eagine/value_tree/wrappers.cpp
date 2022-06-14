@@ -15,6 +15,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.utility;
+import eagine.core.identifier;
 import eagine.core.reflection;
 import :interface;
 import <chrono>;
@@ -97,11 +98,11 @@ public:
     }
 
     /// @brief Returns the implementation type id of this attribute.
-    auto type_id() const noexcept -> identifier_t {
+    auto type_id() const noexcept -> identifier {
         if(_pimpl) {
             return _pimpl->type_id();
         }
-        return 0;
+        return {};
     }
 
     /// @brief Returns the implementation type id of this attribute.
@@ -254,11 +255,11 @@ public:
     }
 
     /// @brief Returns the implementation type id of this attribute.
-    auto type_id() const noexcept -> identifier_t {
+    auto type_id() const noexcept -> identifier {
         if(_pimpl) {
             return _pimpl->type_id();
         }
-        return 0;
+        return {};
     }
 
     /// @brief Returns the root of attribute hierarchy describing the tree structure.

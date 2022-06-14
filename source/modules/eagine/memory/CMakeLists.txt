@@ -41,6 +41,11 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.memory PARTITION struct_block
+	IMPORTS block
+)
+
+eagine_add_module(
 	eagine.core.memory PARTITION offset_span
 	IMPORTS
 		span offset_ptr
@@ -160,6 +165,7 @@ eagine_add_module(
 		offset_ptr
 		span
 		block
+		struct_block
 		string_span
 		offset_span
 		span_io

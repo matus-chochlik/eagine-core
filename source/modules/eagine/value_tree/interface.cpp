@@ -10,6 +10,7 @@ export module eagine.core.value_tree:interface;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
+import eagine.core.identifier;
 import eagine.core.reflection;
 import <chrono>;
 import <cstdint>;
@@ -71,7 +72,7 @@ export struct compound_interface;
 export struct attribute_interface : interface<attribute_interface> {
 
     /// @brief Returns the implementation type identifier of this attribute.
-    virtual auto type_id() const noexcept -> identifier_t = 0;
+    virtual auto type_id() const noexcept -> identifier = 0;
 };
 //------------------------------------------------------------------------------
 /// @brief Interface for value tree compound implementations.
@@ -82,7 +83,7 @@ export struct attribute_interface : interface<attribute_interface> {
 export struct compound_interface : interface<compound_interface> {
 
     /// @brief Returns the implementation type identifier of this compound.
-    virtual auto type_id() const noexcept -> identifier_t = 0;
+    virtual auto type_id() const noexcept -> identifier = 0;
 
     /// @brief Add usage reference to the specified attribute.
     /// @pre this->type_id() == attr.type_id()

@@ -37,7 +37,7 @@ eagine_add_module(
 		backend activity
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.runtime
+		eagine.core.logging
 )
 
 eagine_add_module(

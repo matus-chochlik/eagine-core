@@ -9,15 +9,16 @@ module eagine.core.progress;
 
 import eagine.core.types;
 import eagine.core.utility;
+import eagine.core.logging;
 import :default_backend;
 import <memory>;
 import <chrono>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-auto root_activity::_init_backend(main_ctx_getters& ctx)
+auto root_activity::_init_backend(logger& parent)
   -> std::unique_ptr<progress_tracker_backend> {
-    return make_default_progress_tracker_backend(ctx);
+    return make_default_progress_tracker_backend(parent);
 }
 //------------------------------------------------------------------------------
 auto root_activity::register_observer(progress_observer& observer) noexcept

@@ -46,6 +46,9 @@ eagine_add_module(
 		os_impl
 		git_impl
 		compiler_impl
+	IMPORTS
+		eagine.core.memory
+		eagine.core.valid_if
 	PRIVATE_LINK_LIBRARIES
 		eagine-core-generated-headers
 )
