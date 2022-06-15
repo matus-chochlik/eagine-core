@@ -569,7 +569,7 @@ private:
 
 public:
     rapidjson_document_compound(_doc_t& rj_doc, logger& parent)
-      : _log{identifier{"JsonValTre"}, parent}
+      : _log{identifier{"JsnValTree"}, parent}
       , _rj_doc{std::move(rj_doc)}
       , _root{_rj_doc, nullptr} {}
 
@@ -671,11 +671,12 @@ struct get_rapidjson_document_compound<
 using default_rapidjson_document_compound =
   get_rapidjson_document_compound_t<rapidjson::Document>;
 //------------------------------------------------------------------------------
-/* TODO this currently crashes clang
 auto from_json_text(string_view json_text, logger& parent) -> compound {
-    return compound::make<default_rapidjson_document_compound>(
-      json_text, parent);
+    /* TODO this currently crashes clang
+        return compound::make<default_rapidjson_document_compound>(
+          json_text, parent);
+    */
+    return {};
 }
-*/
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree

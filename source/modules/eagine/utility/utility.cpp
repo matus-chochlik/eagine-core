@@ -15,6 +15,7 @@ export import :integer_hash;
 export import :callable_ref;
 export import :memoized;
 export import :scope_exit;
+export import :cleanup_group;
 export import :overloaded;
 export import :timeout;
 export import :progress_bar;

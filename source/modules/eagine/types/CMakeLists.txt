@@ -29,6 +29,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.types PARTITION outcome
+	IMPORTS
+		extract nothing
+		eagine.core.concepts
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.types PARTITION compare
 	IMPORTS basic
 )
@@ -68,9 +76,11 @@ eagine_add_module(
 		extract
 		tribool
 		optional_ref
+		outcome
 		bitfield
 		function_constant
 		selector
 		enum_map
+		metaprogramming
 )
 

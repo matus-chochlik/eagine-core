@@ -23,6 +23,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.utility PARTITION cleanup_group
+	IMPORTS
+		scope_exit
+		eagine.core.types
+		eagine.core.memory
+)
+
+eagine_add_module(
 	eagine.core.utility PARTITION timeout
 	IMPORTS
 		eagine.core.types
@@ -56,6 +64,7 @@ eagine_add_module(
 		callable_ref
 		memoized
 		scope_exit
+		cleanup_group
 		overloaded
 		timeout
 		protected_member

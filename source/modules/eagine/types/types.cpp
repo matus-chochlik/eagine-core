@@ -18,6 +18,8 @@ export import :integer_range;
 export import :extract;
 export import :tribool;
 export import :optional_ref;
+export import :outcome;
 export import :bitfield;
 export import :function_constant;
 export import :selector;
+export import :metaprogramming;

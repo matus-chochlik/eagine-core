@@ -9,96 +9,17 @@ module;
 
 #include <cassert>
 
-export module eagine.core.concepts:extract;
-
-import :extractable;
+export module eagine.core.types:outcome;
+import :extract;
+import :nothing;
 import <memory>;
 import <optional>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-// pointers
-template <typename T>
-struct extract_traits<T*> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(ptr)
-template <typename T>
-static constexpr auto extract(T* ptr) noexcept -> T& {
-    return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
-}
-//------------------------------------------------------------------------------
-template <typename T>
-struct extract_traits<std::shared_ptr<T>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(ptr)
-template <typename T>
-static constexpr auto extract(std::shared_ptr<T>& ptr) noexcept -> auto& {
-    return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
-}
-
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(ptr)
-template <typename T>
-static constexpr auto extract(const std::shared_ptr<T>& ptr) noexcept -> auto& {
-    return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
-}
-//------------------------------------------------------------------------------
-template <typename T, typename D>
-struct extract_traits<std::unique_ptr<T, D>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(ptr)
-template <typename T, typename D>
-static constexpr auto extract(std::unique_ptr<T, D>& ptr) noexcept -> T& {
-    return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
-}
-
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(ptr)
-template <typename T, typename D>
-static constexpr auto extract(const std::unique_ptr<T, D>& ptr) noexcept
-  -> const T& {
-    return EAGINE_CONSTEXPR_ASSERT(bool(ptr), *ptr);
-}
-//------------------------------------------------------------------------------
-template <typename T>
-struct extract_traits<std::optional<T>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(opt)
-template <typename T>
-static constexpr auto extract(std::optional<T>& opt) noexcept -> auto& {
-    return EAGINE_CONSTEXPR_ASSERT(bool(opt), *opt);
-}
-
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(opt)
-template <typename T>
-static constexpr auto extract(const std::optional<T>& opt) noexcept -> auto& {
-    return EAGINE_CONSTEXPR_ASSERT(bool(opt), *opt);
-}
-//------------------------------------------------------------------------------
 /// @brief Traits used for customization of class ok for the specified Outcome.
 /// @see ok
-template <typename Outcome>
+export template <typename Outcome>
 struct ok_traits {
     /// @brief Returns additional info type for values that are not-OK.
     static constexpr auto nok_info(const Outcome&) noexcept -> nothing_t {
@@ -123,7 +44,7 @@ struct ok_traits {
 /// This class is typically used to store and retrieve C-API function call
 /// results where the success is indicated by @c errno or some such global
 /// variable.
-template <typename Outcome>
+export template <typename Outcome>
 class ok {
 private:
     Outcome _outcome{};
@@ -186,26 +107,26 @@ public:
     }
 };
 
-template <typename Outcome>
+export template <typename Outcome>
 ok(Outcome&& outcome) -> ok<Outcome>;
 //------------------------------------------------------------------------------
 /// @brief Overload of extract for instantiations of the ok template.
 /// @relates ok
-template <typename Outcome>
+export template <typename Outcome>
 auto extract(const ok<Outcome>& x) noexcept -> const auto& {
     return x.get();
 }
 
 /// @brief Overload of extract for instantiations of the ok template.
 /// @relates ok
-template <typename Outcome>
+export template <typename Outcome>
 auto extract(ok<Outcome>& x) noexcept -> auto& {
     return x.get();
 }
 //------------------------------------------------------------------------------
 /// @brief Overload of begin for instantiations of the ok template.
 /// @relates ok
-template <typename Outcome>
+export template <typename Outcome>
 auto begin(
   const ok<Outcome>& x,
   decltype(std::declval<const ok<Outcome>&>().get().begin())* = nullptr) {
@@ -214,7 +135,7 @@ auto begin(
 //------------------------------------------------------------------------------
 /// @brief Overload of begin for instantiations of the ok template.
 /// @relates ok
-template <typename Outcome>
+export template <typename Outcome>
 auto end(
   const ok<Outcome>& x,
   decltype(std::declval<const ok<Outcome>&>().get().end())* = nullptr) {
@@ -222,5 +143,3 @@ auto end(
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
-
-#endif // EAGINE_EXTRACT_HPP
