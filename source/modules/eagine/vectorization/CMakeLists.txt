@@ -88,6 +88,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.vectorization PARTITION view
+	IMPORTS
+		data
+		eagine.core.memory
+)
+
+eagine_add_module(
 	eagine.core.vectorization
 	INTERFACES
 		vectorization
@@ -107,5 +114,6 @@ eagine_add_module(
 		hsum
 		esum
 		sdiv
+		view
 )
 

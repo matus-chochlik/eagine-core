@@ -22,9 +22,9 @@ export auto make_overlay(logger& parent) -> compound {
     return make_overlay(parent, {});
 }
 //------------------------------------------------------------------------------
-/* TODO: this crashes clang currently
 export auto add_overlay(compound&, const compound_attribute&) -> bool;
 
+/* TODO: this crashes clang currently
 export auto add_overlay(compound& c, const compound& a) -> bool {
     return add_overlay(c, a.root());
 }

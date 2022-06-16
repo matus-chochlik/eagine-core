@@ -14,6 +14,7 @@ export module eagine.core.math:vector;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.vectorization;
+import :traits;
 import :scalar;
 import <cmath>;
 import <type_traits>;
@@ -21,7 +22,7 @@ import <utility>;
 
 namespace eagine {
 namespace math {
-
+//------------------------------------------------------------------------------
 /// @brief Basic N-dimensional vector implementation template.
 /// @ingroup math
 /// @see tvec
@@ -448,21 +449,19 @@ struct tvec : vector<T, N, V> {
       : base{base::from(v, w)} {}
 };
 } // namespace math
-
-/* TODO
-template <typename T, int N, bool V>
+//------------------------------------------------------------------------------
+export template <typename T, int N, bool V>
 struct is_known_vector_type<math::vector<T, N, V>> : std::is_scalar<T> {};
 
-template <typename T, int N, bool V>
+export template <typename T, int N, bool V>
 struct canonical_compound_type<math::vector<T, N, V>>
   : std::type_identity<std::remove_cv_t<T[N]>> {};
 
-template <typename T, int N, bool V>
+export template <typename T, int N, bool V>
 struct compound_view_maker<math::vector<T, N, V>> {
     constexpr auto operator()(const math::vector<T, N, V>& v) const noexcept {
         return vect::view<T, N, V>::apply(v._v);
     }
 };
-*/
-
+//------------------------------------------------------------------------------
 } // namespace eagine

@@ -22,3 +22,4 @@ export import :sqrt;
 export import :hsum;
 export import :esum;
 export import :sdiv;
+export import :view;
