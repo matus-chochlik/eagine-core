@@ -17,4 +17,5 @@ export import :matrix_construct;
 export import :curve;
 export import :primitives;
 export import :intersection;
+export import :coordinates;
 export import :animated_value;

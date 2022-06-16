@@ -45,10 +45,11 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.math PARTITION matrix_construct
 	IMPORTS
-		traits matrix
+		traits vector matrix
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.vectorization
+		eagine.core.units
 )
 
 eagine_add_module(
@@ -75,6 +76,14 @@ eagine_add_module(
 		primitives
 		eagine.core.types
 		eagine.core.valid_if
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION coordinates
+	IMPORTS
+		functions vector
+		eagine.core.valid_if
+		eagine.core.units
 )
 
 eagine_add_module(
@@ -107,6 +116,7 @@ eagine_add_module(
 		curve
 		primitives
 		intersection
+		coordinates
 		animated_value
 		io
 )
