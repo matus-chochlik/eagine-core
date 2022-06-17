@@ -39,10 +39,12 @@ private:
         return v[0];
     }
 
+    template <int M>
     static auto _hlp(
       data_param_t<T, N, V> v,
-      int_constant<N>,
+      int_constant<M>,
       std::true_type) noexcept -> T {
+        static_assert(M == N);
         return hsum<T, N, V>::apply(v)[N - 1];
     }
 

@@ -19,16 +19,16 @@ export template <int... I>
 struct shuffle_mask {};
 
 #if defined(__GNUC__) && !defined(__clang__)
-template <typename T, int N, bool V>
+export template <typename T, int N, bool V>
 struct mask : _vec_data<T, N> {};
 
-template <int N, bool V>
+export template <int N, bool V>
 struct mask<float, N, V> : _vec_data<std::int32_t, N> {};
 
-template <int N, bool V>
+export template <int N, bool V>
 struct mask<double, N, V> : _vec_data<std::int64_t, N> {};
 
-template <typename T, int N, bool V>
+export template <typename T, int N, bool V>
 using mask_t = typename mask<T, N, V>::type;
 #endif
 
@@ -56,7 +56,7 @@ private:
         // NOLINTNEXTLINE(hicpp-vararg)
         return __builtin_shuffle(v, _mT{I...});
 #else
-        return _do_apply(v, shuffle_mask<I...>(), std::false_type());
+        return _do_apply(v, shuffle_mask<I...>{}, std::false_type{});
 #endif
     }
 
@@ -65,7 +65,7 @@ public:
     static constexpr auto apply(
       data_param_t<T, N, V> v,
       const shuffle_mask<I...> m = {}) noexcept {
-        return _do_apply(v, m, has_simd_data<T, N, V>());
+        return _do_apply(v, m, has_simd_data<T, N, V>{});
     }
 };
 
@@ -99,7 +99,7 @@ private:
         return __builtin_shuffle(v1, v2, _mT{I...});
 #else
         return _do_apply(
-          v1, v2, shuffle_mask<I...>(), int_constant<M>(), std::false_type());
+          v1, v2, shuffle_mask<I...>{}, int_constant<M>{}, std::false_type{});
 #endif
     }
 
@@ -120,7 +120,7 @@ private:
         return __builtin_shuffle(v1, v2, _mT{(I >= 3 ? I + 1 : I)...});
 #else
         return _do_apply(
-          v1, v2, shuffle_mask<I...>(), int_constant<3>(), std::false_type());
+          v1, v2, shuffle_mask<I...>{}, int_constant<3>{}, std::false_type{});
 #endif
     }
 
@@ -131,7 +131,7 @@ public:
       data_param_t<T, N, V> v2,
       const shuffle_mask<I...> m = {}) noexcept {
         return _do_apply(
-          v1, v2, m, int_constant<N>(), has_simd_data<T, N, V>());
+          v1, v2, m, int_constant<N>{}, has_simd_data<T, N, V>{});
     }
 };
 

@@ -43,7 +43,7 @@ struct sdiv<T, 3, V> {
     static constexpr auto apply(
       data_param_t<T, 3, V> a,
       data_param_t<T, 3, V> b) noexcept -> data_t<T, 3, V> {
-        return _hlp(a, b, has_vect_data<T, 3, V>());
+        return _hlp(a, b, has_simd_data<T, 3, V>{});
     }
 };
 

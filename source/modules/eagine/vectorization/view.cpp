@@ -30,13 +30,13 @@ private:
 public:
     static auto apply(const data_t<T, N, V>& d) noexcept -> span<const T> {
         static_assert(sizeof(T[N]) == sizeof(data_t<T, N, V>));
-        return {_addr(d, has_vect_data<T, N, V>()), N};
+        return {_addr(d, has_simd_data<T, N, V>()), N};
     }
 
     template <int M>
     static auto apply(const data_t<T, N, V> (&d)[M]) noexcept -> span<const T> {
         static_assert(sizeof(T[N][M]) == sizeof(data_t<T, N, V>[M]));
-        return {_addr(d[0], has_vect_data<T, N, V>()), N * M};
+        return {_addr(d[0], has_simd_data<T, N, V>()), N * M};
     }
 };
 

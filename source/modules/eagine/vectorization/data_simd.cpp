@@ -166,7 +166,7 @@ struct _has_simd_data<float, N>
       ((N == 2) || (N == 3) || (N == 4)) ||
 #endif
 #if defined(__SSE__) && __SSE__
-      ((N == 2) || (N == 4)) ||
+      ((N == 2) || (N == 3) || (N == 4)) ||
 #endif
       false> {
 };

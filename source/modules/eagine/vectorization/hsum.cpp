@@ -18,7 +18,7 @@ export template <typename T, int N, bool V>
 struct hsum {
 private:
     template <int... I>
-    static auto _sh_apply(data_param_t<T, N, V> v) noexcept {
+    static auto _sh_apply(data_param_t<T, N, V> v) noexcept -> data_t<T, N, V> {
         return shuffle<T, N, V>::template apply<I...>(v);
     }
 
@@ -97,8 +97,8 @@ private:
     }
 
 public:
-    static auto apply(data_t<T, N, V> v) noexcept -> data_t<T, N, V> {
-        return _hlp(v, int_constant<N>(), has_vect_data<T, N, V>());
+    static auto apply(data_param_t<T, N, V> v) noexcept -> data_t<T, N, V> {
+        return _hlp(v, int_constant<N>{}, has_simd_data<T, N, V>{});
     }
 };
 
