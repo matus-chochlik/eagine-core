@@ -24,7 +24,7 @@ struct scalar {
     using value_type = T;
 
     /// @brief Indicates if the implementation uses SIMD extensions.
-    using is_vectorized = vect::has_simd_data_t<T, N, V>;
+    using is_vectorized = vect::has_simd_data<T, N, V>;
 
     using data_type =
       std::conditional_t<is_vectorized::value, vect::data_t<T, N, V>, T>;

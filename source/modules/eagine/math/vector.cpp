@@ -38,7 +38,7 @@ struct vector {
     using value_type = T;
 
     /// @brief Indicates if the implementation uses SIMD extensions.
-    using is_vectorized = vect::has_simd_data_t<T, N, V>;
+    using is_vectorized = vect::has_simd_data<T, N, V>;
 
     using data_type = vect::data_t<T, N, V>;
 
@@ -287,16 +287,16 @@ constexpr auto is_zero(const vector<T, N, V>& v) noexcept -> bool {
     return vect::is_zero<T, N, V>::apply(v._v);
 }
 
-template <typename T, int N, bool V>
-static constexpr auto _dot(
+export template <typename T, int N, bool V>
+constexpr auto _dot(
   const vector<T, N, V>& a,
   const vector<T, N, V>& b,
   const std::true_type) noexcept {
     return scalar<T, N, V>{vect::hsum<T, N, V>::apply(a._v * b._v)};
 }
 
-template <typename T, int N, bool V>
-static constexpr auto _dot(
+export template <typename T, int N, bool V>
+constexpr auto _dot(
   const vector<T, N, V>& a,
   const vector<T, N, V>& b,
   const std::false_type) noexcept {
@@ -307,7 +307,7 @@ static constexpr auto _dot(
 /// @ingroup math
 export template <typename T, int N, bool V>
 constexpr auto dot(const vector<T, N, V>& a, const vector<T, N, V>& b) noexcept {
-    return _dot(a, b, vect::has_simd_data<T, N, V>());
+    return _dot(a, b, vect::has_simd_data<T, N, V>{});
 }
 
 /// @brief Returns a vector perpendicular to argument.
@@ -349,7 +349,7 @@ static constexpr auto _mag(
 /// @ingroup math
 export template <typename T, int N, bool V>
 constexpr auto magnitude(const vector<T, N, V>& a) noexcept {
-    return _mag(a, vect::has_simd_data<T, N, V>());
+    return _mag(a, vect::has_simd_data<T, N, V>{});
 }
 
 /// @brief Returns the length of a vector.
@@ -367,7 +367,7 @@ constexpr auto _nmld(
     return vector<T, N, V>{vect::sdiv<T, N, V>::apply(a._v, l._v)};
 }
 
-template <typename T, int N, bool V>
+export template <typename T, int N, bool V>
 constexpr auto _nmld(
   const vector<T, N, V>& a,
   const scalar<T, N, V>& l,
@@ -381,7 +381,7 @@ constexpr auto _nmld(
 export template <typename T, int N, bool V>
 constexpr auto normalized(const vector<T, N, V>& a) noexcept {
     scalar<T, N, V> l = length(a);
-    return _nmld(a, l, vect::has_simd_data<T, N, V>());
+    return _nmld(a, l, vect::has_simd_data<T, N, V>{});
 }
 
 /// @brief Returns the distance between two vectors.

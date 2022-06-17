@@ -39,18 +39,16 @@ private:
         return v[0];
     }
 
-    template <int M>
     static auto _hlp(
       data_param_t<T, N, V> v,
-      int_constant<M>,
+      int_constant<N>,
       std::true_type) noexcept -> T {
-        static_assert(M == N);
         return hsum<T, N, V>::apply(v)[N - 1];
     }
 
 public:
     static auto apply(data_param_t<T, N, V> v) noexcept -> T {
-        return _hlp(v, int_constant<N>(), has_simd_data<T, N, V>());
+        return _hlp(v, int_constant<N>{}, has_simd_data<T, N, V>{});
     }
 };
 

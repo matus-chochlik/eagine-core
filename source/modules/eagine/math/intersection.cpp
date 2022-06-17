@@ -20,7 +20,7 @@ namespace eagine::math {
 //------------------------------------------------------------------------------
 // utils
 //------------------------------------------------------------------------------
-template <typename V>
+export template <typename V>
 constexpr auto nearest_ray_param(const std::pair<V, V>& params) noexcept -> V {
 
     const auto& t0 = std::get<0>(params);

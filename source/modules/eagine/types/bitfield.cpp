@@ -20,10 +20,10 @@ public:
     /// @brief The enumeration type specifying individual bit values.
     using bit_type = Bit;
 
-    static_assert(std::is_unsigned_v<std::underlying_type_t<bit_type>>);
-
     /// @brief The Integral type used to store the bits.
     using value_type = std::underlying_type_t<bit_type>;
+
+    static_assert(std::is_unsigned_v<value_type>);
 
     /// @brief Default constructor.
     constexpr bitfield() noexcept = default;
@@ -161,7 +161,7 @@ public:
     /// @brief Bitwise-or operator.
     friend constexpr auto operator|(const bitfield a, const bitfield b) noexcept
       -> bitfield {
-        return bitfield(a._bits | b._bits);
+        return bitfield{a._bits | b._bits};
     }
 
     /// @brief Bitwise-or operator.
