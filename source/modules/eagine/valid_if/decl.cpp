@@ -345,14 +345,14 @@ public:
     /// @brief Returns the stored value, throws if it is invalid.
     /// @see basic_valid_if::value
     /// @throws std::runtime_error
-    auto operator*() const noexcept -> const_reference {
+    auto operator*() const -> const_reference {
         return value();
     }
 
     /// @brief Returns pointer to the stored value, throws if it is invalid.
     /// @see basic_valid_if::value
     /// @throws std::runtime_error
-    auto operator->() const noexcept -> const_pointer {
+    auto operator->() const -> const_pointer {
         return &value();
     }
 

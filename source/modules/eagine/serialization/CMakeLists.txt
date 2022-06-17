@@ -74,6 +74,67 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.serialization PARTITION iostream
+	IMPORTS
+		result interface
+		eagine.core.types
+		eagine.core.memory
+)
+
+eagine_add_module(
+	eagine.core.serialization PARTITION block
+	IMPORTS
+		result interface
+		eagine.core.types
+		eagine.core.memory
+)
+
+eagine_add_module(
+	eagine.core.serialization PARTITION packed_block
+	IMPORTS
+		result block
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.runtime
+)
+
+eagine_add_module(
+	eagine.core.serialization PARTITION fast_backend
+	IMPORTS
+		result implementation
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.reflection
+		eagine.core.valid_if
+)
+
+eagine_add_module(
+	eagine.core.serialization PARTITION string_backend
+	IMPORTS
+		result implementation
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.identifier
+		eagine.core.reflection
+		eagine.core.valid_if
+)
+
+eagine_add_module(
+	eagine.core.serialization PARTITION portable_backend
+	IMPORTS
+		float_utils result implementation
+		eagine.core.concepts
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.identifier
+		eagine.core.reflection
+		eagine.core.valid_if
+)
+
+eagine_add_module(
 	eagine.core.serialization
 	INTERFACES
 		serialization
@@ -85,6 +146,12 @@ eagine_add_module(
 		read
 		write
 		implementation
+		iostream
+		block
+		packed_block
+		fast_backend
+		string_backend
+		portable_backend
 	SOURCES
 )
 

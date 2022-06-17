@@ -50,12 +50,12 @@ export template <typename T>
 concept basic_extractable = requires(T v) {
 	{ std::declval<eagine::extracted_type_t<T>>() };
 	{ std::declval<eagine::extract_result_type_t<T>>() };
-	eagine::extract(v);
+	extract(v);
 };
 
 export template <typename T>
 concept extractable = basic_extractable<T> && requires(T v) {
-    { eagine::has_value(v) } -> std::convertible_to<bool>;
+    { has_value(v) } -> std::convertible_to<bool>;
 };
 // clang-format on
 //------------------------------------------------------------------------------
