@@ -238,7 +238,7 @@ constexpr auto decode_code_point_tail(
       b, tail_data_mask(), tail_data_bitshift(i, l));
 }
 //------------------------------------------------------------------------------
-auto do_decode_code_point(
+export auto do_decode_code_point(
   const valid_cbyte_span& vsrc,
   const valid_sequence_length& vl) noexcept -> code_point {
     if(vl.is_valid()) {
@@ -292,7 +292,7 @@ constexpr auto encode_code_point_tail(
       cp, tail_code(), tail_data_mask(), tail_data_bitshift(i, l));
 }
 //------------------------------------------------------------------------------
-auto do_encode_code_point(
+export auto do_encode_code_point(
   const code_point& cp,
   const valid_byte_span& vdest,
   const valid_sequence_length& vl) noexcept -> bool {

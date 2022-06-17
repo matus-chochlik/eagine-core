@@ -23,3 +23,7 @@ export import eagine.core.units;
 export import eagine.core.string;
 export import eagine.core.runtime;
 export import eagine.core.logging;
+export import eagine.core.console;
+export import eagine.core.progress;
+export import eagine.core.serialization;
+export import eagine.core.main_ctx;

@@ -26,6 +26,10 @@ eagine_add_module(
 	eagine.core.valid_if PARTITION compare
 	IMPORTS decl eagine.core.concepts
 )
+eagine_add_module(
+	eagine.core.valid_if PARTITION indicated
+	IMPORTS decl eagine.core.concepts
+)
 
 eagine_add_module(
 	eagine.core.valid_if
@@ -37,5 +41,6 @@ eagine_add_module(
 		never
 		compare
 		not_empty
+		indicated
 )
 

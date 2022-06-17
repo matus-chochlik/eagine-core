@@ -23,6 +23,7 @@ add_subdirectory(logging)
 add_subdirectory(console)
 add_subdirectory(progress)
 add_subdirectory(value_tree)
+add_subdirectory(serialization)
 add_subdirectory(main_ctx)
 
 
@@ -52,6 +53,7 @@ eagine_add_module(
 		eagine.core.console
 		eagine.core.progress
 		eagine.core.value_tree
+		eagine.core.serialization
 		eagine.core.main_ctx
 )
 
