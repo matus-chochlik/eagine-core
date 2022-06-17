@@ -18,6 +18,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.reflection PARTITION bitfield
+	IMPORTS
+		enumerators
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.reflection PARTITION data_members
 	IMPORTS
 		decl_name
@@ -32,6 +39,7 @@ eagine_add_module(
 	PARTITIONS
 		decl_name
 		enumerators
+		bitfield
 		data_members
 )
 

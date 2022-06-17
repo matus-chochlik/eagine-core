@@ -70,4 +70,5 @@ eagine_add_module(
 		protected_member
 		progress_bar
 		file_contents
+		unreachable
 )

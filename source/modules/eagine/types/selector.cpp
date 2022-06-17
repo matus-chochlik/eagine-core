@@ -96,4 +96,17 @@ export using from_config_t = selector<0xACU>;
 /// @see from_config_t
 export constexpr const from_config_t from_config{};
 
+/// @brief Type alias for from-value-tree function selector.
+/// @ingroup metaprogramming
+/// @see from_value_tree
+///
+/// This type is typically used as an additional parameter some function
+/// overloads.
+export using from_value_tree_t = selector<0xF7U>;
+
+/// @brief The from-config function tag-dispatch constant
+/// @ingroup metaprogramming
+/// @see from_config_t
+export constexpr const from_value_tree_t from_value_tree{};
+
 } // namespace eagine
