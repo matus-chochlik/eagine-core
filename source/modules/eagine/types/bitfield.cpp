@@ -202,7 +202,8 @@ constexpr auto operator!=(const bitfield<Bit> a, const bitfield<Bit> b) noexcept
 export template <typename Bit>
 constexpr auto operator|(const bitfield<Bit> a, const bitfield<Bit> b) noexcept
   -> bitfield<Bit> {
-    return bitfield<Bit>{a.bits() | b.bits()};
+    using value_type = std::underlying_type_t<Bit>;
+    return bitfield<Bit>{value_type(a.bits() | b.bits())};
 }
 
 /// @brief Bitwise-or operator.
@@ -218,7 +219,8 @@ constexpr auto operator|(const bitfield<Bit> a, const Bit b) noexcept
 export template <typename Bit>
 constexpr auto operator&(const bitfield<Bit> a, const bitfield<Bit> b) noexcept
   -> bitfield<Bit> {
-    return bitfield<Bit>(a.bits() & b.bits());
+    using value_type = std::underlying_type_t<Bit>;
+    return bitfield<Bit>(value_type(a.bits() & b.bits()));
 }
 
 /// @brief Bitwise-and operator.
@@ -233,7 +235,8 @@ constexpr auto operator&(const bitfield<Bit> a, const Bit b) noexcept
 /// @relates bitfield
 export template <typename Bit>
 constexpr auto operator~(const bitfield<Bit> b) noexcept -> bitfield<Bit> {
-    return bitfield<Bit>{~b.bits()};
+    using value_type = std::underlying_type_t<Bit>;
+    return bitfield<Bit>{value_type(~b.bits())};
 }
 
 } // namespace eagine
