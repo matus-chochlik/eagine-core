@@ -144,26 +144,6 @@ public:
         return is_empty() || has_only(bit);
     }
 
-    /// @brief Equality comparison.
-    friend constexpr auto operator==(
-      const bitfield a,
-      const bitfield b) noexcept {
-        return a._bits == b._bits;
-    }
-
-    /// @brief Nonequality comparison.
-    friend constexpr auto operator!=(
-      const bitfield a,
-      const bitfield b) noexcept {
-        return a._bits != b._bits;
-    }
-
-    /// @brief Bitwise-or operator.
-    friend constexpr auto operator|(const bitfield a, const bitfield b) noexcept
-      -> bitfield {
-        return bitfield{a._bits | b._bits};
-    }
-
     /// @brief Bitwise-or operator.
     auto operator|=(const bitfield b) noexcept -> bitfield& {
         _bits |= b._bits;
@@ -171,20 +151,9 @@ public:
     }
 
     /// @brief Bitwise-and operator.
-    friend constexpr auto operator&(const bitfield a, const bitfield b) noexcept
-      -> bitfield {
-        return bitfield(a._bits & b._bits);
-    }
-
-    /// @brief Bitwise-and operator.
     auto operator&=(const bitfield b) noexcept -> bitfield& {
         _bits &= b._bits;
         return *this;
-    }
-
-    /// @brief Bit inversion operator
-    friend constexpr auto operator~(const bitfield b) noexcept -> bitfield {
-        return bitfield{value_type(~b._bits)};
     }
 
     /// @brief Sets the specified bit.
@@ -211,5 +180,60 @@ public:
 private:
     value_type _bits{0U};
 };
+
+/// @brief Equality comparison.
+/// @relates bitfield
+export template <typename Bit>
+constexpr auto operator==(const bitfield<Bit> a, const bitfield<Bit> b) noexcept
+  -> bool {
+    return a.bits() == b.bits();
+}
+
+/// @brief Nonequality comparison.
+/// @relates bitfield
+export template <typename Bit>
+constexpr auto operator!=(const bitfield<Bit> a, const bitfield<Bit> b) noexcept
+  -> bool {
+    return a.bits() != b.bits();
+}
+
+/// @brief Bitwise-or operator.
+/// @relates bitfield
+export template <typename Bit>
+constexpr auto operator|(const bitfield<Bit> a, const bitfield<Bit> b) noexcept
+  -> bitfield<Bit> {
+    return bitfield<Bit>{a.bits() | b.bits()};
+}
+
+/// @brief Bitwise-or operator.
+/// @relates bitfield
+export template <typename Bit>
+constexpr auto operator|(const bitfield<Bit> a, const Bit b) noexcept
+  -> bitfield<Bit> {
+    return a | bitfield{b};
+}
+
+/// @brief Bitwise-and operator.
+/// @relates bitfield
+export template <typename Bit>
+constexpr auto operator&(const bitfield<Bit> a, const bitfield<Bit> b) noexcept
+  -> bitfield<Bit> {
+    return bitfield<Bit>(a.bits() & b.bits());
+}
+
+/// @brief Bitwise-and operator.
+/// @relates bitfield
+export template <typename Bit>
+constexpr auto operator&(const bitfield<Bit> a, const Bit b) noexcept
+  -> bitfield<Bit> {
+    return a & bitfield{b};
+}
+
+/// @brief Bit inversion operator
+/// @relates bitfield
+export template <typename Bit>
+constexpr auto operator~(const bitfield<Bit> b) noexcept -> bitfield<Bit> {
+    return bitfield<Bit>{~b.bits()};
+}
 
 } // namespace eagine
