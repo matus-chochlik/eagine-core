@@ -214,7 +214,7 @@ constexpr auto operator+(vector<T, N, V> a) noexcept {
 /// @relates vector
 export template <typename T, int N, bool V>
 constexpr auto operator-(vector<T, N, V> a) noexcept {
-    return vector{-a._v};
+    return vector<T, N, V>{-a._v};
 }
 
 /// @brief Addition operator.

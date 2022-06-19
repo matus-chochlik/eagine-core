@@ -759,7 +759,7 @@ struct is_convertible<U, U> : std::true_type {};
 export template <typename U1, typename U2>
 constexpr const bool is_convertible_v = is_convertible<U1, U2>::value;
 //------------------------------------------------------------------------------
-struct trivial_value_conv {
+export struct trivial_value_conv {
     template <typename T>
     constexpr auto operator()(const T v) const noexcept -> T {
         return v;
