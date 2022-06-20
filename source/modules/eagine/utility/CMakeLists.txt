@@ -3,6 +3,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(eagine.core.utility PARTITION integer_hash)
+eagine_add_module(eagine.core.utility PARTITION interleaved_call)
 eagine_add_module(eagine.core.utility PARTITION protected_member)
 
 eagine_add_module(
@@ -61,6 +62,7 @@ eagine_add_module(
 		bool_aggregate
 		double_buffer
 		integer_hash
+		interleaved_call
 		callable_ref
 		memoized
 		scope_exit
