@@ -19,3 +19,5 @@ export import :proxy_backend;
 export import :entry;
 export import :logger;
 export import :root_logger;
+export import :adapt_enum;
+export import :adapt_exception;

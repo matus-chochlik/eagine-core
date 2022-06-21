@@ -118,6 +118,44 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.logging PARTITION adapt_enum
+	IMPORTS
+		entry_arg backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.c_api
+)
+
+eagine_add_module(
+	eagine.core.logging PARTITION adapt_exception
+	IMPORTS
+		entry_arg backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+)
+
+eagine_add_module(
+	eagine.core.logging PARTITION adapt_filesystem
+	IMPORTS
+		entry_arg backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+)
+
+eagine_add_module(
+	eagine.core.logging PARTITION adapt_program_args
+	IMPORTS
+		entry_arg backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.runtime
+)
+
+eagine_add_module(
 	eagine.core.logging
 	INTERFACES
 		logging
@@ -134,6 +172,10 @@ eagine_add_module(
 		entry
 		logger
 		root_logger
+		adapt_enum
+		adapt_exception
+		adapt_filesystem
+		adapt_program_args
 	SOURCES
 		null_backend_impl
 		asio_backend_impl

@@ -14,16 +14,19 @@ export module eagine.core.main_ctx:storage;
 import eagine.core.build_info;
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.utility;
+import eagine.core.identifier;
 import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.console;
 import eagine.core.progress;
 import :interface;
+import :parent;
+import :app_config;
 import :system_info;
 import :user_info;
 import :watchdog;
-
-// #include "app_config.hpp"
+import <chrono>;
 import <filesystem>;
 import <string>;
 
@@ -38,14 +41,14 @@ public:
       const char** argv,
       main_ctx_options& options) noexcept
       : _args{argc, argv}
+      , _bld_info{}
+      , _sys_info{}
+      , _usr_info{}
       , _console{options.app_id, _args, options.console_opts}
       , _log_root{options.app_id, _args, options.logger_opts}
-      , _progress_root{*this}
-      , _bld_info{build_info::query()}
+      , _progress_root{_log_root}
       , _watchdog{*this}
       , _app_config{*this}
-      , _sys_info{*this}
-      , _usr_info{*this}
       , _app_name{options.app_name} {
         auto fs_path = std::filesystem::path(to_string(_args.command()));
         if(_app_name.empty()) {
@@ -54,8 +57,8 @@ public:
         _exe_path = fs_path.lexically_normal().string();
 
         _log_root.info("application ${appName} starting")
-          .arg(EAGINE_ID(appName), _app_name)
-          .arg(EAGINE_ID(exePath), _exe_path);
+          .arg(identifier{"appName"}, _app_name)
+          .arg(identifier{"exePath"}, _exe_path);
     }
 
     auto setters() noexcept -> main_ctx_setters* final {
@@ -63,7 +66,6 @@ public:
     }
 
     auto preinitialize() noexcept -> main_ctx_storage& final {
-        _app_config.preinitialize();
         _sys_info.preinitialize();
         return *this;
     }
@@ -136,12 +138,12 @@ public:
     }
 
     auto bus() noexcept -> message_bus& final {
-        EAGINE_ASSERT(_msg_bus);
+        assert(_msg_bus);
         return *_msg_bus;
     }
 
     void inject(std::shared_ptr<message_bus> msg_bus) final {
-        EAGINE_ASSERT(!_msg_bus);
+        assert(!_msg_bus);
         _msg_bus = std::move(msg_bus);
     }
 
@@ -162,19 +164,19 @@ public:
     }
 
 private:
-    const process_instance_id_t _instance_id{make_process_instance_id()};
+    const process_instance_id_t _instance_id{process_instance_id()};
     memory::shared_byte_allocator _default_alloc{
       memory::default_byte_allocator()};
     program_args _args;
+    build_info _bld_info;
+    system_info _sys_info;
+    user_info _usr_info;
     console _console;
     root_logger _log_root;
     root_activity _progress_root;
     compiler_info _cmplr_info;
-    build_info _bld_info;
     process_watchdog _watchdog;
     application_config _app_config;
-    system_info _sys_info;
-    user_info _usr_info;
     memory::buffer _scratch_space{_default_alloc};
     data_compressor _compressor{};
     std::string _exe_path{};
@@ -183,5 +185,3 @@ private:
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
-
-#endif

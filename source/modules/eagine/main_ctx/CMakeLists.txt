@@ -78,21 +78,27 @@ eagine_add_module(
 		eagine.core.value_tree
 )
 
+eagine_add_module(
+	eagine.core.main_ctx PARTITION storage
+	IMPORTS
+		interface parent object app_config
+		system_info user_info watchdog
+		eagine.core.types
+		eagine.core.build_info
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.runtime
+		eagine.core.logging
+		eagine.core.console
+		eagine.core.progress
+)
 
-#eagine_add_module(
-#	eagine.core.main_ctx PARTITION storage
-#	IMPORTS
-#		interface parent object
-#		system_info user_info watchdog
-#		eagine.core.types
-#		eagine.core.build_info
-#		eagine.core.types
-#		eagine.core.memory
-#		eagine.core.runtime
-#		eagine.core.logging
-#		eagine.core.console
-#		eagine.core.progress
-#)
+eagine_add_module(
+	eagine.core.main_ctx PARTITION main
+	IMPORTS
+		interface
+)
 
 eagine_add_module(
 	eagine.core.main_ctx
@@ -106,10 +112,13 @@ eagine_add_module(
 		user_info
 		watchdog
 		app_config
+		storage
+		main
 	SOURCES
 		system_info_impl
 		user_info_impl
 		watchdog_impl
 		app_config_impl
+		main_impl
 )
 

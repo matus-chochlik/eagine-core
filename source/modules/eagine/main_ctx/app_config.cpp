@@ -45,9 +45,9 @@ export struct application_config_value_loader
 /// environment variables, command line arguments and/or configuration files.
 export class application_config {
 public:
-    application_config(logger& parent, main_ctx_getters& ctx) noexcept
+    application_config(main_ctx_getters& ctx) noexcept
       : _main_ctx{ctx}
-      , _log{identifier{"AppConfig"}, parent} {}
+      , _log{identifier{"AppConfig"}, _main_ctx.log()} {}
 
     /// @brief Checks is the boolean option identified by @p key is set to true.
     auto is_set(const string_view key, const string_view tag = {}) noexcept
