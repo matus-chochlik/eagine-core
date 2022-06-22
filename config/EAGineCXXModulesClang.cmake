@@ -113,6 +113,42 @@ function(eagine_append_own_module_pcms)
 	endforeach()
 endfunction()
 
+function(eagine_add_module_common_properties TARGET_NAME)
+	set_property(
+		TARGET ${TARGET_NAME}
+		APPEND PROPERTY COMPILE_OPTIONS
+		"-fmodules"
+		"-fbuiltin-module-map"
+	)
+	set_property(
+		TARGET ${TARGET_NAME}
+		APPEND PROPERTY COMPILE_DEFINITIONS
+		EAGINE_DEBUG=${EAGINE_DEBUG}
+		EAGINE_LOW_PROFILE=${LOW_PROFILE}
+	)
+	if(${EAGINE_CLANGXX_COMPILER})
+		set_property(
+			TARGET ${TARGET_NAME}
+			APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
+			"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-weak-vtables;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions"
+		)
+	endif()
+	if(${EAGINE_GXX_COMPILER})
+		set_property(
+			TARGET ${TARGET_NAME}
+			APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
+			"-Wextra;-Wshadow;-Wno-noexcept-type;-Wno-attributes;-Wno-psabi;-Wno-unknown-warning-option"
+		)
+	endif()
+	if((${EAGINE_GXX_COMPILER} OR ${EAGINE_CLANGXX_COMPILER}) AND ${EAGINE_DEBUG})
+		set_property(
+			TARGET ${TARGET_NAME}
+			APPEND PROPERTY COMPILE_OPTIONS
+			"-fstack-protector-all"
+		)
+	endif()
+endfunction()
+
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
 	set(ARG_VALUES PARTITION PP_NAME)
@@ -175,26 +211,8 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				${EAGINE_MODULE_TARGET}-implement OBJECT
 				${EAGINE_MODULE_SOURCE_FILES}
 			)
-			set_property(
-				TARGET ${EAGINE_MODULE_TARGET}-implement
-				APPEND PROPERTY COMPILE_OPTIONS
-				"-fmodules"
-				"-fbuiltin-module-map"
-			)
-			if((${EAGINE_GXX_COMPILER} OR ${EAGINE_CLANGXX_COMPILER}) AND ${EAGINE_DEBUG})
-				set_property(
-					TARGET ${EAGINE_MODULE_TARGET}-implement
-					APPEND PROPERTY COMPILE_OPTIONS
-					"-fstack-protector-all"
-				)
-			endif()
+			eagine_add_module_common_properties(${EAGINE_MODULE_TARGET}-implement)
 
-			set_property(
-				TARGET ${EAGINE_MODULE_TARGET}-implement
-				APPEND PROPERTY COMPILE_DEFINITIONS
-				EAGINE_DEBUG=${EAGINE_DEBUG}
-				EAGINE_LOW_PROFILE=${LOW_PROFILE}
-			)
 			foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
 				target_include_directories(
 					${EAGINE_MODULE_TARGET}-implement
@@ -247,25 +265,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		APPEND PROPERTY EAGINE_MODULE_PROPER
 		"${EAGINE_MODULE_PROPER}"
 	)
-	set_property(
-		TARGET ${EAGINE_MODULE_TARGET}
-		APPEND PROPERTY COMPILE_OPTIONS
-		"-fmodules"
-		"-fbuiltin-module-map"
-	)
-	if((${EAGINE_GXX_COMPILER} OR ${EAGINE_CLANGXX_COMPILER}) AND ${EAGINE_DEBUG})
-		set_property(
-			TARGET ${EAGINE_MODULE_TARGET}
-			APPEND PROPERTY COMPILE_OPTIONS
-			"-fstack-protector-all"
-		)
-	endif()
-	set_property(
-		TARGET ${EAGINE_MODULE_TARGET}
-		APPEND PROPERTY COMPILE_DEFINITIONS
-		EAGINE_DEBUG=${EAGINE_DEBUG}
-		EAGINE_LOW_PROFILE=${LOW_PROFILE}
-	)
+	eagine_add_module_common_properties(${EAGINE_MODULE_TARGET})
 	set_property(
 		TARGET ${EAGINE_MODULE_TARGET}
 		APPEND PROPERTY EAGINE_MODULE_INTERFACES
@@ -405,19 +405,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 endfunction()
 
 function(eagine_target_modules TARGET_NAME)
-	set_property(
-		TARGET ${TARGET_NAME}
-		APPEND PROPERTY COMPILE_OPTIONS
-		"-fmodules"
-		"-fbuiltin-module-map"
-	)
-	if((${EAGINE_GXX_COMPILER} OR ${EAGINE_CLANGXX_COMPILER}) AND ${EAGINE_DEBUG})
-		set_property(
-			TARGET ${TARGET_NAME}
-			APPEND PROPERTY COMPILE_OPTIONS
-			"-fstack-protector-all"
-		)
-	endif()
+	eagine_add_module_common_properties(${TARGET_NAME})
 
 	foreach(EAGINE_MODULE_SOURCE ${ARGN})
 		target_link_libraries(${TARGET_NAME} PUBLIC ${EAGINE_MODULE_SOURCE})
@@ -426,13 +414,13 @@ function(eagine_target_modules TARGET_NAME)
 			TARGET ${EAGINE_MODULE_SOURCE}
 			PROPERTY EAGINE_MODULE_PP_NAME
 		)
-		set_property(
-			TARGET ${TARGET_NAME}
-			APPEND PROPERTY COMPILE_DEFINITIONS
-			EAGINE_DEBUG=${EAGINE_DEBUG}
-			EAGINE_LOW_PROFILE=${LOW_PROFILE}
-			EAGINE_${PP_NAME}_MODULE=1
-		)
+		if(NOT "${PP_NAME}" STREQUAL "")
+			set_property(
+				TARGET ${TARGET_NAME}
+				APPEND PROPERTY COMPILE_DEFINITIONS
+				EAGINE_${PP_NAME}_MODULE=1
+			)
+		endif()
 		add_custom_target(${TARGET_NAME}-imports)
 
 		eagine_append_module_pcms(
