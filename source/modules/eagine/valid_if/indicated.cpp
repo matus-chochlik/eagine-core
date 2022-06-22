@@ -31,8 +31,8 @@ struct valid_if_indicated_policy {
     }
 
     struct do_log {
-        template <typename X>
-        constexpr do_log(X) noexcept {}
+        template <does_not_hide<do_log> X>
+        constexpr do_log(X&&) noexcept {}
 
         template <typename Log, typename T>
         void operator()(Log& log, const T&) const {

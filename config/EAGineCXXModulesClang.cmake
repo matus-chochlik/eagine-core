@@ -181,6 +181,14 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				"-fmodules"
 				"-fbuiltin-module-map"
 			)
+			if((${EAGINE_GXX_COMPILER} OR ${EAGINE_CLANGXX_COMPILER}) AND ${EAGINE_DEBUG})
+				set_property(
+					TARGET ${EAGINE_MODULE_TARGET}-implement
+					APPEND PROPERTY COMPILE_OPTIONS
+					"-fstack-protector-all"
+				)
+			endif()
+
 			set_property(
 				TARGET ${EAGINE_MODULE_TARGET}-implement
 				APPEND PROPERTY COMPILE_DEFINITIONS
@@ -245,6 +253,13 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		"-fmodules"
 		"-fbuiltin-module-map"
 	)
+	if((${EAGINE_GXX_COMPILER} OR ${EAGINE_CLANGXX_COMPILER}) AND ${EAGINE_DEBUG})
+		set_property(
+			TARGET ${EAGINE_MODULE_TARGET}
+			APPEND PROPERTY COMPILE_OPTIONS
+			"-fstack-protector-all"
+		)
+	endif()
 	set_property(
 		TARGET ${EAGINE_MODULE_TARGET}
 		APPEND PROPERTY COMPILE_DEFINITIONS
@@ -389,32 +404,41 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	endif()
 endfunction()
 
-function(eagine_target_module TARGET_NAME EAGINE_MODULE_SOURCE)
-	target_link_libraries(${TARGET_NAME} PUBLIC ${EAGINE_MODULE_SOURCE})
-
+function(eagine_target_modules TARGET_NAME)
 	set_property(
 		TARGET ${TARGET_NAME}
 		APPEND PROPERTY COMPILE_OPTIONS
 		"-fmodules"
 		"-fbuiltin-module-map"
 	)
-	get_property(
-		PP_NAME	
-		TARGET ${EAGINE_MODULE_SOURCE}
-		PROPERTY EAGINE_MODULE_PP_NAME
-	)
-	set_property(
-		TARGET ${TARGET_NAME}
-		APPEND PROPERTY COMPILE_DEFINITIONS
-		EAGINE_DEBUG=${EAGINE_DEBUG}
-		EAGINE_LOW_PROFILE=${LOW_PROFILE}
-		EAGINE_${PP_NAME}_MODULE=1
-	)
-	add_custom_target(${TARGET_NAME}-imports)
+	if((${EAGINE_GXX_COMPILER} OR ${EAGINE_CLANGXX_COMPILER}) AND ${EAGINE_DEBUG})
+		set_property(
+			TARGET ${TARGET_NAME}
+			APPEND PROPERTY COMPILE_OPTIONS
+			"-fstack-protector-all"
+		)
+	endif()
 
-	eagine_append_module_pcms(
-		TARGET ${TARGET_NAME}
-		SOURCE ${EAGINE_MODULE_SOURCE}
-	)
+	foreach(EAGINE_MODULE_SOURCE ${ARGN})
+		target_link_libraries(${TARGET_NAME} PUBLIC ${EAGINE_MODULE_SOURCE})
+		get_property(
+			PP_NAME	
+			TARGET ${EAGINE_MODULE_SOURCE}
+			PROPERTY EAGINE_MODULE_PP_NAME
+		)
+		set_property(
+			TARGET ${TARGET_NAME}
+			APPEND PROPERTY COMPILE_DEFINITIONS
+			EAGINE_DEBUG=${EAGINE_DEBUG}
+			EAGINE_LOW_PROFILE=${LOW_PROFILE}
+			EAGINE_${PP_NAME}_MODULE=1
+		)
+		add_custom_target(${TARGET_NAME}-imports)
+
+		eagine_append_module_pcms(
+			TARGET ${TARGET_NAME}
+			SOURCE ${EAGINE_MODULE_SOURCE}
+		)
+	endforeach()
 endfunction()
 

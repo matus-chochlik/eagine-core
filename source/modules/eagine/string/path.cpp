@@ -17,6 +17,7 @@ import eagine.core.valid_if;
 import :multi_byte;
 import :list;
 import <iostream>;
+import <filesystem>;
 import <string>;
 import <tuple>;
 import <utility>;
@@ -105,6 +106,11 @@ public:
       const string_view name,
       const Str&... names) noexcept
       : basic_string_path(_pack_names(name, view(names)...)) {}
+
+    /// @brief Conversion to filesystem path.
+    operator std::filesystem::path() const {
+        return {as_string()};
+    }
 
     /// @brief Equality comparison.
     friend auto operator==(
@@ -283,7 +289,7 @@ public:
     }
 
     /// @brief Returns this path as string with elements separated by '/'
-    auto as_string() const noexcept {
+    auto as_string() const noexcept -> std::string {
         return as_string({"/"}, false);
     }
 

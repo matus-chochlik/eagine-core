@@ -11,7 +11,7 @@ module;
 #include <cxxabi.h>
 #endif
 
-module eagine.core:type_name;
+module eagine.core.debug;
 
 import <string>;
 

@@ -52,6 +52,7 @@ eagine_add_module(
 	SOURCES
 		empty_impl
 		json_impl
+		yaml_impl
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
@@ -60,5 +61,7 @@ eagine_add_module(
 		eagine.core.logging
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/rapidjson/include"
+	PRIVATE_LINK_LIBRARIES
+		ryml
 )
 

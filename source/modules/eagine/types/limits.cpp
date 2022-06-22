@@ -15,9 +15,9 @@ import :basic;
 import <cstdint>;
 import <concepts>;
 import <limits>;
-import <optional>;
 import <type_traits>;
 import <utility>;
+export import <optional>;
 
 namespace eagine {
 //------------------------------------------------------------------------------

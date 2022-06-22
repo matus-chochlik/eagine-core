@@ -7,12 +7,14 @@
 ///
 export module eagine.core.utility:array_size;
 
+import eagine.core.types;
+
 namespace eagine {
 
 /// @brief Returns the number of elements in the array passed as argument.
 /// @ingroup type_utils
-template <typename T, std::size_t N>
-static constexpr auto array_size(const T (&)[N]) noexcept {
+export template <typename T, std::size_t N>
+constexpr auto array_size(const T (&)[N]) noexcept {
     return span_size(N);
 }
 

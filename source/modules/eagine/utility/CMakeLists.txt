@@ -7,6 +7,11 @@ eagine_add_module(eagine.core.utility PARTITION interleaved_call)
 eagine_add_module(eagine.core.utility PARTITION protected_member)
 
 eagine_add_module(
+	eagine.core.utility PARTITION array_size
+	IMPORTS eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.utility PARTITION callable_ref
 	IMPORTS
 		eagine.core.concepts
@@ -16,6 +21,13 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.utility PARTITION memoized
 	IMPORTS callable_ref
+)
+
+eagine_add_module(
+	eagine.core.utility PARTITION network_sort
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
 )
 
 eagine_add_module(
@@ -59,12 +71,14 @@ eagine_add_module(
 		utility
 	PARTITIONS
 		count
+		array_size
 		bool_aggregate
 		double_buffer
 		integer_hash
 		interleaved_call
 		callable_ref
 		memoized
+		network_sort
 		scope_exit
 		cleanup_group
 		overloaded
@@ -73,4 +87,6 @@ eagine_add_module(
 		progress_bar
 		file_contents
 		unreachable
+	SOURCES
+		progress_bar_impl
 )

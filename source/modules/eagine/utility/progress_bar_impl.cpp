@@ -5,7 +5,9 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-export modulea eagine.core.utility;
+module eagine.core.utility;
+
+import <string>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
