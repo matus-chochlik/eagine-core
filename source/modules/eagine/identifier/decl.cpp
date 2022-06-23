@@ -43,7 +43,7 @@ public:
     }
 
     /// @brief Returns the valid character set as a string_view
-    static inline auto chars() -> memory::string_view {
+    static auto chars() -> memory::string_view {
         return {CharSet::values};
     }
 
@@ -269,55 +269,12 @@ public:
 
     /// @brief Returns this identifier as unpacked standard string.
     /// @see identifier_name
-    inline auto str() const -> std::string {
+    auto str() const -> std::string {
         return name().str();
     }
 
-    /// @brief Equality comparison.
-    friend constexpr auto operator==(
-      const basic_identifier& a,
-      const basic_identifier& b) noexcept {
-        return a._bites == b._bites;
-    }
-
-    /// @brief Nonequality comparison.
-    friend constexpr auto operator!=(
-      const basic_identifier& a,
-      const basic_identifier& b) noexcept {
-        return a._bites != b._bites;
-    }
-
-    /// @brief Less-than comparison.
-    /// @note This is not lexicographical string comparison.
-    friend constexpr auto operator<(
-      const basic_identifier& a,
-      const basic_identifier& b) noexcept {
-        return a._bites < b._bites;
-    }
-
-    /// @brief Less-equal comparison.
-    /// @note This is not lexicographical string comparison.
-    friend constexpr auto operator<=(
-      const basic_identifier& a,
-      const basic_identifier& b) noexcept {
-        return a._bites <= b._bites;
-    }
-
-    /// @brief Greater-than comparison.
-    /// @note This is not lexicographical string comparison.
-    friend constexpr auto operator>(
-      const basic_identifier& a,
-      const basic_identifier& b) noexcept {
-        return a._bites > b._bites;
-    }
-
-    /// @brief Greater-equal comparison.
-    /// @note This is not lexicographical string comparison.
-    friend constexpr auto operator>=(
-      const basic_identifier& a,
-      const basic_identifier& b) noexcept {
-        return a._bites >= b._bites;
-    }
+    /// @brief Comparison.
+    constexpr auto operator<=>(const basic_identifier&) const noexcept = default;
 
 private:
     _bites_t _bites;

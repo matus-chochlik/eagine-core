@@ -16,6 +16,7 @@ import eagine.core.memory;
 import eagine.core.valid_if;
 import :multi_byte;
 import :list;
+import <compare>;
 import <iostream>;
 import <filesystem>;
 import <string>;
@@ -112,47 +113,8 @@ public:
         return {as_string()};
     }
 
-    /// @brief Equality comparison.
-    friend auto operator==(
-      const basic_string_path& a,
-      const basic_string_path& b) noexcept {
-        return a._str == b._str;
-    }
-
-    /// @brief Non-equality comparison.
-    friend auto operator!=(
-      const basic_string_path& a,
-      const basic_string_path& b) noexcept {
-        return a._str != b._str;
-    }
-
-    /// @brief Less-than comparison.
-    friend auto operator<(
-      const basic_string_path& a,
-      const basic_string_path& b) noexcept {
-        return a._str < b._str;
-    }
-
-    /// @brief Less-equal comparison.
-    friend auto operator<=(
-      const basic_string_path& a,
-      const basic_string_path& b) noexcept {
-        return a._str <= b._str;
-    }
-
-    /// @brief Greater-than comparison.
-    friend auto operator>(
-      const basic_string_path& a,
-      const basic_string_path& b) noexcept {
-        return a._str > b._str;
-    }
-
-    /// @brief Greater-equal comparison.
-    friend auto operator>=(
-      const basic_string_path& a,
-      const basic_string_path& b) noexcept {
-        return a._str >= b._str;
-    }
+    /// @brief Comparison.
+    auto operator<=>(const basic_string_path&) const noexcept = default;
 
     /// @brief Concatenates two paths.
     friend auto operator+(

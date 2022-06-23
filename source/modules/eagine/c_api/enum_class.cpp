@@ -15,6 +15,7 @@ import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.container;
+import <compare>;
 import <cstdint>;
 import <tuple>;
 import <type_traits>;
@@ -391,19 +392,8 @@ struct enum_class {
         return limit_cast<T>(_value);
     }
 
-    /// @brief Equality comparison.
-    friend constexpr auto operator==(
-      const enum_class a,
-      const enum_class b) noexcept {
-        return a._value == b._value;
-    }
-
-    /// @brief Nonequality comparison.
-    friend constexpr auto operator!=(
-      const enum_class a,
-      const enum_class b) noexcept {
-        return a._value != b._value;
-    }
+    /// @brief Comparison.
+    constexpr auto operator<=>(const enum_class&) const noexcept = default;
 
     struct transform {
         constexpr auto operator()(const T value) noexcept {
@@ -452,19 +442,8 @@ struct any_enum_class {
         return _type_id != ~identifier_t(0);
     }
 
-    /// @brief Equality comparison.
-    friend auto operator==(
-      const any_enum_class& a,
-      const any_enum_class& b) noexcept {
-        return a._type_id == b._type_id;
-    }
-
-    /// @brief Nonequality comparison.
-    friend auto operator!=(
-      const any_enum_class& a,
-      const any_enum_class& b) noexcept {
-        return a._type_id != b._type_id;
-    }
+    /// @brief Comparison.
+    constexpr auto operator<=>(const any_enum_class&) const noexcept = default;
 };
 
 /// @brief Type erasure for instantiations of enum_value from a specified library.
@@ -494,18 +473,7 @@ struct any_enum_value {
     }
 
     /// @brief Equality comparison.
-    friend auto operator==(
-      const any_enum_value& a,
-      const any_enum_value& b) noexcept {
-        return (a._value == b._value) && (a._type_id == b._type_id);
-    }
-
-    /// @brief Nonequality comparison.
-    friend auto operator!=(
-      const any_enum_value& a,
-      const any_enum_value& b) noexcept {
-        return (a._value != b._value) || (a._type_id != b._type_id);
-    }
+    constexpr auto operator<=>(const any_enum_value&) const noexcept = default;
 };
 
 /// @brief Tests if two instances of any_enum_class belong to the same enum class.

@@ -10,6 +10,7 @@ export module eagine.core.memory:byteset;
 import eagine.core.types;
 import :block;
 import <climits>;
+import <compare>;
 import <type_traits>;
 import <utility>;
 
@@ -149,50 +150,12 @@ public:
         return _bytes + N;
     }
 
-    friend constexpr auto compare(const byteset& a, const byteset& b) noexcept {
-        return _do_cmp(a, b, std::make_index_sequence<N>{});
+    /// @brief Comparison operator.
+    constexpr auto operator<=>(const byteset& that) const noexcept {
+        return _do_cmp(*this, that, std::make_index_sequence<N>{});
     }
-
-    /// @brief Equality comparison.
-    friend constexpr auto operator==(
-      const byteset& a,
-      const byteset& b) noexcept {
-        return compare(a, b) == 0;
-    }
-
-    /// @brief Non-equality comparison.
-    friend constexpr auto operator!=(
-      const byteset& a,
-      const byteset& b) noexcept {
-        return compare(a, b) != 0;
-    }
-
-    /// @brief Less-than comparison.
-    friend constexpr auto operator<(
-      const byteset& a,
-      const byteset& b) noexcept {
-        return compare(a, b) < 0;
-    }
-
-    /// @brief Less-equal comparison.
-    friend constexpr auto operator<=(
-      const byteset& a,
-      const byteset& b) noexcept {
-        return compare(a, b) <= 0;
-    }
-
-    /// @brief Greater-than comparison.
-    friend constexpr auto operator>(
-      const byteset& a,
-      const byteset& b) noexcept {
-        return compare(a, b) > 0;
-    }
-
-    /// @brief Greater-equal comparison.
-    friend constexpr auto operator>=(
-      const byteset& a,
-      const byteset& b) noexcept {
-        return compare(a, b) >= 0;
+    constexpr auto operator==(const byteset& that) const noexcept -> bool {
+        return (*this <=> that) == 0;
     }
 
     /// @brief Converts the byte sequence into an unsigned integer value.

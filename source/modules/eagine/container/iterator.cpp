@@ -7,6 +7,7 @@
 ///
 export module eagine.core.container:iterator;
 
+import <compare>;
 import <iterator>;
 import <utility>;
 
@@ -96,53 +97,14 @@ public:
     }
 
     /// @brief Subtraction operator.
-    constexpr friend auto operator-(
-      const basic_iterable_type a,
-      const basic_iterable_type b) noexcept -> difference_type {
-        return a._value - b._value;
+    constexpr auto operator-(const basic_iterable_type that) noexcept
+      -> difference_type {
+        return _value - that._value;
     }
 
-    /// @brief Equality comparison.
-    constexpr friend auto operator==(
-      const basic_iterable_type a,
-      const basic_iterable_type b) noexcept {
-        return a._value == b._value;
-    }
-
-    /// @brief Non-equality comparison.
-    constexpr friend auto operator!=(
-      const basic_iterable_type a,
-      const basic_iterable_type b) noexcept {
-        return a._value != b._value;
-    }
-
-    /// @brief Less-than comparison.
-    constexpr friend auto operator<(
-      const basic_iterable_type a,
-      const basic_iterable_type b) noexcept {
-        return a._value < b._value;
-    }
-
-    /// @brief Less-equal comparison.
-    constexpr friend auto operator<=(
-      const basic_iterable_type a,
-      const basic_iterable_type b) noexcept {
-        return a._value <= b._value;
-    }
-
-    /// @brief Greater-than comparison.
-    constexpr friend auto operator>(
-      const basic_iterable_type a,
-      const basic_iterable_type b) noexcept {
-        return a._value > b._value;
-    }
-
-    /// @brief Greater-equal comparison.
-    constexpr friend auto operator>=(
-      const basic_iterable_type a,
-      const basic_iterable_type b) noexcept {
-        return a._value >= b._value;
-    }
+    /// @brief Comparison.
+    constexpr auto operator<=>(const basic_iterable_type) const noexcept =
+      default;
 
 protected:
     T _value{};

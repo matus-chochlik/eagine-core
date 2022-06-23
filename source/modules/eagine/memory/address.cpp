@@ -13,6 +13,7 @@ export module eagine.core.memory:address;
 
 import eagine.core.types;
 import :align;
+import <compare>;
 import <cstddef>;
 import <cstdint>;
 import <type_traits>;
@@ -145,47 +146,9 @@ public:
         return memory::is_aligned_as<T>(value(), tid);
     }
 
-    /// @brief Equality comparison.
-    constexpr friend auto operator==(
-      const basic_address a,
-      const basic_address b) noexcept {
-        return a.ptr() == b.ptr();
-    }
-
-    /// @brief Non-equality comparison.
-    constexpr friend auto operator!=(
-      const basic_address a,
-      const basic_address b) noexcept {
-        return a.ptr() != b.ptr();
-    }
-
-    /// @brief Less-than comparison.
-    constexpr friend auto operator<(
-      const basic_address a,
-      const basic_address b) noexcept {
-        return a.ptr() < b.ptr();
-    }
-
-    /// @brief Less-equal comparison.
-    constexpr friend auto operator<=(
-      const basic_address a,
-      const basic_address b) noexcept {
-        return a.ptr() <= b.ptr();
-    }
-
-    /// @brief Greater-than comparison.
-    constexpr friend auto operator>(
-      const basic_address a,
-      const basic_address b) noexcept {
-        return a.ptr() > b.ptr();
-    }
-
-    /// @brief Greater-equal comparison.
-    constexpr friend auto operator>=(
-      const basic_address a,
-      const basic_address b) noexcept {
-        return a.ptr() >= b.ptr();
-    }
+    /// @brief Comparison.
+    constexpr auto operator<=>(const basic_address& that) const noexcept
+      -> std::strong_ordering = default;
 
     /// @brief Byte difference between two addresses.
     constexpr friend auto operator-(

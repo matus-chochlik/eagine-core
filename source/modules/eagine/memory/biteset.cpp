@@ -15,6 +15,7 @@ export module eagine.core.memory:biteset;
 import eagine.core.types;
 import :byteset;
 import <cstdint>;
+import <compare>;
 import <iterator>;
 import <type_traits>;
 import <utility>;
@@ -104,34 +105,9 @@ public:
         return get();
     }
 
-    /// @brief Equality comparison.
-    friend constexpr auto operator==(const self& a, const self& b) noexcept {
-        return a.get() == b.get();
-    }
-
-    /// @brief Non-equality comparison.
-    friend constexpr auto operator!=(const self& a, const self& b) noexcept {
-        return a.get() != b.get();
-    }
-
-    /// @brief Less-than comparison.
-    friend constexpr auto operator<(const self& a, const self& b) noexcept {
-        return a.get() < b.get();
-    }
-
-    /// @brief Less-equal comparison.
-    friend constexpr auto operator<=(const self& a, const self& b) noexcept {
-        return a.get() <= b.get();
-    }
-
-    /// @brief Greater-than comparison.
-    friend constexpr auto operator>(const self& a, const self& b) noexcept {
-        return a.get() > b.get();
-    }
-
-    /// @brief Greater-equal comparison.
-    friend constexpr auto operator>=(const self& a, const self& b) noexcept {
-        return a.get() >= b.get();
+    /// @brief Comparison.
+    constexpr auto operator<=>(const self& that) const noexcept {
+        return get() - that.get();
     }
 
 protected:
@@ -278,28 +254,8 @@ public:
         return a._pos - b._pos;
     }
 
-    friend constexpr auto operator==(const self& a, const self& b) noexcept {
-        return _cmp(a, b) == 0;
-    }
-
-    friend constexpr auto operator!=(const self& a, const self& b) noexcept {
-        return _cmp(a, b) != 0;
-    }
-
-    friend constexpr auto operator<(const self& a, const self& b) noexcept {
-        return _cmp(a, b) < 0;
-    }
-
-    friend constexpr auto operator<=(const self& a, const self& b) noexcept {
-        return _cmp(a, b) <= 0;
-    }
-
-    friend constexpr auto operator>(const self& a, const self& b) noexcept {
-        return _cmp(a, b) > 0;
-    }
-
-    friend constexpr auto operator>=(const self& a, const self& b) noexcept {
-        return _cmp(a, b) >= 0;
+    constexpr auto operator<=>(const self& that) const noexcept {
+        return _cmp(*this, that);
     }
 
 protected:
@@ -532,47 +488,9 @@ public:
         return {*this, i};
     }
 
-    /// @brief Equality comparison.
-    friend constexpr auto operator==(
-      const biteset& a,
-      const biteset& b) noexcept {
-        return a.bytes() == b.bytes();
-    }
-
-    /// @brief Non-equality comparison.
-    friend constexpr auto operator!=(
-      const biteset& a,
-      const biteset& b) noexcept {
-        return a.bytes() != b.bytes();
-    }
-
-    /// @brief Less-than comparison.
-    friend constexpr auto operator<(
-      const biteset& a,
-      const biteset& b) noexcept {
-        return a.bytes() < b.bytes();
-    }
-
-    /// @brief Less-equal comparison.
-    friend constexpr auto operator<=(
-      const biteset& a,
-      const biteset& b) noexcept {
-        return a.bytes() <= b.bytes();
-    }
-
-    /// @brief Greater-than comparison.
-    friend constexpr auto operator>(
-      const biteset& a,
-      const biteset& b) noexcept {
-        return a.bytes() > b.bytes();
-    }
-
-    /// @brief Greater-equal comparison.
-    friend constexpr auto operator>=(
-      const biteset& a,
-      const biteset& b) noexcept {
-        return a.bytes() >= b.bytes();
-    }
+    /// @brief Comparison.
+    constexpr auto operator<=>(const biteset&) const noexcept
+      -> std::strong_ordering = default;
 
     /// @brief Converts this biteset into a byteset.
     constexpr auto bytes() const noexcept -> const byteset<store_size>& {

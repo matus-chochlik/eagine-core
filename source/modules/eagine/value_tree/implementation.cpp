@@ -139,7 +139,7 @@ private:
     }
 
 protected:
-    inline auto _unwrap(attribute_interface& attrib) const noexcept -> auto& {
+    auto _unwrap(attribute_interface& attrib) const noexcept -> auto& {
         assert(attrib.type_id() == this->type_id());
         assert(dynamic_cast<Node*>(&attrib));
         return static_cast<Node&>(attrib);

@@ -182,10 +182,9 @@ public:
     }
 
     /// @brief Equality comparison.
-    constexpr friend auto operator==(
-      const basic_valid_if& a,
-      const basic_valid_if& b) noexcept -> bool {
-        return (a._value == b._value) && a.is_valid() && b.is_valid();
+    constexpr auto operator==(const basic_valid_if& that) const noexcept
+      -> bool {
+        return (_value == that._value) && is_valid() && that.is_valid();
     }
 
     /// @brief Equality comparison of the stored value with @p v.

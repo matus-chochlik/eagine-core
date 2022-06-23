@@ -71,10 +71,8 @@ public:
       : _rj_val{&rj_val}
       , _rj_name{rj_name} {}
 
-    friend auto operator==(
-      const rapidjson_value_node& l,
-      const rapidjson_value_node& r) noexcept {
-        return (l._rj_val == r._rj_val);
+    constexpr auto operator==(const rapidjson_value_node& that) const noexcept {
+        return _rj_val == that._rj_val;
     }
 
     auto type_id() const noexcept -> identifier final {
@@ -672,11 +670,8 @@ using default_rapidjson_document_compound =
   get_rapidjson_document_compound_t<rapidjson::Document>;
 //------------------------------------------------------------------------------
 auto from_json_text(string_view json_text, logger& parent) -> compound {
-    /* TODO this currently crashes clang
-        return compound::make<default_rapidjson_document_compound>(
-          json_text, parent);
-    */
-    return {};
+    return compound::make<default_rapidjson_document_compound>(
+      json_text, parent);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree

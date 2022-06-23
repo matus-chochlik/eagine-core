@@ -15,6 +15,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
 import :multi_byte;
+import <compare>;
 import <iterator>;
 import <string>;
 import <tuple>;
@@ -326,17 +327,7 @@ public:
     iterator(Iter pos) noexcept
       : _pos{pos} {}
 
-    friend auto operator==(iterator a, iterator b) noexcept {
-        return a._pos == b._pos;
-    }
-
-    friend auto operator!=(iterator a, iterator b) noexcept {
-        return a._pos != b._pos;
-    }
-
-    friend auto operator<(iterator a, iterator b) noexcept {
-        return a._pos < b._pos;
-    }
+    auto operator<=>(const iterator&) const noexcept = default;
 
     auto operator*() const noexcept -> reference {
         _update();
@@ -403,17 +394,7 @@ public:
     rev_iterator(Iter pos) noexcept
       : _pos{pos} {}
 
-    friend auto operator==(rev_iterator a, rev_iterator b) noexcept {
-        return a._pos == b._pos;
-    }
-
-    friend auto operator!=(rev_iterator a, rev_iterator b) noexcept {
-        return a._pos != b._pos;
-    }
-
-    friend auto operator<(rev_iterator a, rev_iterator b) noexcept {
-        return a._pos > b._pos;
-    }
+    auto operator<=>(const rev_iterator&) const noexcept = default;
 
     auto operator*() const noexcept -> reference {
         _update();

@@ -85,17 +85,7 @@ struct enum_bitfield {
         return (_value & ev._value) == ev._value;
     }
 
-    friend constexpr auto operator==(
-      const enum_bitfield a,
-      const enum_bitfield b) noexcept {
-        return a._value == b._value;
-    }
-
-    friend constexpr auto operator!=(
-      const enum_bitfield a,
-      const enum_bitfield b) noexcept {
-        return a._value != b._value;
-    }
+    constexpr auto operator<=>(const enum_bitfield&) const noexcept = default;
 
     friend constexpr auto operator|(
       const enum_bitfield a,

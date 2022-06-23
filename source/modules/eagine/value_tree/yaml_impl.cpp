@@ -255,10 +255,8 @@ public:
         return 0;
     }
 
-    friend auto operator==(
-      const rapidyaml_attribute& l,
-      const rapidyaml_attribute& r) noexcept {
-        return l._node == r._node;
+    auto operator==(const rapidyaml_attribute& that) const noexcept {
+        return _node == that._node;
     }
 };
 //------------------------------------------------------------------------------
@@ -369,9 +367,7 @@ static auto rapidyaml_make_new_node(
 }
 //------------------------------------------------------------------------------
 auto from_yaml_text(string_view yaml_text, logger& parent) -> compound {
-    // TODO
-    // return compound::make<rapidyaml_tree_compound>(yaml_text, parent);
-    return {};
+    return compound::make<rapidyaml_tree_compound>(yaml_text, parent);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree

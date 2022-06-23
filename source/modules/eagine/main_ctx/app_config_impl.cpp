@@ -279,7 +279,7 @@ auto application_config::is_set(
 auto application_config::_impl() noexcept -> application_config_impl* {
     if(!_pimpl) [[unlikely]] {
         try {
-            //_pimpl = std::make_shared<application_config_impl>(*this);
+            _pimpl = std::make_shared<application_config_impl>(_log, _main_ctx);
         } catch(...) {
         }
     }
