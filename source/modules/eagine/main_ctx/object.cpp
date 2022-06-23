@@ -23,10 +23,8 @@ import :parent;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-class application_config;
-class process_watchdog;
+export class application_config;
 class message_bus;
-class main_ctx_storage;
 
 export class main_ctx;
 export class main_ctx_object;

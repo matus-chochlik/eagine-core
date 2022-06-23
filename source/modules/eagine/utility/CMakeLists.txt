@@ -58,14 +58,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.utility PARTITION file_contents
-	IMPORTS
-		protected_member
-		eagine.core.types
-		eagine.core.memory
-)
-
-eagine_add_module(
 	eagine.core.utility
 	INTERFACES
 		utility
@@ -85,8 +77,10 @@ eagine_add_module(
 		timeout
 		protected_member
 		progress_bar
-		file_contents
 		unreachable
 	SOURCES
 		progress_bar_impl
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
 )

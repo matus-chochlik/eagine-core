@@ -20,16 +20,16 @@ import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.progress;
 import eagine.core.console;
+import :system_info;
+import :user_info;
 import <chrono>;
 import <memory>;
 import <string>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-class application_config;
-class compiler_info;
-class user_info;
-class process_watchdog;
+export class application_config;
+export class process_watchdog;
 class message_bus;
 
 export class system_info;

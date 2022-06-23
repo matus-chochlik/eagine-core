@@ -46,6 +46,7 @@ eagine_add_module(
 		os_impl
 		git_impl
 		compiler_impl
+		build_info_impl
 	IMPORTS
 		eagine.core.memory
 		eagine.core.valid_if

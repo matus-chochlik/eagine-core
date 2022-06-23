@@ -9,6 +9,7 @@ export module eagine.core.logging:backend;
 
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.runtime;
 import eagine.core.identifier;
 export import :severity;
 import :entry_arg;
@@ -22,7 +23,6 @@ namespace eagine {
 /// @ingroup logging
 export using logger_instance_id = std::uintptr_t;
 
-export class application_config;
 //------------------------------------------------------------------------------
 /// @brief Structure used to supply initial log stream information to a logger.
 /// @ingroup logging
@@ -36,7 +36,7 @@ export struct log_stream_info {
 /// @brief Interface for logging backend implementations.
 /// @ingroup logging
 export struct logger_backend : interface<logger_backend> {
-    virtual auto configure(application_config&) -> bool {
+    virtual auto configure(basic_config&) -> bool {
         return false;
     }
 

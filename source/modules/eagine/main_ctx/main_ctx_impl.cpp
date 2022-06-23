@@ -9,10 +9,11 @@ module;
 
 #include <cassert>
 
-export module eagine.core.main_ctx;
+module eagine.core.main_ctx;
 
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.identifier;
 import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.progress;
@@ -43,14 +44,14 @@ main_ctx::main_ctx(main_ctx_getters& src) noexcept
   , _compressor{src.compressor()}
   , _exe_path{src.exe_path()}
   , _app_name{src.app_name()} {
-    EAGINE_ASSERT(!_single_ptr());
+    assert(!_single_ptr());
     _single_ptr() = this;
     _log.configure(_app_config);
     _progress.configure(_app_config);
 }
 //------------------------------------------------------------------------------
 main_ctx::~main_ctx() noexcept {
-    EAGINE_ASSERT(_single_ptr());
+    assert(_single_ptr());
     _single_ptr() = nullptr;
 }
 //------------------------------------------------------------------------------

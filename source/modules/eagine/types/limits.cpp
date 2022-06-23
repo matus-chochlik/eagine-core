@@ -271,4 +271,45 @@ constexpr auto safe_add_gt(L l, R r, C c) noexcept -> bool {
     return are_safe_to_add<T>(l, r) && (l + r > c);
 }
 //------------------------------------------------------------------------------
+export template <typename... Params, typename... Args>
+constexpr auto args_within_limits_of(const Args&... args) noexcept
+  -> bool requires(sizeof...(Params) == sizeof...(Args)) {
+              return (... && is_within_limits<std::decay_t<Params>>(args));
+          }
+//------------------------------------------------------------------------------
+export template <typename RV, typename... Params, typename... Args>
+constexpr auto args_within_limits(
+  RV (*)(Params...),
+  const Args&... args) noexcept -> bool {
+    return args_within_limits_of<Params...>(args...);
+}
+//------------------------------------------------------------------------------
+export template <typename RV, typename Cls, typename... Params, typename... Args>
+constexpr auto args_within_limits(
+  RV (Cls::*)(Params...),
+  const Args&... args) noexcept -> bool {
+    return args_within_limits_of<Params...>(args...);
+}
+//------------------------------------------------------------------------------
+export template <typename RV, typename Cls, typename... Params, typename... Args>
+constexpr auto args_within_limits(
+  RV (Cls::*)(Params...) noexcept,
+  const Args&... args) noexcept -> bool {
+    return args_within_limits_of<Params...>(args...);
+}
+//------------------------------------------------------------------------------
+export template <typename RV, typename Cls, typename... Params, typename... Args>
+constexpr auto args_within_limits(
+  RV (Cls::*)(Params...) const,
+  const Args&... args) noexcept -> bool {
+    return args_within_limits_of<Params...>(args...);
+}
+//------------------------------------------------------------------------------
+export template <typename RV, typename Cls, typename... Params, typename... Args>
+constexpr auto args_within_limits(
+  RV (Cls::*)(Params...) const noexcept,
+  const Args&... args) noexcept -> bool {
+    return args_within_limits_of<Params...>(args...);
+}
+//------------------------------------------------------------------------------
 } // namespace eagine

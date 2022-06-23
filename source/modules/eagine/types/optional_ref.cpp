@@ -118,7 +118,7 @@ private:
     T* _ptr{nullptr};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct extract_traits<optional_reference_wrapper<T>> {
     using value_type = T;
     using result_type = T&;

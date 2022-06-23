@@ -9,6 +9,7 @@ export module eagine.core.progress:activity;
 
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.runtime;
 import :backend;
 import <memory>;
 
@@ -52,7 +53,7 @@ public:
         return _activity_id;
     }
 
-    auto configure(application_config& config) const -> bool {
+    auto configure(basic_config& config) const -> bool {
         if(auto pbe{backend()}) {
             extract(pbe).configure(config);
         }

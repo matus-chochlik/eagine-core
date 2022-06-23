@@ -201,7 +201,7 @@ private:
     bool _separate{false};
 };
 //------------------------------------------------------------------------------
-auto make_iostream_console_backend(std::ostream& out)
+auto make_iostream_console_backend(std::istream&, std::ostream& out)
   -> std::unique_ptr<console_backend> {
     return std::make_unique<iostream_console_backend<std::mutex>>(out);
 }

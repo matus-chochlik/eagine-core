@@ -3,8 +3,28 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
+	eagine.core.main_ctx PARTITION system_info
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.valid_if
+		eagine.core.reflection
+		eagine.core.units
+)
+
+eagine_add_module(
+	eagine.core.main_ctx PARTITION user_info
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.valid_if
+)
+
+eagine_add_module(
 	eagine.core.main_ctx PARTITION interface
 	IMPORTS
+		system_info user_info
 		eagine.core.build_info
 		eagine.core.types
 		eagine.core.memory
@@ -37,27 +57,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.main_ctx PARTITION system_info
-	IMPORTS
-		interface
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.valid_if
-		eagine.core.reflection
-		eagine.core.units
-)
-
-eagine_add_module(
-	eagine.core.main_ctx PARTITION user_info
-	IMPORTS
-		interface
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.string
-		eagine.core.valid_if
-)
-
-eagine_add_module(
 	eagine.core.main_ctx PARTITION watchdog
 	IMPORTS
 		interface parent object
@@ -83,7 +82,6 @@ eagine_add_module(
 	IMPORTS
 		interface parent object app_config
 		system_info user_info watchdog
-		eagine.core.types
 		eagine.core.build_info
 		eagine.core.types
 		eagine.core.memory
@@ -119,6 +117,15 @@ eagine_add_module(
 		user_info_impl
 		watchdog_impl
 		app_config_impl
+		main_ctx_impl
 		main_impl
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.runtime
+		eagine.core.logging
+		eagine.core.console
+		eagine.core.progress
 )
 

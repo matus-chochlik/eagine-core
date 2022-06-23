@@ -10,6 +10,15 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.runtime PARTITION basic_config
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.utility
+)
+
+eagine_add_module(
 	eagine.core.runtime PARTITION program_args
 	IMPORTS
 		eagine.core.concepts
@@ -28,14 +37,43 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.runtime PARTITION input_data
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.utility
+)
+
+eagine_add_module(
+	eagine.core.runtime PARTITION file_contents
+	IMPORTS
+		input_data
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.utility
+)
+
+eagine_add_module(
 	eagine.core.runtime
 	INTERFACES
 		runtime
 	PARTITIONS
 		signal_switch
+		basic_config
 		process
 		program_args
+		input_data
+		file_contents
 		compression
 	SOURCES
+		input_data_impl
+		file_contents_impl
 		compression_impl
+)
+target_link_libraries(
+	eagine.core.runtime
+	PUBLIC
+		EAGine::Deps::System
+		EAGine::Deps::ZLIB
 )

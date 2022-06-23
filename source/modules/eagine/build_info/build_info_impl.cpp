@@ -17,6 +17,9 @@ module;
 
 module eagine.core.build_info;
 
+import eagine.core.memory;
+import eagine.core.valid_if;
+
 namespace eagine {
 //------------------------------------------------------------------------------
 auto build_info::install_prefix() const noexcept

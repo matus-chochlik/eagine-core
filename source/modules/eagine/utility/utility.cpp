@@ -22,5 +22,4 @@ export import :cleanup_group;
 export import :overloaded;
 export import :timeout;
 export import :progress_bar;
-export import :file_contents;
 export import :unreachable;

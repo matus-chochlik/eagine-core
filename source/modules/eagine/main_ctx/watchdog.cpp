@@ -20,7 +20,7 @@ class process_watchdog_impl;
 
 /// @brief Class implementing process watchdog functionality.
 /// @ingroup main_context
-class process_watchdog : public main_ctx_object {
+export class process_watchdog : public main_ctx_object {
 public:
     process_watchdog(main_ctx_parent parent) noexcept
       : main_ctx_object{identifier{"Watchdog"}, parent} {}

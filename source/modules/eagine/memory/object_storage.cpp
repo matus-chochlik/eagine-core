@@ -18,7 +18,7 @@ import :block;
 import :byte_allocator;
 import :shared_allocator;
 import :std_allocator;
-import <vector>;
+export import <vector>;
 import <stdexcept>;
 import <type_traits>;
 

@@ -15,7 +15,6 @@ import :logger;
 import <memory>;
 
 namespace eagine {
-export class application_config;
 //------------------------------------------------------------------------------
 /// @brief Structure holding root logger customization options.
 /// @ingroup logging

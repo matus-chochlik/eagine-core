@@ -5,11 +5,11 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-export module eagine.core.utility:file_contents;
+export module eagine.core.runtime:file_contents;
 
 import eagine.core.types;
 import eagine.core.memory;
-import :protected_member;
+import eagine.core.utility;
 import <memory>;
 
 namespace eagine {

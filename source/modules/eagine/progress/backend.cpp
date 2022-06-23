@@ -10,14 +10,13 @@ export module eagine.core.progress:backend;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
+import eagine.core.runtime;
 
 import <chrono>;
 import <cstdint>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export class application_config;
-//
 /// @brief Activity progress tracker instance id type.
 /// @ingroup progress
 using activity_progress_id_t = std::uintptr_t;
@@ -50,7 +49,7 @@ export struct progress_observer : interface<progress_observer> {
 /// @brief Interface for activity progress backend implementations.
 /// @ingroup progress
 struct progress_tracker_backend : interface<progress_tracker_backend> {
-    virtual auto configure(application_config&) -> bool {
+    virtual auto configure(basic_config&) -> bool {
         return false;
     }
 

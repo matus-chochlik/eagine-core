@@ -10,13 +10,13 @@ export module eagine.core.console:backend;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
+import eagine.core.runtime;
 import :entry_kind;
 import <chrono>;
 import <cstdint>;
 import <memory>;
 
 namespace eagine {
-class application_config;
 //------------------------------------------------------------------------------
 /// @brief Console entry instance id type.
 /// @ingroup console
@@ -25,7 +25,7 @@ using console_entry_id_t = std::uintptr_t;
 /// @brief Interface for console backend implementations.
 /// @ingroup console
 export struct console_backend : interface<console_backend> {
-    virtual auto configure(application_config&) -> bool {
+    virtual auto configure(basic_config&) -> bool {
         return false;
     }
 

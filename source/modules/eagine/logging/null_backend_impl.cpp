@@ -116,5 +116,4 @@ auto make_null_log_backend() -> std::unique_ptr<logger_backend> {
     return std::make_unique<null_log_backend>();
 }
 //------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 } // namespace eagine

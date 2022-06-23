@@ -47,9 +47,7 @@ public:
     /// @brief Move constructor.
     attribute(attribute&& temp) noexcept
       : _owner{std::move(temp._owner)}
-      , _pimpl{temp._pimpl} {
-        temp._pimpl = nullptr;
-    }
+      , _pimpl{std::exchange(temp._pimpl, nullptr)} {}
 
     /// @brief Copy constructor. Handles attribute reference counting.
     attribute(const attribute& that)
@@ -114,13 +112,13 @@ public:
     }
 
     template <typename Implementation>
-    auto as() noexcept
-      -> Implementation* requires(
-        std::is_base_of_v<attribute_interface, Implementation>) {
-                             return dynamic_cast<Implementation*>(_pimpl);
-                         }
+        requires(std::is_base_of_v<attribute_interface, Implementation>)
+    auto as() noexcept -> Implementation* {
+        return dynamic_cast<Implementation*>(_pimpl);
+    }
 
-    private : friend class compound;
+private:
+    friend class compound;
 
     attribute(
       std::shared_ptr<compound_interface> owner,
@@ -128,7 +126,7 @@ public:
       : _owner{std::move(owner)}
       , _pimpl{pimpl} {}
 
-    std::shared_ptr<compound_interface> _owner{};
+    std::shared_ptr<compound_interface> _owner;
     attribute_interface* _pimpl{nullptr};
 };
 //------------------------------------------------------------------------------
@@ -763,14 +761,13 @@ public:
     void traverse(const stack_visit_handler visitor) const;
 
     template <typename Implementation>
-    auto as() noexcept
-      -> Implementation* requires(
-        std::is_base_of_v<compound_interface, Implementation>) {
-                             return dynamic_cast<Implementation*>(_pimpl.get());
-                         }
+        requires(std::is_base_of_v<compound_interface, Implementation>)
+    auto as() noexcept -> Implementation* {
+        return dynamic_cast<Implementation*>(_pimpl.get());
+    }
 
-    private
-      : compound(std::shared_ptr<compound_interface> pimpl) noexcept
+private:
+    compound(std::shared_ptr<compound_interface> pimpl) noexcept
       : _pimpl{std::move(pimpl)} {}
 
     std::shared_ptr<compound_interface> _pimpl{};
@@ -788,11 +785,13 @@ public:
 
     /// @brief Construction from a compound and attribute pair.
     /// @pre c.type_id() == a.type_id()
-    compound_attribute(compound c, attribute a) noexcept
-      : _c{std::move(c)}
-      , _a{std::move(a)} {
-        assert(!_c || !_a || (_c.type_id() == _a.type_id()));
-    }
+    compound_attribute(compound c, attribute a) noexcept {}
+    /*
+        : _c{std::move(c)}
+          , _a{std::move(a)} {
+            assert(!_c || !_a || (_c.type_id() == _a.type_id()));
+        }
+        */
 
     /// @brief Indicates if this attribute actually refers to something.
     explicit operator bool() const noexcept {

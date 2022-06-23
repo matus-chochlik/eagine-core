@@ -14,6 +14,7 @@ module eagine.core.logging;
 import eagine.core.build_config;
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.runtime;
 import eagine.core.identifier;
 import :null_backend;
 import :ostream_backend;
@@ -34,7 +35,7 @@ public:
     proxy_log_backend(log_stream_info info) noexcept
       : _info{std::move(info)} {}
 
-    auto configure(application_config&) -> bool final;
+    auto configure(basic_config&) -> bool final;
 
     auto entry_backend(
       const identifier source,
@@ -365,7 +366,7 @@ void proxy_log_backend::log_chart_sample(
 }
 //------------------------------------------------------------------------------
 auto proxy_log_choose_backend(
-  application_config& config,
+  basic_config& config,
   const std::string& name,
   const log_stream_info& info) -> std::unique_ptr<logger_backend> {
     if((name == "null") || (name == "none")) {
@@ -410,7 +411,7 @@ auto proxy_log_choose_backend(
     return std::make_unique<ostream_log_backend<std::mutex>>(std::clog, info);
 }
 //------------------------------------------------------------------------------
-auto proxy_log_backend::configure(application_config& config) -> bool {
+auto proxy_log_backend::configure(basic_config& config) -> bool {
     std::string backend_name;
     // config.fetch("log.backend", backend_name);
     // config.fetch("log.severity", _info.min_severity);
@@ -426,6 +427,11 @@ auto proxy_log_backend::configure(application_config& config) -> bool {
         return true;
     }
     return false;
+}
+//------------------------------------------------------------------------------
+auto make_proxy_log_backend(log_stream_info info)
+  -> std::unique_ptr<logger_backend> {
+    return std::make_unique<proxy_log_backend>(std::move(info));
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

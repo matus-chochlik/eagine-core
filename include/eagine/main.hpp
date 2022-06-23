@@ -15,8 +15,7 @@
 #ifndef EAGINE_IMPLEMENTING_CORE_LIBRARY
 // NOLINTNEXTLINE(misc-definitions-in-headers)
 auto main(int argc, const char** argv) -> int {
-    eagine::main_ctx_options options;
-    return eagine::main_impl(argc, argv, options);
+    return eagine::default_main(argc, argv);
 }
 #endif
 

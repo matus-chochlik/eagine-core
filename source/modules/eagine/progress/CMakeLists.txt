@@ -8,6 +8,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
+		eagine.core.runtime
 )
 
 eagine_add_module(
@@ -29,6 +30,7 @@ eagine_add_module(
 		backend
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.runtime
 )
 
 eagine_add_module(

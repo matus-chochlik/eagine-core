@@ -13,14 +13,16 @@ namespace eagine {
 //------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
-extern auto main(main_ctx& ctx) -> int;
-//------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
-auto main_impl(int argc, const char** argv, main_ctx_options& options) -> int {
+auto main_impl(
+  int argc,
+  const char** argv,
+  main_ctx_options& options,
+  int (*main_func)(main_ctx&)) -> int {
     main_ctx_storage storage{argc, argv, options};
     main_ctx ctx{storage};
     try {
-        return eagine::main(ctx);
+        return main_func(ctx);
     } catch(const std::system_error& sys_err) {
         ctx.log()
           .error("unhandled system error: ${error}")

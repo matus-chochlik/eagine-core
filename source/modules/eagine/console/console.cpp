@@ -10,6 +10,7 @@ export module eagine.core.console;
 export import :entry_kind;
 export import :entry;
 export import :backend;
+export import :iostream_backend;
 import eagine.core.types;
 import eagine.core.identifier;
 import eagine.core.memory;

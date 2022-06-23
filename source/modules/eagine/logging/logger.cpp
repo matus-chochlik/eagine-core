@@ -11,6 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.valid_if;
+import eagine.core.runtime;
 import eagine.core.units;
 export import :severity;
 import :config;
@@ -20,7 +21,7 @@ import <memory>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-class logger_shared_backend_getter {
+export class logger_shared_backend_getter {
     using This = logger_shared_backend_getter;
 
 public:
@@ -46,7 +47,7 @@ private:
 //------------------------------------------------------------------------------
 /// @brief Basic template for logger objects.
 /// @ingroup logging
-template <typename BackendGetter>
+export template <typename BackendGetter>
 class basic_logger : protected BackendGetter {
 public:
     /// @brief The entry type for the specified log_event_severity.
@@ -66,7 +67,7 @@ public:
         return reinterpret_cast<logger_instance_id>(this);
     }
 
-    auto configure(application_config& config) const -> bool {
+    auto configure(basic_config& config) const -> bool {
         if(auto lbe{backend()}) {
             extract(lbe).configure(config);
         }

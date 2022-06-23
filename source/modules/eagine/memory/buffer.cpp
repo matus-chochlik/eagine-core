@@ -15,6 +15,7 @@ import eagine.core.types;
 export import :block;
 import :address;
 import :shared_allocator;
+import <cstring>;
 import <utility>;
 
 namespace eagine::memory {
@@ -194,5 +195,24 @@ private:
         _alloc.do_reallocate(_storage, new_size, _align);
     }
 };
+//------------------------------------------------------------------------------
+/// @brief Copies the content of source block to destination block.
+/// @ingroup memory
+/// @see const_block
+/// @see block
+export auto copy(const const_block source, block dest) noexcept -> block {
+    assert(dest.size() >= source.size());
+    std::memcpy(dest.data(), source.data(), integer(source.size()));
+    return {dest.data(), source.size()};
+}
+
+/// @brief Copies the content of source block to destination buffer.
+/// @ingroup memory
+/// @see const_block
+/// @see buffer
+export auto copy_into(const const_block source, buffer& dest) noexcept
+  -> block {
+    return copy(source, cover(dest.resize(source.size())));
+}
 //------------------------------------------------------------------------------
 } // namespace eagine::memory
