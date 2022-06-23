@@ -5,16 +5,20 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <array>;
+#else
 #include <eagine/file_contents.hpp>
 #include <eagine/identifier_ctr.hpp>
 #include <eagine/integer_range.hpp>
 #include <eagine/logging/logger.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/math/functions.hpp>
 #include <eagine/memory/span_algo.hpp>
 #include <eagine/types.hpp>
-
 #include <array>
+#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -37,7 +41,7 @@ auto main(main_ctx& ctx) -> int {
           for(const auto i : integer_range(std_size(256))) {
               backend.add_float(
                 byte_to_identifier(byte(i)),
-                EAGINE_ID(Histogram),
+                identifier{"Histogram"},
                 float(0),
                 float(byte_counts[i]),
                 float(max_count));
@@ -48,3 +52,8 @@ auto main(main_ctx& ctx) -> int {
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

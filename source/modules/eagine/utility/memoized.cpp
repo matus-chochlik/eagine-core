@@ -7,6 +7,7 @@
 ///
 export module eagine.core.utility:memoized;
 
+import eagine.core.concepts;
 import :callable_ref;
 import <map>;
 import <tuple>;
@@ -19,10 +20,9 @@ class memoized;
 export template <typename R, typename... P>
 class memoized<R(P...)> {
 public:
-    template <typename Func>
+    template <does_not_hide<memoized> Func>
     memoized(Func&& func) noexcept
-        requires(!std::is_same_v<std::decay_t<Func>, memoized>)
-    : _func(std::forward<Func>(func)) {}
+      : _func{std::forward<Func>(func)} {}
 
     template <typename F>
     auto operator()(P... p, const F& f) -> R {

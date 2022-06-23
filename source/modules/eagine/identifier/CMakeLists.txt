@@ -10,6 +10,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.identifier PARTITION construct
+	IMPORTS
+		decl
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.identifier PARTITION message_id
 	IMPORTS decl eagine.core.types
 )
@@ -20,6 +27,8 @@ eagine_add_module(
 		identifier
 	PARTITIONS
 		decl
+		construct
 		message_id
+	SOURCES
+		construct_impl
 )
-

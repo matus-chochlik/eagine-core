@@ -21,5 +21,6 @@ export import :scope_exit;
 export import :cleanup_group;
 export import :overloaded;
 export import :timeout;
+export import :random_bytes;
 export import :progress_bar;
 export import :unreachable;

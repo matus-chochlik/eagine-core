@@ -13,7 +13,7 @@ import eagine.core.container;
 
 namespace eagine {
 
-class default_keyboard_layout {
+export class default_keyboard_layout {
 public:
     using coord_type = math::tvec<float, 3, true>;
 

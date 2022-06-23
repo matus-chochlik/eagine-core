@@ -5,10 +5,14 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+#else
 #include <eagine/compression.hpp>
 #include <eagine/file_contents.hpp>
 #include <eagine/logging/logger.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
+#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -56,11 +60,15 @@ static inline void pack_unpack(
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
 
-    data_compressor comp{};
     if(file_contents self{ctx.exe_path()}) {
-        pack_unpack(ctx, comp, self);
+        pack_unpack(ctx, ctx.compressor(), self);
     }
     return 0;
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

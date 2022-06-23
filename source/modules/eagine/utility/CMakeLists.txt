@@ -20,7 +20,9 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.utility PARTITION memoized
-	IMPORTS callable_ref
+	IMPORTS
+		callable_ref
+		eagine.core.concepts
 )
 
 eagine_add_module(
@@ -51,6 +53,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.utility PARTITION random_bytes
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+)
+
+eagine_add_module(
 	eagine.core.utility PARTITION progress_bar
 	IMPORTS
 		eagine.core.types
@@ -77,6 +86,7 @@ eagine_add_module(
 		timeout
 		protected_member
 		progress_bar
+		random_bytes
 		unreachable
 	SOURCES
 		progress_bar_impl
