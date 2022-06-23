@@ -132,7 +132,7 @@ private:
 //------------------------------------------------------------------------------
 export class compound_attribute;
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct not_converted_value {
     constexpr not_converted_value(T& dest) noexcept
       : _dest{dest} {}
@@ -150,7 +150,7 @@ private:
     T& _dest;
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct converted_enum_value {
     static_assert(default_mapped_enum<T>);
 
@@ -177,7 +177,7 @@ private:
     T& _dest;
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct converted_value
   : std::conditional_t<
       default_mapped_enum<T>,
@@ -192,14 +192,14 @@ struct converted_value
     using base::base;
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct converted_value<std::chrono::duration<float>>
   : not_converted_value<std::chrono::duration<float>> {
     using base = not_converted_value<std::chrono::duration<float>>;
     using base::base;
 };
 //------------------------------------------------------------------------------
-template <typename R, typename P>
+export template <typename R, typename P>
 class converted_value<std::chrono::duration<R, P>> {
     using T = std::chrono::duration<R, P>;
 
@@ -785,13 +785,11 @@ public:
 
     /// @brief Construction from a compound and attribute pair.
     /// @pre c.type_id() == a.type_id()
-    compound_attribute(compound c, attribute a) noexcept {}
-    /*
-        : _c{std::move(c)}
-          , _a{std::move(a)} {
-            assert(!_c || !_a || (_c.type_id() == _a.type_id()));
-        }
-        */
+    compound_attribute(compound c, attribute a) noexcept
+      : _c{std::move(c)}
+      , _a{std::move(a)} {
+        // assert(!_c || !_a || (_c.type_id() == _a.type_id()));
+    }
 
     /// @brief Indicates if this attribute actually refers to something.
     explicit operator bool() const noexcept {
@@ -930,8 +928,7 @@ inline auto compound::root() const -> compound_attribute {
 //------------------------------------------------------------------------------
 /// @brief Operator for creating a compound_attribute from compound and attribute.
 /// @ingroup valtree
-static inline auto operator/(compound c, attribute a) noexcept
-  -> compound_attribute {
+export auto operator/(compound c, attribute a) noexcept -> compound_attribute {
     return {std::move(c), std::move(a)};
 }
 //------------------------------------------------------------------------------
