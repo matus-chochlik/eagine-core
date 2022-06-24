@@ -92,6 +92,10 @@ export struct main_ctx_getters : interface<main_ctx_getters> {
     /// @see compiler
     virtual auto build() const noexcept -> const build_info& = 0;
 
+    /// @brief Returns a reference to build version information instance.
+    /// @see compiler
+    virtual auto version() const noexcept -> const version_info& = 0;
+
     /// @brief Returns a reference to system information object.
     /// @see user
     virtual auto system() noexcept -> system_info& = 0;

@@ -14,6 +14,7 @@ export import :unit;
 export import :si;
 export import :quantity;
 export import :dimensions;
+export import :strings;
 import <cmath>;
 
 namespace eagine {

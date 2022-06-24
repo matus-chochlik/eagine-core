@@ -5,9 +5,13 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+#else
 #include <eagine/console/console.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/reflect/enumerators.hpp>
+#endif
 
 namespace eagine {
 
@@ -40,7 +44,6 @@ enum class example_enum {
     value_z
 };
 
-#if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
   const std::type_identity<example_enum>,
@@ -60,7 +63,6 @@ constexpr auto enumerator_mapping(
        {"value_w", example_enum::value_w}, {"value_x", example_enum::value_x},
        {"value_y", example_enum::value_y}, {"value_z", example_enum::value_z}}};
 }
-#endif
 
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;
@@ -82,4 +84,8 @@ auto main(main_ctx& ctx) -> int {
     return 0;
 }
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
 

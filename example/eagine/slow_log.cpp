@@ -5,12 +5,17 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <thread>;
+#else
 #include <eagine/integer_range.hpp>
 #include <eagine/logging/logger.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/progress/activity.hpp>
 #include <eagine/reflect/enumerators.hpp>
 #include <thread>
+#endif
 
 namespace eagine {
 
@@ -26,8 +31,8 @@ auto main(main_ctx& ctx) -> int {
     for(const auto i : integer_range(repeats)) {
         ctx.log()
           .log(severity, "cycle ${i} of ${count}")
-          .arg(EAGINE_ID(i), i)
-          .arg(EAGINE_ID(count), repeats);
+          .arg(identifier{"i"}, i)
+          .arg(identifier{"count"}, repeats);
         main_act.update_progress(i);
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
@@ -36,3 +41,8 @@ auto main(main_ctx& ctx) -> int {
 }
 
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

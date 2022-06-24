@@ -55,6 +55,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.runtime PARTITION value_with_history
+	IMPORTS
+		eagine.core.types
+		eagine.core.valid_if
+)
+
+eagine_add_module(
 	eagine.core.runtime
 	INTERFACES
 		runtime
@@ -66,6 +73,7 @@ eagine_add_module(
 		input_data
 		file_contents
 		compression
+		value_with_history
 	SOURCES
 		input_data_impl
 		file_contents_impl

@@ -99,6 +99,39 @@ export using degree = scaled_dim_unit<
 export using kelvin = unit<temperature, si>;
 //------------------------------------------------------------------------------
 export template <>
+struct name_of<base::second> {
+    static constexpr const char mp_str[] = "second";
+};
+
+export template <>
+struct symbol_of<base::second> {
+    static constexpr const char mp_str[] = "s";
+};
+
+export template <>
+struct name_of<base::minute> {
+    static constexpr const char mp_str[] = "minute";
+};
+
+export template <>
+struct symbol_of<base::minute> {
+    static constexpr const char mp_str[] = "min";
+};
+
+export template <>
+struct name_of<base::hour> {
+    static constexpr const char mp_str[] = "hour";
+};
+
+export template <>
+struct symbol_of<base::hour> {
+    static constexpr const char mp_str[] = "h";
+};
+
+export template <>
+struct si::base_unit<base::time> : base::second {};
+//------------------------------------------------------------------------------
+export template <>
 struct name_of<base::radian> {
     static constexpr const char mp_str[] = "radian";
 };

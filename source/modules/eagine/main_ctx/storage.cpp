@@ -129,6 +129,10 @@ public:
         return _bld_info;
     }
 
+    auto version() const noexcept -> const version_info& final {
+        return _ver_info;
+    }
+
     auto system() noexcept -> system_info& final {
         return _sys_info;
     }
@@ -169,6 +173,7 @@ private:
       memory::default_byte_allocator()};
     program_args _args;
     build_info _bld_info;
+    version_info _ver_info;
     system_info _sys_info;
     user_info _usr_info;
     console _console;

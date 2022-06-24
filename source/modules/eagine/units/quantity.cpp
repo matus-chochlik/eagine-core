@@ -143,7 +143,7 @@ constexpr auto value(const tagged_quantity<T, U>& q) {
 /// @brief Equality comparison.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename T2, typename U2>
+export template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator==(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
@@ -154,7 +154,7 @@ constexpr auto operator==(
 /// @brief Nonequality comparison.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename T2, typename U2>
+export template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator!=(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
@@ -165,7 +165,7 @@ constexpr auto operator!=(
 /// @brief Less-than comparison.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename T2, typename U2>
+export template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator<(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
@@ -176,7 +176,7 @@ constexpr auto operator<(
 /// @brief Less-equal comparison.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename T2, typename U2>
+export template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator<=(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
@@ -187,7 +187,7 @@ constexpr auto operator<=(
 /// @brief Greater-than comparison.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename T2, typename U2>
+export template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator>(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
@@ -198,7 +198,7 @@ constexpr auto operator>(
 /// @brief Greater-equal comparison.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename T2, typename U2>
+export template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator>=(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b)
@@ -209,7 +209,7 @@ constexpr auto operator>=(
 /// @brief Unary plus operator.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T, typename U>
+export template <typename T, typename U>
 constexpr auto operator+(const tagged_quantity<T, U>& a) {
     return a;
 }
@@ -217,7 +217,7 @@ constexpr auto operator+(const tagged_quantity<T, U>& a) {
 /// @brief Unary negation operator.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T, typename U>
+export template <typename T, typename U>
 constexpr auto operator-(const tagged_quantity<T, U>& a) {
     return make_tagged_quantity<U>(-value(a));
 }
@@ -225,7 +225,7 @@ constexpr auto operator-(const tagged_quantity<T, U>& a) {
 /// @brief Addition operator.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename T2, typename U2>
+export template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator+(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b) {
@@ -237,7 +237,7 @@ constexpr auto operator+(
 /// @brief Subtraction operator.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename T2, typename U2>
+export template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator-(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b) {
@@ -249,7 +249,7 @@ constexpr auto operator-(
 /// @brief Multiplication operator.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename T2, typename U2>
+export template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator*(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b) {
@@ -263,7 +263,7 @@ constexpr auto operator*(
 /// @brief Multiplication by constant operator.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U, typename T2>
+export template <typename T1, typename U, typename T2>
 constexpr auto operator*(const tagged_quantity<T1, U>& a, const T2& c)
     requires(!is_unit_v<T2> && !is_tagged_quantity_v<T2>)
 {
@@ -273,7 +273,7 @@ constexpr auto operator*(const tagged_quantity<T1, U>& a, const T2& c)
 /// @brief Multiplication by constant operator.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename T2, typename U>
+export template <typename T1, typename T2, typename U>
 constexpr auto operator*(const T1& c, const tagged_quantity<T2, U>& a) {
     return make_tagged_quantity<U>(c * value(a));
 }
@@ -281,7 +281,7 @@ constexpr auto operator*(const T1& c, const tagged_quantity<T2, U>& a) {
 /// @brief Multiplication by unit operator.
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename U2>
+export template <typename T1, typename U1, typename U2>
 constexpr auto operator*(const tagged_quantity<T1, U1>& a, U2)
     requires(is_unit_v<U2>)
 {
@@ -291,7 +291,7 @@ constexpr auto operator*(const tagged_quantity<T1, U1>& a, U2)
 /// @brief Division operator
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename T2, typename U2>
+export template <typename T1, typename U1, typename T2, typename U2>
 constexpr auto operator/(
   const tagged_quantity<T1, U1>& a,
   const tagged_quantity<T2, U2>& b) {
@@ -305,7 +305,7 @@ constexpr auto operator/(
 /// @brief Division by constant operator
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U, typename T2>
+export template <typename T1, typename U, typename T2>
 constexpr auto operator/(const tagged_quantity<T1, U>& a, const T2& c)
     requires(!is_unit_v<T2>)
 {
@@ -315,7 +315,7 @@ constexpr auto operator/(const tagged_quantity<T1, U>& a, const T2& c)
 /// @brief Constant division operator
 /// @ingroup units
 /// @relates tagged_quantity
-template <typename T1, typename U1, typename U2>
+export template <typename T1, typename U1, typename U2>
 constexpr auto operator/(const tagged_quantity<T1, U1>& a, U2)
     requires(is_unit_v<U2>)
 {

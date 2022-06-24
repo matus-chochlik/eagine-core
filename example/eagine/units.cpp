@@ -5,14 +5,18 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <iostream>;
+#else
 #include <eagine/console/console.hpp>
-#include <eagine/main.hpp>
 #include <eagine/main_ctx.hpp>
 #include <eagine/tagged_quantity.hpp>
 #include <eagine/units/dimensions.hpp>
 #include <eagine/units/strings.hpp>
 #include <eagine/units/unit/si.hpp>
 #include <iostream>
+#endif
 
 namespace eagine {
 
@@ -30,14 +34,14 @@ auto main(main_ctx& ctx) -> int {
         const auto dim = get_dimension(q.unit());
         ctx.cio()
           .print(
-            EAGINE_ID(units),
+            identifier{"units"},
             "${dimName} (${dimForm}): "
             "${value} [${unitSymbol} (${unitForm})]")
-          .arg(EAGINE_ID(dimName), get_name(dim))
-          .arg(EAGINE_ID(dimForm), get_name_form(dim))
-          .arg(EAGINE_ID(unitSymbol), get_symbol(q.unit()))
-          .arg(EAGINE_ID(unitForm), get_name_form(q.unit()))
-          .arg(EAGINE_ID(value), q.value());
+          .arg(identifier{"dimName"}, get_name(dim))
+          .arg(identifier{"dimForm"}, get_name_form(dim))
+          .arg(identifier{"unitSymbol"}, get_symbol(q.unit()))
+          .arg(identifier{"unitForm"}, get_name_form(q.unit()))
+          .arg(identifier{"value"}, q.value());
     };
 
     qty<meter> x{2.F};
@@ -64,3 +68,8 @@ auto main(main_ctx& ctx) -> int {
     return 0;
 }
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

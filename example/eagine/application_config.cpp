@@ -5,11 +5,18 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <chrono>;
+import <optional>;
+import <thread>;
+#else
 #include <eagine/app_config.hpp>
 #include <eagine/console/console.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <chrono>
 #include <thread>
+#endif
 
 namespace eagine {
 
@@ -17,25 +24,26 @@ auto main(main_ctx& ctx) -> int {
     const std::string na{"N/A"};
 
     auto& cfg = ctx.config();
+    main_ctx_object out{identifier{"config"}, ctx};
     std::string s;
     int i{0};
     std::vector<float> v;
 
     if(cfg.fetch("value_1", s)) {
-        cfg.cio_print("string: ${s}").arg(EAGINE_ID(s), s);
+        out.cio_print("string: ${s}").arg(identifier{"s"}, s);
     }
 
     if(cfg.fetch("value_2", s)) {
-        cfg.cio_print("string: ${s}").arg(EAGINE_ID(s), s);
+        out.cio_print("string: ${s}").arg(identifier{"s"}, s);
     }
 
     if(cfg.fetch("section_a.subsection_b.value_c", i)) {
-        cfg.cio_print("integer : ${i}").arg(EAGINE_ID(i), i);
+        out.cio_print("integer : ${i}").arg(identifier{"i"}, i);
     }
 
     if(cfg.fetch("section_a.subsection_b.values", v)) {
         for(auto e : v) {
-            cfg.cio_print("float : ${f}").arg(EAGINE_ID(f), e);
+            out.cio_print("float : ${f}").arg(identifier{"f"}, e);
         }
     }
 
@@ -55,3 +63,8 @@ auto main(main_ctx& ctx) -> int {
 }
 
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

@@ -100,6 +100,10 @@ public:
         return _bld_info;
     }
 
+    auto version() const noexcept -> const version_info& final {
+        return _ver_info;
+    }
+
     auto system() noexcept -> system_info& final {
         return _sys_info;
     }
@@ -147,6 +151,7 @@ private:
     const program_args& _args;
     const compiler_info& _cmplr_info;
     const build_info& _bld_info;
+    const version_info& _ver_info;
     const console& _cio;
     const logger& _log;
     const activity_progress& _progress;

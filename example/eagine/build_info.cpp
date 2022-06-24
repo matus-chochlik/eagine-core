@@ -39,12 +39,6 @@ auto main(main_ctx& ctx) -> int {
       .arg(identifier{"patch"}, either_or(compiler.version_patch(), na));
 
     ctx.cio()
-      .print(cioid, "build version: ${major}.${minor}.${patch}")
-      .arg(identifier{"major"}, either_or(build.version_major(), na))
-      .arg(identifier{"minor"}, either_or(build.version_minor(), na))
-      .arg(identifier{"patch"}, either_or(build.version_patch(), na));
-
-    ctx.cio()
       .print(cioid, "install prefix: ${path}")
       .arg(
         identifier{"path"},

@@ -290,30 +290,30 @@ static constexpr auto get_number(const dimension<Derived>) noexcept -> int {
 
 namespace bits {
 //------------------------------------------------------------------------------
-template <typename X>
+export template <typename X>
 struct collapse_tail : std::type_identity<X> {};
 
-template <typename X>
+export template <typename X>
 using collapse_tail_t = typename collapse_tail<X>::type;
 
-template <typename Dim, int Pow>
+export template <typename Dim, int Pow>
 struct dim_pow {
     using dim = Dim;
     using pow = int_constant<Pow>;
 };
 
-template <typename Head, typename Tail>
+export template <typename Head, typename Tail>
 struct dims : std::type_identity<dims<Head, Tail>> {};
 
-using dimless = dims<nothing_t, nothing_t>;
+export using dimless = dims<nothing_t, nothing_t>;
 
-template <>
+export template <>
 struct collapse_tail<dims<nothing_t, nothing_t>> : nothing_t {};
 
 export template <typename Head, typename Tail>
 struct unit_scales : std::type_identity<unit_scales<Head, Tail>> {};
 
-template <>
+export template <>
 struct collapse_tail<unit_scales<nothing_t, nothing_t>> : nothing_t {};
 //------------------------------------------------------------------------------
 template <typename D, typename Dims>
@@ -869,128 +869,128 @@ struct symbol_of<scales::micro> {
     static constexpr const char mp_str[3] = {char(0xCE), char(0xBC), '\0'};
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::milli> {
     static constexpr const char mp_str[] = "milli";
 };
-template <>
+export template <>
 struct symbol_of<scales::milli> {
     static constexpr const char mp_str[] = "m";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::centi> {
     static constexpr const char mp_str[] = "centi";
 };
-template <>
+export template <>
 struct symbol_of<scales::centi> {
     static constexpr const char mp_str[] = "c";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::deci> {
     static constexpr const char mp_str[] = "deci";
 };
-template <>
+export template <>
 struct symbol_of<scales::deci> {
     static constexpr const char mp_str[] = "d";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::deca> {
     static constexpr const char mp_str[] = "deca";
 };
-template <>
+export template <>
 struct symbol_of<scales::deca> {
     static constexpr const char mp_str[] = "dc";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::hecto> {
     static constexpr const char mp_str[] = "hecto";
 };
-template <>
+export template <>
 struct symbol_of<scales::hecto> {
     static constexpr const char mp_str[] = "h";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::kilo> {
     static constexpr const char mp_str[] = "kilo";
 };
-template <>
+export template <>
 struct symbol_of<scales::kilo> {
     static constexpr const char mp_str[] = "k";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::mega> {
     static constexpr const char mp_str[] = "mega";
 };
-template <>
+export template <>
 struct symbol_of<scales::mega> {
     static constexpr const char mp_str[] = "M";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::giga> {
     static constexpr const char mp_str[] = "giga";
 };
-template <>
+export template <>
 struct symbol_of<scales::giga> {
     static constexpr const char mp_str[] = "G";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::tera> {
     static constexpr const char mp_str[] = "tera";
 };
-template <>
+export template <>
 struct symbol_of<scales::tera> {
     static constexpr const char mp_str[] = "T";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::kibi> {
     static constexpr const char mp_str[] = "kibi";
 };
-template <>
+export template <>
 struct symbol_of<scales::kibi> {
     static constexpr const char mp_str[] = "Ki";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::mebi> {
     static constexpr const char mp_str[] = "mebi";
 };
-template <>
+export template <>
 struct symbol_of<scales::mebi> {
     static constexpr const char mp_str[] = "Mi";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::gibi> {
     static constexpr const char mp_str[] = "gibi";
 };
-template <>
+export template <>
 struct symbol_of<scales::gibi> {
     static constexpr const char mp_str[] = "Gi";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::tebi> {
     static constexpr const char mp_str[] = "tebi";
 };
-template <>
+export template <>
 struct symbol_of<scales::tebi> {
     static constexpr const char mp_str[] = "Ti";
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct name_of<scales::pi> {
     static constexpr const char mp_str[3] = {char(0xCF), char(0x80), '\0'};
 };
-template <>
+export template <>
 struct symbol_of<scales::pi> {
     static constexpr const char mp_str[] = {char(0xCF), char(0x80), '\0'};
 };

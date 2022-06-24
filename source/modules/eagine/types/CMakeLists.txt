@@ -12,6 +12,11 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.types PARTITION metaprogramming
+	IMPORTS basic
+)
+
+eagine_add_module(
 	eagine.core.types PARTITION bitfield
 	IMPORTS eagine.core.concepts
 )

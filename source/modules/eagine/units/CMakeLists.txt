@@ -36,6 +36,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.units PARTITION strings
+	IMPORTS
+		base unit dimension
+		eagine.core.types
+		eagine.core.memory
+)
+
+eagine_add_module(
 	eagine.core.units
 	INTERFACES units
 	PARTITIONS
@@ -45,6 +53,7 @@ eagine_add_module(
 		unit
 		si
 		quantity
+		strings
 	IMPORTS
 		eagine.core.units.framework
 )

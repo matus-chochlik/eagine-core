@@ -5,10 +5,15 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <iostream>;
+#else
 #include <eagine/console/console.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/value_with_history.hpp>
 #include <iostream>
+#endif
 
 namespace eagine {
 
@@ -23,15 +28,21 @@ auto main(main_ctx& ctx) -> int {
         i2.assign(i * i);
         ctx.cio()
           .print(
-            EAGINE_ID(history), "${old}|${new}|${delta}|${distance}|${delta2}")
-          .arg(EAGINE_ID(old), i2.old_value())
-          .arg(EAGINE_ID(new), i2.value())
-          .arg(EAGINE_ID(delta), i2.delta())
-          .arg(EAGINE_ID(distance), i2.distance())
-          .arg(EAGINE_ID(delta2), i2.deltas().delta());
+            identifier{"history"},
+            "${old}|${new}|${delta}|${distance}|${delta2}")
+          .arg(identifier{"old"}, i2.old_value())
+          .arg(identifier{"new"}, i2.value())
+          .arg(identifier{"delta"}, i2.delta())
+          .arg(identifier{"distance"}, i2.distance())
+          .arg(identifier{"delta2"}, i2.deltas().delta());
     }
 
     return 0;
 }
 
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

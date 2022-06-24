@@ -9,6 +9,7 @@ export module eagine.core.main_ctx:app_config;
 
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.runtime;
@@ -19,8 +20,8 @@ import <memory>;
 import <optional>;
 import <string>;
 import <vector>;
-import <type_traits>;
 import <utility>;
+export import <type_traits>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -263,8 +264,9 @@ class application_config_value;
 
 /// @brief Class wrapping values that can be reloaded from application_config.
 /// @ingroup main_context
-export template <typename T, typename As = std::add_const_t<T>&>
-using application_reconfig_value = application_config_value<T, As, true>;
+export template <typename T>
+using application_reconfig_value =
+  application_config_value<T, std::add_const_t<T>&, true>;
 //------------------------------------------------------------------------------
 /// @brief Class wrapping values that can be loaded from application_config.
 /// @ingroup main_context
