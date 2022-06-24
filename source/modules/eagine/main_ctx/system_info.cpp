@@ -23,7 +23,7 @@ namespace eagine {
 /// @brief System power supply kind.
 /// @ingroup msgbus
 /// @see system_info
-enum class power_supply_kind : std::uint8_t {
+export enum class power_supply_kind : std::uint8_t {
     /// @brief Unknown power supply.
     unknown,
     /// @brief Battery.
@@ -32,7 +32,7 @@ enum class power_supply_kind : std::uint8_t {
     ac_supply
 };
 
-template <typename Selector>
+export template <typename Selector>
 constexpr auto enumerator_mapping(
   const std::type_identity<power_supply_kind>,
   const Selector) noexcept {

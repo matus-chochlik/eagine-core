@@ -114,7 +114,9 @@ public:
     }
 
     /// @brief Comparison.
-    auto operator<=>(const basic_string_path&) const noexcept = default;
+    auto operator<=>(const basic_string_path& that) const noexcept {
+        return _str.compare(that._str);
+    }
 
     /// @brief Concatenates two paths.
     friend auto operator+(

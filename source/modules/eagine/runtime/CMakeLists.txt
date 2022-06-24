@@ -29,6 +29,16 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.runtime PARTITION url
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.valid_if
+		eagine.core.container
+)
+
+eagine_add_module(
 	eagine.core.runtime PARTITION compression
 	IMPORTS
 		eagine.core.types
@@ -70,11 +80,13 @@ eagine_add_module(
 		basic_config
 		process
 		program_args
+		url
 		input_data
 		file_contents
 		compression
 		value_with_history
 	SOURCES
+		url_impl
 		input_data_impl
 		file_contents_impl
 		compression_impl

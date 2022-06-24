@@ -7,6 +7,8 @@
 ///
 #if EAGINE_CORE_MODULE
 import eagine.core;
+import <chrono>;
+import <ratio>;
 #else
 #include <eagine/integer_range.hpp>
 #include <eagine/logging/logger.hpp>

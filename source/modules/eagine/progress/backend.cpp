@@ -19,7 +19,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 /// @brief Activity progress tracker instance id type.
 /// @ingroup progress
-using activity_progress_id_t = std::uintptr_t;
+export using activity_progress_id_t = std::uintptr_t;
 //------------------------------------------------------------------------------
 /// @brief Interface for classes observing activity progress.
 /// @ingroup progress

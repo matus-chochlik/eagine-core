@@ -759,7 +759,7 @@ void for_each_delimited(
   const basic_span<T2, P2, S2> delim,
   UnaryOperation unary_op) {
     basic_span<T1, P1, S1> tmp = spn;
-    while(auto pos = find_position(tmp, delim)) {
+    while(const auto pos{find_position(tmp, delim)}) {
         using eagine::extract;
         unary_op(head(tmp, extract(pos)));
         tmp = skip(tmp, extract(pos) + delim.size());

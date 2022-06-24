@@ -18,43 +18,47 @@ import <utility>;
 
 namespace eagine::c_api {
 
-template <typename T>
+export template <typename T>
 struct method_traits;
 
-template <typename Api, typename Wrapper>
+export template <typename Api, typename Wrapper>
 struct method_traits<Wrapper Api::*> {
     using api_type = Api;
     using wrapper_type = Wrapper;
     using signature = typename Wrapper::signature;
 };
 
-template <auto ptr>
+export template <auto ptr>
 using method_api_t = typename method_traits<decltype(ptr)>::api_type;
 
-template <auto ptr>
+export template <auto ptr>
 using method_wrapper_t = typename method_traits<decltype(ptr)>::wrapper_type;
 
-template <auto ptr>
+export template <auto ptr>
 using method_signature_t = typename method_traits<decltype(ptr)>::signature;
 
-template <typename T>
+export template <typename T>
 struct adapted_function_raii_parameter {
     using type = T;
 };
 
-template <typename T>
+export template <typename T>
 using adapted_function_raii_parameter_t =
   typename adapted_function_raii_parameter<T>::type;
 
-template <typename Tag, typename Handle, Handle invalid>
+export template <typename Tag, typename Handle, Handle invalid>
 struct adapted_function_raii_parameter<basic_owned_handle<Tag, Handle, invalid>> {
     using type = basic_owned_handle<Tag, Handle, invalid>&;
 };
 
-template <typename CppSignature, typename RvArgMap, typename Ftw>
+export template <typename CppSignature, typename RvArgMap, typename Ftw>
 struct adapted_function_utils;
 
-template <typename CppRv, typename... CppParam, typename RvArgMap, typename Ftw>
+export template <
+  typename CppRv,
+  typename... CppParam,
+  typename RvArgMap,
+  typename Ftw>
 struct adapted_function_utils<CppRv(CppParam...), RvArgMap, Ftw> {
 
     template <typename Api, typename Wrapped, std::size_t... I>
@@ -115,7 +119,7 @@ struct adapted_function_utils<CppRv(CppParam...), RvArgMap, Ftw> {
     }
 };
 
-template <
+export template <
   typename Api,
   auto method,
   typename CSignature,
@@ -123,7 +127,7 @@ template <
   typename RvArgMap = trivial_map>
 class basic_adapted_function;
 
-template <typename Api, auto method, typename CppSignature, typename RvArgMap>
+export template <typename Api, auto method, typename CppSignature, typename RvArgMap>
 class adapted_function_base {
     [[no_unique_address]] Api& _api;
 
@@ -163,7 +167,7 @@ protected:
     }
 };
 
-template <
+export template <
   typename Api,
   auto method,
   typename CRV,
@@ -231,58 +235,58 @@ public:
     }
 };
 
-template <typename Result, typename Remain>
+export template <typename Result, typename Remain>
 struct get_transformed_signature;
 
-template <typename Rv, typename... P>
+export template <typename Rv, typename... P>
 struct get_transformed_signature<Rv(P...), mp_list<>> {
     using type = Rv(P...);
 };
 
-template <typename Rv, typename... P>
+export template <typename Rv, typename... P>
 struct get_transformed_signature<returned<Rv>(P...), mp_list<>> {
     using type = Rv(P...);
 };
 
-template <typename Rv, typename... P>
+export template <typename Rv, typename... P>
 struct get_transformed_signature<collapsed<Rv>(P...), mp_list<>> {
     using type = void(P...);
 };
 
-template <typename Rv, typename... P, typename... T>
+export template <typename Rv, typename... P, typename... T>
 struct get_transformed_signature<Rv(P...), mp_list<skipped, T...>>
   : get_transformed_signature<Rv(P...), mp_list<T...>> {};
 
-template <typename Rv, typename... P, typename... T>
+export template <typename Rv, typename... P, typename... T>
 struct get_transformed_signature<Rv(P...), mp_list<defaulted, T...>>
   : get_transformed_signature<Rv(P...), mp_list<T...>> {};
 
-template <typename Rv, typename... P, auto value, typename... T>
+export template <typename Rv, typename... P, auto value, typename... T>
 struct get_transformed_signature<Rv(P...), mp_list<substituted<value>, T...>>
   : get_transformed_signature<Rv(P...), mp_list<T...>> {};
 
-template <typename Rv, typename... P, typename... T>
+export template <typename Rv, typename... P, typename... T>
 struct get_transformed_signature<returned<Rv>(P...), mp_list<returned<Rv>, T...>>
   : get_transformed_signature<returned<Rv>(P...), mp_list<T...>> {};
 
-template <typename Rv, typename... P, typename H, typename... T>
+export template <typename Rv, typename... P, typename H, typename... T>
 struct get_transformed_signature<Rv(P...), mp_list<H, T...>>
   : get_transformed_signature<Rv(P..., H), mp_list<T...>> {};
 
-template <typename CppSignature>
+export template <typename CppSignature>
 struct transform_signature;
 
-template <typename CppSignature>
+export template <typename CppSignature>
 using transform_signature_t = typename transform_signature<CppSignature>::type;
 
-template <typename Rv, typename... P>
+export template <typename Rv, typename... P>
 struct transform_signature<Rv(P...)>
   : get_transformed_signature<Rv(), mp_list<P...>> {};
 
-template <typename... BasicAdaptedFunction>
+export template <typename... BasicAdaptedFunction>
 class combined;
 
-template <
+export template <
   typename Api,
   auto... methods,
   typename... CSignatures,
@@ -340,7 +344,7 @@ public:
       RvArgMaps>::later_by...;
 };
 
-template <
+export template <
   auto method,
   typename CppSignature = method_signature_t<method>,
   typename RvArgMap = make_map_t<method_signature_t<method>, CppSignature>>
@@ -351,7 +355,7 @@ using adapted_function = basic_adapted_function<
   transform_signature_t<CppSignature>,
   RvArgMap>;
 
-template <
+export template <
   typename Api,
   typename ApiTraits,
   typename Tag,

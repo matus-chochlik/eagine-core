@@ -23,12 +23,12 @@ auto main(main_ctx& ctx) -> int {
     auto& usr = ctx.user();
 
     ctx.cio()
-      .print(EAGINE_ID(user), "login name: ${login}")
-      .arg(EAGINE_ID(login), extract_or(usr.login_name(), na));
+      .print(identifier{"user"}, "login name: ${login}")
+      .arg(identifier{"login"}, extract_or(usr.login_name(), na));
 
     ctx.cio()
-      .print(EAGINE_ID(user), "home path: ${home}")
-      .arg(EAGINE_ID(home), extract_or(usr.home_dir_path(), na));
+      .print(identifier{"user"}, "home path: ${home}")
+      .arg(identifier{"home"}, extract_or(usr.home_dir_path(), na));
 
     return 0;
 }
