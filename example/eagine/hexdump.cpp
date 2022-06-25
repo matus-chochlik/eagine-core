@@ -5,11 +5,16 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <iostream>;
+#else
 #include <eagine/file_contents.hpp>
 #include <eagine/hexdump.hpp>
 #include <eagine/main_ctx.hpp>
 #include <eagine/program_args.hpp>
 #include <iostream>
+#endif
 
 namespace eagine {
 
@@ -26,9 +31,9 @@ auto main(main_ctx& ctx) -> int {
     }
 
     span_size_t i = 0;
-    const auto get = [&]() -> optionally_valid<byte> {
+    const auto get = [&]() -> std::optional<byte> {
         if(i < 256) {
-            return {byte(i++), true};
+            return {byte(i++)};
         }
         return {};
     };

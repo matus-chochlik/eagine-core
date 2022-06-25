@@ -156,10 +156,10 @@ auto main(int, const char** argv) -> int {
         api.make_pipe(pfd);
 
         auto make_getbyte = [&api](int fd) {
-            return [&api, fd]() -> optionally_valid<byte> {
+            return [&api, fd]() -> std::optional<byte> {
                 byte b{};
                 if(!extract_or(api.read_block(fd, cover_one(b))).is_empty()) {
-                    return {b, true};
+                    return {b};
                 }
                 api.close_file(fd);
                 return {};

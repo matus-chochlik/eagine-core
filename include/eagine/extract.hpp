@@ -85,6 +85,7 @@ struct extract_traits<std::optional<T>> {
 /// @pre has_value(opt)
 template <typename T>
 static constexpr auto extract(std::optional<T>& opt) noexcept -> auto& {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     return EAGINE_CONSTEXPR_ASSERT(bool(opt), *opt);
 }
 
