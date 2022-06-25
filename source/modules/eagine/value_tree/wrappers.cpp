@@ -523,7 +523,8 @@ public:
         span_size_t index = 0;
         for(T& elem : dest) {
             if(!select_value(attrib, offset + index, elem, sel)) {
-                return {};
+                index = 0;
+                break;
             }
             ++index;
         }
@@ -788,7 +789,7 @@ public:
     compound_attribute(compound c, attribute a) noexcept
       : _c{std::move(c)}
       , _a{std::move(a)} {
-        // assert(!_c || !_a || (_c.type_id() == _a.type_id()));
+        assert(!_c || !_a || (_c.type_id() == _a.type_id()));
     }
 
     /// @brief Indicates if this attribute actually refers to something.

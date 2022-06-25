@@ -51,7 +51,7 @@ auto main(main_ctx& ctx) -> int {
       cfg, "section_a.subsection_b.delay", std::chrono::seconds(1)};
     const auto start{std::chrono::steady_clock::now()};
     while(true) {
-        const auto elapsed = std::chrono::steady_clock::now() - start;
+        const auto elapsed{std::chrono::steady_clock::now() - start};
         if(elapsed > delay.value()) {
             break;
         }
