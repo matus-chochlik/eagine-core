@@ -20,6 +20,7 @@ import eagine.core.reflection;
 import eagine.core.valid_if;
 import :float_utils;
 import :result;
+import :interface;
 import :implementation;
 import <cctype>;
 import <concepts>;

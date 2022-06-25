@@ -12,6 +12,7 @@ import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import :result;
+import :interface;
 import :implementation;
 import <string>;
 

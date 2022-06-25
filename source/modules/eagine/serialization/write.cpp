@@ -5,6 +5,10 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#include <cassert>
+
 export module eagine.core.serialization:write;
 
 import eagine.core.types;
@@ -58,23 +62,23 @@ private:
     span_size_t _offset{0};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct serializer;
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct serializer<T&> : serializer<T> {};
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct serializer<const T&> : serializer<T> {};
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct plain_serializer {
     template <typename Backend>
     static auto write(const T value, Backend& backend) noexcept {
         span_size_t written{0};
         const auto errors = backend.write(view_one(value), written);
         if(written < 1) [[unlikely]] {
-            EAGINE_ASSERT(errors.has(serialization_error_code::too_much_data));
+            assert(errors.has(serialization_error_code::too_much_data));
         }
         return errors;
     }
@@ -84,9 +88,9 @@ struct plain_serializer {
         span_size_t written{0};
         const auto errors = backend.write(values, written);
         if(written < 1) [[unlikely]] {
-            EAGINE_ASSERT(errors.has(serialization_error_code::too_much_data));
+            assert(errors.has(serialization_error_code::too_much_data));
         } else if(written < values.size()) [[unlikely]] {
-            EAGINE_ASSERT(
+            assert(
               errors.has(serialization_error_code::incomplete_write) ||
               errors.has(serialization_error_code::too_much_data));
         }
@@ -95,42 +99,42 @@ struct plain_serializer {
 };
 
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct serializer<bool> : plain_serializer<bool> {};
-template <>
+export template <>
 struct serializer<char> : plain_serializer<char> {};
-template <>
+export template <>
 struct serializer<std::int8_t> : plain_serializer<std::int8_t> {};
-template <>
+export template <>
 struct serializer<short> : plain_serializer<short> {};
-template <>
+export template <>
 struct serializer<int> : plain_serializer<int> {};
-template <>
+export template <>
 struct serializer<long> : plain_serializer<long> {};
-template <>
+export template <>
 struct serializer<long long> : plain_serializer<long long> {};
-template <>
+export template <>
 struct serializer<std::uint8_t> : plain_serializer<std::uint8_t> {};
-template <>
+export template <>
 struct serializer<unsigned short> : plain_serializer<unsigned short> {};
-template <>
+export template <>
 struct serializer<unsigned> : plain_serializer<unsigned> {};
-template <>
+export template <>
 struct serializer<unsigned long> : plain_serializer<unsigned long> {};
-template <>
+export template <>
 struct serializer<unsigned long long> : plain_serializer<unsigned long long> {};
-template <>
+export template <>
 struct serializer<float> : plain_serializer<float> {};
-template <>
+export template <>
 struct serializer<double> : plain_serializer<double> {};
-template <>
+export template <>
 struct serializer<identifier> : plain_serializer<identifier> {};
-template <>
+export template <>
 struct serializer<decl_name> : plain_serializer<decl_name> {};
-template <>
+export template <>
 struct serializer<string_view> : plain_serializer<string_view> {};
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct common_serializer {
 
     template <typename Backend>
@@ -170,7 +174,7 @@ struct common_serializer {
     }
 };
 //------------------------------------------------------------------------------
-template <typename... T>
+export template <typename... T>
 struct serializer<std::tuple<T...>> : common_serializer<std::tuple<T...>> {
 
     using common_serializer<std::tuple<T...>>::write;
@@ -218,7 +222,7 @@ private:
     std::tuple<serializer<T>...> _serializers{};
 };
 //------------------------------------------------------------------------------
-template <typename... T>
+export template <typename... T>
 struct serializer<std::tuple<std::pair<const string_view, T>...>>
   : common_serializer<std::tuple<std::pair<const string_view, T>...>> {
 
@@ -274,7 +278,7 @@ private:
     std::tuple<serializer<T>...> _serializers{};
 };
 //------------------------------------------------------------------------------
-template <typename Bit>
+export template <typename Bit>
 struct serializer<bitfield<Bit>> : common_serializer<bitfield<Bit>> {
 
     template <typename Backend>
@@ -286,10 +290,10 @@ private:
     serializer<typename bitfield<Bit>::value_type> _serializer{};
 };
 //------------------------------------------------------------------------------
-template <std::size_t N>
+export template <std::size_t N>
 struct serializer<char[N]> : serializer<string_view> {};
 //------------------------------------------------------------------------------
-template <typename Char, typename Traits, typename Alloc>
+export template <typename Char, typename Traits, typename Alloc>
 struct serializer<std::basic_string<Char, Traits, Alloc>>
   : common_serializer<std::basic_string<Char, Traits, Alloc>> {
 
@@ -306,7 +310,7 @@ private:
     serializer<string_view> _serializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct serializer<span<const T>> : common_serializer<span<const T>> {
 
     using common_serializer<span<const T>>::write;
@@ -325,10 +329,10 @@ private:
     serializer<T> _elem_serializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct serializer<span<T>> : serializer<span<const T>> {};
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct serializer<fragment_serialize_wrapper<span<const T>>>
   : common_serializer<fragment_serialize_wrapper<span<const T>>> {
 
@@ -358,7 +362,7 @@ struct serializer<fragment_serialize_wrapper<span<const T>>>
     serializer<span_size_t> _size_serializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T, std::size_t N>
+export template <typename T, std::size_t N>
 struct serializer<std::array<T, N>> : common_serializer<std::array<T, N>> {
 
     using common_serializer<std::array<T, N>>::write;
@@ -377,7 +381,7 @@ private:
     serializer<T> _elem_serializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T, typename A>
+export template <typename T, typename A>
 struct serializer<std::vector<T, A>> : common_serializer<std::vector<T, A>> {
 
     using common_serializer<std::vector<T, A>>::write;
@@ -397,7 +401,7 @@ private:
     serializer<T> _elem_serializer{};
 };
 //------------------------------------------------------------------------------
-template <typename Rep>
+export template <typename Rep>
 struct serializer<std::chrono::duration<Rep>>
   : common_serializer<std::chrono::duration<Rep>> {
 
@@ -411,7 +415,7 @@ private:
     serializer<Rep> _serializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T, typename P>
+export template <typename T, typename P>
 struct serializer<valid_if<T, P>> : common_serializer<valid_if<T, P>> {
 
     template <typename Backend>
@@ -431,7 +435,7 @@ private:
     serializer<T> _serializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T, typename U>
+export template <typename T, typename U>
 struct serializer<tagged_quantity<T, U>>
   : common_serializer<tagged_quantity<T, U>> {
 
@@ -445,7 +449,7 @@ private:
     serializer<T> _serializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct enum_serializer {
     template <typename Backend>
     auto write(const T enumerator, Backend& backend) const noexcept {
@@ -465,7 +469,7 @@ private:
     serializer<decl_name> _name_serializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct struct_serializer {
 public:
     template <typename Backend>
@@ -478,7 +482,7 @@ private:
     serializer<decltype(map_data_members(std::declval<T>()))> _serializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct serializer
   : std::conditional_t<
       bool(default_mapped_enum<T>),
@@ -492,7 +496,7 @@ struct serializer
 /// @ingroup serialization
 /// @see deserialize
 /// @see serializer_backend
-template <typename T, typename Backend>
+export template <typename T, typename Backend>
 auto serialize(const T& value, Backend& backend) noexcept
   -> serialization_errors
   requires(std::is_base_of_v<serializer_backend, Backend>) {

@@ -76,7 +76,7 @@ struct deserializer;
 export template <typename T>
 struct deserializer<T&> : deserializer<T> {};
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct plain_deserializer {
 
     template <typename Backend>
@@ -94,44 +94,44 @@ struct plain_deserializer {
     }
 };
 //------------------------------------------------------------------------------
-template <>
+export template <>
 struct deserializer<bool> : plain_deserializer<bool> {};
-template <>
+export template <>
 struct deserializer<char> : plain_deserializer<char> {};
-template <>
+export template <>
 struct deserializer<std::int8_t> : plain_deserializer<std::int8_t> {};
-template <>
+export template <>
 struct deserializer<short> : plain_deserializer<short> {};
-template <>
+export template <>
 struct deserializer<int> : plain_deserializer<int> {};
-template <>
+export template <>
 struct deserializer<long> : plain_deserializer<long> {};
-template <>
+export template <>
 struct deserializer<long long> : plain_deserializer<long long> {};
-template <>
+export template <>
 struct deserializer<std::uint8_t> : plain_deserializer<std::uint8_t> {};
-template <>
+export template <>
 struct deserializer<unsigned short> : plain_deserializer<unsigned short> {};
-template <>
+export template <>
 struct deserializer<unsigned> : plain_deserializer<unsigned> {};
-template <>
+export template <>
 struct deserializer<unsigned long> : plain_deserializer<unsigned long> {};
-template <>
+export template <>
 struct deserializer<unsigned long long>
   : plain_deserializer<unsigned long long> {};
-template <>
+export template <>
 struct deserializer<float> : plain_deserializer<float> {};
-template <>
+export template <>
 struct deserializer<double> : plain_deserializer<double> {};
-template <>
+export template <>
 struct deserializer<identifier> : plain_deserializer<identifier> {};
-template <>
+export template <>
 struct deserializer<decl_name_storage>
   : plain_deserializer<decl_name_storage> {};
-template <>
+export template <>
 struct deserializer<std::string> : plain_deserializer<std::string> {};
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct common_deserializer {
 
     template <typename Backend>
@@ -149,7 +149,7 @@ struct common_deserializer {
     }
 };
 //------------------------------------------------------------------------------
-template <typename Bit>
+export template <typename Bit>
 struct deserializer<bitfield<Bit>> : common_deserializer<bitfield<Bit>> {
 
     template <typename Backend>
@@ -166,7 +166,7 @@ private:
     deserializer<typename bitfield<Bit>::value_type> _deserializer{};
 };
 //------------------------------------------------------------------------------
-template <typename Rep>
+export template <typename Rep>
 struct deserializer<std::chrono::duration<Rep>>
   : common_deserializer<std::chrono::duration<Rep>> {
 
@@ -185,7 +185,7 @@ private:
     deserializer<Rep> _deserializer{};
 };
 //------------------------------------------------------------------------------
-template <typename... T>
+export template <typename... T>
 struct deserializer<std::tuple<T...>> : common_deserializer<std::tuple<T...>> {
 
     using common_deserializer<std::tuple<T...>>::read;
@@ -244,7 +244,7 @@ private:
     std::tuple<deserializer<T>...> _deserializers{};
 };
 //------------------------------------------------------------------------------
-template <typename... T>
+export template <typename... T>
 struct deserializer<std::tuple<std::pair<const string_view, T>...>>
   : common_deserializer<std::tuple<std::pair<const string_view, T>...>> {
 
@@ -307,7 +307,7 @@ private:
     std::tuple<deserializer<T>...> _deserializers{};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct deserializer<fragment_deserialize_wrapper<span<T>>>
   : common_deserializer<fragment_deserialize_wrapper<span<T>>> {
 
@@ -334,7 +334,7 @@ struct deserializer<fragment_deserialize_wrapper<span<T>>>
     deserializer<span_size_t> _size_deserializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T, std::size_t N>
+export template <typename T, std::size_t N>
 struct deserializer<std::array<T, N>> : common_deserializer<std::array<T, N>> {
 
     using common_deserializer<std::array<T, N>>::read;
@@ -361,7 +361,7 @@ private:
     deserializer<T> _elem_deserializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T, typename A>
+export template <typename T, typename A>
 struct deserializer<std::vector<T, A>>
   : common_deserializer<std::vector<T, A>> {
 
@@ -382,7 +382,7 @@ private:
     deserializer<T> _elem_deserializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T, typename P>
+export template <typename T, typename P>
 struct deserializer<valid_if<T, P>> : common_deserializer<valid_if<T, P>> {
 
     template <typename Backend>
@@ -418,7 +418,7 @@ private:
     deserializer<T> _deserializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T, typename U>
+export template <typename T, typename U>
 struct deserializer<tagged_quantity<T, U>>
   : common_deserializer<tagged_quantity<T, U>> {
 
@@ -437,7 +437,7 @@ private:
     deserializer<T> _deserializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct enum_deserializer {
 
     template <typename Backend>
@@ -476,7 +476,7 @@ private:
     deserializer<decl_name_storage> _name_deserializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct struct_deserializer {
 public:
     template <typename Backend>
@@ -489,7 +489,7 @@ private:
     deserializer<decltype(map_data_members(std::declval<T&>()))> _deserializer{};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct deserializer
   : std::conditional_t<
       bool(default_mapped_enum<T>),
@@ -503,7 +503,7 @@ struct deserializer
 /// @ingroup serialization
 /// @see serialize
 /// @see deserializer_backend
-template <typename T, typename Backend>
+export template <typename T, typename Backend>
 auto deserialize(T& value, Backend& backend) noexcept -> deserialization_errors
   requires(std::is_base_of_v<deserializer_backend, Backend>) {
       deserialization_errors errors{};
