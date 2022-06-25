@@ -7,7 +7,7 @@
 ///
 #include <eagine/bindump.hpp>
 #include <eagine/file_contents.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/program_args.hpp>
 #include <iostream>
 
@@ -43,3 +43,8 @@ auto main(main_ctx& ctx) -> int {
 }
 
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

@@ -9,7 +9,7 @@
 #include <eagine/console/console.hpp>
 #include <eagine/dynamic_library.hpp>
 #include <eagine/logging/logger.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 
 namespace eagine {
 
@@ -46,3 +46,8 @@ auto main(main_ctx& ctx) -> int {
 }
 
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

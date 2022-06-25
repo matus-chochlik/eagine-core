@@ -14,6 +14,7 @@
 #include "compression.hpp"
 #include "console/console.hpp"
 #include "logging/root_logger.hpp"
+#include "logging/type/exception.hpp"
 #include "memory/default_alloc.hpp"
 #include "process.hpp"
 #include "program_args.hpp"

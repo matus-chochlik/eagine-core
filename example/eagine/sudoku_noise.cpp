@@ -6,7 +6,6 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/app_config.hpp>
-#include <eagine/main.hpp>
 #include <eagine/main_ctx.hpp>
 #include <eagine/sudoku.hpp>
 #include <iostream>
@@ -74,3 +73,8 @@ auto main(main_ctx& ctx) -> int {
     return 0;
 }
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

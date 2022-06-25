@@ -12,7 +12,7 @@ import <string>;
 #include <eagine/base64.hpp>
 #include <eagine/console/console.hpp>
 #include <eagine/file_contents.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/program_args.hpp>
 #endif
 

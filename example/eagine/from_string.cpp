@@ -12,7 +12,7 @@ import <chrono>;
 #else
 #include <eagine/console/console.hpp>
 #include <eagine/from_string.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/main_ctx_object.hpp>
 #include <eagine/program_args.hpp>
 #include <chrono>

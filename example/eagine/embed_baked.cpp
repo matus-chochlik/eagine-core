@@ -7,7 +7,7 @@
 ///
 #include <eagine/embed.hpp>
 #include <eagine/hexdump.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <iostream>
 
 namespace eagine {
@@ -21,3 +21,8 @@ auto main(main_ctx& ctx) -> int {
 }
 
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+
