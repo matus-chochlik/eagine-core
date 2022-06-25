@@ -213,7 +213,7 @@ constexpr auto operator+(vector<T, N, V> a) noexcept {
 /// @brief Negation operator.
 /// @relates vector
 export template <typename T, int N, bool V>
-constexpr auto operator-(vector<T, N, V> a) noexcept {
+constexpr auto operator-(vector_param<T, N, V> a) noexcept {
     return vector<T, N, V>{-a._v};
 }
 
@@ -321,21 +321,21 @@ constexpr auto operator/(const T c, vector_param<T, N, V> a) noexcept {
 /// @brief Returns the dimension of a vector.
 /// @ingroup math
 export template <typename T, int N, bool V>
-constexpr auto dimension(const vector<T, N, V>&) noexcept {
+constexpr auto dimension(vector_param<T, N, V>) noexcept {
     return span_size_t(N);
 }
 
 /// @brief Tests if a vector has zero lenght.
 /// @ingroup math
 export template <typename T, int N, bool V>
-constexpr auto is_zero(const vector<T, N, V>& v) noexcept -> bool {
+constexpr auto is_zero(vector_param<T, N, V> v) noexcept -> bool {
     return vect::is_zero<T, N, V>::apply(v._v);
 }
 
 /// @brief Vector dot product.
 /// @ingroup math
 export template <typename T, int N, bool V>
-constexpr auto dot(const vector<T, N, V>& a, const vector<T, N, V>& b) noexcept {
+constexpr auto dot(vector_param<T, N, V> a, vector_param<T, N, V> b) noexcept {
     if constexpr(vect::has_simd_data<T, N, V>::value) {
         return scalar<T, N, V>{vect::hsum<T, N, V>::apply(a._v * b._v)};
     } else {
@@ -346,26 +346,26 @@ constexpr auto dot(const vector<T, N, V>& a, const vector<T, N, V>& b) noexcept 
 /// @brief Returns a vector perpendicular to argument.
 /// @ingroup math
 export template <typename T, bool V>
-constexpr auto perpendicular(const vector<T, 2, V>& a) noexcept {
+constexpr auto perpendicular(vector_param<T, 2, V> a) noexcept {
     return vector<T, 2, V>{{-a._v[1], a._v[0]}};
 }
 
 /// @brief 3D vector cross product.
 /// @ingroup math
 export template <typename T, bool V>
-constexpr auto cross(
-  const vector<T, 3, V>& a,
-  const vector<T, 3, V>& b) noexcept {
+constexpr auto cross(vector_param<T, 3, V> a, vector_param<T, 3, V> b) noexcept {
     using _sh = vect::shuffle<T, 3, V>;
     return vector<T, 3, V>{
-      _sh::template apply<1, 2, 0>(a._v) * _sh::template apply<2, 0, 1>(b._v) -
-      _sh::template apply<2, 0, 1>(a._v) * _sh::template apply<1, 2, 0>(b._v)};
+      _sh::apply(a._v, vect::shuffle_mask<1, 2, 0>{}) *
+        _sh::apply(b._v, vect::shuffle_mask<2, 0, 1>{}) -
+      _sh::apply(a._v, vect::shuffle_mask<2, 0, 1>{}) *
+        _sh::apply(b._v, vect::shuffle_mask<1, 2, 0>{})};
 }
 
 /// @brief Returns the magnitude of a vector. Same as length.
 /// @ingroup math
 export template <typename T, int N, bool V>
-constexpr auto magnitude(const vector<T, N, V>& a) noexcept {
+constexpr auto magnitude(vector_param<T, N, V> a) noexcept {
     if constexpr(vect::has_simd_data<T, N, V>::value) {
         return scalar<T, N, V>{
           vect::sqrt<T, N, V>::apply(vect::hsum<T, N, V>::apply(a._v * a._v))};
@@ -379,14 +379,14 @@ constexpr auto magnitude(const vector<T, N, V>& a) noexcept {
 /// @brief Returns the length of a vector.
 /// @ingroup math
 export template <typename T, int N, bool V>
-constexpr auto length(const vector<T, N, V>& a) noexcept {
+constexpr auto length(vector_param<T, N, V> a) noexcept {
     return magnitude(a);
 }
 
 /// @brief Returns normalized argument.
 /// @ingroup math
 export template <typename T, int N, bool V>
-constexpr auto normalized(const vector<T, N, V>& a) noexcept {
+constexpr auto normalized(vector_param<T, N, V> a) noexcept {
     scalar<T, N, V> l = length(a);
     if constexpr(vect::has_simd_data<T, N, V>::value) {
         return vector<T, N, V>{vect::sdiv<T, N, V>::apply(a._v, l._v)};
@@ -400,8 +400,8 @@ constexpr auto normalized(const vector<T, N, V>& a) noexcept {
 /// @ingroup math
 export template <typename T, int N, bool V>
 constexpr auto distance(
-  const vector<T, N, V>& a,
-  const vector<T, N, V>& b) noexcept {
+  vector_param<T, N, V> a,
+  vector_param<T, N, V> b) noexcept {
     return magnitude(a - b);
 }
 

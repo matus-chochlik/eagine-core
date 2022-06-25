@@ -17,10 +17,7 @@ namespace eagine::vect {
 export template <typename T, int N, bool V>
 struct hsum {
 private:
-    template <int... I>
-    static auto _sh_apply(data_param_t<T, N, V> v) noexcept -> data_t<T, N, V> {
-        return shuffle<T, N, V>::template apply<I...>(v);
-    }
+    using _sh = shuffle<T, N, V>;
 
     template <int M, bool B>
     static auto _hlp(
@@ -50,43 +47,43 @@ private:
       data_param_t<T, N, V> v,
       int_constant<2>,
       std::true_type) noexcept {
-        return v + _sh_apply<1, 0>(v);
+        return v + _sh::apply(v, shuffle_mask<1, 0>{});
     }
 
     static constexpr auto _hlp3_1(
       data_param_t<T, N, V> t,
       data_param_t<T, N, V> v) noexcept {
-        return t + _sh_apply<2, 2, 1>(v);
+        return t + _sh::apply(v, shuffle_mask<2, 2, 1>{});
     }
 
     static constexpr auto _hlp(
       data_param_t<T, N, V> v,
       int_constant<3>,
       std::true_type) noexcept {
-        return _hlp3_1(v + _sh_apply<1, 0, 0>(v), v);
+        return _hlp3_1(v + _sh::apply(v, shuffle_mask<1, 0, 0>{}), v);
     }
 
     static constexpr auto _hlp4_1(data_param_t<T, N, V> v) noexcept {
-        return v + _sh_apply<2, 3, 0, 1>(v);
+        return v + _sh::apply(v, shuffle_mask<2, 3, 0, 1>{});
     }
 
     static constexpr auto _hlp(
       data_param_t<T, N, V> v,
       int_constant<4>,
       std::true_type) noexcept {
-        return _hlp4_1(v + _sh_apply<1, 0, 3, 2>(v));
+        return _hlp4_1(v + _sh::apply(v, shuffle_mask<1, 0, 3, 2>{}));
     }
 
     static constexpr auto _hlp8_1(data_param_t<T, N, V> v) noexcept {
-        return v + _sh_apply<1, 0, 3, 2, 5, 4, 7, 6>(v);
+        return v + _sh::apply(v, shuffle_mask<1, 0, 3, 2, 5, 4, 7, 6>{});
     }
 
     static constexpr auto _hlp8_2(data_param_t<T, N, V> v) noexcept {
-        return v + _sh_apply<2, 3, 0, 1, 6, 7, 4, 5>(v);
+        return v + _sh::apply(v, shuffle_mask<2, 3, 0, 1, 6, 7, 4, 5>{});
     }
 
     static constexpr auto _hlp8_3(data_param_t<T, N, V> v) noexcept {
-        return v + _sh_apply<4, 5, 6, 7, 0, 1, 2, 3>(v);
+        return v + _sh::apply(v, shuffle_mask<4, 5, 6, 7, 0, 1, 2, 3>{});
     }
 
     static constexpr auto _hlp(
@@ -97,7 +94,8 @@ private:
     }
 
 public:
-    static auto apply(data_param_t<T, N, V> v) noexcept -> data_t<T, N, V> {
+    static constexpr auto apply(data_param_t<T, N, V> v) noexcept
+      -> data_t<T, N, V> {
         return _hlp(v, int_constant<N>{}, has_simd_data<T, N, V>{});
     }
 };

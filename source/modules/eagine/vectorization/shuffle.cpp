@@ -60,11 +60,19 @@ private:
 #endif
     }
 
+    template <int I0, int I1, int I2>
+    static constexpr auto _do_apply(
+      data_param_t<T, N, V> v,
+      const shuffle_mask<I0, I1, I2>,
+      const std::true_type sel) noexcept -> data_t<T, N, V> {
+        return _do_apply(v, shuffle_mask<I0, I1, I2, 0>{}, sel);
+    }
+
 public:
     template <int... I>
     static constexpr auto apply(
       data_param_t<T, N, V> v,
-      const shuffle_mask<I...> m = {}) noexcept {
+      const shuffle_mask<I...> m) noexcept {
         return _do_apply(v, m, has_simd_data<T, N, V>{});
     }
 };
@@ -129,7 +137,7 @@ public:
     static auto apply(
       data_param_t<T, N, V> v1,
       data_param_t<T, N, V> v2,
-      const shuffle_mask<I...> m = {}) noexcept {
+      const shuffle_mask<I...> m) noexcept {
         return _do_apply(
           v1, v2, m, int_constant<N>{}, has_simd_data<T, N, V>{});
     }

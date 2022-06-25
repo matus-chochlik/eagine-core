@@ -45,7 +45,7 @@ private:
       int_constant<M>,
       std::true_type) noexcept -> T {
         static_assert(M == N);
-        return hsum<T, N, V>::apply(v)[N - 1];
+        return hsum<T, N, V>::apply(v)[0];
     }
 
 public:
