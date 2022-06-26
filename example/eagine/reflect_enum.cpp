@@ -5,9 +5,13 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+#else
 #include <eagine/console/console.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/reflect/enumerators.hpp>
+#endif
 
 namespace eagine {
 
@@ -40,10 +44,9 @@ enum class example_enum {
     value_z
 };
 
-#if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
-  const type_identity<example_enum>,
+  const std::type_identity<example_enum>,
   const Selector) noexcept {
     return enumerator_map_type<example_enum, 26>{
       {{"value_a", example_enum::value_a}, {"value_b", example_enum::value_b},
@@ -60,26 +63,29 @@ constexpr auto enumerator_mapping(
        {"value_w", example_enum::value_w}, {"value_x", example_enum::value_x},
        {"value_y", example_enum::value_y}, {"value_z", example_enum::value_z}}};
 }
-#endif
 
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;
 
-    const type_identity<example_enum> tid{};
+    const std::type_identity<example_enum> tid{};
     ctx.cio()
-      .print(EAGINE_ID(enums), "enumerator count: ${count}")
-      .arg(EAGINE_ID(count), enumerator_count(tid));
+      .print(identifier{"enums"}, "enumerator count: ${count}")
+      .arg(identifier{"count"}, enumerator_count(tid));
 
     for_each_enumerator(
       [&](const auto& info) {
           ctx.cio()
-            .print(EAGINE_ID(enums), "${name}: ${value}")
-            .arg(EAGINE_ID(name), info.name)
-            .arg(EAGINE_ID(value), info.value);
+            .print(identifier{"enums"}, "${name}: ${value}")
+            .arg(identifier{"name"}, info.name)
+            .arg(identifier{"value"}, info.value);
       },
-      type_identity<example_enum>{});
+      std::type_identity<example_enum>{});
 
     return 0;
 }
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
 

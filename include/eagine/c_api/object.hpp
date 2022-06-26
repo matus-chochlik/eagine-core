@@ -78,7 +78,7 @@ using basic_object_from_handle_t =
 
 template <typename Api, typename Tag, typename Handle, Handle invalid, typename... P>
 struct get_basic_object_from_handle<Api, basic_handle<Tag, Handle, invalid>, P...>
-  : type_identity<basic_object<Api, Tag, Handle, invalid, P...>> {};
+  : std::type_identity<basic_object<Api, Tag, Handle, invalid, P...>> {};
 
 } // namespace eagine::c_api
 

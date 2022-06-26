@@ -30,6 +30,5 @@
 
 #include "implement.inl"
 #include <eagine/main_ctx.hpp>
-#include <eagine/main.hpp>
 #include "epilogue.inl"
 // clang-format on

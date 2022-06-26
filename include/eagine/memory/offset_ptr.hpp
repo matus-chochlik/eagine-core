@@ -11,8 +11,8 @@
 
 #include "../assert.hpp"
 #include "../extract.hpp"
-#include "../type_identity.hpp"
 #include "address.hpp"
+#include <type_traits>
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
@@ -278,7 +278,7 @@ struct rebind_pointer;
 //------------------------------------------------------------------------------
 template <typename T, typename O, typename U>
 struct rebind_pointer<basic_offset_ptr<T, O>, U>
-  : type_identity<basic_offset_ptr<U, O>> {};
+  : std::type_identity<basic_offset_ptr<U, O>> {};
 //------------------------------------------------------------------------------
 /// @brief Converts basic_offset_ptr into basic_address.
 /// @ingroup memory

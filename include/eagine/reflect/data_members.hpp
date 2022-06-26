@@ -16,7 +16,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 template <typename F, typename S, identifier_t Id>
 constexpr auto data_member_mapping(
-  const type_identity<std::pair<F, S>>,
+  const std::type_identity<std::pair<F, S>>,
   const selector<Id>) noexcept {
     using P = std::pair<F, S>;
     return make_data_member_mapping<P, F, S>(
@@ -31,9 +31,10 @@ constexpr auto data_member_tuple_from_mapping(
 
 template <typename T, typename Selector>
 constexpr auto data_member_tuple(
-  const type_identity<T> tid,
+  const std::type_identity<T> tid,
   const Selector sel) noexcept
-  requires(has_data_member_mapping_v<T, Selector>) {
+    requires(has_data_member_mapping_v<T, Selector>)
+{
     return data_member_tuple_from_mapping(data_member_mapping(tid, sel));
 }
 //------------------------------------------------------------------------------
@@ -131,7 +132,7 @@ constexpr auto map_data_members(
     return do_map_data_members(
       instance,
       select,
-      data_member_mapping(type_identity<std::remove_cv_t<T>>(), select));
+      data_member_mapping(std::type_identity<std::remove_cv_t<T>>(), select));
 }
 //------------------------------------------------------------------------------
 template <typename T, identifier_t Id>
@@ -141,7 +142,7 @@ constexpr auto map_data_members(
     return do_map_data_members(
       instance,
       select,
-      data_member_mapping(type_identity<std::remove_cv_t<T>>(), select));
+      data_member_mapping(std::type_identity<std::remove_cv_t<T>>(), select));
 }
 //------------------------------------------------------------------------------
 template <typename T>

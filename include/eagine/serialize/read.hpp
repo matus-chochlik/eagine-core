@@ -443,7 +443,9 @@ struct enum_deserializer {
             errors |= _name_deserializer.read(temp_name, backend);
             if(!errors) [[likely]] {
                 if(const auto found{from_string(
-                     temp_name.get(), type_identity<T>{}, default_selector)}) {
+                     temp_name.get(),
+                     std::type_identity<T>{},
+                     default_selector)}) {
                     enumerator = extract(found);
                 } else {
                     errors |= deserialization_error_code::unexpected_data;
@@ -454,7 +456,7 @@ struct enum_deserializer {
             errors |= _value_deserializer.read(temp_value, backend);
             if(!errors) [[likely]] {
                 if(const auto found{
-                     from_value(temp_value, type_identity<T>{})}) {
+                     from_value(temp_value, std::type_identity<T>{})}) {
                     enumerator = extract(found);
                 } else {
                     errors |= deserialization_error_code::unexpected_data;
@@ -499,15 +501,15 @@ struct deserializer
 template <typename T, typename Backend>
 auto deserialize(T& value, Backend& backend) noexcept -> deserialization_errors
   requires(std::is_base_of_v<deserializer_backend, Backend>) {
-    deserialization_errors errors{};
-    errors |= backend.begin();
-    if(!errors) [[likely]] {
-        deserializer<T> reader;
-        errors |= reader.read(value, backend);
-        errors |= backend.finish();
-    }
-    return errors;
-}
+      deserialization_errors errors{};
+      errors |= backend.begin();
+      if(!errors) [[likely]] {
+          deserializer<T> reader;
+          errors |= reader.read(value, backend);
+          errors |= backend.finish();
+      }
+      return errors;
+  }
 //------------------------------------------------------------------------------
 } // namespace eagine
 

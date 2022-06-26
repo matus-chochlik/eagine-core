@@ -5,9 +5,13 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#include <eagine/preprocessor.hpp>
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <iostream>;
+#else
 #include <eagine/tribool.hpp>
 #include <iostream>
+#endif
 
 void print(const char* expr, const eagine::weakbool v) {
     std::cout << "'" << expr << "': ";
@@ -31,7 +35,7 @@ void print(const char* expr, const eagine::tribool v) {
     }
 }
 
-#define EAG_PRINT(EXPR) print(EAGINE_STRINGIFY(EXPR), EXPR)
+#define EAG_PRINT(EXPR) print(#EXPR, EXPR)
 
 auto main() -> int {
     using namespace eagine;

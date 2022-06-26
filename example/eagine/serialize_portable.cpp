@@ -29,7 +29,7 @@ struct my_struct {
 //------------------------------------------------------------------------------
 template <identifier_t Id>
 constexpr auto data_member_mapping(
-  const type_identity<my_struct>,
+  const std::type_identity<my_struct>,
   const selector<Id>) noexcept {
     using S = my_struct;
     return make_data_member_mapping<

@@ -15,7 +15,7 @@
 #include "../iterator.hpp"
 #include "../mp_list.hpp"
 #include "../nothing.hpp"
-#include "../type_identity.hpp"
+#include "../type_traits.hpp"
 #include "../wrapping_container.hpp"
 #include <tuple>
 #include <type_traits>
@@ -290,7 +290,7 @@ template <
   typename ValueType,
   typename Value>
 constexpr static bool is_enum_parameter_value_v =
-  c_api::is_enum_class_value_v<ParameterEnumClass, Parameter>&&
+  c_api::is_enum_class_value_v<ParameterEnumClass, Parameter> &&
       std::is_same_v<typename Parameter::tag_type, nothing_t>
     ? std::is_convertible_v<Value, ValueType>
     : c_api::is_enum_class_value_v<typename Parameter::tag_type, Value>;
@@ -298,12 +298,12 @@ constexpr static bool is_enum_parameter_value_v =
 template <typename ParameterEnumClass, typename ValueType>
 struct enum_parameter_value {
     template <typename Parameter, typename Value>
-    requires(
-      is_enum_parameter_value_v<
-        ParameterEnumClass,
-        Parameter,
-        ValueType,
-        Value>) constexpr enum_parameter_value(Parameter param, Value val) noexcept
+        requires(is_enum_parameter_value_v<
+                  ParameterEnumClass,
+                  Parameter,
+                  ValueType,
+                  Value>)
+    constexpr enum_parameter_value(Parameter param, Value val) noexcept
       : parameter{param.value}
       , value{eagine::limit_cast<ValueType>(val.value)} {}
 
@@ -352,14 +352,14 @@ struct enum_class {
     /// @brief Construction from a related enum_value.
     template <typename Classes, typename Tag>
     constexpr enum_class(const enum_value<T, Classes, Tag> ev) noexcept
-      requires(mp_contains_v<Classes, Self>)
-      : _value{ev.value} {}
+        requires(mp_contains_v<Classes, Self>)
+    : _value{ev.value} {}
 
     /// @brief Construction from a related opt_enum_value.
     template <typename Classes, typename Tag>
     constexpr enum_class(const opt_enum_value<T, Classes, Tag> ev) noexcept
-      requires(mp_contains_v<Classes, Self>)
-      : _value{ev.value} {
+        requires(mp_contains_v<Classes, Self>)
+    : _value{ev.value} {
         EAGINE_ASSERT(ev.is_valid);
     }
 
@@ -388,8 +388,10 @@ struct enum_class {
     }
 
     template <typename V>
-    explicit constexpr operator V() const noexcept requires(
-      !std::is_same_v<bool, V> && std::is_convertible_v<value_type, V>) {
+    explicit constexpr operator V() const noexcept
+        requires(
+          !std::is_same_v<bool, V> && std::is_convertible_v<value_type, V>)
+    {
         return limit_cast<T>(_value);
     }
 
@@ -421,8 +423,8 @@ template <
   identifier_t Id>
 static constexpr auto limit_cast(enum_class<Self, Src, LibId, Id> val) noexcept
   -> Dst requires(std::is_convertible_v<Src, Dst>) {
-    return limit_cast<Dst>(val._value);
-}
+             return limit_cast<Dst>(val._value);
+         }
 //------------------------------------------------------------------------------
 /// @brief Type erasure for instantiations of enum_class from a specified library.
 /// @tparam LibId unique identifier of a "library" or API the enums belong to.
@@ -576,16 +578,16 @@ template <typename Dst, typename Src, typename... Classes, typename Tag>
 static constexpr auto limit_cast(
   c_api::opt_enum_value<Src, Classes..., Tag> val) noexcept -> Dst
   requires(std::is_convertible_v<Src, Dst>) {
-    EAGINE_ASSERT(bool(val));
-    return limit_cast<Dst>(val.value);
-}
+      EAGINE_ASSERT(bool(val));
+      return limit_cast<Dst>(val.value);
+  }
 
 template <typename Dst, typename Src, typename Tag>
 static constexpr auto limit_cast(c_api::no_enum_value<Src, Tag> val) noexcept
   -> Dst requires(std::is_convertible_v<Src, Dst>) {
-    EAGINE_ASSERT(bool(val));
-    return limit_cast<Dst>(val.value);
-}
+             EAGINE_ASSERT(bool(val));
+             return limit_cast<Dst>(val.value);
+         }
 //------------------------------------------------------------------------------
 } // namespace eagine::c_api
 

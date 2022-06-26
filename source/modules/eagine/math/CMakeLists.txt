@@ -1,0 +1,124 @@
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+eagine_add_module(
+	eagine.core.math PARTITION traits
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION constants
+	IMPORTS eagine.core.types
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION functions
+	IMPORTS constants
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION scalar
+	IMPORTS eagine.core.vectorization
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION vector
+	IMPORTS
+		traits scalar
+		eagine.core.concepts
+		eagine.core.types
+		eagine.core.vectorization
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION matrix
+	IMPORTS
+		traits vector
+		eagine.core.concepts
+		eagine.core.types
+		eagine.core.vectorization
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION matrix_construct
+	IMPORTS
+		traits vector matrix
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.vectorization
+		eagine.core.units
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION primitives
+	IMPORTS
+		vector
+		eagine.core.types
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION curve
+	IMPORTS
+		functions
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.valid_if
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION intersection
+	IMPORTS
+		vector
+		functions
+		primitives
+		eagine.core.types
+		eagine.core.valid_if
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION coordinates
+	IMPORTS
+		functions vector
+		eagine.core.valid_if
+		eagine.core.units
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION animated_value
+	IMPORTS
+		functions
+		eagine.core.valid_if
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION io
+	IMPORTS
+		primitives
+		vector
+		matrix
+)
+
+eagine_add_module(
+	eagine.core.math
+	INTERFACES
+		math
+	PARTITIONS
+		traits
+		constants
+		functions
+		scalar
+		vector
+		matrix
+		matrix_construct
+		curve
+		primitives
+		intersection
+		coordinates
+		animated_value
+		io
+)
+
+

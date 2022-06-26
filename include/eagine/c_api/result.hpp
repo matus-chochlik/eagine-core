@@ -12,7 +12,6 @@
 #include "../assert.hpp"
 #include "../extract.hpp"
 #include "../nothing.hpp"
-#include "../type_identity.hpp"
 #include "../unreachable_reference.hpp"
 #include <stdexcept>
 #include <type_traits>
@@ -79,7 +78,7 @@ protected:
     template <typename Info, typename T>
     auto _cast_to(
       const result<Result, Info, result_validity::never>& src,
-      type_identity<T>) const {
+      std::type_identity<T>) const {
         result<T, Info, result_validity::never> result{};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
@@ -113,7 +112,7 @@ protected:
     template <typename Info, typename T>
     auto _cast_to(
       const result<void, Info, result_validity::never>& src,
-      const type_identity<T>) const {
+      const std::type_identity<T>) const {
         result<T, Info, result_validity::never> result{};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
@@ -159,15 +158,15 @@ public:
     }
 
     template <typename T>
-    auto cast_to(const type_identity<T> tid) const {
+    auto cast_to(const std::type_identity<T> tid) const {
         return this->_cast_to(*this, tid);
     }
 
-    auto cast_to(const type_identity<void>) const noexcept -> auto& {
+    auto cast_to(const std::type_identity<void>) const noexcept -> auto& {
         return *this;
     }
 
-    auto cast_to(const type_identity<nothing_t>) const noexcept -> auto& {
+    auto cast_to(const std::type_identity<nothing_t>) const noexcept -> auto& {
         return *this;
     }
 
@@ -204,7 +203,7 @@ protected:
     template <typename Info, typename T>
     auto _cast_to(
       const result<Result, Info, result_validity::always>& src,
-      const type_identity<T>) const {
+      const std::type_identity<T>) const {
         result<T, Info, result_validity::always> result{T(_value)};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
@@ -250,7 +249,7 @@ protected:
     template <typename Info, typename T>
     auto _cast_to(
       const result<void, Info, result_validity::always>& src,
-      const type_identity<T>) const {
+      const std::type_identity<T>) const {
         result<T, Info, result_validity::always> result{};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
         return result;
@@ -304,15 +303,15 @@ public:
 
     /// @brief Returns an result with the stored value cast to different type.
     template <typename T>
-    auto cast_to(const type_identity<T> tid) const {
+    auto cast_to(const std::type_identity<T> tid) const {
         return this->_cast_to(*this, tid);
     }
 
-    auto cast_to(const type_identity<void>) const noexcept -> auto& {
+    auto cast_to(const std::type_identity<void>) const noexcept -> auto& {
         return *this;
     }
 
-    auto cast_to(const type_identity<nothing_t>) const noexcept -> auto& {
+    auto cast_to(const std::type_identity<nothing_t>) const noexcept -> auto& {
         return *this;
     }
 
@@ -356,7 +355,7 @@ protected:
     template <typename Info, typename T>
     auto _cast_to(
       const result<Result, Info, result_validity::maybe>& src,
-      const type_identity<T>) const {
+      const std::type_identity<T>) const {
         result<T, Info, result_validity::maybe> res{T(_value), src.is_valid()};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
         return res;
@@ -414,7 +413,7 @@ protected:
     template <typename Info, typename T>
     auto _cast_to(
       const result<void, Info, result_validity::maybe>& src,
-      const type_identity<T>) const {
+      const std::type_identity<T>) const {
         result<T, Info, result_validity::maybe> res{T{}, src.is_valid()};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
         return res;
@@ -465,15 +464,15 @@ public:
     }
 
     template <typename T>
-    auto cast_to(const type_identity<T> tid) const {
+    auto cast_to(const std::type_identity<T> tid) const {
         return this->_cast_to(*this, tid);
     }
 
-    auto cast_to(const type_identity<void>) const noexcept -> auto& {
+    auto cast_to(const std::type_identity<void>) const noexcept -> auto& {
         return *this;
     }
 
-    auto cast_to(const type_identity<nothing_t>) const noexcept -> auto& {
+    auto cast_to(const std::type_identity<nothing_t>) const noexcept -> auto& {
         return *this;
     }
 
@@ -493,14 +492,14 @@ public:
 template <typename Result>
 static constexpr auto extract(
   result_value<Result, result_validity::never>&) noexcept -> Result& {
-    return unreachable_reference(type_identity<Result>{});
+    return unreachable_reference(std::type_identity<Result>{});
 }
 
 template <typename Result>
 static constexpr auto extract(
   const result_value<Result, result_validity::never>&) noexcept
   -> const Result& {
-    return unreachable_reference(type_identity<Result>{});
+    return unreachable_reference(std::type_identity<Result>{});
 }
 
 static constexpr auto extract(

@@ -50,8 +50,8 @@ template <typename T>
 inline base_stack_allocator<T>::base_stack_allocator(
   const block& blk,
   span_size_t align) noexcept
-  : _btm(align_up_to(blk.addr(), type_identity<T>(), align))
-  , _top(align_down_to(blk.end_addr(), type_identity<T>(), align))
+  : _btm(align_up_to(blk.addr(), std::type_identity<T>(), align))
+  , _top(align_down_to(blk.end_addr(), std::type_identity<T>(), align))
   , _pos(_btm)
   , _min(_btm) {}
 //------------------------------------------------------------------------------

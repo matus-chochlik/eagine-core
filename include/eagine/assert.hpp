@@ -82,10 +82,6 @@ inline void assertion_failed_msg(
     BOOST_ASSERT(EXPR) // NOLINT(hicpp-no-array-decay)
 // clang-format on
 
-#ifdef __clang__
-EAGINE_DIAG_POP()
-#endif
-
 #else // EAGINE_USE_STACKTRACE
 
 // clang-format off

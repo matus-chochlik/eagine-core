@@ -9,15 +9,15 @@
 #define EAGINE_INTEGER_HASH_HPP
 
 #include "int_constant.hpp"
-#include "type_identity.hpp"
 #include <cstdint>
+#include <type_traits>
 
 namespace eagine {
 //------------------------------------------------------------------------------
 template <std::size_t N, typename I>
 constexpr auto integer_rotate_right(
   const I x,
-  const type_identity<I> = {},
+  const std::type_identity<I> = {},
   const size_constant<N> = {}) noexcept -> I {
     static_assert(N < sizeof(I) * 8);
     return I(x << N) | I(x >> (-N & (sizeof(I) * 8U - 1U)));
@@ -26,8 +26,8 @@ constexpr auto integer_rotate_right(
 template <typename H, typename I>
 constexpr auto integer_hash_init(
   const I x,
-  const type_identity<H> = {},
-  const type_identity<I> = {}) noexcept -> H {
+  const std::type_identity<H> = {},
+  const std::type_identity<I> = {}) noexcept -> H {
     using std::is_same_v;
 
     using UI = std::make_unsigned_t<I>;
@@ -57,8 +57,8 @@ constexpr auto integer_hash_init(
 template <typename H, typename I>
 inline auto integer_hash(
   const I x,
-  const type_identity<H> hid = {},
-  const type_identity<I> iid = {}) -> H {
+  const std::type_identity<H> hid = {},
+  const std::type_identity<I> iid = {}) -> H {
     using std::is_same_v;
     if constexpr(std::is_unsigned_v<H>) {
         auto h = integer_hash_init(x, hid, iid);

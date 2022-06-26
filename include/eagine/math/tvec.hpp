@@ -41,14 +41,14 @@ struct tvec : vector<T, N, V> {
     /// @brief Construction from coordinates.
     template <typename... P>
     constexpr tvec(P&&... p) noexcept
-      requires((sizeof...(P) == N) && all_are_convertible_to<T, P...>::value)
-      : base{base::make(std::forward<P>(p)...)} {}
+        requires((sizeof...(P) == N) && all_are_convertible_to<T, P...>::value)
+    : base{base::make(std::forward<P>(p)...)} {}
 
     /// @brief Construction from vector of different dimensionality.
     template <typename P, int M, bool W>
     constexpr tvec(const vector<P, M, W>& v) noexcept
-      requires(!std::is_same_v<P, T> || !(M == N))
-      : base{base::from(v)} {}
+        requires(!std::is_same_v<P, T> || !(M == N))
+    : base{base::from(v)} {}
 
     /// @brief Construction from vector of different dimensionality.
     template <typename P, int M, bool W>
@@ -57,10 +57,11 @@ struct tvec : vector<T, N, V> {
 
     /// @brief Construction from vector of different dimensionality.
     template <typename P, int M, bool W, typename... R>
-    constexpr tvec(const vector<P, M, W>& v, R&&... r) noexcept requires(
-      (sizeof...(R) > 1) && (M + sizeof...(R) == N) &&
-      all_are_convertible_to<T, R...>::value)
-      : base{base::from(v, vector<T, N - M, W>::make(std::forward<R>(r)...))} {}
+    constexpr tvec(const vector<P, M, W>& v, R&&... r) noexcept
+        requires(
+          (sizeof...(R) > 1) && (M + sizeof...(R) == N) &&
+          all_are_convertible_to<T, R...>::value)
+    : base{base::from(v, vector<T, N - M, W>::make(std::forward<R>(r)...))} {}
 
     /// @brief Construction from a pair of vectors of different dimensionality.
     template <typename P, int M, bool W>
@@ -77,7 +78,7 @@ struct is_known_vector_type<math::tvec<T, N, V>> : std::is_scalar<T> {};
 
 template <typename T, int N, bool V>
 struct canonical_compound_type<math::tvec<T, N, V>>
-  : type_identity<std::remove_cv_t<T[N]>> {};
+  : std::type_identity<std::remove_cv_t<T[N]>> {};
 
 template <typename T, int N, bool V>
 struct compound_view_maker<math::tvec<T, N, V>> {

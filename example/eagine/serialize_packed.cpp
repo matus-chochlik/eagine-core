@@ -6,7 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 #include <eagine/hexdump.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/reflect/data_members.hpp>
 #include <eagine/serialize/packed_block_sink.hpp>
 #include <eagine/serialize/packed_block_source.hpp>
@@ -31,7 +31,7 @@ struct my_struct {
 //------------------------------------------------------------------------------
 template <identifier_t Id>
 constexpr auto data_member_mapping(
-  const type_identity<my_struct>,
+  const std::type_identity<my_struct>,
   const selector<Id>) noexcept {
     using S = my_struct;
     return make_data_member_mapping<
@@ -112,4 +112,8 @@ auto main(main_ctx&) -> int {
     return 0;
 }
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
 

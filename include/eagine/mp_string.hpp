@@ -28,9 +28,6 @@ struct mp_string {
     }
 };
 
-template <char... C>
-constexpr const char mp_string<C...>::value[sizeof...(C) + 1];
-
 // mp_strlen
 template <typename String>
 struct mp_strlen;

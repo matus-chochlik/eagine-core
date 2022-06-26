@@ -5,17 +5,22 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <cstdint>;
+#else
 #include <eagine/console/console.hpp>
 #include <eagine/integer_hash.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
+#endif
 
 namespace eagine {
 
 template <typename T, typename V>
 void print(const console& cio, V value) {
-    cio.print(EAGINE_ID(hash), "hash(${value}) = ${hash}")
-      .arg(EAGINE_ID(value), value)
-      .arg(EAGINE_ID(hash), integer_hash<T>(value));
+    cio.print(identifier{"hash"}, "hash(${value}) = ${hash}")
+      .arg(identifier{"value"}, value)
+      .arg(identifier{"hash"}, integer_hash<T>(value));
 }
 
 auto main(main_ctx& ctx) -> int {
@@ -35,3 +40,8 @@ auto main(main_ctx& ctx) -> int {
 }
 
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

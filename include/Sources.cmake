@@ -46,7 +46,6 @@ set(HEADERS
     eagine/console/entry_kind.hpp
     eagine/console/fwd.hpp
     eagine/console/iostream_backend.hpp
-    eagine/convertible.hpp
     eagine/count.hpp
     eagine/c_str.hpp
     eagine/data_baking.hpp
@@ -105,7 +104,6 @@ set(HEADERS
     eagine/main_ctx_object.hpp
     eagine/main_ctx_storage.hpp
     eagine/main_fwd.hpp
-    eagine/main.hpp
     eagine/math/constants.hpp
     eagine/math/coordinates.hpp
     eagine/math/curve.hpp
@@ -244,7 +242,6 @@ set(HEADERS
     eagine/tags.hpp
     eagine/timeout.hpp
     eagine/tribool.hpp
-    eagine/type_identity.hpp
     eagine/type_name.hpp
     eagine/types.hpp
     eagine/type_traits.hpp

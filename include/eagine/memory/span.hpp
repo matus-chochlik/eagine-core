@@ -15,7 +15,6 @@
 #include "../extract.hpp"
 #include "../int_constant.hpp"
 #include "../integer_range.hpp"
-#include "../type_identity.hpp"
 #include "../types.hpp"
 #include "address.hpp"
 #include <cstring>
@@ -26,6 +25,14 @@
 namespace eagine {
 namespace memory {
 //------------------------------------------------------------------------------
+// clang-format off
+template <typename T, typename P = anything, typename S = span_size_t>
+concept span_source = requires(T v) {
+	{ v.data() } -> std::convertible_to<P>;
+    { v.size() } -> std::convertible_to<S>;
+};
+// clang-format on
+//------------------------------------------------------------------------------
 // rebind_pointer
 //------------------------------------------------------------------------------
 template <typename Ptr, typename U>
@@ -35,53 +42,7 @@ template <typename Ptr, typename U>
 using rebind_pointer_t = typename rebind_pointer<Ptr, U>::type;
 //------------------------------------------------------------------------------
 template <typename T, typename U>
-struct rebind_pointer<T*, U> : type_identity<U*> {};
-//------------------------------------------------------------------------------
-// has_span_size_member
-//------------------------------------------------------------------------------
-struct _has_span_size_member_base {
-    template <typename X, typename S = decltype(std::declval<X>().size())>
-
-    static auto _detect(X*) -> bool_constant<std::is_integral_v<S>>;
-    static auto _detect(...) -> std::false_type;
-};
-//------------------------------------------------------------------------------
-/// @brief Helper class detecting if type T has x.size() member function.
-/// @ingroup type_utils
-template <typename T>
-struct has_span_size_member
-  : public decltype(
-      _has_span_size_member_base::_detect(static_cast<T*>(nullptr))) {};
-//------------------------------------------------------------------------------
-/// @brief Trait indicating if type T has x.size() member function.
-/// @ingroup type_utils
-template <typename T>
-constexpr bool has_span_size_member_v = has_span_size_member<T>::value;
-//------------------------------------------------------------------------------
-// has_span_data_member
-//------------------------------------------------------------------------------
-template <typename Elem>
-struct _has_span_data_member_base {
-    template <
-      typename X,
-      typename P = decltype(std::declval<X>().data()),
-      typename PT = typename std::pointer_traits<P>::element_type>
-    static auto _detect(X*) -> std::is_convertible<PT, Elem>;
-
-    static auto _detect(...) -> std::false_type;
-};
-//------------------------------------------------------------------------------
-/// @brief Helper class detecting if type T has x.data() member function.
-/// @ingroup type_utils
-template <typename T, typename E>
-struct has_span_data_member
-  : public decltype(
-      _has_span_data_member_base<E>::_detect(static_cast<T*>(nullptr))) {};
-//------------------------------------------------------------------------------
-/// @brief Trait indicating if type T has x.size() member function.
-/// @ingroup type_utils
-template <typename T, typename E = anything>
-constexpr bool has_span_data_member_v = has_span_data_member<T, E>::value;
+struct rebind_pointer<T*, U> : std::type_identity<U*> {};
 //------------------------------------------------------------------------------
 // basic_span
 //------------------------------------------------------------------------------
@@ -384,23 +345,27 @@ public:
     /// @pre 0 <= index < size()
     template <typename Int>
     constexpr auto element(const Int index) const noexcept
-      -> std::add_const_t<value_type>& requires(std::is_integral_v<Int>) {
+      -> std::add_const_t<value_type>&
+        requires(std::is_integral_v<Int>)
+    {
         return ref(span_size(index));
     }
 
     /// @brief Returns a reference to value at the specified index.
     /// @pre 0 <= index < size()
     template <typename Int>
-    auto element(const Int index) noexcept
-      -> value_type& requires(std::is_integral_v<Int>) {
+    auto element(const Int index) noexcept -> value_type&
+        requires(std::is_integral_v<Int>)
+    {
         return ref(span_size(index));
     }
 
     /// @brief Array subscript operator.
     /// @see element
     template <typename Int>
-    auto operator[](const Int index) noexcept
-      -> value_type& requires(std::is_integral_v<Int>) {
+    auto operator[](const Int index) noexcept -> value_type&
+        requires(std::is_integral_v<Int>)
+    {
         return element(index);
     }
 
@@ -408,7 +373,9 @@ public:
     /// @see element
     template <typename Int>
     constexpr auto operator[](const Int index) const noexcept
-      -> std::add_const_t<value_type>& requires(std::is_integral_v<Int>) {
+      -> std::add_const_t<value_type>&
+        requires(std::is_integral_v<Int>)
+    {
         return element(index);
     }
 
@@ -527,17 +494,15 @@ static constexpr auto view(std::initializer_list<T> il) noexcept
 //------------------------------------------------------------------------------
 /// @brief Creates a const view over a compatible contiguous container.
 /// @ingroup memory
-template <typename C>
-static constexpr auto view(const C& container) noexcept
-  requires(has_span_data_member_v<C>&& has_span_size_member_v<C>) {
+template <span_source C>
+static constexpr auto view(const C& container) noexcept {
     return view(container.data(), container.size());
 }
 //------------------------------------------------------------------------------
 /// @brief Creates a mutable span covering a compatible contiguous container.
 /// @ingroup memory
-template <typename C>
-static constexpr auto cover(C& container) noexcept
-  requires(has_span_data_member_v<C>&& has_span_size_member_v<C>) {
+template <span_source C>
+static constexpr auto cover(C& container) noexcept {
     return cover(container.data(), container.size());
 }
 //------------------------------------------------------------------------------
@@ -556,7 +521,7 @@ template <typename T, typename B, typename P, typename S>
 static constexpr auto can_accommodate(
   const basic_span<B, P, S> blk,
   const span_size_t count,
-  const type_identity<T> tid = {}) noexcept {
+  const std::type_identity<T> tid = {}) noexcept {
     return is_aligned_as(blk.begin_addr(), tid) &&
            can_accommodate_between(
              blk.begin_addr(), blk.end_addr(), count * span_size_of(tid));
@@ -567,7 +532,7 @@ static constexpr auto can_accommodate(
 template <typename T, typename B, typename P, typename S>
 static constexpr auto can_accommodate(
   const basic_span<B, P, S> blk,
-  const type_identity<T> tid = {}) noexcept {
+  const std::type_identity<T> tid = {}) noexcept {
     return can_accommodate(blk, 1, tid);
 }
 //------------------------------------------------------------------------------
@@ -578,7 +543,7 @@ static constexpr auto can_accommodate(
 template <typename T, typename B, typename P, typename S>
 static constexpr auto accommodate(
   const basic_span<B, P, S> blk,
-  const type_identity<T> tid = {}) noexcept
+  const std::type_identity<T> tid = {}) noexcept
   -> basic_span<T, rebind_pointer_t<P, T>, S> {
     return EAGINE_CONSTEXPR_ASSERT(
       (can_accommodate(blk, tid)),

@@ -335,6 +335,8 @@ static inline auto operator<<(std::ostream& out, const basic_string_path& path)
     return out << to_string(path);
 }
 //------------------------------------------------------------------------------
+constexpr const EAGINE_TAG_TYPE(split_by) split_by{};
+//------------------------------------------------------------------------------
 } // namespace eagine
 
 #endif // EAGINE_STRING_PATH_HPP

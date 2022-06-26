@@ -5,21 +5,29 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <filesystem>;
+import <fstream>;
+import <iostream>;
+import <vector>;
+#else
 #include <eagine/compare.hpp>
 #include <eagine/console/console.hpp>
 #include <eagine/edit_distance.hpp>
 #include <eagine/integer_range.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <vector>
+#endif
 
 namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
 
-    const identifier cioid{EAGINE_ID(words)};
+    const identifier cioid{identifier{"words"}};
     std::ifstream input("/usr/share/dict/words");
     std::vector<std::string> words;
     std::string word;
@@ -44,16 +52,16 @@ auto main(main_ctx& ctx) -> int {
             if(are_equal(min_dist, 0.F)) {
                 ctx.cio()
                   .print(cioid, "found: ${word}")
-                  .arg(EAGINE_ID(word), words[min_idx]);
+                  .arg(identifier{"word"}, words[min_idx]);
             } else {
                 ctx.cio()
                   .print(cioid, "did you mean ${word}?")
-                  .arg(EAGINE_ID(word), words[min_idx]);
+                  .arg(identifier{"word"}, words[min_idx]);
             }
         } else {
             ctx.cio()
               .print(cioid, "did not find anything similar to ${word}")
-              .arg(EAGINE_ID(word), word);
+              .arg(identifier{"word"}, word);
         }
     }
 
@@ -61,3 +69,8 @@ auto main(main_ctx& ctx) -> int {
 }
 
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

@@ -5,7 +5,12 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#include <eagine/main.hpp>
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <iostream>;
+import <sstream>;
+#else
+#include <eagine/main_ctx.hpp>
 #include <eagine/reflect/data_members.hpp>
 #include <eagine/serialize/fast_backend.hpp>
 #include <eagine/serialize/istream_source.hpp>
@@ -14,6 +19,7 @@
 #include <eagine/serialize/write.hpp>
 #include <iostream>
 #include <sstream>
+#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -28,7 +34,7 @@ struct my_struct {
 //------------------------------------------------------------------------------
 template <identifier_t Id>
 constexpr auto data_member_mapping(
-  const type_identity<my_struct>,
+  const std::type_identity<my_struct>,
   const selector<Id>) noexcept {
     using S = my_struct;
     return make_data_member_mapping<S, bool, char, float, int, std::string, unsigned>(
@@ -84,4 +90,8 @@ auto main(main_ctx&) -> int {
 }
 
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
 

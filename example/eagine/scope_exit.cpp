@@ -5,9 +5,15 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <exception>;
+import <iostream>;
+#else
 #include <eagine/scope_exit.hpp>
 #include <exception>
 #include <iostream>
+#endif
 
 auto main() -> int {
     using namespace eagine;

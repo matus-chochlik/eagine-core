@@ -10,7 +10,6 @@
 #define EAGINE_TYPES_HPP
 
 #include "is_within_limits.hpp"
-#include "type_identity.hpp"
 #include "valid_if/nonnegative.hpp"
 #include <cassert>
 #include <cstdint>
@@ -63,14 +62,14 @@ static constexpr auto span_size(const T v) noexcept {
 /// @brief Returns the byte alignment of type T as span_size_t.
 /// @ingroup type_utils
 template <typename T>
-static constexpr auto span_align_of(const type_identity<T> = {}) noexcept {
+static constexpr auto span_align_of(const std::type_identity<T> = {}) noexcept {
     return span_size(alignof(T));
 }
 
 /// @brief Returns the byte size of type T as span_size_t.
 /// @ingroup type_utils
 template <typename T>
-static constexpr auto span_size_of(const type_identity<T> = {}) noexcept {
+static constexpr auto span_size_of(const std::type_identity<T> = {}) noexcept {
     return span_size(sizeof(T));
 }
 
@@ -79,7 +78,7 @@ static constexpr auto span_size_of(const type_identity<T> = {}) noexcept {
 template <typename T, typename S>
 static constexpr auto span_size_of(
   const S n,
-  const type_identity<T> = {}) noexcept {
+  const std::type_identity<T> = {}) noexcept {
     return span_size(sizeof(T)) * span_size(n);
 }
 
@@ -95,7 +94,8 @@ public:
     }
 
     template <std::integral I>
-    requires(!std::is_same_v<T, I>) constexpr operator I() const noexcept {
+        requires(!std::is_same_v<T, I>)
+    constexpr operator I() const noexcept {
         return EAGINE_CONSTEXPR_ASSERT(
           is_within_limits<I>(_value), static_cast<I>(_value));
     }

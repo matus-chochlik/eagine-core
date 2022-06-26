@@ -5,42 +5,47 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <ratio>;
+import <chrono>;
+#else
 #include <eagine/console/console.hpp>
 #include <eagine/from_string.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/main_ctx_object.hpp>
 #include <eagine/program_args.hpp>
 #include <chrono>
+#endif
 
 namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
     using duration = std::chrono::duration<float, std::milli>;
 
-    main_ctx_object out{EAGINE_ID(fromString), ctx};
+    main_ctx_object out{identifier{"fromString"}, ctx};
 
     for(auto& arg : ctx.args()) {
         if(const auto opt_int{from_string<int>(arg)}) {
             out.cio_print("integer: ${value}")
-              .arg(EAGINE_ID(value), extract(opt_int));
+              .arg(identifier{"value"}, extract(opt_int));
         } else if(const auto opt_float{from_string<float>(arg)}) {
             out.cio_print("float: ${value}")
-              .arg(EAGINE_ID(value), extract(opt_float));
+              .arg(identifier{"value"}, extract(opt_float));
         } else if(const auto opt_double{from_string<double>(arg)}) {
             out.cio_print("double: ${value}")
-              .arg(EAGINE_ID(value), extract(opt_double));
+              .arg(identifier{"value"}, extract(opt_double));
         } else if(const auto opt_char{from_string<char>(arg)}) {
             out.cio_print("character: ${value}")
-              .arg(EAGINE_ID(value), extract(opt_char));
+              .arg(identifier{"value"}, extract(opt_char));
         } else if(const auto opt_bool{from_string<bool>(arg)}) {
             out.cio_print("boolean: ${value}")
-              .arg(EAGINE_ID(value), extract(opt_bool));
+              .arg(identifier{"value"}, extract(opt_bool));
         } else if(const auto opt_dur{from_string<duration>(arg)}) {
             out.cio_print("duration: ${value}")
-              .arg(EAGINE_ID(value), extract(opt_dur));
+              .arg(identifier{"value"}, extract(opt_dur));
         } else {
-            out.cio_print("other: ${value}").arg(EAGINE_ID(value), arg.get());
+            out.cio_print("other: ${value}").arg(identifier{"value"}, arg.get());
         }
     }
 
@@ -48,3 +53,8 @@ auto main(main_ctx& ctx) -> int {
 }
 
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

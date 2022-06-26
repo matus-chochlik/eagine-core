@@ -178,7 +178,7 @@ public:
 
     /// @brief Returns the configuration value or type @p T, identified by @p key.
     template <typename T>
-    auto get(const string_view key, const type_identity<T> = {}) noexcept
+    auto get(const string_view key, const std::type_identity<T> = {}) noexcept
       -> optionally_valid<T> {
         T temp{};
         const auto fetched = fetch(key, temp);

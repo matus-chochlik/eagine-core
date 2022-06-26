@@ -122,7 +122,7 @@ public:
               [this](const auto hexstr) {
                   if(const auto mi{from_string(
                        hexstr,
-                       type_identity<host_id_t>(),
+                       std::type_identity<host_id_t>(),
                        default_selector,
                        16)}) {
                       _host_id ^= extract(mi);

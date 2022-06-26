@@ -86,7 +86,7 @@ public:
       const string_view key,
       T initial,
       const string_view tag = {},
-      const type_identity<Extractable> = {}) noexcept -> T {
+      const std::type_identity<Extractable> = {}) noexcept -> T {
         Extractable value(initial);
         return extract_or(
           application_config_initial(app_config(), key, value, tag), initial);

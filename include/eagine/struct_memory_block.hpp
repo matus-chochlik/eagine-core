@@ -21,7 +21,9 @@ private:
     memory::basic_block<std::is_const_v<T>> _blk;
 
     template <typename X = T>
-    auto _ptr() noexcept requires(!std::is_const_v<X>) {
+    auto _ptr() noexcept
+        requires(!std::is_const_v<X>)
+    {
         EAGINE_ASSERT(is_valid_block(_blk));
         return static_cast<X*>(_blk.addr());
     }
@@ -34,7 +36,7 @@ private:
 public:
     static auto is_valid_block(const memory::const_block blk) noexcept -> bool {
         return !blk.empty() && (blk.is_aligned_as<T>()) &&
-               (can_accommodate(blk, type_identity<T>()));
+               (can_accommodate(blk, std::type_identity<T>()));
     }
 
     structured_memory_block(memory::basic_block<std::is_const_v<T>> blk) noexcept
@@ -45,14 +47,14 @@ public:
     template <typename X = T>
     auto get() noexcept
       -> X& requires(!std::is_const_v<X> && std::is_same_v<X, T>) {
-        return *_ptr();
-    }
+                return *_ptr();
+            }
 
     template <typename X = T>
     auto operator->() noexcept
       -> X* requires(!std::is_const_v<X> && std::is_same_v<X, T>) {
-        return _ptr();
-    }
+                return _ptr();
+            }
 
     auto get() const noexcept -> const T& {
         return *_cptr();

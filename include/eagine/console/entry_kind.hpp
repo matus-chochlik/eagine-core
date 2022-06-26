@@ -29,7 +29,7 @@ enum class console_entry_kind {
 #if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
-  const type_identity<console_entry_kind>,
+  const std::type_identity<console_entry_kind>,
   const Selector) noexcept {
     return enumerator_map_type<console_entry_kind, 4>{
       {{"stat", console_entry_kind::stat},

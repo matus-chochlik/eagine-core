@@ -10,7 +10,6 @@
 #define EAGINE_MEMORY_C_REALLOC_HPP
 
 #include "byte_alloc.hpp"
-#include <cassert>
 #include <limits>
 
 namespace eagine::memory {

@@ -8,7 +8,6 @@
 #ifndef EAGINE_MATH_SCALAR_HPP
 #define EAGINE_MATH_SCALAR_HPP
 
-#include "../type_identity.hpp"
 #include "../vect/data.hpp"
 #include "../vect/fill.hpp"
 #include "fwd.hpp"

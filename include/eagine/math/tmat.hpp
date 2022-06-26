@@ -40,27 +40,30 @@ struct tmat : matrix<T, C, R, RM, V> {
 
 private:
     template <typename... P>
-    static auto _make(P&&... p) noexcept requires(
-      ((sizeof...(P)) == (C * R)) && all_are_convertible_to<T, P...>::value) {
+    static auto _make(P&&... p) noexcept
+        requires(
+          ((sizeof...(P)) == (C * R)) && all_are_convertible_to<T, P...>::value)
+    {
         T d[C * R] = {T(p)...};
         return base::from(d, C * R);
     }
 
 public:
     template <typename... P>
-    tmat(P&&... p) noexcept requires(
-      ((sizeof...(P)) == (R * C)) && all_are_convertible_to<T, P...>::value)
-      : base(_make(std::forward<P>(p)...)) {}
+    tmat(P&&... p) noexcept
+        requires(
+          ((sizeof...(P)) == (R * C)) && all_are_convertible_to<T, P...>::value)
+    : base(_make(std::forward<P>(p)...)) {}
 
     template <typename... P>
     constexpr tmat(const vector<P, RM ? C : R, V>&... v) noexcept
-      requires((sizeof...(P)) == (RM ? R : C))
-      : base{{v._v...}} {}
+        requires((sizeof...(P)) == (RM ? R : C))
+    : base{{v._v...}} {}
 
     template <typename P, int M, int N>
     constexpr tmat(const matrix<P, M, N, RM, V>& m) noexcept
-      requires(std::is_convertible_v<P, T> && (C <= M) && (R <= N))
-      : base{base::from(m)} {}
+        requires(std::is_convertible_v<P, T> && (C <= M) && (R <= N))
+    : base{base::from(m)} {}
 };
 
 template <typename T, int C, int R, bool RM, bool V>
@@ -73,7 +76,7 @@ struct is_known_matrix_type<math::tmat<T, C, R, RM, V>> : std::is_scalar<T> {};
 
 template <typename T, int C, int R, bool RM, bool V>
 struct canonical_compound_type<math::tmat<T, C, R, RM, V>>
-  : type_identity<std::remove_cv_t<T[C][R]>> {};
+  : std::type_identity<std::remove_cv_t<T[C][R]>>{};
 
 template <typename T, int C, int R, bool RM, bool V>
 struct compound_view_maker<math::tmat<T, C, R, RM, V>> {

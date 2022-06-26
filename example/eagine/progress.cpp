@@ -5,13 +5,18 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <chrono>;
+import <ratio>;
+#else
 #include <eagine/integer_range.hpp>
 #include <eagine/logging/logger.hpp>
-#include <eagine/main.hpp>
 #include <eagine/main_ctx.hpp>
 #include <eagine/main_ctx_object.hpp>
 #include <eagine/progress/activity.hpp>
 #include <eagine/progress/backend.hpp>
+#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -20,7 +25,7 @@ class example_observer final
   , public progress_observer {
 public:
     example_observer(main_ctx_parent parent) noexcept
-      : main_ctx_object{EAGINE_ID(Observer), parent} {}
+      : main_ctx_object{identifier{"Observer"}, parent} {}
 
     void activity_begun(
       const activity_progress_id_t parent_id,
@@ -30,10 +35,10 @@ public:
         cio_print(
           "activity ${parent}/${activity} has begun: '${title}' "
           "(total=${total})")
-          .arg(EAGINE_ID(parent), parent_id)
-          .arg(EAGINE_ID(activity), activity_id)
-          .arg(EAGINE_ID(total), total_steps)
-          .arg(EAGINE_ID(title), title);
+          .arg(identifier{"parent"}, parent_id)
+          .arg(identifier{"activity"}, activity_id)
+          .arg(identifier{"total"}, total_steps)
+          .arg(identifier{"title"}, title);
     }
 
     void activity_finished(
@@ -44,10 +49,10 @@ public:
         cio_print(
           "activity ${parent}/${activity} has ended: '${title}' "
           "(total=${total})")
-          .arg(EAGINE_ID(parent), parent_id)
-          .arg(EAGINE_ID(activity), activity_id)
-          .arg(EAGINE_ID(total), total_steps)
-          .arg(EAGINE_ID(title), title);
+          .arg(identifier{"parent"}, parent_id)
+          .arg(identifier{"activity"}, activity_id)
+          .arg(identifier{"total"}, total_steps)
+          .arg(identifier{"title"}, title);
     }
 
     void activity_updated(
@@ -58,9 +63,9 @@ public:
         cio_print(
           "activity ${parent}/${activity} was updated: "
           "${current}")
-          .arg(EAGINE_ID(parent), parent_id)
-          .arg(EAGINE_ID(activity), activity_id)
-          .arg(EAGINE_ID(current), current, total);
+          .arg(identifier{"parent"}, parent_id)
+          .arg(identifier{"activity"}, activity_id)
+          .arg(identifier{"current"}, current, total);
     }
 };
 //------------------------------------------------------------------------------
@@ -91,3 +96,8 @@ auto main(main_ctx& ctx) -> int {
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

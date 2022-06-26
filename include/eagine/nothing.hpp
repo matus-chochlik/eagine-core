@@ -18,16 +18,12 @@ struct nothing_t {
 
     /// @brief Type alias to self.
     using type = nothing_t;
-
-    /// @brief Constructible from any number and types of arguments.
-    template <typename... T>
-    constexpr nothing_t(const T...) noexcept {}
 };
 
 /// @brief Constant of nothing_t type.
 /// @ingroup type_utils
 /// @see nothing_t
-static constexpr nothing_t nothing = {};
+static constexpr nothing_t nothing{};
 
 } // namespace eagine
 

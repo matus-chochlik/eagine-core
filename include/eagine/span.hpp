@@ -78,8 +78,8 @@ static inline auto operator<<(
   std::ostream& out,
   const memory::basic_span<T, P, S> s)
   -> std::ostream& requires(!std::is_same_v<std::remove_const_t<T>, char>) {
-    return list_to_stream(out, s);
-}
+                       return list_to_stream(out, s);
+                   }
 //------------------------------------------------------------------------------
 /// @brief Operator for printing spans of string characters into output streams.
 /// @ingroup memory
@@ -90,8 +90,8 @@ static inline auto operator<<(
   std::ostream& out,
   const memory::basic_span<T, P, S> s)
   -> std::ostream& requires(std::is_same_v<std::remove_const_t<T>, char>) {
-    return write_to_stream(out, absolute(s));
-}
+                       return write_to_stream(out, absolute(s));
+                   }
 //------------------------------------------------------------------------------
 /// @brief Makes a callable that returns consecutive span elements starting at i.
 /// @ingroup memory

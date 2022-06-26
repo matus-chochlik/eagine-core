@@ -13,8 +13,8 @@
 #include "config/basic.hpp"
 #include "memory/block.hpp"
 #include "types.hpp"
-#include "valid_if/decl.hpp"
 #include <iosfwd>
+#include <optional>
 
 namespace eagine {
 
@@ -33,7 +33,7 @@ public:
       : _mb{mb} {}
 
     /// @brief Alias for source byte getter callable.
-    using byte_getter = callable_ref<optionally_valid<byte>()>;
+    using byte_getter = callable_ref<std::optional<byte>()>;
 
     /// @brief Alias for destination encoded char putter callable.
     using char_putter = callable_ref<bool(char)>;

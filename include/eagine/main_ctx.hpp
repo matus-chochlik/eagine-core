@@ -33,6 +33,27 @@ struct main_ctx_options {
     console_options console_opts{};
 };
 
+extern auto main(main_ctx& ctx) -> int;
+
+auto main_impl(int, const char**, main_ctx_options&, int (*)(main_ctx&)) -> int;
+
+inline auto main_impl(int argc, const char** argv, main_ctx_options& options)
+  -> int {
+    return main_impl(argc, argv, options, &main);
+}
+
+inline auto default_main(
+  int argc,
+  const char** argv,
+  int (*main_func)(main_ctx&)) -> int {
+    main_ctx_options options{};
+    return main_impl(argc, argv, options, main_func);
+}
+
+inline auto default_main(int argc, const char** argv) -> int {
+    return default_main(argc, argv, &main);
+}
+
 /// @brief Class for a singleton object providing useful information and services.
 /// @ingroup main_context
 ///

@@ -5,10 +5,16 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <map>;
+import <cstdint>;
+#else
 #include <eagine/console/console.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/memoized.hpp>
 #include <cstdint>
+#endif
 
 namespace eagine {
 
@@ -23,9 +29,9 @@ auto main(main_ctx& ctx) -> int {
 
     for(N n = 1; n <= 91; ++n) {
         ctx.cio()
-          .print(EAGINE_ID(memo), "fib(${n}) = ${f}")
-          .arg(EAGINE_ID(n), n)
-          .arg(EAGINE_ID(f), fib_memo(n));
+          .print(identifier{"memo"}, "fib(${n}) = ${f}")
+          .arg(identifier{"n"}, n)
+          .arg(identifier{"f"}, fib_memo(n));
     }
 
     memoized<N(N)> fact_memo([](N i, auto& memo) -> N {
@@ -37,12 +43,17 @@ auto main(main_ctx& ctx) -> int {
 
     for(N n = 1; n <= 20; ++n) {
         ctx.cio()
-          .print(EAGINE_ID(memo), "${n}! = ${f}")
-          .arg(EAGINE_ID(n), n)
-          .arg(EAGINE_ID(f), fact_memo(n));
+          .print(identifier{"memo"}, "${n}! = ${f}")
+          .arg(identifier{"n"}, n)
+          .arg(identifier{"f"}, fact_memo(n));
     }
 
     return 0;
 }
 
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+

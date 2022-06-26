@@ -13,6 +13,25 @@
 
 namespace eagine {
 
+/// @brief Implementation detail of the @c type_t template.
+/// @ingroup metaprogramming
+/// @note Do not use directly, use @c type_t instead.
+template <typename T, typename F>
+struct get_type {
+    template <typename X>
+    static auto _get(X*) -> typename X::type;
+
+    template <typename X>
+    static auto _get(...) -> F;
+
+    using type = decltype(_get<T>(static_cast<T*>(nullptr)));
+};
+
+/// @brief Template returning nested alias @c type of type @c T or @c void.
+/// @ingroup metaprogramming
+template <typename T, typename F = void>
+using type_t = typename get_type<T, F>::type;
+
 template <typename X, typename Match>
 using disable_if_same_t = std::enable_if_t<
   !std::is_same_v<std::remove_cv_t<std::remove_reference_t<X>>, Match>>;
