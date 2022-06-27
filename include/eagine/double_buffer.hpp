@@ -34,25 +34,33 @@ public:
 
     /// @brief Returns a reference to the current "front" instance.
     auto front() noexcept -> T& {
-        return _idx ? _values.back() : _values.front();
+        return _values[front_index()];
     }
 
     /// @brief Returns a const reference to the current "front" instance.
     auto front() const noexcept -> const T& {
-        return _idx ? _values.back() : _values.front();
+        return _values[front_index()];
     }
 
     /// @brief Returns a reference to the current "back" instance.
     auto back() noexcept -> T& {
-        return _idx ? _values.front() : _values.back();
+        return _values[back_index()];
     }
 
     /// @brief Returns a const reference to the current "back" instance.
     auto back() const noexcept -> const T& {
-        return _idx ? _values.front() : _values.back();
+        return _values[back_index()];
     }
 
 private:
+    auto front_index() const noexcept -> std::size_t {
+        return static_cast<std::size_t>(_idx);
+    }
+
+    auto back_index() const noexcept -> std::size_t {
+        return static_cast<std::size_t>(!_idx);
+    }
+
     std::array<T, 2> _values{};
     bool _idx{false};
 };
