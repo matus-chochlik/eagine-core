@@ -38,6 +38,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.utility PARTITION sudoku
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.container
+)
+
+eagine_add_module(
 	eagine.core.utility PARTITION cleanup_group
 	IMPORTS
 		scope_exit
@@ -81,6 +89,7 @@ eagine_add_module(
 		memoized
 		network_sort
 		scope_exit
+		sudoku
 		cleanup_group
 		overloaded
 		timeout
