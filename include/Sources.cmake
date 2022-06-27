@@ -398,7 +398,6 @@ set(LIB_INLS
     eagine/logging/proxy_backend.inl
     eagine/logging/root_logger.inl
     eagine/main_ctx.inl
-    eagine/main.inl
     eagine/memory/shared_alloc.inl
     eagine/os_info.inl
     eagine/random_identifier.inl
