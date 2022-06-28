@@ -8,6 +8,7 @@ add_subdirectory(types)
 add_subdirectory(debug)
 add_subdirectory(memory)
 add_subdirectory(identifier)
+add_subdirectory(container)
 add_subdirectory(utility)
 add_subdirectory(valid_if)
 add_subdirectory(vectorization)
@@ -15,7 +16,6 @@ add_subdirectory(reflection)
 add_subdirectory(build_info)
 add_subdirectory(units)
 add_subdirectory(math)
-add_subdirectory(container)
 add_subdirectory(string)
 add_subdirectory(c_api)
 add_subdirectory(runtime)
@@ -38,6 +38,7 @@ eagine_add_module(
 		eagine.core.debug
 		eagine.core.memory
 		eagine.core.identifier
+		eagine.core.container
 		eagine.core.utility
 		eagine.core.valid_if
 		eagine.core.vectorization
@@ -45,7 +46,6 @@ eagine_add_module(
 		eagine.core.build_info
 		eagine.core.units
 		eagine.core.math
-		eagine.core.container
 		eagine.core.string
 		eagine.core.c_api
 		eagine.core.runtime

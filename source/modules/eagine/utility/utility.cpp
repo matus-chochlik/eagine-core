@@ -18,6 +18,7 @@ export import :callable_ref;
 export import :memoized;
 export import :network_sort;
 export import :scope_exit;
+export import :sudoku;
 export import :cleanup_group;
 export import :overloaded;
 export import :timeout;

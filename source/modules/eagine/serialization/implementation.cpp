@@ -295,7 +295,7 @@ public:
         return derived();
     }
 
-    auto sink() noexcept -> serializer_data_sink* final {
+    auto sink() noexcept -> Sink* final {
         return _sink;
     }
 
