@@ -5,11 +5,14 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-
+#if EAGINE_CORE_MODULE
+import eagine.core;
+#else
 #include <eagine/console/console.hpp>
 #include <eagine/dynamic_library.hpp>
 #include <eagine/logging/logger.hpp>
 #include <eagine/main_ctx.hpp>
+#endif
 
 namespace eagine {
 
@@ -20,14 +23,14 @@ auto main(main_ctx& ctx) -> int {
             if(string_view sym_name{ctx.args().find("--symbol").next()}) {
                 if(module.exports(sym_name)) {
                     ctx.cio()
-                      .print(EAGINE_ID(DynLib), "symbol found")
-                      .arg(EAGINE_ID(library), lib_path)
-                      .arg(EAGINE_ID(symbol), sym_name);
+                      .print(identifier{"DynLib"}, "symbol found")
+                      .arg(identifier{"library"}, lib_path)
+                      .arg(identifier{"symbol"}, sym_name);
                 } else {
                     ctx.cio()
-                      .print(EAGINE_ID(DynLib), "symbol not found")
-                      .arg(EAGINE_ID(library), lib_path)
-                      .arg(EAGINE_ID(symbol), sym_name);
+                      .print(identifier{"DynLib"}, "symbol not found")
+                      .arg(identifier{"library"}, lib_path)
+                      .arg(identifier{"symbol"}, sym_name);
                 }
             } else {
                 ctx.log().error("missing symbol name argument");
@@ -35,8 +38,8 @@ auto main(main_ctx& ctx) -> int {
         } else {
             ctx.log()
               .error("failed to open ${lib}: ${message}")
-              .arg(EAGINE_ID(lib), lib_path)
-              .arg(EAGINE_ID(message), module.error_message());
+              .arg(identifier{"lib"}, lib_path)
+              .arg(identifier{"message"}, module.error_message());
         }
     } else {
         ctx.log().error("missing library path argument");
