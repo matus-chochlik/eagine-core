@@ -19,7 +19,7 @@ namespace eagine {
 /// @ingroup identifiers
 /// @see identifier
 /// @note Do not use directly.
-template <typename CharSet>
+export template <typename CharSet>
 class identifier_encoding {
 public:
     /// @brief Encoded the specified character as N-bit byte.
@@ -315,5 +315,18 @@ private:
 /// Allows to store short constant string identifiers with maximum length of 10 characters.
 export using identifier =
   basic_identifier<10, 6, default_identifier_char_set, identifier_t>;
+
+/// @brief Alias for identifier.
+/// @ingroup identifiers
+/// @see id_v
+export using id_t = identifier;
+
+/// @brief Returns the numeric value of the specified identifier string.
+/// @ingroup identifiers
+/// @see id_t
+export template <std::size_t N>
+consteval auto id_v(const char (&str)[N]) noexcept -> identifier_t {
+    return identifier{str}.value();
+}
 //------------------------------------------------------------------------------
 } // namespace eagine
