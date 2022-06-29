@@ -242,13 +242,13 @@ public:
     /// functions that know which implementation to pick and how to initialize it.
     template <typename Compound, typename... Args>
     static auto make(Args&&... args) -> compound
-      requires(std::is_base_of_v<compound_interface, Compound>) {
-          return {Compound::make_shared(std::forward<Args>(args)...)};
-      }
+        requires(std::is_base_of_v<compound_interface, Compound>)
+    {
+        return {Compound::make_shared(std::forward<Args>(args)...)};
+    }
 
     /// @brief Indicates if this compound actually refers to some tree.
-    explicit
-    operator bool() const noexcept {
+    explicit operator bool() const noexcept {
         return bool(_pimpl);
     }
 
@@ -384,7 +384,7 @@ public:
     auto find(
       const attribute& attrib,
       const basic_string_path& path,
-      const span<const string_view> tags) const -> attribute {
+      const memory::span<const string_view> tags) const -> attribute {
         if(_pimpl && attrib._pimpl) {
             return {_pimpl, _pimpl->find(*attrib._pimpl, path, tags)};
         }
@@ -401,8 +401,9 @@ public:
     /// @brief Returns nested attribute of root attribute at path with tags.
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto find(const basic_string_path& path, const span<const string_view> tags)
-      const -> attribute {
+    auto find(
+      const basic_string_path& path,
+      const memory::span<const string_view> tags) const -> attribute {
         return find(structure(), path, tags);
     }
 
@@ -429,7 +430,7 @@ public:
     auto fetch_values(
       const attribute& attrib,
       const span_size_t offset,
-      span<T> dest) const -> span<T> {
+      memory::span<T> dest) const -> memory::span<T> {
         if(_pimpl && attrib._pimpl) {
             return head(
               dest, _pimpl->fetch_values(*attrib._pimpl, offset, dest));
@@ -442,7 +443,7 @@ public:
     auto fetch_values(
       const basic_string_path& path,
       const span_size_t offset,
-      span<T> dest) const -> span<T> {
+      memory::span<T> dest) const -> memory::span<T> {
         return fetch_values(find(path), offset, dest);
     }
 
@@ -451,26 +452,28 @@ public:
     auto fetch_values(
       const string_view name,
       const span_size_t offset,
-      span<T> dest) const -> span<T> {
+      memory::span<T> dest) const -> memory::span<T> {
         return fetch_values(nested(name), offset, dest);
     }
 
     /// @brief Fetches values at the given attribute, into @p dest.
     template <typename T>
-    auto fetch_values(const attribute& attrib, span<T> dest) const -> span<T> {
+    auto fetch_values(const attribute& attrib, memory::span<T> dest) const
+      -> memory::span<T> {
         return fetch_values(attrib, 0, dest);
     }
 
     /// @brief Fetches values at the attribute with the specified path, into @p dest.
     template <typename T>
-    auto fetch_values(const basic_string_path& path, span<T> dest) const
-      -> span<T> {
+    auto fetch_values(const basic_string_path& path, memory::span<T> dest) const
+      -> memory::span<T> {
         return fetch_values(path, 0, dest);
     }
 
     /// @brief Fetches values at the attribute with the specified name, into @p dest.
     template <typename T>
-    auto fetch_values(const string_view name, span<T> dest) const -> span<T> {
+    auto fetch_values(const string_view name, memory::span<T> dest) const
+      -> memory::span<T> {
         return fetch_values(name, 0, dest);
     }
 
@@ -518,8 +521,8 @@ public:
     auto select_values(
       const attribute& attrib,
       const span_size_t offset,
-      span<T> dest,
-      const selector<V> sel) const -> span<T> {
+      memory::span<T> dest,
+      const selector<V> sel) const -> memory::span<T> {
         span_size_t index = 0;
         for(T& elem : dest) {
             if(!select_value(attrib, offset + index, elem, sel)) {
@@ -589,8 +592,10 @@ public:
 
     /// @brief Fetches values at the specified attribute, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto select_values(const attribute& attrib, span<T> dest, selector<V> sel)
-      const -> span<T> {
+    auto select_values(
+      const attribute& attrib,
+      memory::span<T> dest,
+      selector<V> sel) const -> memory::span<T> {
         return select_values(attrib, 0, dest, sel);
     }
 
@@ -756,7 +761,7 @@ public:
       const compound&,
       const attribute&,
       const basic_string_path&,
-      span<const attribute>)>;
+      memory::span<const attribute>)>;
 
     /// @brief Traverses the tree, calls the @p visitor function on each node.
     void traverse(const stack_visit_handler visitor) const;
@@ -863,13 +868,13 @@ public:
 
     /// @brief Fetches values from this attribute, starting at offset, into dest.
     template <typename T>
-    auto fetch_values(const span_size_t offset, span<T> dest) const {
+    auto fetch_values(const span_size_t offset, memory::span<T> dest) const {
         return _c.fetch_values(_a, offset, dest);
     }
 
     /// @brief Fetches values from this attribute, into dest.
     template <typename T>
-    auto fetch_values(span<T> dest) const {
+    auto fetch_values(memory::span<T> dest) const {
         return _c.fetch_values(_a, dest);
     }
 
@@ -895,7 +900,8 @@ public:
 
     /// @brief Fetches a value from this attribute, with selector, into dest.
     template <typename T, identifier_t V>
-    auto select_values(span<T> dest, const selector<V> sel) const -> span<T> {
+    auto select_values(memory::span<T> dest, const selector<V> sel) const
+      -> memory::span<T> {
         return _c.select_values(_a, dest, sel);
     }
 
@@ -923,7 +929,7 @@ private:
     attribute _a;
 };
 //------------------------------------------------------------------------------
-inline auto compound::root() const -> compound_attribute {
+auto compound::root() const -> compound_attribute {
     return {*this, structure()};
 }
 //------------------------------------------------------------------------------

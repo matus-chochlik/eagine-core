@@ -50,7 +50,7 @@ public:
       , _watchdog{*this}
       , _app_config{*this}
       , _app_name{options.app_name} {
-        auto fs_path = std::filesystem::path(to_string(_args.command()));
+        const auto fs_path = std::filesystem::path(to_string(_args.command()));
         if(_app_name.empty()) {
             _app_name = fs_path.stem().string();
         }

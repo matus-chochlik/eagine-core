@@ -56,10 +56,7 @@ struct rebind_pointer<T*, U> : std::type_identity<U*> {};
 /// This template is similar to std::span but allows to specify other pointer
 /// types besides ValueType*, for example basic_offset_ptr, etc. and to specify
 /// the size type.
-export template <
-  typename ValueType,
-  typename Pointer = ValueType*,
-  typename SizeType = span_size_t>
+export template <typename ValueType, typename Pointer, typename SizeType>
 class basic_span {
 public:
     /// @brief The element value type.

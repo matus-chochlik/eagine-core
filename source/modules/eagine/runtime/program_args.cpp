@@ -44,7 +44,7 @@ public:
 
     /// @brief Indicates if the arguments is valid.
     auto is_valid() const noexcept -> bool {
-        return (0 < _argi) && (_argi < _argc) && (_argv != nullptr) &&
+        return (0 <= _argi) && (_argi < _argc) && (_argv != nullptr) &&
                (_argv[_argi] != nullptr);
     }
 

@@ -229,6 +229,9 @@ public:
             if(_node.is_seq()) {
                 span_size_t pos{0};
                 for(auto child : _node.children()) {
+                    if(pos >= dest.size()) {
+                        break;
+                    }
                     if(child.has_val()) {
                         if(offset <= 0) {
                             if(auto opt_val{

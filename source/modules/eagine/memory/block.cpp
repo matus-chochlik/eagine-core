@@ -23,7 +23,7 @@ namespace eagine::memory {
 /// @brief Alias for byte spans.
 /// @ingroup type_utils
 export template <bool IsConst>
-using basic_block = basic_span<std::conditional_t<IsConst, const byte, byte>>;
+using basic_block = span<std::conditional_t<IsConst, const byte, byte>>;
 //------------------------------------------------------------------------------
 /// @brief Alias for non-const byte memory span.
 /// @ingroup memory
