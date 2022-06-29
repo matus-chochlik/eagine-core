@@ -663,7 +663,7 @@ public:
       const selector<V> sel) const -> std::optional<T> {
         T temp{};
         if(select_value(path, offset, temp, sel)) {
-            return {std::move(temp), true};
+            return {std::move(temp)};
         }
         return {};
     }

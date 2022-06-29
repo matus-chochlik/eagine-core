@@ -19,6 +19,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
+		eagine.core.utility
 		eagine.core.reflection
 )
 
@@ -40,15 +41,18 @@ eagine_add_module(
 		wrappers
 		implementation
 	SOURCES
+		wrappers_impl
 		empty_impl
 		json_impl
 		yaml_impl
+		filesystem_impl
 		overlay_impl
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.identifier
+		eagine.core.valid_if
 		eagine.core.logging
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/rapidjson/include"

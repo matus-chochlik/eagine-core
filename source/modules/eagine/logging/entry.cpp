@@ -14,6 +14,7 @@ import eagine.core.valid_if;
 export import :entry_arg;
 import :backend;
 import <sstream>;
+import <optional>;
 import <utility>;
 
 namespace eagine {
@@ -657,6 +658,18 @@ public:
       basic_valid_if<T, P, L> opt,
       F fbck) noexcept -> log_entry& {
         return arg(name, tag, either_or(std::move(opt), std::move(fbck)));
+    }
+
+    template <argument_of_log<log_entry> F, argument_of_log<log_entry> T>
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      std::optional<T> opt,
+      F fbck) noexcept -> log_entry& {
+        if(opt) {
+            return arg(name, tag, std::move(*opt));
+        }
+        return arg(name, tag, std::move(fbck));
     }
 
     /// @brief Adds an optional tag to this log entry.

@@ -16,6 +16,7 @@ import eagine.core.concepts;
 import <sstream>;
 import <stdexcept>;
 import <type_traits>;
+import <optional>;
 import <utility>;
 
 namespace eagine {

@@ -566,12 +566,12 @@ private:
     _node_t _root{};
 
 public:
-    rapidjson_document_compound(_doc_t& rj_doc, logger& parent)
+    rapidjson_document_compound(_doc_t& rj_doc, const logger& parent)
       : _log{identifier{"JsnValTree"}, parent}
       , _rj_doc{std::move(rj_doc)}
       , _root{_rj_doc, nullptr} {}
 
-    static auto make_shared(string_view json_str, logger& parent)
+    static auto make_shared(string_view json_str, const logger& parent)
       -> std::shared_ptr<rapidjson_document_compound> {
         _doc_t rj_doc;
         const rapidjson::ParseResult parse_ok{
@@ -669,7 +669,7 @@ struct get_rapidjson_document_compound<
 using default_rapidjson_document_compound =
   get_rapidjson_document_compound_t<rapidjson::Document>;
 //------------------------------------------------------------------------------
-auto from_json_text(string_view json_text, logger& parent) -> compound {
+auto from_json_text(string_view json_text, const logger& parent) -> compound {
     return compound::make<default_rapidjson_document_compound>(
       json_text, parent);
 }

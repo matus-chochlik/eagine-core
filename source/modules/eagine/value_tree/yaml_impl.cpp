@@ -277,7 +277,7 @@ class rapidyaml_tree_compound final
     rapidyaml_attribute _root;
 
 public:
-    rapidyaml_tree_compound(ryml::Tree tree, logger& parent)
+    rapidyaml_tree_compound(ryml::Tree tree, const logger& parent)
       : _log{identifier{"YamlValTre"}, parent}
       , _tree{std::move(tree)}
       , _root{_tree} {}
@@ -289,7 +289,7 @@ public:
 
     ~rapidyaml_tree_compound() noexcept final = default;
 
-    static auto make_shared(string_view yaml_text, logger& parent)
+    static auto make_shared(string_view yaml_text, const logger& parent)
       -> std::shared_ptr<rapidyaml_tree_compound> {
         try {
             rapidyaml_callbacks cbks{};
@@ -369,7 +369,7 @@ static auto rapidyaml_make_new_node(
     return owner.make_node(node);
 }
 //------------------------------------------------------------------------------
-auto from_yaml_text(string_view yaml_text, logger& parent) -> compound {
+auto from_yaml_text(string_view yaml_text, const logger& parent) -> compound {
     return compound::make<rapidyaml_tree_compound>(yaml_text, parent);
 }
 //------------------------------------------------------------------------------

@@ -179,33 +179,33 @@ public:
 /// @see from_filesystem_path
 /// @see from_json_text
 /// @see from_yaml_text
-export auto empty(logger&) -> compound;
+export auto empty(const logger&) -> compound;
 //------------------------------------------------------------------------------
 export struct file_compound_factory : interface<file_compound_factory> {
-    virtual auto make_compound(string_view path, logger&) -> compound = 0;
+    virtual auto make_compound(string_view path, const logger&) -> compound = 0;
 };
 //------------------------------------------------------------------------------
 /// @brief Creates a compound representing a filesystem subtree.
 /// @ingroup valtree
 export auto from_filesystem_path(
   string_view root_path,
-  logger&,
+  const logger&,
   std::shared_ptr<file_compound_factory> = {}) -> compound;
 //------------------------------------------------------------------------------
 /// @brief Creates a compound from a JSON text string view.
 /// @ingroup valtree
-export auto from_json_text(string_view, logger&) -> compound;
+export auto from_json_text(string_view, const logger&) -> compound;
 //------------------------------------------------------------------------------
 /// @brief Creates a compound from a YAML text string view.
 /// @ingroup valtree
-export auto from_yaml_text(string_view, logger&) -> compound;
+export auto from_yaml_text(string_view, const logger&) -> compound;
 //------------------------------------------------------------------------------
 /// @brief Creates a overlay compound, combining multiple other compounds.
 /// @ingroup valtree
-export auto make_overlay(logger& parent, std::vector<compound_attribute>)
+export auto make_overlay(const logger& parent, std::vector<compound_attribute>)
   -> compound;
 
-export auto make_overlay(logger& parent) -> compound {
+export auto make_overlay(const logger& parent) -> compound {
     return make_overlay(parent, {});
 }
 //------------------------------------------------------------------------------

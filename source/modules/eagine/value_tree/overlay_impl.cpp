@@ -191,12 +191,14 @@ class overlay_compound
     overlay_attribute _root{{}};
 
 public:
-    overlay_compound(logger& parent, std::vector<compound_attribute> overlays)
+    overlay_compound(
+      const logger& parent,
+      std::vector<compound_attribute> overlays)
       : _log{identifier{"OvrlyCmpnd"}, parent}
       , _context{std::move(overlays)} {}
 
     static auto make_shared(
-      logger& parent,
+      const logger& parent,
       std::vector<compound_attribute> overlays)
       -> std::shared_ptr<overlay_compound> {
         return std::make_shared<overlay_compound>(parent, std::move(overlays));
@@ -276,7 +278,7 @@ static auto overlay_make_new_node(
     return owner.make_node(std::move(path));
 }
 //------------------------------------------------------------------------------
-auto make_overlay(logger& parent, std::vector<compound_attribute> overlays)
+auto make_overlay(const logger& parent, std::vector<compound_attribute> overlays)
   -> compound {
     return compound::make<overlay_compound>(parent, std::move(overlays));
 }
