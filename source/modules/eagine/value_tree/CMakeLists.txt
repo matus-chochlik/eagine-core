@@ -32,15 +32,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.value_tree PARTITION overlay
-	IMPORTS
-		interface wrappers
-		eagine.core.types
-		eagine.core.logging
-)
-
-
-eagine_add_module(
 	eagine.core.value_tree
 	INTERFACES
 		value_tree
@@ -48,11 +39,11 @@ eagine_add_module(
 		interface
 		wrappers
 		implementation
-		#overlay
 	SOURCES
 		empty_impl
 		json_impl
 		yaml_impl
+		overlay_impl
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory

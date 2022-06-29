@@ -200,4 +200,19 @@ export auto from_json_text(string_view, logger&) -> compound;
 /// @ingroup valtree
 export auto from_yaml_text(string_view, logger&) -> compound;
 //------------------------------------------------------------------------------
+/// @brief Creates a overlay compound, combining multiple other compounds.
+/// @ingroup valtree
+export auto make_overlay(logger& parent, std::vector<compound_attribute>)
+  -> compound;
+
+export auto make_overlay(logger& parent) -> compound {
+    return make_overlay(parent, {});
+}
+//------------------------------------------------------------------------------
+export auto add_overlay(compound&, const compound_attribute&) -> bool;
+
+export auto add_overlay(compound& c, const compound& a) -> bool {
+    return add_overlay(c, a.root());
+}
+//------------------------------------------------------------------------------
 } // namespace eagine::valtree
