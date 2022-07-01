@@ -421,7 +421,9 @@ function(eagine_target_modules TARGET_NAME)
 				EAGINE_${PP_NAME}_MODULE=1
 			)
 		endif()
-		add_custom_target(${TARGET_NAME}-imports)
+		if(NOT TARGET ${TARGET_NAME}-imports)
+			add_custom_target(${TARGET_NAME}-imports)
+		endif()
 
 		eagine_append_module_pcms(
 			TARGET ${TARGET_NAME}
