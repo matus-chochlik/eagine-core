@@ -26,6 +26,7 @@ export import :biteset;
 export import :fixed_size_string;
 export import :edit_distance;
 export import :byte_allocator;
+export import :stack_allocator;
 export import :shared_allocator;
 export import :std_allocator;
 export import :buffer;
