@@ -98,11 +98,14 @@ private:
     static auto _opts_to_flags(module_load_options opts) noexcept -> int {
         int result = 0;
         // TODO: other options
-        if(opts.has(module_load_option::lazy)) {
+        if(opts.has(module_load_option::load_lazy)) {
+            result |= RTLD_LAZY;
+        } else if(opts.has(module_load_option::load_immediate)) {
+            result |= RTLD_NOW;
+        }
+        if((result & (RTLD_LAZY | RTLD_NOW)) == 0) {
             result |= RTLD_LAZY;
         }
-        // TODO: either lazy or now must be specified
-        result |= RTLD_LAZY;
         return result;
     }
 

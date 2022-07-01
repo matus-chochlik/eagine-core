@@ -19,7 +19,9 @@ namespace eagine {
 /// @see module_load_options
 export enum class module_load_option : unsigned {
     /// @brief Lazy load.
-    lazy = 1U << 0U
+    load_lazy = 1U << 0U,
+    /// @brief Immediate load.
+    load_immediate = 1U << 1U
 };
 
 /// @brief Bitfield of executable module load options.
