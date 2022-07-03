@@ -14,11 +14,25 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.resource PARTITION fetch
+	IMPORTS
+		embedded
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.valid_if
+		eagine.core.runtime
+		eagine.core.logging
+		eagine.core.main_ctx
+)
+
+eagine_add_module(
 	eagine.core.resource
 	INTERFACES
 		resource
 	PARTITIONS
 		embedded
+		fetch
 	SOURCES
 )
 

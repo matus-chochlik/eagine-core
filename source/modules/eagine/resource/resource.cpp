@@ -8,4 +8,5 @@
 export module eagine.core.resource;
 
 export import :embedded;
+export import :fetch;
 
