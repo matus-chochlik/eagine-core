@@ -25,6 +25,7 @@ add_subdirectory(progress)
 add_subdirectory(value_tree)
 add_subdirectory(serialization)
 add_subdirectory(main_ctx)
+add_subdirectory(resource)
 
 
 eagine_add_module(
@@ -55,5 +56,6 @@ eagine_add_module(
 		eagine.core.value_tree
 		eagine.core.serialization
 		eagine.core.main_ctx
+		eagine.core.resource
 )
 
