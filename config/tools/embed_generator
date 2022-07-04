@@ -223,7 +223,7 @@ def make_res_code(options, ident, path):
     options.output.write("    }\n")
 # ------------------------------------------------------------------------------
 def make_prologue(options):
-    options.output.write("#if EAGINE_CORE_MODULE\n");
+    options.output.write("#if EAGINE_CORE_MODULE || EAGINE_CORE_RESOURCE_MODULE\n");
     options.output.write("module eagine.core.resource;\n");
     options.output.write("import eagine.core.types;\n");
     options.output.write("import eagine.core.memory;\n");
