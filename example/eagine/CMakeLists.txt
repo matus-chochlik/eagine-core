@@ -122,7 +122,7 @@ eagine_example_common(sudoku_solver)
 eagine_example_common(sudoku_tiling)
 eagine_example_common(sudoku_noise)
 #
-eagine_example_common(embed_self)
+eagine_example_module(embed_self)
 eagine_embed_target_resources(TARGET eagine-embed_self)
 
 install(

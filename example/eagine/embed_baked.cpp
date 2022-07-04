@@ -5,16 +5,21 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <iostream>;
+#else
 #include <eagine/embed.hpp>
 #include <eagine/hexdump.hpp>
 #include <eagine/main_ctx.hpp>
 #include <iostream>
+#endif
 
 namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
 
-    const auto res{embed(EAGINE_ID(ZebraFur), "zebra_fur")};
+    const auto res{embed(identifier{"ZebraFur"}, "zebra_fur")};
     std::cout << hexdump(res.unpack(ctx));
 
     return 0;
