@@ -186,7 +186,7 @@ def make_res_code(options, ident, path):
                 resource_path = os.path.realpath(os.path.join(search_dir, path))
                 break
 
-    options.output.write("    if(res_id == EAGINE_ID(%s)) {\n" % ident)
+    options.output.write('    if(res_id == identifier{"%s"}) {\n' % ident)
 
     with load_resource(options, resource_path) as res:
         if res.byte_size() > 0:
@@ -223,7 +223,14 @@ def make_res_code(options, ident, path):
     options.output.write("    }\n")
 # ------------------------------------------------------------------------------
 def make_prologue(options):
+    options.output.write("#if EAGINE_CORE_MODULE\n");
+    options.output.write("module eagine.core.resource;\n");
+    options.output.write("import eagine.core.types;\n");
+    options.output.write("import eagine.core.memory;\n");
+    options.output.write("import eagine.core.identifier;\n");
+    options.output.write("#else\n");
     options.output.write("#include <eagine/embed.hpp>\n");
+    options.output.write("#endif\n");
     options.output.write("namespace eagine {\n")
     options.output.write(
         "auto get_embedded_resource([[maybe_unused]] const identifier res_id, [[maybe_unused]] const string_view path) noexcept -> embedded_resource {\n"
@@ -235,24 +242,28 @@ def make_epilogue(options):
     options.output.write("} // namespace eagine\n")
 # ------------------------------------------------------------------------------
 def make_resource_file(options):
-    embed_re = r'embed\(\s*EAGINE_ID\(([a-zA-Z0-9_]+)\),\s*("([^"]+)"|__FILE__)\s*\)'
+    embed_res = [
+        r'embed\(\s*EAGINE_ID\(([a-zA-Z0-9_]+)\),\s*("([^"]+)"|__FILE__)\s*\)',
+        r'embed\(\s*identifier[({]"([a-zA-Z0-9_]+)"[})],\s*("([^"]+)"|__FILE__)\s*\)'
+    ]
     some_output = False
     for path in options.input:
         with open(path, "rt") as ifd:
             source = str()
             for line in ifd.readlines():
                 source += line
-                embeds = re.findall(embed_re, source)
-                if embeds:
-                    for ident, res_expr, res_path in embeds:
-                        if not some_output:
-                            make_prologue(options)
-                            some_output = True
-                        if res_expr == "__FILE__":
-                            make_res_code(options, ident, path)
-                        else:
-                            make_res_code(options, ident, res_path)
-                    source = str()
+                for embed_re in embed_res:
+                    embeds = re.findall(embed_re, source)
+                    if embeds:
+                        for ident, res_expr, res_path in embeds:
+                            if not some_output:
+                                make_prologue(options)
+                                some_output = True
+                            if res_expr == "__FILE__":
+                                make_res_code(options, ident, path)
+                            else:
+                                make_res_code(options, ident, res_path)
+                        source = str()
     if some_output:
         make_epilogue(options)
 
