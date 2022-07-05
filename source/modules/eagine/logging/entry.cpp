@@ -552,6 +552,11 @@ public:
         return arg(name, identifier{"str"}, value);
     }
 
+    auto arg(const identifier name, const memory::string_span value) noexcept
+      -> auto& {
+        return arg(name, string_view{value});
+    }
+
     /// @brief Adds a new message argument with string value.
     /// @param name the argument name identifier. Used in message substitution.
     /// @param tag the argument type identifier. Used in value formatting.
