@@ -84,13 +84,13 @@ public:
         };
 
         int zres{};
-        if((zres = ::deflateInit(&_zsd, _translate(level))) != Z_OK) {
+        if(zres = ::deflateInit(&_zsd, _translate(level)); zres != Z_OK) {
             return false;
         }
         const auto cleanup_later{finally([this]() { ::deflateEnd(&_zsd); })};
 
         while(_zsd.avail_in > 0) {
-            if((zres = ::deflate(&_zsd, Z_NO_FLUSH)) != Z_OK) {
+            if(zres = ::deflate(&_zsd, Z_NO_FLUSH); zres != Z_OK) {
                 if(zres != Z_STREAM_END) {
                     return false;
                 }
@@ -175,13 +175,13 @@ public:
         };
 
         int zres{};
-        if((zres = ::inflateInit(&_zsi)) != Z_OK) {
+        if(zres = ::inflateInit(&_zsi); zres != Z_OK) {
             return false;
         }
         const auto cleanup_later{finally([this]() { ::inflateEnd(&_zsi); })};
 
         while(_zsi.avail_in > 0) {
-            if((zres = ::inflate(&_zsi, Z_NO_FLUSH)) != Z_OK) {
+            if(zres = ::inflate(&_zsi, Z_NO_FLUSH); zres != Z_OK) {
                 if(zres != Z_STREAM_END) {
                     return false;
                 }
