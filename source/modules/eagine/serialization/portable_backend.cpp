@@ -43,6 +43,8 @@ public:
     using error_code = serialization_error_code;
     using result = serialization_errors;
 
+    static constexpr const identifier_t id_value = id_v("Portable");
+
     auto type_id() noexcept -> identifier final {
         return identifier{"Portable"};
     }
@@ -156,16 +158,17 @@ private:
     template <typename F>
     auto _write_one(const F value, const std::type_identity<F> tid) noexcept
       -> result
-      requires(std::is_floating_point_v<F>) {
-          const auto [f, e] = float_utils::decompose(value, tid);
-          result errors = _write_one(
-            f, std::type_identity<float_utils::decompose_fraction_t<F>>{});
-          errors |= do_sink('`');
-          errors |= _write_one(
-            e, std::type_identity<float_utils::decompose_exponent_t<F>>{});
+        requires(std::is_floating_point_v<F>)
+    {
+        const auto [f, e] = float_utils::decompose(value, tid);
+        result errors = _write_one(
+          f, std::type_identity<float_utils::decompose_fraction_t<F>>{});
+        errors |= do_sink('`');
+        errors |= _write_one(
+          e, std::type_identity<float_utils::decompose_exponent_t<F>>{});
 
-          return errors;
-      }
+        return errors;
+    }
 
     auto _write_one(
       const identifier id,
@@ -204,6 +207,8 @@ public:
     using base::require;
     using error_code = deserialization_error_code;
     using result = deserialization_errors;
+
+    static constexpr const identifier_t id_value = id_v("Portable");
 
     auto type_id() noexcept -> identifier final {
         return identifier{"Portable"};

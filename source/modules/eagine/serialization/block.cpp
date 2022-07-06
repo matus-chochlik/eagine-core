@@ -130,7 +130,7 @@ private:
 /// @ingroup serialization
 /// @see block_data_sink
 /// @see packed_block_data_source
-class block_data_source : public deserializer_data_source {
+export class block_data_source : public deserializer_data_source {
 public:
     /// @brief Default constructor.
     block_data_source() noexcept = default;

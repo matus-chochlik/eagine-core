@@ -53,6 +53,8 @@ public:
         return errors;
     }
 
+    static constexpr const identifier_t id_value = id_v("String");
+
     auto type_id() noexcept -> identifier final {
         return identifier{"String"};
     }
@@ -255,6 +257,8 @@ public:
 
         return errors;
     }
+
+    static constexpr const identifier_t id_value = id_v("String");
 
     auto type_id() noexcept -> identifier final {
         return identifier{"String"};

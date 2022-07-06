@@ -8,6 +8,7 @@
 export module eagine.core.serialization;
 
 export import :size_and_data;
+export import :data_buffer;
 export import :result;
 export import :interface;
 export import :read;

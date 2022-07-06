@@ -9,6 +9,15 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.serialization PARTITION data_buffer
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.reflection
+)
+
+eagine_add_module(
 	eagine.core.serialization PARTITION size_and_data
 	IMPORTS
 		eagine.core.types
@@ -140,6 +149,7 @@ eagine_add_module(
 		serialization
 	PARTITIONS
 		float_utils
+		data_buffer
 		size_and_data
 		result
 		interface
