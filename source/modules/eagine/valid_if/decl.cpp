@@ -178,7 +178,7 @@ public:
 
     /// @brief Indicates if the stored value is valid according to policy.
     /// @see is_valid
-    explicit operator bool() const noexcept {
+    explicit constexpr operator bool() const noexcept {
         return is_valid();
     }
 
