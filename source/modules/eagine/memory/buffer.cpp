@@ -120,7 +120,9 @@ public:
     /// @see ensure
     /// @see reserve
     auto resize(const span_size_t new_size) noexcept -> auto& {
-        reserve(new_size);
+        if(capacity() < new_size) [[unlikely]] {
+            _reallocate(new_size);
+        }
         _size = new_size;
         assert(_is_ok());
         return *this;
@@ -132,7 +134,7 @@ public:
     /// @see reserve
     /// @see enlarge_by
     auto ensure(const span_size_t new_size) noexcept -> auto& {
-        if(size() < new_size) {
+        if(size() < new_size) [[unlikely]] {
             return resize(new_size);
         }
         assert(_is_ok());

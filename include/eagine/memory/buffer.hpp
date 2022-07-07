@@ -115,7 +115,9 @@ public:
     /// @see ensure
     /// @see reserve
     auto resize(const span_size_t new_size) noexcept -> auto& {
-        reserve(new_size);
+        if(capacity() < new_size) [[unlikely]] {
+            _reallocate(new_size);
+        }
         _size = new_size;
         EAGINE_ASSERT(_is_ok());
         return *this;
