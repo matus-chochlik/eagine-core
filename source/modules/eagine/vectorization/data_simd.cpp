@@ -52,6 +52,11 @@ struct data_simd<int64_t, 2> {
 };
 
 export template <>
+struct data_simd<uint64_t, 2> {
+    using type __attribute__((vector_size(16))) = uint64_t;
+};
+
+export template <>
 struct data_simd<int64_t, 4> {
     using type __attribute__((vector_size(32))) = int64_t;
 };
@@ -151,6 +156,16 @@ struct _has_simd_data<int32_t, N>
 // has_vec_data<int64_t>
 export template <int N>
 struct _has_simd_data<int64_t, N>
+  : std::bool_constant<
+#if defined(__SSE2__) && __SSE2__
+      (N == 2) ||
+#endif
+      false> {
+};
+
+// has_vec_data<int64_t>
+export template <int N>
+struct _has_simd_data<uint64_t, N>
   : std::bool_constant<
 #if defined(__SSE2__) && __SSE2__
       (N == 2) ||

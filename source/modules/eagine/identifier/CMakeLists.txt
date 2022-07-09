@@ -18,7 +18,10 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.identifier PARTITION message_id
-	IMPORTS decl eagine.core.types
+	IMPORTS
+		decl
+		eagine.core.types
+		eagine.core.vectorization
 )
 
 eagine_add_module(
