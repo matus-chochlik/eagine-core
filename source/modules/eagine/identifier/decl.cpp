@@ -195,6 +195,9 @@ public:
     /// @brief Alias for the unpacked identifier_name type.
     using name_type = identifier_name<M>;
 
+    /// @brief The maximum length of the identifier string.
+    static constexpr const std::size_t max_length = M;
+
     /// @brief Default constructor. Constructs an empty identifier.
     constexpr basic_identifier() noexcept = default;
 
@@ -319,11 +322,14 @@ export using identifier =
 /// @brief Alias for identifier.
 /// @ingroup identifiers
 /// @see id_v
-export using id_t = identifier;
+export using id = identifier;
+
+export template <auto L>
+concept identifier_literal_length = (L <= identifier::max_length + 1U);
 
 /// @brief Returns the numeric value of the specified identifier string.
 /// @ingroup identifiers
-/// @see id_t
+/// @see id
 export template <std::size_t N>
 consteval auto id_v(const char (&str)[N]) noexcept -> identifier_t {
     return identifier{str}.value();

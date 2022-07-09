@@ -36,6 +36,12 @@ public:
     constexpr message_id(const identifier c, const identifier m) noexcept
       : message_id{c.value(), m.value()} {}
 
+    ///	@brief Construction from two string literals.
+    template <auto CL, auto ML>
+        requires(identifier_literal_length<CL> && identifier_literal_length<ML>)
+    constexpr message_id(const char (&c)[CL], const char (&m)[ML]) noexcept
+      : message_id{identifier{c}, identifier{m}} {}
+
     ///	@brief Construction from a tuple of two identifier objects.
     constexpr message_id(const std::tuple<identifier, identifier> t) noexcept
       : message_id{std::get<0>(t), std::get<1>(t)} {}
@@ -89,10 +95,26 @@ public:
         return class_id() == id.value();
     }
 
+    /// @brief Checks if the class identifier matches the argument.
+    /// @see has_method
+    template <auto L>
+        requires(identifier_literal_length<L>)
+    constexpr auto has_class(const char (&str)[L]) const noexcept {
+        return has_class(identifier{str});
+    }
+
     /// @brief Checks if the method identifier matches the argument.
     /// @see has_class
     constexpr auto has_method(const identifier id) const noexcept {
         return method_id() == id.value();
+    }
+
+    /// @brief Checks if the method identifier matches the argument.
+    /// @see has_class
+    template <auto L>
+        requires(identifier_literal_length<L>)
+    constexpr auto has_method(const char (&str)[L]) const noexcept {
+        return has_method(identifier{str});
     }
 
 private:
