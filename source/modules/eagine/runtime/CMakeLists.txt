@@ -80,6 +80,12 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.runtime PARTITION workshop
+	IMPORTS
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.runtime
 	INTERFACES
 		runtime
@@ -94,6 +100,7 @@ eagine_add_module(
 		file_contents
 		compression
 		value_with_history
+		workshop
 	SOURCES
 		url_impl
 		input_data_impl

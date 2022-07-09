@@ -17,3 +17,4 @@ export import :file_contents;
 export import :basic_config;
 export import :compression;
 export import :value_with_history;
+export import :workshop;
