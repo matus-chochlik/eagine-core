@@ -42,6 +42,13 @@ export class main_ctx_object;
 export struct main_ctx_service : interface<main_ctx_service> {
     virtual auto type_id() const noexcept -> identifier = 0;
 };
+
+export template <typename Derived>
+struct main_ctx_service_impl : main_ctx_service {
+    auto type_id() const noexcept -> identifier final {
+        return Derived::static_type_id();
+    }
+};
 //------------------------------------------------------------------------------
 /// @brief Interface for classes providing access to main context singletons.
 /// @ingroup main_context

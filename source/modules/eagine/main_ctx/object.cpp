@@ -25,8 +25,6 @@ import <concepts>;
 namespace eagine {
 //------------------------------------------------------------------------------
 export class application_config;
-class message_bus;
-
 export class main_ctx;
 export class main_ctx_object;
 //------------------------------------------------------------------------------
@@ -142,8 +140,9 @@ public:
     /// @brief Locates the specified Service object.
     /// @see locate
     template <std::derived_from<main_ctx_service> Service>
-    auto locate(identifier type_id) const noexcept -> std::shared_ptr<Service> {
-        return std::dynamic_pointer_cast<Service>(locate_service(type_id));
+    auto locate() const noexcept -> std::shared_ptr<Service> {
+        return std::dynamic_pointer_cast<Service>(
+          locate_service(Service::static_type_id()));
     }
 
 private:
