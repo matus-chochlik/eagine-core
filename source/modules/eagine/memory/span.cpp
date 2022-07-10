@@ -15,6 +15,7 @@ import eagine.core.concepts;
 import eagine.core.types;
 import :address;
 
+import <cmath>;
 import <concepts>;
 import <cstring>;
 import <initializer_list>;
@@ -196,17 +197,7 @@ public:
     /// @brief Returns the number of elements in the span.
     /// @see is_empty
     constexpr auto size() const noexcept -> size_type {
-        if constexpr(std::is_same_v<std::remove_const_t<ValueType>, char>) {
-            if(_size < 0) [[likely]] {
-                return -_size;
-            }
-            return _size;
-        } else {
-            if(_size >= 0) [[likely]] {
-                return _size;
-            }
-            return -_size;
-        }
+        return std::abs(_size);
     }
 
     /// @brief Returns a pointer to the start of the span.
