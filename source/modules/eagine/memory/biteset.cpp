@@ -489,8 +489,9 @@ public:
     }
 
     /// @brief Comparison.
-    constexpr auto operator<=>(const biteset&) const noexcept
-      -> std::strong_ordering = default;
+    constexpr auto operator<=>(const biteset&) const noexcept = default;
+    constexpr auto operator==(const biteset&) const noexcept -> bool = default;
+    constexpr auto operator<(const biteset&) const noexcept -> bool = default;
 
     /// @brief Converts this biteset into a byteset.
     constexpr auto bytes() const noexcept -> const byteset<store_size>& {

@@ -86,6 +86,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
+		eagine.core.container
 		eagine.core.runtime
 		eagine.core.logging
 		eagine.core.console
