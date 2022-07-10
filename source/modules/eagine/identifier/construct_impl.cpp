@@ -12,7 +12,9 @@ module;
 module eagine.core.identifier;
 
 import eagine.core.types;
+import eagine.core.memory;
 import <cstdint>;
+import <random>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -82,6 +84,44 @@ auto dec_to_identifier(const int i) noexcept -> identifier {
     }
     char tmp[11];
     return _ident_dec_to_str(i, tmp);
+}
+//------------------------------------------------------------------------------
+template <std::size_t S, std::size_t... I, typename Engine>
+void fill_random_charset_string(
+  span<char> dst,
+  const char (&charset)[S],
+  std::index_sequence<I...>,
+  Engine& engine) {
+    std::uniform_int_distribution<std::size_t> dist(0, S - 1);
+    dst[sizeof...(I)] = '\0';
+    ((dst[I] = charset[dist(engine)]), ...);
+}
+//------------------------------------------------------------------------------
+template <
+  std::size_t M,
+  std::size_t B,
+  typename CharSet,
+  typename UIntT,
+  typename Engine>
+auto make_random_basic_identifier(
+  std::type_identity<basic_identifier<M, B, CharSet, UIntT>>,
+  Engine& engine) {
+    char temp[M + 1];
+    fill_random_charset_string(
+      cover(temp), CharSet::values, std::make_index_sequence<M>(), engine);
+    return basic_identifier<M, B, CharSet, UIntT>{temp};
+}
+//------------------------------------------------------------------------------
+template <typename Engine>
+auto get_random_identifier(Engine& engine) -> identifier {
+    return make_random_basic_identifier(
+      std::type_identity<identifier>(), engine);
+}
+//------------------------------------------------------------------------------
+auto random_identifier() -> identifier {
+    std::random_device rd;
+    std::default_random_engine re{rd()};
+    return get_random_identifier(re);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

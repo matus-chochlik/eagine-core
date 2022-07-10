@@ -26,5 +26,12 @@ export auto byte_to_identifier(const byte b) noexcept -> identifier;
 /// @see random_identifier
 export auto dec_to_identifier(const int i) noexcept -> identifier;
 //------------------------------------------------------------------------------
+/// @brief Creates an random identifier using a default random engine.
+/// @ingroup identifiers
+/// @see identifier
+/// @see byte_to_identifier
+/// @see dec_to_identifier
+export auto random_identifier() -> identifier;
+//------------------------------------------------------------------------------
 } // namespace eagine
 

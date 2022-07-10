@@ -34,4 +34,6 @@ eagine_add_module(
 		message_id
 	SOURCES
 		construct_impl
+	IMPORTS
+		eagine.core.memory
 )
