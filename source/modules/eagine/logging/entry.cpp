@@ -557,6 +557,11 @@ public:
         return arg(name, string_view{value});
     }
 
+    auto arg(const identifier name, const memory::span<char> value) noexcept
+      -> auto& {
+        return arg(name, string_view{value});
+    }
+
     auto arg(
       const identifier name,
       const memory::span<const char> value) noexcept -> auto& {

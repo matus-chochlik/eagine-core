@@ -12,7 +12,7 @@ module;
 export module eagine.core.serialization:float_utils;
 
 import eagine.core.types;
-import <cmath>;
+export import <cmath>;
 import <cstdint>;
 import <limits>;
 import <tuple>;
