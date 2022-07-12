@@ -20,3 +20,4 @@ export import :packed_block;
 export import :fast_backend;
 export import :string_backend;
 export import :portable_backend;
+export import :type_sudoku;
