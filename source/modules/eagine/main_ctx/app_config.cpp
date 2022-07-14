@@ -44,7 +44,7 @@ export struct application_config_value_loader
 ///
 /// This class allow to read application configuration values from from
 /// environment variables, command line arguments and/or configuration files.
-export class application_config : public basic_config {
+export class application_config final : public basic_config {
 public:
     application_config(main_ctx_getters& ctx) noexcept
       : _main_ctx{ctx}
@@ -54,39 +54,11 @@ public:
     auto is_set(const string_view key, const string_view tag = {}) noexcept
       -> bool final;
 
+    /// @brief Fetches the configuration string identified by @p key, into @p dest.
     auto fetch_string(
       const string_view key,
       const string_view tag,
-      std::string& dest) noexcept -> bool final {
-        if(const auto arg{_find_prog_arg(key)}) {
-            if(arg.parse_next(dest, from_config, _log.error_stream())) {
-                return true;
-            } else {
-                _log.error("could not parse configuration value '${value}'")
-                  .arg(identifier{"key"}, key)
-                  .arg(identifier{"value"}, arg.get());
-            }
-        }
-        if(const auto opt_val{_eval_env_var(key)}) {
-            if(auto converted{extract(opt_val)}) {
-                dest = std::move(extract(converted));
-                return true;
-            } else {
-                _log.error("could not convert configuration value '${value}'")
-                  .arg(identifier{"key"}, key)
-                  .arg(identifier{"value"}, extract(opt_val));
-            }
-        }
-        if(const auto attr{_find_comp_attr(key, tag)}) {
-            if(attr.select_value(dest, from_config)) {
-                return true;
-            } else {
-                _log.error("could not fetch configuration value '${key}'")
-                  .arg(identifier{"key"}, key);
-            }
-        }
-        return false;
-    }
+      std::string& dest) noexcept -> bool final;
 
     /// @brief Fetches the configuration value identified by @p key, into @p dest.
     template <typename T>
