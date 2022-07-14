@@ -38,8 +38,15 @@ public:
     /// @brief Uses get_byte to read input bytes, encodes them and calls put_char.
     static void apply(const byte_getter get_byte, const char_putter put_char);
 
+    /// @brief Write this hexdump object to output stream.
+    auto to_stream(std::ostream&) const noexcept -> std::ostream&;
+
     /// @brief Operator for writing instances of hexdump to standard output streams.
-    friend auto operator<<(std::ostream&, const hexdump&) -> std::ostream&;
+    /// @see to_stream
+    friend auto operator<<(std::ostream& out, const hexdump& hd)
+      -> std::ostream& {
+        return hd.to_stream(out);
+    }
 
 private:
     memory::const_block _mb{};
