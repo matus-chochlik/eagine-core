@@ -13,6 +13,7 @@ export module eagine.core.memory:address;
 
 import eagine.core.types;
 import :align;
+import <new>;
 import <compare>;
 import <cstddef>;
 import <cstdint>;
@@ -113,7 +114,7 @@ public:
         requires(!std::is_void_v<T> && (std::is_const_v<T> || !IsConst))
     {
         assert(is_aligned_as<T>());
-        return static_cast<T*>(_addr);
+        return std::launder(static_cast<T*>(_addr));
     }
 
     /// @brief Returns this address as an signed integer.

@@ -254,6 +254,10 @@ private:
     std::string _hostname;
 };
 //------------------------------------------------------------------------------
+application_config::application_config(main_ctx_getters& ctx) noexcept
+  : _main_ctx{ctx}
+  , _log{identifier{"AppConfig"}, _main_ctx.log()} {}
+//------------------------------------------------------------------------------
 auto application_config::is_set(
   const string_view key,
   const string_view tag) noexcept -> bool {

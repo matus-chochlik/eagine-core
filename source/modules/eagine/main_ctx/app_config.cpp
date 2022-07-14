@@ -46,13 +46,15 @@ export struct application_config_value_loader
 /// environment variables, command line arguments and/or configuration files.
 export class application_config final : public basic_config {
 public:
-    application_config(main_ctx_getters& ctx) noexcept
-      : _main_ctx{ctx}
-      , _log{identifier{"AppConfig"}, _main_ctx.log()} {}
+    application_config(main_ctx_getters& ctx) noexcept;
+
+    using basic_config::is_set;
 
     /// @brief Checks is the boolean option identified by @p key is set to true.
-    auto is_set(const string_view key, const string_view tag = {}) noexcept
+    auto is_set(const string_view key, const string_view tag) noexcept
       -> bool final;
+
+    using basic_config::fetch_string;
 
     /// @brief Fetches the configuration string identified by @p key, into @p dest.
     auto fetch_string(
