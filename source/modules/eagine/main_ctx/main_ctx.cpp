@@ -26,7 +26,6 @@ export import :app_config;
 export import :system_info;
 export import :user_info;
 export import :watchdog;
-export import :app_config;
 export import :storage;
 export import :main;
 
