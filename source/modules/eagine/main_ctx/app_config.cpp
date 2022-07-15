@@ -73,8 +73,8 @@ public:
                 return true;
             } else {
                 _log.error("could not parse configuration value '${value}'")
-                  .arg(identifier{"key"}, key)
-                  .arg(identifier{"value"}, arg.get());
+                  .arg("key", key)
+                  .arg("value", arg.get());
             }
         }
         if(const auto opt_val{_eval_env_var(key)}) {
@@ -83,8 +83,8 @@ public:
                 return true;
             } else {
                 _log.error("could not convert configuration value '${value}'")
-                  .arg(identifier{"key"}, key)
-                  .arg(identifier{"value"}, extract(opt_val));
+                  .arg("key", key)
+                  .arg("value", extract(opt_val));
             }
         }
         if(const auto attr{_find_comp_attr(key, tag)}) {
@@ -92,7 +92,7 @@ public:
                 return true;
             } else {
                 _log.error("could not fetch configuration value '${key}'")
-                  .arg(identifier{"key"}, key);
+                  .arg("key", key);
             }
         }
         return false;
@@ -112,8 +112,8 @@ public:
                     dest.emplace_back(std::move(temp));
                 } else {
                     _log.error("could not parse configuration value '${value}'")
-                      .arg(identifier{"key"}, key)
-                      .arg(identifier{"value"}, arg.get());
+                      .arg("key", key)
+                      .arg("value", arg.get());
                     return false;
                 }
             }
@@ -123,8 +123,8 @@ public:
                 dest.emplace_back(std::move(extract(converted)));
             } else {
                 _log.error("could not convert configuration value '${value}'")
-                  .arg(identifier{"key"}, key)
-                  .arg(identifier{"value"}, extract(opt_val));
+                  .arg("key", key)
+                  .arg("value", extract(opt_val));
                 return false;
             }
         }
@@ -135,7 +135,7 @@ public:
                 if(!attr.select_values(
                      tail(memory::cover(dest), count), from_config)) {
                     _log.error("could not fetch configuration values '${key}'")
-                      .arg(identifier{"key"}, key);
+                      .arg("key", key);
                     return false;
                 }
             }
@@ -156,8 +156,8 @@ public:
                 return true;
             } else {
                 _log.error("value '${value}' is not valid for '${key}'")
-                  .arg(identifier{"value"}, temp)
-                  .arg(identifier{"key"}, key);
+                  .arg("value", temp)
+                  .arg("key", key);
             }
         }
         return false;

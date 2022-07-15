@@ -50,7 +50,7 @@ public:
     }
 
     auto type_id() noexcept -> identifier final {
-        return identifier{"OutStream"};
+        return "OutStream";
     }
 
     auto entry_backend(

@@ -203,7 +203,7 @@ public:
 
     /// @brief Construction from a C-string literal.
     template <auto L>
-    explicit constexpr basic_identifier(const char (&init)[L]) noexcept
+    constexpr basic_identifier(const char (&init)[L]) noexcept
         requires(L <= M + 1)
     : _bites{_make_bites(
         static_cast<const char*>(init),

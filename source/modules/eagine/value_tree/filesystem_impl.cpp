@@ -48,7 +48,7 @@ public:
     }
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"filesystem"};
+        return "filesystem";
     }
 
     auto name() -> string_view {
@@ -68,8 +68,8 @@ public:
             } catch(const std::filesystem::filesystem_error& err) {
                 get_log(owner)
                   .debug("failed to get filesystem node count")
-                  .arg(identifier{"path"}, _node_path)
-                  .arg(identifier{"error"}, err);
+                  .arg("path", _node_path)
+                  .arg("error", err);
             }
         }
         return 0;
@@ -91,9 +91,9 @@ public:
         } catch(const std::filesystem::filesystem_error& err) {
             get_log(owner)
               .debug("failed to get nested filesystem node for '${path}'")
-              .arg(identifier{"index"}, index)
-              .arg(identifier{"path"}, _node_path)
-              .arg(identifier{"error"}, err);
+              .arg("index", index)
+              .arg("path", _node_path)
+              .arg("error", err);
         }
         return nullptr;
     }
@@ -114,9 +114,9 @@ public:
         } catch(const std::filesystem::filesystem_error& err) {
             get_log(owner)
               .debug("failed to get nested filesystem node for '${path}'")
-              .arg(identifier{"name"}, name)
-              .arg(identifier{"path"}, _node_path)
-              .arg(identifier{"error"}, err);
+              .arg("name", name)
+              .arg("path", _node_path)
+              .arg("error", err);
         }
         return nullptr;
     }
@@ -242,7 +242,7 @@ public:
       const logger& parent,
       string_view fs_path,
       std::shared_ptr<file_compound_factory> factory)
-      : _log{identifier{"FsVtCmpnd"}, parent}
+      : _log{"FsVtCmpnd", parent}
       , _root{std::string_view{fs_path}}
       , _compound_factory{std::move(factory)} {}
 
@@ -260,7 +260,7 @@ public:
     }
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"filesystem"};
+        return "filesystem";
     }
 
     auto structure() -> attribute_interface* final {
@@ -335,7 +335,7 @@ static inline auto filesystem_make_node(
         } catch(const std::filesystem::filesystem_error&) {
             owner.log()
               .debug("failed to create filesystem node '${path}'")
-              .arg(identifier{"path"}, identifier{"FsPath"}, fs_path);
+              .arg("path", "FsPath", fs_path);
         }
     }
     return nullptr;

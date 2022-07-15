@@ -19,8 +19,7 @@ export auto adapt_entry_arg(
   const identifier name,
   const std::exception& value) noexcept {
     return [name, value](auto& backend) {
-        backend.add_string(
-          name, identifier{"Exception"}, string_view(value.what()));
+        backend.add_string(name, "Exception", string_view(value.what()));
     };
 }
 //------------------------------------------------------------------------------
@@ -28,8 +27,7 @@ export auto adapt_entry_arg(
   const identifier name,
   const std::runtime_error& value) noexcept {
     return [name, value](auto& backend) {
-        backend.add_string(
-          name, identifier{"RuntmError"}, string_view(value.what()));
+        backend.add_string(name, "RuntmError", string_view(value.what()));
     };
 }
 //------------------------------------------------------------------------------
@@ -37,11 +35,10 @@ export auto adapt_entry_arg(
   const identifier name,
   const std::system_error& value) noexcept {
     return [name, value](auto& backend) {
+        backend.add_string(name, "SystmError", string_view(value.what()));
         backend.add_string(
-          name, identifier{"SystmError"}, string_view(value.what()));
-        backend.add_string(
-          identifier{"category"},
-          identifier{"ErrorCtgry"},
+          "category",
+          "ErrorCtgry",
           string_view(value.code().category().name()));
     };
 }

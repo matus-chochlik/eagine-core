@@ -45,7 +45,7 @@ public:
 
     /// @brief Constructor initializing from program arguments and logger options.
     root_logger(const program_args& args, root_logger_options& opts)
-      : root_logger{identifier{"RootLogger"}, args, opts} {}
+      : root_logger{"RootLogger", args, opts} {}
 
 private:
     static auto _init_backend(const program_args&, root_logger_options&)

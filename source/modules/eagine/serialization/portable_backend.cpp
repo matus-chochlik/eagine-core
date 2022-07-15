@@ -46,7 +46,7 @@ public:
     static constexpr const identifier_t id_value = id_v("Portable");
 
     auto type_id() noexcept -> identifier final {
-        return identifier{"Portable"};
+        return "Portable";
     }
 
     template <typename T>
@@ -211,7 +211,7 @@ public:
     static constexpr const identifier_t id_value = id_v("Portable");
 
     auto type_id() noexcept -> identifier final {
-        return identifier{"Portable"};
+        return "Portable";
     }
 
     template <typename T>

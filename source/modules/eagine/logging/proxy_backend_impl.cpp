@@ -151,7 +151,7 @@ auto proxy_log_backend::type_id() noexcept -> identifier {
     if(_delegate) [[likely]] {
         return _delegate->type_id();
     }
-    return identifier{"Proxy"};
+    return "Proxy";
 }
 //------------------------------------------------------------------------------
 void proxy_log_backend::enter_scope(const identifier source) noexcept {

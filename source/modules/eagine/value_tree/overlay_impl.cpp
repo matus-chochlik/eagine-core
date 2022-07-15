@@ -100,7 +100,7 @@ public:
       : _path{std::move(path)} {}
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"overlay"};
+        return "overlay";
     }
 
     friend auto operator==(
@@ -194,7 +194,7 @@ public:
     overlay_compound(
       const logger& parent,
       std::vector<compound_attribute> overlays)
-      : _log{identifier{"OvrlyCmpnd"}, parent}
+      : _log{"OvrlyCmpnd", parent}
       , _context{std::move(overlays)} {}
 
     static auto make_shared(
@@ -205,7 +205,7 @@ public:
     }
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"overlay"};
+        return "overlay";
     }
 
     auto structure() -> attribute_interface* final {

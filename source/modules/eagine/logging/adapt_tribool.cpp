@@ -22,7 +22,7 @@ export auto adapt_entry_arg(const identifier name, yes_no_maybe value) noexcept 
     return [name, value](auto& backend) {
         backend.add_string(
           name,
-          identifier{"YesNoMaybe"},
+          "YesNoMaybe",
           value.is(true)    ? string_view{"yes"}
           : value.is(false) ? string_view{"no"}
                             : string_view{"maybe"});

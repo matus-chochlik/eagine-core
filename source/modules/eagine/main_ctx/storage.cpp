@@ -58,8 +58,8 @@ public:
         _exe_path = fs_path.lexically_normal().string();
 
         _log_root.info("application ${appName} starting")
-          .arg(identifier{"appName"}, _app_name)
-          .arg(identifier{"exePath"}, _exe_path);
+          .arg("appName", _app_name)
+          .arg("exePath", _exe_path);
     }
 
     auto setters() noexcept -> main_ctx_setters* final {

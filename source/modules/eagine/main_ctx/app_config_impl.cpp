@@ -34,7 +34,7 @@ class application_config_impl {
 public:
     application_config_impl(logger& parent, main_ctx_getters& ctx)
       : _main_ctx{ctx}
-      , _log{identifier{"AppCfgImpl"}, parent} {
+      , _log{"AppCfgImpl", parent} {
         // front is empty and is filled out later
         _tag_list.emplace_back();
 
@@ -97,7 +97,7 @@ public:
             }
         } catch(...) {
             _log.error("exception while loading configuration value '${key}'")
-              .arg(identifier{"key"}, key);
+              .arg("key", key);
         }
         return {};
     }
@@ -256,7 +256,7 @@ private:
 //------------------------------------------------------------------------------
 application_config::application_config(main_ctx_getters& ctx) noexcept
   : _main_ctx{ctx}
-  , _log{identifier{"AppConfig"}, _main_ctx.log()} {}
+  , _log{"AppConfig", _main_ctx.log()} {}
 //------------------------------------------------------------------------------
 auto application_config::is_set(
   const string_view key,

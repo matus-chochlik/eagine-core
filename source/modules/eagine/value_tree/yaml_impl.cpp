@@ -98,7 +98,7 @@ public:
       : _node{node} {}
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"rapidyaml"};
+        return "rapidyaml";
     }
 
     auto name() const noexcept -> string_view {
@@ -278,7 +278,7 @@ class rapidyaml_tree_compound final
 
 public:
     rapidyaml_tree_compound(ryml::Tree tree, const logger& parent)
-      : _log{identifier{"YamlValTre"}, parent}
+      : _log{"YamlValTre", parent}
       , _tree{std::move(tree)}
       , _root{_tree} {}
 
@@ -300,13 +300,13 @@ public:
               std::move(tree), parent);
         } catch(const std::runtime_error& err) {
             parent.log_error("YAML parse error: ${message}")
-              .arg(identifier{"message"}, string_view(err.what()));
+              .arg("message", string_view(err.what()));
         }
         return {};
     }
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"rapidyaml"};
+        return "rapidyaml";
     }
 
     auto structure() -> attribute_interface* final {

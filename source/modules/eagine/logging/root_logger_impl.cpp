@@ -109,97 +109,60 @@ auto root_logger::_init_backend(
 //------------------------------------------------------------------------------
 auto root_logger::_log_args(const program_args& args) -> void {
     auto args_entry{info("program arguments:")};
-    args_entry.tag(identifier{"ProgArgs"});
-    args_entry.arg(identifier{"cmd"}, args.command().get());
+    args_entry.tag("ProgArgs");
+    args_entry.arg("cmd", args.command().get());
     for(const auto& arg : args) {
-        args_entry.arg(identifier{"arg"}, arg.get());
+        args_entry.arg("arg", arg.get());
     }
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_os_info() -> void {
     const string_view not_available{"N/A"};
     info("build OS information")
-      .tag(identifier{"OSInfo"})
-      .arg(
-        identifier{"osName"},
-        identifier{"OSName"},
-        config_os_name(),
-        not_available)
-      .arg(
-        identifier{"osCodeName"},
-        identifier{"OSCodeName"},
-        config_os_code_name(),
-        not_available);
+      .tag("OSInfo")
+      .arg("osName", "OSName", config_os_name(), not_available)
+      .arg("osCodeName", "OSCodeName", config_os_code_name(), not_available);
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_git_info() -> void {
     const string_view not_available{"N/A"};
     info("source version information")
-      .tag(identifier{"GitInfo"})
-      .arg(
-        identifier{"gitBranch"},
-        identifier{"GitBranch"},
-        config_git_branch(),
-        not_available)
-      .arg(
-        identifier{"gitHashId"},
-        identifier{"GitHash"},
-        config_git_hash_id(),
-        not_available)
-      .arg(
-        identifier{"gitDate"},
-        identifier{"RFC2822"},
-        config_git_date(),
-        not_available)
-      .arg(
-        identifier{"gitDescrib"},
-        identifier{"str"},
-        config_git_describe(),
-        not_available)
-      .arg(
-        identifier{"gitVersion"},
-        identifier{"str"},
-        config_git_version(),
-        not_available);
+      .tag("GitInfo")
+      .arg("gitBranch", "GitBranch", config_git_branch(), not_available)
+      .arg("gitHashId", "GitHash", config_git_hash_id(), not_available)
+      .arg("gitDate", "RFC2822", config_git_date(), not_available)
+      .arg("gitDescrib", "str", config_git_describe(), not_available)
+      .arg("gitVersion", "str", config_git_version(), not_available);
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_instance_info() -> void {
     info("instance information")
-      .tag(identifier{"Instance"})
-      .arg(identifier{"instanceId"}, process_instance_id());
+      .tag("Instance")
+      .arg("instanceId", process_instance_id());
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_compiler_info() -> void {
     info("built with ${complrName} compiler for ${archtcture} architecture")
-      .tag(identifier{"Compiler"})
+      .tag("Compiler")
       .arg(
-        identifier{"complrName"},
-        identifier{"string"},
-        compiler_name(),
-        string_view{"not_available"})
+        "complrName", "string", compiler_name(), string_view{"not_available"})
       .arg(
-        identifier{"archtcture"},
-        identifier{"string"},
+        "archtcture",
+        "string",
         architecture_name(),
         string_view{"not_available"})
       .arg_func([](logger_backend& backend) {
           if(const auto version_major{compiler_version_major()}) {
               backend.add_integer(
-                identifier{"complrMajr"},
-                identifier{"VrsnMajor"},
-                extract(version_major));
+                "complrMajr", "VrsnMajor", extract(version_major));
           }
           if(const auto version_minor{compiler_version_minor()}) {
               backend.add_integer(
-                identifier{"complrMinr"},
-                identifier{"VrsnMinor"},
-                extract(version_minor));
+                "complrMinr", "VrsnMinor", extract(version_minor));
           }
           if(const auto version_patch{compiler_version_patch()}) {
               backend.add_integer(
-                identifier{"complrPtch"},
-                identifier{"VrsnPatch"},
-                extract(version_patch));
+                "complrPtch", "VrsnPatch", extract(version_patch));
           }
       });
 }

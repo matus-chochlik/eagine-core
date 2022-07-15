@@ -37,7 +37,7 @@ struct default_progress_info {
 class default_progress_tracker_backend : public progress_tracker_backend {
 public:
     default_progress_tracker_backend(logger& parent)
-      : _log{identifier{"Progress"}, parent} {}
+      : _log{"Progress", parent} {}
 
     auto register_observer(progress_observer& observer) noexcept -> bool final {
         if(!_observer) {
@@ -180,11 +180,11 @@ private:
 
     void _do_log(const default_progress_info& info) const {
         _log.log(info.log_level, info.title)
-          .arg(identifier{"current"}, info.curr_steps)
-          .arg(identifier{"total"}, info.total_steps)
+          .arg("current", info.curr_steps)
+          .arg("total", info.total_steps)
           .arg(
-            identifier{"progress"},
-            identifier{"Progress"},
+            "progress",
+            "Progress",
             0.F,
             float(info.curr_steps),
             float(info.total_steps));

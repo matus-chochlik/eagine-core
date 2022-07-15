@@ -76,7 +76,7 @@ public:
     }
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"rapidjson"};
+        return "rapidjson";
     }
 
     auto name() -> string_view {
@@ -567,7 +567,7 @@ private:
 
 public:
     rapidjson_document_compound(_doc_t& rj_doc, const logger& parent)
-      : _log{identifier{"JsnValTree"}, parent}
+      : _log{"JsnValTree", parent}
       , _rj_doc{std::move(rj_doc)}
       , _root{_rj_doc, nullptr} {}
 
@@ -582,13 +582,13 @@ public:
         }
         const auto msg{rapidjson::GetParseError_En(parse_ok.Code())};
         parent.error("JSON parse error")
-          .arg(identifier{"message"}, msg)
-          .arg(identifier{"offset"}, parse_ok.Offset());
+          .arg("message", msg)
+          .arg("offset", parse_ok.Offset());
         return {};
     }
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"rapidjson"};
+        return "rapidjson";
     }
 
     auto structure() -> attribute_interface* final {

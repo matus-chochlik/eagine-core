@@ -35,7 +35,7 @@ public:
     }
 
     auto type_id() noexcept -> identifier final {
-        return identifier{"InOutStrm"};
+        return "InOutStrm";
     }
 
     auto entry_backend(const identifier, const console_entry_kind) noexcept

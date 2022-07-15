@@ -17,7 +17,7 @@ namespace eagine {
 export template <default_mapped_enum T>
 constexpr auto adapt_entry_arg(const identifier name, const T value) noexcept {
     return [=](auto& backend) {
-        backend.add_string(name, identifier{"enum"}, enumerator_name(value));
+        backend.add_string(name, "enum", enumerator_name(value));
     };
 }
 //------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ constexpr auto adapt_entry_arg(
     return [=](auto& backend) {
         const auto func = [&backend, name, bf](const auto& info) {
             if(bf.has(static_cast<T>(info.value))) {
-                backend.add_string(name, identifier{"bitfield"}, info.name);
+                backend.add_string(name, "bitfield", info.name);
             }
         };
         for_each_enumerator(func, std::type_identity<T>{});
