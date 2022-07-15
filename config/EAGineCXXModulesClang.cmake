@@ -292,6 +292,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		APPEND PROPERTY EAGINE_MODULE_PARTITIONS
 		${EAGINE_MODULE_PARTITIONS}
 	)
+	unset(PCM_PREREQUISITE_PCMS)
 	foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
 		if(TARGET ${IMPORT})
 			set(EAGINE_MODULE_IMPORT "${IMPORT}")
@@ -316,8 +317,17 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 					EAGINE_${PP_NAME}_MODULE=1
 				)
 			endif()
+			get_property(
+				PCM_PATH
+				TARGET ${EAGINE_MODULE_IMPORT}
+				PROPERTY EAGINE_MODULE_PCM_PATH
+			)
+			if(NOT "${PCM_PATH}" STREQUAL "")
+				list(APPEND PCM_PREREQUISITE_PCMS ${PCM_PATH})
+			endif()
 		endif()
 	endforeach()
+
 	set_property(
 		TARGET ${EAGINE_MODULE_TARGET}
 		APPEND PROPERTY EAGINE_MODULE_PCM_PATH
@@ -414,6 +424,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		DEPENDS
 			${EAGINE_MODULE_INTERFACE_FILES}
 			${EAGINE_MODULE_TARGET}-imports
+			${PCM_PREREQUISITE_PCMS}
 		)
 	add_custom_target(
 		${EAGINE_MODULE_TARGET}-pcm
