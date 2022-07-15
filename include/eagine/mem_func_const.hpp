@@ -172,6 +172,11 @@ struct member_function_constant<RV (C::*)(P...) const noexcept, Ptr> {
     }
 };
 
+/// @brief Helper for instantiating the member_function_constant template.
+/// @ingroup functional
+template <auto C>
+using member_function_constant_t = member_function_constant<decltype(C), C>;
+
 /// @brief Macro for instantiating the member_function_constant template.
 /// @ingroup functional
 /// @see EAGINE_MEM_FUNC_C

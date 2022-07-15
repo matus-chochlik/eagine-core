@@ -71,7 +71,7 @@ auto main(main_ctx& ctx) -> int {
 		"attribD" : "VGhpcyBpcyBhIGJhc2U2NC1lbmNvZGVkIEJMT0IK"
 	})");
 
-    if(const auto json_tree{valtree::from_json_text(json_text, ctx.log())}) {
+    if(const auto json_tree{valtree::from_json_text(json_text, ctx)}) {
         std::array<byte, 64> temp{};
         log.info("parsed from json")
           .arg(
@@ -111,7 +111,7 @@ auto main(main_ctx& ctx) -> int {
       "    attribB: 123\n"
       "attribC: [45, six, 78.9, zero: false]\n");
 
-    if(const auto yaml_tree{valtree::from_yaml_text(yaml_text, ctx.log())}) {
+    if(const auto yaml_tree{valtree::from_yaml_text(yaml_text, ctx)}) {
         log.info("parsed from yaml")
           .arg(
             identifier{"attribB"},
@@ -145,14 +145,13 @@ auto main(main_ctx& ctx) -> int {
     if(const auto path_arg{ctx.args().find("--fs-tree").next()}) {
         log.info("opening ${root} filesystem tree")
           .arg(identifier{"root"}, path_arg.get());
-        if(const auto fs_tree{
-             valtree::from_filesystem_path(path_arg, ctx.log())}) {
+        if(const auto fs_tree{valtree::from_filesystem_path(path_arg, ctx)}) {
             fs_tree.traverse(
               valtree::compound::visit_handler{construct_from, visitor});
         }
     }
 
-    if(const auto empty_tree{valtree::empty(ctx.log())}) {
+    if(const auto empty_tree{valtree::empty(ctx)}) {
         empty_tree.traverse(
           valtree::compound::visit_handler{construct_from, visitor});
     }
