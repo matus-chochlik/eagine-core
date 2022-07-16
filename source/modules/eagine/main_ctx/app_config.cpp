@@ -44,23 +44,17 @@ export struct application_config_value_loader
 ///
 /// This class allow to read application configuration values from from
 /// environment variables, command line arguments and/or configuration files.
-export class application_config final : public basic_config {
+export class application_config final {
 public:
     application_config(main_ctx_getters& ctx) noexcept;
 
-    using basic_config::is_set;
+    operator basic_config&() noexcept {
+        return _basic;
+    }
 
     /// @brief Checks is the boolean option identified by @p key is set to true.
-    auto is_set(const string_view key, const string_view tag) noexcept
-      -> bool final;
-
-    using basic_config::fetch_string;
-
-    /// @brief Fetches the configuration string identified by @p key, into @p dest.
-    auto fetch_string(
-      const string_view key,
-      const string_view tag,
-      std::string& dest) noexcept -> bool final;
+    auto is_set(const string_view key, const string_view tag = {}) noexcept
+      -> bool;
 
     /// @brief Fetches the configuration value identified by @p key, into @p dest.
     template <typename T>
@@ -217,6 +211,26 @@ private:
     auto _find_prog_arg(const string_view key) noexcept -> program_arg;
     auto _eval_env_var(const string_view key) noexcept
       -> std::optional<string_view>;
+
+private:
+    struct basic_config_impl : basic_config {
+        application_config& _parent;
+
+        basic_config_impl(application_config& parent) noexcept
+          : _parent{parent} {}
+
+        auto is_set(const string_view key, const string_view tag) noexcept
+          -> bool final {
+            return _parent.is_set(key, tag);
+        }
+
+        auto fetch_string(
+          const string_view key,
+          const string_view tag,
+          std::string& dest) noexcept -> bool final {
+            return _parent.fetch(key, dest, tag);
+        }
+    } _basic{*this};
 };
 //------------------------------------------------------------------------------
 export template <typename T>

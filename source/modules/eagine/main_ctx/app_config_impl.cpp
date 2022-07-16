@@ -328,13 +328,6 @@ auto application_config::is_set(
     return false;
 }
 //------------------------------------------------------------------------------
-auto application_config::fetch_string(
-  const string_view key,
-  const string_view tag,
-  std::string& dest) noexcept -> bool {
-    return fetch(key, dest, tag);
-}
-//------------------------------------------------------------------------------
 auto application_config::_impl() noexcept -> application_config_impl* {
     if(!_pimpl) [[unlikely]] {
         try {

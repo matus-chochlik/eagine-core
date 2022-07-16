@@ -326,9 +326,10 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     /// @param value the value of the argument.
     template <adapted_for_log_entry T>
-    auto arg(const identifier name, T&& value) noexcept -> console_entry& {
+        requires(!std::integral<T> && !std::floating_point<T>)
+    auto arg(const identifier name, T value) noexcept -> console_entry& {
         if(_backend) {
-            _args.add(adapt_entry_arg(name, std::forward<T>(value)));
+            _args.add(adapt_entry_arg(name, std::move(value)));
         }
         return *this;
     }
