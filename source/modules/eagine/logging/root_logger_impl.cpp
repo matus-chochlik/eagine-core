@@ -80,7 +80,7 @@ auto root_logger_choose_backend(
     return make_proxy_log_backend(info);
 }
 //------------------------------------------------------------------------------
-auto root_logger::_init_backend(
+auto root_logger_init_backend(
   const program_args& args,
   root_logger_options& opts) -> std::unique_ptr<logger_backend> {
     if(opts.forced_backend) {
@@ -170,8 +170,8 @@ auto root_logger::_log_compiler_info() -> void {
 root_logger::root_logger(
   identifier logger_id,
   const program_args& args,
-  root_logger_options& opts)
-  : logger{logger_id, {_init_backend(args, opts)}} {
+  root_logger_options& opts) noexcept
+  : logger{logger_id, {root_logger_init_backend(args, opts)}} {
     _log_args(args);
     _log_instance_info();
     _log_git_info();

@@ -23,9 +23,7 @@ public:
     console(
       identifier app_id,
       const program_args& args,
-      console_options& opts) noexcept
-      : _backend{_init_backend(args, opts)}
-      , _app_id{app_id} {}
+      console_options& opts) noexcept;
 
     auto print(
       const identifier source,
@@ -50,9 +48,6 @@ public:
     }
 
 private:
-    static auto _init_backend(const program_args&, console_options&)
-      -> std::unique_ptr<console_backend>;
-
     auto make_log_entry(
       const identifier source,
       const console_entry_kind kind,

@@ -18,8 +18,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 export class root_activity : public activity_progress {
 public:
-    root_activity(logger& parent) noexcept
-      : activity_progress{_init_backend(parent)} {}
+    root_activity(logger& parent) noexcept;
 
     auto register_observer(progress_observer&) noexcept -> bool;
     void unregister_observer(progress_observer&) noexcept;
@@ -31,8 +30,6 @@ public:
     void reset_update_callback() noexcept;
 
 private:
-    static auto _init_backend(logger&)
-      -> std::unique_ptr<progress_tracker_backend>;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

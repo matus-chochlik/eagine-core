@@ -452,11 +452,11 @@ public:
     constexpr logger() noexcept = default;
 
     /// @brief Construction from identifier and backed getter
-    logger(const identifier id, logger_shared_backend_getter getter)
+    logger(const identifier id, logger_shared_backend_getter getter) noexcept
       : base{id, std::move(getter)} {}
 
     /// @brief Construction from identifier and reference to parent object.
-    logger(const identifier id, const base& parent)
+    logger(const identifier id, const base& parent) noexcept
       : base{id, parent} {}
 
     /// @brief Construction from identifier and reference to parent logger.
