@@ -167,4 +167,16 @@ auto root_logger::_log_compiler_info() -> void {
       });
 }
 //------------------------------------------------------------------------------
+root_logger::root_logger(
+  identifier logger_id,
+  const program_args& args,
+  root_logger_options& opts)
+  : logger{logger_id, {_init_backend(args, opts)}} {
+    _log_args(args);
+    _log_instance_info();
+    _log_git_info();
+    _log_os_info();
+    _log_compiler_info();
+}
+//------------------------------------------------------------------------------
 } // namespace eagine

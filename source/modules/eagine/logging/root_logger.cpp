@@ -34,14 +34,7 @@ public:
     root_logger(
       identifier logger_id,
       const program_args& args,
-      root_logger_options& opts)
-      : logger{logger_id, {_init_backend(args, opts)}} {
-        _log_args(args);
-        _log_instance_info();
-        _log_git_info();
-        _log_os_info();
-        _log_compiler_info();
-    }
+      root_logger_options& opts);
 
     /// @brief Constructor initializing from program arguments and logger options.
     root_logger(const program_args& args, root_logger_options& opts)

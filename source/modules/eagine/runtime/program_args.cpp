@@ -461,10 +461,6 @@ private:
 /// @ingroup main_context
 export class program_args {
 public:
-    /// @brief Default constructor.
-    /// @post empty()
-    program_args() noexcept = default;
-
     /// @brief  Construction from the length and pointer to the argument list.
     program_args(const span_size_t argn, char** args) noexcept
       : _argc{int(argn)}
