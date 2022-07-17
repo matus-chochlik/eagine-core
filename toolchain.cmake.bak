@@ -6,6 +6,7 @@
 # Copy this file to `toolchain.cmake` and change as necessary.
 # Update if the llvm install prefix path is different
 set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 # set(CMAKE_CXX_COMPILER_LAUNCHER distcc ccache)
 # set(CMAKE_C_COMPILER clang)
 # set(CMAKE_CXX_COMPILER clang++)
