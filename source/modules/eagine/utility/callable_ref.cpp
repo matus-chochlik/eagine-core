@@ -211,7 +211,7 @@ export template <
   typename... P,
   bool NE,
   RV (C::*Ptr)(P...) noexcept(NE)>
-constexpr inline auto make_callable_ref(
+constexpr auto make_callable_ref(
   C* obj,
   member_function_constant<RV (C::*)(P...) noexcept(NE), Ptr> mfc) noexcept
   -> callable_ref<RV(P...) noexcept(NE)> {
@@ -226,11 +226,16 @@ export template <
   typename... P,
   bool NE,
   RV (C::*Ptr)(P...) const noexcept(NE)>
-constexpr inline auto make_callable_ref(
+constexpr auto make_callable_ref(
   C* obj,
   member_function_constant<RV (C::*)(P...) noexcept(NE), Ptr> mfc) noexcept
   -> callable_ref<RV(P...) noexcept(NE)> {
     return {obj, mfc};
+}
+
+export template <auto MemFuncPtr, typename C>
+constexpr auto make_callable_ref(C* obj) noexcept {
+    return make_callable_ref(obj, member_function_constant_t<MemFuncPtr>{});
 }
 
 } // namespace eagine
