@@ -193,7 +193,7 @@ export void reset_progress_update_callback(main_ctx_getters& ctx) noexcept {
 //------------------------------------------------------------------------------
 /// @brief Structure storing customization options for main context.
 /// @ingroup main_context
-struct main_ctx_options {
+export struct main_ctx_options {
 
     /// @brief The application name. Defaults to the executable name.
     std::string app_name{};
