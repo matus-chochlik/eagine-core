@@ -145,6 +145,12 @@ public:
         return _source.locate_service(type_id);
     }
 
+    template <std::derived_from<main_ctx_service> Service>
+    auto locate() noexcept -> std::shared_ptr<Service> {
+        return std::dynamic_pointer_cast<Service>(
+          locate_service(Service::static_type_id()));
+    }
+
 private:
     const process_instance_id_t _instance_id;
     main_ctx_getters& _source;
