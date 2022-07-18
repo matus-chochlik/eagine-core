@@ -153,6 +153,24 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.serialization PARTITION type_compiler_info
+	IMPORTS
+		data_buffer read write
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.build_info
+)
+
+eagine_add_module(
+	eagine.core.serialization PARTITION type_version_info
+	IMPORTS
+		data_buffer read write
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.build_info
+)
+
+eagine_add_module(
 	eagine.core.serialization
 	INTERFACES
 		serialization
@@ -172,6 +190,8 @@ eagine_add_module(
 		string_backend
 		portable_backend
 		type_sudoku
+		type_compiler_info
+		type_version_info
 	SOURCES
 )
 

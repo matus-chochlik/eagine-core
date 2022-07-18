@@ -132,6 +132,22 @@ export template <>
 struct deserializer<std::string> : plain_deserializer<std::string> {};
 //------------------------------------------------------------------------------
 export template <typename T>
+struct structural_deserializer {
+    template <typename Backend>
+    auto read(T& value, Backend& backend) const {
+        auto temp{T::make_structure()};
+        const auto errors{_deserializer.read(temp, backend)};
+        if(!errors) [[likely]] {
+            value.set_structure(std::move(temp));
+        }
+        return errors;
+    }
+
+private:
+    deserializer<typename T::structure_type> _deserializer{};
+};
+//------------------------------------------------------------------------------
+export template <typename T>
 struct common_deserializer {
 
     template <typename Backend>
@@ -505,16 +521,17 @@ struct deserializer
 /// @see deserializer_backend
 export template <typename T, typename Backend>
 auto deserialize(T& value, Backend& backend) noexcept -> deserialization_errors
-  requires(std::is_base_of_v<deserializer_backend, Backend>) {
-      deserialization_errors errors{};
-      errors |= backend.begin();
-      if(!errors) [[likely]] {
-          deserializer<T> reader;
-          errors |= reader.read(value, backend);
-          errors |= backend.finish();
-      }
-      return errors;
-  }
+    requires(std::is_base_of_v<deserializer_backend, Backend>)
+{
+    deserialization_errors errors{};
+    errors |= backend.begin();
+    if(!errors) [[likely]] {
+        deserializer<T> reader;
+        errors |= reader.read(value, backend);
+        errors |= backend.finish();
+    }
+    return errors;
+}
 //------------------------------------------------------------------------------
 } // namespace eagine
 

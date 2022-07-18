@@ -19,15 +19,19 @@ namespace eagine {
 
 /// @brief Class providing basic system information.
 /// @ingroup main_context
-export class version_info {
+export class version_info
+  : public structural_core<std::tuple<int, int, int, int>> {
+
+    using base = structural_core<std::tuple<int, int, int, int>>;
+
 public:
     version_info() noexcept = default;
 
     constexpr version_info(std::tuple<int, int, int, int> data) noexcept
-      : _data{std::move(data)} {}
+      : base{std::move(data)} {}
 
     constexpr version_info(std::tuple<int, int, int> data) noexcept
-      : _data{std::get<0>(data), std::get<1>(data), std::get<2>(data), -1} {}
+      : base{{std::get<0>(data), std::get<1>(data), std::get<2>(data), -1}} {}
 
     /// @brief Creates an instance of git source version info.
     /// @see compiler
@@ -48,7 +52,7 @@ public:
     /// @see version_commit
     auto version_tuple() const noexcept
       -> const std::tuple<int, int, int, int>& {
-        return _data;
+        return get_structure();
     }
 
     /// @brief Returns the project major version number.
@@ -103,9 +107,6 @@ public:
     /// @brief Checks if the project build version is at least as specified.
     auto version_at_least(int major, int minor, int patch, int commit) const
       -> tribool;
-
-private:
-    std::tuple<int, int, int, int> _data{-1, -1, -1, -1};
 };
 //------------------------------------------------------------------------------
 auto version_info::version_at_least(int major, int minor) const -> tribool {

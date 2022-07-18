@@ -135,6 +135,17 @@ export template <>
 struct serializer<string_view> : plain_serializer<string_view> {};
 //------------------------------------------------------------------------------
 export template <typename T>
+struct structural_serializer {
+    template <typename Backend>
+    auto write(const T& value, Backend& backend) const {
+        return _serializer.write(value.get_structure(), backend);
+    }
+
+private:
+    serializer<typename T::structure_type> _serializer{};
+};
+//------------------------------------------------------------------------------
+export template <typename T>
 struct common_serializer {
 
     template <typename Backend>
@@ -499,15 +510,16 @@ struct serializer
 export template <typename T, typename Backend>
 auto serialize(const T& value, Backend& backend) noexcept
   -> serialization_errors
-  requires(std::is_base_of_v<serializer_backend, Backend>) {
-      serialization_errors errors = backend.begin();
-      if(!errors) [[likely]] {
-          serializer<std::remove_cv_t<T>> writer;
-          errors |= writer.write(value, backend);
-          errors |= backend.finish();
-      }
-      errors |= extract(backend.sink()).finalize();
-      return errors;
-  }
+    requires(std::is_base_of_v<serializer_backend, Backend>)
+{
+    serialization_errors errors = backend.begin();
+    if(!errors) [[likely]] {
+        serializer<std::remove_cv_t<T>> writer;
+        errors |= writer.write(value, backend);
+        errors |= backend.finish();
+    }
+    errors |= extract(backend.sink()).finalize();
+    return errors;
+}
 //------------------------------------------------------------------------------
 } // namespace eagine

@@ -7,6 +7,10 @@ eagine_add_module(eagine.core.types PARTITION tribool)
 eagine_add_module(eagine.core.types PARTITION interface)
 
 eagine_add_module(
+	eagine.core.types PARTITION structural
+)
+
+eagine_add_module(
 	eagine.core.types PARTITION nothing
 	IMPORTS eagine.core.build_config
 )
@@ -73,6 +77,7 @@ eagine_add_module(
 		basic
 		nothing
 		anything
+		structural
 		interface
 		compare
 		limits
