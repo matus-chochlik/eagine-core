@@ -112,5 +112,6 @@ target_link_libraries(
 	eagine.core.runtime
 	PUBLIC
 		EAGine::Deps::System
+		EAGine::Deps::SYSTEMD
 		EAGine::Deps::ZLIB
 )
