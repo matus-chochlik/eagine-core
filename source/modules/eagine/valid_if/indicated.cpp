@@ -26,7 +26,7 @@ struct valid_if_indicated_policy {
 
     /// @brief Indicates value validity, true if indicator == Value.
     template <typename T>
-    auto operator()(const T&) const noexcept {
+    constexpr auto operator()(const T&) const noexcept {
         return Comparable(_indicator) == Value;
     }
 
