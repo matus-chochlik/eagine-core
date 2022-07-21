@@ -130,7 +130,7 @@ function(eagine_add_module_common_properties TARGET_NAME)
 		set_property(
 			TARGET ${TARGET_NAME}
 			APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
-			"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-weak-vtables;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions"
+			"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions"
 		)
 	endif()
 	if(${EAGINE_GXX_COMPILER})
@@ -292,7 +292,6 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		APPEND PROPERTY EAGINE_MODULE_PARTITIONS
 		${EAGINE_MODULE_PARTITIONS}
 	)
-	unset(PCM_PREREQUISITE_PCMS)
 	foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
 		if(TARGET ${IMPORT})
 			set(EAGINE_MODULE_IMPORT "${IMPORT}")
@@ -317,7 +316,6 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 					EAGINE_${PP_NAME}_MODULE=1
 				)
 			endif()
-			list(APPEND PCM_PREREQUISITE_PCMS ${EAGINE_MODULE_IMPORT}-pcm)
 		endif()
 	endforeach()
 
@@ -415,11 +413,12 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			-c ${EAGINE_MODULE_INTERFACE_FILES}
 			-o ${EAGINE_MODULE_TARGET}.pcm
 		DEPENDS
-			${EAGINE_MODULE_INTERFACE_FILES};${EAGINE_MODULE_TARGET}-imports;${PCM_PREREQUISITE_PCMS}
+			${EAGINE_MODULE_TARGET}-imports
+			${EAGINE_MODULE_INTERFACE_FILES}
 		)
 	add_custom_target(
 		${EAGINE_MODULE_TARGET}-pcm
-		DEPENDS ${EAGINE_MODULE_TARGET}.pcm
+		SOURCES ${EAGINE_MODULE_TARGET}.pcm
 	)
 	add_dependencies(
 		${EAGINE_MODULE_TARGET}
@@ -437,7 +436,10 @@ function(eagine_target_modules TARGET_NAME)
 	eagine_add_module_common_properties(${TARGET_NAME})
 
 	foreach(EAGINE_MODULE_SOURCE ${ARGN})
-		target_link_libraries(${TARGET_NAME} PUBLIC ${EAGINE_MODULE_SOURCE})
+		target_link_libraries(
+			${TARGET_NAME}
+			PUBLIC ${EAGINE_MODULE_SOURCE}
+		)
 		get_property(
 			PP_NAME	
 			TARGET ${EAGINE_MODULE_SOURCE}
