@@ -166,8 +166,8 @@ public:
 
     /// @brief Checks if the stored value is valid according to policy.
     /// @param p additional parameters for the policy validity check function.
-    constexpr auto is_valid(P... p) const noexcept {
-        return is_valid(_value, p...);
+    constexpr auto is_valid(P... p) const noexcept -> bool {
+        return _policy(_value, p...);
     }
 
     /// @brief Checks if the stored value is valid according to policy.
