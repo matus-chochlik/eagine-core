@@ -133,14 +133,7 @@ function(eagine_add_module_common_properties TARGET_NAME)
 			"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions"
 		)
 	endif()
-	if(${EAGINE_GXX_COMPILER})
-		set_property(
-			TARGET ${TARGET_NAME}
-			APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
-			"-Wextra;-Wshadow;-Wno-noexcept-type;-Wno-attributes;-Wno-psabi;-Wno-unknown-warning-option"
-		)
-	endif()
-	if((${EAGINE_GXX_COMPILER} OR ${EAGINE_CLANGXX_COMPILER}) AND ${EAGINE_DEBUG})
+	if(${EAGINE_CLANGXX_COMPILER} AND ${EAGINE_DEBUG})
 		set_property(
 			TARGET ${TARGET_NAME}
 			APPEND PROPERTY COMPILE_OPTIONS
