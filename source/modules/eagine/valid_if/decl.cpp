@@ -287,12 +287,12 @@ public:
     }
 
     /// @brief Returns the stored value regardless of its validity.
-    constexpr auto value_anyway() const noexcept -> const auto& {
+    constexpr auto value_anyway() const noexcept -> const T& {
         return _value;
     }
 
     /// @brief Returns the stored value regardless of its validity.
-    constexpr auto value_anyway() noexcept -> auto& {
+    constexpr auto value_anyway() noexcept -> T& {
         return _value;
     }
 
