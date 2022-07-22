@@ -64,10 +64,13 @@ private:
 //------------------------------------------------------------------------------
 export template <typename T>
 struct serializer;
-//------------------------------------------------------------------------------
+
+export template <typename T>
+struct serializer<const T> : serializer<T> {};
+
 export template <typename T>
 struct serializer<T&> : serializer<T> {};
-//------------------------------------------------------------------------------
+
 export template <typename T>
 struct serializer<const T&> : serializer<T> {};
 //------------------------------------------------------------------------------
@@ -134,7 +137,7 @@ struct serializer<string_view> : plain_serializer<string_view> {};
 //------------------------------------------------------------------------------
 export template <typename T>
 struct structural_serializer {
-    auto write(const T& value, auto& backend) const {
+    auto write(const T& value, auto& backend) const noexcept {
         return _serializer.write(value.get_structure(), backend);
     }
 
@@ -209,12 +212,12 @@ private:
     }
 
     template <typename Elem, typename Backend, typename Serializer>
-    static void _write_element(
+    void _write_element(
       serialization_errors& errors,
       const std::size_t index,
       Elem& elem,
       Backend& backend,
-      Serializer& serial) noexcept {
+      Serializer& serial) const noexcept {
         if(!errors) [[likely]] {
             errors |= backend.begin_element(span_size(index));
             if(!errors) [[likely]] {
@@ -263,12 +266,12 @@ private:
     }
 
     template <typename Memb, typename Backend, typename Serializer>
-    static void _write_member(
+    void _write_member(
       serialization_errors& errors,
       string_view name,
       Memb& value,
       Backend& backend,
-      Serializer& serial) noexcept {
+      Serializer& serial) const noexcept {
         if(!errors) [[likely]] {
             errors |= backend.begin_member(name);
             if(!errors) [[likely]] {
