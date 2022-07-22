@@ -6,10 +6,15 @@
 function(eagine_add_module_common_properties TARGET_NAME)
 	set_property(
 		TARGET ${TARGET_NAME}
+		APPEND PROPERTY COMPILE_OPTIONS
+		"-fmodules-ts"
+	)
+	set_property(
+		TARGET ${TARGET_NAME}
 		APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
 		"-Wextra;-Wshadow;-Wno-noexcept-type;-Wno-attributes;-Wno-psabi;-Wno-unknown-warning-option"
 	)
-	if(${EAGINE_GXX_COMPILER} AND ${EAGINE_DEBUG})
+	if(${EAGINE_DEBUG})
 		set_property(
 			TARGET ${TARGET_NAME}
 			APPEND PROPERTY COMPILE_OPTIONS
@@ -17,6 +22,83 @@ function(eagine_add_module_common_properties TARGET_NAME)
 		)
 	endif()
 endfunction()
+
+add_custom_target(eagine-std-module)
+
+function(eagine_build_gnu_std_header_module HEADER_NAME)
+	add_custom_target(
+		eagine-std-${HEADER_NAME}
+		COMMAND ${CMAKE_CXX_COMPILER}
+			-std=c++${CMAKE_CXX_STANDARD}
+			-fmodules-ts
+			${CMAKE_CXX_FLAGS}
+			-xc++-system-header ${HEADER_NAME}
+	)
+	add_dependencies(eagine-std-module eagine-std-${HEADER_NAME})
+endfunction()
+
+foreach(
+	HEADER_NAME
+	algorithm
+	array
+	atomic
+	cctype
+	cerrno
+	charconv
+	chrono
+	climits
+	cmath
+	compare
+	complex
+	concepts
+	condition_variable
+	csignal
+	cstddef
+	cstdint
+	cstdio
+	cstdlib
+	cstring
+	exception
+	filesystem
+	fstream
+	functional
+	initializer_list
+	iomanip
+	iosfwd
+	iostream
+	istream
+	iterator
+	limits
+	locale
+	map
+	memory
+	mutex
+	new
+	numeric
+	optional
+	ostream
+	queue
+	random
+	ratio
+	regex
+	set
+	sstream
+	stack
+	stdexcept
+	string
+	string_view
+	system_error
+	thread
+	tuple
+	typeinfo
+	type_traits
+	utility
+	variant
+	vector
+)
+	eagine_build_gnu_std_header_module(${HEADER_NAME})
+endforeach()
+
 
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
@@ -114,6 +196,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			"${EAGINE_MODULE_PROPER}:${EAGINE_MODULE_PARTITION}"
 		)
 	endif()
+	add_dependencies(${EAGINE_MODULE_TARGET} eagine-std-module)
 
 	if(NOT "${EAGINE_MODULE_PP_NAME}" STREQUAL "")
 		set_property(
