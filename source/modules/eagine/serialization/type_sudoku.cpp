@@ -38,7 +38,7 @@ struct serializer<basic_sudoku_board<S, T>>
   : common_serializer<basic_sudoku_board<S, T>> {
     template <typename Backend>
     auto write(const basic_sudoku_board<S, T>& value, Backend& backend) const {
-        return _serializer.write(value._blocks, backend);
+        return _serializer.write(value.blocks(), backend);
     }
 
 private:
@@ -50,7 +50,7 @@ struct deserializer<basic_sudoku_board<S, T>>
   : common_deserializer<basic_sudoku_board<S, T>> {
     template <typename Backend>
     auto read(basic_sudoku_board<S, T>& value, Backend& backend) const {
-        const auto errors{_deserializer.read(value._blocks, backend)};
+        const auto errors{_deserializer.read(value.blocks(), backend)};
         return errors;
     }
 
