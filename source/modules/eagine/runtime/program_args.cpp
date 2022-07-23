@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.runtime:program_args;
 
+import eagine.core.debug;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;

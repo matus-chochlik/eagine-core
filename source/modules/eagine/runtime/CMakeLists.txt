@@ -21,6 +21,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.runtime PARTITION program_args
 	IMPORTS
+		eagine.core.debug
 		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
