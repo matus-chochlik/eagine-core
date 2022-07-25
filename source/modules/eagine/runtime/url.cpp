@@ -33,6 +33,9 @@ public:
         return _url_str.compare(that._url_str);
     }
 
+    auto operator==(const url& that) const noexcept -> bool = default;
+    auto operator<(const url& that) const noexcept -> bool = default;
+
     /// @brief Indicates if the URL was parsed successfully.
     auto is_valid() const noexcept {
         return _parsed;
