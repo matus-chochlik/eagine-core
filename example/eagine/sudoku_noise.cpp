@@ -5,10 +5,15 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <iostream>;
+#else
 #include <eagine/app_config.hpp>
 #include <eagine/main_ctx.hpp>
 #include <eagine/sudoku.hpp>
 #include <iostream>
+#endif
 
 namespace eagine {
 
@@ -64,9 +69,7 @@ auto main(main_ctx& ctx) -> int {
             break;
         }
         default:
-            ctx.log()
-              .error("invalid rank value: ${rank}")
-              .arg(EAGINE_ID(rank), rank);
+            ctx.log().error("invalid rank value: ${rank}").arg("rank", rank);
             break;
     }
 

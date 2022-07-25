@@ -5,22 +5,30 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#include <eagine/c_api/adapted_function.hpp>
-
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <iostream>;
+#else
 #include <eagine/config/platform.hpp>
+#include <eagine/c_api/adapted_function.hpp>
 #include <eagine/c_api_wrap.hpp>
 #include <eagine/extract.hpp>
 #include <eagine/hexdump.hpp>
 #include <eagine/memory/block.hpp>
 #include <eagine/memory/span_algo.hpp>
 #include <iostream>
+#endif
 
-#if EAGINE_POSIX
+#if __has_include(<fcntl.h>) && \
+	__has_include(<sys/types.h>) && \
+	__has_include(<unistd.h>)
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
+#define EAGINE_POSIX 1
 #define EXAMPLE_API_STATIC_FUNC(NAME) &::NAME
 #else
+#define EAGINE_POSIX 0
 #define EXAMPLE_API_STATIC_FUNC(NAME) nullptr
 #endif
 
@@ -90,7 +98,7 @@ public:
       true>
       read_file;
 
-    c_api::adapted_function<
+    c_api::simple_adapted_function<
       &example_file_api::read_file,
       c_api::head_transformed<ssize_t, 0, 2>(int, memory::block)>
       read_block{*this};
@@ -104,12 +112,12 @@ public:
       true>
       write_file;
 
-    c_api::adapted_function<
+    c_api::simple_adapted_function<
       &example_file_api::write_file,
       c_api::skip_transformed<ssize_t, 0, 2>(int, memory::const_block)>
       write_block{*this};
 
-    c_api::adapted_function<
+    c_api::simple_adapted_function<
       &example_file_api::write_file,
       c_api::skip_transformed<ssize_t, 0, 2>(int, string_view)>
       write_string{*this};
