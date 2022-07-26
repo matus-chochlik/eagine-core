@@ -88,7 +88,7 @@ struct within_limits_num<Dst, Src, IsInt, IsInt, true, false> {
     }
 };
 //------------------------------------------------------------------------------
-template <typename Dst, typename Src>
+export template <typename Dst, typename Src>
 struct within_limits
   : within_limits_num<
       Dst,
@@ -98,7 +98,7 @@ struct within_limits
       std::is_signed_v<Dst>,
       std::is_signed_v<Src>> {};
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct within_limits<T, T> {
     static constexpr auto check(const T&) noexcept {
         return true;

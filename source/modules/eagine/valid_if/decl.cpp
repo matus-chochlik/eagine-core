@@ -526,4 +526,11 @@ auto operator<<(std::ostream& out, const valid_if_or_fallback<F, T, P, L>& viof)
 export template <typename T>
 using optionally_valid = valid_if<T, valid_flag_policy>;
 //------------------------------------------------------------------------------
+export template <typename Dst, typename P, typename L, typename... A, typename Src>
+struct within_limits<basic_valid_if<Dst, P, L, A...>, Src> {
+    static constexpr auto check(const Src value) noexcept {
+        return within_limits<Dst, Src>::check(value);
+    }
+};
+//------------------------------------------------------------------------------
 } // namespace eagine
