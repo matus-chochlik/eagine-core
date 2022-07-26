@@ -523,11 +523,13 @@ constexpr auto can_accommodate(
 /// @see as_bytes
 /// @see as_chars
 export template <typename T, typename B, typename P, typename S>
+    requires(std::is_same_v<std::remove_const_t<B>, char> ||
+             std::is_same_v<std::remove_const_t<B>, byte>)
 constexpr auto accommodate(
   const basic_span<B, P, S> blk,
   const std::type_identity<T> tid = {}) noexcept
   -> basic_span<T, rebind_pointer_t<P, T>, S> {
-    assert(can_accommodate(blk, tid));
+    assert(blk.is_empty() || can_accommodate(blk, tid));
     return basic_span<T, rebind_pointer_t<P, T>, S>{
       blk.begin_addr(), blk.end_addr()};
 }
