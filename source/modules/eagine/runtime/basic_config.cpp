@@ -14,7 +14,7 @@ import <string>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export struct basic_config : interface<basic_config> {
+export struct basic_config : abstract<basic_config> {
 
     /// @brief Checks is the boolean option identified by @p key is set to true.
     virtual auto is_set(const string_view key, const string_view tag) noexcept

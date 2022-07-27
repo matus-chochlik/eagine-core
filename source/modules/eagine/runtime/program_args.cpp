@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.runtime:program_args;
 
+import eagine.core.debug;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
@@ -44,7 +45,7 @@ public:
 
     /// @brief Indicates if the arguments is valid.
     auto is_valid() const noexcept -> bool {
-        return (0 < _argi) && (_argi < _argc) && (_argv != nullptr) &&
+        return (0 <= _argi) && (_argi < _argc) && (_argv != nullptr) &&
                (_argv[_argi] != nullptr);
     }
 
@@ -461,10 +462,6 @@ private:
 /// @ingroup main_context
 export class program_args {
 public:
-    /// @brief Default constructor.
-    /// @post empty()
-    program_args() noexcept = default;
-
     /// @brief  Construction from the length and pointer to the argument list.
     program_args(const span_size_t argn, char** args) noexcept
       : _argc{int(argn)}

@@ -13,6 +13,7 @@ export module eagine.core.memory:address;
 
 import eagine.core.types;
 import :align;
+import <new>;
 import <compare>;
 import <cstddef>;
 import <cstdint>;
@@ -65,13 +66,13 @@ public:
     constexpr basic_address(basic_address that, Int offs) noexcept
         requires(
           std::is_integral_v<Int> && std::is_convertible_v<Int, std::ptrdiff_t>)
-    // NOLINTNEXTLINE(performance-no-int-to-ptr)
-    : _addr{reinterpret_cast<pointer>(that.value() + offs)} {}
+      // NOLINTNEXTLINE(performance-no-int-to-ptr)
+      : _addr{reinterpret_cast<pointer>(that.value() + offs)} {}
 
     template <bool IsConst2>
     constexpr basic_address(basic_address<IsConst2> a) noexcept
         requires(IsConst && !IsConst2)
-    : _addr{pointer(a)} {}
+      : _addr{pointer(a)} {}
 
     /// @brief Indicates if the stored address is null.
     constexpr auto is_null() const noexcept {
@@ -113,7 +114,7 @@ public:
         requires(!std::is_void_v<T> && (std::is_const_v<T> || !IsConst))
     {
         assert(is_aligned_as<T>());
-        return static_cast<T*>(_addr);
+        return std::launder(static_cast<T*>(_addr));
     }
 
     /// @brief Returns this address as an signed integer.

@@ -140,7 +140,7 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     /// @param value the value of the argument.
     auto arg(const identifier name, const identifier value) noexcept -> auto& {
-        return arg(name, identifier{"Identifier"}, value);
+        return arg(name, "Identifier", value);
     }
 
     /// @brief Adds a new message argument with boolean value.
@@ -160,7 +160,7 @@ public:
     }
 
     auto arg(const identifier name, const bool value) noexcept -> auto& {
-        return arg(name, identifier{"bool"}, value);
+        return arg(name, "bool", value);
     }
 
     /// @brief Adds a new message argument with signed integer value.
@@ -182,7 +182,7 @@ public:
     auto arg(
       const identifier name,
       const std::signed_integral auto value) noexcept -> auto& {
-        return arg(name, identifier{"signed"}, value);
+        return arg(name, "signed", value);
     }
 
     /// @brief Adds a new message argument with unsigned integer value.
@@ -204,7 +204,7 @@ public:
     auto arg(
       const identifier name,
       const std::unsigned_integral auto value) noexcept -> auto& {
-        return arg(name, identifier{"unsigned"}, value);
+        return arg(name, "unsigned", value);
     }
 
     /// @brief Adds a new message argument with floating-point value.
@@ -226,14 +226,14 @@ public:
     auto arg(
       const identifier name,
       const std::floating_point auto value) noexcept -> auto& {
-        return arg(name, identifier{"float"}, value);
+        return arg(name, "float", value);
     }
 
     auto arg(
       const identifier name,
       const std::integral auto value,
       const std::integral auto max) noexcept -> auto& {
-        return arg(name, identifier{"Ratio"}, double(value) / double(max));
+        return arg(name, "Ratio", double(value) / double(max));
     }
 
     /// @brief Adds a new message argument with time duration value.
@@ -261,7 +261,7 @@ public:
     auto arg(
       const identifier name,
       const std::chrono::duration<R, P> value) noexcept -> auto& {
-        return arg(name, identifier{"seconds"}, value);
+        return arg(name, "seconds", value);
     }
 
     /// @brief Adds a new message argument with string value.
@@ -281,7 +281,7 @@ public:
     }
 
     auto arg(const identifier name, const string_view value) noexcept -> auto& {
-        return arg(name, identifier{"str"}, value);
+        return arg(name, "str", value);
     }
 
     auto arg(const identifier name, const std::string& value) noexcept
@@ -310,7 +310,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const memory::const_block value) noexcept
       -> auto& {
-        return arg(name, identifier{"block"}, value);
+        return arg(name, "block", value);
     }
 
     /// @brief Adds a new message argument adapted by the specified function.
@@ -326,9 +326,10 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     /// @param value the value of the argument.
     template <adapted_for_log_entry T>
-    auto arg(const identifier name, T&& value) noexcept -> console_entry& {
+        requires(!std::integral<T> && !std::floating_point<T>)
+    auto arg(const identifier name, T value) noexcept -> console_entry& {
         if(_backend) {
-            _args.add(adapt_entry_arg(name, std::forward<T>(value)));
+            _args.add(adapt_entry_arg(name, std::move(value)));
         }
         return *this;
     }

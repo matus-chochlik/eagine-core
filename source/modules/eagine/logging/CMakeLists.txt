@@ -149,6 +149,26 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.logging PARTITION adapt_tribool
+	IMPORTS
+		entry_arg backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+)
+
+eagine_add_module(
+	eagine.core.logging PARTITION adapt_version_info
+	IMPORTS
+		entry_arg backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.identifier
+		eagine.core.build_info
+		eagine.core.valid_if
+)
+
+eagine_add_module(
 	eagine.core.logging PARTITION adapt_program_args
 	IMPORTS
 		entry_arg backend
@@ -176,8 +196,10 @@ eagine_add_module(
 		logger
 		root_logger
 		adapt_enum
+		adapt_tribool
 		adapt_exception
 		adapt_filesystem
+		adapt_version_info
 		adapt_program_args
 	SOURCES
 		null_backend_impl

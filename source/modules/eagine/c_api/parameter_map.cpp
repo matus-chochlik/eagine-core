@@ -539,7 +539,7 @@ struct make_arg_map<CI, CppI, Handle, basic_owned_handle<Tag, Handle, invalid>> 
 };
 //------------------------------------------------------------------------------
 export struct defaulted;
-struct skipped;
+export struct skipped;
 
 export template <auto>
 struct substituted;

@@ -149,7 +149,7 @@ public:
         const auto p =
           std::equal_range(_vec.begin(), _vec.end(), key, key_comp());
         const auto res = size_type(std::distance(p.first, p.second));
-        EAGINE_ASSERT(res <= 1);
+        assert(res <= 1);
         _vec.erase(p.first, p.second);
         return res;
     }

@@ -29,8 +29,10 @@ public:
     using error_code = serialization_error_code;
     using result = serialization_errors;
 
+    static constexpr const identifier_t id_value = id_v("FastLocal");
+
     auto type_id() noexcept -> identifier final {
-        return identifier{"FastLocal"};
+        return "FastLocal";
     }
 
     template <typename T>
@@ -97,8 +99,10 @@ public:
     using error_code = deserialization_error_code;
     using result = deserialization_errors;
 
+    static constexpr const identifier_t id_value = id_v("FastLocal");
+
     auto type_id() noexcept -> identifier final {
-        return identifier{"FastLocal"};
+        return "FastLocal";
     }
 
     template <typename T>

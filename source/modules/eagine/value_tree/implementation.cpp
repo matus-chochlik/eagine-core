@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.value_tree:implementation;
 
+import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.logging;
@@ -179,25 +180,73 @@ public:
 /// @see from_filesystem_path
 /// @see from_json_text
 /// @see from_yaml_text
-export auto empty(logger&) -> compound;
+export auto empty(const logger&) -> compound;
+
+export auto empty(does_not_hide<logger> auto& parent) -> compound {
+    return empty(parent.log());
+}
 //------------------------------------------------------------------------------
 export struct file_compound_factory : interface<file_compound_factory> {
-    virtual auto make_compound(string_view path, logger&) -> compound = 0;
+    virtual auto make_compound(string_view path, const logger&) -> compound = 0;
 };
 //------------------------------------------------------------------------------
 /// @brief Creates a compound representing a filesystem subtree.
 /// @ingroup valtree
 export auto from_filesystem_path(
   string_view root_path,
-  logger&,
+  const logger&,
   std::shared_ptr<file_compound_factory> = {}) -> compound;
+
+export auto from_filesystem_path(
+  string_view root_path,
+  does_not_hide<logger> auto& parent,
+  std::shared_ptr<file_compound_factory> factory = {}) -> compound {
+    return from_filesystem_path(root_path, parent, std::move(factory));
+}
 //------------------------------------------------------------------------------
 /// @brief Creates a compound from a JSON text string view.
 /// @ingroup valtree
-export auto from_json_text(string_view, logger&) -> compound;
+export auto from_json_text(string_view, const logger&) -> compound;
+
+export auto from_json_text(
+  string_view json_text,
+  does_not_hide<logger> auto& parent) -> compound {
+    return from_json_text(json_text, parent.log());
+}
 //------------------------------------------------------------------------------
 /// @brief Creates a compound from a YAML text string view.
 /// @ingroup valtree
-export auto from_yaml_text(string_view, logger&) -> compound;
+export auto from_yaml_text(string_view, const logger&) -> compound;
+
+export auto from_yaml_text(
+  string_view yaml_text,
+  does_not_hide<logger> auto& parent) -> compound {
+    return from_yaml_text(yaml_text, parent.log());
+}
+//------------------------------------------------------------------------------
+/// @brief Creates a overlay compound, combining multiple other compounds.
+/// @ingroup valtree
+export auto make_overlay(const logger& parent, std::vector<compound_attribute>)
+  -> compound;
+
+export auto make_overlay(
+  does_not_hide<logger> auto& parent,
+  std::vector<compound_attribute> attribs) -> compound {
+    return make_overlay(parent.log(), attribs);
+}
+
+export auto make_overlay(const logger& parent) -> compound {
+    return make_overlay(parent, {});
+}
+
+export auto make_overlay(does_not_hide<logger> auto& parent) -> compound {
+    return make_overlay(parent, {});
+}
+//------------------------------------------------------------------------------
+export auto add_overlay(compound&, const compound_attribute&) -> bool;
+
+export auto add_overlay(compound& c, const compound& a) -> bool {
+    return add_overlay(c, a.root());
+}
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree

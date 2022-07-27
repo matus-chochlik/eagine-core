@@ -14,7 +14,7 @@ import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.runtime;
 import eagine.core.logging;
-import eagine.core.value_tree;
+export import eagine.core.value_tree;
 import :interface;
 import <memory>;
 import <optional>;
@@ -44,49 +44,17 @@ export struct application_config_value_loader
 ///
 /// This class allow to read application configuration values from from
 /// environment variables, command line arguments and/or configuration files.
-export class application_config : public basic_config {
+export class application_config final {
 public:
-    application_config(main_ctx_getters& ctx) noexcept
-      : _main_ctx{ctx}
-      , _log{identifier{"AppConfig"}, _main_ctx.log()} {}
+    application_config(main_ctx_getters& ctx) noexcept;
+
+    operator basic_config&() noexcept {
+        return _basic;
+    }
 
     /// @brief Checks is the boolean option identified by @p key is set to true.
     auto is_set(const string_view key, const string_view tag = {}) noexcept
-      -> bool final;
-
-    auto fetch_string(
-      const string_view key,
-      const string_view tag,
-      std::string& dest) noexcept -> bool final {
-        if(const auto arg{_find_prog_arg(key)}) {
-            if(arg.parse_next(dest, from_config, _log.error_stream())) {
-                return true;
-            } else {
-                _log.error("could not parse configuration value '${value}'")
-                  .arg(identifier{"key"}, key)
-                  .arg(identifier{"value"}, arg.get());
-            }
-        }
-        if(const auto opt_val{_eval_env_var(key)}) {
-            if(auto converted{extract(opt_val)}) {
-                dest = std::move(extract(converted));
-                return true;
-            } else {
-                _log.error("could not convert configuration value '${value}'")
-                  .arg(identifier{"key"}, key)
-                  .arg(identifier{"value"}, extract(opt_val));
-            }
-        }
-        if(const auto attr{_find_comp_attr(key, tag)}) {
-            if(attr.select_value(dest, from_config)) {
-                return true;
-            } else {
-                _log.error("could not fetch configuration value '${key}'")
-                  .arg(identifier{"key"}, key);
-            }
-        }
-        return false;
-    }
+      -> bool;
 
     /// @brief Fetches the configuration value identified by @p key, into @p dest.
     template <typename T>
@@ -99,8 +67,8 @@ public:
                 return true;
             } else {
                 _log.error("could not parse configuration value '${value}'")
-                  .arg(identifier{"key"}, key)
-                  .arg(identifier{"value"}, arg.get());
+                  .arg("key", key)
+                  .arg("value", arg.get());
             }
         }
         if(const auto opt_val{_eval_env_var(key)}) {
@@ -109,8 +77,8 @@ public:
                 return true;
             } else {
                 _log.error("could not convert configuration value '${value}'")
-                  .arg(identifier{"key"}, key)
-                  .arg(identifier{"value"}, extract(opt_val));
+                  .arg("key", key)
+                  .arg("value", extract(opt_val));
             }
         }
         if(const auto attr{_find_comp_attr(key, tag)}) {
@@ -118,7 +86,7 @@ public:
                 return true;
             } else {
                 _log.error("could not fetch configuration value '${key}'")
-                  .arg(identifier{"key"}, key);
+                  .arg("key", key);
             }
         }
         return false;
@@ -138,8 +106,8 @@ public:
                     dest.emplace_back(std::move(temp));
                 } else {
                     _log.error("could not parse configuration value '${value}'")
-                      .arg(identifier{"key"}, key)
-                      .arg(identifier{"value"}, arg.get());
+                      .arg("key", key)
+                      .arg("value", arg.get());
                     return false;
                 }
             }
@@ -149,8 +117,8 @@ public:
                 dest.emplace_back(std::move(extract(converted)));
             } else {
                 _log.error("could not convert configuration value '${value}'")
-                  .arg(identifier{"key"}, key)
-                  .arg(identifier{"value"}, extract(opt_val));
+                  .arg("key", key)
+                  .arg("value", extract(opt_val));
                 return false;
             }
         }
@@ -158,9 +126,10 @@ public:
             const auto count = attr.value_count();
             if(count > 0) {
                 dest.resize(safe_add(dest.size(), std_size(count)));
-                if(!attr.select_values(tail(cover(dest), count), from_config)) {
+                if(!attr.select_values(
+                     tail(memory::cover(dest), count), from_config)) {
                     _log.error("could not fetch configuration values '${key}'")
-                      .arg(identifier{"key"}, key);
+                      .arg("key", key);
                     return false;
                 }
             }
@@ -181,8 +150,8 @@ public:
                 return true;
             } else {
                 _log.error("value '${value}' is not valid for '${key}'")
-                  .arg(identifier{"value"}, temp)
-                  .arg(identifier{"key"}, key);
+                  .arg("value", temp)
+                  .arg("key", key);
             }
         }
         return false;
@@ -242,6 +211,26 @@ private:
     auto _find_prog_arg(const string_view key) noexcept -> program_arg;
     auto _eval_env_var(const string_view key) noexcept
       -> std::optional<string_view>;
+
+private:
+    struct basic_config_impl : basic_config {
+        application_config& _parent;
+
+        basic_config_impl(application_config& parent) noexcept
+          : _parent{parent} {}
+
+        auto is_set(const string_view key, const string_view tag) noexcept
+          -> bool final {
+            return _parent.is_set(key, tag);
+        }
+
+        auto fetch_string(
+          const string_view key,
+          const string_view tag,
+          std::string& dest) noexcept -> bool final {
+            return _parent.fetch(key, dest, tag);
+        }
+    } _basic{*this};
 };
 //------------------------------------------------------------------------------
 export template <typename T>

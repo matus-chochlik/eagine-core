@@ -148,14 +148,14 @@ void hexdump::apply(
     _hexdump_do_hex_dump(0, get_byte, put_char);
 }
 //------------------------------------------------------------------------------
-auto operator<<(std::ostream& out, const hexdump& hd) -> std::ostream& {
+auto hexdump::to_stream(std::ostream& out) const noexcept -> std::ostream& {
     out << '\n';
 
     span_size_t i = 0;
 
     _hexdump_do_hex_dump(
-      memory::const_address(hd._mb.begin()).value(),
-      make_span_getter(i, hd._mb),
+      memory::const_address(_mb.begin()).value(),
+      make_span_getter(i, _mb),
       [&out](char c) { out << c; });
     return out << std::flush;
 }

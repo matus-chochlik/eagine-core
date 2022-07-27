@@ -126,21 +126,12 @@ function(eagine_add_module_common_properties TARGET_NAME)
 		EAGINE_DEBUG=${EAGINE_DEBUG}
 		EAGINE_LOW_PROFILE=${LOW_PROFILE}
 	)
-	if(${EAGINE_CLANGXX_COMPILER})
-		set_property(
-			TARGET ${TARGET_NAME}
-			APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
-			"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-weak-vtables;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions"
-		)
-	endif()
-	if(${EAGINE_GXX_COMPILER})
-		set_property(
-			TARGET ${TARGET_NAME}
-			APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
-			"-Wextra;-Wshadow;-Wno-noexcept-type;-Wno-attributes;-Wno-psabi;-Wno-unknown-warning-option"
-		)
-	endif()
-	if((${EAGINE_GXX_COMPILER} OR ${EAGINE_CLANGXX_COMPILER}) AND ${EAGINE_DEBUG})
+	set_property(
+		TARGET ${TARGET_NAME}
+		APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
+		"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions"
+	)
+	if(${EAGINE_DEBUG})
 		set_property(
 			TARGET ${TARGET_NAME}
 			APPEND PROPERTY COMPILE_OPTIONS
@@ -172,30 +163,46 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	endif()
 
 	if(NOT ${EAGINE_MODULE_PARTITION} IN_LIST EAGINE_MODULE_INTERFACES)
-		if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${EAGINE_MODULE_PARTITION}.cpp")
+		if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PARTITION}.cpp")
+			list(APPEND EAGINE_MODULE_INTERFACES ${EAGINE_MODULE_PARTITION})
+		elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${EAGINE_MODULE_PARTITION}.cpp")
 			list(APPEND EAGINE_MODULE_INTERFACES ${EAGINE_MODULE_PARTITION})
 		endif()
 	endif()
 
 	unset(EAGINE_MODULE_INTERFACE_FILES)
 	foreach(INTERFACE ${EAGINE_MODULE_INTERFACES})
-		list(
-			APPEND EAGINE_MODULE_INTERFACE_FILES
-			"${CMAKE_CURRENT_SOURCE_DIR}/${INTERFACE}.cpp"
-		)
+		if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${INTERFACE}.cpp")
+			list(
+				APPEND EAGINE_MODULE_INTERFACE_FILES
+				"${CMAKE_CURRENT_BINARY_DIR}/${INTERFACE}.cpp"
+			)
+		elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${INTERFACE}.cpp")
+			list(
+				APPEND EAGINE_MODULE_INTERFACE_FILES
+				"${CMAKE_CURRENT_SOURCE_DIR}/${INTERFACE}.cpp"
+			)
+		endif()
 	endforeach()
 
 	unset(EAGINE_MODULE_SOURCE_FILES)
 	foreach(SOURCE ${EAGINE_MODULE_SOURCES})
 		if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
-			list(
-				APPEND EAGINE_MODULE_SOURCE_FILES
-				"${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp"
-			)
+			if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cpp")
+				list(
+					APPEND EAGINE_MODULE_SOURCE_FILES
+					"${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cpp"
+				)
+			elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp")
+				list(
+					APPEND EAGINE_MODULE_SOURCE_FILES
+					"${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp"
+				)
+			endif()
 		else()
 			message(
 				FATAL_ERROR
-				"SOURCES hould not be specified with module PARTITION "
+				"SOURCES should not be specified with module PARTITION "
 				"(${EAGINE_MODULE_PROPER}:${EAGINE_MODULE_PARTITION})"
 			)
 		endif()
@@ -278,19 +285,31 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	)
 	foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
 		if(TARGET ${IMPORT})
-			set_property(
-				TARGET ${EAGINE_MODULE_TARGET}
-				APPEND PROPERTY EAGINE_MODULE_IMPORTS
-				${IMPORT}
-			)
+			set(EAGINE_MODULE_IMPORT "${IMPORT}")
 		elseif(TARGET ${EAGINE_MODULE_PROPER}.${IMPORT})
+			set(EAGINE_MODULE_IMPORT "${EAGINE_MODULE_PROPER}.${IMPORT}")
+		endif()
+		if(NOT "${EAGINE_MODULE_IMPORT}" STREQUAL "")
 			set_property(
 				TARGET ${EAGINE_MODULE_TARGET}
 				APPEND PROPERTY EAGINE_MODULE_IMPORTS
-				${EAGINE_MODULE_PROPER}.${IMPORT}
+				${EAGINE_MODULE_IMPORT}
 			)
+			get_property(
+				PP_NAME	
+				TARGET ${EAGINE_MODULE_IMPORT}
+				PROPERTY EAGINE_MODULE_PP_NAME
+			)
+			if(NOT "${PP_NAME}" STREQUAL "")
+				set_property(
+					TARGET ${EAGINE_MODULE_TARGET}
+					APPEND PROPERTY COMPILE_DEFINITIONS
+					EAGINE_${PP_NAME}_MODULE=1
+				)
+			endif()
 		endif()
 	endforeach()
+
 	set_property(
 		TARGET ${EAGINE_MODULE_TARGET}
 		APPEND PROPERTY EAGINE_MODULE_PCM_PATH
@@ -385,12 +404,12 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			-c ${EAGINE_MODULE_INTERFACE_FILES}
 			-o ${EAGINE_MODULE_TARGET}.pcm
 		DEPENDS
-			${EAGINE_MODULE_INTERFACE_FILES}
 			${EAGINE_MODULE_TARGET}-imports
+			${EAGINE_MODULE_INTERFACE_FILES}
 		)
 	add_custom_target(
 		${EAGINE_MODULE_TARGET}-pcm
-		DEPENDS ${EAGINE_MODULE_TARGET}.pcm
+		SOURCES ${EAGINE_MODULE_TARGET}.pcm
 	)
 	add_dependencies(
 		${EAGINE_MODULE_TARGET}
@@ -408,7 +427,10 @@ function(eagine_target_modules TARGET_NAME)
 	eagine_add_module_common_properties(${TARGET_NAME})
 
 	foreach(EAGINE_MODULE_SOURCE ${ARGN})
-		target_link_libraries(${TARGET_NAME} PUBLIC ${EAGINE_MODULE_SOURCE})
+		target_link_libraries(
+			${TARGET_NAME}
+			PUBLIC ${EAGINE_MODULE_SOURCE}
+		)
 		get_property(
 			PP_NAME	
 			TARGET ${EAGINE_MODULE_SOURCE}
@@ -421,7 +443,9 @@ function(eagine_target_modules TARGET_NAME)
 				EAGINE_${PP_NAME}_MODULE=1
 			)
 		endif()
-		add_custom_target(${TARGET_NAME}-imports)
+		if(NOT TARGET ${TARGET_NAME}-imports)
+			add_custom_target(${TARGET_NAME}-imports)
+		endif()
 
 		eagine_append_module_pcms(
 			TARGET ${TARGET_NAME}

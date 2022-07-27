@@ -16,10 +16,13 @@ import <chrono>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-auto root_activity::_init_backend(logger& parent)
+auto root_activity_init_backend(logger& parent)
   -> std::unique_ptr<progress_tracker_backend> {
     return make_default_progress_tracker_backend(parent);
 }
+//------------------------------------------------------------------------------
+root_activity::root_activity(logger& parent) noexcept
+  : activity_progress{root_activity_init_backend(parent)} {}
 //------------------------------------------------------------------------------
 auto root_activity::register_observer(progress_observer& observer) noexcept
   -> bool {

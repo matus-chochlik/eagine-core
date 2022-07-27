@@ -151,12 +151,14 @@ public:
     }
 
     /// @brief Comparison operator.
-    constexpr auto operator<=>(const byteset& that) const noexcept {
+    constexpr auto operator<=>(const byteset& that) const noexcept
+      -> std::strong_ordering {
         return _do_cmp(*this, that, std::make_index_sequence<N>{});
     }
-    constexpr auto operator==(const byteset& that) const noexcept -> bool {
-        return (*this <=> that) == 0;
-    }
+    constexpr auto operator==(const byteset& that) const noexcept
+      -> bool = default;
+    constexpr auto operator<(const byteset& that) const noexcept
+      -> bool = default;
 
     /// @brief Converts the byte sequence into an unsigned integer value.
     template <typename UInt>
@@ -185,22 +187,24 @@ private:
 
     static constexpr auto _cmp_byte(
       const value_type a,
-      const value_type b) noexcept -> int {
-        return (a == b) ? 0 : (a < b) ? -1 : 1;
+      const value_type b) noexcept -> std::strong_ordering {
+        return (a == b)  ? std::strong_ordering::equal
+               : (a < b) ? std::strong_ordering::less
+                         : std::strong_ordering::greater;
     }
 
     static constexpr auto _do_cmp(
       const byteset&,
       const byteset&,
-      const std::index_sequence<>) noexcept -> int {
-        return 0;
+      const std::index_sequence<>) noexcept -> std::strong_ordering {
+        return std::strong_ordering::equal;
     }
 
     template <std::size_t I, std::size_t... In>
     static constexpr auto _do_cmp(
       const byteset& a,
       const byteset& b,
-      const std::index_sequence<I, In...>) noexcept -> int {
+      const std::index_sequence<I, In...>) noexcept -> std::strong_ordering {
         return (a._bytes[I] == b._bytes[I])
                  ? _do_cmp(a, b, std::index_sequence<In...>{})
                  : _cmp_byte(a._bytes[I], b._bytes[I]);

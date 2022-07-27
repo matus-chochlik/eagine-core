@@ -93,6 +93,15 @@ private:
     Handle _name{invalid};
 };
 //------------------------------------------------------------------------------
+/// @brief Overload of extract for basic handle values.
+/// @pre h.is_valid()
+export template <typename Tag, typename Handle, Handle invalid>
+constexpr auto extract(const basic_handle<Tag, Handle, invalid>& h) noexcept
+  -> const Handle& {
+    assert(h.is_valid());
+    return *h;
+}
+//------------------------------------------------------------------------------
 /// @brief Owning wrapper for C-API opaque handle types.
 /// @ingroup c_api_wrap
 /// @tparam Tag type distinguisihing various handler with the same underlying type.

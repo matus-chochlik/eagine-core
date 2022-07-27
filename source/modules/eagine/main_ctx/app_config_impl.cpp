@@ -34,7 +34,7 @@ class application_config_impl {
 public:
     application_config_impl(logger& parent, main_ctx_getters& ctx)
       : _main_ctx{ctx}
-      , _log{identifier{"AppCfgImpl"}, parent} {
+      , _log{"AppCfgImpl", parent} {
         // front is empty and is filled out later
         _tag_list.emplace_back();
 
@@ -97,7 +97,7 @@ public:
             }
         } catch(...) {
             _log.error("exception while loading configuration value '${key}'")
-              .arg(identifier{"key"}, key);
+              .arg("key", key);
         }
         return {};
     }
@@ -254,6 +254,58 @@ private:
     std::string _hostname;
 };
 //------------------------------------------------------------------------------
+auto application_config::_find_comp_attr(
+  const string_view key,
+  const string_view tag) noexcept -> valtree::compound_attribute {
+    if(const auto impl{_impl()}) {
+        return extract(impl).find_compound_attribute(key, tag);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto application_config::_prog_args() noexcept -> const program_args& {
+    return _main_ctx.args();
+}
+//------------------------------------------------------------------------------
+auto application_config::_prog_arg_name(string_view key) noexcept
+  -> std::string {
+    std::string arg_name;
+    arg_name.reserve(integer(safe_add(3, key.size())));
+    arg_name.append("--");
+    for(auto c : key) {
+        if(c == '.' || c == '_') {
+            c = '-';
+        }
+        arg_name.append(&c, 1U);
+    }
+    return arg_name;
+}
+//------------------------------------------------------------------------------
+auto application_config::_find_prog_arg(const string_view key) noexcept
+  -> program_arg {
+    return _prog_args().find(_prog_arg_name(key));
+}
+//------------------------------------------------------------------------------
+auto application_config::_eval_env_var(const string_view key) noexcept
+  -> std::optional<string_view> {
+    std::string arg_name;
+    arg_name.reserve(integer(safe_add(7, key.size())));
+    arg_name.append("EAGINE_");
+    for(auto c : key) {
+        if(c == '.') {
+            c = '_';
+        } else {
+            c = static_cast<char>(std::toupper(c));
+        }
+        arg_name.append(&c, 1U);
+    }
+    return get_environment_variable(arg_name);
+}
+//------------------------------------------------------------------------------
+application_config::application_config(main_ctx_getters& ctx) noexcept
+  : _main_ctx{ctx}
+  , _log{"AppConfig", ctx.log()} {}
+//------------------------------------------------------------------------------
 auto application_config::is_set(
   const string_view key,
   const string_view tag) noexcept -> bool {
@@ -308,54 +360,6 @@ void application_config::reload() noexcept {
     if(const auto impl{_impl()}) {
         return extract(impl).reload();
     }
-}
-//------------------------------------------------------------------------------
-auto application_config::_find_comp_attr(
-  const string_view key,
-  const string_view tag) noexcept -> valtree::compound_attribute {
-    if(const auto impl{_impl()}) {
-        return extract(impl).find_compound_attribute(key, tag);
-    }
-    return {};
-}
-//------------------------------------------------------------------------------
-auto application_config::_prog_args() noexcept -> const program_args& {
-    return _main_ctx.args();
-}
-//------------------------------------------------------------------------------
-auto application_config::_prog_arg_name(string_view key) noexcept
-  -> std::string {
-    std::string arg_name;
-    arg_name.reserve(integer(safe_add(3, key.size())));
-    arg_name.append("--");
-    for(auto c : key) {
-        if(c == '.' || c == '_') {
-            c = '-';
-        }
-        arg_name.append(&c, 1U);
-    }
-    return arg_name;
-}
-//------------------------------------------------------------------------------
-auto application_config::_find_prog_arg(const string_view key) noexcept
-  -> program_arg {
-    return _prog_args().find(_prog_arg_name(key));
-}
-//------------------------------------------------------------------------------
-auto application_config::_eval_env_var(const string_view key) noexcept
-  -> std::optional<string_view> {
-    std::string arg_name;
-    arg_name.reserve(integer(safe_add(7, key.size())));
-    arg_name.append("EAGINE_");
-    for(auto c : key) {
-        if(c == '.') {
-            c = '_';
-        } else {
-            c = static_cast<char>(std::toupper(c));
-        }
-        arg_name.append(&c, 1U);
-    }
-    return get_environment_variable(arg_name);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

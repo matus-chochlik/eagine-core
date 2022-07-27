@@ -47,18 +47,32 @@ public:
       : _align{align}
       , _alloc{std::move(alloc)} {}
 
+    /// @brief Constructor with explicit size, alignment and allocator.
+    buffer(
+      const span_size_t size,
+      const span_size_t align,
+      shared_byte_allocator alloc) noexcept
+      : _storage{alloc.allocate(size, align)}
+      , _size{size}
+      , _align{align}
+      , _alloc{std::move(alloc)} {}
+
+    /// @brief Constructor with explicit size and alignment.
+    buffer(const span_size_t size, const span_size_t align) noexcept
+      : buffer{size, align, default_shared_allocator()} {}
+
     /// @brief Move constructor.
     buffer(buffer&& temp) noexcept
-      : _align{temp._align}
+      : _storage{std::move(temp._storage)}
       , _size{std::exchange(temp._size, 0)}
-      , _storage{std::move(temp._storage)}
+      , _align{temp._align}
       , _alloc{std::move(temp._alloc)} {}
 
     /// @brief Move assignment operator.
     auto operator=(buffer&& temp) noexcept -> buffer& {
-        _align = temp._align;
-        _size = std::exchange(temp._size, 0);
         _storage = std::move(temp._storage);
+        _size = std::exchange(temp._size, 0);
+        _align = temp._align;
         _alloc = std::move(temp._alloc);
         return *this;
     }
@@ -120,7 +134,9 @@ public:
     /// @see ensure
     /// @see reserve
     auto resize(const span_size_t new_size) noexcept -> auto& {
-        reserve(new_size);
+        if(capacity() < new_size) [[unlikely]] {
+            _reallocate(new_size);
+        }
         _size = new_size;
         assert(_is_ok());
         return *this;
@@ -132,7 +148,7 @@ public:
     /// @see reserve
     /// @see enlarge_by
     auto ensure(const span_size_t new_size) noexcept -> auto& {
-        if(size() < new_size) {
+        if(size() < new_size) [[unlikely]] {
             return resize(new_size);
         }
         assert(_is_ok());
@@ -182,9 +198,9 @@ public:
     }
 
 private:
-    span_size_t _align{alignof(long double)};
-    span_size_t _size{0};
     owned_block _storage{};
+    span_size_t _size{0};
+    span_size_t _align{alignof(long double)};
     shared_byte_allocator _alloc{default_shared_allocator()};
 
     auto _is_ok() const noexcept -> bool {

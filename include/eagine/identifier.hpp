@@ -202,12 +202,12 @@ public:
 
     /// @brief Construction from a C-string literal.
     template <std::size_t L>
-    explicit constexpr basic_identifier(const char (&init)[L]) noexcept
-      requires(L <= M + 1)
-      : _bites{_make_bites(
-          static_cast<const char*>(init),
-          L,
-          std::make_index_sequence<M>{})} {}
+    constexpr basic_identifier(const char (&init)[L]) noexcept
+        requires(L <= M + 1)
+    : _bites{_make_bites(
+        static_cast<const char*>(init),
+        L,
+        std::make_index_sequence<M>{})} {}
 
     /// @brief Construction from a const span of characters.
     explicit constexpr basic_identifier(const span<const char> init) noexcept
@@ -359,6 +359,19 @@ private:
 /// Allows to store short constant string identifiers with maximum length of 10 characters.
 using identifier =
   basic_identifier<10, 6, default_identifier_char_set, identifier_t>;
+
+/// @brief Alias for identifier.
+/// @ingroup identifiers
+/// @see id_v
+using id_t = identifier;
+
+/// @brief Returns the numeric value of the specified identifier string.
+/// @ingroup identifiers
+/// @see id_t
+template <std::size_t N>
+constexpr auto id_v(const char (&str)[N]) noexcept -> identifier_t {
+    return identifier{str}.value();
+}
 //------------------------------------------------------------------------------
 /// @brief Macro for constructing instances of eagine::identifier.
 /// @ingroup identifiers

@@ -8,6 +8,7 @@
 export module eagine.core.serialization;
 
 export import :size_and_data;
+export import :data_buffer;
 export import :result;
 export import :interface;
 export import :read;
@@ -19,3 +20,6 @@ export import :packed_block;
 export import :fast_backend;
 export import :string_backend;
 export import :portable_backend;
+export import :type_sudoku;
+export import :type_compiler_info;
+export import :type_version_info;

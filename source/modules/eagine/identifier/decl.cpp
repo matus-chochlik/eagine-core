@@ -19,7 +19,7 @@ namespace eagine {
 /// @ingroup identifiers
 /// @see identifier
 /// @note Do not use directly.
-template <typename CharSet>
+export template <typename CharSet>
 class identifier_encoding {
 public:
     /// @brief Encoded the specified character as N-bit byte.
@@ -195,12 +195,15 @@ public:
     /// @brief Alias for the unpacked identifier_name type.
     using name_type = identifier_name<M>;
 
+    /// @brief The maximum length of the identifier string.
+    static constexpr const std::size_t max_length = M;
+
     /// @brief Default constructor. Constructs an empty identifier.
     constexpr basic_identifier() noexcept = default;
 
     /// @brief Construction from a C-string literal.
     template <auto L>
-    explicit constexpr basic_identifier(const char (&init)[L]) noexcept
+    constexpr basic_identifier(const char (&init)[L]) noexcept
         requires(L <= M + 1)
     : _bites{_make_bites(
         static_cast<const char*>(init),
@@ -315,5 +318,21 @@ private:
 /// Allows to store short constant string identifiers with maximum length of 10 characters.
 export using identifier =
   basic_identifier<10, 6, default_identifier_char_set, identifier_t>;
+
+/// @brief Alias for identifier.
+/// @ingroup identifiers
+/// @see id_v
+export using id = identifier;
+
+export template <auto L>
+concept identifier_literal_length = (L <= identifier::max_length + 1U);
+
+/// @brief Returns the numeric value of the specified identifier string.
+/// @ingroup identifiers
+/// @see id
+export template <std::size_t N>
+consteval auto id_v(const char (&str)[N]) noexcept -> identifier_t {
+    return identifier{str}.value();
+}
 //------------------------------------------------------------------------------
 } // namespace eagine

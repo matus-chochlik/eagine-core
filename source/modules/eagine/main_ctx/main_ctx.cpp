@@ -14,6 +14,7 @@ export module eagine.core.main_ctx;
 import eagine.core.build_info;
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.identifier;
 import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.progress;
@@ -25,7 +26,6 @@ export import :app_config;
 export import :system_info;
 export import :user_info;
 export import :watchdog;
-export import :app_config;
 export import :storage;
 export import :main;
 
@@ -132,16 +132,23 @@ public:
         return _watchdog;
     }
 
-    auto bus() noexcept -> message_bus& final {
-        return _source.bus();
-    }
-
     auto compressor() noexcept -> data_compressor& final {
         return _compressor;
     }
 
     auto scratch_space() noexcept -> memory::buffer& final {
         return _scratch_space;
+    }
+
+    auto locate_service(identifier type_id) noexcept
+      -> std::shared_ptr<main_ctx_service> final {
+        return _source.locate_service(type_id);
+    }
+
+    template <std::derived_from<main_ctx_service> Service>
+    auto locate() noexcept -> std::shared_ptr<Service> {
+        return std::dynamic_pointer_cast<Service>(
+          locate_service(Service::static_type_id()));
     }
 
 private:

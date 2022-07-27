@@ -7,11 +7,11 @@ add_subdirectory(concepts)
 add_subdirectory(types)
 add_subdirectory(debug)
 add_subdirectory(memory)
+add_subdirectory(vectorization)
 add_subdirectory(identifier)
 add_subdirectory(container)
 add_subdirectory(utility)
 add_subdirectory(valid_if)
-add_subdirectory(vectorization)
 add_subdirectory(reflection)
 add_subdirectory(build_info)
 add_subdirectory(units)
@@ -25,6 +25,7 @@ add_subdirectory(progress)
 add_subdirectory(value_tree)
 add_subdirectory(serialization)
 add_subdirectory(main_ctx)
+add_subdirectory(resource)
 
 
 eagine_add_module(
@@ -55,5 +56,6 @@ eagine_add_module(
 		eagine.core.value_tree
 		eagine.core.serialization
 		eagine.core.main_ctx
+		eagine.core.resource
 )
 

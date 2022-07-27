@@ -8,6 +8,7 @@
 export module eagine.core.identifier:message_id;
 
 import eagine.core.types;
+import eagine.core.vectorization;
 import :decl;
 import <tuple>;
 
@@ -21,20 +22,25 @@ struct static_message_id;
 /// @see static_message_id
 /// @see identifier_t
 /// @see identifier
-export struct message_id : std::tuple<identifier_t, identifier_t> {
-    using base = std::tuple<identifier_t, identifier_t>;
-
+export class message_id {
+public:
     ///	@brief Default constructor.
     /// @post !is_valid()
     constexpr message_id() noexcept = default;
 
     ///	@brief Construction from two identifier values.
     constexpr message_id(const identifier_t c, const identifier_t m) noexcept
-      : base{c, m} {}
+      : _data{c, m} {}
 
     ///	@brief Construction from two identifier objects.
     constexpr message_id(const identifier c, const identifier m) noexcept
-      : base{c.value(), m.value()} {}
+      : message_id{c.value(), m.value()} {}
+
+    ///	@brief Construction from two string literals.
+    template <auto CL, auto ML>
+        requires(identifier_literal_length<CL> && identifier_literal_length<ML>)
+    constexpr message_id(const char (&c)[CL], const char (&m)[ML]) noexcept
+      : message_id{identifier{c}, identifier{m}} {}
 
     ///	@brief Construction from a tuple of two identifier objects.
     constexpr message_id(const std::tuple<identifier, identifier> t) noexcept
@@ -43,11 +49,16 @@ export struct message_id : std::tuple<identifier_t, identifier_t> {
     ///	@brief Construction from static_message_id value.
     template <identifier_t ClassId, identifier_t MethodId>
     constexpr message_id(const static_message_id<ClassId, MethodId>&) noexcept
-      : base{ClassId, MethodId} {}
+      : message_id{ClassId, MethodId} {}
+
+    constexpr auto operator<=>(const message_id&) const noexcept = default;
+    /// @brief Equality comparison
+    constexpr auto operator==(const message_id&) const noexcept
+      -> bool = default;
 
     /// @brief Returns the class identifier value.
     constexpr auto class_id() const noexcept -> identifier_t {
-        return std::get<0>(*this);
+        return _data[0];
     }
 
     /// @brief Returns the class identifier.
@@ -57,7 +68,7 @@ export struct message_id : std::tuple<identifier_t, identifier_t> {
 
     /// @brief Returns the method identifier value.
     constexpr auto method_id() const noexcept -> identifier_t {
-        return std::get<1>(*this);
+        return _data[1];
     }
 
     /// @brief Returns the method identifier.
@@ -84,11 +95,30 @@ export struct message_id : std::tuple<identifier_t, identifier_t> {
         return class_id() == id.value();
     }
 
+    /// @brief Checks if the class identifier matches the argument.
+    /// @see has_method
+    template <auto L>
+        requires(identifier_literal_length<L>)
+    constexpr auto has_class(const char (&str)[L]) const noexcept {
+        return has_class(identifier{str});
+    }
+
     /// @brief Checks if the method identifier matches the argument.
     /// @see has_class
     constexpr auto has_method(const identifier id) const noexcept {
         return method_id() == id.value();
     }
+
+    /// @brief Checks if the method identifier matches the argument.
+    /// @see has_class
+    template <auto L>
+        requires(identifier_literal_length<L>)
+    constexpr auto has_method(const char (&str)[L]) const noexcept {
+        return has_method(identifier{str});
+    }
+
+private:
+    vect::data_t<identifier_t, 2, false> _data{0U, 0U};
 };
 //------------------------------------------------------------------------------
 /// @brief Template with two identifier parameters representing class/method pair.

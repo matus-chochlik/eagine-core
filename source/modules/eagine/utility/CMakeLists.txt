@@ -54,6 +54,12 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.utility PARTITION timeline
+	IMPORTS
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.utility PARTITION timeout
 	IMPORTS
 		eagine.core.types
@@ -92,6 +98,7 @@ eagine_add_module(
 		sudoku
 		cleanup_group
 		overloaded
+		timeline
 		timeout
 		protected_member
 		progress_bar

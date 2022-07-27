@@ -30,18 +30,32 @@ namespace eagine {
 //------------------------------------------------------------------------------
 export class application_config;
 export class process_watchdog;
-class message_bus;
 
 export class system_info;
 export class main_ctx_log_backend_getter;
 export class main_ctx_object;
 //------------------------------------------------------------------------------
+/// @brief Interface for classes that can be located through the main context.
+/// @ingroup main_context
+/// @see main_ctx_getters
+/// @see main_ctx_setters
+export struct main_ctx_service : interface<main_ctx_service> {
+    virtual auto type_id() const noexcept -> identifier = 0;
+};
+
+export template <typename Derived>
+struct main_ctx_service_impl : main_ctx_service {
+    auto type_id() const noexcept -> identifier final {
+        return Derived::static_type_id();
+    }
+};
+//------------------------------------------------------------------------------
 /// @brief Interface for classes providing access to main context singletons.
 /// @ingroup main_context
 /// @see main_ctx_setters
 export struct main_ctx_setters : interface<main_ctx_setters> {
-    /// @brief Injects the message bus object to main context.
-    virtual void inject(std::shared_ptr<message_bus>) = 0;
+    /// @brief Injects the service object to main context.
+    virtual void inject(std::shared_ptr<main_ctx_service>) = 0;
 
     /// @brief Registers a activity progress observer.
     virtual auto register_observer(progress_observer&) -> bool = 0;
@@ -119,14 +133,15 @@ export struct main_ctx_getters : interface<main_ctx_getters> {
     /// @brief Returns a reference to process watchdog object.
     virtual auto watchdog() noexcept -> process_watchdog& = 0;
 
-    /// @brief Returns a reference to message bus facade object.
-    virtual auto bus() noexcept -> message_bus& = 0;
-
     /// @brief Returns a reference to shared data compressor object.
     virtual auto compressor() noexcept -> data_compressor& = 0;
 
     /// @brief Returns a reference to shared temporary buffer.
     virtual auto scratch_space() noexcept -> memory::buffer& = 0;
+
+    /// @brief Locates a service object by it's type name.
+    virtual auto locate_service(identifier type_id) noexcept
+      -> std::shared_ptr<main_ctx_service> = 0;
 };
 
 export auto try_get_main_ctx() noexcept -> main_ctx_getters*;
@@ -178,7 +193,7 @@ export void reset_progress_update_callback(main_ctx_getters& ctx) noexcept {
 //------------------------------------------------------------------------------
 /// @brief Structure storing customization options for main context.
 /// @ingroup main_context
-struct main_ctx_options {
+export struct main_ctx_options {
 
     /// @brief The application name. Defaults to the executable name.
     std::string app_name{};

@@ -15,6 +15,7 @@ import eagine.core.concepts;
 import eagine.core.types;
 import :address;
 
+import <cmath>;
 import <concepts>;
 import <cstring>;
 import <initializer_list>;
@@ -56,10 +57,7 @@ struct rebind_pointer<T*, U> : std::type_identity<U*> {};
 /// This template is similar to std::span but allows to specify other pointer
 /// types besides ValueType*, for example basic_offset_ptr, etc. and to specify
 /// the size type.
-export template <
-  typename ValueType,
-  typename Pointer = ValueType*,
-  typename SizeType = span_size_t>
+export template <typename ValueType, typename Pointer, typename SizeType>
 class basic_span {
 public:
     /// @brief The element value type.
@@ -199,17 +197,7 @@ public:
     /// @brief Returns the number of elements in the span.
     /// @see is_empty
     constexpr auto size() const noexcept -> size_type {
-        if constexpr(std::is_same_v<std::remove_const_t<ValueType>, char>) {
-            if(_size < 0) [[likely]] {
-                return -_size;
-            }
-            return _size;
-        } else {
-            if(_size >= 0) [[likely]] {
-                return _size;
-            }
-            return -_size;
-        }
+        return std::abs(_size);
     }
 
     /// @brief Returns a pointer to the start of the span.
@@ -535,11 +523,13 @@ constexpr auto can_accommodate(
 /// @see as_bytes
 /// @see as_chars
 export template <typename T, typename B, typename P, typename S>
+    requires(std::is_same_v<std::remove_const_t<B>, char> ||
+             std::is_same_v<std::remove_const_t<B>, byte>)
 constexpr auto accommodate(
   const basic_span<B, P, S> blk,
   const std::type_identity<T> tid = {}) noexcept
   -> basic_span<T, rebind_pointer_t<P, T>, S> {
-    assert(can_accommodate(blk, tid));
+    assert(blk.is_empty() || can_accommodate(blk, tid));
     return basic_span<T, rebind_pointer_t<P, T>, S>{
       blk.begin_addr(), blk.end_addr()};
 }

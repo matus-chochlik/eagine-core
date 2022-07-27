@@ -17,19 +17,19 @@ import <utility>;
 
 namespace eagine {
 
-template <typename Sig>
+export template <typename Sig>
 struct is_noexcept_function;
 
-template <typename Sig>
+export template <typename Sig>
 using is_noexcept_function_t = type_t<is_noexcept_function<Sig>>;
 
-template <typename Sig>
+export template <typename Sig>
 inline constexpr bool is_noexcept_function_v = is_noexcept_function<Sig>::value;
 
-template <typename RV, typename... P>
+export template <typename RV, typename... P>
 struct is_noexcept_function<RV(P...)> : std::false_type {};
 
-template <typename RV, typename... P>
+export template <typename RV, typename... P>
 struct is_noexcept_function<RV(P...) noexcept> : std::true_type {};
 
 /// @brief Declaration of class template storing a reference to a callable object.
@@ -211,7 +211,7 @@ export template <
   typename... P,
   bool NE,
   RV (C::*Ptr)(P...) noexcept(NE)>
-constexpr inline auto make_callable_ref(
+constexpr auto make_callable_ref(
   C* obj,
   member_function_constant<RV (C::*)(P...) noexcept(NE), Ptr> mfc) noexcept
   -> callable_ref<RV(P...) noexcept(NE)> {
@@ -226,11 +226,16 @@ export template <
   typename... P,
   bool NE,
   RV (C::*Ptr)(P...) const noexcept(NE)>
-constexpr inline auto make_callable_ref(
+constexpr auto make_callable_ref(
   C* obj,
   member_function_constant<RV (C::*)(P...) noexcept(NE), Ptr> mfc) noexcept
   -> callable_ref<RV(P...) noexcept(NE)> {
     return {obj, mfc};
+}
+
+export template <auto MemFuncPtr, typename C>
+constexpr auto make_callable_ref(C* obj) noexcept {
+    return make_callable_ref(obj, member_function_constant_t<MemFuncPtr>{});
 }
 
 } // namespace eagine

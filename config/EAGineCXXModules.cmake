@@ -49,6 +49,8 @@ define_property(
 
 if(${EAGINE_CLANGXX_COMPILER})
 	include(EAGineCXXModulesClang)
+elseif(${EAGINE_GXX_COMPILER})
+	include(EAGineCXXModulesGNU)
 else()
 	message(FATAL_ERROR "Modules are not supported with this compiler")
 endif()

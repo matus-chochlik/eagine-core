@@ -50,6 +50,10 @@ struct data_array {
         T(std::forward<P2>(p2)),
         T(std::forward<Pn>(pn))...} {}
 
+    constexpr auto operator<=>(const data_array&) const noexcept = default;
+    constexpr auto operator==(const data_array&) const noexcept
+      -> bool = default;
+
     constexpr auto operator[](const int i) const noexcept -> T {
         return _v[i];
     }

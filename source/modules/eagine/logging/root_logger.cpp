@@ -34,23 +34,13 @@ public:
     root_logger(
       identifier logger_id,
       const program_args& args,
-      root_logger_options& opts)
-      : logger{logger_id, {_init_backend(args, opts)}} {
-        _log_args(args);
-        _log_instance_info();
-        _log_git_info();
-        _log_os_info();
-        _log_compiler_info();
-    }
+      root_logger_options& opts) noexcept;
 
     /// @brief Constructor initializing from program arguments and logger options.
-    root_logger(const program_args& args, root_logger_options& opts)
-      : root_logger{identifier{"RootLogger"}, args, opts} {}
+    root_logger(const program_args& args, root_logger_options& opts) noexcept
+      : root_logger{"RootLogger", args, opts} {}
 
 private:
-    static auto _init_backend(const program_args&, root_logger_options&)
-      -> std::unique_ptr<logger_backend>;
-
     auto _log_os_info() -> void;
     auto _log_git_info() -> void;
     auto _log_compiler_info() -> void;

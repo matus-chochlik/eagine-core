@@ -20,12 +20,11 @@ import eagine.core.console;
 import eagine.core.progress;
 import :interface;
 import :parent;
+import <concepts>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 export class application_config;
-class message_bus;
-
 export class main_ctx;
 export class main_ctx_object;
 //------------------------------------------------------------------------------
@@ -134,8 +133,17 @@ public:
     /// @brief Returns a reference to the root activity object.
     auto progress() const noexcept -> const activity_progress&;
 
-    /// @brief Returns a reference to the message bus object.
-    auto bus() const noexcept -> message_bus&;
+    /// @brief Locates the specified service object.
+    auto locate_service(identifier type_id) const noexcept
+      -> std::shared_ptr<main_ctx_service>;
+
+    /// @brief Locates the specified Service object.
+    /// @see locate
+    template <std::derived_from<main_ctx_service> Service>
+    auto locate() const noexcept -> std::shared_ptr<Service> {
+        return std::dynamic_pointer_cast<Service>(
+          locate_service(Service::static_type_id()));
+    }
 
 private:
     static auto _make_base(

@@ -53,8 +53,10 @@ public:
         return errors;
     }
 
+    static constexpr const identifier_t id_value = id_v("String");
+
     auto type_id() noexcept -> identifier final {
-        return identifier{"String"};
+        return "String";
     }
 
     auto enum_as_string() noexcept -> bool final {
@@ -256,8 +258,10 @@ public:
         return errors;
     }
 
+    static constexpr const identifier_t id_value = id_v("String");
+
     auto type_id() noexcept -> identifier final {
-        return identifier{"String"};
+        return "String";
     }
 
     auto enum_as_string() noexcept -> bool final {

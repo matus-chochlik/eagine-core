@@ -118,6 +118,8 @@ public:
         return _str.compare(that._str);
     }
 
+    auto operator==(const basic_string_path&) const noexcept -> bool = default;
+
     /// @brief Concatenates two paths.
     friend auto operator+(
       const basic_string_path& a,

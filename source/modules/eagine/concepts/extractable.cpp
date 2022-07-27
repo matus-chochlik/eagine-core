@@ -21,11 +21,6 @@ constexpr auto has_value(T&& xtr) noexcept -> bool {
     return bool(std::forward<T>(xtr));
 }
 
-export template <typename T>
-constexpr auto extract(T&& xtr) noexcept -> decltype(auto) {
-    return *std::forward<T>(xtr);
-}
-
 /// @brief Returns the value type of an extractable.
 /// @ingroup utilities
 /// @see extract

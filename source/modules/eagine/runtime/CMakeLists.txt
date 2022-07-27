@@ -21,6 +21,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.runtime PARTITION program_args
 	IMPORTS
+		eagine.core.debug
 		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
@@ -56,6 +57,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.runtime PARTITION executable_module
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+)
+
+eagine_add_module(
 	eagine.core.runtime PARTITION file_contents
 	IMPORTS
 		input_data
@@ -72,6 +81,12 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.runtime PARTITION workshop
+	IMPORTS
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.runtime
 	INTERFACES
 		runtime
@@ -82,12 +97,15 @@ eagine_add_module(
 		program_args
 		url
 		input_data
+		executable_module
 		file_contents
 		compression
 		value_with_history
+		workshop
 	SOURCES
 		url_impl
 		input_data_impl
+		executable_module_impl
 		file_contents_impl
 		compression_impl
 )
@@ -95,5 +113,6 @@ target_link_libraries(
 	eagine.core.runtime
 	PUBLIC
 		EAGine::Deps::System
+		EAGine::Deps::SYSTEMD
 		EAGine::Deps::ZLIB
 )

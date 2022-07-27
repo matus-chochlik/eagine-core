@@ -14,6 +14,7 @@ import eagine.core.valid_if;
 export import :entry_arg;
 import :backend;
 import <sstream>;
+import <optional>;
 import <utility>;
 
 namespace eagine {
@@ -21,10 +22,9 @@ namespace eagine {
 export auto adapt_entry_arg(const identifier name, logger_backend* value) {
     return [name, value](logger_backend& backend) noexcept {
         if(value) {
-            backend.add_identifier(
-              name, identifier{"LogBkEndId"}, value->type_id());
+            backend.add_identifier(name, "LogBkEndId", value->type_id());
         } else {
-            backend.add_nothing(name, identifier{"LogBkEndId"});
+            backend.add_nothing(name, "LogBkEndId");
         }
     };
 }
@@ -95,7 +95,7 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     /// @param value the value of the argument.
     auto arg(const identifier name, const identifier value) noexcept -> auto& {
-        return arg(name, identifier{"Identifier"}, value);
+        return arg(name, "Identifier", value);
     }
 
     /// @brief Adds a new message argument with message_id type value.
@@ -118,7 +118,7 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     /// @param value the value of the argument.
     auto arg(const identifier name, const message_id value) noexcept -> auto& {
-        return arg(name, identifier{"MessageId"}, value);
+        return arg(name, "MessageId", value);
     }
 
     /// @brief Adds a new message argument with 64-bit signed integer value.
@@ -142,7 +142,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const std::int64_t value) noexcept
       -> auto& {
-        return arg(name, identifier{"int64"}, value);
+        return arg(name, "int64", value);
     }
 
     /// @brief Adds a new message argument with 64-bit signed integer span.
@@ -167,7 +167,7 @@ public:
     auto arg(
       const identifier name,
       const span<const std::int64_t> values) noexcept -> auto& {
-        return arg(name, identifier{"int64"}, values);
+        return arg(name, "int64", values);
     }
 
     /// @brief Adds a new message argument with 32-bit signed integer value.
@@ -191,7 +191,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const std::int32_t value) noexcept
       -> auto& {
-        return arg(name, identifier{"int32"}, value);
+        return arg(name, "int32", value);
     }
 
     /// @brief Adds a new message argument with 32-bit signed integer span.
@@ -216,7 +216,7 @@ public:
     auto arg(
       const identifier name,
       const span<const std::int32_t> values) noexcept -> auto& {
-        return arg(name, identifier{"int32"}, values);
+        return arg(name, "int32", values);
     }
 
     /// @brief Adds a new message argument with 16-bit signed integer value.
@@ -240,7 +240,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const std::int16_t value) noexcept
       -> auto& {
-        return arg(name, identifier{"int16"}, value);
+        return arg(name, "int16", value);
     }
 
     /// @brief Adds a new message argument with 16-bit signed integer span.
@@ -265,7 +265,7 @@ public:
     auto arg(
       const identifier name,
       const span<const std::int16_t> values) noexcept -> auto& {
-        return arg(name, identifier{"int16"}, values);
+        return arg(name, "int16", values);
     }
 
     /// @brief Adds a new message argument with 64-bit unsigned integer value.
@@ -289,7 +289,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const std::uint64_t value) noexcept
       -> auto& {
-        return arg(name, identifier{"int64"}, value);
+        return arg(name, "int64", value);
     }
 
     /// @brief Adds a new message argument with 64-bit unsigned integer span.
@@ -314,7 +314,7 @@ public:
     auto arg(
       const identifier name,
       const span<const std::uint64_t> values) noexcept -> auto& {
-        return arg(name, identifier{"uint64"}, values);
+        return arg(name, "uint64", values);
     }
 
     /// @brief Adds a new message argument with 32-bit unsigned integer value.
@@ -338,7 +338,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const std::uint32_t value) noexcept
       -> auto& {
-        return arg(name, identifier{"uint32"}, value);
+        return arg(name, "uint32", value);
     }
 
     /// @brief Adds a new message argument with 32-bit unsigned integer span.
@@ -363,7 +363,7 @@ public:
     auto arg(
       const identifier name,
       const span<const std::uint32_t> values) noexcept -> auto& {
-        return arg(name, identifier{"uint32"}, values);
+        return arg(name, "uint32", values);
     }
 
     /// @brief Adds a new message argument with 16-bit unsigned integer value.
@@ -387,7 +387,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const std::uint16_t value) noexcept
       -> auto& {
-        return arg(name, identifier{"uint16"}, value);
+        return arg(name, "uint16", value);
     }
 
     /// @brief Adds a new message argument with 16-bit unsigned integer span.
@@ -412,7 +412,7 @@ public:
     auto arg(
       const identifier name,
       const span<const std::uint16_t> values) noexcept -> auto& {
-        return arg(name, identifier{"uint16"}, values);
+        return arg(name, "uint16", values);
     }
 
     /// @brief Adds a new message argument with floating-point value.
@@ -435,7 +435,7 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     /// @param value the value of the argument.
     auto arg(const identifier name, const float value) noexcept -> auto& {
-        return arg(name, identifier{"real"}, value);
+        return arg(name, "real", value);
     }
 
     /// @brief Adds a new message argument with double-precision float value.
@@ -465,7 +465,7 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     auto arg(const identifier name, const span<const float> values) noexcept
       -> auto& {
-        return arg(name, identifier{"real"}, values);
+        return arg(name, "real", values);
     }
 
     /// @brief Adds a new message argument with floating-point value.
@@ -494,7 +494,7 @@ public:
       const float min,
       const float value,
       const float max) noexcept -> auto& {
-        return arg(name, identifier{"real"}, min, value, max);
+        return arg(name, "real", min, value, max);
     }
 
     /// @brief Adds a new message argument with time duration value.
@@ -525,7 +525,7 @@ public:
     auto arg(
       const identifier name,
       const std::chrono::duration<R, P> value) noexcept -> auto& {
-        return arg(name, identifier{"duration"}, value);
+        return arg(name, "duration", value);
     }
 
     /// @brief Adds a new message argument with string value.
@@ -548,7 +548,23 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     /// @param value the value of the argument.
     auto arg(const identifier name, const string_view value) noexcept -> auto& {
-        return arg(name, identifier{"str"}, value);
+        return arg(name, "str", value);
+    }
+
+    auto arg(const identifier name, const memory::string_span value) noexcept
+      -> auto& {
+        return arg(name, string_view{value});
+    }
+
+    auto arg(const identifier name, const memory::span<char> value) noexcept
+      -> auto& {
+        return arg(name, string_view{value});
+    }
+
+    auto arg(
+      const identifier name,
+      const memory::span<const char> value) noexcept -> auto& {
+        return arg(name, string_view{value});
     }
 
     /// @brief Adds a new message argument with string value.
@@ -572,7 +588,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const std::string& value) noexcept
       -> auto& {
-        return arg(name, identifier{"str"}, value);
+        return arg(name, "str", value);
     }
 
     /// @brief Adds a new message argument with BLOB value.
@@ -596,7 +612,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const memory::const_block value) noexcept
       -> auto& {
-        return arg(name, identifier{"block"}, value);
+        return arg(name, "block", value);
     }
 
     /// @brief Adds a new message argument adapted by the specified function.
@@ -657,6 +673,18 @@ public:
       basic_valid_if<T, P, L> opt,
       F fbck) noexcept -> log_entry& {
         return arg(name, tag, either_or(std::move(opt), std::move(fbck)));
+    }
+
+    template <argument_of_log<log_entry> F, argument_of_log<log_entry> T>
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      std::optional<T> opt,
+      F fbck) noexcept -> log_entry& {
+        if(opt) {
+            return arg(name, tag, std::move(*opt));
+        }
+        return arg(name, tag, std::move(fbck));
     }
 
     /// @brief Adds an optional tag to this log entry.

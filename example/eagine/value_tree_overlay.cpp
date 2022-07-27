@@ -5,13 +5,17 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <memory>;
+#else
 #include <eagine/logging/logger.hpp>
 #include <eagine/main_ctx.hpp>
 #include <eagine/value_tree/json.hpp>
 #include <eagine/value_tree/overlay.hpp>
 #include <eagine/value_tree/yaml.hpp>
-#include <iostream>
 #include <memory>
+#endif
 
 namespace eagine {
 
@@ -44,12 +48,12 @@ auto main(main_ctx& ctx) -> int {
         auto ca{c / a};
         ctx.log()
           .info("visit")
-          .arg(EAGINE_ID(nested), ca.nested_count())
-          .arg(EAGINE_ID(values), ca.value_count())
-          .arg(EAGINE_ID(isLink), EAGINE_ID(bool), ca.is_link())
-          .arg(EAGINE_ID(canonType), ca.canonical_type())
-          .arg(EAGINE_ID(path), p.as_string("/", ca.nested_count() > 0))
-          .arg(EAGINE_ID(name), ca.name());
+          .arg(identifier{"nested"}, ca.nested_count())
+          .arg(identifier{"values"}, ca.value_count())
+          .arg(identifier{"isLink"}, identifier{"bool"}, ca.is_link())
+          .arg(identifier{"canonType"}, ca.canonical_type())
+          .arg(identifier{"path"}, p.as_string("/", ca.nested_count() > 0))
+          .arg(identifier{"name"}, ca.name());
 
         if(ca.canonical_type() == valtree::value_type::byte_type) {
             const auto s{ca.value_count()};
@@ -57,14 +61,14 @@ auto main(main_ctx& ctx) -> int {
                 std::array<byte, 256> temp{};
                 auto content{ca.fetch_blob(cover(temp))};
                 ctx.log().info("content").arg(
-                  EAGINE_ID(content), view(content));
+                  identifier{"content"}, view(content));
             }
         } else if(ca.canonical_type() == valtree::value_type::string_type) {
             if(ca.value_count() == 1) {
                 std::array<char, 64> temp{};
                 auto content{ca.fetch_values(cover(temp))};
                 ctx.log().info("content").arg(
-                  EAGINE_ID(content), string_view(content));
+                  identifier{"content"}, string_view(content));
             }
         }
         return true;

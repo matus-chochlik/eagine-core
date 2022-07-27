@@ -88,7 +88,7 @@ struct within_limits_num<Dst, Src, IsInt, IsInt, true, false> {
     }
 };
 //------------------------------------------------------------------------------
-template <typename Dst, typename Src>
+export template <typename Dst, typename Src>
 struct within_limits
   : within_limits_num<
       Dst,
@@ -98,7 +98,7 @@ struct within_limits
       std::is_signed_v<Dst>,
       std::is_signed_v<Src>> {};
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 struct within_limits<T, T> {
     static constexpr auto check(const T&) noexcept {
         return true;
@@ -127,14 +127,15 @@ constexpr auto is_within_limits(const Src value) noexcept {
 /// @pre is_within_limits<Dst>(value)
 export template <typename Dst, typename Src>
 constexpr auto limit_cast(Src value) noexcept -> Dst
-  requires(std::is_convertible_v<Src, Dst>) {
-      assert(is_within_limits<Dst>(value));
-      if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<Dst>) {
-          return Dst(value);
-      } else {
-          return Dst(std::move(value));
-      }
-  }
+    requires(std::is_convertible_v<Src, Dst>)
+{
+    assert(is_within_limits<Dst>(value));
+    if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<Dst>) {
+        return Dst(value);
+    } else {
+        return Dst(std::move(value));
+    }
+}
 //------------------------------------------------------------------------------
 /// @brief Casts @p value to a type with the opposite signedness.
 /// @ingroup type_utils
@@ -186,6 +187,12 @@ constexpr auto std_size(const T v) noexcept {
 export template <typename T>
 constexpr auto span_align_of(const std::type_identity<T> = {}) noexcept {
     return span_size(alignof(T));
+}
+
+/// @brief Returns the byte alignment of type max_align_t as span_size_t.
+/// @ingroup type_utils
+export constexpr auto max_span_align() noexcept {
+    return span_align_of<std::max_align_t>();
 }
 
 /// @brief Returns the byte size of type T as span_size_t.
@@ -272,10 +279,11 @@ constexpr auto safe_add_gt(L l, R r, C c) noexcept -> bool {
 }
 //------------------------------------------------------------------------------
 export template <typename... Params, typename... Args>
-constexpr auto args_within_limits_of(const Args&... args) noexcept
-  -> bool requires(sizeof...(Params) == sizeof...(Args)) {
-              return (... && is_within_limits<std::decay_t<Params>>(args));
-          }
+constexpr auto args_within_limits_of(const Args&... args) noexcept -> bool
+    requires(sizeof...(Params) == sizeof...(Args))
+{
+    return (... && is_within_limits<std::decay_t<Params>>(args));
+}
 //------------------------------------------------------------------------------
 export template <typename RV, typename... Params, typename... Args>
 constexpr auto args_within_limits(

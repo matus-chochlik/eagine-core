@@ -111,6 +111,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.memory PARTITION stack_allocator
+	IMPORTS
+		block byte_allocator
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.memory PARTITION shared_allocator
 	IMPORTS
 		byte_allocator
@@ -177,6 +184,7 @@ eagine_add_module(
 		fixed_size_string
 		edit_distance
 		byte_allocator
+		stack_allocator
 		shared_allocator
 		std_allocator
 		buffer
@@ -184,5 +192,6 @@ eagine_add_module(
 		object_storage
 	SOURCES
 		memory_impl
+		stack_allocator_impl
 )
 

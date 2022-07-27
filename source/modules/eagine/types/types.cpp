@@ -20,6 +20,8 @@ export import :tribool;
 export import :optional_ref;
 export import :outcome;
 export import :bitfield;
+export import :enum_map;
 export import :function_constant;
 export import :selector;
+export import :structural;
 export import :metaprogramming;

@@ -98,7 +98,7 @@ public:
       : _node{node} {}
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"rapidyaml"};
+        return "rapidyaml";
     }
 
     auto name() const noexcept -> string_view {
@@ -229,6 +229,9 @@ public:
             if(_node.is_seq()) {
                 span_size_t pos{0};
                 for(auto child : _node.children()) {
+                    if(pos >= dest.size()) {
+                        break;
+                    }
                     if(child.has_val()) {
                         if(offset <= 0) {
                             if(auto opt_val{
@@ -274,8 +277,8 @@ class rapidyaml_tree_compound final
     rapidyaml_attribute _root;
 
 public:
-    rapidyaml_tree_compound(ryml::Tree tree, logger& parent)
-      : _log{identifier{"YamlValTre"}, parent}
+    rapidyaml_tree_compound(ryml::Tree tree, const logger& parent)
+      : _log{"YamlValTre", parent}
       , _tree{std::move(tree)}
       , _root{_tree} {}
 
@@ -286,7 +289,7 @@ public:
 
     ~rapidyaml_tree_compound() noexcept final = default;
 
-    static auto make_shared(string_view yaml_text, logger& parent)
+    static auto make_shared(string_view yaml_text, const logger& parent)
       -> std::shared_ptr<rapidyaml_tree_compound> {
         try {
             rapidyaml_callbacks cbks{};
@@ -297,13 +300,13 @@ public:
               std::move(tree), parent);
         } catch(const std::runtime_error& err) {
             parent.log_error("YAML parse error: ${message}")
-              .arg(identifier{"message"}, string_view(err.what()));
+              .arg("message", string_view(err.what()));
         }
         return {};
     }
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"rapidyaml"};
+        return "rapidyaml";
     }
 
     auto structure() -> attribute_interface* final {
@@ -366,7 +369,7 @@ static auto rapidyaml_make_new_node(
     return owner.make_node(node);
 }
 //------------------------------------------------------------------------------
-auto from_yaml_text(string_view yaml_text, logger& parent) -> compound {
+auto from_yaml_text(string_view yaml_text, const logger& parent) -> compound {
     return compound::make<rapidyaml_tree_compound>(yaml_text, parent);
 }
 //------------------------------------------------------------------------------

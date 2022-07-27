@@ -299,6 +299,9 @@ public:
     using coord_type = std::array<unsigned, 4>;
     static constexpr const unsigned glyph_count = board_traits::glyph_count;
 
+    using block_type = std::array<cell_type, glyph_count>;
+    using blocks_type = std::array<block_type, glyph_count>;
+
     static constexpr auto invalid_coord() noexcept -> coord_type {
         return {{S, S, S, S}};
     }
@@ -330,7 +333,11 @@ public:
       : _type{that._type}
       , _blocks{that._blocks} {}
 
-    auto blocks() const noexcept -> auto& {
+    auto blocks() noexcept -> blocks_type& {
+        return _blocks;
+    }
+
+    auto blocks() const noexcept -> const blocks_type& {
         return _blocks;
     }
 
@@ -475,9 +482,6 @@ public:
         });
         return count;
     }
-
-    using block_type = std::array<cell_type, glyph_count>;
-    using blocks_type = std::array<block_type, glyph_count>;
 
     auto get_block(const unsigned bx, const unsigned by) const noexcept
       -> const block_type& {

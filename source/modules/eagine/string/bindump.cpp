@@ -36,8 +36,15 @@ public:
     /// @brief Uses get_byte to read input bytes, encodes them and calls put_char.
     static void apply(const byte_getter get_byte, const char_putter put_char);
 
+    /// @brief Write this bindump object to output stream.
+    auto to_stream(std::ostream&) const noexcept -> std::ostream&;
+
     /// @brief Operator for writing instances of bindump to standard output streams.
-    friend auto operator<<(std::ostream&, const bindump&) -> std::ostream&;
+    /// @see to_stream
+    friend auto operator<<(std::ostream& out, const bindump& bd)
+      -> std::ostream& {
+        return bd.to_stream(out);
+    }
 
 private:
     memory::const_block _mb;

@@ -76,7 +76,7 @@ public:
     }
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"rapidjson"};
+        return "rapidjson";
     }
 
     auto name() -> string_view {
@@ -566,12 +566,12 @@ private:
     _node_t _root{};
 
 public:
-    rapidjson_document_compound(_doc_t& rj_doc, logger& parent)
-      : _log{identifier{"JsnValTree"}, parent}
+    rapidjson_document_compound(_doc_t& rj_doc, const logger& parent)
+      : _log{"JsnValTree", parent}
       , _rj_doc{std::move(rj_doc)}
       , _root{_rj_doc, nullptr} {}
 
-    static auto make_shared(string_view json_str, logger& parent)
+    static auto make_shared(string_view json_str, const logger& parent)
       -> std::shared_ptr<rapidjson_document_compound> {
         _doc_t rj_doc;
         const rapidjson::ParseResult parse_ok{
@@ -582,13 +582,13 @@ public:
         }
         const auto msg{rapidjson::GetParseError_En(parse_ok.Code())};
         parent.error("JSON parse error")
-          .arg(identifier{"message"}, msg)
-          .arg(identifier{"offset"}, parse_ok.Offset());
+          .arg("message", msg)
+          .arg("offset", parse_ok.Offset());
         return {};
     }
 
     auto type_id() const noexcept -> identifier final {
-        return identifier{"rapidjson"};
+        return "rapidjson";
     }
 
     auto structure() -> attribute_interface* final {
@@ -669,7 +669,7 @@ struct get_rapidjson_document_compound<
 using default_rapidjson_document_compound =
   get_rapidjson_document_compound_t<rapidjson::Document>;
 //------------------------------------------------------------------------------
-auto from_json_text(string_view json_text, logger& parent) -> compound {
+auto from_json_text(string_view json_text, const logger& parent) -> compound {
     return compound::make<default_rapidjson_document_compound>(
       json_text, parent);
 }

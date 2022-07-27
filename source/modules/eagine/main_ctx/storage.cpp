@@ -16,6 +16,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
 import eagine.core.identifier;
+import eagine.core.container;
 import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.console;
@@ -50,15 +51,15 @@ public:
       , _watchdog{*this}
       , _app_config{*this}
       , _app_name{options.app_name} {
-        auto fs_path = std::filesystem::path(to_string(_args.command()));
+        const auto fs_path = std::filesystem::path(to_string(_args.command()));
         if(_app_name.empty()) {
             _app_name = fs_path.stem().string();
         }
         _exe_path = fs_path.lexically_normal().string();
 
         _log_root.info("application ${appName} starting")
-          .arg(identifier{"appName"}, _app_name)
-          .arg(identifier{"exePath"}, _exe_path);
+          .arg("appName", _app_name)
+          .arg("exePath", _exe_path);
     }
 
     auto setters() noexcept -> main_ctx_setters* final {
@@ -141,22 +142,26 @@ public:
         return _usr_info;
     }
 
-    auto bus() noexcept -> message_bus& final {
-        assert(_msg_bus);
-        return *_msg_bus;
-    }
-
-    void inject(std::shared_ptr<message_bus> msg_bus) final {
-        assert(!_msg_bus);
-        _msg_bus = std::move(msg_bus);
-    }
-
     auto compressor() noexcept -> data_compressor& final {
         return _compressor;
     }
 
     auto scratch_space() noexcept -> memory::buffer& final {
         return _scratch_space;
+    }
+
+    void inject(std::shared_ptr<main_ctx_service> service) final {
+        if(service) {
+            _services[service->type_id()] = service;
+        }
+    }
+
+    auto locate_service(identifier type_id) noexcept
+      -> std::shared_ptr<main_ctx_service> final {
+        if(const auto pos{_services.find(type_id)}; pos != _services.end()) {
+            return std::get<1>(*pos);
+        }
+        return {};
     }
 
     auto exe_path() const noexcept -> string_view final {
@@ -186,7 +191,8 @@ private:
     data_compressor _compressor{};
     std::string _exe_path{};
     std::string _app_name{};
-    std::shared_ptr<message_bus> _msg_bus;
+
+    flat_map<identifier, std::shared_ptr<main_ctx_service>> _services;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

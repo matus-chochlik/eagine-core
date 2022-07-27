@@ -10,4 +10,3 @@ export module eagine.core.value_tree;
 export import :interface;
 export import :wrappers;
 export import :implementation;
-// export import :app_config;

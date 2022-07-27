@@ -344,16 +344,23 @@ public:
       RvArgMaps>::later_by...;
 };
 
-export template <
-  auto method,
-  typename CppSignature = method_signature_t<method>,
-  typename RvArgMap = make_map_t<method_signature_t<method>, CppSignature>>
+export template <auto method, typename CppSignature, typename RvArgMap>
 using adapted_function = basic_adapted_function<
   method_api_t<method>,
   method,
   method_signature_t<method>,
   transform_signature_t<CppSignature>,
   RvArgMap>;
+
+export template <auto method, typename CppSignature>
+using simple_adapted_function = adapted_function<
+  method,
+  CppSignature,
+  make_map_t<method_signature_t<method>, CppSignature>>;
+
+export template <auto method>
+using plain_adapted_function =
+  simple_adapted_function<method, method_signature_t<method>>;
 
 export template <
   typename Api,

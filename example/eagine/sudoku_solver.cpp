@@ -5,10 +5,16 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <iostream>;
+import <stack>;
+#else
 #include <eagine/program_args.hpp>
 #include <eagine/sudoku.hpp>
 #include <iostream>
 #include <stack>
+#endif
 
 template <unsigned S>
 void solve_sudoku(const eagine::program_args& args) {

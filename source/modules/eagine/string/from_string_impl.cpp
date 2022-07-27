@@ -20,10 +20,10 @@ module;
 #endif
 
 module eagine.core.string;
+import eagine.core.memory;
 
 #if EAGINE_USE_BOOST_SPIRIT
 import eagine.core.math;
-import eagine.core.memory;
 import <complex>;
 import <limits>;
 import <memory>;

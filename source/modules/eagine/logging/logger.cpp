@@ -268,8 +268,8 @@ public:
       : base{BackendGetter(std::move(backend_getter))}
       , _object_id{id} {
         log_lifetime(_object_id, "${self} created with ${backend} backend")
-          .arg(identifier{"backend"}, this->backend())
-          .arg(identifier{"self"}, identifier{"LogId"}, _object_id);
+          .arg("backend", this->backend())
+          .arg("self", "LogId", _object_id);
     }
 
     /// @brief Constructor from logger id and parent logging object.
@@ -279,7 +279,7 @@ public:
       : base{static_cast<const base&>(parent)}
       , _object_id{id} {
         log_lifetime(_object_id, "created as a child of ${parent}")
-          .arg(identifier{"parent"}, identifier{"LogId"}, parent._object_id);
+          .arg("parent", "LogId", parent._object_id);
     }
 
     /// @brief Construct logging object without backend.
@@ -435,7 +435,7 @@ protected:
     }
 
 private:
-    identifier _object_id{identifier{"Object"}};
+    identifier _object_id{"Object"};
 };
 //------------------------------------------------------------------------------
 /// @brief Standalone logger object type.
@@ -452,11 +452,11 @@ public:
     constexpr logger() noexcept = default;
 
     /// @brief Construction from identifier and backed getter
-    logger(const identifier id, logger_shared_backend_getter getter)
+    logger(const identifier id, logger_shared_backend_getter getter) noexcept
       : base{id, std::move(getter)} {}
 
     /// @brief Construction from identifier and reference to parent object.
-    logger(const identifier id, const base& parent)
+    logger(const identifier id, const base& parent) noexcept
       : base{id, parent} {}
 
     /// @brief Construction from identifier and reference to parent logger.
