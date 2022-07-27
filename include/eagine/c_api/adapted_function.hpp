@@ -350,6 +350,16 @@ using adapted_function = basic_adapted_function<
   transform_signature_t<CppSignature>,
   RvArgMap>;
 
+template <auto method, typename CppSignature>
+using simple_adapted_function = adapted_function<
+  method,
+  CppSignature,
+  make_map_t<method_signature_t<method>, CppSignature>>;
+
+template <auto method>
+using plain_adapted_function =
+  simple_adapted_function<method, method_signature_t<method>>;
+
 template <
   typename Api,
   typename ApiTraits,
