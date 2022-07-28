@@ -66,7 +66,7 @@ void LogEntryStorage::beginStream(
     LogEntryData entry{};
     entry.entryUid = _uidSequence;
     entry.streamId = streamId;
-    entry.source = EAGINE_ID(XmlLogView);
+    entry.source = "XmlLogView";
     entry.severity = eagine::log_event_severity::info;
     entry.reltimeSec = 0.F;
     entry.isFirst = true;
@@ -78,7 +78,7 @@ void LogEntryStorage::endStream(stream_id_t streamId) noexcept {
     LogEntryData entry{};
     entry.entryUid = ++_uidSequence;
     entry.streamId = streamId;
-    entry.source = EAGINE_ID(XmlLogView);
+    entry.source = "XmlLogView";
     entry.severity = eagine::log_event_severity::info;
     entry.isLast = true;
     entry.format = "Log finished";

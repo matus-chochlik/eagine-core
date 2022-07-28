@@ -9,7 +9,7 @@
 //------------------------------------------------------------------------------
 StreamViewModel::StreamViewModel(EntryLog& parent)
   : QObject{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(StreamVM), parent}
+  , eagine::main_ctx_object{"StreamVM", parent}
   , _parent{parent}
   , _streamListModel{*this} {}
 //------------------------------------------------------------------------------

@@ -72,7 +72,7 @@ private:
     }
 
     auto type_id() noexcept -> identifier final {
-        return EAGINE_ID(XmlLogView);
+        return "XmlLogView";
     }
 
     void enter_scope(identifier) noexcept final {}

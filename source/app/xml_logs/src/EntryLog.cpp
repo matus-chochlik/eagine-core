@@ -9,7 +9,7 @@
 //------------------------------------------------------------------------------
 EntryLog::EntryLog(Backend& backend)
   : QObject{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(EntryLog), backend}
+  , eagine::main_ctx_object{"EntryLog", backend}
   , _backend{backend}
   , _entryViewModel{*this}
   , _progressViewModel{*this}

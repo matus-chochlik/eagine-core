@@ -47,7 +47,7 @@ auto main(int argc, const char** argv) -> int {
     eagine::argc_copy = argc;
     eagine::argv_copy = argv;
     eagine::main_ctx_options options;
-    options.app_id = EAGINE_ID(XmlLogView);
+    options.app_id = "XmlLogView";
     options.logger_opts.forced_backend =
       std::make_unique<eagine::internal_log_backend>();
     return eagine::main_impl(argc, argv, options);

@@ -165,7 +165,6 @@ auto operator<<(std::ostream& out, const identifier_name<M>& n)
 /// @ingroup identifiers
 /// @see identifier
 /// @see long_identifier
-/// @see EAGINE_ID
 ///
 /// Packed identifier store short constant strings with limited allowed set
 /// of characters that are used as object identifiers throughout the project.
@@ -205,10 +204,10 @@ public:
     template <auto L>
     constexpr basic_identifier(const char (&init)[L]) noexcept
         requires(L <= M + 1)
-    : _bites{_make_bites(
-        static_cast<const char*>(init),
-        L,
-        std::make_index_sequence<M>{})} {}
+      : _bites{_make_bites(
+          static_cast<const char*>(init),
+          L,
+          std::make_index_sequence<M>{})} {}
 
     /// @brief Construction from a const span of characters.
     explicit constexpr basic_identifier(
@@ -313,7 +312,6 @@ private:
 /// @see dec_to_identifier
 /// @see byte_to_identifier
 /// @see random_identifier
-/// @see EAGINE_ID
 ///
 /// Allows to store short constant string identifiers with maximum length of 10 characters.
 export using identifier =

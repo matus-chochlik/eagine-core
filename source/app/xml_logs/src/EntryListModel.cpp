@@ -15,7 +15,7 @@
 //------------------------------------------------------------------------------
 EntryListModel::EntryListModel(EntryViewModel& parent)
   : QAbstractItemModel{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(EntListMdl), parent}
+  , eagine::main_ctx_object{"EntListMdl", parent}
   , _parent{parent} {}
 //------------------------------------------------------------------------------
 auto EntryListModel::backend() const noexcept -> Backend& {

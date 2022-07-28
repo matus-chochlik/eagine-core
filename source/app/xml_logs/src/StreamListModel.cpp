@@ -14,7 +14,7 @@
 //------------------------------------------------------------------------------
 StreamListModel::StreamListModel(StreamViewModel& parent)
   : QAbstractItemModel{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(StmListMdl), parent}
+  , eagine::main_ctx_object{"StmListMdl", parent}
   , _parent{parent} {}
 //------------------------------------------------------------------------------
 auto StreamListModel::backend() const noexcept -> Backend& {

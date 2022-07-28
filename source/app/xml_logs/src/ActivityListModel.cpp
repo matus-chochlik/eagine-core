@@ -14,7 +14,7 @@
 //------------------------------------------------------------------------------
 ActivityListModel::ActivityListModel(ProgressViewModel& parent)
   : QAbstractItemModel{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(ActListMdl), parent}
+  , eagine::main_ctx_object{"ActListMdl", parent}
   , _parent{parent}
   , _timerId{startTimer(2000)} {}
 //------------------------------------------------------------------------------
