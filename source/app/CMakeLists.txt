@@ -16,7 +16,7 @@ install(
 )
 
 find_package(Qt5 COMPONENTS Core Widgets Xml Qml Quick)
-if(Qt5_FOUND)
+if(Qt5_FOUND AND WITH_MODULES)
 	set(CMAKE_AUTOMOC ON)
 	set(CMAKE_AUTORCC ON)
  	add_subdirectory(xml_logs)
