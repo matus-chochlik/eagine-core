@@ -7,13 +7,17 @@
 #ifndef EAGINE_XML_LOGS_ENTRY_LOG
 #define EAGINE_XML_LOGS_ENTRY_LOG
 
+#if EAGINE_CORE_MODULE
+import eagine.core;
+#else
+#include <eagine/main_ctx_object.hpp>
+#endif
 #include "ActivityStorage.hpp"
 #include "ChartsViewModel.hpp"
 #include "EntryStorage.hpp"
 #include "EntryViewModel.hpp"
 #include "ProgressViewModel.hpp"
 #include "StreamViewModel.hpp"
-#include <eagine/main_ctx_object.hpp>
 #include <QObject>
 
 class Backend;

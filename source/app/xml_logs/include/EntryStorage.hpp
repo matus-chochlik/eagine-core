@@ -7,6 +7,17 @@
 #ifndef EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 #define EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <algorithm>;
+import <chrono>;
+import <cstdint>;
+import <map>;
+import <set>;
+import <string>;
+import <tuple>;
+import <variant>;
+#else
 #include <eagine/flat_map.hpp>
 #include <eagine/identifier.hpp>
 #include <eagine/is_within_limits.hpp>
@@ -22,6 +33,7 @@
 #include <string>
 #include <tuple>
 #include <variant>
+#endif
 
 class Backend;
 //------------------------------------------------------------------------------

@@ -4,10 +4,15 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#include "EntryFormat.hpp"
-#include "EntryStorage.hpp"
+#if EAGINE_CORE_MODULE
+import eagine.core;
+import <sstream>;
+#else
 #include <eagine/str_var_subst.hpp>
 #include <sstream>
+#endif
+#include "EntryFormat.hpp"
+#include "EntryStorage.hpp"
 
 //------------------------------------------------------------------------------
 auto EntryFormat::operator()(
@@ -23,7 +28,7 @@ auto EntryFormat::operator()(
     _arg.append("<b>");
     eagine::append_to(_arg, i.name().view());
     _arg.append("</b>");
-    return {{_arg}, true};
+    return {{_arg}};
 }
 //------------------------------------------------------------------------------
 auto EntryFormat::operator()(
@@ -33,14 +38,14 @@ auto EntryFormat::operator()(
     eagine::append_to(_arg, m.class_().name().view());
     _arg.append(".");
     eagine::append_to(_arg, m.method().name().view());
-    return {{_arg}, true};
+    return {{_arg}};
 }
 //------------------------------------------------------------------------------
 auto EntryFormat::operator()(const eagine::identifier, const bool b) noexcept
   -> result_type {
     const eagine::string_view t{"true"};
     const eagine::string_view f{"false"};
-    return {b ? t : f, true};
+    return {b ? t : f};
 }
 //------------------------------------------------------------------------------
 auto EntryFormat::operator()(
@@ -48,7 +53,7 @@ auto EntryFormat::operator()(
   const std::intmax_t i) noexcept -> result_type {
     _arg.clear();
     _arg.append(std::to_string(i));
-    return {{_arg}, true};
+    return {{_arg}};
 }
 //------------------------------------------------------------------------------
 auto EntryFormat::operator()(
@@ -56,14 +61,14 @@ auto EntryFormat::operator()(
   const std::uintmax_t i) noexcept -> result_type {
     _arg.clear();
     _arg.append(std::to_string(i));
-    return {{_arg}, true};
+    return {{_arg}};
 }
 //------------------------------------------------------------------------------
 auto EntryFormat::operator()(const eagine::identifier, const float f) noexcept
   -> result_type {
     _arg.clear();
     _arg.append(std::to_string(f));
-    return {{_arg}, true};
+    return {{_arg}};
 }
 //------------------------------------------------------------------------------
 auto EntryFormat::operator()(
@@ -83,13 +88,13 @@ auto EntryFormat::operator()(
     std::stringstream s;
     s << d.count() << "[s]";
     _arg = s.str();
-    return {{_arg}, true};
+    return {{_arg}};
 }
 //------------------------------------------------------------------------------
 auto EntryFormat::operator()(
   const eagine::identifier,
   const eagine::string_view s) noexcept -> result_type {
-    return {s, true};
+    return {s};
 }
 //------------------------------------------------------------------------------
 auto EntryFormat::format(const LogEntryData& entry) noexcept

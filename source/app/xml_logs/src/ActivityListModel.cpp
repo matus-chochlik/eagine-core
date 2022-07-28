@@ -4,13 +4,17 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
+#if EAGINE_CORE_MODULE
+import eagine.core;
+#else
+#include <eagine/extract.hpp>
+#include <eagine/is_within_limits.hpp>
+#endif
 #include "ActivityListModel.hpp"
 #include "Backend.hpp"
 #include "EntryLog.hpp"
 #include "ProgressViewModel.hpp"
 #include "Utility.hpp"
-#include <eagine/extract.hpp>
-#include <eagine/is_within_limits.hpp>
 //------------------------------------------------------------------------------
 ActivityListModel::ActivityListModel(ProgressViewModel& parent)
   : QAbstractItemModel{nullptr}

@@ -4,10 +4,14 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#include "Backend.hpp"
-#include "internal_log_backend.hpp"
+#if EAGINE_CORE_MODULE
+import eagine.core;
+#else
 #include <eagine/main_ctx.hpp>
 #include <eagine/main_fwd.hpp>
+#endif
+#include "Backend.hpp"
+#include "internal_log_backend.hpp"
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -50,5 +54,5 @@ auto main(int argc, const char** argv) -> int {
     options.app_id = "XmlLogView";
     options.logger_opts.forced_backend =
       std::make_unique<eagine::internal_log_backend>();
-    return eagine::main_impl(argc, argv, options);
+    return eagine::main_impl(argc, argv, options, eagine::main);
 }

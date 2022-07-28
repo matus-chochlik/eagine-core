@@ -4,11 +4,15 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#include "Connection.hpp"
-#include "Backend.hpp"
+#if EAGINE_CORE_MODULE
+import eagine.core;
+#else
 #include <eagine/assert.hpp>
 #include <eagine/from_string.hpp>
 #include <eagine/reflect/enumerators.hpp>
+#endif
+#include "Backend.hpp"
+#include "Connection.hpp"
 
 //------------------------------------------------------------------------------
 Connection::Connection(QTcpSocket& socket, Backend& parent)
@@ -34,16 +38,18 @@ auto Connection::_toIdentifier(const QStringRef& s) noexcept
 }
 //------------------------------------------------------------------------------
 auto Connection::_toFloat(const QStringRef& s, float f) noexcept -> float {
-    return extract_or(eagine::from_string<float>(eagine::view(s.toUtf8())), f);
+    return eagine::extract_or(
+      eagine::from_string<float>(eagine::view(s.toUtf8())), f);
 }
 //------------------------------------------------------------------------------
 auto Connection::_toInt(const QStringRef& s, int i) noexcept -> int {
-    return extract_or(eagine::from_string<int>(eagine::view(s.toUtf8())), i);
+    return eagine::extract_or(
+      eagine::from_string<int>(eagine::view(s.toUtf8())), i);
 }
 //------------------------------------------------------------------------------
 auto Connection::_toUnsigned64(const QStringRef& s, std::uint64_t f) noexcept
   -> std::uint64_t {
-    return extract_or(
+    return eagine::extract_or(
       eagine::from_string<std::uint64_t>(eagine::view(s.toUtf8())), f);
 }
 //------------------------------------------------------------------------------

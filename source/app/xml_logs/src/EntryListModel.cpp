@@ -4,14 +4,18 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#include "EntryListModel.hpp"
+#if EAGINE_CORE_MODULE
+import eagine.core;
+#else
+#include <eagine/extract.hpp>
+#include <eagine/is_within_limits.hpp>
+#endif
 #include "Backend.hpp"
 #include "EntryFormat.hpp"
+#include "EntryListModel.hpp"
 #include "EntryLog.hpp"
 #include "EntryViewModel.hpp"
 #include "Utility.hpp"
-#include <eagine/extract.hpp>
-#include <eagine/is_within_limits.hpp>
 //------------------------------------------------------------------------------
 EntryListModel::EntryListModel(EntryViewModel& parent)
   : QAbstractItemModel{nullptr}

@@ -4,13 +4,17 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#include "StreamListModel.hpp"
-#include "Backend.hpp"
-#include "EntryLog.hpp"
-#include "StreamViewModel.hpp"
-#include "Utility.hpp"
+#if EAGINE_CORE_MODULE
+import eagine.core;
+#else
 #include <eagine/extract.hpp>
 #include <eagine/is_within_limits.hpp>
+#endif
+#include "Backend.hpp"
+#include "EntryLog.hpp"
+#include "StreamListModel.hpp"
+#include "StreamViewModel.hpp"
+#include "Utility.hpp"
 //------------------------------------------------------------------------------
 StreamListModel::StreamListModel(StreamViewModel& parent)
   : QAbstractItemModel{nullptr}

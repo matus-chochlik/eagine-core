@@ -9,20 +9,24 @@
 #ifndef EAGINE_XML_LOGS_INTERNAL_LOG_BACKEND_HPP
 #define EAGINE_XML_LOGS_INTERNAL_LOG_BACKEND_HPP
 
-#include "EntryStorage.hpp"
-#include <eagine/assert.hpp>
+#if EAGINE_CORE_MODULE
+import eagine.core;
+#else
 #include <eagine/compiler_info.hpp>
 #include <eagine/git_info.hpp>
 #include <eagine/logging/backend.hpp>
 #include <eagine/memory/default_alloc.hpp>
 #include <eagine/os_info.hpp>
+#endif
+#include "EntryStorage.hpp"
+#include <cassert>
 
 namespace eagine {
 //------------------------------------------------------------------------------
 class internal_log_backend final : public logger_backend {
 public:
     internal_log_backend() noexcept {
-        EAGINE_ASSERT(!_single_instance_ptr());
+        assert(!_single_instance_ptr());
         _single_instance_ptr() = this;
         LogStreamInfo info{};
         info.logIdentity = "XML log viewer";
@@ -47,12 +51,12 @@ public:
 
     ~internal_log_backend() noexcept final {
         _entries->endStream(0);
-        EAGINE_ASSERT(_single_instance_ptr());
+        assert(_single_instance_ptr());
         _single_instance_ptr() = nullptr;
     }
 
     static auto storage() noexcept -> std::shared_ptr<LogEntryStorage> {
-        EAGINE_ASSERT(_single_instance_ptr());
+        assert(_single_instance_ptr());
         return _single_instance_ptr()->_entries;
     }
 

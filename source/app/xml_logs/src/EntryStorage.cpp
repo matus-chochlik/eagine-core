@@ -5,6 +5,7 @@
 ///
 
 #include "EntryStorage.hpp"
+#include <cassert>
 
 //------------------------------------------------------------------------------
 auto LogEntryStorage::cacheString(eagine::string_view s)
@@ -20,7 +21,7 @@ void LogEntryStorage::_emplaceNextEntry(LogEntryData&& entry) noexcept {
     auto& chunk = [&]() -> std::vector<LogEntryData>& {
         if(!_entries.empty()) [[likely]] {
             if(_entries.back().size() >= _chunkSize()) [[unlikely]] {
-                EAGINE_ASSERT(_entries.back().size() == _chunkSize());
+                assert(_entries.back().size() == _chunkSize());
                 _entries.emplace_back();
                 _entries.back().reserve(_chunkSize());
             }

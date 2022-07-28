@@ -53,14 +53,14 @@ public:
         requires(
           !std::is_array_v<R> && std::is_convertible_v<R, P> &&
           std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>)
-    : base{addr, -static_cast<S>(_ce_strlen(addr))} {}
+      : base{addr, -static_cast<S>(_ce_strlen(addr))} {}
 
     template <typename R>
     constexpr explicit basic_string_span(R addr) noexcept
         requires(
           !std::is_array_v<R> && std::is_convertible_v<R, P> &&
           std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>)
-    : base{addr, -limit_cast<S>(std::strlen(addr))} {}
+      : base{addr, -limit_cast<S>(std::strlen(addr))} {}
 
     /// @brief Construction from C string literal
     template <std::size_t N>
@@ -248,6 +248,7 @@ auto make_span_putter(
 }
 //------------------------------------------------------------------------------
 export using memory::string_view;
+export using memory::append_to;
 //------------------------------------------------------------------------------
 } // namespace eagine
 
