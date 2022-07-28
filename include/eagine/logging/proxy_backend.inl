@@ -36,7 +36,7 @@ auto proxy_log_backend::type_id() noexcept -> identifier {
     if(_delegate) [[likely]] {
         return _delegate->type_id();
     }
-    return EAGINE_ID(Proxy);
+    return "Proxy";
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC

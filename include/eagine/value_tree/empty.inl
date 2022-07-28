@@ -15,7 +15,7 @@ class empty_compound
   , public compound_implementation<empty_compound> {
 public:
     empty_compound(main_ctx_parent parent)
-      : main_ctx_object{EAGINE_ID(EmptyCmpnd), parent} {}
+      : main_ctx_object{"EmptyCmpnd", parent} {}
 
     static auto make_shared(main_ctx_parent parent)
       -> std::shared_ptr<empty_compound> {

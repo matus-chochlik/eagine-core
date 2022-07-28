@@ -38,7 +38,7 @@ public:
     using host_id_type = std::uint32_t;
 
     system_info(main_ctx_parent parent) noexcept
-      : main_ctx_object{EAGINE_ID(SystemInfo), parent} {}
+      : main_ctx_object{"SystemInfo", parent} {}
 
     /// @brief Do potentially expensive pre-initialization and caching.
     auto preinitialize() noexcept -> system_info&;

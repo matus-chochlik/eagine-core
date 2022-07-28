@@ -22,7 +22,7 @@ class process_watchdog_impl;
 class process_watchdog : public main_ctx_object {
 public:
     process_watchdog(main_ctx_parent parent) noexcept
-      : main_ctx_object{EAGINE_ID(Watchdog), parent} {}
+      : main_ctx_object{"Watchdog", parent} {}
 
     /// @brief Tells the system that this process finished initialization.
     void declare_initialized() noexcept;

@@ -18,7 +18,7 @@ static inline auto adapt_entry_arg(
   const identifier name,
   const std::filesystem::path& fsp) noexcept {
     return [name, fsps{fsp.native()}](auto& backend) {
-        backend.add_string(name, EAGINE_ID(FsPath), string_view(fsps));
+        backend.add_string(name, "FsPath", string_view(fsps));
     };
 }
 //------------------------------------------------------------------------------
@@ -26,11 +26,10 @@ static inline auto adapt_entry_arg(
   const identifier name,
   const std::filesystem::filesystem_error& value) noexcept {
     return [name, value](auto& backend) {
+        backend.add_string(name, "FlSysError", string_view(value.what()));
         backend.add_string(
-          name, EAGINE_ID(FlSysError), string_view(value.what()));
-        backend.add_string(
-          EAGINE_ID(category),
-          EAGINE_ID(ErrorCtgry),
+          "category",
+          "ErrorCtgry",
           string_view(value.code().category().name()));
     };
 }

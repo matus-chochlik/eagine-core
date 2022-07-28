@@ -11,7 +11,7 @@
 
 auto main() -> int {
     using namespace eagine;
-    std::cout << hexdump(embed(EAGINE_ID(self), __FILE__));
+    std::cout << hexdump(embed(identifier{"self"}, __FILE__));
 
     return 0;
 }

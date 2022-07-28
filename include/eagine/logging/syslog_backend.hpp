@@ -56,7 +56,7 @@ public:
     }
 
     auto type_id() noexcept -> identifier final {
-        return EAGINE_ID(Syslog);
+        return "Syslog";
     }
 
     void enter_scope(const identifier) noexcept final {}

@@ -262,8 +262,8 @@ public:
       : base{BackendGetter(std::move(backend_getter))}
       , _object_id{id} {
         log_lifetime(_object_id, "${self} created with ${backend} backend")
-          .arg(EAGINE_ID(backend), this->backend())
-          .arg(EAGINE_ID(self), EAGINE_ID(LogId), _object_id);
+          .arg("backend", this->backend())
+          .arg("self", "LogId", _object_id);
     }
 
     /// @brief Constructor from logger id and parent logging object.
@@ -273,7 +273,7 @@ public:
       : base{static_cast<const base&>(parent)}
       , _object_id{id} {
         log_lifetime(_object_id, "created as a child of ${parent}")
-          .arg(EAGINE_ID(parent), EAGINE_ID(LogId), parent._object_id);
+          .arg("parent", "LogId", parent._object_id);
     }
 
     /// @brief Construct logging object without backend.
@@ -392,9 +392,9 @@ public:
       const identifier series,
       const tagged_quantity<T, U>& qty) const noexcept
       -> const named_logging_object& requires(std::is_convertible_v<T, float>) {
-        log_chart_sample(series, qty.value());
-        return *this;
-    }
+                                         log_chart_sample(series, qty.value());
+                                         return *this;
+                                     }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename P>
@@ -429,7 +429,7 @@ protected:
     }
 
 private:
-    identifier _object_id{EAGINE_ID(Object)};
+    identifier _object_id{"Object"};
 };
 //------------------------------------------------------------------------------
 /// @brief Standalone logger object type.
@@ -516,9 +516,9 @@ public:
       const identifier series,
       const tagged_quantity<T, U>& qty) noexcept
       -> const logger& requires(std::is_convertible_v<T, float>) {
-        log_chart_sample(series, qty.value());
-        return *this;
-    }
+                           log_chart_sample(series, qty.value());
+                           return *this;
+                       }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename P>

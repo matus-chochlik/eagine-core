@@ -187,7 +187,7 @@ public:
     overlay_compound(
       main_ctx_parent parent,
       std::vector<compound_attribute> overlays)
-      : main_ctx_object{EAGINE_ID(OvrlyCmpnd), parent}
+      : main_ctx_object{"OvrlyCmpnd", parent}
       , _context{std::move(overlays)} {}
 
     static auto make_shared(

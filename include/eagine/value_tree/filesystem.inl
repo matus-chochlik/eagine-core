@@ -65,8 +65,8 @@ public:
             } catch(const std::filesystem::filesystem_error& err) {
                 filesystem_object_of(owner)
                   .log_debug("failed to get filesystem node count")
-                  .arg(EAGINE_ID(path), _node_path)
-                  .arg(EAGINE_ID(error), err);
+                  .arg("path", _node_path)
+                  .arg("error", err);
             }
         }
         return 0;
@@ -88,9 +88,9 @@ public:
         } catch(const std::filesystem::filesystem_error& err) {
             filesystem_object_of(owner)
               .log_debug("failed to get nested filesystem node for '${path}'")
-              .arg(EAGINE_ID(index), index)
-              .arg(EAGINE_ID(path), _node_path)
-              .arg(EAGINE_ID(error), err);
+              .arg("index", index)
+              .arg("path", _node_path)
+              .arg("error", err);
         }
         return nullptr;
     }
@@ -111,9 +111,9 @@ public:
         } catch(const std::filesystem::filesystem_error& err) {
             filesystem_object_of(owner)
               .log_debug("failed to get nested filesystem node for '${path}'")
-              .arg(EAGINE_ID(name), name)
-              .arg(EAGINE_ID(path), _node_path)
-              .arg(EAGINE_ID(error), err);
+              .arg("name", name)
+              .arg("path", _node_path)
+              .arg("error", err);
         }
         return nullptr;
     }
@@ -239,7 +239,7 @@ public:
       main_ctx_parent parent,
       string_view fs_path,
       std::shared_ptr<file_compound_factory> factory)
-      : main_ctx_object{EAGINE_ID(FsVtCmpnd), parent}
+      : main_ctx_object{"FsVtCmpnd", parent}
       , _root{std::string_view{fs_path}}
       , _compound_factory{std::move(factory)} {}
 
@@ -328,7 +328,7 @@ static inline auto filesystem_make_node(
             return owner.make_node(fs_path, canonical(fs_path));
         } catch(const std::filesystem::filesystem_error&) {
             owner.log_debug("failed to create filesystem node '${path}'")
-              .arg(EAGINE_ID(path), EAGINE_ID(FsPath), fs_path);
+              .arg("path", "FsPath", fs_path);
         }
     }
     return nullptr;

@@ -27,7 +27,7 @@ namespace eagine {
 class application_config_impl : public main_ctx_object {
 public:
     application_config_impl(main_ctx_parent parent)
-      : main_ctx_object{EAGINE_ID(AppCfgImpl), parent} {
+      : main_ctx_object{"AppCfgImpl", parent} {
         // front is empty and is filled out later
         _tag_list.emplace_back();
 
@@ -90,7 +90,7 @@ public:
             }
         } catch(...) {
             log_error("exception while loading configuration value '${key}'")
-              .arg(EAGINE_ID(key), key);
+              .arg("key", key);
         }
         return {};
     }

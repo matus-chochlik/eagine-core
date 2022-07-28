@@ -25,7 +25,7 @@ static inline auto adapt_entry_arg(
     return [name, value](auto& backend) {
         backend.add_string(
           name,
-          EAGINE_ID(YesNoMaybe),
+          "YesNoMaybe",
           value.is(true)    ? string_view{"yes"}
           : value.is(false) ? string_view{"no"}
                             : string_view{"maybe"});
