@@ -18,10 +18,6 @@ import :embedded;
 
 namespace eagine {
 
-extern auto fetch_embedded_resource(
-  const identifier res_id,
-  const string_view src_path) noexcept -> embedded_resource;
-
 template <identifier_t ResId>
 auto get_embedded_resource(const selector<ResId>, const string_view) noexcept
   -> embedded_resource;
@@ -37,11 +33,6 @@ auto get_embedded_resource(const selector<ResId>, const string_view) noexcept
 /// The embed generator is installed as one of the tools and in cmake-based
 /// build systems the eagine_embed_packed_target_resources and
 /// eagine_embed_target_resources cmake functions can be used invoke it.
-export auto embed(const identifier res_id, const string_view src_path) noexcept
-  -> embedded_resource {
-    return fetch_embedded_resource(res_id, src_path);
-}
-
 export template <identifier_t ResId>
 auto embed(string_view src_path) noexcept -> embedded_resource {
     return get_embedded_resource(selector<ResId>{}, src_path);
