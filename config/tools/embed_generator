@@ -176,23 +176,32 @@ def load_resource(options, resource_path):
     return PlainResource(resource_path)
 
 # ------------------------------------------------------------------------------
-def make_res_code(options, ident, path):
-    linelen = 0
-    first = True
+def fix_res_path(options, path):
     resource_path = options.target_map.get(path, path)
     if not os.path.isfile(resource_path):
         for search_dir in options.search_path:
             if os.path.isfile(os.path.join(search_dir, path)):
                 resource_path = os.path.realpath(os.path.join(search_dir, path))
                 break
+    return resource_path
 
-    options.output.write('    if(res_id == identifier{"%s"}) {\n' % ident)
+# ------------------------------------------------------------------------------
+def make_res_function(options, ident, path):
+    resource_path = fix_res_path(options, path);
 
+    options.output.write(
+        'auto get_embedded_resource(\n'+
+        '    const selector<id_v("%s")>,\n'
+        '    [[maybe_unused]] const string_view path\n'
+        ') noexcept -> embedded_resource {\n' % ident
+    )
+    linelen = 0
     with load_resource(options, resource_path) as res:
         if res.byte_size() > 0:
             options.output.write("#if !defined(__clang_analyzer__)\n")
             options.output.write("        static const byte res[] = {\n")
         
+            first = True
             while True:
                 byte = res.get_byte()
                 if byte is None:
@@ -218,8 +227,14 @@ def make_res_code(options, ident, path):
                 "true" if options.packed else "false"
             ))
             options.output.write("#endif\n")
-        else:
-            options.output.write("        return {};\n")
+    options.output.write("    return {};\n")
+    options.output.write('} // %s\n' % ident)
+
+# ------------------------------------------------------------------------------
+def make_res_code(options, ident, path):
+
+    options.output.write('    if(res_id == identifier{"%s"}) {\n' % ident)
+    options.output.write('        return get_embedded_resource(selector<id_v("%s")>{}, path);\n' % ident)
     options.output.write("    }\n")
 # ------------------------------------------------------------------------------
 def make_prologue(options):
@@ -232,22 +247,16 @@ def make_prologue(options):
     options.output.write("#include <eagine/embed.hpp>\n");
     options.output.write("#endif\n");
     options.output.write("namespace eagine {\n")
-    options.output.write(
-        "auto get_embedded_resource([[maybe_unused]] const identifier res_id, [[maybe_unused]] const string_view path) noexcept -> embedded_resource {\n"
-    )
 # ------------------------------------------------------------------------------
 def make_epilogue(options):
-    options.output.write("    return {};\n")
-    options.output.write("}\n")
     options.output.write("} // namespace eagine\n")
 # ------------------------------------------------------------------------------
-def make_resource_file(options):
+def list_embedded_resources(options):
     embed_res = [
         r'embed\(\s*EAGINE_ID\(([a-zA-Z0-9_]+)\),\s*("([^"]+)"|__FILE__)\s*\)',
         r'embed\(\s*identifier[({]"([a-zA-Z0-9_]+)"[})],\s*("([^"]+)"|__FILE__)\s*\)',
         r'embed\(\s*"([a-zA-Z0-9_]+)",\s*("([^"]+)"|__FILE__)\s*\)'
     ]
-    some_output = False
     for path in options.input:
         with open(path, "rt") as ifd:
             source = str()
@@ -257,15 +266,36 @@ def make_resource_file(options):
                     embeds = re.findall(embed_re, source)
                     if embeds:
                         for ident, res_expr, res_path in embeds:
-                            if not some_output:
-                                make_prologue(options)
-                                some_output = True
                             if res_expr == "__FILE__":
-                                make_res_code(options, ident, path)
+                                yield ident, path
                             else:
-                                make_res_code(options, ident, res_path)
+                                yield ident, res_path
                         source = str()
+# ------------------------------------------------------------------------------
+def make_resource_file(options):
+    some_output = False
+    res_map = {i:p for (i, p) in list_embedded_resources(options)}
+    for identifier, resource_path in res_map.items():
+        if not some_output:
+            make_prologue(options)
+            some_output = True
+
+        make_res_function(options, identifier, resource_path)
+
     if some_output:
+        options.output.write(
+            'auto get_embedded_resource(\n'
+            '    [[maybe_unused]] const identifier res_id,\n'
+            '    [[maybe_unused]] const string_view path\n'
+            ') noexcept -> embedded_resource {\n'
+        )
+
+    for identifier, resource_path in res_map.items():
+        make_res_code(options, identifier, resource_path)
+
+    if some_output:
+        options.output.write("    return {};\n")
+        options.output.write("}\n")
         make_epilogue(options)
 
 # ------------------------------------------------------------------------------
