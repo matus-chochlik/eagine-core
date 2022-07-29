@@ -190,7 +190,7 @@ def make_res_function(options, ident, path):
     resource_path = fix_res_path(options, path);
 
     options.output.write(
-        'auto get_embedded_resource(\n'+
+        'template<> auto get_embedded_resource(\n'+
         '    const selector<id_v("%s")>,\n'
         '    [[maybe_unused]] const string_view path\n'
         ') noexcept -> embedded_resource {\n' % ident
@@ -247,15 +247,20 @@ def make_prologue(options):
     options.output.write("#include <eagine/embed.hpp>\n");
     options.output.write("#endif\n");
     options.output.write("namespace eagine {\n")
+    options.output.write("template <identifier_t ResId>\n")
+    options.output.write("auto get_embedded_resource(const selector<ResId>, const string_view) noexcept\n")
+    options.output.write("  -> embedded_resource;\n")
+
 # ------------------------------------------------------------------------------
 def make_epilogue(options):
     options.output.write("} // namespace eagine\n")
 # ------------------------------------------------------------------------------
 def list_embedded_resources(options):
     embed_res = [
-        r'embed\(\s*EAGINE_ID\(([a-zA-Z0-9_]+)\),\s*("([^"]+)"|__FILE__)\s*\)',
+        r'embed<id_v\("([a-zA-Z0-9_]+)"\)>\(\s*("([^"]+)"|__FILE__)\s*\)',
+        r'embed\(\s*"([a-zA-Z0-9_]+)",\s*("([^"]+)"|__FILE__)\s*\)',
         r'embed\(\s*identifier[({]"([a-zA-Z0-9_]+)"[})],\s*("([^"]+)"|__FILE__)\s*\)',
-        r'embed\(\s*"([a-zA-Z0-9_]+)",\s*("([^"]+)"|__FILE__)\s*\)'
+        r'embed\(\s*EAGINE_ID\(([a-zA-Z0-9_]+)\),\s*("([^"]+)"|__FILE__)\s*\)'
     ]
     for path in options.input:
         with open(path, "rt") as ifd:
@@ -284,7 +289,7 @@ def make_resource_file(options):
 
     if some_output:
         options.output.write(
-            'auto get_embedded_resource(\n'
+            'auto fetch_embedded_resource(\n'
             '    [[maybe_unused]] const identifier res_id,\n'
             '    [[maybe_unused]] const string_view path\n'
             ') noexcept -> embedded_resource {\n'
