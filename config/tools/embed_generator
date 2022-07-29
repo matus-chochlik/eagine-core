@@ -196,8 +196,10 @@ def make_res_function(options, ident, path):
         ') noexcept -> embedded_resource {\n' % ident
     )
     linelen = 0
+    is_empty = True
     with load_resource(options, resource_path) as res:
         if res.byte_size() > 0:
+            is_empty = False
             options.output.write("#if !defined(__clang_analyzer__)\n")
             options.output.write("        static const byte res[] = {\n")
         
@@ -226,8 +228,10 @@ def make_res_function(options, ident, path):
             options.output.write("        return {view(res), path, %s};\n" % (
                 "true" if options.packed else "false"
             ))
-            options.output.write("#endif\n")
+            options.output.write("#else\n")
     options.output.write("    return {};\n")
+    if not is_empty:
+        options.output.write("#endif\n")
     options.output.write('} // %s\n' % ident)
 
 # ------------------------------------------------------------------------------

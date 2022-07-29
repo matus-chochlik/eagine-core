@@ -89,7 +89,7 @@ static inline auto as_chars(const embedded_resource& res) noexcept {
     return as_chars(memory::const_block{res});
 }
 
-extern auto get_embedded_resource(
+extern auto fetch_embedded_resource(
   const identifier res_id,
   const string_view src_path) noexcept -> embedded_resource;
 
@@ -107,7 +107,12 @@ extern auto get_embedded_resource(
 static inline auto embed(
   const identifier res_id,
   const string_view src_path) noexcept -> embedded_resource {
-    return get_embedded_resource(res_id, src_path);
+    return fetch_embedded_resource(res_id, src_path);
+}
+
+template <identifier_t ResId>
+auto embed(string_view src_path) noexcept -> embedded_resource {
+    return fetch_embedded_resource(identifier{ResId}, src_path);
 }
 
 } // namespace eagine
