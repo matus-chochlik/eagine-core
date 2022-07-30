@@ -93,30 +93,16 @@ public:
 
     /// @brief Checks if the class identifier matches the argument.
     /// @see has_method
-    constexpr auto has_class(const identifier id) const noexcept {
-        return class_id() == id.value();
-    }
-
-    /// @brief Checks if the class identifier matches the argument.
-    /// @see has_method
-    template <auto L>
-        requires(identifier_literal_length<L>)
-    constexpr auto has_class(const char (&str)[L]) const noexcept {
-        return has_class(identifier{str});
+    constexpr auto has_class(const identifier_value idv) const noexcept
+      -> bool {
+        return class_id() == idv._value;
     }
 
     /// @brief Checks if the method identifier matches the argument.
     /// @see has_class
-    constexpr auto has_method(const identifier id) const noexcept {
-        return method_id() == id.value();
-    }
-
-    /// @brief Checks if the method identifier matches the argument.
-    /// @see has_class
-    template <auto L>
-        requires(identifier_literal_length<L>)
-    constexpr auto has_method(const char (&str)[L]) const noexcept {
-        return has_method(identifier{str});
+    constexpr auto has_method(const identifier_value idv) const noexcept
+      -> bool {
+        return method_id() == idv._value;
     }
 
 private:

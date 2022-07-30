@@ -323,6 +323,10 @@ struct basic_identifier_value {
     constexpr basic_identifier_value(const value_type value) noexcept
       : _value{value} {}
 
+    /// @brief Construction from the identifier type.
+    constexpr basic_identifier_value(const identifier_type id) noexcept
+      : _value{id.value()} {}
+
     /// @brief Construction from a string literal.
     template <auto L>
     constexpr basic_identifier_value(const char (&str)[L]) noexcept
