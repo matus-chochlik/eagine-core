@@ -261,6 +261,7 @@ def make_epilogue(options):
 # ------------------------------------------------------------------------------
 def list_embedded_resources(options):
     embed_res = [
+        r'embed<"([a-zA-Z0-9_]+)">\(\s*("([^"]+)"|__FILE__)\s*\)',
         r'embed<id_v\("([a-zA-Z0-9_]+)"\)>\(\s*("([^"]+)"|__FILE__)\s*\)',
         r'embed\(\s*"([a-zA-Z0-9_]+)",\s*("([^"]+)"|__FILE__)\s*\)',
         r'embed\(\s*identifier[({]"([a-zA-Z0-9_]+)"[})],\s*("([^"]+)"|__FILE__)\s*\)',

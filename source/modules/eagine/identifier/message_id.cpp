@@ -14,7 +14,7 @@ import <tuple>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export template <identifier_t ClassId, identifier_t MethodId>
+export template <identifier_value ClassId, identifier_value MethodId>
 struct static_message_id;
 //------------------------------------------------------------------------------
 /// @brief Class storing two identifier values representing class/method pair.
@@ -29,7 +29,9 @@ public:
     constexpr message_id() noexcept = default;
 
     ///	@brief Construction from two identifier values.
-    constexpr message_id(const identifier_t c, const identifier_t m) noexcept
+    constexpr message_id(
+      const identifier_value c,
+      const identifier_value m) noexcept
       : _data{c, m} {}
 
     ///	@brief Construction from two identifier objects.
@@ -47,7 +49,7 @@ public:
       : message_id{std::get<0>(t), std::get<1>(t)} {}
 
     ///	@brief Construction from static_message_id value.
-    template <identifier_t ClassId, identifier_t MethodId>
+    template <identifier_value ClassId, identifier_value MethodId>
     constexpr message_id(const static_message_id<ClassId, MethodId>&) noexcept
       : message_id{ClassId, MethodId} {}
 
@@ -127,7 +129,7 @@ private:
 ///
 /// This class encodes an identifier pair in its template parameters.
 /// It is implicitly convertible to message_id.
-export template <identifier_t ClassId, identifier_t MethodId>
+export template <identifier_value ClassId, identifier_value MethodId>
 struct static_message_id {
     using type = static_message_id;
 
@@ -154,7 +156,7 @@ struct static_message_id {
 //------------------------------------------------------------------------------
 /// @brief Equality comparison between message_id and static_message_id.
 /// @ingroup identifiers
-export template <identifier_t ClassId, identifier_t MethodId>
+export template <identifier_value ClassId, identifier_value MethodId>
 auto operator==(
   const message_id l,
   const static_message_id<ClassId, MethodId> r) noexcept {

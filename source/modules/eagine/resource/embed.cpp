@@ -33,7 +33,7 @@ auto get_embedded_resource(const selector<ResId>, const string_view) noexcept
 /// The embed generator is installed as one of the tools and in cmake-based
 /// build systems the eagine_embed_packed_target_resources and
 /// eagine_embed_target_resources cmake functions can be used invoke it.
-export template <identifier_t ResId>
+export template <identifier_value ResId>
 auto embed(string_view src_path) noexcept -> embedded_resource {
     return get_embedded_resource(selector<ResId>{}, src_path);
 }

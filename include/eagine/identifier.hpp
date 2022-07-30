@@ -345,6 +345,41 @@ private:
     }
 };
 //------------------------------------------------------------------------------
+/// @brief The numeric value of an identifier. Can be used as a NTTP.
+/// @ingroup identifiers
+/// @see basic_identifier
+/// @see identifier_value
+template <std::size_t M, std::size_t B, typename CharSet, typename UIntT>
+struct basic_identifier_value {
+    UIntT _value{};
+
+    /// @brief The numeric type of the identifier value.
+    using value_type = UIntT;
+
+    /// @brief The type of the identifier instantiation.
+    using identifier_type = basic_identifier<M, B, CharSet, UIntT>;
+
+    /// @brief Construction from the value type.
+    constexpr basic_identifier_value(const value_type value) noexcept
+      : _value{value} {}
+
+    /// @brief Construction from a string literal.
+    template <auto L>
+    constexpr basic_identifier_value(const char (&str)[L]) noexcept
+        requires(L <= M + 1)
+      : _value{identifier_type{str}.value()} {}
+
+    /// @brief Conversion to numeric value type.
+    constexpr operator value_type() const noexcept {
+        return _value;
+    }
+
+    /// @brief Conversion to identifier type.
+    constexpr operator identifier_type() const noexcept {
+        return identifier_type{_value};
+    }
+};
+//------------------------------------------------------------------------------
 /// @brief Default short string identifier type used throughout the project.
 /// @ingroup identifiers
 /// @see basic_identifier
@@ -362,6 +397,12 @@ using identifier =
 /// @ingroup identifiers
 /// @see id_v
 using id_t = identifier;
+
+/// @brief Default instantiation of identifier value.
+/// @ingroup identifiers
+/// @see identifier
+using identifier_value =
+  basic_identifier_value<10, 6, default_identifier_char_set, identifier_t>;
 
 /// @brief Returns the numeric value of the specified identifier string.
 /// @ingroup identifiers

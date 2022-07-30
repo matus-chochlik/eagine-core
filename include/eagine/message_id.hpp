@@ -14,13 +14,13 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-template <identifier_t ClassId, identifier_t MethodId>
+template <identifier_value ClassId, identifier_value MethodId>
 struct static_message_id;
 //------------------------------------------------------------------------------
 /// @brief Class storing two identifier values representing class/method pair.
 /// @ingroup identifiers
 /// @see static_message_id
-/// @see identifier_t
+/// @see identifier_value
 /// @see identifier
 struct message_id : std::tuple<identifier_t, identifier_t> {
     using base = std::tuple<identifier_t, identifier_t>;
@@ -30,7 +30,9 @@ struct message_id : std::tuple<identifier_t, identifier_t> {
     constexpr message_id() noexcept = default;
 
     ///	@brief Construction from two identifier values.
-    constexpr message_id(const identifier_t c, const identifier_t m) noexcept
+    constexpr message_id(
+      const identifier_value c,
+      const identifier_value m) noexcept
       : base{c, m} {}
 
     ///	@brief Construction from two identifier objects.
@@ -41,8 +43,13 @@ struct message_id : std::tuple<identifier_t, identifier_t> {
     constexpr message_id(const std::tuple<identifier, identifier> t) noexcept
       : message_id{std::get<0>(t), std::get<1>(t)} {}
 
+    ///	@brief Construction from two string literals.
+    template <size_t CL, size_t ML>
+    constexpr message_id(const char (&c)[CL], const char (&m)[ML]) noexcept
+      : message_id{identifier{c}, identifier{m}} {}
+
     ///	@brief Construction from static_message_id value.
-    template <identifier_t ClassId, identifier_t MethodId>
+    template <identifier_value ClassId, identifier_value MethodId>
     constexpr message_id(const static_message_id<ClassId, MethodId>&) noexcept
       : base{ClassId, MethodId} {}
 
@@ -98,7 +105,7 @@ struct message_id : std::tuple<identifier_t, identifier_t> {
 ///
 /// This class encodes an identifier pair in its template parameters.
 /// It is implicitly convertible to message_id.
-template <identifier_t ClassId, identifier_t MethodId>
+template <identifier_value ClassId, identifier_value MethodId>
 struct static_message_id {
     using type = static_message_id;
 
@@ -125,7 +132,7 @@ struct static_message_id {
 //------------------------------------------------------------------------------
 /// @brief Equality comparison between message_id and static_message_id.
 /// @ingroup identifiers
-template <identifier_t ClassId, identifier_t MethodId>
+template <identifier_value ClassId, identifier_value MethodId>
 inline auto operator==(
   const message_id l,
   const static_message_id<ClassId, MethodId> r) noexcept {

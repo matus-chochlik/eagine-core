@@ -110,7 +110,7 @@ static inline auto embed(
     return fetch_embedded_resource(res_id, src_path);
 }
 
-template <identifier_t ResId>
+template <identifier_value ResId>
 auto embed(string_view src_path) noexcept -> embedded_resource {
     return fetch_embedded_resource(identifier{ResId}, src_path);
 }
