@@ -13,7 +13,7 @@ import <chrono>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-/// @brief Class representing a stateful timeline, with a chron-like API.
+/// @brief Class representing a stateful timeline, with a chrono-like API.
 /// @ingroup time_utils
 /// @see timeout
 export class timeline {
