@@ -366,17 +366,38 @@ class XmlLogFormatter(object):
         return self._ttyBoldWhite() + result + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatValueBar(self, mn, x, mx, width, invert):
+    def _formatValueBar(self, inst, mn, x, mx, width, progress):
+        try: progress_begin = self._progress_info[inst]
+        except KeyError:
+            progress_begin = self._progress_info[inst] = time.time()
+        progress_seconds = time.time() - progress_begin
+
+        if x >= mx:
+            del self._progress_info[inst]
+
         try: coef = (x - mn) / (mx - mn)
         except ZeroDivisionError:
             coef = 0.0
         pos = coef * float(width)
         cnt = int(pos)
-        lbl = " %.1f%% " % (100.0 * coef)
+        if progress_seconds > 10.0 and coef > 0.0 and coef < 1.0:
+            progress_eta = progress_seconds * (1.0 - coef) / coef
+            if coef >= 0.5:
+                lbl = " (%s) %.1f%%" % (
+                    formatRelTime(progress_eta),
+                    100.0 * coef
+                )
+            else:
+                lbl = " %.1f%% (%s)" % (
+                    100.0 * coef,
+                    formatRelTime(progress_eta)
+                )
+        else:
+            lbl = " %.1f%%" % (100.0 * coef)
 
         i = 0
         result = "│"
-        if invert:
+        if progress:
             result += self._ttyInvert()
 
         if coef >= 0.5:
@@ -385,13 +406,13 @@ class XmlLogFormatter(object):
                 i += 1
 
             if i + len(lbl) <= cnt:
-                if invert:
+                if progress:
                     result += self._ttyReset()
                 else:
                     result += self._ttyInvert()
                 result += lbl
                 i += len(lbl)
-                if invert:
+                if progress:
                     result += self._ttyInvert()
                 else:
                     result += self._ttyReset()
@@ -414,7 +435,7 @@ class XmlLogFormatter(object):
             result += " "
             i += 1
 
-        if invert:
+        if progress:
             result += self._ttyReset()
         else:
             result += "│"
@@ -438,6 +459,7 @@ class XmlLogFormatter(object):
         self._lock = threading.Lock()
         self._out = options.log_output
         self._backend_count = 0
+        self._progress_info = dict()
 
         self._translations = permanentTranslations()
 
@@ -663,6 +685,7 @@ class XmlLogFormatter(object):
 
             self._out.write("┊")
             conn = False
+            instance = info["instance"]
             for sid in self._sources:
                 if sid == srcid:
                     conn = True
@@ -677,7 +700,7 @@ class XmlLogFormatter(object):
             self._out.write("%s│" % self.translateLevel(info["level"]))
             self._out.write("%10s│" % self._root_ids[srcid])
             self._out.write("%10s│" % info["source"])
-            self._out.write("%12s│" % self.formatInstance(info["instance"]))
+            self._out.write("%12s│" % self.formatInstance(instance))
             self._out.write("\n")
             self._out.write("┊")
             for sid in self._sources:
@@ -711,6 +734,7 @@ class XmlLogFormatter(object):
                         if value["min"] is not None and value["max"] is not None:
                             self._out.write(
                                 self._formatValueBar(
+                                    instance,
                                     float(value["min"]),
                                     float(value["value"]),
                                     float(value["max"]),
