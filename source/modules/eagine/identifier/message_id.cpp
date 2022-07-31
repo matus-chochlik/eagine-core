@@ -32,7 +32,13 @@ public:
     constexpr message_id(
       const identifier_value c,
       const identifier_value m) noexcept
-      : _data{c, m} {}
+#if __SIZEOF_INT128__
+      : _data{(static_cast<__uint128_t>(c) << 64U) | static_cast<__uint128_t>(m)}
+#else
+      : _data{c, m}
+#endif
+    {
+    }
 
     ///	@brief Construction from two identifier objects.
     constexpr message_id(const identifier c, const identifier m) noexcept
@@ -60,7 +66,11 @@ public:
 
     /// @brief Returns the class identifier value.
     constexpr auto class_id() const noexcept -> identifier_t {
+#if __SIZEOF_INT128__
+        return static_cast<identifier_t>(_data >> 64U);
+#else
         return _data[0];
+#endif
     }
 
     /// @brief Returns the class identifier.
@@ -70,7 +80,11 @@ public:
 
     /// @brief Returns the method identifier value.
     constexpr auto method_id() const noexcept -> identifier_t {
+#if __SIZEOF_INT128__
+        return static_cast<identifier_t>(_data);
+#else
         return _data[1];
+#endif
     }
 
     /// @brief Returns the method identifier.
@@ -106,7 +120,11 @@ public:
     }
 
 private:
+#if __SIZEOF_INT128__
+    __uint128_t _data{0U};
+#else
     vect::data_t<identifier_t, 2, false> _data{0U, 0U};
+#endif
 };
 //------------------------------------------------------------------------------
 /// @brief Template with two identifier parameters representing class/method pair.
