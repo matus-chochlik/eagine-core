@@ -40,16 +40,6 @@ public:
     {
     }
 
-    ///	@brief Construction from two identifier objects.
-    constexpr message_id(const identifier c, const identifier m) noexcept
-      : message_id{c.value(), m.value()} {}
-
-    ///	@brief Construction from two string literals.
-    template <auto CL, auto ML>
-        requires(identifier_literal_length<CL> && identifier_literal_length<ML>)
-    constexpr message_id(const char (&c)[CL], const char (&m)[ML]) noexcept
-      : message_id{identifier{c}, identifier{m}} {}
-
     ///	@brief Construction from a tuple of two identifier objects.
     constexpr message_id(const std::tuple<identifier, identifier> t) noexcept
       : message_id{std::get<0>(t), std::get<1>(t)} {}
