@@ -89,9 +89,9 @@ static inline auto as_chars(const embedded_resource& res) noexcept {
     return as_chars(memory::const_block{res});
 }
 
-extern auto fetch_embedded_resource(
-  const identifier res_id,
-  const string_view src_path) noexcept -> embedded_resource;
+template <identifier_t ResId>
+auto get_embedded_resource(const selector<ResId>, const string_view) noexcept
+  -> embedded_resource;
 
 /// @brief Triggers the embedding of data from a file on the specified path.
 /// @ingroup embedding
@@ -106,7 +106,7 @@ extern auto fetch_embedded_resource(
 /// eagine_embed_target_resources cmake functions can be used invoke it.
 template <identifier_value ResId>
 auto embed(string_view src_path) noexcept -> embedded_resource {
-    return fetch_embedded_resource(identifier{ResId}, src_path);
+    return get_embedded_resource(selector<ResId>{}, src_path);
 }
 
 } // namespace eagine
