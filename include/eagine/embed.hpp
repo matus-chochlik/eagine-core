@@ -90,8 +90,9 @@ static inline auto as_chars(const embedded_resource& res) noexcept {
 }
 
 template <identifier_t ResId>
-auto get_embedded_resource(const selector<ResId>, const string_view) noexcept
-  -> embedded_resource;
+extern auto get_embedded_resource(
+  const selector<ResId>,
+  const string_view) noexcept -> embedded_resource;
 
 /// @brief Triggers the embedding of data from a file on the specified path.
 /// @ingroup embedding
@@ -106,7 +107,14 @@ auto get_embedded_resource(const selector<ResId>, const string_view) noexcept
 /// eagine_embed_target_resources cmake functions can be used invoke it.
 template <identifier_value ResId>
 auto embed(string_view src_path) noexcept -> embedded_resource {
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundefined-func-template"
+#endif
     return get_embedded_resource(selector<ResId>{}, src_path);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 }
 
 } // namespace eagine
