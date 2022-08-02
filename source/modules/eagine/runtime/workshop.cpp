@@ -26,15 +26,15 @@ export struct work_unit : interface<work_unit> {
 export class workshop {
 private:
     std::vector<std::thread> _workers{};
+    std::queue<work_unit*> _work_queue{};
     std::mutex _mutex{};
     std::condition_variable _cond{};
-    std::queue<work_unit*> _work_queue{};
     bool _shutdown{false};
 
-    auto _fetch() -> std::tuple<work_unit*, bool> {
-        std::unique_lock lock{_mutex};
+    auto _fetch() noexcept -> std::tuple<work_unit*, bool> {
         work_unit* work = nullptr;
-        if(!_shutdown) {
+        std::unique_lock lock{_mutex};
+        if(!_shutdown) [[unlikely]] {
             _cond.wait(
               lock, [this] { return !_work_queue.empty() || _shutdown; });
             if(!_work_queue.empty()) {
@@ -45,13 +45,13 @@ private:
         return {work, _shutdown};
     }
 
-    void _employ() {
+    void _employ() noexcept {
         while(true) {
             auto [opt_work, shutdown] = _fetch();
             if(opt_work) {
                 auto& work = extract(opt_work);
                 if(work.do_it()) {
-                    std::unique_lock lock{_mutex};
+                    const std::unique_lock lock{_mutex};
                     work.deliver();
                     _cond.notify_all();
                 } else {
@@ -65,7 +65,7 @@ private:
     }
 
 public:
-    workshop() = default;
+    workshop() noexcept = default;
     workshop(workshop&&) = delete;
     workshop(const workshop&) = delete;
     auto operator=(workshop&&) = delete;
@@ -78,21 +78,21 @@ public:
         }
     }
 
-    auto shutdown() -> workshop& {
-        std::unique_lock lock{_mutex};
+    auto shutdown() noexcept -> workshop& {
+        const std::unique_lock lock{_mutex};
         _shutdown = true;
         _cond.notify_all();
         return *this;
     }
 
-    auto wait_until_closed() -> workshop& {
+    auto wait_until_closed() noexcept -> workshop& {
         for(auto& worker : _workers) {
             worker.join();
         }
         return *this;
     }
 
-    auto wait_until_idle() -> workshop& {
+    auto wait_until_idle() noexcept -> workshop& {
         std::unique_lock lock{_mutex};
         _cond.wait(lock, [this]() { return _work_queue.empty(); });
         return *this;
@@ -123,13 +123,13 @@ public:
         return ensure_workers(span_size(std::thread::hardware_concurrency()));
     }
 
-    auto release_worker() -> workshop& {
+    auto release_worker() noexcept -> workshop& {
         _workers.pop_back();
         return *this;
     }
 
     auto enqueue(work_unit& work) -> workshop& {
-        std::unique_lock lock{_mutex};
+        const std::unique_lock lock{_mutex};
         if(_workers.empty()) [[unlikely]] {
             add_worker();
         }
