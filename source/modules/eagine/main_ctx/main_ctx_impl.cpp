@@ -43,6 +43,7 @@ main_ctx::main_ctx(main_ctx_getters& src) noexcept
   , _usr_info{src.user()}
   , _scratch_space{src.scratch_space()}
   , _compressor{src.compressor()}
+  , _workers{src.workers()}
   , _exe_path{src.exe_path()}
   , _app_name{src.app_name()} {
     assert(!_single_ptr());

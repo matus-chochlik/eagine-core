@@ -136,6 +136,10 @@ public:
         return _compressor;
     }
 
+    auto workers() noexcept -> workshop& final {
+        return _workers;
+    };
+
     auto scratch_space() noexcept -> memory::buffer& final {
         return _scratch_space;
     }
@@ -168,6 +172,7 @@ private:
     user_info& _usr_info;
     memory::buffer& _scratch_space;
     data_compressor& _compressor;
+    workshop& _workers;
     string_view _exe_path;
     string_view _app_name;
 

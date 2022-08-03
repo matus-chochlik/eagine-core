@@ -18,9 +18,10 @@ import <vector>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export struct work_unit : interface<work_unit> {
-    virtual auto do_it() -> bool = 0;
-    virtual void deliver() = 0;
+export struct work_unit {
+    virtual ~work_unit() noexcept = default;
+    virtual auto do_it() noexcept -> bool = 0;
+    virtual void deliver() noexcept = 0;
 };
 //------------------------------------------------------------------------------
 export class workshop {
