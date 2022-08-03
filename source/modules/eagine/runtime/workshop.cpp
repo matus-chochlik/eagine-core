@@ -8,9 +8,11 @@
 export module eagine.core.runtime:workshop;
 
 import eagine.core.types;
+import <algorithm>;
 import <condition_variable>;
 import <memory>;
 import <mutex>;
+import <latch>;
 import <queue>;
 import <thread>;
 import <tuple>;
@@ -19,9 +21,28 @@ import <vector>;
 namespace eagine {
 //------------------------------------------------------------------------------
 export struct work_unit {
+    work_unit() noexcept = default;
+    work_unit(work_unit&&) noexcept = default;
+    work_unit(const work_unit&) = delete;
+    auto operator=(work_unit&&) noexcept -> work_unit& = default;
+    auto operator=(const work_unit&) -> work_unit& = delete;
     virtual ~work_unit() noexcept = default;
     virtual auto do_it() noexcept -> bool = 0;
     virtual void deliver() noexcept = 0;
+};
+//------------------------------------------------------------------------------
+export struct latched_work_unit : work_unit {
+
+    latched_work_unit() noexcept = default;
+    latched_work_unit(std::latch& l) noexcept
+      : _completed{&l} {}
+
+    void deliver() noexcept final {
+        _completed->count_down();
+    }
+
+private:
+    std::latch* _completed{nullptr};
 };
 //------------------------------------------------------------------------------
 export class workshop {
@@ -35,7 +56,7 @@ private:
     auto _fetch() noexcept -> std::tuple<work_unit*, bool> {
         work_unit* work = nullptr;
         std::unique_lock lock{_mutex};
-        if(!_shutdown) [[unlikely]] {
+        if(!_shutdown) [[likely]] {
             _cond.wait(
               lock, [this] { return !_work_queue.empty() || _shutdown; });
             if(!_work_queue.empty()) {
@@ -132,7 +153,9 @@ public:
     auto enqueue(work_unit& work) -> workshop& {
         const std::unique_lock lock{_mutex};
         if(_workers.empty()) [[unlikely]] {
-            add_worker();
+            ensure_workers(std::max(
+              span_size(std::thread::hardware_concurrency() / 2),
+              span_size(2)));
         }
         _work_queue.push(&work);
         _cond.notify_one();
