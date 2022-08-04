@@ -34,18 +34,33 @@ public:
     using size_type = span_size_t;
     using difference_type = std::ptrdiff_t;
 
-    base_stack_allocator(base_stack_allocator&& tmp) noexcept;
+    base_stack_allocator(base_stack_allocator&& tmp) noexcept
+      : _btm{std::exchange(tmp._btm, nullptr)}
+      , _top{std::exchange(tmp._top, nullptr)}
+      , _pos{std::exchange(tmp._pos, nullptr)}
+      , _min{std::exchange(tmp._min, nullptr)}
+      , _dif{std::exchange(tmp._dif, 0)} {}
+
     base_stack_allocator(const base_stack_allocator&) = delete;
     auto operator=(base_stack_allocator&& tmp) = delete;
     auto operator=(const base_stack_allocator&) = delete;
 
     base_stack_allocator() noexcept = default;
 
-    base_stack_allocator(const block& blk, span_size_t align) noexcept;
+    base_stack_allocator(const block& blk, span_size_t align) noexcept
+      : _btm{align_up_to(blk.addr(), std::type_identity<T>(), align)}
+      , _top{align_down_to(blk.end_addr(), std::type_identity<T>(), align)}
+      , _pos{_btm}
+      , _min{_btm} {}
 
-    base_stack_allocator(const block& blk) noexcept;
+    base_stack_allocator(const block& blk) noexcept
+      : base_stack_allocator(blk, alignof(T)) {}
 
-    ~base_stack_allocator() noexcept;
+    ~base_stack_allocator() noexcept {
+        if(!std::is_trivially_destructible<T>()) {
+            assert(_allocated().empty());
+        }
+    }
 
     auto max_size() const noexcept -> size_type {
         return _available().size();
@@ -59,14 +74,81 @@ public:
         return _allocated().size();
     }
 
-    auto contains(const owned_block& b) const noexcept -> bool;
-    auto has_allocated(const owned_block& b) const noexcept -> tribool;
+    auto contains(const owned_block& b) const noexcept -> bool {
+        return _store().contains(b);
+    }
+    auto has_allocated(const owned_block& b) const noexcept -> tribool {
+        return _allocated().contains(b);
+    }
 
-    auto allocate(size_type n) noexcept -> owned_block;
+    auto allocate(size_type n) noexcept -> owned_block {
+        if(n > max_size()) {
+            return {};
+        }
 
-    auto truncate(owned_block&& b, size_type nn) noexcept -> owned_block;
+        auto result = static_cast<pointer>(_pos);
 
-    void deallocate(owned_block&& b) noexcept;
+        assert(_min <= _pos);
+        if(_min == _pos) {
+            _min += n;
+        } else {
+            _dif += n;
+        }
+
+        _pos += n;
+        return acquire_block({result, n});
+    }
+
+    auto truncate(owned_block&& b, size_type nn) noexcept -> owned_block {
+        auto p = static_cast<pointer>(b.addr());
+        size_type pn = b.size();
+        release_block(std::move(b));
+
+        assert(pn >= nn);
+
+        if(p + pn == _pos) {
+            auto d = difference_type(pn - nn);
+            assert(_min <= _pos);
+            if(_min == _pos) {
+                _min -= d;
+            } else {
+                _dif -= d;
+            }
+
+            _pos -= d;
+        }
+        return acquire_block({p, nn});
+    }
+
+    void deallocate(owned_block&& b) noexcept {
+        auto p = static_cast<pointer>(b.addr());
+        size_type n = b.size();
+        release_block(std::move(b));
+
+        assert(p + n <= _pos);
+        if(p + n == _pos) {
+            assert(_min <= _pos);
+            if(_min == _pos) {
+                _min -= n;
+            } else {
+                _dif -= n;
+            }
+
+            _pos -= n;
+        } else {
+            if(p + n == _min) {
+                _min -= n;
+            } else if(p + n > _min) {
+                _dif -= n;
+            } else {
+                _dif += size_type(_min - p) - n;
+                _min = p;
+            }
+        }
+        if(_dif == 0) {
+            _pos = _min;
+        }
+    }
 
     friend auto operator==(
       const base_stack_allocator& a,
@@ -88,9 +170,18 @@ private:
     T* _min{nullptr};
     span_size_t _dif{0};
 
-    auto _store() const noexcept -> const_block;
-    auto _allocated() const noexcept -> const_block;
-    auto _available() const noexcept -> const_block;
+    auto _store() const noexcept -> const_block {
+        assert(_btm <= _top);
+        return const_block(_btm, _top);
+    }
+    auto _allocated() const noexcept -> const_block {
+        assert(_btm <= _pos);
+        return const_block(_btm, _pos);
+    }
+    auto _available() const noexcept -> const_block {
+        assert(_pos <= _top);
+        return const_block(_pos, _top);
+    }
 };
 //------------------------------------------------------------------------------
 // stack_byte_allocator_only
@@ -107,23 +198,18 @@ public:
 
     ~stack_byte_allocator_only() noexcept override = default;
 
-    stack_byte_allocator_only(const block& blk)
-      : _alloc{blk} {}
+    stack_byte_allocator_only(const block& blk);
 
     auto equal(byte_allocator* a) const noexcept -> bool override;
 
-    auto max_size(size_type) noexcept -> size_type override {
-        return _alloc.max_size();
-    }
+    auto max_size(size_type) noexcept -> size_type override;
 
     auto allocated() const noexcept -> const_block {
         return _alloc.allocated();
     }
 
     auto has_allocated(const owned_block& b, span_size_t) noexcept
-      -> tribool override {
-        return _alloc.has_allocated(b);
-    }
+      -> tribool override;
 
     auto allocate(size_type n, size_type a) noexcept -> owned_block override;
 
@@ -147,8 +233,7 @@ public:
     auto operator=(const stack_byte_allocator&) = delete;
     ~stack_byte_allocator() noexcept final = default;
 
-    stack_byte_allocator(const block& blk)
-      : _alloc{blk} {}
+    stack_byte_allocator(const block& blk);
 
     auto equal(byte_allocator* a) const noexcept -> bool override;
 
@@ -184,9 +269,7 @@ public:
     auto operator=(const stack_aligned_byte_allocator&) = delete;
     ~stack_aligned_byte_allocator() noexcept final = default;
 
-    stack_aligned_byte_allocator(const block& blk, span_size_t align)
-      : _align{align}
-      , _alloc{blk, _align} {}
+    stack_aligned_byte_allocator(const block& blk, span_size_t align);
 
     auto equal(byte_allocator* a) const noexcept -> bool override;
 
