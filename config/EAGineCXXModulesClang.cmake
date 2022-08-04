@@ -117,7 +117,7 @@ function(eagine_add_module_common_properties TARGET_NAME)
 	set_property(
 		TARGET ${TARGET_NAME}
 		APPEND PROPERTY COMPILE_OPTIONS
-		"-fmodules"
+		"-fcxx-modules" "-fmodules"
 		"-fbuiltin-module-map"
 	)
 	set_property(

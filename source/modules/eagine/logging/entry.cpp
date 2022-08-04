@@ -619,7 +619,7 @@ public:
     template <typename Func>
     auto arg_func(Func function) -> auto& {
         if(_backend) {
-            _args.add(std::move(function));
+            function(*_backend);
         }
         return *this;
     }
@@ -630,10 +630,7 @@ public:
     /// @see has_log_entry_adapter_v
     template <adapted_for_log_entry T>
     auto arg(const identifier name, T&& value) noexcept -> log_entry& {
-        if(_backend) {
-            _args.add(adapt_entry_arg(name, std::forward<T>(value)));
-        }
-        return *this;
+        return arg_func(adapt_entry_arg(name, std::forward<T>(value)));
     }
 
     /// @brief Adds a new message argument with valid_if_or_fallback value.

@@ -5,7 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module eagine.core.build_info:compiler;
+module eagine.core.build_info;
 
 import eagine.core.memory;
 import eagine.core.valid_if;
