@@ -13,6 +13,7 @@ import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.string;
 import :backend;
+import <array>;
 import <ostream>;
 
 namespace eagine {
@@ -53,9 +54,8 @@ public:
         return "OutStream";
     }
 
-    auto entry_backend(
-      const identifier,
-      const log_event_severity severity) noexcept -> logger_backend* final {
+    auto entry_backend(const log_event_severity severity) noexcept
+      -> logger_backend* final {
         if(severity >= _min_severity) {
             return this;
         }

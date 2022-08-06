@@ -97,11 +97,7 @@ protected:
       const std::true_type,
       const string_view format) const noexcept -> log_entry {
         return {
-          source,
-          instance_id(),
-          severity,
-          format,
-          _entry_backend(source, severity)};
+          source, instance_id(), severity, format, _entry_backend(severity)};
     }
 
     constexpr auto make_log_entry(
@@ -126,11 +122,7 @@ protected:
       const log_event_severity severity,
       const string_view format) const noexcept -> log_entry {
         return {
-          source,
-          instance_id(),
-          severity,
-          format,
-          _entry_backend(source, severity)};
+          source, instance_id(), severity, format, _entry_backend(severity)};
     }
 
     constexpr auto log_fatal(const identifier source, const string_view format)
@@ -207,8 +199,7 @@ protected:
     auto make_log_stream(
       const identifier source,
       const log_event_severity severity) const noexcept -> stream_log_entry {
-        return {
-          source, instance_id(), severity, _entry_backend(source, severity)};
+        return {source, instance_id(), severity, _entry_backend(severity)};
     }
 
     void log_chart_sample(
@@ -216,19 +207,18 @@ protected:
       [[maybe_unused]] const identifier series,
       [[maybe_unused]] const float value) const noexcept {
         if constexpr(is_log_level_enabled_v<log_event_severity::stat>) {
-            if(auto lbe{_entry_backend(source, log_event_severity::stat)}) {
+            if(auto lbe{_entry_backend(log_event_severity::stat)}) {
                 extract(lbe).log_chart_sample(
                   source, instance_id(), series, value);
             }
         }
     }
 
-    auto _entry_backend(
-      const identifier source,
-      const log_event_severity severity) const noexcept -> logger_backend* {
+    auto _entry_backend(const log_event_severity severity) const noexcept
+      -> logger_backend* {
         if(is_log_level_enabled(severity)) {
             if(auto lbe{backend()}) {
-                return lbe->entry_backend(source, severity);
+                return lbe->entry_backend(severity);
             }
         }
         return nullptr;

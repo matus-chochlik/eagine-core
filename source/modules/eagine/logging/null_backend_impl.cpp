@@ -19,7 +19,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 struct null_log_backend final : logger_backend {
 
-    auto entry_backend(const identifier, const log_event_severity) noexcept
+    auto entry_backend(const log_event_severity) noexcept
       -> logger_backend* final {
         return nullptr;
     }

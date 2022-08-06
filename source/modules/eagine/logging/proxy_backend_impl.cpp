@@ -37,9 +37,8 @@ public:
 
     auto configure(basic_config&) -> bool final;
 
-    auto entry_backend(
-      const identifier source,
-      const log_event_severity severity) noexcept -> logger_backend* final;
+    auto entry_backend(const log_event_severity severity) noexcept
+      -> logger_backend* final;
 
     auto allocator() noexcept -> memory::shared_byte_allocator final;
     auto type_id() noexcept -> identifier final;
@@ -131,11 +130,10 @@ private:
     log_stream_info _info;
 };
 //------------------------------------------------------------------------------
-auto proxy_log_backend::entry_backend(
-  const identifier source,
-  const log_event_severity severity) noexcept -> logger_backend* {
+auto proxy_log_backend::entry_backend(const log_event_severity severity) noexcept
+  -> logger_backend* {
     if(_delegate) [[likely]] {
-        return _delegate->entry_backend(source, severity);
+        return _delegate->entry_backend(severity);
     }
     return this;
 }
