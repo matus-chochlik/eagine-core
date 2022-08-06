@@ -19,14 +19,22 @@ import <utility>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export auto adapt_entry_arg(const identifier name, logger_backend* value) {
-    return [name, value](logger_backend& backend) noexcept {
-        if(value) {
-            backend.add_identifier(name, "LogBkEndId", value->type_id());
-        } else {
-            backend.add_nothing(name, "LogBkEndId");
+export auto adapt_entry_arg(
+  const identifier name,
+  logger_backend* value) noexcept {
+    struct _adapter {
+        const identifier name;
+        logger_backend* value;
+
+        void operator()(logger_backend& backend) const noexcept {
+            if(value) {
+                backend.add_identifier(name, "LogBkEndId", value->type_id());
+            } else {
+                backend.add_nothing(name, "LogBkEndId");
+            }
         }
     };
+    return _adapter{.name = name, .value = value};
 }
 //------------------------------------------------------------------------------
 export class logger;
@@ -619,7 +627,7 @@ public:
     template <typename Func>
     auto arg_func(Func function) -> auto& {
         if(_backend) {
-            function(*_backend);
+            _args.add(std::move(function));
         }
         return *this;
     }
