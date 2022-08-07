@@ -10,49 +10,37 @@ export module eagine.core.string:base64;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
+import <array>;
+import <algorithm>;
+import <optional>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 export constexpr auto make_base64_encode_transform() {
-    return [](const auto b) -> always_valid<char> {
-        const auto i = int(b);
-        if(i < 26) {
-            return {char('A' + i)};
-        }
-        if(i < 52) {
-            return {char('a' + i - 26)};
-        }
-        if(i < 62) {
-            return {char('0' + i - 52)};
-        }
-        if(i == 62) {
-            return {'+'};
-        }
-        if(i == 63) {
-            return {'/'};
-        }
-        return {'='};
+    return [](const auto b) noexcept -> always_valid<char> {
+        static const char table[66] =
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+        return table[std::min(std_size(b), std_size(64))];
     };
 }
 //------------------------------------------------------------------------------
 export constexpr auto make_base64_decode_transform() {
-    return [](const char c) -> optionally_valid<byte> {
-        if((c >= 'A') && (c <= 'Z')) {
-            return {byte(c - 'A'), true};
-        }
-        if((c >= 'a') && (c <= 'z')) {
-            return {byte(c - 'a' + 26), true};
-        }
-        if((c >= '0') && (c <= '9')) {
-            return {byte(c - '0' + 52), true};
-        }
-        if(c == '+') {
-            return {byte(62), true};
-        }
-        if(c == '/') {
-            return {byte(63), true};
-        }
-        return {};
+    return [](const char c) noexcept -> optionally_valid<byte> {
+        static const auto table = []() {
+            const char invtable[66] =
+              "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+              "0123456789+/";
+            std::array<byte, 256> result{};
+            std::fill(result.begin(), result.end(), byte(0xFF));
+            byte b{0};
+            for(const auto x : invtable) {
+                result[std_size(x)] = b++;
+            }
+            result[std_size('\0')] = byte(0xFF);
+            return result;
+        }();
+        const auto r{table[std_size(c)]};
+        return {r, (r & 0x80) != 0x80};
     };
 }
 //------------------------------------------------------------------------------
