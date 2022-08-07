@@ -66,8 +66,7 @@ private:
         return the_instance;
     }
 
-    auto entry_backend(identifier, log_event_severity) noexcept
-      -> logger_backend* final {
+    auto entry_backend(log_event_severity) noexcept -> logger_backend* final {
         return this;
     }
 
