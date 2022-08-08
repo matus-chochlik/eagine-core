@@ -99,6 +99,24 @@ class ArgumentParser(argparse.ArgumentParser):
             except:
                 self.error("`%s' is not a positive integer value" % str(x))
 
+        valid_msg_re1 = re.compile("^([A-Za-z0-9_]{1,10})$")
+        valid_msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
+        valid_msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
+        def _valid_msg_id(x):
+            try:
+                found = valid_msg_re1.match(x)
+                if found:
+                    return (None, found.group(1))
+                found = valid_msg_re2.match(x)
+                if found:
+                    return (found.group(1), found.group(2))
+                found = valid_msg_re3.match(x)
+                if found:
+                    return (found.group(1), None)
+                assert False
+            except:
+                self.error("`%s' is not a valid message identifier" % str(x))
+
         argparse.ArgumentParser.__init__(self, **kw)
 
         self.add_argument(
@@ -131,9 +149,30 @@ class ArgumentParser(argparse.ArgumentParser):
             action="store_true",
             default=False,
             help="""
-            Keeps running even after all logging backends have disconnected.
+            Keeps running even after all logging back-ends have disconnected.
             """
         )
+
+        self.add_argument(
+            "--allow", "-A",
+            metavar='IDENTIFIER',
+            dest='allow_list',
+            nargs='+',
+            action="append",
+            type=_valid_msg_id,
+            default=[]
+        )
+
+        self.add_argument(
+            "--block", "-B",
+            metavar='IDENTIFIER',
+            dest='block_list',
+            nargs='+',
+            action="append",
+            type=_valid_msg_id,
+            default=[]
+        )
+
         try:
             import matplotlib.pyplot as plt
             self.add_argument(
@@ -193,6 +232,9 @@ class ArgumentParser(argparse.ArgumentParser):
 
     # -------------------------------------------------------------------------
     def processParsedOptions(self, options):
+
+        options.block_list = [i for sl in options.block_list for i in sl]
+        options.allow_list = [i for sl in options.allow_list for i in sl]
 
         if options.output_path is None:
             options.log_output = sys.stdout
@@ -497,30 +539,34 @@ class XmlLogFormatter(object):
             self._out.close()
 
     # --------------------------------------------------------------------------
+    def write(self, what):
+        self._out.write(what)
+
+    # --------------------------------------------------------------------------
     def beginLog(self, srcid, info):
         self._backend_count += 1
         self._src_times[srcid] = time.time();
         with self._lock:
             #
-            self._out.write("┊")
+            self.write("┊")
             for sid in self._sources:
-                self._out.write(" │")
-            self._out.write("   ╭────────────╮\n")
+                self.write(" │")
+            self.write("   ╭────────────╮\n")
             #
-            self._out.write("┝")
+            self.write("┝")
             for sid in self._sources:
-                self._out.write("━━")
-            self._out.write("━┯━┥")
-            self._out.write(self._ttyGreen())
-            self._out.write("starting log")
-            self._out.write(self._ttyReset())
-            self._out.write("│")
-            self._out.write("\n")
+                self.write("━━")
+            self.write("━┯━┥")
+            self.write(self._ttyGreen())
+            self.write("starting log")
+            self.write(self._ttyReset())
+            self.write("│")
+            self.write("\n")
             #
-            self._out.write("┊")
+            self.write("┊")
             for sid in self._sources:
-                self._out.write(" │")
-            self._out.write(" │ ╰────────────╯\n")
+                self.write(" │")
+            self.write(" │ ╰────────────╯\n")
             self._sources.append(srcid)
             self._root_ids[srcid] = None
             self._prev_times[srcid] = None
@@ -531,52 +577,52 @@ class XmlLogFormatter(object):
             total_time = time.time() - self._src_times[srcid]
             del self._src_times[srcid]
             # L0
-            self._out.write("┊")
+            self.write("┊")
             for sid in self._sources:
-                self._out.write(" │")
-            self._out.write(" ╭─────────┬────────────╮\n")
+                self.write(" │")
+            self.write(" ╭─────────┬────────────╮\n")
             # L1
-            self._out.write("┊")
+            self.write("┊")
             conn = False
             for sid in self._sources:
                 if sid == srcid:
                     conn = True
-                    self._out.write(" ┕")
+                    self.write(" ┕")
                 elif conn:
-                    self._out.write("━━")
+                    self.write("━━")
                 else:
-                    self._out.write(" │")
-            self._out.write("━┥")
-            self._out.write("%9s│" % formatRelTime(float(total_time)))
-            self._out.write(self._ttyBlue())
-            self._out.write("closing  log")
-            self._out.write(self._ttyReset())
-            self._out.write("│")
-            self._out.write("\n")
+                    self.write(" │")
+            self.write("━┥")
+            self.write("%9s│" % formatRelTime(float(total_time)))
+            self.write(self._ttyBlue())
+            self.write("closing  log")
+            self.write(self._ttyReset())
+            self.write("│")
+            self.write("\n")
             # L2
-            self._out.write("┊")
+            self.write("┊")
             conn = False
             for sid in self._sources:
                 if sid == srcid:
                     conn = True
-                    self._out.write("  ")
+                    self.write("  ")
                 elif conn:
-                    self._out.write("╭╯")
+                    self.write("╭╯")
                 else:
-                    self._out.write(" │")
-            self._out.write(" ╰─────────┴────────────╯\n")
+                    self.write(" │")
+            self.write(" ╰─────────┴────────────╯\n")
             # L3
-            self._out.write("┊")
+            self.write("┊")
             conn = False
             for sid in self._sources:
                 if sid == srcid:
                     conn = True
-                    self._out.write(" ")
+                    self.write(" ")
                 elif conn:
-                    self._out.write("╭╯")
+                    self.write("╭╯")
                 else:
-                    self._out.write(" │")
-            self._out.write("\n")
+                    self.write(" │")
+            self.write("\n")
             self._sources = [sid for sid in self._sources if sid != srcid]
             del self._root_ids[srcid]
             del self._prev_times[srcid]
@@ -652,6 +698,25 @@ class XmlLogFormatter(object):
         return instance
 
     # --------------------------------------------------------------------------
+    def isInList(self, msrc, mtag, lst):
+        for lsrc, ltag in lst:
+            src_match = lsrc is None or lsrc == msrc
+            tag_match = ltag is None or ltag == mtag
+            if src_match and tag_match:
+                return True
+        return False
+
+    # --------------------------------------------------------------------------
+    def isVisible(self, info):
+        src = info.get("source", None)
+        tag = info.get("tag", None)
+        if self._options.block_list:
+            return not self.isInList(src, tag, self._options.block_list)
+        if self._options.allow_list:
+            return self.isInList(src, tag, self._options.allow_list)
+        return True
+
+    # --------------------------------------------------------------------------
     def addMessage(self, srcid, info):
         args = info["args"]
         message = info["format"]
@@ -678,61 +743,61 @@ class XmlLogFormatter(object):
             found = re.match(self._re_var, message)
 
         with self._lock:
-            self._out.write("┊")
+            self.write("┊")
             for sid in self._sources:
-                self._out.write(" │")
-            self._out.write("\n")
+                self.write(" │")
+            self.write("\n")
 
-            self._out.write("┊")
+            self.write("┊")
             conn = False
             instance = info["instance"]
             for sid in self._sources:
                 if sid == srcid:
                     conn = True
-                    self._out.write(" ┝")
+                    self.write(" ┝")
                 elif conn:
-                    self._out.write("━━")
+                    self.write("━━")
                 else:
-                    self._out.write(" │")
-            self._out.write("━┑")
-            self._out.write("%9s│" % formatRelTime(float(info["timestamp"])))
-            self._out.write("%9s│" % (formatRelTime(time_diff) if time_diff is not None else "   N/A   "))
-            self._out.write("%s│" % self.translateLevel(info["level"]))
-            self._out.write("%10s│" % self._root_ids[srcid])
-            self._out.write("%10s│" % info["source"])
-            self._out.write("%12s│" % self.formatInstance(instance))
-            self._out.write("\n")
-            self._out.write("┊")
+                    self.write(" │")
+            self.write("━┑")
+            self.write("%9s│" % formatRelTime(float(info["timestamp"])))
+            self.write("%9s│" % (formatRelTime(time_diff) if time_diff is not None else "   N/A   "))
+            self.write("%s│" % self.translateLevel(info["level"]))
+            self.write("%10s│" % self._root_ids[srcid])
+            self.write("%10s│" % info["source"])
+            self.write("%12s│" % self.formatInstance(instance))
+            self.write("\n")
+            self.write("┊")
             for sid in self._sources:
-                self._out.write(" │")
-            self._out.write(" ├─────────┴─────────┴─────────┴──────────┴──────────┴────────────╯")
-            self._out.write("\n")
+                self.write(" │")
+            self.write(" ├─────────┴─────────┴─────────┴──────────┴──────────┴────────────╯")
+            self.write("\n")
 
             cols = 80 - (len(self._sources) * 2)
             lno = 0
             for line in textwrap.wrap(message, cols):
-                self._out.write("┊")
+                self.write("┊")
                 for sid in self._sources:
-                    self._out.write(" │")
+                    self.write(" │")
                 if lno == 0:
-                    self._out.write(" ╰╴")
+                    self.write(" ╰╴")
                 else:
-                    self._out.write("   ")
+                    self.write("   ")
                 lno += 1
-                self._out.write(line)
-                self._out.write("\n")
+                self.write(line)
+                self.write("\n")
             # BLOBs and progress
             for name, info in args.items():
                 if not info["used"]:
                     for value in info["values"]:
-                        self._out.write("┊")
+                        self.write("┊")
                         for sid in self._sources:
-                            self._out.write(" │")
-                        self._out.write("   ")
-                        self._out.write(name)
-                        self._out.write(": ")
+                            self.write(" │")
+                        self.write("   ")
+                        self.write(name)
+                        self.write(": ")
                         if value["min"] is not None and value["max"] is not None:
-                            self._out.write(
+                            self.write(
                                 self._formatValueBar(
                                     instance,
                                     float(value["min"]),
@@ -742,39 +807,39 @@ class XmlLogFormatter(object):
                                     value["type"] in ["Progress"]
                                 )
                             )
-                            self._out.write("\n")
+                            self.write("\n")
                         else:
-                            self._out.write(self.doTranslateArg(name, value))
-                            self._out.write("\n")
+                            self.write(self.doTranslateArg(name, value))
+                            self.write("\n")
                         if value["blob"]:
                             blob = value["value"]
                             if len(blob) % 4 != 0:
                                 blob += '=' * (4 - len(blob) % 4)
                             blob = base64.standard_b64decode(blob)
                             while blob:
-                                self._out.write("┊")
+                                self.write("┊")
                                 for sid in self._sources:
-                                    self._out.write(" │")
-                                self._out.write("  ")
+                                    self.write(" │")
+                                self.write("  ")
                                 for i in range(16):
                                     if i == 8:
-                                        self._out.write(" ")
+                                        self.write(" ")
                                     try:
-                                        self._out.write(" %02x" % blob[i])
+                                        self.write(" %02x" % blob[i])
                                     except IndexError:
-                                        self._out.write(" ..")
-                                self._out.write(" │ ")
+                                        self.write(" ..")
+                                self.write(" │ ")
 
                                 for i in range(16):
                                     if i == 8:
-                                        self._out.write(" ")
+                                        self.write(" ")
                                     try:
                                         c = bytes([blob[i]]).decode('ascii')
                                         assert c.isprintable()
-                                        self._out.write(c)
+                                        self.write(c)
                                     except:
-                                        self._out.write(".")
-                                self._out.write("\n")
+                                        self.write(".")
+                                self.write("\n")
                                 blob = blob[16:]
 
             #
@@ -891,9 +956,10 @@ class XmlLogProcessor(xml.sax.ContentHandler):
             self._formatter.beginLog(self._srcid, attr)
         elif tag == "m":
             self._info = {
-                r: attr[k] for k, r in [
+                r: attr.get(k, None) for k, r in [
                     ("lvl", "level"),
                     ("src", "source"),
+                    ("tag", "tag"),
                     ("iid", "instance"),
                     ("ts",  "timestamp")
                 ]
@@ -944,7 +1010,8 @@ class XmlLogProcessor(xml.sax.ContentHandler):
             self._formatter.addLoggerInfos(self._srcid, self._loggers)
             self._formatter.finishLog(self._srcid)
         elif tag == "m":
-            self._formatter.addMessage(self._srcid, self._info)
+            if self._formatter.isVisible(self._info):
+                self._formatter.addMessage(self._srcid, self._info)
             self._info = None
 
     # --------------------------------------------------------------------------
