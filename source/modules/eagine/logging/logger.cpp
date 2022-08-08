@@ -269,6 +269,7 @@ public:
       : base{static_cast<const base&>(parent)}
       , _object_id{id} {
         log_lifetime(_object_id, "created as a child of ${parent}")
+          .tag("objCreate")
           .arg("parent", "LogId", parent._object_id);
     }
 
@@ -279,14 +280,14 @@ public:
     named_logging_object(named_logging_object&& temp) noexcept
       : base{static_cast<base&&>(temp)}
       , _object_id{temp._object_id} {
-        log_lifetime(_object_id, "being moved");
+        log_lifetime(_object_id, "being moved").tag("objMove");
     }
 
     /// @brief Copy constructor.
     named_logging_object(const named_logging_object& that) noexcept
       : base{static_cast<const base&>(that)}
       , _object_id{that._object_id} {
-        log_lifetime(_object_id, "being copied");
+        log_lifetime(_object_id, "being copied").tag("objCopy");
     }
 
     /// @brief Move assignment operator.
@@ -298,7 +299,7 @@ public:
       -> named_logging_object& = default;
 
     ~named_logging_object() noexcept {
-        log_lifetime(_object_id, "being destroyed");
+        log_lifetime(_object_id, "being destroyed").tag("objDestroy");
     }
 
     /// @brief Returns the identifier of this logging object.
