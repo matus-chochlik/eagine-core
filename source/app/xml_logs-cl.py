@@ -726,16 +726,18 @@ class XmlLogFormatter(object):
     def isVisible(self, info):
         src = info.get("source", None)
         tag = info.get("tag", None)
+        result = True
         if self._options.block_list:
-            return not self.isInList(src, tag, self._options.block_list)
+            result = result and not self.isInList(src, tag, self._options.block_list)
         if self._options.allow_list:
-            return self.isInList(src, tag, self._options.allow_list)
-        return True
+            result = result and self.isInList(src, tag, self._options.allow_list)
+        return result
 
     # --------------------------------------------------------------------------
     def addMessage(self, srcid, info):
         args = info["args"]
         message = info["format"]
+        tag = info.get("tag")
 
         if self._root_ids[srcid] is None:
             self._root_ids[srcid] = info["source"]
@@ -781,12 +783,17 @@ class XmlLogFormatter(object):
             self.write("%s│" % self.translateLevel(info["level"]))
             self.write("%10s│" % self._root_ids[srcid])
             self.write("%10s│" % info["source"])
+            if tag is not None:
+                self.write("%10s│" % tag)
             self.write("%12s│" % self.formatInstance(instance))
             self.write("\n")
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ├─────────┴─────────┴─────────┴──────────┴──────────┴────────────╯")
+            if tag is not None:
+                self.write(" ├─────────┴─────────┴─────────┴──────────┴──────────┴──────────┴────────────╯")
+            else:
+                self.write(" ├─────────┴─────────┴─────────┴──────────┴──────────┴────────────╯")
             self.write("\n")
 
             cols = 80 - (len(self._sources) * 2)
