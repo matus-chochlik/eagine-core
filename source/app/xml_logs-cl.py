@@ -11,6 +11,7 @@ import sys
 import math
 import stat
 import time
+import json
 import errno
 import socket
 import signal
@@ -91,7 +92,27 @@ def formatRelTime(s):
 # ------------------------------------------------------------------------------
 class ArgumentParser(argparse.ArgumentParser):
     # -------------------------------------------------------------------------
+    def _valid_msg_id(self, x):
+        try:
+            found = self._msg_re1.match(x)
+            if found:
+                return (None, found.group(1))
+            found = self._msg_re2.match(x)
+            if found:
+                return (found.group(1), found.group(2))
+            found = self._msg_re3.match(x)
+            if found:
+                return (found.group(1), None)
+            assert False
+        except:
+            self.error("`%s' is not a valid message identifier" % str(x))
+
+    # -------------------------------------------------------------------------
     def __init__(self, **kw):
+        self._msg_re1 = re.compile("^([A-Za-z0-9_]{1,10})$")
+        self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
+        self._msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
+
         def _positive_int(x):
             try:
                 assert(int(x) > 0)
@@ -99,23 +120,6 @@ class ArgumentParser(argparse.ArgumentParser):
             except:
                 self.error("`%s' is not a positive integer value" % str(x))
 
-        valid_msg_re1 = re.compile("^([A-Za-z0-9_]{1,10})$")
-        valid_msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
-        valid_msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
-        def _valid_msg_id(x):
-            try:
-                found = valid_msg_re1.match(x)
-                if found:
-                    return (None, found.group(1))
-                found = valid_msg_re2.match(x)
-                if found:
-                    return (found.group(1), found.group(2))
-                found = valid_msg_re3.match(x)
-                if found:
-                    return (found.group(1), None)
-                assert False
-            except:
-                self.error("`%s' is not a valid message identifier" % str(x))
 
         argparse.ArgumentParser.__init__(self, **kw)
 
@@ -159,7 +163,7 @@ class ArgumentParser(argparse.ArgumentParser):
             dest='allow_list',
             nargs='+',
             action="append",
-            type=_valid_msg_id,
+            type=self._valid_msg_id,
             default=[]
         )
 
@@ -169,7 +173,7 @@ class ArgumentParser(argparse.ArgumentParser):
             dest='block_list',
             nargs='+',
             action="append",
-            type=_valid_msg_id,
+            type=self._valid_msg_id,
             default=[]
         )
 
@@ -232,6 +236,18 @@ class ArgumentParser(argparse.ArgumentParser):
 
     # -------------------------------------------------------------------------
     def processParsedOptions(self, options):
+        for cfg_path in ["/etc/eagine/xml_logs.json","~/.config/eagine/xml_logs.json"]:
+            try:
+                with open(os.path.expanduser(cfg_path), "r") as cfgfd:
+                    cfg = json.load(cfgfd)
+                    l = cfg.get("block_list")
+                    if l is not None:
+                        options.block_list.append([self._valid_msg_id(e) for e in l])
+                    l = cfg.get("allow_list")
+                    if l is not None:
+                        options.allow_list.append([self._valid_msg_id(e) for e in l])
+            except:
+                pass
 
         options.block_list = [i for sl in options.block_list for i in sl]
         options.allow_list = [i for sl in options.allow_list for i in sl]
