@@ -10,6 +10,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.utility;
+import eagine.core.reflection;
 import <string>;
 
 namespace eagine {
@@ -35,6 +36,26 @@ export struct basic_config : abstract<basic_config> {
     auto fetch_string(const string_view key, std::string& dest) noexcept
       -> bool {
         return fetch_string(key, {}, dest);
+    }
+
+    /// @brief Fetches the configuration value identified by @p key, into @p dest.
+    template <typename T>
+    auto fetch(const string_view key, const string_view tag, T& dest) noexcept
+      -> bool {
+        std::string temp;
+        if(fetch_string(key, tag, temp)) {
+            if(const auto converted{from_string<T>(temp)}) {
+                dest = extract(converted);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// @brief Fetches the configuration value identified by @p key, into @p dest.
+    template <typename T>
+    auto fetch(const string_view key, T& dest) noexcept -> bool {
+        return fetch(key, {}, dest);
     }
 };
 //------------------------------------------------------------------------------
