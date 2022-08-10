@@ -4,12 +4,7 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
-#else
-#include <eagine/main_ctx.hpp>
-#include <eagine/main_fwd.hpp>
-#endif
 #include "Backend.hpp"
 #include "internal_log_backend.hpp"
 #include <QApplication>

@@ -7,11 +7,7 @@
 #ifndef EAGINE_XML_LOG_CHARTS_VIEW_MODEL
 #define EAGINE_XML_LOG_CHARTS_VIEW_MODEL
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
-#else
-#include <eagine/main_ctx_object.hpp>
-#endif
 #include <QObject>
 
 class EntryLog;

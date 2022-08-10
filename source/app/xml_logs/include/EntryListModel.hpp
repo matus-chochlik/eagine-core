@@ -7,11 +7,7 @@
 #ifndef EAGINE_XML_LOG_ENTRY_LIST_MODEL
 #define EAGINE_XML_LOG_ENTRY_LIST_MODEL
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
-#else
-#include <eagine/main_ctx_object.hpp>
-#endif
 #include <QAbstractItemModel>
 #include <QColor>
 

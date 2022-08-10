@@ -7,13 +7,8 @@
 #ifndef EAGINE_XML_LOGS_CONNECTION
 #define EAGINE_XML_LOGS_CONNECTION
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <memory>;
-#else
-#include <eagine/main_ctx_object.hpp>
-#include <memory>
-#endif
 #include "EntryStorage.hpp"
 #include <QObject>
 #include <QTcpSocket>

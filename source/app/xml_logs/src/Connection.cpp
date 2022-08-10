@@ -4,15 +4,9 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
-#else
-#include <eagine/assert.hpp>
-#include <eagine/from_string.hpp>
-#include <eagine/reflect/enumerators.hpp>
-#endif
-#include "Backend.hpp"
 #include "Connection.hpp"
+#include "Backend.hpp"
 
 //------------------------------------------------------------------------------
 Connection::Connection(QTcpSocket& socket, Backend& parent)

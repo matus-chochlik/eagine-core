@@ -4,11 +4,7 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
-#else
-#include <eagine/app_config.hpp>
-#endif
 #include "Theme.hpp"
 //------------------------------------------------------------------------------
 Theme::Theme(eagine::main_ctx_parent parent)

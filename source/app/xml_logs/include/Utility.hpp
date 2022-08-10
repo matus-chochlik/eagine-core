@@ -7,12 +7,7 @@
 #ifndef EAGINE_XML_LOG_UTILITY
 #define EAGINE_XML_LOG_UTILITY
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
-#else
-#include <eagine/is_within_limits.hpp>
-#include <eagine/string_span.hpp>
-#endif
 #include <QString>
 
 //------------------------------------------------------------------------------

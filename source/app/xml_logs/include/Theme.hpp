@@ -7,12 +7,7 @@
 #ifndef EAGINE_XML_LOGS_THEME
 #define EAGINE_XML_LOGS_THEME
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
-#else
-#include <eagine/logging/severity.hpp>
-#include <eagine/main_ctx_object.hpp>
-#endif
 #include <QColor>
 #include <QObject>
 

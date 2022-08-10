@@ -9,15 +9,7 @@
 #ifndef EAGINE_XML_LOGS_INTERNAL_LOG_BACKEND_HPP
 #define EAGINE_XML_LOGS_INTERNAL_LOG_BACKEND_HPP
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
-#else
-#include <eagine/compiler_info.hpp>
-#include <eagine/git_info.hpp>
-#include <eagine/logging/backend.hpp>
-#include <eagine/memory/default_alloc.hpp>
-#include <eagine/os_info.hpp>
-#endif
 #include "EntryStorage.hpp"
 #include <cassert>
 

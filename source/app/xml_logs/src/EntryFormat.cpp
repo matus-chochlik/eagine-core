@@ -4,13 +4,8 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <sstream>;
-#else
-#include <eagine/str_var_subst.hpp>
-#include <sstream>
-#endif
 #include "EntryFormat.hpp"
 #include "EntryStorage.hpp"
 

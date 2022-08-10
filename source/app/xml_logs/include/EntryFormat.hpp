@@ -7,16 +7,9 @@
 #ifndef EAGINE_XML_LOGS_ENTRY_FORMAT_HPP
 #define EAGINE_XML_LOGS_ENTRY_FORMAT_HPP
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <optional>;
 import <chrono>;
-#else
-#include <eagine/message_id.hpp>
-#include <eagine/string_span.hpp>
-#include <eagine/valid_if/decl.hpp>
-#include <chrono>
-#endif
 
 //------------------------------------------------------------------------------
 struct LogEntryData;
