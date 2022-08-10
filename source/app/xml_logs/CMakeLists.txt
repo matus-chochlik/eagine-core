@@ -64,15 +64,7 @@ target_include_directories(
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/include
 )
-if(${WITH_MODULES})
-	eagine_target_modules(eagine-xml_logs-gui eagine.core)
-else()
-	target_link_libraries(
-		eagine-xml_logs-gui
-		PUBLIC
-			EAGine::Core
-	)
-endif()
+eagine_target_modules(eagine-xml_logs-gui eagine.core)
 target_link_libraries(
 	eagine-xml_logs-gui
 	PUBLIC
