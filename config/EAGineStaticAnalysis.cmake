@@ -46,11 +46,6 @@ macro(eagine_add_exe_analysis TARGETNAME)
 		PRIVATE $<$<BOOL:${EAGINE_GXX_COMPILER}>:-Wextra;-Wshadow;-Wno-noexcept-type;-Wno-attributes;-Wno-psabi;-Wno-unknown-warning-option>
 	)
 
-	target_compile_options(
-		${TARGETNAME}
-		PRIVATE $<$<BOOL:(${EAGINE_GXX_COMPILER} OR ${EAGINE_CLANGXX_COMPILER}) AND ${EAGINE_DEBUG}>:-fstack-protector-all>
-	)
-	
 	if(INVOKE_CLANG_TIDY)
 		set_target_properties(
 			${TARGETNAME}

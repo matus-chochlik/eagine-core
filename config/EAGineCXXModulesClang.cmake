@@ -117,7 +117,7 @@ function(eagine_add_module_common_properties TARGET_NAME)
 	set_property(
 		TARGET ${TARGET_NAME}
 		APPEND PROPERTY COMPILE_OPTIONS
-		"-fcxx-modules" "-fmodules"
+		"-fmodules"
 		"-fexperimental-library"
 		"-fbuiltin-module-map"
 	)
@@ -132,7 +132,7 @@ function(eagine_add_module_common_properties TARGET_NAME)
 		APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
 		"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions"
 	)
-	if(${EAGINE_DEBUG})
+	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 		set_property(
 			TARGET ${TARGET_NAME}
 			APPEND PROPERTY COMPILE_OPTIONS
@@ -386,6 +386,12 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	foreach(DEF ${DIR_COMPILE_DEFINITIONS})
 		list(APPEND PCM_COMPILE_DEFINITIONS "-D${DEF}")
 	endforeach()
+	if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+		list(APPEND PCM_COMPILE_OPTIONS "-O3")
+		list(APPEND PCM_COMPILE_DEFINITIONS "-DNDEBUG")
+	elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+		list(APPEND PCM_COMPILE_OPTIONS "-fstack-protector-all")
+	endif()
 
 	unset(PCM_INCLUDE_DIRECTORIES)
 	foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
