@@ -31,6 +31,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
+		eagine.core.identifier
 )
 
 eagine_add_module(

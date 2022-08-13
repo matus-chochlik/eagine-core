@@ -15,6 +15,7 @@ import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.container;
+import eagine.core.identifier;
 import <compare>;
 import <cstdint>;
 import <tuple>;
@@ -209,10 +210,14 @@ struct no_enum_value<bool, Tag> {
     }
 };
 //------------------------------------------------------------------------------
-export template <identifier_t LibId>
+export template <identifier_value LibId>
 struct any_enum_value;
 
-export template <typename Self, typename T, identifier_t LibId, identifier_t Id>
+export template <
+  typename Self,
+  typename T,
+  identifier_value LibId,
+  identifier_value Id>
 struct enum_class;
 
 /// @brief Implementation of is_enum_class trait.
@@ -227,7 +232,11 @@ struct is_enum_class : std::false_type {};
 export template <typename T>
 constexpr const bool is_enum_class_v = is_enum_class<T>::value;
 
-export template <typename Self, typename T, identifier_t LibId, identifier_t Id>
+export template <
+  typename Self,
+  typename T,
+  identifier_value LibId,
+  identifier_value Id>
 struct is_enum_class<enum_class<Self, T, LibId, Id>> : std::true_type {
     static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
 };
@@ -251,8 +260,8 @@ export template <
   typename Self,
   typename T,
   typename Tag,
-  identifier_t LibId,
-  identifier_t Id>
+  identifier_value LibId,
+  identifier_value Id>
 struct is_enum_class_value<enum_class<Self, T, LibId, Id>, no_enum_value<T, Tag>>
   : std::true_type {
     static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
@@ -263,8 +272,8 @@ export template <
   typename T,
   typename Classes,
   typename Tag,
-  identifier_t LibId,
-  identifier_t Id>
+  identifier_value LibId,
+  identifier_value Id>
 struct is_enum_class_value<
   enum_class<Self, T, LibId, Id>,
   enum_value<T, Classes, Tag>> : mp_contains<Classes, Self> {
@@ -276,8 +285,8 @@ export template <
   typename T,
   typename Classes,
   typename Tag,
-  identifier_t LibId,
-  identifier_t Id>
+  identifier_value LibId,
+  identifier_value Id>
 struct is_enum_class_value<
   enum_class<Self, T, LibId, Id>,
   opt_enum_value<T, Classes, Tag>> : mp_contains<Classes, Self> {
@@ -333,15 +342,19 @@ struct enum_parameter_value {
 /// declared as enum_value or opt_enum_value. The conversions between enum_class
 /// and enum_value do static type checking to ensure that constants from
 /// unrelated enum classes cannot be assigned.
-export template <typename Self, typename T, identifier_t LibId, identifier_t Id>
+export template <
+  typename Self,
+  typename T,
+  identifier_value LibId,
+  identifier_value Id>
 struct enum_class {
     using type = enum_class;
 
     /// @brief The constant or enumerator value type.
     using value_type = T;
 
-    static constexpr const identifier_t lib_id = LibId;
-    static constexpr const identifier_t id = Id;
+    static constexpr const identifier_value lib_id = LibId;
+    static constexpr const identifier_value id = Id;
 
     value_type _value{};
 
@@ -352,13 +365,13 @@ struct enum_class {
     template <typename Classes, typename Tag>
     constexpr enum_class(const enum_value<T, Classes, Tag> ev) noexcept
         requires(mp_contains_v<Classes, Self>)
-    : _value{ev.value} {}
+      : _value{ev.value} {}
 
     /// @brief Construction from a related opt_enum_value.
     template <typename Classes, typename Tag>
     constexpr enum_class(const opt_enum_value<T, Classes, Tag> ev) noexcept
         requires(mp_contains_v<Classes, Self>)
-    : _value{ev.value} {
+      : _value{ev.value} {
         assert(ev.is_valid);
     }
 
@@ -406,28 +419,29 @@ export template <
   typename Dst,
   typename Self,
   typename Src,
-  identifier_t LibId,
-  identifier_t Id>
+  identifier_value LibId,
+  identifier_value Id>
 constexpr auto limit_cast(enum_class<Self, Src, LibId, Id> val) noexcept -> Dst
-  requires(std::is_convertible_v<Src, Dst>) {
-      return limit_cast<Dst>(val._value);
-  }
+    requires(std::is_convertible_v<Src, Dst>)
+{
+    return limit_cast<Dst>(val._value);
+}
 //------------------------------------------------------------------------------
 /// @brief Type erasure for instantiations of enum_class from a specified library.
 /// @tparam LibId unique identifier of a "library" or API the enums belong to.
 /// @ingroup c_api_wrap
 /// @see enum_class
 /// @see any_enum_value
-export template <identifier_t LibId>
+export template <identifier_value LibId>
 struct any_enum_class {
 
-    identifier_t _type_id{~identifier_t(0)};
+    identifier_value _type_id{~identifier_t(0)};
 
     /// @brief Default constructor.
     constexpr any_enum_class() noexcept = default;
 
     /// @brief Construction from enum_class from the same "library" or API.
-    template <typename Self, typename T, identifier_t Id>
+    template <typename Self, typename T, identifier_value Id>
     constexpr any_enum_class(const enum_class<Self, T, LibId, Id>&) noexcept
       : _type_id{Id} {
         static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
@@ -451,16 +465,16 @@ struct any_enum_class {
 /// @ingroup c_api_wrap
 /// @see enum_value
 /// @see any_enum_class
-export template <identifier_t LibId>
+export template <identifier_value LibId>
 struct any_enum_value {
     long _value{0};
-    identifier_t _type_id{~identifier_t(0)};
+    identifier_value _type_id{~identifier_t(0)};
 
     /// @brief Default constructor.
     constexpr any_enum_value() noexcept = default;
 
     /// @brief Construction from enum_class from the same "library" or API.
-    template <typename Self, typename T, identifier_t Id>
+    template <typename Self, typename T, identifier_value Id>
     constexpr any_enum_value(const enum_class<Self, T, LibId, Id> v) noexcept
       : _value{long(v._value)}
       , _type_id{Id} {
@@ -479,7 +493,7 @@ struct any_enum_value {
 /// @brief Tests if two instances of any_enum_class belong to the same enum class.
 /// @ingroup c_api_wrap
 /// @see any_enum_class
-export template <identifier_t LibId>
+export template <identifier_value LibId>
 constexpr auto same_enum_class(
   const any_enum_class<LibId> a,
   const any_enum_class<LibId> b) noexcept {
@@ -542,17 +556,19 @@ using enum_class_array =
 export template <typename Dst, typename Src, typename... Classes, typename Tag>
 constexpr auto limit_cast(
   c_api::opt_enum_value<Src, Classes..., Tag> val) noexcept -> Dst
-  requires(std::is_convertible_v<Src, Dst>) {
-      assert(bool(val));
-      return limit_cast<Dst>(val.value);
-  }
+    requires(std::is_convertible_v<Src, Dst>)
+{
+    assert(bool(val));
+    return limit_cast<Dst>(val.value);
+}
 
 export template <typename Dst, typename Src, typename Tag>
 constexpr auto limit_cast(c_api::no_enum_value<Src, Tag> val) noexcept -> Dst
-  requires(std::is_convertible_v<Src, Dst>) {
-      assert(bool(val));
-      return limit_cast<Dst>(val.value);
-  }
+    requires(std::is_convertible_v<Src, Dst>)
+{
+    assert(bool(val));
+    return limit_cast<Dst>(val.value);
+}
 //------------------------------------------------------------------------------
 } // namespace eagine::c_api
 
