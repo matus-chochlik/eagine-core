@@ -462,7 +462,7 @@ using reflection_z = reflection_I<M, 2>;
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-template <typename T, bool V>
+export template <typename T, bool V>
 using matrix_reflection_x =
   convertible_matrix_constructor<reflection_x<matrix<T, 4, 4, true, V>>>;
 
@@ -476,7 +476,7 @@ using matrix_reflection_x =
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-template <typename T, bool V>
+export template <typename T, bool V>
 using matrix_reflection_y =
   convertible_matrix_constructor<reflection_y<matrix<T, 4, 4, true, V>>>;
 
@@ -490,7 +490,7 @@ using matrix_reflection_y =
 /// @see matrix_reflection_y
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-template <typename T, bool V>
+export template <typename T, bool V>
 using matrix_reflection_z =
   convertible_matrix_constructor<reflection_z<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------

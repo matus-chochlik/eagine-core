@@ -7,6 +7,7 @@
 ///
 export module eagine.core.math;
 
+export import :sign;
 export import :traits;
 export import :constants;
 export import :functions;
@@ -14,6 +15,7 @@ export import :scalar;
 export import :vector;
 export import :matrix;
 export import :matrix_construct;
+export import :tmat;
 export import :curve;
 export import :primitives;
 export import :intersection;
