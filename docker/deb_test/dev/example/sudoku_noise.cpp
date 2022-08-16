@@ -64,9 +64,7 @@ auto main(main_ctx& ctx) -> int {
             break;
         }
         default:
-            ctx.log()
-              .error("invalid rank value: ${rank}")
-              .arg(EAGINE_ID(rank), rank);
+            ctx.log().error("invalid rank value: ${rank}").arg("rank", rank);
             break;
     }
 

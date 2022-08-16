@@ -51,7 +51,7 @@ public:
     }
 
     auto type_id() noexcept -> identifier final {
-        return EAGINE_ID(OutStream);
+        return "OutStream";
     }
 
     auto entry_backend(

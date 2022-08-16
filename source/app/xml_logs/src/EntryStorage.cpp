@@ -5,6 +5,7 @@
 ///
 
 #include "EntryStorage.hpp"
+#include <cassert>
 
 //------------------------------------------------------------------------------
 auto LogEntryStorage::cacheString(eagine::string_view s)
@@ -20,7 +21,7 @@ void LogEntryStorage::_emplaceNextEntry(LogEntryData&& entry) noexcept {
     auto& chunk = [&]() -> std::vector<LogEntryData>& {
         if(!_entries.empty()) [[likely]] {
             if(_entries.back().size() >= _chunkSize()) [[unlikely]] {
-                EAGINE_ASSERT(_entries.back().size() == _chunkSize());
+                assert(_entries.back().size() == _chunkSize());
                 _entries.emplace_back();
                 _entries.back().reserve(_chunkSize());
             }
@@ -66,7 +67,7 @@ void LogEntryStorage::beginStream(
     LogEntryData entry{};
     entry.entryUid = _uidSequence;
     entry.streamId = streamId;
-    entry.source = EAGINE_ID(XmlLogView);
+    entry.source = "XmlLogView";
     entry.severity = eagine::log_event_severity::info;
     entry.reltimeSec = 0.F;
     entry.isFirst = true;
@@ -78,7 +79,7 @@ void LogEntryStorage::endStream(stream_id_t streamId) noexcept {
     LogEntryData entry{};
     entry.entryUid = ++_uidSequence;
     entry.streamId = streamId;
-    entry.source = EAGINE_ID(XmlLogView);
+    entry.source = "XmlLogView";
     entry.severity = eagine::log_event_severity::info;
     entry.isLast = true;
     entry.format = "Log finished";

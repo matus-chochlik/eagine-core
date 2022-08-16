@@ -75,7 +75,7 @@ static constexpr auto adapt_entry_arg(
     requires(has_enumerator_mapping_v<T>)
 {
     return [=](auto& backend) {
-        backend.add_string(name, EAGINE_ID(enum), enumerator_name(value));
+        backend.add_string(name, "enum", enumerator_name(value));
     };
 }
 //------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ static constexpr auto adapt_entry_arg(
     return [=](auto& backend) {
         const auto func = [&backend, name, bf](const auto& info) {
             if(bf.has(static_cast<T>(info.value))) {
-                backend.add_string(name, EAGINE_ID(bitfield), info.name);
+                backend.add_string(name, "bitfield", info.name);
             }
         };
         for_each_enumerator(func, std::type_identity<T>{});

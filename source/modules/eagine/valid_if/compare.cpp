@@ -357,4 +357,72 @@ struct valid_if_size_gt_policy {
 export template <typename C, typename T>
 using valid_if_size_gt = in_class_valid_if<C, T, valid_if_size_gt_policy<C, T>>;
 
+/// @brief Policy for values valid if >= 0 and < container.size().
+/// @ingroup valid_if
+export template <typename T, typename C>
+struct valid_if_lt_size_ge0_policy {
+
+    /// @brief Indicates value validity, true if 0 <= x < c.size().
+    auto operator()(const T x, const C& c) const {
+        return (T(0) <= x) && (x < c.size());
+    }
+
+    /// @brief Indicates value validity, true if 0 <= x < c.size() - o.
+    auto operator()(const T x, const C& c, const T o) const {
+        return (T(0) <= x) && (x < c.size() - o);
+    }
+
+    struct do_log {
+        template <does_not_hide<do_log> X>
+        constexpr do_log(X&&) noexcept {}
+
+        template <typename Log>
+        void operator()(Log& log, const T& v, const C& c) const {
+            log << "Value " << v << ", less than zero or "
+                << "not less than c.size() = " << c.size() << " is invalid";
+        }
+    };
+};
+
+/// @brief Specialization of valid_if, for values valid if >= 0 and < container.size().
+/// @ingroup valid_if
+/// @see valid_if_le_size_ge0
+export template <typename C, typename T>
+using valid_if_lt_size_ge0 =
+  in_class_valid_if<T, C, valid_if_lt_size_ge0_policy<T, C>>;
+
+/// @brief Policy for values valid if >= 0 and <= container.size().
+/// @ingroup valid_if
+export template <typename T, typename C>
+struct valid_if_le_size_ge0_policy {
+
+    /// @brief Indicates value validity, true if 0 <= x <= c.size().
+    auto operator()(const T x, const C& c) const {
+        return (T(0) <= x) && (x <= c.size());
+    }
+
+    /// @brief Indicates value validity, true if 0 <= x <= c.size() - o.
+    auto operator()(const T x, const C& c, const T o) const {
+        return (T(0) <= x) && (x <= c.size() - o);
+    }
+
+    struct do_log {
+        template <does_not_hide<do_log> X>
+        constexpr do_log(X&&) noexcept {}
+
+        template <typename Log>
+        void operator()(Log& log, const T& v, const C& c) const {
+            log << "Value " << v << ", less than zero or "
+                << "greater than c.size() = " << c.size() << " is invalid";
+        }
+    };
+};
+
+/// @brief Specialization of valid_if, for values valid if >= 0 and <= container.size().
+/// @ingroup valid_if
+/// @see valid_if_lt_size_ge0
+export template <typename C, typename T>
+using valid_if_le_size_ge0 =
+  in_class_valid_if<T, C, valid_if_le_size_ge0_policy<T, C>>;
+
 } // namespace eagine

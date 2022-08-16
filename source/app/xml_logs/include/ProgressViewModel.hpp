@@ -7,8 +7,8 @@
 #ifndef EAGINE_XML_LOG_PROGRESS_VIEW_MODEL
 #define EAGINE_XML_LOG_PROGRESS_VIEW_MODEL
 
+import eagine.core;
 #include "ActivityListModel.hpp"
-#include <eagine/main_ctx_object.hpp>
 #include <QObject>
 
 class EntryLog;

@@ -7,9 +7,9 @@
 #ifndef EAGINE_XML_LOG_ENTRIES_VIEW_MODEL
 #define EAGINE_XML_LOG_ENTRIES_VIEW_MODEL
 
+import eagine.core;
 #include "EntryFilterModel.hpp"
 #include "EntryListModel.hpp"
-#include <eagine/main_ctx_object.hpp>
 #include <QObject>
 
 class Backend;

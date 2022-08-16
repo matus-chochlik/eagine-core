@@ -4,12 +4,12 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
+import eagine.core;
 #include "Theme.hpp"
-#include <eagine/app_config.hpp>
 //------------------------------------------------------------------------------
 Theme::Theme(eagine::main_ctx_parent parent)
   : QObject{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(Theme), parent} {
+  , eagine::main_ctx_object{"Theme", parent} {
     setLight(
       extract_or(app_config().get<bool>("log.viewer.theme.light"), false));
 }

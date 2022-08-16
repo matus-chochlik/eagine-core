@@ -18,6 +18,7 @@ eagine_add_module(
 		iterator
 		eagine.core.types;
 		eagine.core.memory;
+		eagine.core.valid_if;
 )
 
 eagine_add_module(

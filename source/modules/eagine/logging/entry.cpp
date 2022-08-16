@@ -19,14 +19,22 @@ import <utility>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export auto adapt_entry_arg(const identifier name, logger_backend* value) {
-    return [name, value](logger_backend& backend) noexcept {
-        if(value) {
-            backend.add_identifier(name, "LogBkEndId", value->type_id());
-        } else {
-            backend.add_nothing(name, "LogBkEndId");
+export auto adapt_entry_arg(
+  const identifier name,
+  logger_backend* value) noexcept {
+    struct _adapter {
+        const identifier name;
+        logger_backend* value;
+
+        void operator()(logger_backend& backend) const noexcept {
+            if(value) {
+                backend.add_identifier(name, "LogBkEndId", value->type_id());
+            } else {
+                backend.add_nothing(name, "LogBkEndId");
+            }
         }
     };
+    return _adapter{.name = name, .value = value};
 }
 //------------------------------------------------------------------------------
 export class logger;
@@ -630,10 +638,7 @@ public:
     /// @see has_log_entry_adapter_v
     template <adapted_for_log_entry T>
     auto arg(const identifier name, T&& value) noexcept -> log_entry& {
-        if(_backend) {
-            _args.add(adapt_entry_arg(name, std::forward<T>(value)));
-        }
-        return *this;
+        return arg_func(adapt_entry_arg(name, std::forward<T>(value)));
     }
 
     /// @brief Adds a new message argument with valid_if_or_fallback value.

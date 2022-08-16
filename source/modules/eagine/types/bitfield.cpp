@@ -56,6 +56,9 @@ public:
         return _bits;
     }
 
+    /// @brief Comparison operator.
+    constexpr auto operator<=>(const bitfield&) const noexcept = default;
+
     /// @brief Returns the bits in the underlying integer value type.
     constexpr auto bits() const noexcept -> value_type {
         return _bits;
@@ -91,10 +94,11 @@ public:
     /// @see has_none
     /// @see has_at_most
     template <typename... B>
+        requires(all_are_same_v<bit_type, B...>)
     constexpr auto has_all(const bit_type bit, B... bits) const noexcept
-      -> bool requires(all_are_same_v<bit_type, B...>) {
-                  return (has(bit) && ... && has(bits));
-              }
+      -> bool {
+        return (has(bit) && ... && has(bits));
+    }
 
     /// @brief Tests if any of the specified bits are set.
     /// @see has
@@ -104,10 +108,11 @@ public:
     /// @see has_none
     /// @see has_at_most
     template <typename... B>
+        requires(all_are_same_v<bit_type, B...>)
     constexpr auto has_any(const bit_type bit, B... bits) const noexcept
-      -> bool requires(all_are_same_v<bit_type, B...>) {
-                  return (has(bit) || ... || has(bits));
-              }
+      -> bool {
+        return (has(bit) || ... || has(bits));
+    }
 
     /// @brief Tests if none of the specified bits are set.
     /// @see has
@@ -117,10 +122,11 @@ public:
     /// @see has_any
     /// @see has_at_most
     template <typename... B>
+        requires(all_are_same_v<bit_type, B...>)
     constexpr auto has_none(const bit_type bit, B... bits) const noexcept
-      -> bool requires(all_are_same_v<bit_type, B...>) {
-                  return (has_not(bit) && ... && has_not(bits));
-              }
+      -> bool {
+        return (has_not(bit) && ... && has_not(bits));
+    }
 
     /// @brief Tests if only the specified bit is set.
     /// @see has
@@ -150,10 +156,35 @@ public:
         return *this;
     }
 
+    /// @brief Bitwise-or operator.
+    auto operator|(const bitfield b) const noexcept -> bitfield {
+        return bitfield{value_type(_bits | b._bits)};
+    }
+
+    /// @brief Bitwise-or operator.
+    auto operator|(const Bit b) const noexcept -> bitfield {
+        return *this | bitfield{b};
+    }
+
     /// @brief Bitwise-and operator.
     auto operator&=(const bitfield b) noexcept -> bitfield& {
         _bits &= b._bits;
         return *this;
+    }
+
+    /// @brief Bitwise-and operator.
+    auto operator&(const bitfield b) const noexcept -> bitfield {
+        return bitfield{value_type(_bits & b._bits)};
+    }
+
+    /// @brief Bitwise-and operator.
+    auto operator&(const Bit b) const noexcept -> bitfield {
+        return *this & bitfield{b};
+    }
+
+    /// @brief Bit inversion operator
+    auto operator~() const noexcept -> bitfield {
+        return bitfield{value_type(~_bits)};
     }
 
     /// @brief Sets the specified bit.
@@ -180,63 +211,5 @@ public:
 private:
     value_type _bits{0U};
 };
-
-/// @brief Equality comparison.
-/// @relates bitfield
-export template <typename Bit>
-constexpr auto operator==(const bitfield<Bit> a, const bitfield<Bit> b) noexcept
-  -> bool {
-    return a.bits() == b.bits();
-}
-
-/// @brief Nonequality comparison.
-/// @relates bitfield
-export template <typename Bit>
-constexpr auto operator!=(const bitfield<Bit> a, const bitfield<Bit> b) noexcept
-  -> bool {
-    return a.bits() != b.bits();
-}
-
-/// @brief Bitwise-or operator.
-/// @relates bitfield
-export template <typename Bit>
-constexpr auto operator|(const bitfield<Bit> a, const bitfield<Bit> b) noexcept
-  -> bitfield<Bit> {
-    using value_type = std::underlying_type_t<Bit>;
-    return bitfield<Bit>{value_type(a.bits() | b.bits())};
-}
-
-/// @brief Bitwise-or operator.
-/// @relates bitfield
-export template <typename Bit>
-constexpr auto operator|(const bitfield<Bit> a, const Bit b) noexcept
-  -> bitfield<Bit> {
-    return a | bitfield{b};
-}
-
-/// @brief Bitwise-and operator.
-/// @relates bitfield
-export template <typename Bit>
-constexpr auto operator&(const bitfield<Bit> a, const bitfield<Bit> b) noexcept
-  -> bitfield<Bit> {
-    using value_type = std::underlying_type_t<Bit>;
-    return bitfield<Bit>(value_type(a.bits() & b.bits()));
-}
-
-/// @brief Bitwise-and operator.
-/// @relates bitfield
-export template <typename Bit>
-constexpr auto operator&(const bitfield<Bit> a, const Bit b) noexcept
-  -> bitfield<Bit> {
-    return a & bitfield{b};
-}
-
-/// @brief Bit inversion operator
-/// @relates bitfield
-export template <typename Bit>
-constexpr auto operator~(const bitfield<Bit> b) noexcept -> bitfield<Bit> {
-    using value_type = std::underlying_type_t<Bit>;
-    return bitfield<Bit>{value_type(~b.bits())};
-}
 
 } // namespace eagine

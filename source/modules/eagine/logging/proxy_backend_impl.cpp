@@ -37,9 +37,8 @@ public:
 
     auto configure(basic_config&) -> bool final;
 
-    auto entry_backend(
-      const identifier source,
-      const log_event_severity severity) noexcept -> logger_backend* final;
+    auto entry_backend(const log_event_severity severity) noexcept
+      -> logger_backend* final;
 
     auto allocator() noexcept -> memory::shared_byte_allocator final;
     auto type_id() noexcept -> identifier final;
@@ -131,11 +130,10 @@ private:
     log_stream_info _info;
 };
 //------------------------------------------------------------------------------
-auto proxy_log_backend::entry_backend(
-  const identifier source,
-  const log_event_severity severity) noexcept -> logger_backend* {
+auto proxy_log_backend::entry_backend(const log_event_severity severity) noexcept
+  -> logger_backend* {
     if(_delegate) [[likely]] {
-        return _delegate->entry_backend(source, severity);
+        return _delegate->entry_backend(severity);
     }
     return this;
 }
@@ -381,8 +379,7 @@ auto proxy_log_choose_backend(
         return std::make_unique<syslog_log_backend<std::mutex>>(info);
     } else if(name == "network") {
         std::string nw_addr;
-        // TODO
-        // config.fetch("log.network.address", nw_addr);
+        config.fetch_string("log.network.address", nw_addr);
         return make_asio_tcpipv4_ostream_log_backend(nw_addr, info);
     } else if(name == "local") {
         return make_asio_local_ostream_log_backend(info);
@@ -398,8 +395,7 @@ auto proxy_log_choose_backend(
         }
         try {
             std::string nw_addr;
-            // TODO
-            // config.fetch("log.network.address", nw_addr);
+            config.fetch_string("log.network.address", nw_addr);
             return make_asio_tcpipv4_ostream_log_backend(nw_addr, info);
         } catch(const std::system_error& err) {
             if(err.code().value() != ENOENT) {
@@ -413,8 +409,8 @@ auto proxy_log_choose_backend(
 //------------------------------------------------------------------------------
 auto proxy_log_backend::configure(basic_config& config) -> bool {
     std::string backend_name;
-    // config.fetch("log.backend", backend_name);
-    // config.fetch("log.severity", _info.min_severity);
+    config.fetch_string("log.backend", backend_name);
+    config.fetch("log.severity", _info.min_severity);
     _delegate = proxy_log_choose_backend(config, backend_name, _info);
     if(_delegate) {
         _delegate->configure(config);

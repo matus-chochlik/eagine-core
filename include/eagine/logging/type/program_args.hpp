@@ -18,7 +18,7 @@ static inline auto adapt_entry_arg(
   const identifier name,
   const program_arg& value) noexcept {
     return [name, value](auto& backend) {
-        backend.add_string(name, EAGINE_ID(ProgramArg), string_view(value));
+        backend.add_string(name, "ProgramArg", string_view(value));
     };
 }
 //------------------------------------------------------------------------------

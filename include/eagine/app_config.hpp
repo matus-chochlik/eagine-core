@@ -42,7 +42,7 @@ struct application_config_value_loader
 class application_config : public main_ctx_object {
 public:
     application_config(main_ctx_parent parent) noexcept
-      : main_ctx_object{EAGINE_ID(AppConfig), parent} {}
+      : main_ctx_object{"AppConfig", parent} {}
 
     /// @brief Do potentially expensive pre-initialization and caching.
     auto preinitialize() noexcept -> application_config& {
@@ -85,8 +85,8 @@ public:
                 return true;
             } else {
                 log_error("could not parse configuration value '${value}'")
-                  .arg(EAGINE_ID(key), key)
-                  .arg(EAGINE_ID(value), arg.get());
+                  .arg("key", key)
+                  .arg("value", arg.get());
             }
         }
         if(const auto opt_val{_eval_env_var(key)}) {
@@ -95,8 +95,8 @@ public:
                 return true;
             } else {
                 log_error("could not convert configuration value '${value}'")
-                  .arg(EAGINE_ID(key), key)
-                  .arg(EAGINE_ID(value), extract(opt_val));
+                  .arg("key", key)
+                  .arg("value", extract(opt_val));
             }
         }
         if(const auto attr{_find_comp_attr(key, tag)}) {
@@ -104,7 +104,7 @@ public:
                 return true;
             } else {
                 log_error("could not fetch configuration value '${key}'")
-                  .arg(EAGINE_ID(key), key);
+                  .arg("key", key);
             }
         }
         return false;
@@ -125,8 +125,8 @@ public:
                     dest.emplace_back(std::move(temp));
                 } else {
                     log_error("could not parse configuration value '${value}'")
-                      .arg(EAGINE_ID(key), key)
-                      .arg(EAGINE_ID(value), arg.get());
+                      .arg("key", key)
+                      .arg("value", arg.get());
                     return false;
                 }
             }
@@ -136,8 +136,8 @@ public:
                 dest.emplace_back(std::move(extract(converted)));
             } else {
                 log_error("could not convert configuration value '${value}'")
-                  .arg(EAGINE_ID(key), key)
-                  .arg(EAGINE_ID(value), extract(opt_val));
+                  .arg("key", key)
+                  .arg("value", extract(opt_val));
                 return false;
             }
         }
@@ -148,7 +148,7 @@ public:
                 if(!attr.select_values(
                      tail(cover(dest), count), application_config_tag())) {
                     log_error("could not fetch configuration values '${key}'")
-                      .arg(EAGINE_ID(key), key);
+                      .arg("key", key);
                     return false;
                 }
             }
@@ -169,8 +169,8 @@ public:
                 return true;
             } else {
                 log_error("value '${value}' is not valid for '${key}'")
-                  .arg(EAGINE_ID(value), temp)
-                  .arg(EAGINE_ID(key), key);
+                  .arg("value", temp)
+                  .arg("key", key);
             }
         }
         return false;

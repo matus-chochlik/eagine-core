@@ -22,10 +22,10 @@ export struct anything {
     constexpr anything(const anything&) noexcept = default;
 
     /// @brief Move assignment operator.
-    auto operator=(anything&&) noexcept -> anything& = default;
+    constexpr auto operator=(anything&&) noexcept -> anything& = default;
 
     /// @brief Copy assignment operator.
-    auto operator=(const anything&) noexcept -> anything& = default;
+    constexpr auto operator=(const anything&) noexcept -> anything& = default;
 
     ~anything() noexcept = default;
 

@@ -278,7 +278,7 @@ class rapidyaml_tree_compound final
 
 public:
     rapidyaml_tree_compound(ryml::Tree tree, main_ctx_parent parent)
-      : main_ctx_object{EAGINE_ID(YamlValTre), parent}
+      : main_ctx_object{"YamlValTre", parent}
       , _tree{std::move(tree)}
       , _root{_tree} {}
 
@@ -299,9 +299,9 @@ public:
             return std::make_shared<rapidyaml_tree_compound>(
               std::move(tree), parent);
         } catch(const std::runtime_error& err) {
-            main_ctx_object(EAGINE_ID(YamlParse), parent)
+            main_ctx_object("YamlParse", parent)
               .log_error("YAML parse error: ${message}")
-              .arg(EAGINE_ID(message), string_view(err.what()));
+              .arg("message", string_view(err.what()));
         }
         return {};
     }

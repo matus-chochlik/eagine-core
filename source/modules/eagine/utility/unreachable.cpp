@@ -13,13 +13,14 @@ export module eagine.core.utility:unreachable;
 
 namespace eagine {
 
-export [[noreturn]] void unreachable() {
+export [[noreturn]] void unreachable() noexcept {
 #if defined(__GNUC__) // GCC, Clang, ICC
     __builtin_unreachable();
 #elif defined(_MSC_VER) // MSVC
     __assume(false);
-#endif
+#else
     assert(false);
+#endif
 }
 
 } // namespace eagine

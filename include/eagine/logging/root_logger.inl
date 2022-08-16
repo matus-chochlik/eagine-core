@@ -99,10 +99,10 @@ auto root_logger::_init_backend(
 EAGINE_LIB_FUNC
 auto root_logger::_log_args(const program_args& args) -> void {
     auto args_entry{info("program arguments:")};
-    args_entry.tag(EAGINE_ID(ProgArgs));
-    args_entry.arg(EAGINE_ID(cmd), args.command());
+    args_entry.tag("ProgArgs");
+    args_entry.arg("cmd", args.command());
     for(const auto& arg : args) {
-        args_entry.arg(EAGINE_ID(arg), arg);
+        args_entry.arg("arg", arg);
     }
 }
 //------------------------------------------------------------------------------
@@ -110,66 +110,48 @@ EAGINE_LIB_FUNC
 auto root_logger::_log_os_info() -> void {
     const string_view n_a{"N/A"};
     info("build OS information")
-      .tag(EAGINE_ID(OSInfo))
-      .arg(EAGINE_ID(osName), EAGINE_ID(OSName), config_os_name(), n_a)
-      .arg(
-        EAGINE_ID(osCodeName),
-        EAGINE_ID(OSCodeName),
-        config_os_code_name(),
-        n_a);
+      .tag("OSInfo")
+      .arg("osName", "OSName", config_os_name(), n_a)
+      .arg("osCodeName", "OSCodeName", config_os_code_name(), n_a);
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto root_logger::_log_git_info() -> void {
     const string_view n_a{"N/A"};
     info("source version information")
-      .tag(EAGINE_ID(GitInfo))
-      .arg(EAGINE_ID(gitBranch), EAGINE_ID(GitBranch), config_git_branch(), n_a)
-      .arg(EAGINE_ID(gitHashId), EAGINE_ID(GitHash), config_git_hash_id(), n_a)
-      .arg(EAGINE_ID(gitDate), EAGINE_ID(RFC2822), config_git_date(), n_a)
-      .arg(EAGINE_ID(gitDescrib), EAGINE_ID(str), config_git_describe(), n_a)
-      .arg(EAGINE_ID(gitVersion), EAGINE_ID(str), config_git_version(), n_a);
+      .tag("GitInfo")
+      .arg("gitBranch", "GitBranch", config_git_branch(), n_a)
+      .arg("gitHashId", "GitHash", config_git_hash_id(), n_a)
+      .arg("gitDate", "RFC2822", config_git_date(), n_a)
+      .arg("gitDescrib", "str", config_git_describe(), n_a)
+      .arg("gitVersion", "str", config_git_version(), n_a);
 }
 EAGINE_LIB_FUNC
 //------------------------------------------------------------------------------
 auto root_logger::_log_instance_info() -> void {
     info("instance information")
-      .tag(EAGINE_ID(Instance))
-      .arg(EAGINE_ID(instanceId), make_process_instance_id());
+      .tag("Instance")
+      .arg("instanceId", make_process_instance_id());
 }
 //------------------------------------------------------------------------------
 EAGINE_LIB_FUNC
 auto root_logger::_log_compiler_info() -> void {
     info("built with ${complrName} compiler for ${archtcture} architecture")
-      .tag(EAGINE_ID(Compiler))
-      .arg(
-        EAGINE_ID(complrName),
-        EAGINE_ID(string),
-        compiler_name(),
-        string_view{"unknown"})
-      .arg(
-        EAGINE_ID(archtcture),
-        EAGINE_ID(string),
-        architecture_name(),
-        string_view{"unknown"})
+      .tag("Compiler")
+      .arg("complrName", "string", compiler_name(), string_view{"unknown"})
+      .arg("archtcture", "string", architecture_name(), string_view{"unknown"})
       .arg_func([](logger_backend& backend) {
           if(const auto version_major{compiler_version_major()}) {
               backend.add_integer(
-                EAGINE_ID(complrMajr),
-                EAGINE_ID(VrsnMajor),
-                extract(version_major));
+                "complrMajr", "VrsnMajor", extract(version_major));
           }
           if(const auto version_minor{compiler_version_minor()}) {
               backend.add_integer(
-                EAGINE_ID(complrMinr),
-                EAGINE_ID(VrsnMinor),
-                extract(version_minor));
+                "complrMinr", "VrsnMinor", extract(version_minor));
           }
           if(const auto version_patch{compiler_version_patch()}) {
               backend.add_integer(
-                EAGINE_ID(complrPtch),
-                EAGINE_ID(VrsnPatch),
-                extract(version_patch));
+                "complrPtch", "VrsnPatch", extract(version_patch));
           }
       });
 }

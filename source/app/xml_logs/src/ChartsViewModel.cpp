@@ -9,6 +9,6 @@
 //------------------------------------------------------------------------------
 ChartsViewModel::ChartsViewModel(EntryLog& parent)
   : QObject{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(ChartsVM), parent}
+  , eagine::main_ctx_object{"ChartsVM", parent}
   , _parent{parent} {}
 //------------------------------------------------------------------------------

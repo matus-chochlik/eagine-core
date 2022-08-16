@@ -135,7 +135,7 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     /// @param value the value of the argument.
     auto arg(const identifier name, const identifier value) noexcept -> auto& {
-        return arg(name, EAGINE_ID(Identifier), value);
+        return arg(name, "Identifier", value);
     }
 
     /// @brief Adds a new message argument with boolean value.
@@ -155,7 +155,7 @@ public:
     }
 
     auto arg(const identifier name, const bool value) noexcept -> auto& {
-        return arg(name, EAGINE_ID(bool), value);
+        return arg(name, "bool", value);
     }
 
     /// @brief Adds a new message argument with signed integer value.
@@ -177,7 +177,7 @@ public:
     auto arg(
       const identifier name,
       const std::signed_integral auto value) noexcept -> auto& {
-        return arg(name, EAGINE_ID(signed), value);
+        return arg(name, "signed", value);
     }
 
     /// @brief Adds a new message argument with unsigned integer value.
@@ -199,7 +199,7 @@ public:
     auto arg(
       const identifier name,
       const std::unsigned_integral auto value) noexcept -> auto& {
-        return arg(name, EAGINE_ID(unsigned), value);
+        return arg(name, "unsigned", value);
     }
 
     /// @brief Adds a new message argument with floating-point value.
@@ -221,14 +221,14 @@ public:
     auto arg(
       const identifier name,
       const std::floating_point auto value) noexcept -> auto& {
-        return arg(name, EAGINE_ID(float), value);
+        return arg(name, "float", value);
     }
 
     auto arg(
       const identifier name,
       const std::integral auto value,
       const std::integral auto max) noexcept -> auto& {
-        return arg(name, EAGINE_ID(Ratio), double(value) / double(max));
+        return arg(name, "Ratio", double(value) / double(max));
     }
 
     /// @brief Adds a new message argument with time duration value.
@@ -256,7 +256,7 @@ public:
     auto arg(
       const identifier name,
       const std::chrono::duration<R, P> value) noexcept -> auto& {
-        return arg(name, EAGINE_ID(seconds), value);
+        return arg(name, "seconds", value);
     }
 
     /// @brief Adds a new message argument with string value.
@@ -276,7 +276,7 @@ public:
     }
 
     auto arg(const identifier name, const string_view value) noexcept -> auto& {
-        return arg(name, EAGINE_ID(str), value);
+        return arg(name, "str", value);
     }
 
     auto arg(const identifier name, const std::string& value) noexcept
@@ -305,7 +305,7 @@ public:
     /// @param value the value of the argument.
     auto arg(const identifier name, const memory::const_block value) noexcept
       -> auto& {
-        return arg(name, EAGINE_ID(block), value);
+        return arg(name, "block", value);
     }
 
     /// @brief Adds a new message argument adapted by the specified function.
@@ -322,8 +322,9 @@ public:
     /// @param value the value of the argument.
     /// @see has_log_entry_adapter_v
     template <typename T>
-    auto arg(const identifier name, T&& value) noexcept
-      -> console_entry& requires(has_entry_adapter_v<std::decay_t<T>>) {
+    auto arg(const identifier name, T&& value) noexcept -> console_entry&
+        requires(has_entry_adapter_v<std::decay_t<T>>)
+    {
         if(_backend) {
             _args.add(adapt_entry_arg(name, std::forward<T>(value)));
         }
@@ -343,11 +344,11 @@ public:
       -> console_entry& requires(
         has_entry_function_v<console_entry, std::decay_t<T>>&&
           has_entry_function_v<console_entry, std::decay_t<F>>) {
-        if(opt.is_valid()) {
-            return arg(name, tag, std::move(opt.value()));
-        }
-        return arg(name, std::move(opt.fallback()));
-    }
+                            if(opt.is_valid()) {
+                                return arg(name, tag, std::move(opt.value()));
+                            }
+                            return arg(name, std::move(opt.fallback()));
+                        }
 
     template <typename F, typename T, typename P, typename L>
     auto arg(
@@ -356,11 +357,11 @@ public:
       -> console_entry& requires(
         has_entry_function_v<console_entry, std::decay_t<T>>&&
           has_entry_function_v<console_entry, std::decay_t<F>>) {
-        if(opt.is_valid()) {
-            return arg(name, std::move(opt.value()));
-        }
-        return arg(name, std::move(opt.fallback()));
-    }
+                            if(opt.is_valid()) {
+                                return arg(name, std::move(opt.value()));
+                            }
+                            return arg(name, std::move(opt.fallback()));
+                        }
 
     auto to_be_continued() const noexcept -> console_entry_continuation {
         return {*this};

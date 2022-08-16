@@ -11,7 +11,7 @@
 //------------------------------------------------------------------------------
 Server::Server(Backend& parent)
   : QObject{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(Server), parent}
+  , eagine::main_ctx_object{"Server", parent}
   , _backend{parent} {
     if(_server.listen(QHostAddress::Any, 34917)) {
         connect(

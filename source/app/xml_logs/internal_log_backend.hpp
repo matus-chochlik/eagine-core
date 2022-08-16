@@ -9,20 +9,16 @@
 #ifndef EAGINE_XML_LOGS_INTERNAL_LOG_BACKEND_HPP
 #define EAGINE_XML_LOGS_INTERNAL_LOG_BACKEND_HPP
 
+import eagine.core;
 #include "EntryStorage.hpp"
-#include <eagine/assert.hpp>
-#include <eagine/compiler_info.hpp>
-#include <eagine/git_info.hpp>
-#include <eagine/logging/backend.hpp>
-#include <eagine/memory/default_alloc.hpp>
-#include <eagine/os_info.hpp>
+#include <cassert>
 
 namespace eagine {
 //------------------------------------------------------------------------------
 class internal_log_backend final : public logger_backend {
 public:
     internal_log_backend() noexcept {
-        EAGINE_ASSERT(!_single_instance_ptr());
+        assert(!_single_instance_ptr());
         _single_instance_ptr() = this;
         LogStreamInfo info{};
         info.logIdentity = "XML log viewer";
@@ -47,12 +43,12 @@ public:
 
     ~internal_log_backend() noexcept final {
         _entries->endStream(0);
-        EAGINE_ASSERT(_single_instance_ptr());
+        assert(_single_instance_ptr());
         _single_instance_ptr() = nullptr;
     }
 
     static auto storage() noexcept -> std::shared_ptr<LogEntryStorage> {
-        EAGINE_ASSERT(_single_instance_ptr());
+        assert(_single_instance_ptr());
         return _single_instance_ptr()->_entries;
     }
 
@@ -62,8 +58,7 @@ private:
         return the_instance;
     }
 
-    auto entry_backend(identifier, log_event_severity) noexcept
-      -> logger_backend* final {
+    auto entry_backend(log_event_severity) noexcept -> logger_backend* final {
         return this;
     }
 
@@ -72,7 +67,7 @@ private:
     }
 
     auto type_id() noexcept -> identifier final {
-        return EAGINE_ID(XmlLogView);
+        return "XmlLogView";
     }
 
     void enter_scope(identifier) noexcept final {}

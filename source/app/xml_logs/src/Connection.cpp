@@ -4,16 +4,14 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
+import eagine.core;
 #include "Connection.hpp"
 #include "Backend.hpp"
-#include <eagine/assert.hpp>
-#include <eagine/from_string.hpp>
-#include <eagine/reflect/enumerators.hpp>
 
 //------------------------------------------------------------------------------
 Connection::Connection(QTcpSocket& socket, Backend& parent)
   : QObject{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(Connection), parent}
+  , eagine::main_ctx_object{"Connection", parent}
   , _backend{parent}
   , _socket{socket}
   , _streamId{reinterpret_cast<stream_id_t>(&_socket)} {
@@ -34,16 +32,18 @@ auto Connection::_toIdentifier(const QStringRef& s) noexcept
 }
 //------------------------------------------------------------------------------
 auto Connection::_toFloat(const QStringRef& s, float f) noexcept -> float {
-    return extract_or(eagine::from_string<float>(eagine::view(s.toUtf8())), f);
+    return eagine::extract_or(
+      eagine::from_string<float>(eagine::view(s.toUtf8())), f);
 }
 //------------------------------------------------------------------------------
 auto Connection::_toInt(const QStringRef& s, int i) noexcept -> int {
-    return extract_or(eagine::from_string<int>(eagine::view(s.toUtf8())), i);
+    return eagine::extract_or(
+      eagine::from_string<int>(eagine::view(s.toUtf8())), i);
 }
 //------------------------------------------------------------------------------
 auto Connection::_toUnsigned64(const QStringRef& s, std::uint64_t f) noexcept
   -> std::uint64_t {
-    return extract_or(
+    return eagine::extract_or(
       eagine::from_string<std::uint64_t>(eagine::view(s.toUtf8())), f);
 }
 //------------------------------------------------------------------------------
@@ -106,7 +106,7 @@ auto Connection::_handleBeginMessage() noexcept -> bool {
     // source
     s = _xmlReader.attributes().value("src");
     if(s.isEmpty()) {
-        _currentEntry.source = EAGINE_ID(Unknown);
+        _currentEntry.source = "Unknown";
     } else {
         _currentEntry.source = _toIdentifier(s);
     }
@@ -128,46 +128,46 @@ void Connection::_handleEndMessage() noexcept {
 }
 //------------------------------------------------------------------------------
 void Connection::_handleSpecialArgument() noexcept {
-    if(_currentEntry.tag == EAGINE_ID(ProgArgs)) {
+    if(_currentEntry.tag == "ProgArgs") {
         auto& info = _backend.entryLog().streamInfoRef(_streamId);
-        if(_isArgName(EAGINE_ID(arg))) {
+        if(_isArgName("arg")) {
             info.args.push_back(_cacheString(_xmlReader.text()));
         }
-    } else if(_currentEntry.tag == EAGINE_ID(OSInfo)) {
+    } else if(_currentEntry.tag == "OSInfo") {
         auto& info = _backend.entryLog().streamInfoRef(_streamId);
-        if(_isArgName(EAGINE_ID(osName))) {
+        if(_isArgName("osName")) {
             info.osName = _cacheString(_xmlReader.text());
-        } else if(_isArgName(EAGINE_ID(osCodeName))) {
+        } else if(_isArgName("osCodeName")) {
             info.osCodeName = _cacheString(_xmlReader.text());
         }
-    } else if(_currentEntry.tag == EAGINE_ID(GitInfo)) {
+    } else if(_currentEntry.tag == "GitInfo") {
         auto& info = _backend.entryLog().streamInfoRef(_streamId);
-        if(_isArgName(EAGINE_ID(gitBranch))) {
+        if(_isArgName("gitBranch")) {
             info.gitBranch = _cacheString(_xmlReader.text());
-        } else if(_isArgName(EAGINE_ID(gitHashId))) {
+        } else if(_isArgName("gitHashId")) {
             info.gitHashId = _cacheString(_xmlReader.text());
-        } else if(_isArgName(EAGINE_ID(gitDate))) {
-        } else if(_isArgName(EAGINE_ID(gitDescrib))) {
+        } else if(_isArgName("gitDate")) {
+        } else if(_isArgName("gitDescrib")) {
             info.gitDescribe = _cacheString(_xmlReader.text());
-        } else if(_isArgName(EAGINE_ID(gitVersion))) {
+        } else if(_isArgName("gitVersion")) {
             info.gitVersion = _cacheString(_xmlReader.text());
         }
-    } else if(_currentEntry.tag == EAGINE_ID(Instance)) {
+    } else if(_currentEntry.tag == "Instance") {
         auto& info = _backend.entryLog().streamInfoRef(_streamId);
-        if(_isArgName(EAGINE_ID(instanceId))) {
+        if(_isArgName("instanceId")) {
             info.instanceId = _cacheString(_xmlReader.text());
         }
-    } else if(_currentEntry.tag == EAGINE_ID(Compiler)) {
+    } else if(_currentEntry.tag == "Compiler") {
         auto& info = _backend.entryLog().streamInfoRef(_streamId);
-        if(_isArgName(EAGINE_ID(archtcture))) {
+        if(_isArgName("archtcture")) {
             info.architecture = _cacheString(_xmlReader.text());
-        } else if(_isArgName(EAGINE_ID(complrName))) {
+        } else if(_isArgName("complrName")) {
             info.compilerName = _cacheString(_xmlReader.text());
-        } else if(_isArgName(EAGINE_ID(complrMajr))) {
+        } else if(_isArgName("complrMajr")) {
             info.compilerVersionMajor = _toInt(_xmlReader.text(), -1);
-        } else if(_isArgName(EAGINE_ID(complrMinr))) {
+        } else if(_isArgName("complrMinr")) {
             info.compilerVersionMinor = _toInt(_xmlReader.text(), -1);
-        } else if(_isArgName(EAGINE_ID(complrPtch))) {
+        } else if(_isArgName("complrPtch")) {
             info.compilerVersionPatch = _toInt(_xmlReader.text(), -1);
         }
     }
@@ -240,29 +240,27 @@ auto Connection::_isArgTag(eagine::identifier tag) const noexcept -> bool {
 }
 //------------------------------------------------------------------------------
 auto Connection::_isProgressArg() const noexcept -> bool {
-    return _isArgTag(EAGINE_ID(Progress));
+    return _isArgTag("Progress");
 }
 //------------------------------------------------------------------------------
 auto Connection::_isBoolArg() const noexcept -> bool {
-    return _isArgTag(EAGINE_ID(bool));
+    return _isArgTag("bool");
 }
 //------------------------------------------------------------------------------
 auto Connection::_isIntegerArg() const noexcept -> bool {
-    return _isArgTag(EAGINE_ID(int64)) || _isArgTag(EAGINE_ID(int32)) ||
-           _isArgTag(EAGINE_ID(int16));
+    return _isArgTag("int64") || _isArgTag("int32") || _isArgTag("int16");
 }
 //------------------------------------------------------------------------------
 auto Connection::_isUnsignedArg() const noexcept -> bool {
-    return _isArgTag(EAGINE_ID(uint64)) || _isArgTag(EAGINE_ID(uint32)) ||
-           _isArgTag(EAGINE_ID(uint16));
+    return _isArgTag("uint64") || _isArgTag("uint32") || _isArgTag("uint16");
 }
 //------------------------------------------------------------------------------
 auto Connection::_isFloatArg() const noexcept -> bool {
-    return _isArgTag(EAGINE_ID(real));
+    return _isArgTag("real");
 }
 //------------------------------------------------------------------------------
 auto Connection::_isDurationArg() const noexcept -> bool {
-    return _isArgTag(EAGINE_ID(duration));
+    return _isArgTag("duration");
 }
 //------------------------------------------------------------------------------
 void Connection::_handleArgumentValue() noexcept {

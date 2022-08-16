@@ -57,17 +57,17 @@ eagine_add_exe_analysis(eagine-xml_logs-gui)
 
 target_compile_options(
 	eagine-xml_logs-gui
-	PRIVATE $<$<BOOL:${EAGINE_GNUCXX_COMPILER}>:-Wno-extra-semi-stmt;-Wno-redundant-parens>
+	PRIVATE $<$<BOOL:${EAGINE_GNUCXX_COMPILER}>:-Wno-extra-semi-stmt;-Wno-redundant-parens;-Wno-auto-import>
 )
 target_include_directories(
 	eagine-xml_logs-gui
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+eagine_target_modules(eagine-xml_logs-gui eagine.core)
 target_link_libraries(
 	eagine-xml_logs-gui
 	PUBLIC
-		EAGine::Core
 		Qt5::Core
 		Qt5::Widgets
 		Qt5::Xml

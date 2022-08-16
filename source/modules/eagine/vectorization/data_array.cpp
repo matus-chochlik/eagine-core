@@ -40,15 +40,15 @@ struct data_array {
     template <does_not_hide<data_array> P>
     constexpr data_array(P&& p) noexcept
         requires((N == 1) && (std::is_convertible_v<P, T>))
-    : _v{T(std::forward<P>(p))} {}
+      : _v{T(std::forward<P>(p))} {}
 
     template <typename P1, typename P2, typename... Pn>
     constexpr data_array(P1&& p1, P2&& p2, Pn&&... pn) noexcept
         requires((sizeof...(Pn) + 2) == N)
-    : _v{
-        T(std::forward<P1>(p1)),
-        T(std::forward<P2>(p2)),
-        T(std::forward<Pn>(pn))...} {}
+      : _v{
+          T(std::forward<P1>(p1)),
+          T(std::forward<P2>(p2)),
+          T(std::forward<Pn>(pn))...} {}
 
     constexpr auto operator<=>(const data_array&) const noexcept = default;
     constexpr auto operator==(const data_array&) const noexcept
@@ -118,77 +118,78 @@ struct data_array {
         return *this;
     }
 
-    friend constexpr auto operator+(const data_array a) noexcept {
-        return a;
+    constexpr auto operator+() const noexcept {
+        return *this;
     }
 
-    friend auto operator-(data_array a) noexcept {
+    constexpr auto operator-() const noexcept {
+        data_array a{*this};
         for(int i = 0; i < N; ++i) {
             a._v[i] = -a._v[i];
         }
         return a;
     }
 
-    friend auto operator+(param_t a, param_t b) noexcept {
+    constexpr auto operator+(param_t that) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
-            c._v[i] = a._v[i] + b._v[i];
+            c._v[i] = _v[i] + that._v[i];
         }
         return c;
     }
 
-    friend auto operator+(param_t a, const T b) noexcept {
+    constexpr auto operator+(const T v) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
-            c._v[i] = a._v[i] + b;
+            c._v[i] = _v[i] + v;
         }
         return c;
     }
 
-    friend auto operator-(param_t a, param_t b) noexcept {
+    constexpr auto operator-(param_t that) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
-            c._v[i] = a._v[i] - b._v[i];
+            c._v[i] = _v[i] - that._v[i];
         }
         return c;
     }
 
-    friend auto operator-(param_t a, const T b) noexcept {
+    constexpr auto operator-(const T v) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
-            c._v[i] = a._v[i] - b;
+            c._v[i] = _v[i] - v;
         }
         return c;
     }
 
-    friend auto operator*(param_t a, param_t b) noexcept {
+    constexpr auto operator*(param_t that) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
-            c._v[i] = a._v[i] * b._v[i];
+            c._v[i] = _v[i] * that._v[i];
         }
         return c;
     }
 
-    friend auto operator*(param_t a, const T b) noexcept {
+    constexpr auto operator*(const T v) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
-            c._v[i] = a._v[i] * b;
+            c._v[i] = _v[i] * v;
         }
         return c;
     }
 
-    friend auto operator/(param_t a, param_t b) noexcept {
+    constexpr auto operator/(param_t that) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
-            c._v[i] = a._v[i] / b._v[i];
+            c._v[i] = _v[i] / that._v[i];
         }
         return c;
     }
 
-    friend auto operator/(param_t a, const T b) noexcept {
+    constexpr auto operator/(const T v) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
-            c._v[i] = a._v[i] / b;
+            c._v[i] = _v[i] / v;
         }
         return c;
     }

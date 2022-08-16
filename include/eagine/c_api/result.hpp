@@ -512,7 +512,7 @@ inline auto operator>>(
   result<Result, Info, result_validity::never> res,
   Result& dest) -> Result& {
     throw bad_result<Info>(static_cast<Info&&>(res));
-    return dest = std::move(res._value);
+    return dest;
 }
 //------------------------------------------------------------------------------
 // combined_result

@@ -34,6 +34,10 @@ endforeach()
 if(${EAGINE_CLANGXX_COMPILER})
 	set_property(
 		TARGET eagine-core-headers
+		APPEND PROPERTY INTERFACE_COMPILE_OPTIONS -fexperimental-library
+	)
+	set_property(
+		TARGET eagine-core-headers
 		APPEND PROPERTY INTERFACE_COMPILE_OPTIONS -stdlib=libc++
 	)
 	set_property(

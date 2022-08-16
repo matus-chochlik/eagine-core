@@ -283,7 +283,7 @@ auto make_overlay(const logger& parent, std::vector<compound_attribute> overlays
     return compound::make<overlay_compound>(parent, std::move(overlays));
 }
 //------------------------------------------------------------------------------
-auto add_overlay(compound& c, compound_attribute overlay) -> bool {
+auto add_overlay(compound& c, const compound_attribute& overlay) -> bool {
     if(auto oc{c.as<overlay_compound>()}) {
         extract(oc).add_overlay(std::move(overlay));
         return true;

@@ -16,6 +16,7 @@
 #include "main_ctx.hpp"
 #include "main_ctx_object.hpp"
 #include "memory/copy.hpp"
+#include "selector.hpp"
 #include "string_span.hpp"
 
 namespace eagine {
@@ -88,9 +89,10 @@ static inline auto as_chars(const embedded_resource& res) noexcept {
     return as_chars(memory::const_block{res});
 }
 
+template <identifier_t ResId>
 extern auto get_embedded_resource(
-  const identifier res_id,
-  const string_view src_path) noexcept -> embedded_resource;
+  const selector<ResId>,
+  const string_view) noexcept -> embedded_resource;
 
 /// @brief Triggers the embedding of data from a file on the specified path.
 /// @ingroup embedding
@@ -103,10 +105,16 @@ extern auto get_embedded_resource(
 /// The embed generator is installed as one of the tools and in cmake-based
 /// build systems the eagine_embed_packed_target_resources and
 /// eagine_embed_target_resources cmake functions can be used invoke it.
-static inline auto embed(
-  const identifier res_id,
-  const string_view src_path) noexcept -> embedded_resource {
-    return get_embedded_resource(res_id, src_path);
+template <identifier_value ResId>
+auto embed(string_view src_path) noexcept -> embedded_resource {
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundefined-func-template"
+#endif
+    return get_embedded_resource(selector<ResId>{}, src_path);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 }
 
 } // namespace eagine

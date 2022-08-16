@@ -7,12 +7,12 @@
 #ifndef EAGINE_XML_LOGS_BACKEND
 #define EAGINE_XML_LOGS_BACKEND
 
+import eagine.core;
+import <memory>;
 #include "EntryLog.hpp"
 #include "Server.hpp"
 #include "Theme.hpp"
-#include <eagine/main_ctx_object.hpp>
 #include <QObject>
-#include <memory>
 
 //------------------------------------------------------------------------------
 class Backend

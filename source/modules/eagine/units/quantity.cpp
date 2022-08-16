@@ -15,9 +15,8 @@ namespace eagine::units {
 export template <typename T, typename U>
 class tagged_quantity;
 
-template <typename U, typename T>
-static constexpr auto make_tagged_quantity(const T& value)
-  -> tagged_quantity<T, U>;
+export template <typename U, typename T>
+constexpr auto make_tagged_quantity(const T& value) -> tagged_quantity<T, U>;
 //------------------------------------------------------------------------------
 /// @brief Value of type T with a specified unit or tag type U.
 /// @ingroup units
@@ -41,7 +40,7 @@ public:
     template <typename X, typename UX>
     constexpr tagged_quantity(const tagged_quantity<X, UX>& tq) noexcept
         requires(std::is_convertible_v<X, T> && is_convertible_v<UX, U>)
-    : _v(T(value_conv<UX, U>()(tq._v))) {}
+      : _v(T(value_conv<UX, U>()(tq._v))) {}
 
     /// @brief Conversion to a quantity in another unit type.
     template <typename UX>
@@ -93,8 +92,7 @@ public:
 };
 //------------------------------------------------------------------------------
 template <typename U, typename T>
-static constexpr auto make_tagged_quantity(const T& value)
-  -> tagged_quantity<T, U> {
+constexpr auto make_tagged_quantity(const T& value) -> tagged_quantity<T, U> {
     return tagged_quantity<T, U>{value};
 }
 //------------------------------------------------------------------------------
@@ -124,9 +122,8 @@ struct is_convertible_quantity<tagged_quantity<T, QU>, U>
   : is_convertible<QU, U> {};
 //------------------------------------------------------------------------------
 export template <typename T, typename U>
-constexpr auto operator*(const T& v, U)
     requires(!is_tagged_quantity_v<T> && !is_unit_v<T> && is_unit_v<U>)
-{
+constexpr auto operator*(const T& v, U) {
     return make_tagged_quantity<U>(v);
 }
 //------------------------------------------------------------------------------
@@ -144,67 +141,67 @@ constexpr auto value(const tagged_quantity<T, U>& q) {
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U1, typename T2, typename U2>
+    requires(is_convertible_v<U2, U1>)
 constexpr auto operator==(
   const tagged_quantity<T1, U1>& a,
-  const tagged_quantity<T2, U2>& b)
-  -> bool requires(is_convertible_v<U2, U1>) {
-              return value(a) == value_conv<U2, U1>()(value(b));
-          }
+  const tagged_quantity<T2, U2>& b) -> bool {
+    return value(a) == value_conv<U2, U1>()(value(b));
+}
 //------------------------------------------------------------------------------
 /// @brief Nonequality comparison.
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U1, typename T2, typename U2>
+    requires(is_convertible_v<U2, U1>)
 constexpr auto operator!=(
   const tagged_quantity<T1, U1>& a,
-  const tagged_quantity<T2, U2>& b)
-  -> bool requires(is_convertible_v<U2, U1>) {
-              return value(a) != value_conv<U2, U1>()(value(b));
-          }
+  const tagged_quantity<T2, U2>& b) -> bool {
+    return value(a) != value_conv<U2, U1>()(value(b));
+}
 //------------------------------------------------------------------------------
 /// @brief Less-than comparison.
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U1, typename T2, typename U2>
+    requires(is_convertible_v<U2, U1>)
 constexpr auto operator<(
   const tagged_quantity<T1, U1>& a,
-  const tagged_quantity<T2, U2>& b)
-  -> bool requires(is_convertible_v<U2, U1>) {
-              return value(a) < value_conv<U2, U1>()(value(b));
-          }
+  const tagged_quantity<T2, U2>& b) -> bool {
+    return value(a) < value_conv<U2, U1>()(value(b));
+}
 //------------------------------------------------------------------------------
 /// @brief Less-equal comparison.
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U1, typename T2, typename U2>
+    requires(is_convertible_v<U2, U1>)
 constexpr auto operator<=(
   const tagged_quantity<T1, U1>& a,
-  const tagged_quantity<T2, U2>& b)
-  -> bool requires(is_convertible_v<U2, U1>) {
-              return value(a) <= value_conv<U2, U1>()(value(b));
-          }
+  const tagged_quantity<T2, U2>& b) -> bool {
+    return value(a) <= value_conv<U2, U1>()(value(b));
+}
 //------------------------------------------------------------------------------
 /// @brief Greater-than comparison.
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U1, typename T2, typename U2>
+    requires(is_convertible_v<U2, U1>)
 constexpr auto operator>(
   const tagged_quantity<T1, U1>& a,
-  const tagged_quantity<T2, U2>& b)
-  -> bool requires(is_convertible_v<U2, U1>) {
-              return value(a) > value_conv<U2, U1>()(value(b));
-          }
+  const tagged_quantity<T2, U2>& b) -> bool {
+    return value(a) > value_conv<U2, U1>()(value(b));
+}
 //------------------------------------------------------------------------------
 /// @brief Greater-equal comparison.
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U1, typename T2, typename U2>
+    requires(is_convertible_v<U2, U1>)
 constexpr auto operator>=(
   const tagged_quantity<T1, U1>& a,
-  const tagged_quantity<T2, U2>& b)
-  -> bool requires(is_convertible_v<U2, U1>) {
-              return value(a) >= value_conv<U2, U1>()(value(b));
-          }
+  const tagged_quantity<T2, U2>& b) -> bool {
+    return value(a) >= value_conv<U2, U1>()(value(b));
+}
 //------------------------------------------------------------------------------
 /// @brief Unary plus operator.
 /// @ingroup units
@@ -264,9 +261,8 @@ constexpr auto operator*(
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U, typename T2>
-constexpr auto operator*(const tagged_quantity<T1, U>& a, const T2& c)
     requires(!is_unit_v<T2> && !is_tagged_quantity_v<T2>)
-{
+constexpr auto operator*(const tagged_quantity<T1, U>& a, const T2& c) {
     return make_tagged_quantity<U>(value(a) * c);
 }
 //------------------------------------------------------------------------------
@@ -282,9 +278,8 @@ constexpr auto operator*(const T1& c, const tagged_quantity<T2, U>& a) {
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U1, typename U2>
-constexpr auto operator*(const tagged_quantity<T1, U1>& a, U2)
     requires(is_unit_v<U2>)
-{
+constexpr auto operator*(const tagged_quantity<T1, U1>& a, U2) {
     return a * make_tagged_quantity<U2>(1);
 }
 //------------------------------------------------------------------------------
@@ -306,9 +301,8 @@ constexpr auto operator/(
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U, typename T2>
-constexpr auto operator/(const tagged_quantity<T1, U>& a, const T2& c)
     requires(!is_unit_v<T2>)
-{
+constexpr auto operator/(const tagged_quantity<T1, U>& a, const T2& c) {
     return make_tagged_quantity<U>((1.F * value(a)) / c);
 }
 //------------------------------------------------------------------------------
@@ -316,9 +310,8 @@ constexpr auto operator/(const tagged_quantity<T1, U>& a, const T2& c)
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U1, typename U2>
-constexpr auto operator/(const tagged_quantity<T1, U1>& a, U2)
     requires(is_unit_v<U2>)
-{
+constexpr auto operator/(const tagged_quantity<T1, U1>& a, U2) {
     return a / make_tagged_quantity<U2>(1);
 }
 //------------------------------------------------------------------------------

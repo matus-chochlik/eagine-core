@@ -25,7 +25,7 @@ struct null_log_backend final : logger_backend {
     }
 
     auto type_id() noexcept -> identifier final {
-        return EAGINE_ID(Null);
+        return "Null";
     }
 
     void enter_scope(const identifier) noexcept final {}

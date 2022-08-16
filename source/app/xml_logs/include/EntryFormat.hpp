@@ -7,16 +7,15 @@
 #ifndef EAGINE_XML_LOGS_ENTRY_FORMAT_HPP
 #define EAGINE_XML_LOGS_ENTRY_FORMAT_HPP
 
-#include <eagine/message_id.hpp>
-#include <eagine/string_span.hpp>
-#include <eagine/valid_if/decl.hpp>
-#include <chrono>
+import eagine.core;
+import <optional>;
+import <chrono>;
 
 //------------------------------------------------------------------------------
 struct LogEntryData;
 class EntryFormat {
 public:
-    using result_type = eagine::optionally_valid<eagine::string_view>;
+    using result_type = std::optional<eagine::string_view>;
 
     auto format(const LogEntryData&) noexcept -> eagine::string_view;
 

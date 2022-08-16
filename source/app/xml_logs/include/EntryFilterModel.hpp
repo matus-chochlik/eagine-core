@@ -7,7 +7,7 @@
 #ifndef EAGINE_XML_LOG_ENTRY_FILTER_MODEL
 #define EAGINE_XML_LOG_ENTRY_FILTER_MODEL
 
-#include <eagine/main_ctx_object.hpp>
+import eagine.core;
 #include <QObject>
 
 class EntryViewModel;

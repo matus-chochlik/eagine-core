@@ -4,18 +4,17 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
+import eagine.core;
 #include "EntryListModel.hpp"
 #include "Backend.hpp"
 #include "EntryFormat.hpp"
 #include "EntryLog.hpp"
 #include "EntryViewModel.hpp"
 #include "Utility.hpp"
-#include <eagine/extract.hpp>
-#include <eagine/is_within_limits.hpp>
 //------------------------------------------------------------------------------
 EntryListModel::EntryListModel(EntryViewModel& parent)
   : QAbstractItemModel{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(EntListMdl), parent}
+  , eagine::main_ctx_object{"EntListMdl", parent}
   , _parent{parent} {}
 //------------------------------------------------------------------------------
 auto EntryListModel::backend() const noexcept -> Backend& {

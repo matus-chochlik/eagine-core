@@ -13,6 +13,7 @@ import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.string;
 import :backend;
+import <array>;
 import <ostream>;
 
 namespace eagine {
@@ -46,16 +47,15 @@ public:
     auto operator=(const ostream_log_backend&) = delete;
 
     auto allocator() noexcept -> memory::shared_byte_allocator final {
-        return memory::default_byte_allocator();
+        return _alloc;
     }
 
     auto type_id() noexcept -> identifier final {
         return "OutStream";
     }
 
-    auto entry_backend(
-      const identifier,
-      const log_event_severity severity) noexcept -> logger_backend* final {
+    auto entry_backend(const log_event_severity severity) noexcept
+      -> logger_backend* final {
         if(severity >= _min_severity) {
             return this;
         }
@@ -296,6 +296,7 @@ private:
     std::ostream& _out;
     const log_event_severity _min_severity;
     const std::chrono::steady_clock::time_point _start;
+    memory::shared_byte_allocator _alloc{memory::default_byte_allocator()};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

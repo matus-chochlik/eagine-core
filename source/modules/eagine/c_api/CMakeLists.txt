@@ -31,6 +31,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
+		eagine.core.identifier
 )
 
 eagine_add_module(
@@ -38,6 +39,14 @@ eagine_add_module(
 	IMPORTS
 		enum_class
 		eagine.core.types
+)
+
+eagine_add_module(
+	eagine.core.c_api PARTITION constant
+	IMPORTS
+		enum_class
+		eagine.core.types
+		eagine.core.memory
 )
 
 eagine_add_module(
@@ -97,6 +106,7 @@ eagine_add_module(
 		key_value_list
 		enum_class
 		enum_bitfield
+		constant
 		handle
 		object
 		function

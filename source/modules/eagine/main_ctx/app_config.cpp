@@ -224,6 +224,8 @@ private:
             return _parent.is_set(key, tag);
         }
 
+        using basic_config::fetch_string;
+
         auto fetch_string(
           const string_view key,
           const string_view tag,

@@ -23,16 +23,16 @@ static void test_gen_ident(char* str, eagine::span_size_t n) {
 BOOST_AUTO_TEST_CASE(identifier_tag_1) {
     using namespace eagine;
 
-    BOOST_CHECK_EQUAL(EAGINE_ID(A).str(), "A");
-    BOOST_CHECK_EQUAL(EAGINE_ID(BC).str(), "BC");
-    BOOST_CHECK_EQUAL(EAGINE_ID(CDE).str(), "CDE");
-    BOOST_CHECK_EQUAL(EAGINE_ID(DEFG).str(), "DEFG");
-    BOOST_CHECK_EQUAL(EAGINE_ID(EFGHI).str(), "EFGHI");
-    BOOST_CHECK_EQUAL(EAGINE_ID(FGHIJK).str(), "FGHIJK");
-    BOOST_CHECK_EQUAL(EAGINE_ID(GHIJKLM).str(), "GHIJKLM");
-    BOOST_CHECK_EQUAL(EAGINE_ID(HIJKLMNO).str(), "HIJKLMNO");
-    BOOST_CHECK_EQUAL(EAGINE_ID(IJKLMNOPQ).str(), "IJKLMNOPQ");
-    BOOST_CHECK_EQUAL(EAGINE_ID(JKLMNOPQRS).str(), "JKLMNOPQRS");
+    BOOST_CHECK_EQUAL(identifier{"A"}.str(), "A");
+    BOOST_CHECK_EQUAL(identifier{"BC"}.str(), "BC");
+    BOOST_CHECK_EQUAL(identifier{"CDE"}.str(), "CDE");
+    BOOST_CHECK_EQUAL(identifier{"DEFG"}.str(), "DEFG");
+    BOOST_CHECK_EQUAL(identifier{"EFGHI"}.str(), "EFGHI");
+    BOOST_CHECK_EQUAL(identifier{"FGHIJK"}.str(), "FGHIJK");
+    BOOST_CHECK_EQUAL(identifier{"GHIJKLM"}.str(), "GHIJKLM");
+    BOOST_CHECK_EQUAL(identifier{"HIJKLMNO"}.str(), "HIJKLMNO");
+    BOOST_CHECK_EQUAL(identifier{"IJKLMNOPQ"}.str(), "IJKLMNOPQ");
+    BOOST_CHECK_EQUAL(identifier{"JKLMNOPQRS"}.str(), "JKLMNOPQRS");
 }
 
 BOOST_AUTO_TEST_CASE(identifier_1) {

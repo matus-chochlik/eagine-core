@@ -9,6 +9,6 @@
 //------------------------------------------------------------------------------
 EntryFilterModel::EntryFilterModel(EntryViewModel& parent)
   : QObject{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(EntFlrtMdl), parent}
+  , eagine::main_ctx_object{"EntFlrtMdl", parent}
   , _parent{parent} {}
 //------------------------------------------------------------------------------

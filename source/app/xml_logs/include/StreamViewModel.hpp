@@ -7,8 +7,8 @@
 #ifndef EAGINE_XML_LOG_STREAM_VIEW_MODEL
 #define EAGINE_XML_LOG_STREAM_VIEW_MODEL
 
+import eagine.core;
 #include "StreamListModel.hpp"
-#include <eagine/main_ctx_object.hpp>
 #include <QObject>
 
 class EntryLog;

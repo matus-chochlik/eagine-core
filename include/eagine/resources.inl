@@ -29,30 +29,28 @@ auto fetch_resource(
             copy(blk, cover(buf));
 
             log.debug("using ${resource} from file ${path}")
-              .arg(EAGINE_ID(resource), description)
-              .arg(EAGINE_ID(key), key)
-              .arg(EAGINE_ID(path), EAGINE_ID(FsPath), extract(res_path));
+              .arg("resource", description)
+              .arg("key", key)
+              .arg("path", "FsPath", extract(res_path));
             log.trace("${resource} content:")
-              .arg(EAGINE_ID(resource), description)
-              .arg(EAGINE_ID(blob), view(buf));
+              .arg("resource", description)
+              .arg("blob", view(buf));
             return view(buf);
         } else {
             log.error("failed to load ${resource} from file ${path}")
-              .arg(EAGINE_ID(resource), description)
-              .arg(EAGINE_ID(key), key)
-              .arg(EAGINE_ID(path), EAGINE_ID(FsPath), extract(res_path));
+              .arg("resource", description)
+              .arg("key", key)
+              .arg("path", "FsPath", extract(res_path));
         }
     } else if(embedded_blk) {
-        log.debug("using embedded ${resource}")
-          .arg(EAGINE_ID(resource), description);
+        log.debug("using embedded ${resource}").arg("resource", description);
         log.trace("${resource} content:")
-          .arg(EAGINE_ID(resource), description)
-          .arg(EAGINE_ID(blob), embedded_blk);
+          .arg("resource", description)
+          .arg("blob", embedded_blk);
         return embedded_blk;
     }
 
-    log.warning("could not fetch ${resource}")
-      .arg(EAGINE_ID(resource), description);
+    log.warning("could not fetch ${resource}").arg("resource", description);
     return {};
 }
 //------------------------------------------------------------------------------

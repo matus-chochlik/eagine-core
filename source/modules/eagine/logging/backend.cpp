@@ -49,9 +49,8 @@ export struct logger_backend : interface<logger_backend> {
     /// @brief Returns a pointer to the actual backend to be used by an log_entry.
     /// @param source the identifier of the source logger object.
     /// @param severity the log level or severity of the log event.
-    virtual auto entry_backend(
-      const identifier source,
-      const log_event_severity severity) noexcept -> logger_backend* = 0;
+    virtual auto entry_backend(const log_event_severity severity) noexcept
+      -> logger_backend* = 0;
 
     /// @brief Enters logging scope.
     virtual void enter_scope(const identifier scope) noexcept = 0;

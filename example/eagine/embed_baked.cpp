@@ -19,7 +19,7 @@ namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
 
-    const auto res{embed(identifier{"ZebraFur"}, "zebra_fur")};
+    const auto res{embed<"ZebraFur">("zebra_fur")};
     std::cout << hexdump(res.unpack(ctx));
 
     return 0;

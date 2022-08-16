@@ -22,7 +22,7 @@ class user_info_impl;
 class user_info : public main_ctx_object {
 public:
     user_info(main_ctx_parent parent) noexcept
-      : main_ctx_object{EAGINE_ID(UserInfo), parent} {}
+      : main_ctx_object{"UserInfo", parent} {}
 
     /// @brief The user's login name.
     auto login_name() noexcept -> valid_if_not_empty<string_view>;

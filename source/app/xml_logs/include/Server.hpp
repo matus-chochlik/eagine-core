@@ -7,7 +7,7 @@
 #ifndef EAGINE_XML_LOGS_SERVER
 #define EAGINE_XML_LOGS_SERVER
 
-#include <eagine/main_ctx_object.hpp>
+import eagine.core;
 #include <QObject>
 #include <QTcpServer>
 #include <QTcpSocket>

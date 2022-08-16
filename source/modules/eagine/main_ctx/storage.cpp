@@ -146,6 +146,10 @@ public:
         return _compressor;
     }
 
+    auto workers() noexcept -> workshop& final {
+        return _workers;
+    }
+
     auto scratch_space() noexcept -> memory::buffer& final {
         return _scratch_space;
     }
@@ -189,6 +193,7 @@ private:
     application_config _app_config;
     memory::buffer _scratch_space{_default_alloc};
     data_compressor _compressor{};
+    workshop _workers{};
     std::string _exe_path{};
     std::string _app_name{};
 

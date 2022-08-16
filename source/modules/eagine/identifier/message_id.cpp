@@ -14,7 +14,7 @@ import <tuple>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export template <identifier_t ClassId, identifier_t MethodId>
+export template <identifier_value ClassId, identifier_value MethodId>
 struct static_message_id;
 //------------------------------------------------------------------------------
 /// @brief Class storing two identifier values representing class/method pair.
@@ -29,25 +29,23 @@ public:
     constexpr message_id() noexcept = default;
 
     ///	@brief Construction from two identifier values.
-    constexpr message_id(const identifier_t c, const identifier_t m) noexcept
-      : _data{c, m} {}
-
-    ///	@brief Construction from two identifier objects.
-    constexpr message_id(const identifier c, const identifier m) noexcept
-      : message_id{c.value(), m.value()} {}
-
-    ///	@brief Construction from two string literals.
-    template <auto CL, auto ML>
-        requires(identifier_literal_length<CL> && identifier_literal_length<ML>)
-    constexpr message_id(const char (&c)[CL], const char (&m)[ML]) noexcept
-      : message_id{identifier{c}, identifier{m}} {}
+    constexpr message_id(
+      const identifier_value c,
+      const identifier_value m) noexcept
+#if __SIZEOF_INT128__
+      : _data{(static_cast<__uint128_t>(c) << 64U) | static_cast<__uint128_t>(m)}
+#else
+      : _data{c, m}
+#endif
+    {
+    }
 
     ///	@brief Construction from a tuple of two identifier objects.
     constexpr message_id(const std::tuple<identifier, identifier> t) noexcept
       : message_id{std::get<0>(t), std::get<1>(t)} {}
 
     ///	@brief Construction from static_message_id value.
-    template <identifier_t ClassId, identifier_t MethodId>
+    template <identifier_value ClassId, identifier_value MethodId>
     constexpr message_id(const static_message_id<ClassId, MethodId>&) noexcept
       : message_id{ClassId, MethodId} {}
 
@@ -58,7 +56,11 @@ public:
 
     /// @brief Returns the class identifier value.
     constexpr auto class_id() const noexcept -> identifier_t {
+#if __SIZEOF_INT128__
+        return static_cast<identifier_t>(_data >> 64U);
+#else
         return _data[0];
+#endif
     }
 
     /// @brief Returns the class identifier.
@@ -68,7 +70,11 @@ public:
 
     /// @brief Returns the method identifier value.
     constexpr auto method_id() const noexcept -> identifier_t {
+#if __SIZEOF_INT128__
+        return static_cast<identifier_t>(_data);
+#else
         return _data[1];
+#endif
     }
 
     /// @brief Returns the method identifier.
@@ -91,34 +97,24 @@ public:
 
     /// @brief Checks if the class identifier matches the argument.
     /// @see has_method
-    constexpr auto has_class(const identifier id) const noexcept {
-        return class_id() == id.value();
-    }
-
-    /// @brief Checks if the class identifier matches the argument.
-    /// @see has_method
-    template <auto L>
-        requires(identifier_literal_length<L>)
-    constexpr auto has_class(const char (&str)[L]) const noexcept {
-        return has_class(identifier{str});
+    constexpr auto has_class(const identifier_value idv) const noexcept
+      -> bool {
+        return class_id() == idv._value;
     }
 
     /// @brief Checks if the method identifier matches the argument.
     /// @see has_class
-    constexpr auto has_method(const identifier id) const noexcept {
-        return method_id() == id.value();
-    }
-
-    /// @brief Checks if the method identifier matches the argument.
-    /// @see has_class
-    template <auto L>
-        requires(identifier_literal_length<L>)
-    constexpr auto has_method(const char (&str)[L]) const noexcept {
-        return has_method(identifier{str});
+    constexpr auto has_method(const identifier_value idv) const noexcept
+      -> bool {
+        return method_id() == idv._value;
     }
 
 private:
+#if __SIZEOF_INT128__
+    __uint128_t _data{0U};
+#else
     vect::data_t<identifier_t, 2, false> _data{0U, 0U};
+#endif
 };
 //------------------------------------------------------------------------------
 /// @brief Template with two identifier parameters representing class/method pair.
@@ -127,7 +123,7 @@ private:
 ///
 /// This class encodes an identifier pair in its template parameters.
 /// It is implicitly convertible to message_id.
-export template <identifier_t ClassId, identifier_t MethodId>
+export template <identifier_value ClassId, identifier_value MethodId>
 struct static_message_id {
     using type = static_message_id;
 
@@ -154,7 +150,7 @@ struct static_message_id {
 //------------------------------------------------------------------------------
 /// @brief Equality comparison between message_id and static_message_id.
 /// @ingroup identifiers
-export template <identifier_t ClassId, identifier_t MethodId>
+export template <identifier_value ClassId, identifier_value MethodId>
 auto operator==(
   const message_id l,
   const static_message_id<ClassId, MethodId> r) noexcept {

@@ -4,12 +4,12 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
+import eagine.core;
+import <algorithm>;
+import <numeric>;
 #include "ActivityStorage.hpp"
 #include "EntryFormat.hpp"
 #include "EntryStorage.hpp"
-#include <eagine/integer_range.hpp>
-#include <eagine/overloaded.hpp>
-#include <algorithm>
 
 //------------------------------------------------------------------------------
 auto ActivityData::init(

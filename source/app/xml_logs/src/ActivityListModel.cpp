@@ -4,17 +4,16 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
+import eagine.core;
 #include "ActivityListModel.hpp"
 #include "Backend.hpp"
 #include "EntryLog.hpp"
 #include "ProgressViewModel.hpp"
 #include "Utility.hpp"
-#include <eagine/extract.hpp>
-#include <eagine/is_within_limits.hpp>
 //------------------------------------------------------------------------------
 ActivityListModel::ActivityListModel(ProgressViewModel& parent)
   : QAbstractItemModel{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(ActListMdl), parent}
+  , eagine::main_ctx_object{"ActListMdl", parent}
   , _parent{parent}
   , _timerId{startTimer(2000)} {}
 //------------------------------------------------------------------------------

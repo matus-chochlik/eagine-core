@@ -4,17 +4,16 @@
 /// See http://www.gnu.org/licenses/gpl-3.0.txt
 ///
 
+import eagine.core;
 #include "StreamListModel.hpp"
 #include "Backend.hpp"
 #include "EntryLog.hpp"
 #include "StreamViewModel.hpp"
 #include "Utility.hpp"
-#include <eagine/extract.hpp>
-#include <eagine/is_within_limits.hpp>
 //------------------------------------------------------------------------------
 StreamListModel::StreamListModel(StreamViewModel& parent)
   : QAbstractItemModel{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(StmListMdl), parent}
+  , eagine::main_ctx_object{"StmListMdl", parent}
   , _parent{parent} {}
 //------------------------------------------------------------------------------
 auto StreamListModel::backend() const noexcept -> Backend& {

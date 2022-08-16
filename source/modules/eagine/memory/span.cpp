@@ -579,7 +579,7 @@ public:
 //------------------------------------------------------------------------------
 /// @brief Default alias for basic memory chunk spans with native pointer type.
 /// @ingroup memory
-template <typename T, span_size_t chunkSize>
+export template <typename T, span_size_t chunkSize>
 using chunk_span = basic_chunk_span<T, T*, span_size_t, chunkSize>;
 //------------------------------------------------------------------------------
 } // namespace memory

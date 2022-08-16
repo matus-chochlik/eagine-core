@@ -9,7 +9,7 @@
 //------------------------------------------------------------------------------
 ProgressViewModel::ProgressViewModel(EntryLog& parent)
   : QObject{nullptr}
-  , eagine::main_ctx_object{EAGINE_ID(ProgressVM), parent}
+  , eagine::main_ctx_object{"ProgressVM", parent}
   , _parent{parent}
   , _activityListModel{*this} {}
 //------------------------------------------------------------------------------

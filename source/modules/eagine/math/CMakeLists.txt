@@ -3,6 +3,10 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
+	eagine.core.math PARTITION sign
+)
+
+eagine_add_module(
 	eagine.core.math PARTITION traits
 	IMPORTS
 		eagine.core.types
@@ -50,6 +54,17 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.vectorization
 		eagine.core.units
+)
+
+eagine_add_module(
+	eagine.core.math PARTITION tmat
+	IMPORTS
+		traits vector
+		matrix matrix_construct
+		eagine.core.concepts
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.vectorization
 )
 
 eagine_add_module(
@@ -106,6 +121,7 @@ eagine_add_module(
 	INTERFACES
 		math
 	PARTITIONS
+		sign
 		traits
 		constants
 		functions
@@ -113,6 +129,7 @@ eagine_add_module(
 		vector
 		matrix
 		matrix_construct
+		tmat
 		curve
 		primitives
 		intersection

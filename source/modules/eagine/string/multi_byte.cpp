@@ -136,13 +136,13 @@ static constexpr auto is_valid_masked_code(
              : false;
 }
 //------------------------------------------------------------------------------
-static constexpr auto is_valid_head_byte(
+constexpr auto is_valid_head_byte(
   const byte b,
   const valid_sequence_length& l) noexcept -> bool {
     return is_valid_masked_code(b, head_code_mask(l), head_code(l));
 }
 //------------------------------------------------------------------------------
-static constexpr auto is_valid_head_byte(const byte b) noexcept -> bool {
+export constexpr auto is_valid_head_byte(const byte b) noexcept -> bool {
     return is_valid_head_byte(b, 1) || is_valid_head_byte(b, 2) ||
            is_valid_head_byte(b, 3) || is_valid_head_byte(b, 4) ||
            is_valid_head_byte(b, 5) || is_valid_head_byte(b, 6);

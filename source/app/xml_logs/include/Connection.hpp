@@ -7,12 +7,12 @@
 #ifndef EAGINE_XML_LOGS_CONNECTION
 #define EAGINE_XML_LOGS_CONNECTION
 
+import eagine.core;
+import <memory>;
 #include "EntryStorage.hpp"
-#include <eagine/main_ctx_object.hpp>
 #include <QObject>
 #include <QTcpSocket>
 #include <QXmlStreamReader>
-#include <memory>
 
 //------------------------------------------------------------------------------
 class Backend;

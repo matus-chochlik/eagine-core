@@ -142,11 +142,9 @@ auto main_impl(
     } catch(const std::system_error& sys_err) {
         ctx.log()
           .error("unhandled system error: ${error}")
-          .arg(EAGINE_ID(error), sys_err);
+          .arg("error", sys_err);
     } catch(const std::exception& err) {
-        ctx.log()
-          .error("unhandled generic error: ${error}")
-          .arg(EAGINE_ID(error), err);
+        ctx.log().error("unhandled generic error: ${error}").arg("error", err);
     }
     return 1;
 }

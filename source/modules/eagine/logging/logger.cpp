@@ -97,11 +97,7 @@ protected:
       const std::true_type,
       const string_view format) const noexcept -> log_entry {
         return {
-          source,
-          instance_id(),
-          severity,
-          format,
-          _entry_backend(source, severity)};
+          source, instance_id(), severity, format, _entry_backend(severity)};
     }
 
     constexpr auto make_log_entry(
@@ -126,11 +122,7 @@ protected:
       const log_event_severity severity,
       const string_view format) const noexcept -> log_entry {
         return {
-          source,
-          instance_id(),
-          severity,
-          format,
-          _entry_backend(source, severity)};
+          source, instance_id(), severity, format, _entry_backend(severity)};
     }
 
     constexpr auto log_fatal(const identifier source, const string_view format)
@@ -207,8 +199,7 @@ protected:
     auto make_log_stream(
       const identifier source,
       const log_event_severity severity) const noexcept -> stream_log_entry {
-        return {
-          source, instance_id(), severity, _entry_backend(source, severity)};
+        return {source, instance_id(), severity, _entry_backend(severity)};
     }
 
     void log_chart_sample(
@@ -216,19 +207,18 @@ protected:
       [[maybe_unused]] const identifier series,
       [[maybe_unused]] const float value) const noexcept {
         if constexpr(is_log_level_enabled_v<log_event_severity::stat>) {
-            if(auto lbe{_entry_backend(source, log_event_severity::stat)}) {
+            if(auto lbe{_entry_backend(log_event_severity::stat)}) {
                 extract(lbe).log_chart_sample(
                   source, instance_id(), series, value);
             }
         }
     }
 
-    auto _entry_backend(
-      const identifier source,
-      const log_event_severity severity) const noexcept -> logger_backend* {
+    auto _entry_backend(const log_event_severity severity) const noexcept
+      -> logger_backend* {
         if(is_log_level_enabled(severity)) {
             if(auto lbe{backend()}) {
-                return lbe->entry_backend(source, severity);
+                return lbe->entry_backend(severity);
             }
         }
         return nullptr;
@@ -279,6 +269,7 @@ public:
       : base{static_cast<const base&>(parent)}
       , _object_id{id} {
         log_lifetime(_object_id, "created as a child of ${parent}")
+          .tag("objCreate")
           .arg("parent", "LogId", parent._object_id);
     }
 
@@ -289,14 +280,14 @@ public:
     named_logging_object(named_logging_object&& temp) noexcept
       : base{static_cast<base&&>(temp)}
       , _object_id{temp._object_id} {
-        log_lifetime(_object_id, "being moved");
+        log_lifetime(_object_id, "being moved").tag("objMove");
     }
 
     /// @brief Copy constructor.
     named_logging_object(const named_logging_object& that) noexcept
       : base{static_cast<const base&>(that)}
       , _object_id{that._object_id} {
-        log_lifetime(_object_id, "being copied");
+        log_lifetime(_object_id, "being copied").tag("objCopy");
     }
 
     /// @brief Move assignment operator.
@@ -308,7 +299,7 @@ public:
       -> named_logging_object& = default;
 
     ~named_logging_object() noexcept {
-        log_lifetime(_object_id, "being destroyed");
+        log_lifetime(_object_id, "being destroyed").tag("objDestroy");
     }
 
     /// @brief Returns the identifier of this logging object.

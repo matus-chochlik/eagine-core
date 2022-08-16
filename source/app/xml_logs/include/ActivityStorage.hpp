@@ -7,13 +7,12 @@
 #ifndef EAGINE_XML_LOGS_ACTIVITY_STORAGE_HPP
 #define EAGINE_XML_LOGS_ACTIVITY_STORAGE_HPP
 
-#include <eagine/identifier.hpp>
-#include <eagine/logging/fwd.hpp>
-#include <eagine/logging/severity.hpp>
-#include <array>
-#include <chrono>
-#include <cstdint>
-#include <vector>
+import eagine.core;
+import <array>;
+import <algorithm>;
+import <chrono>;
+import <cstdint>;
+import <vector>;
 
 class Backend;
 struct LogEntryData;

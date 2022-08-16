@@ -570,7 +570,7 @@ private:
 
 public:
     rapidjson_document_compound(_doc_t& rj_doc, main_ctx_parent parent)
-      : main_ctx_object{EAGINE_ID(JsonValTre), parent}
+      : main_ctx_object{"JsonValTre", parent}
       , _rj_doc{std::move(rj_doc)}
       , _root{_rj_doc, nullptr} {}
 
@@ -583,10 +583,10 @@ public:
             return std::make_shared<rapidjson_document_compound>(
               rj_doc, parent);
         }
-        main_ctx_object{EAGINE_ID(JsonParse), parent}
+        main_ctx_object{"JsonParse", parent}
           .log_error("JSON parse error")
-          .arg(EAGINE_ID(message), rapidjson::GetParseError_En(parse_ok.Code()))
-          .arg(EAGINE_ID(offset), parse_ok.Offset());
+          .arg("message", rapidjson::GetParseError_En(parse_ok.Code()))
+          .arg("offset", parse_ok.Offset());
         return {};
     }
 
