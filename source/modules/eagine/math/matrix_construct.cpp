@@ -152,7 +152,7 @@ constexpr auto inverse_matrix(matrix<T, N, N, RM, V> m) noexcept
   -> std::optional<matrix<T, N, N, RM, V>> {
     auto i = identity<matrix<T, N, N, RM, V>>()();
     if(gauss_jordan_elimination(m, i)) {
-        return {i, true};
+        return {i};
     }
     return {};
 }
@@ -196,7 +196,7 @@ public:
 
     /// @brief Returns the constructed matrix.
     constexpr auto operator()() const noexcept {
-        return _make(bool_constant<RM>());
+        return _make(std::bool_constant<RM>());
     }
 
     friend constexpr auto reorder_mat_ctr(
@@ -657,7 +657,7 @@ public:
 
     /// @brief Returns the constructed matrix.
     constexpr auto operator()() const noexcept {
-        return _make(bool_constant<RM>());
+        return _make(std::bool_constant<RM>());
     }
 
 private:
@@ -769,7 +769,7 @@ public:
 
     /// @brief Returns the constructed matrix.
     constexpr auto operator()() const noexcept {
-        return _make(bool_constant<RM>());
+        return _make(std::bool_constant<RM>());
     }
 
     /// @brief Constructs perspective matrix with x-FOV angle and aspect ratio.
@@ -778,8 +778,8 @@ public:
       const T aspect,
       const T z_near,
       const T z_far) noexcept {
-        EAGINE_ASSERT(aspect > T(0));
-        EAGINE_ASSERT(T(xfov) > T(0));
+        assert(aspect > T(0));
+        assert(T(xfov) > T(0));
 
         const T x_right = z_near * tan(xfov * T(0.5));
         const T x_left = -x_right;
@@ -796,8 +796,8 @@ public:
       const T aspect,
       const T z_near,
       const T z_far) noexcept {
-        EAGINE_ASSERT(aspect > T(0));
-        EAGINE_ASSERT(T(yfov) > T(0));
+        assert(aspect > T(0));
+        assert(T(yfov) > T(0));
 
         const T y_top = z_near * tan(yfov * T(0.5));
         const T y_bottom = -y_top;
@@ -813,7 +813,7 @@ public:
       const radians_t<T> fov,
       const T z_near,
       const T z_far) noexcept {
-        EAGINE_ASSERT(T(fov) > T(0));
+        assert(T(fov) > T(0));
 
         const T x_right = z_near * tan(fov * T(0.5));
         const T x_left = -x_right;
@@ -940,7 +940,7 @@ public:
 
     /// @brief Returns the constructed matrix.
     constexpr auto operator()() const noexcept {
-        return _make(bool_constant<RM>());
+        return _make(std::bool_constant<RM>());
     }
 
 private:
@@ -1063,7 +1063,7 @@ public:
 
     /// @brief Returns the constructed matrix.
     constexpr auto operator()() const noexcept {
-        return _make(bool_constant<RM>());
+        return _make(std::bool_constant<RM>());
     }
 
     friend constexpr auto reorder_mat_ctr(
