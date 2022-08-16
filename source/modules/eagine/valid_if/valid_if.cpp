@@ -14,3 +14,4 @@ export import :compare;
 export import :not_empty;
 export import :indicated;
 export import :filesystem;
+export import :range;

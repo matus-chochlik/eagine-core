@@ -36,6 +36,12 @@ eagine_add_module(
 		eagine.core.concepts
 		eagine.core.memory
 )
+eagine_add_module(
+	eagine.core.valid_if PARTITION range
+	IMPORTS
+		decl compare
+		eagine.core.types
+)
 
 eagine_add_module(
 	eagine.core.valid_if
@@ -49,5 +55,6 @@ eagine_add_module(
 		not_empty
 		indicated
 		filesystem
+		range
 )
 
