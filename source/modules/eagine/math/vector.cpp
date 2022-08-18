@@ -13,6 +13,7 @@ export module eagine.core.math:vector;
 
 import eagine.core.concepts;
 import eagine.core.types;
+import eagine.core.memory;
 import eagine.core.vectorization;
 import :traits;
 import :scalar;
@@ -135,38 +136,45 @@ struct vector {
     /// @brief Returns the x-coordinate value.
     /// @pre N >= 1
     template <int M = N>
-    constexpr auto x() const noexcept -> T requires(M > 0) {
-                                               static_assert(M == N);
-                                               return _v[0];
-                                           }
+    constexpr auto x() const noexcept -> T
+        requires(M > 0)
+    {
+        static_assert(M == N);
+        return _v[0];
+    }
 
     /// @brief Returns the y-coordinate value.
     /// @pre N >= 2
     template <int M = N>
-    constexpr auto y() const noexcept -> T requires(M > 1) {
-                                               static_assert(M == N);
-                                               return _v[1];
-                                           }
+    constexpr auto y() const noexcept -> T
+        requires(M > 1)
+    {
+        static_assert(M == N);
+        return _v[1];
+    }
 
     /// @brief Returns the z-coordinate value.
     /// @pre N >= 3
     template <int M = N>
-    constexpr auto z() const noexcept -> T requires(M > 2) {
-                                               static_assert(M == N);
-                                               return _v[2];
-                                           }
+    constexpr auto z() const noexcept -> T
+        requires(M > 2)
+    {
+        static_assert(M == N);
+        return _v[2];
+    }
 
     /// @brief Returns the w-coordinate value.
     /// @pre N >= 4
     template <int M = N>
-    constexpr auto w() const noexcept -> T requires(M > 3) {
-                                               static_assert(M == N);
-                                               return _v[3];
-                                           }
+    constexpr auto w() const noexcept -> T
+        requires(M > 3)
+    {
+        static_assert(M == N);
+        return _v[3];
+    }
 
     /// @brief Addition operator.
-    auto
-    operator+=(vector_param a) noexcept -> auto& {
+    auto operator+=(vector_param a) noexcept -> auto& {
         _v = _v + a._v;
         return *this;
     }
@@ -432,13 +440,13 @@ struct tvec : vector<T, N, V> {
     template <typename... P>
     constexpr tvec(P&&... p) noexcept
         requires((sizeof...(P) == N) && all_are_convertible_to<T, P...>::value)
-    : base{base::make(std::forward<P>(p)...)} {}
+      : base{base::make(std::forward<P>(p)...)} {}
 
     /// @brief Construction from vector of different dimensionality.
     template <typename P, int M, bool W>
     constexpr tvec(const vector<P, M, W>& v) noexcept
         requires(!std::is_same_v<P, T> || !(M == N))
-    : base{base::from(v)} {}
+      : base{base::from(v)} {}
 
     /// @brief Construction from vector of different dimensionality.
     template <typename P, int M, bool W>
@@ -451,7 +459,7 @@ struct tvec : vector<T, N, V> {
         requires(
           (sizeof...(R) > 1) && (M + sizeof...(R) == N) &&
           all_are_convertible_to<T, R...>::value)
-    : base{base::from(v, vector<T, N - M, W>::make(std::forward<R>(r)...))} {}
+      : base{base::from(v, vector<T, N - M, W>::make(std::forward<R>(r)...))} {}
 
     /// @brief Construction from a pair of vectors of different dimensionality.
     template <typename P, int M, bool W>
@@ -473,6 +481,49 @@ export template <typename T, int N, bool V>
 struct compound_view_maker<math::vector<T, N, V>> {
     constexpr auto operator()(const math::vector<T, N, V>& v) const noexcept {
         return vect::view<T, N, V>::apply(v._v);
+    }
+};
+
+export template <typename T, int N, bool V>
+struct is_known_vector_type<math::tvec<T, N, V>> : std::is_scalar<T> {};
+
+export template <typename T, int N, bool V>
+struct canonical_compound_type<math::tvec<T, N, V>>
+  : std::type_identity<std::remove_cv_t<T[N]>> {};
+
+export template <typename T, int N, bool V>
+struct compound_view_maker<math::tvec<T, N, V>> {
+    constexpr auto operator()(const math::tvec<T, N, V>& v) const noexcept {
+        return vect::view<T, N, V>::apply(v._v);
+    }
+};
+
+export template <typename T, int N, bool V>
+struct flatten_traits<math::tvec<T, N, V>, T> {
+
+    template <typename Ps, typename Ss>
+    static constexpr auto required_size(
+      const memory::basic_span<const math::tvec<T, N, V>, Ps, Ss> src) noexcept
+      -> span_size_t {
+        return src.size() * N;
+    }
+
+    template <typename Pd, typename Sd>
+    static auto apply(
+      const math::tvec<T, N, V>& src,
+      memory::basic_span<T, Pd, Sd> dst) noexcept {
+        assert(N <= dst.size());
+        _do_apply(src._v, dst, std::make_index_sequence<std::size_t(N)>{});
+        return skip(dst, N);
+    }
+
+private:
+    template <typename Pd, typename Sd, std::size_t... I>
+    static void _do_apply(
+      const vect::data_t<T, N, V> src,
+      memory::basic_span<T, Pd, Sd> dst,
+      std::index_sequence<I...>) noexcept {
+        ((dst[I] = src[I]), ...);
     }
 };
 //------------------------------------------------------------------------------

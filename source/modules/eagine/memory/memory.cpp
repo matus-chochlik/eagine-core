@@ -24,6 +24,7 @@ export import :aligned_block;
 export import :byteset;
 export import :biteset;
 export import :fixed_size_string;
+export import :flatten;
 export import :edit_distance;
 export import :byte_allocator;
 export import :stack_allocator;

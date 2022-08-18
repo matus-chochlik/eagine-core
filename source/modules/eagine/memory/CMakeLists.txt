@@ -86,6 +86,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.memory PARTITION flatten
+	IMPORTS
+		span
+		eagine.core.concepts
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.memory PARTITION edit_distance
 	IMPORTS span eagine.core.types
 )
@@ -181,8 +189,9 @@ eagine_add_module(
 		aligned_block
 		byteset
 		biteset
-		fixed_size_string
+		flatten
 		edit_distance
+		fixed_size_string
 		byte_allocator
 		stack_allocator
 		shared_allocator
