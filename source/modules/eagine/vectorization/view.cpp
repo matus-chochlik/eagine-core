@@ -29,7 +29,7 @@ private:
 
 public:
     static auto apply(const data_t<T, N, V>& d) noexcept -> span<const T> {
-        static_assert(sizeof(T[N]) == sizeof(data_t<T, N, V>));
+        static_assert(sizeof(T[N]) <= sizeof(data_t<T, N, V>));
         return {_addr(d, has_simd_data<T, N, V>()), N};
     }
 
