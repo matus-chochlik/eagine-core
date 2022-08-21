@@ -154,7 +154,7 @@ public:
     }
 
     explicit constexpr operator bool() const noexcept {
-        return bool(underlying());
+        return bool(_api.*method);
     }
 
     [[nodiscard]] auto fail() const noexcept {
