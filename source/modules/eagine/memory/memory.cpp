@@ -33,3 +33,5 @@ export import :std_allocator;
 export import :buffer;
 export import :buffer_pool;
 export import :object_storage;
+export import :alloc_arena;
+export import :data_baking;
