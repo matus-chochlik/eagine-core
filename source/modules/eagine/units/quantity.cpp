@@ -40,7 +40,7 @@ public:
     template <typename X, typename UX>
     constexpr tagged_quantity(const tagged_quantity<X, UX>& tq) noexcept
         requires(std::is_convertible_v<X, T> && is_convertible_v<UX, U>)
-      : _v(T(value_conv<UX, U>()(tq._v))) {}
+      : _v{value_conv<UX, U>()(T(tq._v))} {}
 
     /// @brief Conversion to a quantity in another unit type.
     template <typename UX>
@@ -72,7 +72,7 @@ public:
     template <typename X, typename UX>
     auto operator+=(const tagged_quantity<X, UX>& q) noexcept
       -> auto& requires(std::is_convertible_v<X, T>&& is_convertible_v<UX, U>) {
-                   _v += T(value_conv<UX, U>()(q._v));
+                   _v += value_conv<UX, U>()(T(q._v));
                    return *this;
                }
 
@@ -80,7 +80,7 @@ public:
     template <typename X, typename UX>
     auto operator-=(const tagged_quantity<X, UX>& q) noexcept
       -> auto& requires(std::is_convertible_v<X, T>&& is_convertible_v<UX, U>) {
-                   _v -= T(value_conv<UX, U>()(q._v));
+                   _v -= value_conv<UX, U>()(T(q._v));
                    return *this;
                }
 
