@@ -640,7 +640,7 @@ public:
       const selector<V> sel) const -> std::optional<T> {
         T temp{};
         if(select_value(attrib, offset, temp, sel)) {
-            return {std::move(temp), true};
+            return {std::move(temp)};
         }
         return {};
     }
@@ -686,7 +686,7 @@ public:
       const selector<V> sel) const -> std::optional<T> {
         T temp{};
         if(select_value(name, offset, temp, sel)) {
-            return {std::move(temp), true};
+            return {std::move(temp)};
         }
         return {};
     }
