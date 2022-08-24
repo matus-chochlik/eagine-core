@@ -45,6 +45,52 @@ private:
     std::latch* _completed{nullptr};
 };
 //------------------------------------------------------------------------------
+export class workshop;
+export template <typename Function>
+struct inplace_work_unit : latched_work_unit {
+    inplace_work_unit(workshop& w, std::latch& l, Function function) noexcept;
+
+    auto do_it() noexcept -> bool final {
+        return _function();
+    }
+
+private:
+    const Function _function;
+};
+
+export template <typename Function>
+inplace_work_unit(workshop&, std::latch&, Function)
+  -> inplace_work_unit<Function>;
+//------------------------------------------------------------------------------
+export template <typename Function>
+class inplace_work_batch {
+public:
+    inplace_work_batch(
+      workshop& ws,
+      std::size_t size,
+      const Function& function) noexcept
+      : _completed{limit_cast<std::ptrdiff_t>(size)} {
+        _units.reserve(size);
+        for(const auto i : integer_range(size)) {
+            _units.emplace_back(ws, _completed, function);
+        }
+    }
+
+    inplace_work_batch(workshop& ws, const Function& function) noexcept
+      : inplace_work_batch{ws, std::thread::hardware_concurrency(), function} {}
+
+    ~inplace_work_batch() noexcept {
+        _completed.wait();
+    }
+
+private:
+    std::latch _completed;
+    std::vector<inplace_work_unit<Function>> _units;
+};
+
+export template <typename Function>
+inplace_work_batch(workshop&, const Function&) -> inplace_work_batch<Function>;
+//------------------------------------------------------------------------------
 export class workshop {
 private:
     std::vector<std::thread> _workers{};
@@ -87,6 +133,16 @@ public:
 
     auto enqueue(work_unit& work) -> workshop&;
 };
+//------------------------------------------------------------------------------
+template <typename Function>
+inplace_work_unit<Function>::inplace_work_unit(
+  workshop& w,
+  std::latch& l,
+  Function function) noexcept
+  : latched_work_unit{l}
+  , _function{std::move(function)} {
+    w.enqueue(*this);
+}
 //------------------------------------------------------------------------------
 } // namespace eagine
 
