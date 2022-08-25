@@ -24,22 +24,28 @@ struct enum_bits<T, mp_list<Classes...>> {
 };
 
 export template <typename T, typename TL1, typename TL2>
+    requires(!mp_is_empty_v<mp_union_t<TL1, TL2>>)
 constexpr auto operator|(
   const enum_value<T, TL1> a,
-  const enum_value<T, TL2> b) noexcept
-    requires(!mp_is_empty_v<mp_union_t<TL1, TL2>>)
-{
+  const enum_value<T, TL2> b) noexcept {
     // NOLINTNEXTLINE(hicpp-signed-bitwise)
     return enum_bits<T, mp_union_t<TL1, TL2>>{a.value | b.value};
 }
 
 export template <typename T, typename TL1, typename TL2>
+    requires(!mp_is_empty_v<mp_union_t<TL1, TL2>>)
 constexpr auto operator|(
   const enum_bits<T, TL1> eb,
-  const enum_value<T, TL2> ev) noexcept
-    requires(!mp_is_empty_v<mp_union_t<TL1, TL2>>)
-{
+  const enum_value<T, TL2> ev) noexcept {
     return enum_bits<T, mp_union_t<TL1, TL2>>{eb._bits | ev.value};
+}
+
+export template <typename T, typename TL1, typename TL2>
+    requires(!mp_is_empty_v<mp_union_t<TL1, TL2>>)
+constexpr auto operator|(
+  const enum_value<T, TL1> ev,
+  const enum_bits<T, TL2> eb) noexcept {
+    return enum_bits<T, mp_union_t<TL1, TL2>>{ev._bits | eb.value};
 }
 //------------------------------------------------------------------------------
 export template <typename EnumClass>
@@ -59,12 +65,12 @@ struct enum_bitfield {
     template <typename Classes>
     constexpr enum_bitfield(const enum_value<value_type, Classes> ev) noexcept
         requires(mp_contains_v<Classes, EnumClass>)
-    : _value{ev.value} {}
+      : _value{ev.value} {}
 
     template <typename Classes>
     constexpr enum_bitfield(const enum_bits<value_type, Classes> eb) noexcept
         requires(mp_contains_v<Classes, EnumClass>)
-    : _value{eb._bits} {}
+      : _value{eb._bits} {}
 
     explicit constexpr operator value_type() const noexcept {
         return _value;

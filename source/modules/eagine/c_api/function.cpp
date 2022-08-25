@@ -58,10 +58,6 @@ public:
     constexpr function_base(const string_view name) noexcept
       : _name{name} {}
 
-    constexpr explicit operator bool() const noexcept {
-        return isAvailable;
-    }
-
     constexpr auto name() const noexcept -> string_view {
         return _name;
     }
@@ -84,9 +80,10 @@ public:
 
     template <typename... Args>
     constexpr auto operator()(Args&&...) const noexcept -> RV
-      requires(sizeof...(Params) == sizeof...(Args)) {
-          return ApiTraits::fallback(Tag(), std::type_identity<RV>());
-      }
+        requires(sizeof...(Params) == sizeof...(Args))
+    {
+        return ApiTraits::fallback(Tag(), std::type_identity<RV>());
+    }
 };
 //------------------------------------------------------------------------------
 /// @brief Wrapper for statically-linked C-API functions.
@@ -114,10 +111,11 @@ public:
     /// @brief Calls the wrapped function.
     template <typename... Args>
     constexpr auto operator()(Args&&... args) const noexcept -> RV
-      requires(sizeof...(Params) == sizeof...(Args)) {
-          return ApiTraits::call_static(
-            Tag(), function, std::forward<Args>(args)...);
-      }
+        requires(sizeof...(Params) == sizeof...(Args))
+    {
+        return ApiTraits::call_static(
+          Tag(), function, std::forward<Args>(args)...);
+    }
 };
 //------------------------------------------------------------------------------
 /// @brief Wrapper for dynamically -linked C-API functions.
@@ -152,12 +150,14 @@ public:
     /// @brief Calls the wrapped function.
     template <typename... Args>
     constexpr auto operator()(Args&&... args) const noexcept -> RV
-      requires(sizeof...(Params) == sizeof...(Args)) {
-          return ApiTraits::call_dynamic(
-            Tag(), _function, std::forward<Args>(args)...);
-      }
+        requires(sizeof...(Params) == sizeof...(Args))
+    {
+        return ApiTraits::call_dynamic(
+          Tag(), _function, std::forward<Args>(args)...);
+    }
 
-    private : function_pointer _function{nullptr};
+private:
+    function_pointer _function{nullptr};
 };
 //------------------------------------------------------------------------------
 /// @brief Template alias used for switching between static and dynamic function.

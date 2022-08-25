@@ -34,6 +34,7 @@ eagine_add_module(
 		traits scalar
 		eagine.core.concepts
 		eagine.core.types
+		eagine.core.memory
 		eagine.core.vectorization
 )
 

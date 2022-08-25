@@ -40,6 +40,7 @@ eagine_add_module(
 	eagine.core.valid_if PARTITION range
 	IMPORTS
 		decl compare
+		eagine.core.concepts
 		eagine.core.types
 )
 

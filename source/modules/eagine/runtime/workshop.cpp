@@ -45,6 +45,52 @@ private:
     std::latch* _completed{nullptr};
 };
 //------------------------------------------------------------------------------
+export class workshop;
+export template <typename Function>
+struct inplace_work_unit : latched_work_unit {
+    inplace_work_unit(workshop& w, std::latch& l, Function function) noexcept;
+
+    auto do_it() noexcept -> bool final {
+        return _function();
+    }
+
+private:
+    const Function _function;
+};
+
+export template <typename Function>
+inplace_work_unit(workshop&, std::latch&, Function)
+  -> inplace_work_unit<Function>;
+//------------------------------------------------------------------------------
+export template <typename Function>
+class inplace_work_batch {
+public:
+    inplace_work_batch(
+      workshop& ws,
+      std::size_t size,
+      const Function& function) noexcept
+      : _completed{limit_cast<std::ptrdiff_t>(size)} {
+        _units.reserve(size);
+        for(const auto i : integer_range(size)) {
+            _units.emplace_back(ws, _completed, function);
+        }
+    }
+
+    inplace_work_batch(workshop& ws, const Function& function) noexcept
+      : inplace_work_batch{ws, std::thread::hardware_concurrency(), function} {}
+
+    ~inplace_work_batch() noexcept {
+        _completed.wait();
+    }
+
+private:
+    std::latch _completed;
+    std::vector<inplace_work_unit<Function>> _units;
+};
+
+export template <typename Function>
+inplace_work_batch(workshop&, const Function&) -> inplace_work_batch<Function>;
+//------------------------------------------------------------------------------
 export class workshop {
 private:
     std::vector<std::thread> _workers{};
@@ -53,38 +99,8 @@ private:
     std::condition_variable _cond{};
     bool _shutdown{false};
 
-    auto _fetch() noexcept -> std::tuple<work_unit*, bool> {
-        work_unit* work = nullptr;
-        std::unique_lock lock{_mutex};
-        if(!_shutdown) [[likely]] {
-            _cond.wait(
-              lock, [this] { return !_work_queue.empty() || _shutdown; });
-            if(!_work_queue.empty()) {
-                work = _work_queue.front();
-                _work_queue.pop();
-            }
-        }
-        return {work, _shutdown};
-    }
-
-    void _employ() noexcept {
-        while(true) {
-            auto [opt_work, shutdown] = _fetch();
-            if(opt_work) {
-                auto& work = extract(opt_work);
-                if(work.do_it()) {
-                    const std::unique_lock lock{_mutex};
-                    work.deliver();
-                    _cond.notify_all();
-                } else {
-                    enqueue(work);
-                }
-            }
-            if(shutdown) {
-                break;
-            }
-        }
-    }
+    auto _fetch() noexcept -> std::tuple<work_unit*, bool>;
+    void _employ() noexcept;
 
 public:
     workshop() noexcept = default;
@@ -92,6 +108,7 @@ public:
     workshop(const workshop&) = delete;
     auto operator=(workshop&&) = delete;
     auto operator=(const workshop&) = delete;
+
     ~workshop() noexcept {
         try {
             shutdown();
@@ -100,68 +117,32 @@ public:
         }
     }
 
-    auto shutdown() noexcept -> workshop& {
-        const std::unique_lock lock{_mutex};
-        _shutdown = true;
-        _cond.notify_all();
-        return *this;
-    }
+    auto shutdown() noexcept -> workshop&;
 
-    auto wait_until_closed() noexcept -> workshop& {
-        for(auto& worker : _workers) {
-            worker.join();
-        }
-        return *this;
-    }
+    auto wait_until_closed() noexcept -> workshop&;
+    auto wait_until_idle() noexcept -> workshop&;
 
-    auto wait_until_idle() noexcept -> workshop& {
-        std::unique_lock lock{_mutex};
-        _cond.wait(lock, [this]() { return _work_queue.empty(); });
-        return *this;
-    }
+    auto add_worker() -> workshop&;
+    auto add_workers(span_size_t n) -> workshop&;
 
-    auto add_worker() -> workshop& {
-        _workers.emplace_back([this]() { this->_employ(); });
-        return *this;
-    }
+    auto ensure_workers(span_size_t n) -> workshop&;
 
-    auto add_workers(span_size_t n) -> workshop& {
-        _workers.reserve(safe_add(_workers.size(), std_size(n)));
-        for([[maybe_unused]] const auto i : integer_range(n)) {
-            add_worker();
-        }
-        return *this;
-    }
+    auto populate() -> workshop&;
 
-    auto ensure_workers(span_size_t n) -> workshop& {
-        const auto c = span_size(_workers.size());
-        if(n > c) {
-            add_workers(n - c);
-        }
-        return *this;
-    }
+    auto release_worker() noexcept -> workshop&;
 
-    auto populate() -> workshop& {
-        return ensure_workers(span_size(std::thread::hardware_concurrency()));
-    }
-
-    auto release_worker() noexcept -> workshop& {
-        _workers.pop_back();
-        return *this;
-    }
-
-    auto enqueue(work_unit& work) -> workshop& {
-        const std::unique_lock lock{_mutex};
-        if(_workers.empty()) [[unlikely]] {
-            ensure_workers(std::max(
-              span_size(std::thread::hardware_concurrency() / 2),
-              span_size(2)));
-        }
-        _work_queue.push(&work);
-        _cond.notify_one();
-        return *this;
-    }
+    auto enqueue(work_unit& work) -> workshop&;
 };
+//------------------------------------------------------------------------------
+template <typename Function>
+inplace_work_unit<Function>::inplace_work_unit(
+  workshop& w,
+  std::latch& l,
+  Function function) noexcept
+  : latched_work_unit{l}
+  , _function{std::move(function)} {
+    w.enqueue(*this);
+}
 //------------------------------------------------------------------------------
 } // namespace eagine
 

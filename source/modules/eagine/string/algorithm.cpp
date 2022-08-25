@@ -15,7 +15,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 /// @brief Replaces all occurrences of @p from with @p to in the given string.
 /// @ingroup string_utils
-template <
+export template <
   typename C,
   typename T,
   typename A,
@@ -42,7 +42,7 @@ auto string_replace(
 //------------------------------------------------------------------------------
 /// @brief Replaces all occurrences of the string specifed in the dictionary.
 /// @ingroup string_utils
-template <
+export template <
   typename C,
   typename T,
   typename A,

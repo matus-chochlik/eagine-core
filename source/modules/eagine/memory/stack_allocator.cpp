@@ -198,22 +198,49 @@ public:
 
     ~stack_byte_allocator_only() noexcept override = default;
 
-    stack_byte_allocator_only(const block& blk);
+    stack_byte_allocator_only(const block& blk) noexcept
+      : _alloc{blk} {}
 
-    auto equal(byte_allocator* a) const noexcept -> bool override;
+    auto equal(byte_allocator* a) const noexcept -> bool override {
+        auto* sba = dynamic_cast<stack_byte_allocator_only*>(a);
 
-    auto max_size(size_type) noexcept -> size_type override;
+        return (sba != nullptr) && (this->_alloc == sba->_alloc);
+    }
+
+    auto max_size(size_type) noexcept -> size_type override {
+        return _alloc.max_size();
+    }
 
     auto allocated() const noexcept -> const_block {
         return _alloc.allocated();
     }
 
     auto has_allocated(const owned_block& b, span_size_t) noexcept
-      -> tribool override;
+      -> tribool override {
+        return _alloc.has_allocated(b);
+    }
 
-    auto allocate(size_type n, size_type a) noexcept -> owned_block override;
+    auto allocate(size_type n, size_type a) noexcept -> owned_block override {
+        size_type m = (a - _alloc.allocated_size() % a) % a;
+        owned_block b = _alloc.allocate(m + n);
 
-    void deallocate(owned_block&& b, size_type) noexcept override;
+        if(b) {
+            assert(is_aligned_to(b.begin() + m, a));
+        }
+
+        assert(m <= b.size());
+
+        owned_block r{this->acquire_block({b.begin() + m, b.end()})};
+
+        this->release_block(std::move(b));
+
+        return r;
+    }
+
+    void deallocate(owned_block&& b, size_type) noexcept override {
+        assert(_alloc.has_allocated(b));
+        this->release_block(std::move(b));
+    }
 
 private:
     base_stack_allocator<byte> _alloc;

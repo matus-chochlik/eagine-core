@@ -13,8 +13,9 @@ import <iosfwd>;
 
 namespace eagine {
 
-auto read_stream_data(std::istream&, memory::buffer& dest) noexcept -> bool;
-auto read_file_data(const string_view path, memory::buffer& dest) noexcept
+export auto read_stream_data(std::istream&, memory::buffer& dest) noexcept
+  -> bool;
+export auto read_file_data(const string_view path, memory::buffer& dest) noexcept
   -> bool;
 
 } // namespace eagine

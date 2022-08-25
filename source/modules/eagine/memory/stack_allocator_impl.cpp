@@ -15,51 +15,6 @@ import <memory>;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
-// stack_byte_allocator_only
-//------------------------------------------------------------------------------
-stack_byte_allocator_only::stack_byte_allocator_only(const block& blk)
-  : _alloc{blk} {}
-//------------------------------------------------------------------------------
-auto stack_byte_allocator_only::max_size(size_type) noexcept -> size_type {
-    return _alloc.max_size();
-}
-//------------------------------------------------------------------------------
-auto stack_byte_allocator_only::has_allocated(
-  const owned_block& b,
-  span_size_t) noexcept -> tribool {
-    return _alloc.has_allocated(b);
-}
-//------------------------------------------------------------------------------
-auto stack_byte_allocator_only::equal(byte_allocator* a) const noexcept
-  -> bool {
-    auto* sba = dynamic_cast<stack_byte_allocator_only*>(a);
-
-    return (sba != nullptr) && (this->_alloc == sba->_alloc);
-}
-//------------------------------------------------------------------------------
-auto stack_byte_allocator_only::allocate(size_type n, size_type a) noexcept
-  -> owned_block {
-    size_type m = (a - _alloc.allocated_size() % a) % a;
-    owned_block b = _alloc.allocate(m + n);
-
-    if(b) {
-        assert(is_aligned_to(b.begin() + m, a));
-    }
-
-    assert(m <= b.size());
-
-    owned_block r{this->acquire_block({b.begin() + m, b.end()})};
-
-    this->release_block(std::move(b));
-
-    return r;
-}
-//------------------------------------------------------------------------------
-void stack_byte_allocator_only::deallocate(owned_block&& b, size_type) noexcept {
-    assert(_alloc.has_allocated(b));
-    this->release_block(std::move(b));
-}
-//------------------------------------------------------------------------------
 // stack_byte_allocator
 //------------------------------------------------------------------------------
 stack_byte_allocator::stack_byte_allocator(const block& blk)

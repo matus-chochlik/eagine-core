@@ -111,8 +111,8 @@ constexpr auto blend(const T v1, const T v2, const A alpha) noexcept {
     return v1 * T(A(1) - alpha) + v2 * T(alpha);
 }
 //------------------------------------------------------------------------------
-template <typename Tuple, typename A, std::size_t... I>
-static constexpr auto do_blend_tuple(
+export template <typename Tuple, typename A, std::size_t... I>
+constexpr auto do_blend_tuple(
   const std::index_sequence<I...>,
   const Tuple& v1,
   const Tuple& v2,
@@ -217,7 +217,7 @@ constexpr auto binomial(const T n, const T k) noexcept -> T {
 /// @see lerp
 export template <typename T, typename C>
 constexpr auto interpolate_linear(const T& a, const T& b, const C coef) noexcept {
-    return ((T(1) - coef) * a + T(coef) * b);
+    return ((C(1) - coef) * a + coef * b);
 }
 //------------------------------------------------------------------------------
 /// @brief Same as interpolate_linear.
@@ -234,7 +234,7 @@ constexpr auto lerp(const T& a, const T& b, const C coef) noexcept {
 /// @see sine_sigmoid01
 export template <typename T, typename C>
 constexpr auto smooth_lerp(const T& a, const T& b, const C coef) noexcept {
-    return lerp(a, b, sine_sigmoid01(T(coef)));
+    return lerp(a, b, sine_sigmoid01(coef));
 }
 //------------------------------------------------------------------------------
 /// @brief Smooth interpolation between negative @p a and @p a.

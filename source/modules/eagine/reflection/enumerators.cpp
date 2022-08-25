@@ -43,11 +43,11 @@ concept default_mapped_enum = requires(std::type_identity<T> tid) {
                                   enumerator_mapping(tid, default_selector);
                               };
 //------------------------------------------------------------------------------
-export template <typename T, typename Selector>
-    requires(mapped_enum<T, Selector>)
+export template <typename T, identifier_t V>
+    requires(mapped_enum<T, selector<V>>)
 constexpr auto enumerator_count(
   const std::type_identity<T> id,
-  const Selector sel) noexcept -> span_size_t {
+  const selector<V> sel) noexcept -> span_size_t {
     return span_size_t(enumerator_mapping(id, sel).size());
 }
 //------------------------------------------------------------------------------
@@ -63,12 +63,12 @@ constexpr auto enumerator_name(
     return enumerator_name(value, id, default_selector);
 }
 //------------------------------------------------------------------------------
-export template <typename T, typename Selector>
-    requires(mapped_enum<T, Selector>)
+export template <typename T, identifier_t V>
+    requires(mapped_enum<T, selector<V>>)
 auto enumerator_name(
   const T enumerator,
   const std::type_identity<T> id,
-  const Selector sel) noexcept -> decl_name {
+  const selector<V> sel) noexcept -> decl_name {
     for(const auto& info : enumerator_mapping(id, sel)) {
         if(info.enumerator == enumerator) {
             return info.name;
@@ -107,12 +107,12 @@ export template <typename T>
 using enum_value_and_name =
   enum_int_value_and_name<std::is_signed_v<std::underlying_type_t<T>>>;
 //------------------------------------------------------------------------------
-export template <typename T, typename Selector>
-    requires(mapped_enum<T, Selector>)
+export template <typename T, identifier_t V>
+    requires(mapped_enum<T, selector<V>>)
 auto enumerator_info(
   const T enumerator,
   const std::type_identity<T> id,
-  const Selector sel) noexcept -> std::optional<enum_value_and_name<T>> {
+  const selector<V> sel) noexcept -> std::optional<enum_value_and_name<T>> {
     for(const auto& info : enumerator_mapping(id, sel)) {
         if(info.enumerator == enumerator) {
             return {enum_value_and_name<T>{info}};
@@ -128,12 +128,12 @@ auto enumerator_info(
     return enumerator_info(enumerator, id, default_selector);
 }
 //------------------------------------------------------------------------------
-export template <typename T, typename Selector>
-    requires(mapped_enum<T, Selector>)
+export template <typename T, identifier_t V>
+    requires(mapped_enum<T, selector<V>>)
 auto from_value(
   const std::underlying_type_t<T> value,
   const std::type_identity<T> id,
-  const Selector sel) noexcept -> std::optional<T> {
+  const selector<V> sel) noexcept -> std::optional<T> {
     for(const auto& info : enumerator_mapping(id, sel)) {
         if(enumerator_value(info.enumerator, id) == value) {
             return {info.enumerator};
@@ -149,12 +149,12 @@ constexpr auto from_value(
     return from_value(value, id, default_selector);
 }
 //------------------------------------------------------------------------------
-export template <typename T, typename Selector>
-    requires(mapped_enum<T, Selector>)
+export template <typename T, identifier_t V>
+    requires(mapped_enum<T, selector<V>>)
 auto from_string(
   const string_view name,
   const std::type_identity<T> id,
-  const Selector sel) noexcept -> std::optional<T> {
+  const selector<V> sel) noexcept -> std::optional<T> {
     for(const auto& info : enumerator_mapping(id, sel)) {
         if(are_equal(string_view(info.name), name)) {
             return {info.enumerator};
@@ -163,12 +163,12 @@ auto from_string(
     return {};
 }
 //------------------------------------------------------------------------------
-export template <typename Function, typename T, typename Selector>
-    requires(mapped_enum<T, Selector>)
+export template <typename Function, typename T, identifier_t V>
+    requires(mapped_enum<T, selector<V>>)
 void for_each_enumerator(
   Function function,
   const std::type_identity<T> id,
-  const Selector sel) noexcept {
+  const selector<V> sel) noexcept {
     for(const auto& info : enumerator_mapping(id, sel)) {
         function(enum_value_and_name<T>{info});
     }

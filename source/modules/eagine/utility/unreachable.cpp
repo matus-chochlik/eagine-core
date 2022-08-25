@@ -11,8 +11,10 @@ module;
 
 export module eagine.core.utility:unreachable;
 
-namespace eagine {
+import <type_traits>;
 
+namespace eagine {
+//------------------------------------------------------------------------------
 export [[noreturn]] void unreachable() noexcept {
 #if defined(__GNUC__) // GCC, Clang, ICC
     __builtin_unreachable();
@@ -22,6 +24,19 @@ export [[noreturn]] void unreachable() noexcept {
     assert(false);
 #endif
 }
+//------------------------------------------------------------------------------
+export template <auto N>
+inline auto unreachable_storage() noexcept -> void* {
+    static std::aligned_storage_t<N> _storage{};
+    return static_cast<void*>(&_storage);
+}
+//------------------------------------------------------------------------------
+export template <typename T>
+inline auto unreachable_reference(std::type_identity<T>) noexcept -> T& {
+    unreachable();
+    return *static_cast<T*>(unreachable_storage<sizeof(T)>());
+}
+//------------------------------------------------------------------------------
 
 } // namespace eagine
 

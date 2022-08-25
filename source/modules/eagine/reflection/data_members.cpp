@@ -49,73 +49,73 @@ constexpr auto data_member_tuple_from_mapping(
     return std::tuple<std::remove_cv_t<std::remove_reference_t<M>>...>{};
 }
 
-export template <typename T, typename Selector>
+export template <typename T, identifier_t V>
 constexpr auto data_member_tuple(
   const std::type_identity<T> tid,
-  const Selector sel) noexcept
-    requires(mapped_struct<T, Selector>)
+  const selector<V> sel) noexcept
+    requires(mapped_struct<T, selector<V>>)
 {
     return data_member_tuple_from_mapping(data_member_mapping(tid, sel));
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Selector>
+template <typename T, identifier_t V>
 constexpr auto _do_map_single_data_member(
   const string_view name,
   const T& ref,
-  const Selector,
+  const selector<V>,
   const std::false_type) noexcept {
     return std::pair<const string_view, const T&>(name, ref);
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Selector>
+template <typename T, identifier_t V>
 constexpr auto _do_map_single_data_member(
   const string_view name,
   T& ref,
-  const Selector,
+  const selector<V>,
   const std::false_type) noexcept {
     return std::pair<const string_view, T&>(name, ref);
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Selector>
+template <typename T, identifier_t V>
 constexpr auto _do_map_single_data_member(
   const string_view name,
   const T& ref,
-  const Selector select,
+  const selector<V> select,
   const std::true_type) noexcept {
     return std::make_pair(name, map_data_members(ref, select));
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Selector>
+template <typename T, identifier_t V>
 constexpr auto _do_map_single_data_member(
   const string_view name,
   T& ref,
-  const Selector select,
+  const selector<V> select,
   const std::true_type) noexcept {
     return std::make_pair(name, map_data_members(ref, select));
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Selector>
+template <typename T, identifier_t V>
 constexpr auto _map_single_data_member(
   const string_view name,
   const T& ref,
-  const Selector select) noexcept {
+  const selector<V> select) noexcept {
     return _do_map_single_data_member(
-      name, ref, select, std::bool_constant<mapped_struct<T, Selector>>());
+      name, ref, select, std::bool_constant<mapped_struct<T, selector<V>>>());
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Selector>
+template <typename T, identifier_t V>
 constexpr auto _map_single_data_member(
   const string_view name,
   T& ref,
-  const Selector select) noexcept {
+  const selector<V> select) noexcept {
     return _do_map_single_data_member(
-      name, ref, select, std::bool_constant<mapped_struct<T, Selector>>());
+      name, ref, select, std::bool_constant<mapped_struct<T, selector<V>>>());
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Selector, typename Mapping, std::size_t... I>
+template <typename T, identifier_t V, typename Mapping, std::size_t... I>
 constexpr auto _map_data_members_impl(
   const T& instance,
-  const Selector select,
+  const selector<V> select,
   const Mapping& mapping,
   const std::index_sequence<I...>) {
     return std::make_tuple(_map_single_data_member(
@@ -124,10 +124,10 @@ constexpr auto _map_data_members_impl(
       select)...);
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Selector, typename Mapping, std::size_t... I>
+template <typename T, identifier_t V, typename Mapping, std::size_t... I>
 constexpr auto _map_data_members_impl(
   T& instance,
-  const Selector select,
+  const selector<V> select,
   const Mapping& mapping,
   const std::index_sequence<I...>) {
     return std::make_tuple(_map_single_data_member(
@@ -136,10 +136,10 @@ constexpr auto _map_data_members_impl(
       select)...);
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Selector, typename C, typename... M>
+template <typename T, identifier_t V, typename C, typename... M>
 constexpr auto do_map_data_members(
   T& instance,
-  const Selector select,
+  const selector<V> select,
   const std::tuple<std::pair<const string_view, M C::*const>...>& mapping) {
     return _map_data_members_impl(
       instance, select, mapping, std::make_index_sequence<sizeof...(M)>());

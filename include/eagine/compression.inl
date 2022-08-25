@@ -231,7 +231,7 @@ public:
 #else
 class data_compressor_impl {
 public:
-    using data_handler = callable_ref<bool(memory::const_block)>;
+    using data_handler = callable_ref<bool(memory::const_block) noexcept>;
 
     auto compress(
       const memory::const_block,
