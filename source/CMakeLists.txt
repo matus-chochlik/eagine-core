@@ -10,29 +10,17 @@ else()
 endif()
 add_subdirectory(app)
 
+set(EAGINE_CORE_EXPORT_TARGETS)
+
 if(TARGET eagine-core)
 	add_library(EAGine::Core INTERFACE IMPORTED GLOBAL)
 	target_link_libraries(EAGine::Core INTERFACE eagine-core)
-	set(
-		EAGINE_CORE_EXPORT_TARGETS
+	list(
+		APPEND EAGINE_CORE_EXPORT_TARGETS
 			eagine-core-generated-headers
 			eagine-core-private-headers
 			eagine-core-headers
 			eagine-core
-	)
-
-	if(TARGET eagine-xml_logs-gui)
-		list(APPEND EAGINE_CORE_EXPORT_TARGETS eagine-xml_logs-gui)
-	endif()
-
-	install(
-		TARGETS ${EAGINE_CORE_EXPORT_TARGETS}
-		EXPORT Core
-		LIBRARY DESTINATION lib
-		ARCHIVE DESTINATION lib
-		RUNTIME DESTINATION bin
-		INCLUDES DESTINATION include
-		PUBLIC_HEADER DESTINATION include
 	)
 
 	install(
@@ -42,3 +30,19 @@ if(TARGET eagine-core)
 		DESTINATION lib/cmake/EAGine
 	)
 endif()
+
+if(TARGET eagine-xml_logs-gui)
+	list(APPEND EAGINE_CORE_EXPORT_TARGETS eagine-xml_logs-gui)
+endif()
+
+install(
+	TARGETS ${EAGINE_CORE_EXPORT_TARGETS}
+	EXPORT Core
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	INCLUDES DESTINATION include
+	PUBLIC_HEADER DESTINATION include
+)
+
+
