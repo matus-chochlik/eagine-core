@@ -59,7 +59,7 @@ public:
 protected:
     void _flush() {
         try {
-            if(_socket.is_open()) {
+            if(_socket.is_open()) [[likely]] {
                 const auto done = asio::write(_socket, _buffer);
                 _buffer.consume(done);
             }
@@ -103,7 +103,7 @@ public:
 protected:
     void _flush() {
         try {
-            if(_socket.is_open()) {
+            if(_socket.is_open()) [[likely]] {
                 const auto done = asio::write(_socket, _buffer);
                 _buffer.consume(done);
             }
@@ -155,8 +155,12 @@ public:
     }
 
     void flush() noexcept final {
+        std::lock_guard<Lockable> lock{_flush_lockable};
         Connection::_flush();
     }
+
+private:
+    Lockable _flush_lockable;
 };
 //------------------------------------------------------------------------------
 template <typename Lockable>

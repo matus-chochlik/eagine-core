@@ -64,7 +64,7 @@ public:
 
     void enter_scope(const identifier scope) noexcept final {
         try {
-            _lockable.lock();
+            const std::lock_guard<Lockable> lock{_lockable};
             _out << "<s name='" << scope.name() << "'>\n";
         } catch(...) {
         }
@@ -72,7 +72,7 @@ public:
 
     void leave_scope(const identifier) noexcept final {
         try {
-            _lockable.lock();
+            const std::lock_guard<Lockable> lock{_lockable};
             _out << "</s>\n";
         } catch(...) {
         }
@@ -84,13 +84,15 @@ public:
       const string_view display_name,
       const string_view description) noexcept final {
         try {
-            const std::lock_guard<Lockable> lock{_lockable};
-            _out << "<d";
-            _out << " src='" << source.name() << "'";
-            _out << " iid='" << instance << "'";
-            _out << " dn='" << display_name << "'";
-            _out << " desc='" << description << "'";
-            _out << "/>\n";
+            {
+                const std::lock_guard<Lockable> lock{_lockable};
+                _out << "<d";
+                _out << " src='" << source.name() << "'";
+                _out << " iid='" << instance << "'";
+                _out << " dn='" << display_name << "'";
+                _out << " desc='" << description << "'";
+                _out << "/>\n";
+            }
             flush();
         } catch(...) {
         }
@@ -247,16 +249,18 @@ public:
     void finish_message() noexcept final {
         try {
             _out << "</m>\n";
-            flush();
             _lockable.unlock();
+            flush();
         } catch(...) {
         }
     }
 
     void finish_log() noexcept final {
         try {
-            const std::lock_guard<Lockable> lock{_lockable};
-            _out << "</log>\n" << std::flush;
+            {
+                const std::lock_guard<Lockable> lock{_lockable};
+                _out << "</log>\n" << std::flush;
+            }
             flush();
         } catch(...) {
         }
