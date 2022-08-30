@@ -6,7 +6,7 @@
 function(eagine_add_target_resource_file)
 	cmake_parse_arguments(
 		EAGINE_RESOURCE
-		"PACKED"
+		"PACKED;ENABLE_SEARCH"
 		"TARGET"
 		"INPUT_FILES;INPUT_TARGETS;SEARCH_PATHS"
 		${ARGN}
@@ -19,6 +19,9 @@ function(eagine_add_target_resource_file)
 		if(${EAGINE_RESOURCE_PACKED})
 			list(APPEND GEN_OPTIONS --packed)
 		endif()
+	endif()
+	if(${EAGINE_RESOURCE_ENABLE_SEARCH})
+		list(APPEND GEN_OPTIONS --enable-search)
 	endif()
 	list(APPEND GEN_OPTIONS -o)
 	list(APPEND GEN_OPTIONS ${CMAKE_CURRENT_BINARY_DIR}/${RESOURCE_FILE})

@@ -25,6 +25,7 @@ auto get_embedded_resource(const selector<ResId>, const string_view) noexcept
 /// @brief Triggers the embedding of data from a file on the specified path.
 /// @ingroup embedding
 /// @see embedded_resource
+/// @see search_resource
 ///
 /// This function only works properly if the build system invokes the embed
 /// generator, that generates appropriate C++ code that defines byte blocks
@@ -36,6 +37,19 @@ auto get_embedded_resource(const selector<ResId>, const string_view) noexcept
 export template <identifier_value ResId>
 auto embed(string_view src_path) noexcept -> embedded_resource {
     return get_embedded_resource(selector<ResId>{}, src_path);
+}
+
+auto search_embedded_resource(identifier_t) noexcept -> embedded_resource;
+
+/// @brief Searches for a resource with the specified identifier.
+/// @ingroup embedding
+/// @see embedded_resource
+/// @see embed
+// NOTE: this has to be a template, otherwise there will be link errors.
+export template <auto L>
+    requires(identifier_literal_length<L>)
+auto search_resource(const char (&res_id)[L]) noexcept -> embedded_resource {
+    return search_embedded_resource(identifier_value(res_id));
 }
 
 } // namespace eagine
