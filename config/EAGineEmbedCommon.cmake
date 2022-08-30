@@ -8,7 +8,7 @@ function(eagine_add_target_resource_file)
 		EAGINE_RESOURCE
 		"PACKED;ENABLE_SEARCH"
 		"TARGET"
-		"INPUT_FILES;INPUT_TARGETS;SEARCH_PATHS"
+		"INPUT_FILES;INPUT_TARGETS;SEARCH_PATHS;SEARCH_IDENTIFIERS"
 		${ARGN}
 	)
 
@@ -39,6 +39,10 @@ function(eagine_add_target_resource_file)
 				list(APPEND GEN_DEPENDS ${SEARCH_PATH}/${RES_FILE})
 			endif()
 		endforeach()
+	endforeach()
+	foreach(SEARCH_IDENT ${EAGINE_RESOURCE_SEARCH_IDENTIFIERS})
+		list(APPEND GEN_OPTIONS -g)
+		list(APPEND GEN_OPTIONS ${SEARCH_IDENT})
 	endforeach()
 
 	foreach(RES_NAME ${EAGINE_RESOURCE_INPUT_TARGETS})

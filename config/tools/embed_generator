@@ -21,13 +21,21 @@ class EmberArgumentParser(argparse.ArgumentParser):
     def _identifier(self, x):
         try:
             assert self._id_re.match(x)
+            return x
         except:
             self.error("`%s' is not valid identifier value" % str(x))
+
+    def _id_and_path(self, x):
+        try:
+            assert (self._id_re.match(x) or os.path.exists(x))
+            return x
+        except:
+            self.error("`%s' is not valid identifier or path" % str(x))
 
     # --------------------------------------------------------------------------
     def __init__(self, **kw):
         argparse.ArgumentParser.__init__(self, **kw)
-        self._id_re = re.compile("^[A-Za-z0-9_]\{1,10\}$")
+        self._id_re = re.compile("^[A-Za-z0-9_]{1,10}$")
 
         self.add_argument(
             '-p', '--packed',
@@ -48,6 +56,16 @@ class EmberArgumentParser(argparse.ArgumentParser):
             metavar='INPUT-FILE',
             nargs='?',
             type=os.path.realpath,
+            default=[],
+            action="append"
+        )
+
+        self.add_argument(
+            '-I', '--id-input',
+            dest='explicit_id_paths',
+            metavar=('IDENTIFIER','INPUT-FILE'),
+            nargs=2,
+            type=self._id_and_path,
             default=[],
             action="append"
         )
@@ -292,6 +310,9 @@ def make_epilogue(options):
     options.output.write("} // namespace eagine\n")
 # ------------------------------------------------------------------------------
 def list_embedded_resources(options):
+    for ident, path in options.explicit_id_paths:
+        yield ident, path
+
     embed_res = [
         r'embed<"([a-zA-Z0-9_]+)">\(\s*("([^"]+)"|__FILE__)\s*\)',
         r'embed<id_v\("([a-zA-Z0-9_]+)"\)>\(\s*("([^"]+)"|__FILE__)\s*\)'
