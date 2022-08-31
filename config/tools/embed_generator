@@ -20,14 +20,14 @@ class EmberArgumentParser(argparse.ArgumentParser):
 
     def _identifier(self, x):
         try:
-            assert self._id_re.match(x)
+            assert self._ident_re.match(x)
             return x
         except:
             self.error("`%s' is not valid identifier value" % str(x))
 
     def _id_and_path(self, x):
         try:
-            assert (self._id_re.match(x) or os.path.exists(x))
+            assert (self._ident_re.match(x) or self._target_re.match(x) or os.path.exists(x))
             return x
         except:
             self.error("`%s' is not valid identifier or path" % str(x))
@@ -35,7 +35,8 @@ class EmberArgumentParser(argparse.ArgumentParser):
     # --------------------------------------------------------------------------
     def __init__(self, **kw):
         argparse.ArgumentParser.__init__(self, **kw)
-        self._id_re = re.compile("^[A-Za-z0-9_]{1,10}$")
+        self._ident_re = re.compile("^[A-Za-z0-9_]{1,10}$")
+        self._target_re = re.compile("^[A-Za-z0-9_]+$")
 
         self.add_argument(
             '-p', '--packed',
