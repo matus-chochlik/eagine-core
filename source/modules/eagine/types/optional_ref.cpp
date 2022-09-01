@@ -82,34 +82,32 @@ public:
     /// @see is_valid
     template <typename U>
     auto value_or(U&& fallback) const noexcept -> T
-      requires(std::is_convertible_v<U, T>) {
-          if(is_valid()) {
-              return *_ptr;
-          }
-          return T(std::forward<U>(fallback));
-      }
+        requires(std::is_convertible_v<U, T>)
+    {
+        if(is_valid()) {
+            return *_ptr;
+        }
+        return T(std::forward<U>(fallback));
+    }
 
     /// @brief Returns the stored reference.
     /// @see get
-    explicit
-    operator T&() const noexcept {
+    explicit operator T&() const noexcept {
         return get();
     }
 
     /// @brief Tri-state equality comparison of the referred instance with a value.
-    friend auto operator==(const optional_reference_wrapper& l, const T& r)
-      -> tribool {
-        if(l.is_valid()) {
-            return l.value() == r;
+    auto operator==(const T& r) const noexcept -> tribool {
+        if(is_valid()) {
+            return value() == r;
         }
         return indeterminate;
     }
 
     /// @brief Tri-state nonequality comparison of the referred instance with a value.
-    friend auto operator!=(const optional_reference_wrapper& l, const T& r)
-      -> tribool {
-        if(l.is_valid()) {
-            return l.value() != r;
+    auto operator!=(const T& r) const noexcept -> tribool {
+        if(is_valid()) {
+            return value() != r;
         }
         return indeterminate;
     }
