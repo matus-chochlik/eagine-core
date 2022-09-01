@@ -110,15 +110,13 @@ public:
     }
 
     /// @brief Equality comparison.
-    friend constexpr auto operator==(const tribool a, const tribool b) noexcept
-      -> tribool {
-        return {a._value == b._value, (*a || *b)};
+    constexpr auto operator==(const tribool b) noexcept -> tribool {
+        return {_value == b._value, (*(*this) || *b)};
     }
 
     /// @brief Non-equality comparison.
-    friend constexpr auto operator!=(const tribool a, const tribool b) noexcept
-      -> tribool {
-        return {a._value != b._value, (*a || *b)};
+    constexpr auto operator!=(const tribool b) noexcept -> tribool {
+        return {_value != b._value, (*(*this) || *b)};
     }
 
 private:
