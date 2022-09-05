@@ -652,7 +652,7 @@ class XmlLogFormatter(object):
                 keepRunning = False
 
     # --------------------------------------------------------------------------
-    def updateInterval(self, srcid, interval, info):
+    def addInterval(self, srcid, interval, info):
         with self._lock:
             self.write("┊")
             for sid in self._sources:
@@ -681,19 +681,19 @@ class XmlLogFormatter(object):
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ├─min duration: %s\n" % formatRelTime(interval.min_duration()))
+            self.write(" ├─min duration: %s\n" % formatRelTime(interval.minDuration()))
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ├─avg duration: %s\n" % formatRelTime(interval.avg_duration()))
+            self.write(" ├─avg duration: %s\n" % formatRelTime(interval.avgDuration()))
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ├─max duration: %s\n" % formatRelTime(interval.max_duration()))
+            self.write(" ├─max duration: %s\n" % formatRelTime(interval.maxDuration()))
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ╰╴hit count: %d\n" % interval.hit_count())
+            self.write(" ╰╴hit count: %d\n" % interval.hitCount())
 
     # --------------------------------------------------------------------------
     def translateLevel(self, level):
@@ -1005,6 +1005,8 @@ class XmlLogFormatter(object):
 class TimeIntervalInfo:
     # --------------------------------------------------------------------------
     def __init__(self, time_ns):
+        self._print_interval = 10.0
+        self._print_time = time.time()
         self._count = 1
         self._time_min_ns = time_ns
         self._time_max_ns = time_ns
@@ -1019,19 +1021,27 @@ class TimeIntervalInfo:
         return self
 
     # --------------------------------------------------------------------------
-    def min_duration(self):
+    def shouldPrint(self):
+        now = time.time()
+        if now > self._print_time + self._print_interval:
+            self._print_time = now
+            return True
+        return False
+
+    # --------------------------------------------------------------------------
+    def minDuration(self):
         return self._time_min_ns / 1000000000.0
 
     # --------------------------------------------------------------------------
-    def max_duration(self):
+    def maxDuration(self):
         return self._time_max_ns / 1000000000.0
 
     # --------------------------------------------------------------------------
-    def avg_duration(self):
+    def avgDuration(self):
         return self._time_sum_ns / (self._count * 1000000000.0)
 
     # --------------------------------------------------------------------------
-    def hit_count(self):
+    def hitCount(self):
         return self._count
 
 # ------------------------------------------------------------------------------
@@ -1092,7 +1102,8 @@ class XmlLogProcessor(xml.sax.ContentHandler):
             try: interval = self._intervals[key].update(iarg["time_ns"])
             except KeyError:
                 interval = self._intervals[key] = TimeIntervalInfo(iarg["time_ns"])
-            self._formatter.updateInterval(self._srcid, interval, iarg)
+            if interval.shouldPrint():
+                self._formatter.addInterval(self._srcid, interval, iarg)
         elif tag == "c":
             try: logger = self._loggers[attr["src"]]
             except KeyError:
@@ -1120,6 +1131,12 @@ class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
     def endElement(self, tag):
         if tag == "log":
+            for key, interval in self._intervals.items():
+                iarg = {
+                    "instance": key[0],
+                    "label": key[1]
+                }
+                self._formatter.addInterval(self._srcid, interval, iarg)
             self._formatter.addLoggerInfos(self._srcid, self._loggers)
             self._formatter.finishLog(self._srcid)
         elif tag == "m":
