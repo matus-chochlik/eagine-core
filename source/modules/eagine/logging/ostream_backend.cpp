@@ -84,21 +84,24 @@ public:
       const logger_instance_id log_id,
       const time_interval_id int_id) noexcept final {
         try {
-            const auto end{std::chrono::steady_clock::now()};
-            const std::lock_guard<Lockable> lock{_lockable};
-            const auto pos{std::find_if(
-              _intervals.rbegin(),
-              _intervals.rend(),
-              [int_id](const auto& entry) {
-                  return std::get<0>(entry) == int_id;
-              })};
-            assert(pos != _intervals.rend());
-            _out << "<i tid='" << std::get<0>(*pos) << "' iid='"
-                 << std::get<1>(*pos) << "' lbl='" << std::get<2>(*pos).name()
-                 << "' tns='"
-                 << std::chrono::nanoseconds(end - std::get<3>(*pos)).count()
-                 << "'/>\n";
-            _intervals.erase(std::next(pos).base());
+            {
+                const auto end{std::chrono::steady_clock::now()};
+                const std::lock_guard<Lockable> lock{_lockable};
+                const auto pos{std::find_if(
+                  _intervals.rbegin(),
+                  _intervals.rend(),
+                  [int_id](const auto& entry) {
+                      return std::get<0>(entry) == int_id;
+                  })};
+                assert(pos != _intervals.rend());
+                _out << "<i tid='" << std::get<0>(*pos) << "' iid='"
+                     << std::get<1>(*pos) << "' lbl='"
+                     << std::get<2>(*pos).name() << "' tns='"
+                     << std::chrono::nanoseconds(end - std::get<3>(*pos)).count()
+                     << "'/>\n";
+                _intervals.erase(std::next(pos).base());
+            }
+            flush();
         } catch(...) {
         }
     }
