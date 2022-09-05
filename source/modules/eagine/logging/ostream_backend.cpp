@@ -94,7 +94,7 @@ public:
               })};
             assert(pos != _intervals.rend());
             _out << "<i tid='" << std::get<0>(*pos) << "' iid='"
-                 << std::get<1>(*pos) << "' n='" << std::get<2>(*pos).name()
+                 << std::get<1>(*pos) << "' lbl='" << std::get<2>(*pos).name()
                  << "' tns='"
                  << std::chrono::nanoseconds(end - std::get<3>(*pos)).count()
                  << "'/>\n";

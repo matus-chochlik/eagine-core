@@ -561,7 +561,7 @@ class XmlLogFormatter(object):
     # --------------------------------------------------------------------------
     def beginLog(self, srcid, info):
         self._backend_count += 1
-        self._src_times[srcid] = time.time();
+        self._src_times[srcid] = time.time()
         with self._lock:
             #
             self.write("┊")
@@ -650,6 +650,50 @@ class XmlLogFormatter(object):
             if not self._options.keep_running:
                 global keepRunning
                 keepRunning = False
+
+    # --------------------------------------------------------------------------
+    def updateInterval(self, srcid, interval, info):
+        with self._lock:
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write("\n")
+
+            self.write("┊")
+            conn = False
+            for sid in self._sources:
+                if sid == srcid:
+                    conn = True
+                    self.write(" ┝")
+                elif conn:
+                    self.write("━━")
+                else:
+                    self.write(" │")
+            self.write("━┑")
+            self.write("%10s│" % info["label"])
+            self.write("%12s│" % self.formatInstance(info["instance"]))
+            self.write("\n")
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ├──────────┴────────────╯")
+            self.write("\n")
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ├─min duration: %s\n" % formatRelTime(interval.min_duration()))
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ├─avg duration: %s\n" % formatRelTime(interval.avg_duration()))
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ├─max duration: %s\n" % formatRelTime(interval.max_duration()))
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ╰╴hit count: %d\n" % interval.hit_count())
 
     # --------------------------------------------------------------------------
     def translateLevel(self, level):
@@ -958,6 +1002,39 @@ class XmlLogFormatter(object):
         return XmlLogProcessor(self._source_id, self)
 
 # ------------------------------------------------------------------------------
+class TimeIntervalInfo:
+    # --------------------------------------------------------------------------
+    def __init__(self, time_ns):
+        self._count = 1
+        self._time_min_ns = time_ns
+        self._time_max_ns = time_ns
+        self._time_sum_ns = time_ns
+
+    # --------------------------------------------------------------------------
+    def update(self, time_ns):
+        self._count += 1
+        self._time_min_ns = min(self._time_min_ns, time_ns)
+        self._time_max_ns = max(self._time_max_ns, time_ns)
+        self._time_sum_ns += time_ns
+        return self
+
+    # --------------------------------------------------------------------------
+    def min_duration(self):
+        return self._time_min_ns / 1000000000.0
+
+    # --------------------------------------------------------------------------
+    def max_duration(self):
+        return self._time_max_ns / 1000000000.0
+
+    # --------------------------------------------------------------------------
+    def avg_duration(self):
+        return self._time_sum_ns / (self._count * 1000000000.0)
+
+    # --------------------------------------------------------------------------
+    def hit_count(self):
+        return self._count
+
+# ------------------------------------------------------------------------------
 class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
     def __init__(self, srcid, formatter):
@@ -966,6 +1043,7 @@ class XmlLogProcessor(xml.sax.ContentHandler):
         self._carg = None
         self._info = None
         self._loggers = {}
+        self._intervals = {}
         self._start_time = time.time()
         self._formatter= formatter
         self._parser = xml.sax.make_parser()
@@ -1003,6 +1081,18 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                     "used": False,
                     "values": [iarg]
                 }
+        elif tag == "i":
+            iarg = {
+                "interval": attr.get("tid"),
+                "instance": attr.get("iid"),
+                "label": attr.get("lbl"),
+                "time_ns": int(attr.get("tns"))
+            }
+            key = (iarg["instance"], iarg["label"])
+            try: interval = self._intervals[key].update(iarg["time_ns"])
+            except KeyError:
+                interval = self._intervals[key] = TimeIntervalInfo(iarg["time_ns"])
+            self._formatter.updateInterval(self._srcid, interval, iarg)
         elif tag == "c":
             try: logger = self._loggers[attr["src"]]
             except KeyError:
