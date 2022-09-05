@@ -45,9 +45,13 @@ public:
 
     void time_interval_begin(
       const identifier,
-      const logger_instance_id) noexcept final;
-    void time_interval_end(const identifier, const logger_instance_id) noexcept
-      final;
+      const logger_instance_id,
+      const time_interval_id) noexcept final;
+
+    void time_interval_end(
+      const identifier,
+      const logger_instance_id,
+      const time_interval_id) noexcept final;
 
     void set_description(
       const identifier source,
@@ -157,17 +161,19 @@ auto proxy_log_backend::type_id() noexcept -> identifier {
 //------------------------------------------------------------------------------
 void proxy_log_backend::time_interval_begin(
   const identifier label,
-  const logger_instance_id inst) noexcept {
+  const logger_instance_id log_id,
+  const time_interval_id int_id) noexcept {
     if(_delegate) [[likely]] {
-        _delegate->time_interval_begin(label, inst);
+        _delegate->time_interval_begin(label, log_id, int_id);
     }
 }
 //------------------------------------------------------------------------------
 void proxy_log_backend::time_interval_end(
   const identifier label,
-  const logger_instance_id inst) noexcept {
+  const logger_instance_id log_id,
+  const time_interval_id int_id) noexcept {
     if(_delegate) [[likely]] {
-        _delegate->time_interval_end(label, inst);
+        _delegate->time_interval_end(label, log_id, int_id);
     }
 }
 //------------------------------------------------------------------------------

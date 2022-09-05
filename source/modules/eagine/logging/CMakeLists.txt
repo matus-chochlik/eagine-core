@@ -86,6 +86,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.logging PARTITION time_interval
+	IMPORTS
+		backend
+		eagine.core.types
+		eagine.core.identifier
+)
+
+eagine_add_module(
 	eagine.core.logging PARTITION entry
 	IMPORTS
 		entry_arg backend
@@ -98,7 +106,8 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION logger
 	IMPORTS
-		config entry backend
+		config backend
+		entry time_interval
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -192,6 +201,7 @@ eagine_add_module(
 		syslog_backend
 		asio_backend
 		proxy_backend
+		time_interval
 		entry
 		logger
 		root_logger

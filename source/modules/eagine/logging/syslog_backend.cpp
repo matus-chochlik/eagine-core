@@ -65,11 +65,15 @@ public:
         return "Syslog";
     }
 
-    void time_interval_begin(const identifier, logger_instance_id) noexcept
-      final {}
+    void time_interval_begin(
+      identifier,
+      logger_instance_id,
+      time_interval_id) noexcept final {}
 
-    void time_interval_end(const identifier, logger_instance_id) noexcept final {
-    }
+    void time_interval_end(
+      identifier,
+      logger_instance_id,
+      time_interval_id) noexcept final {}
 
     void set_description(
       [[maybe_unused]] const identifier src,

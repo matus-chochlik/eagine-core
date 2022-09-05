@@ -17,6 +17,7 @@ export import :severity;
 import :config;
 import :backend;
 import :entry;
+import :time_interval;
 import <memory>;
 
 namespace eagine {
@@ -72,6 +73,11 @@ public:
             extract(lbe).configure(config);
         }
         return false;
+    }
+
+    auto measure_time_interval(const identifier label) const noexcept
+      -> log_time_interval {
+        return {label, instance_id(), _entry_backend(log_event_severity::stat)};
     }
 
 protected:

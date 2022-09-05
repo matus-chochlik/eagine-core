@@ -23,6 +23,10 @@ namespace eagine {
 /// @ingroup logging
 export using logger_instance_id = std::uintptr_t;
 
+/// @brief Time interval measurement id type.
+/// @ingroup logging
+export using time_interval_id = std::uintptr_t;
+
 //------------------------------------------------------------------------------
 /// @brief Structure used to supply initial log stream information to a logger.
 /// @ingroup logging
@@ -56,13 +60,15 @@ export struct logger_backend : interface<logger_backend> {
     /// @see time_interval_end
     virtual void time_interval_begin(
       const identifier,
-      const logger_instance_id) noexcept = 0;
+      const logger_instance_id,
+      const time_interval_id) noexcept = 0;
 
     /// @brief End of time interval measurement.
     /// @see time_interval_begin
     virtual void time_interval_end(
       const identifier,
-      const logger_instance_id) noexcept = 0;
+      const logger_instance_id,
+      const time_interval_id) noexcept = 0;
 
     /// @brief Sets the user-readable description for the logger object.
     virtual void set_description(

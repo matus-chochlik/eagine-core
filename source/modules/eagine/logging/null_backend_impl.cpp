@@ -33,11 +33,14 @@ struct null_log_backend final : logger_backend {
     }
 
     void time_interval_begin(
-      const identifier,
-      const logger_instance_id) noexcept final {}
+      identifier,
+      logger_instance_id,
+      time_interval_id) noexcept final {}
 
-    void time_interval_end(const identifier, const logger_instance_id) noexcept
-      final {}
+    void time_interval_end(
+      identifier,
+      logger_instance_id,
+      time_interval_id) noexcept final {}
 
     void set_description(
       const identifier,

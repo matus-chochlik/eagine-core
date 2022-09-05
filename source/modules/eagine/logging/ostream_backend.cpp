@@ -69,29 +69,34 @@ public:
 
     void time_interval_begin(
       const identifier label,
-      const logger_instance_id inst) noexcept final {
+      const logger_instance_id log_id,
+      const time_interval_id int_id) noexcept final {
         try {
             const std::lock_guard<Lockable> lock{_lockable};
             _intervals.emplace_back(
-              inst, label, std::chrono::steady_clock::now());
+              int_id, log_id, label, std::chrono::steady_clock::now());
         } catch(...) {
         }
     }
 
     void time_interval_end(
       const identifier label,
-      const logger_instance_id inst) noexcept final {
+      const logger_instance_id log_id,
+      const time_interval_id int_id) noexcept final {
         try {
             const auto end{std::chrono::steady_clock::now()};
             const std::lock_guard<Lockable> lock{_lockable};
             const auto pos{std::find_if(
-              _intervals.rbegin(), _intervals.rend(), [inst](const auto& entry) {
-                  return std::get<0>(entry) == inst;
+              _intervals.rbegin(),
+              _intervals.rend(),
+              [int_id](const auto& entry) {
+                  return std::get<0>(entry) == int_id;
               })};
             assert(pos != _intervals.rend());
-            _out << "<i i='" << std::get<0>(*pos) << "' l='"
-                 << std::get<1>(*pos).name() << "' tns='"
-                 << std::chrono::nanoseconds(end - std::get<2>(*pos)).count()
+            _out << "<i tid='" << std::get<0>(*pos) << "' iid='"
+                 << std::get<1>(*pos) << "' n='" << std::get<2>(*pos).name()
+                 << "' tns='"
+                 << std::chrono::nanoseconds(end - std::get<3>(*pos)).count()
                  << "'/>\n";
             _intervals.erase(std::next(pos).base());
         } catch(...) {
@@ -322,6 +327,7 @@ private:
     const std::chrono::steady_clock::time_point _start;
     memory::shared_byte_allocator _alloc{memory::default_byte_allocator()};
     std::vector<std::tuple<
+      time_interval_id,
       logger_instance_id,
       identifier,
       std::chrono::steady_clock::time_point>>
