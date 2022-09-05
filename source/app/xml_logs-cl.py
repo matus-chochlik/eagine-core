@@ -108,6 +108,15 @@ class ArgumentParser(argparse.ArgumentParser):
             self.error("`%s' is not a valid message identifier" % str(x))
 
     # -------------------------------------------------------------------------
+    def _positive_float(self, x):
+        try:
+            value = float(x)
+            assert value > 0.0
+            return value
+        except:
+            self.error("`%s' is not a valid positive number" % str(x))
+
+    # -------------------------------------------------------------------------
     def __init__(self, **kw):
         self._msg_re1 = re.compile("^([A-Za-z0-9_]{1,10})$")
         self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
@@ -175,6 +184,15 @@ class ArgumentParser(argparse.ArgumentParser):
             action="append",
             type=self._valid_msg_id,
             default=[]
+        )
+
+        self.add_argument(
+            "--interval", "-I",
+            metavar='SECONDS',
+            dest='interval_print_period',
+            action="store",
+            type=self._positive_float,
+            default=10.0,
         )
 
         try:
@@ -694,6 +712,7 @@ class XmlLogFormatter(object):
             for sid in self._sources:
                 self.write(" │")
             self.write(" ╰╴hit count: %d\n" % interval.hitCount())
+            self._out.flush()
 
     # --------------------------------------------------------------------------
     def translateLevel(self, level):
@@ -1004,8 +1023,8 @@ class XmlLogFormatter(object):
 # ------------------------------------------------------------------------------
 class TimeIntervalInfo:
     # --------------------------------------------------------------------------
-    def __init__(self, time_ns):
-        self._print_interval = 10.0
+    def __init__(self, options, time_ns):
+        self._print_interval = options.interval_print_period
         self._print_time = time.time()
         self._count = 1
         self._time_min_ns = time_ns
@@ -1022,11 +1041,11 @@ class TimeIntervalInfo:
 
     # --------------------------------------------------------------------------
     def shouldPrint(self):
-        now = time.time()
-        if now > self._print_time + self._print_interval:
-            self._print_time = now
-            return True
-        return False
+        return (self._print_time + self._print_interval) < time.time()
+
+    # --------------------------------------------------------------------------
+    def wasPrinted(self):
+        self._print_time = time.time()
 
     # --------------------------------------------------------------------------
     def minDuration(self):
@@ -1055,7 +1074,8 @@ class XmlLogProcessor(xml.sax.ContentHandler):
         self._loggers = {}
         self._intervals = {}
         self._start_time = time.time()
-        self._formatter= formatter
+        self._formatter = formatter
+        self._options = formatter._options
         self._parser = xml.sax.make_parser()
         self._parser.setContentHandler(self)
 
@@ -1095,15 +1115,17 @@ class XmlLogProcessor(xml.sax.ContentHandler):
             iarg = {
                 "interval": attr.get("tid"),
                 "instance": attr.get("iid"),
-                "label": attr.get("lbl"),
-                "time_ns": int(attr.get("tns"))
+                "label": attr.get("lbl")
             }
             key = (iarg["instance"], iarg["label"])
-            try: interval = self._intervals[key].update(iarg["time_ns"])
+            try: interval = self._intervals[key].update(int(attr.get("tns")))
             except KeyError:
-                interval = self._intervals[key] = TimeIntervalInfo(iarg["time_ns"])
+                interval = self._intervals[key] = TimeIntervalInfo(
+                    self._options,
+                    int(attr.get("tns")))
             if interval.shouldPrint():
                 self._formatter.addInterval(self._srcid, interval, iarg)
+                interval.wasPrinted()
         elif tag == "c":
             try: logger = self._loggers[attr["src"]]
             except KeyError:
