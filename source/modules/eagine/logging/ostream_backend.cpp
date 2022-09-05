@@ -5,6 +5,10 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#include <cassert>
+
 export module eagine.core.logging:ostream_backend;
 
 import eagine.core.types;
@@ -14,6 +18,7 @@ import eagine.core.reflection;
 import eagine.core.string;
 import :backend;
 import <array>;
+import <vector>;
 import <ostream>;
 
 namespace eagine {
@@ -62,18 +67,33 @@ public:
         return nullptr;
     }
 
-    void enter_scope(const identifier scope) noexcept final {
+    void time_interval_begin(
+      const identifier label,
+      const logger_instance_id inst) noexcept final {
         try {
             const std::lock_guard<Lockable> lock{_lockable};
-            _out << "<s name='" << scope.name() << "'>\n";
+            _intervals.emplace_back(
+              inst, label, std::chrono::steady_clock::now());
         } catch(...) {
         }
     }
 
-    void leave_scope(const identifier) noexcept final {
+    void time_interval_end(
+      const identifier label,
+      const logger_instance_id inst) noexcept final {
         try {
+            const auto end{std::chrono::steady_clock::now()};
             const std::lock_guard<Lockable> lock{_lockable};
-            _out << "</s>\n";
+            const auto pos{std::find_if(
+              _intervals.rbegin(), _intervals.rend(), [inst](const auto& entry) {
+                  return std::get<0>(entry) == inst;
+              })};
+            assert(pos != _intervals.rend());
+            _out << "<i i='" << std::get<0>(*pos) << "' l='"
+                 << std::get<1>(*pos).name() << "' tns='"
+                 << std::chrono::nanoseconds(end - std::get<2>(*pos)).count()
+                 << "'/>\n";
+            _intervals.erase(std::next(pos).base());
         } catch(...) {
         }
     }
@@ -301,6 +321,11 @@ private:
     const log_event_severity _min_severity;
     const std::chrono::steady_clock::time_point _start;
     memory::shared_byte_allocator _alloc{memory::default_byte_allocator()};
+    std::vector<std::tuple<
+      logger_instance_id,
+      identifier,
+      std::chrono::steady_clock::time_point>>
+      _intervals;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

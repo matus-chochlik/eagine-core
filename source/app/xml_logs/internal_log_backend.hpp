@@ -70,9 +70,9 @@ private:
         return "XmlLogView";
     }
 
-    void enter_scope(identifier) noexcept final {}
+    void time_interval_begin(identifier, logger_instance_id) noexcept final {}
 
-    void leave_scope(identifier) noexcept final {}
+    void time_interval_end(identifier, logger_instance_id) noexcept final {}
 
     void set_description(
       identifier source,

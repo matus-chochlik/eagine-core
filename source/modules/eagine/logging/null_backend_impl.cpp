@@ -32,9 +32,12 @@ struct null_log_backend final : logger_backend {
         return "Null";
     }
 
-    void enter_scope(const identifier) noexcept final {}
+    void time_interval_begin(
+      const identifier,
+      const logger_instance_id) noexcept final {}
 
-    void leave_scope(const identifier) noexcept final {}
+    void time_interval_end(const identifier, const logger_instance_id) noexcept
+      final {}
 
     void set_description(
       const identifier,

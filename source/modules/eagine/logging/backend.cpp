@@ -52,11 +52,17 @@ export struct logger_backend : interface<logger_backend> {
     virtual auto entry_backend(const log_event_severity severity) noexcept
       -> logger_backend* = 0;
 
-    /// @brief Enters logging scope.
-    virtual void enter_scope(const identifier scope) noexcept = 0;
+    /// @brief Start of time interval measurement.
+    /// @see time_interval_end
+    virtual void time_interval_begin(
+      const identifier,
+      const logger_instance_id) noexcept = 0;
 
-    /// @brief Leaves logging scope.
-    virtual void leave_scope(const identifier scope) noexcept = 0;
+    /// @brief End of time interval measurement.
+    /// @see time_interval_begin
+    virtual void time_interval_end(
+      const identifier,
+      const logger_instance_id) noexcept = 0;
 
     /// @brief Sets the user-readable description for the logger object.
     virtual void set_description(

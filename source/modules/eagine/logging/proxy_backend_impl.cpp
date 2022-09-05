@@ -43,8 +43,11 @@ public:
     auto allocator() noexcept -> memory::shared_byte_allocator final;
     auto type_id() noexcept -> identifier final;
 
-    void enter_scope(const identifier source) noexcept final;
-    void leave_scope(const identifier source) noexcept final;
+    void time_interval_begin(
+      const identifier,
+      const logger_instance_id) noexcept final;
+    void time_interval_end(const identifier, const logger_instance_id) noexcept
+      final;
 
     void set_description(
       const identifier source,
@@ -152,19 +155,19 @@ auto proxy_log_backend::type_id() noexcept -> identifier {
     return "Proxy";
 }
 //------------------------------------------------------------------------------
-void proxy_log_backend::enter_scope(const identifier source) noexcept {
-    if(_delayed) {
-        assert(!_delegate);
-        _delayed->emplace_back(
-          [this, source]() { _delegate->enter_scope(source); });
+void proxy_log_backend::time_interval_begin(
+  const identifier label,
+  const logger_instance_id inst) noexcept {
+    if(_delegate) [[likely]] {
+        _delegate->time_interval_begin(label, inst);
     }
 }
 //------------------------------------------------------------------------------
-void proxy_log_backend::leave_scope(const identifier source) noexcept {
-    if(_delayed) [[likely]] {
-        assert(!_delegate);
-        _delayed->emplace_back(
-          [this, source]() { _delegate->leave_scope(source); });
+void proxy_log_backend::time_interval_end(
+  const identifier label,
+  const logger_instance_id inst) noexcept {
+    if(_delegate) [[likely]] {
+        _delegate->time_interval_end(label, inst);
     }
 }
 //------------------------------------------------------------------------------
