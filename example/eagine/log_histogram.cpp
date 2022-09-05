@@ -23,6 +23,9 @@ import <array>;
 namespace eagine {
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
+#if EAGINE_CORE_MODULE
+    const auto exec_time{ctx.log().measure_time_interval("main")};
+#endif
 
     file_contents content_of_self{ctx.exe_path()};
     memory::const_block data{content_of_self};
