@@ -688,13 +688,15 @@ class XmlLogFormatter(object):
                 else:
                     self.write(" │")
             self.write("━┑")
-            self.write("%10s│" % info["label"])
+            self.write("%10s│" % self._root_ids[srcid])
+            self.write("%10s│" % info.get("source", "N/A"))
+            self.write("%10s│" % info["tag"])
             self.write("%12s│" % self.formatInstance(info["instance"]))
             self.write("\n")
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ├──────────┴────────────╯")
+            self.write(" ├──────────┴──────────┴──────────┴────────────╯")
             self.write("\n")
             self.write("┊")
             for sid in self._sources:
@@ -797,13 +799,16 @@ class XmlLogFormatter(object):
         return result
 
     # --------------------------------------------------------------------------
+    def previewMessage(self, srcid, info):
+        if self._root_ids[srcid] is None:
+            self._root_ids[srcid] = info["source"]
+        return self.isVisible(info)
+
+    # --------------------------------------------------------------------------
     def addMessage(self, srcid, info):
         args = info["args"]
         message = info["format"]
         tag = info.get("tag")
-
-        if self._root_ids[srcid] is None:
-            self._root_ids[srcid] = info["source"]
 
         curr_time = time.time()
         if self._prev_times[srcid] is None:
@@ -1073,6 +1078,7 @@ class XmlLogProcessor(xml.sax.ContentHandler):
         self._info = None
         self._loggers = {}
         self._intervals = {}
+        self._source_map = {}
         self._start_time = time.time()
         self._formatter = formatter
         self._options = formatter._options
@@ -1096,6 +1102,7 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                 ]
             }
             self._info["args"] = {}
+            self._source_map[attr["iid"]] = attr["src"]
         elif tag == "a":
             self._carg = attr["n"]
             iarg = {
@@ -1112,18 +1119,20 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                     "values": [iarg]
                 }
         elif tag == "i":
-            iarg = {
-                "instance": attr.get("iid"),
-                "label": attr.get("lbl")
-            }
-            key = (iarg["instance"], iarg["label"])
+            key = (attr["iid"], attr["lbl"])
             try: interval = self._intervals[key].update(int(attr.get("tns")))
             except KeyError:
                 interval = self._intervals[key] = TimeIntervalInfo(
                     self._options,
                     int(attr.get("tns")))
             if interval.shouldPrint():
-                self._formatter.addInterval(self._srcid, interval, iarg)
+                info = {
+                    "source": self._source_map.get(attr.get("iid")),
+                    "instance": attr.get("iid"),
+                    "tag": attr.get("lbl")
+                }
+                if self._formatter.isVisible(info):
+                    self._formatter.addInterval(self._srcid, interval, info)
                 interval.wasPrinted()
         elif tag == "c":
             try: logger = self._loggers[attr["src"]]
@@ -1154,14 +1163,15 @@ class XmlLogProcessor(xml.sax.ContentHandler):
         if tag == "log":
             for key, interval in self._intervals.items():
                 iarg = {
+                    "source": self._source_map.get(key[0]),
                     "instance": key[0],
-                    "label": key[1]
+                    "tag": key[1]
                 }
                 self._formatter.addInterval(self._srcid, interval, iarg)
             self._formatter.addLoggerInfos(self._srcid, self._loggers)
             self._formatter.finishLog(self._srcid)
         elif tag == "m":
-            if self._formatter.isVisible(self._info):
+            if self._formatter.previewMessage(self._srcid, self._info):
                 self._formatter.addMessage(self._srcid, self._info)
             self._info = None
 
