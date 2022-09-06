@@ -84,23 +84,20 @@ public:
       const logger_instance_id log_id,
       const time_interval_id int_id) noexcept final {
         try {
-            {
-                const auto end{std::chrono::steady_clock::now()};
-                const std::lock_guard<Lockable> lock{_lockable};
-                const auto pos{std::find_if(
-                  _intervals.rbegin(),
-                  _intervals.rend(),
-                  [int_id](const auto& entry) {
-                      return std::get<0>(entry) == int_id;
-                  })};
-                assert(pos != _intervals.rend());
-                _out << "<i tid='" << std::get<0>(*pos) << "' iid='"
-                     << std::get<1>(*pos) << "' lbl='"
-                     << std::get<2>(*pos).name() << "' tns='"
-                     << std::chrono::nanoseconds(end - std::get<3>(*pos)).count()
-                     << "'/>\n";
-                _intervals.erase(std::next(pos).base());
-            }
+            const auto end{std::chrono::steady_clock::now()};
+            const std::lock_guard<Lockable> lock{_lockable};
+            const auto pos{std::find_if(
+              _intervals.rbegin(),
+              _intervals.rend(),
+              [int_id](const auto& entry) {
+                  return std::get<0>(entry) == int_id;
+              })};
+            assert(pos != _intervals.rend());
+            _out << "<i iid='" << std::get<1>(*pos) << "' lbl='"
+                 << std::get<2>(*pos).name() << "' tns='"
+                 << std::chrono::nanoseconds(end - std::get<3>(*pos)).count()
+                 << "'/>\n";
+            _intervals.erase(std::next(pos).base());
             flush();
         } catch(...) {
         }
@@ -112,15 +109,13 @@ public:
       const string_view display_name,
       const string_view description) noexcept final {
         try {
-            {
-                const std::lock_guard<Lockable> lock{_lockable};
-                _out << "<d";
-                _out << " src='" << source.name() << "'";
-                _out << " iid='" << instance << "'";
-                _out << " dn='" << display_name << "'";
-                _out << " desc='" << description << "'";
-                _out << "/>\n";
-            }
+            const std::lock_guard<Lockable> lock{_lockable};
+            _out << "<d";
+            _out << " src='" << source.name() << "'";
+            _out << " iid='" << instance << "'";
+            _out << " dn='" << display_name << "'";
+            _out << " desc='" << description << "'";
+            _out << "/>\n";
             flush();
         } catch(...) {
         }
@@ -277,19 +272,17 @@ public:
     void finish_message() noexcept final {
         try {
             _out << "</m>\n";
+            flush(true);
             _lockable.unlock();
-            flush();
         } catch(...) {
         }
     }
 
     void finish_log() noexcept final {
         try {
-            {
-                const std::lock_guard<Lockable> lock{_lockable};
-                _out << "</log>\n" << std::flush;
-            }
-            flush();
+            const std::lock_guard<Lockable> lock{_lockable};
+            _out << "</log>\n";
+            flush(true);
         } catch(...) {
         }
     }
@@ -312,6 +305,7 @@ public:
             _out << " ts='" << sec.count() << "'";
             _out << " v='" << value << "'";
             _out << "/>\n";
+            flush();
         } catch(...) {
         }
     }
@@ -321,7 +315,7 @@ public:
     }
 
 protected:
-    virtual void flush() noexcept {}
+    virtual void flush([[maybe_unused]] bool always = false) noexcept {}
 
 private:
     Lockable _lockable{};

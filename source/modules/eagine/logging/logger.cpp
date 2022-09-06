@@ -78,7 +78,7 @@ public:
     /// @brief Creates object the lifetime of this is measured and logged.
     auto measure_time_interval(const identifier label) const noexcept
       -> log_time_interval {
-        return measure_time_interval(label, log_event_severity::debug);
+        return measure_time_interval(label, log_event_severity::stat);
     }
 
     auto configure(basic_config& config) const -> bool {
