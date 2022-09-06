@@ -50,7 +50,7 @@ public:
     }
 
     auto out() noexcept -> std::ostream& {
-        if(_socket.is_open()) {
+        if(_socket.is_open()) [[likely]] {
             return _out;
         }
         return std::clog;
@@ -96,7 +96,7 @@ public:
     }
 
     auto out() noexcept -> std::ostream& {
-        if(_socket.is_open()) {
+        if(_socket.is_open()) [[likely]] {
             return _out;
         }
         return std::clog;
