@@ -192,7 +192,7 @@ class ArgumentParser(argparse.ArgumentParser):
             dest='interval_print_period',
             action="store",
             type=self._positive_float,
-            default=10.0,
+            default=60.0,
         )
 
         try:
@@ -1113,7 +1113,6 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                 }
         elif tag == "i":
             iarg = {
-                "interval": attr.get("tid"),
                 "instance": attr.get("iid"),
                 "label": attr.get("lbl")
             }
