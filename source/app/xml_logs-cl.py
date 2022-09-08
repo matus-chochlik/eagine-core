@@ -108,6 +108,15 @@ class ArgumentParser(argparse.ArgumentParser):
             self.error("`%s' is not a valid message identifier" % str(x))
 
     # -------------------------------------------------------------------------
+    def _positive_float(self, x):
+        try:
+            value = float(x)
+            assert value > 0.0
+            return value
+        except:
+            self.error("`%s' is not a valid positive number" % str(x))
+
+    # -------------------------------------------------------------------------
     def __init__(self, **kw):
         self._msg_re1 = re.compile("^([A-Za-z0-9_]{1,10})$")
         self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
@@ -175,6 +184,15 @@ class ArgumentParser(argparse.ArgumentParser):
             action="append",
             type=self._valid_msg_id,
             default=[]
+        )
+
+        self.add_argument(
+            "--interval", "-I",
+            metavar='SECONDS',
+            dest='interval_print_period',
+            action="store",
+            type=self._positive_float,
+            default=60.0,
         )
 
         try:
@@ -561,7 +579,7 @@ class XmlLogFormatter(object):
     # --------------------------------------------------------------------------
     def beginLog(self, srcid, info):
         self._backend_count += 1
-        self._src_times[srcid] = time.time();
+        self._src_times[srcid] = time.time()
         with self._lock:
             #
             self.write("┊")
@@ -652,6 +670,53 @@ class XmlLogFormatter(object):
                 keepRunning = False
 
     # --------------------------------------------------------------------------
+    def addInterval(self, srcid, interval, info):
+        with self._lock:
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write("\n")
+
+            self.write("┊")
+            conn = False
+            for sid in self._sources:
+                if sid == srcid:
+                    conn = True
+                    self.write(" ┝")
+                elif conn:
+                    self.write("━━")
+                else:
+                    self.write(" │")
+            self.write("━┑")
+            self.write("%10s│" % self._root_ids[srcid])
+            self.write("%10s│" % info.get("source", "N/A"))
+            self.write("%10s│" % info["tag"])
+            self.write("%12s│" % self.formatInstance(info["instance"]))
+            self.write("\n")
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ├──────────┴──────────┴──────────┴────────────╯")
+            self.write("\n")
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ├─min duration: %s\n" % formatRelTime(interval.minDuration()))
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ├─avg duration: %s\n" % formatRelTime(interval.avgDuration()))
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ├─max duration: %s\n" % formatRelTime(interval.maxDuration()))
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ╰╴hit count: %d\n" % interval.hitCount())
+            self._out.flush()
+
+    # --------------------------------------------------------------------------
     def translateLevel(self, level):
         if level == "debug":
             return self._ttyBoldCyan()   + "  debug  " + self._ttyReset()
@@ -734,13 +799,16 @@ class XmlLogFormatter(object):
         return result
 
     # --------------------------------------------------------------------------
+    def previewMessage(self, srcid, info):
+        if self._root_ids[srcid] is None:
+            self._root_ids[srcid] = info["source"]
+        return self.isVisible(info)
+
+    # --------------------------------------------------------------------------
     def addMessage(self, srcid, info):
         args = info["args"]
         message = info["format"]
         tag = info.get("tag")
-
-        if self._root_ids[srcid] is None:
-            self._root_ids[srcid] = info["source"]
 
         curr_time = time.time()
         if self._prev_times[srcid] is None:
@@ -958,6 +1026,49 @@ class XmlLogFormatter(object):
         return XmlLogProcessor(self._source_id, self)
 
 # ------------------------------------------------------------------------------
+class TimeIntervalInfo:
+    # --------------------------------------------------------------------------
+    def __init__(self, options, time_ns):
+        self._print_interval = options.interval_print_period
+        self._print_time = time.time()
+        self._count = 1
+        self._time_min_ns = time_ns
+        self._time_max_ns = time_ns
+        self._time_sum_ns = time_ns
+
+    # --------------------------------------------------------------------------
+    def update(self, time_ns):
+        self._count += 1
+        self._time_min_ns = min(self._time_min_ns, time_ns)
+        self._time_max_ns = max(self._time_max_ns, time_ns)
+        self._time_sum_ns += time_ns
+        return self
+
+    # --------------------------------------------------------------------------
+    def shouldPrint(self):
+        return (self._print_time + self._print_interval) < time.time()
+
+    # --------------------------------------------------------------------------
+    def wasPrinted(self):
+        self._print_time = time.time()
+
+    # --------------------------------------------------------------------------
+    def minDuration(self):
+        return self._time_min_ns / 1000000000.0
+
+    # --------------------------------------------------------------------------
+    def maxDuration(self):
+        return self._time_max_ns / 1000000000.0
+
+    # --------------------------------------------------------------------------
+    def avgDuration(self):
+        return self._time_sum_ns / (self._count * 1000000000.0)
+
+    # --------------------------------------------------------------------------
+    def hitCount(self):
+        return self._count
+
+# ------------------------------------------------------------------------------
 class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
     def __init__(self, srcid, formatter):
@@ -966,8 +1077,11 @@ class XmlLogProcessor(xml.sax.ContentHandler):
         self._carg = None
         self._info = None
         self._loggers = {}
+        self._intervals = {}
+        self._source_map = {}
         self._start_time = time.time()
-        self._formatter= formatter
+        self._formatter = formatter
+        self._options = formatter._options
         self._parser = xml.sax.make_parser()
         self._parser.setContentHandler(self)
 
@@ -988,6 +1102,7 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                 ]
             }
             self._info["args"] = {}
+            self._source_map[attr["iid"]] = attr["src"]
         elif tag == "a":
             self._carg = attr["n"]
             iarg = {
@@ -1003,6 +1118,22 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                     "used": False,
                     "values": [iarg]
                 }
+        elif tag == "i":
+            key = (attr["iid"], attr["lbl"])
+            try: interval = self._intervals[key].update(int(attr.get("tns")))
+            except KeyError:
+                interval = self._intervals[key] = TimeIntervalInfo(
+                    self._options,
+                    int(attr.get("tns")))
+            if interval.shouldPrint():
+                info = {
+                    "source": self._source_map.get(attr.get("iid")),
+                    "instance": attr.get("iid"),
+                    "tag": attr.get("lbl")
+                }
+                if self._formatter.isVisible(info):
+                    self._formatter.addInterval(self._srcid, interval, info)
+                interval.wasPrinted()
         elif tag == "c":
             try: logger = self._loggers[attr["src"]]
             except KeyError:
@@ -1030,10 +1161,17 @@ class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
     def endElement(self, tag):
         if tag == "log":
+            for key, interval in self._intervals.items():
+                iarg = {
+                    "source": self._source_map.get(key[0]),
+                    "instance": key[0],
+                    "tag": key[1]
+                }
+                self._formatter.addInterval(self._srcid, interval, iarg)
             self._formatter.addLoggerInfos(self._srcid, self._loggers)
             self._formatter.finishLog(self._srcid)
         elif tag == "m":
-            if self._formatter.isVisible(self._info):
+            if self._formatter.previewMessage(self._srcid, self._info):
                 self._formatter.addMessage(self._srcid, self._info)
             self._info = None
 

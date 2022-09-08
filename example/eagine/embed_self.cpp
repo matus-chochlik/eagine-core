@@ -17,6 +17,8 @@ import <iostream>;
 auto main() -> int {
     using namespace eagine;
     std::cout << hexdump(embed<"self">(__FILE__));
+    std::cout << std::endl;
+    std::cout << hexdump(search_resource("self"));
 
     return 0;
 }

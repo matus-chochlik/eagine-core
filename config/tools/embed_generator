@@ -13,14 +13,30 @@ class EmberArgumentParser(argparse.ArgumentParser):
     # --------------------------------------------------------------------------
     def _positive_int(self, x):
         try:
-            assert(int(x) > 0)
+            assert int(x) > 0
             return int(x)
         except:
             self.error("`%s' is not a positive integer value" % str(x))
 
+    def _identifier(self, x):
+        try:
+            assert self._ident_re.match(x)
+            return x
+        except:
+            self.error("`%s' is not valid identifier value" % str(x))
+
+    def _id_and_path(self, x):
+        try:
+            assert (self._ident_re.match(x) or self._target_re.match(x) or os.path.exists(x))
+            return x
+        except:
+            self.error("`%s' is not valid identifier or path" % str(x))
+
     # --------------------------------------------------------------------------
     def __init__(self, **kw):
         argparse.ArgumentParser.__init__(self, **kw)
+        self._ident_re = re.compile("^[A-Za-z0-9_]{1,10}$")
+        self._target_re = re.compile("^[A-Za-z0-9_]+$")
 
         self.add_argument(
             '-p', '--packed',
@@ -30,10 +46,27 @@ class EmberArgumentParser(argparse.ArgumentParser):
         )
 
         self.add_argument(
+            '-e', '--enable-search',
+            dest='enable_search',
+            default=False,
+            action="store_true"
+        )
+
+        self.add_argument(
             '-i', '--input',
             metavar='INPUT-FILE',
             nargs='?',
             type=os.path.realpath,
+            default=[],
+            action="append"
+        )
+
+        self.add_argument(
+            '-I', '--id-input',
+            dest='explicit_id_paths',
+            metavar=('IDENTIFIER','INPUT-FILE'),
+            nargs=2,
+            type=self._id_and_path,
             default=[],
             action="append"
         )
@@ -53,6 +86,16 @@ class EmberArgumentParser(argparse.ArgumentParser):
             metavar='DIRECTORY',
             nargs='?',
             type=os.path.realpath,
+            default=[],
+            action="append"
+        )
+
+        self.add_argument(
+            '-g', '--generate-switch',
+            dest='switch_identifiers',
+            metavar='IDENTIFIER',
+            nargs='?',
+            type=self._identifier,
             default=[],
             action="append"
         )
@@ -250,10 +293,27 @@ def make_prologue(options):
     options.output.write("  -> embedded_resource;\n")
 
 # ------------------------------------------------------------------------------
+def make_switch_function(options):
+    options.output.write("auto search_embedded_resource(identifier_t res_id) noexcept\n")
+    options.output.write("  -> embedded_resource {\n")
+    options.output.write("    switch(res_id) {\n")
+
+    for ident in set(options.switch_identifiers):
+        options.output.write('        case id_v("%s"):\n' % ident)
+        options.output.write('            return get_embedded_resource(selector<id_v("%s")>{}, {});\n' % ident)
+
+    options.output.write("        default: break;\n")
+    options.output.write("    }\n")
+    options.output.write("    return {};\n")
+    options.output.write("}\n")
+# ------------------------------------------------------------------------------
 def make_epilogue(options):
     options.output.write("} // namespace eagine\n")
 # ------------------------------------------------------------------------------
 def list_embedded_resources(options):
+    for ident, path in options.explicit_id_paths:
+        yield ident, path
+
     embed_res = [
         r'embed<"([a-zA-Z0-9_]+)">\(\s*("([^"]+)"|__FILE__)\s*\)',
         r'embed<id_v\("([a-zA-Z0-9_]+)"\)>\(\s*("([^"]+)"|__FILE__)\s*\)'
@@ -280,8 +340,15 @@ def make_resource_file(options):
         if not some_output:
             make_prologue(options)
             some_output = True
-
+        if options.enable_search:
+            options.switch_identifiers.append(identifier)
         make_res_function(options, identifier, resource_path)
+
+    if options.switch_identifiers:
+        if not some_output:
+            make_prologue(options)
+            some_output = True
+        make_switch_function(options)
 
     if some_output:
         make_epilogue(options)

@@ -117,6 +117,18 @@ auto embed(string_view src_path) noexcept -> embedded_resource {
 #endif
 }
 
+auto search_embedded_resource(identifier_t) noexcept -> embedded_resource;
+
+/// @brief Searches for a resource with the specified identifier.
+/// @ingroup embedding
+/// @see embedded_resource
+/// @see embed
+// NOTE: this has to be a template, otherwise there will be link errors.
+template <auto L>
+auto search_resource(const char (&res_id)[L]) noexcept -> embedded_resource {
+    return search_embedded_resource(identifier_value(res_id));
+}
+
 } // namespace eagine
 
 #endif // EAGINE_EMBED_HPP

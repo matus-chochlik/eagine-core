@@ -65,9 +65,15 @@ public:
         return "Syslog";
     }
 
-    void enter_scope(const identifier) noexcept final {}
+    void time_interval_begin(
+      identifier,
+      logger_instance_id,
+      time_interval_id) noexcept final {}
 
-    void leave_scope(const identifier) noexcept final {}
+    void time_interval_end(
+      identifier,
+      logger_instance_id,
+      time_interval_id) noexcept final {}
 
     void set_description(
       [[maybe_unused]] const identifier src,

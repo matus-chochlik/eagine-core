@@ -50,18 +50,20 @@ public:
     }
 
     auto out() noexcept -> std::ostream& {
-        if(_socket.is_open()) {
+        if(_socket.is_open()) [[likely]] {
             return _out;
         }
         return std::clog;
     }
 
 protected:
-    void _flush() {
+    void _flush(bool always) {
         try {
-            if(_socket.is_open()) {
-                const auto done = asio::write(_socket, _buffer);
-                _buffer.consume(done);
+            if(always || _buffer.size() > 2048) {
+                if(_socket.is_open()) [[likely]] {
+                    const auto done = asio::write(_socket, _buffer);
+                    _buffer.consume(done);
+                }
             }
         } catch(...) {
         }
@@ -94,18 +96,20 @@ public:
     }
 
     auto out() noexcept -> std::ostream& {
-        if(_socket.is_open()) {
+        if(_socket.is_open()) [[likely]] {
             return _out;
         }
         return std::clog;
     }
 
 protected:
-    void _flush() {
+    void _flush(bool always) {
         try {
-            if(_socket.is_open()) {
-                const auto done = asio::write(_socket, _buffer);
-                _buffer.consume(done);
+            if(always || _buffer.size() > 2048) {
+                if(_socket.is_open()) [[likely]] {
+                    const auto done = asio::write(_socket, _buffer);
+                    _buffer.consume(done);
+                }
             }
         } catch(...) {
         }
@@ -154,9 +158,13 @@ public:
         this->finish_log();
     }
 
-    void flush() noexcept final {
-        Connection::_flush();
+    void flush(bool always) noexcept final {
+        std::lock_guard<Lockable> lock{_flush_lockable};
+        Connection::_flush(always);
     }
+
+private:
+    Lockable _flush_lockable;
 };
 //------------------------------------------------------------------------------
 template <typename Lockable>

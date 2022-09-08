@@ -133,6 +133,9 @@ public:
     /// @brief Returns a reference to the root activity object.
     auto progress() const noexcept -> const activity_progress&;
 
+    /// @brief Returns a reference to the workshop object.
+    auto workers() const noexcept -> workshop&;
+
     /// @brief Locates the specified service object.
     auto locate_service(identifier type_id) const noexcept
       -> std::shared_ptr<main_ctx_service>;

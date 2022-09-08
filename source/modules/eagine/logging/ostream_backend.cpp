@@ -5,6 +5,10 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#include <cassert>
+
 export module eagine.core.logging:ostream_backend;
 
 import eagine.core.types;
@@ -14,6 +18,7 @@ import eagine.core.reflection;
 import eagine.core.string;
 import :backend;
 import <array>;
+import <vector>;
 import <ostream>;
 
 namespace eagine {
@@ -62,18 +67,38 @@ public:
         return nullptr;
     }
 
-    void enter_scope(const identifier scope) noexcept final {
+    void time_interval_begin(
+      const identifier label,
+      const logger_instance_id log_id,
+      const time_interval_id int_id) noexcept final {
         try {
-            _lockable.lock();
-            _out << "<s name='" << scope.name() << "'>\n";
+            const std::lock_guard<Lockable> lock{_lockable};
+            _intervals.emplace_back(
+              int_id, log_id, label, std::chrono::steady_clock::now());
         } catch(...) {
         }
     }
 
-    void leave_scope(const identifier) noexcept final {
+    void time_interval_end(
+      const identifier label,
+      const logger_instance_id log_id,
+      const time_interval_id int_id) noexcept final {
         try {
-            _lockable.lock();
-            _out << "</s>\n";
+            const auto end{std::chrono::steady_clock::now()};
+            const std::lock_guard<Lockable> lock{_lockable};
+            const auto pos{std::find_if(
+              _intervals.rbegin(),
+              _intervals.rend(),
+              [int_id](const auto& entry) {
+                  return std::get<0>(entry) == int_id;
+              })};
+            assert(pos != _intervals.rend());
+            _out << "<i iid='" << std::get<1>(*pos) << "' lbl='"
+                 << std::get<2>(*pos).name() << "' tns='"
+                 << std::chrono::nanoseconds(end - std::get<3>(*pos)).count()
+                 << "'/>\n";
+            _intervals.erase(std::next(pos).base());
+            flush();
         } catch(...) {
         }
     }
@@ -247,7 +272,7 @@ public:
     void finish_message() noexcept final {
         try {
             _out << "</m>\n";
-            flush();
+            flush(true);
             _lockable.unlock();
         } catch(...) {
         }
@@ -256,8 +281,8 @@ public:
     void finish_log() noexcept final {
         try {
             const std::lock_guard<Lockable> lock{_lockable};
-            _out << "</log>\n" << std::flush;
-            flush();
+            _out << "</log>\n";
+            flush(true);
         } catch(...) {
         }
     }
@@ -280,6 +305,7 @@ public:
             _out << " ts='" << sec.count() << "'";
             _out << " v='" << value << "'";
             _out << "/>\n";
+            flush();
         } catch(...) {
         }
     }
@@ -289,7 +315,7 @@ public:
     }
 
 protected:
-    virtual void flush() noexcept {}
+    virtual void flush([[maybe_unused]] bool always = false) noexcept {}
 
 private:
     Lockable _lockable{};
@@ -297,6 +323,12 @@ private:
     const log_event_severity _min_severity;
     const std::chrono::steady_clock::time_point _start;
     memory::shared_byte_allocator _alloc{memory::default_byte_allocator()};
+    std::vector<std::tuple<
+      time_interval_id,
+      logger_instance_id,
+      identifier,
+      std::chrono::steady_clock::time_point>>
+      _intervals;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

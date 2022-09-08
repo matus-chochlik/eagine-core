@@ -17,6 +17,7 @@ export import :severity;
 import :config;
 import :backend;
 import :entry;
+import :time_interval;
 import <memory>;
 
 namespace eagine {
@@ -65,6 +66,19 @@ public:
     /// @brief Returns the unique id of this logger instance.
     auto instance_id() const noexcept -> logger_instance_id {
         return reinterpret_cast<logger_instance_id>(this);
+    }
+
+    /// @brief Creates object the lifetime of this is measured and logged.
+    auto measure_time_interval(
+      const identifier label,
+      log_event_severity severity) const noexcept -> log_time_interval {
+        return {label, instance_id(), _entry_backend(severity)};
+    }
+
+    /// @brief Creates object the lifetime of this is measured and logged.
+    auto measure_time_interval(const identifier label) const noexcept
+      -> log_time_interval {
+        return measure_time_interval(label, log_event_severity::stat);
     }
 
     auto configure(basic_config& config) const -> bool {

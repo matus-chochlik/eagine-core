@@ -117,6 +117,10 @@ auto main_ctx_object::progress() const noexcept -> const activity_progress& {
     return main_context().progress();
 }
 //------------------------------------------------------------------------------
+auto main_ctx_object::workers() const noexcept -> workshop& {
+    return main_context().workers();
+}
+//------------------------------------------------------------------------------
 auto main_ctx_object::locate_service(identifier type_id) const noexcept
   -> std::shared_ptr<main_ctx_service> {
     return main_context().locate_service(type_id);
