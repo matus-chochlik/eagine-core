@@ -76,8 +76,26 @@ public:
     }
 
     /// @brief Returns the host name or IP address.
+    /// @see domain
     auto host() const noexcept -> valid_if_not_empty<string_view> {
         return {_host};
+    }
+
+    /// @brief Returns the host name or IP address.
+    /// @see host
+    auto domain() const noexcept -> valid_if_not_empty<string_view> {
+        return {_host};
+    }
+
+    /// @brief Returns the host name or IP address.
+    /// @see host
+    auto domain_identifier() const noexcept -> identifier {
+        if(const string_view str{_host}) {
+            if(identifier::can_be_encoded(str)) {
+                return identifier{str};
+            }
+        }
+        return {};
     }
 
     /// @brief Returns the port string.
@@ -87,7 +105,7 @@ public:
 
     /// @brief Returns the port.
     auto port() const noexcept -> valid_if_not_zero<int> {
-        int result = 0;
+        int result{0};
         [[maybe_unused]] const auto unused{
           std::from_chars(_port.begin(), _port.end(), result)};
         return {result};
