@@ -10,6 +10,7 @@ export module eagine.core.runtime:url;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
+import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.container;
 export import <string>;
@@ -99,6 +100,7 @@ public:
 
     /// @brief Returns the path.
     /// @see has_path
+    /// @see path_identifier
     auto path() const noexcept -> basic_string_path {
         return {basic_string_path{_path, split_by, "/"}};
     }
@@ -108,6 +110,18 @@ public:
     /// @see path
     auto has_path(const string_view str) const noexcept -> bool {
         return are_equal(str, _path);
+    }
+
+    /// @brief Returns the path as identifier if possible.
+    /// @see path_str
+    /// @see path_identifier
+    auto path_identifier() const noexcept -> identifier {
+        if(const string_view str{skip(view(_path), 1)}) {
+            if(identifier::can_be_encoded(str)) {
+                return identifier{str};
+            }
+        }
+        return {};
     }
 
     /// @brief Returns the query string.

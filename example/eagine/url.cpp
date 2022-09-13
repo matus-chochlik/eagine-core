@@ -38,6 +38,8 @@ auto main(main_ctx& ctx) -> int {
           .arg(identifier{"value"}, either_or(u.port(), n));
         out.cio_print("path:       ")
           .arg(identifier{"value"}, either_or(u.path_str(), n));
+        out.cio_print("path ident: ")
+          .arg(identifier{"value"}, u.path_identifier());
 
         const auto entry_cio{out.cio_print("path entries:").to_be_continued()};
 
