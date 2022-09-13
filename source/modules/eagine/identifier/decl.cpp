@@ -43,8 +43,18 @@ public:
     }
 
     /// @brief Returns the valid character set as a string_view
-    static auto chars() -> memory::string_view {
+    static constexpr auto chars() noexcept -> memory::string_view {
         return {CharSet::values};
+    }
+
+    /// @brief Indicates if the specified string view can be encoded by this.
+    static constexpr auto can_be_encoded(string_view str) noexcept -> bool {
+        for(const char c : str) {
+            if(!memory::has_element(chars(), c)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 private:
@@ -197,6 +207,14 @@ public:
 
     /// @brief The maximum length of the identifier string.
     static constexpr const std::size_t max_length = M;
+
+    /// @brief Indicates if the specified string view can be encoded into identifier.
+    static constexpr auto can_be_encoded(string_view str) noexcept -> bool {
+        if(str.size() <= max_length) {
+            return encoding::can_be_encoded(str);
+        }
+        return false;
+    }
 
     /// @brief Default constructor. Constructs an empty identifier.
     constexpr basic_identifier() noexcept = default;
