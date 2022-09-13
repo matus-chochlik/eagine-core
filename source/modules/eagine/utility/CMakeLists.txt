@@ -19,6 +19,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.utility PARTITION signal
+	IMPORTS
+		callable_ref
+		eagine.core.types
+		eagine.core.container
+)
+
+eagine_add_module(
 	eagine.core.utility PARTITION memoized
 	IMPORTS
 		callable_ref
@@ -98,6 +106,7 @@ eagine_add_module(
 		integer_hash
 		interleaved_call
 		callable_ref
+		signal
 		memoized
 		network_sort
 		scope_exit
