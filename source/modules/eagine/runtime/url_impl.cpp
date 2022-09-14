@@ -53,4 +53,27 @@ url::url(
     }
 }
 //------------------------------------------------------------------------------
+void url::_remap(
+  const std::string& src_str,
+  string_view src_part,
+  string_view& dst_part) const noexcept {
+    dst_part = head(
+      skip(view(_url_str), src_part.data() - src_str.data()), src_part.size());
+}
+//------------------------------------------------------------------------------
+url::url(const url& that)
+  : _url_str{that._url_str}
+  , _parsed{that._parsed} {
+    if(_parsed) {
+        _remap(that._url_str, that._scheme, _scheme);
+        _remap(that._url_str, that._login, _login);
+        _remap(that._url_str, that._passwd, _passwd);
+        _remap(that._url_str, that._host, _host);
+        _remap(that._url_str, that._port, _port);
+        _remap(that._url_str, that._path, _path);
+        _remap(that._url_str, that._query, _query);
+        _remap(that._url_str, that._fragment, _fragment);
+    }
+}
+//------------------------------------------------------------------------------
 } // namespace eagine

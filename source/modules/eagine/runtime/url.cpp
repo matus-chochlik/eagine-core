@@ -29,6 +29,12 @@ public:
     url(std::string url_str) noexcept
       : url{std::move(url_str), std::match_results<std::string::iterator>{}} {}
 
+    url(url&&) noexcept = default;
+    url(const url&);
+    auto operator=(url&&) noexcept -> url& = default;
+    auto operator=(const url&) = delete;
+    ~url() noexcept = default;
+
     /// @brief Comparison.
     auto operator<=>(const url& that) const noexcept {
         return _url_str.compare(that._url_str);
@@ -188,6 +194,10 @@ private:
       string_view& part,
       const std::match_results<std::string::iterator>& match,
       const std::size_t index) const noexcept;
+    void _remap(
+      const std::string& src_str,
+      string_view src_part,
+      string_view& dst_part) const noexcept;
 
     static auto _get_regex() noexcept -> const std::regex&;
 
