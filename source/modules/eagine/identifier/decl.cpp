@@ -247,18 +247,20 @@ public:
         return M;
     }
 
-    /// @brief Returns the size of this identifier.
-    /// @see size()
+    /// @brief Indicates if this identifier is empty.
+    /// @see size
     constexpr auto is_empty() const noexcept -> bool {
         return value() == 0;
     }
 
+    /// @brief Indicates if this identifier is not empty.
+    /// @see is_empty
     constexpr explicit operator bool() const noexcept {
-        return !is_empty();
+        return value() != 0;
     }
 
     /// @brief Returns the size of this identifier.
-    /// @see is_empty()
+    /// @see is_empty
     constexpr auto size() const noexcept -> size_type {
         return is_empty() ? 0 : _get_size(0);
     }
