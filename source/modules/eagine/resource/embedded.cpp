@@ -54,6 +54,7 @@ public:
     }
 
     /// @brief Unpacks this resource into a buffer using the provided compressor.
+    /// @see fetch
     /// @see is_packed
     auto unpack(data_compressor& comp, memory::buffer& buf) const
       -> memory::const_block {
@@ -64,15 +65,42 @@ public:
     }
 
     /// @brief Unpacks this resource into a buffer using compressor from main context.
+    /// @see fetch
     /// @see is_packed
     auto unpack(main_ctx& ctx) const -> memory::const_block {
         return unpack(ctx.compressor(), ctx.scratch_space());
     }
 
     /// @brief Unpacks this resource using compressor from a main context object.
+    /// @see fetch
     /// @see is_packed
     auto unpack(main_ctx_object& mco) const -> memory::const_block {
         return unpack(mco.main_context());
+    }
+
+    /// @brief Unpacks this resource and passes the data into the handler function.
+    /// @see unpack
+    /// @see is_packed
+    auto fetch(data_compressor& comp, data_compressor::data_handler handler)
+      const -> bool {
+        if(is_packed()) {
+            return comp.decompress(_res_blk, handler);
+        }
+        return handler(_res_blk);
+    }
+
+    /// @brief Unpacks this resource and passes the data into the handler function.
+    /// @see unpack
+    /// @see is_packed
+    auto fetch(main_ctx& ctx, data_compressor::data_handler handler) {
+        return fetch(ctx.compressor(), handler);
+    }
+
+    /// @brief Unpacks this resource and passes the data into the handler function.
+    /// @see unpack
+    /// @see is_packed
+    auto fetch(main_ctx_object& mco, data_compressor::data_handler handler) {
+        return fetch(mco.main_context(), handler);
     }
 
 private:
