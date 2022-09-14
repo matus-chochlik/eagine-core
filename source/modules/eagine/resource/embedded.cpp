@@ -47,6 +47,11 @@ public:
         return _packed;
     }
 
+    /// @brief Indicates if the resource is empty.
+    constexpr explicit operator bool() const noexcept {
+        return !_res_blk.empty();
+    }
+
     /// @brief Implicit conversion to const block.
     constexpr operator memory::const_block() const noexcept {
         assert(!is_packed());
