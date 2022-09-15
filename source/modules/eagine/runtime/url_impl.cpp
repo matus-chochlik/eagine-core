@@ -17,20 +17,19 @@ namespace eagine {
 auto url::_get_regex() noexcept -> const std::regex& {
     static const std::regex re{
       // clang-format off
-          R"(^((([\w]+):)?\/\/)(([^:]+)(:(\S+))?@)?((((\w[\w_-]{0,62}(\.\w[\w_-]{0,62})*))|((10|127)(\.\d{1,3}){3})|((169\.254|192\.168)(\.\d{1,3}){2})|(172\.(1[6-9]|2\d|3[0-1])(\.\d{1,3}){2})|([1-9]\d?|1\d\d|2[01]\d|22[0-3])(\.(1?\d{1,2}|2[0-4]\d|25[0-5])){2}(\.([1-9]\d?|1\d\d|2[0-4]\d|25[0-4])))(:(\d{1,5}))?)?((/[\w_-]+)*/?)?(\?(([\w_]+=[^+#]*)(\+([\w_]+=[^+#]*))*))?(#([\w_-]*))?$)",
+      R"(^((([\w]+):)?\/\/)(([^:]+)(:(\S+))?@)?((((\w[\w_-]{0,62}(\.\w[\w_-]{0,62})*))|((10|127)(\.\d{1,3}){3})|((169\.254|192\.168)(\.\d{1,3}){2})|(172\.(1[6-9]|2\d|3[0-1])(\.\d{1,3}){2})|([1-9]\d?|1\d\d|2[01]\d|22[0-3])(\.(1?\d{1,2}|2[0-4]\d|25[0-5])){2}(\.([1-9]\d?|1\d\d|2[0-4]\d|25[0-4])))(:(\d{1,5}))?)?((/[\w_-]+)*/?)?(\?(([\w_]+=[^+#]*)(\+([\w_]+=[^+#]*))*))?(#([\w_-]*))?$)",
       // clang-format on
       std::regex::ECMAScript};
     return re;
 }
 //------------------------------------------------------------------------------
 void url::_cover(
-  string_view& part,
+  url::_range& part,
   const std::match_results<std::string::iterator>& match,
   const std::size_t index) const noexcept {
     if(index < match.size()) {
         auto& m = match[index];
-        part = head(
-          skip(view(_url_str), m.first - _url_str.begin()), m.second - m.first);
+        part = {m.first - _url_str.begin(), m.second - m.first};
     }
 }
 //------------------------------------------------------------------------------
@@ -50,29 +49,6 @@ url::url(
         _cover(_path, match, 29);
         _cover(_query, match, 32);
         _cover(_fragment, match, 37);
-    }
-}
-//------------------------------------------------------------------------------
-void url::_remap(
-  const std::string& src_str,
-  string_view src_part,
-  string_view& dst_part) const noexcept {
-    dst_part = head(
-      skip(view(_url_str), src_part.data() - src_str.data()), src_part.size());
-}
-//------------------------------------------------------------------------------
-url::url(const url& that)
-  : _url_str{that._url_str}
-  , _parsed{that._parsed} {
-    if(_parsed) {
-        _remap(that._url_str, that._scheme, _scheme);
-        _remap(that._url_str, that._login, _login);
-        _remap(that._url_str, that._passwd, _passwd);
-        _remap(that._url_str, that._host, _host);
-        _remap(that._url_str, that._port, _port);
-        _remap(that._url_str, that._path, _path);
-        _remap(that._url_str, that._query, _query);
-        _remap(that._url_str, that._fragment, _fragment);
     }
 }
 //------------------------------------------------------------------------------
