@@ -26,20 +26,28 @@ auto main(main_ctx& ctx) -> int {
     while((std::cin >> line).good()) {
         const url u{line};
 
-        out.cio_print("scheme:     ").arg("value", either_or(u.scheme(), n));
-        out.cio_print("login:      ").arg("value", either_or(u.login(), n));
-        out.cio_print("password:   ").arg("value", either_or(u.password(), n));
-        out.cio_print("host:       ").arg("value", either_or(u.host(), n));
-        out.cio_print("port:       ").arg("value", either_or(u.port(), n));
-        out.cio_print("path:       ").arg("value", either_or(u.path_str(), n));
-        out.cio_print("path ident: ").arg("value", u.path_identifier());
+        out.cio_print("scheme:          ${value}")
+          .arg("value", either_or(u.scheme(), n));
+        out.cio_print("login:           ${value}")
+          .arg("value", either_or(u.login(), n));
+        out.cio_print("password:        ${value}")
+          .arg("value", either_or(u.password(), n));
+        out.cio_print("host:            ${value}")
+          .arg("value", either_or(u.host(), n));
+        out.cio_print("port:            ${value}")
+          .arg("value", either_or(u.port(), n));
+        out.cio_print("path:            ${value}")
+          .arg("value", either_or(u.path_str(), n));
+        out.cio_print("path identifier: ${value}")
+          .arg("value", u.path_identifier());
 
         const auto entry_cio{out.cio_print("path entries:").to_be_continued()};
 
         for(auto& entry : u.path()) {
             entry_cio.print("'${value}'").arg("value", entry);
         }
-        out.cio_print("query:      ").arg("value", either_or(u.query_str(), n));
+        out.cio_print("query:           ${value}")
+          .arg("value", either_or(u.query_str(), n));
 
         const auto arg_cio{out.cio_print("query arguments:").to_be_continued()};
 
@@ -48,7 +56,8 @@ auto main(main_ctx& ctx) -> int {
               .arg("name", name)
               .arg("value", value);
         }
-        out.cio_print("fragment:   ").arg("value", either_or(u.fragment(), n));
+        out.cio_print("fragment:        ${value}")
+          .arg("value", either_or(u.fragment(), n));
     }
 
     return 0;
