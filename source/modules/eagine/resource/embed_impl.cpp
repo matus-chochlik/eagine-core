@@ -10,8 +10,9 @@ module;
 extern "C" {
 struct eagine_embedded_resource_info {
     const char* src_path;
+    long src_path_len;
     const unsigned char* data_pointer;
-    ptrdiff_t data_size;
+    long data_size;
     bool is_packed;
 };
 } // extern "C"
@@ -36,7 +37,7 @@ auto embedded_resource_loader::search(identifier_value res_id) noexcept
             const auto info{search_func(res_id)};
             return {
               memory::const_block{info.data_pointer, info.data_size},
-              string_view{info.src_path},
+              string_view{info.src_path, info.src_path_len},
               info.is_packed};
         }
     }
