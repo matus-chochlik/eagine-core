@@ -9,11 +9,12 @@ module eagine.core.resource;
 
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.identifier;
 import eagine.core.runtime;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-auto embedded_resource_loader::search(identifier_t res_id) noexcept
+auto embedded_resource_loader::search(identifier_value res_id) noexcept
   -> embedded_resource {
     if(auto found{_self.find_function(
          "search_embedded_resource",

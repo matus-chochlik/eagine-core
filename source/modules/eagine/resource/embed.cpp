@@ -44,7 +44,7 @@ auto search_embedded_resource(identifier_t) noexcept -> embedded_resource;
 
 export class embedded_resource_loader {
 public:
-    auto search(identifier_t) noexcept -> embedded_resource;
+    auto search(identifier_value) noexcept -> embedded_resource;
 
 private:
     shared_executable_module _self{nothing, module_load_option::load_lazy};
