@@ -18,6 +18,15 @@ import eagine.core.utility;
 import eagine.core.runtime;
 import eagine.core.main_ctx;
 
+extern "C" {
+struct eagine_embedded_resource_info {
+    const char* src_path;
+    const unsigned char* data_pointer;
+    ptrdiff_t data_size;
+    bool is_packed;
+};
+}
+
 namespace eagine {
 
 /// @brief Class providing access to a const resource block embedded into the executable.
@@ -50,6 +59,10 @@ public:
     /// @brief Indicates if the resource is empty.
     constexpr explicit operator bool() const noexcept {
         return !_res_blk.empty();
+    }
+
+    constexpr auto embedded_block() const noexcept -> memory::const_block {
+        return _res_blk;
     }
 
     /// @brief Implicit conversion to const block.

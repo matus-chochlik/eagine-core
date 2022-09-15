@@ -19,6 +19,11 @@ auto main() -> int {
     std::cout << hexdump(embed<"self">(__FILE__));
     std::cout << std::endl;
     std::cout << hexdump(search_resource("self"));
+#if EAGINE_CORE_MODULE
+    std::cout << std::endl;
+    embedded_resource_loader resources;
+    std::cout << hexdump(resources.search("self"));
+#endif
 
     return 0;
 }

@@ -5,6 +5,17 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+extern "C" {
+struct eagine_embedded_resource_info {
+    const char* src_path;
+    const unsigned char* data_pointer;
+    ptrdiff_t data_size;
+    bool is_packed;
+};
+} // extern "C"
+
 module eagine.core.resource;
 
 import eagine.core.types;
@@ -16,11 +27,17 @@ namespace eagine {
 //------------------------------------------------------------------------------
 auto embedded_resource_loader::search(identifier_value res_id) noexcept
   -> embedded_resource {
+    using search_func_type =
+      struct eagine_embedded_resource_info(std::uint64_t);
     if(auto found{_self.find_function(
-         "search_embedded_resource",
-         std::type_identity<embedded_resource(identifier_t)>())}) {
+         "eagine_search_embedded_resource",
+         std::type_identity<search_func_type>())}) {
         if(auto search_func{extract(found)}) {
-            return search_func(res_id);
+            const auto info{search_func(res_id)};
+            return {
+              memory::const_block{info.data_pointer, info.data_size},
+              string_view{info.src_path},
+              info.is_packed};
         }
     }
     return {};
