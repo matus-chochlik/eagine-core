@@ -411,4 +411,29 @@ auto from_string(const string_view src, const selector<V> sel) noexcept {
     return from_string(src, std::type_identity<T>(), sel);
 }
 //------------------------------------------------------------------------------
+/// @brief Checks if the string can be converted to a value equal to the one given.
+/// @ingroup type_utils
+/// @see from_string
+///
+/// This overload allows to specify a selector that can change the value
+/// conversion rules.
+export template <typename T, identifier_t V>
+auto string_has_value(
+  const string_view str,
+  const T& value,
+  const selector<V> sel) noexcept {
+    if(const auto converted{from_string(str, std::type_identity<T>(), sel)}) {
+        return are_equal(extract(converted), value);
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+/// @brief Checks if the string can be converted to a value equal to the one given.
+/// @ingroup type_utils
+/// @see from_string
+export template <typename T>
+auto string_has_value(const string_view str, const T& value) noexcept {
+    return string_has_value(str, value, default_selector);
+}
+//------------------------------------------------------------------------------
 } // namespace eagine
