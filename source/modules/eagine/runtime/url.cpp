@@ -19,7 +19,35 @@ import <regex>;
 
 namespace eagine {
 
+/// @brief Value map class for storing URL query parts.
+/// @see url
+export struct url_query_args
+  : flat_map<string_view, string_view, basic_view_less<string_view>> {
+
+    /// @brief Returns the value of the argument with the specified name.
+    /// @see arg_has_value
+    auto arg_value(const string_view name) const noexcept
+      -> valid_if_not_empty<string_view> {
+        if(const auto pos{find(name)}; pos != end()) {
+            return {std::get<1>(*pos)};
+        }
+        return {};
+    }
+
+    /// @brief Checks if the argument with the specified name has the specified value.
+    /// @see arg_value
+    template <typename T>
+    auto arg_has_value(const string_view name, const T& value) const noexcept
+      -> bool {
+        if(const auto pos{find(name)}; pos != end()) {
+            return string_has_value(std::get<1>(*pos), value);
+        }
+        return false;
+    }
+};
+
 /// @brief Class parsing and providing access to parts of an URL.
+/// @see url_query_args
 export class url {
 public:
     /// @brief Default constructor.
@@ -148,14 +176,10 @@ public:
         return {_sw(_query)};
     }
 
-    /// @brief Name to value map for storing URL query parts.
-    using query_args =
-      flat_map<string_view, string_view, basic_view_less<string_view>>;
-
     /// @brief Returns the query.
     /// @see argument
-    auto query() const noexcept -> query_args {
-        query_args result;
+    auto query() const noexcept -> url_query_args {
+        url_query_args result;
         for_each_delimited(_sw(_query), string_view{"+"}, [&result](auto part) {
             auto [name, value] = split_by_first(part, string_view{"="});
             result[name] = value;
