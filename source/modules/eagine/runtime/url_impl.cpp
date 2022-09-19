@@ -49,6 +49,7 @@ url::url(
         _cover(_path, match, 29);
         _cover(_query, match, 32);
         _cover(_fragment, match, 37);
+        _query_args = _parse_args();
     }
 }
 //------------------------------------------------------------------------------

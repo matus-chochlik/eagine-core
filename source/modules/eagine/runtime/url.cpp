@@ -39,10 +39,10 @@ export struct url_query_args
     /// @see arg_has_value
     /// @see arg_value
     template <typename T>
-    auto arg_value_as(const string_view name, std::type_identity<T> tid = {})
+    auto arg_value_as(const string_view name, std::type_identity<T> = {})
       const noexcept -> std::optional<T> {
         if(const auto pos{find(name)}; pos != end()) {
-            return from_string(std::get<1>(*pos), tid);
+            return from_string<T>(std::get<1>(*pos));
         }
         return {};
     }
@@ -76,8 +76,12 @@ public:
         return _url_str.compare(that._url_str);
     }
 
-    auto operator==(const url& that) const noexcept -> bool = default;
-    auto operator<(const url& that) const noexcept -> bool = default;
+    auto operator==(const url& that) const noexcept -> bool {
+        return _url_str == that._url_str;
+    }
+    auto operator<(const url& that) const noexcept -> bool {
+        return _url_str < that._url_str;
+    }
 
     /// @brief Indicates if the URL was parsed successfully.
     auto is_valid() const noexcept {
@@ -192,13 +196,8 @@ public:
 
     /// @brief Returns the query.
     /// @see argument
-    auto query() const noexcept -> url_query_args {
-        url_query_args result;
-        for_each_delimited(_sw(_query), string_view{"+"}, [&result](auto part) {
-            auto [name, value] = split_by_first(part, string_view{"="});
-            result[name] = value;
-        });
-        return result;
+    auto query() const noexcept -> const url_query_args& {
+        return _query_args;
     }
 
     /// @brief Returns the value of the specified query argument.
@@ -230,6 +229,15 @@ private:
           head(skip(view(_url_str), std::get<0>(r)), std::get<1>(r))};
     }
 
+    auto _parse_args() const noexcept -> url_query_args {
+        url_query_args result;
+        for_each_delimited(_sw(_query), string_view{"+"}, [&result](auto part) {
+            auto [name, value] = split_by_first(part, string_view{"="});
+            result[name] = value;
+        });
+        return result;
+    }
+
     void _cover(
       _range& part,
       const std::match_results<std::string::iterator>& match,
@@ -247,6 +255,7 @@ private:
     _range _path;
     _range _query;
     _range _fragment;
+    url_query_args _query_args;
     bool _parsed{false};
 };
 
