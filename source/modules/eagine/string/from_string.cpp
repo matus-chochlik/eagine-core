@@ -392,6 +392,19 @@ auto from_string(
     return {};
 }
 //------------------------------------------------------------------------------
+export template <typename T, typename Policy, typename Log, identifier_t V>
+auto from_string(
+  const string_view str,
+  const std::type_identity<basic_valid_if<T, Policy, Log>>,
+  const selector<V> sel) noexcept -> std::optional<T> {
+    if(const auto temp{from_string(str, std::type_identity<T>(), sel)}) {
+        if(Policy()(*temp)) {
+            return temp;
+        }
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
 /// @brief Converts the string representation in @p src to a value of type @p T.
 /// @ingroup type_utils
 /// @see is_within_limits
