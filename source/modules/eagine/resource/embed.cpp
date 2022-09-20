@@ -14,6 +14,7 @@ export module eagine.core.resource:embed;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
+import eagine.core.runtime;
 import :embedded;
 
 namespace eagine {
@@ -40,6 +41,14 @@ auto embed(string_view src_path) noexcept -> embedded_resource {
 }
 
 auto search_embedded_resource(identifier_t) noexcept -> embedded_resource;
+
+export class embedded_resource_loader {
+public:
+    auto search(identifier_value) noexcept -> embedded_resource;
+
+private:
+    shared_executable_module _self{nothing, module_load_option::load_lazy};
+};
 
 /// @brief Searches for a resource with the specified identifier.
 /// @ingroup embedding

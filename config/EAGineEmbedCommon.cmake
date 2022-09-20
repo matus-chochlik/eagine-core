@@ -95,6 +95,10 @@ function(eagine_add_target_resource_file)
 		endif()
 	endforeach()
 	if(${EAGINE_RESOURCE_ENABLE_SEARCH})
+		set_target_properties(
+			${EAGINE_RESOURCE_TARGET}
+			PROPERTIES LINK_FLAGS -rdynamic
+		)
 		list(APPEND GEN_OPTIONS --enable-search)
 	endif()
 

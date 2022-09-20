@@ -20,6 +20,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
+		eagine.core.runtime
 )
 
 eagine_add_module(
@@ -45,5 +46,7 @@ eagine_add_module(
 		embed
 		fetch
 	SOURCES
+		embed_impl
+	IMPORTS
 )
 

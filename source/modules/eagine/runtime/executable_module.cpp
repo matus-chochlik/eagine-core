@@ -136,9 +136,13 @@ public:
     /// @see is_open
     /// @see find_object
     /// @see error_message
-    auto find_function(const string_view name) -> std::optional<void (*)()> {
+    template <typename RV, typename... P>
+    auto find_function(const string_view name, std::type_identity<RV(P...)>)
+      -> std::optional<RV (*)(P...)> {
         if(_module) {
-            return _module->find_function(name);
+            if(auto found{_module->find_function(name)}) {
+                return {reinterpret_cast<RV (*)(P...)>(*found)};
+            }
         }
         return {};
     }

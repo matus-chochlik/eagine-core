@@ -281,8 +281,28 @@ constexpr auto find_position(
     return {};
 }
 //------------------------------------------------------------------------------
+/// @brief Indicates if span contains the specified element.
+/// @ingroup memory
+/// @see find
+/// @see find_element
+/// @see find_element_if
+/// @see reverse_find_position
+export template <typename T, typename P, typename S, typename E>
+constexpr auto has_element(const basic_span<T, P, S> spn, const E& what) noexcept
+  -> bool {
+    auto pos = S(0);
+    while(pos < spn.size()) {
+        if(are_equal(spn[pos], what)) {
+            return true;
+        }
+        ++pos;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
 /// @brief Finds the position of the first occurrence of @p what in a span.
 /// @ingroup memory
+/// @see has_element
 /// @see find
 /// @see find_position
 /// @see find_element_if

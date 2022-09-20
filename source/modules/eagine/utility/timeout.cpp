@@ -101,24 +101,29 @@ public:
     }
 
     /// @brief Resets the timeout using the specified duration values.
+    template <typename Rd, typename Pd, typename Ri, typename Pi>
     auto reset(
-      const _clock::duration duration,
-      const _clock::duration initial) noexcept -> auto& {
-        _duration = duration;
-        _timeout = std::chrono::steady_clock::now() + initial;
+      const std::chrono::duration<Rd, Pd> duration,
+      const std::chrono::duration<Ri, Pi> initial) noexcept -> auto& {
+        _duration = std::chrono::duration_cast<_clock::duration>(duration);
+        _timeout = std::chrono::steady_clock::now() +
+                   std::chrono::duration_cast<_clock::duration>(initial);
         return *this;
     }
 
     /// @brief Resets the timeout using the specified duration values.
     /// @post is_expired()
-    auto reset(const _clock::duration duration, const nothing_t) noexcept
-      -> auto& {
+    template <typename R, typename P>
+    auto reset(
+      const std::chrono::duration<R, P> duration,
+      const nothing_t) noexcept -> auto& {
         return reset(duration, _clock::duration::zero());
     }
 
     /// @brief Resets the timeout using the specified duration value.
     /// @see is_expired
-    auto reset(const _clock::duration duration) noexcept -> auto& {
+    template <typename R, typename P>
+    auto reset(const std::chrono::duration<R, P> duration) noexcept -> auto& {
         return reset(duration, duration);
     }
 
