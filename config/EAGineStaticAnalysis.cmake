@@ -34,12 +34,6 @@ macro(eagine_add_exe_analysis TARGETNAME)
 		${TARGETNAME}
 		PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-weak-vtables;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions>
 	)
-	if(WITH_REFLECTION)
-		target_compile_options(
-			${TARGETNAME}
-			PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-language-extension-token;-Wno-c++20-compat;-Wno-c++2a-extensions>
-		)
-	endif()
 
 	target_compile_options(
 		${TARGETNAME}
