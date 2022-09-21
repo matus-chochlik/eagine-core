@@ -279,14 +279,10 @@ def make_res_function(options, ident, path):
 
 # ------------------------------------------------------------------------------
 def make_prologue(options):
-    options.output.write("#if EAGINE_CORE_MODULE || EAGINE_CORE_RESOURCE_MODULE\n");
     options.output.write("module eagine.core.resource;\n");
     options.output.write("import eagine.core.types;\n");
     options.output.write("import eagine.core.memory;\n");
     options.output.write("import eagine.core.identifier;\n");
-    options.output.write("#else\n");
-    options.output.write("#include <eagine/embed.hpp>\n");
-    options.output.write("#endif\n");
     options.output.write("namespace eagine {\n")
     options.output.write("template <identifier_t ResId>\n")
     options.output.write("auto get_embedded_resource(const selector<ResId>, const string_view) noexcept\n")

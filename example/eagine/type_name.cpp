@@ -5,19 +5,11 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <array>;
 import <iostream>;
 import <string>;
 import <vector>;
-#else
-#include <eagine/type_name.hpp>
-#include <array>
-#include <iostream>
-#include <string>
-#include <vector>
-#endif
 
 auto main() -> int {
     using namespace eagine;

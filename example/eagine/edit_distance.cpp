@@ -5,23 +5,11 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <filesystem>;
 import <fstream>;
 import <iostream>;
 import <vector>;
-#else
-#include <eagine/compare.hpp>
-#include <eagine/console/console.hpp>
-#include <eagine/edit_distance.hpp>
-#include <eagine/integer_range.hpp>
-#include <eagine/main_ctx.hpp>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <vector>
-#endif
 
 namespace eagine {
 

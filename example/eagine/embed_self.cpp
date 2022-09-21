@@ -5,25 +5,17 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <iostream>;
-#else
-#include <eagine/embed.hpp>
-#include <eagine/hexdump.hpp>
-#include <iostream>
-#endif
 
 auto main() -> int {
     using namespace eagine;
     std::cout << hexdump(embed<"self">(__FILE__));
     std::cout << std::endl;
     std::cout << hexdump(search_resource("self"));
-#if EAGINE_CORE_MODULE
     std::cout << std::endl;
     embedded_resource_loader resources;
     std::cout << hexdump(resources.search("self"));
-#endif
 
     return 0;
 }

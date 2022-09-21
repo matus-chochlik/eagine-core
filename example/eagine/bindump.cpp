@@ -5,16 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <iostream>;
-#else
-#include <eagine/bindump.hpp>
-#include <eagine/file_contents.hpp>
-#include <eagine/main_ctx.hpp>
-#include <eagine/program_args.hpp>
-#include <iostream>
-#endif
 
 namespace eagine {
 

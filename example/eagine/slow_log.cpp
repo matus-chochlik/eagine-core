@@ -5,17 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <thread>;
-#else
-#include <eagine/integer_range.hpp>
-#include <eagine/logging/logger.hpp>
-#include <eagine/main_ctx.hpp>
-#include <eagine/progress/activity.hpp>
-#include <eagine/reflect/enumerators.hpp>
-#include <thread>
-#endif
 
 namespace eagine {
 

@@ -5,18 +5,9 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <iostream>;
 import <vector>;
-#else
-#include <eagine/hexdump.hpp>
-#include <eagine/main_ctx.hpp>
-#include <eagine/random_bytes.hpp>
-#include <eagine/span.hpp>
-#include <iostream>
-#include <vector>
-#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------

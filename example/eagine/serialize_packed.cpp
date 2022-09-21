@@ -5,22 +5,9 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <iostream>;
 import <sstream>;
-#else
-#include <eagine/hexdump.hpp>
-#include <eagine/main_ctx.hpp>
-#include <eagine/reflect/data_members.hpp>
-#include <eagine/serialize/packed_block_sink.hpp>
-#include <eagine/serialize/packed_block_source.hpp>
-#include <eagine/serialize/read.hpp>
-#include <eagine/serialize/string_backend.hpp>
-#include <eagine/serialize/write.hpp>
-#include <iostream>
-#include <sstream>
-#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------
