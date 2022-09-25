@@ -16,6 +16,7 @@ export import :integer_hash;
 export import :interleaved_call;
 export import :callable_ref;
 export import :signal;
+export import :spinlock;
 export import :memoized;
 export import :network_sort;
 export import :scope_exit;
