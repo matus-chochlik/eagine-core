@@ -16,18 +16,47 @@ import <thread>;
 
 namespace eagine {
 
+export struct spinlock_stats {
+public:
+    void locked() noexcept {
+        ++_lock_count;
+    }
+
+    void yielded() noexcept {
+        ++_yield_count;
+    }
+
+    auto lock_count() const noexcept -> std::uintmax_t {
+        return _lock_count;
+    }
+
+    auto yield_count() const noexcept -> std::uintmax_t {
+        return _yield_count;
+    }
+
+private:
+    std::uintmax_t _lock_count{0U};
+    std::uintmax_t _yield_count{0U};
+};
+
 /// @brief Spinlock drop-in replacement for std mutex.
 /// @ingroup utility
-export class spinlock {
+export template <unsigned yieldModulo>
+class basic_spinlock {
 public:
     /// @brief Locks the spinlock.
     void lock() noexcept {
         unsigned i = 0;
         while(_flag.test() || _flag.test_and_set(std::memory_order_acquire)) {
-            if((++i % 16U) == 0U) {
-                ++_yield_count;
+            if((++i % yieldModulo) == 0U) {
+                if constexpr(!low_profile_build) {
+                    _stats.yielded();
+                }
                 std::this_thread::yield();
             }
+        }
+        if constexpr(!low_profile_build) {
+            _stats.locked();
         }
     }
 
@@ -37,17 +66,20 @@ public:
     }
 
     /// @brief Returns the number of times the spinlock was locked.
-    auto yield_count() const noexcept -> std::optional<std::uintmax_t> {
-        if constexpr(low_profile_build) {
-            return {};
+    auto stats() const noexcept
+      -> optional_reference_wrapper<const spinlock_stats> {
+        if constexpr(!low_profile_build) {
+            return {_stats};
         } else {
-            return {_yield_count};
-        };
+            return {nothing};
+        }
     }
 
 private:
-    [[no_unique_address]] not_in_low_profile<std::uintmax_t> _yield_count{0U};
+    [[no_unique_address]] not_in_low_profile<spinlock_stats> _stats{};
     std::atomic_flag _flag{};
 };
+
+export using spinlock = basic_spinlock<32U>;
 
 } // namespace eagine

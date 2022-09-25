@@ -323,7 +323,7 @@ private:
     void _print_lockable_stats(const std::mutex&) const noexcept {}
 
     void _print_lockable_stats(const spinlock& l) {
-        if(const auto count{l.yield_count()}) {
+        if(const auto stats{l.stats()}) {
             const auto now = std::chrono::steady_clock::now();
             const auto sec = std::chrono::duration<float>(now - _start);
             _out << "<m";
@@ -333,8 +333,12 @@ private:
             _out << " iid='0'";
             _out << " ts='" << sec.count() << "'";
             _out << ">";
-            _out << "<f>log backend yielded ${count} times</f>";
-            _out << "<a n='count' t='int64'>" << extract(count) << "</a>";
+            _out << "<f>log backend yielded ${yields} "
+                    "times out of ${locks} locks</f>";
+            _out << "<a n='locks' t='int64'>" << extract(stats).lock_count()
+                 << "</a>";
+            _out << "<a n='yields' t='int64'>" << extract(stats).yield_count()
+                 << "</a>";
             _out << "</m>\n";
         }
     }
