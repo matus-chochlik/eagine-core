@@ -1167,7 +1167,8 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                     "instance": key[0],
                     "tag": key[1]
                 }
-                self._formatter.addInterval(self._srcid, interval, iarg)
+                if self._formatter.isVisible(iarg):
+                    self._formatter.addInterval(self._srcid, interval, iarg)
             self._formatter.addLoggerInfos(self._srcid, self._loggers)
             self._formatter.finishLog(self._srcid)
         elif tag == "m":
