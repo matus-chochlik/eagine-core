@@ -48,17 +48,33 @@ auto root_logger_choose_backend(
   const log_stream_info& info) -> std::unique_ptr<logger_backend> {
     std::unique_ptr<logger_backend> result{};
 
+    const bool use_spinlock{args.find("--log-use-spinlock")};
+
     for(auto& arg : args) {
         if(arg.is_long_tag("use-null-log")) {
             return make_null_log_backend();
         } else if(arg.is_long_tag("use-cerr-log")) {
-            return std::make_unique<ostream_log_backend<std::mutex>>(
-              std::cerr, info);
+            if(use_spinlock) {
+                return std::make_unique<ostream_log_backend<spinlock>>(
+                  std::cerr, info);
+            } else {
+                return std::make_unique<ostream_log_backend<std::mutex>>(
+                  std::cerr, info);
+            }
         } else if(arg.is_long_tag("use-cout-log")) {
-            return std::make_unique<ostream_log_backend<std::mutex>>(
-              std::cout, info);
+            if(use_spinlock) {
+                return std::make_unique<ostream_log_backend<spinlock>>(
+                  std::cout, info);
+            } else {
+                return std::make_unique<ostream_log_backend<std::mutex>>(
+                  std::cout, info);
+            }
         } else if(arg.is_long_tag("use-syslog")) {
-            return std::make_unique<syslog_log_backend<std::mutex>>(info);
+            if(use_spinlock) {
+                return std::make_unique<syslog_log_backend<spinlock>>(info);
+            } else {
+                return std::make_unique<syslog_log_backend<std::mutex>>(info);
+            }
         } else if(arg.is_long_tag("use-asio-nw-log")) {
             string_view nw_addr;
             if(arg.next() && !arg.next().starts_with("-")) {
@@ -67,9 +83,19 @@ auto root_logger_choose_backend(
                         "EAGINE_LOG_NETWORK_ADDRESS")}) {
                 nw_addr = extract(env_var);
             }
-            return make_asio_tcpipv4_ostream_log_backend(nw_addr, info);
+            if(use_spinlock) {
+                return make_asio_tcpipv4_ostream_log_backend_spinlock(
+                  nw_addr, info);
+            } else {
+                return make_asio_tcpipv4_ostream_log_backend_mutex(
+                  nw_addr, info);
+            }
         } else if(arg.is_long_tag("use-asio-log")) {
-            return make_asio_local_ostream_log_backend(info);
+            if(use_spinlock) {
+                return make_asio_local_ostream_log_backend_spinlock(info);
+            } else {
+                return make_asio_local_ostream_log_backend_mutex(info);
+            }
         }
     }
 

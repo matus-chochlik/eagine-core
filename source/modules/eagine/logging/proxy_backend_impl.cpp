@@ -14,6 +14,8 @@ module eagine.core.logging;
 import eagine.core.build_config;
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.string;
+import eagine.core.utility;
 import eagine.core.runtime;
 import eagine.core.identifier;
 import :null_backend;
@@ -376,27 +378,64 @@ auto proxy_log_choose_backend(
   basic_config& config,
   const std::string& name,
   const log_stream_info& info) -> std::unique_ptr<logger_backend> {
+    const bool use_spinlock{[&]() -> bool {
+        std::string temp;
+        if(config.fetch_string("log.use_spinlock", temp)) {
+            if(const auto val{from_string<bool>(temp)}) {
+                return extract(val);
+            }
+        }
+        return false;
+    }()};
+
     if((name == "null") || (name == "none")) {
         return make_null_log_backend();
     } else if(name == "cerr") {
-        return std::make_unique<ostream_log_backend<std::mutex>>(
-          std::cerr, info);
+        if(use_spinlock) {
+            return std::make_unique<ostream_log_backend<spinlock>>(
+              std::cerr, info);
+        } else {
+            return std::make_unique<ostream_log_backend<std::mutex>>(
+              std::cerr, info);
+        }
     } else if(name == "cout") {
-        return std::make_unique<ostream_log_backend<std::mutex>>(
-          std::cout, info);
+        if(use_spinlock) {
+            return std::make_unique<ostream_log_backend<spinlock>>(
+              std::cout, info);
+        } else {
+            return std::make_unique<ostream_log_backend<std::mutex>>(
+              std::cout, info);
+        }
     } else if(name == "syslog") {
-        return std::make_unique<syslog_log_backend<std::mutex>>(info);
+        if(use_spinlock) {
+            return std::make_unique<syslog_log_backend<spinlock>>(info);
+        } else {
+            return std::make_unique<syslog_log_backend<std::mutex>>(info);
+        }
     } else if(name == "network") {
         std::string nw_addr;
         config.fetch_string("log.network.address", nw_addr);
-        return make_asio_tcpipv4_ostream_log_backend(nw_addr, info);
+        if(use_spinlock) {
+            return make_asio_tcpipv4_ostream_log_backend_spinlock(
+              nw_addr, info);
+        } else {
+            return make_asio_tcpipv4_ostream_log_backend_mutex(nw_addr, info);
+        }
     } else if(name == "local") {
-        return make_asio_local_ostream_log_backend(info);
+        if(use_spinlock) {
+            return make_asio_local_ostream_log_backend_spinlock(info);
+        } else {
+            return make_asio_local_ostream_log_backend_mutex(info);
+        }
     }
 
     if constexpr(debug_build) {
         try {
-            return make_asio_local_ostream_log_backend(info);
+            if(use_spinlock) {
+                return make_asio_local_ostream_log_backend_spinlock(info);
+            } else {
+                return make_asio_local_ostream_log_backend_mutex(info);
+            }
         } catch(const std::system_error& err) {
             if(err.code().value() != ENOENT) {
                 throw;
@@ -405,7 +444,13 @@ auto proxy_log_choose_backend(
         try {
             std::string nw_addr;
             config.fetch_string("log.network.address", nw_addr);
-            return make_asio_tcpipv4_ostream_log_backend(nw_addr, info);
+            if(use_spinlock) {
+                return make_asio_tcpipv4_ostream_log_backend_spinlock(
+                  nw_addr, info);
+            } else {
+                return make_asio_tcpipv4_ostream_log_backend_mutex(
+                  nw_addr, info);
+            }
         } catch(const std::system_error& err) {
             if(err.code().value() != ENOENT) {
                 throw;
@@ -413,6 +458,9 @@ auto proxy_log_choose_backend(
         }
     }
 
+    if(use_spinlock) {
+        return std::make_unique<ostream_log_backend<spinlock>>(std::clog, info);
+    }
     return std::make_unique<ostream_log_backend<std::mutex>>(std::clog, info);
 }
 //------------------------------------------------------------------------------

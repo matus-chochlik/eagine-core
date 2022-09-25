@@ -13,14 +13,22 @@ import <memory>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export auto make_asio_local_ostream_log_backend(const log_stream_info&)
+export auto make_asio_local_ostream_log_backend_mutex(const log_stream_info&)
+  -> std::unique_ptr<logger_backend>;
+export auto make_asio_local_ostream_log_backend_spinlock(const log_stream_info&)
   -> std::unique_ptr<logger_backend>;
 
-export auto make_asio_local_ostream_log_backend(
+export auto make_asio_local_ostream_log_backend_mutex(
+  string_view addr,
+  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+export auto make_asio_local_ostream_log_backend_spinlock(
   string_view addr,
   const log_stream_info&) -> std::unique_ptr<logger_backend>;
 
-export auto make_asio_tcpipv4_ostream_log_backend(
+export auto make_asio_tcpipv4_ostream_log_backend_mutex(
+  string_view addr,
+  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+export auto make_asio_tcpipv4_ostream_log_backend_spinlock(
   string_view addr,
   const log_stream_info&) -> std::unique_ptr<logger_backend>;
 //------------------------------------------------------------------------------

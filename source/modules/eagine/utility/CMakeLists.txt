@@ -5,7 +5,6 @@
 eagine_add_module(eagine.core.utility PARTITION integer_hash)
 eagine_add_module(eagine.core.utility PARTITION interleaved_call)
 eagine_add_module(eagine.core.utility PARTITION protected_member)
-eagine_add_module(eagine.core.utility PARTITION spinlock)
 
 eagine_add_module(
 	eagine.core.utility PARTITION array_size
@@ -25,6 +24,13 @@ eagine_add_module(
 		callable_ref
 		eagine.core.types
 		eagine.core.container
+)
+
+eagine_add_module(
+	eagine.core.utility PARTITION spinlock
+	IMPORTS
+		eagine.core.build_config
+		eagine.core.types
 )
 
 eagine_add_module(

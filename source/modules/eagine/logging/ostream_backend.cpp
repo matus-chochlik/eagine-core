@@ -13,9 +13,10 @@ export module eagine.core.logging:ostream_backend;
 
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.reflection;
-import eagine.core.string;
+import eagine.core.utility;
 import :backend;
 import <array>;
 import <vector>;
@@ -281,6 +282,7 @@ public:
     void finish_log() noexcept final {
         try {
             const std::lock_guard<Lockable> lock{_lockable};
+            _print_lockable_stats(_lockable);
             _out << "</log>\n";
             flush(true);
         } catch(...) {
@@ -318,6 +320,25 @@ protected:
     virtual void flush([[maybe_unused]] bool always = false) noexcept {}
 
 private:
+    void _print_lockable_stats(const std::mutex&) const noexcept {}
+
+    void _print_lockable_stats(const spinlock& l) {
+        if(const auto count{l.yield_count()}) {
+            const auto now = std::chrono::steady_clock::now();
+            const auto sec = std::chrono::duration<float>(now - _start);
+            _out << "<m";
+            _out << " lvl='stat'";
+            _out << " src='logBackend'";
+            _out << " tag='logYields'";
+            _out << " iid='0'";
+            _out << " ts='" << sec.count() << "'";
+            _out << ">";
+            _out << "<f>log backend yielded ${count} times</f>";
+            _out << "<a n='count' t='int64'>" << extract(count) << "</a>";
+            _out << "</m>\n";
+        }
+    }
+
     Lockable _lockable{};
     std::ostream& _out;
     const log_event_severity _min_severity;
