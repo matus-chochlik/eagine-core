@@ -95,7 +95,7 @@ export class workshop {
 private:
     std::vector<std::thread> _workers{};
     std::queue<work_unit*> _work_queue{};
-    std::mutex _mutex{};
+    std::mutex _queue_lockable{};
     std::condition_variable _cond{};
     bool _shutdown{false};
 
