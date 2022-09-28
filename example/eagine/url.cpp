@@ -31,6 +31,10 @@ auto main(main_ctx& ctx) -> int {
           .arg("value", either_or(u.port(), n));
         out.cio_print("path:            ${value}")
           .arg("value", either_or(u.path_str(), n));
+        out.cio_print("path dirname:    ${value}")
+          .arg("value", either_or(u.path_dirname(), n));
+        out.cio_print("path basename:   ${value}")
+          .arg("value", either_or(u.path_basename(), n));
         out.cio_print("path identifier: ${value}")
           .arg("value", u.path_identifier());
 

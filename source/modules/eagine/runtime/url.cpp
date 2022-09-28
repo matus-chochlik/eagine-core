@@ -163,6 +163,36 @@ public:
         return {_sw(_path)};
     }
 
+    /// @brief Returns the path dirname.
+    /// @see path_basename
+    auto path_dirname() const noexcept -> valid_if_not_empty<string_view> {
+        return {slice_before_last(_sw(_path), string_view{"/"})};
+    }
+
+    /// @brief Returns the path basename.
+    /// @see path_dirname
+    /// @see has_path_prefix
+    /// @see has_path_suffix
+    auto path_basename() const noexcept -> valid_if_not_empty<string_view> {
+        return {slice_after_last(_sw(_path), string_view{"/"})};
+    }
+
+    /// @brief Indicates if path ends with the specified prefix
+    /// @see path_basename
+    /// @see has_path_suffix
+    /// @see path_str
+    auto has_path_prefix(const string_view prefix) const noexcept -> bool {
+        return starts_with(_sw(_path), prefix);
+    }
+
+    /// @brief Indicates if path ends with the specified suffix
+    /// @see path_basename
+    /// @see has_path_prefix
+    /// @see path_str
+    auto has_path_suffix(const string_view suffix) const noexcept -> bool {
+        return ends_with(_sw(_path), suffix);
+    }
+
     /// @brief Returns the path.
     /// @see has_path
     /// @see path_identifier
