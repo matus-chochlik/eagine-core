@@ -22,18 +22,12 @@ namespace eagine {
 /// @see data_compressor
 export class packed_block_data_sink : public block_data_sink {
 public:
-    /// @brief Default constructor.
-    packed_block_data_sink() noexcept = default;
-
     /// @brief Constructor setting the backing block and data compressor.
     packed_block_data_sink(
       data_compressor compressor,
       const memory::block dst) noexcept
       : block_data_sink{dst}
       , _compressor{std::move(compressor)} {}
-
-    packed_block_data_sink(const memory::block dst) noexcept
-      : packed_block_data_sink{{}, dst} {}
 
     packed_block_data_sink(data_compressor compressor) noexcept
       : packed_block_data_sink{std::move(compressor), {}} {}
@@ -47,7 +41,7 @@ public:
     }
 
 private:
-    data_compressor _compressor{};
+    data_compressor _compressor;
 };
 //------------------------------------------------------------------------------
 /// @brief Unpacking deserialization data source backed by a pre-allocated memory block.
@@ -56,9 +50,6 @@ private:
 /// @see data_compressor
 export class packed_block_data_source : public block_data_source {
 public:
-    /// @brief Default constructor.
-    packed_block_data_source() noexcept = default;
-
     /// @brief Constructor setting the backing block and data compressor.
     packed_block_data_source(
       data_compressor compressor,
@@ -66,9 +57,6 @@ public:
       : _compressor{std::move(compressor)} {
         reset(src);
     }
-
-    packed_block_data_source(const memory::const_block src) noexcept
-      : packed_block_data_source{{}, src} {}
 
     packed_block_data_source(data_compressor compressor) noexcept
       : packed_block_data_source{std::move(compressor), {}} {}
@@ -78,7 +66,7 @@ public:
     }
 
 private:
-    data_compressor _compressor{};
+    data_compressor _compressor;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

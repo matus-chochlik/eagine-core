@@ -41,6 +41,7 @@ main_ctx::main_ctx(main_ctx_getters& src) noexcept
   , _app_config{src.config()}
   , _sys_info{src.system()}
   , _usr_info{src.user()}
+  , _buffers{src.buffers()}
   , _scratch_space{src.scratch_space()}
   , _compressor{src.compressor()}
   , _workers{src.workers()}

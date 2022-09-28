@@ -150,6 +150,10 @@ public:
         return _workers;
     }
 
+    auto buffers() noexcept -> memory::buffer_pool& final {
+        return _buffers;
+    }
+
     auto scratch_space() noexcept -> memory::buffer& final {
         return _scratch_space;
     }
@@ -191,8 +195,9 @@ private:
     compiler_info _cmplr_info;
     process_watchdog _watchdog;
     application_config _app_config;
+    memory::buffer_pool _buffers;
     memory::buffer _scratch_space{_default_alloc};
-    data_compressor _compressor{};
+    data_compressor _compressor{_buffers};
     workshop _workers{};
     std::string _exe_path{};
     std::string _app_name{};

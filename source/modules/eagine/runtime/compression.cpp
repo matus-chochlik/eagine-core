@@ -33,8 +33,8 @@ class data_compressor_impl;
 /// @ingroup main_context
 export class data_compressor {
 public:
-    /// @brief Default constructor.
-    data_compressor() noexcept;
+    /// @brief Initializing constructor.
+    data_compressor(memory::buffer_pool&) noexcept;
 
     /// @brief Alias for data handler callable type.
     using data_handler = callable_ref<bool(memory::const_block) noexcept>;

@@ -59,8 +59,8 @@ void baz(const my_struct& instance) {
     std::cout << std::endl;
 }
 //------------------------------------------------------------------------------
-void bar(const memory::const_block data) {
-    packed_block_data_source source(data);
+void bar(main_ctx& ctx, const memory::const_block data) {
+    packed_block_data_source source(data_compressor{ctx.buffers()}, data);
     std::cout << hexdump(source.remaining());
     string_deserializer_backend backend(source);
     my_struct instance;
@@ -69,18 +69,18 @@ void bar(const memory::const_block data) {
     baz(instance);
 }
 //------------------------------------------------------------------------------
-void foo(const my_struct& instance) {
+void foo(main_ctx& ctx, const my_struct& instance) {
 
     std::array<byte, 1024> data{};
-    packed_block_data_sink sink(cover(data));
+    packed_block_data_sink sink(data_compressor{ctx.buffers()}, cover(data));
     string_serializer_backend backend(sink);
     auto member_map = map_data_members(instance);
     serialize(member_map, backend);
     std::cout << hexdump(sink.done());
-    bar(sink.done());
+    bar(ctx, sink.done());
 }
 //------------------------------------------------------------------------------
-auto main(main_ctx&) -> int {
+auto main(main_ctx& ctx) -> int {
     using namespace eagine;
 
     my_struct x;
@@ -100,7 +100,7 @@ auto main(main_ctx&) -> int {
       "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
       "mollit anim id est laborum.";
 
-    foo(x);
+    foo(ctx, x);
 
     return 0;
 }

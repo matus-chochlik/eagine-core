@@ -31,8 +31,9 @@ namespace eagine {
 #if EAGINE_USE_ZLIB
 class data_compressor_impl {
 private:
-    memory::buffer _buff{};
-    std::array<byte, std_size(16U * 1024U)> _temp{};
+    memory::buffer_pool& _buffers;
+    memory::buffer _output;
+    memory::buffer _temp;
     ::z_stream _zsd{};
     ::z_stream _zsi{};
 
@@ -54,7 +55,10 @@ private:
 public:
     using data_handler = callable_ref<bool(memory::const_block) noexcept>;
 
-    data_compressor_impl() noexcept {
+    data_compressor_impl(memory::buffer_pool& buffers)
+      : _buffers{buffers}
+      , _output{_buffers.get(8 * 1024)}
+      , _temp{_buffers.get(16 * 1024)} {
         zero(as_bytes(cover_one(_zsd)));
         _zsd.zalloc = nullptr;
         _zsd.zfree = nullptr;
@@ -64,6 +68,16 @@ public:
         _zsi.zfree = nullptr;
         _zsi.opaque = nullptr;
     }
+
+    ~data_compressor_impl() noexcept {
+        _buffers.eat(std::move(_temp));
+        _buffers.eat(std::move(_output));
+    }
+
+    data_compressor_impl(data_compressor_impl&&) = delete;
+    data_compressor_impl(const data_compressor_impl&) = delete;
+    auto operator=(data_compressor_impl&&) = delete;
+    auto operator=(const data_compressor_impl&) = delete;
 
     auto compress(
       const memory::const_block input,
@@ -145,7 +159,7 @@ public:
     auto compress(
       const memory::const_block input,
       data_compression_level level) noexcept -> memory::const_block {
-        return compress(input, _buff, level);
+        return compress(input, _output, level);
     }
 
     auto decompress(
@@ -237,13 +251,17 @@ public:
         if(input.front() == 0x00U) {
             return skip(input, 1);
         }
-        return decompress(input, _buff);
+        return decompress(input, _output);
     }
 };
 #else
 class data_compressor_impl {
 public:
     using data_handler = callable_ref<bool(memory::const_block)>;
+
+    data_compressor_impl(memory::buffer_pool& buffers)
+      : _buffers{buffers}
+      , _output{_buffers.get(8 * 1024)} {}
 
     auto compress(
       const memory::const_block,
@@ -266,7 +284,7 @@ public:
     auto compress(
       const memory::const_block block,
       const data_compression_level level) noexcept -> memory::const_block {
-        return compress(block, _buff, level);
+        return compress(block, _output, level);
     }
 
     auto decompress(const memory::const_block, const data_handler&) noexcept
@@ -293,16 +311,18 @@ public:
     }
 
 private:
-    memory::buffer _buff{};
+    memory::buffer_pool& _buffers;
+    memory::buffer _output;
 };
 #endif
 //------------------------------------------------------------------------------
-static inline auto make_data_compressor_impl() noexcept {
-    return std::make_shared<data_compressor_impl>();
+static inline auto make_data_compressor_impl(
+  memory::buffer_pool& buffers) noexcept {
+    return std::make_shared<data_compressor_impl>(buffers);
 }
 //------------------------------------------------------------------------------
-data_compressor::data_compressor() noexcept
-  : _pimpl{make_data_compressor_impl()} {}
+data_compressor::data_compressor(memory::buffer_pool& buffers) noexcept
+  : _pimpl{make_data_compressor_impl(buffers)} {}
 //------------------------------------------------------------------------------
 auto data_compressor::compress(
   const memory::const_block input,

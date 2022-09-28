@@ -139,6 +139,9 @@ export struct main_ctx_getters : interface<main_ctx_getters> {
     /// @brief Returns a reference to shared workshop object.
     virtual auto workers() noexcept -> workshop& = 0;
 
+    /// @brief Returns a reference to global buffer pool.
+    virtual auto buffers() noexcept -> memory::buffer_pool& = 0;
+
     /// @brief Returns a reference to shared temporary buffer.
     virtual auto scratch_space() noexcept -> memory::buffer& = 0;
 
