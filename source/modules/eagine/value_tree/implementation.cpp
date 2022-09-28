@@ -14,6 +14,7 @@ export module eagine.core.value_tree:implementation;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.utility;
 import eagine.core.logging;
 import :interface;
 import :wrappers;
@@ -22,6 +23,55 @@ import <memory>;
 import <vector>;
 
 namespace eagine::valtree {
+//------------------------------------------------------------------------------
+/// @brief Class handling value tree stream input.
+/// @ingroup valtree
+export class value_tree_stream_input {
+public:
+    value_tree_stream_input(
+      std::unique_ptr<value_tree_stream_parser> impl) noexcept
+      : _pimpl{std::move(impl)} {
+        _pimpl->begin();
+    }
+
+    value_tree_stream_input(value_tree_stream_input&&) noexcept = default;
+    value_tree_stream_input(const value_tree_stream_input&) = delete;
+    auto operator=(value_tree_stream_input&&) noexcept
+      -> value_tree_stream_input& = default;
+    auto operator=(const value_tree_stream_input&) = delete;
+
+    ~value_tree_stream_input() noexcept {
+        if(_pimpl) {
+            _pimpl->finish();
+        }
+    }
+
+    /// @brief Indicates if this stream input object is in a valid state.
+    /// @see consume_data
+    explicit operator bool() const noexcept {
+        return bool(_pimpl);
+    }
+
+    /// @brief Consumes the next chunk of stream data.
+    auto consume_data(memory::const_block data) noexcept -> bool {
+        assert(_pimpl);
+        return _pimpl->parse_data(data);
+    }
+
+    /// @brief Alias for the data handler callable type.
+    using data_handler = callable_ref<bool(memory::const_block) noexcept>;
+
+    /// @brief Returns the callable that can consume stream data.
+    /// @see consume_data
+    auto get_handler() noexcept -> data_handler {
+        assert(_pimpl);
+        return make_callable_ref<&value_tree_stream_parser::parse_data>(
+          _pimpl.get());
+    }
+
+private:
+    std::unique_ptr<value_tree_stream_parser> _pimpl;
+};
 //------------------------------------------------------------------------------
 template <typename Derived>
 class compound_implementation : public compound_interface {

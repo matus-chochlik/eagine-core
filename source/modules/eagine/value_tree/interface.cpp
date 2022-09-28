@@ -223,4 +223,61 @@ export struct compound_interface : interface<compound_interface> {
       span<std::string> dest) -> span_size_t = 0;
 };
 //------------------------------------------------------------------------------
+struct value_tree_stream_parser : interface<value_tree_stream_parser> {
+    virtual auto begin() noexcept -> bool = 0;
+    virtual auto parse_data(memory::const_block data) noexcept -> bool = 0;
+    virtual auto finish() noexcept -> bool = 0;
+};
+//------------------------------------------------------------------------------
+/// @brief Interface for value tree structured traversal visitors.
+/// @ingroup valtree
+export struct value_tree_visitor : interface<value_tree_visitor> {
+    /// @brief Called when starting the traversal of the whole tree.
+    /// @see finish
+    virtual void begin() = 0;
+
+    /// @brief Consume a consecutive sequence of nil values at the given offset.
+    virtual void consume(span_size_t offset, span<const nothing_t>) = 0;
+
+    /// @brief Consume a consecutive sequence of boolean values at the given offset.
+    virtual void consume(span_size_t offset, span<const bool>) = 0;
+
+    /// @brief Consume a consecutive sequence of integer values at the given offset.
+    virtual void consume(span_size_t offset, span<const std::int64_t>) = 0;
+
+    /// @brief Consume a consecutive sequence of unsigned values at the given offset.
+    virtual void consume(span_size_t offset, span<const std::uint64_t>) = 0;
+
+    /// @brief Consume a consecutive sequence of float values at the given offset.
+    virtual void consume(span_size_t offset, span<const float>) = 0;
+
+    /// @brief Consume a consecutive sequence of double values at the given offset.
+    virtual void consume(span_size_t offset, span<const double>) = 0;
+
+    /// @brief Consume a consecutive sequence of string values at the given offset.
+    virtual void consume(span_size_t offset, span<const string_view>) = 0;
+
+    /// @brief Called when entering a nested structure.
+    virtual void begin_struct() = 0;
+
+    /// @brief Called when entering a structure attribute with the given name.
+    virtual void begin_attribute(const string_view key) = 0;
+
+    /// @brief Called when leaving a structure attribute with the given name.
+    virtual void finish_attribute(const string_view key) = 0;
+
+    /// @brief Called when leaving a nested structure.
+    virtual void finish_struct() = 0;
+
+    /// @brief Called when entering a nested list.
+    virtual void begin_list() = 0;
+
+    /// @brief Called when leaving a nested list.
+    virtual void finish_list() = 0;
+
+    /// @brief Called when the traversal of the whole tree finished.
+    /// @see begin
+    virtual void finish() = 0;
+};
+//------------------------------------------------------------------------------
 } // namespace eagine::valtree
