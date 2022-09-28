@@ -52,10 +52,18 @@ public:
         return bool(_pimpl);
     }
 
-    /// @brief Consumes the next chunk of stream data.
-    auto consume_data(memory::const_block data) noexcept -> bool {
+    /// @brief Consumes the next chunk of stream binary data.
+    /// @see consume_text
+    auto consume_data(const memory::const_block data) noexcept -> bool {
         assert(_pimpl);
         return _pimpl->parse_data(data);
+    }
+
+    /// @brief Consumes the next chunk of stream text data.
+    /// @see consume_data
+    auto consume_text(const memory::string_view data) noexcept -> bool {
+        assert(_pimpl);
+        return _pimpl->parse_data(memory::as_bytes(data));
     }
 
     /// @brief Alias for the data handler callable type.
@@ -72,6 +80,10 @@ public:
 private:
     std::unique_ptr<value_tree_stream_parser> _pimpl;
 };
+//------------------------------------------------------------------------------
+export auto traverse_json_stream(
+  std::shared_ptr<value_tree_visitor>,
+  const logger& parent) -> value_tree_stream_input;
 //------------------------------------------------------------------------------
 template <typename Derived>
 class compound_implementation : public compound_interface {

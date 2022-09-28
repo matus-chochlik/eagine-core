@@ -7,8 +7,11 @@
 ///
 module;
 
+#include <cassert>
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
+#include <rapidjson/reader.h>
+#include <rapidjson/stream.h>
 
 module eagine.core.value_tree;
 
@@ -20,6 +23,7 @@ import eagine.core.logging;
 import <chrono>;
 import <memory>;
 import <optional>;
+import <stack>;
 import <string>;
 import <vector>;
 
@@ -672,6 +676,129 @@ using default_rapidjson_document_compound =
 auto from_json_text(string_view json_text, const logger& parent) -> compound {
     return compound::make<default_rapidjson_document_compound>(
       json_text, parent);
+}
+//------------------------------------------------------------------------------
+// streaming
+//------------------------------------------------------------------------------
+// TODO: actual progressive parsing of the individual chunks
+class json_value_tree_stream_parser
+  : public value_tree_stream_parser
+  , public rapidjson::
+      BaseReaderHandler<rapidjson::UTF8<>, json_value_tree_stream_parser> {
+public:
+    json_value_tree_stream_parser(
+      std::shared_ptr<value_tree_visitor> visitor,
+      const logger& parent) noexcept
+      : _parent{parent}
+      , _visitor{std::move(visitor)} {
+        assert(_visitor);
+    }
+
+    auto begin() noexcept -> bool {
+        _json_block.clear();
+        return true;
+    }
+
+    auto parse_data(memory::const_block data) noexcept -> bool {
+        append_to(data, _json_block);
+        return true;
+    }
+
+    auto finish() noexcept -> bool {
+        _visitor->begin();
+        if(!_json_block.empty()) {
+            while(!_attr_stack.empty()) {
+                _attr_stack.pop();
+            }
+            // TODO: implement own stream wrapper, this is not very secure
+            rapidjson::StringStream rj_stream{
+              reinterpret_cast<const char*>(_json_block.data())};
+            rapidjson::Reader rj_reader;
+            rj_reader.Parse(rj_stream, *this);
+        }
+        _visitor->finish();
+        return true;
+    }
+
+    // rapidjson handler API
+    auto Null() -> bool {
+        _visitor->consume(view_one(nothing));
+        return true;
+    }
+    auto Bool(bool value) -> bool {
+        _visitor->consume(view_one(value));
+        return true;
+    }
+    auto Int(int value) -> bool {
+        return Int64(value);
+    }
+    auto Uint(unsigned value) -> bool {
+        return Uint64(value);
+    }
+    auto Int64(int64_t value) -> bool {
+        _visitor->consume(view_one(value));
+        return true;
+    }
+    auto Uint64(uint64_t value) -> bool {
+        _visitor->consume(view_one(value));
+        return true;
+    }
+    auto Double(double value) -> bool {
+        _visitor->consume(view_one(value));
+        return true;
+    }
+    auto String(const char* str, rapidjson::SizeType length, bool copy)
+      -> bool {
+        const string_view value{str, span_size(length)};
+        _visitor->consume(view_one(value));
+        return true;
+    }
+    auto StartObject() -> bool {
+        _attr_stack.push({});
+        _visitor->begin_struct();
+        return true;
+    }
+    auto Key(const char* str, rapidjson::SizeType length, bool) -> bool {
+        assert(!_attr_stack.empty());
+        auto& attr_name = _attr_stack.top();
+        if(!attr_name.empty()) {
+            _visitor->finish_attribute(attr_name);
+        }
+        attr_name.assign(str, std_size(length));
+        _visitor->begin_attribute(attr_name);
+        return true;
+    }
+    auto EndObject(rapidjson::SizeType) -> bool {
+        assert(!_attr_stack.empty());
+        auto& attr_name = _attr_stack.top();
+        if(!attr_name.empty()) {
+            _visitor->finish_attribute(attr_name);
+        }
+        _attr_stack.pop();
+        _visitor->finish_struct();
+        return true;
+    }
+    auto StartArray() -> bool {
+        _visitor->begin_list();
+        return true;
+    }
+    auto EndArray(rapidjson::SizeType) -> bool {
+        _visitor->finish_list();
+        return true;
+    }
+
+private:
+    const logger& _parent;
+    std::shared_ptr<value_tree_visitor> _visitor;
+    memory::buffer _json_block;
+    std::stack<std::string> _attr_stack;
+};
+//------------------------------------------------------------------------------
+auto traverse_json_stream(
+  std::shared_ptr<value_tree_visitor> visitor,
+  const logger& parent) -> value_tree_stream_input {
+    return {std::make_unique<json_value_tree_stream_parser>(
+      std::move(visitor), parent)};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree

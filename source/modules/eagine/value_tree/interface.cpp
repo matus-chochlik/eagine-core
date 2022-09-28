@@ -236,26 +236,26 @@ export struct value_tree_visitor : interface<value_tree_visitor> {
     /// @see finish
     virtual void begin() = 0;
 
-    /// @brief Consume a consecutive sequence of nil values at the given offset.
-    virtual void consume(span_size_t offset, span<const nothing_t>) = 0;
+    /// @brief Consume a consecutive sequence of nil values.
+    virtual void consume(span<const nothing_t>) = 0;
 
-    /// @brief Consume a consecutive sequence of boolean values at the given offset.
-    virtual void consume(span_size_t offset, span<const bool>) = 0;
+    /// @brief Consume a consecutive sequence of boolean values.
+    virtual void consume(span<const bool>) = 0;
 
-    /// @brief Consume a consecutive sequence of integer values at the given offset.
-    virtual void consume(span_size_t offset, span<const std::int64_t>) = 0;
+    /// @brief Consume a consecutive sequence of integer values.
+    virtual void consume(span<const std::int64_t>) = 0;
 
-    /// @brief Consume a consecutive sequence of unsigned values at the given offset.
-    virtual void consume(span_size_t offset, span<const std::uint64_t>) = 0;
+    /// @brief Consume a consecutive sequence of unsigned values.
+    virtual void consume(span<const std::uint64_t>) = 0;
 
-    /// @brief Consume a consecutive sequence of float values at the given offset.
-    virtual void consume(span_size_t offset, span<const float>) = 0;
+    /// @brief Consume a consecutive sequence of float values.
+    virtual void consume(span<const float>) = 0;
 
-    /// @brief Consume a consecutive sequence of double values at the given offset.
-    virtual void consume(span_size_t offset, span<const double>) = 0;
+    /// @brief Consume a consecutive sequence of double values.
+    virtual void consume(span<const double>) = 0;
 
-    /// @brief Consume a consecutive sequence of string values at the given offset.
-    virtual void consume(span_size_t offset, span<const string_view>) = 0;
+    /// @brief Consume a consecutive sequence of string values.
+    virtual void consume(span<const string_view>) = 0;
 
     /// @brief Called when entering a nested structure.
     virtual void begin_struct() = 0;
