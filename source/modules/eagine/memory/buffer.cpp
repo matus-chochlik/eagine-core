@@ -14,6 +14,7 @@ export module eagine.core.memory:buffer;
 import eagine.core.types;
 export import :block;
 import :address;
+import :span_algorithm;
 import :shared_allocator;
 import <cstring>;
 import <utility>;
@@ -224,11 +225,23 @@ export auto copy(const const_block source, block dest) noexcept -> block {
 
 /// @brief Copies the content of source block to destination buffer.
 /// @ingroup memory
+/// @see append_to
 /// @see const_block
 /// @see buffer
 export auto copy_into(const const_block source, buffer& dest) noexcept
   -> block {
     return copy(source, cover(dest.resize(source.size())));
+}
+
+/// @brief Appends the content of source block to destination buffer.
+/// @ingroup memory
+/// @see copy_into
+/// @see const_block
+/// @see buffer
+export auto append_to(const const_block source, buffer& dest) noexcept
+  -> block {
+    const auto old_size{dest.size()};
+    return copy(source, skip(cover(dest.enlarge_by(source.size())), old_size));
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::memory

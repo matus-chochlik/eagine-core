@@ -154,8 +154,8 @@ constexpr auto to_string(const basic_span<C, P, S> spn)
 /// @ingroup string_utils
 export template <typename C, typename T, typename A, typename P, typename S>
 constexpr auto assign_to(
-  std::basic_string<C, T, A>& str,
-  const basic_span<const C, P, S> spn) -> auto& {
+  const basic_span<const C, P, S> spn,
+  std::basic_string<C, T, A>& str) -> auto& {
     str.assign(spn.data(), std_size(spn.size()));
     return str;
 }
@@ -164,8 +164,8 @@ constexpr auto assign_to(
 /// @ingroup string_utils
 export template <typename C, typename T, typename A, typename P, typename S>
 constexpr auto append_to(
-  std::basic_string<C, T, A>& str,
-  const basic_span<const C, P, S> spn) -> auto& {
+  const basic_span<const C, P, S> spn,
+  std::basic_string<C, T, A>& str) -> auto& {
     str.append(spn.data(), std_size(spn.size()));
     return str;
 }

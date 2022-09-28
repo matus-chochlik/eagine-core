@@ -183,7 +183,7 @@ public:
     }
 
     void push_back_elem(const string_list::element& elem) noexcept {
-        append_to(_str, elem);
+        append_to(elem, _str);
         ++_size;
     }
 

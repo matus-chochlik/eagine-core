@@ -54,7 +54,7 @@ public:
       const console_entry_kind kind,
       const string_view format) noexcept -> bool final {
         _lockable.lock();
-        assign_to(_message.back(), format);
+        assign_to(format, _message.back());
         _message.swap();
         _source = source;
         _kind = kind;

@@ -145,8 +145,8 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.memory PARTITION buffer
 	IMPORTS
-		address
-		block
+		address block 
+		span_algorithm
 		shared_allocator
 		eagine.core.types
 )

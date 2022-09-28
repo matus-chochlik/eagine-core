@@ -474,7 +474,7 @@ private:
                 if(str.size() < len) {
                     errors |= error_code::not_enough_data;
                 } else {
-                    assign_to(value, str);
+                    assign_to(str, value);
                     pop(str.size());
                     errors |= require('"');
                     errors |= require(delimiter);
