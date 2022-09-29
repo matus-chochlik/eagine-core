@@ -11,6 +11,7 @@ export import :count;
 export import :array_size;
 export import :protected_member;
 export import :bool_aggregate;
+export import :sliding_average;
 export import :double_buffer;
 export import :integer_hash;
 export import :interleaved_call;
