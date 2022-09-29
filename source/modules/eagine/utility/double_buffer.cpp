@@ -24,6 +24,12 @@ public:
     double_buffer(const T& initial)
       : _values{{initial, initial}} {}
 
+    double_buffer(double_buffer&&) noexcept = default;
+    double_buffer(const double_buffer&) = default;
+    auto operator=(double_buffer&&) noexcept -> double_buffer& = default;
+    auto operator=(const double_buffer&) -> double_buffer& = default;
+    ~double_buffer() noexcept = default;
+
     /// @brief Swaps the front and the back buffers.
     /// @see front
     /// @see back
