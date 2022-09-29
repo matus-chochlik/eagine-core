@@ -51,7 +51,7 @@ public:
 private:
     std::array<T, numSlots> _values{};
     std::array<std::size_t, numSlots> _counts{};
-    std::size_t _current{0Z};
+    std::size_t _current{0};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
