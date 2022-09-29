@@ -23,12 +23,12 @@ public:
     constexpr basic_sliding_average() noexcept = default;
 
     auto add(T value) noexcept -> basic_sliding_average& {
-        if(++_counts[_current] >= numSlotValues) {
+        if(++_counts[_current] < numSlotValues) {
+            _values[_current] += value;
+        } else {
             _current = (_current + 1) % numSlots;
             _counts[_current] = 1;
             _values[_current] = value;
-        } else {
-            _values[_current] += value;
         }
         return *this;
     }
@@ -42,7 +42,7 @@ public:
     }
 
     auto get() const noexcept -> T {
-        if(const auto div{get_count()}; div != 0) {
+        if(const auto div{get_count()}; div != 0) [[likely]] {
             return get_sum() / div;
         }
         return T{};
