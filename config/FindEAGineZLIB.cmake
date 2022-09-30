@@ -27,7 +27,9 @@ if(ZLIB_FOUND)
 	target_link_libraries(
 		EAGine::Deps::ZLIB INTERFACE "${ZLIB_LIBRARIES}"
 	)
+	set(EAGINE_USE_ZLIB 1)
 	set(EAGINE_USE_ZLIB 1 PARENT_SCOPE)
 else()
+	set(EAGINE_USE_ZLIB 0)
 	set(EAGINE_USE_ZLIB 0 PARENT_SCOPE)
 endif()

@@ -93,6 +93,14 @@ eagine_example_common(sudoku_noise)
 #
 eagine_example_common(embed_self)
 eagine_embed_target_resources(TARGET eagine-embed_self ENABLE_SEARCH)
+eagine_example_common(embed_packed)
+eagine_embed_target_resources(
+	TARGET eagine-embed_packed
+	RESOURCES
+		packedSelf "${CMAKE_CURRENT_SOURCE_DIR}/embed_packed.cpp"
+	PACKED
+	ENABLE_SEARCH
+)
 #
 target_compile_options(
 	eagine-limit_cast

@@ -62,15 +62,23 @@ public:
         return _res_blk;
     }
 
+    /// @brief Unpacks and appends this resource into a buffer using the provided compressor.
+    /// @see fetch
+    /// @see is_packed
+    auto append_to(data_compressor& comp, memory::buffer& buf) const
+      -> memory::const_block {
+        if(is_packed()) {
+            return {comp.decompress(_res_blk, buf)};
+        }
+        return memory::append_to(_res_blk, buf);
+    }
+
     /// @brief Unpacks this resource into a buffer using the provided compressor.
     /// @see fetch
     /// @see is_packed
     auto unpack(data_compressor& comp, memory::buffer& buf) const
       -> memory::const_block {
-        if(is_packed()) {
-            return {comp.decompress(_res_blk, buf)};
-        }
-        return copy_into(_res_blk, buf);
+        return append_to(comp, buf.clear());
     }
 
     /// @brief Unpacks this resource into a buffer using compressor from main context.

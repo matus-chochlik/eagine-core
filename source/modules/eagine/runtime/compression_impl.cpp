@@ -157,7 +157,7 @@ public:
       const data_compression_method method,
       const memory::const_block input,
       data_compression_level level) noexcept -> memory::const_block final {
-        return compress(method, input, _output, level);
+        return compress(method, input, _output.clear(), level);
     }
 
     using data_compressor_intf::decompress;
@@ -165,7 +165,7 @@ public:
     auto decompress(
       const data_compression_method method,
       const memory::const_block input) noexcept -> memory::const_block final {
-        return decompress(method, input, _output);
+        return decompress(method, input, _output.clear());
     }
 
 protected:
