@@ -7,6 +7,7 @@
 ///
 export module eagine.core.utility:sliding_average;
 
+import eagine.core.types;
 import <array>;
 import <cstdint>;
 import <numeric>;
@@ -38,7 +39,7 @@ public:
     }
 
     auto get_count() const noexcept -> D {
-        return D(std::accumulate(_counts.begin(), _counts.end(), 0Z));
+        return D(std::accumulate(_counts.begin(), _counts.end(), std_size(0)));
     }
 
     auto get() const noexcept -> T {

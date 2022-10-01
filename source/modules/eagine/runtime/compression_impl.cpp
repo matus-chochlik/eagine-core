@@ -28,24 +28,221 @@ import <memory>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-#if EAGINE_USE_ZLIB
-class data_compressor_impl {
-private:
+struct data_compressor_intf : abstract<data_compressor_intf> {
+    using data_handler = callable_ref<bool(memory::const_block) noexcept>;
+
+    virtual auto default_method() const noexcept -> data_compression_method = 0;
+
+    virtual auto supported_methods() const noexcept
+      -> data_compression_methods {
+        return {default_method()};
+    }
+
+    virtual auto method_header(data_compression_method) const noexcept
+      -> memory::const_block = 0;
+
+    auto default_method_header() const noexcept -> memory::const_block {
+        return method_header(default_method());
+    }
+
+    virtual auto method_from_header(
+      const memory::const_block input) const noexcept
+      -> std::tuple<data_compression_method, memory::const_block> {
+        const auto header{default_method_header()};
+        if(are_equal(head(input, header.size()), header)) {
+            return {default_method(), skip(input, header.size())};
+        }
+        return {data_compression_method::unknown, input};
+    }
+
+    virtual auto compress_begin(
+      const data_compression_method method,
+      const data_compression_level level) noexcept -> bool = 0;
+
+    virtual auto compress_next(
+      const memory::const_block input,
+      const data_handler& handler) noexcept -> bool = 0;
+
+    virtual auto compress_finish() noexcept -> bool = 0;
+
+    virtual auto compress(
+      const data_compression_method method,
+      const memory::const_block input,
+      const data_handler& handler,
+      const data_compression_level level) noexcept -> bool {
+        if(compress_begin(method, level)) {
+            compress_next(input, handler);
+            return compress_finish();
+        }
+        return false;
+    }
+
+    virtual auto compress(
+      const data_compression_method method,
+      const memory::const_block input,
+      memory::buffer& output,
+      const data_compression_level level) noexcept -> memory::const_block {
+        auto append = [&](memory::const_block data) {
+            append_to(data, output);
+            return true;
+        };
+        if(compress(method, input, {construct_from, append}, level)) {
+            return view(output);
+        }
+        return {};
+    }
+
+    virtual auto compress(
+      const data_compression_method method,
+      const memory::const_block input,
+      data_compression_level level) noexcept -> memory::const_block = 0;
+
+    virtual auto decompress_begin(const data_compression_method method) noexcept
+      -> bool = 0;
+
+    virtual auto decompress_next(
+      const memory::const_block input,
+      const data_handler& handler) noexcept -> bool = 0;
+
+    virtual auto decompress_finish() noexcept -> bool = 0;
+
+    virtual auto decompress(
+      data_compression_method method,
+      memory::const_block input,
+      const data_handler& handler) noexcept -> bool {
+        if(decompress_begin(method)) {
+            decompress_next(input, handler);
+            return decompress_finish();
+        }
+        return false;
+    }
+
+    virtual auto decompress(
+      const data_compression_method method,
+      const memory::const_block input,
+      memory::buffer& output) noexcept -> memory::const_block {
+        auto append = [&](memory::const_block data) {
+            append_to(data, output);
+            return true;
+        };
+        if(decompress(method, input, {construct_from, append})) {
+            return view(output);
+        }
+        return {};
+    }
+
+    virtual auto decompress(
+      const data_compression_method method,
+      const memory::const_block input) noexcept -> memory::const_block = 0;
+};
+//------------------------------------------------------------------------------
+class buffered_data_compressor_impl : public data_compressor_intf {
+public:
+    buffered_data_compressor_impl(memory::buffer_pool& buffers) noexcept
+      : _buffers{buffers}
+      , _output{buffers.get(0)} {}
+
+    ~buffered_data_compressor_impl() noexcept {
+        _buffers.eat(std::move(_output));
+    }
+
+    buffered_data_compressor_impl(buffered_data_compressor_impl&&) = delete;
+    buffered_data_compressor_impl(const buffered_data_compressor_impl&) = delete;
+    auto operator=(buffered_data_compressor_impl&&) = delete;
+    auto operator=(const buffered_data_compressor_impl&) = delete;
+
+    using data_compressor_intf::compress;
+
+    auto compress(
+      const data_compression_method method,
+      const memory::const_block input,
+      data_compression_level level) noexcept -> memory::const_block final {
+        return compress(method, input, _output.clear(), level);
+    }
+
+    using data_compressor_intf::decompress;
+
+    auto decompress(
+      const data_compression_method method,
+      const memory::const_block input) noexcept -> memory::const_block final {
+        return decompress(method, input, _output.clear());
+    }
+
+protected:
     memory::buffer_pool& _buffers;
+
+private:
     memory::buffer _output;
+};
+//------------------------------------------------------------------------------
+class noop_data_compressor_impl : public buffered_data_compressor_impl {
+public:
+    using buffered_data_compressor_impl::buffered_data_compressor_impl;
+
+    using data_handler = callable_ref<bool(memory::const_block) noexcept>;
+
+    auto default_method() const noexcept -> data_compression_method final {
+        return data_compression_method::none;
+    }
+
+    auto method_header([[maybe_unused]] data_compression_method method)
+      const noexcept -> memory::const_block final {
+        assert(method == default_method());
+        static const std::array<byte, 1> header{{0x00U}};
+        return view(header);
+    }
+
+    auto compress_begin(
+      const data_compression_method method,
+      const data_compression_level) noexcept -> bool final {
+        return method == default_method();
+    }
+
+    auto compress_next(
+      const memory::const_block input,
+      const data_handler& handler) noexcept -> bool final {
+        return handler(input);
+    }
+
+    auto compress_finish() noexcept -> bool final {
+        return true;
+    }
+
+    auto decompress_begin(const data_compression_method method) noexcept
+      -> bool final {
+        return method == default_method();
+    }
+
+    auto decompress_next(
+      const memory::const_block input,
+      const data_handler& handler) noexcept -> bool final {
+        return handler(input);
+    }
+
+    auto decompress_finish() noexcept -> bool final {
+        return true;
+    }
+};
+//------------------------------------------------------------------------------
+#if EAGINE_USE_ZLIB
+class zlib_data_compressor_impl : public buffered_data_compressor_impl {
+private:
     memory::buffer _temp;
     ::z_stream _zsd{};
     ::z_stream _zsi{};
+    int _zd_lvl{Z_DEFAULT_COMPRESSION};
+    int _zd_res{Z_STREAM_END};
+    int _zi_res{Z_STREAM_END};
 
     static constexpr auto _translate(const data_compression_level level) noexcept
       -> int {
         switch(level) {
+            case data_compression_level::normal:
+                break;
             case data_compression_level::none:
                 return 0;
             case data_compression_level::lowest:
                 return 1;
-            case data_compression_level::normal:
-                break;
             case data_compression_level::highest:
                 return 9;
         }
@@ -55,9 +252,8 @@ private:
 public:
     using data_handler = callable_ref<bool(memory::const_block) noexcept>;
 
-    data_compressor_impl(memory::buffer_pool& buffers)
-      : _buffers{buffers}
-      , _output{_buffers.get(8 * 1024)}
+    zlib_data_compressor_impl(memory::buffer_pool& buffers)
+      : buffered_data_compressor_impl{buffers}
       , _temp{_buffers.get(16 * 1024)} {
         zero(as_bytes(cover_one(_zsd)));
         _zsd.zalloc = nullptr;
@@ -69,26 +265,57 @@ public:
         _zsi.opaque = nullptr;
     }
 
-    ~data_compressor_impl() noexcept {
+    ~zlib_data_compressor_impl() noexcept {
         _buffers.eat(std::move(_temp));
-        _buffers.eat(std::move(_output));
     }
 
-    data_compressor_impl(data_compressor_impl&&) = delete;
-    data_compressor_impl(const data_compressor_impl&) = delete;
-    auto operator=(data_compressor_impl&&) = delete;
-    auto operator=(const data_compressor_impl&) = delete;
+    zlib_data_compressor_impl(zlib_data_compressor_impl&&) = delete;
+    zlib_data_compressor_impl(const zlib_data_compressor_impl&) = delete;
+    auto operator=(zlib_data_compressor_impl&&) = delete;
+    auto operator=(const zlib_data_compressor_impl&) = delete;
 
-    auto compress(
+    auto default_method() const noexcept -> data_compression_method final {
+        return data_compression_method::zlib;
+    }
+
+    auto method_header([[maybe_unused]] data_compression_method method)
+      const noexcept -> memory::const_block final {
+        assert(method == default_method());
+        static const std::array<byte, 1> header{{0x01U}};
+        return view(header);
+    }
+
+    auto compress_begin(
+      const data_compression_method method,
+      const data_compression_level level) noexcept -> bool final {
+        if(method != default_method()) [[unlikely]] {
+            return false;
+        }
+        if(_zd_res != Z_STREAM_END) [[unlikely]] {
+            return false;
+        }
+        _zd_lvl = _translate(level);
+
+        return true;
+    }
+
+    auto compress_next(
       const memory::const_block input,
-      const data_handler& handler,
-      const data_compression_level level) noexcept -> bool {
+      const data_handler& handler) noexcept -> bool final {
         _zsd.next_in = const_cast<byte*>(input.data());
         _zsd.avail_in = limit_cast<unsigned>(input.size());
         _zsd.next_out = _temp.data();
         _zsd.avail_out = limit_cast<unsigned>(_temp.size());
 
-        const auto append = [&](span_size_t size) -> bool {
+        if(_zd_res == Z_STREAM_END) {
+            _zd_res = ::deflateInit(&_zsd, _zd_lvl);
+        }
+
+        if(_zd_res != Z_OK) [[unlikely]] {
+            return false;
+        }
+
+        const auto advance = [&, this](const span_size_t size) -> bool {
             if(handler(head(view(_temp), size))) [[likely]] {
                 _zsd.next_out = _temp.data();
                 _zsd.avail_out = limit_cast<unsigned>(_temp.size());
@@ -97,89 +324,74 @@ public:
             return false;
         };
 
-        int zres{};
-        if(zres = ::deflateInit(&_zsd, _translate(level)); zres != Z_OK) {
-            return false;
-        }
-        const auto cleanup_later{finally([this]() { ::deflateEnd(&_zsd); })};
-
         while(_zsd.avail_in > 0) {
-            if(zres = ::deflate(&_zsd, Z_NO_FLUSH); zres != Z_OK) {
-                if(zres != Z_STREAM_END) {
+            if(_zd_res = ::deflate(&_zsd, Z_NO_FLUSH); _zd_res != Z_OK) {
+                if(_zd_res != Z_STREAM_END) {
                     return false;
                 }
             }
             if(_zsd.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) [[unlikely]] {
+                if(!advance(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
         }
 
-        while(zres == Z_OK) {
+        while(_zd_res == Z_OK) {
             if(_zsd.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) [[unlikely]] {
+                if(!advance(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
-            zres = ::deflate(&_zsd, Z_FINISH);
+            _zd_res = ::deflate(&_zsd, Z_FINISH);
         }
 
-        if((zres != Z_OK) && (zres != Z_STREAM_END)) {
+        if((_zd_res != Z_OK) && (_zd_res != Z_STREAM_END)) {
             return false;
         }
 
-        if(!append(span_size(_temp.size() - _zsd.avail_out))) [[unlikely]] {
+        if(!advance(span_size(_temp.size() - _zsd.avail_out))) [[unlikely]] {
+            return false;
+        }
+        return _zd_res == Z_OK;
+    }
+
+    auto compress_finish() noexcept -> bool final {
+        const auto cleanup_later{finally([this]() { ::deflateEnd(&_zsd); })};
+        const bool result{(_zd_res != Z_OK) || (_zd_res != Z_STREAM_END)};
+        _zd_res = Z_STREAM_END;
+        return result;
+    }
+
+    auto decompress_begin(const data_compression_method method) noexcept
+      -> bool {
+        if(method != default_method()) [[unlikely]] {
+            return false;
+        }
+        if(_zi_res != Z_STREAM_END) [[unlikely]] {
             return false;
         }
 
-        return true;
+        return _zi_res != Z_OK;
     }
 
-    auto compress(
+    auto decompress_next(
       const memory::const_block input,
-      memory::buffer& output,
-      const data_compression_level level) noexcept -> memory::const_block {
-        auto append = [&](memory::const_block blk) {
-            const auto sk = output.size();
-            output.enlarge_by(blk.size());
-            copy(blk, skip(cover(output), sk));
-            return true;
-        };
-
-        output.resize(1);
-        cover(output).front() = 0x01U;
-
-        if(compress(input, data_handler(construct_from, append), level)) {
-            return view(output);
-        }
-        return {};
-    }
-
-    auto compress(
-      const memory::const_block input,
-      data_compression_level level) noexcept -> memory::const_block {
-        return compress(input, _output, level);
-    }
-
-    auto decompress(
-      memory::const_block input,
       const data_handler& handler) noexcept -> bool {
-        if(!input) {
-            return false;
-        }
-        if(input.front() != 0x01U) {
-            return false;
-        }
-
-        input = skip(input, 1);
-
         _zsi.next_in = const_cast<byte*>(input.data());
         _zsi.avail_in = limit_cast<unsigned>(input.size());
         _zsi.next_out = _temp.data();
         _zsi.avail_out = limit_cast<unsigned>(_temp.size());
 
-        auto append = [&](span_size_t size) -> bool {
+        if(_zi_res == Z_STREAM_END) {
+            _zi_res = ::inflateInit(&_zsi);
+        }
+
+        if(_zi_res != Z_OK) [[unlikely]] {
+            return false;
+        }
+
+        auto advance = [&, this](span_size_t size) -> bool {
             if(handler(head(view(_temp), size))) [[likely]] {
                 _zsi.next_out = _temp.data();
                 _zsi.avail_out = limit_cast<unsigned>(_temp.size());
@@ -188,148 +400,118 @@ public:
             return false;
         };
 
-        int zres{};
-        if(zres = ::inflateInit(&_zsi); zres != Z_OK) {
-            return false;
-        }
-        const auto cleanup_later{finally([this]() { ::inflateEnd(&_zsi); })};
-
         while(_zsi.avail_in > 0) {
-            if(zres = ::inflate(&_zsi, Z_NO_FLUSH); zres != Z_OK) {
-                if(zres != Z_STREAM_END) {
+            if(_zi_res = ::inflate(&_zsi, Z_NO_FLUSH); _zi_res != Z_OK) {
+                if(_zi_res != Z_STREAM_END) {
                     return false;
                 }
             }
             if(_zsi.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) [[unlikely]] {
+                if(!advance(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
         }
 
-        while(zres == Z_OK) {
-            if(_zsd.avail_out == 0) {
-                if(!append(span_size(_temp.size()))) [[unlikely]] {
+        while(_zi_res == Z_OK) {
+            if(_zsi.avail_out == 0) {
+                if(!advance(span_size(_temp.size()))) [[unlikely]] {
                     return false;
                 }
             }
-            zres = ::inflate(&_zsd, Z_FINISH);
+            _zi_res = ::inflate(&_zsi, Z_FINISH);
         }
 
-        if((zres != Z_OK) && (zres != Z_STREAM_END)) {
+        if((_zi_res != Z_OK) && (_zi_res != Z_STREAM_END)) {
             return false;
         }
 
-        if(!append(span_size(_temp.size() - _zsi.avail_out))) [[unlikely]] {
+        if(!advance(span_size(_temp.size() - _zsi.avail_out))) [[unlikely]] {
             return false;
         }
 
-        return true;
+        return _zi_res == Z_OK;
     }
 
-    auto decompress(
-      const memory::const_block input,
-      memory::buffer& output) noexcept -> memory::const_block {
-        auto append = [&](memory::const_block blk) {
-            const auto sk = output.size();
-            output.enlarge_by(blk.size());
-            copy(blk, skip(cover(output), sk));
-            _zsi.next_out = _temp.data();
-            _zsi.avail_out = limit_cast<unsigned>(_temp.size());
-            return true;
-        };
-        output.clear();
-
-        if(decompress(input, data_handler(construct_from, append))) {
-            return view(output);
-        }
-        return {};
-    }
-
-    auto decompress(const memory::const_block input) noexcept
-      -> memory::const_block {
-        if(input.front() == 0x00U) {
-            return skip(input, 1);
-        }
-        return decompress(input, _output);
+    auto decompress_finish() noexcept -> bool {
+        const auto cleanup_later{finally([this]() { ::inflateEnd(&_zsi); })};
+        const bool result{(_zi_res != Z_OK) || (_zi_res != Z_STREAM_END)};
+        _zi_res = Z_STREAM_END;
+        return result;
     }
 };
+
+auto default_data_compression_method() noexcept -> data_compression_method {
+    return data_compression_method::zlib;
+}
 #else
-class data_compressor_impl {
-public:
-    using data_handler = callable_ref<bool(memory::const_block)>;
-
-    data_compressor_impl(memory::buffer_pool& buffers)
-      : _buffers{buffers}
-      , _output{_buffers.get(8 * 1024)} {}
-
-    auto compress(
-      const memory::const_block,
-      const data_handler&,
-      const data_compression_level) noexcept -> bool {
-        return false;
-    }
-
-    auto compress(
-      const memory::const_block input,
-      memory::buffer& output,
-      [[maybe_unused]] const data_compression_level level) noexcept
-      -> memory::const_block {
-        output.resize(safe_add(input.size(), 1));
-        copy(input, skip(cover(output), 1));
-        cover(output).front() = 0x00U;
-        return view(output);
-    }
-
-    auto compress(
-      const memory::const_block block,
-      const data_compression_level level) noexcept -> memory::const_block {
-        return compress(block, _output, level);
-    }
-
-    auto decompress(const memory::const_block, const data_handler&) noexcept
-      -> bool {
-        return false;
-    }
-
-    auto decompress(const memory::const_block input, memory::buffer& output)
-      const noexcept -> memory::const_block {
-        if(input.front() == 0x00U) {
-            output.resize(input.size() - 1);
-            copy(skip(input, 1), cover(output));
-            return view(output);
-        }
-        return {};
-    }
-
-    auto decompress(const memory::const_block input) const noexcept
-      -> memory::const_block {
-        if(input.front() == 0x00U) {
-            return skip(input, 1);
-        }
-        return {};
-    }
-
-private:
-    memory::buffer_pool& _buffers;
-    memory::buffer _output;
-};
+auto default_data_compression_method() noexcept -> data_compression_method {
+    return data_compression_method::none;
+}
 #endif
 //------------------------------------------------------------------------------
 static inline auto make_data_compressor_impl(
   memory::buffer_pool& buffers) noexcept {
-    return std::make_shared<data_compressor_impl>(buffers);
+#if EAGINE_USE_ZLIB
+    return std::make_shared<zlib_data_compressor_impl>(buffers);
+#else
+    return std::make_shared<noop_data_compressor_impl>(buffers);
+#endif
 }
 //------------------------------------------------------------------------------
 data_compressor::data_compressor(memory::buffer_pool& buffers) noexcept
   : _pimpl{make_data_compressor_impl(buffers)} {}
+//------------------------------------------------------------------------------
+auto data_compressor::supported_methods() const noexcept
+  -> data_compression_methods {
+    assert(_pimpl);
+    return _pimpl->supported_methods();
+}
+//------------------------------------------------------------------------------
+auto data_compressor::compress_begin(
+  const data_compression_method method,
+  const data_compression_level level) noexcept -> bool {
+    assert(_pimpl);
+    return _pimpl->compress_begin(method, level);
+}
+//------------------------------------------------------------------------------
+auto data_compressor::compress_next(
+  const memory::const_block input,
+  const data_handler& handler) noexcept -> bool {
+    assert(_pimpl);
+    return _pimpl->compress_next(input, handler);
+}
+//------------------------------------------------------------------------------
+auto data_compressor::compress_finish() noexcept -> bool {
+    assert(_pimpl);
+    return _pimpl->compress_finish();
+}
+//------------------------------------------------------------------------------
+auto data_compressor::compress(
+  const data_compression_method method,
+  const memory::const_block input,
+  const data_handler& handler,
+  const data_compression_level level) noexcept -> bool {
+    assert(_pimpl);
+    return _pimpl->compress(method, input, handler, level);
+}
 //------------------------------------------------------------------------------
 auto data_compressor::compress(
   const memory::const_block input,
   const data_handler& handler,
   const data_compression_level level) noexcept -> bool {
     assert(_pimpl);
-    return _pimpl->compress(input, handler, level);
+    handler(_pimpl->default_method_header());
+    return _pimpl->compress(_pimpl->default_method(), input, handler, level);
+}
+//------------------------------------------------------------------------------
+auto data_compressor::compress(
+  const data_compression_method method,
+  const memory::const_block input,
+  memory::buffer& output,
+  const data_compression_level level) noexcept -> memory::const_block {
+    assert(_pimpl);
+    return _pimpl->compress(method, input, output, level);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress(
@@ -337,51 +519,97 @@ auto data_compressor::compress(
   memory::buffer& output,
   const data_compression_level level) noexcept -> memory::const_block {
     assert(_pimpl);
-    if(const auto result{_pimpl->compress(input, output, level)}) {
-        return result;
-    }
-    output.resize(safe_add(input.size(), 1));
-    copy(input, skip(cover(output), 1));
-    cover(output).front() = 0x00U;
-    return view(output);
+    append_to(_pimpl->default_method_header(), output);
+    return _pimpl->compress(_pimpl->default_method(), input, output, level);
+}
+//------------------------------------------------------------------------------
+auto data_compressor::compress(
+  const data_compression_method method,
+  const memory::const_block input,
+  const data_compression_level level) noexcept -> memory::const_block {
+    assert(_pimpl);
+    return _pimpl->compress(method, input, level);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress(
   const memory::const_block input,
   const data_compression_level level) noexcept -> memory::const_block {
     assert(_pimpl);
-    if(const auto result{_pimpl->compress(input, level)}) {
-        return result;
-    }
-    return {};
+    return _pimpl->compress(_pimpl->default_method(), input, level);
 }
 //------------------------------------------------------------------------------
-auto data_compressor::decompress(
+auto data_compressor::decompress_begin(
+  const data_compression_method method) noexcept -> bool {
+    assert(_pimpl);
+    return _pimpl->decompress_begin(method);
+}
+//------------------------------------------------------------------------------
+auto data_compressor::decompress_next(
   const memory::const_block input,
   const data_handler& handler) noexcept -> bool {
     assert(_pimpl);
-    return _pimpl->decompress(input, handler);
+    return _pimpl->decompress_next(input, handler);
+}
+//------------------------------------------------------------------------------
+auto data_compressor::decompress_finish() noexcept -> bool {
+    assert(_pimpl);
+    return _pimpl->decompress_finish();
 }
 //------------------------------------------------------------------------------
 auto data_compressor::decompress(
+  const data_compression_method method,
+  const memory::const_block input,
+  const data_handler& handler) noexcept -> bool {
+    assert(_pimpl);
+    return _pimpl->decompress(method, input, handler);
+}
+//------------------------------------------------------------------------------
+auto data_compressor::decompress(
+  const memory::const_block data,
+  const data_handler& handler) noexcept -> bool {
+    assert(_pimpl);
+    const auto [method, input] = _pimpl->method_from_header(data);
+    return _pimpl->decompress(method, input, handler);
+}
+//------------------------------------------------------------------------------
+auto data_compressor::decompress(
+  const data_compression_method method,
   const memory::const_block input,
   memory::buffer& output) noexcept -> memory::const_block {
     if(input) {
         assert(_pimpl);
-        if(const auto result{_pimpl->decompress(input, output)}) {
-            return result;
-        }
+        return _pimpl->decompress(method, input, output);
     }
     return {};
 }
 //------------------------------------------------------------------------------
-auto data_compressor::decompress(const memory::const_block input) noexcept
-  -> memory::const_block {
+auto data_compressor::decompress(
+  const memory::const_block data,
+  memory::buffer& output) noexcept -> memory::const_block {
+    if(data) {
+        assert(_pimpl);
+        const auto [method, input] = _pimpl->method_from_header(data);
+        return _pimpl->decompress(method, input, output);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto data_compressor::decompress(
+  const data_compression_method method,
+  const memory::const_block input) noexcept -> memory::const_block {
     if(input) {
         assert(_pimpl);
-        if(const auto result{_pimpl->decompress(input)}) {
-            return result;
-        }
+        return _pimpl->decompress(method, input);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto data_compressor::decompress(const memory::const_block data) noexcept
+  -> memory::const_block {
+    if(data) {
+        assert(_pimpl);
+        const auto [method, input] = _pimpl->method_from_header(data);
+        return _pimpl->decompress(method, input);
     }
     return {};
 }

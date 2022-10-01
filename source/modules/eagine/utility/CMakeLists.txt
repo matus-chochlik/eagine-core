@@ -2,11 +2,15 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
-eagine_add_module(eagine.core.utility PARTITION sliding_average)
 eagine_add_module(eagine.core.utility PARTITION double_buffer)
 eagine_add_module(eagine.core.utility PARTITION integer_hash)
 eagine_add_module(eagine.core.utility PARTITION interleaved_call)
 eagine_add_module(eagine.core.utility PARTITION protected_member)
+
+eagine_add_module(
+	eagine.core.utility PARTITION sliding_average
+	IMPORTS eagine.core.types
+)
 
 eagine_add_module(
 	eagine.core.utility PARTITION array_size
