@@ -337,15 +337,6 @@ public:
             }
         }
 
-        while(_zd_res == Z_OK) {
-            if(_zsd.avail_out == 0) {
-                if(!advance(span_size(_temp.size()))) [[unlikely]] {
-                    return false;
-                }
-            }
-            _zd_res = ::deflate(&_zsd, Z_FINISH);
-        }
-
         if((_zd_res != Z_OK) && (_zd_res != Z_STREAM_END)) {
             return false;
         }
@@ -353,7 +344,7 @@ public:
         if(!advance(span_size(_temp.size() - _zsd.avail_out))) [[unlikely]] {
             return false;
         }
-        return _zd_res == Z_OK;
+        return true;
     }
 
     auto compress_finish() noexcept -> bool final {
@@ -413,15 +404,6 @@ public:
             }
         }
 
-        while(_zi_res == Z_OK) {
-            if(_zsi.avail_out == 0) {
-                if(!advance(span_size(_temp.size()))) [[unlikely]] {
-                    return false;
-                }
-            }
-            _zi_res = ::inflate(&_zsi, Z_FINISH);
-        }
-
         if((_zi_res != Z_OK) && (_zi_res != Z_STREAM_END)) {
             return false;
         }
@@ -430,7 +412,7 @@ public:
             return false;
         }
 
-        return _zi_res == Z_OK;
+        return true;
     }
 
     auto decompress_finish() noexcept -> bool {

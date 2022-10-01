@@ -22,7 +22,7 @@ auto main() -> int {
         std::cout << "is packed: " << res.is_packed() << std::endl;
         std::cout << res.fetch(compressor, {construct_from, print});
         std::cout << std::endl;
-        auto unpacker{res.make_unpacker(buffers, {construct_from, print}, 512)};
+        auto unpacker{res.make_unpacker(buffers, {construct_from, print}, 64)};
         do {
             unpacker.next();
         } while(unpacker.is_working());
