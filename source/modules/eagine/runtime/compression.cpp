@@ -74,6 +74,13 @@ public:
     /// @brief Returns the set of methods supported by the compressor.
     auto supported_methods() const noexcept -> data_compression_methods;
 
+    /// @brief Returns the default compression method of this compressor.
+    auto default_method() const noexcept -> data_compression_method;
+
+    /// @brief Examines and skips block header and determines the compression method.
+    auto method_from_header(const memory::const_block data) const noexcept
+      -> std::tuple<data_compression_method, memory::const_block>;
+
     /// @brief Begins a compression transaction.
     /// @see compress_next
     /// @see compress_finish
@@ -190,12 +197,15 @@ private:
     std::shared_ptr<data_compressor_intf> _pimpl{};
 };
 //------------------------------------------------------------------------------
-export class stream_decompression {
+/// @brief Base class for stream compression and decompression helpers
+/// @ingroup main_context
+export class stream_compression_decompression_base {
 public:
     /// @brief Alias for data handler callable type.
     using data_handler = callable_ref<bool(memory::const_block) noexcept>;
 
-    stream_decompression(
+    /// @brief Construction from compressor instance, data handler and compresion method.
+    stream_compression_decompression_base(
       data_compressor compressor,
       data_handler handler,
       const data_compression_method method) noexcept
@@ -203,61 +213,192 @@ public:
       , _handler{handler}
       , _method{method} {}
 
-    stream_decompression(
+    /// @brief Construction from compressor instance, data handler.
+    stream_compression_decompression_base(
+      data_compressor compressor,
+      data_handler handler) noexcept
+      : _compressor{std::move(compressor)}
+      , _handler{handler}
+      , _method{_compressor.default_method()} {}
+
+    /// @brief Construction from buffer pool, data handler and compresion method.
+    stream_compression_decompression_base(
       memory::buffer_pool& buffers,
       data_handler handler,
       const data_compression_method method) noexcept
-      : stream_decompression{data_compressor{buffers}, handler, method} {}
+      : stream_compression_decompression_base{
+          data_compressor{buffers},
+          handler,
+          method} {}
 
-    stream_decompression(
+    /// @brief Construction from buffer pool, data handler.
+    stream_compression_decompression_base(
       memory::buffer_pool& buffers,
       data_handler handler) noexcept
-      : stream_decompression{
-          {buffers},
-          handler,
-          default_data_compression_method()} {}
+      : stream_compression_decompression_base{
+          data_compressor{buffers},
+          handler} {}
 
+    /// @brief Indicates if compression has started successfully.
     auto has_started() const noexcept -> bool {
         return _started;
     }
 
+    /// @brief Indicates if compression has finished.
     auto has_finished() const noexcept -> bool {
         return _finished;
     }
 
+    /// @brief Indicates if compression has succeeded.
+    /// @see has_failed
+    auto has_succeeded() const noexcept -> bool {
+        return !_failed;
+    }
+
+    /// @brief Indicates if compression has failed.
+    /// @see has_succeeded
     auto has_failed() const noexcept -> bool {
         return _failed;
     }
 
+    /// @brief Indicates if stream compression is progressing successfully.
     auto is_working() const noexcept -> bool {
         return has_started() && !(has_finished() || has_failed());
     }
 
-    auto next(const memory::const_block input) noexcept
-      -> stream_decompression& {
-        if(!_started) {
-            if(_compressor.decompress_begin(_method)) {
-                _started = true;
-            } else {
-                _failed = true;
-            }
-        }
-        if(_started) {
-            if(!_compressor.decompress_next(input, _handler)) {
-                _finished = true;
-                _failed = !_compressor.decompress_finish();
-            }
-        }
-        return *this;
+    /// @brief Indicates if stream compression is progressing successfully.
+    /// @see is_working
+    explicit operator bool() const noexcept {
+        return is_working();
     }
 
-private:
+protected:
     data_compressor _compressor;
     data_handler _handler;
     data_compression_method _method;
     bool _started{false};
     bool _finished{false};
     bool _failed{false};
+};
+//------------------------------------------------------------------------------
+/// @brief Class implementing data stream compression functionality.
+/// @ingroup main_context
+/// @see stream_decompression
+export class stream_compression : public stream_compression_decompression_base {
+    using base = stream_compression_decompression_base;
+
+public:
+    using base::base;
+
+    /// @brief Compresses the next chunk of a data stream to specified level.
+    auto next(
+      const memory::const_block input,
+      data_compression_level level) noexcept -> stream_compression&;
+
+    /// @brief Compresses the next chunk of a data stream to normal level.
+    auto next(const memory::const_block input) noexcept -> stream_compression& {
+        return next(input, data_compression_level::normal);
+    }
+
+    /// @brief Finishes the stream compression.
+    auto finish() noexcept -> stream_compression&;
+};
+//------------------------------------------------------------------------------
+/// @brief Class implementing data stream decompression functionality.
+/// @ingroup main_context
+/// @see stream_compression
+/// @see block_stream_decompression
+export class stream_decompression
+  : public stream_compression_decompression_base {
+    using base = stream_compression_decompression_base;
+
+public:
+    using base::base;
+
+    /// @brief Decompresses the next chunk of a compressed stream.
+    auto next(const memory::const_block input) noexcept
+      -> stream_decompression&;
+
+    /// @brief Finishes the stream decompression.
+    auto finish() noexcept -> stream_compression&;
+};
+//------------------------------------------------------------------------------
+/// @brief Class implementing data block decompression functionality.
+/// @ingroup main_context
+/// @see stream_compression
+/// @see stream_decompression
+export class block_stream_decompression {
+public:
+    /// @brief Returns a suitable default chunk size value.
+    static constexpr auto default_chunk_size() noexcept -> span_size_t {
+        return 2048;
+    }
+
+    /// @brief Alias for data handler callable type.
+    using data_handler = stream_decompression::data_handler;
+
+    block_stream_decompression(
+      data_compressor compressor,
+      data_handler handler,
+      data_compression_method method,
+      memory::const_block input,
+      span_size_t chunk_size = default_chunk_size()) noexcept
+      : _base{std::move(compressor), handler, method}
+      , _stream{input}
+      , _chunk_size{chunk_size} {}
+
+    block_stream_decompression(
+      data_compressor compressor,
+      data_handler handler,
+      std::tuple<data_compression_method, memory::const_block> method_and_input,
+      span_size_t chunk_size = default_chunk_size()) noexcept
+      : block_stream_decompression{
+          std::move(compressor),
+          handler,
+          std::get<0>(method_and_input),
+          std::get<1>(method_and_input),
+          chunk_size} {}
+
+    /// @brief Indicates if compression has succeeded.
+    auto has_succeeded() const noexcept -> bool {
+        return _base.has_succeeded();
+    }
+
+    /// @brief Indicates if compression has failed.
+    /// @see has_succeeded
+    auto has_failed() const noexcept -> bool {
+        return _base.has_failed();
+    }
+
+    /// @brief Indicates if stream decompression is progressing successfully.
+    auto is_working() const noexcept -> bool {
+        return _base.is_working();
+    }
+
+    /// @brief Indicates if stream decompression is progressing successfully.
+    /// @see is_working
+    explicit operator bool() const noexcept {
+        return is_working();
+    }
+
+    /// @brief Decompresses the next chunk of the compressed data.
+    auto next() noexcept -> block_stream_decompression& {
+        _base.next(head(_stream.tail(), _chunk_size));
+        _stream.advance(_chunk_size);
+        return *this;
+    }
+
+    /// @brief Decompresses next chunk of the data, indicates if should be called again.
+    /// @see next
+    /// @see is_working
+    auto operator()() noexcept -> bool {
+        return next().is_working();
+    }
+
+private:
+    stream_decompression _base;
+    memory::const_split_block _stream;
+    const span_size_t _chunk_size;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

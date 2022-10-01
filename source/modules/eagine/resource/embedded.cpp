@@ -19,7 +19,7 @@ import eagine.core.runtime;
 import eagine.core.main_ctx;
 
 namespace eagine {
-
+//------------------------------------------------------------------------------
 /// @brief Class providing access to a const resource block embedded into the executable.
 /// @ingroup embedding
 /// @see embed
@@ -91,8 +91,41 @@ public:
     /// @brief Unpacks this resource using compressor from a main context object.
     /// @see fetch
     /// @see is_packed
+    /// @see make_unpacker
     auto unpack(main_ctx_object& mco) const -> memory::const_block {
         return unpack(mco.main_context());
+    }
+
+    /// @brief Creates an object that can unpack the resource per-partes.
+    /// @see unpack
+    auto make_unpacker(
+      memory::buffer_pool& buffers,
+      block_stream_decompression::data_handler handler,
+      span_size_t chunk_size = block_stream_decompression::default_chunk_size())
+      const -> block_stream_decompression {
+        data_compressor compressor{buffers};
+        auto method_and_input{compressor.method_from_header(embedded_block())};
+        return {std::move(compressor), handler, method_and_input, chunk_size};
+    }
+
+    /// @brief Creates an object that can unpack the resource per-partes.
+    /// @see unpack
+    auto make_unpacker(
+      main_ctx& ctx,
+      block_stream_decompression::data_handler handler,
+      span_size_t chunk_size = block_stream_decompression::default_chunk_size())
+      const -> block_stream_decompression {
+        return make_unpacker(ctx.buffers(), handler, chunk_size);
+    }
+
+    /// @brief Creates an object that can unpack the resource per-partes.
+    /// @see unpack
+    auto make_unpacker(
+      main_ctx_object& mco,
+      block_stream_decompression::data_handler handler,
+      span_size_t chunk_size = block_stream_decompression::default_chunk_size())
+      const -> block_stream_decompression {
+        return make_unpacker(mco.main_context(), handler, chunk_size);
     }
 
     /// @brief Unpacks this resource and passes the data into the handler function.

@@ -468,6 +468,18 @@ auto data_compressor::supported_methods() const noexcept
     return _pimpl->supported_methods();
 }
 //------------------------------------------------------------------------------
+auto data_compressor::default_method() const noexcept
+  -> data_compression_method {
+    assert(_pimpl);
+    return _pimpl->default_method();
+}
+//------------------------------------------------------------------------------
+auto data_compressor::method_from_header(const memory::const_block data)
+  const noexcept -> std::tuple<data_compression_method, memory::const_block> {
+    assert(_pimpl);
+    return _pimpl->method_from_header(data);
+}
+//------------------------------------------------------------------------------
 auto data_compressor::compress_begin(
   const data_compression_method method,
   const data_compression_level level) noexcept -> bool {
@@ -612,6 +624,63 @@ auto data_compressor::decompress(const memory::const_block data) noexcept
         return _pimpl->decompress(method, input);
     }
     return {};
+}
+//------------------------------------------------------------------------------
+// stream_compression
+//------------------------------------------------------------------------------
+auto stream_compression::next(
+  const memory::const_block input,
+  data_compression_level level) noexcept -> stream_compression& {
+    if(!_started) {
+        if(_compressor.compress_begin(_method, level)) {
+            _started = true;
+        } else {
+            _failed = true;
+        }
+    }
+    if(_started) {
+        if(input.empty() || !_compressor.compress_next(input, _handler)) {
+            _finished = true;
+            _failed = !_compressor.compress_finish();
+        }
+    }
+    return *this;
+}
+//------------------------------------------------------------------------------
+auto stream_compression::finish() noexcept -> stream_compression& {
+    if(_started) {
+        _finished = true;
+        _failed = !_compressor.compress_finish();
+    }
+    return *this;
+}
+//------------------------------------------------------------------------------
+// stream_decompression
+//------------------------------------------------------------------------------
+auto stream_decompression::next(const memory::const_block input) noexcept
+  -> stream_decompression& {
+    if(!_started) {
+        if(_compressor.decompress_begin(_method)) {
+            _started = true;
+        } else {
+            _failed = true;
+        }
+    }
+    if(_started) {
+        if(input.empty() || !_compressor.decompress_next(input, _handler)) {
+            _finished = true;
+            _failed = !_compressor.decompress_finish();
+        }
+    }
+    return *this;
+}
+//------------------------------------------------------------------------------
+auto stream_decompression::finish() noexcept -> stream_decompression& {
+    if(_started) {
+        _finished = true;
+        _failed = !_compressor.decompress_finish();
+    }
+    return *this;
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
