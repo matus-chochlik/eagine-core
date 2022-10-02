@@ -25,6 +25,7 @@ import eagine.core.memory;
 import eagine.core.utility;
 import <array>;
 import <memory>;
+import <stdexcept>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -45,7 +46,7 @@ struct data_compressor_intf : abstract<data_compressor_intf> {
         return method_header(default_method());
     }
 
-    virtual auto method_from_header(
+    virtual auto supported_method_from_header(
       const memory::const_block input) const noexcept
       -> std::tuple<data_compression_method, memory::const_block> {
         const auto header{default_method_header()};
@@ -175,6 +176,10 @@ private:
     memory::buffer _output;
 };
 //------------------------------------------------------------------------------
+static auto none_compression_header() noexcept -> memory::const_block {
+    static const std::array<byte, 1> header{{0x00U}};
+    return view(header);
+}
 class noop_data_compressor_impl : public buffered_data_compressor_impl {
 public:
     using buffered_data_compressor_impl::buffered_data_compressor_impl;
@@ -188,8 +193,7 @@ public:
     auto method_header([[maybe_unused]] data_compression_method method)
       const noexcept -> memory::const_block final {
         assert(method == default_method());
-        static const std::array<byte, 1> header{{0x00U}};
-        return view(header);
+        return none_compression_header();
     }
 
     auto compress_begin(
@@ -225,6 +229,10 @@ public:
 };
 //------------------------------------------------------------------------------
 #if EAGINE_USE_ZLIB
+static auto zlib_compression_header() noexcept -> memory::const_block {
+    static const std::array<byte, 1> header{{0x01U}};
+    return view(header);
+}
 class zlib_data_compressor_impl : public buffered_data_compressor_impl {
 private:
     memory::buffer _temp;
@@ -281,8 +289,7 @@ public:
     auto method_header([[maybe_unused]] data_compression_method method)
       const noexcept -> memory::const_block final {
         assert(method == default_method());
-        static const std::array<byte, 1> header{{0x01U}};
-        return view(header);
+        return zlib_compression_header();
     }
 
     auto compress_begin(
@@ -441,8 +448,31 @@ static inline auto make_data_compressor_impl(
 #endif
 }
 //------------------------------------------------------------------------------
+static inline auto make_data_compressor_impl_for_method(
+  data_compression_method method,
+  memory::buffer_pool& buffers) -> std::shared_ptr<data_compressor_intf> {
+    switch(method) {
+        case data_compression_method::none:
+            return std::make_shared<noop_data_compressor_impl>(buffers);
+        case data_compression_method::zlib:
+#if EAGINE_USE_ZLIB
+            return std::make_shared<zlib_data_compressor_impl>(buffers);
+#else
+            break;
+#endif
+        case data_compression_method::unknown:
+            break;
+    }
+    throw std::runtime_error("data compression method not available");
+}
+//------------------------------------------------------------------------------
 data_compressor::data_compressor(memory::buffer_pool& buffers) noexcept
   : _pimpl{make_data_compressor_impl(buffers)} {}
+//------------------------------------------------------------------------------
+data_compressor::data_compressor(
+  data_compression_method method,
+  memory::buffer_pool& buffers)
+  : _pimpl{make_data_compressor_impl_for_method(method, buffers)} {}
 //------------------------------------------------------------------------------
 auto data_compressor::supported_methods() const noexcept
   -> data_compression_methods {
@@ -456,10 +486,31 @@ auto data_compressor::default_method() const noexcept
     return _pimpl->default_method();
 }
 //------------------------------------------------------------------------------
-auto data_compressor::method_from_header(const memory::const_block data)
-  const noexcept -> std::tuple<data_compression_method, memory::const_block> {
+auto data_compression_method_from_header(const memory::const_block data) noexcept
+  -> std::tuple<data_compression_method, memory::const_block> {
+    const auto header_match = [data](const memory::const_block header) {
+        return are_equal(header, head(data, header.size()));
+    };
+    const auto skip_header = [data](const memory::const_block header) {
+        return skip(data, header.size());
+    };
+#if EAGINE_USE_ZLIB
+    if(const auto header{zlib_compression_header()}; header_match(header)) {
+        return {data_compression_method::zlib, skip_header(header)};
+    }
+#endif
+    if(const auto header{none_compression_header()}; header_match(header)) {
+        return {data_compression_method::none, skip_header(header)};
+    }
+    return {data_compression_method::unknown, data};
+}
+//------------------------------------------------------------------------------
+auto data_compressor::supported_method_from_header(
+  const memory::const_block data) const noexcept
+  -> std::tuple<data_compression_method, memory::const_block> {
+
     assert(_pimpl);
-    return _pimpl->method_from_header(data);
+    return _pimpl->supported_method_from_header(data);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress_begin(
@@ -562,7 +613,7 @@ auto data_compressor::decompress(
   const memory::const_block data,
   const data_handler& handler) noexcept -> bool {
     assert(_pimpl);
-    const auto [method, input] = _pimpl->method_from_header(data);
+    const auto [method, input] = _pimpl->supported_method_from_header(data);
     return _pimpl->decompress(method, input, handler);
 }
 //------------------------------------------------------------------------------
@@ -582,7 +633,7 @@ auto data_compressor::decompress(
   memory::buffer& output) noexcept -> memory::const_block {
     if(data) {
         assert(_pimpl);
-        const auto [method, input] = _pimpl->method_from_header(data);
+        const auto [method, input] = _pimpl->supported_method_from_header(data);
         return _pimpl->decompress(method, input, output);
     }
     return {};
@@ -602,7 +653,7 @@ auto data_compressor::decompress(const memory::const_block data) noexcept
   -> memory::const_block {
     if(data) {
         assert(_pimpl);
-        const auto [method, input] = _pimpl->method_from_header(data);
+        const auto [method, input] = _pimpl->supported_method_from_header(data);
         return _pimpl->decompress(method, input);
     }
     return {};

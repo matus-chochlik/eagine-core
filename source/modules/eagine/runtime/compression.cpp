@@ -59,6 +59,10 @@ export constexpr auto operator|(
     return {l, r};
 }
 //------------------------------------------------------------------------------
+export auto data_compression_method_from_header(
+  const memory::const_block) noexcept
+  -> std::tuple<data_compression_method, memory::const_block>;
+//------------------------------------------------------------------------------
 struct data_compressor_intf;
 
 /// @brief Class implementing data compression and decompresson.
@@ -67,6 +71,9 @@ export class data_compressor {
 public:
     /// @brief Initializing constructor.
     data_compressor(memory::buffer_pool&) noexcept;
+
+    /// @brief Construction of a compressor with a specified method.
+    data_compressor(data_compression_method, memory::buffer_pool&);
 
     /// @brief Alias for data handler callable type.
     using data_handler = callable_ref<bool(memory::const_block) noexcept>;
@@ -78,7 +85,14 @@ public:
     auto default_method() const noexcept -> data_compression_method;
 
     /// @brief Examines and skips block header and determines the compression method.
-    auto method_from_header(const memory::const_block data) const noexcept
+    /// @see supported_method_from_header
+    static auto method_from_header(const memory::const_block data) noexcept
+      -> std::tuple<data_compression_method, memory::const_block>;
+
+    /// @brief Examines and skips block header and determines the compression method.
+    /// @see method_from_header
+    auto supported_method_from_header(
+      const memory::const_block data) const noexcept
       -> std::tuple<data_compression_method, memory::const_block>;
 
     /// @brief Begins a compression transaction.

@@ -103,9 +103,10 @@ public:
       block_stream_decompression::data_handler handler,
       span_size_t chunk_size = block_stream_decompression::default_chunk_size())
       const -> block_stream_decompression {
-        data_compressor compressor{buffers};
-        auto method_and_input{compressor.method_from_header(embedded_block())};
-        return {std::move(compressor), handler, method_and_input, chunk_size};
+        const auto [method, input]{
+          data_compression_method_from_header(embedded_block())};
+        return {
+          data_compressor{method, buffers}, handler, method, input, chunk_size};
     }
 
     /// @brief Creates an object that can unpack the resource per-partes.
