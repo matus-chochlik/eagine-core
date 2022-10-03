@@ -10,6 +10,7 @@ eagine_add_module(
 		eagine.core.string
 		eagine.core.identifier
 		eagine.core.reflection
+		eagine.core.console
 )
 
 eagine_add_module(
@@ -49,6 +50,7 @@ eagine_add_module(
 		yaml_impl
 		filesystem_impl
 		overlay_impl
+		visitors_impl
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
@@ -56,6 +58,7 @@ eagine_add_module(
 		eagine.core.identifier
 		eagine.core.valid_if
 		eagine.core.logging
+		eagine.core.console
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/rapidjson/include"
 	PRIVATE_LINK_LIBRARIES

@@ -83,6 +83,8 @@ private:
 //------------------------------------------------------------------------------
 export auto traverse_json_stream(
   std::shared_ptr<value_tree_visitor>,
+  span_size_t max_token_size,
+  memory::buffer_pool&,
   const logger& parent) -> value_tree_stream_input;
 //------------------------------------------------------------------------------
 template <typename Derived>

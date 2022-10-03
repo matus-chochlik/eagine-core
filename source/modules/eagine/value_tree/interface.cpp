@@ -12,6 +12,7 @@ import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.reflection;
+import eagine.core.console;
 import <chrono>;
 import <cstdint>;
 import <memory>;
@@ -278,6 +279,15 @@ export struct value_tree_visitor : interface<value_tree_visitor> {
     /// @brief Called when the traversal of the whole tree finished.
     /// @see begin
     virtual void finish() = 0;
+
+    /// @brief Called when the parsing and traversal failed.
+    /// @see begin
+    virtual void failed() = 0;
 };
+//------------------------------------------------------------------------------
+/// @brief Make a value tree visitor printing the visited items to the console.
+/// @ingroup valtree
+export auto make_printing_value_tree_visitor(const console&)
+  -> std::unique_ptr<value_tree_visitor>;
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree

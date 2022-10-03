@@ -680,6 +680,91 @@ auto from_json_text(string_view json_text, const logger& parent) -> compound {
 //------------------------------------------------------------------------------
 // streaming
 //------------------------------------------------------------------------------
+class value_tree_json_stream {
+public:
+    using Ch = rapidjson::UTF8<>::Ch;
+
+    auto Peek() const noexcept -> Ch {
+        span_size_t offs{_offs};
+        if(offs < _previous.size()) {
+            return static_cast<Ch>(memory::const_block{_previous}[offs]);
+        }
+        offs -= _previous.size();
+        if(offs < _current.size()) {
+            return static_cast<Ch>(_current[offs]);
+        }
+        return '\0';
+    }
+
+    auto Take() noexcept -> Ch {
+        const Ch result{Peek()};
+        ++_offs;
+        return result;
+    }
+
+    auto Tell() const noexcept -> std::size_t {
+        return std_size(_done + _offs);
+    }
+
+    auto PutBegin() noexcept -> Ch* {
+        RAPIDJSON_ASSERT(false);
+        return 0;
+    }
+    void Put(Ch) noexcept {
+        RAPIDJSON_ASSERT(false);
+    }
+    void Flush() noexcept {
+        RAPIDJSON_ASSERT(false);
+    }
+    auto PutEnd(Ch*) noexcept -> std::size_t {
+        RAPIDJSON_ASSERT(false);
+        return 0;
+    }
+
+    auto available() const noexcept -> span_size_t {
+        return _previous.size() + _current.size() - _offs;
+    }
+
+    void begin(memory::buffer_pool& buffers, span_size_t max_token_size) {
+        _previous = buffers.get(max_token_size);
+        _previous.clear();
+        _current = {};
+        _done = 0;
+        _offs = 0;
+    }
+
+    void next(memory::const_block blk) {
+        assert(_current.empty());
+        _current = blk;
+    }
+
+    void advance() {
+        const auto sz{_previous.size()};
+        if(_offs >= sz) {
+            _done += sz;
+            _offs -= sz;
+            _previous.clear();
+            _current = skip(_current, _offs);
+            _done += _offs;
+            _offs = 0;
+        }
+        if(!_current.empty()) {
+            append_to(_current, _previous);
+            _current = {};
+        }
+    }
+
+    void finish(memory::buffer_pool& buffers) noexcept {
+        buffers.eat(std::move(_previous));
+    }
+
+private:
+    memory::buffer _previous;
+    memory::const_block _current;
+    span_size_t _done{0};
+    span_size_t _offs{0};
+};
+//------------------------------------------------------------------------------
 // TODO: actual progressive parsing of the individual chunks
 class json_value_tree_stream_parser
   : public value_tree_stream_parser
@@ -688,35 +773,57 @@ class json_value_tree_stream_parser
 public:
     json_value_tree_stream_parser(
       std::shared_ptr<value_tree_visitor> visitor,
+      span_size_t max_token_size,
+      memory::buffer_pool& buffers,
       const logger& parent) noexcept
       : _parent{parent}
+      , _buffers{buffers}
+      , _max_token_size{max_token_size}
       , _visitor{std::move(visitor)} {
         assert(_visitor);
     }
 
     auto begin() noexcept -> bool {
-        _json_block.clear();
+        _json_stream.begin(_buffers, _max_token_size);
+        _json_reader.IterativeParseInit();
+        _visitor->begin();
         return true;
     }
 
+    constexpr static auto _parse_flags() noexcept {
+        return rapidjson::kParseDefaultFlags | rapidjson::kParseIterativeFlag |
+               rapidjson::kParseTrailingCommasFlag;
+    }
+
+    auto _parse_current() noexcept -> bool {
+        return _json_reader.IterativeParseNext<_parse_flags()>(
+          _json_stream, *this);
+    }
+
     auto parse_data(memory::const_block data) noexcept -> bool {
-        append_to(data, _json_block);
+        _json_stream.next(data);
+        while(_json_stream.available() >= _max_token_size) {
+            _parse_current();
+        }
+
+        if(_json_reader.IterativeParseComplete()) {
+            return false;
+        }
+
+        _json_stream.advance();
         return true;
     }
 
     auto finish() noexcept -> bool {
-        _visitor->begin();
-        if(!_json_block.empty()) {
-            while(!_attr_stack.empty()) {
-                _attr_stack.pop();
-            }
-            // TODO: implement own stream wrapper, this is not very secure
-            rapidjson::StringStream rj_stream{
-              reinterpret_cast<const char*>(_json_block.data())};
-            rapidjson::Reader rj_reader;
-            rj_reader.Parse(rj_stream, *this);
+        while(!_json_reader.IterativeParseComplete()) {
+            _parse_current();
         }
-        _visitor->finish();
+        if(_json_reader.HasParseError()) [[unlikely]] {
+            _visitor->failed();
+        } else {
+            _visitor->finish();
+        }
+        _json_stream.finish(_buffers);
         return true;
     }
 
@@ -789,6 +896,10 @@ public:
 
 private:
     const logger& _parent;
+    memory::buffer_pool& _buffers;
+    const span_size_t _max_token_size;
+    value_tree_json_stream _json_stream;
+    rapidjson::Reader _json_reader;
     std::shared_ptr<value_tree_visitor> _visitor;
     memory::buffer _json_block;
     std::stack<std::string> _attr_stack;
@@ -796,9 +907,11 @@ private:
 //------------------------------------------------------------------------------
 auto traverse_json_stream(
   std::shared_ptr<value_tree_visitor> visitor,
+  span_size_t max_token_size,
+  memory::buffer_pool& buffers,
   const logger& parent) -> value_tree_stream_input {
     return {std::make_unique<json_value_tree_stream_parser>(
-      std::move(visitor), parent)};
+      std::move(visitor), max_token_size, buffers, parent)};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree
