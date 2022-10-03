@@ -787,6 +787,8 @@ public:
         _json_stream.begin(_buffers, _max_token_size);
         _json_reader.IterativeParseInit();
         _visitor->begin();
+        _just_flushed = false;
+        _old_val_typ = _cached_type::none;
         return true;
     }
 
@@ -812,8 +814,9 @@ public:
             return false;
         }
 
-        if(parsed_something) {
+        if(parsed_something && !_just_flushed) {
             _visitor->flush();
+            _just_flushed = true;
         }
         _json_stream.advance();
         return true;
@@ -846,6 +849,7 @@ public:
         if(should_flush) [[unlikely]] {
             _visitor->consume(memory::view(cache));
             cache.clear();
+            _just_flushed = false;
         }
     }
 
@@ -860,6 +864,7 @@ public:
     void _do_push(T value, std::vector<T>& cache, _cached_type new_val_typ) {
         if(_list_stack.empty() || !_list_stack.top()) {
             _visitor->consume(view_one(value));
+            _just_flushed = false;
         } else {
             _flush_previous(new_val_typ);
             cache.push_back(value);
@@ -870,11 +875,13 @@ public:
     auto Null() -> bool {
         _flush_previous(_cached_type::other);
         _visitor->consume(view_one(nothing));
+        _just_flushed = false;
         return true;
     }
     auto Bool(bool value) -> bool {
         _flush_previous(_cached_type::other);
         _visitor->consume(view_one(value));
+        _just_flushed = false;
         return true;
     }
     auto Int(int value) -> bool {
@@ -900,6 +907,7 @@ public:
         _flush_previous(_cached_type::other);
         const string_view value{str, span_size(length)};
         _visitor->consume(view_one(value));
+        _just_flushed = false;
         return true;
     }
     auto StartObject() -> bool {
@@ -955,6 +963,7 @@ private:
     std::vector<std::int64_t> _int_values;
     std::vector<std::uint64_t> _uint_values;
     _cached_type _old_val_typ{_cached_type::none};
+    bool _just_flushed{false};
 };
 //------------------------------------------------------------------------------
 auto traverse_json_stream(
