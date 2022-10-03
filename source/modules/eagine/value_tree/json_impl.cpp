@@ -833,12 +833,47 @@ public:
         return true;
     }
 
+    enum class _cached_type { none, _int, _uint, _float, other };
+
+    template <typename T>
+    void _do_flush_previous(
+      std::vector<T>& cache,
+      _cached_type cur_val_typ,
+      _cached_type new_val_typ) noexcept {
+        const auto should_flush{
+          ((_old_val_typ != new_val_typ) && !cache.empty()) ||
+          ((_old_val_typ == cur_val_typ) && (cache.size() >= 512))};
+        if(should_flush) [[unlikely]] {
+            _visitor->consume(memory::view(cache));
+            cache.clear();
+        }
+    }
+
+    void _flush_previous(_cached_type new_val_typ) {
+        _do_flush_previous(_float_values, _cached_type::_float, new_val_typ);
+        _do_flush_previous(_uint_values, _cached_type::_uint, new_val_typ);
+        _do_flush_previous(_int_values, _cached_type::_int, new_val_typ);
+        _old_val_typ = new_val_typ;
+    }
+
+    template <typename T>
+    void _do_push(T value, std::vector<T>& cache, _cached_type new_val_typ) {
+        if(_list_stack.empty() || !_list_stack.top()) {
+            _visitor->consume(view_one(value));
+        } else {
+            _flush_previous(new_val_typ);
+            cache.push_back(value);
+        }
+    }
+
     // rapidjson handler API
     auto Null() -> bool {
+        _flush_previous(_cached_type::other);
         _visitor->consume(view_one(nothing));
         return true;
     }
     auto Bool(bool value) -> bool {
+        _flush_previous(_cached_type::other);
         _visitor->consume(view_one(value));
         return true;
     }
@@ -848,26 +883,28 @@ public:
     auto Uint(unsigned value) -> bool {
         return Uint64(value);
     }
-    auto Int64(int64_t value) -> bool {
-        _visitor->consume(view_one(value));
+    auto Int64(std::int64_t value) -> bool {
+        _do_push(value, _int_values, _cached_type::_int);
         return true;
     }
-    auto Uint64(uint64_t value) -> bool {
-        _visitor->consume(view_one(value));
+    auto Uint64(std::uint64_t value) -> bool {
+        _do_push(value, _uint_values, _cached_type::_uint);
         return true;
     }
     auto Double(double value) -> bool {
-        _visitor->consume(view_one(value));
+        _do_push(value, _float_values, _cached_type::_float);
         return true;
     }
     auto String(const char* str, rapidjson::SizeType length, bool copy)
       -> bool {
+        _flush_previous(_cached_type::other);
         const string_view value{str, span_size(length)};
         _visitor->consume(view_one(value));
         return true;
     }
     auto StartObject() -> bool {
         _attr_stack.push({});
+        _list_stack.push(false);
         _visitor->begin_struct();
         return true;
     }
@@ -887,16 +924,20 @@ public:
         if(!attr_name.empty()) {
             _visitor->finish_attribute(attr_name);
         }
+        _list_stack.pop();
         _attr_stack.pop();
         _visitor->finish_struct();
         return true;
     }
     auto StartArray() -> bool {
+        _list_stack.push(true);
         _visitor->begin_list();
         return true;
     }
     auto EndArray(rapidjson::SizeType) -> bool {
+        _flush_previous(_cached_type::none);
         _visitor->finish_list();
+        _list_stack.pop();
         return true;
     }
 
@@ -909,6 +950,11 @@ private:
     std::shared_ptr<value_tree_visitor> _visitor;
     memory::buffer _json_block;
     std::stack<std::string> _attr_stack;
+    std::stack<bool> _list_stack;
+    std::vector<double> _float_values;
+    std::vector<std::int64_t> _int_values;
+    std::vector<std::uint64_t> _uint_values;
+    _cached_type _old_val_typ{_cached_type::none};
 };
 //------------------------------------------------------------------------------
 auto traverse_json_stream(
