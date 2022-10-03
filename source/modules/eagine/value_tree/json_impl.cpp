@@ -801,15 +801,20 @@ public:
     }
 
     auto parse_data(memory::const_block data) noexcept -> bool {
+        bool parsed_something{false};
         _json_stream.next(data);
         while(_json_stream.available() >= _max_token_size) {
             _parse_current();
+            parsed_something = true;
         }
 
-        if(_json_reader.IterativeParseComplete()) {
+        if(_json_reader.IterativeParseComplete()) [[unlikely]] {
             return false;
         }
 
+        if(parsed_something) {
+            _visitor->flush();
+        }
         _json_stream.advance();
         return true;
     }
@@ -821,6 +826,7 @@ public:
         if(_json_reader.HasParseError()) [[unlikely]] {
             _visitor->failed();
         } else {
+            _visitor->flush();
             _visitor->finish();
         }
         _json_stream.finish(_buffers);

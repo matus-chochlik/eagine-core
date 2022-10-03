@@ -276,6 +276,10 @@ export struct value_tree_visitor : interface<value_tree_visitor> {
     /// @brief Called when leaving a nested list.
     virtual void finish_list() = 0;
 
+    /// @brief Called when current chunk of input is consumed.
+    /// @see begin
+    virtual void flush() = 0;
+
     /// @brief Called when the traversal of the whole tree finished.
     /// @see begin
     virtual void finish() = 0;

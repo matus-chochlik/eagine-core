@@ -83,6 +83,10 @@ public:
         _cio.print("leave list");
     }
 
+    void flush() final {
+        _cio.print("flush");
+    }
+
     void finish() final {
         _cio.print("finish traversal");
     }
