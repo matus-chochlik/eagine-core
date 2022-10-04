@@ -13,7 +13,9 @@ module eagine.core.value_tree;
 
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.string;
 import eagine.core.console;
+import <stack>;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -88,6 +90,101 @@ private:
 auto make_printing_value_tree_visitor(const console& cio)
   -> std::unique_ptr<value_tree_visitor> {
     return std::make_unique<printing_value_tree_visitor>(cio);
+}
+//------------------------------------------------------------------------------
+class building_value_tree_visitor
+  : public value_tree_visitor_impl<building_value_tree_visitor> {
+public:
+    building_value_tree_visitor(std::shared_ptr<object_builder> builder) noexcept
+      : _builder{std::move(builder)} {}
+
+    auto should_continue() noexcept -> bool final {
+        return _should_continue && _builder->should_continue();
+    }
+
+    void begin() final {
+        _path.clear();
+        _should_continue = true;
+        _builder->begin();
+    }
+
+    template <typename T>
+    void do_consume(span<const T> data) {
+        _builder->add(_path, data);
+    }
+
+    void begin_struct() final {
+        if(!_in_list.empty() && _in_list.top() == true) {
+            _builder->add_element(_path);
+        }
+        _in_list.push(false);
+    }
+
+    void begin_attribute(const string_view name) final {
+        _path.push_back(name);
+    }
+
+    void finish_attribute(const string_view name) final {
+        if(!_path.empty() && _path.back() == name) {
+            _path.pop_back();
+        } else {
+            _should_continue = false;
+        }
+    }
+
+    void finish_struct() final {
+        if(!_in_list.empty() && _in_list.top() == false) {
+            _in_list.pop();
+        } else {
+            _should_continue = false;
+        }
+        if(!_in_list.empty() && _in_list.top() == true) {
+            _builder->finish_element(_path);
+        }
+    }
+
+    void begin_list() final {
+        _in_list.push(true);
+        _path.push_back("_");
+    }
+
+    void finish_list() final {
+        if(!_in_list.empty() && _in_list.top() == true) {
+            _in_list.pop();
+        } else {
+            _should_continue = false;
+        }
+
+        if(!_path.empty() && _path.back() == string_view{"_"}) {
+            _path.pop_back();
+        } else {
+            _should_continue = false;
+        }
+    }
+
+    void flush() final {}
+
+    void finish() final {
+        if(!_path.empty()) {
+            _builder->failed();
+        }
+        _builder->finish();
+    }
+
+    void failed() final {
+        _builder->failed();
+    }
+
+private:
+    std::shared_ptr<object_builder> _builder;
+    std::stack<bool> _in_list;
+    basic_string_path _path;
+    bool _should_continue{false};
+};
+//------------------------------------------------------------------------------
+auto make_building_value_tree_visitor(std::shared_ptr<object_builder> builder)
+  -> std::unique_ptr<value_tree_visitor> {
+    return std::make_unique<building_value_tree_visitor>(std::move(builder));
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree

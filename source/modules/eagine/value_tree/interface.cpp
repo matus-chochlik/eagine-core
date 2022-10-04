@@ -295,6 +295,7 @@ export struct value_tree_visitor : interface<value_tree_visitor> {
 /// @brief Interface for classes that initialize or change values in an object.
 /// @ingroup valtree
 /// @see value_tree_visitor
+/// @see make_building_value_tree_visitor
 ///
 /// Implementation of this interface are typically plugged into a value tree
 /// visitor that handles the traversal of a value tree, keeps track of the
@@ -363,6 +364,12 @@ export struct object_builder : interface<object_builder> {
 /// @brief Make a value tree visitor printing the visited items to the console.
 /// @ingroup valtree
 export auto make_printing_value_tree_visitor(const console&)
+  -> std::unique_ptr<value_tree_visitor>;
+//------------------------------------------------------------------------------
+/// @brief Make a value tree visitor driving an object builder.
+/// @ingroup valtree
+export auto make_building_value_tree_visitor(
+  std::shared_ptr<object_builder> builder)
   -> std::unique_ptr<value_tree_visitor>;
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree
