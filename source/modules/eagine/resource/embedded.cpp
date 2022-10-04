@@ -143,14 +143,15 @@ public:
     /// @brief Unpacks this resource and passes the data into the handler function.
     /// @see unpack
     /// @see is_packed
-    auto fetch(main_ctx& ctx, data_compressor::data_handler handler) {
+    auto fetch(main_ctx& ctx, data_compressor::data_handler handler) const {
         return fetch(ctx.compressor(), handler);
     }
 
     /// @brief Unpacks this resource and passes the data into the handler function.
     /// @see unpack
     /// @see is_packed
-    auto fetch(main_ctx_object& mco, data_compressor::data_handler handler) {
+    auto fetch(main_ctx_object& mco, data_compressor::data_handler handler)
+      const {
         return fetch(mco.main_context(), handler);
     }
 
