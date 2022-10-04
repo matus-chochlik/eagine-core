@@ -114,11 +114,51 @@ public:
     }
 
     /// @brief Comparison.
+    /// @see like
     auto operator<=>(const basic_string_path& that) const noexcept {
         return _str.compare(that._str);
     }
 
     auto operator==(const basic_string_path&) const noexcept -> bool = default;
+
+    static auto elements_match(
+      const string_view elem,
+      const string_view patt) noexcept -> bool {
+        return (elem == patt) || (patt == string_view{"*"});
+    }
+
+    /// @brief Tests if this path matches a pattern.
+    /// @see starts_with
+    auto like(const basic_string_path& pattern) const noexcept -> bool {
+        if(size() != pattern.size()) {
+            return false;
+        }
+        auto tp{begin()};
+        auto pp{pattern.begin()};
+        while(tp != end() && pp != pattern.end()) {
+            if(!elements_match(*tp, *pp)) {
+                return false;
+            }
+            ++tp;
+            ++pp;
+        }
+        return true;
+    }
+
+    /// @brief Tests if the beginning of this path matches a pattern.
+    /// @see like
+    auto starts_with(const basic_string_path& pattern) const noexcept -> bool {
+        auto tp{begin()};
+        auto pp{pattern.begin()};
+        while(tp != end() && pp != pattern.end()) {
+            if(!elements_match(*tp, *pp)) {
+                return false;
+            }
+            ++tp;
+            ++pp;
+        }
+        return tp == end();
+    }
 
     /// @brief Concatenates two paths.
     friend auto operator+(
@@ -224,6 +264,13 @@ public:
     auto rend() const noexcept -> reverse_iterator {
         return empty() ? reverse_iterator(nullptr)
                        : reverse_iterator(_str.data() - 1);
+    }
+
+    auto operator[](span_size_t idx) const noexcept -> iterator::reference {
+        assert(idx < size());
+        auto it{begin()};
+        std::advance(it, idx);
+        return *it;
     }
 
     /// @brief Calls the specified function for each element of this path.
