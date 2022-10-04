@@ -15,7 +15,6 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.console;
-import <stack>;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -196,10 +195,7 @@ public:
     }
 
     void begin_struct() final {
-        if(!_in_list.empty() && _in_list.top() == true) {
-            _builder->add_element(_path);
-        }
-        _in_list.push(false);
+        _builder->add_object(_path);
     }
 
     void begin_attribute(const string_view name) final {
@@ -215,28 +211,14 @@ public:
     }
 
     void finish_struct() final {
-        if(!_in_list.empty() && _in_list.top() == false) {
-            _in_list.pop();
-        } else {
-            _should_continue = false;
-        }
-        if(!_in_list.empty() && _in_list.top() == true) {
-            _builder->finish_element(_path);
-        }
+        _builder->finish_object(_path);
     }
 
     void begin_list() final {
-        _in_list.push(true);
         _path.push_back("_");
     }
 
     void finish_list() final {
-        if(!_in_list.empty() && _in_list.top() == true) {
-            _in_list.pop();
-        } else {
-            _should_continue = false;
-        }
-
         if(!_path.empty() && _path.back() == string_view{"_"}) {
             _path.pop_back();
         } else {
@@ -259,7 +241,6 @@ public:
 
 private:
     std::shared_ptr<object_builder> _builder;
-    std::stack<bool> _in_list;
     basic_string_path _path;
     bool _should_continue{false};
 };

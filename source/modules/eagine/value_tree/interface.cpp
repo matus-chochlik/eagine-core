@@ -343,13 +343,13 @@ export struct object_builder : interface<object_builder> {
       const basic_string_path& path,
       span<const string_view> data) = 0;
 
-    /// @brief Called when a new structured array element should be added.
-    /// @see finish_element
-    virtual void add_element(const basic_string_path&) {}
+    /// @brief Called when a new structured attribute or array element should be added.
+    /// @see finish_object
+    virtual void add_object(const basic_string_path&) {}
 
-    /// @brief Called when a structured array element is finalized.
-    /// @see add_element
-    virtual void finish_element(const basic_string_path&) {}
+    /// @brief Called when a structured attribute or array element is finalized.
+    /// @see add_object
+    virtual void finish_object(const basic_string_path&) {}
 
     /// @brief Called when the tree traversal finished.
     /// @see begin
