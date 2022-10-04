@@ -292,6 +292,74 @@ export struct value_tree_visitor : interface<value_tree_visitor> {
     virtual void failed() = 0;
 };
 //------------------------------------------------------------------------------
+/// @brief Interface for classes that initialize or change values in an object.
+/// @ingroup valtree
+/// @see value_tree_visitor
+///
+/// Implementation of this interface are typically plugged into a value tree
+/// visitor that handles the traversal of a value tree, keeps track of the
+/// current position in the tree structure and the associated path and
+/// calls the functions from the object builder's interface. Such
+/// implementations can be used to initialize or modify values in an structured
+/// object from values in a value tree.
+export struct object_builder : interface<object_builder> {
+
+    /// @brief Called by the driver to check if the traversal should continue.
+    virtual auto should_continue() noexcept -> bool {
+        return true;
+    }
+
+    /// @brief Called when the tree traversal begins.
+    /// @see finish
+    virtual void begin() {}
+
+    /// @brief Called when values at the specified path in the tree are consumed.
+    virtual void add(
+      const basic_string_path& path,
+      const span<const nothing_t> data) = 0;
+
+    /// @brief Called when values at the specified path in the tree are consumed.
+    virtual void add(const basic_string_path& path, span<const bool> data) = 0;
+
+    /// @brief Called when values at the specified path in the tree are consumed.
+    virtual void add(
+      const basic_string_path& path,
+      span<const std::int64_t> data) = 0;
+
+    /// @brief Called when values at the specified path in the tree are consumed.
+    virtual void add(
+      const basic_string_path& path,
+      span<const std::uint64_t> data) = 0;
+
+    /// @brief Called when values at the specified path in the tree are consumed.
+    virtual void add(const basic_string_path& path, span<const float> data) = 0;
+
+    /// @brief Called when values at the specified path in the tree are consumed.
+    virtual void add(const basic_string_path& path, span<const double> data) = 0;
+
+    /// @brief Called when values at the specified path in the tree are consumed.
+    virtual void add(
+      const basic_string_path& path,
+      span<const string_view> data) = 0;
+
+    /// @brief Called when a new structured array element should be added.
+    /// @see finish_element
+    virtual void add_element(const basic_string_path&) {}
+
+    /// @brief Called when a structured array element is finalized.
+    /// @see add_element
+    virtual void finish_element(const basic_string_path&) {}
+
+    /// @brief Called when the tree traversal finished.
+    /// @see begin
+    /// @see failed
+    virtual void finish() {}
+
+    /// @brief Called when the tree traversal failed.
+    /// @see finish
+    virtual void failed() = 0;
+};
+//------------------------------------------------------------------------------
 /// @brief Make a value tree visitor printing the visited items to the console.
 /// @ingroup valtree
 export auto make_printing_value_tree_visitor(const console&)

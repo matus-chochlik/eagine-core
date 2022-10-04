@@ -14,6 +14,7 @@ export module eagine.core.value_tree:implementation;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.string;
 import eagine.core.utility;
 import eagine.core.logging;
 import :interface;
@@ -107,6 +108,38 @@ struct value_tree_visitor_impl : value_tree_visitor {
     }
     void consume(span<const string_view> data) final {
         derived().do_consume(data);
+    }
+};
+//------------------------------------------------------------------------------
+export template <typename Derived>
+struct object_builder_impl : object_builder {
+    auto derived() noexcept -> Derived& {
+        return *static_cast<Derived*>(this);
+    }
+
+    void add(const basic_string_path& path, const span<const nothing_t> data)
+      final {
+        derived().do_add(path, data);
+    }
+    void add(const basic_string_path& path, span<const bool> data) final {
+        derived().do_add(path, data);
+    }
+    void add(const basic_string_path& path, span<const std::int64_t> data)
+      final {
+        derived().do_add(path, data);
+    }
+    void add(const basic_string_path& path, span<const std::uint64_t> data)
+      final {
+        derived().do_add(path, data);
+    }
+    void add(const basic_string_path& path, span<const float> data) final {
+        derived().do_add(path, data);
+    }
+    void add(const basic_string_path& path, span<const double> data) final {
+        derived().do_add(path, data);
+    }
+    void add(const basic_string_path& path, span<const string_view> data) final {
+        derived().do_add(path, data);
     }
 };
 //------------------------------------------------------------------------------

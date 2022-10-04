@@ -31,6 +31,7 @@ eagine_add_module(
 		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.string
 		eagine.core.utility
 		eagine.core.logging
 )
