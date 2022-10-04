@@ -19,6 +19,88 @@ import <stack>;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
+class combined_value_tree_visitor
+  : public value_tree_visitor_impl<combined_value_tree_visitor> {
+public:
+    combined_value_tree_visitor(
+      std::shared_ptr<value_tree_visitor> left,
+      std::shared_ptr<value_tree_visitor> right) noexcept
+      : _left{std::move(left)}
+      , _right{std::move(right)} {}
+
+    auto should_continue() noexcept -> bool {
+        return _left->should_continue() && _right->should_continue();
+    }
+
+    void begin() final {
+        _left->begin();
+        _right->begin();
+    }
+
+    template <typename T>
+    void do_consume(span<const T> data) {
+        _left->consume(data);
+        _right->consume(data);
+    }
+
+    void begin_struct() final {
+        _left->begin_struct();
+        _right->begin_struct();
+    }
+
+    void begin_attribute(const string_view name) final {
+        _left->begin_attribute(name);
+        _right->begin_attribute(name);
+    }
+
+    void finish_attribute(const string_view name) final {
+        _left->finish_attribute(name);
+        _right->finish_attribute(name);
+    }
+
+    void finish_struct() final {
+        _left->finish_struct();
+        _right->finish_struct();
+    }
+
+    void begin_list() final {
+        _left->begin_list();
+        _right->begin_list();
+    }
+
+    void finish_list() final {
+        _left->finish_list();
+        _right->finish_list();
+    }
+
+    void flush() final {
+        _left->flush();
+        _right->flush();
+    }
+
+    void finish() final {
+        _left->finish();
+        _right->finish();
+    }
+
+    void failed() final {
+        _left->failed();
+        _right->finish();
+    }
+
+private:
+    std::shared_ptr<value_tree_visitor> _left;
+    std::shared_ptr<value_tree_visitor> _right;
+};
+//------------------------------------------------------------------------------
+auto make_combined_value_tree_visitor(
+  std::shared_ptr<value_tree_visitor> left,
+  std::shared_ptr<value_tree_visitor> right)
+  -> std::unique_ptr<value_tree_visitor> {
+    return std::make_unique<combined_value_tree_visitor>(
+      std::move(left), std::move(right));
+}
+//------------------------------------------------------------------------------
 class printing_value_tree_visitor
   : public value_tree_visitor_impl<printing_value_tree_visitor> {
 public:

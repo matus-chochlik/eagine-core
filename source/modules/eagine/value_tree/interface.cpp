@@ -361,6 +361,13 @@ export struct object_builder : interface<object_builder> {
     virtual void failed() = 0;
 };
 //------------------------------------------------------------------------------
+/// @brief Make a value tree visitor that combines two other visitors.
+/// @ingroup valtree
+export auto make_combined_value_tree_visitor(
+  std::shared_ptr<value_tree_visitor> left,
+  std::shared_ptr<value_tree_visitor> right)
+  -> std::unique_ptr<value_tree_visitor>;
+//------------------------------------------------------------------------------
 /// @brief Make a value tree visitor printing the visited items to the console.
 /// @ingroup valtree
 export auto make_printing_value_tree_visitor(const console&)
