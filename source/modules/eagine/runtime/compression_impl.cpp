@@ -64,7 +64,8 @@ struct data_compressor_intf : abstract<data_compressor_intf> {
       const memory::const_block input,
       const data_handler& handler) noexcept -> bool = 0;
 
-    virtual auto compress_finish() noexcept -> bool = 0;
+    virtual auto compress_finish(const data_handler& handler) noexcept
+      -> bool = 0;
 
     virtual auto compress(
       const data_compression_method method,
@@ -73,7 +74,7 @@ struct data_compressor_intf : abstract<data_compressor_intf> {
       const data_compression_level level) noexcept -> bool {
         if(compress_begin(method, level)) {
             compress_next(input, handler);
-            return compress_finish();
+            return compress_finish(handler);
         }
         return false;
     }
@@ -105,7 +106,8 @@ struct data_compressor_intf : abstract<data_compressor_intf> {
       const memory::const_block input,
       const data_handler& handler) noexcept -> bool = 0;
 
-    virtual auto decompress_finish() noexcept -> bool = 0;
+    virtual auto decompress_finish(const data_handler& handler) noexcept
+      -> bool = 0;
 
     virtual auto decompress(
       data_compression_method method,
@@ -113,7 +115,7 @@ struct data_compressor_intf : abstract<data_compressor_intf> {
       const data_handler& handler) noexcept -> bool {
         if(decompress_begin(method)) {
             decompress_next(input, handler);
-            return decompress_finish();
+            return decompress_finish(handler);
         }
         return false;
     }
@@ -208,7 +210,7 @@ public:
         return handler(input);
     }
 
-    auto compress_finish() noexcept -> bool final {
+    auto compress_finish(const data_handler&) noexcept -> bool final {
         return true;
     }
 
@@ -223,7 +225,7 @@ public:
         return handler(input);
     }
 
-    auto decompress_finish() noexcept -> bool final {
+    auto decompress_finish(const data_handler&) noexcept -> bool final {
         return true;
     }
 };
@@ -322,7 +324,8 @@ public:
             return false;
         }
 
-        const auto advance = [&, this](const span_size_t size) -> bool {
+        const auto advance = [&, this]() -> bool {
+            const auto size{_temp.size() - span_size(_zsd.avail_out)};
             if(handler(head(view(_temp), size))) [[likely]] {
                 _zsd.next_out = _temp.data();
                 _zsd.avail_out = limit_cast<unsigned>(_temp.size());
@@ -338,7 +341,7 @@ public:
                 }
             }
             if(_zsd.avail_out == 0) {
-                if(!advance(span_size(_temp.size()))) [[unlikely]] {
+                if(!advance()) [[unlikely]] {
                     return false;
                 }
             }
@@ -348,13 +351,22 @@ public:
             return false;
         }
 
-        if(!advance(span_size(_temp.size() - _zsd.avail_out))) [[unlikely]] {
+        if(!advance()) [[unlikely]] {
             return false;
         }
         return true;
     }
 
-    auto compress_finish() noexcept -> bool final {
+    auto compress_finish(const data_handler& handler) noexcept -> bool final {
+        while(_zd_res != Z_STREAM_END) {
+            _zd_res = ::deflate(&_zsd, Z_FINISH);
+            const auto size{_temp.size() - span_size(_zsd.avail_out)};
+            if(handler(head(view(_temp), size))) [[likely]] {
+                _zsd.next_out = _temp.data();
+                _zsd.avail_out = limit_cast<unsigned>(_temp.size());
+            }
+        }
+
         const auto cleanup_later{finally([this]() { ::deflateEnd(&_zsd); })};
         const bool result{(_zd_res != Z_OK) || (_zd_res != Z_STREAM_END)};
         _zd_res = Z_STREAM_END;
@@ -389,7 +401,8 @@ public:
             return false;
         }
 
-        auto advance = [&, this](span_size_t size) -> bool {
+        auto advance = [&, this]() -> bool {
+            const auto size{_temp.size() - span_size(_zsi.avail_out)};
             if(handler(head(view(_temp), size))) [[likely]] {
                 _zsi.next_out = _temp.data();
                 _zsi.avail_out = limit_cast<unsigned>(_temp.size());
@@ -405,7 +418,7 @@ public:
                 }
             }
             if(_zsi.avail_out == 0) {
-                if(!advance(span_size(_temp.size()))) [[unlikely]] {
+                if(!advance()) [[unlikely]] {
                     return false;
                 }
             }
@@ -415,14 +428,23 @@ public:
             return false;
         }
 
-        if(!advance(span_size(_temp.size() - _zsi.avail_out))) [[unlikely]] {
+        if(!advance()) [[unlikely]] {
             return false;
         }
 
         return true;
     }
 
-    auto decompress_finish() noexcept -> bool {
+    auto decompress_finish(const data_handler& handler) noexcept -> bool {
+        while(_zi_res != Z_STREAM_END) {
+            _zi_res = ::inflate(&_zsi, Z_FINISH);
+            const auto size{_temp.size() - span_size(_zsi.avail_out)};
+            if(handler(head(view(_temp), size))) [[likely]] {
+                _zsi.next_out = _temp.data();
+                _zsi.avail_out = limit_cast<unsigned>(_temp.size());
+            }
+        }
+
         const auto cleanup_later{finally([this]() { ::inflateEnd(&_zsi); })};
         const bool result{(_zi_res != Z_OK) || (_zi_res != Z_STREAM_END)};
         _zi_res = Z_STREAM_END;
@@ -527,9 +549,10 @@ auto data_compressor::compress_next(
     return _pimpl->compress_next(input, handler);
 }
 //------------------------------------------------------------------------------
-auto data_compressor::compress_finish() noexcept -> bool {
+auto data_compressor::compress_finish(const data_handler& handler) noexcept
+  -> bool {
     assert(_pimpl);
-    return _pimpl->compress_finish();
+    return _pimpl->compress_finish(handler);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress(
@@ -576,7 +599,7 @@ auto data_compressor::compress(
     return _pimpl->compress(method, input, level);
 }
 //------------------------------------------------------------------------------
-auto data_compressor::compress(
+auto data_compressor::default_compress(
   const memory::const_block input,
   const data_compression_level level) noexcept -> memory::const_block {
     assert(_pimpl);
@@ -596,9 +619,10 @@ auto data_compressor::decompress_next(
     return _pimpl->decompress_next(input, handler);
 }
 //------------------------------------------------------------------------------
-auto data_compressor::decompress_finish() noexcept -> bool {
+auto data_compressor::decompress_finish(const data_handler& handler) noexcept
+  -> bool {
     assert(_pimpl);
-    return _pimpl->decompress_finish();
+    return _pimpl->decompress_finish(handler);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::decompress(
@@ -649,12 +673,11 @@ auto data_compressor::decompress(
     return {};
 }
 //------------------------------------------------------------------------------
-auto data_compressor::decompress(const memory::const_block data) noexcept
-  -> memory::const_block {
-    if(data) {
+auto data_compressor::default_decompress(
+  const memory::const_block input) noexcept -> memory::const_block {
+    if(input) {
         assert(_pimpl);
-        const auto [method, input] = _pimpl->supported_method_from_header(data);
-        return _pimpl->decompress(method, input);
+        return _pimpl->decompress(_pimpl->default_method(), input);
     }
     return {};
 }
@@ -674,7 +697,7 @@ auto stream_compression::next(
     if(_started) {
         if(input.empty() || !_compressor.compress_next(input, _handler)) {
             _finished = true;
-            _failed = !_compressor.compress_finish();
+            _failed = !_compressor.compress_finish(_handler);
         }
     }
     return *this;
@@ -683,7 +706,7 @@ auto stream_compression::next(
 auto stream_compression::finish() noexcept -> stream_compression& {
     if(_started) {
         _finished = true;
-        _failed = !_compressor.compress_finish();
+        _failed = !_compressor.compress_finish(_handler);
     }
     return *this;
 }
@@ -702,7 +725,7 @@ auto stream_decompression::next(const memory::const_block input) noexcept
     if(_started) {
         if(input.empty() || !_compressor.decompress_next(input, _handler)) {
             _finished = true;
-            _failed = !_compressor.decompress_finish();
+            _failed = !_compressor.decompress_finish(_handler);
         }
     }
     return *this;
@@ -711,7 +734,7 @@ auto stream_decompression::next(const memory::const_block input) noexcept
 auto stream_decompression::finish() noexcept -> stream_decompression& {
     if(_started) {
         _finished = true;
-        _failed = !_compressor.decompress_finish();
+        _failed = !_compressor.decompress_finish(_handler);
     }
     return *this;
 }

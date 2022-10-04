@@ -33,8 +33,8 @@ public:
       : packed_block_data_sink{std::move(compressor), {}} {}
 
     auto finalize() noexcept -> serialization_errors final {
-        if(const auto packed{
-             _compressor.compress(done(), data_compression_level::normal)}) {
+        if(const auto packed{_compressor.default_compress(
+             done(), data_compression_level::normal)}) {
             return this->replace_with(packed);
         }
         return {serialization_error_code::backend_error};
@@ -62,7 +62,7 @@ public:
       : packed_block_data_source{std::move(compressor), {}} {}
 
     void reset(const memory::const_block src) {
-        block_data_source::reset(_compressor.decompress(src));
+        block_data_source::reset(_compressor.default_decompress(src));
     }
 
 private:

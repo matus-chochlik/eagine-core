@@ -112,7 +112,7 @@ public:
     /// @brief Finished the compression transacition.
     /// @see compress_begin
     /// @see compress_next
-    auto compress_finish() noexcept -> bool;
+    auto compress_finish(const data_handler& handler) noexcept -> bool;
 
     /// @brief Compress the input block, passing the packed data to handler.
     auto compress(
@@ -158,7 +158,7 @@ public:
       const memory::const_block input,
       const data_compression_level level) noexcept -> memory::const_block;
 
-    auto compress(
+    auto default_compress(
       const memory::const_block input,
       const data_compression_level level) noexcept -> memory::const_block;
 
@@ -177,7 +177,7 @@ public:
     /// @brief Finished the decompression transacition.
     /// @see decompress_begin
     /// @see decompress_next
-    auto decompress_finish() noexcept -> bool;
+    auto decompress_finish(const data_handler& handler) noexcept -> bool;
 
     /// @brief Decompress the input block, passing the unpacked data to handler.
     auto decompress(
@@ -204,7 +204,7 @@ public:
       const data_compression_method method,
       const memory::const_block input) noexcept -> memory::const_block;
 
-    auto decompress(const memory::const_block input) noexcept
+    auto default_decompress(const memory::const_block input) noexcept
       -> memory::const_block;
 
 private:
