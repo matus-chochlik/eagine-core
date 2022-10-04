@@ -233,6 +233,9 @@ struct value_tree_stream_parser : interface<value_tree_stream_parser> {
 /// @brief Interface for value tree structured traversal visitors.
 /// @ingroup valtree
 export struct value_tree_visitor : interface<value_tree_visitor> {
+    /// @brief Called by the driver to check if the traversal should continue.
+    virtual auto should_continue() noexcept -> bool = 0;
+
     /// @brief Called when starting the traversal of the whole tree.
     /// @see finish
     virtual void begin() = 0;

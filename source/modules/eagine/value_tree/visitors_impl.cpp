@@ -23,6 +23,10 @@ public:
       : _cio{cio.print("valTrePrnt", "printing value tree elements")
                .to_be_continued()} {}
 
+    auto should_continue() noexcept -> bool {
+        return true;
+    }
+
     void begin() final {
         _cio.print("begin traversal");
     }

@@ -803,23 +803,26 @@ public:
     }
 
     auto parse_data(memory::const_block data) noexcept -> bool {
-        bool parsed_something{false};
-        _json_stream.next(data);
-        while(_json_stream.available() >= _max_token_size) {
-            _parse_current();
-            parsed_something = true;
-        }
+        if(_visitor->should_continue()) [[likely]] {
+            bool parsed_something{false};
+            _json_stream.next(data);
+            while(_json_stream.available() >= _max_token_size) {
+                _parse_current();
+                parsed_something = true;
+            }
 
-        if(_json_reader.IterativeParseComplete()) [[unlikely]] {
-            return false;
-        }
+            if(_json_reader.IterativeParseComplete()) [[unlikely]] {
+                return false;
+            }
 
-        if(parsed_something && !_just_flushed) {
-            _visitor->flush();
-            _just_flushed = true;
+            if(parsed_something && !_just_flushed) {
+                _visitor->flush();
+                _just_flushed = true;
+            }
+            _json_stream.advance();
+            return true;
         }
-        _json_stream.advance();
-        return true;
+        return false;
     }
 
     auto finish() noexcept -> bool {
