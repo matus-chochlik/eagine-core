@@ -17,7 +17,8 @@ import eagine.core.console;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
-class printing_value_tree_visitor : public valtree::value_tree_visitor {
+class printing_value_tree_visitor
+  : public value_tree_visitor_impl<printing_value_tree_visitor> {
 public:
     printing_value_tree_visitor(const console& cio)
       : _cio{cio.print("valTrePrnt", "printing value tree elements")
@@ -31,36 +32,17 @@ public:
         _cio.print("begin traversal");
     }
 
-    void consume(span<const nothing_t> data) final {
+    void do_consume(span<const nothing_t> data) {
         _cio.print("consume nil: ${count] instances").arg("count", data.size());
     }
 
     template <typename T>
-    void _consume(span<const T> data) {
+    void do_consume(span<const T> data) {
         const auto value_cio{_cio.print("consume:").to_be_continued()};
 
         for(const auto& value : data) {
             value_cio.print("'${value}'").arg("value", value);
         }
-    }
-
-    void consume(span<const bool> data) final {
-        _consume(data);
-    }
-    void consume(span<const std::int64_t> data) final {
-        _consume(data);
-    }
-    void consume(span<const std::uint64_t> data) final {
-        _consume(data);
-    }
-    void consume(span<const float> data) final {
-        _consume(data);
-    }
-    void consume(span<const double> data) final {
-        _consume(data);
-    }
-    void consume(span<const string_view> data) final {
-        _consume(data);
     }
 
     void begin_struct() final {

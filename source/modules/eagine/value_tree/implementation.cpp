@@ -81,6 +81,35 @@ private:
     std::unique_ptr<value_tree_stream_parser> _pimpl;
 };
 //------------------------------------------------------------------------------
+export template <typename Derived>
+struct value_tree_visitor_impl : value_tree_visitor {
+    auto derived() noexcept -> Derived& {
+        return *static_cast<Derived*>(this);
+    }
+
+    void consume(span<const nothing_t> data) final {
+        derived().do_consume(data);
+    }
+    void consume(span<const bool> data) final {
+        derived().do_consume(data);
+    }
+    void consume(span<const std::int64_t> data) final {
+        derived().do_consume(data);
+    }
+    void consume(span<const std::uint64_t> data) final {
+        derived().do_consume(data);
+    }
+    void consume(span<const float> data) final {
+        derived().do_consume(data);
+    }
+    void consume(span<const double> data) final {
+        derived().do_consume(data);
+    }
+    void consume(span<const string_view> data) final {
+        derived().do_consume(data);
+    }
+};
+//------------------------------------------------------------------------------
 export auto traverse_json_stream(
   std::shared_ptr<value_tree_visitor>,
   span_size_t max_token_size,
