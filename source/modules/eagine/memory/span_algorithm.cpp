@@ -694,6 +694,7 @@ auto make_index(
         std::sort(idx.begin(), idx.end(), [spn, &compare](auto& l, auto& r) {
             return compare(spn[l], spn[r]);
         });
+        return true;
     }
     return false;
 }
