@@ -88,25 +88,25 @@ struct value_tree_visitor_impl : value_tree_visitor {
         return *static_cast<Derived*>(this);
     }
 
-    void consume(span<const nothing_t> data) final {
+    void consume(span<const nothing_t> data) noexcept final {
         derived().do_consume(data);
     }
-    void consume(span<const bool> data) final {
+    void consume(span<const bool> data) noexcept final {
         derived().do_consume(data);
     }
-    void consume(span<const std::int64_t> data) final {
+    void consume(span<const std::int64_t> data) noexcept final {
         derived().do_consume(data);
     }
-    void consume(span<const std::uint64_t> data) final {
+    void consume(span<const std::uint64_t> data) noexcept final {
         derived().do_consume(data);
     }
-    void consume(span<const float> data) final {
+    void consume(span<const float> data) noexcept final {
         derived().do_consume(data);
     }
-    void consume(span<const double> data) final {
+    void consume(span<const double> data) noexcept final {
         derived().do_consume(data);
     }
-    void consume(span<const string_view> data) final {
+    void consume(span<const string_view> data) noexcept final {
         derived().do_consume(data);
     }
 };
@@ -117,28 +117,36 @@ struct object_builder_impl : object_builder {
         return *static_cast<Derived*>(this);
     }
 
-    void add(const basic_string_path& path, const span<const nothing_t> data)
+    void add(
+      const basic_string_path& path,
+      const span<const nothing_t> data) noexcept final {
+        derived().do_add(path, data);
+    }
+    void add(const basic_string_path& path, span<const bool> data) noexcept
       final {
         derived().do_add(path, data);
     }
-    void add(const basic_string_path& path, span<const bool> data) final {
+    void add(
+      const basic_string_path& path,
+      span<const std::int64_t> data) noexcept final {
         derived().do_add(path, data);
     }
-    void add(const basic_string_path& path, span<const std::int64_t> data)
+    void add(
+      const basic_string_path& path,
+      span<const std::uint64_t> data) noexcept final {
+        derived().do_add(path, data);
+    }
+    void add(const basic_string_path& path, span<const float> data) noexcept
       final {
         derived().do_add(path, data);
     }
-    void add(const basic_string_path& path, span<const std::uint64_t> data)
+    void add(const basic_string_path& path, span<const double> data) noexcept
       final {
         derived().do_add(path, data);
     }
-    void add(const basic_string_path& path, span<const float> data) final {
-        derived().do_add(path, data);
-    }
-    void add(const basic_string_path& path, span<const double> data) final {
-        derived().do_add(path, data);
-    }
-    void add(const basic_string_path& path, span<const string_view> data) final {
+    void add(
+      const basic_string_path& path,
+      span<const string_view> data) noexcept final {
         derived().do_add(path, data);
     }
 };

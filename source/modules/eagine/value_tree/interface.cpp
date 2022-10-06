@@ -238,58 +238,58 @@ export struct value_tree_visitor : interface<value_tree_visitor> {
 
     /// @brief Called when starting the traversal of the whole tree.
     /// @see finish
-    virtual void begin() = 0;
+    virtual void begin() noexcept = 0;
 
     /// @brief Consume a consecutive sequence of nil values.
-    virtual void consume(span<const nothing_t>) = 0;
+    virtual void consume(span<const nothing_t>) noexcept = 0;
 
     /// @brief Consume a consecutive sequence of boolean values.
-    virtual void consume(span<const bool>) = 0;
+    virtual void consume(span<const bool>) noexcept = 0;
 
     /// @brief Consume a consecutive sequence of integer values.
-    virtual void consume(span<const std::int64_t>) = 0;
+    virtual void consume(span<const std::int64_t>) noexcept = 0;
 
     /// @brief Consume a consecutive sequence of unsigned values.
-    virtual void consume(span<const std::uint64_t>) = 0;
+    virtual void consume(span<const std::uint64_t>) noexcept = 0;
 
     /// @brief Consume a consecutive sequence of float values.
-    virtual void consume(span<const float>) = 0;
+    virtual void consume(span<const float>) noexcept = 0;
 
     /// @brief Consume a consecutive sequence of double values.
-    virtual void consume(span<const double>) = 0;
+    virtual void consume(span<const double>) noexcept = 0;
 
     /// @brief Consume a consecutive sequence of string values.
-    virtual void consume(span<const string_view>) = 0;
+    virtual void consume(span<const string_view>) noexcept = 0;
 
     /// @brief Called when entering a nested structure.
-    virtual void begin_struct() = 0;
+    virtual void begin_struct() noexcept = 0;
 
     /// @brief Called when entering a structure attribute with the given name.
-    virtual void begin_attribute(const string_view key) = 0;
+    virtual void begin_attribute(const string_view key) noexcept = 0;
 
     /// @brief Called when leaving a structure attribute with the given name.
-    virtual void finish_attribute(const string_view key) = 0;
+    virtual void finish_attribute(const string_view key) noexcept = 0;
 
     /// @brief Called when leaving a nested structure.
-    virtual void finish_struct() = 0;
+    virtual void finish_struct() noexcept = 0;
 
     /// @brief Called when entering a nested list.
-    virtual void begin_list() = 0;
+    virtual void begin_list() noexcept = 0;
 
     /// @brief Called when leaving a nested list.
-    virtual void finish_list() = 0;
+    virtual void finish_list() noexcept = 0;
 
     /// @brief Called when current chunk of input is consumed.
     /// @see begin
-    virtual void flush() = 0;
+    virtual void flush() noexcept = 0;
 
     /// @brief Called when the traversal of the whole tree finished.
     /// @see begin
-    virtual void finish() = 0;
+    virtual void finish() noexcept = 0;
 
     /// @brief Called when the parsing and traversal failed.
     /// @see begin
-    virtual void failed() = 0;
+    virtual void failed() noexcept = 0;
 };
 //------------------------------------------------------------------------------
 /// @brief Interface for classes that initialize or change values in an object.
@@ -312,53 +312,59 @@ export struct object_builder : interface<object_builder> {
 
     /// @brief Called when the tree traversal begins.
     /// @see finish
-    virtual void begin() {}
+    virtual void begin() noexcept {}
 
     /// @brief Called when values at the specified path in the tree are consumed.
     virtual void add(
       const basic_string_path& path,
-      const span<const nothing_t> data) = 0;
-
-    /// @brief Called when values at the specified path in the tree are consumed.
-    virtual void add(const basic_string_path& path, span<const bool> data) = 0;
+      const span<const nothing_t> data) noexcept = 0;
 
     /// @brief Called when values at the specified path in the tree are consumed.
     virtual void add(
       const basic_string_path& path,
-      span<const std::int64_t> data) = 0;
+      span<const bool> data) noexcept = 0;
 
     /// @brief Called when values at the specified path in the tree are consumed.
     virtual void add(
       const basic_string_path& path,
-      span<const std::uint64_t> data) = 0;
-
-    /// @brief Called when values at the specified path in the tree are consumed.
-    virtual void add(const basic_string_path& path, span<const float> data) = 0;
-
-    /// @brief Called when values at the specified path in the tree are consumed.
-    virtual void add(const basic_string_path& path, span<const double> data) = 0;
+      span<const std::int64_t> data) noexcept = 0;
 
     /// @brief Called when values at the specified path in the tree are consumed.
     virtual void add(
       const basic_string_path& path,
-      span<const string_view> data) = 0;
+      span<const std::uint64_t> data) noexcept = 0;
+
+    /// @brief Called when values at the specified path in the tree are consumed.
+    virtual void add(
+      const basic_string_path& path,
+      span<const float> data) noexcept = 0;
+
+    /// @brief Called when values at the specified path in the tree are consumed.
+    virtual void add(
+      const basic_string_path& path,
+      span<const double> data) noexcept = 0;
+
+    /// @brief Called when values at the specified path in the tree are consumed.
+    virtual void add(
+      const basic_string_path& path,
+      span<const string_view> data) noexcept = 0;
 
     /// @brief Called when a new structured attribute or array element should be added.
     /// @see finish_object
-    virtual void add_object(const basic_string_path&) {}
+    virtual void add_object(const basic_string_path&) noexcept {}
 
     /// @brief Called when a structured attribute or array element is finalized.
     /// @see add_object
-    virtual void finish_object(const basic_string_path&) {}
+    virtual void finish_object(const basic_string_path&) noexcept {}
 
     /// @brief Called when the tree traversal finished.
     /// @see begin
     /// @see failed
-    virtual void finish() {}
+    virtual void finish() noexcept {}
 
     /// @brief Called when the tree traversal failed.
     /// @see finish
-    virtual void failed() = 0;
+    virtual void failed() noexcept = 0;
 };
 //------------------------------------------------------------------------------
 /// @brief Make a value tree visitor that combines two other visitors.
