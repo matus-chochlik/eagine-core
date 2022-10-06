@@ -348,6 +348,11 @@ export auto from_json_text(
     return from_json_text(json_text, parent.log());
 }
 //------------------------------------------------------------------------------
+/// @brief Creates a compound from a collection of consecutive JSON data block
+/// @ingroup valtree
+export auto from_json_data(span<const memory::const_block>, const logger&)
+  -> compound;
+//------------------------------------------------------------------------------
 /// @brief Creates a compound from a YAML text string view.
 /// @ingroup valtree
 export auto from_yaml_text(string_view, const logger&) -> compound;

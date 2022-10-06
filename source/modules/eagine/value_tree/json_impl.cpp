@@ -550,6 +550,57 @@ public:
     }
 };
 //------------------------------------------------------------------------------
+class rapidjson_chunk_stream {
+public:
+    rapidjson_chunk_stream(span<const memory::const_block> data) noexcept
+      : _chunks{data} {}
+
+    using Ch = rapidjson::UTF8<>::Ch;
+
+    auto Peek() const noexcept -> Ch {
+        if(_chunk < _chunks.size()) {
+            return static_cast<Ch>(_chunks[_chunk][_index]);
+        }
+        return '\0';
+    }
+
+    auto Take() noexcept -> Ch {
+        const Ch result{Peek()};
+        if(_chunk < _chunks.size()) {
+            if(++_index >= _chunks[_chunk].size()) {
+                ++_chunk;
+                _index = 0;
+            }
+        }
+        return result;
+    }
+
+    auto Tell() const noexcept -> std::size_t {
+        return _offset;
+    }
+
+    auto PutBegin() noexcept -> Ch* {
+        RAPIDJSON_ASSERT(false);
+        return 0;
+    }
+    void Put(Ch) noexcept {
+        RAPIDJSON_ASSERT(false);
+    }
+    void Flush() noexcept {
+        RAPIDJSON_ASSERT(false);
+    }
+    auto PutEnd(Ch*) noexcept -> std::size_t {
+        RAPIDJSON_ASSERT(false);
+        return 0;
+    }
+
+private:
+    span<const memory::const_block> _chunks;
+    std::size_t _offset{0U};
+    span_size_t _chunk{0};
+    span_size_t _index{0};
+};
+//------------------------------------------------------------------------------
 template <typename Encoding, typename Allocator, typename StackAlloc>
 class rapidjson_document_compound
   : public compound_with_refcounted_node<
@@ -575,11 +626,10 @@ public:
       , _rj_doc{std::move(rj_doc)}
       , _root{_rj_doc, nullptr} {}
 
-    static auto make_shared(string_view json_str, const logger& parent)
-      -> std::shared_ptr<rapidjson_document_compound> {
-        _doc_t rj_doc;
-        const rapidjson::ParseResult parse_ok{
-          rj_doc.Parse(json_str.data(), rapidjson::SizeType(json_str.size()))};
+    static auto do_make_shared(
+      _doc_t& rj_doc,
+      const rapidjson::ParseResult parse_ok,
+      const logger& parent) -> std::shared_ptr<rapidjson_document_compound> {
         if(parse_ok) {
             return std::make_shared<rapidjson_document_compound>(
               rj_doc, parent);
@@ -589,6 +639,24 @@ public:
           .arg("message", msg)
           .arg("offset", parse_ok.Offset());
         return {};
+    }
+
+    static auto make_shared(string_view json_str, const logger& parent)
+      -> std::shared_ptr<rapidjson_document_compound> {
+        _doc_t rj_doc;
+        return do_make_shared(
+          rj_doc,
+          rj_doc.Parse(json_str.data(), rapidjson::SizeType(json_str.size())),
+          parent);
+    }
+
+    static auto make_shared(
+      span<const memory::const_block> json_data,
+      const logger& parent) -> std::shared_ptr<rapidjson_document_compound> {
+        rapidjson_chunk_stream json_stream{json_data};
+        _doc_t rj_doc;
+
+        return do_make_shared(rj_doc, rj_doc.ParseStream(json_stream), parent);
     }
 
     auto type_id() const noexcept -> identifier final {
@@ -678,9 +746,16 @@ auto from_json_text(string_view json_text, const logger& parent) -> compound {
       json_text, parent);
 }
 //------------------------------------------------------------------------------
+auto from_json_data(
+  span<const memory::const_block> json_data,
+  const logger& parent) -> compound {
+    return compound::make<default_rapidjson_document_compound>(
+      json_data, parent);
+}
+//------------------------------------------------------------------------------
 // streaming
 //------------------------------------------------------------------------------
-class value_tree_json_stream {
+class rapidjson_progressive_stream {
 public:
     using Ch = rapidjson::UTF8<>::Ch;
 
@@ -956,7 +1031,7 @@ private:
     const logger& _parent;
     memory::buffer_pool& _buffers;
     const span_size_t _max_token_size;
-    value_tree_json_stream _json_stream;
+    rapidjson_progressive_stream _json_stream;
     rapidjson::Reader _json_reader;
     std::shared_ptr<value_tree_visitor> _visitor;
     memory::buffer _json_block;
