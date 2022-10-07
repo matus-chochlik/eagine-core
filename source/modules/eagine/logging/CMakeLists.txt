@@ -18,6 +18,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.reflection
 		eagine.core.identifier
+		eagine.core.utility
 )
 
 eagine_add_module(
