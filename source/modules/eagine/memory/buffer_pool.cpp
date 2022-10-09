@@ -104,6 +104,25 @@ public:
         }
     }
 
+    auto eat_later(memory::buffer& buf) noexcept {
+        struct _cleanup {
+            _cleanup(buffer_pool& pool, memory::buffer& buf) noexcept
+              : _pool{pool}
+              , _buf{buf} {}
+            _cleanup(_cleanup&&) noexcept = default;
+            _cleanup(const _cleanup&) = delete;
+            auto operator=(_cleanup&&) = delete;
+            auto operator=(const _cleanup&) = delete;
+            ~_cleanup() noexcept {
+                _pool.eat(std::move(_buf));
+            }
+
+            buffer_pool& _pool;
+            memory::buffer& _buf;
+        };
+        return _cleanup{*this, buf};
+    }
+
     auto stats() const noexcept
       -> optional_reference_wrapper<const buffer_pool_stats> {
         if constexpr(!low_profile_build) {
