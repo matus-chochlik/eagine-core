@@ -20,12 +20,15 @@ import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.logging;
+import <array>;
 import <chrono>;
 import <memory>;
 import <optional>;
 import <stack>;
 import <string>;
 import <vector>;
+
+import <iostream>;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -829,6 +832,25 @@ public:
         }
     }
 
+    auto get_unused() noexcept -> span<const memory::const_block> {
+        const auto szp{_previous.size()};
+        const auto szc{_current.size()};
+        if(_offs < szp) {
+            _unused[0] = skip(view(_previous), _offs);
+            _unused[1] = _current;
+            _offs = szp + szc;
+            return view(_unused);
+        }
+
+        if(_offs < (szp + szc)) {
+            _unused[0] = skip(_current, _offs - szp);
+            _offs = szp + szc;
+            return view_one(_unused[0]);
+        }
+
+        return {};
+    }
+
     void finish(memory::buffer_pool& buffers) noexcept {
         buffers.eat(std::move(_previous));
     }
@@ -836,6 +858,7 @@ public:
 private:
     memory::buffer _previous;
     memory::const_block _current;
+    std::array<memory::const_block, 2> _unused;
     span_size_t _done{0};
     span_size_t _offs{0};
 };
@@ -869,6 +892,7 @@ public:
 
     constexpr static auto _parse_flags() noexcept {
         return rapidjson::kParseDefaultFlags | rapidjson::kParseIterativeFlag |
+               rapidjson::kParseStopWhenDoneFlag |
                rapidjson::kParseTrailingCommasFlag;
     }
 
@@ -882,12 +906,18 @@ public:
             bool parsed_something{false};
             _json_stream.next(data);
             while(_json_stream.available() >= _max_token_size) {
-                _parse_current();
+                if(!_parse_current()) {
+                    break;
+                }
                 parsed_something = true;
             }
 
             if(_json_reader.IterativeParseComplete()) [[unlikely]] {
-                return false;
+                if(const auto unparsed{_json_stream.get_unused()}) {
+                    _visitor->unparsed_data(unparsed);
+                } else {
+                    return false;
+                }
             }
 
             if(parsed_something && !_just_flushed) {
@@ -902,10 +932,19 @@ public:
 
     auto finish() noexcept -> bool {
         while(!_json_reader.IterativeParseComplete()) {
-            _parse_current();
+            if(!_parse_current()) {
+                break;
+            }
         }
         if(_json_reader.HasParseError()) [[unlikely]] {
-            _visitor->failed();
+            if(
+              _json_reader.GetParseErrorCode() ==
+              rapidjson::kParseErrorDocumentRootNotSingular) {
+                _visitor->flush();
+                _visitor->finish();
+            } else {
+                _visitor->failed();
+            }
         } else {
             _visitor->flush();
             _visitor->finish();

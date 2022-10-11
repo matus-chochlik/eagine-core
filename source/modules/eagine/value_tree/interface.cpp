@@ -283,6 +283,9 @@ export struct value_tree_visitor : interface<value_tree_visitor> {
     /// @see begin
     virtual void flush() noexcept = 0;
 
+    /// @brief Called when unparsed data is consumed by the input object.
+    virtual void unparsed_data(span<const memory::const_block>) noexcept = 0;
+
     /// @brief Called when the traversal of the whole tree finished.
     /// @see begin
     virtual void finish() noexcept = 0;
@@ -356,6 +359,9 @@ export struct object_builder : interface<object_builder> {
     /// @brief Called when a structured attribute or array element is finalized.
     /// @see add_object
     virtual void finish_object(const basic_string_path&) noexcept {}
+
+    /// @brief Called when unparsed data is consumed by the input
+    virtual void unparsed_data(span<const memory::const_block>) noexcept {}
 
     /// @brief Called when the tree traversal finished.
     /// @see begin

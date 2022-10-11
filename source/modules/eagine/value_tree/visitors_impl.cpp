@@ -77,6 +77,11 @@ public:
         _right->flush();
     }
 
+    void unparsed_data(span<const memory::const_block> data) noexcept final {
+        _left->unparsed_data(data);
+        _right->unparsed_data(data);
+    }
+
     void finish() noexcept final {
         _left->finish();
         _right->finish();
@@ -156,6 +161,10 @@ public:
         _cio.print("flush");
     }
 
+    void unparsed_data(span<const memory::const_block>) noexcept final {
+        _cio.print("unparsed data");
+    }
+
     void finish() noexcept final {
         _cio.print("finish traversal");
     }
@@ -227,6 +236,10 @@ public:
     }
 
     void flush() noexcept final {}
+
+    void unparsed_data(span<const memory::const_block> data) noexcept final {
+        _builder->unparsed_data(data);
+    }
 
     void finish() noexcept final {
         if(!_path.empty()) {
