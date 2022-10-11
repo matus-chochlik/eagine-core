@@ -279,14 +279,12 @@ public:
     template <typename T>
     auto convert_bool(_val_t& val, T& dest) -> bool {
         if(val.IsBool()) {
-            if(const auto converted{convert_if_fits<T>(val.GetBool())}) {
-                dest = extract(converted);
+            if(assign_if_fits(val.GetBool(), dest)) {
                 return true;
             }
         }
         if(val.IsInt()) {
-            if(const auto converted{convert_if_fits<T>(val.GetInt())}) {
-                dest = extract(converted);
+            if(assign_if_fits(val.GetInt(), dest)) {
                 return true;
             }
         }
@@ -316,14 +314,12 @@ public:
     template <typename T>
     auto convert_int(_val_t& val, T& dest) -> bool {
         if(val.IsInt()) {
-            if(const auto converted{convert_if_fits<T>(val.GetInt())}) {
-                dest = extract(converted);
+            if(assign_if_fits(val.GetInt(), dest)) {
                 return true;
             }
         }
         if(val.IsInt64()) {
-            if(const auto converted{convert_if_fits<T>(val.GetInt64())}) {
-                dest = extract(converted);
+            if(assign_if_fits(val.GetInt64(), dest)) {
                 return true;
             }
         }
@@ -339,14 +335,12 @@ public:
     template <typename T>
     auto convert_uint(_val_t& val, T& dest) -> bool {
         if(val.IsUint()) {
-            if(const auto converted{convert_if_fits<T>(val.GetUint())}) {
-                dest = extract(converted);
+            if(assign_if_fits(val.GetUint(), dest)) {
                 return true;
             }
         }
         if(val.IsUint64()) {
-            if(const auto converted{convert_if_fits<T>(val.GetUint64())}) {
-                dest = extract(converted);
+            if(assign_if_fits(val.GetUint64(), dest)) {
                 return true;
             }
         }
@@ -362,26 +356,22 @@ public:
     template <typename T>
     auto convert_real(_val_t& val, T& dest) -> bool {
         if(val.IsFloat()) {
-            if(const auto converted{convert_if_fits<T>(val.GetFloat())}) {
-                dest = extract(converted);
+            if(assign_if_fits(val.GetFloat(), dest)) {
                 return true;
             }
         }
         if(val.IsDouble()) {
-            if(const auto converted{convert_if_fits<T>(val.GetDouble())}) {
-                dest = extract(converted);
+            if(assign_if_fits(val.GetDouble(), dest)) {
                 return true;
             }
         }
         if(val.IsInt()) {
-            if(const auto converted{convert_if_fits<T>(val.GetInt())}) {
-                dest = extract(converted);
+            if(assign_if_fits(val.GetInt(), dest)) {
                 return true;
             }
         }
         if(val.IsInt64()) {
-            if(const auto converted{convert_if_fits<T>(val.GetInt64())}) {
-                dest = extract(converted);
+            if(assign_if_fits(val.GetInt64(), dest)) {
                 return true;
             }
         }
@@ -399,26 +389,22 @@ public:
       -> bool {
         using _dur_t = std::chrono::duration<R, P>;
         if(val.IsFloat()) {
-            if(const auto converted{convert_if_fits<R>(val.GetFloat())}) {
-                dest = _dur_t{extract(converted)};
+            if(assign_if_fits(val.GetFloat(), dest)) {
                 return true;
             }
         }
         if(val.IsDouble()) {
-            if(const auto converted{convert_if_fits<R>(val.GetDouble())}) {
-                dest = _dur_t{extract(converted)};
+            if(assign_if_fits(val.GetDouble(), dest)) {
                 return true;
             }
         }
         if(val.IsInt()) {
-            if(const auto converted{convert_if_fits<R>(val.GetInt())}) {
-                dest = _dur_t{extract(converted)};
+            if(assign_if_fits(val.GetInt(), dest)) {
                 return true;
             }
         }
         if(val.IsInt64()) {
-            if(const auto converted{convert_if_fits<R>(val.GetInt64())}) {
-                dest = _dur_t{extract(converted)};
+            if(assign_if_fits(val.GetInt64(), dest)) {
                 return true;
             }
         }

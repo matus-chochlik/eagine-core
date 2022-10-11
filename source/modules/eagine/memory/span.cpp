@@ -136,11 +136,12 @@ public:
 
     /// @brief Converting copy assignment from span of compatible elements.
     template <typename T, typename P, typename S>
-        requires(std::is_convertible_v<T, ValueType> &&
-                   std::is_convertible_v<P, Pointer> &&
-                   std::is_convertible_v<S, SizeType> &&
-                   !std::is_same_v<T, ValueType> ||
-                 !std::is_same_v<P, Pointer> || !std::is_same_v<S, SizeType>)
+        requires(
+          std::is_convertible_v<T, ValueType> &&
+            std::is_convertible_v<P, Pointer> &&
+            std::is_convertible_v<S, SizeType> &&
+            !std::is_same_v<T, ValueType> ||
+          !std::is_same_v<P, Pointer> || !std::is_same_v<S, SizeType>)
     auto operator=(basic_span<T, P, S> that) noexcept -> auto& {
         _addr = static_cast<pointer>(that.data());
         _size = limit_cast<size_type>(that.size());
@@ -173,10 +174,11 @@ public:
     /// @see is_empty
     /// @see size
     explicit constexpr operator bool() const noexcept {
-        return !is_empty();
+        return size() >= 1;
     }
 
     /// @brief Indicates that the span is empty.
+    /// @see has_single_value
     /// @see size
     constexpr auto is_empty() const noexcept -> bool {
         return size() == 0;
@@ -187,6 +189,13 @@ public:
     /// @see size
     constexpr auto empty() const noexcept -> bool {
         return size() == 0;
+    }
+
+    /// @brief Indicates if the span has exactly one value.
+    /// @see is_empty
+    /// @see size
+    constexpr auto has_single_value() const noexcept -> bool {
+        return size() == 1;
     }
 
     /// @brief Indicates that the span is terminated with value T(0) if applicable.
@@ -523,8 +532,9 @@ constexpr auto can_accommodate(
 /// @see as_bytes
 /// @see as_chars
 export template <typename T, typename B, typename P, typename S>
-    requires(std::is_same_v<std::remove_const_t<B>, char> ||
-             std::is_same_v<std::remove_const_t<B>, byte>)
+    requires(
+      std::is_same_v<std::remove_const_t<B>, char> ||
+      std::is_same_v<std::remove_const_t<B>, byte>)
 constexpr auto accommodate(
   const basic_span<B, P, S> blk,
   const std::type_identity<T> tid = {}) noexcept
@@ -538,7 +548,7 @@ constexpr auto accommodate(
 //------------------------------------------------------------------------------
 export template <typename T, typename P, typename S>
 constexpr auto has_value(basic_span<T, P, S> spn) noexcept -> bool {
-    return spn.size() >= 1;
+    return spn.has_single_value();
 }
 
 /// @brief Overload of extract for spans. Returns the first element,
@@ -546,8 +556,17 @@ constexpr auto has_value(basic_span<T, P, S> spn) noexcept -> bool {
 /// @ingroup memory
 export template <typename T, typename P, typename S>
 constexpr auto extract(basic_span<T, P, S> spn) noexcept -> T& {
-    assert(spn.size() >= 1);
+    assert(has_value(spn));
     return spn.front();
+}
+
+export template <typename T, typename P, typename S, typename Dst>
+constexpr auto assign_if_fits(basic_span<T, P, S> src, Dst& dst) noexcept
+  -> bool {
+    if(has_value(src)) {
+        return eagine::assign_if_fits(extract(src), dst);
+    }
+    return false;
 }
 //------------------------------------------------------------------------------
 // basic_chunk_span

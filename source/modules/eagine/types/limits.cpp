@@ -154,6 +154,7 @@ constexpr auto signedness_cast(Src value) noexcept {
 /// @ingroup type_utils
 /// @see is_within_limits
 /// @see limit_cast
+/// @see assign_if_fits
 export template <typename Dst, typename Src>
 constexpr auto convert_if_fits(Src value) noexcept -> std::optional<Dst>
     requires(std::is_convertible_v<Src, Dst>)
@@ -166,6 +167,45 @@ constexpr auto convert_if_fits(Src value) noexcept -> std::optional<Dst>
         }
     }
     return {};
+}
+
+/// @brief Optionally converts and assigns src value to dst value.
+/// @ingroup type_utils
+/// @see is_within_limits
+/// @see limit_cast
+/// @see convert_if_fits
+export template <typename Src, typename Dst>
+constexpr auto assign_if_fits(const Src& src, Dst& dst) noexcept -> bool
+    requires(
+      std::is_convertible_v<Src, Dst> || std::is_constructible_v<Dst, Src>)
+{
+    if(is_within_limits<Dst>(src)) {
+        if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<Dst>) {
+            dst = Dst(src);
+        } else {
+            dst = Dst(std::move(src));
+        }
+        return true;
+    }
+    return false;
+}
+
+export template <typename Src, typename DstR, typename DstP>
+constexpr auto assign_if_fits(
+  const Src& src,
+  std::chrono::duration<DstR, DstP>& dst) noexcept -> bool
+    requires(
+      std::is_convertible_v<Src, DstR> || std::is_constructible_v<DstR, Src>)
+{
+    if(is_within_limits<DstR>(src)) {
+        if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<DstR>) {
+            dst = std::chrono::duration<DstR, DstP>{DstR(src)};
+        } else {
+            dst = std::chrono::duration<DstR, DstP>{DstR(std::move(src))};
+        }
+        return true;
+    }
+    return false;
 }
 //------------------------------------------------------------------------------
 /// @brief Converts argument to span size type.
