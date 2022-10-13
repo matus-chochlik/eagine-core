@@ -311,8 +311,8 @@ private:
         if(src) [[likely]] {
             const auto skip_len = safe_add(src.size(), 1);
             unsigned shift = 0U;
-            while(src) {
-                const char c = extract(src);
+            while(!src.empty()) {
+                const char c{src.front()};
                 I frag{};
                 if((c >= '0') && (c <= '9')) {
                     frag = I(c - '0');
