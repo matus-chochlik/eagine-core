@@ -155,9 +155,23 @@ public:
     /// @brief Not copy assignable.
     auto operator=(const signal_binding&) = delete;
 
-    /// @brief Indicates if the binding is valid.
-    constexpr operator bool() const noexcept {
+    /// @brief Indicates if this binding is connected.
+    constexpr auto is_connected() const noexcept -> bool {
         return _key != 0;
+    }
+
+    /// @brief Indicates if this binding is connected.
+    /// @see is_connected
+    constexpr operator bool() const noexcept {
+        return is_connected();
+    }
+
+    /// @brief Disconnects this binding from it's signal.
+    void disconnect() noexcept {
+        if(_key && _disconnect) {
+            _disconnect(_key);
+            _key = 0U;
+        }
     }
 
 private:
@@ -169,6 +183,11 @@ template <typename... Params>
 [[nodiscard]] auto signal<void(Params...) noexcept>::bind(
   callable_ref<void(Params...) noexcept> slot) -> signal_binding {
     return {connect(slot), this};
+}
+
+export template <auto MemFuncPtr, typename C, typename... Params>
+auto bind(C* that, signal<void(Params...) noexcept>& sig) noexcept {
+    return sig.bind(make_callable_ref<MemFuncPtr>(that));
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
