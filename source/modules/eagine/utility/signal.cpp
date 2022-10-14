@@ -89,18 +89,32 @@ public:
     }
 
     /// @brief Implicit conversion to a compatible callable_ref.
+    operator callable_ref<void(Params...) noexcept>() const noexcept {
+        return {
+          this,
+          member_function_constant<
+            void (signal::*)(Params...) const noexcept,
+            &signal::_call>{}};
+    }
+
     template <typename... P>
     operator callable_ref<void(P...) noexcept>() const noexcept {
         return {
           this,
           member_function_constant<
             void (signal::*)(P...) const noexcept,
-            &signal::_call>{}};
+            &signal::_call_tpl<P...>>{}};
     }
 
 private:
+    void _call(Params... args) const noexcept {
+        for(const auto& entry : _slots) {
+            std::get<1>(entry)(args...);
+        }
+    }
+
     template <typename... P>
-    void _call(P... args) const noexcept {
+    void _call_tpl(P... args) const noexcept {
         for(const auto& entry : _slots) {
             std::get<1>(entry)(args...);
         }
