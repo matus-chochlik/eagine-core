@@ -9,6 +9,7 @@ export module eagine.core.runtime:compression;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
+import eagine.core.reflection;
 import <cstdint>;
 import <memory>;
 
@@ -41,6 +42,16 @@ export enum class data_compression_method : std::uint8_t {
     zlib = 1U << 1U
 };
 
+export template <typename Selector>
+constexpr auto enumerator_mapping(
+  const std::type_identity<data_compression_method>,
+  const Selector) noexcept {
+    return enumerator_map_type<data_compression_method, 3>{
+      {{"unknown", data_compression_method::unknown},
+       {"none", data_compression_method::none},
+       {"zlib", data_compression_method::zlib}}};
+}
+
 /// @brief Returns the default data compression method.
 /// @ingroup main_context
 /// @see data_compression_methods
@@ -69,11 +80,19 @@ struct data_compressor_intf;
 /// @ingroup main_context
 export class data_compressor {
 public:
+    /// @brief Default constructor.
+    data_compressor() noexcept = default;
+
     /// @brief Initializing constructor.
     data_compressor(memory::buffer_pool&) noexcept;
 
     /// @brief Construction of a compressor with a specified method.
     data_compressor(data_compression_method, memory::buffer_pool&);
+
+    /// @brief Indicates if this compressor object is initialized and usable.
+    explicit operator bool() const noexcept {
+        return bool(_pimpl);
+    }
 
     /// @brief Alias for data handler callable type.
     using data_handler = callable_ref<bool(memory::const_block) noexcept>;
@@ -215,6 +234,9 @@ private:
 /// @ingroup main_context
 export class stream_compression_decompression_base {
 public:
+    /// @brief Default constructor.
+    stream_compression_decompression_base() noexcept = default;
+
     /// @brief Alias for data handler callable type.
     using data_handler = callable_ref<bool(memory::const_block) noexcept>;
 
@@ -253,6 +275,11 @@ public:
           data_compressor{buffers},
           handler} {}
 
+    /// @brief Indicates if this object is initialized and usable.
+    auto is_initialized() const noexcept -> bool {
+        return bool{_compressor};
+    }
+
     /// @brief Indicates if compression has started successfully.
     auto has_started() const noexcept -> bool {
         return _started;
@@ -289,7 +316,7 @@ public:
 protected:
     data_compressor _compressor;
     data_handler _handler;
-    data_compression_method _method;
+    data_compression_method _method{data_compression_method::unknown};
     bool _started{false};
     bool _finished{false};
     bool _failed{false};
