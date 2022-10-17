@@ -45,6 +45,7 @@ auto main(main_ctx& ctx) -> int {
     }
     input.consume_text(chunk.str());
     input.consume_text(R"(],"one_int":789})");
+    input.consume_text("J5r463/1NhsqHRGMRQQ/rxfm0jO1VcOGuBaE7XNWaSc=");
     return 0;
 }
 
