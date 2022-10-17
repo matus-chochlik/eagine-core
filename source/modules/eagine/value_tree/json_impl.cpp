@@ -872,6 +872,7 @@ public:
         _json_reader.IterativeParseInit();
         _visitor->begin();
         _just_flushed = false;
+        _in_unparsed = false;
         _old_val_typ = _cached_type::none;
         return true;
     }
@@ -882,44 +883,61 @@ public:
                rapidjson::kParseTrailingCommasFlag;
     }
 
-    auto _parse_current() noexcept -> bool {
+    auto _do_parse_current() noexcept -> bool {
         return _json_reader.IterativeParseNext<_parse_flags()>(
           _json_stream, *this);
     }
 
     auto parse_data(memory::const_block data) noexcept -> bool {
         if(_visitor->should_continue()) [[likely]] {
-            bool parsed_something{false};
-            _json_stream.next(data);
-            while(_json_stream.available() >= _max_token_size) {
-                if(!_parse_current()) {
-                    break;
+            if(_in_unparsed) {
+                if(!data.empty()) {
+                    _visitor->unparsed_data(view_one(data));
+                    return true;
                 }
-                parsed_something = true;
-            }
-
-            if(_json_reader.IterativeParseComplete()) [[unlikely]] {
-                if(const auto unparsed{_json_stream.get_unused()}) {
-                    _visitor->unparsed_data(unparsed);
-                } else {
-                    return false;
+            } else {
+                _json_stream.next(data);
+                bool parsed_something{false};
+                while(_json_stream.available() >= _max_token_size) {
+                    if(!_do_parse_current()) {
+                        break;
+                    }
+                    parsed_something = true;
                 }
-            }
 
-            if(parsed_something && !_just_flushed) {
-                _visitor->flush();
-                _just_flushed = true;
+                if(_json_reader.IterativeParseComplete()) {
+                    if(const auto unparsed{_json_stream.get_unused()}) {
+                        _visitor->unparsed_data(unparsed);
+                        _in_unparsed = true;
+                    } else {
+                        return false;
+                    }
+                }
+
+                if(parsed_something && !_just_flushed) {
+                    _visitor->flush();
+                    _just_flushed = true;
+                }
+                _json_stream.advance();
+                return true;
             }
-            _json_stream.advance();
-            return true;
         }
         return false;
     }
 
     auto finish() noexcept -> bool {
-        while(!_json_reader.IterativeParseComplete()) {
-            if(!_parse_current()) {
-                break;
+        if(_in_unparsed) {
+            assert(_json_stream.available() == 0);
+        } else {
+            while(_visitor->should_continue()) {
+                if(!_do_parse_current()) {
+                    break;
+                }
+            }
+            if(_json_reader.IterativeParseComplete()) {
+                if(const auto unparsed{_json_stream.get_unused()}) {
+                    _visitor->unparsed_data(unparsed);
+                }
             }
         }
         if(_json_reader.HasParseError()) [[unlikely]] {
@@ -1035,8 +1053,11 @@ public:
         if(!attr_name.empty()) {
             _visitor->finish_attribute(attr_name);
         }
-        _list_stack.pop();
         _attr_stack.pop();
+        _list_stack.pop();
+        if(_list_stack.empty()) {
+            _in_unparsed = true;
+        }
         _visitor->finish_struct();
         return true;
     }
@@ -1049,6 +1070,9 @@ public:
         _flush_previous(_cached_type::none);
         _visitor->finish_list();
         _list_stack.pop();
+        if(_list_stack.empty()) {
+            _in_unparsed = true;
+        }
         return true;
     }
 
@@ -1067,6 +1091,7 @@ private:
     std::vector<std::uint64_t> _uint_values;
     _cached_type _old_val_typ{_cached_type::none};
     bool _just_flushed{false};
+    bool _in_unparsed{false};
 };
 //------------------------------------------------------------------------------
 auto traverse_json_stream(

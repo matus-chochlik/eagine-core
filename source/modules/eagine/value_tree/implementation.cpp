@@ -55,6 +55,10 @@ public:
 
     /// @brief Consumes the next chunk of stream binary data.
     /// @see consume_text
+    /// @see finish
+    ///
+    /// If the return value is true then the next chunk can be consumed,
+    /// otherwise no further data should be provided and finish should be called.
     auto consume_data(const memory::const_block data) noexcept -> bool {
         assert(_pimpl);
         return _pimpl->parse_data(data);
@@ -62,9 +66,25 @@ public:
 
     /// @brief Consumes the next chunk of stream text data.
     /// @see consume_data
+    /// @see finish
+    ///
+    /// If the return value is true then the next chunk can be consumed,
+    /// otherwise no further data should be provided and finish should be called.
     auto consume_text(const memory::string_view data) noexcept -> bool {
         assert(_pimpl);
         return _pimpl->parse_data(memory::as_bytes(data));
+    }
+
+    /// @brief Finishes the consumption on input data.
+    /// @see consume_data
+    /// @see consume_text
+    auto finish() noexcept -> bool {
+        if(_pimpl) {
+            const bool result{_pimpl->finish()};
+            _pimpl.reset();
+            return result;
+        }
+        return false;
     }
 
     /// @brief Alias for the data handler callable type.
