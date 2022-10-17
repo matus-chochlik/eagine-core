@@ -117,6 +117,7 @@ public:
     }
 
     void begin() noexcept final {
+        _unparsed_offs = 0;
         _cio.print("begin traversal");
     }
 
@@ -161,8 +162,13 @@ public:
         _cio.print("flush");
     }
 
-    void unparsed_data(span<const memory::const_block>) noexcept final {
-        _cio.print("unparsed data");
+    void unparsed_data(span<const memory::const_block> data) noexcept final {
+        for(const auto& blk : data) {
+            _cio.print("unparsed data ${offs}:${size}")
+              .arg("offs", _unparsed_offs)
+              .arg("size", blk.size());
+            _unparsed_offs += blk.size();
+        }
     }
 
     void finish() noexcept final {
@@ -175,6 +181,7 @@ public:
 
 private:
     console_entry_continuation _cio;
+    span_size_t _unparsed_offs{0};
 };
 //------------------------------------------------------------------------------
 auto make_printing_value_tree_visitor(const console& cio)
