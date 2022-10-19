@@ -29,12 +29,15 @@ public:
             ? _backend->begin_activity(parent._activity_id, title, total_steps)
             : 0U} {}
 
+    activity_progress() noexcept = default;
     activity_progress(activity_progress&& temp) noexcept
       : _backend{std::move(temp._backend)}
       , _activity_id{temp._activity_id} {}
-    activity_progress(const activity_progress&) = delete;
-    auto operator=(activity_progress&&) = delete;
-    auto operator=(const activity_progress&) = delete;
+    activity_progress(const activity_progress&) noexcept = default;
+    auto operator=(activity_progress&&) noexcept
+      -> activity_progress& = default;
+    auto operator=(const activity_progress&) noexcept
+      -> activity_progress& = default;
 
     /// @brief Marks the activity as finished.
     /// @see finish
@@ -109,7 +112,7 @@ protected:
 
 private:
     std::shared_ptr<progress_tracker_backend> _backend;
-    const activity_progress_id_t _activity_id{0U};
+    activity_progress_id_t _activity_id{0U};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
