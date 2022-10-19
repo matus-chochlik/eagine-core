@@ -372,7 +372,7 @@ export class block_stream_decompression {
 public:
     /// @brief Returns a suitable default chunk size value.
     static constexpr auto default_chunk_size() noexcept -> span_size_t {
-        return 16 * 1024;
+        return 64 * 1024;
     }
 
     /// @brief Alias for data handler callable type.

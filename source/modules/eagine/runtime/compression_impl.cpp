@@ -264,7 +264,7 @@ public:
 
     zlib_data_compressor_impl(memory::buffer_pool& buffers)
       : buffered_data_compressor_impl{buffers}
-      , _temp{_buffers.get(16 * 1024)} {
+      , _temp{_buffers.get(64 * 1024)} {
         zero(as_bytes(cover_one(_zsd)));
         _zsd.zalloc = nullptr;
         _zsd.zfree = nullptr;
