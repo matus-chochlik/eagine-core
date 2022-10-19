@@ -308,6 +308,19 @@ public:
         return true;
     }
 
+    auto compress_handle_data(const data_handler& handler) noexcept -> bool {
+        const auto size{_temp.size() - span_size(_zsd.avail_out)};
+        if(size > 0) {
+            if(handler(head(view(_temp), size))) [[likely]] {
+                _zsd.next_out = _temp.data();
+                _zsd.avail_out = limit_cast<unsigned>(_temp.size());
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
     auto compress_next(
       const memory::const_block input,
       const data_handler& handler) noexcept -> bool final {
@@ -324,53 +337,49 @@ public:
             return false;
         }
 
-        const auto advance = [&, this]() -> bool {
-            const auto size{_temp.size() - span_size(_zsd.avail_out)};
-            if(handler(head(view(_temp), size))) [[likely]] {
-                _zsd.next_out = _temp.data();
-                _zsd.avail_out = limit_cast<unsigned>(_temp.size());
-                return true;
-            }
-            return false;
-        };
-
-        while(_zsd.avail_in > 0) {
-            if(_zd_res = ::deflate(&_zsd, Z_NO_FLUSH); _zd_res != Z_OK) {
-                if(_zd_res != Z_STREAM_END) {
+        while(true) {
+            _zd_res = ::deflate(&_zsd, Z_NO_FLUSH);
+            if(_zd_res == Z_BUF_ERROR) {
+                if(!compress_handle_data(handler)) {
                     return false;
                 }
-            }
-            if(_zsd.avail_out == 0) {
-                if(!advance()) [[unlikely]] {
-                    return false;
+            } else if((_zd_res == Z_OK) || (_zd_res == Z_STREAM_END)) {
+                if(_zsd.avail_out == 0) {
+                    if(!compress_handle_data(handler)) {
+                        return false;
+                    }
                 }
+                if(_zsd.avail_in == 0) {
+                    if(!compress_handle_data(handler)) {
+                        return false;
+                    }
+                    break;
+                }
+            } else {
+                return false;
             }
         }
 
-        if((_zd_res != Z_OK) && (_zd_res != Z_STREAM_END)) {
-            return false;
-        }
-
-        if(!advance()) [[unlikely]] {
-            return false;
-        }
-        return true;
+        return _zd_res == Z_OK;
     }
 
     auto compress_finish(const data_handler& handler) noexcept -> bool final {
+        const auto cleanup_later{finally([this]() {
+            ::deflateEnd(&_zsi);
+            _zd_res = Z_STREAM_END;
+        })};
         while(_zd_res != Z_STREAM_END) {
             _zd_res = ::deflate(&_zsd, Z_FINISH);
-            const auto size{_temp.size() - span_size(_zsd.avail_out)};
-            if(handler(head(view(_temp), size))) [[likely]] {
-                _zsd.next_out = _temp.data();
-                _zsd.avail_out = limit_cast<unsigned>(_temp.size());
+            if((_zd_res == Z_STREAM_END) || (_zd_res == Z_OK)) {
+                if(!compress_handle_data(handler)) {
+                    return false;
+                }
+                return true;
+            } else {
+                return false;
             }
         }
-
-        const auto cleanup_later{finally([this]() { ::deflateEnd(&_zsd); })};
-        const bool result{(_zd_res != Z_OK) || (_zd_res != Z_STREAM_END)};
-        _zd_res = Z_STREAM_END;
-        return result;
+        return true;
     }
 
     auto decompress_begin(const data_compression_method method) noexcept
@@ -383,6 +392,19 @@ public:
         }
 
         return _zi_res != Z_OK;
+    }
+
+    auto decompress_handle_data(const data_handler& handler) noexcept -> bool {
+        const auto size{_temp.size() - span_size(_zsi.avail_out)};
+        if(size > 0) {
+            if(handler(head(view(_temp), size))) [[likely]] {
+                _zsi.next_out = _temp.data();
+                _zsi.avail_out = limit_cast<unsigned>(_temp.size());
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 
     auto decompress_next(
@@ -401,54 +423,49 @@ public:
             return false;
         }
 
-        auto advance = [&, this]() -> bool {
-            const auto size{_temp.size() - span_size(_zsi.avail_out)};
-            if(handler(head(view(_temp), size))) [[likely]] {
-                _zsi.next_out = _temp.data();
-                _zsi.avail_out = limit_cast<unsigned>(_temp.size());
-                return true;
-            }
-            return false;
-        };
-
-        while(_zsi.avail_in > 0) {
-            if(_zi_res = ::inflate(&_zsi, Z_NO_FLUSH); _zi_res != Z_OK) {
-                if(_zi_res != Z_STREAM_END) {
+        while(true) {
+            _zi_res = ::inflate(&_zsi, Z_NO_FLUSH);
+            if(_zi_res == Z_BUF_ERROR) {
+                if(!decompress_handle_data(handler)) {
                     return false;
                 }
-            }
-            if(_zsi.avail_out == 0) {
-                if(!advance()) [[unlikely]] {
-                    return false;
+            } else if((_zi_res == Z_OK) || (_zi_res == Z_STREAM_END)) {
+                if(_zsi.avail_out == 0) {
+                    if(!decompress_handle_data(handler)) {
+                        return false;
+                    }
                 }
+                if(_zsi.avail_in == 0) {
+                    if(!decompress_handle_data(handler)) {
+                        return false;
+                    }
+                    break;
+                }
+            } else {
+                return false;
             }
         }
 
-        if((_zi_res != Z_OK) && (_zi_res != Z_STREAM_END)) {
-            return false;
-        }
-
-        if(!advance()) [[unlikely]] {
-            return false;
-        }
-
-        return true;
+        return _zi_res == Z_OK;
     }
 
     auto decompress_finish(const data_handler& handler) noexcept -> bool {
+        const auto cleanup_later{finally([this]() {
+            ::inflateEnd(&_zsi);
+            _zi_res = Z_STREAM_END;
+        })};
         while(_zi_res != Z_STREAM_END) {
             _zi_res = ::inflate(&_zsi, Z_FINISH);
-            const auto size{_temp.size() - span_size(_zsi.avail_out)};
-            if(handler(head(view(_temp), size))) [[likely]] {
-                _zsi.next_out = _temp.data();
-                _zsi.avail_out = limit_cast<unsigned>(_temp.size());
+            if((_zi_res == Z_STREAM_END) || (_zi_res == Z_OK)) {
+                if(!decompress_handle_data(handler)) {
+                    return false;
+                }
+                return true;
+            } else {
+                return false;
             }
         }
-
-        const auto cleanup_later{finally([this]() { ::inflateEnd(&_zsi); })};
-        const bool result{(_zi_res != Z_OK) || (_zi_res != Z_STREAM_END)};
-        _zi_res = Z_STREAM_END;
-        return result;
+        return true;
     }
 };
 
@@ -705,8 +722,10 @@ auto stream_compression::next(
 //------------------------------------------------------------------------------
 auto stream_compression::finish() noexcept -> stream_compression& {
     if(_started) {
-        _finished = true;
-        _failed = !_compressor.compress_finish(_handler);
+        if(!_finished) {
+            _finished = true;
+            _failed = !_compressor.compress_finish(_handler);
+        }
     }
     return *this;
 }
@@ -733,8 +752,10 @@ auto stream_decompression::next(const memory::const_block input) noexcept
 //------------------------------------------------------------------------------
 auto stream_decompression::finish() noexcept -> stream_decompression& {
     if(_started) {
-        _finished = true;
-        _failed = !_compressor.decompress_finish(_handler);
+        if(!_finished) {
+            _finished = true;
+            _failed = !_compressor.decompress_finish(_handler);
+        }
     }
     return *this;
 }
