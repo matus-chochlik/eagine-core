@@ -103,6 +103,10 @@ eagine_embed_target_resources(
 )
 #
 target_compile_options(
+	eagine-valgrind
+	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>
+)
+target_compile_options(
 	eagine-limit_cast
 	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>
 )
