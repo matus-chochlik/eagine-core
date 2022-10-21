@@ -361,7 +361,7 @@ public:
       -> stream_decompression&;
 
     /// @brief Finishes the stream decompression.
-    auto finish() noexcept -> stream_compression&;
+    auto finish() noexcept -> stream_decompression&;
 };
 //------------------------------------------------------------------------------
 /// @brief Class implementing data block decompression functionality.
