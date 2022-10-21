@@ -283,6 +283,7 @@ def make_prologue(options):
     options.output.write("import eagine.core.types;\n");
     options.output.write("import eagine.core.memory;\n");
     options.output.write("import eagine.core.identifier;\n");
+    options.output.write("import <array>;\n");
     options.output.write("namespace eagine {\n")
     options.output.write("template <identifier_t ResId>\n")
     options.output.write("auto get_embedded_resource(const selector<ResId>, const string_view) noexcept\n")
@@ -294,13 +295,30 @@ def make_switch_function(options):
     options.output.write("  -> embedded_resource {\n")
     options.output.write("    switch(res_id) {\n")
 
-    for ident in set(options.switch_identifiers):
+    idents = set(options.switch_identifiers)
+
+    for ident in idents:
         options.output.write('        case id_v("%s"):\n' % ident)
         options.output.write('            return get_embedded_resource(selector<id_v("%s")>{}, {});\n' % ident)
 
     options.output.write("        default: break;\n")
     options.output.write("    }\n")
     options.output.write("    return {};\n")
+    options.output.write("}\n")
+    options.output.write("auto embedded_resource_ids() noexcept -> span<const identifier_t> {\n")
+    options.output.write("    static const std::array<identifier_t, %d> ids{{\n" % len(idents))
+    options.output.write("        ")
+
+    first = True
+    for ident in idents:
+        if first:
+            first = False
+        else:
+            options.output.write(', ')
+        options.output.write('id_v("%s")' % ident)
+
+    options.output.write("\n    }};\n")
+    options.output.write("    return view(ids);\n")
     options.output.write("}\n")
     options.output.write("#if defined(__GNUC__)\n")
     options.output.write('} extern "C" {\n')
@@ -320,6 +338,19 @@ def make_switch_function(options):
     options.output.write("        .data_pointer = resource.embedded_block().data(),\n")
     options.output.write("        .data_size = resource.embedded_block().size(),\n")
     options.output.write("        .is_packed = resource.is_packed()\n")
+    options.output.write("    };\n")
+    options.output.write("    return result;\n")
+    options.output.write("}\n")
+    options.output.write("struct eagine_embedded_resources_list {\n")
+    options.output.write("    const uint64_t* begin;\n")
+    options.output.write("    const uint64_t* end;\n")
+    options.output.write("};\n")
+    options.output.write('__attribute__((visibility("default")))\n')
+    options.output.write("eagine_embedded_resources_list eagine_embedded_resource_ids() {\n")
+    options.output.write("    const auto list{eagine::embedded_resource_ids()};\n")
+    options.output.write("    eagine_embedded_resources_list result{\n")
+    options.output.write("        .begin = list.begin(),\n")
+    options.output.write("        .end = list.end()\n")
     options.output.write("    };\n")
     options.output.write("    return result;\n")
     options.output.write("}\n")

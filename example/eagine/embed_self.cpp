@@ -17,5 +17,9 @@ auto main() -> int {
     embedded_resource_loader resources;
     std::cout << hexdump(resources.search("self"));
 
+    resources.for_each([](const auto& res) {
+        std::cout << res.embedded_block().size() << std::endl;
+    });
+
     return 0;
 }
