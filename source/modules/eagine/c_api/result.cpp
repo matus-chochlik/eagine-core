@@ -534,7 +534,7 @@ public:
         static_cast<Info&>(*this) = static_cast<SrcInfo&&>(src);
     }
 
-    template <typename SrcInfo, result_value validity>
+    template <typename SrcInfo, result_validity validity>
     combined_result(result<Result, SrcInfo, validity> src)
       : base{
           extract(static_cast<result_value<Result, validity>&&>(src)),
@@ -557,16 +557,10 @@ public:
         static_cast<Info&>(*this) = static_cast<const SrcInfo&>(src);
     }
 
-    template <typename R, typename SrcInfo>
-    combined_result(const result<R, Info, result_validity::always>& src)
+    template <typename R, typename SrcInfo, result_validity validity>
+    combined_result(const result<R, SrcInfo, validity>& src)
       : base{src.is_valid()} {
         static_cast<Info&>(*this) = static_cast<const SrcInfo&>(src);
-    }
-
-    template <typename R>
-    combined_result(const result<R, Info, result_validity::maybe>& src)
-      : base{src.is_valid()} {
-        static_cast<Info&>(*this) = static_cast<const Info&>(src);
     }
 };
 //------------------------------------------------------------------------------
