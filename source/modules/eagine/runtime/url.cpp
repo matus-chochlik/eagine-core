@@ -249,6 +249,13 @@ public:
         return {_sw(_fragment)};
     }
 
+    /// @brief Releases the internally allocated URL string.
+    /// @post !is_valid()
+    auto release_string() noexcept -> std::string {
+        _parsed = false;
+        return {std::move(_url_str)};
+    }
+
 private:
     url(std::string, std::match_results<std::string::iterator>) noexcept;
 
