@@ -130,6 +130,9 @@ public:
                (are_connected(points) || are_separated(points));
     }
 
+    /// @brief Default constructor.
+    bezier_curves() noexcept = default;
+
     /// @brief Creates the bezier curves from the control @c points.
     /// @pre points_are_ok(points)
     ///
@@ -307,8 +310,13 @@ private:
 
     std::vector<Type> _points;
     bezier_t<Type, Parameter, Order + 1> _bezier{};
-    bool _connected;
+    bool _connected{false};
 };
+
+/// @brief Alias for specialization of bezier_curves for cubic curves.
+/// @ingroup math
+export template <typename Type, typename Parameter>
+using cubic_bezier_curves = bezier_curves<Type, Parameter, 3>;
 //------------------------------------------------------------------------------
 /// @brief A closed smooth cubic Bezier spline passing through all input points.
 /// @ingroup math
@@ -318,14 +326,21 @@ private:
 /// and end points of each segment are calculated automatically to make
 /// the transition between the individual segments smooth.
 export template <typename Type, typename Parameter>
-class cubic_bezier_loop : public bezier_curves<Type, Parameter, 3> {
+class cubic_bezier_loop : public cubic_bezier_curves<Type, Parameter> {
 public:
+    cubic_bezier_loop() noexcept = default;
+
     /// @brief Creates a loop passing through the sequence of the input points.
     template <typename P, typename S>
     cubic_bezier_loop(
       const memory::basic_span<const Type, P, S> points,
-      const Parameter r = Parameter(1) / Parameter(3))
+      const Parameter r)
       : bezier_curves<Type, Parameter, 3>(_make_cpoints(points, r)) {}
+
+    /// @brief Creates a loop passing through the sequence of the input points.
+    template <typename P, typename S>
+    cubic_bezier_loop(const memory::basic_span<const Type, P, S> points)
+      : cubic_bezier_loop(points, Parameter(1) / Parameter(3)) {}
 
 private:
     template <typename P, typename S>
