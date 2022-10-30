@@ -144,6 +144,19 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.serialization PARTITION valtree_backend
+	IMPORTS
+		result interface
+		eagine.core.concepts
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.identifier
+		eagine.core.reflection
+		eagine.core.value_tree
+)
+
+eagine_add_module(
 	eagine.core.serialization PARTITION type_sudoku
 	IMPORTS
 		data_buffer read write
@@ -189,6 +202,7 @@ eagine_add_module(
 		fast_backend
 		string_backend
 		portable_backend
+		valtree_backend
 		type_sudoku
 		type_compiler_info
 		type_version_info
