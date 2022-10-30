@@ -154,6 +154,7 @@ eagine_add_module(
 		eagine.core.identifier
 		eagine.core.reflection
 		eagine.core.value_tree
+		eagine.core.valid_if
 )
 
 eagine_add_module(

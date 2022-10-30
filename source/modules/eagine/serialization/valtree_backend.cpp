@@ -18,9 +18,11 @@ import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.value_tree;
+import eagine.core.valid_if;
 import :result;
 import :interface;
 import <stack>;
+import <string>;
 import <vector>;
 
 namespace eagine {
@@ -80,9 +82,52 @@ public:
         return _errors;
     }
 
+    auto do_convert(
+      span<identifier> values,
+      span_size_t& done,
+      std::type_identity<std::string>) noexcept -> result {
+        std::vector<std::string> temp;
+        temp.resize(std_size(values.size()));
+        do_read(cover(temp), done);
+        if(done == values.size()) {
+            span_size_t i{0};
+            for(const auto& str : temp) {
+                if(identifier::can_be_encoded(view(str))) {
+                    values[i++] = identifier(view(str));
+                } else {
+                    _errors.set(error_code::invalid_format);
+                    break;
+                }
+            }
+        }
+        return _errors;
+    }
+
     template <typename T, typename I>
     auto do_convert(
       span<T> values,
+      span_size_t& done,
+      std::type_identity<I>) noexcept -> result {
+        std::vector<I> temp;
+        temp.resize(std_size(values.size()));
+        do_read(cover(temp), done);
+        if(done == values.size()) {
+            span_size_t i{0};
+            for(const auto& val : temp) {
+                if(const auto conv{convert_if_fits<T>(val)}) {
+                    values[i++] = extract(conv);
+                } else {
+                    _errors.set(error_code::invalid_format);
+                    break;
+                }
+            }
+        }
+        return _errors;
+    }
+
+    template <typename I>
+    auto do_convert(
+      span<decl_name_storage> values,
       span_size_t& done,
       std::type_identity<I>) noexcept -> result {
         // TODO
@@ -143,7 +188,7 @@ public:
     }
 
     auto read(span<double> v, span_size_t& d) noexcept -> result final {
-        return do_convert(v, d, std::type_identity<double>{});
+        return do_convert(v, d, std::type_identity<float>{});
     }
 
     auto read(span<identifier> v, span_size_t& d) noexcept -> result final {
