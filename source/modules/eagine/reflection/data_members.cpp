@@ -26,13 +26,13 @@ constexpr auto make_data_member_mapping(
 //------------------------------------------------------------------------------
 export template <typename T, typename Selector>
 concept mapped_struct = requires(std::type_identity<T> tid, Selector s) {
-                            data_member_mapping(tid, s);
-                        };
+    data_member_mapping(tid, s);
+};
 
 export template <typename T>
 concept default_mapped_struct = requires(std::type_identity<T> tid) {
-                                    data_member_mapping(tid, default_selector);
-                                };
+    data_member_mapping(tid, default_selector);
+};
 //------------------------------------------------------------------------------
 export template <typename F, typename S, identifier_t Id>
 constexpr auto data_member_mapping(
@@ -82,7 +82,8 @@ constexpr auto _do_map_single_data_member(
   const T& ref,
   const selector<V> select,
   const std::true_type) noexcept {
-    return std::make_pair(name, map_data_members(ref, select));
+    using R = decltype(map_data_members(ref, select));
+    return std::pair<const string_view, R>(name, map_data_members(ref, select));
 }
 //------------------------------------------------------------------------------
 template <typename T, identifier_t V>
@@ -91,7 +92,8 @@ constexpr auto _do_map_single_data_member(
   T& ref,
   const selector<V> select,
   const std::true_type) noexcept {
-    return std::make_pair(name, map_data_members(ref, select));
+    using R = decltype(map_data_members(ref, select));
+    return std::pair<const string_view, R>(name, map_data_members(ref, select));
 }
 //------------------------------------------------------------------------------
 template <typename T, identifier_t V>
