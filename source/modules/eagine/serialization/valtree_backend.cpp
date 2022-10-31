@@ -38,6 +38,12 @@ public:
     valtree_deserializer_backend(valtree::compound source) noexcept
       : _source{std::move(source)} {}
 
+    valtree_deserializer_backend(
+      valtree::compound source,
+      valtree::attribute root) noexcept
+      : _source{std::move(source)}
+      , _root{std::move(root)} {}
+
     static constexpr const identifier_value id_value{"ValTree"};
 
     auto source() noexcept -> deserializer_data_source* final {
@@ -55,13 +61,21 @@ public:
     auto begin() noexcept -> result final {
         _errors.clear();
         if(_attribs.empty()) {
-            if(!_source) [[unlikely]] {
-                _errors.set(error_code::data_source_error);
-            }
-            if(auto root{_source.structure()}) {
-                _attribs.emplace(std::move(root));
+            if(_root) {
+                if(_source.type_id() == _root.type_id()) {
+                    _attribs.push(_root);
+                } else {
+                    _errors.set(error_code::data_source_error);
+                }
             } else {
-                _errors.set(error_code::missing_member);
+                if(!_source) [[unlikely]] {
+                    _errors.set(error_code::data_source_error);
+                }
+                if(auto root{_source.structure()}) {
+                    _attribs.emplace(std::move(root));
+                } else {
+                    _errors.set(error_code::missing_member);
+                }
             }
         } else {
             _errors.set(error_code::backend_error);
@@ -284,6 +298,7 @@ public:
 private:
     result _errors{};
     valtree::compound _source;
+    valtree::attribute _root;
     std::stack<valtree::attribute> _attribs;
 };
 //------------------------------------------------------------------------------
