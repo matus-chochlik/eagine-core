@@ -82,27 +82,6 @@ public:
         return _errors;
     }
 
-    auto do_convert(
-      span<identifier> values,
-      span_size_t& done,
-      std::type_identity<std::string>) noexcept -> result {
-        std::vector<std::string> temp;
-        temp.resize(std_size(values.size()));
-        do_read(cover(temp), done);
-        if(done == values.size()) {
-            span_size_t i{0};
-            for(const auto& str : temp) {
-                if(identifier::can_be_encoded(view(str))) {
-                    values[i++] = identifier(view(str));
-                } else {
-                    _errors.set(error_code::invalid_format);
-                    break;
-                }
-            }
-        }
-        return _errors;
-    }
-
     template <typename T, typename I>
     auto do_convert(
       span<T> values,
@@ -125,12 +104,45 @@ public:
         return _errors;
     }
 
-    template <typename I>
+    auto do_convert(
+      span<identifier> values,
+      span_size_t& done,
+      std::type_identity<std::string>) noexcept -> result {
+        std::vector<std::string> temp;
+        temp.resize(std_size(values.size()));
+        do_read(cover(temp), done);
+        if(done == values.size()) {
+            span_size_t i{0};
+            for(const auto& str : temp) {
+                if(identifier::can_be_encoded(view(str))) {
+                    values[i++] = identifier(view(str));
+                } else {
+                    _errors.set(error_code::invalid_format);
+                    break;
+                }
+            }
+        }
+        return _errors;
+    }
+
     auto do_convert(
       span<decl_name_storage> values,
       span_size_t& done,
-      std::type_identity<I>) noexcept -> result {
-        // TODO
+      std::type_identity<std::string>) noexcept -> result {
+        std::vector<std::string> temp;
+        temp.resize(std_size(values.size()));
+        do_read(cover(temp), done);
+        if(done == values.size()) {
+            span_size_t i{0};
+            for(const auto& str : temp) {
+                if(values[i].assign(view(str))) {
+                    ++i;
+                } else {
+                    _errors.set(error_code::invalid_format);
+                    break;
+                }
+            }
+        }
         return _errors;
     }
 

@@ -22,7 +22,7 @@ export struct decl_name : string_view {
     template <std::size_t N>
     constexpr decl_name(const char (&array)[N]) noexcept
         requires(N <= span_size_t(max_length))
-    : string_view{array} {}
+      : string_view{array} {}
 };
 //------------------------------------------------------------------------------
 export class decl_name_storage {
