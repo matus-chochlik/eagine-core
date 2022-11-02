@@ -885,7 +885,8 @@ public:
 
     auto _do_parse_current() noexcept -> bool {
         return _json_reader.IterativeParseNext<_parse_flags()>(
-          _json_stream, *this);
+                 _json_stream, *this) &&
+               !_json_reader.IterativeParseComplete();
     }
 
     auto parse_data(memory::const_block data) noexcept -> bool {
