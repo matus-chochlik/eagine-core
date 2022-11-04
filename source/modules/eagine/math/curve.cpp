@@ -210,6 +210,12 @@ public:
         return _points;
     }
 
+    /// @brief Clears the control points.
+    auto clear() noexcept -> auto& {
+        _points.clear();
+        return *this;
+    }
+
     /// @brief Wraps the parameter value to [0.0, 1.0].
     static auto wrap(Parameter t) noexcept -> Parameter {
         const Parameter zero{0};
