@@ -14,12 +14,13 @@ export module eagine.core.utility:signal;
 import eagine.core.types;
 import eagine.core.container;
 import :callable_ref;
+import <cstdint>;
 import <limits>;
 import <utility>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export using signal_binding_key = unsigned;
+export using signal_binding_key = std::uint16_t;
 
 export template <typename Signature>
 class signal;
