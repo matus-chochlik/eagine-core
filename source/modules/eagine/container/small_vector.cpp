@@ -67,7 +67,7 @@ public:
         }
     }
 
-    constexpr void resize(size_type n) const noexcept {
+    constexpr void resize(size_type n) noexcept {
         if(std::holds_alternative<T0>(_storage)) {
             auto& v0{std::get<T0>(_storage)};
             if(n <= v0.max_size()) {
@@ -90,7 +90,7 @@ public:
         }
     }
 
-    constexpr void clear() const noexcept {
+    constexpr void clear() noexcept {
         if(std::holds_alternative<T0>(_storage)) {
             std::get<T0>(_storage).clear();
         } else {
@@ -279,6 +279,15 @@ public:
         return begin() + offs;
     }
 
+    template <typename Predicate>
+    constexpr auto erase_if(const Predicate& predicate) noexcept -> size_type {
+        if(std::holds_alternative<T0>(_storage)) {
+            return eagine::erase_if(std::get<T0>(_storage), predicate);
+        } else {
+            return std::erase_if(std::get<T1>(_storage), predicate);
+        }
+    }
+
     constexpr auto front() noexcept -> value_type& {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage).front();
@@ -330,5 +339,11 @@ public:
 private:
     std::variant<T0, T1> _storage{};
 };
+//------------------------------------------------------------------------------
+export template <typename T, std::size_t N, typename A, typename Predicate>
+auto erase_if(small_vector<T, N, A>& v, const Predicate& predicate) noexcept ->
+  typename small_vector<T, N, A>::size_type {
+    return v.erase_if(predicate);
+}
 //------------------------------------------------------------------------------
 } // namespace eagine

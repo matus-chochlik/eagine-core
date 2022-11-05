@@ -237,4 +237,13 @@ private:
     std::size_t _size{0};
 };
 //------------------------------------------------------------------------------
+export template <typename T, std::size_t N, typename Predicate>
+auto erase_if(static_vector<T, N>& v, const Predicate& predicate) noexcept ->
+  typename static_vector<T, N>::size_type {
+    const auto pos{std::remove_if(v.begin(), v.end(), predicate)};
+    const auto num{std::distance(pos, v.end())};
+    v.erase(pos, v.end());
+    return num;
+}
+//------------------------------------------------------------------------------
 } // namespace eagine

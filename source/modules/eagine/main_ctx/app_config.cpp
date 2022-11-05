@@ -11,6 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
+import eagine.core.container;
 import eagine.core.valid_if;
 import eagine.core.runtime;
 import eagine.core.logging;
@@ -92,12 +93,12 @@ public:
         return false;
     }
 
-    /// @brief Fetches the configuration values identified by @p key, into @p dest.
-    template <typename T, typename A>
-    auto fetch(
+    template <typename Vector>
+    auto fetch_vector(
       const string_view key,
-      std::vector<T, A>& dest,
-      const string_view tag = {}) noexcept {
+      Vector& dest,
+      const string_view tag) noexcept {
+        using T = typename Vector::value_type;
         const auto arg_name{_prog_arg_name(key)};
         for(const auto arg : _prog_args()) {
             if(arg.is_tag(arg_name)) {
@@ -135,6 +136,24 @@ public:
             }
         }
         return true;
+    }
+
+    /// @brief Fetches the configuration values identified by @p key, into @p dest.
+    template <typename T, typename A>
+    auto fetch(
+      const string_view key,
+      std::vector<T, A>& dest,
+      const string_view tag = {}) noexcept {
+        return fetch_vector(key, dest, tag);
+    }
+
+    /// @brief Fetches the configuration values identified by @p key, into @p dest.
+    template <typename T, std::size_t N, typename A>
+    auto fetch(
+      const string_view key,
+      small_vector<T, N, A>& dest,
+      const string_view tag = {}) noexcept {
+        return fetch_vector(key, dest, tag);
     }
 
     /// @brief Fetches the configuration value identified by @p key, into @p dest.
