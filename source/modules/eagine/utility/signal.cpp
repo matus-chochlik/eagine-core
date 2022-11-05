@@ -121,7 +121,14 @@ private:
         }
     }
 
-    flat_map<unsigned, callable_ref<void(Params...) noexcept>> _slots;
+    flat_map<
+      signal_binding_key,
+      callable_ref<void(Params...) noexcept>,
+      std::less<signal_binding_key>,
+      small_vector<
+        std::pair<signal_binding_key, callable_ref<void(Params...) noexcept>>,
+        2>>
+      _slots;
 };
 
 export template <auto MemFuncPtr, typename C, typename... Params>
