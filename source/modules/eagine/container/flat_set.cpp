@@ -23,22 +23,21 @@ namespace eagine {
 export template <
   typename Key,
   typename Compare = std::less<Key>,
-  class Allocator = std::allocator<Key>>
+  class Container = std::vector<Key>>
 class flat_set : private Compare {
 
-    using _vec_t = std::vector<Key, Allocator>;
-    _vec_t _vec;
+    Container _vec;
 
 public:
     using key_type = Key;
     using value_type = Key;
-    using size_type = typename _vec_t::size_type;
-    using difference_type = typename _vec_t::difference_type;
-    using iterator = typename _vec_t::const_iterator;
-    using const_iterator = typename _vec_t::const_iterator;
-    using allocator_type = Allocator;
+    using size_type = typename Container::size_type;
+    using difference_type = typename Container::difference_type;
+    using iterator = typename Container::const_iterator;
+    using const_iterator = typename Container::const_iterator;
     using reference = value_type&;
     using const_reference = const value_type&;
+    using allocator_type = typename Container::allocator_type;
 
     flat_set() noexcept = default;
     flat_set(const flat_set&) = default;
@@ -51,17 +50,17 @@ public:
         assign(il);
     }
 
-    flat_set(const std::vector<value_type>& v) {
+    flat_set(const Container& v) {
         assign(v);
     }
 
     void assign(std::initializer_list<Key> il) {
-        _vec = _vec_t(il);
+        _vec = Container(il);
         std::sort(_vec.begin(), _vec.end(), value_comp());
     }
 
-    void assign(const std::vector<value_type>& v) {
-        _vec = _vec_t(v.begin(), v.end());
+    void assign(const Container& v) {
+        _vec = Container(v.begin(), v.end());
         std::sort(_vec.begin(), _vec.end(), value_comp());
     }
 
