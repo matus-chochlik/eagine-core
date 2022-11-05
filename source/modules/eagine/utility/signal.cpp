@@ -127,7 +127,7 @@ private:
       std::less<signal_binding_key>,
       small_vector<
         std::pair<signal_binding_key, callable_ref<void(Params...) noexcept>>,
-        2>>
+        3>>
       _slots;
 };
 

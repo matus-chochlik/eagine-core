@@ -51,14 +51,12 @@ public:
         std::is_nothrow_destructible_v<T>) {
         assert(n <= max_size());
         if(n < _size) {
-            for(auto i = n; i < _size; ++i) {
-                _array[i].~T();
-                _size = n;
-            }
+            std::destroy(begin() + n, end());
+            _size = n;
         } else if(n > _size) {
-            for(auto i = _size; i < n; ++i) {
-                new(&_array[i]) T();
-                _size = n;
+            _size = n;
+            for(auto i{begin() + n}; i != end(); ++i) {
+                std::construct_at(i);
             }
         }
     }
@@ -72,9 +70,7 @@ public:
     }
 
     constexpr void clear() noexcept {
-        for(pointer p : *this) {
-            p->~T();
-        }
+        std::destroy(begin(), end());
         _size = 0;
     }
 
@@ -113,7 +109,7 @@ public:
     constexpr void push_back(const value_type& value) noexcept(
       std::is_nothrow_copy_constructible_v<T>) {
         assert(!full());
-        new(end()) T(value);
+        std::construct_at(end(), value);
         ++_size;
     }
 
@@ -121,14 +117,32 @@ public:
     constexpr void emplace_back(Args&&... args) noexcept(
       std::is_nothrow_constructible_v<T, decltype(std::forward<Args>(args))...>) {
         assert(!full());
-        new(end()) T(std::forward<Args>(args)...);
+        std::construct_at(end(), std::forward<Args>(args)...);
         ++_size;
     }
 
     constexpr void pop_back() noexcept(std::is_nothrow_destructible_v<T>) {
         assert(!empty());
         --_size;
-        end()->~T();
+        std::destroy_at(end());
+    }
+
+    template <typename Iter>
+    constexpr auto insert(const_iterator pos, Iter iter, Iter iend) noexcept(
+      std::is_nothrow_copy_constructible_v<T>) -> iterator {
+        const auto count{std::distance(iter, iend)};
+        assert((size() + count) <= max_size());
+        assert(_valid_pos(iter) && _valid_pos(iend));
+        const auto bpos{begin() + std::distance(cbegin(), iter)};
+        auto ipos{bpos};
+        std::move_backward(ipos, end(), end() + count);
+        while(iter != iend) {
+            std::construct_at(ipos, *iter);
+            ++ipos;
+            ++iter;
+        }
+        _size += count;
+        return bpos;
     }
 
     constexpr auto insert(const_iterator pos, const value_type& value) noexcept(
@@ -136,7 +150,7 @@ public:
         assert(!full() && _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
-        new(ipos) T(value);
+        std::construct_at(ipos, value);
         ++_size;
         return ipos;
     }
@@ -146,7 +160,7 @@ public:
         assert(!full() && _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
-        new(ipos) T(std::move(value));
+        std::construct_at(ipos, std::move(value));
         ++_size;
         return ipos;
     }
@@ -158,15 +172,27 @@ public:
         assert(!full() && _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
-        new(ipos) T(std::forward<Args>(args)...);
+        std::construct_at(ipos, std::forward<Args>(args)...);
         ++_size;
         return ipos;
+    }
+
+    constexpr auto erase(const_iterator iter, const_iterator iend) noexcept
+      -> iterator {
+        assert(_valid_pos(iter) && _valid_pos(iend));
+        const auto count{std::distance(iter, iend)};
+        const auto epos{begin() + std::distance(cbegin(), iter)};
+        const auto eend{begin() + std::distance(cbegin(), iend)};
+        std::destroy(epos, eend);
+        std::move(epos + count, end(), epos);
+        _size -= count;
+        return epos;
     }
 
     constexpr auto erase(const_iterator pos) noexcept -> iterator {
         assert(_valid_pos(pos));
         auto epos{begin() + std::distance(cbegin(), pos)};
-        epos->~T();
+        std::destroy_at(epos);
         std::move(epos + 1, end(), epos);
         --_size;
         return epos;

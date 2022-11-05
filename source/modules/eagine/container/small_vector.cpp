@@ -177,6 +177,26 @@ public:
         }
     }
 
+    template <typename Iter>
+    constexpr auto insert(const_iterator pos, Iter iter, Iter end) -> iterator {
+        const auto offs{std::distance(cbegin(), pos)};
+        const auto count{std::distance(iter, end)};
+        if(std::holds_alternative<T0>(_storage)) {
+            auto& v0{std::get<T0>(_storage)};
+            if((v0.size() + count) > v0.max_size()) {
+                _storage = T1(v0.begin(), v0.end());
+                auto& v1{std::get<T1>(_storage)};
+                v1.insert(v1.begin() + offs, iter, end);
+            } else {
+                v0.insert(pos, iter, end);
+            }
+        } else {
+            auto& v1{std::get<T1>(_storage)};
+            v1.insert(v1.begin() + offs, iter, end);
+        }
+        return begin() + offs;
+    }
+
     constexpr auto insert(const_iterator pos, const value_type& value)
       -> iterator {
         const auto offs{std::distance(cbegin(), pos)};
@@ -229,6 +249,20 @@ public:
         } else {
             auto& v1{std::get<T1>(_storage)};
             v1.emplace(v1.begin() + offs, std::forward<Args>(args)...);
+        }
+        return begin() + offs;
+    }
+
+    constexpr auto erase(const_iterator iter, const_iterator end) noexcept
+      -> iterator {
+        const auto offs{std::distance(cbegin(), iter)};
+        const auto effs{std::distance(cbegin(), end)};
+        if(std::holds_alternative<T0>(_storage)) {
+            auto& v0{std::get<T0>(_storage)};
+            v0.erase(v0.begin() + offs, v0.begin() + effs);
+        } else {
+            auto& v1{std::get<T1>(_storage)};
+            v1.erase(v1.begin() + offs, v1.begin() + effs);
         }
         return begin() + offs;
     }
