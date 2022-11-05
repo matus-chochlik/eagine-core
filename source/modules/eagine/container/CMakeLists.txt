@@ -5,6 +5,9 @@
 eagine_add_module(eagine.core.container PARTITION iterator)
 
 eagine_add_module(
+	eagine.core.container PARTITION static_vector
+)
+eagine_add_module(
 	eagine.core.container PARTITION flat_set
 	IMPORTS eagine.core.types;
 )
@@ -26,6 +29,7 @@ eagine_add_module(
 	INTERFACES container
 	PARTITIONS
 		iterator
+		static_vector
 		flat_set
 		flat_map
 		wrapping
