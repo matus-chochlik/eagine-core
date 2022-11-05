@@ -12,7 +12,7 @@ module;
 export module eagine.core.container:static_vector;
 
 import <algorithm>;
-import <array>;
+export import <array>;
 import <cstdint>;
 
 namespace eagine {
