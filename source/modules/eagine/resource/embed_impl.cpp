@@ -51,6 +51,21 @@ auto embedded_resource_loader::search(identifier_value res_id) noexcept
     return {};
 }
 //------------------------------------------------------------------------------
+auto embedded_resource_loader::has_resource(identifier_value res_id) noexcept
+  -> bool {
+    using search_func_type =
+      struct eagine_embedded_resource_info(std::uint64_t);
+    if(auto found{_self.find_function(
+         "eagine_search_embedded_resource",
+         std::type_identity<search_func_type>())}) {
+        if(auto search_func{extract(found)}) {
+            const auto info{search_func(res_id)};
+            return info.data_size > 0;
+        }
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
 auto embedded_resource_loader::resource_ids() noexcept
   -> span<const identifier_t> {
     using list_func_type = struct eagine_embedded_resources_list();
