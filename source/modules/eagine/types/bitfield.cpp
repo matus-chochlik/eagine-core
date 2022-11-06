@@ -189,15 +189,33 @@ public:
 
     /// @brief Sets the specified bit.
     /// @see clear
+    /// @see merge
     auto set(const bit_type b) noexcept -> bitfield& {
         _bits |= value_type(b); // NOLINT(hicpp-signed-bitwise)
         return *this;
     }
 
+    /// @brief Merges the specified bitfield into this bitfield.
+    /// @see set
+    /// @see subtract
+    auto merge(const bitfield b) noexcept -> bitfield& {
+        _bits |= b._bits; // NOLINT(hicpp-signed-bitwise)
+        return *this;
+    }
+
     /// @brief Clears the specified bit.
     /// @see set
+    /// @see merge
     auto clear(const bit_type b) noexcept -> bitfield& {
         _bits &= ~value_type(b); // NOLINT(hicpp-signed-bitwise)
+        return *this;
+    }
+
+    /// @brief Subtracts the specified bitfield from this bitfield.
+    /// @see clear
+    /// @see merge
+    auto subtract(const bitfield b) noexcept -> bitfield& {
+        _bits &= ~b._bits; // NOLINT(hicpp-signed-bitwise)
         return *this;
     }
 
