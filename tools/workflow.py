@@ -115,9 +115,15 @@ class WorkflowArgParser(argparse.ArgumentParser):
 # ------------------------------------------------------------------------------
 def make_argument_parser():
     return WorkflowArgParser(
-            prog=os.path.basename(__file__),
-            description="""
+        prog=os.path.basename(__file__),
+        description="""
             EAGine Git workflow helper script
+        """,
+        epilog="""
+            Copyright (c) Matúš Chochlík.
+            Permission is granted to copy, distribute and/or modify this document
+            under the terms of the Boost Software License, Version 1.0.
+            (See a copy at http://www.boost.org/LICENSE_1_0.txt)
         """
     )
 # ------------------------------------------------------------------------------
@@ -499,7 +505,6 @@ class Workflow(object):
         develop = self._options.git_branch
         hotfix_tag = self.version_string(self.read_version())
         hotfix_branch = self.hotfix_branch(hotfix_tag)
-        print(self.git_current_branch(), hotfix_branch)
         if self.git_current_branch() != hotfix_branch:
             hotfix_tag = self.version_string(self.next_repo_hotfix())
             hotfix_branch = self.hotfix_branch(hotfix_tag)
