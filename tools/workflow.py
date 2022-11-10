@@ -261,6 +261,10 @@ class Workflow(object):
         return "release-" + version_tag
 
     # --------------------------------------------------------------------------
+    def hotfix_branch(self, version_tag):
+        return "hotfix-" + version_tag
+
+    # --------------------------------------------------------------------------
     def bumped_version_number(self, version_numbers, idx):
         return tuple(n if i < idx else n+1 if i== idx else 0 for i, n in enumerate(version_numbers))
 
@@ -333,12 +337,14 @@ class Workflow(object):
 
     # --------------------------------------------------------------------------
     def do_execute_command(self, cmd_line, work_dir, simulate=None, simresult=str()):
+        def _cmd_str():
+            return "%s '%s'" % (cmd_line[0], str("' '").join(cmd_line[1:]))
         if simulate is None:
             simulate = self._options.dry_run
         if simulate:
             if work_dir != self.repo_root_path():
                 print("cd '%s' && " % work_dir, end='')
-            print("%s '%s'" % (cmd_line[0], str("' '").join(cmd_line[1:])))
+            print(_cmd_str())
             return simresult
         else:
             proc = subprocess.Popen(
@@ -349,7 +355,7 @@ class Workflow(object):
             )
             out, err = proc.communicate()
             if proc.returncode != 0:
-                text = err.decode('utf-8')
+                text = "command %s:\n\n%s" % (_cmd_str(), err.decode('utf-8'))
                 self._ui.operation_failed(text)
                 raise RuntimeError(text)
             return out.decode('utf-8')
@@ -415,33 +421,33 @@ class Workflow(object):
     # --------------------------------------------------------------------------
     def begin_release(self):
         remote = self._options.git_remote
-        branch = self._options.git_branch
+        develop = self._options.git_branch
         self.begin_work()
-        self.git_command(["checkout", branch])
-        self.git_command(["pull", remote, branch])
+        self.git_command(["checkout", develop])
+        self.git_command(["pull", remote, develop])
         self.commit()
-        version_tag = self.version_string(self.next_repo_release())
-        release_branch = self.release_branch(version_tag)
+        release_tag = self.version_string(self.next_repo_release())
+        release_branch = self.release_branch(release_tag)
         self.begin_work()
-        self.git_command(["checkout", "-b", release_branch, branch])
+        self.git_command(["checkout", "-b", release_branch, develop])
         if self.is_in_core():
-            self.write_file(self.version_path(), version_tag)
+            self.write_file(self.version_path(), release_tag)
             self.git_command(["add", self.version_path()])
         else:
             self.update_submodules()
-        self.git_command(["commit", "-m", "Started release "+version_tag])
+        self.git_command(["commit", "-m", "Started release "+release_tag])
         self.commit()
         self.git_command(["push", remote, release_branch])
 
     # --------------------------------------------------------------------------
     def finish_release(self):
         remote = self._options.git_remote
-        branch = self._options.git_branch
-        version_tag = self.version_string(self.read_version())
-        release_branch = self.release_branch(version_tag)
+        develop = self._options.git_branch
+        release_tag = self.version_string(self.read_version())
+        release_branch = self.release_branch(release_tag)
         if self.git_current_branch() != release_branch:
-            version_tag = self.version_string(self.next_repo_release())
-            release_branch = self.release_branch(version_tag)
+            release_tag = self.version_string(self.next_repo_release())
+            release_branch = self.release_branch(release_tag)
             if self.git_has_branch(release_branch):
                 self.git_command(["checkout", release_branch])
                 self.git_command(["pull", remote, release_branch])
@@ -457,25 +463,69 @@ class Workflow(object):
         self.git_command(["checkout", "main"])
         self.git_command(["pull", remote, "main"])
         self.git_command(["merge", "-X", "theirs", "--no-ff", release_branch])
-        self.git_command(["tag", "-a", version_tag, "-m", "Tagged release "+version_tag])
-        self.git_command(["checkout", branch])
-        self.git_command(["pull", remote, branch])
+        self.git_command(["tag", "-a", release_tag, "-m", "Tagged release "+release_tag])
+        self.git_command(["checkout", develop])
+        self.git_command(["pull", remote, develop])
         self.git_command(["merge", "--no-ff", release_branch])
-        self.git_command(["push", remote, version_tag])
+        self.git_command(["push", remote, release_tag])
         self.git_command(["push", remote, "main"])
-        self.git_command(["push", remote, branch])
+        self.git_command(["push", remote, develop])
         self.git_command(["push", remote, ":"+release_branch])
         self.git_command(["branch", "-D", release_branch])
 
     # --------------------------------------------------------------------------
     def begin_hotfix(self):
         remote = self._options.git_remote
+        self.begin_work()
+        self.git_command(["checkout", "main"])
+        self.git_command(["pull", remote, "main"])
+        self.commit()
+        source_tag = self.version_string(self.read_version())
+        hotfix_tag = self.version_string(self.next_repo_hotfix())
+        hotfix_branch = self.hotfix_branch(hotfix_tag)
+        self.git_command(["checkout", "-b", hotfix_branch, source_tag+"^2"])
+        if self.is_in_core():
+            self.write_file(self.version_path(), hotfix_tag)
+            self.git_command(["add", self.version_path()])
+        else:
+            self.update_submodules()
+        self.git_command(["commit", "-m", "Started hotfix "+hotfix_tag])
+        self.git_command(["push", remote, hotfix_branch])
+
 
     # --------------------------------------------------------------------------
     def finish_hotfix(self):
         remote = self._options.git_remote
-        version_tag = self.version_string(self.read_version())
-        release_branch = self.release_branch(version_tag)
+        develop = self._options.git_branch
+        hotfix_tag = self.version_string(self.read_version())
+        hotfix_branch = self.hotfix_branch(hotfix_tag)
+        print(self.git_current_branch(), hotfix_branch)
+        if self.git_current_branch() != hotfix_branch:
+            hotfix_tag = self.version_string(self.next_repo_hotfix())
+            hotfix_branch = self.hotfix_branch(hotfix_tag)
+            if self.git_has_branch(hotfix_branch):
+                self.git_command(["checkout", hotfix_branch])
+                self.git_command(["pull", remote, hotfix_branch])
+            elif self.git_has_remote_branch(hotfix_branch):
+                self.git_command(["checkout", "-b", hotfix_branch, remote+"/"+hotfix_branch])
+                self.git_command(["pull", remote, hotfix_branch])
+            else: raise RuntimeError(
+                "Hotfix branch '"+hotfix_branch+"' does not exist. "
+                "Re-run with --begin-hotfix to start a new hotfix."
+            )
+        self.git_command(["checkout", "main"])
+        self.git_command(["pull", remote, "main"])
+        self.git_command(["merge", "-X", "theirs", "--no-ff", hotfix_branch])
+        self.git_command(["tag", "-a", hotfix_tag, "-m", "Tagged hotfix "+hotfix_tag])
+        self.git_command(["checkout", develop])
+        self.git_command(["pull", remote, develop])
+        self.git_command(["merge", "-X", "theirs", "--no-ff", hotfix_branch])
+        self.git_command(["push", remote, hotfix_tag])
+        self.git_command(["push", remote, "main"])
+        self.git_command(["push", remote, develop])
+        self.git_command(["push", remote, ":"+hotfix_branch])
+        self.git_command(["branch", "-D", hotfix_branch])
+
 
     # --------------------------------------------------------------------------
     def run(self):
