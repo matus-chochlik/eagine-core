@@ -423,6 +423,7 @@ class Workflow(object):
         for moddir in self.own_submodules():
             self.git_dir_command(["checkout", branch], moddir)
             self.git_dir_command(["pull", remote, branch], moddir)
+            self.git_command(["add", moddir])
 
     # --------------------------------------------------------------------------
     def begin_release(self):
