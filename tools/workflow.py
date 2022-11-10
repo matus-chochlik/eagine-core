@@ -34,7 +34,6 @@ def version_string(version_numbers):
     return "%d.%d.%d" % tuple(version_numbers)
 
 def bumped_version_number(version_numbers, idx):
-
     return [n if i < idx else n+1 if i== idx else 0 for i, n in enumerate(version_numbers)]
 
 def next_release(root_dir = get_root_dir()):
