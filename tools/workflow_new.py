@@ -33,6 +33,17 @@ class WorkflowArgParser(argparse.ArgumentParser):
         )
 
         self.add_argument(
+            "--branch",
+            dest="git_branch",
+            metavar="NAME",
+            action="store",
+            default="develop",
+            help="""
+                Name of the development git branch that is the source of the release.
+            """
+        )
+
+        self.add_argument(
             "--remote",
             dest="git_remote",
             metavar="NAME",
@@ -45,6 +56,15 @@ class WorkflowArgParser(argparse.ArgumentParser):
 
         action_group = self.add_mutually_exclusive_group()
 
+        action_group.add_argument(
+            "--update-submodules",
+            dest="action",
+            action="store_const",
+            const="update_submodules",
+            help="""
+                Updates the sub-modules of the current repository.
+            """
+        )
         action_group.add_argument(
             "--begin-release",
             dest="action",
@@ -101,9 +121,103 @@ def make_argument_parser():
         """
     )
 # ------------------------------------------------------------------------------
+class WorkflowUIBase(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options):
+        self._options = options
+        self._commands = None
+
+    # --------------------------------------------------------------------------
+    def begin(self):
+        # TODO
+        # self._commands = []
+        return self
+
+    # --------------------------------------------------------------------------
+    def commit(self, parent):
+        self._commands = None
+        return self
+
+    # --------------------------------------------------------------------------
+    def execute_command(self, parent, cmd_line, work_dir, simulate, simresult):
+        if not self.should_execute(cmd_line, work_dir):
+            raise RuntimeError("Command cancelled")
+        if self._commands is None:
+            parent.do_execute_command(cmd_line, work_dir, simulate, simresult)
+        else:
+            self._commands.append(
+                lambda p: p.do_execute_command(cmd_line, work_dir, simulate, simresult))
+        return self
+
+    # --------------------------------------------------------------------------
+    def write_file(self, parent, file_path, contents, simulate):
+        if not self.should_write(file_path, contents):
+            raise RuntimeError("Write cancelled")
+        if self._commands is None:
+            parent.do_write_file(file_path, contents, simulate)
+        else:
+            self._commands.append(
+                lambda p: p.do_write_file(file_path, contents, simulate))
+        return self
+
+
+# ------------------------------------------------------------------------------
+class WorkflowWhiptailUI(WorkflowUIBase):
+    # --------------------------------------------------------------------------
+    def __init__(self, options):
+        WorkflowUIBase.__init__(self, options)
+
+    # --------------------------------------------------------------------------
+    def should_execute(self, cmd_line, work_dir):
+        text = "execute:\n"
+        text += " %s '%s'\n" % (cmd_line[0], "' '".join(cmd_line[1:]))
+        text += "\nin directory:\n"
+        text += " '%s'\n" % work_dir
+        proc = subprocess.Popen([
+            "whiptail",
+            "--yes-button", "execute",
+            "--no-button", "cancel",
+            "--yesno", text, "20", "74"])
+        out, err = proc.communicate()
+        return proc.returncode == 0
+
+    # --------------------------------------------------------------------------
+    def should_write(self, file_path, contents):
+        text = "write: '%s'" % contents
+        text += "\ninto file:\n"
+        text += " '%s'\n" % file_path 
+        proc = subprocess.Popen([
+            "whiptail",
+            "--yes-button", "execute",
+            "--no-button", "cancel",
+            "--yesno", text, "20", "74"])
+        out, err = proc.communicate()
+        return proc.returncode == 0
+
+
+# ------------------------------------------------------------------------------
+class WorkflowZenityUI(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options):
+        self._options = options
+        # TODO zenity
+
+# ------------------------------------------------------------------------------
+class WorkflowDialogUI(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options):
+        self._options = options
+        # TODO dialog
+
+# ------------------------------------------------------------------------------
+def make_ui(options):
+    # TODO
+    return WorkflowWhiptailUI(options)
+# ------------------------------------------------------------------------------
 class Workflow(object):
     # --------------------------------------------------------------------------
     def __init__(self, options):
+        self._ui = make_ui(options)
         self._options = options
         self._ownp = os.path.realpath(__file__)
 
@@ -136,6 +250,10 @@ class Workflow(object):
     # --------------------------------------------------------------------------
     def version_string(self, version_numbers):
         return "%d.%d.%d" % version_numbers
+
+    # --------------------------------------------------------------------------
+    def release_branch(self, version_tag):
+        return "release-" + version_tag
 
     # --------------------------------------------------------------------------
     def bumped_version_number(self, version_numbers, idx):
@@ -195,7 +313,7 @@ class Workflow(object):
                 yield p
 
     # --------------------------------------------------------------------------
-    def write_file(self, file_path, contents, simulate=None):
+    def do_write_file(self, file_path, contents, simulate=None):
         if simulate is None:
             simulate = self._options.dry_run
         if simulate:
@@ -205,11 +323,18 @@ class Workflow(object):
                 dst.write(contents)
 
     # --------------------------------------------------------------------------
-    def execute_command(self, cmd_line, simulate=None, simresult=str()):
+    def write_file(self, file_path, contents, simulate=None):
+        return self._ui.write_file(self, file_path, contents, simulate)
+
+    # --------------------------------------------------------------------------
+    def do_execute_command(self, cmd_line, work_dir, simulate=None, simresult=str()):
         if simulate is None:
             simulate = self._options.dry_run
         if simulate:
-            print(cmd_line[0]+" '"+str("' '").join(cmd_line[1:])+"'")
+            chdir = work_dir != self.repo_root_path()
+            if chdir:
+                print("cd '%s' && " % work_dir, end='')
+            print("%s '%s'" % (cmd_line[0], str("' '").join(cmd_line[1:])))
             return simresult
         else:
             proc = subprocess.Popen(
@@ -217,41 +342,145 @@ class Workflow(object):
                 cwd=self.repo_root_path(),
                 stdout=subprocess.PIPE
             )
-            # TODO: out, err = proc.communicate()
+            out, err = proc.communicate()
             return out.decode('utf-8')
 
     # --------------------------------------------------------------------------
+    def begin_work(self):
+        self._ui.begin()
+
+    # --------------------------------------------------------------------------
+    def commit(self):
+        self._ui.commit(self)
+
+    # --------------------------------------------------------------------------
+    def execute_command(self, cmd_line, work_dir, simulate=None, simresult=str()):
+        return self._ui.execute_command(self, cmd_line, work_dir, simulate, simresult)
+
+    # --------------------------------------------------------------------------
+    def git_dir_command(self, args, work_dir, simulate=None, simresult=str()):
+        return self.execute_command(["git"] + args, work_dir, simulate, simresult)
+
+    # --------------------------------------------------------------------------
     def git_command(self, args, simulate=None, simresult=str()):
-        return self.execute_command(["git"]+args, simulate, simresult)
+        return self.git_dir_command(args, self.repo_root_path(), simulate, simresult)
+
+    # --------------------------------------------------------------------------
+    def do_git_dir_command(self, args, work_dir, simulate=None, simresult=str()):
+        return self.do_execute_command(["git"] + args, work_dir, simulate, simresult)
+
+    # --------------------------------------------------------------------------
+    def do_git_command(self, args, simulate=None, simresult=str()):
+        return self.do_git_dir_command(args, self.repo_root_path(), simulate, simresult)
 
     # --------------------------------------------------------------------------
     def git_current_branch(self):
-        return self.git_command(
+        return self.do_git_command(
             ["rev-parse", "--abbrev-ref", "HEAD"],
-            root_dir,
             False
         ).strip()
 
     # --------------------------------------------------------------------------
+    def git_has_branch(self, branch_name):
+        return bool(self.do_git_command(
+                ["branch", "--list", branch_name],
+                False
+            ).strip())
+
+    # --------------------------------------------------------------------------
+    def git_has_remote_branch(self, branch_name):
+        self.do_git_command(["fetch", self._options.git_remote], False)
+        return bool(self.do_git_command(
+                ["branch", "--list", branch_name],
+                False
+            ).strip())
+
+    # --------------------------------------------------------------------------
+    def update_submodules(self):
+        remote = self._options.git_remote
+        branch = self._options.git_branch
+        for moddir in self.own_submodules():
+            self.git_dir_command(["checkout", branch], moddir)
+            self.git_dir_command(["pull", remote, branch], moddir)
+
+    # --------------------------------------------------------------------------
     def begin_release(self):
         remote = self._options.git_remote
-        self.git_command(["checkout", "develop"])
-        self.git_command(["pull", remote, "develop"])
-        next_version = self.version_string(self.next_repo_release())
-        self.git_command(["checkout", "-b", "release-"+next_version, "develop"])
+        branch = self._options.git_branch
+        self.begin_work()
+        self.git_command(["checkout", branch])
+        self.git_command(["pull", remote, branch])
+        self.commit()
+        version_tag = self.version_string(self.next_repo_release())
+        release_branch = self.release_branch(version_tag)
+        self.begin_work()
+        self.git_command(["checkout", "-b", release_branch, branch])
         if self.is_in_core():
-            self.write_file(self.version_path(), next_version)
+            self.write_file(self.version_path(), version_tag)
             self.git_command(["add", self.version_path()])
-        self.git_command(["commit", "-m", "Started release-"+next_version])
-        self.git_command(["push", remote, "release-"+next_version])
+        self.git_command(["commit", "-m", "Started release "+version_tag])
+        self.commit()
+        self.git_command(["push", remote, release_branch])
+
+    # --------------------------------------------------------------------------
+    def finish_release(self):
+        remote = self._options.git_remote
+        branch = self._options.git_branch
+        version_tag = self.version_string(self.read_version())
+        release_branch = self.release_branch(version_tag)
+        if self.git_current_branch() != release_branch:
+            version_tag = self.version_string(self.next_repo_release())
+            release_branch = self.release_branch(version_tag)
+            if self.git_has_branch(release_branch):
+                self.git_command(["checkout", release_branch])
+                self.git_command(["pull", remote, release_branch])
+            elif self.git_has_remote_branch(release_branch):
+                self.git_command(["checkout", "-b", release_branch, remote+"/"+release_branch])
+                self.git_command(["pull", remote, release_branch])
+            else: raise RuntimeError(
+                "Release branch '"+release_branch+"' does not exist. "
+                "Re-run with --begin-release to start a new release."
+            )
+        self.git_command(["checkout", release_branch])
+        self.git_command(["pull", remote, release_branch])
+        self.git_command(["checkout", "main"])
+        self.git_command(["pull", remote, "main"])
+        self.git_command(["merge", "-X", "theirs", "--no-ff", release_branch])
+        self.git_command(["tag", "-a", version_tag, "-m", "Tagged release "+version_tag])
+        self.git_command(["checkout", branch])
+        self.git_command(["pull", remote, branch])
+        self.git_command(["merge", "--no-ff", release_branch])
+        self.git_command(["push", remote, version_tag])
+        self.git_command(["push", remote, "main"])
+        self.git_command(["push", remote, branch])
+        self.git_command(["push", remote, ":"+release_branch])
+        self.git_command(["branch", "-D", release_branch])
+
+    # --------------------------------------------------------------------------
+    def begin_hotfix(self):
+        remote = self._options.git_remote
+
+    # --------------------------------------------------------------------------
+    def finish_hotfix(self):
+        remote = self._options.git_remote
+        version_tag = self.version_string(self.read_version())
+        release_branch = self.release_branch(version_tag)
 
     # --------------------------------------------------------------------------
     def run(self):
         if self._options.debug:
             print(self._options)
 
-        if self._options.action == "begin_release":
+        if self._options.action == "update_submodules":
+            self.update_submodules()
+        elif self._options.action == "begin_release":
             self.begin_release()
+        elif self._options.action == "finish_release":
+            self.finish_release()
+        elif self._options.action == "begin_hotfix":
+            self.begin_hotfix()
+        elif self._options.action == "finish_hotfix":
+            self.finish_hotfix()
 
 # ------------------------------------------------------------------------------
 def main():
