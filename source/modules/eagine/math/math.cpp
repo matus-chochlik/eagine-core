@@ -16,6 +16,7 @@ export import :vector;
 export import :matrix;
 export import :matrix_construct;
 export import :tmat;
+export import :color;
 export import :curve;
 export import :primitives;
 export import :intersection;

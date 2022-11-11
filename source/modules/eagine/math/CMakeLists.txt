@@ -69,6 +69,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.math PARTITION color
+	IMPORTS
+		constants functions vector
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.math PARTITION primitives
 	IMPORTS
 		vector
@@ -131,6 +138,7 @@ eagine_add_module(
 		matrix
 		matrix_construct
 		tmat
+		color
 		curve
 		primitives
 		intersection
