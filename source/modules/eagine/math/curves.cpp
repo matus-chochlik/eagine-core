@@ -9,7 +9,7 @@ module;
 
 #include <cassert>
 
-export module eagine.core.math:curve;
+export module eagine.core.math:curves;
 
 import eagine.core.types;
 import eagine.core.memory;
