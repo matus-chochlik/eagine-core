@@ -239,10 +239,21 @@ public:
 
     /// @brief Removes a single element from the end of this path.
     /// @see push_back
+    /// @see parent
     void pop_back() noexcept {
         assert(!empty());
         _str.resize(integer(string_list::pop_back(_str).size()));
         --_size;
+    }
+
+    /// @brief Returns a new path that is a copy of this without the last n elements.
+    /// @see pop_back
+    auto parent(span_size_t n = 1) const noexcept {
+        basic_string_path result{*this};
+        while((n-- > 0) && !empty()) {
+            result.pop_back();
+        }
+        return result;
     }
 
     /// @brief Returns an iterator pointing to the start of the path.
