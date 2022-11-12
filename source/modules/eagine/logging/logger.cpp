@@ -365,6 +365,12 @@ public:
         base::set_description(_object_id, display_name, description);
     }
 
+    /// @brief Create a log message entry with specified severity and format.
+    auto log(const log_event_severity severity, const string_view format)
+      const noexcept {
+        return base::make_log_entry(_object_id, severity, format);
+    }
+
     /// @brief Create a log message entry for fatal error, with specified format.
     /// @see log_event_severity
     auto log_fatal(const string_view format) const noexcept {
@@ -464,9 +470,9 @@ public:
       const identifier series,
       const tagged_quantity<T, U>& qty) const noexcept
       -> const named_logging_object& requires(std::is_convertible_v<T, float>) {
-                                         log_chart_sample(series, qty.value());
-                                         return *this;
-                                     }
+          log_chart_sample(series, qty.value());
+          return *this;
+      }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename P>
@@ -589,9 +595,9 @@ public:
       const identifier series,
       const tagged_quantity<T, U>& qty) noexcept
       -> const logger& requires(std::is_convertible_v<T, float>) {
-                           log_chart_sample(series, qty.value());
-                           return *this;
-                       }
+          log_chart_sample(series, qty.value());
+          return *this;
+      }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename P>
