@@ -215,6 +215,16 @@ public:
         return string_list::back_value(_str);
     }
 
+    /// @brief Indicates if the path starts with the specified entry.
+    auto starts_with(const string_view entry) const noexcept -> bool {
+        return front() == entry;
+    }
+
+    /// @brief Indicates if the path ends with the specified entry.
+    auto ends_with(const string_view entry) const noexcept -> bool {
+        return back() == entry;
+    }
+
     /// @brief Appends a new element with the specified name to the end.
     /// @see pop_back
     void push_back(const string_view name) {
