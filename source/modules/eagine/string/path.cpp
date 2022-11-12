@@ -217,12 +217,17 @@ public:
 
     /// @brief Indicates if the path starts with the specified entry.
     auto starts_with(const string_view entry) const noexcept -> bool {
-        return front() == entry;
+        return !empty() && (front() == entry);
     }
 
     /// @brief Indicates if the path ends with the specified entry.
     auto ends_with(const string_view entry) const noexcept -> bool {
-        return back() == entry;
+        return !empty() && (back() == entry);
+    }
+
+    /// @brief Indicates if the path has a single specified entry.
+    auto is(const string_view entry) const noexcept -> bool {
+        return (size() == 1) && (back() == entry);
     }
 
     /// @brief Appends a new element with the specified name to the end.
