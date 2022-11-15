@@ -5,18 +5,10 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <chrono>;
 import <optional>;
 import <thread>;
-#else
-#include <eagine/app_config.hpp>
-#include <eagine/console/console.hpp>
-#include <eagine/main_ctx.hpp>
-#include <chrono>
-#include <thread>
-#endif
 
 namespace eagine {
 

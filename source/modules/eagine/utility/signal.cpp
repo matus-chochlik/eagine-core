@@ -14,12 +14,13 @@ export module eagine.core.utility:signal;
 import eagine.core.types;
 import eagine.core.container;
 import :callable_ref;
+import <cstdint>;
 import <limits>;
 import <utility>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export using signal_binding_key = unsigned;
+export using signal_binding_key = std::uint16_t;
 
 export template <typename Signature>
 class signal;
@@ -89,24 +90,45 @@ public:
     }
 
     /// @brief Implicit conversion to a compatible callable_ref.
+    operator callable_ref<void(Params...) noexcept>() const noexcept {
+        return {
+          this,
+          member_function_constant<
+            void (signal::*)(Params...) const noexcept,
+            &signal::_call>{}};
+    }
+
     template <typename... P>
     operator callable_ref<void(P...) noexcept>() const noexcept {
         return {
           this,
           member_function_constant<
             void (signal::*)(P...) const noexcept,
-            &signal::_call>{}};
+            &signal::_call_tpl<P...>>{}};
     }
 
 private:
-    template <typename... P>
-    void _call(P... args) const noexcept {
+    void _call(Params... args) const noexcept {
         for(const auto& entry : _slots) {
             std::get<1>(entry)(args...);
         }
     }
 
-    flat_map<unsigned, callable_ref<void(Params...) noexcept>> _slots;
+    template <typename... P>
+    void _call_tpl(P... args) const noexcept {
+        for(const auto& entry : _slots) {
+            std::get<1>(entry)(args...);
+        }
+    }
+
+    flat_map<
+      signal_binding_key,
+      callable_ref<void(Params...) noexcept>,
+      std::less<signal_binding_key>,
+      small_vector<
+        std::pair<signal_binding_key, callable_ref<void(Params...) noexcept>>,
+        3>>
+      _slots;
 };
 
 export template <auto MemFuncPtr, typename C, typename... Params>
@@ -155,9 +177,23 @@ public:
     /// @brief Not copy assignable.
     auto operator=(const signal_binding&) = delete;
 
-    /// @brief Indicates if the binding is valid.
-    constexpr operator bool() const noexcept {
+    /// @brief Indicates if this binding is connected.
+    constexpr auto is_connected() const noexcept -> bool {
         return _key != 0;
+    }
+
+    /// @brief Indicates if this binding is connected.
+    /// @see is_connected
+    constexpr operator bool() const noexcept {
+        return is_connected();
+    }
+
+    /// @brief Disconnects this binding from it's signal.
+    void disconnect() noexcept {
+        if(_key && _disconnect) {
+            _disconnect(_key);
+            _key = 0U;
+        }
     }
 
 private:
@@ -169,6 +205,11 @@ template <typename... Params>
 [[nodiscard]] auto signal<void(Params...) noexcept>::bind(
   callable_ref<void(Params...) noexcept> slot) -> signal_binding {
     return {connect(slot), this};
+}
+
+export template <auto MemFuncPtr, typename C, typename... Params>
+auto bind(C* that, signal<void(Params...) noexcept>& sig) noexcept {
+    return sig.bind(make_callable_ref<MemFuncPtr>(that));
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

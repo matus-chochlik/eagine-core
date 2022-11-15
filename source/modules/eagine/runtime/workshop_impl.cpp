@@ -20,7 +20,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 auto workshop::_fetch() noexcept -> std::tuple<work_unit*, bool> {
     work_unit* work = nullptr;
-    std::unique_lock lock{_mutex};
+    std::unique_lock lock{_queue_lockable};
     if(!_shutdown) [[likely]] {
         _cond.wait(lock, [this] { return !_work_queue.empty() || _shutdown; });
         if(!_work_queue.empty()) {
@@ -37,9 +37,7 @@ void workshop::_employ() noexcept {
         if(opt_work) {
             auto& work = extract(opt_work);
             if(work.do_it()) {
-                if(const std::lock_guard lock{_mutex}; true) {
-                    work.deliver();
-                }
+                work.deliver();
                 _cond.notify_all();
             } else {
                 enqueue(work);
@@ -52,7 +50,7 @@ void workshop::_employ() noexcept {
 }
 //------------------------------------------------------------------------------
 auto workshop::shutdown() noexcept -> workshop& {
-    if(const std::lock_guard lock{_mutex}; true) {
+    if(const std::lock_guard lock{_queue_lockable}; true) {
         _shutdown = true;
     }
     _cond.notify_all();
@@ -67,7 +65,7 @@ auto workshop::wait_until_closed() noexcept -> workshop& {
 }
 //------------------------------------------------------------------------------
 auto workshop::wait_until_idle() noexcept -> workshop& {
-    std::unique_lock lock{_mutex};
+    std::unique_lock lock{_queue_lockable};
     _cond.wait(lock, [this]() { return _work_queue.empty(); });
     return *this;
 }
@@ -103,7 +101,7 @@ auto workshop::release_worker() noexcept -> workshop& {
 }
 //------------------------------------------------------------------------------
 auto workshop::enqueue(work_unit& work) -> workshop& {
-    const std::lock_guard lock{_mutex};
+    const std::lock_guard lock{_queue_lockable};
     if(_workers.empty()) [[unlikely]] {
         ensure_workers(std::max(
           span_size(std::thread::hardware_concurrency() / 2), span_size(2)));

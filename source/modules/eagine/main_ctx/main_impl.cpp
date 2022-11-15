@@ -11,9 +11,12 @@ module;
 
 module eagine.core.main_ctx;
 
+import eagine.core.build_info;
 import eagine.core.memory;
 import eagine.core.identifier;
+import eagine.core.valid_if;
 import eagine.core.logging;
+import <iostream>;
 import <stdexcept>;
 import <system_error>;
 
@@ -24,17 +27,36 @@ auto main_impl(
   const char** argv,
   main_ctx_options& options,
   int (*main_func)(main_ctx&)) -> int {
-    main_ctx_storage storage{argc, argv, options};
-    main_ctx ctx{storage};
     try {
-        assert(main_func);
-        return main_func(ctx);
+        main_ctx_storage storage{argc, argv, options};
+        main_ctx ctx{storage};
+        try {
+            assert(main_func);
+            return main_func(ctx);
+        } catch(const std::system_error& sys_err) {
+            ctx.log()
+              .error("unhandled system error: ${error}")
+              .arg("error", sys_err);
+        } catch(const std::exception& err) {
+            ctx.log()
+              .error("unhandled generic error: ${error}")
+              .arg("error", err);
+        }
+    } catch(const log_backend_error& log_err) {
+        const auto code{log_err.code().value()};
+        if((code == ENOENT) || (code == ECONNREFUSED)) {
+            std::cerr << "Logger failed to connect to the formatter. "
+                      << "Start one of the 'xml_logs-*' apps";
+            if(const auto prefix{build_info().install_prefix()}) {
+                std::cerr << " installed in '" << extract(prefix) << "/bin'";
+            }
+            std::cerr << "." << std::endl;
+        } else {
+            std::cerr << "unhandled log back-end error: " << log_err.what()
+                      << std::endl;
+        }
     } catch(const std::system_error& sys_err) {
-        ctx.log()
-          .error("unhandled system error: ${error}")
-          .arg("error", sys_err);
-    } catch(const std::exception& err) {
-        ctx.log().error("unhandled generic error: ${error}").arg("error", err);
+        std::cerr << "unhandled system error: " << sys_err.what() << std::endl;
     }
     return 1;
 }

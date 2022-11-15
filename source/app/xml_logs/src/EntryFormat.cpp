@@ -21,7 +21,7 @@ auto EntryFormat::operator()(
   const eagine::identifier i) noexcept -> result_type {
     _arg.clear();
     _arg.append("<b>");
-    eagine::append_to(_arg, i.name().view());
+    eagine::append_to(i.name().view(), _arg);
     _arg.append("</b>");
     return {{_arg}};
 }
@@ -30,9 +30,9 @@ auto EntryFormat::operator()(
   const eagine::identifier,
   const eagine::message_id& m) noexcept -> result_type {
     _arg.clear();
-    eagine::append_to(_arg, m.class_().name().view());
+    eagine::append_to(m.class_().name().view(), _arg);
     _arg.append(".");
-    eagine::append_to(_arg, m.method().name().view());
+    eagine::append_to(m.method().name().view(), _arg);
     return {{_arg}};
 }
 //------------------------------------------------------------------------------

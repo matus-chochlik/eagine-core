@@ -11,6 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.valid_if;
+import eagine.core.utility;
 export import :entry_arg;
 import :backend;
 import <sstream>;
@@ -828,6 +829,42 @@ private:
     logger_instance_id _instance_id{};
     logger_backend* _backend{nullptr};
     const log_event_severity _severity{log_event_severity::info};
+};
+//------------------------------------------------------------------------------
+/// @brief Class controlling how often are quickly repeating messages logged.
+/// @ingroup logging
+/// @see logger
+///
+/// Class which can be used with the log_error, log_warning, etc. functions
+/// of a logger instance and it is typically associated with a single log
+/// message that can be logged very often. This class ensures that the message
+/// is actually written into the log only in increasing time intervals.
+export class repeating_log_entry_control {
+public:
+    template <typename R, typename P>
+    repeating_log_entry_control(
+      const std::chrono::duration<R, P>& interval) noexcept
+      : _orig_interval{interval}
+      , _should_be_logged{_orig_interval, nothing} {}
+
+    auto should_be_logged() const noexcept -> bool {
+        return _should_be_logged.is_expired();
+    }
+
+    auto was_logged() noexcept -> repeating_log_entry_control& {
+        _should_be_logged.reset(_should_be_logged.period() * 2);
+        return *this;
+    }
+
+    /// @brief Resets the timeout on the associated repeating log entry.
+    auto reset() noexcept -> repeating_log_entry_control& {
+        _should_be_logged.reset(_orig_interval, nothing);
+        return *this;
+    }
+
+private:
+    const timeout::duration_type _orig_interval;
+    timeout _should_be_logged;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

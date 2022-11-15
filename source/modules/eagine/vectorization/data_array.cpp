@@ -35,21 +35,6 @@ struct data_array {
     using type = data_array;
     using param_t = data_array_param_t<T, N>;
 
-    constexpr data_array() = default;
-
-    template <does_not_hide<data_array> P>
-    constexpr data_array(P&& p) noexcept
-        requires((N == 1) && (std::is_convertible_v<P, T>))
-      : _v{T(std::forward<P>(p))} {}
-
-    template <typename P1, typename P2, typename... Pn>
-    constexpr data_array(P1&& p1, P2&& p2, Pn&&... pn) noexcept
-        requires((sizeof...(Pn) + 2) == N)
-      : _v{
-          T(std::forward<P1>(p1)),
-          T(std::forward<P2>(p2)),
-          T(std::forward<Pn>(pn))...} {}
-
     constexpr auto operator<=>(const data_array&) const noexcept = default;
     constexpr auto operator==(const data_array&) const noexcept
       -> bool = default;

@@ -84,8 +84,8 @@ const auto conversion_def =
   (numeric_literal >> "deg")[([](auto& c) {
       _val(c) = ((parsed_number_t(math::pi) * _attr(c)) / parsed_number_t(180));
   })] |
-  (numeric_literal >> "turn")[(
-    [](auto& c) { _val(c) = (parsed_number_t(2 * math::pi) * _attr(c)); })];
+  (numeric_literal >>
+   "turn")[([](auto& c) { _val(c) = (parsed_number_t(math::tau) * _attr(c)); })];
 //------------------------------------------------------------------------------
 struct numeric_constant_tag;
 // NOLINTNEXTLINE(cert-err58-cpp)

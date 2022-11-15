@@ -26,7 +26,7 @@ auto main_ctx::_single_ptr() noexcept -> main_ctx*& {
     return the_ptr;
 }
 //------------------------------------------------------------------------------
-main_ctx::main_ctx(main_ctx_getters& src) noexcept
+main_ctx::main_ctx(main_ctx_getters& src)
   : _instance_id{src.instance_id()}
   , _source{src}
   , _default_alloc{src.default_allocator()}
@@ -41,6 +41,7 @@ main_ctx::main_ctx(main_ctx_getters& src) noexcept
   , _app_config{src.config()}
   , _sys_info{src.system()}
   , _usr_info{src.user()}
+  , _buffers{src.buffers()}
   , _scratch_space{src.scratch_space()}
   , _compressor{src.compressor()}
   , _workers{src.workers()}

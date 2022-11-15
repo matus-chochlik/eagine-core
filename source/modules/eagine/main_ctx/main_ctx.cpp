@@ -39,7 +39,7 @@ namespace eagine {
 /// throughout the system.
 export class main_ctx : public main_ctx_getters {
 public:
-    main_ctx(main_ctx_getters&) noexcept;
+    main_ctx(main_ctx_getters&);
 
     /// @brief Not move constructible.
     main_ctx(main_ctx&&) = delete;
@@ -140,6 +140,10 @@ public:
         return _workers;
     };
 
+    auto buffers() noexcept -> memory::buffer_pool& final {
+        return _buffers;
+    }
+
     auto scratch_space() noexcept -> memory::buffer& final {
         return _scratch_space;
     }
@@ -170,6 +174,7 @@ private:
     application_config& _app_config;
     system_info& _sys_info;
     user_info& _usr_info;
+    memory::buffer_pool& _buffers;
     memory::buffer& _scratch_space;
     data_compressor& _compressor;
     workshop& _workers;

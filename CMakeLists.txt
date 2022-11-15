@@ -12,7 +12,7 @@ endif()
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
 file(STRINGS VERSION EAGINE_VERSION)
 
-include(EAGineCoreCommon)
+include(EAGineCoreCommonBasic)
 include(EAGineCppFeature)
 
 find_package(Threads REQUIRED)
@@ -22,6 +22,7 @@ find_package(EAGineZLIB)
 find_package(EAGineBoostSpirit)
 find_package(EAGineStacktrace)
 
+include(EAGineCoreCommonFinish)
 include(EAGineOSInfo)
 include(EAGineGitInfo)
 

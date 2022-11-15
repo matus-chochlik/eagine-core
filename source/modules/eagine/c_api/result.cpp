@@ -13,6 +13,7 @@ export module eagine.core.c_api:result;
 
 import eagine.core.concepts;
 import eagine.core.types;
+import eagine.core.utility;
 import <stdexcept>;
 import <type_traits>;
 import <utility>;
@@ -525,21 +526,21 @@ class combined_result : public result<Result, Info, result_validity::maybe> {
     using base = result<Result, Info, result_validity::maybe>;
 
 public:
-    combined_result(result<Result, Info, result_validity::never> src)
+    constexpr combined_result() noexcept = default;
+
+    template <typename SrcInfo>
+    combined_result(result<Result, SrcInfo, result_validity::never> src)
       : base{} {
-        static_cast<Info&>(*this) = static_cast<Info&&>(src);
+        static_cast<Info&>(*this) = static_cast<SrcInfo&&>(src);
     }
 
-    combined_result(result<Result, Info> src)
+    template <typename SrcInfo, result_validity validity>
+    combined_result(result<Result, SrcInfo, validity> src)
       : base{
-          extract(
-            static_cast<result_value<Result, result_validity::always>&&>(src)),
+          extract(static_cast<result_value<Result, validity>&&>(src)),
           src.is_valid()} {
-        static_cast<Info&>(*this) = static_cast<Info&&>(src);
+        static_cast<Info&>(*this) = static_cast<SrcInfo&&>(src);
     }
-
-    combined_result(result<Result, Info, result_validity::maybe> src)
-      : base{std::move(src)} {}
 };
 //------------------------------------------------------------------------------
 export template <typename Info>
@@ -548,22 +549,18 @@ class combined_result<void, Info>
     using base = result<void, Info, result_validity::maybe>;
 
 public:
-    template <typename R>
-    combined_result(const result<R, Info, result_validity::never>& src)
+    constexpr combined_result() noexcept = default;
+
+    template <typename R, typename SrcInfo>
+    combined_result(const result<R, SrcInfo, result_validity::never>& src)
       : base{} {
-        static_cast<Info&>(*this) = static_cast<const Info&>(src);
+        static_cast<Info&>(*this) = static_cast<const SrcInfo&>(src);
     }
 
-    template <typename R>
-    combined_result(const result<R, Info>& src)
+    template <typename R, typename SrcInfo, result_validity validity>
+    combined_result(const result<R, SrcInfo, validity>& src)
       : base{src.is_valid()} {
-        static_cast<Info&>(*this) = static_cast<const Info&>(src);
-    }
-
-    template <typename R>
-    combined_result(const result<R, Info, result_validity::maybe>& src)
-      : base{src.is_valid()} {
-        static_cast<Info&>(*this) = static_cast<const Info&>(src);
+        static_cast<Info&>(*this) = static_cast<const SrcInfo&>(src);
     }
 };
 //------------------------------------------------------------------------------

@@ -129,7 +129,7 @@ public:
 private:
     auto _cat(const string_view l, const string_view r) noexcept
       -> const std::string& {
-        return append_to(assign_to(_config_name, l), r);
+        return append_to(r, assign_to(l, _config_name));
     }
 
     auto _cat(
@@ -138,7 +138,7 @@ private:
       const string_view c,
       const string_view d) noexcept -> const std::string& {
         return append_to(
-          append_to(append_to(assign_to(_config_name, a), b), c), d);
+          d, append_to(c, append_to(b, assign_to(a, _config_name))));
     }
 
     auto _find_config_of(

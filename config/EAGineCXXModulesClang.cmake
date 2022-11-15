@@ -130,7 +130,7 @@ function(eagine_add_module_common_properties TARGET_NAME)
 	set_property(
 		TARGET ${TARGET_NAME}
 		APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
-		"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions"
+		"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions;-Wno-c++2b-extensions"
 	)
 	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 		set_property(

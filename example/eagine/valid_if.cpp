@@ -6,14 +6,8 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <iostream>;
-#else
-#include <eagine/valid_if/filesystem.hpp>
-#include <eagine/valid_if/positive.hpp>
-#include <iostream>
-#endif
 
 auto main(int argc, const char** argv) -> int {
     int i = 0;

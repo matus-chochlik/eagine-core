@@ -442,7 +442,34 @@ class XmlLogFormatter(object):
         return self._ttyBoldWhite() + result + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatValueBar(self, inst, mn, x, mx, width, progress):
+    def _formatValueBar(self, mn, x, mx, width):
+        try: coef = (x - mn) / (mx - mn)
+        except ZeroDivisionError:
+            coef = 0.0
+        pos = coef * float(width)
+        cnt = int(pos)
+
+        i = 0
+        result = "│"
+        while i < cnt:
+            result += "█"
+            i += 1
+
+        if i < width:
+            parts = [" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█"]
+            result += parts[int(9 * (pos - float(cnt)))]
+            i += 1
+
+        while i < width:
+            result += " "
+            i += 1
+
+        result += "│"
+
+        return result
+
+    # --------------------------------------------------------------------------
+    def _formatProgress(self, inst, mn, x, mx, width, progress):
         try: progress_begin = self._progress_info[inst]
         except KeyError:
             progress_begin = self._progress_info[inst] = time.time()
@@ -672,6 +699,11 @@ class XmlLogFormatter(object):
     # --------------------------------------------------------------------------
     def addInterval(self, srcid, interval, info):
         with self._lock:
+            mn = interval.minDuration()
+            av = interval.avgDuration()
+            mx = interval.maxDuration()
+            hc = interval.hitCount()
+
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
@@ -701,19 +733,33 @@ class XmlLogFormatter(object):
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ├─min duration: %s\n" % formatRelTime(interval.minDuration()))
+            self.write(" ├─min duration: %s\n" % formatRelTime(mn))
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ├─avg duration: %s\n" % formatRelTime(interval.avgDuration()))
+            self.write(" ├─avg duration: %s\n" % formatRelTime(av))
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ├─max duration: %s\n" % formatRelTime(interval.maxDuration()))
+            self.write(" ├─max duration: %s\n" % formatRelTime(mx))
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ╰╴hit count: %d\n" % interval.hitCount())
+            self.write(" ├─linear distr:%s\n" % self._formatValueBar(
+                mn, av, mx,
+                70-len(self._sources)*2))
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ├─log 10 distr:%s\n" % self._formatValueBar(
+                math.log10(mn),
+                math.log10(av),
+                math.log10(mx),
+                70-len(self._sources)*2))
+            self.write("┊")
+            for sid in self._sources:
+                self.write(" │")
+            self.write(" ╰╴hit count: %s\n" % self._formatInteger(hc))
             self._out.flush()
 
     # --------------------------------------------------------------------------
@@ -889,7 +935,7 @@ class XmlLogFormatter(object):
                         self.write(": ")
                         if value["min"] is not None and value["max"] is not None:
                             self.write(
-                                self._formatValueBar(
+                                self._formatProgress(
                                     instance,
                                     float(value["min"]),
                                     float(value["value"]),
@@ -1167,7 +1213,8 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                     "instance": key[0],
                     "tag": key[1]
                 }
-                self._formatter.addInterval(self._srcid, interval, iarg)
+                if self._formatter.isVisible(iarg):
+                    self._formatter.addInterval(self._srcid, interval, iarg)
             self._formatter.addLoggerInfos(self._srcid, self._loggers)
             self._formatter.finishLog(self._srcid)
         elif tag == "m":

@@ -5,20 +5,11 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <iostream>;
 import <functional>;
 import <random>;
 import <vector>;
-#else
-#include <eagine/memory/span_algo.hpp>
-#include <eagine/network_sorter.hpp>
-#include <eagine/span.hpp>
-#include <iostream>
-#include <random>
-#include <vector>
-#endif
 
 auto main() -> int {
     using namespace eagine;

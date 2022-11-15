@@ -296,14 +296,14 @@ auto join(
 
     auto fill = [&res, sep](const element& elem, bool first) {
         if(!first) {
-            append_to(res, sep);
+            append_to(sep, res);
         }
         res.append(elem.value_data(), integer(elem.value_size()));
     };
     for_each_elem(list, fill);
 
     if(trail_sep) {
-        append_to(res, sep);
+        append_to(sep, res);
     }
     assert(res.size() == std_size(len));
 

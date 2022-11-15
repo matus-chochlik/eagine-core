@@ -22,9 +22,6 @@ namespace eagine {
 /// @see data_compressor
 export class packed_block_data_sink : public block_data_sink {
 public:
-    /// @brief Default constructor.
-    packed_block_data_sink() noexcept = default;
-
     /// @brief Constructor setting the backing block and data compressor.
     packed_block_data_sink(
       data_compressor compressor,
@@ -32,22 +29,19 @@ public:
       : block_data_sink{dst}
       , _compressor{std::move(compressor)} {}
 
-    packed_block_data_sink(const memory::block dst) noexcept
-      : packed_block_data_sink{{}, dst} {}
-
     packed_block_data_sink(data_compressor compressor) noexcept
       : packed_block_data_sink{std::move(compressor), {}} {}
 
     auto finalize() noexcept -> serialization_errors final {
-        if(const auto packed{
-             _compressor.compress(done(), data_compression_level::normal)}) {
+        if(const auto packed{_compressor.default_compress(
+             done(), data_compression_level::normal)}) {
             return this->replace_with(packed);
         }
         return {serialization_error_code::backend_error};
     }
 
 private:
-    data_compressor _compressor{};
+    data_compressor _compressor;
 };
 //------------------------------------------------------------------------------
 /// @brief Unpacking deserialization data source backed by a pre-allocated memory block.
@@ -56,9 +50,6 @@ private:
 /// @see data_compressor
 export class packed_block_data_source : public block_data_source {
 public:
-    /// @brief Default constructor.
-    packed_block_data_source() noexcept = default;
-
     /// @brief Constructor setting the backing block and data compressor.
     packed_block_data_source(
       data_compressor compressor,
@@ -67,18 +58,15 @@ public:
         reset(src);
     }
 
-    packed_block_data_source(const memory::const_block src) noexcept
-      : packed_block_data_source{{}, src} {}
-
     packed_block_data_source(data_compressor compressor) noexcept
       : packed_block_data_source{std::move(compressor), {}} {}
 
     void reset(const memory::const_block src) {
-        block_data_source::reset(_compressor.decompress(src));
+        block_data_source::reset(_compressor.default_decompress(src));
     }
 
 private:
-    data_compressor _compressor{};
+    data_compressor _compressor;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

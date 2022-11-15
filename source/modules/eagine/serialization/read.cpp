@@ -131,7 +131,7 @@ struct deserializer<std::string> : plain_deserializer<std::string> {};
 //------------------------------------------------------------------------------
 export template <typename T>
 struct structural_deserializer {
-    auto read(T& value, auto& backend) const {
+    auto read(T& value, auto& backend) {
         auto temp{T::make_structure()};
         const auto errors{_deserializer.read(temp, backend)};
         if(!errors) [[likely]] {
@@ -199,7 +199,7 @@ struct deserializer<std::tuple<T...>> : common_deserializer<std::tuple<T...>> {
 
     using common_deserializer<std::tuple<T...>>::read;
 
-    auto read(std::tuple<T...>& values, auto& backend) const noexcept {
+    auto read(std::tuple<T...>& values, auto& backend) noexcept {
         deserialization_errors errors{};
         span_size_t elem_count{0};
         errors |= backend.begin_list(elem_count);
@@ -223,7 +223,7 @@ private:
       deserialization_errors& errors,
       Tuple& values,
       Backend& backend,
-      const std::index_sequence<I...>) const noexcept {
+      const std::index_sequence<I...>) noexcept {
         (...,
          _read_element(
            errors,
@@ -233,17 +233,17 @@ private:
            std::get<I>(_deserializers)));
     }
 
-    template <typename Elem, typename Backend, typename Serializer>
+    template <typename Elem, typename Backend, typename Deserializer>
     static void _read_element(
       deserialization_errors& errors,
       const std::size_t index,
       Elem& elem,
       Backend& backend,
-      Serializer& serial) noexcept {
+      Deserializer& deserial) noexcept {
         if(!errors) [[likely]] {
             errors |= backend.begin_element(span_size(index));
             if(!errors) [[likely]] {
-                errors |= serial.read(elem, backend);
+                errors |= deserial.read(elem, backend);
                 errors |= backend.finish_element(span_size(index));
             }
         }

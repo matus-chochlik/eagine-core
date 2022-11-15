@@ -14,6 +14,8 @@ export module eagine.core.value_tree:implementation;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.string;
+import eagine.core.utility;
 import eagine.core.logging;
 import :interface;
 import :wrappers;
@@ -22,6 +24,158 @@ import <memory>;
 import <vector>;
 
 namespace eagine::valtree {
+//------------------------------------------------------------------------------
+/// @brief Class handling value tree stream input.
+/// @ingroup valtree
+export class value_tree_stream_input {
+public:
+    value_tree_stream_input(
+      std::unique_ptr<value_tree_stream_parser> impl) noexcept
+      : _pimpl{std::move(impl)} {
+        _pimpl->begin();
+    }
+
+    value_tree_stream_input(value_tree_stream_input&&) noexcept = default;
+    value_tree_stream_input(const value_tree_stream_input&) = delete;
+    auto operator=(value_tree_stream_input&&) noexcept
+      -> value_tree_stream_input& = default;
+    auto operator=(const value_tree_stream_input&) = delete;
+
+    ~value_tree_stream_input() noexcept {
+        if(_pimpl) {
+            _pimpl->finish();
+        }
+    }
+
+    /// @brief Indicates if this stream input object is in a valid state.
+    /// @see consume_data
+    explicit operator bool() const noexcept {
+        return bool(_pimpl);
+    }
+
+    /// @brief Consumes the next chunk of stream binary data.
+    /// @see consume_text
+    /// @see finish
+    ///
+    /// If the return value is true then the next chunk can be consumed,
+    /// otherwise no further data should be provided and finish should be called.
+    auto consume_data(const memory::const_block data) noexcept -> bool {
+        assert(_pimpl);
+        return _pimpl->parse_data(data);
+    }
+
+    /// @brief Consumes the next chunk of stream text data.
+    /// @see consume_data
+    /// @see finish
+    ///
+    /// If the return value is true then the next chunk can be consumed,
+    /// otherwise no further data should be provided and finish should be called.
+    auto consume_text(const memory::string_view data) noexcept -> bool {
+        assert(_pimpl);
+        return _pimpl->parse_data(memory::as_bytes(data));
+    }
+
+    /// @brief Finishes the consumption on input data.
+    /// @see consume_data
+    /// @see consume_text
+    auto finish() noexcept -> bool {
+        if(_pimpl) {
+            const bool result{_pimpl->finish()};
+            _pimpl.reset();
+            return result;
+        }
+        return false;
+    }
+
+    /// @brief Alias for the data handler callable type.
+    using data_handler = callable_ref<bool(memory::const_block) noexcept>;
+
+    /// @brief Returns the callable that can consume stream data.
+    /// @see consume_data
+    auto get_handler() noexcept -> data_handler {
+        assert(_pimpl);
+        return make_callable_ref<&value_tree_stream_parser::parse_data>(
+          _pimpl.get());
+    }
+
+private:
+    std::unique_ptr<value_tree_stream_parser> _pimpl;
+};
+//------------------------------------------------------------------------------
+export template <typename Derived>
+struct value_tree_visitor_impl : value_tree_visitor {
+    auto derived() noexcept -> Derived& {
+        return *static_cast<Derived*>(this);
+    }
+
+    void consume(span<const nothing_t> data) noexcept final {
+        derived().do_consume(data);
+    }
+    void consume(span<const bool> data) noexcept final {
+        derived().do_consume(data);
+    }
+    void consume(span<const std::int64_t> data) noexcept final {
+        derived().do_consume(data);
+    }
+    void consume(span<const std::uint64_t> data) noexcept final {
+        derived().do_consume(data);
+    }
+    void consume(span<const float> data) noexcept final {
+        derived().do_consume(data);
+    }
+    void consume(span<const double> data) noexcept final {
+        derived().do_consume(data);
+    }
+    void consume(span<const string_view> data) noexcept final {
+        derived().do_consume(data);
+    }
+};
+//------------------------------------------------------------------------------
+export template <typename Derived>
+struct object_builder_impl : object_builder {
+    auto derived() noexcept -> Derived& {
+        return *static_cast<Derived*>(this);
+    }
+
+    void add(
+      const basic_string_path& path,
+      const span<const nothing_t> data) noexcept final {
+        derived().do_add(path, data);
+    }
+    void add(const basic_string_path& path, span<const bool> data) noexcept
+      final {
+        derived().do_add(path, data);
+    }
+    void add(
+      const basic_string_path& path,
+      span<const std::int64_t> data) noexcept final {
+        derived().do_add(path, data);
+    }
+    void add(
+      const basic_string_path& path,
+      span<const std::uint64_t> data) noexcept final {
+        derived().do_add(path, data);
+    }
+    void add(const basic_string_path& path, span<const float> data) noexcept
+      final {
+        derived().do_add(path, data);
+    }
+    void add(const basic_string_path& path, span<const double> data) noexcept
+      final {
+        derived().do_add(path, data);
+    }
+    void add(
+      const basic_string_path& path,
+      span<const string_view> data) noexcept final {
+        derived().do_add(path, data);
+    }
+};
+//------------------------------------------------------------------------------
+export auto traverse_json_stream(
+  std::shared_ptr<value_tree_visitor>,
+  span_size_t max_token_size,
+  memory::buffer_pool&,
+  const logger& parent) -> value_tree_stream_input;
 //------------------------------------------------------------------------------
 template <typename Derived>
 class compound_implementation : public compound_interface {
@@ -213,6 +367,11 @@ export auto from_json_text(
   does_not_hide<logger> auto& parent) -> compound {
     return from_json_text(json_text, parent.log());
 }
+//------------------------------------------------------------------------------
+/// @brief Creates a compound from a collection of consecutive JSON data block
+/// @ingroup valtree
+export auto from_json_data(span<const memory::const_block>, const logger&)
+  -> compound;
 //------------------------------------------------------------------------------
 /// @brief Creates a compound from a YAML text string view.
 /// @ingroup valtree

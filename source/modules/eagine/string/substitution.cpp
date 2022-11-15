@@ -126,15 +126,15 @@ auto substitute_variable_into(
               (src[npos - 1] == opts.opening_bracket) &&
               (src[npos - 2] == opts.leading_sign) &&
               (src[npos + name.size()] == opts.closing_bracket)) {
-                append_to(dst, head(src, npos - 2));
-                append_to(dst, value);
+                append_to(head(src, npos - 2), dst);
+                append_to(value, dst);
                 src = skip(src, safe_add(npos, name.size(), 1));
             } else {
-                append_to(dst, head(src, safe_add(npos, name.size())));
+                append_to(head(src, safe_add(npos, name.size())), dst);
                 src = skip(src, safe_add(npos, name.size()));
             }
         } else {
-            append_to(dst, src);
+            append_to(src, dst);
             src.reset();
         }
     } while(!src.empty());
@@ -150,36 +150,36 @@ auto substitute_variables_into(
 
     do {
         if(const auto lpos{find_element(src, opts.leading_sign)}) {
-            append_to(dst, head(src, lpos.value()));
+            append_to(head(src, lpos.value()), dst);
             src = skip(src, lpos.value());
 
             if(const auto inner{slice_inside_brackets(
                  src, opts.opening_bracket, opts.closing_bracket)}) {
 
                 if(const auto translation{translate(inner)}) {
-                    append_to(dst, translation.value());
+                    append_to(translation.value(), dst);
                 } else {
                     if(find_element(inner, opts.leading_sign)) {
                         std::string temp;
                         substitute_variables_into(temp, inner, translate, opts);
                         if(const auto translation2 = translate(temp)) {
-                            append_to(dst, translation2.value());
+                            append_to(translation2.value(), dst);
                         } else if(opts.keep_untranslated) {
                             append_to(
-                              dst, head(src, safe_add(inner.size(), 3)));
+                              head(src, safe_add(inner.size(), 3)), dst);
                         }
                     } else if(opts.keep_untranslated) {
-                        append_to(dst, head(src, safe_add(inner.size(), 3)));
+                        append_to(head(src, safe_add(inner.size(), 3)), dst);
                     }
                 }
                 src = skip(src, safe_add(inner.size(), 3));
             } else {
-                append_to(dst, head(src, 3));
+                append_to(head(src, 3), dst);
                 src = skip(src, 3);
             }
 
         } else {
-            append_to(dst, src);
+            append_to(src, dst);
             src.reset();
         }
     } while(!src.empty());

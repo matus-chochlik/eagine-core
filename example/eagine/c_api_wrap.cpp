@@ -5,19 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <iostream>;
-#else
-#include <eagine/config/platform.hpp>
-#include <eagine/c_api/adapted_function.hpp>
-#include <eagine/c_api_wrap.hpp>
-#include <eagine/extract.hpp>
-#include <eagine/hexdump.hpp>
-#include <eagine/memory/block.hpp>
-#include <eagine/memory/span_algo.hpp>
-#include <iostream>
-#endif
 
 #if __has_include(<fcntl.h>) && \
 	__has_include(<sys/types.h>) && \

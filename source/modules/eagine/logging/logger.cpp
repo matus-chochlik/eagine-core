@@ -139,12 +139,33 @@ protected:
           source, instance_id(), severity, format, _entry_backend(severity)};
     }
 
+    auto make_log_entry(
+      repeating_log_entry_control& control,
+      const identifier source,
+      const log_event_severity severity,
+      const string_view format) const noexcept -> log_entry {
+        logger_backend* entry_backend{nullptr};
+        if(control.should_be_logged()) [[unlikely]] {
+            entry_backend = _entry_backend(severity);
+            control.was_logged();
+        }
+        return {source, instance_id(), severity, format, entry_backend};
+    }
+
     constexpr auto log_fatal(const identifier source, const string_view format)
       const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::fatal>{},
           format);
+    }
+
+    constexpr auto log_fatal(
+      repeating_log_entry_control& control,
+      const identifier source,
+      const string_view format) const noexcept {
+        return make_log_entry(
+          control, source, log_event_severity::fatal, format);
     }
 
     constexpr auto log_error(const identifier source, const string_view format)
@@ -155,6 +176,14 @@ protected:
           format);
     }
 
+    constexpr auto log_error(
+      repeating_log_entry_control& control,
+      const identifier source,
+      const string_view format) const noexcept {
+        return make_log_entry(
+          control, source, log_event_severity::error, format);
+    }
+
     constexpr auto log_warning(
       const identifier source,
       const string_view format) const noexcept {
@@ -162,6 +191,14 @@ protected:
           source,
           log_event_severity_constant<log_event_severity::warning>{},
           format);
+    }
+
+    constexpr auto log_warning(
+      repeating_log_entry_control& control,
+      const identifier source,
+      const string_view format) const noexcept {
+        return make_log_entry(
+          control, source, log_event_severity::warning, format);
     }
 
     constexpr auto log_info(const identifier source, const string_view format)
@@ -328,10 +365,24 @@ public:
         base::set_description(_object_id, display_name, description);
     }
 
+    /// @brief Create a log message entry with specified severity and format.
+    auto log(const log_event_severity severity, const string_view format)
+      const noexcept {
+        return base::make_log_entry(_object_id, severity, format);
+    }
+
     /// @brief Create a log message entry for fatal error, with specified format.
     /// @see log_event_severity
     auto log_fatal(const string_view format) const noexcept {
         return base::log_fatal(_object_id, format);
+    }
+
+    /// @brief Create a log message entry for fatal error, with specified format.
+    /// @see log_event_severity
+    auto log_fatal(
+      repeating_log_entry_control& control,
+      const string_view format) const noexcept {
+        return base::log_fatal(control, _object_id, format);
     }
 
     /// @brief Create a log message entry for error, with specified format.
@@ -340,10 +391,26 @@ public:
         return base::log_error(_object_id, format);
     }
 
+    /// @brief Create a log message entry for error, with specified format.
+    /// @see log_event_severity
+    auto log_error(
+      repeating_log_entry_control& control,
+      const string_view format) const noexcept {
+        return base::log_error(control, _object_id, format);
+    }
+
     /// @brief Create a log message entry for warning, with specified format.
     /// @see log_event_severity
     auto log_warning(const string_view format) const noexcept {
         return base::log_warning(_object_id, format);
+    }
+
+    /// @brief Create a log message entry for warning, with specified format.
+    /// @see log_event_severity
+    auto log_warning(
+      repeating_log_entry_control& control,
+      const string_view format) const noexcept {
+        return base::log_warning(control, _object_id, format);
     }
 
     /// @brief Create a log message entry for information, with specified format.
@@ -403,9 +470,9 @@ public:
       const identifier series,
       const tagged_quantity<T, U>& qty) const noexcept
       -> const named_logging_object& requires(std::is_convertible_v<T, float>) {
-                                         log_chart_sample(series, qty.value());
-                                         return *this;
-                                     }
+          log_chart_sample(series, qty.value());
+          return *this;
+      }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename P>
@@ -528,9 +595,9 @@ public:
       const identifier series,
       const tagged_quantity<T, U>& qty) noexcept
       -> const logger& requires(std::is_convertible_v<T, float>) {
-                           log_chart_sample(series, qty.value());
-                           return *this;
-                       }
+          log_chart_sample(series, qty.value());
+          return *this;
+      }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
     template <typename T, typename P>

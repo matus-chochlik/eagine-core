@@ -42,9 +42,28 @@ auto embed(string_view src_path) noexcept -> embedded_resource {
 
 auto search_embedded_resource(identifier_t) noexcept -> embedded_resource;
 
+/// @brief Class that can be used for searching of embedded resources.
+/// @ingroup embedding
+/// @see embedded_resource
 export class embedded_resource_loader {
 public:
-    auto search(identifier_value) noexcept -> embedded_resource;
+    /// @brief Searches embedded resource with the specified id.
+    auto search(identifier_value id) noexcept -> embedded_resource;
+
+    /// @brief Indicates if a resource with the specified id is embedded.
+    auto has_resource(identifier_value id) noexcept -> bool;
+
+    /// @brief Lists the ids of all available embedded resources.
+    auto resource_ids() noexcept -> span<const identifier_t>;
+
+    /// @brief Calls a function for each embedded resource.
+    /// The functions must take a single embedded_resource argument.
+    template <typename Func>
+    void for_each(const Func& func) {
+        for(const auto res_id : resource_ids()) {
+            func(search(res_id));
+        }
+    }
 
 private:
     shared_executable_module _self{nothing, module_load_option::load_lazy};

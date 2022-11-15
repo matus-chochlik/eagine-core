@@ -7,6 +7,7 @@ eagine_add_module(
 	IMPORTS
 		eagine.core.concepts
 		eagine.core.types
+		eagine.core.utility
 )
 
 eagine_add_module(

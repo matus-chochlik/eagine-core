@@ -71,6 +71,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
+		eagine.core.container
 		eagine.core.valid_if
 		eagine.core.runtime
 		eagine.core.logging
@@ -121,6 +122,7 @@ eagine_add_module(
 		main_ctx_impl
 		main_impl
 	IMPORTS
+		eagine.core.build_config
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier

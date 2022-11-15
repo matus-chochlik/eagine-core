@@ -18,6 +18,7 @@ import eagine.core.vectorization;
 import :traits;
 import :scalar;
 import <cmath>;
+import <concepts>;
 import <type_traits>;
 import <utility>;
 
@@ -84,19 +85,12 @@ struct vector {
         return r;
     }
 
-    template <typename P>
-    static constexpr auto make(P&& p) noexcept
-        requires((N == 1) && (std::is_convertible_v<P, T>))
-    {
-        return vector{{T(std::forward<P>(p))}};
-    }
-
     /// @brief Creates vector instance with the specified elements.
-    template <typename... P>
+    template <std::convertible_to<T>... P>
     static constexpr auto make(P&&... p) noexcept
-        requires((N > 1) && (sizeof...(P) == N))
+        requires(sizeof...(P) == N)
     {
-        return vector{{T(std::forward<P>(p))...}};
+        return vector{T(std::forward<P>(p))...};
     }
 
     /// @brief Creates vector instance from vector of another dimension.

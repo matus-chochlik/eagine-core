@@ -114,11 +114,51 @@ public:
     }
 
     /// @brief Comparison.
+    /// @see like
     auto operator<=>(const basic_string_path& that) const noexcept {
         return _str.compare(that._str);
     }
 
     auto operator==(const basic_string_path&) const noexcept -> bool = default;
+
+    static auto elements_match(
+      const string_view elem,
+      const string_view patt) noexcept -> bool {
+        return (elem == patt) || (patt == string_view{"*"});
+    }
+
+    /// @brief Tests if this path matches a pattern.
+    /// @see starts_with
+    auto like(const basic_string_path& pattern) const noexcept -> bool {
+        if(size() != pattern.size()) {
+            return false;
+        }
+        auto tp{begin()};
+        auto pp{pattern.begin()};
+        while(tp != end() && pp != pattern.end()) {
+            if(!elements_match(*tp, *pp)) {
+                return false;
+            }
+            ++tp;
+            ++pp;
+        }
+        return true;
+    }
+
+    /// @brief Tests if the beginning of this path matches a pattern.
+    /// @see like
+    auto starts_with(const basic_string_path& pattern) const noexcept -> bool {
+        auto tp{begin()};
+        auto pp{pattern.begin()};
+        while(tp != end() && pp != pattern.end()) {
+            if(!elements_match(*tp, *pp)) {
+                return false;
+            }
+            ++tp;
+            ++pp;
+        }
+        return tp == end();
+    }
 
     /// @brief Concatenates two paths.
     friend auto operator+(
@@ -175,6 +215,21 @@ public:
         return string_list::back_value(_str);
     }
 
+    /// @brief Indicates if the path starts with the specified entry.
+    auto starts_with(const string_view entry) const noexcept -> bool {
+        return !empty() && (front() == entry);
+    }
+
+    /// @brief Indicates if the path ends with the specified entry.
+    auto ends_with(const string_view entry) const noexcept -> bool {
+        return !empty() && (back() == entry);
+    }
+
+    /// @brief Indicates if the path has a single specified entry.
+    auto is(const string_view entry) const noexcept -> bool {
+        return (size() == 1) && (back() == entry);
+    }
+
     /// @brief Appends a new element with the specified name to the end.
     /// @see pop_back
     void push_back(const string_view name) {
@@ -183,16 +238,27 @@ public:
     }
 
     void push_back_elem(const string_list::element& elem) noexcept {
-        append_to(_str, elem);
+        append_to(elem, _str);
         ++_size;
     }
 
     /// @brief Removes a single element from the end of this path.
     /// @see push_back
+    /// @see parent
     void pop_back() noexcept {
         assert(!empty());
         _str.resize(integer(string_list::pop_back(_str).size()));
         --_size;
+    }
+
+    /// @brief Returns a new path that is a copy of this without the last n elements.
+    /// @see pop_back
+    auto parent(span_size_t n = 1) const noexcept {
+        basic_string_path result{*this};
+        while((n-- > 0) && !empty()) {
+            result.pop_back();
+        }
+        return result;
     }
 
     /// @brief Returns an iterator pointing to the start of the path.
@@ -224,6 +290,13 @@ public:
     auto rend() const noexcept -> reverse_iterator {
         return empty() ? reverse_iterator(nullptr)
                        : reverse_iterator(_str.data() - 1);
+    }
+
+    auto operator[](span_size_t idx) const noexcept -> iterator::reference {
+        assert(idx < size());
+        auto it{begin()};
+        std::advance(it, idx);
+        return *it;
     }
 
     /// @brief Calls the specified function for each element of this path.

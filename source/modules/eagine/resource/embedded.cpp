@@ -19,7 +19,7 @@ import eagine.core.runtime;
 import eagine.core.main_ctx;
 
 namespace eagine {
-
+//------------------------------------------------------------------------------
 /// @brief Class providing access to a const resource block embedded into the executable.
 /// @ingroup embedding
 /// @see embed
@@ -62,15 +62,23 @@ public:
         return _res_blk;
     }
 
+    /// @brief Unpacks and appends this resource into a buffer using the provided compressor.
+    /// @see fetch
+    /// @see is_packed
+    auto append_to(data_compressor& comp, memory::buffer& buf) const
+      -> memory::const_block {
+        if(is_packed()) {
+            return {comp.decompress(_res_blk, buf)};
+        }
+        return memory::append_to(_res_blk, buf);
+    }
+
     /// @brief Unpacks this resource into a buffer using the provided compressor.
     /// @see fetch
     /// @see is_packed
     auto unpack(data_compressor& comp, memory::buffer& buf) const
       -> memory::const_block {
-        if(is_packed()) {
-            return {comp.decompress(_res_blk, buf)};
-        }
-        return copy_into(_res_blk, buf);
+        return append_to(comp, buf.clear());
     }
 
     /// @brief Unpacks this resource into a buffer using compressor from main context.
@@ -83,8 +91,42 @@ public:
     /// @brief Unpacks this resource using compressor from a main context object.
     /// @see fetch
     /// @see is_packed
+    /// @see make_unpacker
     auto unpack(main_ctx_object& mco) const -> memory::const_block {
         return unpack(mco.main_context());
+    }
+
+    /// @brief Creates an object that can unpack the resource per-partes.
+    /// @see unpack
+    auto make_unpacker(
+      memory::buffer_pool& buffers,
+      block_stream_decompression::data_handler handler,
+      span_size_t chunk_size = block_stream_decompression::default_chunk_size())
+      const -> block_stream_decompression {
+        const auto [method, input]{
+          data_compression_method_from_header(embedded_block())};
+        return {
+          data_compressor{method, buffers}, handler, method, input, chunk_size};
+    }
+
+    /// @brief Creates an object that can unpack the resource per-partes.
+    /// @see unpack
+    auto make_unpacker(
+      main_ctx& ctx,
+      block_stream_decompression::data_handler handler,
+      span_size_t chunk_size = block_stream_decompression::default_chunk_size())
+      const -> block_stream_decompression {
+        return make_unpacker(ctx.buffers(), handler, chunk_size);
+    }
+
+    /// @brief Creates an object that can unpack the resource per-partes.
+    /// @see unpack
+    auto make_unpacker(
+      main_ctx_object& mco,
+      block_stream_decompression::data_handler handler,
+      span_size_t chunk_size = block_stream_decompression::default_chunk_size())
+      const -> block_stream_decompression {
+        return make_unpacker(mco.main_context(), handler, chunk_size);
     }
 
     /// @brief Unpacks this resource and passes the data into the handler function.
@@ -101,14 +143,15 @@ public:
     /// @brief Unpacks this resource and passes the data into the handler function.
     /// @see unpack
     /// @see is_packed
-    auto fetch(main_ctx& ctx, data_compressor::data_handler handler) {
+    auto fetch(main_ctx& ctx, data_compressor::data_handler handler) const {
         return fetch(ctx.compressor(), handler);
     }
 
     /// @brief Unpacks this resource and passes the data into the handler function.
     /// @see unpack
     /// @see is_packed
-    auto fetch(main_ctx_object& mco, data_compressor::data_handler handler) {
+    auto fetch(main_ctx_object& mco, data_compressor::data_handler handler)
+      const {
         return fetch(mco.main_context(), handler);
     }
 

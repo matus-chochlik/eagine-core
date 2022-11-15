@@ -5,13 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
 import <iostream>;
-#else
-#include <eagine/is_within_limits.hpp>
-#include <iostream>
-#endif
 
 static inline void foo(short s) {
     std::cout << s << std::endl;

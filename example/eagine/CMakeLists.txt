@@ -24,16 +24,8 @@ function(eagine_example_common EXAMPLE_NAME)
 		${ARGN}
 	)
 	add_dependencies(eagine-core-examples eagine-${EXAMPLE_NAME})
-	if(${WITH_MODULES})
-		eagine_target_modules(eagine-${EXAMPLE_NAME} eagine.core)
-	else()
-		eagine_add_exe_analysis(eagine-${EXAMPLE_NAME})
-		target_link_libraries(
-			eagine-${EXAMPLE_NAME}
-			PUBLIC EAGine::Core
-			PRIVATE ${ARGN}
-		)
-	endif()
+	eagine_add_exe_analysis(eagine-${EXAMPLE_NAME})
+	eagine_target_modules(eagine-${EXAMPLE_NAME} eagine.core)
 
 	set_target_properties(
 		eagine-${EXAMPLE_NAME}
@@ -86,6 +78,7 @@ eagine_example_common(network_sort)
 eagine_example_common(make_index)
 eagine_example_common(value_tree)
 eagine_example_common(value_tree_overlay)
+eagine_example_common(value_tree_visitor)
 eagine_example_common(memoized)
 eagine_example_common(c_api_wrap)
 eagine_example_common(dyn_lib_lookup)
@@ -93,6 +86,7 @@ eagine_example_common(serialize_basic)
 eagine_example_common(serialize_string)
 eagine_example_common(serialize_portable)
 eagine_example_common(serialize_packed)
+eagine_example_common(serialize_valtree)
 eagine_example_common(serialize_fragmented)
 eagine_example_common(sudoku_solver)
 eagine_example_common(sudoku_tiling)
@@ -100,6 +94,23 @@ eagine_example_common(sudoku_noise)
 #
 eagine_example_common(embed_self)
 eagine_embed_target_resources(TARGET eagine-embed_self ENABLE_SEARCH)
+eagine_example_common(embed_packed)
+eagine_embed_target_resources(
+	TARGET eagine-embed_packed
+	RESOURCES
+		packedSelf "${CMAKE_CURRENT_SOURCE_DIR}/embed_packed.cpp"
+	PACKED
+	ENABLE_SEARCH
+)
+#
+target_compile_options(
+	eagine-valgrind
+	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>
+)
+target_compile_options(
+	eagine-limit_cast
+	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>
+)
 
 install(
 	FILES

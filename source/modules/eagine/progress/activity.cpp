@@ -17,6 +17,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 /// @brief Class tracking the progress of a long-running activity.
 /// @ingroup progress
+/// @see puzzle_progress
 export class activity_progress {
 public:
     activity_progress(
@@ -29,12 +30,15 @@ public:
             ? _backend->begin_activity(parent._activity_id, title, total_steps)
             : 0U} {}
 
+    activity_progress() noexcept = default;
     activity_progress(activity_progress&& temp) noexcept
       : _backend{std::move(temp._backend)}
       , _activity_id{temp._activity_id} {}
-    activity_progress(const activity_progress&) = delete;
-    auto operator=(activity_progress&&) = delete;
-    auto operator=(const activity_progress&) = delete;
+    activity_progress(const activity_progress&) noexcept = default;
+    auto operator=(activity_progress&&) noexcept
+      -> activity_progress& = default;
+    auto operator=(const activity_progress&) noexcept
+      -> activity_progress& = default;
 
     /// @brief Marks the activity as finished.
     /// @see finish
@@ -109,7 +113,40 @@ protected:
 
 private:
     std::shared_ptr<progress_tracker_backend> _backend;
-    const activity_progress_id_t _activity_id{0U};
+    activity_progress_id_t _activity_id{0U};
+};
+//------------------------------------------------------------------------------
+/// @brief Class tracking the completion of Count objects, indicating true/false status.
+/// @ingroup progress
+/// @see activity_progress
+export template <span_size_t Count>
+class puzzle_progress : activity_progress {
+public:
+    /// @brief Construction from a parent activity and this activity title.
+    puzzle_progress(
+      const activity_progress& parent,
+      const string_view title) noexcept
+      : activity_progress{parent, title, Count} {}
+
+    /// @brief Indicates that all the pieces indicates true state.
+    auto done() const noexcept -> bool {
+        return _all_done;
+    }
+
+    /// @brief Updates the progress value by counting pieces returning true.
+    template <typename... Piece>
+    auto update_progress(const Piece&... piece) noexcept -> bool {
+        const bool result{
+          activity_progress::update_progress((... + span_size_t(bool(piece))))};
+        _all_done = (bool(piece) && ...);
+        if(_all_done) {
+            activity_progress::finish();
+        }
+        return result;
+    }
+
+private:
+    bool _all_done{false};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

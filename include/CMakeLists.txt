@@ -13,55 +13,6 @@ set(GEN_HPPS
 	eagine/config/os_info.hpp
 	eagine/config/git_info.hpp
 )
-include(./Sources.cmake)
-# - regular headers ------------------------------------------------------------
-add_library(eagine-core-headers INTERFACE)
-
-set_property(
-	TARGET eagine-core-headers
-	APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-		$<INSTALL_INTERFACE:include>
-		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-)
-
-foreach(FILENAME ${HEADERS} ${PUB_INLS})
-	set_property(
-		TARGET eagine-core-headers
-		APPEND PROPERTY PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}
-	)
-endforeach()
-
-if(${EAGINE_CLANGXX_COMPILER})
-	set_property(
-		TARGET eagine-core-headers
-		APPEND PROPERTY INTERFACE_COMPILE_OPTIONS -fexperimental-library
-	)
-	set_property(
-		TARGET eagine-core-headers
-		APPEND PROPERTY INTERFACE_COMPILE_OPTIONS -stdlib=libc++
-	)
-	set_property(
-		TARGET eagine-core-headers
-		APPEND PROPERTY INTERFACE_LINK_OPTIONS -stdlib=libc++
-	)
-endif()
-# - private headers or implementation files ------------------------------------
-add_library(eagine-core-private-headers INTERFACE)
-
-set_property(
-	TARGET eagine-core-private-headers
-	APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/submodules/asio/asio/include>"
-		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/submodules/rapidjson/include>"
-)
-
-foreach(FILENAME ${LIB_INLS})
-	set_property(
-		TARGET eagine-core-private-headers
-		APPEND PROPERTY PRIVATE_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}
-	)
-endforeach()
 # - generated headers or implementation files ----------------------------------
 add_library(eagine-core-generated-headers INTERFACE)
 
@@ -77,4 +28,3 @@ foreach(FILENAME ${GEN_HPPS})
 		APPEND PROPERTY PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME}
 	)
 endforeach()
-

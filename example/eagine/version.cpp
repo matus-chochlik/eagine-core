@@ -5,23 +5,13 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_CORE_MODULE
 import eagine.core;
-#else
-#include <eagine/build_info.hpp>
-#include <eagine/console/console.hpp>
-#include <eagine/main_ctx.hpp>
-#endif
 
 namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
 
-#if EAGINE_CORE_MODULE
     const auto& vi = ctx.version();
-#else
-    const auto& vi = ctx.build();
-#endif
 
     const auto [major, minor, patch, commit] = vi.version_tuple();
     ctx.cio()

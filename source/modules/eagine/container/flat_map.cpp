@@ -220,29 +220,25 @@ export template <
   typename Key,
   typename Val,
   typename Cmp = std::less<Key>,
-  typename Allocator = std::allocator<std::pair<Key, Val>>>
+  typename Container = std::vector<std::pair<Key, Val>>>
 class flat_map
-  : public flat_map_view_crtp<Key, Val, Cmp, flat_map<Key, Val, Cmp, Allocator>> {
+  : public flat_map_view_crtp<Key, Val, Cmp, flat_map<Key, Val, Cmp, Container>> {
     using _base =
-      flat_map_view_crtp<Key, Val, Cmp, flat_map<Key, Val, Cmp, Allocator>>;
+      flat_map_view_crtp<Key, Val, Cmp, flat_map<Key, Val, Cmp, Container>>;
     using _base::_ops;
 
-    using _alloc_t = typename std::allocator_traits<
-      Allocator>::template rebind_alloc<std::pair<Key, Val>>;
-
-    using _vec_t = std::vector<std::pair<Key, Val>, _alloc_t>;
-    _vec_t _vec{};
+    Container _vec{};
 
 public:
     using typename _base::key_compare;
     using typename _base::key_type;
     using typename _base::mapped_type;
     using typename _base::value_type;
-    using size_type = typename _vec_t::size_type;
-    using difference_type = typename _vec_t::difference_type;
-    using iterator = typename _vec_t::iterator;
-    using const_iterator = typename _vec_t::const_iterator;
-    using allocator_type = Allocator;
+    using size_type = typename Container::size_type;
+    using difference_type = typename Container::difference_type;
+    using iterator = typename Container::iterator;
+    using const_iterator = typename Container::const_iterator;
+    using allocator_type = typename Container::allocator_type;
 
     using _base::key_comp;
     using _base::lower_bound;

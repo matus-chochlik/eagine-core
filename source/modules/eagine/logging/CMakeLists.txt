@@ -18,6 +18,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.reflection
 		eagine.core.identifier
+		eagine.core.utility
 )
 
 eagine_add_module(
@@ -46,9 +47,10 @@ eagine_add_module(
 		backend
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.identifier
 		eagine.core.string
+		eagine.core.identifier
 		eagine.core.reflection
+		eagine.core.utility
 )
 
 eagine_add_module(
@@ -80,9 +82,10 @@ eagine_add_module(
 		eagine.core.build_config
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.identifier
-		eagine.core.runtime
 		eagine.core.string
+		eagine.core.identifier
+		eagine.core.utility
+		eagine.core.runtime
 )
 
 eagine_add_module(

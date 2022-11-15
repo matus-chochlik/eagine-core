@@ -14,12 +14,20 @@ namespace eagine::math {
 /// @var pi
 /// @brief The pi constant.
 /// @ingroup math
+/// @see tau
 /// @see phi
+
+/// @var tau
+/// @brief The 2*pi constant.
+/// @ingroup math
+/// @see pi
 
 #ifdef M_PI
 export constexpr const auto pi = M_PI;
+export constexpr const auto tau = 2 * M_PI;
 #else
 export constexpr const auto pi = 3.14159265358979323846;
+export constexpr const auto tau = 2 * 3.14159265358979323846;
 #endif
 
 /// @var phi

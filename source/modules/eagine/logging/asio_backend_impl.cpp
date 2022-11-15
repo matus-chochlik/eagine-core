@@ -33,6 +33,7 @@ module eagine.core.logging;
 
 import eagine.core.memory;
 import eagine.core.string;
+import eagine.core.utility;
 import :backend;
 import :ostream_backend;
 import <iostream>;
@@ -175,22 +176,41 @@ template <typename Lockable = std::mutex>
 using asio_tcpipv4_ostream_log_backend =
   asio_ostream_log_backend<asio_tcpipv4_ostream_log_connection, Lockable>;
 //------------------------------------------------------------------------------
-auto make_asio_local_ostream_log_backend(const log_stream_info& info)
+auto make_asio_local_ostream_log_backend_mutex(const log_stream_info& info)
   -> std::unique_ptr<logger_backend> {
     return std::make_unique<asio_local_ostream_log_backend<std::mutex>>(info);
 }
 
-auto make_asio_local_ostream_log_backend(
+auto make_asio_local_ostream_log_backend_spinlock(const log_stream_info& info)
+  -> std::unique_ptr<logger_backend> {
+    return std::make_unique<asio_local_ostream_log_backend<spinlock>>(info);
+}
+
+auto make_asio_local_ostream_log_backend_mutex(
   string_view addr,
   const log_stream_info& info) -> std::unique_ptr<logger_backend> {
     return std::make_unique<asio_local_ostream_log_backend<std::mutex>>(
       addr, info);
 }
 
-auto make_asio_tcpipv4_ostream_log_backend(
+auto make_asio_local_ostream_log_backend_spinlock(
+  string_view addr,
+  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
+    return std::make_unique<asio_local_ostream_log_backend<spinlock>>(
+      addr, info);
+}
+
+auto make_asio_tcpipv4_ostream_log_backend_mutex(
   string_view addr,
   const log_stream_info& info) -> std::unique_ptr<logger_backend> {
     return std::make_unique<asio_tcpipv4_ostream_log_backend<std::mutex>>(
+      addr, info);
+}
+
+auto make_asio_tcpipv4_ostream_log_backend_spinlock(
+  string_view addr,
+  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
+    return std::make_unique<asio_tcpipv4_ostream_log_backend<spinlock>>(
       addr, info);
 }
 //------------------------------------------------------------------------------

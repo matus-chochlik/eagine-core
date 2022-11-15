@@ -168,9 +168,9 @@ public:
       const basic_string_path& path,
       span<const string_view> tags) const noexcept -> attribute_interface* {
         std::string temp_str;
-        auto _cat = [&](
-          string_view a, string_view b, string_view c) mutable -> auto& {
-            return append_to(append_to(assign_to(temp_str, a), b), c);
+        auto _cat =
+          [&](string_view a, string_view b, string_view c) mutable -> auto& {
+            return append_to(c, append_to(b, assign_to(a, temp_str)));
         };
 
         auto result{_node};

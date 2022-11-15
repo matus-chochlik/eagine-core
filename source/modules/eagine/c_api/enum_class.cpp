@@ -316,6 +316,12 @@ struct enum_parameter_value {
       : parameter{param.value}
       , value{eagine::limit_cast<ValueType>(val.value)} {}
 
+    constexpr enum_parameter_value(
+      ParameterEnumClass param,
+      ValueType val) noexcept
+      : parameter{param._value}
+      , value{val} {}
+
     typename ParameterEnumClass::value_type parameter{};
     ValueType value{};
 };
@@ -352,6 +358,7 @@ struct enum_class {
 
     /// @brief The constant or enumerator value type.
     using value_type = T;
+    using tag_type = T;
 
     static constexpr const identifier_value lib_id = LibId;
     static constexpr const identifier_value id = Id;
