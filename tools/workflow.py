@@ -95,6 +95,15 @@ class WorkflowArgParser(argparse.ArgumentParser):
             """
         )
         action_group.add_argument(
+            "--do-release",
+            dest="action",
+            action="store_const",
+            const="do_release",
+            help="""
+                Begins and finishes a release.
+            """
+        )
+        action_group.add_argument(
             "--begin-hotfix",
             dest="action",
             action="store_const",
@@ -486,9 +495,7 @@ class Workflow(object):
         self.git_command(["checkout", develop])
         self.git_command(["pull", remote, develop])
         self.git_command(["merge", "--no-ff", release_branch])
-        self.git_command(["push", remote, release_tag])
-        self.git_command(["push", remote, "main"])
-        self.git_command(["push", remote, develop])
+        self.git_command(["push", remote, release_tag, "main", develop])
         self.git_command(["push", remote, ":"+release_branch])
         self.git_command(["branch", "-D", release_branch])
 
@@ -539,9 +546,7 @@ class Workflow(object):
         self.git_command(["checkout", develop])
         self.git_command(["pull", remote, develop])
         self.git_command(["merge", "-X", "theirs", "--no-ff", hotfix_branch])
-        self.git_command(["push", remote, hotfix_tag])
-        self.git_command(["push", remote, "main"])
-        self.git_command(["push", remote, develop])
+        self.git_command(["push", remote, hotfix_tag, "main", develop])
         self.git_command(["push", remote, ":"+hotfix_branch])
         self.git_command(["branch", "-D", hotfix_branch])
 
@@ -553,6 +558,9 @@ class Workflow(object):
 
         if self._options.action == "update_submodules":
             self.update_submodules()
+        elif self._options.action == "do_release":
+            self.begin_release()
+            self.finish_release()
         elif self._options.action == "begin_release":
             self.begin_release()
         elif self._options.action == "finish_release":
