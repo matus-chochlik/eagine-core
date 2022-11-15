@@ -39,7 +39,7 @@ namespace eagine {
 /// throughout the system.
 export class main_ctx : public main_ctx_getters {
 public:
-    main_ctx(main_ctx_getters&) noexcept;
+    main_ctx(main_ctx_getters&);
 
     /// @brief Not move constructible.
     main_ctx(main_ctx&&) = delete;

@@ -26,7 +26,7 @@ auto main_ctx::_single_ptr() noexcept -> main_ctx*& {
     return the_ptr;
 }
 //------------------------------------------------------------------------------
-main_ctx::main_ctx(main_ctx_getters& src) noexcept
+main_ctx::main_ctx(main_ctx_getters& src)
   : _instance_id{src.instance_id()}
   , _source{src}
   , _default_alloc{src.default_allocator()}

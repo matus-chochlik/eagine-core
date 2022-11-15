@@ -468,16 +468,20 @@ auto proxy_log_backend::configure(basic_config& config) -> bool {
     std::string backend_name;
     config.fetch_string("log.backend", backend_name);
     config.fetch("log.severity", _info.min_severity);
-    _delegate = proxy_log_choose_backend(config, backend_name, _info);
-    if(_delegate) {
-        _delegate->configure(config);
-        if(_delayed) {
-            for(auto& op : *_delayed) {
-                op();
+    try {
+        _delegate = proxy_log_choose_backend(config, backend_name, _info);
+        if(_delegate) {
+            _delegate->configure(config);
+            if(_delayed) {
+                for(auto& op : *_delayed) {
+                    op();
+                }
+                _delayed.reset();
             }
-            _delayed.reset();
+            return true;
         }
-        return true;
+    } catch(std::system_error& rte) {
+        throw log_backend_error(rte);
     }
     return false;
 }

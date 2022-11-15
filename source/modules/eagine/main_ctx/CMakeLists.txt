@@ -122,6 +122,7 @@ eagine_add_module(
 		main_ctx_impl
 		main_impl
 	IMPORTS
+		eagine.core.build_config
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
