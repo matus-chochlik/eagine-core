@@ -83,9 +83,14 @@ public:
     }
     /// @brief Returns the basic data format of the resource.
     /// @see is_packed
+    /// @see is_utf8_text
     constexpr auto format() const noexcept -> embedded_resource_format {
         return _format;
     }
+
+    /// @brief Indicates if the resource is a UTF-8-encoded text.
+    /// @see format
+    auto is_utf8_text() const noexcept -> tribool;
 
     /// @brief Indicates if the resource is packed and needs to be decompressed.
     /// @see format

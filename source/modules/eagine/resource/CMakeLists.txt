@@ -48,6 +48,7 @@ eagine_add_module(
 		fetch
 	SOURCES
 		embed_impl
+		embedded_impl
 	IMPORTS
 )
 
