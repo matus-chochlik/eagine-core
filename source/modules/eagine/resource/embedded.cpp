@@ -17,6 +17,8 @@ import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.utility;
 import eagine.core.runtime;
+import eagine.core.logging;
+import eagine.core.value_tree;
 import eagine.core.main_ctx;
 import <cstdint>;
 
@@ -202,9 +204,93 @@ public:
     /// @brief Unpacks this resource and passes the data into the handler function.
     /// @see unpack
     /// @see is_packed
+    /// @see visit
     auto fetch(main_ctx_object& mco, data_compressor::data_handler handler)
       const {
         return fetch(mco.main_context(), handler);
+    }
+
+    /// @brief Visit by the specified visitor if the resource is a value tree.
+    /// @see fetch
+    /// @see format
+    auto visit(
+      data_compressor& comp,
+      memory::buffer_pool& buffers,
+      const logger&,
+      std::shared_ptr<valtree::value_tree_visitor> visitor,
+      span_size_t max_token_size) const -> bool;
+
+    /// @brief Visit by the specified visitor if the resource is a value tree.
+    /// @see fetch
+    /// @see build
+    /// @see format
+    auto visit(
+      main_ctx& ctx,
+      std::shared_ptr<valtree::value_tree_visitor> visitor,
+      span_size_t max_token_size) const -> bool {
+        return visit(
+          ctx.compressor(),
+          ctx.buffers(),
+          ctx.log(),
+          std::move(visitor),
+          max_token_size);
+    }
+
+    /// @brief Visit by the specified visitor if the resource is a value tree.
+    /// @see fetch
+    /// @see build
+    /// @see format
+    auto visit(
+      main_ctx_object& mco,
+      std::shared_ptr<valtree::value_tree_visitor> visitor,
+      span_size_t max_token_size) const -> bool {
+        return visit(mco.main_context(), std::move(visitor), max_token_size);
+    }
+
+    /// @brief Apply the specified builder if the resource is a value tree.
+    /// @see visit
+    /// @see fetch
+    /// @see format
+    auto build(
+      data_compressor& comp,
+      memory::buffer_pool& buffers,
+      const logger& log,
+      std::shared_ptr<valtree::object_builder> builder,
+      span_size_t max_token_size) const -> bool {
+        return visit(
+          comp,
+          buffers,
+          log,
+          make_building_value_tree_visitor(std::move(builder)),
+          max_token_size);
+    }
+
+    /// @brief Apply the specified builder if the resource is a value tree.
+    /// @see visit
+    /// @see fetch
+    /// @see format
+    auto build(
+      main_ctx& ctx,
+      std::shared_ptr<valtree::object_builder> builder,
+      span_size_t max_token_size) const -> bool {
+        return visit(
+          ctx,
+          make_building_value_tree_visitor(std::move(builder)),
+          max_token_size);
+    }
+
+    /// @brief Apply the specified builder if the resource is a value tree.
+    /// @see visit
+    /// @see fetch
+    /// @see format
+    auto build(
+      main_ctx_object& mco,
+      std::shared_ptr<valtree::object_builder> builder,
+      span_size_t max_token_size) const -> bool {
+        return visit(
+          mco,
+          make_building_value_tree_visitor(std::move(builder)),
+          max_token_size);
     }
 
 private:

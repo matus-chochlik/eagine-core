@@ -9,6 +9,9 @@ module eagine.core.resource;
 
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.runtime;
+import eagine.core.logging;
+import eagine.core.value_tree;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -26,6 +29,22 @@ auto embedded_resource::is_utf8_text() const noexcept -> tribool {
         default:
             return false;
     }
+}
+//------------------------------------------------------------------------------
+auto embedded_resource::visit(
+  data_compressor& comp,
+  memory::buffer_pool& buffers,
+  const logger& log,
+  std::shared_ptr<valtree::value_tree_visitor> visitor,
+  span_size_t max_token_size) const -> bool {
+    if(
+      (format() == embedded_resource_format::json) ||
+      (format() == embedded_resource_format::json_binary)) {
+        auto input{traverse_json_stream(
+          std::move(visitor), max_token_size, buffers, log)};
+        return fetch(comp, input.get_handler());
+    }
+    return false;
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
