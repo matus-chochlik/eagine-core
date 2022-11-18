@@ -8,6 +8,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
+		eagine.core.reflection
 		eagine.core.utility
 		eagine.core.runtime
 		eagine.core.main_ctx

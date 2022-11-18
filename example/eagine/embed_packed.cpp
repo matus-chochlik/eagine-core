@@ -18,7 +18,8 @@ auto main() -> int {
     };
 
     if(const auto res{search_resource("packedSelf")}) {
-        std::cout << print(res.embedded_block());
+        std::cout << print(res.embedded_block()) << std::endl;
+        std::cout << "format: " << enumerator_name(res.format()) << std::endl;
         std::cout << "is packed: " << res.is_packed() << std::endl;
         std::cout << res.fetch(compressor, {construct_from, print});
         std::cout << std::endl;
