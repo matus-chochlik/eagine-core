@@ -10,6 +10,15 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.runtime PARTITION traverse
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.reflection
+)
+
+eagine_add_module(
 	eagine.core.runtime PARTITION basic_config
 	IMPORTS
 		eagine.core.types
@@ -95,6 +104,7 @@ eagine_add_module(
 		runtime
 	PARTITIONS
 		signal_switch
+		traverse	
 		basic_config
 		process
 		program_args

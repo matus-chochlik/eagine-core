@@ -8,6 +8,7 @@
 export module eagine.core.runtime;
 
 export import :signal_switch;
+export import :traverse;
 export import :process;
 export import :program_args;
 export import :url;
