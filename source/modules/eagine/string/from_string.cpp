@@ -437,10 +437,31 @@ auto assign_if_fits(const string_view src, T& dst) noexcept -> bool {
     }
     return false;
 }
-//------------------------------------------------------------------------------
+
+export template <typename T>
+auto assign_if_fits(const string_view src, std::optional<T>& dst) noexcept
+  -> bool {
+    if(auto conv{from_string<T>(src)}) {
+        dst = std::move(extract(conv));
+        return true;
+    }
+    return false;
+}
+
 export template <typename T>
 auto assign_if_fits(const memory::span<const string_view> src, T& dst) noexcept
   -> bool {
+    if(auto conv{from_strings<T>(src)}) {
+        dst = std::move(extract(conv));
+        return true;
+    }
+    return false;
+}
+
+export template <typename T>
+auto assign_if_fits(
+  const memory::span<const string_view> src,
+  std::optional<T>& dst) noexcept -> bool {
     if(auto conv{from_strings<T>(src)}) {
         dst = std::move(extract(conv));
         return true;

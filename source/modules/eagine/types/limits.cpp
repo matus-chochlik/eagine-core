@@ -207,6 +207,20 @@ constexpr auto assign_if_fits(
     }
     return false;
 }
+
+export template <typename Src, typename Dst>
+constexpr auto assign_if_fits(const Src& src, std::optional<Dst>& dst) noexcept
+  -> bool
+    requires(
+      std::is_convertible_v<Src, Dst> || std::is_constructible_v<Dst, Src>)
+{
+    Dst temp{};
+    if(assign_if_fits(src, temp)) {
+        dst = std::move(temp);
+        return true;
+    }
+    return false;
+}
 //------------------------------------------------------------------------------
 /// @brief Converts argument to span size type.
 /// @ingroup type_utils
