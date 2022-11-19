@@ -429,6 +429,25 @@ auto from_strings(const span<const string_view> src) noexcept
     return {};
 }
 //------------------------------------------------------------------------------
+export template <typename T>
+auto assign_if_fits(const string_view src, T& dst) noexcept -> bool {
+    if(auto conv{from_string<T>(src)}) {
+        dst = std::move(extract(conv));
+        return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+export template <typename T>
+auto assign_if_fits(const memory::span<const string_view> src, T& dst) noexcept
+  -> bool {
+    if(auto conv{from_strings<T>(src)}) {
+        dst = std::move(extract(conv));
+        return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
 /// @brief Converts the string representation in @p src to a value of type @p T.
 /// @ingroup type_utils
 /// @see is_within_limits
