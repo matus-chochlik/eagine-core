@@ -13,6 +13,34 @@ import <type_traits>;
 
 namespace eagine {
 
+/// @brief Policy class for values valid if conversion to bool returns true
+/// @ingroup valid_if
+export template <typename T>
+struct valid_if_true_policy {
+
+    /// @brief Indicates value validity.
+    constexpr auto operator()(const T& value) const noexcept {
+        return bool(value);
+    }
+
+    struct do_log {
+        template <does_not_hide<do_log> X>
+        constexpr do_log(X&&) noexcept {}
+
+        template <typename Log>
+        void operator()(Log& log, const T&) const {
+            log << "Conversion to boolean returns false";
+        }
+    };
+};
+
+/// @brief Specialization of valid_if, for values convertible to boolean.
+/// @ingroup valid_if
+/// @see valid_if_not_zero
+export template <typename T>
+using valid_if_true =
+  valid_if<T, valid_if_true_policy<std::remove_reference_t<T>>>;
+
 /// @brief Policy class for values valid if not equal to zero.
 /// @ingroup valid_if
 export template <typename T>
