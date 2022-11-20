@@ -25,13 +25,9 @@ void _do_traverse_mapped(basic_string_path& path, T& obj, Selector, Func& func) 
 export template <typename M, typename Selector, typename Func>
 void _do_traverse_single_mapped(
   basic_string_path& path,
-  const std::pair<const string_view, M&>& m,
+  const std::pair<const string_view, M>& m,
   Selector sel,
-  Func& func) {
-    path.push_back(std::get<0>(m));
-    _do_traverse_mapped(path, std::get<1>(m), sel, func);
-    path.pop_back();
-}
+  Func& func);
 //------------------------------------------------------------------------------
 export template <typename Map, std::size_t... I, typename Selector, typename Func>
 void _do_traverse_mapped_idx(
@@ -46,7 +42,17 @@ void _do_traverse_mapped_idx(
 export template <typename... M, typename Selector, typename Func>
 void _do_traverse_member_map(
   basic_string_path& path,
-  const std::tuple<std::pair<const string_view, M&>...>& members,
+  const std::tuple<std::pair<const string_view, M>...>& members,
+  Selector sel,
+  Func& func) {
+    _do_traverse_mapped_idx(
+      path, members, std::make_index_sequence<sizeof...(M)>(), sel, func);
+}
+//------------------------------------------------------------------------------
+export template <typename... M, typename Selector, typename Func>
+void _do_traverse_mapped(
+  basic_string_path& path,
+  const std::tuple<std::pair<const string_view, M>...>& members,
   Selector sel,
   Func& func) {
     _do_traverse_mapped_idx(
@@ -61,6 +67,17 @@ void _do_traverse_mapped(
   Selector sel,
   Func& func) {
     _do_traverse_member_map(path, map_data_members(obj), sel, func);
+}
+//------------------------------------------------------------------------------
+export template <typename M, typename Selector, typename Func>
+void _do_traverse_single_mapped(
+  basic_string_path& path,
+  const std::pair<const string_view, M>& m,
+  Selector sel,
+  Func& func) {
+    path.push_back(std::get<0>(m));
+    _do_traverse_mapped(path, std::get<1>(m), sel, func);
+    path.pop_back();
 }
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t V, typename Func>
