@@ -22,6 +22,7 @@ import :wrappers;
 import <chrono>;
 import <memory>;
 import <vector>;
+import <type_traits>;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -169,6 +170,43 @@ struct object_builder_impl : object_builder {
       span<const string_view> data) noexcept final {
         derived().do_add(path, data);
     }
+};
+//------------------------------------------------------------------------------
+export class object_builder_data_forwarder {
+    template <typename T>
+    struct _fwd_func {
+        span<const T> data;
+
+        template <typename X>
+            requires(std::is_convertible_v<T, X>)
+        auto operator()(X& dest) const noexcept -> bool {
+            return assign_if_fits(data, dest);
+        }
+
+        template <typename X>
+            requires(std::is_convertible_v<T, X>)
+        auto operator()(std::optional<X>& dest) const noexcept -> bool {
+            return assign_if_fits(data, dest);
+        }
+
+        template <typename X>
+            requires(!std::is_convertible_v<T, X>)
+        auto operator()(const X&) const noexcept -> bool {
+            return false;
+        }
+    };
+
+public:
+    template <typename T, typename O>
+    auto forward_data(
+      const basic_string_path& path,
+      span<const T> data,
+      O& dest) {
+        visit_mapped(_temp, path, dest, default_selector, _fwd_func<T>{data});
+    }
+
+private:
+    basic_string_path _temp;
 };
 //------------------------------------------------------------------------------
 export auto traverse_json_stream(
