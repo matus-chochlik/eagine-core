@@ -10,41 +10,40 @@ export module eagine.core.logging:adapt_filesystem;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
-import :backend;
 import <filesystem>;
 import <system_error>;
 import <string>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+struct std_filesystem_path_entry_adapter {
+    const identifier name;
+    const std::filesystem::path fsp;
+    void operator()(auto& backend) const noexcept {
+        backend.add_string(name, "FsPath", string_view(fsp.native()));
+    }
+};
 export auto adapt_entry_arg(
   const identifier name,
   const std::filesystem::path& fsp) noexcept {
-    struct _adapter {
-        const identifier name;
-        const std::string fsps;
-        void operator()(logger_backend& backend) const noexcept {
-            backend.add_string(name, "FsPath", string_view(fsps));
-        }
-    };
-    return _adapter{.name = name, .fsps = fsp.native()};
+    return std_filesystem_path_entry_adapter{.name = name, .fsp = fsp};
 }
 //------------------------------------------------------------------------------
+struct std_filesystem_error_entry_adapter {
+    const identifier name;
+    const std::filesystem::filesystem_error value;
+    void operator()(auto& backend) const noexcept {
+        backend.add_string(name, "FlSysError", string_view(value.what()));
+        backend.add_string(
+          "category",
+          "ErrorCtgry",
+          string_view(value.code().category().name()));
+    }
+};
 export auto adapt_entry_arg(
   const identifier name,
   const std::filesystem::filesystem_error& value) noexcept {
-    struct _adapter {
-        const identifier name;
-        const std::filesystem::filesystem_error value;
-        void operator()(logger_backend& backend) const noexcept {
-            backend.add_string(name, "FlSysError", string_view(value.what()));
-            backend.add_string(
-              "category",
-              "ErrorCtgry",
-              string_view(value.code().category().name()));
-        }
-    };
-    return _adapter{.name = name, .value = value};
+    return std_filesystem_error_entry_adapter{.name = name, .value = value};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

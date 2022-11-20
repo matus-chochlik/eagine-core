@@ -24,5 +24,6 @@ export import :adapt_enum;
 export import :adapt_tribool;
 export import :adapt_exception;
 export import :adapt_filesystem;
+export import :adapt_string_path;
 export import :adapt_version_info;
 export import :adapt_program_args;
