@@ -552,6 +552,18 @@ public:
         return get(i);
     }
 
+    /// @brief Finds the specified argument and tries to parse value in the next one.
+    template <typename T>
+    auto find_value_or(
+      const value_type what,
+      T fallback,
+      std::ostream& parse_log) const noexcept -> T {
+        if(const auto arg{find(what)}) {
+            arg.parse_next(fallback, parse_log);
+        }
+        return fallback;
+    }
+
 private:
     const int _argc{0};
     const char** _argv{nullptr};
