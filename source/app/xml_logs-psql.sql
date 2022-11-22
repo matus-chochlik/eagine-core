@@ -224,10 +224,10 @@ ADD FOREIGN KEY(entry_id)
 REFERENCES eagilog.entry;
 
 CREATE FUNCTION eagilog.add_entry_arg_string(
-	_entry_id eagilog.entry.entry_id%TYPE,
-	_arg_id VARCHAR(10),
-	_value VARCHAR(40),
-	_tag eagilog.entry.tag%TYPE
+	_entry_id eagilog.arg_string.entry_id%TYPE,
+	_arg_id eagilog.arg_string.arg_id%TYPE,
+	_value eagilog.arg_string.value%TYPE,
+	_tag eagilog.arg_string.tag%TYPE
 ) RETURNS VOID
 AS $$
 BEGIN
@@ -235,6 +235,38 @@ BEGIN
 	(entry_id, arg_id, value, tag)
 	VALUES(_entry_id, _arg_id, _value, _tag)
 	ON CONFLICT ON CONSTRAINT arg_string_pkey
+	DO NOTHING;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
+-- arg_boolean
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.arg_boolean(
+	entry_id BIGINT NOT NULL,
+	arg_id VARCHAR(10) NOT NULL,
+	value BOOL NOT NULL,
+	tag VARCHAR(10) NULL
+);
+
+ALTER TABLE eagilog.arg_boolean
+ADD PRIMARY KEY(entry_id, arg_id);
+
+ALTER TABLE eagilog.arg_boolean
+ADD FOREIGN KEY(entry_id)
+REFERENCES eagilog.entry;
+
+CREATE FUNCTION eagilog.add_entry_arg_boolean(
+	_entry_id eagilog.arg_boolean.entry_id%TYPE,
+	_arg_id eagilog.arg_boolean.arg_id%TYPE,
+	_value eagilog.arg_boolean.value%TYPE,
+	_tag eagilog.arg_boolean.tag%TYPE
+) RETURNS VOID
+AS $$
+BEGIN
+	INSERT INTO eagilog.arg_boolean
+	(entry_id, arg_id, value, tag)
+	VALUES(_entry_id, _arg_id, _value, _tag)
+	ON CONFLICT ON CONSTRAINT arg_boolean_pkey
 	DO NOTHING;
 END
 $$ LANGUAGE plpgsql;
@@ -256,10 +288,10 @@ ADD FOREIGN KEY(entry_id)
 REFERENCES eagilog.entry;
 
 CREATE FUNCTION eagilog.add_entry_arg_integer(
-	_entry_id eagilog.entry.entry_id%TYPE,
-	_arg_id VARCHAR(10),
-	_value INTEGER,
-	_tag eagilog.entry.tag%TYPE
+	_entry_id eagilog.arg_integer.entry_id%TYPE,
+	_arg_id eagilog.arg_integer.arg_id%TYPE,
+	_value eagilog.arg_integer.value%TYPE,
+	_tag eagilog.arg_integer.tag%TYPE
 ) RETURNS VOID
 AS $$
 BEGIN
@@ -267,6 +299,38 @@ BEGIN
 	(entry_id, arg_id, value, tag)
 	VALUES(_entry_id, _arg_id, _value, _tag)
 	ON CONFLICT ON CONSTRAINT arg_integer_pkey
+	DO NOTHING;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
+-- arg_float
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.arg_float(
+	entry_id BIGINT NOT NULL,
+	arg_id VARCHAR(10) NOT NULL,
+	value DOUBLE PRECISION NOT NULL,
+	tag VARCHAR(10) NULL
+);
+
+ALTER TABLE eagilog.arg_float
+ADD PRIMARY KEY(entry_id, arg_id);
+
+ALTER TABLE eagilog.arg_float
+ADD FOREIGN KEY(entry_id)
+REFERENCES eagilog.entry;
+
+CREATE FUNCTION eagilog.add_entry_arg_float(
+	_entry_id eagilog.arg_float.entry_id%TYPE,
+	_arg_id eagilog.arg_float.arg_id%TYPE,
+	_value eagilog.arg_float.value%TYPE,
+	_tag eagilog.arg_float.tag%TYPE
+) RETURNS VOID
+AS $$
+BEGIN
+	INSERT INTO eagilog.arg_float
+	(entry_id, arg_id, value, tag)
+	VALUES(_entry_id, _arg_id, _value, _tag)
+	ON CONFLICT ON CONSTRAINT arg_float_pkey
 	DO NOTHING;
 END
 $$ LANGUAGE plpgsql;
