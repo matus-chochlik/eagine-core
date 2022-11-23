@@ -6,7 +6,6 @@ eagine_add_module(
 	eagine.core.runtime PARTITION process
 	IMPORTS
 		eagine.core.types
-		eagine.core.utility
 )
 
 eagine_add_module(
@@ -117,11 +116,14 @@ eagine_add_module(
 		workshop
 	SOURCES
 		url_impl
+		process_impl
 		input_data_impl
 		executable_module_impl
 		file_contents_impl
 		compression_impl
 		workshop_impl
+	IMPORTS
+		eagine.core.utility
 )
 target_link_libraries(
 	eagine.core.runtime

@@ -228,6 +228,7 @@ eagine_add_module(
 	SOURCES
 		null_backend_impl
 		asio_backend_impl
+		syslog_backend_impl
 		proxy_backend_impl
 		root_logger_impl
 	PRIVATE_INCLUDE_DIRECTORIES

@@ -71,9 +71,9 @@ auto root_logger_choose_backend(
             }
         } else if(arg.is_long_tag("use-syslog")) {
             if(use_spinlock) {
-                return std::make_unique<syslog_log_backend<spinlock>>(info);
+                return make_syslog_log_backend_spinlock(info);
             } else {
-                return std::make_unique<syslog_log_backend<std::mutex>>(info);
+                return make_syslog_log_backend_mutex(info);
             }
         } else if(arg.is_long_tag("use-asio-nw-log")) {
             string_view nw_addr;
