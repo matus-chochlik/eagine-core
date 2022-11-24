@@ -927,6 +927,7 @@ public:
     }
 
     auto finish() noexcept -> bool {
+        bool result = true;
         if(_in_unparsed) {
             assert(_json_stream.available() == 0);
         } else {
@@ -946,16 +947,17 @@ public:
               _json_reader.GetParseErrorCode() ==
               rapidjson::kParseErrorDocumentRootNotSingular) {
                 _visitor->flush();
-                _visitor->finish();
+                result &= _visitor->finish();
             } else {
                 _visitor->failed();
+                result = false;
             }
         } else {
             _visitor->flush();
-            _visitor->finish();
+            result &= _visitor->finish();
         }
         _json_stream.finish(_buffers);
-        return true;
+        return result;
     }
 
     enum class _cached_type { none, _int, _uint, _float, other };

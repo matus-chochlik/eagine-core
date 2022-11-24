@@ -288,7 +288,7 @@ export struct value_tree_visitor : interface<value_tree_visitor> {
 
     /// @brief Called when the traversal of the whole tree finished.
     /// @see begin
-    virtual void finish() noexcept = 0;
+    virtual auto finish() noexcept -> bool = 0;
 
     /// @brief Called when the parsing and traversal failed.
     /// @see begin
@@ -366,7 +366,9 @@ export struct object_builder : interface<object_builder> {
     /// @brief Called when the tree traversal finished.
     /// @see begin
     /// @see failed
-    virtual void finish() noexcept {}
+    virtual auto finish() noexcept -> bool {
+        return true;
+    }
 
     /// @brief Called when the tree traversal failed.
     /// @see finish
