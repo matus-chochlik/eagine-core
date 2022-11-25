@@ -21,6 +21,8 @@ namespace memory {
 //------------------------------------------------------------------------------
 /// @brief Specialization of memory::basic_span for character string containers.
 /// @ingroup string_utils
+/// @see string_view
+/// @see string_literal
 export template <typename C, typename P = C*, typename S = span_size_t>
 class basic_string_span : public basic_span<C, P, S> {
     using base = basic_span<C, P, S>;

@@ -17,6 +17,7 @@ export import :block;
 export import :struct_block;
 export import :offset_span;
 export import :string_span;
+export import :string_literal;
 export import :span_io;
 export import :span_algorithm;
 export import :split_span;
