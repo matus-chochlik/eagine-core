@@ -1106,4 +1106,16 @@ auto traverse_json_stream(
       std::move(visitor), max_token_size, buffers, parent)};
 }
 //------------------------------------------------------------------------------
+auto traverse_json_stream(
+  std::shared_ptr<object_builder> builder,
+  memory::buffer_pool& buffers,
+  const logger& parent) -> value_tree_stream_input {
+    const auto max_token_size{builder->max_token_size()};
+    return traverse_json_stream(
+      make_building_value_tree_visitor(std::move(builder)),
+      max_token_size,
+      buffers,
+      parent);
+}
+//------------------------------------------------------------------------------
 } // namespace eagine::valtree

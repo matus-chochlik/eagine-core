@@ -214,6 +214,11 @@ export auto traverse_json_stream(
   span_size_t max_token_size,
   memory::buffer_pool&,
   const logger& parent) -> value_tree_stream_input;
+
+export auto traverse_json_stream(
+  std::shared_ptr<object_builder>,
+  memory::buffer_pool&,
+  const logger& parent) -> value_tree_stream_input;
 //------------------------------------------------------------------------------
 template <typename Derived>
 class compound_implementation : public compound_interface {

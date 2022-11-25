@@ -313,6 +313,9 @@ export struct object_builder : interface<object_builder> {
         return true;
     }
 
+    /// @brief Returns the maximum token size length needed by this builder.
+    virtual auto max_token_size() noexcept -> span_size_t = 0;
+
     /// @brief Called when the tree traversal begins.
     /// @see finish
     virtual void begin() noexcept {}

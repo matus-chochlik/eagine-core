@@ -54,6 +54,10 @@ public:
     example_builder(O& obj) noexcept
       : _obj{obj} {}
 
+    auto max_token_size() noexcept -> span_size_t final {
+        return 16;
+    }
+
     template <typename T>
     void do_add(const basic_string_path& path, span<const T> data) noexcept {
         _forwarder.forward_data(path, data, _obj);
@@ -73,7 +77,7 @@ auto make_builder(O& obj) {
 void build_and_traverse(main_ctx& ctx, const embedded_resource& res) {
     if(res) {
         tetrahedron t{};
-        res.build(ctx, make_builder(t), 8);
+        res.build(ctx, make_builder(t));
         traverse_mapped(t, [&](const auto& path, const auto& value) {
             ctx.cio()
               .print("traverse", "${path}: ${value}")

@@ -255,28 +255,27 @@ public:
       data_compressor& comp,
       memory::buffer_pool& buffers,
       const logger& log,
-      std::shared_ptr<valtree::object_builder> builder,
-      span_size_t max_token_size) const -> bool {
-        return visit(
-          comp,
-          buffers,
-          log,
-          make_building_value_tree_visitor(std::move(builder)),
-          max_token_size);
+      std::shared_ptr<valtree::object_builder> builder) const -> bool {
+        if(builder) {
+            const auto max_token_size{builder->max_token_size()};
+            return visit(
+              comp,
+              buffers,
+              log,
+              make_building_value_tree_visitor(std::move(builder)),
+              max_token_size);
+        }
+        return false;
     }
 
     /// @brief Apply the specified builder if the resource is a value tree.
     /// @see visit
     /// @see fetch
     /// @see format
-    auto build(
-      main_ctx& ctx,
-      std::shared_ptr<valtree::object_builder> builder,
-      span_size_t max_token_size) const -> bool {
-        return visit(
-          ctx,
-          make_building_value_tree_visitor(std::move(builder)),
-          max_token_size);
+    auto build(main_ctx& ctx, std::shared_ptr<valtree::object_builder> builder)
+      const -> bool {
+        return build(
+          ctx.compressor(), ctx.buffers(), ctx.log(), std::move(builder));
     }
 
     /// @brief Apply the specified builder if the resource is a value tree.
@@ -285,12 +284,8 @@ public:
     /// @see format
     auto build(
       main_ctx_object& mco,
-      std::shared_ptr<valtree::object_builder> builder,
-      span_size_t max_token_size) const -> bool {
-        return visit(
-          mco,
-          make_building_value_tree_visitor(std::move(builder)),
-          max_token_size);
+      std::shared_ptr<valtree::object_builder> builder) const -> bool {
+        return build(mco.main_context(), std::move(builder));
     }
 
 private:
