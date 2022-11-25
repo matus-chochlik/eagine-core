@@ -177,20 +177,19 @@ export class object_builder_data_forwarder {
     struct _fwd_func {
         span<const T> data;
 
-        template <typename X>
-            requires(std::is_convertible_v<T, X>)
+        template <assignable_if_fits_from<T> X>
         auto operator()(X& dest) const noexcept -> bool {
             return assign_if_fits(data, dest);
         }
 
         template <typename X>
-            requires(std::is_convertible_v<T, X>)
+            requires(assignable_if_fits_from<X, T>)
         auto operator()(std::optional<X>& dest) const noexcept -> bool {
             return assign_if_fits(data, dest);
         }
 
         template <typename X>
-            requires(!std::is_convertible_v<T, X>)
+            requires(!assignable_if_fits_from<X, T>)
         auto operator()(const X&) const noexcept -> bool {
             return false;
         }

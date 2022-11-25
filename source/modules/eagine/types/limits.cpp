@@ -73,9 +73,13 @@ template <typename Dst, typename Src, bool IsInt>
 struct within_limits_num<Dst, Src, IsInt, IsInt, false, true> {
     static constexpr auto check(const Src value) noexcept {
         using Dnl = std::numeric_limits<Dst>;
-        using Tmp = std::make_unsigned_t<Src>;
 
-        return (value < Src(0)) ? false : (Tmp(value) < Dnl::max());
+        if constexpr(IsInt) {
+            using Tmp = std::make_unsigned_t<Src>;
+            return (value < Src(0)) ? false : (Tmp(value) < Dnl::max());
+        } else {
+            return implicitly_within_limits<Dst, Src>::value;
+        }
     }
 };
 //------------------------------------------------------------------------------
@@ -189,6 +193,15 @@ constexpr auto assign_if_fits(const Src& src, Dst& dst) noexcept -> bool
     }
     return false;
 }
+
+/// @brief Concept for Dst types for which there is assign_if_fits conversion.
+/// @ingroup type_utils
+/// @see assign_if_fits
+/// @see limit_cast
+export template <typename Dst, typename Src>
+concept assignable_if_fits_from = requires(const Src src, Dst dst) {
+    { assign_if_fits(src, dst) } -> std::convertible_to<bool>;
+};
 
 export template <typename Src, typename DstR, typename DstP>
 constexpr auto assign_if_fits(
