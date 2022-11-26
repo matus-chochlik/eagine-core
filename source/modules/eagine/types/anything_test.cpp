@@ -6,8 +6,8 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-import eagine.core.types;
 #include <eagine/testing/unit_begin.hpp>
+import eagine.core.types;
 //------------------------------------------------------------------------------
 void test_anything_default_construct() {
     eagine::anything a;

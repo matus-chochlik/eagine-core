@@ -504,6 +504,17 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 				FIXTURES_SETUP
 					"${TEST_NAME}-built"
 			)
+			add_test(
+				NAME "execute-${TEST_NAME}"
+				COMMAND "${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}"
+			)
+			set_tests_properties(
+				"execute-${TEST_NAME}"
+				PROPERTIES
+					TIMEOUT 200
+					FIXTURES_REQUIRE
+					"${TEST_NAME}-built"
+			)
 		else()
 			message(
 				FATAL_ERROR
