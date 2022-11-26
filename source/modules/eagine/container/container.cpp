@@ -11,5 +11,6 @@ export import :static_vector;
 export import :small_vector;
 export import :flat_set;
 export import :flat_map;
+export import :trie;
 export import :iterator;
 export import :wrapping;

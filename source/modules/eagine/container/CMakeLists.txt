@@ -20,6 +20,12 @@ eagine_add_module(
 	IMPORTS eagine.core.types;
 )
 eagine_add_module(
+	eagine.core.container PARTITION trie
+	IMPORTS
+		eagine.core.types;
+		eagine.core.memory;
+)
+eagine_add_module(
 	eagine.core.container PARTITION wrapping
 	IMPORTS
 		iterator
@@ -37,6 +43,7 @@ eagine_add_module(
 		small_vector
 		flat_set
 		flat_map
+		trie
 		wrapping
 )
 
