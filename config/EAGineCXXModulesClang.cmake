@@ -461,3 +461,54 @@ function(eagine_target_modules TARGET_NAME)
 	endforeach()
 endfunction()
 
+function(eagine_add_module_tests EAGINE_MODULE_PROPER)
+	set(ARG_FLAGS)
+	set(ARG_VALUES PARTITION PP_NAME)
+	set(ARG_LISTS
+		UNITS
+		IMPORTS
+	)
+	cmake_parse_arguments(
+		EAGINE_MODULE_TEST
+		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
+		${ARGN}
+	)
+	foreach(UNIT ${EAGINE_MODULE_TEST_UNITS})
+		if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${UNIT}_test.cpp")
+			set(TEST_NAME test.${EAGINE_MODULE_PROPER}.${UNIT})
+			add_executable(${TEST_NAME} EXCLUDE_FROM_ALL "${UNIT}_test.cpp")
+			target_compile_definitions(
+				${TEST_NAME}
+				PRIVATE BOOST_TEST_MODULE EAGINE_${UNIT}
+			)
+			target_link_libraries(${TEST_NAME} PRIVATE eagine-core-testing-headers)
+			eagine_add_exe_analysis(${TEST_NAME})
+			eagine_target_modules(${TEST_NAME} ${EAGINE_MODULE_PROPER})
+
+			foreach(IMPORT ${EAGINE_MODULE_TEST_IMPORTS})
+				eagine_target_modules(${TEST_NAME} ${EAGINE_MODULE_PROPER})
+			endforeach()
+
+			set_target_properties(${TEST_NAME} PROPERTIES FOLDER "Test/Core")
+
+			add_test(
+				NAME "build-${TEST_NAME}"
+				COMMAND "${CMAKE_COMMAND}"
+					--build "${CMAKE_BINARY_DIR}"
+					--target "${TEST_NAME}"
+			)
+			set_tests_properties(
+				"build-${TEST_NAME}"
+				PROPERTIES
+					TIMEOUT 200
+				FIXTURES_SETUP
+					"${TEST_NAME}-built"
+			)
+		else()
+			message(
+				FATAL_ERROR
+				"Missing source for unit test ${EAGINE_MODULE_PROPER}.${UNIT}!"
+			)
+		endif()
+	endforeach()
+endfunction()

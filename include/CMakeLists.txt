@@ -13,6 +13,14 @@ set(GEN_HPPS
 	eagine/config/os_info.hpp
 	eagine/config/git_info.hpp
 )
+# - testing headers or implementation files ------------------------------------
+add_library(eagine-core-testing-headers INTERFACE)
+
+set_property(
+	TARGET eagine-core-testing-headers
+	APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
 # - generated headers or implementation files ----------------------------------
 add_library(eagine-core-generated-headers INTERFACE)
 
