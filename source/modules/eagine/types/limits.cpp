@@ -120,7 +120,7 @@ struct within_limits<T, T> {
 export template <typename Dst, typename Src>
 constexpr auto is_within_limits(const Src value) noexcept {
     return implicitly_within_limits<Dst, Src>::value ||
-           within_limits<Dst, Src>::check(value);
+           within_limits<Dst, Src>().check(value);
 }
 //------------------------------------------------------------------------------
 /// @brief Casts @p value to Dst type if the value fits in that type.
@@ -160,9 +160,7 @@ constexpr auto signedness_cast(Src value) noexcept {
 /// @see limit_cast
 /// @see assign_if_fits
 export template <typename Dst, typename Src>
-constexpr auto convert_if_fits(Src value) noexcept -> std::optional<Dst>
-    requires(std::is_convertible_v<Src, Dst>)
-{
+constexpr auto convert_if_fits(Src value) noexcept -> std::optional<Dst> {
     if(is_within_limits<Dst>(value)) {
         if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<Dst>) {
             return {Dst(value)};
