@@ -205,7 +205,7 @@ using basic_lc_identifier_trie =
   basic_trie<"0123456789_abcdefghijklmnopqrstuvwxyz", Value>;
 export template <typename Value = nothing_t>
 using basic_identifier_trie = basic_trie<
-  "0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",
   Value>;
 
 export using identifier_trie = basic_identifier_trie<>;

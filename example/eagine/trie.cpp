@@ -19,7 +19,7 @@ auto main() -> int {
         }
     };
 
-    basic_trie<"_0123456789abcdefghijklmnopqrstuvwxyz", int> t;
+    basic_identifier_trie<int> t;
 
     print(t.find("foo"));
     t.insert("foo", 0);
