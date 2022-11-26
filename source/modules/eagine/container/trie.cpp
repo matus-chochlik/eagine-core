@@ -12,6 +12,8 @@ module;
 export module eagine.core.container:trie;
 import eagine.core.types;
 import eagine.core.memory;
+import <cstdint>;
+import <algorithm>;
 import <array>;
 import <optional>;
 import <vector>;
@@ -19,7 +21,7 @@ import <type_traits>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-class basic_trie_utils {
+export class basic_trie_utils {
     template <std::size_t I>
     using index_constant = std::integral_constant<std::size_t, I>;
 
@@ -104,7 +106,8 @@ public:
 //------------------------------------------------------------------------------
 export template <memory::string_literal Chars, std::size_t N, typename Value>
 class basic_trie_impl : private basic_trie_utils {
-    using key_type = std::array<std::size_t, N>;
+    static_assert(std::is_sorted(Chars.begin(), Chars.begin() + N - 1));
+    using key_type = std::array<std::uint32_t, N>;
     using node_type = std::tuple<key_type, Value>;
 
     auto _find_insert_pos(const string_view str) const noexcept
@@ -115,7 +118,7 @@ class basic_trie_impl : private basic_trie_utils {
         while(offs < str.size()) {
             if(const auto cidx{this->get_char_index<Chars>(str[offs])})
               [[likely]] {
-                const auto next{std::get<0>(_nodes[iidx])[*cidx]};
+                const auto next{std_size(std::get<0>(_nodes[iidx])[*cidx])};
                 if(next == 0) {
                     break;
                 } else {
@@ -148,7 +151,8 @@ public:
                 const auto next{_nodes.size()};
                 _nodes.emplace_back(node_type{});
                 if(const auto cidx{this->get_char_index<Chars>(str[offs])}) {
-                    std::get<0>(_nodes[iidx])[*cidx] = next;
+                    std::get<0>(_nodes[iidx])[*cidx] =
+                      limit_cast<std::uint32_t>(next);
                     iidx = next;
                     ++offs;
                 } else {
@@ -184,6 +188,10 @@ public:
         return {nothing};
     }
 
+    auto underlying() const noexcept -> span<const node_type> {
+        return view(_nodes);
+    }
+
 private:
     Value _default{};
     std::vector<node_type> _nodes;
@@ -193,8 +201,12 @@ export template <memory::string_literal chars, typename Value = nothing_t>
 using basic_trie = basic_trie_impl<chars, chars.size(), Value>;
 //------------------------------------------------------------------------------
 export template <typename Value = nothing_t>
-using basic_identifier_trie =
-  basic_trie<"_01234567890abcdefghijklmnopqrstuvwxyz", Value>;
+using basic_lc_identifier_trie =
+  basic_trie<"0123456789_abcdefghijklmnopqrstuvwxyz", Value>;
+export template <typename Value = nothing_t>
+using basic_identifier_trie = basic_trie<
+  "0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+  Value>;
 
 export using identifier_trie = basic_identifier_trie<>;
 //------------------------------------------------------------------------------
