@@ -512,7 +512,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 				"execute-${TEST_NAME}"
 				PROPERTIES
 					TIMEOUT 200
-					FIXTURES_REQUIRE
+					FIXTURES_REQUIRED
 					"${TEST_NAME}-built"
 			)
 		else()

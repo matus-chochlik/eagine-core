@@ -9,22 +9,26 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
 //------------------------------------------------------------------------------
-void test_anything_default_construct() {
+void test_anything_default_construct(auto& s) {
+    const eagitest::case_ self{"default_construct", s};
     eagine::anything a;
-    (void)a;
+    s.constructed("a", a);
 }
 //------------------------------------------------------------------------------
-void test_anything_construct() {
+void test_anything_construct(auto& s) {
+    const eagitest::case_ self{"construct", s};
     eagine::anything ai(0);
-    (void)ai;
+    s.constructed("ai", ai);
     eagine::anything af(0.F);
-    (void)af;
+    s.constructed("af", af);
     eagine::anything ad(0.0);
-    (void)ad;
+    s.constructed("ad", ad);
 }
 //------------------------------------------------------------------------------
 auto main() -> int {
-    test_anything_default_construct();
+    eagitest::suite test{"anything"};
+    test(test_anything_default_construct);
+    test(test_anything_construct);
     return 0;
 }
 //------------------------------------------------------------------------------
