@@ -146,4 +146,5 @@ eagine_add_module_tests(
 	eagine.core.utility
 	UNITS
 		array_size
+		memoized
 )
