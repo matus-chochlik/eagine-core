@@ -99,4 +99,5 @@ eagine_add_module_tests(
 	UNITS
 		anything
 		bitfield
+		tribool
 )

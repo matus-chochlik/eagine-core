@@ -34,8 +34,3 @@ add_subdirectory(source)
 add_subdirectory(example)
 add_subdirectory(deploy)
 
-# tests
-if(NOT ${NO_TESTS})
-	add_subdirectory(test)
-endif()
-
