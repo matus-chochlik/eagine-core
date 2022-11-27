@@ -66,9 +66,14 @@ auto suite::once(void (*func)(eagitest::suite&)) -> suite& {
     return *this;
 }
 //------------------------------------------------------------------------------
-auto suite::repeat(int count, void (*func)(eagitest::suite&)) -> suite& {
-    for(int i = 0; i < count; ++i) {
-        once(func);
+auto suite::repeat(unsigned count, void (*func)(unsigned, eagitest::suite&))
+  -> suite& {
+    for(unsigned i = 0; i < count; ++i) {
+        try {
+            func(i, *this);
+        } catch(const abort_test_case&) {
+        } catch(...) {
+        }
     }
     return *this;
 }
@@ -93,6 +98,15 @@ case_::~case_() noexcept {
         std::clog << " test case '" << _parent._name << "/" << this->_name
                   << "' finished" << std::endl;
     }
+}
+//------------------------------------------------------------------------------
+auto case_::parameter(const auto& value, std::string_view name) noexcept
+  -> case_& {
+    if(_parent._is_verbose) {
+        std::clog << "  parameter '" << _parent._name << "/" << this->_name
+                  << "/" << name << "': " << value << std::endl;
+    }
+    return *this;
 }
 //------------------------------------------------------------------------------
 auto case_::constructed(const auto&, std::string_view name) noexcept -> case_& {

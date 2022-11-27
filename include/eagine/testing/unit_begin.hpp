@@ -44,7 +44,7 @@ public:
     auto random() noexcept -> random_generator&;
 
     auto once(void (*func)(eagitest::suite&)) -> suite&;
-    auto repeat(int, void (*func)(eagitest::suite&)) -> suite&;
+    auto repeat(unsigned, void (*func)(unsigned, eagitest::suite&)) -> suite&;
 
     auto exit_code() const noexcept -> int;
 
@@ -53,7 +53,7 @@ private:
 
     random_generator _rand_gen;
     const std::string_view _name;
-    bool _is_verbose{true};
+    bool _is_verbose{false};
     bool _checks_failed{false};
 };
 //------------------------------------------------------------------------------
@@ -66,7 +66,8 @@ public:
     auto operator=(const case_&) = delete;
     ~case_() noexcept;
 
-    auto constructed(const auto&, std::string_view label) noexcept -> case_&;
+    auto parameter(const auto&, std::string_view name) noexcept -> case_&;
+    auto constructed(const auto&, std::string_view name) noexcept -> case_&;
     auto checkpoint(
       std::string_view label
 #if __cpp_lib_source_location >= 201907L

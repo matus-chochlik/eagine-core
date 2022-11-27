@@ -10,6 +10,9 @@
 import eagine.core.types;
 import <array>;
 import <tuple>;
+//
+import <iostream>;
+import <iomanip>;
 //------------------------------------------------------------------------------
 enum class test_bit : unsigned {
     bit_0 = 1U << 0U,
@@ -94,19 +97,60 @@ void bitfield_default_construct(auto& s) {
       "!has_all");
 }
 //------------------------------------------------------------------------------
-void bitfield_underlying_construct(auto& s) {
+void bitfield_underlying_bits_construct_impl(unsigned u, auto& s) {
     eagitest::case_ test{s, "underlying construct"};
-    const auto u{s.random().get_between(0x00U, 0xFF)};
+    test.parameter(u, "underlying");
+
     eagine::bitfield<test_bit> b{u};
     test.constructed(b, "b");
     test.check(b.is_empty() == (u == 0U), "empty if no bits set");
     test.check(!b == (u == 0U), "false if no bits set");
+    test.check(bool(b) == (u != 0U), "true if bits set");
+    //
+    for(auto [idx, bit] : test_bit_list()) {
+        test.check(
+          b.has(bit) == (((u >> idx) & 0x1U) == 0x1U), "has(bit_{})", idx);
+    }
+    //
+    for(auto [idx, bit] : test_bit_list()) {
+        test.check(
+          b.has_not(bit) == (((u >> idx) & 0x1U) != 0x1U),
+          "has_not(bit_{}) bit",
+          idx);
+    }
+    //
+    for(auto [idx, bit] : test_bit_list()) {
+        test.check(
+          b.has_only(bit) ==
+            ((((~(1U << idx) & 0xFFU) & u) == 0x00U) && (u != 0U)),
+          "has_only(bit_{})",
+          idx);
+    }
+    //
+}
+//------------------------------------------------------------------------------
+void bitfield_underlying_bits_construct(unsigned run, auto& s) {
+    if(run < 1) {
+        bitfield_underlying_bits_construct_impl(0x00U, s);
+        bitfield_underlying_bits_construct_impl(0x01U, s);
+        bitfield_underlying_bits_construct_impl(0x02U, s);
+        bitfield_underlying_bits_construct_impl(0x04U, s);
+        bitfield_underlying_bits_construct_impl(0x08U, s);
+        bitfield_underlying_bits_construct_impl(0x10U, s);
+        bitfield_underlying_bits_construct_impl(0x20U, s);
+        bitfield_underlying_bits_construct_impl(0x40U, s);
+        bitfield_underlying_bits_construct_impl(0x80U, s);
+        bitfield_underlying_bits_construct_impl(0xFFU, s);
+    } else {
+        bitfield_underlying_bits_construct_impl(
+          s.random().get_between(0x00U, 0xFFU), s);
+    }
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
     eagitest::suite test{argc, argv, "bitfield"};
     test.once(bitfield_default_construct);
-    test.repeat(100, bitfield_default_construct);
+    test.repeat(100, bitfield_underlying_bits_construct);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
