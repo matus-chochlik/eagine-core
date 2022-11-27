@@ -7,6 +7,7 @@
 ///
 ///
 import <string_view>;
+import <vector>;
 import <random>;
 import <type_traits>;
 #if __cpp_lib_source_location >= 201907L
@@ -28,6 +29,13 @@ public:
 
     template <typename T>
     auto get_any(std::type_identity<T> = {}) noexcept -> T;
+
+    template <typename T>
+    auto fill(std::vector<T>& dest) noexcept {
+        for(auto& e : dest) {
+            e = get_any<T>();
+        }
+    }
 
 private:
     std::default_random_engine _re{};
