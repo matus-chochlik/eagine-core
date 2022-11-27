@@ -234,4 +234,5 @@ eagine_add_module_tests(
 	UNITS
 		bit_density
 		biteset
+		byteset
 )

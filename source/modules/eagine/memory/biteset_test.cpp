@@ -306,9 +306,9 @@ void biteset_4(unsigned run, auto& s) {
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
     eagitest::suite test{argc, argv, "biteset"};
-    test.repeat(100, biteset_1);
-    test.repeat(100, biteset_2);
-    test.repeat(100, biteset_3);
+    test.repeat(1000, biteset_1);
+    test.repeat(1000, biteset_2);
+    test.repeat(1000, biteset_3);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
