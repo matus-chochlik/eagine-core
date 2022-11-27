@@ -9,7 +9,7 @@ define_property(
 	BRIEF_DOCS "Module PCM path"
 	FULL_DOCS "Clang C++ modules PCM file path for module target"
 )
-
+# ------------------------------------------------------------------------------
 function(eagine_append_single_module_pcms)
 	set(ARG_VALUES SOURCE TARGET)
 	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
@@ -38,7 +38,7 @@ function(eagine_append_single_module_pcms)
 		)
 	endif()
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_depend_single_module_pcms)
 	set(ARG_VALUES SOURCE TARGET)
 	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
@@ -48,7 +48,7 @@ function(eagine_depend_single_module_pcms)
 		${EAGINE_MODULE_SOURCE}-pcm
 	)
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_append_module_pcms)
 	set(ARG_VALUES SOURCE TARGET)
 	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
@@ -74,7 +74,7 @@ function(eagine_append_module_pcms)
 		)
 	endforeach()
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_append_own_module_pcms)
 	set(ARG_VALUES SOURCE TARGET)
 	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
@@ -112,7 +112,7 @@ function(eagine_append_own_module_pcms)
 		)
 	endforeach()
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_add_module_common_properties TARGET_NAME)
 	set_property(
 		TARGET ${TARGET_NAME}
@@ -140,7 +140,7 @@ function(eagine_add_module_common_properties TARGET_NAME)
 		)
 	endif()
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
 	set(ARG_VALUES PARTITION PP_NAME)
@@ -429,15 +429,39 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		)
 	endif()
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_target_modules TARGET_NAME)
 	eagine_add_module_common_properties(${TARGET_NAME})
 
 	foreach(EAGINE_MODULE_SOURCE ${ARGN})
-		target_link_libraries(
-			${TARGET_NAME}
-			PUBLIC ${EAGINE_MODULE_SOURCE}
+		unset(EAGINE_TARGET_IMPORTS)
+		list(APPEND EAGINE_TARGET_IMPORTS ${EAGINE_MODULE_SOURCE})
+		unset(EAGINE_MODULE_PARTITIONS)
+		get_property(
+			EAGINE_MODULE_PARTITIONS
+			TARGET ${EAGINE_MODULE_SOURCE}
+			PROPERTY EAGINE_MODULE_PARTITIONS
 		)
+		foreach(PARTITION ${EAGINE_MODULE_PARTITIONS})
+			unset(EAGINE_MODULE_IMPORTS)
+			get_property(
+				EAGINE_MODULE_IMPORTS
+				TARGET ${EAGINE_MODULE_SOURCE}
+				PROPERTY EAGINE_MODULE_IMPORTS)
+			foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
+				list(APPEND EAGINE_TARGET_IMPORTS ${IMPORT})
+			endforeach()
+		endforeach()
+		
+		list(REMOVE_DUPLICATES EAGINE_TARGET_IMPORTS)
+		foreach(IMPORT ${EAGINE_TARGET_IMPORTS})
+			target_link_libraries(
+				${TARGET_NAME}
+				PUBLIC ${IMPORT}
+			)
+		endforeach()
+
+
 		get_property(
 			PP_NAME	
 			TARGET ${EAGINE_MODULE_SOURCE}
@@ -460,7 +484,7 @@ function(eagine_target_modules TARGET_NAME)
 		)
 	endforeach()
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
 	set(ARG_VALUES PARTITION PP_NAME)
@@ -472,6 +496,19 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 		EAGINE_MODULE_TEST
 		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
 		${ARGN}
+	)
+	add_test(
+		NAME "build-${EAGINE_MODULE_PROPER}"
+		COMMAND "${CMAKE_COMMAND}"
+			--build "${CMAKE_BINARY_DIR}"
+			--target "${EAGINE_MODULE_PROPER}"
+	)
+	set_tests_properties(
+		"build-${EAGINE_MODULE_PROPER}"
+		PROPERTIES
+			TIMEOUT 200
+		FIXTURES_SETUP
+		"${EAGINE_MODULE_PROPER}-built"
 	)
 	foreach(UNIT ${EAGINE_MODULE_TEST_UNITS})
 		if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${UNIT}_test.cpp")
@@ -486,7 +523,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 			eagine_target_modules(${TEST_NAME} ${EAGINE_MODULE_PROPER})
 
 			foreach(IMPORT ${EAGINE_MODULE_TEST_IMPORTS})
-				eagine_target_modules(${TEST_NAME} ${EAGINE_MODULE_PROPER})
+				eagine_target_modules(${TEST_NAME} ${IMPORT})
 			endforeach()
 
 			set_target_properties(${TEST_NAME} PROPERTIES FOLDER "Test/Core")
@@ -500,9 +537,11 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 			set_tests_properties(
 				"build-${TEST_NAME}"
 				PROPERTIES
-					TIMEOUT 200
+					TIMEOUT 60
 				FIXTURES_SETUP
 					"${TEST_NAME}-built"
+				FIXTURES_REQUIRED
+					"${EAGINE_MODULE_PROPER}-built"
 			)
 			add_test(
 				NAME "execute-${TEST_NAME}"
@@ -512,7 +551,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 				"execute-${TEST_NAME}"
 				PROPERTIES
 					TIMEOUT 200
-					FIXTURES_REQUIRED
+				FIXTURES_REQUIRED
 					"${TEST_NAME}-built"
 			)
 		else()
