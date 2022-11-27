@@ -141,3 +141,9 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 )
+
+eagine_add_module_tests(
+	eagine.core.utility
+	UNITS
+		array_size
+)
