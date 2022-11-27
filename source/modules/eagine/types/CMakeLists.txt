@@ -98,4 +98,5 @@ eagine_add_module_tests(
 	eagine.core.types
 	UNITS
 		anything
+		bitfield
 )
