@@ -7,39 +7,79 @@
 ///
 ///
 import <string_view>;
+import <random>;
+import <type_traits>;
+#if __cpp_lib_source_location >= 201907L
+import <source_location>;
+#endif
 
 namespace eagitest {
 //------------------------------------------------------------------------------
+class random_generator {
+public:
+    random_generator(int argc, const char** argv) noexcept;
+
+    template <typename T>
+    auto get_between(T min, T max, std::type_identity<T> = {}) noexcept -> T;
+
+    template <typename T>
+    auto get_any(std::type_identity<T> = {}) noexcept -> T;
+
+private:
+    std::default_random_engine _re{};
+};
+//------------------------------------------------------------------------------
+struct abort_test_case {};
+//------------------------------------------------------------------------------
+class case_;
 class suite {
 public:
-    suite(std::string_view name) noexcept;
+    suite(int argc, const char** argv, std::string_view name) noexcept;
     suite(suite&&) = delete;
     suite(const suite&) = delete;
     auto operator=(suite&&) = delete;
     auto operator=(const suite&) = delete;
     ~suite() noexcept;
 
-    auto constructed(std::string_view, const auto&) noexcept -> suite&;
+    auto random() noexcept -> random_generator&;
 
-    auto checkpoint(std::string_view) noexcept -> suite&;
+    auto once(void (*func)(eagitest::suite&)) -> suite&;
+    auto repeat(int, void (*func)(eagitest::suite&)) -> suite&;
 
-    auto operator()(void (*func)(eagitest::suite&)) -> suite&;
+    auto exit_code() const noexcept -> int;
 
 private:
-    std::string_view _name;
+    friend class case_;
+
+    random_generator _rand_gen;
+    const std::string_view _name;
+    bool _is_verbose{true};
+    bool _checks_failed{false};
 };
 //------------------------------------------------------------------------------
 class case_ {
 public:
-    case_(std::string_view name, suite&) noexcept;
+    case_(suite&, std::string_view name) noexcept;
     case_(case_&&) = delete;
     case_(const case_&) = delete;
     auto operator=(case_&&) = delete;
     auto operator=(const case_&) = delete;
     ~case_() noexcept;
 
+    auto constructed(const auto&, std::string_view label) noexcept -> case_&;
+    auto checkpoint(
+      std::string_view label
+#if __cpp_lib_source_location >= 201907L
+      ,
+      const std::source_location loc = std::source_location::current()
+#endif
+        ) noexcept -> case_&;
+    auto check(bool condition, std::string_view label, const auto&...) noexcept
+      -> case_&;
+
 private:
-    std::string_view _name;
+    suite& _parent;
+    const std::string_view _name;
 };
 //------------------------------------------------------------------------------
 } // namespace eagitest

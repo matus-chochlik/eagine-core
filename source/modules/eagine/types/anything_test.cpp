@@ -9,27 +9,27 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
 //------------------------------------------------------------------------------
-void test_anything_default_construct(auto& s) {
-    const eagitest::case_ self{"default_construct", s};
+void anything_default_construct(auto& s) {
+    eagitest::case_ test{s, "default construct"};
     eagine::anything a;
-    s.constructed("a", a);
+    test.constructed(a, "a");
 }
 //------------------------------------------------------------------------------
-void test_anything_construct(auto& s) {
-    const eagitest::case_ self{"construct", s};
+void anything_construct(auto& s) {
+    eagitest::case_ test{s, "construct"};
     eagine::anything ai(0);
-    s.constructed("ai", ai);
+    test.constructed(ai, "ai");
     eagine::anything af(0.F);
-    s.constructed("af", af);
+    test.constructed(af, "af");
     eagine::anything ad(0.0);
-    s.constructed("ad", ad);
+    test.constructed(ad, "ad");
 }
 //------------------------------------------------------------------------------
-auto main() -> int {
-    eagitest::suite test{"anything"};
-    test(test_anything_default_construct);
-    test(test_anything_construct);
-    return 0;
+auto main(int argc, const char** argv) -> int {
+    eagitest::suite test{argc, argv, "anything"};
+    test.once(anything_default_construct);
+    test.once(anything_construct);
+    return test.exit_code();
 }
 //------------------------------------------------------------------------------
 #include <eagine/testing/unit_end.hpp>
