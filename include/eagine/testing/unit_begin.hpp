@@ -22,6 +22,10 @@ public:
     template <typename T>
     auto get_between(T min, T max, std::type_identity<T> = {}) noexcept -> T;
 
+    auto get_byte(unsigned char min, unsigned char max) noexcept {
+        return get_between(min, max);
+    }
+
     template <typename T>
     auto get_any(std::type_identity<T> = {}) noexcept -> T;
 
@@ -66,6 +70,10 @@ public:
     auto operator=(const case_&) = delete;
     ~case_() noexcept;
 
+    auto random() noexcept -> random_generator& {
+        return _parent.random();
+    }
+
     auto parameter(const auto&, std::string_view name) noexcept -> case_&;
     auto constructed(const auto&, std::string_view name) noexcept -> case_&;
     auto checkpoint(
@@ -75,8 +83,12 @@ public:
       const std::source_location loc = std::source_location::current()
 #endif
         ) noexcept -> case_&;
+
     auto check(bool condition, std::string_view label, const auto&...) noexcept
       -> case_&;
+
+    template <typename T>
+    auto check_equal(T l, T r, std::string_view label) noexcept -> case_&;
 
 private:
     suite& _parent;

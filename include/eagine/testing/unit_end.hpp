@@ -143,4 +143,16 @@ auto case_::check(
     return *this;
 }
 //------------------------------------------------------------------------------
+template <typename T>
+auto case_::check_equal(T l, T r, std::string_view label) noexcept -> case_& {
+    // TODO
+    if(!(l == r)) {
+        std::clog << "  check '" << _parent._name << "/" << this->_name << "/"
+                  << label << "' " << l << " == " << r << " failed";
+        std::clog << std::endl;
+        _parent._checks_failed = true;
+    }
+    return *this;
+}
+//------------------------------------------------------------------------------
 } // namespace eagitest

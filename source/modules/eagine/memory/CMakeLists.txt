@@ -229,3 +229,8 @@ eagine_add_module(
 		stack_allocator_impl
 )
 
+eagine_add_module_tests(
+	eagine.core.memory
+	UNITS
+		biteset
+)
