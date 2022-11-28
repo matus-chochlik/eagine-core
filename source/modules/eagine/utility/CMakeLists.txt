@@ -148,5 +148,6 @@ eagine_add_module_tests(
 		array_size
 		bool_aggregate
 		memoized
+		overloaded
 		scope_exit
 )

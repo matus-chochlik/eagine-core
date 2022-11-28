@@ -155,8 +155,9 @@ auto case_::check(
     return *this;
 }
 //------------------------------------------------------------------------------
-template <typename T>
-auto case_::check_equal(T l, T r, std::string_view label) noexcept -> case_& {
+template <typename L, typename R>
+auto case_::check_equal(const L& l, const R& r, std::string_view label) noexcept
+  -> case_& {
     // TODO
     if(!(l == r)) {
         std::clog << "  check '" << _parent._name << "/" << this->_name << "/"

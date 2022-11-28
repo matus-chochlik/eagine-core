@@ -101,8 +101,9 @@ public:
     auto check(bool condition, std::string_view label, const auto&...) noexcept
       -> case_&;
 
-    template <typename T>
-    auto check_equal(T l, T r, std::string_view label) noexcept -> case_&;
+    template <typename L, typename R>
+    auto check_equal(const L& l, const R& r, std::string_view label) noexcept
+      -> case_&;
 
 private:
     friend class track;
