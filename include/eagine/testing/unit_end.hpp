@@ -130,6 +130,18 @@ auto case_::checkpoint(
     return *this;
 }
 //------------------------------------------------------------------------------
+auto case_::ensure(bool condition, std::string_view label, const auto&...)
+  -> case_& {
+    if(!condition) {
+        std::clog << "  check '" << _parent._name << "/" << this->_name << "/"
+                  << label << "' failed";
+        std::clog << std::endl;
+        _parent._checks_failed = true;
+        throw abort_test_case{};
+    }
+    return *this;
+}
+//------------------------------------------------------------------------------
 auto case_::check(
   bool condition,
   std::string_view label,

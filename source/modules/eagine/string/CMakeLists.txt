@@ -154,4 +154,8 @@ eagine_add_module(
 		keyboard_distance_impl
 )
 
-
+eagine_add_module_tests(
+	eagine.core.string
+	UNITS
+		multi_byte
+)
