@@ -6,6 +6,7 @@
 /// http://www.boost.org/LICENSE_1_0.txt
 ///
 ///
+import <cctype>;
 import <format>;
 import <limits>;
 import <iostream>;
@@ -20,7 +21,13 @@ random_generator::random_generator(int, const char**) noexcept
 template <typename T>
 auto random_generator::get_between(T min, T max, std::type_identity<T>) noexcept
   -> T {
-    if constexpr(std::is_integral_v<T>) {
+    if constexpr(std::is_same_v<std::remove_const_t<T>, char>) {
+        if constexpr(std::is_signed_v<char>) {
+            return std::uniform_int_distribution<signed char>(min, max)(_re);
+        } else {
+            return std::uniform_int_distribution<unsigned char>(min, max)(_re);
+        }
+    } else if constexpr(std::is_integral_v<T>) {
         return std::uniform_int_distribution<T>(min, max)(_re);
     }
     // TODO
@@ -29,12 +36,27 @@ auto random_generator::get_between(T min, T max, std::type_identity<T>) noexcept
 //------------------------------------------------------------------------------
 template <typename T>
 auto random_generator::get_any(std::type_identity<T>) noexcept -> T {
-    if constexpr(std::is_integral_v<T>) {
-        return std::uniform_int_distribution<T>(
-          std::numeric_limits<T>::min(), std::numeric_limits<T>::max())(_re);
+    return get_between(
+      std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+}
+//------------------------------------------------------------------------------
+template <typename Pred>
+auto random_generator::get_string(
+  std::size_t min,
+  std::size_t max,
+  Pred pred) noexcept -> std::string {
+    std::string result(get_std_size(min, max), '\0');
+    for(char& c : result) {
+        do {
+            c = get_any(std::type_identity<char>{});
+        } while(!pred(c));
     }
-    // TODO
-    return {};
+    return result;
+}
+//------------------------------------------------------------------------------
+auto random_generator::get_string(std::size_t min, std::size_t max)
+  -> std::string {
+    return get_string(min, max, [](char c) { return std::isprint(c) != 0; });
 }
 //------------------------------------------------------------------------------
 // test suite
