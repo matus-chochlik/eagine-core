@@ -132,3 +132,9 @@ target_link_libraries(
 		EAGine::Deps::SYSTEMD
 		EAGine::Deps::ZLIB
 )
+
+eagine_add_module_tests(
+	eagine.core.runtime
+	UNITS
+		program_args
+)

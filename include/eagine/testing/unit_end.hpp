@@ -169,7 +169,7 @@ track::track(
 //------------------------------------------------------------------------------
 track::~track() noexcept {
     if(_passed_points < _expected_points) {
-        std::clog << "   track '" << _parent._parent._name << "/"
+        std::clog << "  track '" << _parent._parent._name << "/"
                   << _parent._name << "/" << this->_name << "' not completed ("
                   << _passed_points << "/" << _expected_points << ")";
         std::clog << std::endl;
@@ -179,7 +179,7 @@ track::~track() noexcept {
         if(
           static_cast<std::uint64_t>(0) ==
           (_passed_parts & (static_cast<std::uint64_t>(1) << p))) {
-            std::clog << "   track '" << _parent._parent._name << "/"
+            std::clog << "  track '" << _parent._parent._name << "/"
                       << _parent._name << "/" << this->_name
                       << "' missed part (" << (p + 1) << "/" << _expected_parts
                       << ")";
