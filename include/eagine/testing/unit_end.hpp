@@ -155,4 +155,47 @@ auto case_::check_equal(T l, T r, std::string_view label) noexcept -> case_& {
     return *this;
 }
 //------------------------------------------------------------------------------
+// test track
+//------------------------------------------------------------------------------
+track::track(
+  case_& parent,
+  std::string_view name,
+  std::uint64_t expected_points,
+  std::uint64_t expected_parts) noexcept
+  : _parent{parent}
+  , _name{name}
+  , _expected_points{expected_points}
+  , _expected_parts{expected_parts} {}
+//------------------------------------------------------------------------------
+track::~track() noexcept {
+    if(_passed_points < _expected_points) {
+        std::clog << "   track '" << _parent._parent._name << "/"
+                  << _parent._name << "/" << this->_name << "' not completed ("
+                  << _passed_points << "/" << _expected_points << ")";
+        std::clog << std::endl;
+        _parent._parent._checks_failed = true;
+    }
+    for(std::uint64_t p = 0U; p < _expected_parts; ++p) {
+        if(
+          static_cast<std::uint64_t>(0) ==
+          (_passed_parts & (static_cast<std::uint64_t>(1) << p))) {
+            std::clog << "   track '" << _parent._parent._name << "/"
+                      << _parent._name << "/" << this->_name
+                      << "' missed part (" << (p + 1) << "/" << _expected_parts
+                      << ")";
+            std::clog << std::endl;
+            _parent._parent._checks_failed = true;
+        }
+    }
+}
+//------------------------------------------------------------------------------
+auto track::passed_part(std::uint64_t part) noexcept -> track& {
+    ++_passed_points;
+    if((_expected_parts != 0U) && (part != 0U)) {
+        _passed_parts =
+          _passed_parts | (static_cast<std::uint64_t>(1) << (part - 1U));
+    }
+    return *this;
+}
+//------------------------------------------------------------------------------
 } // namespace eagitest

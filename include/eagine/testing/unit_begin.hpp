@@ -6,6 +6,7 @@
 /// http://www.boost.org/LICENSE_1_0.txt
 ///
 ///
+import <cstdint>;
 import <string_view>;
 import <vector>;
 import <random>;
@@ -43,6 +44,7 @@ private:
 //------------------------------------------------------------------------------
 struct abort_test_case {};
 //------------------------------------------------------------------------------
+class track;
 class case_;
 class suite {
 public:
@@ -62,6 +64,7 @@ public:
 
 private:
     friend class case_;
+    friend class track;
 
     random_generator _rand_gen;
     const std::string_view _name;
@@ -99,8 +102,43 @@ public:
     auto check_equal(T l, T r, std::string_view label) noexcept -> case_&;
 
 private:
+    friend class track;
+
     suite& _parent;
     const std::string_view _name;
+};
+//------------------------------------------------------------------------------
+class track {
+public:
+    track(
+      case_&,
+      std::string_view name,
+      std::uint64_t expected_points,
+      std::uint64_t expected_parts = 0U) noexcept;
+    track(
+      case_& parent,
+      std::uint64_t expected_points,
+      std::uint64_t expected_parts = 0U) noexcept
+      : track{parent, "default", expected_points, expected_parts} {}
+
+    track(track&&) = delete;
+    track(const track&) = delete;
+    auto operator=(track&&) = delete;
+    auto operator=(const track&) = delete;
+    ~track() noexcept;
+
+    auto passed_part(std::uint64_t) noexcept -> track&;
+    auto passed() noexcept -> track& {
+        return passed_part(0U);
+    }
+
+private:
+    case_& _parent;
+    const std::string_view _name;
+    const std::uint64_t _expected_points;
+    const std::uint64_t _expected_parts;
+    std::uint64_t _passed_points{0U};
+    std::uint64_t _passed_parts{0U};
 };
 //------------------------------------------------------------------------------
 } // namespace eagitest
