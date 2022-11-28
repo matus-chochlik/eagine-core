@@ -147,4 +147,5 @@ eagine_add_module_tests(
 	UNITS
 		array_size
 		memoized
+		scope_exit
 )

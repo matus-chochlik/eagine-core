@@ -29,21 +29,25 @@ unsigned long fib_calc(unsigned long n) {
 //------------------------------------------------------------------------------
 void memoized_fibonacci(auto& s) {
     eagitest::case_ test{s, "fibonacci"};
+    eagitest::track trck{test, 0, 5};
 
     using N = unsigned long;
 
     eagine::memoized<N(N)> fib_memo([](N _n, eagine::memoized<N(N)>& m) -> N {
-        if(_n < 2)
+        if(_n < 2) {
             return 1;
+        }
         return m(_n, [](N n, auto& f) { return f(n - 2) + f(n - 1); });
     });
 
     for(int j = 0; j < 20; ++j) {
         for(unsigned long i = 0; i < 90; ++i) {
             test.check_equal(fib_calc(i), fib_memo(i), "A");
+            trck.passed_part(1);
         }
         if(j % 3 == 1) {
             fib_memo.clear();
+            trck.passed_part(2);
         }
     }
 
@@ -54,14 +58,17 @@ void memoized_fibonacci(auto& s) {
 
     for(unsigned long i = 0; i < 90; ++i) {
         test.check_equal(f[i], fib_memo(i), "B");
+        trck.passed_part(3);
     }
 
     for(unsigned long i = 0; i < 90; ++i) {
         fib_memo.reset(i);
+        trck.passed_part(4);
     }
 
     for(unsigned long i = 0; i < 90; ++i) {
         test.check_equal(f[i], fib_memo(i), "C");
+        trck.passed_part(5);
     }
 }
 //------------------------------------------------------------------------------
@@ -75,6 +82,7 @@ unsigned long fact_calc(unsigned n) {
 //------------------------------------------------------------------------------
 void memoized_factorial(auto& s) {
     eagitest::case_ test{s, "factorial"};
+    eagitest::track trck{test, 0, 2};
 
     using M = unsigned;
     using N = unsigned long;
@@ -82,16 +90,19 @@ void memoized_factorial(auto& s) {
     using namespace eagine;
 
     memoized<N(M)> fact_memo([](M _n, eagine::memoized<N(M)>& m) -> N {
-        if(_n < 2)
+        if(_n < 2) {
             return _n;
+        }
         return m(_n, [](M n, auto& f) { return n * f(n - 1); });
     });
     for(int j = 0; j < 20; ++j) {
         for(unsigned i = 0; i < 22; ++i) {
             test.check_equal(fact_calc(i), fact_memo(i), "A");
+            trck.passed_part(1);
         }
         if(j % 7 == 1) {
             fact_memo.clear();
+            trck.passed_part(2);
         }
     }
 }
@@ -106,6 +117,7 @@ unsigned long exp_calc(unsigned x, unsigned e) {
 //------------------------------------------------------------------------------
 void memoized_exponential(auto& s) {
     eagitest::case_ test{s, "exponential"};
+    eagitest::track trck{test, 0, 2};
     auto& rg = s.random();
 
     using M = unsigned;
@@ -125,6 +137,7 @@ void memoized_exponential(auto& s) {
     for(int j = 0; j < 10; ++j) {
         for(unsigned i = 0; i < 64; ++i) {
             test.check_equal(exp_calc(2, i), exp_memo(2, i), "A");
+            trck.passed_part(1);
         }
     }
 
@@ -132,6 +145,7 @@ void memoized_exponential(auto& s) {
         const auto x = rg.get_between(0U, 20U);
         const auto e = rg.get_between(0U, 20U - x);
         test.check_equal(exp_calc(x, e), exp_memo(x, e), "B");
+        trck.passed_part(2);
     }
 }
 //------------------------------------------------------------------------------

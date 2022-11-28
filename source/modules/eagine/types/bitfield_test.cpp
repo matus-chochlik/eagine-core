@@ -39,6 +39,8 @@ auto test_bit_list() noexcept -> std::array<std::tuple<unsigned, test_bit>, 8> {
 //------------------------------------------------------------------------------
 void bitfield_default_construct(auto& s) {
     eagitest::case_ test{s, "default construct"};
+    eagitest::track trck{test, 0, 4};
+
     eagine::bitfield<test_bit> b;
     test.constructed(b, "b");
     test.check(b.is_empty(), "is empty");
@@ -46,18 +48,22 @@ void bitfield_default_construct(auto& s) {
     //
     for(auto [idx, bit] : test_bit_list()) {
         test.check(!b.has(bit), "!has(bit_{})", idx);
+        trck.passed_part(1);
     }
     //
     for(auto [idx, bit] : test_bit_list()) {
         test.check(b.has_not(bit), "has_not(bit_{}) bit", idx);
+        trck.passed_part(2);
     }
     //
     for(auto [idx, bit] : test_bit_list()) {
         test.check(!b.has_only(bit), "!has_only(bit_{})", idx);
+        trck.passed_part(3);
     }
     //
     for(auto [idx, bit] : test_bit_list()) {
         test.check(b.has_at_most(bit), "has_at_most(bit_{})", idx);
+        trck.passed_part(4);
     }
     //
     test.check(
@@ -99,6 +105,8 @@ void bitfield_default_construct(auto& s) {
 //------------------------------------------------------------------------------
 void bitfield_underlying_bits_construct_impl(unsigned u, auto& s) {
     eagitest::case_ test{s, "underlying construct"};
+    eagitest::track trck{test, 0, 3};
+
     test.parameter(u, "underlying");
 
     eagine::bitfield<test_bit> b{u};
@@ -110,6 +118,7 @@ void bitfield_underlying_bits_construct_impl(unsigned u, auto& s) {
     for(auto [idx, bit] : test_bit_list()) {
         test.check(
           b.has(bit) == (((u >> idx) & 0x1U) == 0x1U), "has(bit_{})", idx);
+        trck.passed_part(1);
     }
     //
     for(auto [idx, bit] : test_bit_list()) {
@@ -117,6 +126,7 @@ void bitfield_underlying_bits_construct_impl(unsigned u, auto& s) {
           b.has_not(bit) == (((u >> idx) & 0x1U) != 0x1U),
           "has_not(bit_{}) bit",
           idx);
+        trck.passed_part(2);
     }
     //
     for(auto [idx, bit] : test_bit_list()) {
@@ -125,6 +135,7 @@ void bitfield_underlying_bits_construct_impl(unsigned u, auto& s) {
             ((((~(1U << idx) & 0xFFU) & u) == 0x00U) && (u != 0U)),
           "has_only(bit_{})",
           idx);
+        trck.passed_part(3);
     }
     //
 }
