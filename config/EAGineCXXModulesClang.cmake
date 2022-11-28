@@ -507,8 +507,9 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 		"build-${EAGINE_MODULE_PROPER}"
 		PROPERTIES
 			TIMEOUT 200
-		FIXTURES_SETUP
-		"${EAGINE_MODULE_PROPER}-built"
+			RUN_SERIAL True
+			FIXTURES_SETUP
+			"${EAGINE_MODULE_PROPER}-built"
 	)
 	foreach(UNIT ${EAGINE_MODULE_TEST_UNITS})
 		if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${UNIT}_test.cpp")
@@ -538,10 +539,10 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 				"build-${TEST_NAME}"
 				PROPERTIES
 					TIMEOUT 60
-				FIXTURES_SETUP
-					"${TEST_NAME}-built"
-				FIXTURES_REQUIRED
-					"${EAGINE_MODULE_PROPER}-built"
+					FIXTURES_SETUP
+						"${TEST_NAME}-built"
+					FIXTURES_REQUIRED
+						"${EAGINE_MODULE_PROPER}-built"
 			)
 			add_test(
 				NAME "execute-${TEST_NAME}"
@@ -551,8 +552,8 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 				"execute-${TEST_NAME}"
 				PROPERTIES
 					TIMEOUT 200
-				FIXTURES_REQUIRED
-					"${TEST_NAME}-built"
+					FIXTURES_REQUIRED
+						"${TEST_NAME}-built"
 			)
 		else()
 			message(
