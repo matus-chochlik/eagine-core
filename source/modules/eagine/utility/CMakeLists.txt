@@ -146,6 +146,7 @@ eagine_add_module_tests(
 	eagine.core.utility
 	UNITS
 		array_size
+		bool_aggregate
 		memoized
 		scope_exit
 )
