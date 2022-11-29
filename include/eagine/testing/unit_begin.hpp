@@ -99,6 +99,8 @@ public:
         return _parent.random();
     }
 
+    auto repeats(unsigned count) noexcept -> unsigned;
+
     auto parameter(const auto&, std::string_view name) noexcept -> case_&;
     auto constructed(const auto&, std::string_view name) noexcept -> case_&;
     auto checkpoint(

@@ -122,6 +122,11 @@ case_::~case_() noexcept {
     }
 }
 //------------------------------------------------------------------------------
+auto case_::repeats(unsigned count) noexcept -> unsigned {
+    // TODO: decrease if running on valgrind, etc.
+    return count;
+}
+//------------------------------------------------------------------------------
 auto case_::parameter(const auto& value, std::string_view name) noexcept
   -> case_& {
     if(_parent._is_verbose) {

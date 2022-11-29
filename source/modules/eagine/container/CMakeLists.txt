@@ -47,3 +47,8 @@ eagine_add_module(
 		wrapping
 )
 
+eagine_add_module_tests(
+	eagine.core.container
+	UNITS
+		flat_map
+)
