@@ -511,15 +511,31 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 			FIXTURES_SETUP
 			"${EAGINE_MODULE_PROPER}-built"
 	)
+	unset(EAGINE_MODULE_PROFRAW_FILES)
+	unset(EAGINE_MODULE_PROFRAW_FIXTURES)
 	foreach(UNIT ${EAGINE_MODULE_TEST_UNITS})
 		if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${UNIT}_test.cpp")
 			set(TEST_NAME test.${EAGINE_MODULE_PROPER}.${UNIT})
 			add_executable(${TEST_NAME} EXCLUDE_FROM_ALL "${UNIT}_test.cpp")
-			target_compile_definitions(
+			target_compile_options(
 				${TEST_NAME}
-				PRIVATE BOOST_TEST_MODULE EAGINE_${UNIT}
+				PRIVATE
+					-fprofile-instr-generate
+					-fcoverage-mapping
+					-mllvm
+					-runtime-counter-relocation
 			)
-			target_link_libraries(${TEST_NAME} PRIVATE eagine-core-testing-headers)
+			target_link_options(
+				${TEST_NAME}
+				PRIVATE
+					-fprofile-instr-generate
+					-fcoverage-mapping
+			)
+			target_link_libraries(
+				${TEST_NAME}
+				PRIVATE
+					eagine-core-testing-headers
+			)
 			eagine_add_exe_analysis(${TEST_NAME})
 			eagine_target_modules(${TEST_NAME} ${EAGINE_MODULE_PROPER})
 
@@ -552,9 +568,18 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 				"execute-${TEST_NAME}"
 				PROPERTIES
 					TIMEOUT 200
+					ENVIRONMENT
+						"LLVM_PROFILE_FILE=${EAGINE_MODULE_PROPER}.${UNIT}.profraw"
+					FIXTURES_SETUP
+						"${TEST_NAME}-profraw"
 					FIXTURES_REQUIRED
 						"${TEST_NAME}-built"
 			)
+			list(APPEND
+				EAGINE_MODULE_PROFRAW_FILES
+				"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PROPER}.${UNIT}.profraw"
+			)
+			list(APPEND EAGINE_MODULE_PROFRAW_FIXTURES "${TEST_NAME}-profraw")
 		else()
 			message(
 				FATAL_ERROR
@@ -562,4 +587,19 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 			)
 		endif()
 	endforeach()
+	if(LLVM_PROFDATA)
+		add_test(
+			NAME "profdata-${EAGINE_MODULE_PROPER}"
+			COMMAND "${LLVM_PROFDATA}" merge
+				-o "${EAGINE_MODULE_PROPER}.profdata"
+				-sparse ${EAGINE_MODULE_PROFRAW_FILES}
+		)
+		foreach(FIXTURE ${EAGINE_MODULE_PROFRAW_FIXTURES})
+			set_tests_properties(
+				"profdata-${EAGINE_MODULE_PROPER}"
+				PROPERTIES
+					FIXTURES_REQUIRED ${FIXTURE}
+			)
+		endforeach()
+	endif()
 endfunction()
