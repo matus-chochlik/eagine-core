@@ -11,6 +11,15 @@ import eagine.core.container;
 import <map>;
 import <functional>;
 //------------------------------------------------------------------------------
+void flat_map_default_construct(auto& s) {
+    eagitest::case_ test{s, "default construct"};
+    eagine::flat_map<int, int> fm;
+
+    test.check(fm.empty(), "is empty");
+    test.check_equal(fm.size(), 0U, "size is zero");
+    test.check(fm.begin() == fm.end(), "begin == end");
+}
+//------------------------------------------------------------------------------
 void flat_map_init_from_vector(auto& s) {
     eagitest::case_ test{s, "init from vector"};
     eagitest::track trck{test, 2, 2};
@@ -409,6 +418,7 @@ void flat_map_erase_if(auto& s) {
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
     eagitest::suite test{argc, argv, "flat_map"};
+    test.once(flat_map_default_construct);
     test.once(flat_map_init_from_vector);
     test.once(flat_map_insert);
     test.once(flat_map_insert_at_begin);
