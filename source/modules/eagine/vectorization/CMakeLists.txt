@@ -124,4 +124,5 @@ eagine_add_module_tests(
 		axis
 		compare
 		data
+		diff
 )
