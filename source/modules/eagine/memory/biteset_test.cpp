@@ -283,32 +283,33 @@ void biteset_C(unsigned run, auto& test, std::integral_constant<int, C> c = {}) 
 }
 //------------------------------------------------------------------------------
 void biteset_1(unsigned run, auto& s) {
-    eagitest::case_ test{s, "1"};
+    eagitest::case_ test{s, 1, "1"};
     return biteset_C<1>(run, test);
 }
 //------------------------------------------------------------------------------
 void biteset_2(unsigned run, auto& s) {
-    eagitest::case_ test{s, "2"};
+    eagitest::case_ test{s, 2, "2"};
     return biteset_C<2>(run, test);
 }
 //------------------------------------------------------------------------------
 void biteset_3(unsigned run, auto& s) {
-    eagitest::case_ test{s, "3"};
+    eagitest::case_ test{s, 3, "3"};
     return biteset_C<3>(run, test);
 }
 //------------------------------------------------------------------------------
 void biteset_4(unsigned run, auto& s) {
-    eagitest::case_ test{s, "sort"};
+    eagitest::case_ test{s, 4, "sort"};
     return biteset_C<4>(run, test);
 }
 //------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "biteset"};
-    test.repeat(1000, biteset_1);
-    test.repeat(1000, biteset_2);
-    test.repeat(1000, biteset_3);
+    eagitest::suite test{argc, argv, "biteset", 3};
+    test.repeat(500, biteset_1);
+    test.repeat(500, biteset_2);
+    test.repeat(500, biteset_3);
+    test.repeat(500, biteset_4);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

@@ -337,19 +337,19 @@ void byteset_C(unsigned, auto& test, std::integral_constant<int, 2> c = {}) {
 }
 //------------------------------------------------------------------------------
 void byteset_1(unsigned run, auto& s) {
-    eagitest::case_ test{s, "1"};
+    eagitest::case_ test{s, 1, "1"};
     return byteset_C(run, test, std::integral_constant<int, 1>{});
 }
 //------------------------------------------------------------------------------
 void byteset_2(unsigned run, auto& s) {
-    eagitest::case_ test{s, "2"};
+    eagitest::case_ test{s, 2, "2"};
     return byteset_C(run, test, std::integral_constant<int, 2>{});
 }
 //------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "byteset"};
+    eagitest::suite test{argc, argv, "byteset", 2};
     test.repeat(1000, byteset_1);
     test.repeat(1000, byteset_2);
     return test.exit_code();

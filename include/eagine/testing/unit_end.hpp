@@ -11,6 +11,7 @@ import <format>;
 import <limits>;
 import <iostream>;
 
+#include <cassert>
 namespace eagitest {
 //------------------------------------------------------------------------------
 // test random generator
@@ -61,9 +62,14 @@ auto random_generator::get_string(std::size_t min, std::size_t max)
 //------------------------------------------------------------------------------
 // test suite
 //------------------------------------------------------------------------------
-suite::suite(int argc, const char** argv, std::string_view name) noexcept
+suite::suite(
+  int argc,
+  const char** argv,
+  std::string_view name,
+  suite_case_t cases) noexcept
   : _rand_gen{argc, argv}
-  , _name{name} {
+  , _name{name}
+  , _expected_cases{cases} {
     if(_is_verbose) {
         std::clog << "test suite '" << _name << "' started" << std::endl;
     }
@@ -79,7 +85,7 @@ auto suite::random() noexcept -> random_generator& {
     return _rand_gen;
 }
 //------------------------------------------------------------------------------
-auto suite::once(void (*func)(eagitest::suite&)) -> suite& {
+auto suite::once(void (*func)(eagitest::suite&)) noexcept -> suite& {
     try {
         func(*this);
     } catch(const abort_test_case&) {
@@ -88,8 +94,9 @@ auto suite::once(void (*func)(eagitest::suite&)) -> suite& {
     return *this;
 }
 //------------------------------------------------------------------------------
-auto suite::repeat(unsigned count, void (*func)(unsigned, eagitest::suite&))
-  -> suite& {
+auto suite::repeat(
+  unsigned count,
+  void (*func)(unsigned, eagitest::suite&)) noexcept -> suite& {
     for(unsigned i = 0; i < count; ++i) {
         try {
             func(i, *this);
@@ -100,15 +107,36 @@ auto suite::repeat(unsigned count, void (*func)(unsigned, eagitest::suite&))
     return *this;
 }
 //------------------------------------------------------------------------------
+auto suite::tested_case(suite_case_t case_idx) noexcept -> suite& {
+    if(_expected_cases != 0U) {
+        assert(case_idx != static_cast<suite_case_t>(0));
+        _tested_cases =
+          _tested_cases | (static_cast<suite_case_t>(1) << (case_idx - 1U));
+    }
+    return *this;
+}
+//------------------------------------------------------------------------------
 auto suite::exit_code() const noexcept -> int {
-    return _checks_failed ? 1 : 0;
+    bool failed{_checks_failed};
+    for(suite_case_t c = 0U; c < _expected_cases; ++c) {
+        if(
+          static_cast<suite_case_t>(0) ==
+          (_tested_cases & (static_cast<suite_case_t>(1) << c))) {
+            std::clog << "  suite '" << this->_name << "' missed case ("
+                      << (c + 1) << "/" << _expected_cases << ")";
+            std::clog << std::endl;
+            failed = true;
+        }
+    }
+    return failed ? 1 : 0;
 }
 //------------------------------------------------------------------------------
 // test case
 //------------------------------------------------------------------------------
-case_::case_(suite& parent, std::string_view name) noexcept
+case_::case_(suite& parent, suite_case_t case_idx, std::string_view name) noexcept
   : _parent{parent}
   , _name{name} {
+    _parent.tested_case(case_idx);
     if(_parent._is_verbose) {
         std::clog << " test case '" << _parent._name << "/" << this->_name
                   << "' started" << std::endl;
@@ -200,8 +228,8 @@ auto case_::check_equal(const L& l, const R& r, std::string_view label) noexcept
 track::track(
   case_& parent,
   std::string_view name,
-  std::uint64_t expected_points,
-  std::uint64_t expected_parts) noexcept
+  std::size_t expected_points,
+  track_part_t expected_parts) noexcept
   : _parent{parent}
   , _name{name}
   , _expected_points{expected_points}
@@ -215,10 +243,10 @@ track::~track() noexcept {
         std::clog << std::endl;
         _parent._parent._checks_failed = true;
     }
-    for(std::uint64_t p = 0U; p < _expected_parts; ++p) {
+    for(track_part_t p = 0U; p < _expected_parts; ++p) {
         if(
-          static_cast<std::uint64_t>(0) ==
-          (_passed_parts & (static_cast<std::uint64_t>(1) << p))) {
+          static_cast<track_part_t>(0) ==
+          (_passed_parts & (static_cast<track_part_t>(1) << p))) {
             std::clog << "  track '" << _parent._parent._name << "/"
                       << _parent._name << "/" << this->_name
                       << "' missed part (" << (p + 1) << "/" << _expected_parts
@@ -229,11 +257,12 @@ track::~track() noexcept {
     }
 }
 //------------------------------------------------------------------------------
-auto track::passed_part(std::uint64_t part) noexcept -> track& {
+auto track::passed_part(track_part_t part_idx) noexcept -> track& {
     ++_passed_points;
-    if((_expected_parts != 0U) && (part != 0U)) {
+    if(_expected_parts != 0U) {
+        assert(part_idx != 0U);
         _passed_parts =
-          _passed_parts | (static_cast<std::uint64_t>(1) << (part - 1U));
+          _passed_parts | (static_cast<track_part_t>(1) << (part_idx - 1U));
     }
     return *this;
 }

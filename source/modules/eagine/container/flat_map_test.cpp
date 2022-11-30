@@ -12,7 +12,7 @@ import <map>;
 import <functional>;
 //------------------------------------------------------------------------------
 void flat_map_default_construct(auto& s) {
-    eagitest::case_ test{s, "default construct"};
+    eagitest::case_ test{s, 1, "default construct"};
     eagine::flat_map<int, int> fm;
 
     test.check(fm.empty(), "is empty");
@@ -21,7 +21,7 @@ void flat_map_default_construct(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_map_init_from_vector(auto& s) {
-    eagitest::case_ test{s, "init from vector"};
+    eagitest::case_ test{s, 2, "init from vector"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -64,7 +64,7 @@ void flat_map_init_from_vector(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_map_insert(auto& s) {
-    eagitest::case_ test{s, "insert"};
+    eagitest::case_ test{s, 3, "insert"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -104,7 +104,7 @@ void flat_map_insert(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_map_insert_at_begin(auto& s) {
-    eagitest::case_ test{s, "insert at begin"};
+    eagitest::case_ test{s, 4, "insert at begin"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -144,7 +144,7 @@ void flat_map_insert_at_begin(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_map_insert_at_end(auto& s) {
-    eagitest::case_ test{s, "insert at end"};
+    eagitest::case_ test{s, 5, "insert at end"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -184,7 +184,7 @@ void flat_map_insert_at_end(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_map_insert_at_lower_bound(auto& s) {
-    eagitest::case_ test{s, "insert at lower bound"};
+    eagitest::case_ test{s, 6, "insert at lower bound"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -224,7 +224,7 @@ void flat_map_insert_at_lower_bound(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_map_try_emplace(auto& s) {
-    eagitest::case_ test{s, "try emplace"};
+    eagitest::case_ test{s, 7, "try emplace"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -264,7 +264,7 @@ void flat_map_try_emplace(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_map_emplace(auto& s) {
-    eagitest::case_ test{s, "emplace"};
+    eagitest::case_ test{s, 8, "emplace"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -304,7 +304,7 @@ void flat_map_emplace(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_map_key_assign(auto& s) {
-    eagitest::case_ test{s, "assign by key"};
+    eagitest::case_ test{s, 9, "assign by key"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -335,7 +335,7 @@ void flat_map_key_assign(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_map_erase_key(auto& s) {
-    eagitest::case_ test{s, "erase key"};
+    eagitest::case_ test{s, 10, "erase key"};
     auto& rg{test.random()};
     eagitest::track trck{test, 3, 3};
 
@@ -390,7 +390,7 @@ void flat_map_erase_key(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_map_erase_if(auto& s) {
-    eagitest::case_ test{s, "erase if"};
+    eagitest::case_ test{s, 11, "erase if"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -417,7 +417,7 @@ void flat_map_erase_if(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "flat_map"};
+    eagitest::suite test{argc, argv, "flat_map", 11};
     test.once(flat_map_default_construct);
     test.once(flat_map_init_from_vector);
     test.once(flat_map_insert);

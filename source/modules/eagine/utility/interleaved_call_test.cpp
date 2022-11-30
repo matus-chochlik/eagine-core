@@ -11,7 +11,7 @@ import eagine.core.types;
 import <string>;
 //------------------------------------------------------------------------------
 void interleaved_call_default_1(unsigned, auto& s) {
-    eagitest::case_ test{s, "1"};
+    eagitest::case_ test{s, 1, "1"};
     auto& rg{test.random()};
 
     std::string s1, s2;
@@ -36,7 +36,7 @@ void interleaved_call_default_1(unsigned, auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "interleaved_call"};
+    eagitest::suite test{argc, argv, "interleaved_call", 1};
     test.repeat(100, interleaved_call_1);
     return test.exit_code();
 }

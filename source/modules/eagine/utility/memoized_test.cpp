@@ -28,7 +28,7 @@ unsigned long fib_calc(unsigned long n) {
 }
 //------------------------------------------------------------------------------
 void memoized_fibonacci(auto& s) {
-    eagitest::case_ test{s, "fibonacci"};
+    eagitest::case_ test{s, 1, "fibonacci"};
     eagitest::track trck{test, 0, 5};
 
     using N = unsigned long;
@@ -81,7 +81,7 @@ unsigned long fact_calc(unsigned n) {
 }
 //------------------------------------------------------------------------------
 void memoized_factorial(auto& s) {
-    eagitest::case_ test{s, "factorial"};
+    eagitest::case_ test{s, 2, "factorial"};
     eagitest::track trck{test, 0, 2};
 
     using M = unsigned;
@@ -116,7 +116,7 @@ unsigned long exp_calc(unsigned x, unsigned e) {
 }
 //------------------------------------------------------------------------------
 void memoized_exponential(auto& s) {
-    eagitest::case_ test{s, "exponential"};
+    eagitest::case_ test{s, 3, "exponential"};
     eagitest::track trck{test, 0, 2};
     auto& rg = s.random();
 
@@ -150,7 +150,7 @@ void memoized_exponential(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "memoized"};
+    eagitest::suite test{argc, argv, "memoized", 3};
     test.once(memoized_fibonacci);
     test.once(memoized_factorial);
     test.once(memoized_exponential);

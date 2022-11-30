@@ -509,7 +509,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 			TIMEOUT 200
 			RUN_SERIAL True
 			FIXTURES_SETUP
-			"${EAGINE_MODULE_PROPER}-built"
+				"${EAGINE_MODULE_PROPER}-built"
 	)
 	unset(EAGINE_MODULE_PROFRAW_FILES)
 	unset(EAGINE_MODULE_PROFRAW_FIXTURES)
@@ -598,6 +598,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 			set_tests_properties(
 				"profdata-${EAGINE_MODULE_PROPER}"
 				PROPERTIES
+					TIMEOUT 60
 					FIXTURES_REQUIRED ${FIXTURE}
 			)
 		endforeach()

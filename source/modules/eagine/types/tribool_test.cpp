@@ -10,7 +10,7 @@
 import eagine.core.types;
 //------------------------------------------------------------------------------
 void tribool_default_construct(auto& s) {
-    eagitest::case_ test{s, "default construct"};
+    eagitest::case_ test{s, 1, "default construct"};
     eagine::tribool x;
     test.constructed(x, "x");
 }
@@ -21,7 +21,7 @@ void tribool_default_construct(auto& s) {
 #define CHECK(X) check(bool(X), #X)
 //------------------------------------------------------------------------------
 void tribool_ops(auto& s) {
-    eagitest::case_ test{s, "ops"};
+    eagitest::case_ test{s, 2, "ops"};
 
     eagine::tribool a = true;
     eagine::tribool b = false;
@@ -97,7 +97,7 @@ void tribool_ops(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "tribool"};
+    eagitest::suite test{argc, argv, "tribool", 2};
     test.once(tribool_default_construct);
     test.once(tribool_ops);
     return test.exit_code();

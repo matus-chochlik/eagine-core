@@ -12,7 +12,7 @@ import <set>;
 import <functional>;
 //------------------------------------------------------------------------------
 void flat_set_default_construct(auto& s) {
-    eagitest::case_ test{s, "default construct"};
+    eagitest::case_ test{s, 1, "default construct"};
     eagine::flat_set<int> fs;
 
     test.check(fs.empty(), "is empty");
@@ -21,7 +21,7 @@ void flat_set_default_construct(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_set_init_from_vector(auto& s) {
-    eagitest::case_ test{s, "init from vector"};
+    eagitest::case_ test{s, 2, "init from vector"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -55,7 +55,7 @@ void flat_set_init_from_vector(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_set_insert(auto& s) {
-    eagitest::case_ test{s, "insert"};
+    eagitest::case_ test{s, 3, "insert"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -87,7 +87,7 @@ void flat_set_insert(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_set_insert_at_begin(auto& s) {
-    eagitest::case_ test{s, "insert at begin"};
+    eagitest::case_ test{s, 4, "insert at begin"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -119,7 +119,7 @@ void flat_set_insert_at_begin(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_set_insert_at_end(auto& s) {
-    eagitest::case_ test{s, "insert at end"};
+    eagitest::case_ test{s, 5, "insert at end"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -151,7 +151,7 @@ void flat_set_insert_at_end(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_set_insert_at_lower_bound(auto& s) {
-    eagitest::case_ test{s, "insert at lower bound"};
+    eagitest::case_ test{s, 6, "insert at lower bound"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
@@ -183,7 +183,7 @@ void flat_set_insert_at_lower_bound(auto& s) {
 }
 //------------------------------------------------------------------------------
 void flat_set_erase(auto& s) {
-    eagitest::case_ test{s, "erase"};
+    eagitest::case_ test{s, 7, "erase"};
     eagitest::track trck{test, 3, 3};
     auto& rg{test.random()};
 
@@ -234,7 +234,7 @@ void flat_set_erase(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "flat_set"};
+    eagitest::suite test{argc, argv, "flat_set", 7};
     test.once(flat_set_default_construct);
     test.once(flat_set_init_from_vector);
     test.once(flat_set_insert);

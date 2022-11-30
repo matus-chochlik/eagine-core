@@ -13,7 +13,7 @@ import eagine.core.string;
 //------------------------------------------------------------------------------
 void multi_byte_seq_1(auto& s) {
     using namespace eagine;
-    eagitest::case_ test{s, "seq 1"};
+    eagitest::case_ test{s, 1, "seq 1"};
     auto& rg{s.random()};
 
     std::vector<byte> bytes;
@@ -48,7 +48,7 @@ void multi_byte_seq_1(auto& s) {
 //------------------------------------------------------------------------------
 void multi_byte_seq_2(auto& s) {
     using namespace eagine;
-    eagitest::case_ test{s, "seq 2"};
+    eagitest::case_ test{s, 2, "seq 2"};
     auto& rg{s.random()};
 
     std::vector<multi_byte::code_point> cps, cps2;
@@ -94,7 +94,7 @@ void multi_byte_seq_2(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "multi_byte"};
+    eagitest::suite test{argc, argv, "multi_byte", 2};
     test.once(multi_byte_seq_1);
     test.once(multi_byte_seq_2);
     return test.exit_code();

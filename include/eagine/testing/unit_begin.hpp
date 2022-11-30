@@ -60,9 +60,14 @@ struct abort_test_case {};
 //------------------------------------------------------------------------------
 class track;
 class case_;
+using suite_case_t = std::uint64_t;
 class suite {
 public:
-    suite(int argc, const char** argv, std::string_view name) noexcept;
+    suite(
+      int argc,
+      const char** argv,
+      std::string_view name,
+      suite_case_t cases) noexcept;
     suite(suite&&) = delete;
     suite(const suite&) = delete;
     auto operator=(suite&&) = delete;
@@ -71,8 +76,10 @@ public:
 
     auto random() noexcept -> random_generator&;
 
-    auto once(void (*func)(eagitest::suite&)) -> suite&;
-    auto repeat(unsigned, void (*func)(unsigned, eagitest::suite&)) -> suite&;
+    auto once(void (*func)(eagitest::suite&)) noexcept -> suite&;
+    auto repeat(unsigned, void (*func)(unsigned, eagitest::suite&)) noexcept
+      -> suite&;
+    auto tested_case(suite_case_t) noexcept -> suite&;
 
     auto exit_code() const noexcept -> int;
 
@@ -82,13 +89,15 @@ private:
 
     random_generator _rand_gen;
     const std::string_view _name;
+    const suite_case_t _expected_cases;
+    suite_case_t _tested_cases;
     bool _is_verbose{false};
     bool _checks_failed{false};
 };
 //------------------------------------------------------------------------------
 class case_ {
 public:
-    case_(suite&, std::string_view name) noexcept;
+    case_(suite&, suite_case_t case_idx, std::string_view name) noexcept;
     case_(case_&&) = delete;
     case_(const case_&) = delete;
     auto operator=(case_&&) = delete;
@@ -128,17 +137,18 @@ private:
     const std::string_view _name;
 };
 //------------------------------------------------------------------------------
+using track_part_t = std::uint64_t;
 class track {
 public:
     track(
       case_&,
       std::string_view name,
-      std::uint64_t expected_points,
-      std::uint64_t expected_parts = 0U) noexcept;
+      std::size_t expected_points,
+      track_part_t expected_parts = 0U) noexcept;
     track(
       case_& parent,
-      std::uint64_t expected_points,
-      std::uint64_t expected_parts = 0U) noexcept
+      std::size_t expected_points,
+      track_part_t expected_parts = 0U) noexcept
       : track{parent, "default", expected_points, expected_parts} {}
 
     track(track&&) = delete;
@@ -147,7 +157,7 @@ public:
     auto operator=(const track&) = delete;
     ~track() noexcept;
 
-    auto passed_part(std::uint64_t) noexcept -> track&;
+    auto passed_part(track_part_t) noexcept -> track&;
     auto passed() noexcept -> track& {
         return passed_part(0U);
     }
@@ -155,10 +165,10 @@ public:
 private:
     case_& _parent;
     const std::string_view _name;
-    const std::uint64_t _expected_points;
-    const std::uint64_t _expected_parts;
-    std::uint64_t _passed_points{0U};
-    std::uint64_t _passed_parts{0U};
+    const std::size_t _expected_points;
+    const track_part_t _expected_parts;
+    std::size_t _passed_points{0U};
+    track_part_t _passed_parts{0U};
 };
 //------------------------------------------------------------------------------
 } // namespace eagitest

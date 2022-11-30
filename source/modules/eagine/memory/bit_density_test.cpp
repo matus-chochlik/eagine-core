@@ -13,7 +13,7 @@ import eagine.core.memory;
 void bit_density_length_trip(unsigned, auto& s) {
     using namespace eagine;
 
-    eagitest::case_ test{s, "default construct"};
+    eagitest::case_ test{s, 1, "default construct"};
     auto& rg{test.random()};
 
     for(span_size_t bits = 1; bits <= byte_bits(); ++bits) {
@@ -35,7 +35,7 @@ void bit_density_length_trip(unsigned, auto& s) {
 void bit_density_trip(unsigned, auto& s) {
     using namespace eagine;
 
-    eagitest::case_ test{s, "default construct"};
+    eagitest::case_ test{s, 2, "default construct"};
     auto& rg{test.random()};
 
     std::vector<byte> orig;
@@ -79,7 +79,7 @@ void bit_density_trip(unsigned, auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "bit_density"};
+    eagitest::suite test{argc, argv, "bit_density", 2};
     test.repeat(1000, bit_density_length_trip);
     test.repeat(1000, bit_density_trip);
     return test.exit_code();

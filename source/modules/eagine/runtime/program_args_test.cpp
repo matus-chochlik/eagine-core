@@ -14,7 +14,7 @@ import <vector>;
 import <sstream>;
 //------------------------------------------------------------------------------
 void program_args_empty(auto& s) {
-    eagitest::case_ test{s, "empty"};
+    eagitest::case_ test{s, 1, "empty"};
     std::stringstream out;
 
     std::array<const char*, 1> argv{{nullptr}};
@@ -36,7 +36,7 @@ void program_args_empty(auto& s) {
 }
 //------------------------------------------------------------------------------
 void program_args_none(auto& s) {
-    eagitest::case_ test{s, "none"};
+    eagitest::case_ test{s, 2, "none"};
     std::stringstream out;
 
     std::array<const char*, 2> argv{{"eagitest", nullptr}};
@@ -59,7 +59,7 @@ void program_args_none(auto& s) {
 }
 //------------------------------------------------------------------------------
 void program_args_some(auto& s) {
-    eagitest::case_ test{s, "some"};
+    eagitest::case_ test{s, 3, "some"};
     std::stringstream out;
 
     std::array<const char*, 4> argv{{"eagitest", "--int", "2345", nullptr}};
@@ -88,7 +88,7 @@ void program_args_some(auto& s) {
 }
 //------------------------------------------------------------------------------
 void program_args_iterator(auto& s) {
-    eagitest::case_ test{s, "iterator"};
+    eagitest::case_ test{s, 4, "iterator"};
 
     std::array<const char*, 6> argv{
       {"eagitest", "--int", "2345", "--bool", "true", nullptr}};
@@ -141,7 +141,7 @@ void program_args_iterator(auto& s) {
 }
 //------------------------------------------------------------------------------
 void program_args_range_for(auto& s) {
-    eagitest::case_ test{s, "range for"};
+    eagitest::case_ test{s, 5, "range for"};
     eagitest::track trck{test, 12, 1};
 
     std::array<const char*, 8> argv{
@@ -174,7 +174,7 @@ void program_args_range_for(auto& s) {
 }
 //------------------------------------------------------------------------------
 void program_args_parse(auto& s) {
-    eagitest::case_ test{s, "parse"};
+    eagitest::case_ test{s, 6, "parse"};
     eagitest::track vect{test, 6, 1};
     std::stringstream out;
 
@@ -235,7 +235,7 @@ void program_args_parse(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "program_args"};
+    eagitest::suite test{argc, argv, "program_args", 6};
     test.once(program_args_empty);
     test.once(program_args_none);
     test.once(program_args_some);

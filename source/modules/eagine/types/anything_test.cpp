@@ -10,13 +10,13 @@
 import eagine.core.types;
 //------------------------------------------------------------------------------
 void anything_default_construct(auto& s) {
-    eagitest::case_ test{s, "default construct"};
+    eagitest::case_ test{s, 1, "default construct"};
     eagine::anything a;
     test.constructed(a, "a");
 }
 //------------------------------------------------------------------------------
 void anything_construct(auto& s) {
-    eagitest::case_ test{s, "construct"};
+    eagitest::case_ test{s, 2, "construct"};
     eagine::anything ai(0);
     test.constructed(ai, "ai");
     eagine::anything af(0.F);
@@ -26,7 +26,7 @@ void anything_construct(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "anything"};
+    eagitest::suite test{argc, argv, "anything", 2};
     test.once(anything_default_construct);
     test.once(anything_construct);
     return test.exit_code();

@@ -11,7 +11,7 @@ import eagine.core.utility;
 import <string_view>;
 //------------------------------------------------------------------------------
 void overloaded_1(auto& s) {
-    eagitest::case_ test{s, "1"};
+    eagitest::case_ test{s, 1, "1"};
     const auto func = eagine::overloaded(
       [](int) -> std::string_view { return "int"; },
       [](float) -> std::string_view { return "float"; },
@@ -25,7 +25,7 @@ void overloaded_1(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "overloaded"};
+    eagitest::suite test{argc, argv, "overloaded", 1};
     test.once(overloaded_1);
     return test.exit_code();
 }

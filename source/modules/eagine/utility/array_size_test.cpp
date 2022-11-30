@@ -10,7 +10,7 @@
 import eagine.core.utility;
 //------------------------------------------------------------------------------
 void array_size(auto& s) {
-    eagitest::case_ test{s, "result"};
+    eagitest::case_ test{s, 1, "result"};
 
     float f3[] = {1.f, 2.f, 3.f};
     int i5[] = {1, 2, 3, 4, 5};
@@ -31,7 +31,7 @@ void array_size(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "array_size"};
+    eagitest::suite test{argc, argv, "array_size", 1};
     test.once(array_size);
     return test.exit_code();
 }

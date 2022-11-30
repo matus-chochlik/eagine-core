@@ -38,7 +38,7 @@ auto test_bit_list() noexcept -> std::array<std::tuple<unsigned, test_bit>, 8> {
 }
 //------------------------------------------------------------------------------
 void bitfield_default_construct(auto& s) {
-    eagitest::case_ test{s, "default construct"};
+    eagitest::case_ test{s, 1, "default construct"};
     eagitest::track trck{test, 0, 4};
 
     eagine::bitfield<test_bit> b;
@@ -104,7 +104,7 @@ void bitfield_default_construct(auto& s) {
 }
 //------------------------------------------------------------------------------
 void bitfield_underlying_bits_construct_impl(unsigned u, auto& s) {
-    eagitest::case_ test{s, "underlying construct"};
+    eagitest::case_ test{s, 2, "underlying construct"};
     eagitest::track trck{test, 0, 3};
 
     test.parameter(u, "underlying");
@@ -159,7 +159,7 @@ void bitfield_underlying_bits_construct(unsigned run, auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "bitfield"};
+    eagitest::suite test{argc, argv, "bitfield", 2};
     test.once(bitfield_default_construct);
     test.repeat(100, bitfield_underlying_bits_construct);
     return test.exit_code();

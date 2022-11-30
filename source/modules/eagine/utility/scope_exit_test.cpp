@@ -11,7 +11,7 @@ import eagine.core.types;
 import eagine.core.utility;
 //------------------------------------------------------------------------------
 void scope_exit_false_type(auto& s) {
-    eagitest::case_ test{s, "false_type"};
+    eagitest::case_ test{s, 1, "false_type"};
     eagitest::track trck{test, 4, 4};
 
     int i = 10;
@@ -48,7 +48,7 @@ void scope_exit_false_type(auto& s) {
 }
 //------------------------------------------------------------------------------
 void scope_exit_true_type(auto& s) {
-    eagitest::case_ test{s, "true_type"};
+    eagitest::case_ test{s, 2, "true_type"};
     eagitest::track trck{test, 5, 5};
 
     int i = 11;
@@ -91,7 +91,7 @@ void scope_exit_true_type(auto& s) {
 }
 //------------------------------------------------------------------------------
 void scope_exit_nothing(auto& s) {
-    eagitest::case_ test{s, "nothing"};
+    eagitest::case_ test{s, 3, "nothing"};
     eagitest::track trck{test, 6, 6};
 
     int i = 41;
@@ -142,7 +142,7 @@ void scope_exit_nothing(auto& s) {
 }
 //------------------------------------------------------------------------------
 void scope_exit_finally(auto& s) {
-    eagitest::case_ test{s, "finally"};
+    eagitest::case_ test{s, 4, "finally"};
     eagitest::track trck{test, 6, 6};
 
     int i = 41;
@@ -190,7 +190,7 @@ void scope_exit_finally(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "scope_exit"};
+    eagitest::suite test{argc, argv, "scope_exit", 4};
     test.once(scope_exit_false_type);
     test.once(scope_exit_true_type);
     test.once(scope_exit_nothing);

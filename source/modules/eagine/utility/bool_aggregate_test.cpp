@@ -10,14 +10,14 @@
 import eagine.core.utility;
 //------------------------------------------------------------------------------
 void bool_aggregate_default_construct(auto& s) {
-    eagitest::case_ test{s, "default construct"};
+    eagitest::case_ test{s, 1, "default construct"};
     const eagine::some_true t;
     test.constructed(t, "t");
     test.check(!t, "is false");
 }
 //------------------------------------------------------------------------------
 void bool_aggregate_init_construct(auto& s) {
-    eagitest::case_ test{s, "construct"};
+    eagitest::case_ test{s, 2, "construct"};
 
     const eagine::some_true t{true};
     test.constructed(t, "t");
@@ -29,7 +29,7 @@ void bool_aggregate_init_construct(auto& s) {
 }
 //------------------------------------------------------------------------------
 void bool_aggregate_copy_construct(auto& s) {
-    eagitest::case_ test{s, "copy construct"};
+    eagitest::case_ test{s, 3, "copy construct"};
 
     const eagine::some_true t0{true};
     const eagine::some_true t{t0};
@@ -43,7 +43,7 @@ void bool_aggregate_copy_construct(auto& s) {
 }
 //------------------------------------------------------------------------------
 void bool_aggregate_call_op_bool(auto& s) {
-    eagitest::case_ test{s, "call operator bool"};
+    eagitest::case_ test{s, 4, "call operator bool"};
     eagine::work_done x;
     test.constructed(x, "x");
     test.check(!x, "is false");
@@ -56,7 +56,7 @@ void bool_aggregate_call_op_bool(auto& s) {
 }
 //------------------------------------------------------------------------------
 void bool_aggregate_call_op_self(auto& s) {
-    eagitest::case_ test{s, "call operator self"};
+    eagitest::case_ test{s, 5, "call operator self"};
     eagine::work_done x;
     test.constructed(x, "x");
     test.check(!x, "is false");
@@ -73,7 +73,7 @@ void bool_aggregate_call_op_self(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "bool_aggregate"};
+    eagitest::suite test{argc, argv, "bool_aggregate", 5};
     test.once(bool_aggregate_default_construct);
     test.once(bool_aggregate_init_construct);
     test.once(bool_aggregate_copy_construct);
