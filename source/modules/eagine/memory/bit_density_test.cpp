@@ -80,8 +80,8 @@ void bit_density_trip(unsigned, auto& s) {
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
     eagitest::suite test{argc, argv, "bit_density", 2};
-    test.repeat(1000, bit_density_length_trip);
-    test.repeat(1000, bit_density_trip);
+    test.repeat(100, bit_density_length_trip);
+    test.repeat(100, bit_density_trip);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

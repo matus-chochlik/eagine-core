@@ -37,3 +37,9 @@ eagine_add_module(
 	IMPORTS
 		eagine.core.memory
 )
+
+eagine_add_module_tests(
+	eagine.core.identifier
+	UNITS
+		identifier
+)

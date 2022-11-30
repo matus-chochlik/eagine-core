@@ -24,15 +24,23 @@ public:
     template <typename T>
     auto get_between(T min, T max, std::type_identity<T> = {}) noexcept -> T;
 
-    auto get_char(char min, char max) noexcept {
-        return get_between(min, max);
-    }
-
-    auto get_byte(unsigned char min, unsigned char max) noexcept {
+    auto get_span_size(std::ptrdiff_t min, std::ptrdiff_t max) noexcept {
         return get_between(min, max);
     }
 
     auto get_std_size(std::size_t min, std::size_t max) noexcept {
+        return get_between(min, max);
+    }
+
+    auto get_char(char min, char max) noexcept {
+        return get_between(min, max);
+    }
+
+    auto get_char_from(std::string_view chars) noexcept {
+        return chars[get_std_size(0U, chars.size() - 1U)];
+    }
+
+    auto get_byte(unsigned char min, unsigned char max) noexcept {
         return get_between(min, max);
     }
 
