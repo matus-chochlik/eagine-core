@@ -32,6 +32,10 @@ public:
         return get_between(min, max);
     }
 
+    auto get_int(int min, int max) noexcept {
+        return get_between(min, max);
+    }
+
     auto get_char(char min, char max) noexcept {
         return get_between(min, max);
     }
