@@ -58,35 +58,35 @@ void network_sorter_1_N(Case& test, int n) {
 void network_sort_1(auto& s) {
     eagitest::case_ test{s, 1, "1"};
 
-    network_sorter_1_N<1>(test, test.repeats(1000));
-    network_sorter_1_N<2>(test, test.repeats(1000));
-    network_sorter_1_N<3>(test, test.repeats(1000));
-    network_sorter_1_N<4>(test, test.repeats(1000));
-    network_sorter_1_N<5>(test, test.repeats(1000));
-    network_sorter_1_N<6>(test, test.repeats(1000));
-    network_sorter_1_N<7>(test, test.repeats(900));
-    network_sorter_1_N<8>(test, test.repeats(800));
-    network_sorter_1_N<9>(test, test.repeats(700));
+    network_sorter_1_N<1>(test, test.repeats(100));
+    network_sorter_1_N<2>(test, test.repeats(100));
+    network_sorter_1_N<3>(test, test.repeats(100));
+    network_sorter_1_N<4>(test, test.repeats(100));
+    network_sorter_1_N<5>(test, test.repeats(100));
+    network_sorter_1_N<6>(test, test.repeats(100));
+    network_sorter_1_N<7>(test, test.repeats(90));
+    network_sorter_1_N<8>(test, test.repeats(80));
+    network_sorter_1_N<9>(test, test.repeats(70));
 }
 //------------------------------------------------------------------------------
 void network_sort_2(auto& s) {
     eagitest::case_ test{s, 2, "2"};
 
-    network_sorter_1_N<10>(test, test.repeats(700));
-    network_sorter_1_N<11>(test, test.repeats(700));
-    network_sorter_1_N<12>(test, test.repeats(700));
-    network_sorter_1_N<14>(test, test.repeats(650));
-    network_sorter_1_N<16>(test, test.repeats(600));
-    network_sorter_1_N<32>(test, test.repeats(400));
-    network_sorter_1_N<64>(test, test.repeats(200));
+    network_sorter_1_N<10>(test, test.repeats(70));
+    network_sorter_1_N<11>(test, test.repeats(70));
+    network_sorter_1_N<12>(test, test.repeats(70));
+    network_sorter_1_N<14>(test, test.repeats(65));
+    network_sorter_1_N<16>(test, test.repeats(60));
+    network_sorter_1_N<32>(test, test.repeats(40));
+    network_sorter_1_N<64>(test, test.repeats(20));
 }
 //------------------------------------------------------------------------------
 void network_sort_3(auto& s) {
     eagitest::case_ test{s, 3, "3"};
 
-    network_sorter_1_N<128>(test, test.repeats(100));
-    network_sorter_1_N<256>(test, test.repeats(70));
-    network_sorter_1_N<512>(test, test.repeats(40));
+    network_sorter_1_N<128>(test, test.repeats(10));
+    network_sorter_1_N<256>(test, test.repeats(7));
+    network_sorter_1_N<512>(test, test.repeats(4));
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

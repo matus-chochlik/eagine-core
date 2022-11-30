@@ -40,7 +40,7 @@ void multi_byte_seq_1(auto& s) {
 
             cp += rg.get_between(
               multi_byte::code_point_t(1),
-              multi_byte::code_point_t(l * l * l * l),
+              multi_byte::code_point_t((l + 1) * (l + 1) * l * l),
               std::type_identity<multi_byte::code_point_t>{});
         }
     }
@@ -54,7 +54,7 @@ void multi_byte_seq_2(auto& s) {
     std::vector<multi_byte::code_point> cps, cps2;
     std::vector<byte> bytes;
 
-    for(unsigned i = 0; i < test.repeats(100); ++i) {
+    for(unsigned i = 0; i < test.repeats(1000); ++i) {
 
         std::size_t len = rg.get_between(std::size_t(1), std::size_t(100));
         cps.resize(len);
