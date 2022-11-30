@@ -122,5 +122,6 @@ eagine_add_module_tests(
 	UNITS
 		abs
 		axis
+		compare
 		data
 )
