@@ -149,6 +149,7 @@ eagine_add_module_tests(
 		bool_aggregate
 		callable_ref
 		memoized
+		network_sort
 		overloaded
 		scope_exit
 )
