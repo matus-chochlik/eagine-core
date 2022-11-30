@@ -147,6 +147,7 @@ eagine_add_module_tests(
 	UNITS
 		array_size
 		bool_aggregate
+		callable_ref
 		memoized
 		overloaded
 		scope_exit

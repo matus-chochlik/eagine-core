@@ -54,8 +54,7 @@ void multi_byte_seq_2(auto& s) {
     std::vector<multi_byte::code_point> cps, cps2;
     std::vector<byte> bytes;
 
-    // TODO: repeat
-    for(int i = 0; i < 10000; ++i) {
+    for(unsigned i = 0; i < test.repeats(1000); ++i) {
 
         std::size_t len = rg.get_between(std::size_t(1), std::size_t(100));
         cps.resize(len);

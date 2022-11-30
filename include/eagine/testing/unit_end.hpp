@@ -213,8 +213,15 @@ auto case_::check(
 template <typename L, typename R>
 auto case_::check_equal(const L& l, const R& r, std::string_view label) noexcept
   -> case_& {
-    // TODO
-    if(!(l == r)) {
+    const auto _eq = [&]() {
+        if constexpr(std::is_floating_point_v<L> || std::is_floating_point_v<R>) {
+            using C = std::common_type_t<L, R>;
+            return std::fabs(C(l) - C(r)) <= std::numeric_limits<C>::epsilon();
+        } else {
+            return (l == r);
+        }
+    };
+    if(!_eq()) {
         std::clog << "  check '" << _parent._name << "/" << this->_name << "/"
                   << label << "' " << l << " == " << r << " failed";
         std::clog << std::endl;
