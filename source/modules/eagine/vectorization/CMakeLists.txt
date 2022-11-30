@@ -126,4 +126,5 @@ eagine_add_module_tests(
 		data
 		diff
 		fill
+		from
 )
