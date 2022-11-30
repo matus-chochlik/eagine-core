@@ -236,5 +236,6 @@ eagine_add_module_tests(
 		bit_density
 		biteset
 		block
+		buffer
 		byteset
 )
