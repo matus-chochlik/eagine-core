@@ -594,13 +594,11 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 				-o "${EAGINE_MODULE_PROPER}.profdata"
 				-sparse ${EAGINE_MODULE_PROFRAW_FILES}
 		)
-		foreach(FIXTURE ${EAGINE_MODULE_PROFRAW_FIXTURES})
-			set_tests_properties(
-				"profdata-${EAGINE_MODULE_PROPER}"
-				PROPERTIES
-					TIMEOUT 60
-					FIXTURES_REQUIRED ${FIXTURE}
-			)
-		endforeach()
+		set_tests_properties(
+			"profdata-${EAGINE_MODULE_PROPER}"
+			PROPERTIES
+				TIMEOUT 60
+				FIXTURES_REQUIRED "${EAGINE_MODULE_PROFRAW_FIXTURES}"
+		)
 	endif()
 endfunction()
