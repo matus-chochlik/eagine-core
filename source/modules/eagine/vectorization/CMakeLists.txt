@@ -117,3 +117,8 @@ eagine_add_module(
 		view
 )
 
+eagine_add_module_tests(
+	eagine.core.vectorization
+	UNITS
+		data
+)

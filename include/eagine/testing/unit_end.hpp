@@ -7,6 +7,7 @@
 ///
 ///
 import <cctype>;
+import <cmath>;
 import <format>;
 import <limits>;
 import <iostream>;
@@ -30,6 +31,8 @@ auto random_generator::get_between(T min, T max, std::type_identity<T>) noexcept
         }
     } else if constexpr(std::is_integral_v<T>) {
         return std::uniform_int_distribution<T>(min, max)(_re);
+    } else if constexpr(std::is_floating_point_v<T>) {
+        return std::uniform_real_distribution<T>(min, max)(_re);
     }
     // TODO
     return {};
@@ -224,6 +227,39 @@ auto case_::check_equal(const L& l, const R& r, std::string_view label) noexcept
     if(!_eq()) {
         std::clog << "  check '" << _parent._name << "/" << this->_name << "/"
                   << label << "' " << l << " == " << r << " failed";
+        std::clog << std::endl;
+        _parent._checks_failed = true;
+    }
+    return *this;
+}
+//------------------------------------------------------------------------------
+template <typename L, typename R>
+auto case_::check_close(const L& l, const R& r, std::string_view label) noexcept
+  -> case_& {
+    const auto _close = [&]() {
+        if constexpr(std::is_floating_point_v<L> && std::is_floating_point_v<R>) {
+            const auto cll{std::fpclassify(l)};
+            const auto clr{std::fpclassify(r)};
+            if(cll == clr) {
+                int exl = 0;
+                int exr = 0;
+                const auto frl{std::frexp(l, &exl)};
+                const auto frr{std::frexp(r, &exr)};
+
+                using C = std::common_type_t<L, R>;
+                const auto eps{C(1) / C(1000)};
+                if(exl == exr) {
+                    return std::fabs(C(frl) - C(frr)) <= eps;
+                }
+            }
+            return false;
+        } else {
+            return (l == r);
+        }
+    };
+    if(!_close()) {
+        std::clog << "  check '" << _parent._name << "/" << this->_name << "/"
+                  << label << "' " << l << " ~= " << r << " failed";
         std::clog << std::endl;
         _parent._checks_failed = true;
     }

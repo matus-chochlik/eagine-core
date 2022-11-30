@@ -142,6 +142,10 @@ public:
     auto check_equal(const L& l, const R& r, std::string_view label) noexcept
       -> case_&;
 
+    template <typename L, typename R>
+    auto check_close(const L& l, const R& r, std::string_view label) noexcept
+      -> case_&;
+
 private:
     friend class track;
 
