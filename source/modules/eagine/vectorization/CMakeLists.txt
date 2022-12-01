@@ -127,4 +127,5 @@ eagine_add_module_tests(
 		diff
 		fill
 		from
+		hsum
 )
