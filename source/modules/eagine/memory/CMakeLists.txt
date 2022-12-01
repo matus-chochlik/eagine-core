@@ -237,5 +237,6 @@ eagine_add_module_tests(
 		biteset
 		block
 		buffer
+		byte_allocator
 		byteset
 )
