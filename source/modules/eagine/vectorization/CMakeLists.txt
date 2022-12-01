@@ -128,5 +128,6 @@ eagine_add_module_tests(
 		fill
 		from
 		hsum
+		shuffle
 		view
 )
