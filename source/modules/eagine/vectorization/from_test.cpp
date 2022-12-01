@@ -11,6 +11,8 @@ import eagine.core.vectorization;
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void vect_from_TNV_array(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
     auto& rg{test.random()};
 
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
@@ -45,16 +47,25 @@ void vect_from_T_array(eagitest::case_& test) {
     vect_from_TV_array<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void vect_from_array(auto& s) {
-    eagitest::case_ test{s, 1, "1"};
-
+void vect_from_int_array(auto& s) {
+    eagitest::case_ test{s, 1, "int 1"};
     vect_from_T_array<int>(test);
+}
+//------------------------------------------------------------------------------
+void vect_from_float_array(auto& s) {
+    eagitest::case_ test{s, 2, "float 1"};
     vect_from_T_array<float>(test);
+}
+//------------------------------------------------------------------------------
+void vect_from_double_array(auto& s) {
+    eagitest::case_ test{s, 3, "double 1"};
     vect_from_T_array<double>(test);
 }
 //------------------------------------------------------------------------------
 template <typename T, int N, int M, bool V>
 void vect_from_saafv_TNMV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
     auto& rg{test.random()};
 
     for(unsigned k = 0; k < test.repeats(100); ++k) {
@@ -129,18 +140,29 @@ void vect_from_saafv_T(eagitest::case_& test) {
     vect_from_saafv_TV<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void vect_from_saafv(auto& s) {
-    eagitest::case_ test{s, 2, "2"};
-
+void vect_from_int_saafv(auto& s) {
+    eagitest::case_ test{s, 4, "int 2"};
     vect_from_saafv_T<int>(test);
+}
+//------------------------------------------------------------------------------
+void vect_from_float_saafv(auto& s) {
+    eagitest::case_ test{s, 5, "float 2"};
     vect_from_saafv_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void vect_from_double_saafv(auto& s) {
+    eagitest::case_ test{s, 6, "double 2"};
     vect_from_saafv_T<double>(test);
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "vect_from", 2};
-    test.once(vect_from_array);
-    test.once(vect_from_saafv);
+    eagitest::suite test{argc, argv, "vect_from", 6};
+    test.once(vect_from_int_array);
+    test.once(vect_from_float_array);
+    test.once(vect_from_double_array);
+    test.once(vect_from_int_saafv);
+    test.once(vect_from_float_saafv);
+    test.once(vect_from_double_saafv);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

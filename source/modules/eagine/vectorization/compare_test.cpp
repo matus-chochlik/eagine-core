@@ -11,6 +11,8 @@ import eagine.core.vectorization;
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void vect_compare_TNV_1(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
     auto& rg{test.random()};
 
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
@@ -43,17 +45,26 @@ void vect_compare_T_1(eagitest::case_& test) {
     vect_compare_TV_1<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void vect_compare_1(auto& s) {
-    eagitest::case_ test{s, 1, "1"};
-
+void vect_compare_int_1(auto& s) {
+    eagitest::case_ test{s, 1, "int 1"};
     vect_compare_T_1<int>(test);
+}
+//------------------------------------------------------------------------------
+void vect_compare_float_1(auto& s) {
+    eagitest::case_ test{s, 2, "float 1"};
     vect_compare_T_1<float>(test);
+}
+//------------------------------------------------------------------------------
+void vect_compare_double_1(auto& s) {
+    eagitest::case_ test{s, 3, "double 1"};
     vect_compare_T_1<double>(test);
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "vect_compare", 1};
-    test.once(vect_compare_1);
+    eagitest::suite test{argc, argv, "vect_compare", 3};
+    test.once(vect_compare_int_1);
+    test.once(vect_compare_float_1);
+    test.once(vect_compare_double_1);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

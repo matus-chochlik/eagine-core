@@ -53,17 +53,26 @@ void vect_hsum_T_1(eagitest::case_& test) {
     vect_hsum_TV_1<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void vect_hsum_1(auto& s) {
-    eagitest::case_ test{s, 1, "1"};
-
+void vect_hsum_int_1(auto& s) {
+    eagitest::case_ test{s, 1, "int 1"};
     vect_hsum_T_1<int>(test);
+}
+//------------------------------------------------------------------------------
+void vect_hsum_float_1(auto& s) {
+    eagitest::case_ test{s, 2, "float 1"};
     vect_hsum_T_1<float>(test);
+}
+//------------------------------------------------------------------------------
+void vect_hsum_double_1(auto& s) {
+    eagitest::case_ test{s, 3, "double 1"};
     vect_hsum_T_1<double>(test);
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "vect_hsum", 1};
-    test.once(vect_hsum_1);
+    eagitest::suite test{argc, argv, "vect_hsum", 3};
+    test.once(vect_hsum_int_1);
+    test.once(vect_hsum_float_1);
+    test.once(vect_hsum_double_1);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

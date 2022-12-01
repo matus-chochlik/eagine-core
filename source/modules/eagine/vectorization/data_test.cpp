@@ -180,9 +180,8 @@ void vect_data_copy_assignment(auto& s) {
 //------------------------------------------------------------------------------
 // elements
 //------------------------------------------------------------------------------
-template <typename T, bool V, typename Suite>
-void vect_data_elements_TV(Suite& s) {
-    eagitest::case_ test{s, 1, "element access"};
+template <typename T, bool V>
+void vect_data_elements_TV(eagitest::case_& test) {
     typename eagine::vect::data<T, 1, V>::type v1{T(1)};
     test.check_equal(v1[0], T(1), "1");
 
@@ -223,23 +222,33 @@ void vect_data_elements_TV(Suite& s) {
     test.check_equal(v8[7], T(2), "2");
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Suite>
-void vect_data_elements_T(Suite& s) {
-    vect_data_elements_TV<T, true>(s);
-    vect_data_elements_TV<T, false>(s);
+template <typename T>
+void vect_data_elements_T(eagitest::case_& test) {
+    vect_data_elements_TV<T, true>(test);
+    vect_data_elements_TV<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void vect_data_elements(auto& s) {
-    vect_data_elements_T<int>(s);
-    vect_data_elements_T<float>(s);
-    vect_data_elements_T<double>(s);
+void vect_data_elements_int(auto& s) {
+    eagitest::case_ test{s, 5, "element access int"};
+    vect_data_elements_T<int>(test);
+}
+//------------------------------------------------------------------------------
+void vect_data_elements_float(auto& s) {
+    eagitest::case_ test{s, 6, "element access float"};
+    vect_data_elements_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void vect_data_elements_double(auto& s) {
+    eagitest::case_ test{s, 7, "element access double"};
+    vect_data_elements_T<double>(test);
 }
 //------------------------------------------------------------------------------
 // addition
 //------------------------------------------------------------------------------
-template <typename T, int N, bool V, typename Suite>
-void vect_data_add_TNV(Suite& s) {
-    eagitest::case_ test{s, 5, "addition"};
+template <typename T, int N, bool V>
+void vect_data_add_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
     auto& rg{test.random()};
 
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
@@ -268,35 +277,45 @@ void vect_data_add_TNV(Suite& s) {
     }
 }
 //------------------------------------------------------------------------------
-template <typename T, int N, typename Suite>
-void vect_data_add_TV(Suite& s) {
-    vect_data_add_TNV<T, N, true>(s);
-    vect_data_add_TNV<T, N, false>(s);
+template <typename T, int N>
+void vect_data_add_TV(eagitest::case_& test) {
+    vect_data_add_TNV<T, N, true>(test);
+    vect_data_add_TNV<T, N, false>(test);
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Suite>
-void vect_data_add_T(Suite& s) {
-    vect_data_add_TV<T, 1>(s);
-    vect_data_add_TV<T, 2>(s);
-    vect_data_add_TV<T, 3>(s);
-    vect_data_add_TV<T, 4>(s);
-    vect_data_add_TV<T, 5>(s);
-    vect_data_add_TV<T, 6>(s);
-    vect_data_add_TV<T, 7>(s);
-    vect_data_add_TV<T, 8>(s);
+template <typename T>
+void vect_data_add_T(eagitest::case_& test) {
+    vect_data_add_TV<T, 1>(test);
+    vect_data_add_TV<T, 2>(test);
+    vect_data_add_TV<T, 3>(test);
+    vect_data_add_TV<T, 4>(test);
+    vect_data_add_TV<T, 5>(test);
+    vect_data_add_TV<T, 6>(test);
+    vect_data_add_TV<T, 7>(test);
+    vect_data_add_TV<T, 8>(test);
 }
 //------------------------------------------------------------------------------
-void vect_data_add(auto& s) {
-    vect_data_add_T<int>(s);
-    vect_data_add_T<float>(s);
-    vect_data_add_T<double>(s);
+void vect_data_add_int(auto& s) {
+    eagitest::case_ test{s, 8, "int addition"};
+    vect_data_add_T<int>(test);
+}
+//------------------------------------------------------------------------------
+void vect_data_add_float(auto& s) {
+    eagitest::case_ test{s, 9, "float addition"};
+    vect_data_add_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void vect_data_add_double(auto& s) {
+    eagitest::case_ test{s, 10, "double addition"};
+    vect_data_add_T<double>(test);
 }
 //------------------------------------------------------------------------------
 // subtraction
 //------------------------------------------------------------------------------
-template <typename T, int N, bool V, typename Suite>
-void vect_data_subtract_TNV(Suite& s) {
-    eagitest::case_ test{s, 6, "subtraction"};
+template <typename T, int N, bool V>
+void vect_data_subtract_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
     auto& rg{test.random()};
 
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
@@ -324,35 +343,45 @@ void vect_data_subtract_TNV(Suite& s) {
     }
 }
 //------------------------------------------------------------------------------
-template <typename T, int N, typename Suite>
-void vect_data_subtract_TV(Suite& s) {
-    vect_data_subtract_TNV<T, N, true>(s);
-    vect_data_subtract_TNV<T, N, false>(s);
+template <typename T, int N>
+void vect_data_subtract_TV(eagitest::case_& test) {
+    vect_data_subtract_TNV<T, N, true>(test);
+    vect_data_subtract_TNV<T, N, false>(test);
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Suite>
-void vect_data_subtract_T(Suite& s) {
-    vect_data_subtract_TV<T, 1>(s);
-    vect_data_subtract_TV<T, 2>(s);
-    vect_data_subtract_TV<T, 3>(s);
-    vect_data_subtract_TV<T, 4>(s);
-    vect_data_subtract_TV<T, 5>(s);
-    vect_data_subtract_TV<T, 6>(s);
-    vect_data_subtract_TV<T, 7>(s);
-    vect_data_subtract_TV<T, 8>(s);
+template <typename T>
+void vect_data_subtract_T(eagitest::case_& test) {
+    vect_data_subtract_TV<T, 1>(test);
+    vect_data_subtract_TV<T, 2>(test);
+    vect_data_subtract_TV<T, 3>(test);
+    vect_data_subtract_TV<T, 4>(test);
+    vect_data_subtract_TV<T, 5>(test);
+    vect_data_subtract_TV<T, 6>(test);
+    vect_data_subtract_TV<T, 7>(test);
+    vect_data_subtract_TV<T, 8>(test);
 }
 //------------------------------------------------------------------------------
-void vect_data_subtract(auto& s) {
-    vect_data_subtract_T<int>(s);
-    vect_data_subtract_T<float>(s);
-    vect_data_subtract_T<double>(s);
+void vect_data_subtract_int(auto& s) {
+    eagitest::case_ test{s, 11, "int subtraction"};
+    vect_data_subtract_T<int>(test);
+}
+//------------------------------------------------------------------------------
+void vect_data_subtract_float(auto& s) {
+    eagitest::case_ test{s, 12, "float subtraction"};
+    vect_data_subtract_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void vect_data_subtract_double(auto& s) {
+    eagitest::case_ test{s, 13, "double subtraction"};
+    vect_data_subtract_T<double>(test);
 }
 //------------------------------------------------------------------------------
 // multiplication
 //------------------------------------------------------------------------------
-template <typename T, int N, bool V, typename Suite>
-void vect_data_multiply_TNV(Suite& s) {
-    eagitest::case_ test{s, 7, "multiplication"};
+template <typename T, int N, bool V>
+void vect_data_multiply_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
     auto& rg{test.random()};
 
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
@@ -381,35 +410,45 @@ void vect_data_multiply_TNV(Suite& s) {
     }
 }
 //------------------------------------------------------------------------------
-template <typename T, int N, typename Suite>
-void vect_data_multiply_TV(Suite& s) {
-    vect_data_multiply_TNV<T, N, true>(s);
-    vect_data_multiply_TNV<T, N, false>(s);
+template <typename T, int N>
+void vect_data_multiply_TV(eagitest::case_& test) {
+    vect_data_multiply_TNV<T, N, true>(test);
+    vect_data_multiply_TNV<T, N, false>(test);
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Suite>
-void vect_data_multiply_T(Suite& s) {
-    vect_data_multiply_TV<T, 1>(s);
-    vect_data_multiply_TV<T, 2>(s);
-    vect_data_multiply_TV<T, 3>(s);
-    vect_data_multiply_TV<T, 4>(s);
-    vect_data_multiply_TV<T, 5>(s);
-    vect_data_multiply_TV<T, 6>(s);
-    vect_data_multiply_TV<T, 7>(s);
-    vect_data_multiply_TV<T, 8>(s);
+template <typename T>
+void vect_data_multiply_T(eagitest::case_& test) {
+    vect_data_multiply_TV<T, 1>(test);
+    vect_data_multiply_TV<T, 2>(test);
+    vect_data_multiply_TV<T, 3>(test);
+    vect_data_multiply_TV<T, 4>(test);
+    vect_data_multiply_TV<T, 5>(test);
+    vect_data_multiply_TV<T, 6>(test);
+    vect_data_multiply_TV<T, 7>(test);
+    vect_data_multiply_TV<T, 8>(test);
 }
 //------------------------------------------------------------------------------
-void vect_data_multiply(auto& s) {
-    vect_data_multiply_T<int>(s);
-    vect_data_multiply_T<float>(s);
-    vect_data_multiply_T<double>(s);
+void vect_data_multiply_int(auto& s) {
+    eagitest::case_ test{s, 14, "int multiplication"};
+    vect_data_multiply_T<int>(test);
+}
+//------------------------------------------------------------------------------
+void vect_data_multiply_float(auto& s) {
+    eagitest::case_ test{s, 15, "float multiplication"};
+    vect_data_multiply_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void vect_data_multiply_double(auto& s) {
+    eagitest::case_ test{s, 16, "double multiplication"};
+    vect_data_multiply_T<double>(test);
 }
 //------------------------------------------------------------------------------
 // division
 //------------------------------------------------------------------------------
-template <typename T, int N, bool V, typename Suite>
-void vect_data_divide_TNV(Suite& s) {
-    eagitest::case_ test{s, 8, "division"};
+template <typename T, int N, bool V>
+void vect_data_divide_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
     auto& rg{test.random()};
 
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
@@ -443,43 +482,62 @@ void vect_data_divide_TNV(Suite& s) {
     }
 }
 //------------------------------------------------------------------------------
-template <typename T, int N, typename Suite>
-void vect_data_divide_TV(Suite& s) {
-    vect_data_divide_TNV<T, N, true>(s);
-    vect_data_divide_TNV<T, N, false>(s);
+template <typename T, int N>
+void vect_data_divide_TV(eagitest::case_& test) {
+    vect_data_divide_TNV<T, N, true>(test);
+    vect_data_divide_TNV<T, N, false>(test);
 }
 //------------------------------------------------------------------------------
-template <typename T, typename Suite>
-void vect_data_divide_T(Suite& s) {
-    vect_data_divide_TV<T, 1>(s);
-    vect_data_divide_TV<T, 2>(s);
-    vect_data_divide_TV<T, 3>(s);
-    vect_data_divide_TV<T, 4>(s);
-    vect_data_divide_TV<T, 5>(s);
-    vect_data_divide_TV<T, 6>(s);
-    vect_data_divide_TV<T, 7>(s);
-    vect_data_divide_TV<T, 8>(s);
+template <typename T>
+void vect_data_divide_T(eagitest::case_& test) {
+    vect_data_divide_TV<T, 1>(test);
+    vect_data_divide_TV<T, 2>(test);
+    vect_data_divide_TV<T, 3>(test);
+    vect_data_divide_TV<T, 4>(test);
+    vect_data_divide_TV<T, 5>(test);
+    vect_data_divide_TV<T, 6>(test);
+    vect_data_divide_TV<T, 7>(test);
+    vect_data_divide_TV<T, 8>(test);
 }
 //------------------------------------------------------------------------------
-void vect_data_divide(auto& s) {
-    vect_data_divide_T<int>(s);
-    vect_data_divide_T<float>(s);
-    vect_data_divide_T<double>(s);
+void vect_data_divide_int(auto& s) {
+    eagitest::case_ test{s, 17, "division"};
+    vect_data_divide_T<int>(test);
+}
+//------------------------------------------------------------------------------
+void vect_data_divide_float(auto& s) {
+    eagitest::case_ test{s, 18, "division"};
+    vect_data_divide_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void vect_data_divide_double(auto& s) {
+    eagitest::case_ test{s, 19, "division"};
+    vect_data_divide_T<double>(test);
 }
 //------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "vect_data", 8};
+    eagitest::suite test{argc, argv, "vect_data", 19};
     test.once(vect_data_default_construct);
     test.once(vect_data_initialization);
     test.once(vect_data_copy_construction);
     test.once(vect_data_copy_assignment);
-    test.once(vect_data_elements);
-    test.once(vect_data_add);
-    test.once(vect_data_subtract);
-    test.once(vect_data_multiply);
-    test.once(vect_data_divide);
+    test.once(vect_data_elements_int);
+    test.once(vect_data_elements_float);
+    test.once(vect_data_elements_double);
+    test.once(vect_data_add_int);
+    test.once(vect_data_add_float);
+    test.once(vect_data_add_double);
+    test.once(vect_data_subtract_int);
+    test.once(vect_data_subtract_float);
+    test.once(vect_data_subtract_double);
+    test.once(vect_data_multiply_int);
+    test.once(vect_data_multiply_float);
+    test.once(vect_data_multiply_double);
+    test.once(vect_data_divide_int);
+    test.once(vect_data_divide_float);
+    test.once(vect_data_divide_double);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
