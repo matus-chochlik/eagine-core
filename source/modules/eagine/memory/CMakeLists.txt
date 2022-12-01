@@ -239,4 +239,5 @@ eagine_add_module_tests(
 		buffer
 		byte_allocator
 		byteset
+		std_allocator
 )
