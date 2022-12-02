@@ -157,5 +157,6 @@ eagine_add_module(
 eagine_add_module_tests(
 	eagine.core.string
 	UNITS
+		base64
 		multi_byte
 )
