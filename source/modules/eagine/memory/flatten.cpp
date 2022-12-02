@@ -11,10 +11,10 @@ module;
 
 export module eagine.core.memory:flatten;
 
-import eagine.core.concepts;
 import eagine.core.types;
 import :span;
 import <array>;
+import <concepts>;
 import <tuple>;
 import <utility>;
 import <vector>;
@@ -78,9 +78,8 @@ struct flatten_traits<std::array<Ts, N>, Td> {
     }
 };
 //------------------------------------------------------------------------------
-export template <typename T, typename... P>
+export template <typename T, std::convertible_to<T>... P>
 struct flatten_traits<std::tuple<P...>, T> {
-    static_assert(all_are_convertible_to_v<T, P...>);
 
     template <typename Ps, typename Ss>
     static constexpr auto required_size(

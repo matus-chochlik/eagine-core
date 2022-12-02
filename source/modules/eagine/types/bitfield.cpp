@@ -7,7 +7,7 @@
 ///
 export module eagine.core.types:bitfield;
 
-import eagine.core.concepts;
+import <concepts>;
 import <type_traits>;
 
 namespace eagine {
@@ -93,8 +93,7 @@ public:
     /// @see has_any
     /// @see has_none
     /// @see has_at_most
-    template <typename... B>
-        requires(all_are_same_v<bit_type, B...>)
+    template <std::same_as<bit_type>... B>
     constexpr auto has_all(const bit_type bit, B... bits) const noexcept
       -> bool {
         return (has(bit) && ... && has(bits));
@@ -107,8 +106,7 @@ public:
     /// @see has_all
     /// @see has_none
     /// @see has_at_most
-    template <typename... B>
-        requires(all_are_same_v<bit_type, B...>)
+    template <std::same_as<bit_type>... B>
     constexpr auto has_any(const bit_type bit, B... bits) const noexcept
       -> bool {
         return (has(bit) || ... || has(bits));
@@ -121,8 +119,7 @@ public:
     /// @see has_all
     /// @see has_any
     /// @see has_at_most
-    template <typename... B>
-        requires(all_are_same_v<bit_type, B...>)
+    template <std::same_as<bit_type>... B>
     constexpr auto has_none(const bit_type bit, B... bits) const noexcept
       -> bool {
         return (has_not(bit) && ... && has_not(bits));

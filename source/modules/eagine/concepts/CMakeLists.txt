@@ -7,16 +7,10 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.concepts PARTITION type_traits
-	IMPORTS utils
-)
-
-eagine_add_module(
 	eagine.core.concepts
 	INTERFACES concepts
 	PARTITIONS
 		utils
-		type_traits
 		does_not_hide
 		extractable
 )

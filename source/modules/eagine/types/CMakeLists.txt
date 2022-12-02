@@ -5,6 +5,7 @@
 eagine_add_module(eagine.core.types PARTITION basic)
 eagine_add_module(eagine.core.types PARTITION tribool)
 eagine_add_module(eagine.core.types PARTITION interface)
+eagine_add_module(eagine.core.types PARTITION bitfield)
 
 eagine_add_module(
 	eagine.core.types PARTITION structural
@@ -20,10 +21,6 @@ eagine_add_module(
 	IMPORTS basic
 )
 
-eagine_add_module(
-	eagine.core.types PARTITION bitfield
-	IMPORTS eagine.core.concepts
-)
 
 eagine_add_module(
 	eagine.core.types PARTITION extract
