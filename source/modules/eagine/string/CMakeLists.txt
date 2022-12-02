@@ -158,5 +158,7 @@ eagine_add_module_tests(
 	eagine.core.string
 	UNITS
 		base64
+		bindump
+		hexdump
 		multi_byte
 )
