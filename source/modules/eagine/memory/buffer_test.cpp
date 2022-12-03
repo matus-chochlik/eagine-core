@@ -108,11 +108,53 @@ void buffer_ensure(unsigned, auto& s) {
     }
 }
 //------------------------------------------------------------------------------
+void buffer_enlarge_by(unsigned, auto& s) {
+    eagitest::case_ test{s, 4, "enlarge by"};
+    eagitest::track trck{test, 0, 2};
+    auto& rg{test.random()};
+    using namespace eagine;
+
+    memory::buffer buf;
+
+    int r = 0;
+
+    span_size_t total{0};
+    for(unsigned i = 0; i < test.repeats(100); ++i) {
+        const auto sz = span_size_t(r);
+
+        buf.enlarge_by(sz);
+        total += sz;
+
+        test.check_equal(buf.size(), total, "size is ok");
+        test.check(buf.capacity() >= total, "capacity is ok");
+
+        memory::block blk = buf;
+
+        if(buf.size() > 0) {
+            test.check(bool(blk), "is true");
+            test.check(!!blk, "is not false");
+            test.check(!blk.empty(), "is not empty");
+            test.check(blk.size() >= buf.size(), "size is ok");
+            test.check(blk.begin() != blk.end(), "begin != end");
+            trck.passed_part(1);
+        } else {
+            test.check(!bool(blk), "is false");
+            test.check(!blk, "is not true");
+            test.check(blk.empty(), "is empty");
+            test.check(blk.begin() == blk.end(), "begin == end");
+            trck.passed_part(2);
+        }
+
+        r = rg.get_int(0, 1000);
+    }
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "buffer", 3};
+    eagitest::suite test{argc, argv, "buffer", 4};
     test.once(buffer_default_construct);
     test.repeat(10, buffer_resize);
     test.repeat(10, buffer_ensure);
+    test.repeat(10, buffer_enlarge_by);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
