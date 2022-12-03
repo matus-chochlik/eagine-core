@@ -150,7 +150,7 @@ constexpr auto tan(const Qty& qty)
 export template <typename T>
 constexpr auto arcsin(const T x) {
     using std::asin;
-    return make_tagged_quantity<units::radian>(asin(x));
+    return units::make_tagged_quantity<units::radian>(asin(x));
 }
 
 /// @brief Overload of arc cosine for quantities of angle.
@@ -163,7 +163,7 @@ constexpr auto arcsin(const T x) {
 export template <typename T>
 constexpr auto arccos(const T x) {
     using std::acos;
-    return make_tagged_quantity<units::radian>(acos(x));
+    return units::make_tagged_quantity<units::radian>(acos(x));
 }
 
 /// @brief Overload of tangens for quantities of angle.
@@ -176,7 +176,7 @@ constexpr auto arccos(const T x) {
 export template <typename T>
 constexpr auto arctan(const T y, const T x) {
     using std::atan2;
-    return make_tagged_quantity<units::radian>(atan2(y, x));
+    return units::make_tagged_quantity<units::radian>(atan2(y, x));
 }
 
 /// @brief Alias for type storing angle values in degrees.
