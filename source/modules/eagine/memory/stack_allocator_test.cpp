@@ -11,8 +11,10 @@ import eagine.core.types;
 import eagine.core.memory;
 import <deque>;
 //------------------------------------------------------------------------------
+// test 1
+//------------------------------------------------------------------------------
 template <typename T>
-void memory_alloc_Tn(
+void memory_alloc_Tn_1(
   eagitest::case_& test,
   eagine::memory::block& b,
   std::size_t n) {
@@ -77,7 +79,7 @@ void memory_alloc_T(eagitest::case_& test) {
         std::size_t n = fib[(i + 0) % 2] + fib[(i + 1) % 2];
         fib[i % 2] = n;
 
-        memory_alloc_Tn<T>(test, b, n);
+        memory_alloc_Tn_1<T>(test, b, n);
     }
 }
 //------------------------------------------------------------------------------
@@ -111,14 +113,83 @@ void stack_allocator_double_1(auto& s) {
     memory_alloc_T<double>(test);
 }
 //------------------------------------------------------------------------------
+// test 2
+//------------------------------------------------------------------------------
+template <typename T>
+void memory_stack_alloc_T_hlp_2(
+  std::deque<eagine::memory::owned_block>& blks,
+  eagine::memory::stack_byte_allocator& a,
+  std::size_t n) {
+    blks.emplace_back(
+      a.allocate(eagine::span_size_of<T>(n), eagine::span_align_of<T>()));
+}
+//------------------------------------------------------------------------------
+void stack_allocator_2(auto& s) {
+    eagitest::case_ test{s, 7, "2"};
+    eagitest::track trck{test, 0, 3};
+    auto& rg{test.random()};
+    using namespace eagine;
+
+    std::vector<char> buf;
+    buf.resize(1024 * 1024);
+
+    memory::stack_byte_allocator a(as_bytes(cover(buf)));
+
+    std::deque<memory::owned_block> blks;
+
+    for(unsigned i = 0; i < test.repeats(100); ++i) {
+        const auto n = rg.get_std_size(0, 10);
+
+        switch(i % 7) {
+            case 0:
+                memory_stack_alloc_T_hlp_2<int>(blks, a, n);
+                break;
+            case 1:
+                memory_stack_alloc_T_hlp_2<long>(blks, a, n);
+                break;
+            case 2:
+                memory_stack_alloc_T_hlp_2<float>(blks, a, n);
+                break;
+            case 3:
+                memory_stack_alloc_T_hlp_2<double>(blks, a, n);
+                break;
+            case 4:
+                memory_stack_alloc_T_hlp_2<short>(blks, a, n);
+                break;
+            default:
+                memory_stack_alloc_T_hlp_2<char>(blks, a, n);
+        }
+        trck.passed_part(1);
+    }
+
+    for(std::size_t n = blks.size(), i = 0; i < n; ++i) {
+        test.check(bool(a.has_allocated(blks[i], 0)), "has allocated");
+
+        for(std::size_t j = i; j < n; ++j) {
+            test.check(blks[i].overlaps(blks[j]) == (i == j), "overlaps");
+            trck.passed_part(2);
+        }
+    }
+
+    while(!blks.empty()) {
+        auto i = blks.begin() + rg.get_int(0, int(blks.size() - 1));
+        a.deallocate(std::move(*i), 0);
+        blks.erase(i);
+        trck.passed_part(3);
+    }
+}
+//------------------------------------------------------------------------------
+// main
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "stack_allocator", 6};
+    eagitest::suite test{argc, argv, "stack_allocator", 7};
     test.once(stack_allocator_char_1);
     test.once(stack_allocator_short_1);
     test.once(stack_allocator_int_1);
     test.once(stack_allocator_long_long_1);
     test.once(stack_allocator_float_1);
     test.once(stack_allocator_double_1);
+    test.once(stack_allocator_2);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
