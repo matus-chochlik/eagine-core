@@ -242,5 +242,6 @@ eagine_add_module_tests(
 		offset_ptr
 		offset_span
 		span
+		stack_allocator
 		std_allocator
 )

@@ -273,9 +273,9 @@ public:
         return _alloc.has_allocated(b);
     }
 
-    auto allocate(size_type n, size_type a) noexcept -> owned_block override;
+    auto allocate(size_type n, size_type a) noexcept -> owned_block final;
 
-    void deallocate(owned_block&& b, size_type) noexcept override;
+    void deallocate(owned_block&& b, size_type) noexcept final;
 
 private:
     base_stack_allocator<byte> _alloc;
@@ -307,9 +307,9 @@ public:
     auto has_allocated(const owned_block& b, span_size_t) noexcept
       -> tribool override;
 
-    auto allocate(size_type n, size_type a) noexcept -> owned_block override;
+    auto allocate(size_type n, size_type a) noexcept -> owned_block final;
 
-    void deallocate(owned_block&& b, size_type a) noexcept override;
+    void deallocate(owned_block&& b, size_type a) noexcept final;
 
 private:
     span_size_t _align;

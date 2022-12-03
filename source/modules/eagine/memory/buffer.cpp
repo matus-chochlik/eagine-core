@@ -209,7 +209,7 @@ private:
     }
 
     void _reallocate(const span_size_t new_size) noexcept {
-        _alloc.do_reallocate(_storage, new_size, _align);
+        _alloc.reallocate_inplace(_storage, new_size, _align);
     }
 };
 //------------------------------------------------------------------------------
