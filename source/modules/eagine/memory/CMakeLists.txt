@@ -240,5 +240,6 @@ eagine_add_module_tests(
 		byte_allocator
 		byteset
 		offset_ptr
+		offset_span
 		std_allocator
 )
