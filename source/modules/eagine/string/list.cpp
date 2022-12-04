@@ -183,7 +183,7 @@ void for_each(const string_view list, Func func) noexcept {
     for_each_elem(list, adapted_func);
 }
 //------------------------------------------------------------------------------
-template <typename Func>
+export template <typename Func>
 void rev_for_each_elem(const string_view list, Func func) noexcept {
     span_size_t i = list.size() - 1;
     bool first = true;
@@ -199,7 +199,7 @@ void rev_for_each_elem(const string_view list, Func func) noexcept {
     }
 }
 //------------------------------------------------------------------------------
-template <typename Func>
+export template <typename Func>
 void rev_for_each(const string_view list, Func func) noexcept {
     auto adapted_func = [&func](const element& elem, bool) {
         func(elem.value());
@@ -277,7 +277,7 @@ auto split_c_str(const char* str, const char sep) noexcept
     return std::make_tuple(std::move(res), cnt);
 }
 //------------------------------------------------------------------------------
-auto join(
+export auto join(
   const string_view list,
   const string_view sep,
   const bool trail_sep) noexcept -> std::string {

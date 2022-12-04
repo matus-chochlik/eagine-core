@@ -57,6 +57,10 @@ public:
     template <typename T>
     auto get_any(std::type_identity<T> = {}) noexcept -> T;
 
+    auto get_bool() noexcept {
+        return get_any(std::type_identity<bool>{});
+    }
+
     template <typename T>
     auto fill(std::vector<T>& dest) noexcept {
         for(auto& e : dest) {

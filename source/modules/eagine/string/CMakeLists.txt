@@ -162,4 +162,5 @@ eagine_add_module_tests(
 		from_string
 		hexdump
 		multi_byte
+		list
 )
