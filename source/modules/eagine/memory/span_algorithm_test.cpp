@@ -381,10 +381,129 @@ void span_tail_int(auto& s) {
     span_tail_m_m<int>(test, -10000, 10000);
 }
 //------------------------------------------------------------------------------
+// starts with
+//------------------------------------------------------------------------------
+template <typename T>
+void span_starts_with_T_r1_r2_1(
+  eagitest::case_& test,
+  eagine::span<const T> rng1,
+  eagine::span<T> rng2) {
+    using namespace eagine;
+
+    const span_size_t n = rng2.size();
+
+    bool are_equal = true;
+
+    for(span_size_t i = 0; i < n; ++i) {
+        are_equal &= (rng1[i] == rng2[i]);
+    }
+
+    test.check_equal(eagine::are_equal(rng1, rng2), are_equal, "are equal");
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_starts_with_T_m_m_a(eagitest::case_& test, T min, T max, bool does) {
+    auto& rg{test.random()};
+    std::vector<T> v1(rg.get_std_size(20, 100));
+    std::vector<T> v2(v1.size());
+
+    for(typename std::vector<T>::size_type i = 0; i < v1.size(); ++i) {
+        v1[i] = rg.get_between<T>(min, max);
+        if(does) {
+            v2[i] = v1[i];
+        } else {
+            v2[i] = rg.get_between<T>(min, max);
+        }
+    }
+
+    span_starts_with_T_r1_r2_1<T>(test, eagine::view(v1), eagine::cover(v2));
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_starts_with_T(eagitest::case_& test, T min, T max) {
+    span_starts_with_T_m_m_a(test, min, max, true);
+    span_starts_with_T_m_m_a(test, min, max, false);
+}
+//------------------------------------------------------------------------------
+void span_starts_with_char(auto& s) {
+    eagitest::case_ test{s, 13, "span starts with 1 char"};
+    span_starts_with_T<char>(test, 'A', 'Z');
+}
+//------------------------------------------------------------------------------
+void span_starts_with_int(auto& s) {
+    eagitest::case_ test{s, 14, "span starts with 1 int"};
+    span_starts_with_T<int>(test, -10000, 10000);
+}
+//------------------------------------------------------------------------------
+// ends with
+//------------------------------------------------------------------------------
+template <typename T>
+void span_ends_with_T_r1_r2_1(
+  eagitest::case_& test,
+  eagine::span<T> rng1,
+  eagine::span<const T> rng2) {
+    using namespace eagine;
+
+    const span_size_t n = rng2.size();
+
+    const span_size_t p = rng1.size() - n;
+
+    bool are_equal = true;
+
+    for(span_size_t i = 0; i < n; ++i) {
+        are_equal &= (rng1[p + i] == rng2[i]);
+    }
+
+    test.check_equal(ends_with(rng1, rng2), are_equal, "are equal");
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_ends_with_T_m_m_a(eagitest::case_& test, T min, T max, bool does) {
+    auto& rg{test.random()};
+    std::vector<T> v1(rg.get_std_size(20, 100));
+    std::vector<T> v2(rg.get_std_size(0, v1.size()));
+
+    typename std::vector<T>::size_type i = 0;
+    typename std::vector<T>::size_type p = v1.size() - v2.size();
+
+    while(i < p) {
+        v1[i] = rg.get_between<T>(min, max);
+        ++i;
+    }
+
+    while(i < v1.size()) {
+        v1[i] = rg.get_between<T>(min, max);
+        if(does) {
+            v2[i - p] = v1[i];
+        } else {
+            v2[i - p] = rg.get_between<T>(min, max);
+        }
+        ++i;
+    }
+
+    span_ends_with_T_r1_r2_1<T>(test, eagine::cover(v1), eagine::view(v2));
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_ends_with_T(eagitest::case_& test, T min, T max) {
+    span_ends_with_T_m_m_a(test, min, max, true);
+    span_ends_with_T_m_m_a(test, min, max, false);
+}
+//------------------------------------------------------------------------------
+void span_ends_with_char(auto& s) {
+    eagitest::case_ test{s, 15, "span ends with 1 char"};
+    span_ends_with_T<char>(test, 'A', 'Z');
+}
+//------------------------------------------------------------------------------
+void span_ends_with_int(auto& s) {
+    eagitest::case_ test{s, 16, "span ends with 1 int"};
+    span_ends_with_T<int>(test, -10000, 10000);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "span_algorithm", 12};
+    eagitest::suite test{argc, argv, "span_algorithm", 16};
     test.once(span_equal_1_char);
     test.once(span_equal_1_int);
     test.once(span_slice_1_char);
@@ -397,6 +516,10 @@ auto main(int argc, const char** argv) -> int {
     test.once(span_head_int);
     test.once(span_tail_char);
     test.once(span_tail_int);
+    test.once(span_starts_with_char);
+    test.once(span_starts_with_int);
+    test.once(span_ends_with_char);
+    test.once(span_ends_with_int);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
