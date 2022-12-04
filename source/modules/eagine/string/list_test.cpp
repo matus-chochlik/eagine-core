@@ -22,6 +22,7 @@ void list_empty(auto& s) {
     test.check_equal(e0.header_size(), 1, "header size");
     test.check_equal(e0.footer_size(), 1, "footer size");
     test.check_equal(e0.value_size(), 0, "value size");
+    test.check_equal(string_list::element_count(s0), 0, "count 0");
 }
 //------------------------------------------------------------------------------
 void list_element_1(auto& s) {
@@ -35,7 +36,12 @@ void list_element_1(auto& s) {
     test.check_equal(e1.header_size(), 1, "header size");
     test.check_equal(e1.footer_size(), 1, "footer size");
     test.check_equal(e1.value_size(), 1, "value size");
-    test.check(are_equal(e1.value(), string_view("A")), "value equal");
+    test.check_equal(string_list::element_count(s1), 1, "count 1");
+    test.check_equal(e1.value(), string_view("A"), "value equal");
+    test.check_equal(
+      string_list::front_value(s1), string_view("A"), "front equal");
+    test.check_equal(
+      string_list::back_value(s1), string_view("A"), "back equal");
 }
 //------------------------------------------------------------------------------
 void list_element_2(auto& s) {
@@ -67,7 +73,16 @@ void list_element_2(auto& s) {
     test.check_equal(e2.header_size(), 1, "header size");
     test.check_equal(e2.footer_size(), 1, "footer size");
     test.check_equal(e2.value_size(), 16, "value size");
-    test.check(are_equal(e2.value(), string_view("ABCDEFGHIJKLMNOP")), "value");
+    test.check_equal(string_list::element_count(s2), 1, "count 1");
+    test.check_equal(e2.value(), string_view("ABCDEFGHIJKLMNOP"), "value");
+    test.check_equal(
+      string_list::front_value(s2),
+      string_view("ABCDEFGHIJKLMNOP"),
+      "front value");
+    test.check_equal(
+      string_list::back_value(s2),
+      string_view("ABCDEFGHIJKLMNOP"),
+      "back value");
 }
 //------------------------------------------------------------------------------
 void list_element_3(auto& s) {
@@ -95,9 +110,14 @@ void list_element_3(auto& s) {
     test.check_equal(e3.header_size(), 2, "header size");
     test.check_equal(e3.footer_size(), 2, "footer size");
     test.check_equal(e3.value_size(), 128, "value size");
+    test.check_equal(string_list::element_count(s3), 1, "count 1");
 
     std::string ss3(128, 'x');
-    test.check(are_equal(e3.value(), string_view(ss3)), "value");
+    test.check_equal(e3.value(), string_view(ss3), "value");
+    test.check_equal(
+      string_list::front_value(s3), string_view(ss3), "front value");
+    test.check_equal(
+      string_list::back_value(s3), string_view(ss3), "back value");
 }
 //------------------------------------------------------------------------------
 void list_for_each_element_1(auto& s) {
@@ -116,10 +136,15 @@ void list_for_each_element_1(auto& s) {
     });
 
     std::string ts;
+    test.check_equal(string_list::element_count(ss1), 5, "count 5");
     string_list::for_each_elem(ss1, [&](string_list::element e, bool) {
         ts.append(e.value().data(), std_size(e.value().size()));
     });
     test.check_equal(ts, "AbCDeFgHiJKlMnO", "value");
+    test.check_equal(
+      string_list::front_value(ss1), string_view("A"), "front value");
+    test.check_equal(
+      string_list::back_value(ss1), string_view("KlMnO"), "back value");
 }
 //------------------------------------------------------------------------------
 void list_for_each_element_2(auto& s) {
@@ -227,8 +252,50 @@ void list_join_3(auto& s) {
       "joined");
 }
 //------------------------------------------------------------------------------
+void list_push_back_1(auto& s) {
+    eagitest::case_ test{s, 12, "push back 1"};
+    using namespace eagine;
+
+    std::string sp;
+
+    string_list::push_back(sp, "ABCD");
+    test.check_equal(string_list::element_count(sp), 1, "size 1");
+    test.check_equal(
+      string_list::front_value(sp), string_view("ABCD"), "front value");
+    test.check_equal(
+      string_list::back_value(sp), string_view("ABCD"), "back value");
+
+    string_list::push_back(sp, "EFGHI");
+    test.check_equal(string_list::element_count(sp), 2, "size 2");
+    test.check_equal(
+      string_list::front_value(sp), string_view("ABCD"), "front value");
+    test.check_equal(
+      string_list::back_value(sp), string_view("EFGHI"), "back value");
+
+    string_list::push_back(sp, "JKLMNO");
+    test.check_equal(string_list::element_count(sp), 3, "size 3");
+    test.check_equal(
+      string_list::front_value(sp), string_view("ABCD"), "front value");
+    test.check_equal(
+      string_list::back_value(sp), string_view("JKLMNO"), "back value");
+
+    string_list::push_back(sp, "PQRSTUV");
+    test.check_equal(string_list::element_count(sp), 4, "size 4");
+    test.check_equal(
+      string_list::front_value(sp), string_view("ABCD"), "front value");
+    test.check_equal(
+      string_list::back_value(sp), string_view("PQRSTUV"), "back value");
+
+    string_list::push_back(sp, "WXYZ");
+    test.check_equal(string_list::element_count(sp), 5, "size 5");
+    test.check_equal(
+      string_list::front_value(sp), string_view("ABCD"), "front value");
+    test.check_equal(
+      string_list::back_value(sp), string_view("WXYZ"), "back value");
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "list", 11};
+    eagitest::suite test{argc, argv, "list", 12};
     test.once(list_empty);
     test.once(list_element_1);
     test.once(list_element_2);
@@ -240,6 +307,7 @@ auto main(int argc, const char** argv) -> int {
     test.once(list_join_1);
     test.once(list_join_2);
     test.once(list_join_3);
+    test.once(list_push_back_1);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
