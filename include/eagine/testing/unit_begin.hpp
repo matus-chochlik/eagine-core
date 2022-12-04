@@ -61,6 +61,10 @@ public:
         return get_any(std::type_identity<bool>{});
     }
 
+    auto one_of(int count) noexcept -> bool {
+        return get_int(0, count - 1) == 0;
+    }
+
     template <typename T>
     auto fill(std::vector<T>& dest) noexcept {
         for(auto& e : dest) {

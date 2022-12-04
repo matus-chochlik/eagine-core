@@ -163,4 +163,5 @@ eagine_add_module_tests(
 		hexdump
 		multi_byte
 		list
+		path
 )

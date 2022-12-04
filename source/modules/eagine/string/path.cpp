@@ -247,7 +247,7 @@ public:
     /// @see parent
     void pop_back() noexcept {
         assert(!empty());
-        _str.resize(integer(string_list::pop_back(_str).size()));
+        string_list::pop_back(_str);
         --_size;
     }
 
@@ -356,8 +356,8 @@ private:
     }
 
     static auto _fix(string_view str) noexcept -> string_view {
-        while(str.size() > 0) {
-            if(str[str.size() - 1] == '\0') {
+        while(!str.empty()) {
+            if(str.back() == '\0') {
                 str = string_view(str.data(), str.size() - 1);
             } else {
                 break;

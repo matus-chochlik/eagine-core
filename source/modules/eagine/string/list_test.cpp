@@ -257,45 +257,154 @@ void list_push_back_1(auto& s) {
     using namespace eagine;
 
     std::string sp;
+    test.check_equal(string_list::element_count(sp), 0, "size 0");
 
     string_list::push_back(sp, "ABCD");
     test.check_equal(string_list::element_count(sp), 1, "size 1");
     test.check_equal(
-      string_list::front_value(sp), string_view("ABCD"), "front value");
+      string_list::front_value(sp), string_view("ABCD"), "front value 1");
     test.check_equal(
-      string_list::back_value(sp), string_view("ABCD"), "back value");
+      string_list::back_value(sp), string_view("ABCD"), "back value 1");
 
     string_list::push_back(sp, "EFGHI");
     test.check_equal(string_list::element_count(sp), 2, "size 2");
     test.check_equal(
-      string_list::front_value(sp), string_view("ABCD"), "front value");
+      string_list::front_value(sp), string_view("ABCD"), "front value 2");
     test.check_equal(
-      string_list::back_value(sp), string_view("EFGHI"), "back value");
+      string_list::back_value(sp), string_view("EFGHI"), "back value 2");
 
     string_list::push_back(sp, "JKLMNO");
     test.check_equal(string_list::element_count(sp), 3, "size 3");
     test.check_equal(
-      string_list::front_value(sp), string_view("ABCD"), "front value");
+      string_list::front_value(sp), string_view("ABCD"), "front value 3");
     test.check_equal(
-      string_list::back_value(sp), string_view("JKLMNO"), "back value");
+      string_list::back_value(sp), string_view("JKLMNO"), "back value 3");
 
     string_list::push_back(sp, "PQRSTUV");
     test.check_equal(string_list::element_count(sp), 4, "size 4");
     test.check_equal(
-      string_list::front_value(sp), string_view("ABCD"), "front value");
+      string_list::front_value(sp), string_view("ABCD"), "front value 4");
     test.check_equal(
-      string_list::back_value(sp), string_view("PQRSTUV"), "back value");
+      string_list::back_value(sp), string_view("PQRSTUV"), "back value 4");
 
     string_list::push_back(sp, "WXYZ");
     test.check_equal(string_list::element_count(sp), 5, "size 5");
     test.check_equal(
-      string_list::front_value(sp), string_view("ABCD"), "front value");
+      string_list::front_value(sp), string_view("ABCD"), "front value 5");
     test.check_equal(
-      string_list::back_value(sp), string_view("WXYZ"), "back value");
+      string_list::back_value(sp), string_view("WXYZ"), "back value 5");
+}
+//------------------------------------------------------------------------------
+void list_push_back_2(auto& s) {
+    eagitest::case_ test{s, 13, "push back 2"};
+    using namespace eagine;
+
+    const std::string ex(128, 'x');
+    const std::string ey(256, 'y');
+    const std::string ez(999, 'z');
+
+    std::string sp;
+    test.check_equal(string_list::element_count(sp), 0, "size 0");
+
+    string_list::push_back(sp, ex);
+    test.check_equal(string_list::element_count(sp), 1, "size 1");
+    test.check_equal(string_list::front_value(sp), ex, "front value 1");
+    test.check_equal(string_list::back_value(sp), ex, "back value 1");
+
+    string_list::push_back(sp, ey);
+    test.check_equal(string_list::element_count(sp), 2, "size 2");
+    test.check_equal(string_list::front_value(sp), ex, "front value 2");
+    test.check_equal(string_list::back_value(sp), ey, "back value 2");
+
+    string_list::push_back(sp, ez);
+    test.check_equal(string_list::element_count(sp), 3, "size 3");
+    test.check_equal(string_list::front_value(sp), ex, "front value 3");
+    test.check_equal(string_list::back_value(sp), ez, "back value 3");
+}
+//------------------------------------------------------------------------------
+void list_push_pop_1(auto& s) {
+    eagitest::case_ test{s, 14, "push pop 1"};
+    auto& rg{test.random()};
+    using namespace eagine;
+
+    std::string sp;
+    test.check_equal(string_list::element_count(sp), 0, "size 0");
+
+    for(unsigned i = 0; i < test.repeats(100); ++i) {
+        const auto e{rg.get_string(0, rg.one_of(7) ? 0 : 8192)};
+
+        string_list::push_back(sp, e);
+        test.check_equal(string_list::element_count(sp), 1, "size 1");
+        test.check_equal(string_list::front_value(sp), e, "front value");
+        test.check_equal(string_list::back_value(sp), e, "back value");
+
+        test.ensure(string_list::element_count(sp) > 0, "not empty");
+        string_list::pop_back(sp);
+    }
+    test.check_equal(string_list::element_count(sp), 0, "size 0");
+}
+//------------------------------------------------------------------------------
+void list_push_pop_2(auto& s) {
+    eagitest::case_ test{s, 15, "push pop 2"};
+    auto& rg{test.random()};
+    using namespace eagine;
+
+    std::string sp;
+    const auto f{rg.get_string(0, rg.one_of(7) ? 0 : 1024)};
+    string_list::push_back(sp, f);
+    test.check_equal(string_list::element_count(sp), 1, "size 1");
+
+    for(unsigned i = 0; i < test.repeats(100); ++i) {
+        const auto e{rg.get_string(0, rg.one_of(7) ? 0 : 4096)};
+
+        string_list::push_back(sp, e);
+        test.check_equal(string_list::element_count(sp), 2, "size 2");
+        test.check_equal(string_list::front_value(sp), f, "front value");
+        test.check_equal(string_list::back_value(sp), e, "back value");
+
+        test.ensure(string_list::element_count(sp) > 1, "not empty");
+        string_list::pop_back(sp);
+    }
+    test.check_equal(string_list::element_count(sp), 1, "size 1");
+}
+//------------------------------------------------------------------------------
+void list_push_pop_3(auto& s) {
+    eagitest::case_ test{s, 16, "push pop 3"};
+    auto& rg{test.random()};
+    using namespace eagine;
+
+    std::string sp;
+    const auto f{rg.get_string(0, rg.one_of(7) ? 0 : 2048)};
+    string_list::push_back(sp, f);
+    test.check_equal(string_list::element_count(sp), 1, "size 1");
+
+    span_size_t count{1};
+    for(unsigned i = 0; i < test.repeats(100); ++i) {
+        const auto e{rg.get_string(0, rg.one_of(7) ? 0 : 2048)};
+
+        string_list::push_back(sp, e);
+        ++count;
+        test.check_equal(string_list::element_count(sp), count, "size n");
+        test.check_equal(string_list::front_value(sp), f, "front value");
+        test.check_equal(string_list::back_value(sp), e, "back value");
+
+        if(rg.one_of(5)) {
+            if(string_list::element_count(sp) > 0) {
+                string_list::pop_back(sp);
+                --count;
+            }
+        }
+    }
+    while(count > 0) {
+        test.ensure(string_list::element_count(sp) == count, "count ok");
+        string_list::pop_back(sp);
+        --count;
+    }
+    test.check_equal(string_list::element_count(sp), 0, "size 0");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "list", 12};
+    eagitest::suite test{argc, argv, "list", 16};
     test.once(list_empty);
     test.once(list_element_1);
     test.once(list_element_2);
@@ -308,6 +417,10 @@ auto main(int argc, const char** argv) -> int {
     test.once(list_join_2);
     test.once(list_join_3);
     test.once(list_push_back_1);
+    test.once(list_push_back_2);
+    test.once(list_push_pop_1);
+    test.once(list_push_pop_2);
+    test.once(list_push_pop_3);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

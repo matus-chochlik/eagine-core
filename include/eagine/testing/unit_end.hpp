@@ -52,10 +52,13 @@ auto random_generator::get_string(
   std::size_t min,
   std::size_t max,
   Pred pred) noexcept -> std::string {
+
     std::string result(get_std_size(min, max), '\0');
     for(char& c : result) {
         do {
-            c = get_any(std::type_identity<char>{});
+            c = get_char_from(
+              "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+              "0123456789`~!@#$%^&*(){}_");
         } while(!pred(c));
     }
     return result;

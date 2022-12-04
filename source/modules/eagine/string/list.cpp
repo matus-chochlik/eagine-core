@@ -66,16 +66,22 @@ export auto back_value(const string_view list) noexcept -> string_view {
     return slice(list, i - l, l);
 }
 //------------------------------------------------------------------------------
-export auto pop_back(const string_view list) noexcept -> string_view {
+export auto without_back(const string_view list) noexcept -> string_view {
     const span_size_t i = rev_seek_header_start(list);
-    string_view header = skip(list, i);
+    const string_view header = skip(list, i);
     const span_size_t k = element_header_size(header);
     const span_size_t l = element_value_size(header, k);
     assert(i >= k + l);
     return head(list, i - k - l);
 }
 //------------------------------------------------------------------------------
-export void push_back(std::string& list, const string_view value) noexcept {
+export auto pop_back(std::string& list) noexcept -> std::string& {
+    list.resize(std_size(without_back(list).size()));
+    return list;
+}
+//------------------------------------------------------------------------------
+export auto push_back(std::string& list, const string_view value) noexcept
+  -> std::string& {
     const span_size_t vl = value.size();
     const std::string elen = encode_length(vl);
     const std::size_t nl = safe_add(list.size(), elen.size() * 2, std_size(vl));
@@ -85,6 +91,7 @@ export void push_back(std::string& list, const string_view value) noexcept {
     list.append(elen);
     list.append(value.data(), integer(vl));
     list.append(elen);
+    return list;
 }
 //------------------------------------------------------------------------------
 export class element : public string_view {
@@ -167,7 +174,7 @@ export template <typename Func>
 void for_each_elem(const string_view list, Func func) noexcept {
     span_size_t i = 0;
     bool first = true;
-    while((i + 2) < list.size()) {
+    while((i + 2) <= list.size()) {
         element elem(list.data() + i, list.size() - i);
         func(elem, first);
         i += elem.size();
