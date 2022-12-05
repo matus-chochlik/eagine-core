@@ -891,10 +891,145 @@ void span_skip_until_int(auto& s) {
     span_skip_until_T<int>(test, -1000, 1000);
 }
 //------------------------------------------------------------------------------
+// strip prefix
+//------------------------------------------------------------------------------
+template <typename T>
+void span_strip_prefix_T_r1_r2_1(
+  eagitest::case_& test,
+  eagine::span<T> rng1,
+  eagine::span<T> rng2) {
+    using namespace eagine;
+
+    bool empty_prefix = rng2.empty();
+    bool had_prefix = starts_with(rng1, rng2);
+
+    eagine::span<T> rng3 = strip_prefix(rng1, rng2);
+
+    bool has_prefix = (rng3.size() == rng1.size()) && starts_with(rng3, rng2);
+
+    if(had_prefix) {
+        test.check(!has_prefix || empty_prefix, "prefix 1");
+        test.check_equal(rng1.size(), rng2.size() + rng3.size(), "size 1");
+    } else {
+        test.check(!has_prefix, "prefix 2");
+        test.check_equal(rng1.size(), rng3.size(), "size 2");
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_strip_prefix_T_m_m_h_1(eagitest::case_& test, T min, T max, bool has) {
+    auto& rg{test.random()};
+    std::vector<T> v1(rg.get_std_size(20, 100));
+    std::vector<T> v2(rg.get_std_size(0, v1.size()));
+
+    typename std::vector<T>::size_type i = 0;
+
+    while(i < v2.size()) {
+        v1[i] = rg.get_between<T>(min, max);
+        if(has) {
+            v2[i] = v1[i];
+        } else {
+            v2[i] = rg.get_between<T>(min, max);
+        }
+        ++i;
+    }
+
+    while(i < v1.size()) {
+        v1[i] = rg.get_between<T>(min, max);
+        ++i;
+    }
+
+    span_strip_prefix_T_r1_r2_1(test, eagine::cover(v1), eagine::cover(v2));
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_strip_prefix_T(eagitest::case_& test, T min, T max) {
+    span_strip_prefix_T_m_m_h_1(test, min, max, true);
+    span_strip_prefix_T_m_m_h_1(test, min, max, false);
+}
+//------------------------------------------------------------------------------
+void span_strip_prefix_char(auto& s) {
+    eagitest::case_ test{s, 29, "span strip prefix 1 char"};
+    span_strip_prefix_T<char>(test, 'A', 'Z');
+}
+//------------------------------------------------------------------------------
+void span_strip_prefix_int(auto& s) {
+    eagitest::case_ test{s, 30, "span strip prefix 1 int"};
+    span_strip_prefix_T<int>(test, -1000, 1000);
+}
+//------------------------------------------------------------------------------
+// strip suffix
+//------------------------------------------------------------------------------
+template <typename T>
+void span_strip_suffix_T_r1_r2_1(
+  eagitest::case_& test,
+  eagine::span<T> rng1,
+  eagine::span<T> rng2) {
+    using namespace eagine;
+
+    bool empty_suffix = rng2.empty();
+    bool had_suffix = ends_with(rng1, rng2);
+
+    eagine::span<T> rng3 = strip_suffix(rng1, rng2);
+
+    bool has_suffix = (rng3.size() == rng1.size()) && ends_with(rng3, rng2);
+
+    if(had_suffix) {
+        test.check(!has_suffix || empty_suffix, "suffix 1");
+        test.check_equal(rng1.size(), rng2.size() + rng3.size(), "size 1");
+    } else {
+        test.check(!has_suffix, "suffix 2");
+        test.check_equal(rng1.size(), rng3.size(), "size 2");
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_strip_suffix_T_m_m_h_1(eagitest::case_& test, T min, T max, bool has) {
+    auto& rg{test.random()};
+    std::vector<T> v1(rg.get_std_size(20, 100));
+    std::vector<T> v2(rg.get_std_size(0, v1.size()));
+
+    typename std::vector<T>::size_type i = 0;
+    typename std::vector<T>::size_type p = v1.size() - v2.size();
+
+    while(i < p) {
+        v1[i] = rg.get_between<T>(min, max);
+        ++i;
+    }
+
+    while(i < v1.size()) {
+        v1[i] = rg.get_between<T>(min, max);
+        if(has) {
+            v2[i - p] = v1[i];
+        } else {
+            v2[i - p] = rg.get_between<T>(min, max);
+        }
+        ++i;
+    }
+
+    span_strip_suffix_T_r1_r2_1(test, eagine::cover(v1), eagine::cover(v2));
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_strip_suffix_T(eagitest::case_& test, T min, T max) {
+    span_strip_suffix_T_m_m_h_1(test, min, max, true);
+    span_strip_suffix_T_m_m_h_1(test, min, max, false);
+}
+//------------------------------------------------------------------------------
+void span_strip_suffix_char(auto& s) {
+    eagitest::case_ test{s, 31, "span strip suffix 1 char"};
+    span_strip_suffix_T<char>(test, 'A', 'Z');
+}
+//------------------------------------------------------------------------------
+void span_strip_suffix_int(auto& s) {
+    eagitest::case_ test{s, 32, "span strip suffix 1 int"};
+    span_strip_suffix_T<int>(test, -1000, 1000);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "span_algorithm", 28};
+    eagitest::suite test{argc, argv, "span_algorithm", 32};
     test.once(span_equal_1_char);
     test.once(span_equal_1_int);
     test.once(span_slice_1_char);
@@ -923,6 +1058,10 @@ auto main(int argc, const char** argv) -> int {
     test.once(span_take_until_int);
     test.once(span_skip_until_char);
     test.once(span_skip_until_int);
+    test.once(span_strip_prefix_char);
+    test.once(span_strip_prefix_int);
+    test.once(span_strip_suffix_char);
+    test.once(span_strip_suffix_int);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
