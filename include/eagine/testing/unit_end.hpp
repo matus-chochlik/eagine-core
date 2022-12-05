@@ -24,9 +24,9 @@ template <typename T>
 auto random_generator::get_between(T min, T max, std::type_identity<T>) noexcept
   -> T {
     using U = std::remove_const_t<T>;
-    if constexpr(std::is_same_v<U, char>) {
+    if constexpr(std::is_same_v<U, bool>) {
         return bool(std::uniform_int_distribution<int>(0, 1)(_re));
-    } else if constexpr(std::is_same_v<U, bool>) {
+    } else if constexpr(std::is_same_v<U, char>) {
         if constexpr(std::is_signed_v<char>) {
             return std::uniform_int_distribution<signed char>(min, max)(_re);
         } else {

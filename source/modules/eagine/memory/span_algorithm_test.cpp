@@ -659,10 +659,133 @@ void span_rfind_pos_int(auto& s) {
     span_rfind_pos_T<int>(test, -10000, 10000);
 }
 //------------------------------------------------------------------------------
+// find
+//------------------------------------------------------------------------------
+template <typename T>
+void span_find_T_r1_r2_1(
+  eagitest::case_& test,
+  eagine::span<T> rng1,
+  eagine::span<T> rng2) {
+    using namespace eagine;
+
+    eagine::span<T> rng3 = find(rng1, rng2);
+    if(rng3.size() > 0) {
+        test.check(rng2.size() <= rng3.size(), "size");
+
+        span_size_t n = rng2.size();
+
+        bool are_equal = true;
+
+        for(span_size_t i = 0; i < n; ++i) {
+            are_equal &= (rng2[i] == rng3[i]);
+        }
+
+        test.check(are_equal, "equal");
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_find_T_m_m_h_1(eagitest::case_& test, T min, T max, bool has) {
+    auto& rg{test.random()};
+    using sz_t = typename std::vector<T>::size_type;
+
+    sz_t l1 = rg.get_between<sz_t>(20, 100);
+    sz_t l2 = rg.get_between<sz_t>(0, l1);
+    sz_t p2 = rg.get_between<sz_t>(0, l1 - l2);
+    sz_t i = 0;
+
+    test.ensure(p2 + l2 <= l1, "position is ok");
+
+    std::vector<T> v1(l1);
+    std::vector<T> v2(l2);
+
+    while(i < p2) {
+        v1[i] = rg.get_between<T>(min, max);
+        ++i;
+    }
+
+    while(i < p2 + l2) {
+        v1[i] = rg.get_between<T>(min, max);
+        if(has) {
+            v2[i - p2] = v1[i];
+        } else {
+            v2[i - p2] = rg.get_between<T>(min, max);
+        }
+        ++i;
+    }
+
+    while(i < l1) {
+        v1[i] = rg.get_between<T>(min, max);
+        ++i;
+    }
+
+    span_find_T_r1_r2_1(test, eagine::cover(v1), eagine::cover(v2));
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_find_T(eagitest::case_& test, T min, T max) {
+    span_find_T_m_m_h_1(test, min, max, true);
+    span_find_T_m_m_h_1(test, min, max, false);
+}
+//------------------------------------------------------------------------------
+void span_find_char(auto& s) {
+    eagitest::case_ test{s, 21, "span find element 1 char"};
+    span_find_T<char>(test, 'A', 'Z');
+}
+//------------------------------------------------------------------------------
+void span_find_int(auto& s) {
+    eagitest::case_ test{s, 22, "span find element 1 int"};
+    span_find_T<int>(test, -10000, 10000);
+}
+//------------------------------------------------------------------------------
+// find if
+//------------------------------------------------------------------------------
+template <typename T>
+void span_find_if_T_m_m_h_1(eagitest::case_& test, T min, T max, bool has) {
+    auto& rg{test.random()};
+    const T mid = std::midpoint(min, max);
+
+    std::vector<T> v;
+    for(T cur = min; cur <= mid; ++cur) {
+        v.push_back(cur);
+    }
+
+    for(unsigned i = 0; i < test.repeats(200); ++i) {
+        if(has) {
+            auto what = rg.get_between<T>(min, mid);
+            auto pos = find_element_if(
+              eagine::view(v), [what](auto elem) { return elem == what; });
+            test.ensure(bool(pos), "position");
+            test.check_equal(extract(pos), what - min, "position is ok");
+        } else {
+            auto what = rg.get_between<T>(mid + 1, max);
+            auto pos = find_element_if(
+              eagine::view(v), [what](auto elem) { return elem == what; });
+            test.check(!pos, "not found");
+        }
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_find_if_T(eagitest::case_& test, T min, T max) {
+    span_find_if_T_m_m_h_1(test, min, max, true);
+    span_find_if_T_m_m_h_1(test, min, max, false);
+}
+//------------------------------------------------------------------------------
+void span_find_if_char(auto& s) {
+    eagitest::case_ test{s, 23, "span find if 1 char"};
+    span_find_if_T<char>(test, 'A', 'Z');
+}
+//------------------------------------------------------------------------------
+void span_find_if_int(auto& s) {
+    eagitest::case_ test{s, 24, "span find if 1 int"};
+    span_find_if_T<int>(test, -1000, 1000);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "span_algorithm", 20};
+    eagitest::suite test{argc, argv, "span_algorithm", 24};
     test.once(span_equal_1_char);
     test.once(span_equal_1_int);
     test.once(span_slice_1_char);
@@ -683,6 +806,10 @@ auto main(int argc, const char** argv) -> int {
     test.once(span_find_pos_int);
     test.once(span_rfind_pos_char);
     test.once(span_rfind_pos_int);
+    test.once(span_find_char);
+    test.once(span_find_int);
+    test.once(span_find_if_char);
+    test.once(span_find_if_int);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
