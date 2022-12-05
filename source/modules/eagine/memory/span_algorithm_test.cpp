@@ -782,10 +782,119 @@ void span_find_if_int(auto& s) {
     span_find_if_T<int>(test, -1000, 1000);
 }
 //------------------------------------------------------------------------------
+// take until
+//------------------------------------------------------------------------------
+template <typename T>
+void span_take_until_T_m_m_h_1(eagitest::case_& test, T min, T max, bool has) {
+    auto& rg{test.random()};
+    const T mid = std::midpoint(min, max);
+
+    std::vector<T> v;
+    for(T cur = min; cur <= mid; ++cur) {
+        v.push_back(cur);
+    }
+
+    test.check_equal(
+      take_until(eagine::view(v), [min](auto elem) { return elem == min; })
+        .size(),
+      0,
+      "front");
+    test.check_equal(
+      take_until(eagine::view(v), [mid](auto elem) { return elem == mid; })
+        .size(),
+      mid - min,
+      "back");
+
+    for(unsigned i = 0; i < test.repeats(100); ++i) {
+        if(has) {
+            auto what = rg.get_between<T>(min, mid);
+            auto spn = take_until(
+              eagine::view(v), [what](auto elem) { return elem == what; });
+            test.check_equal(spn.size(), what - min, "taken 1");
+        } else {
+            auto what = rg.get_between<T>(mid + 1, max);
+            auto spn = take_until(
+              eagine::view(v), [what](auto elem) { return elem == what; });
+            test.check_equal(spn.size(), mid - min + 1, "taken 2");
+        }
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_take_until_T(eagitest::case_& test, T min, T max) {
+    span_take_until_T_m_m_h_1(test, min, max, true);
+    span_take_until_T_m_m_h_1(test, min, max, false);
+}
+//------------------------------------------------------------------------------
+void span_take_until_char(auto& s) {
+    eagitest::case_ test{s, 25, "span take until 1 char"};
+    span_take_until_T<char>(test, 'A', 'Z');
+}
+//------------------------------------------------------------------------------
+void span_take_until_int(auto& s) {
+    eagitest::case_ test{s, 26, "span take until 1 int"};
+    span_take_until_T<int>(test, -1000, 1000);
+}
+//------------------------------------------------------------------------------
+// skip until
+//------------------------------------------------------------------------------
+template <typename T>
+void span_skip_until_T_m_m_h_1(eagitest::case_& test, T min, T max, bool has) {
+    auto& rg{test.random()};
+    const T mid = std::midpoint(min, max);
+
+    std::vector<T> v;
+    for(T cur = min; cur <= mid; ++cur) {
+        v.push_back(cur);
+    }
+
+    test.check_equal(
+      skip_until(eagine::view(v), [min](auto elem) { return elem == min; })
+        .size(),
+      mid - min + 1,
+      "front");
+    test.check_equal(
+      skip_until(eagine::view(v), [mid](auto elem) { return elem == mid; })
+        .size(),
+      1,
+      "back");
+
+    for(unsigned i = 0; i < test.repeats(100); ++i) {
+        if(has) {
+            auto what = rg.get_between<T>(min, mid);
+            auto spn = skip_until(
+              eagine::view(v), [what](auto elem) { return elem == what; });
+            test.check_equal(spn.size(), mid - what + 1, "skipped");
+        } else {
+            auto what = rg.get_between<T>(mid + 1, max);
+            auto spn = skip_until(
+              eagine::view(v), [what](auto elem) { return elem == what; });
+            test.check_equal(
+              spn.size(), eagine::span_size(v.size()), "not skipped");
+        }
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_skip_until_T(eagitest::case_& test, T min, T max) {
+    span_skip_until_T_m_m_h_1(test, min, max, true);
+    span_skip_until_T_m_m_h_1(test, min, max, false);
+}
+//------------------------------------------------------------------------------
+void span_skip_until_char(auto& s) {
+    eagitest::case_ test{s, 27, "span skip until 1 char"};
+    span_skip_until_T<char>(test, 'A', 'Z');
+}
+//------------------------------------------------------------------------------
+void span_skip_until_int(auto& s) {
+    eagitest::case_ test{s, 28, "span skip until 1 int"};
+    span_skip_until_T<int>(test, -1000, 1000);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "span_algorithm", 24};
+    eagitest::suite test{argc, argv, "span_algorithm", 28};
     test.once(span_equal_1_char);
     test.once(span_equal_1_int);
     test.once(span_slice_1_char);
@@ -810,6 +919,10 @@ auto main(int argc, const char** argv) -> int {
     test.once(span_find_int);
     test.once(span_find_if_char);
     test.once(span_find_if_int);
+    test.once(span_take_until_char);
+    test.once(span_take_until_int);
+    test.once(span_skip_until_char);
+    test.once(span_skip_until_int);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
