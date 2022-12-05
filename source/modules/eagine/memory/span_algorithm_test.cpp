@@ -500,10 +500,169 @@ void span_ends_with_int(auto& s) {
     span_ends_with_T<int>(test, -10000, 10000);
 }
 //------------------------------------------------------------------------------
+// find position
+//------------------------------------------------------------------------------
+template <typename T>
+void span_find_pos_T_r1_r2_1(
+  eagitest::case_& test,
+  eagine::span<const T> rng1,
+  eagine::span<T> rng2) {
+    using namespace eagine;
+
+    if(const auto f{find_position(rng1, rng2)}) {
+        span_size_t p = f.value();
+        span_size_t n = rng2.size();
+
+        bool are_equal = true;
+
+        for(span_size_t i = 0; i < n; ++i) {
+            are_equal &= (rng1[p + i] == rng2[i]);
+        }
+
+        test.check(are_equal, "equal");
+        test.check(contains(rng1, rng2), "contains");
+    } else if(rng2.size() > 0) {
+        test.check(!contains(rng1, rng2), "not contains");
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_find_pos_T_m_m_h_1(eagitest::case_& test, T min, T max, bool has) {
+    auto& rg{test.random()};
+    using sz_t = typename std::vector<T>::size_type;
+
+    sz_t l1 = rg.get_between<sz_t>(20, 100);
+    sz_t l2 = rg.get_between<sz_t>(0, l1);
+    sz_t p2 = rg.get_between<sz_t>(0, l1 - l2);
+    sz_t i = 0;
+
+    test.ensure(p2 + l2 <= l1, "position is ok");
+
+    std::vector<T> v1(l1);
+    std::vector<T> v2(l2);
+
+    while(i < p2) {
+        v1[i] = rg.get_between<T>(min, max);
+        ++i;
+    }
+
+    while(i < p2 + l2) {
+        v1[i] = rg.get_between<T>(min, max);
+        if(has) {
+            v2[i - p2] = v1[i];
+        } else {
+            v2[i - p2] = rg.get_between<T>(min, max);
+        }
+        ++i;
+    }
+
+    while(i < l1) {
+        v1[i] = rg.get_between<T>(min, max);
+        ++i;
+    }
+
+    span_find_pos_T_r1_r2_1(test, eagine::view(v1), eagine::cover(v2));
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_find_pos_T(eagitest::case_& test, T min, T max) {
+    span_find_pos_T_m_m_h_1(test, min, max, true);
+    span_find_pos_T_m_m_h_1(test, min, max, false);
+}
+//------------------------------------------------------------------------------
+void span_find_pos_char(auto& s) {
+    eagitest::case_ test{s, 17, "span find position 1 char"};
+    span_find_pos_T<char>(test, 'A', 'Z');
+}
+//------------------------------------------------------------------------------
+void span_find_pos_int(auto& s) {
+    eagitest::case_ test{s, 18, "span find position 1 int"};
+    span_find_pos_T<int>(test, -10000, 10000);
+}
+//------------------------------------------------------------------------------
+// reverse find position
+//------------------------------------------------------------------------------
+template <typename T>
+void span_rfind_pos_T_r1_r2_1(
+  eagitest::case_& test,
+  eagine::span<T> rng1,
+  eagine::span<const T> rng2) {
+    using namespace eagine;
+
+    if(const auto f{reverse_find_position(rng1, rng2)}) {
+        span_size_t p = f.value();
+        span_size_t n = rng2.size();
+
+        bool are_equal = true;
+
+        for(span_size_t i = 0; i < n; ++i) {
+            are_equal &= (rng1[p + i] == rng2[i]);
+        }
+        test.check(are_equal, "equal");
+        test.check(contains(rng1, rng2), "contains");
+    } else if(rng2.size() > 0) {
+        test.check(!contains(rng1, rng2), "not contains");
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_rfind_pos_T_m_m_h_1(eagitest::case_& test, T min, T max, bool has) {
+    auto& rg{test.random()};
+    using sz_t = typename std::vector<T>::size_type;
+
+    sz_t l1 = rg.get_between<sz_t>(20, 100);
+    sz_t l2 = rg.get_between<sz_t>(0, l1);
+    sz_t p2 = rg.get_between<sz_t>(0, l1 - l2);
+    sz_t i = 0;
+
+    test.ensure(p2 + l2 <= l1, "position is ok");
+
+    std::vector<T> v1(l1);
+    std::vector<T> v2(l2);
+
+    while(i < p2) {
+        v1[i] = rg.get_between<T>(min, max);
+        ++i;
+    }
+
+    while(i < p2 + l2) {
+        v1[i] = rg.get_between<T>(min, max);
+        if(has) {
+            v2[i - p2] = v1[i];
+        } else {
+            v2[i - p2] = rg.get_between<T>(min, max);
+        }
+        ++i;
+    }
+
+    while(i < l1) {
+        v1[i] = rg.get_between<T>(min, max);
+        ++i;
+    }
+
+    span_rfind_pos_T_r1_r2_1(test, eagine::cover(v1), eagine::view(v2));
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void span_rfind_pos_T(eagitest::case_& test, T min, T max) {
+    span_rfind_pos_T_m_m_h_1(test, min, max, true);
+    span_rfind_pos_T_m_m_h_1(test, min, max, false);
+}
+//------------------------------------------------------------------------------
+void span_rfind_pos_char(auto& s) {
+    eagitest::case_ test{s, 19, "span reverse find position 1 char"};
+    span_rfind_pos_T<char>(test, 'A', 'Z');
+}
+//------------------------------------------------------------------------------
+void span_rfind_pos_int(auto& s) {
+    eagitest::case_ test{s, 20, "span reverse find position 1 int"};
+    span_rfind_pos_T<int>(test, -10000, 10000);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "span_algorithm", 16};
+    eagitest::suite test{argc, argv, "span_algorithm", 20};
     test.once(span_equal_1_char);
     test.once(span_equal_1_int);
     test.once(span_slice_1_char);
@@ -520,6 +679,10 @@ auto main(int argc, const char** argv) -> int {
     test.once(span_starts_with_int);
     test.once(span_ends_with_char);
     test.once(span_ends_with_int);
+    test.once(span_find_pos_char);
+    test.once(span_find_pos_int);
+    test.once(span_rfind_pos_char);
+    test.once(span_rfind_pos_int);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
