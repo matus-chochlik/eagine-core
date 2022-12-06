@@ -25,15 +25,15 @@ RUN apt update \
 
 RUN adduser \
 		--shell /bin/bash \
-		--home /home/oglplus \
+		--home /home/eagine \
 		--disabled-password \
-		--gecos "OGLplus" \
-		oglplus
+		--gecos "EAGine" \
+		eagine
 
-COPY toolchain-clang.cmake /home/oglplus/
-COPY entrypoint /home/oglplus/
-RUN chown oglplus /home/oglplus/entrypoint \
- && chmod u+x /home/oglplus/entrypoint
+COPY toolchain-clang.cmake /home/eagine/
+COPY entrypoint /home/eagine/
+RUN chown eagine /home/eagine/entrypoint \
+ && chmod u+x /home/eagine/entrypoint
 
 ARG EAGINE_CPU_COUNT=1
 ARG EAGINE_BRANCH=develop
@@ -42,9 +42,9 @@ ARG EAGINE_BUILD_TYPE=Debug
 RUN apt --yes install \
 		libsystemd-dev zlib1g-dev
 
-USER oglplus
+USER eagine
 ENTRYPOINT \
-	/home/oglplus/entrypoint \
+	/home/eagine/entrypoint \
 	--branch $EAGINE_BRANCH \
 	--build-type $EAGINE_BUILD_TYPE \
 	--cpu-count $EAGINE_CPU_COUNT
