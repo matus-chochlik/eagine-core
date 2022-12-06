@@ -567,7 +567,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 			set_tests_properties(
 				"execute-${TEST_NAME}"
 				PROPERTIES
-					TIMEOUT 200
+					TIMEOUT 300
 					ENVIRONMENT
 						"LLVM_PROFILE_FILE=${EAGINE_MODULE_PROPER}.${UNIT}.profraw"
 					FIXTURES_SETUP
