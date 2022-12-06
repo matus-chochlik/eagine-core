@@ -4,7 +4,7 @@ cpu_count=$(grep -c -i -e 'processor\s\+:\s*[0-9]\+' /proc/cpuinfo)
 branch=develop
 build_type=Debug
 
-while "${1}" != ""
+while [[ "${1}" != "" ]]
 do
 	case "${1}" in
 		--sub-module)
