@@ -5,23 +5,28 @@ cpu_count=1
 branch=develop
 build_type=Debug
 
-while "${1}" != ""
+while [[ "${1}" != "" ]]
 do
 	case "${1}" in
-		--sub-module)
+		"--sub-module")
 			sub_module="${2}"
-			shift;;
-		--branch)
+			shift
+			;;
+		"--branch")
 			branch="${2}"
-			shift;;
-		--build-type)
+			shift
+			;;
+		"--build-type")
 			build_type="${2}"
-			shift;;
-		--cpu-count)
+			shift
+			;;
+		"--cpu-count")
 			cpu_count="${2}"
-			shift;;
+			shift
+			;;
 		*)
-			break;;
+			break
+			;;
 	esac
 	shift
 done
