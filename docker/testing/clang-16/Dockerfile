@@ -35,17 +35,20 @@ COPY entrypoint /home/eagine/
 RUN chown eagine /home/eagine/entrypoint \
  && chmod u+x /home/eagine/entrypoint
 
+RUN apt --yes install \
+		libsystemd-dev zlib1g-dev
+
 ARG EAGINE_CPU_COUNT=1
 ARG EAGINE_BRANCH=develop
 ARG EAGINE_BUILD_TYPE=Debug
 
-RUN apt --yes install \
-		libsystemd-dev zlib1g-dev
-
-USER eagine
-ENTRYPOINT \
-	/home/eagine/entrypoint \
+RUN echo /home/eagine/entrypoint \
 	--branch $EAGINE_BRANCH \
 	--build-type $EAGINE_BUILD_TYPE \
-	--cpu-count $EAGINE_CPU_COUNT
+	--cpu-count $EAGINE_CPU_COUNT \
+	> /entrypoint \
+ && chmod a+x /entrypoint
+
+USER eagine
+ENTRYPOINT /entrypoint
 
