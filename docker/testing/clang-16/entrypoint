@@ -43,3 +43,6 @@ cmake \
 cmake \
 	"--build" "~/Code/_build" \
 	"--parallel" "${cpu_count}"
+ctest \
+	"--test-dir" "~/Code/_build" \
+	"--parallel" "${cpu_count}"
