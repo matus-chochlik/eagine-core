@@ -1,0 +1,36 @@
+#!/bin/bash -e
+sub_module=core
+cpu_count=$(grep -c -i -e 'processor\s\+:\s*[0-9]\+' /proc/cpuinfo)
+branch=develop
+build_type=Develop
+
+while "${1}" != ""
+do
+	case "${1}" in
+		--sub-module)
+			sub_module="${2}"
+			shift;;
+		--branch)
+			branch="${2}"
+			shift;;
+		--build-type)
+			build_type="${2}"
+			shift;;
+		--cpu-count)
+			cpu_count="${2}"
+			shift;;
+		*)
+			break;;
+	esac
+	shift
+done
+
+docker build "$(dirname ${0})" \
+	--build-arg "EAGINE_BRANCH=${branch}" \
+	--build-arg "EAGINE_BUILD_TYPE=${build_type}" \
+	--build-arg "EAGINE_CPU_COUNT=${cpu_count}"
+
+docker-compose -f "$(dirname ${0})/docker-compose.yml" up \
+	--abort-on-container-exit \
+	--exit-code-from eagine-core-test-llvm-16
+

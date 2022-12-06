@@ -1,0 +1,6 @@
+version: "3.6"
+services:
+    eagine-core-test-llvm-16:
+        build: .
+        image: localhost:5000/eagine-core-test-llvm-16
+
