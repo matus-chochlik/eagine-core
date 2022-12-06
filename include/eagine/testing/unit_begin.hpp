@@ -48,11 +48,12 @@ public:
         return get_between(min, max);
     }
 
-    template <typename Pred>
-    auto get_string(std::size_t min, std::size_t max, Pred pred) noexcept
-      -> std::string;
+    auto get_string(std::size_t min, std::size_t max) noexcept -> std::string;
 
-    auto get_string(std::size_t min, std::size_t max) -> std::string;
+    auto get_string_made_of(
+      std::size_t min,
+      std::size_t max,
+      std::string_view chars) noexcept -> std::string;
 
     template <typename T>
     auto get_any(std::type_identity<T> = {}) noexcept -> T;

@@ -6,7 +6,6 @@
 /// http://www.boost.org/LICENSE_1_0.txt
 ///
 ///
-import <cctype>;
 import <cmath>;
 import <format>;
 import <limits>;
@@ -47,26 +46,24 @@ auto random_generator::get_any(std::type_identity<T>) noexcept -> T {
       std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 }
 //------------------------------------------------------------------------------
-template <typename Pred>
-auto random_generator::get_string(
+auto random_generator::get_string_made_of(
   std::size_t min,
   std::size_t max,
-  Pred pred) noexcept -> std::string {
-
+  std::string_view chars) noexcept -> std::string {
     std::string result(get_std_size(min, max), '\0');
     for(char& c : result) {
-        do {
-            c = get_char_from(
-              "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-              "0123456789`~!@#$%^&*(){}_");
-        } while(!pred(c));
+        c = get_char_from(chars);
     }
     return result;
 }
 //------------------------------------------------------------------------------
-auto random_generator::get_string(std::size_t min, std::size_t max)
+auto random_generator::get_string(std::size_t min, std::size_t max) noexcept
   -> std::string {
-    return get_string(min, max, [](char c) { return std::isprint(c) != 0; });
+    return get_string_made_of(
+      min,
+      max,
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      "0123456789`~!@#$%^&*(){}_");
 }
 //------------------------------------------------------------------------------
 // test suite

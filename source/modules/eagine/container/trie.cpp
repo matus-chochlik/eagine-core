@@ -21,6 +21,9 @@ import <type_traits>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+/// @brief Common base class for trie implementation
+/// @ingroup container
+/// @note Do not use this class directly, use basic_trie instead.
 export class basic_trie_utils {
     template <std::size_t I>
     using index_constant = std::integral_constant<std::size_t, I>;
@@ -104,19 +107,22 @@ public:
     }
 };
 //------------------------------------------------------------------------------
+/// @brief Implementation template for basic_trie.
+/// @ingroup container
+/// @note Do not use directly, use basic_trie instead.
 export template <memory::string_literal Chars, std::size_t N, typename Value>
 class basic_trie_impl : private basic_trie_utils {
     static_assert(std::is_sorted(Chars.begin(), Chars.begin() + N - 1));
     using key_type = std::array<std::uint32_t, N>;
-    using node_type = std::tuple<key_type, Value>;
+    using node_type = std::tuple<key_type, Value, bool>;
 
-    auto _find_insert_pos(const string_view str) const noexcept
+    auto _find_insert_pos(const string_view key) const noexcept
       -> std::tuple<std::size_t, span_size_t, bool> {
         std::size_t iidx{0U};
         span_size_t offs{0};
         bool can_insert{true};
-        while(offs < str.size()) {
-            if(const auto cidx{this->get_char_index<Chars>(str[offs])})
+        while(offs < key.size()) {
+            if(const auto cidx{this->get_char_index<Chars>(key[offs])})
               [[likely]] {
                 const auto next{std_size(std::get<0>(_nodes[iidx])[*cidx])};
                 if(next == 0) {
@@ -136,21 +142,27 @@ class basic_trie_impl : private basic_trie_utils {
     }
 
 public:
-    constexpr basic_trie_impl(Value v) noexcept
-      : _default{v} {
+    /// @brief Default constructor.
+    basic_trie_impl() noexcept {
         _nodes.emplace_back(node_type{});
     }
 
-    basic_trie_impl() noexcept
-      : basic_trie_impl{Value{}} {}
+    /// @brief Returns a range of chars that valid keys for this trie can use.
+    constexpr auto valid_chars() const noexcept -> string_view {
+        return Chars;
+    }
 
-    auto insert(const string_view str, Value value = {}) noexcept -> bool {
-        auto [iidx, offs, can_insert] = _find_insert_pos(str);
+    /// @brief Inserts a new value under the specified key string.
+    /// @see add
+    /// @see valid_chars
+    /// The return value indicates if the value was successfully inserted.
+    auto insert(const string_view key, Value value = {}) noexcept -> bool {
+        auto [iidx, offs, can_insert] = _find_insert_pos(key);
         if(can_insert) {
-            while(offs < str.size()) {
+            while(offs < key.size()) {
                 const auto next{_nodes.size()};
                 _nodes.emplace_back(node_type{});
-                if(const auto cidx{this->get_char_index<Chars>(str[offs])}) {
+                if(const auto cidx{this->get_char_index<Chars>(key[offs])}) {
                     std::get<0>(_nodes[iidx])[*cidx] =
                       limit_cast<std::uint32_t>(next);
                     iidx = next;
@@ -160,30 +172,42 @@ public:
                     break;
                 }
             }
-            if(offs == str.size()) {
-                std::get<1>(_nodes[iidx]) = std::move(value);
+            if(offs == key.size()) {
+                auto& node{_nodes[iidx]};
+                std::get<1>(node) = std::move(value);
+                std::get<2>(node) = true;
             }
         }
         return can_insert;
     }
 
-    auto add(const string_view str, Value value = {}) noexcept
+    /// @brief Inserts a new value under the specified key string.
+    /// @see insert
+    /// @see valid_chars
+    auto add(const string_view key, Value value = {}) noexcept
       -> basic_trie_impl& {
-        insert(str, std::move(value));
+        insert(key, std::move(value));
         return *this;
     }
 
-    auto contains(const string_view str) const noexcept -> bool {
-        auto [iidx, offs, can_insert] = _find_insert_pos(str);
-        (void)iidx;
-        return (can_insert && (offs == str.size()));
+    /// @brief Checks if the specified key is contained in this trie.
+    auto contains(const string_view key) const noexcept -> bool {
+        auto [iidx, offs, can_insert] = _find_insert_pos(key);
+        if(can_insert && (offs == key.size())) {
+            return std::get<2>(_nodes[iidx]);
+        }
+        return false;
     }
 
-    auto find(const string_view str) const noexcept
+    /// @brief Tries to find the value stored under the specified key.
+    auto find(const string_view key) const noexcept
       -> optional_reference_wrapper<const Value> {
-        auto [fidx, offs, can_insert] = _find_insert_pos(str);
-        if(can_insert && (offs == str.size())) {
-            return {std::get<1>(_nodes[fidx])};
+        auto [fidx, offs, can_insert] = _find_insert_pos(key);
+        if(can_insert && (offs == key.size())) {
+            auto& node{_nodes[fidx]};
+            if(std::get<2>(node)) {
+                return {std::get<1>(node)};
+            }
         }
         return {nothing};
     }
@@ -193,10 +217,11 @@ public:
     }
 
 private:
-    Value _default{};
     std::vector<node_type> _nodes;
 };
 //------------------------------------------------------------------------------
+/// @brief Template for tries, string dictionaries optionally mapping to values.
+/// @ingroup container
 export template <memory::string_literal chars, typename Value = nothing_t>
 using basic_trie = basic_trie_impl<chars, chars.size(), Value>;
 //------------------------------------------------------------------------------

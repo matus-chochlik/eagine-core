@@ -52,4 +52,5 @@ eagine_add_module_tests(
 	UNITS
 		flat_map
 		flat_set
+		trie
 )
