@@ -27,22 +27,22 @@ do
 done
 
 set -x
-mkdir -p ~/Code/_build
-rm -rf ~/Code/_build/*
-cd ~/Code 
-if [[ -d "~/Code/eagine-${sub_module}" ]]
-then cd "~/Code/eagine-${sub_module}" && git checkout "${branch}" && git pull origin "${branch}"
+rm -rf "${HOME}/Code/_build/"
+mkdir -p "${HOME}/Code/_build"
+cd "${HOME}/Code"
+if [[ -d "${HOME}/Code/eagine-${sub_module}" ]]
+then cd "${HOME}/Code/eagine-${sub_module}" && git checkout "${branch}" && git pull origin "${branch}"
 else git clone --branch "${branch}" "https://github.com/matus-chochlik/eagine-${sub_module}.git"
 fi
 cmake \
 	"-G" "Ninja" \
 	"-DCMAKE_BUILD_TYPE=${build_type}" \
 	"-DCMAKE_TOOLCHAIN_FILE=~/toolchain-clang.cmake" \
-	"-S" "~/Code/eagine-${sub_module}" \
-	"-B" "~/Code/_build"
+	"-S" "${HOME}/Code/eagine-${sub_module}" \
+	"-B" "${HOME}/Code/_build"
 cmake \
-	"--build" "~/Code/_build" \
+	"--build" "${HOME}/Code/_build" \
 	"--parallel" "${cpu_count}"
 ctest \
-	"--test-dir" "~/Code/_build" \
+	"--test-dir" "${HOME}/Code/_build" \
 	"--parallel" "${cpu_count}"
