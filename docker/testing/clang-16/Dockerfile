@@ -36,7 +36,14 @@ RUN chown eagine /home/eagine/entrypoint \
  && chmod u+x /home/eagine/entrypoint
 
 RUN apt --yes install \
-		libsystemd-dev zlib1g-dev
+		libglfw3-dev \
+		libglew-dev \
+		libegl-dev \
+		libopenal-dev \
+		libalut-dev \
+		libssl-dev \
+		libsystemd-dev \
+		zlib1g-dev
 
 ARG EAGINE_CPU_COUNT=4
 ARG EAGINE_SUB_MODULE=all
