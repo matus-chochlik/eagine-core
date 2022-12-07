@@ -38,11 +38,13 @@ RUN chown eagine /home/eagine/entrypoint \
 RUN apt --yes install \
 		libsystemd-dev zlib1g-dev
 
-ARG EAGINE_CPU_COUNT=1
+ARG EAGINE_CPU_COUNT=4
+ARG EAGINE_SUB_MODULE=all
 ARG EAGINE_BRANCH=develop
 ARG EAGINE_BUILD_TYPE=Debug
 
 RUN echo /home/eagine/entrypoint \
+	--sub-module $EAGINE_SUB_MODULE \
 	--branch $EAGINE_BRANCH \
 	--build-type $EAGINE_BUILD_TYPE \
 	--cpu-count $EAGINE_CPU_COUNT \

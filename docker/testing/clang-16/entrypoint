@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-sub_module=core
+sub_module=all
 cpu_count=1
 branch=develop
 build_type=Debug
