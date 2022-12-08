@@ -34,6 +34,14 @@ struct cast<T, 4, V, T, 3, V> {
 };
 
 export template <typename T, bool V>
+struct cast<T, 4, V, T, 3, false> {
+    static constexpr auto apply(const data_param_t<T, 4, V> v, const T) noexcept
+      -> data_t<T, 3, V> {
+        return {v[0], v[1], v[2]};
+    }
+};
+
+export template <typename T, bool V>
 struct cast<T, 3, V, T, 4, V> {
     static constexpr auto apply(
       const data_param_t<T, 3, V> v,
