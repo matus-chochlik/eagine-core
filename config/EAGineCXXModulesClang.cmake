@@ -554,7 +554,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 			set_tests_properties(
 				"build-${TEST_NAME}"
 				PROPERTIES
-					TIMEOUT 60
+					TIMEOUT 180
 					FIXTURES_SETUP
 						"${TEST_NAME}-built"
 					FIXTURES_REQUIRED
