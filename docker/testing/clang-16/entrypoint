@@ -37,8 +37,13 @@ mkdir -p "${HOME}/Code/_build"
 cd "${HOME}/Code"
 if [[ -d "${HOME}/Code/eagine-${sub_module}" ]]
 then cd "${HOME}/Code/eagine-${sub_module}" && git checkout "${branch}" && git pull origin "${branch}"
-else git clone --branch "${branch}" "https://github.com/matus-chochlik/eagine-${sub_module}.git"
+else git clone --branch "${branch}" "https://github.com/matus-chochlik/eagine-${sub_module}.git" && cd "eagine-${sub_module}"
 fi
+if [[ "${sub_module}" == "all" ]]
+then "${HOME}/Code/eagine-all/tools/pull_all" origin "${branch}"
+else git submodule update --recursive
+fi
+
 cmake \
 	"-G" "Ninja" \
 	"-DCMAKE_BUILD_TYPE=${build_type}" \
