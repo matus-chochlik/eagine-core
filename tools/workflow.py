@@ -453,6 +453,8 @@ class Workflow(object):
         self.git_command(["checkout", develop])
         self.git_command(["pull", remote, develop])
         self.commit()
+        if not self.is_in_core():
+            self.update_submodules()
         release_tag = self.version_string(self.next_repo_release())
         release_branch = self.release_branch(release_tag)
         self.begin_work()
@@ -461,7 +463,6 @@ class Workflow(object):
             self.write_file(self.version_path(), release_tag)
             self.git_command(["add", self.version_path()])
         else:
-            self.update_submodules()
             self.git_command(["checkout", "-b", release_branch, develop])
         self.git_command(["commit", "-m", "Started release "+release_tag])
         self.commit()
@@ -506,6 +507,8 @@ class Workflow(object):
         self.git_command(["checkout", "main"])
         self.git_command(["pull", remote, "main"])
         self.commit()
+        if not self.is_in_core():
+            self.update_submodules()
         source_tag = self.version_string(self.read_version())
         hotfix_tag = self.version_string(self.next_repo_hotfix())
         hotfix_branch = self.hotfix_branch(hotfix_tag)
@@ -514,7 +517,6 @@ class Workflow(object):
             self.write_file(self.version_path(), hotfix_tag)
             self.git_command(["add", self.version_path()])
         else:
-            self.update_submodules()
             self.git_command(["checkout", "-b", hotfix_branch, source_tag+"^2"])
         self.git_command(["commit", "-m", "Started hotfix "+hotfix_tag])
         self.git_command(["push", remote, hotfix_branch])
