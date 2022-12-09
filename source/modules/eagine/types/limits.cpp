@@ -73,9 +73,13 @@ template <typename Dst, typename Src, bool IsInt>
 struct within_limits_num<Dst, Src, IsInt, IsInt, false, true> {
     static constexpr auto check(const Src value) noexcept {
         using Dnl = std::numeric_limits<Dst>;
-        using Tmp = std::make_unsigned_t<Src>;
 
-        return (value < Src(0)) ? false : (Tmp(value) < Dnl::max());
+        if constexpr(IsInt) {
+            using Tmp = std::make_unsigned_t<Src>;
+            return (value < Src(0)) ? false : (Tmp(value) < Dnl::max());
+        } else {
+            return implicitly_within_limits<Dst, Src>::value;
+        }
     }
 };
 //------------------------------------------------------------------------------
@@ -116,7 +120,7 @@ struct within_limits<T, T> {
 export template <typename Dst, typename Src>
 constexpr auto is_within_limits(const Src value) noexcept {
     return implicitly_within_limits<Dst, Src>::value ||
-           within_limits<Dst, Src>::check(value);
+           within_limits<Dst, Src>().check(value);
 }
 //------------------------------------------------------------------------------
 /// @brief Casts @p value to Dst type if the value fits in that type.
@@ -156,9 +160,7 @@ constexpr auto signedness_cast(Src value) noexcept {
 /// @see limit_cast
 /// @see assign_if_fits
 export template <typename Dst, typename Src>
-constexpr auto convert_if_fits(Src value) noexcept -> std::optional<Dst>
-    requires(std::is_convertible_v<Src, Dst>)
-{
+constexpr auto convert_if_fits(Src value) noexcept -> std::optional<Dst> {
     if(is_within_limits<Dst>(value)) {
         if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<Dst>) {
             return {Dst(value)};
@@ -190,6 +192,15 @@ constexpr auto assign_if_fits(const Src& src, Dst& dst) noexcept -> bool
     return false;
 }
 
+/// @brief Concept for Dst types for which there is assign_if_fits conversion.
+/// @ingroup type_utils
+/// @see assign_if_fits
+/// @see limit_cast
+export template <typename Dst, typename Src>
+concept assignable_if_fits_from = requires(const Src src, Dst dst) {
+    { assign_if_fits(src, dst) } -> std::convertible_to<bool>;
+};
+
 export template <typename Src, typename DstR, typename DstP>
 constexpr auto assign_if_fits(
   const Src& src,
@@ -203,6 +214,20 @@ constexpr auto assign_if_fits(
         } else {
             dst = std::chrono::duration<DstR, DstP>{DstR(std::move(src))};
         }
+        return true;
+    }
+    return false;
+}
+
+export template <typename Src, typename Dst>
+constexpr auto assign_if_fits(const Src& src, std::optional<Dst>& dst) noexcept
+  -> bool
+    requires(
+      std::is_convertible_v<Src, Dst> || std::is_constructible_v<Dst, Src>)
+{
+    Dst temp{};
+    if(assign_if_fits(src, temp)) {
+        dst = std::move(temp);
         return true;
     }
     return false;

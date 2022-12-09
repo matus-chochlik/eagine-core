@@ -10,7 +10,6 @@ export module eagine.core.logging:adapt_tribool;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
-import :backend;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -19,21 +18,21 @@ export struct yes_no_maybe : tribool {
       : tribool{v} {}
 };
 //------------------------------------------------------------------------------
-export auto adapt_entry_arg(const identifier name, yes_no_maybe value) noexcept {
-    struct _adapter {
-        const identifier name;
-        const yes_no_maybe value;
+struct yes_no_maybe_entry_adapter {
+    const identifier name;
+    const yes_no_maybe value;
 
-        void operator()(logger_backend& backend) const noexcept {
-            backend.add_string(
-              name,
-              "YesNoMaybe",
-              value.is(true)    ? string_view{"yes"}
-              : value.is(false) ? string_view{"no"}
-                                : string_view{"maybe"});
-        }
-    };
-    return _adapter{.name = name, .value = value};
+    void operator()(auto& backend) const noexcept {
+        backend.add_string(
+          name,
+          "YesNoMaybe",
+          value.is(true)    ? string_view{"yes"}
+          : value.is(false) ? string_view{"no"}
+                            : string_view{"maybe"});
+    }
+};
+export auto adapt_entry_arg(const identifier name, yes_no_maybe value) noexcept {
+    return yes_no_maybe_entry_adapter{.name = name, .value = value};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

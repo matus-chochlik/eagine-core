@@ -8,8 +8,11 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
+		eagine.core.reflection
 		eagine.core.utility
 		eagine.core.runtime
+		eagine.core.logging
+		eagine.core.value_tree
 		eagine.core.main_ctx
 )
 
@@ -47,6 +50,7 @@ eagine_add_module(
 		fetch
 	SOURCES
 		embed_impl
+		embedded_impl
 	IMPORTS
 )
 

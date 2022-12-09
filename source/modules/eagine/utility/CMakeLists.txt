@@ -75,12 +75,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.utility PARTITION file_magic_number
-	IMPORTS
-		eagine.core.types
-)
-
-eagine_add_module(
 	eagine.core.utility PARTITION timeline
 	IMPORTS
 		eagine.core.types
@@ -128,7 +122,6 @@ eagine_add_module(
 		sudoku
 		cleanup_group
 		overloaded
-		file_magic_number
 		timeline
 		timeout
 		protected_member
@@ -140,4 +133,16 @@ eagine_add_module(
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
+)
+
+eagine_add_module_tests(
+	eagine.core.utility
+	UNITS
+		array_size
+		bool_aggregate
+		callable_ref
+		memoized
+		network_sort
+		overloaded
+		scope_exit
 )

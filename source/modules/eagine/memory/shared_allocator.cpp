@@ -90,20 +90,32 @@ public:
         return n == b.size();
     }
 
+    auto do_reallocate(owned_block& b, size_type n, size_type a) noexcept
+      -> bool {
+        if(_pballoc) [[likely]] {
+            return _pballoc->do_reallocate(b, n, a);
+        }
+        return (n == b.size());
+    }
+
+    auto reallocate_inplace(owned_block& b, size_type n, size_type a) noexcept
+      -> owned_block& {
+        if(_pballoc) [[likely]] {
+            _pballoc->reallocate_inplace(b, n, a);
+        } else {
+            assert(n == b.size());
+        }
+        return b;
+    }
+
     auto reallocate(owned_block&& b, size_type n, size_type a) noexcept
       -> owned_block {
         if(_pballoc) [[likely]] {
             return _pballoc->reallocate(std::move(b), n, a);
+        } else {
+            assert(n == b.size());
         }
-        assert(n == b.size());
         return std::move(b);
-    }
-
-    void do_reallocate(owned_block& b, size_type n, size_type a) noexcept {
-        if(_pballoc) [[likely]] {
-            return _pballoc->do_reallocate(b, n, a);
-        }
-        assert(n == b.size());
     }
 
     friend auto operator==(

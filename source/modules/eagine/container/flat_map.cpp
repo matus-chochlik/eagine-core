@@ -149,6 +149,11 @@ public:
     }
 
     template <typename K>
+    auto contains(const K& key) const noexcept {
+        return _ops().find(_b(), _e(), key) != _e();
+    }
+
+    template <typename K>
     auto lower_bound(const K& key) noexcept {
         return _ops().lower_bound(_b(), _e(), key);
     }

@@ -47,6 +47,13 @@ auto main(main_ctx& ctx) -> int {
     ctx.cio().print(identifier{"struct"}, "c: ${c}").arg(identifier{"c"}, s.c);
     ctx.cio().print(identifier{"struct"}, "f: ${f}").arg(identifier{"f"}, s.f);
 
+    traverse_mapped(s, [&](const auto& path, const auto& value) {
+        ctx.cio()
+          .print("traverse", "${path}: ${value}")
+          .arg("path", path)
+          .arg("value", value);
+    });
+
     return 0;
 }
 } // namespace eagine

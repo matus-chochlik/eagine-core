@@ -23,7 +23,6 @@ export import :network_sort;
 export import :scope_exit;
 export import :sudoku;
 export import :cleanup_group;
-export import :file_magic_number;
 export import :overloaded;
 export import :timeline;
 export import :timeout;

@@ -633,7 +633,7 @@ class XmlLogFormatter(object):
             self._prev_times[srcid] = None
 
     # --------------------------------------------------------------------------
-    def finishLog(self, srcid):
+    def finishLog(self, srcid, clean_shutdown):
         with self._lock:
             total_time = time.time() - self._src_times[srcid]
             del self._src_times[srcid]
@@ -641,7 +641,7 @@ class XmlLogFormatter(object):
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ╭─────────┬────────────╮\n")
+            self.write(" ╭─────────┬────────────┬─────────╮\n")
             # L1
             self.write("┊")
             conn = False
@@ -656,7 +656,15 @@ class XmlLogFormatter(object):
             self.write("━┥")
             self.write("%9s│" % formatRelTime(float(total_time)))
             self.write(self._ttyBlue())
-            self.write("closing  log")
+            self.write(" closing log")
+            self.write(self._ttyReset())
+            self.write("│")
+            if clean_shutdown:
+                self.write(self._ttyGreen())
+                self.write("  clean  ")
+            else:
+                self.write(self._ttyRed())
+                self.write(" failed  ")
             self.write(self._ttyReset())
             self.write("│")
             self.write("\n")
@@ -671,7 +679,7 @@ class XmlLogFormatter(object):
                     self.write("╭╯")
                 else:
                     self.write(" │")
-            self.write(" ╰─────────┴────────────╯\n")
+            self.write(" ╰─────────┴────────────┴─────────╯\n")
             # L3
             self.write("┊")
             conn = False
@@ -1119,6 +1127,7 @@ class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
     def __init__(self, srcid, formatter):
         self._srcid = srcid
+        self._clean_shutdown = False
         self._ctag = None
         self._carg = None
         self._info = None
@@ -1207,16 +1216,7 @@ class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
     def endElement(self, tag):
         if tag == "log":
-            for key, interval in self._intervals.items():
-                iarg = {
-                    "source": self._source_map.get(key[0]),
-                    "instance": key[0],
-                    "tag": key[1]
-                }
-                if self._formatter.isVisible(iarg):
-                    self._formatter.addInterval(self._srcid, interval, iarg)
-            self._formatter.addLoggerInfos(self._srcid, self._loggers)
-            self._formatter.finishLog(self._srcid)
+            self._clean_shutdown = True
         elif tag == "m":
             if self._formatter.previewMessage(self._srcid, self._info):
                 self._formatter.addMessage(self._srcid, self._info)
@@ -1233,6 +1233,19 @@ class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
     def processLine(self, line):
         self._parser.feed(line)
+
+    # --------------------------------------------------------------------------
+    def processDisconnect(self):
+        for key, interval in self._intervals.items():
+            iarg = {
+                "source": self._source_map.get(key[0]),
+                "instance": key[0],
+                "tag": key[1]
+            }
+            if self._formatter.isVisible(iarg):
+                self._formatter.addInterval(self._srcid, interval, iarg)
+        self._formatter.addLoggerInfos(self._srcid, self._loggers)
+        self._formatter.finishLog(self._srcid, self._clean_shutdown)
 
 # ------------------------------------------------------------------------------
 class XmlLogClientHandler(xml.sax.ContentHandler):
@@ -1251,6 +1264,7 @@ class XmlLogClientHandler(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
     def disconnect(self):
         self._processor.processLine(self._buffer)
+        self._processor.processDisconnect()
         self._selector.unregister(self._connection)
 
     # --------------------------------------------------------------------------

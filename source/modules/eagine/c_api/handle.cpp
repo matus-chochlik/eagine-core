@@ -93,6 +93,12 @@ private:
     Handle _name{invalid};
 };
 //------------------------------------------------------------------------------
+export template <typename Tag, typename Handle, Handle invalid>
+constexpr auto to_underlying(basic_handle<Tag, Handle, invalid> h) noexcept
+  -> Handle {
+    return static_cast<Handle>(h);
+}
+//------------------------------------------------------------------------------
 /// @brief Overload of extract for basic handle values.
 /// @pre h.is_valid()
 export template <typename Tag, typename Handle, Handle invalid>

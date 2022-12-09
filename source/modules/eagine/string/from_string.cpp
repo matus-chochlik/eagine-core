@@ -416,6 +416,62 @@ auto from_string(const string_view src) noexcept {
 /// @brief Converts the string representation in @p src to a value of type @p T.
 /// @ingroup type_utils
 /// @see is_within_limits
+export template <typename T>
+auto from_strings(const span<const string_view> src) noexcept
+  -> decltype(from_string(
+    extract(src),
+    std::type_identity<T>(),
+    default_selector)) {
+    if(src.has_single_value()) {
+        return from_string(
+          extract(src), std::type_identity<T>(), default_selector);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+export template <typename T>
+auto assign_if_fits(const string_view src, T& dst) noexcept -> bool {
+    if(auto conv{from_string<T>(src)}) {
+        dst = std::move(extract(conv));
+        return true;
+    }
+    return false;
+}
+
+export template <typename T>
+auto assign_if_fits(const string_view src, std::optional<T>& dst) noexcept
+  -> bool {
+    if(auto conv{from_string<T>(src)}) {
+        dst = std::move(extract(conv));
+        return true;
+    }
+    return false;
+}
+
+export template <typename T>
+auto assign_if_fits(const memory::span<const string_view> src, T& dst) noexcept
+  -> bool {
+    if(auto conv{from_strings<T>(src)}) {
+        dst = std::move(extract(conv));
+        return true;
+    }
+    return false;
+}
+
+export template <typename T>
+auto assign_if_fits(
+  const memory::span<const string_view> src,
+  std::optional<T>& dst) noexcept -> bool {
+    if(auto conv{from_strings<T>(src)}) {
+        dst = std::move(extract(conv));
+        return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+/// @brief Converts the string representation in @p src to a value of type @p T.
+/// @ingroup type_utils
+/// @see is_within_limits
 ///
 /// This overload allows to specify a selector that can change the value
 /// conversion rules.

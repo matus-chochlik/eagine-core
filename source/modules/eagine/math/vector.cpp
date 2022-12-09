@@ -11,7 +11,6 @@ module;
 
 export module eagine.core.math:vector;
 
-import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.vectorization;
@@ -431,9 +430,9 @@ struct tvec : vector<T, N, V> {
       : base{base::from(static_cast<const T*>(d), N)} {}
 
     /// @brief Construction from coordinates.
-    template <typename... P>
+    template <std::convertible_to<T>... P>
     constexpr tvec(P&&... p) noexcept
-        requires((sizeof...(P) == N) && all_are_convertible_to<T, P...>::value)
+        requires(sizeof...(P) == N)
       : base{base::make(std::forward<P>(p)...)} {}
 
     /// @brief Construction from vector of different dimensionality.
@@ -448,11 +447,9 @@ struct tvec : vector<T, N, V> {
       : base{base::from(v, d)} {}
 
     /// @brief Construction from vector of different dimensionality.
-    template <typename P, int M, bool W, typename... R>
+    template <std::convertible_to<T> P, int M, bool W, std::convertible_to<T>... R>
     constexpr tvec(const vector<P, M, W>& v, R&&... r) noexcept
-        requires(
-          (sizeof...(R) > 1) && (M + sizeof...(R) == N) &&
-          all_are_convertible_to<T, R...>::value)
+        requires((sizeof...(R) > 1) && (M + sizeof...(R) == N))
       : base{base::from(v, vector<T, N - M, W>::make(std::forward<R>(r)...))} {}
 
     /// @brief Construction from a pair of vectors of different dimensionality.

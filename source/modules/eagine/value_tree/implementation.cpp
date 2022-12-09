@@ -22,6 +22,7 @@ import :wrappers;
 import <chrono>;
 import <memory>;
 import <vector>;
+import <type_traits>;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -171,9 +172,50 @@ struct object_builder_impl : object_builder {
     }
 };
 //------------------------------------------------------------------------------
+export class object_builder_data_forwarder {
+    template <typename T>
+    struct _fwd_func {
+        span<const T> data;
+
+        template <assignable_if_fits_from<T> X>
+        auto operator()(X& dest) const noexcept -> bool {
+            return assign_if_fits(data, dest);
+        }
+
+        template <typename X>
+            requires(assignable_if_fits_from<X, T>)
+        auto operator()(std::optional<X>& dest) const noexcept -> bool {
+            return assign_if_fits(data, dest);
+        }
+
+        template <typename X>
+            requires(!assignable_if_fits_from<X, T>)
+        auto operator()(const X&) const noexcept -> bool {
+            return false;
+        }
+    };
+
+public:
+    template <typename T, typename O>
+    auto forward_data(
+      const basic_string_path& path,
+      span<const T> data,
+      O& dest) {
+        visit_mapped(_temp, path, dest, default_selector, _fwd_func<T>{data});
+    }
+
+private:
+    basic_string_path _temp;
+};
+//------------------------------------------------------------------------------
 export auto traverse_json_stream(
   std::shared_ptr<value_tree_visitor>,
   span_size_t max_token_size,
+  memory::buffer_pool&,
+  const logger& parent) -> value_tree_stream_input;
+
+export auto traverse_json_stream(
+  std::shared_ptr<object_builder>,
   memory::buffer_pool&,
   const logger& parent) -> value_tree_stream_input;
 //------------------------------------------------------------------------------

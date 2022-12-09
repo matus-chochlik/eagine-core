@@ -24,7 +24,7 @@ using double_byte = std::conditional_t<
   uint_fast16_t,
   std::conditional_t<(CHAR_BIT > 16), uint_fast32_t, uint_fast64_t>>;
 //------------------------------------------------------------------------------
-static constexpr auto byte_bits() noexcept {
+export constexpr auto byte_bits() noexcept {
     return span_size_t(CHAR_BIT);
 }
 //------------------------------------------------------------------------------

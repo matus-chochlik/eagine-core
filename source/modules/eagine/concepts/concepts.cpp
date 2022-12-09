@@ -8,7 +8,6 @@
 export module eagine.core.concepts;
 
 export import :utils;
-export import :type_traits;
 export import :does_not_hide;
 export import :extractable;
 

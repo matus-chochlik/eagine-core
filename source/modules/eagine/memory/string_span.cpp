@@ -21,6 +21,8 @@ namespace memory {
 //------------------------------------------------------------------------------
 /// @brief Specialization of memory::basic_span for character string containers.
 /// @ingroup string_utils
+/// @see string_view
+/// @see string_literal
 export template <typename C, typename P = C*, typename S = span_size_t>
 class basic_string_span : public basic_span<C, P, S> {
     using base = basic_span<C, P, S>;
@@ -41,7 +43,7 @@ public:
 
     static consteval auto _ce_strlen(const char* str) noexcept {
         span_size_t len = 0U;
-        while(*str) {
+        while(str && *str) {
             ++len;
             ++str;
         }
@@ -60,7 +62,7 @@ public:
         requires(
           !std::is_array_v<R> && std::is_convertible_v<R, P> &&
           std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>)
-      : base{addr, -limit_cast<S>(std::strlen(addr))} {}
+      : base{addr, addr ? -limit_cast<S>(std::strlen(addr)) : 0} {}
 
     /// @brief Construction from C string literal
     template <std::size_t N>

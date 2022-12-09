@@ -45,6 +45,7 @@ eagine_example_common(type_name)
 eagine_example_common(args_within_limits)
 eagine_example_common(extract)
 eagine_example_common(tribool)
+eagine_example_common(trie)
 eagine_example_common(environment)
 eagine_example_common(reflect_enum)
 eagine_example_common(reflect_struct)
@@ -94,12 +95,22 @@ eagine_example_common(sudoku_noise)
 #
 eagine_example_common(embed_self)
 eagine_embed_target_resources(TARGET eagine-embed_self ENABLE_SEARCH)
+#
 eagine_example_common(embed_packed)
 eagine_embed_target_resources(
 	TARGET eagine-embed_packed
 	RESOURCES
 		packedSelf "${CMAKE_CURRENT_SOURCE_DIR}/embed_packed.cpp"
 	PACKED
+	ENABLE_SEARCH
+)
+#
+eagine_example_common(value_tree_builder)
+eagine_embed_target_resources(
+	TARGET eagine-value_tree_builder
+	RESOURCES
+		json1 "value_tree_builder_1.json"
+		json2 "value_tree_builder_2.json"
 	ENABLE_SEARCH
 )
 #

@@ -408,9 +408,9 @@ auto proxy_log_choose_backend(
         }
     } else if(name == "syslog") {
         if(use_spinlock) {
-            return std::make_unique<syslog_log_backend<spinlock>>(info);
+            return make_syslog_log_backend_spinlock(info);
         } else {
-            return std::make_unique<syslog_log_backend<std::mutex>>(info);
+            return make_syslog_log_backend_mutex(info);
         }
     } else if(name == "network") {
         std::string nw_addr;

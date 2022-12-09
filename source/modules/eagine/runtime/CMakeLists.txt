@@ -6,7 +6,15 @@ eagine_add_module(
 	eagine.core.runtime PARTITION process
 	IMPORTS
 		eagine.core.types
-		eagine.core.utility
+)
+
+eagine_add_module(
+	eagine.core.runtime PARTITION traverse
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.reflection
 )
 
 eagine_add_module(
@@ -95,6 +103,7 @@ eagine_add_module(
 		runtime
 	PARTITIONS
 		signal_switch
+		traverse	
 		basic_config
 		process
 		program_args
@@ -107,11 +116,14 @@ eagine_add_module(
 		workshop
 	SOURCES
 		url_impl
+		process_impl
 		input_data_impl
 		executable_module_impl
 		file_contents_impl
 		compression_impl
 		workshop_impl
+	IMPORTS
+		eagine.core.utility
 )
 target_link_libraries(
 	eagine.core.runtime
@@ -119,4 +131,10 @@ target_link_libraries(
 		EAGine::Deps::System
 		EAGine::Deps::SYSTEMD
 		EAGine::Deps::ZLIB
+)
+
+eagine_add_module_tests(
+	eagine.core.runtime
+	UNITS
+		program_args
 )

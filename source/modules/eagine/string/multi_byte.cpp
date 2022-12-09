@@ -53,15 +53,15 @@ export constexpr auto max_code_point(const valid_sequence_length& len) noexcept
   -> valid_if_not_zero<code_point_t> {
     return len == 1 ? 0x0000007F : //  7b
              len == 2 ? 0x000007FF
-                      : // 11b
+                      :            // 11b
              len == 3 ? 0x0000FFFF
-                      : // 16b
+                      :            // 16b
              len == 4 ? 0x001FFFFF
-                      : // 21b
+                      :            // 21b
              len == 5 ? 0x03FFFFFF
-                      : // 26b
+                      :            // 26b
              len == 6 ? 0x7FFFFFFF
-                      : // 31b
+                      :            // 31b
              0x00000000;
 }
 //------------------------------------------------------------------------------
@@ -340,11 +340,11 @@ export auto encode_code_point(const code_point& cp)
     return {};
 }
 //------------------------------------------------------------------------------
-auto encoding_bytes_required(span<const code_point_t> cps) noexcept
+export auto encoding_bytes_required(span<const code_point> cps) noexcept
   -> optionally_valid<span_size_t> {
     span_size_t result = 0;
-    for(const code_point_t cp : cps) {
-        if(const auto len{required_sequence_length(cp)}) {
+    for(const auto cp : cps) {
+        if(const auto len{required_sequence_length(cp.value())}) {
             result += len.value_anyway();
         } else {
             return {0, false};
@@ -353,11 +353,12 @@ auto encoding_bytes_required(span<const code_point_t> cps) noexcept
     return {result, true};
 }
 //------------------------------------------------------------------------------
-auto decode_code_point(const valid_cbyte_span& src) noexcept -> code_point {
+export auto decode_code_point(const valid_cbyte_span& src) noexcept
+  -> code_point {
     return do_decode_code_point(src, decode_sequence_length(src));
 }
 //------------------------------------------------------------------------------
-auto decoding_code_points_required(const valid_cbyte_span& bytes) noexcept
+export auto decoding_code_points_required(const valid_cbyte_span& bytes) noexcept
   -> optionally_valid<span_size_t> {
     span_size_t result = 0;
 

@@ -9,7 +9,7 @@ define_property(
 	BRIEF_DOCS "Module PCM path"
 	FULL_DOCS "Clang C++ modules PCM file path for module target"
 )
-
+# ------------------------------------------------------------------------------
 function(eagine_append_single_module_pcms)
 	set(ARG_VALUES SOURCE TARGET)
 	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
@@ -38,7 +38,7 @@ function(eagine_append_single_module_pcms)
 		)
 	endif()
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_depend_single_module_pcms)
 	set(ARG_VALUES SOURCE TARGET)
 	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
@@ -48,7 +48,7 @@ function(eagine_depend_single_module_pcms)
 		${EAGINE_MODULE_SOURCE}-pcm
 	)
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_append_module_pcms)
 	set(ARG_VALUES SOURCE TARGET)
 	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
@@ -74,7 +74,7 @@ function(eagine_append_module_pcms)
 		)
 	endforeach()
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_append_own_module_pcms)
 	set(ARG_VALUES SOURCE TARGET)
 	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
@@ -112,7 +112,7 @@ function(eagine_append_own_module_pcms)
 		)
 	endforeach()
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_add_module_common_properties TARGET_NAME)
 	set_property(
 		TARGET ${TARGET_NAME}
@@ -140,7 +140,7 @@ function(eagine_add_module_common_properties TARGET_NAME)
 		)
 	endif()
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
 	set(ARG_VALUES PARTITION PP_NAME)
@@ -429,15 +429,39 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		)
 	endif()
 endfunction()
-
+# ------------------------------------------------------------------------------
 function(eagine_target_modules TARGET_NAME)
 	eagine_add_module_common_properties(${TARGET_NAME})
 
 	foreach(EAGINE_MODULE_SOURCE ${ARGN})
-		target_link_libraries(
-			${TARGET_NAME}
-			PUBLIC ${EAGINE_MODULE_SOURCE}
+		unset(EAGINE_TARGET_IMPORTS)
+		list(APPEND EAGINE_TARGET_IMPORTS ${EAGINE_MODULE_SOURCE})
+		unset(EAGINE_MODULE_PARTITIONS)
+		get_property(
+			EAGINE_MODULE_PARTITIONS
+			TARGET ${EAGINE_MODULE_SOURCE}
+			PROPERTY EAGINE_MODULE_PARTITIONS
 		)
+		foreach(PARTITION ${EAGINE_MODULE_PARTITIONS})
+			unset(EAGINE_MODULE_IMPORTS)
+			get_property(
+				EAGINE_MODULE_IMPORTS
+				TARGET ${EAGINE_MODULE_SOURCE}
+				PROPERTY EAGINE_MODULE_IMPORTS)
+			foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
+				list(APPEND EAGINE_TARGET_IMPORTS ${IMPORT})
+			endforeach()
+		endforeach()
+		
+		list(REMOVE_DUPLICATES EAGINE_TARGET_IMPORTS)
+		foreach(IMPORT ${EAGINE_TARGET_IMPORTS})
+			target_link_libraries(
+				${TARGET_NAME}
+				PUBLIC ${IMPORT}
+			)
+		endforeach()
+
+
 		get_property(
 			PP_NAME	
 			TARGET ${EAGINE_MODULE_SOURCE}
@@ -460,4 +484,121 @@ function(eagine_target_modules TARGET_NAME)
 		)
 	endforeach()
 endfunction()
+# ------------------------------------------------------------------------------
+function(eagine_add_module_tests EAGINE_MODULE_PROPER)
+	set(ARG_FLAGS)
+	set(ARG_VALUES PARTITION PP_NAME)
+	set(ARG_LISTS
+		UNITS
+		IMPORTS
+	)
+	cmake_parse_arguments(
+		EAGINE_MODULE_TEST
+		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
+		${ARGN}
+	)
+	add_test(
+		NAME "build-${EAGINE_MODULE_PROPER}"
+		COMMAND "${CMAKE_COMMAND}"
+			--build "${CMAKE_BINARY_DIR}"
+			--target "${EAGINE_MODULE_PROPER}"
+	)
+	set_tests_properties(
+		"build-${EAGINE_MODULE_PROPER}"
+		PROPERTIES
+			TIMEOUT 200
+			RUN_SERIAL True
+			FIXTURES_SETUP
+				"${EAGINE_MODULE_PROPER}-built"
+	)
+	unset(EAGINE_MODULE_PROFRAW_FILES)
+	unset(EAGINE_MODULE_PROFRAW_FIXTURES)
+	foreach(UNIT ${EAGINE_MODULE_TEST_UNITS})
+		if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${UNIT}_test.cpp")
+			set(TEST_NAME test.${EAGINE_MODULE_PROPER}.${UNIT})
+			add_executable(${TEST_NAME} EXCLUDE_FROM_ALL "${UNIT}_test.cpp")
+			target_compile_options(
+				${TEST_NAME}
+				PRIVATE
+					-fprofile-instr-generate
+					-fcoverage-mapping
+					-mllvm
+					-runtime-counter-relocation
+			)
+			target_link_options(
+				${TEST_NAME}
+				PRIVATE
+					-fprofile-instr-generate
+					-fcoverage-mapping
+			)
+			target_link_libraries(
+				${TEST_NAME}
+				PRIVATE
+					eagine-core-testing-headers
+			)
+			eagine_add_exe_analysis(${TEST_NAME})
+			eagine_target_modules(${TEST_NAME} ${EAGINE_MODULE_PROPER})
 
+			foreach(IMPORT ${EAGINE_MODULE_TEST_IMPORTS})
+				eagine_target_modules(${TEST_NAME} ${IMPORT})
+			endforeach()
+
+			set_target_properties(${TEST_NAME} PROPERTIES FOLDER "Test/Core")
+
+			add_test(
+				NAME "build-${TEST_NAME}"
+				COMMAND "${CMAKE_COMMAND}"
+					--build "${CMAKE_BINARY_DIR}"
+					--target "${TEST_NAME}"
+			)
+			set_tests_properties(
+				"build-${TEST_NAME}"
+				PROPERTIES
+					TIMEOUT 180
+					FIXTURES_SETUP
+						"${TEST_NAME}-built"
+					FIXTURES_REQUIRED
+						"${EAGINE_MODULE_PROPER}-built"
+			)
+			add_test(
+				NAME "execute-${TEST_NAME}"
+				COMMAND "${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}"
+			)
+			set_tests_properties(
+				"execute-${TEST_NAME}"
+				PROPERTIES
+					TIMEOUT 300
+					ENVIRONMENT
+						"LLVM_PROFILE_FILE=${EAGINE_MODULE_PROPER}.${UNIT}.profraw"
+					FIXTURES_SETUP
+						"${TEST_NAME}-profraw"
+					FIXTURES_REQUIRED
+						"${TEST_NAME}-built"
+			)
+			list(APPEND
+				EAGINE_MODULE_PROFRAW_FILES
+				"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PROPER}.${UNIT}.profraw"
+			)
+			list(APPEND EAGINE_MODULE_PROFRAW_FIXTURES "${TEST_NAME}-profraw")
+		else()
+			message(
+				FATAL_ERROR
+				"Missing source for unit test ${EAGINE_MODULE_PROPER}.${UNIT}!"
+			)
+		endif()
+	endforeach()
+	if(LLVM_PROFDATA)
+		add_test(
+			NAME "profdata-${EAGINE_MODULE_PROPER}"
+			COMMAND "${LLVM_PROFDATA}" merge
+				-o "${EAGINE_MODULE_PROPER}.profdata"
+				-sparse ${EAGINE_MODULE_PROFRAW_FILES}
+		)
+		set_tests_properties(
+			"profdata-${EAGINE_MODULE_PROPER}"
+			PROPERTIES
+				TIMEOUT 60
+				FIXTURES_REQUIRED "${EAGINE_MODULE_PROFRAW_FIXTURES}"
+		)
+	endif()
+endfunction()

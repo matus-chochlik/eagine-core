@@ -256,8 +256,8 @@ struct rebind_pointer<basic_offset_ptr<T, O>, U>
 //------------------------------------------------------------------------------
 /// @brief Converts basic_offset_ptr into basic_address.
 /// @ingroup memory
-template <typename P, typename O>
-static constexpr auto as_address(basic_offset_ptr<P, O> op) noexcept
+export template <typename P, typename O>
+constexpr auto as_address(basic_offset_ptr<P, O> op) noexcept
   -> basic_address<std::is_const_v<P>> {
     return op.addr();
 }

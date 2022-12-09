@@ -257,6 +257,8 @@ public:
     constexpr auto operator<=>(const self& that) const noexcept {
         return _cmp(*this, that);
     }
+    constexpr auto operator==(const self&) const noexcept -> bool = default;
+    constexpr auto operator!=(const self&) const noexcept -> bool = default;
 
 protected:
     constexpr biteset_iterator_base(BiS& bs, const size_type pos) noexcept
@@ -428,7 +430,7 @@ public:
         requires(
           (sizeof...(P) == N) &&
           std::conjunction_v<std::is_convertible<P, T>...>)
-    : _bytes{_make_bytes(T(p)...)} {}
+      : _bytes{_make_bytes(T(p)...)} {}
 
     explicit constexpr biteset(_bytes_t init) noexcept
       : _bytes{init} {}

@@ -927,6 +927,7 @@ public:
     }
 
     auto finish() noexcept -> bool {
+        bool result = true;
         if(_in_unparsed) {
             assert(_json_stream.available() == 0);
         } else {
@@ -946,16 +947,17 @@ public:
               _json_reader.GetParseErrorCode() ==
               rapidjson::kParseErrorDocumentRootNotSingular) {
                 _visitor->flush();
-                _visitor->finish();
+                result &= _visitor->finish();
             } else {
                 _visitor->failed();
+                result = false;
             }
         } else {
             _visitor->flush();
-            _visitor->finish();
+            result &= _visitor->finish();
         }
         _json_stream.finish(_buffers);
-        return true;
+        return result;
     }
 
     enum class _cached_type { none, _int, _uint, _float, other };
@@ -1102,6 +1104,18 @@ auto traverse_json_stream(
   const logger& parent) -> value_tree_stream_input {
     return {std::make_unique<json_value_tree_stream_parser>(
       std::move(visitor), max_token_size, buffers, parent)};
+}
+//------------------------------------------------------------------------------
+auto traverse_json_stream(
+  std::shared_ptr<object_builder> builder,
+  memory::buffer_pool& buffers,
+  const logger& parent) -> value_tree_stream_input {
+    const auto max_token_size{builder->max_token_size()};
+    return traverse_json_stream(
+      make_building_value_tree_visitor(std::move(builder)),
+      max_token_size,
+      buffers,
+      parent);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree

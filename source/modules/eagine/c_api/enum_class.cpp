@@ -423,6 +423,15 @@ struct enum_class {
 };
 
 export template <
+  typename Self,
+  typename T,
+  identifier_value LibId,
+  identifier_value Id>
+constexpr auto to_underlying(enum_class<Self, T, LibId, Id> val) noexcept -> T {
+    return val._value;
+}
+
+export template <
   typename Dst,
   typename Self,
   typename Src,

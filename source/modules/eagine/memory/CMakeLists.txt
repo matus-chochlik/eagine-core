@@ -62,6 +62,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.memory PARTITION string_literal
+	IMPORTS
+		string_span
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.memory PARTITION span_io
 	IMPORTS span eagine.core.types
 )
@@ -160,21 +167,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.memory PARTITION alloc_arena
-	IMPORTS
-		address span block
-		byte_allocator
-		eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.memory PARTITION data_baking
-	IMPORTS
-		alloc_arena stack_allocator
-		eagine.core.types
-)
-
-eagine_add_module(
 	eagine.core.memory PARTITION object_storage
 	IMPORTS
 		byte_allocator
@@ -197,6 +189,7 @@ eagine_add_module(
 		block
 		struct_block
 		string_span
+		string_literal
 		offset_span
 		span_io
 		span_algorithm
@@ -214,10 +207,26 @@ eagine_add_module(
 		buffer
 		buffer_pool
 		object_storage
-		alloc_arena
-		data_baking
 	SOURCES
 		memory_impl
 		stack_allocator_impl
 )
 
+eagine_add_module_tests(
+	eagine.core.memory
+	UNITS
+		address
+		bit_density
+		biteset
+		block
+		buffer
+		byte_allocator
+		byteset
+		offset_ptr
+		offset_span
+		span
+		span_algorithm
+		shared_allocator
+		stack_allocator
+		std_allocator
+)

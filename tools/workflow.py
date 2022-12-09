@@ -54,6 +54,17 @@ class WorkflowArgParser(argparse.ArgumentParser):
             """
         )
 
+        self.add_argument(
+            "--submodule-remote",
+            dest="git_submodule_remote",
+            metavar="NAME",
+            action="store",
+            default="origin",
+            help="""
+                Name of the git remote to pull from sub-module updates.
+            """
+        )
+
         action_group = self.add_mutually_exclusive_group()
 
         action_group.add_argument(
@@ -81,6 +92,15 @@ class WorkflowArgParser(argparse.ArgumentParser):
             const="finish_release",
             help="""
                 Finishes the current release.
+            """
+        )
+        action_group.add_argument(
+            "--do-release",
+            dest="action",
+            action="store_const",
+            const="do_release",
+            help="""
+                Begins and finishes a release.
             """
         )
         action_group.add_argument(
@@ -418,7 +438,7 @@ class Workflow(object):
 
     # --------------------------------------------------------------------------
     def update_submodules(self):
-        remote = self._options.git_remote
+        remote = self._options.git_submodule_remote
         branch = self._options.git_branch
         for moddir in self.own_submodules():
             self.git_dir_command(["checkout", branch], moddir)
@@ -436,12 +456,13 @@ class Workflow(object):
         release_tag = self.version_string(self.next_repo_release())
         release_branch = self.release_branch(release_tag)
         self.begin_work()
-        self.git_command(["checkout", "-b", release_branch, develop])
         if self.is_in_core():
+            self.git_command(["checkout", "-b", release_branch, develop])
             self.write_file(self.version_path(), release_tag)
             self.git_command(["add", self.version_path()])
         else:
             self.update_submodules()
+            self.git_command(["checkout", "-b", release_branch, develop])
         self.git_command(["commit", "-m", "Started release "+release_tag])
         self.commit()
         self.git_command(["push", remote, release_branch])
@@ -474,9 +495,7 @@ class Workflow(object):
         self.git_command(["checkout", develop])
         self.git_command(["pull", remote, develop])
         self.git_command(["merge", "--no-ff", release_branch])
-        self.git_command(["push", remote, release_tag])
-        self.git_command(["push", remote, "main"])
-        self.git_command(["push", remote, develop])
+        self.git_command(["push", remote, release_tag, "main", develop])
         self.git_command(["push", remote, ":"+release_branch])
         self.git_command(["branch", "-D", release_branch])
 
@@ -490,12 +509,13 @@ class Workflow(object):
         source_tag = self.version_string(self.read_version())
         hotfix_tag = self.version_string(self.next_repo_hotfix())
         hotfix_branch = self.hotfix_branch(hotfix_tag)
-        self.git_command(["checkout", "-b", hotfix_branch, source_tag+"^2"])
         if self.is_in_core():
+            self.git_command(["checkout", "-b", hotfix_branch, source_tag+"^2"])
             self.write_file(self.version_path(), hotfix_tag)
             self.git_command(["add", self.version_path()])
         else:
             self.update_submodules()
+            self.git_command(["checkout", "-b", hotfix_branch, source_tag+"^2"])
         self.git_command(["commit", "-m", "Started hotfix "+hotfix_tag])
         self.git_command(["push", remote, hotfix_branch])
 
@@ -526,9 +546,7 @@ class Workflow(object):
         self.git_command(["checkout", develop])
         self.git_command(["pull", remote, develop])
         self.git_command(["merge", "-X", "theirs", "--no-ff", hotfix_branch])
-        self.git_command(["push", remote, hotfix_tag])
-        self.git_command(["push", remote, "main"])
-        self.git_command(["push", remote, develop])
+        self.git_command(["push", remote, hotfix_tag, "main", develop])
         self.git_command(["push", remote, ":"+hotfix_branch])
         self.git_command(["branch", "-D", hotfix_branch])
 
@@ -540,6 +558,9 @@ class Workflow(object):
 
         if self._options.action == "update_submodules":
             self.update_submodules()
+        elif self._options.action == "do_release":
+            self.begin_release()
+            self.finish_release()
         elif self._options.action == "begin_release":
             self.begin_release()
         elif self._options.action == "finish_release":

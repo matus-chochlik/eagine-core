@@ -46,26 +46,37 @@ export struct byte_allocator
         return false;
     }
 
-    virtual auto reallocate(
-      [[maybe_unused]] owned_block&& b,
+    virtual auto do_reallocate(
+      [[maybe_unused]] owned_block& b,
       [[maybe_unused]] size_type n,
-      [[maybe_unused]] size_type a) noexcept -> owned_block {
-        return {};
+      [[maybe_unused]] size_type a) noexcept -> bool {
+        if(can_reallocate(b, n, a)) {
+            b = reallocate(std::move(b), n, a);
+            return b.size() == n;
+        }
+        return false;
     }
 
-    void do_reallocate(owned_block& b, size_type n, size_type a) noexcept {
+    auto reallocate_inplace(owned_block& b, size_type n, size_type a) noexcept
+      -> owned_block& {
         if(b.size() != n) {
             if(can_reallocate(b, n, a)) {
-                b = reallocate(std::move(b), n, a);
+                do_reallocate(b, n, a);
             } else {
                 deallocate(std::move(b), a);
                 b = allocate(n, a);
             }
         }
+        return b;
+    }
+
+    virtual auto reallocate(owned_block&& b, size_type n, size_type a) noexcept
+      -> owned_block {
+        return std::move(reallocate_inplace(b, n, a));
     }
 };
 //------------------------------------------------------------------------------
-export class c_byte_reallocator : public byte_allocator {
+export class c_byte_reallocator final : public byte_allocator {
 public:
     using size_type = span_size_t;
 

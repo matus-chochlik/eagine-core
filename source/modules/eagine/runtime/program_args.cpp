@@ -226,25 +226,28 @@ private:
     friend class program_args;
 
     template <typename T, identifier_t V>
-    auto _do_parse(T& dest, const selector<V> sel, const std::ostream&)
+    auto _do_parse(T& dest, const selector<V> sel, std::ostream& parse_log)
       const noexcept -> bool {
         if(auto opt_val{from_string<T>(get(), sel)}) {
             dest = std::move(extract(opt_val));
             return true;
+        } else {
+            parse_log << "'" << get() << "' "
+                      << "is not a valid `" << type_name<T>() << "` value";
         }
         return false;
     }
 
     template <identifier_t V>
-    auto _do_parse(string_view& dest, const selector<V>, const std::ostream&)
+    auto _do_parse(string_view& dest, const selector<V>, std::ostream&)
       const noexcept -> bool {
         dest = get();
         return true;
     }
 
     template <identifier_t V>
-    auto _do_parse(std::string& dest, const selector<V>, const std::ostream&)
-      const -> bool {
+    auto _do_parse(std::string& dest, const selector<V>, std::ostream&) const
+      -> bool {
         dest = get_string();
         return true;
     }
@@ -437,6 +440,16 @@ public:
         return result;
     }
 
+    /// @brief Arrow operator.
+    constexpr auto operator->() noexcept -> pointer {
+        return &_a;
+    }
+
+    /// @brief Const arrow operator.
+    constexpr auto operator->() const noexcept -> const_pointer {
+        return &_a;
+    }
+
     /// @brief Dereference operator.
     constexpr auto operator*() noexcept -> reference {
         return _a;
@@ -535,7 +548,7 @@ public:
 
     /// @brief Returns an iterator past the last argument.
     auto end() const noexcept -> iterator {
-        return {get(_argc)};
+        return {get(_argc == 0 ? 1 : _argc)};
     }
 
     /// @brief Finds and returns the argument with the specified value.
@@ -550,6 +563,18 @@ public:
             ++i;
         }
         return get(i);
+    }
+
+    /// @brief Finds the specified argument and tries to parse value in the next one.
+    template <typename T>
+    auto find_value_or(
+      const value_type what,
+      T fallback,
+      std::ostream& parse_log) const noexcept -> T {
+        if(const auto arg{find(what)}) {
+            arg.parse_next(fallback, parse_log);
+        }
+        return fallback;
     }
 
 private:

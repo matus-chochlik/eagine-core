@@ -1,0 +1,58 @@
+#!/bin/bash -e
+#
+sub_module=all
+cpu_count=1
+branch=develop
+build_type=Debug
+
+while [[ "${1}" != "" ]]
+do
+	case "${1}" in
+		"--sub-module")
+			sub_module="${2}"
+			shift
+			;;
+		"--branch")
+			branch="${2}"
+			shift
+			;;
+		"--build-type")
+			build_type="${2}"
+			shift
+			;;
+		"--cpu-count")
+			cpu_count="${2}"
+			shift
+			;;
+		*)
+			break
+			;;
+	esac
+	shift
+done
+
+set -x
+rm -rf "${HOME}/Code/_build/"
+mkdir -p "${HOME}/Code/_build"
+cd "${HOME}/Code"
+if [[ -d "${HOME}/Code/eagine-${sub_module}" ]]
+then cd "${HOME}/Code/eagine-${sub_module}" && git checkout "${branch}" && git pull origin "${branch}"
+else git clone --branch "${branch}" "https://github.com/matus-chochlik/eagine-${sub_module}.git" && cd "eagine-${sub_module}"
+fi
+if [[ "${sub_module}" == "all" ]]
+then "${HOME}/Code/eagine-all/tools/pull_all" origin "${branch}"
+else git submodule update --recursive
+fi
+
+cmake \
+	"-G" "Ninja" \
+	"-DCMAKE_BUILD_TYPE=${build_type}" \
+	"-DCMAKE_TOOLCHAIN_FILE=~/toolchain-clang.cmake" \
+	"-S" "${HOME}/Code/eagine-${sub_module}" \
+	"-B" "${HOME}/Code/_build"
+cmake \
+	"--build" "${HOME}/Code/_build" \
+	"--parallel" "${cpu_count}"
+ctest \
+	"--test-dir" "${HOME}/Code/_build" \
+	"--parallel" "${cpu_count}"

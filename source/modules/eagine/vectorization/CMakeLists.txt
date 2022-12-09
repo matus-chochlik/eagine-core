@@ -117,3 +117,17 @@ eagine_add_module(
 		view
 )
 
+eagine_add_module_tests(
+	eagine.core.vectorization
+	UNITS
+		abs
+		axis
+		compare
+		data
+		diff
+		fill
+		from
+		hsum
+		shuffle
+		view
+)

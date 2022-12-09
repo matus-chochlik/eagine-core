@@ -15,6 +15,7 @@ struct eagine_embedded_resource_info {
     long src_path_len;
     const unsigned char* data_pointer;
     long data_size;
+    uint8_t format;
     bool is_packed;
 };
 
@@ -45,6 +46,7 @@ auto embedded_resource_loader::search(identifier_value res_id) noexcept
             return {
               memory::const_block{info.data_pointer, info.data_size},
               string_view{info.src_path, info.src_path_len},
+              embedded_resource_format{info.format},
               info.is_packed};
         }
     }

@@ -14,11 +14,52 @@ export module eagine.core.resource:embedded;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
+import eagine.core.reflection;
 import eagine.core.utility;
 import eagine.core.runtime;
+import eagine.core.logging;
+import eagine.core.value_tree;
 import eagine.core.main_ctx;
+import <cstdint>;
 
 namespace eagine {
+//------------------------------------------------------------------------------
+/// @brief Enumeration indicating the base format of embedded resource block.
+/// @see embedded resource
+/// @see embed
+export enum class embedded_resource_format : std::uint8_t {
+    /// @brief Unknown binary.
+    unknown = 0U,
+    /// @brief Conforming XML
+    xml,
+    /// @brief Conforming JSON.
+    json,
+    /// @brief JSON header followed by binary data.
+    json_binary,
+    /// @brief Conforming YAML.
+    yaml,
+    /// @brief GLSL source.
+    glsl,
+    /// @brief C++ source.
+    cpp,
+    /// @brief UTF8 formatted text.
+    text_utf8
+};
+
+export template <typename Selector>
+constexpr auto enumerator_mapping(
+  const std::type_identity<embedded_resource_format>,
+  const Selector) noexcept {
+    return enumerator_map_type<embedded_resource_format, 8>{
+      {{"unknown", embedded_resource_format::unknown},
+       {"xml", embedded_resource_format::xml},
+       {"json", embedded_resource_format::json},
+       {"json_binary", embedded_resource_format::json_binary},
+       {"yaml", embedded_resource_format::yaml},
+       {"glsl", embedded_resource_format::glsl},
+       {"cpp", embedded_resource_format::cpp},
+       {"text_utf8", embedded_resource_format::text_utf8}}};
+}
 //------------------------------------------------------------------------------
 /// @brief Class providing access to a const resource block embedded into the executable.
 /// @ingroup embedding
@@ -31,17 +72,30 @@ public:
     constexpr embedded_resource(
       const memory::const_block blk,
       const string_view src_path,
+      const embedded_resource_format format,
       const bool packed = false) noexcept
       : _res_blk{blk}
       , _src_path{src_path}
+      , _format{format}
       , _packed{packed} {}
 
     /// @brief Returns the path of the file this resource data comes from.
     constexpr auto source_path() const noexcept -> string_view {
         return _src_path;
     }
+    /// @brief Returns the basic data format of the resource.
+    /// @see is_packed
+    /// @see is_utf8_text
+    constexpr auto format() const noexcept -> embedded_resource_format {
+        return _format;
+    }
+
+    /// @brief Indicates if the resource is a UTF-8-encoded text.
+    /// @see format
+    auto is_utf8_text() const noexcept -> tribool;
 
     /// @brief Indicates if the resource is packed and needs to be decompressed.
+    /// @see format
     /// @see decompress
     constexpr auto is_packed() const noexcept -> bool {
         return _packed;
@@ -150,14 +204,94 @@ public:
     /// @brief Unpacks this resource and passes the data into the handler function.
     /// @see unpack
     /// @see is_packed
+    /// @see visit
     auto fetch(main_ctx_object& mco, data_compressor::data_handler handler)
       const {
         return fetch(mco.main_context(), handler);
     }
 
+    /// @brief Visit by the specified visitor if the resource is a value tree.
+    /// @see fetch
+    /// @see format
+    auto visit(
+      data_compressor& comp,
+      memory::buffer_pool& buffers,
+      const logger&,
+      std::shared_ptr<valtree::value_tree_visitor> visitor,
+      span_size_t max_token_size) const -> bool;
+
+    /// @brief Visit by the specified visitor if the resource is a value tree.
+    /// @see fetch
+    /// @see build
+    /// @see format
+    auto visit(
+      main_ctx& ctx,
+      std::shared_ptr<valtree::value_tree_visitor> visitor,
+      span_size_t max_token_size) const -> bool {
+        return visit(
+          ctx.compressor(),
+          ctx.buffers(),
+          ctx.log(),
+          std::move(visitor),
+          max_token_size);
+    }
+
+    /// @brief Visit by the specified visitor if the resource is a value tree.
+    /// @see fetch
+    /// @see build
+    /// @see format
+    auto visit(
+      main_ctx_object& mco,
+      std::shared_ptr<valtree::value_tree_visitor> visitor,
+      span_size_t max_token_size) const -> bool {
+        return visit(mco.main_context(), std::move(visitor), max_token_size);
+    }
+
+    /// @brief Apply the specified builder if the resource is a value tree.
+    /// @see visit
+    /// @see fetch
+    /// @see format
+    auto build(
+      data_compressor& comp,
+      memory::buffer_pool& buffers,
+      const logger& log,
+      std::shared_ptr<valtree::object_builder> builder) const -> bool {
+        if(builder) {
+            const auto max_token_size{builder->max_token_size()};
+            return visit(
+              comp,
+              buffers,
+              log,
+              make_building_value_tree_visitor(std::move(builder)),
+              max_token_size);
+        }
+        return false;
+    }
+
+    /// @brief Apply the specified builder if the resource is a value tree.
+    /// @see visit
+    /// @see fetch
+    /// @see format
+    auto build(main_ctx& ctx, std::shared_ptr<valtree::object_builder> builder)
+      const -> bool {
+        return build(
+          ctx.compressor(), ctx.buffers(), ctx.log(), std::move(builder));
+    }
+
+    /// @brief Apply the specified builder if the resource is a value tree.
+    /// @see visit
+    /// @see fetch
+    /// @see format
+    auto build(
+      main_ctx_object& mco,
+      std::shared_ptr<valtree::object_builder> builder) const -> bool {
+        return build(mco.main_context(), std::move(builder));
+    }
+
 private:
     memory::const_block _res_blk{};
     string_view _src_path{};
+    embedded_resource_format _format{embedded_resource_format::unknown};
     bool _packed{false};
 };
 
@@ -167,6 +301,6 @@ private:
 export auto as_chars(const embedded_resource& res) noexcept {
     return as_chars(memory::const_block{res});
 }
-
+//------------------------------------------------------------------------------
 } // namespace eagine
 

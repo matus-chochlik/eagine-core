@@ -87,20 +87,26 @@ public:
     /// @brief Returns the specified buffer back to the pool for further reuse.
     /// @see get
     void eat(memory::buffer used) noexcept {
-        const auto old_cap{std_size(used.capacity())};
-        if(_pool.size() < _max) [[likely]] {
-            try {
-                _pool.emplace_back(std::move(used));
-            } catch(...) {
+        if(const auto old_cap{std_size(used.capacity())}; old_cap >= 16)
+          [[likely]] {
+            if(_pool.size() < _max) [[likely]] {
+                try {
+                    _pool.emplace_back(std::move(used));
+                } catch(...) {
+                }
+            } else {
+                if constexpr(!low_profile_build) {
+                    ++_stats._dscs;
+                }
+            }
+            if constexpr(!low_profile_build) {
+                ++_stats._eats;
+                _stats._maxs = std::max(_stats._maxs, old_cap);
             }
         } else {
             if constexpr(!low_profile_build) {
                 ++_stats._dscs;
             }
-        }
-        if constexpr(!low_profile_build) {
-            ++_stats._eats;
-            _stats._maxs = std::max(_stats._maxs, old_cap);
         }
     }
 

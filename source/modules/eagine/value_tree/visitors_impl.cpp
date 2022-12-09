@@ -82,14 +82,15 @@ public:
         _right->unparsed_data(data);
     }
 
-    void finish() noexcept final {
-        _left->finish();
-        _right->finish();
+    auto finish() noexcept -> bool final {
+        const bool l{_left->finish()};
+        const bool r{_right->finish()};
+        return l && r;
     }
 
     void failed() noexcept final {
         _left->failed();
-        _right->finish();
+        _right->failed();
     }
 
 private:
@@ -171,8 +172,9 @@ public:
         }
     }
 
-    void finish() noexcept final {
+    auto finish() noexcept -> bool final {
         _cio.print("finish traversal");
+        return true;
     }
 
     void failed() noexcept final {
@@ -248,11 +250,11 @@ public:
         _builder->unparsed_data(data);
     }
 
-    void finish() noexcept final {
+    auto finish() noexcept -> bool final {
         if(!_path.empty()) {
             _builder->failed();
         }
-        _builder->finish();
+        return _builder->finish();
     }
 
     void failed() noexcept final {

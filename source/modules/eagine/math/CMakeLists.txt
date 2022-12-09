@@ -147,4 +147,8 @@ eagine_add_module(
 		io
 )
 
-
+eagine_add_module_tests(
+	eagine.core.math
+	UNITS
+		coordinates
+)

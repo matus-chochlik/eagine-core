@@ -7,7 +7,6 @@
 ///
 export module eagine.core.math:tmat;
 
-import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.vectorization;
@@ -15,6 +14,7 @@ import :traits;
 import :vector;
 import :matrix;
 import :matrix_construct;
+import <concepts>;
 import <type_traits>;
 import <utility>;
 
@@ -45,20 +45,18 @@ struct tmat : matrix<T, C, R, RM, V> {
       : base{base::from(d, C * R)} {}
 
 private:
-    template <typename... P>
+    template <std::convertible_to<T>... P>
     static auto _make(P&&... p) noexcept
-        requires(
-          ((sizeof...(P)) == (C * R)) && all_are_convertible_to<T, P...>::value)
+        requires((sizeof...(P)) == (C * R))
     {
         T d[C * R] = {T(p)...};
         return base::from(d, C * R);
     }
 
 public:
-    template <typename... P>
+    template <std::convertible_to<T>... P>
     tmat(P&&... p) noexcept
-        requires(
-          ((sizeof...(P)) == (R * C)) && all_are_convertible_to<T, P...>::value)
+        requires((sizeof...(P)) == (R * C))
       : base(_make(std::forward<P>(p)...)) {}
 
     template <typename... P>
@@ -66,9 +64,9 @@ public:
         requires((sizeof...(P)) == (RM ? R : C))
       : base{{v._v...}} {}
 
-    template <typename P, int M, int N>
+    template <std::convertible_to<T> P, int M, int N>
     constexpr tmat(const matrix<P, M, N, RM, V>& m) noexcept
-        requires(std::is_convertible_v<P, T> && (C <= M) && (R <= N))
+        requires((C <= M) && (R <= N))
       : base{base::from(m)} {}
 };
 
