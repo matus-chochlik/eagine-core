@@ -112,7 +112,13 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE eagilog.stream (
 	stream_id SERIAL PRIMARY KEY,
 	start_time TIMESTAMP WITH TIME ZONE NOT NULL,
-	finish_time TIMESTAMP WITH TIME ZONE
+	finish_time TIMESTAMP WITH TIME ZONE NULL,
+	git_hash VARCHAR(64) NULL,
+	git_version VARCHAR(32) NULL,
+	os_name VARCHAR(64) NULL,
+	hostname VARCHAR(64) NULL,
+	architecture VARCHAR(32) NULL,
+	compiler VARCHAR(32) NULL
 );
 
 CREATE FUNCTION eagilog.start_stream(
@@ -408,6 +414,28 @@ $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 -- other views
 --------------------------------------------------------------------------------
+-- count of entries by source
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.source_entry_counts
+AS
+SELECT
+	source_id,
+	count(entry_id) source_entry_count
+FROM eagilog.entry
+GROUP BY source_id;
+--------------------------------------------------------------------------------
+-- count of entries with specific source/tag combination
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.message_entry_counts
+AS
+SELECT
+	source_id, tag,
+	count(entry_id) message_entry_count
+FROM eagilog.entry
+GROUP BY source_id, tag;
+--------------------------------------------------------------------------------
+-- various numeric values merged into one view
+--------------------------------------------------------------------------------
 CREATE VIEW eagilog.numeric_streams
 AS
 SELECT
@@ -435,6 +463,8 @@ FROM eagilog.any_stream s
 JOIN eagilog.entry e USING(stream_id)
 JOIN eagilog.arg_integer a USING(entry_id)
 WHERE e.tag IS NOT NULL;
+--------------------------------------------------------------------------------
+-- various time-duration values merged into one view
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.duration_streams
 AS

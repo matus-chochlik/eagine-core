@@ -166,6 +166,19 @@ class XmlLogDbWriter(object):
     def __init__(self, options):
         self._options = options
         self._source_id = 0
+        self._special_args = {
+            "OSInfo": {
+                "osCodeName": ("os_name", 64)
+            },
+            "GitInfo": {
+                "gitHashId": ("git_hash", 64),
+                "gitVersion": ("git_version", 32), 
+            },
+            "Compiler": {
+                "complrName": ("compiler", 32),
+                "archtcture": ("architecture", 32)
+            }
+        }
 
     # --------------------------------------------------------------------------
     def startStream(self, pg_conn):
@@ -206,7 +219,7 @@ class XmlLogDbWriter(object):
         return self.shouldBeStored(info)
 
     # --------------------------------------------------------------------------
-    def storeArg(self, cursor, entry_id, arg_id, info):
+    def storeArg(self, cursor, stream_id, entry_id, msg_tag, arg_id, info):
         for vinfo in info.get("values", []):
             try:
                 value = int(vinfo["value"])
@@ -246,24 +259,31 @@ class XmlLogDbWriter(object):
                             vinfo.get("type"),
                             value))
 
+            for spec_arg_id, param in self._special_args.get(msg_tag, {}).items():
+                column_name, max_length = param
+                if spec_arg_id == arg_id:
+                    query = "UPDATE eagilog.stream SET %s = %%s WHERE stream_id = %%s" % column_name
+                    cursor.execute(query, (vinfo["value"][0:32], stream_id));
+
     # --------------------------------------------------------------------------
     def storeMessage(self, pg_conn, stream_id, info):
         args = info["args"]
         message = info["format"]
         with pg_conn:
             with pg_conn.cursor() as cursor:
+                msg_tag = info.get("tag")
                 cursor.execute(
                     "SELECT eagilog.add_entry(%s, %s, %s, %s, %s)", (
                         stream_id,
                         info["source"],
                         info["level"],
-                        info.get("tag"),
+                        msg_tag,
                         info["format"]))
                 data = cursor.fetchone()
                 entry_id = int(data[0])
 
-                for arg, ainfo in args.items():
-                    self.storeArg(cursor, entry_id, arg, ainfo)
+                for arg_id, ainfo in args.items():
+                    self.storeArg(cursor, stream_id, entry_id, msg_tag, arg_id, ainfo)
 
     # --------------------------------------------------------------------------
     def makeProcessor(self):
