@@ -251,8 +251,8 @@ GROUP BY (message_format_id, hash, format);
 CREATE TABLE eagilog.arg_string(
 	entry_id BIGINT NOT NULL,
 	arg_id VARCHAR(10) NOT NULL,
-	value VARCHAR(40) NOT NULL,
-	tag VARCHAR(10) NULL
+	arg_type VARCHAR(10) NULL,
+	value VARCHAR(80) NOT NULL
 );
 
 ALTER TABLE eagilog.arg_string
@@ -265,14 +265,14 @@ REFERENCES eagilog.entry;
 CREATE FUNCTION eagilog.add_entry_arg_string(
 	_entry_id eagilog.arg_string.entry_id%TYPE,
 	_arg_id eagilog.arg_string.arg_id%TYPE,
-	_value eagilog.arg_string.value%TYPE,
-	_tag eagilog.arg_string.tag%TYPE
+	_type eagilog.arg_string.arg_type%TYPE,
+	_value eagilog.arg_string.value%TYPE
 ) RETURNS VOID
 AS $$
 BEGIN
 	INSERT INTO eagilog.arg_string
-	(entry_id, arg_id, value, tag)
-	VALUES(_entry_id, _arg_id, _value, _tag)
+	(entry_id, arg_id, arg_type, value)
+	VALUES(_entry_id, _arg_id, _type, _value)
 	ON CONFLICT ON CONSTRAINT arg_string_pkey
 	DO NOTHING;
 END
@@ -283,8 +283,8 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE eagilog.arg_boolean(
 	entry_id BIGINT NOT NULL,
 	arg_id VARCHAR(10) NOT NULL,
-	value BOOL NOT NULL,
-	tag VARCHAR(10) NULL
+	arg_type VARCHAR(10) NULL,
+	value BOOL NOT NULL
 );
 
 ALTER TABLE eagilog.arg_boolean
@@ -297,14 +297,14 @@ REFERENCES eagilog.entry;
 CREATE FUNCTION eagilog.add_entry_arg_boolean(
 	_entry_id eagilog.arg_boolean.entry_id%TYPE,
 	_arg_id eagilog.arg_boolean.arg_id%TYPE,
-	_value eagilog.arg_boolean.value%TYPE,
-	_tag eagilog.arg_boolean.tag%TYPE
+	_type eagilog.arg_boolean.arg_type%TYPE,
+	_value eagilog.arg_boolean.value%TYPE
 ) RETURNS VOID
 AS $$
 BEGIN
 	INSERT INTO eagilog.arg_boolean
-	(entry_id, arg_id, value, tag)
-	VALUES(_entry_id, _arg_id, _value, _tag)
+	(entry_id, arg_id, arg_type, value)
+	VALUES(_entry_id, _arg_id, _type, _value)
 	ON CONFLICT ON CONSTRAINT arg_boolean_pkey
 	DO NOTHING;
 END
@@ -315,8 +315,8 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE eagilog.arg_integer(
 	entry_id BIGINT NOT NULL,
 	arg_id VARCHAR(10) NOT NULL,
-	value INTEGER NOT NULL,
-	tag VARCHAR(10) NULL
+	arg_type VARCHAR(10) NULL,
+	value BIGINT NOT NULL
 );
 
 ALTER TABLE eagilog.arg_integer
@@ -329,14 +329,14 @@ REFERENCES eagilog.entry;
 CREATE FUNCTION eagilog.add_entry_arg_integer(
 	_entry_id eagilog.arg_integer.entry_id%TYPE,
 	_arg_id eagilog.arg_integer.arg_id%TYPE,
-	_value eagilog.arg_integer.value%TYPE,
-	_tag eagilog.arg_integer.tag%TYPE
+	_type eagilog.arg_integer.arg_type%TYPE,
+	_value eagilog.arg_integer.value%TYPE
 ) RETURNS VOID
 AS $$
 BEGIN
 	INSERT INTO eagilog.arg_integer
-	(entry_id, arg_id, value, tag)
-	VALUES(_entry_id, _arg_id, _value, _tag)
+	(entry_id, arg_id, arg_type, value)
+	VALUES(_entry_id, _arg_id, _type, _value)
 	ON CONFLICT ON CONSTRAINT arg_integer_pkey
 	DO NOTHING;
 END
@@ -347,8 +347,8 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE eagilog.arg_float(
 	entry_id BIGINT NOT NULL,
 	arg_id VARCHAR(10) NOT NULL,
-	value DOUBLE PRECISION NOT NULL,
-	tag VARCHAR(10) NULL
+	arg_type VARCHAR(10) NULL,
+	value DOUBLE PRECISION NOT NULL
 );
 
 ALTER TABLE eagilog.arg_float
@@ -361,18 +361,95 @@ REFERENCES eagilog.entry;
 CREATE FUNCTION eagilog.add_entry_arg_float(
 	_entry_id eagilog.arg_float.entry_id%TYPE,
 	_arg_id eagilog.arg_float.arg_id%TYPE,
-	_value eagilog.arg_float.value%TYPE,
-	_tag eagilog.arg_float.tag%TYPE
+	_type eagilog.arg_float.arg_type%TYPE,
+	_value eagilog.arg_float.value%TYPE
 ) RETURNS VOID
 AS $$
 BEGIN
 	INSERT INTO eagilog.arg_float
-	(entry_id, arg_id, value, tag)
-	VALUES(_entry_id, _arg_id, _value, _tag)
+	(entry_id, arg_id, arg_type, value)
+	VALUES(_entry_id, _arg_id, _type, _value)
 	ON CONFLICT ON CONSTRAINT arg_float_pkey
 	DO NOTHING;
 END
 $$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
+-- arg_duration
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.arg_duration(
+	entry_id BIGINT NOT NULL,
+	arg_id VARCHAR(10) NOT NULL,
+	arg_type VARCHAR(10) NULL,
+	value INTERVAL NOT NULL
+);
+
+ALTER TABLE eagilog.arg_duration
+ADD PRIMARY KEY(entry_id, arg_id);
+
+ALTER TABLE eagilog.arg_duration
+ADD FOREIGN KEY(entry_id)
+REFERENCES eagilog.entry;
+
+CREATE FUNCTION eagilog.add_entry_arg_duration(
+	_entry_id eagilog.arg_duration.entry_id%TYPE,
+	_arg_id eagilog.arg_duration.arg_id%TYPE,
+	_type eagilog.arg_duration.arg_type%TYPE,
+	_value eagilog.arg_duration.value%TYPE
+) RETURNS VOID
+AS $$
+BEGIN
+	INSERT INTO eagilog.arg_duration
+	(entry_id, arg_id, arg_type, value)
+	VALUES(_entry_id, _arg_id, _type, _value)
+	ON CONFLICT ON CONSTRAINT arg_duration_pkey
+	DO NOTHING;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
+-- other views
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.numeric_streams
+AS
+SELECT
+	stream_id,
+	source_id || '.' || tag || '.' || arg_id AS value_id,
+	s.start_time,
+	s.finish_time,
+	s.start_time + e.entry_time AS value_time,
+	a.arg_type AS value_type,
+	a.value
+FROM eagilog.any_stream s
+JOIN eagilog.entry e USING(stream_id)
+JOIN eagilog.arg_float a USING(entry_id)
+WHERE e.tag IS NOT NULL
+UNION
+SELECT
+	stream_id,
+	source_id || '.' || tag || '.' || arg_id AS value_id,
+	s.start_time,
+	s.finish_time,
+	s.start_time + e.entry_time AS value_time,
+	a.arg_type AS value_type,
+	a.value::DOUBLE PRECISION
+FROM eagilog.any_stream s
+JOIN eagilog.entry e USING(stream_id)
+JOIN eagilog.arg_integer a USING(entry_id)
+WHERE e.tag IS NOT NULL;
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.duration_streams
+AS
+SELECT
+	stream_id,
+	source_id || '.' || tag || '.' || arg_id AS value_id,
+	s.start_time,
+	s.finish_time,
+	s.start_time + e.entry_time AS value_time,
+	a.arg_type AS value_type,
+	value
+FROM eagilog.any_stream s
+JOIN eagilog.entry e USING(stream_id)
+JOIN eagilog.arg_duration a USING(entry_id)
+WHERE e.tag IS NOT NULL
 --------------------------------------------------------------------------------
 -- END
 --------------------------------------------------------------------------------

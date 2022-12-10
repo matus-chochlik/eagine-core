@@ -206,6 +206,47 @@ class XmlLogDbWriter(object):
         return self.shouldBeStored(info)
 
     # --------------------------------------------------------------------------
+    def storeArg(self, cursor, entry_id, arg_id, info):
+        for vinfo in info.get("values", []):
+            try:
+                value = int(vinfo["value"])
+                cursor.execute(
+                    "SELECT eagilog.add_entry_arg_integer(%s, %s, %s, %s)", (
+                        entry_id,
+                        arg_id,
+                        vinfo.get("type"),
+                        value))
+            except ValueError:
+                try:
+                    value = float(vinfo["value"])
+                    if vinfo.get("type") in ["duration"] \
+                    or vinfo.get("u") in ["s"]:
+                        units = {
+                            "s": "seconds"
+                        }
+                        cursor.execute(
+                            "SELECT eagilog.add_entry_arg_duration(%s, %s, %s, %s :: INTERVAL)", (
+                                entry_id,
+                                arg_id,
+                                vinfo.get("type"),
+                                "%f %s" % (value, units[info.get("u", "s")])))
+                    else:
+                        cursor.execute(
+                            "SELECT eagilog.add_entry_arg_float(%s, %s, %s, %s)", (
+                                entry_id,
+                                arg_id,
+                                vinfo.get("type"),
+                                value))
+                except ValueError:
+                    value = vinfo["value"]
+                    cursor.execute(
+                        "SELECT eagilog.add_entry_arg_string(%s, %s, %s, %s)", (
+                            entry_id,
+                            arg_id,
+                            vinfo.get("type"),
+                            value))
+
+    # --------------------------------------------------------------------------
     def storeMessage(self, pg_conn, stream_id, info):
         args = info["args"]
         message = info["format"]
@@ -220,6 +261,9 @@ class XmlLogDbWriter(object):
                         info["format"]))
                 data = cursor.fetchone()
                 entry_id = int(data[0])
+
+                for arg, ainfo in args.items():
+                    self.storeArg(cursor, entry_id, arg, ainfo)
 
     # --------------------------------------------------------------------------
     def makeProcessor(self):
@@ -243,8 +287,7 @@ class XmlLogProcessor(xml.sax.ContentHandler):
             user=options.db_user,
             password=options.db_password,
             host=options.db_host,
-            port=options.db_port
-        )
+            port=options.db_port)
         self._parser = xml.sax.make_parser()
         self._parser.setContentHandler(self)
 
