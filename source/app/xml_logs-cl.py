@@ -117,17 +117,19 @@ class ArgumentParser(argparse.ArgumentParser):
             self.error("`%s' is not a valid positive number" % str(x))
 
     # -------------------------------------------------------------------------
+    def _positive_int(self, x):
+        try:
+            assert(int(x) > 0)
+            return int(x)
+        except:
+            self.error("`%s' is not a positive integer value" % str(x))
+
+    # -------------------------------------------------------------------------
     def __init__(self, **kw):
         self._msg_re1 = re.compile("^([A-Za-z0-9_]{1,10})$")
         self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
         self._msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
 
-        def _positive_int(x):
-            try:
-                assert(int(x) > 0)
-                return int(x)
-            except:
-                self.error("`%s' is not a positive integer value" % str(x))
 
 
         argparse.ArgumentParser.__init__(self, **kw)
@@ -142,7 +144,7 @@ class ArgumentParser(argparse.ArgumentParser):
         self.add_argument(
             "--port", "-p",
             dest='socket_port',
-            type=_positive_int,
+            type=self._positive_int,
             action="store",
             default=34917
         )
@@ -224,7 +226,7 @@ class ArgumentParser(argparse.ArgumentParser):
                 metavar='MAX-SAMPLES',
                 dest='plot_reduce_count',
                 nargs='?',
-                type=_positive_int,
+                type=self._positive_int,
                 default=None,
                 help="""
                 Reduces plot series sample count to at most MAX-SAMPLES.
@@ -310,7 +312,7 @@ def getArgumentParser():
         prog=os.path.basename(__file__),
         description="""
             Process formatting the XML log output from one or several
-            OGLplus logger backends.
+            EAGine logger backends.
         """
     )
 # ------------------------------------------------------------------------------
@@ -1311,7 +1313,7 @@ class LocalLogSocket(socket.socket):
         except: pass
 
 # ------------------------------------------------------------------------------
-class LocalNetworkSocket(socket.socket):
+class NetworkLogSocket(socket.socket):
     # --------------------------------------------------------------------------
     def __init__(self, socket_port):
         socket.socket.__init__(self, socket.AF_INET, socket.SOCK_STREAM)
@@ -1329,7 +1331,7 @@ class LocalNetworkSocket(socket.socket):
 # ------------------------------------------------------------------------------
 def open_socket(options):
     if options.network_socket:
-        return LocalNetworkSocket(options.socket_port)
+        return NetworkLogSocket(options.socket_port)
     return LocalLogSocket("/tmp/eagine-xmllog")
 
 # ------------------------------------------------------------------------------
