@@ -270,10 +270,10 @@ class XmlLogDbWriter(object):
                             value))
 
             for spec_arg_id, param in self._special_args.get(msg_tag, {}).items():
-                column_name, max_length = param
+                attrib_name, max_length = param
                 if spec_arg_id == arg_id:
-                    query = "UPDATE eagilog.stream SET %s = %%s WHERE stream_id = %%s" % column_name
-                    cursor.execute(query, (vinfo["value"][0:max_length], stream_id));
+                    query = "SELECT eagilog.set_stream_%s(%%s, %%s)" % attrib_name
+                    cursor.execute(query, (stream_id, vinfo["value"][0:max_length]));
 
     # --------------------------------------------------------------------------
     def storeMessage(self, pg_conn, stream_id, info):

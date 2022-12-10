@@ -107,13 +107,83 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+-- stream command
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.stream_command (
+	stream_command_id SERIAL PRIMARY KEY,
+	hash BYTEA NOT NULL,
+	command VARCHAR(256) NOT NULL
+);
+
+CREATE UNIQUE INDEX hash_index
+ON eagilog.stream_command (hash);
+
+CREATE FUNCTION eagilog.trigger_stream_command_hash_default()
+RETURNS TRIGGER
+AS $$
+BEGIN
+	IF NEW.hash IS NULL
+	THEN NEW.hash = decode(md5(NEW.command), 'hex');
+	END IF;
+	RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER default_hash_on_insert
+BEFORE INSERT OR UPDATE ON eagilog.stream_command
+FOR EACH ROW EXECUTE PROCEDURE eagilog.trigger_stream_command_hash_default();
+
+CREATE FUNCTION eagilog.get_stream_command_id(
+	eagilog.stream_command.hash%TYPE,
+	eagilog.stream_command.command%TYPE
+) RETURNS eagilog.stream_command.stream_command_id%TYPE
+AS $$
+DECLARE
+	result eagilog.stream_command.stream_command_id%TYPE;
+BEGIN
+	LOOP
+		BEGIN
+			WITH sel AS (
+				SELECT lmf.stream_command_id
+				FROM eagilog.stream_command lmf
+				WHERE lmf.hash = $1
+				FOR SHARE
+			)  , ins AS (
+				INSERT INTO eagilog.stream_command (command)
+				SELECT $2
+				WHERE NOT EXISTS (SELECT 1 FROM sel)
+				RETURNING eagilog.stream_command.stream_command_id
+			)
+			SELECT sel.stream_command_id FROM sel
+			UNION ALL
+			SELECT ins.stream_command_id FROM ins
+			INTO result;
+		EXCEPTION WHEN UNIQUE_VIOLATION THEN
+			result := NULL;
+		END;
+
+		EXIT WHEN result IS NOT NULL;
+	END LOOP;
+	RETURN result;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.get_stream_command_id(
+	eagilog.stream_command.command%TYPE
+) RETURNS eagilog.stream_command.stream_command_id%TYPE
+AS $$
+BEGIN
+	RETURN eagilog.get_stream_command_id(decode(md5($1), 'hex'), $1);
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 -- stream
 --------------------------------------------------------------------------------
 CREATE TABLE eagilog.stream (
 	stream_id SERIAL PRIMARY KEY,
 	start_time TIMESTAMP WITH TIME ZONE NOT NULL,
 	finish_time TIMESTAMP WITH TIME ZONE NULL,
-	command VARCHAR(128) NULL,
+	stream_command_id INTEGER NULL,
 	git_hash VARCHAR(64) NULL,
 	git_version VARCHAR(32) NULL,
 	os_name VARCHAR(64) NULL,
@@ -150,7 +220,103 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+-- stream metadata function
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.set_stream_command(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_value VARCHAR
+) RETURNS VOID
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET stream_command_id = eagilog.get_stream_command_id(_value)
+	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.set_stream_git_hash(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_value VARCHAR
+) RETURNS VOID
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET git_hash = _value
+	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.set_stream_git_version(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_value VARCHAR
+) RETURNS VOID
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET git_version = _value
+	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.set_stream_os_name(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_value VARCHAR
+) RETURNS VOID
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET os_name = _value
+	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.set_stream_hostname(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_value VARCHAR
+) RETURNS VOID
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET hostname = _value
+	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.set_stream_architecture(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_value VARCHAR
+) RETURNS VOID
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET architecture = _value
+	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.set_stream_compiler(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_value VARCHAR
+) RETURNS VOID
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET compiler = _value
+	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 -- stream views
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.stream_command_ref_count
+AS
+SELECT
+    stream_command_id, hash, command,
+    count(stream_id) AS ref_count
+FROM eagilog.stream_command
+JOIN eagilog.stream
+USING (stream_command_id)
+GROUP BY (stream_command_id, hash, command);
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.finished_stream
 AS
@@ -165,6 +331,7 @@ SELECT
 	architecture,
 	compiler
 FROM eagilog.stream
+LEFT JOIN eagilog.stream_command USING(stream_command_id)
 WHERE finish_time IS NOT NULL;
 
 CREATE VIEW eagilog.active_stream
@@ -180,6 +347,7 @@ SELECT
 	architecture,
 	compiler
 FROM eagilog.stream
+LEFT JOIN eagilog.stream_command USING(stream_command_id)
 WHERE finish_time IS NULL;
 
 CREATE VIEW eagilog.any_stream
@@ -194,7 +362,8 @@ SELECT
 	hostname,
 	architecture,
 	compiler
-FROM eagilog.stream;
+FROM eagilog.stream
+LEFT JOIN eagilog.stream_command USING(stream_command_id);
 --------------------------------------------------------------------------------
 -- entry
 --------------------------------------------------------------------------------
