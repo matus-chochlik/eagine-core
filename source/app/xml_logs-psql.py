@@ -140,7 +140,11 @@ class ArgumentParser(argparse.ArgumentParser):
             options.db_user = os.getlogin()
 
         if options.db_password is None:
-            options.db_password = getpass.getpass("psql password: ")
+            try:
+                with open(os.path.expanduser("~/.pgpass"), "r") as passfd:
+                    options.db_password = passfd.readline().rstrip().split(":")[-1]
+            except:
+                options.db_password = getpass.getpass("psql password: ")
 
         return options
 
