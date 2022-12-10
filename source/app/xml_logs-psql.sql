@@ -113,6 +113,7 @@ CREATE TABLE eagilog.stream (
 	stream_id SERIAL PRIMARY KEY,
 	start_time TIMESTAMP WITH TIME ZONE NOT NULL,
 	finish_time TIMESTAMP WITH TIME ZONE NULL,
+	command VARCHAR(128) NULL,
 	git_hash VARCHAR(64) NULL,
 	git_version VARCHAR(32) NULL,
 	os_name VARCHAR(64) NULL,
@@ -155,7 +156,14 @@ CREATE VIEW eagilog.finished_stream
 AS
 SELECT
 	stream_id, start_time, finish_time,
-	finish_time - start_time AS duration
+	finish_time - start_time AS duration,
+	command,
+	git_hash,
+	git_version,
+	os_name,
+	hostname,
+	architecture,
+	compiler
 FROM eagilog.stream
 WHERE finish_time IS NOT NULL;
 
@@ -163,7 +171,14 @@ CREATE VIEW eagilog.active_stream
 AS
 SELECT
 	stream_id, start_time, 
-	current_timestamp - start_time AS duration
+	current_timestamp - start_time AS duration,
+	command,
+	git_hash,
+	git_version,
+	os_name,
+	hostname,
+	architecture,
+	compiler
 FROM eagilog.stream
 WHERE finish_time IS NULL;
 
@@ -171,7 +186,14 @@ CREATE VIEW eagilog.any_stream
 AS
 SELECT
 	stream_id, start_time, finish_time,
-	coalesce(finish_time, current_timestamp) - start_time AS duration
+	coalesce(finish_time, current_timestamp) - start_time AS duration,
+	command,
+	git_hash,
+	git_version,
+	os_name,
+	hostname,
+	architecture,
+	compiler
 FROM eagilog.stream;
 --------------------------------------------------------------------------------
 -- entry

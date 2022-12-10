@@ -171,6 +171,9 @@ class XmlLogDbWriter(object):
         self._options = options
         self._source_id = 0
         self._special_args = {
+            "ProgArgs": {
+                "cmd": ("command", 128)
+            },
             "OSInfo": {
                 "osCodeName": ("os_name", 64)
             },
@@ -270,7 +273,7 @@ class XmlLogDbWriter(object):
                 column_name, max_length = param
                 if spec_arg_id == arg_id:
                     query = "UPDATE eagilog.stream SET %s = %%s WHERE stream_id = %%s" % column_name
-                    cursor.execute(query, (vinfo["value"][0:32], stream_id));
+                    cursor.execute(query, (vinfo["value"][0:max_length], stream_id));
 
     # --------------------------------------------------------------------------
     def storeMessage(self, pg_conn, stream_id, info):
