@@ -170,6 +170,9 @@ class XmlLogDbWriter(object):
             "OSInfo": {
                 "osCodeName": ("os_name", 64)
             },
+            "Instance": {
+                "hostname": ("hostname", 64)
+            },
             "GitInfo": {
                 "gitHashId": ("git_hash", 64),
                 "gitVersion": ("git_version", 32), 

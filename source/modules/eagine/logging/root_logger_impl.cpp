@@ -8,6 +8,16 @@
 module;
 
 #include <cassert>
+#if __has_include(<unistd.h>)
+#include <unistd.h>
+#ifndef EAGINE_POSIX
+#define EAGINE_POSIX 1
+#endif
+#else
+#ifndef EAGINE_POSIX
+#define EAGINE_POSIX 0
+#endif
+#endif
 
 module eagine.core.logging;
 
@@ -162,8 +172,18 @@ auto root_logger::_log_git_info() -> void {
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_instance_info() -> void {
+    std::array<char, 1024> hname{};
+#if EAGINE_POSIX
+    try {
+        if(::gethostname(hname.data(), hname.size() - 1) != 0) {
+            hname[0] = '\0';
+        }
+    } catch(...) {
+    }
+#endif
     info("instance information")
       .tag("Instance")
+      .arg("hostname", std::string{hname.data()})
       .arg("instanceId", process_instance_id());
 }
 //------------------------------------------------------------------------------
