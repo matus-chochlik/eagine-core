@@ -143,6 +143,31 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+-- stream views
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.finished_stream
+AS
+SELECT
+	stream_id, start_time, finish_time,
+	finish_time - start_time AS duration
+FROM eagilog.stream
+WHERE finish_time IS NOT NULL;
+
+CREATE VIEW eagilog.active_stream
+AS
+SELECT
+	stream_id, start_time, 
+	current_timestamp - start_time AS duration
+FROM eagilog.stream
+WHERE finish_time IS NULL;
+
+CREATE VIEW eagilog.any_stream
+AS
+SELECT
+	stream_id, start_time, finish_time,
+	coalesce(finish_time, current_timestamp) - start_time AS duration
+FROM eagilog.stream;
+--------------------------------------------------------------------------------
 -- entry
 --------------------------------------------------------------------------------
 CREATE TABLE eagilog.entry(
@@ -167,6 +192,7 @@ CREATE FUNCTION eagilog.add_entry(
 	_stream_id eagilog.entry.stream_id%TYPE,
 	_source_id eagilog.entry.source_id%TYPE,
 	_severity_name eagilog.severity.name%TYPE,
+	_tag eagilog.entry.tag%TYPE,
 	_format eagilog.message_format.format%TYPE
 ) RETURNS eagilog.entry.entry_id%TYPE
 AS $$
@@ -181,11 +207,12 @@ BEGIN
 
 	WITH ins AS (
 		INSERT INTO eagilog.entry
-		(stream_id, source_id, severity_id, message_format_id, entry_time)
+		(stream_id, source_id, severity_id, tag, message_format_id, entry_time)
 		VALUES(
 			_stream_id,
 			_source_id,
 			eagilog.get_severity_id(_severity_name),
+            _tag,
 			eagilog.get_message_format_id(_format),
 			_entry_time
 		) RETURNING eagilog.entry.entry_id
@@ -206,6 +233,18 @@ BEGIN
 	WHERE entry_id = _entry_id;
 END
 $$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
+-- format / entry views
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.message_format_ref_count
+AS
+SELECT
+    message_format_id, hash, format,
+    count(entry_id) AS ref_count
+FROM eagilog.message_format
+JOIN eagilog.entry
+USING (message_format_id)
+GROUP BY (message_format_id, hash, format);
 --------------------------------------------------------------------------------
 -- arg_string
 --------------------------------------------------------------------------------

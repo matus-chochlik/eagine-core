@@ -176,10 +176,50 @@ class XmlLogDbWriter(object):
                 return int(data[0])
 
     # --------------------------------------------------------------------------
-    def finishStream(self, pg_conn, streamid, clean_shutdown):
+    def finishStream(self, pg_conn, stream_id, clean_shutdown):
         with pg_conn:
             with pg_conn.cursor() as cursor:
-                cursor.execute("SELECT eagilog.finish_stream(%s)", (streamid,))
+                cursor.execute("SELECT eagilog.finish_stream(%s)", (stream_id,))
+
+    # --------------------------------------------------------------------------
+    def isInList(self, msrc, mtag, lst):
+        for lsrc, ltag in lst:
+            src_match = lsrc is None or lsrc == msrc
+            tag_match = ltag is None or ltag == mtag
+            if src_match and tag_match:
+                return True
+        return False
+
+    # --------------------------------------------------------------------------
+    def shouldBeStored(self, info):
+        src = info.get("source", None)
+        tag = info.get("tag", None)
+        result = True
+        if self._options.block_list:
+            result = result and not self.isInList(src, tag, self._options.block_list)
+        if self._options.allow_list:
+            result = result and self.isInList(src, tag, self._options.allow_list)
+        return result
+
+    # --------------------------------------------------------------------------
+    def previewMessage(self, stream_id, info):
+        return self.shouldBeStored(info)
+
+    # --------------------------------------------------------------------------
+    def storeMessage(self, pg_conn, stream_id, info):
+        args = info["args"]
+        message = info["format"]
+        with pg_conn:
+            with pg_conn.cursor() as cursor:
+                cursor.execute(
+                    "SELECT eagilog.add_entry(%s, %s, %s, %s, %s)", (
+                        stream_id,
+                        info["source"],
+                        info["level"],
+                        info.get("tag"),
+                        info["format"]))
+                data = cursor.fetchone()
+                entry_id = int(data[0])
 
     # --------------------------------------------------------------------------
     def makeProcessor(self):
@@ -189,10 +229,14 @@ class XmlLogDbWriter(object):
 # ------------------------------------------------------------------------------
 class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
-    def __init__(self, srcid, db_writer, options):
-        self._srcid = srcid
-        self._streamid = None
+    def __init__(self, src_id, db_writer, options):
+        self._src_id = src_id
+        self._stream_id = None
         self._clean_shutdown = False
+        self._ctag = None
+        self._carg = None
+        self._info = None
+        self._source_map = {}
         self._db_writer = db_writer
         self._pg_conn = None
         self._pg_conn = psycopg2.connect(
@@ -211,18 +255,54 @@ class XmlLogProcessor(xml.sax.ContentHandler):
 
     # --------------------------------------------------------------------------
     def startElement(self, tag, attr):
+        self._ctag = tag
         if tag == "log":
             if self._pg_conn is not None:
-                self._streamid = self._db_writer.startStream(self._pg_conn)
+                self._stream_id = self._db_writer.startStream(self._pg_conn)
+        elif tag == "m":
+            self._info = {
+                r: attr.get(k, None) for k, r in [
+                    ("lvl", "level"),
+                    ("src", "source"),
+                    ("tag", "tag"),
+                    ("iid", "instance"),
+                    ("ts",  "timestamp")
+                ]
+            }
+            self._info["args"] = {}
+            self._source_map[attr["iid"]] = attr["src"]
+        elif tag == "a":
+            self._carg = attr["n"]
+            iarg = {
+                "value": "''",
+                "min": attr.get("min"),
+                "max": attr.get("max"),
+                "type": attr["t"],
+                "blob": attr.get("blob", False)
+            }
+            try: self._info["args"][self._carg]["values"].append(iarg)
+            except KeyError:
+                self._info["args"][self._carg] = {
+                    "used": False,
+                    "values": [iarg]
+                }
 
     # --------------------------------------------------------------------------
     def endElement(self, tag):
         if tag == "log":
             self._clean_shutdown = True
+        elif tag == "m":
+            if self._db_writer.previewMessage(self._stream_id, self._info):
+                self._db_writer.storeMessage(self._pg_conn, self._stream_id, self._info)
+            self._info = None
 
     # --------------------------------------------------------------------------
     def characters(self, content):
-        pass
+        if self._info:
+            if self._ctag == "f":
+                self._info["format"] = content
+            elif self._ctag == "a":
+                self._info["args"][self._carg]["values"][-1]["value"] = content
 
     # --------------------------------------------------------------------------
     def processLine(self, line):
@@ -230,10 +310,10 @@ class XmlLogProcessor(xml.sax.ContentHandler):
 
     # --------------------------------------------------------------------------
     def processDisconnect(self):
-        if self._pg_conn is not None and self._streamid is not None:
+        if self._pg_conn is not None and self._stream_id is not None:
             self._db_writer.finishStream(
                 self._pg_conn, 
-                self._streamid,
+                self._stream_id,
                 self._clean_shutdown)
 
 # ------------------------------------------------------------------------------
