@@ -8,6 +8,11 @@ install(
 	RENAME eagine-xml_logs-cl
 	DESTINATION bin
 )
+install(
+	PROGRAMS xml_logs-psql.py
+	RENAME eagine-xml_logs-psql
+	DESTINATION bin
+)
 
 install(
 	PROGRAMS servicectl.py
