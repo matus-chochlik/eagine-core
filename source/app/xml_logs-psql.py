@@ -337,10 +337,8 @@ class XmlLogDbWriter(object):
         with pg_conn:
             with pg_conn.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO eagilog.profile_interval"
-                    "(stream_id, source_id, tag, hit_count, hit_interval,"
-                    " min_duration_ms, avg_duration_ms, max_duration_ms)"
-                    "VALUES(%s, %s, %s, %s, %s::INTERVAL, %s, %s, %s)",(
+                    "SELECT eagilog.add_profile_interval"
+                    "(%s, %s, %s, %s, %s::INTERVAL, %s, %s, %s)",(
                         stream_id,
                         info["source"],
                         info["tag"],

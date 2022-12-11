@@ -439,9 +439,15 @@ BEGIN
 	WHERE stream_id = _stream_id;
 
 	WITH ins AS (
-		INSERT INTO eagilog.entry
-		(stream_id, source_id, instance, severity_id, tag, message_format_id, entry_time)
-		VALUES(
+		INSERT INTO eagilog.entry (
+			stream_id,
+			source_id,
+			instance,
+			severity_id,
+			tag,
+			message_format_id,
+			entry_time
+		) VALUES (
 			_stream_id,
 			_source_id,
 			_instance,
@@ -651,12 +657,61 @@ CREATE TABLE eagilog.profile_interval(
 	hit_interval INTERVAL NOT NULL,
 	min_duration_ms REAL NOT NULL,
 	avg_duration_ms REAL NOT NULL,
-	max_duration_ms REAL NOT NULL
+	max_duration_ms REAL NOT NULL,
+	entry_time INTERVAL NOT NULL
 );
 
 ALTER TABLE eagilog.profile_interval
 ADD FOREIGN KEY(stream_id)
 REFERENCES eagilog.stream;
+
+CREATE FUNCTION eagilog.add_profile_interval(
+	_stream_id eagilog.profile_interval.stream_id%TYPE,
+	_source_id eagilog.profile_interval.source_id%TYPE,
+	_tag eagilog.profile_interval.tag%TYPE,
+	_hit_count eagilog.profile_interval.hit_count%TYPE,
+	_hit_interval eagilog.profile_interval.hit_interval%TYPE,
+	_min_duration_ms eagilog.profile_interval.min_duration_ms%TYPE,
+	_avg_duration_ms eagilog.profile_interval.avg_duration_ms%TYPE,
+	_max_duration_ms eagilog.profile_interval.max_duration_ms%TYPE
+) RETURNS eagilog.profile_interval.interval_id%TYPE
+AS $$
+DECLARE
+	_entry_time INTERVAL;
+	result eagilog.profile_interval.interval_id%TYPE;
+BEGIN
+	SELECT now() - start_time
+	INTO _entry_time
+	FROM eagilog.stream
+	WHERE stream_id = _stream_id;
+
+	WITH ins AS (
+		INSERT INTO eagilog.profile_interval (
+			stream_id,
+			source_id,
+			tag,
+			hit_count,
+			hit_interval,
+			min_duration_ms,
+			avg_duration_ms,
+			max_duration_ms,
+			entry_time
+		) VALUES (
+			_stream_id,
+			_source_id,
+			_tag,
+			_hit_count,
+			_hit_interval,
+			_min_duration_ms,
+			_avg_duration_ms,
+			_max_duration_ms,
+			_entry_time
+		) RETURNING eagilog.profile_interval.interval_id
+	)
+	SELECT interval_id INTO result FROM ins;
+	RETURN result;
+END
+$$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 -- other views
 --------------------------------------------------------------------------------
