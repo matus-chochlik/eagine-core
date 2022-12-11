@@ -3,6 +3,24 @@ DROP SCHEMA eagilog CASCADE;
 CREATE SCHEMA eagilog;
 
 --------------------------------------------------------------------------------
+-- statistics
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.schema_statistics
+AS
+SELECT relname
+AS
+	table_name,
+	pg_total_relation_size(c.oid) AS total_bytes,
+	pg_size_pretty(pg_total_relation_size(c.oid)) AS pretty_size
+FROM pg_class c
+LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE relkind = 'r'
+AND nspname = 'eagilog';
+
+CREATE FUNCTION eagilog.schema_data_size_mebi() RETURNS NUMERIC
+AS 'SELECT round(sum(total_bytes) / 1048576, 3)::NUMERIC FROM eagilog.schema_statistics;'
+LANGUAGE sql IMMUTABLE;
+--------------------------------------------------------------------------------
 -- severity
 --------------------------------------------------------------------------------
 CREATE TABLE eagilog.severity (
@@ -45,7 +63,7 @@ CREATE TABLE eagilog.message_format (
 	format VARCHAR(160) NOT NULL
 );
 
-CREATE UNIQUE INDEX hash_index
+CREATE UNIQUE INDEX message_format_hash_index
 ON eagilog.message_format (hash);
 
 CREATE FUNCTION eagilog.trigger_message_format_hash_default()
@@ -115,7 +133,7 @@ CREATE TABLE eagilog.stream_command (
 	command VARCHAR(256) NOT NULL
 );
 
-CREATE UNIQUE INDEX hash_index
+CREATE UNIQUE INDEX stream_command_hash_index
 ON eagilog.stream_command (hash);
 
 CREATE FUNCTION eagilog.trigger_stream_command_hash_default()
