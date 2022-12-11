@@ -197,63 +197,6 @@ class ArgumentParser(argparse.ArgumentParser):
             default=60.0,
         )
 
-        try:
-            import matplotlib.pyplot as plt
-            self.add_argument(
-                "--plot-charts", "-C",
-                dest="plot_charts",
-                action="store_true",
-                default=False,
-                help="""
-                Plots charts from statistic samples received from the backends.
-                """
-            )
-
-            self.add_argument(
-                "--plot-output", "-P",
-                metavar='OUTPUT-FILE',
-                dest='plot_output_path',
-                nargs='?',
-                type=os.path.realpath,
-                default=None,
-                help="""
-                Specifies the plot output PDF file path.
-                """
-            )
-
-            self.add_argument(
-                "--plot-reduce", "-R",
-                metavar='MAX-SAMPLES',
-                dest='plot_reduce_count',
-                nargs='?',
-                type=self._positive_int,
-                default=None,
-                help="""
-                Reduces plot series sample count to at most MAX-SAMPLES.
-                """
-            )
-
-            self.add_argument(
-                "--plot-normalize", "-N",
-                dest='plot_normalize',
-                action="store_true",
-                default=False,
-                help="""
-                Makes the plot series normalized.
-                """
-            )
-        except ImportError:
-            self.add_argument(
-                "--plot-charts", "-C",
-                dest="plot_charts",
-                action="store_false",
-                default=False,
-                help="""
-                The matplotlib module cannot be imported.
-                This option has no effect.
-                """
-            )
-
     # -------------------------------------------------------------------------
     def processParsedOptions(self, options):
         for cfg_path in ["/etc/eagine/xml_logs.json","~/.config/eagine/xml_logs.json"]:
@@ -280,31 +223,9 @@ class ArgumentParser(argparse.ArgumentParser):
 
     # -------------------------------------------------------------------------
     def parseArgs(self):
-        # ----------------------------------------------------------------------
-        class _Options(object):
-            # ------------------------------------------------------------------
-            def __init__(self, base):
-                self.__dict__.update(base.__dict__)
-            # ------------------------------------------------------------------
-            def initialize(self, plot, fig):
-                if self.plot_output_path:
-                    fig.set_size_inches(8, 4.5)
-            # ------------------------------------------------------------------
-            def finalize(self, plot):
-                if self.plot_output_path:
-                    plot.savefig(
-                        self.output_path,
-                        papertype="a3",
-                        orientation="landscape",
-                        transparent=True,
-                        format="pdf"
-                    )
-                else:
-                    plot.show()
-
-        return _Options(self.processParsedOptions(
+        return self.processParsedOptions(
             argparse.ArgumentParser.parse_args(self)
-        ))
+        )
 
 # ------------------------------------------------------------------------------
 def getArgumentParser():
@@ -700,8 +621,6 @@ class XmlLogFormatter(object):
 
         self._backend_count -= 1
         if self._backend_count < 1:
-            if self._options.plot_charts:
-                self.plotCharts()
             if not self._options.keep_running:
                 global keepRunning
                 keepRunning = False
@@ -995,86 +914,6 @@ class XmlLogFormatter(object):
     # --------------------------------------------------------------------------
     def addLoggerInfos(self, src_id, infos):
         self._loggers[src_id] = infos
-
-    # --------------------------------------------------------------------------
-    def plotCharts(self):
-        import matplotlib.pyplot as plt
-        import matplotlib.ticker as pltckr
-
-        def _formatTime(s, pos=None):
-            h = int(s/3600)
-            s -= h*3600
-            m = int(s/60)
-            s -= m*60
-            return "%d:%02d:%02d" % (h, m, s)
-
-        def _reduceSamples(lst):
-            maxlen = self._options.plot_reduce_count
-            maxlen = maxlen if maxlen is not None else len(lst)
-            if maxlen < len(lst):
-                def _avg(x, y):
-                    return (sum(x)/len(x), sum(y)/len(y))
-
-                temp = []
-                llen = len(lst)
-                fact = int(math.ceil(llen / maxlen))
-                nlen = int(math.ceil(llen / fact))
-                for step in range(nlen):
-                    bgn = step*fact
-                    idx = [bgn + i for i in range(fact) if (bgn + i) < llen]
-                    temp.append(_avg(*map(list, zip(*[lst[i] for i in idx]))))
-                lst = temp
-            return lst
-
-        plt.style.use('dark_background')
-
-        fig, spl = plt.subplots()
-        self._options.initialize(plt, fig)
-
-        spl.set_xlabel("Time [HH:MM:SS]")
-        if not self._options.plot_normalize:
-            spl.set_yscale("log")
-
-        x_tick_interval = 5
-
-        for src_id, loggers in self._loggers.items():
-            for logger_id, instances in loggers.items():
-                for instance_id, instance in instances.items():
-                    for ser, series in instance["charts"].items():
-                        x_tick_interval = max(x_tick_interval, series[-1][0])
-                        x, y = map(list, zip(*_reduceSamples(series)))
-                        if self._options.plot_normalize:
-                            try:
-                                ny = 1.0 / max([abs(v) for v in y])
-                                y = [v*ny for v in y]
-                            except ZeroDivisionError:
-                                pass
-                        label = "%s.%s" % (
-                            instance.get("display_name", "%s[%s]" % (
-                                logger_id,
-                                self.formatInstance(instance_id)
-                            )),
-                            ser
-                        )
-                        spl.plot(x, y, label=label)
-
-        tick_opts = [5,10,15,30,60,300,600,900,1800,3600,7200,86400]
-        for t in tick_opts:
-            x_tick_maj = t
-            if x_tick_interval / x_tick_maj < 15:
-                break
-
-        spl.xaxis.set_major_locator(pltckr.MultipleLocator(x_tick_maj))
-        spl.xaxis.set_minor_locator(pltckr.NullLocator())
-        spl.xaxis.set_major_formatter(pltckr.FuncFormatter(_formatTime))
-        spl.xaxis.set_tick_params(rotation=60)
-
-        spl.yaxis.set_major_locator(pltckr.LogLocator(base=10,numdecs=None))
-        spl.yaxis.set_minor_locator(pltckr.NullLocator())
-
-        spl.grid(which="both", axis="both", alpha=0.15)
-        spl.legend(bbox_to_anchor=(1,0), loc="lower left")
-        self._options.finalize(plt)
 
     # --------------------------------------------------------------------------
     def makeProcessor(self):
