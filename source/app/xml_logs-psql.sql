@@ -181,6 +181,7 @@ $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 CREATE TABLE eagilog.stream (
 	stream_id SERIAL PRIMARY KEY,
+	application_id VARCHAR(10) NULL,
 	start_time TIMESTAMP WITH TIME ZONE NOT NULL,
 	finish_time TIMESTAMP WITH TIME ZONE NULL,
 	stream_command_id INTEGER NULL,
@@ -222,6 +223,18 @@ $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 -- stream metadata function
 --------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.set_stream_application_id(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_value VARCHAR
+) RETURNS VOID
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET application_id = _value
+	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.set_stream_command(
 	_stream_id eagilog.stream.stream_id%TYPE,
 	_value VARCHAR
@@ -233,7 +246,7 @@ BEGIN
 	WHERE stream_id = _stream_id;
 END
 $$ LANGUAGE plpgsql;
-
+--------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.set_stream_git_hash(
 	_stream_id eagilog.stream.stream_id%TYPE,
 	_value VARCHAR
@@ -321,7 +334,8 @@ GROUP BY (stream_command_id, hash, command);
 CREATE VIEW eagilog.finished_stream
 AS
 SELECT
-	stream_id, start_time, finish_time,
+	stream_id, application_id,
+	start_time, finish_time,
 	finish_time - start_time AS duration,
 	command,
 	git_hash,
@@ -337,7 +351,8 @@ WHERE finish_time IS NOT NULL;
 CREATE VIEW eagilog.active_stream
 AS
 SELECT
-	stream_id, start_time, 
+	stream_id, application_id,
+	start_time, 
 	current_timestamp - start_time AS duration,
 	command,
 	git_hash,
@@ -353,7 +368,8 @@ WHERE finish_time IS NULL;
 CREATE VIEW eagilog.any_stream
 AS
 SELECT
-	stream_id, start_time, finish_time,
+	stream_id, application_id,
+	start_time, finish_time,
 	coalesce(finish_time, current_timestamp) - start_time AS duration,
 	command,
 	git_hash,
@@ -371,6 +387,7 @@ CREATE TABLE eagilog.entry(
 	entry_id BIGSERIAL PRIMARY KEY,
 	stream_id INTEGER NOT NULL,
 	source_id VARCHAR(10) NOT NULL,
+	instance BIGINT NOT NULL,
 	severity_id SMALLINT NOT NULL,
 	tag VARCHAR(10) NULL,
 	message_format_id INTEGER NOT NULL,
@@ -388,6 +405,7 @@ REFERENCES eagilog.message_format;
 CREATE FUNCTION eagilog.add_entry(
 	_stream_id eagilog.entry.stream_id%TYPE,
 	_source_id eagilog.entry.source_id%TYPE,
+	_instance eagilog.entry.instance%TYPE,
 	_severity_name eagilog.severity.name%TYPE,
 	_tag eagilog.entry.tag%TYPE,
 	_format eagilog.message_format.format%TYPE
@@ -404,10 +422,11 @@ BEGIN
 
 	WITH ins AS (
 		INSERT INTO eagilog.entry
-		(stream_id, source_id, severity_id, tag, message_format_id, entry_time)
+		(stream_id, source_id, instance, severity_id, tag, message_format_id, entry_time)
 		VALUES(
 			_stream_id,
 			_source_id,
+			_instance,
 			eagilog.get_severity_id(_severity_name),
             _tag,
 			eagilog.get_message_format_id(_format),
@@ -603,6 +622,24 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+-- profiling intervals
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.profile_interval(
+	interval_id BIGSERIAL PRIMARY KEY,
+	stream_id INTEGER NOT NULL,
+	source_id VARCHAR(10) NOT NULL,
+	tag VARCHAR(10) NOT NULL,
+	hit_count BIGINT NOT NULL,
+	hit_interval INTERVAL NOT NULL,
+	min_duration_ms REAL NOT NULL,
+	avg_duration_ms REAL NOT NULL,
+	max_duration_ms REAL NOT NULL
+);
+
+ALTER TABLE eagilog.profile_interval
+ADD FOREIGN KEY(stream_id)
+REFERENCES eagilog.stream;
+--------------------------------------------------------------------------------
 -- other views
 --------------------------------------------------------------------------------
 -- count of entries by source
@@ -631,6 +668,7 @@ CREATE VIEW eagilog.numeric_streams
 AS
 SELECT
 	stream_id,
+	s.application_id,
 	source_id || '.' || tag || '.' || arg_id AS value_id,
 	s.start_time,
 	s.finish_time,
@@ -644,6 +682,7 @@ WHERE e.tag IS NOT NULL
 UNION
 SELECT
 	stream_id,
+	s.application_id,
 	source_id || '.' || tag || '.' || arg_id AS value_id,
 	s.start_time,
 	s.finish_time,
@@ -661,6 +700,7 @@ CREATE VIEW eagilog.duration_streams
 AS
 SELECT
 	stream_id,
+	s.application_id,
 	source_id || '.' || tag || '.' || arg_id AS value_id,
 	s.start_time,
 	s.finish_time,

@@ -8,6 +8,7 @@
 import os
 import sys
 import json
+import time
 import errno
 import socket
 import signal
@@ -38,6 +39,15 @@ class ArgumentParser(argparse.ArgumentParser):
             assert False
         except:
             self.error("`%s' is not a valid message identifier" % str(x))
+
+    # -------------------------------------------------------------------------
+    def _positive_float(self, x):
+        try:
+            value = float(x)
+            assert value > 0.0
+            return value
+        except:
+            self.error("`%s' is not a valid positive number" % str(x))
     # -------------------------------------------------------------------------
     def _positive_int(self, x):
         try:
@@ -115,6 +125,15 @@ class ArgumentParser(argparse.ArgumentParser):
             default=[]
         )
 
+        self.add_argument(
+            "--interval", "-I",
+            metavar='SECONDS',
+            dest='interval_store_period',
+            action="store",
+            type=self._positive_float,
+            default=120.0,
+        )
+
     # -------------------------------------------------------------------------
     def processParsedOptions(self, options):
         for cfg_path in ["/etc/eagine/xml_logs.json","~/.config/eagine/xml_logs.json"]:
@@ -170,6 +189,7 @@ class XmlLogDbWriter(object):
     def __init__(self, options):
         self._options = options
         self._source_id = 0
+        self._root_ids = {}
         self._special_args = {
             "ProgArgs": {
                 "cmd": ("command", 128)
@@ -191,7 +211,8 @@ class XmlLogDbWriter(object):
         }
 
     # --------------------------------------------------------------------------
-    def startStream(self, pg_conn):
+    def startStream(self, pg_conn, src_id):
+        self._root_ids[src_id] = None
         with pg_conn:
             with pg_conn.cursor() as cursor:
                 cursor.execute("SELECT eagilog.start_stream()")
@@ -199,10 +220,11 @@ class XmlLogDbWriter(object):
                 return int(data[0])
 
     # --------------------------------------------------------------------------
-    def finishStream(self, pg_conn, stream_id, clean_shutdown):
+    def finishStream(self, pg_conn, src_id, stream_id, clean_shutdown):
         with pg_conn:
             with pg_conn.cursor() as cursor:
                 cursor.execute("SELECT eagilog.finish_stream(%s)", (stream_id,))
+        del self._root_ids[src_id]
 
     # --------------------------------------------------------------------------
     def isInList(self, msrc, mtag, lst):
@@ -225,7 +247,9 @@ class XmlLogDbWriter(object):
         return result
 
     # --------------------------------------------------------------------------
-    def previewMessage(self, stream_id, info):
+    def previewMessage(self, src_id, stream_id, info):
+        if self._root_ids[src_id] is None:
+            self._root_ids[src_id] = (info["source"], False)
         return self.shouldBeStored(info)
 
     # --------------------------------------------------------------------------
@@ -276,16 +300,17 @@ class XmlLogDbWriter(object):
                     cursor.execute(query, (stream_id, vinfo["value"][0:max_length]));
 
     # --------------------------------------------------------------------------
-    def storeMessage(self, pg_conn, stream_id, info):
+    def storeMessage(self, pg_conn, src_id, stream_id, info):
         args = info["args"]
         message = info["format"]
         with pg_conn:
             with pg_conn.cursor() as cursor:
                 msg_tag = info.get("tag")
                 cursor.execute(
-                    "SELECT eagilog.add_entry(%s, %s, %s, %s, %s)", (
+                    "SELECT eagilog.add_entry(%s, %s, %s, %s, %s, %s)", (
                         stream_id,
                         info["source"],
+                        info["instance"],
                         info["level"],
                         msg_tag,
                         info["format"]))
@@ -294,6 +319,36 @@ class XmlLogDbWriter(object):
 
                 for arg_id, ainfo in args.items():
                     self.storeArg(cursor, stream_id, entry_id, msg_tag, arg_id, ainfo)
+                
+                try:
+                    (app_id, is_stored) = self._root_ids[src_id]
+                    if not is_stored:
+                        cursor.execute(
+                            "SELECT eagilog.set_stream_application_id(%s, %s)", (
+                                stream_id,
+                                app_id
+                            ))
+                        self._root_ids[src_id] = (app_id, True)
+                except KeyError:
+                    pass
+
+    # --------------------------------------------------------------------------
+    def storeInterval(self, pg_conn, src_id, stream_id, interval, info):
+        with pg_conn:
+            with pg_conn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO eagilog.profile_interval"
+                    "(stream_id, source_id, tag, hit_count, hit_interval,"
+                    " min_duration_ms, avg_duration_ms, max_duration_ms)"
+                    "VALUES(%s, %s, %s, %s, %s::INTERVAL, %s, %s, %s)",(
+                        stream_id,
+                        info["source"],
+                        info["tag"],
+                        interval.hitCount(),
+                        interval.hitIntervalStr(),
+                        interval.minDuration(),
+                        interval.avgDuration(),
+                        interval.maxDuration()))
 
     # --------------------------------------------------------------------------
     def makeProcessor(self):
@@ -301,15 +356,65 @@ class XmlLogDbWriter(object):
         return XmlLogProcessor(self._source_id, self, self._options)
 
 # ------------------------------------------------------------------------------
+class TimeIntervalInfo:
+    # --------------------------------------------------------------------------
+    def __init__(self, options, time_ns):
+        self._store_interval = options.interval_store_period
+        self._store_time = time.time()
+        self._count = 1
+        self._time_min_ns = time_ns
+        self._time_max_ns = time_ns
+        self._time_sum_ns = time_ns
+
+    # --------------------------------------------------------------------------
+    def update(self, time_ns):
+        self._count += 1
+        self._time_min_ns = min(self._time_min_ns, time_ns)
+        self._time_max_ns = max(self._time_max_ns, time_ns)
+        self._time_sum_ns += time_ns
+        return self
+
+    # --------------------------------------------------------------------------
+    def shouldBeStored(self):
+        return (self._store_time + self._store_interval) < time.time()
+
+    # --------------------------------------------------------------------------
+    def wasStored(self):
+        self._store_time = time.time()
+
+    # --------------------------------------------------------------------------
+    def minDuration(self):
+        return self._time_min_ns / 1000000.0
+
+    # --------------------------------------------------------------------------
+    def maxDuration(self):
+        return self._time_max_ns / 1000000.0
+
+    # --------------------------------------------------------------------------
+    def avgDuration(self):
+        return self._time_sum_ns / (self._count * 1000000.0)
+
+    # --------------------------------------------------------------------------
+    def hitIntervalStr(self):
+        return "%s seconds" % (time.time() - self._store_time,)
+
+    # --------------------------------------------------------------------------
+    def hitCount(self):
+        return self._count
+
+
+# ------------------------------------------------------------------------------
 class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
     def __init__(self, src_id, db_writer, options):
+        self._options = options
         self._src_id = src_id
         self._stream_id = None
         self._clean_shutdown = False
         self._ctag = None
         self._carg = None
         self._info = None
+        self._intervals = {}
         self._source_map = {}
         self._db_writer = db_writer
         self._pg_conn = None
@@ -331,7 +436,9 @@ class XmlLogProcessor(xml.sax.ContentHandler):
         self._ctag = tag
         if tag == "log":
             if self._pg_conn is not None:
-                self._stream_id = self._db_writer.startStream(self._pg_conn)
+                self._stream_id = self._db_writer.startStream(
+                    self._pg_conn,
+                    self._src_id)
         elif tag == "m":
             self._info = {
                 r: attr.get(k, None) for k, r in [
@@ -359,14 +466,39 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                     "used": False,
                     "values": [iarg]
                 }
+        elif tag == "i":
+            key = (attr["iid"], attr["lbl"])
+            try: interval = self._intervals[key].update(int(attr.get("tns")))
+            except KeyError:
+                interval = self._intervals[key] = TimeIntervalInfo(
+                    self._options,
+                    int(attr.get("tns")))
+            if interval.shouldBeStored():
+                iinfo = {
+                    "source": self._source_map.get(attr.get("iid")),
+                    "instance": attr.get("iid"),
+                    "tag": attr.get("lbl")
+                }
+                if self._db_writer.shouldBeStored(iinfo):
+                    self._db_writer.storeInterval(
+                        self._pg_conn,
+                        self._src_id,
+                        self._stream_id,
+                        interval,
+                        iinfo)
+                interval.wasStored()
 
     # --------------------------------------------------------------------------
     def endElement(self, tag):
         if tag == "log":
             self._clean_shutdown = True
         elif tag == "m":
-            if self._db_writer.previewMessage(self._stream_id, self._info):
-                self._db_writer.storeMessage(self._pg_conn, self._stream_id, self._info)
+            if self._db_writer.previewMessage(self._src_id, self._stream_id, self._info):
+                self._db_writer.storeMessage(
+                    self._pg_conn,
+                    self._src_id,
+                    self._stream_id,
+                    self._info)
             self._info = None
 
     # --------------------------------------------------------------------------
@@ -384,8 +516,23 @@ class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
     def processDisconnect(self):
         if self._pg_conn is not None and self._stream_id is not None:
+            for key, interval in self._intervals.items():
+                iinfo = {
+                    "source": self._source_map.get(key[0]),
+                    "instance": key[0],
+                    "tag": key[1]
+                }
+                if self._db_writer.shouldBeStored(iinfo):
+                    self._db_writer.storeInterval(
+                        self._pg_conn,
+                        self._src_id,
+                        self._stream_id,
+                        interval,
+                        iinfo)
+
             self._db_writer.finishStream(
                 self._pg_conn, 
+                self._src_id,
                 self._stream_id,
                 self._clean_shutdown)
 
