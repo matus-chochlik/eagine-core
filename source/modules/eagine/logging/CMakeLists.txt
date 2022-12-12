@@ -42,6 +42,18 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.logging PARTITION format_backend
+	IMPORTS
+		backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.identifier
+		eagine.core.reflection
+		eagine.core.utility
+)
+
+eagine_add_module(
 	eagine.core.logging PARTITION ostream_backend
 	IMPORTS
 		backend
@@ -210,6 +222,7 @@ eagine_add_module(
 		entry_arg
 		backend
 		null_backend
+		format_backend
 		ostream_backend
 		syslog_backend
 		asio_backend
