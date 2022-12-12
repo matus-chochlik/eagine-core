@@ -106,6 +106,13 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
         self.add_argument(
+            "--db-pass-file",
+            dest='db_password_file',
+            action="store",
+            default=None
+        )
+
+        self.add_argument(
             "--allow", "-A",
             metavar='IDENTIFIER',
             dest='allow_list',
@@ -160,10 +167,14 @@ class ArgumentParser(argparse.ArgumentParser):
 
         if options.db_password is None:
             try:
-                with open(os.path.expanduser("~/.pgpass"), "r") as passfd:
+                with open(options.db_password_file, "r") as passfd:
                     options.db_password = passfd.readline().rstrip().split(":")[-1]
             except:
-                options.db_password = getpass.getpass("psql password: ")
+                try:
+                    with open(os.path.expanduser("~/.pgpass"), "r") as passfd:
+                        options.db_password = passfd.readline().rstrip().split(":")[-1]
+                except:
+                    options.db_password = getpass.getpass("psql password: ")
 
         return options
 
