@@ -29,23 +29,9 @@ class ostream_log_backend : public logger_backend {
 public:
     ostream_log_backend(std::ostream& out, const log_stream_info& info) noexcept
       : _out{out}
+      , _log_identity{info.log_identity}
       , _min_severity{info.min_severity}
-      , _start{std::chrono::steady_clock::now()} {
-        try {
-            const std::lock_guard<Lockable> lock{_lockable};
-            _out << "<?xml version='1.0' encoding='UTF-8'?>\n";
-            _out << "<log start_tse_us='"
-                 << std::chrono::duration_cast<
-                      std::chrono::duration<std::int64_t, std::micro>>(
-                      _start.time_since_epoch())
-                      .count();
-            if(!info.log_identity.empty()) {
-                _out << "' identity='" << info.log_identity;
-            }
-            _out << "'>\n";
-        } catch(...) {
-        }
-    }
+      , _start{std::chrono::steady_clock::now()} {}
 
     ostream_log_backend(ostream_log_backend&&) = delete;
     ostream_log_backend(const ostream_log_backend&) = delete;
@@ -66,6 +52,23 @@ public:
             return this;
         }
         return nullptr;
+    }
+
+    void begin_log() noexcept final {
+        try {
+            const std::lock_guard<Lockable> lock{_lockable};
+            _out << "<?xml version='1.0' encoding='UTF-8'?>\n";
+            _out << "<log start_tse_us='"
+                 << std::chrono::duration_cast<
+                      std::chrono::duration<std::int64_t, std::micro>>(
+                      _start.time_since_epoch())
+                      .count();
+            if(!_log_identity.empty()) {
+                _out << "' identity='" << _log_identity;
+            }
+            _out << "'>\n";
+        } catch(...) {
+        }
     }
 
     void time_interval_begin(
@@ -345,6 +348,7 @@ private:
 
     Lockable _lockable{};
     std::ostream& _out;
+    const std::string _log_identity;
     const log_event_severity _min_severity;
     const std::chrono::steady_clock::time_point _start;
     memory::shared_byte_allocator _alloc{memory::default_byte_allocator()};

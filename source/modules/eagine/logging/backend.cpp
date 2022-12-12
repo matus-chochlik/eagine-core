@@ -56,6 +56,9 @@ export struct logger_backend : interface<logger_backend> {
     virtual auto entry_backend(const log_event_severity severity) noexcept
       -> logger_backend* = 0;
 
+    /// @brief Starts the current log.
+    virtual void begin_log() noexcept = 0;
+
     /// @brief Start of time interval measurement.
     /// @see time_interval_end
     virtual void time_interval_begin(

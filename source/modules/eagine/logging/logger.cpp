@@ -35,8 +35,12 @@ public:
     ~logger_shared_backend_getter() noexcept = default;
 
     logger_shared_backend_getter(
-      std::shared_ptr<logger_backend> backend) noexcept
-      : _backend{std::move(backend)} {}
+      std::unique_ptr<logger_backend> backend) noexcept
+      : _backend{std::move(backend)} {
+        if(_backend) {
+            _backend->begin_log();
+        }
+    }
 
     auto operator()() const noexcept -> logger_backend* {
         return _backend.get();

@@ -90,32 +90,10 @@ class formatting_log_backend : public logger_backend {
 
 public:
     formatting_log_backend(const log_stream_info& info) noexcept
-      : _min_severity{info.min_severity}
+      : _log_identity{info.log_identity}
+      , _min_severity{info.min_severity}
       , _start{std::chrono::steady_clock::now()} {
         _buffer.reserve(1024);
-        try {
-            const std::lock_guard<Lockable> lock{_lockable};
-            _add("<?xml version='1.0' encoding='UTF-8'?>\n");
-            const auto start_tse{
-              std::chrono::duration_cast<
-                std::chrono::duration<std::int64_t, std::micro>>(
-                _start.time_since_epoch())
-                .count()};
-
-            if(info.log_identity.empty()) {
-                _add("<log start_tse_us='");
-                _add(start_tse);
-                _add("'>\n");
-            } else {
-                _add("<log start_tse_us='");
-                _add(start_tse);
-                _add("' identity='");
-                _add(info.log_identity);
-                _add("'>\n");
-            }
-            _flush();
-        } catch(...) {
-        }
     }
 
     formatting_log_backend(formatting_log_backend&&) = delete;
@@ -137,6 +115,32 @@ public:
             return this;
         }
         return nullptr;
+    }
+
+    void begin_log() noexcept final {
+        try {
+            const std::lock_guard<Lockable> lock{_lockable};
+            _add("<?xml version='1.0' encoding='UTF-8'?>\n");
+            const auto start_tse{
+              std::chrono::duration_cast<
+                std::chrono::duration<std::int64_t, std::micro>>(
+                _start.time_since_epoch())
+                .count()};
+
+            if(_log_identity.empty()) {
+                _add("<log start_tse_us='");
+                _add(start_tse);
+                _add("'>\n");
+            } else {
+                _add("<log start_tse_us='");
+                _add(start_tse);
+                _add("' identity='");
+                _add(_log_identity);
+                _add("'>\n");
+            }
+            _flush();
+        } catch(...) {
+        }
     }
 
     void time_interval_begin(
@@ -387,6 +391,7 @@ public:
 
 private:
     Lockable _lockable{};
+    const std::string _log_identity;
     const log_event_severity _min_severity;
     const std::chrono::steady_clock::time_point _start;
     std::string _buffer;

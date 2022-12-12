@@ -41,14 +41,7 @@ template <typename Lockable>
 class syslog_log_backend final : public logger_backend {
 public:
     syslog_log_backend(const log_stream_info& info)
-      : _min_severity{info.min_severity} {
-#if EAGINE_POSIX
-        ::openlog(
-          "EAGine",
-          LOG_CONS | LOG_NDELAY | LOG_PID, // NOLINT(hicpp-signed-bitwise)
-          LOG_LOCAL0);                     // NOLINT(hicpp-signed-bitwise)
-#endif
-    }
+      : _min_severity{info.min_severity} {}
 
     auto entry_backend(const log_event_severity severity) noexcept
       -> logger_backend* final {
@@ -64,6 +57,15 @@ public:
 
     auto type_id() noexcept -> identifier final {
         return "Syslog";
+    }
+
+    void begin_log() noexcept final {
+#if EAGINE_POSIX
+        ::openlog(
+          "EAGine",
+          LOG_CONS | LOG_NDELAY | LOG_PID, // NOLINT(hicpp-signed-bitwise)
+          LOG_LOCAL0);                     // NOLINT(hicpp-signed-bitwise)
+#endif
     }
 
     void time_interval_begin(
