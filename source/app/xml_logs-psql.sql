@@ -712,6 +712,24 @@ BEGIN
 	RETURN result;
 END
 $$ LANGUAGE plpgsql;
+
+CREATE VIEW eagilog.stream_profile_intervals
+AS
+SELECT
+	i.stream_id,
+	s.application_id,
+	i.source_id,
+	i.tag,
+	sum(i.hit_count) AS hit_count,
+	sum(i.hit_interval) AS hit_interval,
+	min(i.min_duration_ms) AS min_duration_ms,
+	avg(i.avg_duration_ms) AS avg_duration_ms,
+	max(i.max_duration_ms) AS max_duration_ms,
+	s.start_time,
+	s.finish_time
+FROM eagilog.profile_interval i
+JOIN eagilog.stream s USING(stream_id)
+GROUP BY i.stream_id, s.application_id, i.source_id, i.tag, s.start_time, s.finish_time;
 --------------------------------------------------------------------------------
 -- other views
 --------------------------------------------------------------------------------
