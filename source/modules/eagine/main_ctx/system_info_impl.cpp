@@ -345,7 +345,7 @@ auto system_info::hostname() noexcept -> valid_if_not_empty<std::string> {
 #if EAGINE_POSIX
     try {
         std::array<char, 1024> hname{};
-        if(::gethostname(hname.data(), std_size(hname.size())) == 0) {
+        if(::gethostname(hname.data(), hname.size()) == 0) {
             return {std::string(hname.data())};
         }
     } catch(...) {

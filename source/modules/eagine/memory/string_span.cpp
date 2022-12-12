@@ -114,7 +114,7 @@ public:
 
     /// @brief Named conversion to the corresponding standard string view.
     constexpr auto std_view() const noexcept -> std_view_type {
-        return {data(), std_size_t(size())};
+        return {this->data(), this->std_size()};
     }
 
     /// @brief Implicit conversion to the corresponding standard string view.
@@ -124,7 +124,7 @@ public:
 
     /// @brief Conversion to the corresponding standard string.
     constexpr auto to_string() const -> string_type {
-        return {data(), std_size_t(size())};
+        return {this->data(), this->std_size()};
     }
 };
 //------------------------------------------------------------------------------
@@ -141,7 +141,7 @@ export using string_view = basic_string_span<const char>;
 export template <typename C, typename P, typename S>
 constexpr auto std_view(const basic_span<C, P, S> spn) noexcept
   -> std::basic_string_view<std::remove_const_t<C>> {
-    return {spn.data(), std_size_t(spn.size())};
+    return {spn.data(), spn.std_size()};
 }
 //------------------------------------------------------------------------------
 /// @brief Converts a basic_span of characters to standard string.
@@ -149,7 +149,7 @@ constexpr auto std_view(const basic_span<C, P, S> spn) noexcept
 export template <typename C, typename P, typename S>
 constexpr auto to_string(const basic_span<C, P, S> spn)
   -> std::basic_string<std::remove_const_t<C>> {
-    return {spn.data(), std_size_t(spn.size())};
+    return {spn.data(), spn.std_size()};
 }
 //------------------------------------------------------------------------------
 /// @brief Assigns the contents of a span of characters to a standard string.
@@ -158,7 +158,7 @@ export template <typename C, typename T, typename A, typename P, typename S>
 constexpr auto assign_to(
   const basic_span<const C, P, S> spn,
   std::basic_string<C, T, A>& str) -> auto& {
-    str.assign(spn.data(), std_size(spn.size()));
+    str.assign(spn.data(), spn.std_size());
     return str;
 }
 //------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ export template <typename C, typename T, typename A, typename P, typename S>
 constexpr auto append_to(
   const basic_span<const C, P, S> spn,
   std::basic_string<C, T, A>& str) -> auto& {
-    str.append(spn.data(), std_size(spn.size()));
+    str.append(spn.data(), spn.std_size());
     return str;
 }
 //------------------------------------------------------------------------------
@@ -198,7 +198,7 @@ struct basic_view_less {
     constexpr auto operator()(const Spn l, const Spn r) const noexcept -> bool {
         return _helper(
           std::strncmp(
-            l.data(), r.data(), std_size(std::min(l.size(), r.size()))),
+            l.data(), r.data(), std::min(l.std_size(), r.std_size())),
           l.size(),
           r.size());
     }

@@ -138,7 +138,7 @@ void list_for_each_element_1(auto& s) {
     std::string ts;
     test.check_equal(string_list::element_count(ss1), 5, "count 5");
     string_list::for_each_elem(ss1, [&](string_list::element e, bool) {
-        ts.append(e.value().data(), std_size(e.value().size()));
+        ts.append(e.value().data(), e.value().std_size());
     });
     test.check_equal(ts, "AbCDeFgHiJKlMnO", "value");
     test.check_equal(
@@ -165,7 +165,7 @@ void list_for_each_element_2(auto& s) {
 
     std::string ts;
     string_list::rev_for_each_elem(ss1, [&](string_list::element e, bool) {
-        ts.append(e.value().data(), std_size(e.value().size()));
+        ts.append(e.value().data(), e.value().std_size());
     });
     test.check_equal(ts, "KlMnOgHiJDeFbCA", "value");
 }
@@ -185,7 +185,7 @@ void list_for_each_1(auto& s) {
 
     std::string ts;
     string_list::for_each(
-      ss1, [&ts](string_view e) { ts.append(e.data(), std_size(e.size())); });
+      ss1, [&ts](string_view e) { ts.append(e.data(), e.std_size()); });
     test.check_equal(ts, "aBcdEfGhIjkLmNo", "value");
 }
 //------------------------------------------------------------------------------
@@ -204,7 +204,7 @@ void list_for_each_2(auto& s) {
 
     std::string ts;
     string_list::rev_for_each(
-      ss1, [&](string_view e) { ts.append(e.data(), std_size(e.size())); });
+      ss1, [&](string_view e) { ts.append(e.data(), e.std_size()); });
     test.check_equal(ts, "kLmNoGhIjdEfBca", "value");
 }
 //------------------------------------------------------------------------------

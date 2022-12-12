@@ -205,8 +205,16 @@ public:
 
     /// @brief Returns the number of elements in the span.
     /// @see is_empty
+    /// @see std_size
     constexpr auto size() const noexcept -> size_type {
         return std::abs(_size);
+    }
+
+    /// @brief Returns the number of elements in the span as std::size.
+    /// @see is_empty
+    /// @see size
+    constexpr auto std_size() const noexcept -> std::size_t {
+        return static_cast<std::size_t>(std::abs(_size));
     }
 
     /// @brief Returns a pointer to the start of the span.
@@ -625,9 +633,8 @@ struct equal_cmp<memory::basic_span<Tl, Pl, Sl>, memory::basic_span<Tr, Pr, Sr>>
             if constexpr(
               std::is_same_v<std::remove_const_t<Tl>, std::remove_const_t<Tr>> &&
               std::is_integral_v<std::remove_const_t<Tl>>) {
-                return 0 ==
-                       std::memcmp(
-                         l.data(), r.data(), sizeof(Tl) * std_size(l.size()));
+                return 0 == std::memcmp(
+                              l.data(), r.data(), sizeof(Tl) * l.std_size());
             } else {
                 for(const auto i : integer_range(span_size(l.size()))) {
                     if(!are_equal(l[i], r[i])) {

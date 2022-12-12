@@ -36,7 +36,7 @@ void memory_std_alloc_1_T(eagitest::case_& test, std::size_t n) {
     for(std::size_t i = 1; i <= n; ++i) {
         v.push_back(T());
     }
-    test.check_equal(std_size(v.size()), n, "size is ok");
+    test.check_equal(v.std_size(), n, "size is ok");
 }
 //------------------------------------------------------------------------------
 void std_byte_allocator_1(unsigned i, auto& s) {

@@ -64,7 +64,7 @@ public:
 
     basic_string_path(const string_view str, const span_size_t size) noexcept
       : _size{size}
-      , _str{str.data(), std_size(str.size())} {}
+      , _str{str.data(), str.std_size()} {}
 
     basic_string_path(std::string str, const span_size_t size) noexcept
       : _size{size}

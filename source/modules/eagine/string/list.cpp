@@ -76,7 +76,7 @@ export auto without_back(const string_view list) noexcept -> string_view {
 }
 //------------------------------------------------------------------------------
 export auto pop_back(std::string& list) noexcept -> std::string& {
-    list.resize(std_size(without_back(list).size()));
+    list.resize(without_back(list).std_size());
     return list;
 }
 //------------------------------------------------------------------------------
