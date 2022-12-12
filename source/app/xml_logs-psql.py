@@ -262,7 +262,7 @@ class XmlLogDbWriter(object):
 
     # --------------------------------------------------------------------------
     def previewMessage(self, src_id, stream_id, info):
-        if self._root_ids[src_id] is None:
+        if self._root_ids.get(src_id) is None:
             self._root_ids[src_id] = (info["source"], False)
         return self.shouldBeStored(info)
 
@@ -433,6 +433,7 @@ class XmlLogProcessor(xml.sax.ContentHandler):
         self._pg_conn = psycopg2.connect(
             user=options.db_user,
             password=options.db_password,
+            database=options.db_name,
             host=options.db_host,
             port=options.db_port)
         self._parser = xml.sax.make_parser()

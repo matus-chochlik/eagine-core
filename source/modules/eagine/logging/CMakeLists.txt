@@ -42,7 +42,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION format_backend
+	eagine.core.logging PARTITION fast_xml_backend
 	IMPORTS
 		backend
 		eagine.core.types
@@ -56,7 +56,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION ostream_backend
 	IMPORTS
-		backend
+		backend fast_xml_backend
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -222,7 +222,7 @@ eagine_add_module(
 		entry_arg
 		backend
 		null_backend
-		format_backend
+		fast_xml_backend
 		ostream_backend
 		syslog_backend
 		asio_backend

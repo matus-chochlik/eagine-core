@@ -155,9 +155,7 @@ public:
     auto operator=(asio_ostream_log_backend&&) = delete;
     auto operator=(const asio_ostream_log_backend&) = delete;
 
-    ~asio_ostream_log_backend() noexcept final {
-        this->finish_log();
-    }
+    ~asio_ostream_log_backend() noexcept final = default;
 
     void flush(bool always) noexcept final {
         std::lock_guard<Lockable> lock{_flush_lockable};

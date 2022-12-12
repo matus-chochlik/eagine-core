@@ -218,11 +218,16 @@ root_logger::root_logger(
   const program_args& args,
   root_logger_options& opts) noexcept
   : logger{logger_id, {root_logger_init_backend(args, opts)}} {
+    begin_log();
     _log_args(args);
     _log_instance_info();
     _log_git_info();
     _log_os_info();
     _log_compiler_info();
+}
+//------------------------------------------------------------------------------
+root_logger::~root_logger() noexcept {
+    finish_log();
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

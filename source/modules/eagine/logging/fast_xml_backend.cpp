@@ -11,7 +11,7 @@ module;
 
 #include <cassert>
 
-export module eagine.core.logging:format_backend;
+export module eagine.core.logging:fast_xml_backend;
 
 import eagine.core.types;
 import eagine.core.memory;
@@ -31,7 +31,7 @@ import <vector>;
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename Lockable, typename Derived>
-class formatting_log_backend : public logger_backend {
+class fast_xml_log_backend : public logger_backend {
     auto self() noexcept -> Derived& {
         return *static_cast<Derived*>(this);
     }
@@ -39,6 +39,18 @@ class formatting_log_backend : public logger_backend {
     template <std::size_t N>
     void _add(const char (&str)[N]) {
         _buffer.append(static_cast<const char*>(str), N - 1);
+    }
+
+    void _add(const bool data) {
+        if(data) {
+            _buffer.append("true");
+        } else {
+            _buffer.append("false");
+        }
+    }
+
+    void _add(const std::string& data) {
+        _buffer.append(data);
     }
 
     void _add(const std::string_view data) {
@@ -49,9 +61,17 @@ class formatting_log_backend : public logger_backend {
         _buffer.append(data.std_view());
     }
 
+    void _add(const decl_name& data) {
+        _buffer.append(data.std_view());
+    }
+
     template <auto M>
     void _add(const identifier_name<M>& data) {
         _add(data.view());
+    }
+
+    void _add(const identifier data) {
+        _add(data.name());
     }
 
     void _add(const message_id data) {
@@ -60,10 +80,10 @@ class formatting_log_backend : public logger_backend {
         _add(data.method().name());
     }
 
-    void _add(const base64dump& data) {
+    void _add(const memory::const_block data) {
         self().write(_buffer);
         _buffer.clear();
-        data.apply([this](const char c) {
+        base64dump(data).apply([this](const char c) {
             _b64lob.push_back(c);
             if(_b64lob.size() >= 512) {
                 self().write(_b64lob);
@@ -86,27 +106,29 @@ class formatting_log_backend : public logger_backend {
 
     void _flush(bool force = false) noexcept {
         self().write(_buffer);
+        self().flush(force);
+        _buffer.clear();
     }
 
 public:
-    formatting_log_backend(const log_stream_info& info) noexcept
+    fast_xml_log_backend(const log_stream_info& info) noexcept
       : _log_identity{info.log_identity}
       , _min_severity{info.min_severity}
       , _start{std::chrono::steady_clock::now()} {
         _buffer.reserve(1024);
     }
 
-    formatting_log_backend(formatting_log_backend&&) = delete;
-    formatting_log_backend(const formatting_log_backend&) = delete;
-    auto operator=(formatting_log_backend&&) = delete;
-    auto operator=(const formatting_log_backend&) = delete;
+    fast_xml_log_backend(fast_xml_log_backend&&) = delete;
+    fast_xml_log_backend(const fast_xml_log_backend&) = delete;
+    auto operator=(fast_xml_log_backend&&) = delete;
+    auto operator=(const fast_xml_log_backend&) = delete;
 
     auto allocator() noexcept -> memory::shared_byte_allocator final {
         return _alloc;
     }
 
-    auto type_id() noexcept -> identifier final {
-        return "Format";
+    auto type_id() noexcept -> identifier override {
+        return "FastXML";
     }
 
     auto entry_backend(const log_event_severity severity) noexcept
@@ -256,7 +278,7 @@ public:
             _add(arg.name());
             _add("' t='");
             _add(tag.name());
-            _add("'/>");
+            _add("'>");
             _add(value);
             _add("</a>");
         } catch(...) {
@@ -320,7 +342,7 @@ public:
             _add(min);
             _add("' max='");
             _add(max);
-            _add("'/>");
+            _add("'>");
             _add(value);
             _add("</a>");
         } catch(...) {
@@ -336,7 +358,7 @@ public:
             _add(arg.name());
             _add("' t='");
             _add(tag.name());
-            _add("' u='s'/>");
+            _add("' u='s'>");
             _add(value.count());
             _add("</a>");
         } catch(...) {
@@ -383,10 +405,6 @@ public:
         try {
         } catch(...) {
         }
-    }
-
-    ~formatting_log_backend() noexcept override {
-        finish_log();
     }
 
 private:

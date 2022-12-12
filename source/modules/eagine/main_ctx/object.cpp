@@ -45,7 +45,7 @@ public:
     main_ctx_log_backend_getter() noexcept;
     main_ctx_log_backend_getter(main_ctx_getters&) noexcept;
 
-    auto operator()() const noexcept -> auto* {
+    auto get() const noexcept -> auto* {
         return _backend;
     }
 

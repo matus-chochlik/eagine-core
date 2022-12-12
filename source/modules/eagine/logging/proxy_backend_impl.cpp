@@ -164,8 +164,11 @@ auto proxy_log_backend::type_id() noexcept -> identifier {
 }
 //------------------------------------------------------------------------------
 void proxy_log_backend::begin_log() noexcept {
-    if(_delegate) [[likely]] {
+    if(_delegate) {
         _delegate->begin_log();
+    } else if(_delayed) {
+        assert(!_delegate);
+        _delayed->emplace_back([this]() { _delegate->begin_log(); });
     }
 }
 //------------------------------------------------------------------------------
@@ -363,7 +366,9 @@ void proxy_log_backend::finish_message() noexcept {
 }
 //------------------------------------------------------------------------------
 void proxy_log_backend::finish_log() noexcept {
-    if(_delayed) [[likely]] {
+    if(_delegate) [[likely]] {
+        return _delegate->finish_log();
+    } else if(_delayed) [[likely]] {
         assert(!_delegate);
         _delayed->emplace_back([this]() { _delegate->finish_log(); });
     }
