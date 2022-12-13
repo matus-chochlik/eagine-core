@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <type_traits>
 export module eagine.core.reflection:enumerators;
 
 import eagine.core.types;
@@ -35,13 +36,13 @@ using enumerator_map_type = std::array<const name_and_enumerator<T>, N>;
 //------------------------------------------------------------------------------
 export template <typename T, typename Selector>
 concept mapped_enum = requires(std::type_identity<T> tid, Selector s) {
-                          enumerator_mapping(tid, s);
-                      };
+    enumerator_mapping(tid, s);
+};
 
 export template <typename T>
 concept default_mapped_enum = requires(std::type_identity<T> tid) {
-                                  enumerator_mapping(tid, default_selector);
-                              };
+    enumerator_mapping(tid, default_selector);
+};
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t V>
     requires(mapped_enum<T, selector<V>>)
@@ -56,11 +57,28 @@ constexpr auto enumerator_count(const std::type_identity<T> id) noexcept {
     return enumerator_count(id, default_selector);
 }
 //------------------------------------------------------------------------------
+export template <typename T, identifier_t V>
+    requires(mapped_enum<T, selector<V>>)
+constexpr auto is_consecutive(
+  const std::type_identity<T> id,
+  const selector<V> sel) noexcept -> bool {
+    using UT = std::underlying_type_t<T>;
+    if constexpr(std::is_unsigned_v<UT>) {
+        std::size_t index = 0;
+        for(const auto& info : enumerator_mapping(id, sel)) {
+            if(index != std::size_t(static_cast<UT>(info.enumerator))) {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+//------------------------------------------------------------------------------
 export template <typename T>
-constexpr auto enumerator_name(
-  const T value,
-  const std::type_identity<T> id = {}) noexcept {
-    return enumerator_name(value, id, default_selector);
+constexpr auto is_consecutive(const std::type_identity<T> id) noexcept -> bool {
+    return is_consecutive(id, default_selector);
 }
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t V>
@@ -69,12 +87,27 @@ auto enumerator_name(
   const T enumerator,
   const std::type_identity<T> id,
   const selector<V> sel) noexcept -> decl_name {
-    for(const auto& info : enumerator_mapping(id, sel)) {
+    const auto enum_map{enumerator_mapping(id, sel)};
+    if constexpr(is_consecutive(id, sel)) {
+        using UT = std::underlying_type_t<T>;
+        const auto index{std::size_t(static_cast<UT>(enumerator))};
+        if(index < enum_map.size()) [[likely]] {
+            return enum_map[index].name;
+        }
+    }
+    for(const auto& info : enum_map) {
         if(info.enumerator == enumerator) {
             return info.name;
         }
     }
     return {};
+}
+//------------------------------------------------------------------------------
+export template <typename T>
+constexpr auto enumerator_name(
+  const T value,
+  const std::type_identity<T> id = {}) noexcept {
+    return enumerator_name(value, id, default_selector);
 }
 //------------------------------------------------------------------------------
 export template <typename T>
