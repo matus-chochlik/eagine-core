@@ -18,7 +18,7 @@ namespace eagine {
 /// @brief Data compression level enumeration.
 /// @ingroup main_context
 /// @see data_compressor
-export enum class data_compression_level {
+export enum class data_compression_level : std::uint8_t {
     /// @brief No compression.
     none,
     /// @brief Fastest compression method lowest compression level.

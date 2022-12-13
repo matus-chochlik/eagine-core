@@ -8,13 +8,14 @@
 export module eagine.core.logging:severity;
 
 import eagine.core.reflection;
+import <cstdint>;
 import <type_traits>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 /// @brief Log event severity enumeration.
 /// @ingroup logging
-export enum class log_event_severity {
+export enum class log_event_severity : std::uint8_t {
     /// @brief Backtracing log entries (the lowest severity).
     backtrace,
     /// @brief Trace log entries.
