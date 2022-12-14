@@ -38,22 +38,22 @@ public:
     }
 
     /// @brief Returns a reference to the current "front" instance.
-    auto front() noexcept -> T& {
+    [[nodiscard]] auto front() noexcept -> T& {
         return _values[front_index()];
     }
 
     /// @brief Returns a const reference to the current "front" instance.
-    auto front() const noexcept -> const T& {
+    [[nodiscard]] auto front() const noexcept -> const T& {
         return _values[front_index()];
     }
 
     /// @brief Returns a reference to the current "back" instance.
-    auto back() noexcept -> T& {
+    [[nodiscard]] auto back() noexcept -> T& {
         return _values[back_index()];
     }
 
     /// @brief Returns a const reference to the current "back" instance.
-    auto back() const noexcept -> const T& {
+    [[nodiscard]] auto back() const noexcept -> const T& {
         return _values[back_index()];
     }
 

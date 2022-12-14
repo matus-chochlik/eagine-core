@@ -43,7 +43,7 @@ public:
     }
 
     /// @brief Returns the current time on the clock.
-    constexpr auto now() const noexcept -> time_point {
+    [[nodiscard]] constexpr auto now() const noexcept -> time_point {
         return _now;
     }
 

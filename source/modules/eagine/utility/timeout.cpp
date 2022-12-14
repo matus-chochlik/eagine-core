@@ -26,12 +26,12 @@ public:
       : _start{_clock::now()} {}
 
     /// @brief Returns the time since construction using clock's representation.
-    auto elapsed_time() const noexcept {
+    [[nodiscard]] auto elapsed_time() const noexcept {
         return _clock::now() - _start;
     }
 
     /// @brief Returns the time since construction in seconds.
-    auto seconds() const noexcept {
+    [[nodiscard]] auto seconds() const noexcept {
         return std::chrono::duration_cast<std::chrono::duration<float>>(
           elapsed_time());
     }
@@ -43,7 +43,7 @@ private:
 /// @brief Adjusts time duration in cases program execution is slowed down.
 /// @ingroup time_utils
 export template <typename R, typename P>
-constexpr auto adjusted_duration(
+[[nodiscard]] constexpr auto adjusted_duration(
   std::chrono::duration<R, P> d,
   memory_access_rate mem_access = memory_access_rate::medium) noexcept {
     return d * R(temporal_slowdown_factor(mem_access));
@@ -141,27 +141,27 @@ public:
     }
 
     /// @brief Returns the time since reset as clocks duration type.
-    auto elapsed_time() const noexcept -> duration_type {
+    [[nodiscard]] auto elapsed_time() const noexcept -> duration_type {
         return _clock::now() - _timeout + _duration;
     }
 
     /// @brief Indicates if the timeout is expired.
     /// @see reset
     /// @see period
-    auto is_expired() const noexcept -> bool {
+    [[nodiscard]] auto is_expired() const noexcept -> bool {
         return _clock::now() >= _timeout;
     }
 
     /// @brief Indicates if the timeout is expired.
     /// @see is_expired
-    explicit operator bool() const noexcept {
+    [[nodiscard]] explicit operator bool() const noexcept {
         return is_expired();
     }
 
     /// @brief Returns the timeout period.
     /// @see reset
     /// @see is_expired
-    auto period() const noexcept -> const auto& {
+    [[nodiscard]] auto period() const noexcept -> const auto& {
         return _duration;
     }
 
@@ -194,27 +194,27 @@ public:
     }
 
     /// @brief Returns the time since reset as clocks duration type.
-    auto elapsed_time() const noexcept -> duration_type {
+    [[nodiscard]] auto elapsed_time() const noexcept -> duration_type {
         return _clock::now() - _prev_reset;
     }
 
     /// @brief Indicates if the timeout is expired.
     /// @see reset
     /// @see period
-    auto is_expired() const noexcept -> bool {
+    [[nodiscard]] auto is_expired() const noexcept -> bool {
         return _clock::now() >= _prev_reset + _duration;
     }
 
     /// @brief Indicates if the timeout is expired.
     /// @see is_expired
-    explicit operator bool() const noexcept {
+    [[nodiscard]] explicit operator bool() const noexcept {
         return is_expired();
     }
 
     /// @brief Returns the timeout period.
     /// @see reset
     /// @see is_expired
-    auto period() const noexcept -> const auto& {
+    [[nodiscard]] auto period() const noexcept -> const auto& {
         return _duration;
     }
 
@@ -233,7 +233,7 @@ public:
     using timeout::timeout;
 
     /// @brief Indicates if expired and if it is resets the timeout.
-    explicit operator bool() noexcept {
+    [[nodiscard]] explicit operator bool() noexcept {
         const auto result = is_expired();
         if(result) {
             reset();

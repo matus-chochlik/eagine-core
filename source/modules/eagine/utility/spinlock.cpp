@@ -26,11 +26,11 @@ public:
         ++_yield_count;
     }
 
-    auto lock_count() const noexcept -> std::uintmax_t {
+    [[nodiscard]] auto lock_count() const noexcept -> std::uintmax_t {
         return _lock_count;
     }
 
-    auto yield_count() const noexcept -> std::uintmax_t {
+    [[nodiscard]] auto yield_count() const noexcept -> std::uintmax_t {
         return _yield_count;
     }
 
@@ -66,7 +66,7 @@ public:
     }
 
     /// @brief Returns the number of times the spinlock was locked.
-    auto stats() const noexcept
+    [[nodiscard]] auto stats() const noexcept
       -> optional_reference_wrapper<const spinlock_stats> {
         if constexpr(!low_profile_build) {
             return {_stats};

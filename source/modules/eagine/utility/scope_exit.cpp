@@ -57,7 +57,7 @@ public:
     /// @brief Indicates if there is any on-scope-exit action.
     /// @see release
     /// @see cancel
-    auto is_active() const noexcept -> bool {
+    [[nodiscard]] auto is_active() const noexcept -> bool {
         return _action.is_valid();
     }
 
@@ -65,7 +65,7 @@ public:
     /// @post !is_active()
     /// @see cancel
     /// @see is_active
-    auto release() noexcept -> action_type {
+    [[nodiscard]] auto release() noexcept -> action_type {
         return std::move(_action);
     }
 

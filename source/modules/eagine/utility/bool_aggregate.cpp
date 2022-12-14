@@ -32,7 +32,7 @@ public:
     }
 
     /// @brief Returns the current boolean state.
-    constexpr explicit operator bool() const noexcept {
+    [[nodiscard]] constexpr explicit operator bool() const noexcept {
         return _result;
     }
 

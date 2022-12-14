@@ -21,13 +21,13 @@ public:
     constexpr count_t() noexcept = default;
 
     /// @brief Returns the current value on the counter.
-    constexpr value_type value() const noexcept {
+    [[nodiscard]] constexpr value_type value() const noexcept {
         return _c;
     }
 
     /// @brief Implicit conversion to value type, returns counter value.
     /// @see value
-    constexpr operator value_type() const noexcept {
+    [[nodiscard]] constexpr operator value_type() const noexcept {
         return _c;
     }
 

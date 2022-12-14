@@ -106,15 +106,15 @@ public:
     template <typename C>
     basic_callable_ref(construct_from_t, C& obj) noexcept
         requires(!std::is_same_v<C, basic_callable_ref>)
-    : _data{static_cast<void*>(&obj)}
-    , _func{reinterpret_cast<_func_t>(&_cls_fn_call_op<C>)} {}
+      : _data{static_cast<void*>(&obj)}
+      , _func{reinterpret_cast<_func_t>(&_cls_fn_call_op<C>)} {}
 
     /// @brief Construction a const reference to object with a call operator.
     template <typename C>
     basic_callable_ref(construct_from_t, const C& obj) noexcept
         requires(!std::is_same_v<C, basic_callable_ref>)
-    : _data{static_cast<void*>(const_cast<C*>(&obj))}
-    , _func{reinterpret_cast<_func_t>(&_cls_fn_call_op_c<C>)} {}
+      : _data{static_cast<void*>(const_cast<C*>(&obj))}
+      , _func{reinterpret_cast<_func_t>(&_cls_fn_call_op_c<C>)} {}
 
     /// @brief Construction a pointer to object and member function constant.
     template <typename C, RV (C::*Ptr)(P...) noexcept(NE)>
@@ -140,13 +140,13 @@ public:
     }
 
     /// @brief Indicates if this object stores a valid callable reference.
-    constexpr auto is_valid() const noexcept {
+    [[nodiscard]] constexpr auto is_valid() const noexcept {
         return _func != nullptr;
     }
 
     /// @brief Indicates if this object stores a valid callable reference.
     /// @see is_valid
-    explicit constexpr operator bool() const noexcept {
+    [[nodiscard]] explicit constexpr operator bool() const noexcept {
         return is_valid();
     }
 
@@ -211,7 +211,7 @@ export template <
   typename... P,
   bool NE,
   RV (C::*Ptr)(P...) noexcept(NE)>
-constexpr auto make_callable_ref(
+[[nodiscard]] constexpr auto make_callable_ref(
   C* obj,
   member_function_constant<RV (C::*)(P...) noexcept(NE), Ptr> mfc) noexcept
   -> callable_ref<RV(P...) noexcept(NE)> {
@@ -226,7 +226,7 @@ export template <
   typename... P,
   bool NE,
   RV (C::*Ptr)(P...) const noexcept(NE)>
-constexpr auto make_callable_ref(
+[[nodiscard]] constexpr auto make_callable_ref(
   C* obj,
   member_function_constant<RV (C::*)(P...) noexcept(NE), Ptr> mfc) noexcept
   -> callable_ref<RV(P...) noexcept(NE)> {
@@ -234,7 +234,7 @@ constexpr auto make_callable_ref(
 }
 
 export template <auto MemFuncPtr, typename C>
-constexpr auto make_callable_ref(C* obj) noexcept {
+[[nodiscard]] constexpr auto make_callable_ref(C* obj) noexcept {
     return make_callable_ref(obj, member_function_constant_t<MemFuncPtr>{});
 }
 
