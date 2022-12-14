@@ -216,7 +216,11 @@ class XmlLogDbWriter(object):
             },
             "GitInfo": {
                 "gitHashId": ("git_hash", 64),
-                "gitVersion": ("git_version", 32), 
+                "gitVersion": ("git_version", 32),
+            },
+            "BuildInfo": {
+                "lowProfile": ("low_profile_build", None),
+                "debug": ("debug_build", None),
             },
             "Compiler": {
                 "complrName": ("compiler", 32),
@@ -310,8 +314,11 @@ class XmlLogDbWriter(object):
             for spec_arg_id, param in self._special_args.get(msg_tag, {}).items():
                 attrib_name, max_length = param
                 if spec_arg_id == arg_id:
+                    value = vinfo["value"]
+                    if max_length is not None:
+                        value = value[0:max_length]
                     query = "SELECT eagilog.set_stream_%s(%%s, %%s)" % attrib_name
-                    cursor.execute(query, (stream_id, vinfo["value"][0:max_length]));
+                    cursor.execute(query, (stream_id, value));
 
     # --------------------------------------------------------------------------
     def storeMessage(self, pg_conn, src_id, stream_id, info):
@@ -333,7 +340,7 @@ class XmlLogDbWriter(object):
 
                 for arg_id, ainfo in args.items():
                     self.storeArg(cursor, stream_id, entry_id, msg_tag, arg_id, ainfo)
-                
+
                 try:
                     (app_id, is_stored) = self._root_ids[src_id]
                     if not is_stored:
@@ -544,7 +551,7 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                         iinfo)
 
             self._db_writer.finishStream(
-                self._pg_conn, 
+                self._pg_conn,
                 self._src_id,
                 self._stream_id,
                 self._clean_shutdown)

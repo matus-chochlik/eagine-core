@@ -49,6 +49,7 @@ public:
 private:
     auto _log_os_info() -> void;
     auto _log_git_info() -> void;
+    auto _log_build_info() -> void;
     auto _log_compiler_info() -> void;
     auto _log_instance_info() -> void;
     auto _log_args(const program_args&) -> void;

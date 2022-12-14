@@ -55,7 +55,7 @@ INSERT INTO eagilog.severity (severity_id, name) VALUES(5, 'warning');
 INSERT INTO eagilog.severity (severity_id, name) VALUES(6, 'error');
 INSERT INTO eagilog.severity (severity_id, name) VALUES(7, 'fatal');
 --------------------------------------------------------------------------------
--- message_format 
+-- message_format
 --------------------------------------------------------------------------------
 CREATE TABLE eagilog.message_format (
 	message_format_id SERIAL PRIMARY KEY,
@@ -208,7 +208,9 @@ CREATE TABLE eagilog.stream (
 	os_name VARCHAR(64) NULL,
 	hostname VARCHAR(64) NULL,
 	architecture VARCHAR(32) NULL,
-	compiler VARCHAR(32) NULL
+	compiler VARCHAR(32) NULL,
+	low_profile_build BOOL NULL,
+	debug_build BOOL NULL
 );
 
 CREATE FUNCTION eagilog.start_stream(
@@ -336,6 +338,30 @@ BEGIN
 	WHERE stream_id = _stream_id;
 END
 $$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.set_stream_low_profile_build(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_value VARCHAR
+) RETURNS VOID
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET low_profile_build = _value::BOOL
+	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.set_stream_debug_build(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_value VARCHAR
+) RETURNS VOID
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET debug_build  = _value::BOOL
+	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 -- stream views
 --------------------------------------------------------------------------------
@@ -370,7 +396,7 @@ CREATE VIEW eagilog.active_stream
 AS
 SELECT
 	stream_id, application_id,
-	start_time, 
+	start_time,
 	current_timestamp - start_time AS duration,
 	command,
 	git_hash,

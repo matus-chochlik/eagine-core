@@ -26,6 +26,7 @@ import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.reflection;
+import eagine.core.build_config;
 import eagine.core.build_info;
 import eagine.core.valid_if;
 import eagine.core.utility;
@@ -171,6 +172,13 @@ auto root_logger::_log_git_info() -> void {
       .arg("gitVersion", "str", config_git_version(), not_available);
 }
 //------------------------------------------------------------------------------
+auto root_logger::_log_build_info() -> void {
+    info("source version information")
+      .tag("BuildInfo")
+      .arg("lowProfile", "bool", low_profile_build)
+      .arg("debug", "bool", debug_build);
+}
+//------------------------------------------------------------------------------
 auto root_logger::_log_instance_info() -> void {
     std::array<char, 1024> hname{};
 #if EAGINE_POSIX
@@ -221,6 +229,7 @@ root_logger::root_logger(
     begin_log();
     _log_args(args);
     _log_instance_info();
+    _log_build_info();
     _log_git_info();
     _log_os_info();
     _log_compiler_info();
