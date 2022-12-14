@@ -54,26 +54,26 @@ public:
     constexpr optional_reference_wrapper(std::nullptr_t) noexcept {}
 
     /// @brief Indicates if this stores a valid reference.
-    auto is_valid() const noexcept -> bool {
+    [[nodiscard]] auto is_valid() const noexcept -> bool {
         return _ptr != nullptr;
     }
 
     /// @brief Indicates if this stores a valid reference.
     /// @see is_valid
-    explicit operator bool() const noexcept {
+    [[nodiscard]] explicit operator bool() const noexcept {
         return is_valid();
     }
 
     /// @brief Returns the stored reference.
     /// @pre is_valid()
-    auto get() const noexcept -> T& {
+    [[nodiscard]] auto get() const noexcept -> T& {
         assert(is_valid());
         return *_ptr;
     }
 
     /// @brief Returns the stored value.
     /// @pre is_valid()
-    auto value() const noexcept -> const T& {
+    [[nodiscard]] auto value() const noexcept -> const T& {
         assert(is_valid());
         return *_ptr;
     }
@@ -81,7 +81,7 @@ public:
     /// @brief Returns the stored value if valid or @p fallback otherwise.
     /// @see is_valid
     template <typename U>
-    auto value_or(U&& fallback) const noexcept -> T
+    [[nodiscard]] auto value_or(U&& fallback) const noexcept -> T
         requires(std::is_convertible_v<U, T>)
     {
         if(is_valid()) {
@@ -92,12 +92,12 @@ public:
 
     /// @brief Returns the stored reference.
     /// @see get
-    explicit operator T&() const noexcept {
+    [[nodiscard]] explicit operator T&() const noexcept {
         return get();
     }
 
     /// @brief Tri-state equality comparison of the referred instance with a value.
-    auto operator==(const T& r) const noexcept -> tribool {
+    [[nodiscard]] auto operator==(const T& r) const noexcept -> tribool {
         if(is_valid()) {
             return value() == r;
         }
@@ -105,7 +105,7 @@ public:
     }
 
     /// @brief Tri-state nonequality comparison of the referred instance with a value.
-    auto operator!=(const T& r) const noexcept -> tribool {
+    [[nodiscard]] auto operator!=(const T& r) const noexcept -> tribool {
         if(is_valid()) {
             return value() != r;
         }
@@ -126,7 +126,7 @@ struct extract_traits<optional_reference_wrapper<T>> {
 /// @brief Overload of extract for optional_reference_wrapper.
 /// @ingroup valid_if
 export template <typename T>
-auto extract(optional_reference_wrapper<T> ref) noexcept -> T& {
+[[nodiscard]] auto extract(optional_reference_wrapper<T> ref) noexcept -> T& {
     return ref.get();
 }
 //------------------------------------------------------------------------------

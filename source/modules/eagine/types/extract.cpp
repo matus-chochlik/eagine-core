@@ -18,14 +18,14 @@ import <optional>;
 namespace eagine {
 //------------------------------------------------------------------------------
 export template <extractable T>
-constexpr auto extract_or(
+[[nodiscard]] constexpr auto extract_or(
   T& opt_val,
   extract_result_type_t<T> fallback = {}) noexcept -> extract_result_type_t<T> {
     return has_value(opt_val) ? extract(opt_val) : fallback;
 }
 
 export template <extractable T>
-constexpr auto extract_or(
+[[nodiscard]] constexpr auto extract_or(
   const T& opt_val,
   const_extract_result_type_t<T> fallback = {}) noexcept
   -> const_extract_result_type_t<T> {
@@ -43,7 +43,7 @@ struct extract_traits<T*> {
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(ptr)
 export template <typename T>
-constexpr auto extract(T* ptr) noexcept -> T& {
+[[nodiscard]] constexpr auto extract(T* ptr) noexcept -> T& {
     assert(ptr);
     return *ptr;
 }
@@ -58,7 +58,8 @@ struct extract_traits<std::shared_ptr<T>> {
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(ptr)
 export template <typename T>
-constexpr auto extract(std::shared_ptr<T>& ptr) noexcept -> auto& {
+[[nodiscard]] constexpr auto extract(std::shared_ptr<T>& ptr) noexcept
+  -> auto& {
     assert(ptr);
     return *ptr;
 }
@@ -66,7 +67,8 @@ constexpr auto extract(std::shared_ptr<T>& ptr) noexcept -> auto& {
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(ptr)
 export template <typename T>
-constexpr auto extract(const std::shared_ptr<T>& ptr) noexcept -> auto& {
+[[nodiscard]] constexpr auto extract(const std::shared_ptr<T>& ptr) noexcept
+  -> auto& {
     assert(ptr);
     return *ptr;
 }
@@ -81,7 +83,8 @@ struct extract_traits<std::unique_ptr<T, D>> {
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(ptr)
 export template <typename T, typename D>
-constexpr auto extract(std::unique_ptr<T, D>& ptr) noexcept -> T& {
+[[nodiscard]] constexpr auto extract(std::unique_ptr<T, D>& ptr) noexcept
+  -> T& {
     assert(ptr);
     return *ptr;
 }
@@ -89,7 +92,8 @@ constexpr auto extract(std::unique_ptr<T, D>& ptr) noexcept -> T& {
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(ptr)
 export template <typename T, typename D>
-constexpr auto extract(const std::unique_ptr<T, D>& ptr) noexcept -> const T& {
+[[nodiscard]] constexpr auto extract(const std::unique_ptr<T, D>& ptr) noexcept
+  -> const T& {
     assert(ptr);
     return *ptr;
 }
@@ -109,7 +113,7 @@ namespace std {
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(opt)
 export template <typename T>
-constexpr auto extract(optional<T>& opt) noexcept -> auto& {
+[[nodiscard]] constexpr auto extract(optional<T>& opt) noexcept -> auto& {
     assert(opt);
     return *opt;
 }
@@ -117,7 +121,8 @@ constexpr auto extract(optional<T>& opt) noexcept -> auto& {
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(opt)
 export template <typename T>
-constexpr auto extract(const optional<T>& opt) noexcept -> const auto& {
+[[nodiscard]] constexpr auto extract(const optional<T>& opt) noexcept -> const
+  auto& {
     assert(opt);
     return *opt;
 }

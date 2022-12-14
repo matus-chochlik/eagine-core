@@ -24,13 +24,13 @@ public:
     constexpr integer(T value) noexcept
       : _value{value} {}
 
-    constexpr operator T() const noexcept {
+    [[nodiscard]] constexpr operator T() const noexcept {
         return _value;
     }
 
     template <std::integral I>
         requires(!std::is_same_v<T, I>)
-    constexpr operator I() const noexcept {
+    [[nodiscard]] constexpr operator I() const noexcept {
         assert(is_within_limits<I>(_value));
         return static_cast<I>(_value);
     }

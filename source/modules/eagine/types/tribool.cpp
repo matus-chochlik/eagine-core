@@ -31,17 +31,18 @@ export class weakbool {
 
 public:
     /// @brief Returns true, if the stored value is not @c false.
-    constexpr explicit operator bool() const noexcept {
+    [[nodiscard]] constexpr explicit operator bool() const noexcept {
         return _value != _value_t::_false;
     }
 
     /// @brief Returns true, if the stored value is not @c true.
-    constexpr auto operator!() const noexcept {
+    [[nodiscard]] constexpr auto operator!() const noexcept -> bool {
         return _value != _value_t::_true;
     }
 
     ///@ brief Checks if the stored value is indeterminate.
-    constexpr auto is(const indeterminate_t) const noexcept {
+    [[nodiscard]] constexpr auto is(const indeterminate_t) const noexcept
+      -> bool {
         return _value == _value_t::_unknown;
     }
 
@@ -80,42 +81,45 @@ public:
                      : _value_t::_false) {}
 
     /// @brief Returns true, if the stored value is true.
-    constexpr explicit operator bool() const noexcept {
+    [[nodiscard]] constexpr explicit operator bool() const noexcept {
         return _value == _value_t::_true;
     }
 
     /// @brief Returns true, if the stored value is false.
-    constexpr auto operator!() const noexcept {
+    [[nodiscard]] constexpr auto operator!() const noexcept -> bool {
         return _value == _value_t::_false;
     }
 
     /// @brief Returns true, if the stored value is indeterminate.
-    constexpr auto operator*() const noexcept -> bool {
+    [[nodiscard]] constexpr auto operator*() const noexcept -> bool {
         return _value == _value_t::_unknown;
     }
 
     /// @brief Converts this value to @c weakbool.
-    constexpr auto operator~() const noexcept -> weakbool {
+    [[nodiscard]] constexpr auto operator~() const noexcept -> weakbool {
         return weakbool{_value};
     }
 
     /// @brief Returns true if the stored value is known and equal to @p value.
-    constexpr auto is(const bool value) const noexcept -> bool {
+    [[nodiscard]] constexpr auto is(const bool value) const noexcept -> bool {
         return _value == (value ? _value_t::_true : _value_t::_false);
     }
 
     /// @brief Returns true if the stored value is indeterminate.
-    constexpr auto is(const indeterminate_t) const noexcept -> bool {
+    [[nodiscard]] constexpr auto is(const indeterminate_t) const noexcept
+      -> bool {
         return *(*this);
     }
 
     /// @brief Equality comparison.
-    constexpr auto operator==(const tribool b) noexcept -> tribool {
+    [[nodiscard]] constexpr auto operator==(const tribool b) noexcept
+      -> tribool {
         return {_value == b._value, (*(*this) || *b)};
     }
 
     /// @brief Non-equality comparison.
-    constexpr auto operator!=(const tribool b) noexcept -> tribool {
+    [[nodiscard]] constexpr auto operator!=(const tribool b) noexcept
+      -> tribool {
         return {_value != b._value, (*(*this) || *b)};
     }
 
@@ -124,34 +128,46 @@ private:
 };
 
 /// @brief Tri-state boolean and operator.
-export constexpr auto operator&&(const tribool a, const tribool b) noexcept {
+export [[nodiscard]] constexpr auto operator&&(
+  const tribool a,
+  const tribool b) noexcept {
     return !a   ? tribool{false}
            : a  ? b
            : !b ? tribool{false}
                 : tribool{indeterminate};
 }
 
-export constexpr auto operator&&(const bool a, const tribool b) noexcept {
+export [[nodiscard]] constexpr auto operator&&(
+  const bool a,
+  const tribool b) noexcept {
     return tribool(a) && b;
 }
 
-export constexpr auto operator&&(const tribool a, const bool b) noexcept {
+export [[nodiscard]] constexpr auto operator&&(
+  const tribool a,
+  const bool b) noexcept {
     return a && tribool(b);
 }
 
 /// @brief Tri-state boolean or operator.
-export constexpr auto operator||(const tribool a, const tribool b) noexcept {
+export [[nodiscard]] constexpr auto operator||(
+  const tribool a,
+  const tribool b) noexcept {
     return a    ? tribool{true}
            : !a ? b
            : b  ? tribool{true}
                 : tribool{indeterminate};
 }
 
-export constexpr auto operator||(const bool a, const tribool b) noexcept {
+export [[nodiscard]] constexpr auto operator||(
+  const bool a,
+  const tribool b) noexcept {
     return tribool(a) || b;
 }
 
-export constexpr auto operator||(const tribool a, const bool b) noexcept {
+export [[nodiscard]] constexpr auto operator||(
+  const tribool a,
+  const bool b) noexcept {
     return a || tribool(b);
 }
 

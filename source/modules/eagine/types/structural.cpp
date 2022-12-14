@@ -21,11 +21,13 @@ struct structural_core {
     constexpr structural_core(structure_type value) noexcept
       : _value{std::move(value)} {}
 
-    static constexpr auto make_structure() noexcept -> structure_type {
+    [[nodiscard]] static constexpr auto make_structure() noexcept
+      -> structure_type {
         return {};
     }
 
-    constexpr auto get_structure() const noexcept -> const structure_type& {
+    [[nodiscard]] constexpr auto get_structure() const noexcept
+      -> const structure_type& {
         return _value;
     }
 
