@@ -752,10 +752,20 @@ SELECT
 	avg(i.avg_duration_ms) AS avg_duration_ms,
 	max(i.max_duration_ms) AS max_duration_ms,
 	s.start_time,
-	s.finish_time
+	s.finish_time,
+	s.low_profile_build,
+	s.debug_build
 FROM eagilog.profile_interval i
 JOIN eagilog.stream s USING(stream_id)
-GROUP BY i.stream_id, s.application_id, i.source_id, i.tag, s.start_time, s.finish_time;
+GROUP BY
+	i.stream_id,
+	s.application_id,
+	i.source_id,
+	i.tag,
+	s.start_time,
+	s.finish_time,
+	s.low_profile_build,
+	s.debug_build;
 --------------------------------------------------------------------------------
 -- other views
 --------------------------------------------------------------------------------

@@ -304,12 +304,27 @@ class XmlLogDbWriter(object):
                                 value))
                 except ValueError:
                     value = vinfo["value"]
-                    cursor.execute(
-                        "SELECT eagilog.add_entry_arg_string(%s, %s, %s, %s)", (
-                            entry_id,
-                            arg_id,
-                            vinfo.get("type"),
-                            value))
+                    if value in ["True", "true", "T", "t", "1"]:
+                        cursor.execute(
+                            "SELECT eagilog.add_entry_arg_boolean(%s, %s, %s, %s)", (
+                                entry_id,
+                                arg_id,
+                                vinfo.get("type"),
+                                True))
+                    elif value in ["False", "false", "F", "f", "0"]:
+                        cursor.execute(
+                            "SELECT eagilog.add_entry_arg_boolean(%s, %s, %s, %s)", (
+                                entry_id,
+                                arg_id,
+                                vinfo.get("type"),
+                                False))
+                    else:
+                        cursor.execute(
+                            "SELECT eagilog.add_entry_arg_string(%s, %s, %s, %s)", (
+                                entry_id,
+                                arg_id,
+                                vinfo.get("type"),
+                                value))
 
             for spec_arg_id, param in self._special_args.get(msg_tag, {}).items():
                 attrib_name, max_length = param
