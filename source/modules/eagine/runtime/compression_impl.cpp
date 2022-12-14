@@ -365,7 +365,7 @@ public:
 
     auto compress_finish(const data_handler& handler) noexcept -> bool final {
         const auto cleanup_later{finally([this]() {
-            ::deflateEnd(&_zsi);
+            ::deflateEnd(&_zsd);
             _zd_res = Z_STREAM_END;
         })};
         while(_zd_res != Z_STREAM_END) {
