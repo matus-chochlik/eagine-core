@@ -26,7 +26,7 @@ export enum class memory_access_rate {
     very_high
 };
 
-export auto temporal_slowdown_factor(
+export [[nodiscard]] auto temporal_slowdown_factor(
   const memory_access_rate mem_access = memory_access_rate::medium) noexcept
   -> int {
     if(running_on_valgrind()) [[unlikely]] {

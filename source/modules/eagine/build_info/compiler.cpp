@@ -19,42 +19,49 @@ namespace eagine {
 /// @brief Returns a short name of the target architecture.
 /// @ingroup main_ctx
 /// @see architecture_name
-export auto architecture_tag() noexcept -> valid_if_not_empty<string_view>;
+export [[nodiscard]] auto architecture_tag() noexcept
+  -> valid_if_not_empty<string_view>;
 
 /// @brief Returns a descriptive name of the target architecture.
 /// @ingroup main_ctx
 /// @see architecture_tag
-export auto architecture_name() noexcept -> valid_if_not_empty<string_view>;
+export [[nodiscard]] auto architecture_name() noexcept
+  -> valid_if_not_empty<string_view>;
 
 /// @brief Returns the name of the compiler used to build the binaries.
 /// @ingroup main_ctx
 /// @see compiler_version_major
 /// @see compiler_version_minor
 /// @see compiler_version_patch
-export auto compiler_name() noexcept -> valid_if_not_empty<string_view>;
+export [[nodiscard]] auto compiler_name() noexcept
+  -> valid_if_not_empty<string_view>;
 
 /// @brief Returns the major version number of the compiler.
 /// @ingroup main_ctx
 /// @see compiler_name
 /// @see compiler_version_minor
 /// @see compiler_version_patch
-export auto compiler_version_major() noexcept -> valid_if_nonnegative<int>;
+export [[nodiscard]] auto compiler_version_major() noexcept
+  -> valid_if_nonnegative<int>;
 
 /// @brief Returns the minor version number of the compiler.
 /// @ingroup main_ctx
 /// @see compiler_name
 /// @see compiler_version_major
 /// @see compiler_version_patch
-export auto compiler_version_minor() noexcept -> valid_if_nonnegative<int>;
+export [[nodiscard]] auto compiler_version_minor() noexcept
+  -> valid_if_nonnegative<int>;
 
 /// @brief Returns the version patch number of the compiler.
 /// @ingroup main_ctx
 /// @see compiler_name
 /// @see compiler_version_major
 /// @see compiler_version_minor
-export auto compiler_version_patch() noexcept -> valid_if_nonnegative<int>;
+export [[nodiscard]] auto compiler_version_patch() noexcept
+  -> valid_if_nonnegative<int>;
 
-export auto compiler_version_tuple() noexcept -> std::tuple<int, int, int> {
+export [[nodiscard]] auto compiler_version_tuple() noexcept
+  -> std::tuple<int, int, int> {
     return {
       extract_or(compiler_version_major(), -1),
       extract_or(compiler_version_minor(), -1),
@@ -85,13 +92,15 @@ public:
 
     /// @brief Returns the architecture name.
     /// @see name
-    auto architecture_name() const noexcept -> valid_if_not_empty<string_view> {
+    [[nodiscard]] auto architecture_name() const noexcept
+      -> valid_if_not_empty<string_view> {
         return {std::get<0>(get_structure())};
     }
 
     /// @brief Returns the compiler name.
     /// @see architecture_name
-    auto name() const noexcept -> valid_if_not_empty<string_view> {
+    [[nodiscard]] auto name() const noexcept
+      -> valid_if_not_empty<string_view> {
         return {std::get<1>(get_structure())};
     }
 
@@ -100,7 +109,8 @@ public:
     /// @see version_major
     /// @see version_minor
     /// @see version_patch
-    auto version_tuple() const noexcept -> const std::tuple<int, int, int>& {
+    [[nodiscard]] auto version_tuple() const noexcept
+      -> const std::tuple<int, int, int>& {
         return std::get<2>(get_structure());
     }
 
@@ -109,7 +119,8 @@ public:
     /// @see version_tuple
     /// @see version_minor
     /// @see version_patch
-    auto version_major() const noexcept -> valid_if_nonnegative<int> {
+    [[nodiscard]] auto version_major() const noexcept
+      -> valid_if_nonnegative<int> {
         return {std::get<0>(version_tuple())};
     }
 
@@ -118,7 +129,8 @@ public:
     /// @see version_tuple
     /// @see version_major
     /// @see version_patch
-    auto version_minor() const noexcept -> valid_if_nonnegative<int> {
+    [[nodiscard]] auto version_minor() const noexcept
+      -> valid_if_nonnegative<int> {
         return {std::get<1>(version_tuple())};
     }
 
@@ -127,7 +139,8 @@ public:
     /// @see version_tuple
     /// @see version_major
     /// @see version_minor
-    auto version_patch() const noexcept -> valid_if_nonnegative<int> {
+    [[nodiscard]] auto version_patch() const noexcept
+      -> valid_if_nonnegative<int> {
         return {std::get<2>(version_tuple())};
     }
 };
