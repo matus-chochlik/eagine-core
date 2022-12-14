@@ -517,12 +517,13 @@ GROUP BY (message_format_id, hash, format);
 CREATE TABLE eagilog.arg_string(
 	entry_id BIGINT NOT NULL,
 	arg_id VARCHAR(10) NOT NULL,
+	arg_order SMALLINT NOT NULL DEFAULT 0,
 	arg_type VARCHAR(10) NULL,
 	value VARCHAR(80) NOT NULL
 );
 
 ALTER TABLE eagilog.arg_string
-ADD PRIMARY KEY(entry_id, arg_id);
+ADD PRIMARY KEY(entry_id, arg_id, arg_order);
 
 ALTER TABLE eagilog.arg_string
 ADD FOREIGN KEY(entry_id)
@@ -535,12 +536,17 @@ CREATE FUNCTION eagilog.add_entry_arg_string(
 	_value eagilog.arg_string.value%TYPE
 ) RETURNS VOID
 AS $$
+DECLARE
+	_arg_order SMALLINT;
 BEGIN
+	SELECT count(1)
+	INTO _arg_order
+	FROM eagilog.arg_string
+	WHERE entry_id = _entry_id
+	AND arg_id = _arg_id;
 	INSERT INTO eagilog.arg_string
-	(entry_id, arg_id, arg_type, value)
-	VALUES(_entry_id, _arg_id, _type, _value)
-	ON CONFLICT ON CONSTRAINT arg_string_pkey
-	DO NOTHING;
+	(entry_id, arg_id, arg_order, arg_type, value)
+	VALUES(_entry_id, _arg_id, _arg_order, _type, _value);
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
@@ -549,12 +555,13 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE eagilog.arg_boolean(
 	entry_id BIGINT NOT NULL,
 	arg_id VARCHAR(10) NOT NULL,
+	arg_order SMALLINT NOT NULL DEFAULT 0,
 	arg_type VARCHAR(10) NULL,
 	value BOOL NOT NULL
 );
 
 ALTER TABLE eagilog.arg_boolean
-ADD PRIMARY KEY(entry_id, arg_id);
+ADD PRIMARY KEY(entry_id, arg_id, arg_order);
 
 ALTER TABLE eagilog.arg_boolean
 ADD FOREIGN KEY(entry_id)
@@ -567,12 +574,17 @@ CREATE FUNCTION eagilog.add_entry_arg_boolean(
 	_value eagilog.arg_boolean.value%TYPE
 ) RETURNS VOID
 AS $$
+DECLARE
+	_arg_order SMALLINT;
 BEGIN
+	SELECT count(1)
+	INTO _arg_order
+	FROM eagilog.arg_boolean
+	WHERE entry_id = _entry_id
+	AND arg_id = _arg_id;
 	INSERT INTO eagilog.arg_boolean
-	(entry_id, arg_id, arg_type, value)
-	VALUES(_entry_id, _arg_id, _type, _value)
-	ON CONFLICT ON CONSTRAINT arg_boolean_pkey
-	DO NOTHING;
+	(entry_id, arg_id, arg_order, arg_type, value)
+	VALUES(_entry_id, _arg_id, _arg_order, _type, _value);
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
@@ -581,12 +593,13 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE eagilog.arg_integer(
 	entry_id BIGINT NOT NULL,
 	arg_id VARCHAR(10) NOT NULL,
+	arg_order SMALLINT NOT NULL DEFAULT 0,
 	arg_type VARCHAR(10) NULL,
 	value BIGINT NOT NULL
 );
 
 ALTER TABLE eagilog.arg_integer
-ADD PRIMARY KEY(entry_id, arg_id);
+ADD PRIMARY KEY(entry_id, arg_id, arg_order);
 
 ALTER TABLE eagilog.arg_integer
 ADD FOREIGN KEY(entry_id)
@@ -599,12 +612,17 @@ CREATE FUNCTION eagilog.add_entry_arg_integer(
 	_value eagilog.arg_integer.value%TYPE
 ) RETURNS VOID
 AS $$
+DECLARE
+	_arg_order SMALLINT;
 BEGIN
+	SELECT count(1)
+	INTO _arg_order
+	FROM eagilog.arg_integer
+	WHERE entry_id = _entry_id
+	AND arg_id = _arg_id;
 	INSERT INTO eagilog.arg_integer
-	(entry_id, arg_id, arg_type, value)
-	VALUES(_entry_id, _arg_id, _type, _value)
-	ON CONFLICT ON CONSTRAINT arg_integer_pkey
-	DO NOTHING;
+	(entry_id, arg_id, arg_order, arg_type, value)
+	VALUES(_entry_id, _arg_id, _arg_order, _type, _value);
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
@@ -613,12 +631,13 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE eagilog.arg_float(
 	entry_id BIGINT NOT NULL,
 	arg_id VARCHAR(10) NOT NULL,
+	arg_order SMALLINT NOT NULL DEFAULT 0,
 	arg_type VARCHAR(10) NULL,
 	value DOUBLE PRECISION NOT NULL
 );
 
 ALTER TABLE eagilog.arg_float
-ADD PRIMARY KEY(entry_id, arg_id);
+ADD PRIMARY KEY(entry_id, arg_id, arg_order);
 
 ALTER TABLE eagilog.arg_float
 ADD FOREIGN KEY(entry_id)
@@ -631,12 +650,17 @@ CREATE FUNCTION eagilog.add_entry_arg_float(
 	_value eagilog.arg_float.value%TYPE
 ) RETURNS VOID
 AS $$
+DECLARE
+	_arg_order SMALLINT;
 BEGIN
+	SELECT count(1)
+	INTO _arg_order
+	FROM eagilog.arg_float
+	WHERE entry_id = _entry_id
+	AND arg_id = _arg_id;
 	INSERT INTO eagilog.arg_float
-	(entry_id, arg_id, arg_type, value)
-	VALUES(_entry_id, _arg_id, _type, _value)
-	ON CONFLICT ON CONSTRAINT arg_float_pkey
-	DO NOTHING;
+	(entry_id, arg_id, arg_order, arg_type, value)
+	VALUES(_entry_id, _arg_id, _arg_order, _type, _value);
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
@@ -645,12 +669,13 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE eagilog.arg_duration(
 	entry_id BIGINT NOT NULL,
 	arg_id VARCHAR(10) NOT NULL,
+	arg_order SMALLINT NOT NULL DEFAULT 0,
 	arg_type VARCHAR(10) NULL,
 	value INTERVAL NOT NULL
 );
 
 ALTER TABLE eagilog.arg_duration
-ADD PRIMARY KEY(entry_id, arg_id);
+ADD PRIMARY KEY(entry_id, arg_id, arg_order);
 
 ALTER TABLE eagilog.arg_duration
 ADD FOREIGN KEY(entry_id)
@@ -663,12 +688,17 @@ CREATE FUNCTION eagilog.add_entry_arg_duration(
 	_value eagilog.arg_duration.value%TYPE
 ) RETURNS VOID
 AS $$
+DECLARE
+	_arg_order SMALLINT;
 BEGIN
+	SELECT count(1)
+	INTO _arg_order
+	FROM eagilog.arg_duration
+	WHERE entry_id = _entry_id
+	AND arg_id = _arg_id;
 	INSERT INTO eagilog.arg_duration
-	(entry_id, arg_id, arg_type, value)
-	VALUES(_entry_id, _arg_id, _type, _value)
-	ON CONFLICT ON CONSTRAINT arg_duration_pkey
-	DO NOTHING;
+	(entry_id, arg_id, arg_order, arg_type, value)
+	VALUES(_entry_id, _arg_id, _arg_order, _type, _value);
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
