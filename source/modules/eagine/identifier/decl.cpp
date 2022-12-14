@@ -120,33 +120,33 @@ public:
     using const_iterator = iterator;
 
     /// @brief Returns the pointer to the start of the unpacked identifier name.
-    constexpr auto data() const noexcept {
+    [[nodiscard]] constexpr auto data() const noexcept {
         return _str.data();
     }
 
     /// @brief Returns the length of the unpacked character string.
-    constexpr auto size() const noexcept {
+    [[nodiscard]] constexpr auto size() const noexcept {
         return size_type(_len);
     }
 
     /// @brief Returns an iterator to the start of the unpacked identifier name.
-    constexpr auto begin() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto begin() const noexcept -> const_iterator {
         return _str.data();
     }
 
     /// @brief Returns an iterator past the end of the unpacked identifier name.
-    constexpr auto end() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto end() const noexcept -> const_iterator {
         return _str.data() + size();
     }
 
     /// @brief Returns a string view covering the unpacked identifier name.
-    constexpr auto view() const noexcept -> memory::string_view {
+    [[nodiscard]] constexpr auto view() const noexcept -> memory::string_view {
         // negative size indicates that the data is zero terminated
         return {data(), -size()};
     }
 
     /// @brief Returns the unpacked identifier name as a standard string.
-    auto str() const noexcept -> std::string {
+    [[nodiscard]] auto str() const noexcept -> std::string {
         return {_str.data(), _len};
     }
 
@@ -209,7 +209,8 @@ public:
     static constexpr const std::size_t max_length = M;
 
     /// @brief Indicates if the specified string view can be encoded into identifier.
-    static constexpr auto can_be_encoded(string_view str) noexcept -> bool {
+    [[nodiscard]] static constexpr auto can_be_encoded(string_view str) noexcept
+      -> bool {
         if(str.size() <= max_length) {
             return encoding::can_be_encoded(str);
         }
@@ -243,61 +244,63 @@ public:
       : _bites{std::move(init)} {}
 
     /// @brief Returns the maximum length of this identifier type.
-    static constexpr auto max_size() noexcept -> size_type {
+    [[nodiscard]] static constexpr auto max_size() noexcept -> size_type {
         return M;
     }
 
     /// @brief Indicates if this identifier is empty.
     /// @see size
-    constexpr auto is_empty() const noexcept -> bool {
+    [[nodiscard]] constexpr auto is_empty() const noexcept -> bool {
         return value() == 0;
     }
 
     /// @brief Indicates if this identifier is not empty.
     /// @see is_empty
-    constexpr explicit operator bool() const noexcept {
+    [[nodiscard]] constexpr explicit operator bool() const noexcept {
         return value() != 0;
     }
 
     /// @brief Returns the size of this identifier.
     /// @see is_empty
-    constexpr auto size() const noexcept -> size_type {
+    [[nodiscard]] constexpr auto size() const noexcept -> size_type {
         return is_empty() ? 0 : _get_size(0);
     }
 
     /// @brief Subscript operator. Allows to access individual characters.
-    constexpr auto operator[](const size_type idx) const noexcept
+    [[nodiscard]] constexpr auto operator[](const size_type idx) const noexcept
       -> value_type {
         return encoding::decode(_bites[idx]);
     }
 
-    constexpr auto value() const noexcept -> UIntT {
+    [[nodiscard]] constexpr auto value() const noexcept -> UIntT {
         return _bites.bytes().template as<UIntT>();
     }
 
-    constexpr auto matches(const UIntT what) const noexcept {
+    [[nodiscard]] constexpr auto matches(const UIntT what) const noexcept {
         return value() == what;
     }
 
-    constexpr auto matches(memory::string_view what) const noexcept {
+    [[nodiscard]] constexpr auto matches(
+      memory::string_view what) const noexcept {
         // TODO: this could be optimized: compare char-by-char and bail early
         return name() == what;
     }
 
     /// @brief Returns this identifier as unpacked identifier_name.
     /// @see identifier_name
-    constexpr auto name() const noexcept -> name_type {
+    [[nodiscard]] constexpr auto name() const noexcept -> name_type {
         return _get_name(std::make_index_sequence<M>{});
     }
 
     /// @brief Returns this identifier as unpacked standard string.
     /// @see identifier_name
-    auto str() const -> std::string {
+    [[nodiscard]] auto str() const -> std::string {
         return name().str();
     }
 
     /// @brief Comparison.
-    constexpr auto operator<=>(const basic_identifier&) const noexcept = default;
+    [[nodiscard]] constexpr auto operator<=>(
+      const basic_identifier&) const noexcept = default;
 
 private:
     _bites_t _bites;
@@ -354,12 +357,12 @@ struct basic_identifier_value {
       : _value{identifier_type{str}.value()} {}
 
     /// @brief Conversion to numeric value type.
-    constexpr operator value_type() const noexcept {
+    [[nodiscard]] constexpr operator value_type() const noexcept {
         return _value;
     }
 
     /// @brief Conversion to identifier type.
-    constexpr operator identifier_type() const noexcept {
+    [[nodiscard]] constexpr operator identifier_type() const noexcept {
         return identifier_type{_value};
     }
 };
@@ -395,7 +398,8 @@ concept identifier_literal_length = (L <= identifier::max_length + 1U);
 /// @ingroup identifiers
 /// @see id
 export template <std::size_t N>
-consteval auto id_v(const char (&str)[N]) noexcept -> identifier_t {
+[[nodiscard]] consteval auto id_v(const char (&str)[N]) noexcept
+  -> identifier_t {
     return identifier{str}.value();
 }
 //------------------------------------------------------------------------------

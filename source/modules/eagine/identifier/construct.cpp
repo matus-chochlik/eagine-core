@@ -17,21 +17,22 @@ namespace eagine {
 /// @see identifier
 /// @see dec_to_identifier
 /// @see random_identifier
-export auto byte_to_identifier(const byte b) noexcept -> identifier;
+export [[nodiscard]] auto byte_to_identifier(const byte b) noexcept
+  -> identifier;
 
 /// @brief Creates an identifier representing an integer value as a decimal string.
 /// @ingroup identifiers
 /// @see identifier
 /// @see byte_to_identifier
 /// @see random_identifier
-export auto dec_to_identifier(const int i) noexcept -> identifier;
+export [[nodiscard]] auto dec_to_identifier(const int i) noexcept -> identifier;
 //------------------------------------------------------------------------------
 /// @brief Creates an random identifier using a default random engine.
 /// @ingroup identifiers
 /// @see identifier
 /// @see byte_to_identifier
 /// @see dec_to_identifier
-export auto random_identifier() -> identifier;
+export [[nodiscard]] auto random_identifier() -> identifier;
 //------------------------------------------------------------------------------
 } // namespace eagine
 

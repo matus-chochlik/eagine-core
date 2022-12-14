@@ -14,30 +14,37 @@ import <type_traits>;
 namespace eagine {
 //------------------------------------------------------------------------------
 export template <typename Bit, typename Selector>
-auto count_all_bits(const bitfield<Bit>&, const Selector sel) noexcept
-  -> span_size_t requires(mapped_enum<Bit, Selector>) {
-                     return enumerator_count(std::type_identity<Bit>{}, sel);
-                 }
+[[nodiscard]] auto count_all_bits(
+  const bitfield<Bit>&,
+  const Selector sel) noexcept -> span_size_t
+    requires(mapped_enum<Bit, Selector>)
+{
+    return enumerator_count(std::type_identity<Bit>{}, sel);
+}
 //------------------------------------------------------------------------------
 export template <typename Bit>
-auto count_all_bits(const bitfield<Bit>&) noexcept -> span_size_t
-  requires(mapped_enum<Bit, default_selector_t>) {
-      return enumerator_count(std::type_identity<Bit>{}, default_selector);
-  }
+[[nodiscard]] auto count_all_bits(const bitfield<Bit>&) noexcept -> span_size_t
+    requires(mapped_enum<Bit, default_selector_t>)
+{
+    return enumerator_count(std::type_identity<Bit>{}, default_selector);
+}
 //------------------------------------------------------------------------------
 export template <typename Bit, typename Selector>
-auto count_set_bits(const bitfield<Bit> bits, const Selector sel) noexcept
-  -> span_size_t requires(mapped_enum<Bit, Selector>) {
-                     span_size_t result{0};
-                     for(const auto& info :
-                         enumerator_mapping(std::type_identity<Bit>{}, sel)) {
-                         result += (bits.has(info.enumerator) ? 1 : 0);
-                     }
-                     return result;
-                 }
+[[nodiscard]] auto count_set_bits(
+  const bitfield<Bit> bits,
+  const Selector sel) noexcept -> span_size_t
+    requires(mapped_enum<Bit, Selector>)
+{
+    span_size_t result{0};
+    for(const auto& info : enumerator_mapping(std::type_identity<Bit>{}, sel)) {
+        result += (bits.has(info.enumerator) ? 1 : 0);
+    }
+    return result;
+}
 //------------------------------------------------------------------------------
 export template <default_mapped_enum Bit>
-auto count_set_bits(const bitfield<Bit> bits) noexcept -> span_size_t {
+[[nodiscard]] auto count_set_bits(const bitfield<Bit> bits) noexcept
+  -> span_size_t {
     return count_set_bits(bits, default_selector);
 }
 //------------------------------------------------------------------------------
