@@ -107,14 +107,14 @@ public:
 
     /// @brief Indicates if this container is empty.
     /// @see size
-    constexpr auto empty() const noexcept -> bool {
+    [[nodiscard]] constexpr auto empty() const noexcept -> bool {
         return _items.empty();
     }
 
     /// @brief Returns the number of elements in this container.
     /// @see resize
     /// @see empty
-    constexpr auto size() const noexcept {
+    [[nodiscard]] constexpr auto size() const noexcept {
         return span_size(_items.size());
     }
 
@@ -127,41 +127,42 @@ public:
 
     /// @brief Subscript access.
     /// @pre index < size()
-    constexpr auto operator[](const span_size_t index) const noexcept {
+    [[nodiscard]] constexpr auto operator[](
+      const span_size_t index) const noexcept {
         return _transf()(_items[range_index<Container>(index)]);
     }
 
     /// @brief Access the element at the specified index.
-    constexpr auto at(const span_size_t index) const {
+    [[nodiscard]] constexpr auto at(const span_size_t index) const {
         return _transf()(_items.at(range_index<Container>(index)));
     }
 
     /// @brief Access the first element.
     /// @see back
     /// @pre !empty()
-    constexpr auto front() const noexcept {
+    [[nodiscard]] constexpr auto front() const noexcept {
         return _transf()(_items.front());
     }
 
     /// @brief Access the last element.
     /// @see front
     /// @pre !empty()
-    constexpr auto back() const noexcept {
+    [[nodiscard]] constexpr auto back() const noexcept {
         return _transf()(_items.back());
     }
 
     /// @brief Returns an iterator to the first element in this container.
-    constexpr auto begin() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto begin() const noexcept -> const_iterator {
         return {_items.begin()};
     }
 
     /// @brief Returns an iterator past  the last element in this container.
-    constexpr auto end() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto end() const noexcept -> const_iterator {
         return {_items.end()};
     }
 
     /// @brief Returns view of the elements as they are stored, without transfomation.
-    constexpr auto raw_items() noexcept {
+    [[nodiscard]] constexpr auto raw_items() noexcept {
         if constexpr(std::is_const_v<typename Container::value_type>) {
             return view(_items);
         } else {
@@ -170,13 +171,13 @@ public:
     }
 
     /// @brief Returns view of the elements as they are stored, without transfomation.
-    constexpr auto raw_items() const noexcept {
+    [[nodiscard]] constexpr auto raw_items() const noexcept {
         return view(_items);
     }
 
     /// @brief Returns a pointer to raw items data.
     /// @see raw_items
-    constexpr auto data() const noexcept {
+    [[nodiscard]] constexpr auto data() const noexcept {
         return raw_items().data();
     }
 

@@ -64,60 +64,60 @@ public:
         std::sort(_vec.begin(), _vec.end(), value_comp());
     }
 
-    auto key_comp() const noexcept -> const Compare& {
+    [[nodiscard]] auto key_comp() const noexcept -> const Compare& {
         return *this;
     }
 
-    auto value_comp() const noexcept -> const Compare& {
+    [[nodiscard]] auto value_comp() const noexcept -> const Compare& {
         return *this;
     }
 
-    auto empty() const noexcept {
+    [[nodiscard]] auto empty() const noexcept {
         return _vec.empty();
     }
 
-    auto size() const noexcept {
+    [[nodiscard]] auto size() const noexcept {
         return _vec.size();
     }
 
-    auto max_size() const noexcept {
+    [[nodiscard]] auto max_size() const noexcept {
         return _vec.max_size();
     }
 
-    auto begin() -> iterator {
+    [[nodiscard]] auto begin() -> iterator {
         return _vec.begin();
     }
 
-    auto begin() const -> const_iterator {
+    [[nodiscard]] auto begin() const -> const_iterator {
         return _vec.begin();
     }
 
-    auto end() -> iterator {
+    [[nodiscard]] auto end() -> iterator {
         return _vec.end();
     }
 
-    auto end() const -> const_iterator {
+    [[nodiscard]] auto end() const -> const_iterator {
         return _vec.end();
     }
 
-    auto lower_bound(const Key& key) const noexcept {
+    [[nodiscard]] auto lower_bound(const Key& key) const noexcept {
         return ::std::lower_bound(begin(), end(), key, value_comp());
     }
 
-    auto upper_bound(const Key& key) const noexcept {
+    [[nodiscard]] auto upper_bound(const Key& key) const noexcept {
         return ::std::upper_bound(begin(), end(), key, value_comp());
     }
 
-    auto equal_range(const Key& key) const noexcept {
+    [[nodiscard]] auto equal_range(const Key& key) const noexcept {
         return ::std::equal_range(begin(), end(), key, value_comp());
     }
 
-    auto find(const Key& key) const noexcept {
+    [[nodiscard]] auto find(const Key& key) const noexcept {
         auto [p, i] = _find_insert_pos(key);
         return i ? _vec.end() : p;
     }
 
-    auto contains(const Key& key) const noexcept {
+    [[nodiscard]] auto contains(const Key& key) const noexcept {
         return !_find_insert_pos(key).second;
     }
 
