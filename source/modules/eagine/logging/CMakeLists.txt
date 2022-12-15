@@ -244,6 +244,8 @@ eagine_add_module(
 		syslog_backend_impl
 		proxy_backend_impl
 		root_logger_impl
+	IMPORTS
+		eagine.core.debug
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/asio/asio/include"
 )

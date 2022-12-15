@@ -22,6 +22,7 @@ module;
 module eagine.core.logging;
 
 import eagine.core.types;
+import eagine.core.debug;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
@@ -175,8 +176,9 @@ auto root_logger::_log_git_info() -> void {
 auto root_logger::_log_build_info() -> void {
     info("source version information")
       .tag("BuildInfo")
-      .arg("lowProfile", "bool", low_profile_build)
-      .arg("debug", "bool", debug_build);
+      .arg("onValgrind", running_on_valgrind())
+      .arg("lowProfile", low_profile_build)
+      .arg("debug", debug_build);
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_instance_info() -> void {

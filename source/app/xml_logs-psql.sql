@@ -209,6 +209,7 @@ CREATE TABLE eagilog.stream (
 	hostname VARCHAR(64) NULL,
 	architecture VARCHAR(32) NULL,
 	compiler VARCHAR(32) NULL,
+	running_on_valgrind BOOL NULL,
 	low_profile_build BOOL NULL,
 	debug_build BOOL NULL
 );
@@ -336,6 +337,26 @@ BEGIN
 	UPDATE eagilog.stream
 	SET compiler = _value
 	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.set_stream_running_on_valgrind(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_value VARCHAR
+) RETURNS VOID
+AS $$
+BEGIN
+	IF _value = 'yes'
+	THEN
+		UPDATE eagilog.stream
+		SET running_on_valgrind = TRUE
+		WHERE stream_id = _stream_id;
+	ELSIF _value = 'no'
+	THEN
+		UPDATE eagilog.stream
+		SET running_on_valgrind = FALSE
+		WHERE stream_id = _stream_id;
+	END IF;
 END
 $$ LANGUAGE plpgsql;
 

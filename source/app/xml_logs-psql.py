@@ -219,6 +219,7 @@ class XmlLogDbWriter(object):
                 "gitVersion": ("git_version", 32),
             },
             "BuildInfo": {
+                "onValgrind": ("running_on_valgrind", None),
                 "lowProfile": ("low_profile_build", None),
                 "debug": ("debug_build", None),
             },
