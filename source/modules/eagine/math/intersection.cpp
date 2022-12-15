@@ -21,7 +21,8 @@ namespace eagine::math {
 // utils
 //------------------------------------------------------------------------------
 export template <typename V>
-constexpr auto nearest_ray_param(const std::pair<V, V>& params) noexcept -> V {
+[[nodiscard]] constexpr auto nearest_ray_param(
+  const std::pair<V, V>& params) noexcept -> V {
 
     const auto& [t0, t1] = params;
 
@@ -96,7 +97,7 @@ constexpr auto _line_sphere_intersection_p(
 }
 //------------------------------------------------------------------------------
 export template <typename T, bool V>
-auto line_sphere_intersection_params(
+[[nodiscard]] auto line_sphere_intersection_params(
   const line<T, V>& ray,
   const sphere<T, V>& sph) noexcept
   -> std::pair<std::optional<T>, std::optional<T>> {
@@ -112,7 +113,7 @@ auto line_sphere_intersection_params(
 /// @ingroup math
 /// @see nearest_line_sphere_intersection
 export template <typename T, bool V>
-constexpr auto line_sphere_intersection(
+[[nodiscard]] constexpr auto line_sphere_intersection(
   const line<T, V>& ray,
   const sphere<T, V>& sph) noexcept
   -> std::pair<std::optional<vector<T, 3, V>>, std::optional<vector<T, 3, V>>> {
@@ -140,7 +141,7 @@ constexpr auto _line_sphere_intersection_n_p(
 /// @ingroup math
 /// @see line_sphere_intersection
 export template <typename T, bool V>
-constexpr auto nearest_line_sphere_intersection(
+[[nodiscard]] constexpr auto nearest_line_sphere_intersection(
   const line<T, V>& ray,
   const sphere<T, V>& sph) noexcept -> std::optional<vector<T, 3, V>> {
     return _line_sphere_intersection_n_p(
@@ -150,7 +151,7 @@ constexpr auto nearest_line_sphere_intersection(
 // line-triangle
 //------------------------------------------------------------------------------
 export template <typename T, bool V>
-constexpr auto line_triangle_intersection_param(
+[[nodiscard]] constexpr auto line_triangle_intersection_param(
   const line<T, V>& ray,
   const triangle<T, V>& tri) noexcept -> std::optional<T> {
 
@@ -180,7 +181,7 @@ constexpr auto line_triangle_intersection_param(
 /// @brief Finds line-triangle intersection point.
 /// @ingroup math
 export template <typename T, bool V>
-constexpr auto line_triangle_intersection(
+[[nodiscard]] constexpr auto line_triangle_intersection(
   const line<T, V>& ray,
   const triangle<T, V>& tri) noexcept -> std::optional<vector<T, 3, V>> {
     if(const auto t{line_triangle_intersection_param(ray, tri)}) {

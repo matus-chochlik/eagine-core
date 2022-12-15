@@ -41,24 +41,24 @@ public:
     template <typename X>
     auto operator=(const X& value) noexcept
       -> auto& requires(!std::is_same_v<X, sign<T>>) {
-                   _positive = (value >= X(0));
-                   return *this;
-               }
+          _positive = (value >= X(0));
+          return *this;
+      }
 
     /// @brief Constructs a positive sign (plus).
     /// @see minus
-    static constexpr auto plus() noexcept -> sign {
+    [[nodiscard]] static constexpr auto plus() noexcept -> sign {
         return {true};
     }
 
     /// @brief Constructs a negative sign (minus).
     /// @see plus
-    static constexpr auto minus() noexcept -> sign {
+    [[nodiscard]] static constexpr auto minus() noexcept -> sign {
         return {false};
     }
 
     /// @brief Returns either 1 if this sign is positive or -1 if negative.
-    operator T() const noexcept {
+    [[nodiscard]] operator T() const noexcept {
         return _positive ? T{1} : T{-1};
     }
 
@@ -71,21 +71,21 @@ public:
 
     /// @brief Returns a new sign opposite to this sign.
     /// @see flip
-    auto flipped() const noexcept -> sign {
+    [[nodiscard]] auto flipped() const noexcept -> sign {
         return {!_positive};
     }
 
     /// @brief Returns a new sign opposite to this sign.
     /// @see flipped
     /// @see flip
-    auto operator-() const noexcept -> sign {
+    [[nodiscard]] auto operator-() const noexcept -> sign {
         return flipped();
     }
 
     /// @brief Returns a new sign opposite to this sign.
     /// @see flipped
     /// @see flip
-    auto operator!() const noexcept -> sign {
+    [[nodiscard]] auto operator!() const noexcept -> sign {
         return flipped();
     }
 

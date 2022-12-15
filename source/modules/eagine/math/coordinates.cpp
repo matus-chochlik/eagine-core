@@ -32,12 +32,12 @@ public:
       , _elev{elevation} {}
 
     /// @brief Returns the azimuth.
-    constexpr auto azimuth() const noexcept -> radians_t<T> {
+    [[nodiscard]] constexpr auto azimuth() const noexcept -> radians_t<T> {
         return _azim;
     }
 
     /// @brief Returns the elevation.
-    constexpr auto elevation() const noexcept -> radians_t<T> {
+    [[nodiscard]] constexpr auto elevation() const noexcept -> radians_t<T> {
         return _elev;
     }
 
@@ -49,8 +49,8 @@ private:
 /// @brief Converts unit spherical coordinate to cartesian vector.
 /// @ingroup math
 export template <typename T, bool V>
-constexpr auto to_cartesian(const unit_spherical_coordinate<T, V> c) noexcept
-  -> vector<T, 3, V> {
+[[nodiscard]] constexpr auto to_cartesian(
+  const unit_spherical_coordinate<T, V> c) noexcept -> vector<T, 3, V> {
     using std::abs;
     return vector<T, 3, V>::make(
       cos(c.azimuth()) * abs(cos(c.elevation())),
@@ -61,7 +61,7 @@ constexpr auto to_cartesian(const unit_spherical_coordinate<T, V> c) noexcept
 /// @brief Converts cartesian vector to unit spherical coordinate.
 /// @ingroup math
 export template <typename T, bool V>
-constexpr auto to_unit_spherical(const vector<T, 3, V> v) noexcept
+[[nodiscard]] constexpr auto to_unit_spherical(const vector<T, 3, V> v) noexcept
   -> unit_spherical_coordinate<T, V> {
     using R = unit_spherical_coordinate<T, V>;
     using std::abs;

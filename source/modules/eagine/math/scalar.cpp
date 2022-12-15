@@ -46,7 +46,7 @@ struct scalar {
     }
 
     /// @brief Creates a scalar with the specified value.
-    static constexpr auto make(const T v) noexcept {
+    [[nodiscard]] static constexpr auto make(const T v) noexcept {
         return _make(v, is_vectorized());
     }
 
@@ -59,7 +59,7 @@ struct scalar {
     }
 
     /// @brief Implicit cast to the value type.
-    constexpr operator T() const noexcept {
+    [[nodiscard]] constexpr operator T() const noexcept {
         return _get(is_vectorized());
     }
 

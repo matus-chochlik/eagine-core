@@ -42,7 +42,7 @@ public:
     }
 
     /// @brief Gets the current value between the current and the next point.
-    auto get() const -> T {
+    [[nodiscard]] auto get() const -> T {
         return math::blend(
           _curr,
           _next,
@@ -56,7 +56,7 @@ public:
     }
 
     /// @brief Indicates if the current transition factor is higher than current duration.
-    auto is_done() const noexcept -> bool {
+    [[nodiscard]] auto is_done() const noexcept -> bool {
         return _phase >= _duration;
     }
 

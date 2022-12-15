@@ -69,7 +69,7 @@ export template <typename C>
 struct compound_view_maker;
 
 export template <typename C>
-auto element_view(const C& c) noexcept {
+[[nodiscard]] auto element_view(const C& c) noexcept {
     return compound_view_maker<C>()(c);
 }
 
@@ -81,7 +81,7 @@ struct compound_view_maker<T[N]> {
 };
 
 export template <typename T, span_size_t N>
-auto element_view(T (&v)[N]) noexcept {
+[[nodiscard]] auto element_view(T (&v)[N]) noexcept {
     return compound_view_maker<T[N]>()(v);
 }
 //------------------------------------------------------------------------------
