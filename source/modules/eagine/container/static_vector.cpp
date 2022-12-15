@@ -51,14 +51,9 @@ public:
         std::is_nothrow_destructible_v<T>) {
         assert(n <= max_size());
         if(n < _size) {
-            std::destroy(begin() + n, end());
-            _size = n;
-        } else if(n > _size) {
-            _size = n;
-            for(auto i{begin() + n}; i != end(); ++i) {
-                std::construct_at(i);
-            }
+            std::fill(_array.begin() + n, _array.begin() + _size, T{});
         }
+        _size = n;
     }
 
     constexpr auto empty() const noexcept -> bool {
@@ -70,7 +65,7 @@ public:
     }
 
     constexpr void clear() noexcept {
-        std::destroy(begin(), end());
+        std::fill(begin(), end(), T{});
         _size = 0;
     }
 
@@ -109,7 +104,7 @@ public:
     constexpr void push_back(const value_type& value) noexcept(
       std::is_nothrow_copy_constructible_v<T>) {
         assert(!full());
-        std::construct_at(end(), value);
+        *end() = value;
         ++_size;
     }
 
@@ -117,14 +112,14 @@ public:
     constexpr void emplace_back(Args&&... args) noexcept(
       std::is_nothrow_constructible_v<T, decltype(std::forward<Args>(args))...>) {
         assert(!full());
-        std::construct_at(end(), std::forward<Args>(args)...);
+        *end() = T(std::forward<Args>(args)...);
         ++_size;
     }
 
     constexpr void pop_back() noexcept(std::is_nothrow_destructible_v<T>) {
         assert(!empty());
         --_size;
-        std::destroy_at(end());
+        *end() = T{};
     }
 
     template <typename Iter>
@@ -137,7 +132,7 @@ public:
         auto ipos{bpos};
         std::move_backward(ipos, end(), end() + count);
         while(iter != iend) {
-            std::construct_at(ipos, *iter);
+            *ipos = *iter;
             ++ipos;
             ++iter;
         }
@@ -150,7 +145,7 @@ public:
         assert(!full() && _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
-        std::construct_at(ipos, value);
+        *ipos = value;
         ++_size;
         return ipos;
     }
@@ -160,7 +155,7 @@ public:
         assert(!full() && _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
-        std::construct_at(ipos, std::move(value));
+        *ipos = std::move(value);
         ++_size;
         return ipos;
     }
@@ -172,7 +167,7 @@ public:
         assert(!full() && _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
-        std::construct_at(ipos, std::forward<Args>(args)...);
+        *ipos = T(std::forward<Args>(args)...);
         ++_size;
         return ipos;
     }
@@ -183,7 +178,7 @@ public:
         const auto count{std::distance(iter, iend)};
         const auto epos{begin() + std::distance(cbegin(), iter)};
         const auto eend{begin() + std::distance(cbegin(), iend)};
-        std::destroy(epos, eend);
+        std::fill(epos, eend, T{});
         std::move(epos + count, end(), epos);
         _size -= count;
         return epos;
@@ -192,7 +187,7 @@ public:
     constexpr auto erase(const_iterator pos) noexcept -> iterator {
         assert(_valid_pos(pos));
         auto epos{begin() + std::distance(cbegin(), pos)};
-        std::destroy_at(epos);
+        *epos = T{};
         std::move(epos + 1, end(), epos);
         --_size;
         return epos;
