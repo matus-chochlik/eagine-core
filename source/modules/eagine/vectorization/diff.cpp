@@ -14,8 +14,9 @@ namespace eagine::vect {
 
 export template <typename T, int N, bool V>
 struct diff {
-    static auto apply(data_param_t<T, N, V> a, data_param_t<T, N, V> b) noexcept
-      -> data_t<T, N, V> {
+    [[nodiscard]] static auto apply(
+      data_param_t<T, N, V> a,
+      data_param_t<T, N, V> b) noexcept -> data_t<T, N, V> {
         return vect::abs<T, N, V>::apply(a - b);
     }
 };

@@ -49,7 +49,7 @@ private:
     }
 
 public:
-    static auto apply(data_param_t<T, N, V> v) noexcept -> T {
+    [[nodiscard]] static auto apply(data_param_t<T, N, V> v) noexcept -> T {
         return _hlp(v, int_constant<N>{}, has_simd_data<T, N, V>{});
     }
 };

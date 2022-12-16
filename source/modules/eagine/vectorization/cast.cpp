@@ -18,23 +18,25 @@ struct cast;
 
 export template <typename T, int N, bool V>
 struct cast<T, N, V, T, N, V> {
-    static constexpr auto apply(const data_param_t<T, N, V> v, const T) noexcept
-      -> data_t<T, N, V> {
+    [[nodiscard]] static constexpr auto apply(
+      const data_param_t<T, N, V> v,
+      const T) noexcept -> data_t<T, N, V> {
         return v;
     }
 };
 
 export template <typename T, bool V>
 struct cast<T, 4, V, T, 3, V> {
-    static constexpr auto apply(const data_param_t<T, 4, V> v, const T) noexcept
-      -> data_t<T, 3, V> {
+    [[nodiscard]] static constexpr auto apply(
+      const data_param_t<T, 4, V> v,
+      const T) noexcept -> data_t<T, 3, V> {
         return {v[0], v[1], v[2]};
     }
 };
 
 export template <typename T, bool V>
 struct cast<T, 3, V, T, 4, V> {
-    static constexpr auto apply(
+    [[nodiscard]] static constexpr auto apply(
       const data_param_t<T, 3, V> v,
       const T d) noexcept -> data_t<T, 4, V> {
         return {v[0], v[1], v[2], d};
@@ -69,7 +71,7 @@ private:
     }
 
 public:
-    static constexpr auto apply(
+    [[nodiscard]] static constexpr auto apply(
       const data_param_t<TF, NF, VF> v,
       const data_param_t<TT, (NT > NF) ? NT - NF : 0, VT> d) noexcept {
         using is = _make_idx_seq<(NT > NF) ? NF : NT>;
@@ -77,7 +79,7 @@ public:
         return _cast(v, d, is(), ds());
     }
 
-    static constexpr auto apply(
+    [[nodiscard]] static constexpr auto apply(
       const data_param_t<TF, NF, VF> v,
       const TT d) noexcept {
         return apply(v, fill < TT, (NT > NF) ? NT - NF : 0, VT > ::apply(d));

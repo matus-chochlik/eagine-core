@@ -70,7 +70,7 @@ private:
 
 public:
     template <int... I>
-    static constexpr auto apply(
+    [[nodiscard]] static constexpr auto apply(
       data_param_t<T, N, V> v,
       const shuffle_mask<I...> m) noexcept {
         return _do_apply(v, m, has_simd_data<T, N, V>{});
@@ -134,7 +134,7 @@ private:
 
 public:
     template <int... I>
-    static auto apply(
+    [[nodiscard]] static auto apply(
       data_param_t<T, N, V> v1,
       data_param_t<T, N, V> v2,
       const shuffle_mask<I...> m) noexcept {

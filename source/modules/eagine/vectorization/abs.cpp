@@ -14,7 +14,8 @@ namespace eagine::vect {
 
 export template <typename T, int N, bool V>
 struct abs {
-    static auto apply(data_t<T, N, V> v) noexcept -> data_t<T, N, V> {
+    [[nodiscard]] static auto apply(data_t<T, N, V> v) noexcept
+      -> data_t<T, N, V> {
         for(int i = 0; i < N; ++i) {
             using std::abs;
             v[i] = abs(v[i]);
