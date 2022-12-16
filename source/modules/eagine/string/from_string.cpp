@@ -25,8 +25,9 @@ namespace eagine {
 auto _parse_from_string(const string_view src, long long int&) noexcept -> bool;
 //------------------------------------------------------------------------------
 export template <std::integral T>
-auto parse_from_string(const string_view src, std::type_identity<T>) noexcept
-  -> std::optional<T> {
+[[nodiscard]] auto parse_from_string(
+  const string_view src,
+  std::type_identity<T>) noexcept -> std::optional<T> {
     long long int parsed{};
     if(_parse_from_string(src, parsed)) {
         return convert_if_fits<T>(parsed);
@@ -37,8 +38,9 @@ auto parse_from_string(const string_view src, std::type_identity<T>) noexcept
 auto _parse_from_string(const string_view src, long double&) noexcept -> bool;
 //------------------------------------------------------------------------------
 export template <std::floating_point T>
-auto parse_from_string(const string_view src, std::type_identity<T>) noexcept
-  -> std::optional<T> {
+[[nodiscard]] auto parse_from_string(
+  const string_view src,
+  std::type_identity<T>) noexcept -> std::optional<T> {
     long double parsed{};
     if(_parse_from_string(src, parsed)) {
         return convert_if_fits<T>(parsed);
@@ -47,7 +49,7 @@ auto parse_from_string(const string_view src, std::type_identity<T>) noexcept
 }
 //------------------------------------------------------------------------------
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<bool>,
   const selector<V>) noexcept -> std::optional<bool> {
@@ -67,7 +69,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<tribool>,
   const selector<V> sel) noexcept -> std::optional<tribool> {
@@ -85,7 +87,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<char>,
   const selector<V>) noexcept -> std::optional<char> {
@@ -165,7 +167,7 @@ auto convert_from_string_with(
 }
 //------------------------------------------------------------------------------
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<short> id,
   const selector<V>,
@@ -174,7 +176,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<int> id,
   const selector<V>,
@@ -183,7 +185,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<long> id,
   const selector<V>,
@@ -192,7 +194,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<long long> id,
   const selector<V>,
@@ -201,7 +203,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<unsigned short> id,
   const selector<V>,
@@ -210,7 +212,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<unsigned int> id,
   const selector<V>,
@@ -219,7 +221,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<unsigned long> id,
   const selector<V>,
@@ -228,7 +230,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<unsigned long long> id,
   const selector<V>,
@@ -237,7 +239,7 @@ auto from_string(
 }
 //------------------------------------------------------------------------------
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<byte>,
   const selector<V> sel) noexcept -> std::optional<byte> {
@@ -270,7 +272,7 @@ auto from_string(
 }
 //------------------------------------------------------------------------------
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<float> id,
   const selector<V>) noexcept -> std::optional<float> {
@@ -278,7 +280,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<double> id,
   const selector<V>) noexcept -> std::optional<double> {
@@ -286,7 +288,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<long double> id,
   const selector<V>) noexcept -> std::optional<long double> {
@@ -294,7 +296,7 @@ auto from_string(
 }
 
 export template <identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<std::string>,
   const selector<V>) noexcept -> always_valid<std::string> {
@@ -302,7 +304,7 @@ auto from_string(
 }
 //------------------------------------------------------------------------------
 export template <typename Rep, typename Period, identifier_t V>
-auto convert_from_string(
+[[nodiscard]] auto convert_from_string(
   const string_view src,
   const std::type_identity<std::chrono::duration<Rep, Period>>,
   const selector<V> sel,
@@ -319,7 +321,7 @@ auto convert_from_string(
 }
 //------------------------------------------------------------------------------
 export template <typename Rep, typename Period, identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view str,
   const std::type_identity<std::chrono::duration<Rep, Period>>,
   const selector<V> sel) noexcept
@@ -393,7 +395,7 @@ auto from_string(
 }
 //------------------------------------------------------------------------------
 export template <typename T, typename Policy, typename Log, identifier_t V>
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view str,
   const std::type_identity<basic_valid_if<T, Policy, Log>>,
   const selector<V> sel) noexcept -> std::optional<T> {
@@ -409,7 +411,7 @@ auto from_string(
 /// @ingroup type_utils
 /// @see is_within_limits
 export template <typename T>
-auto from_string(const string_view src) noexcept {
+[[nodiscard]] auto from_string(const string_view src) noexcept {
     return from_string(src, std::type_identity<T>(), default_selector);
 }
 //------------------------------------------------------------------------------
@@ -417,7 +419,7 @@ auto from_string(const string_view src) noexcept {
 /// @ingroup type_utils
 /// @see is_within_limits
 export template <typename T>
-auto from_strings(const span<const string_view> src) noexcept
+[[nodiscard]] auto from_strings(const span<const string_view> src) noexcept
   -> decltype(from_string(
     extract(src),
     std::type_identity<T>(),
@@ -430,16 +432,7 @@ auto from_strings(const span<const string_view> src) noexcept
 }
 //------------------------------------------------------------------------------
 export template <typename T>
-auto assign_if_fits(const string_view src, T& dst) noexcept -> bool {
-    if(auto conv{from_string<T>(src)}) {
-        dst = std::move(extract(conv));
-        return true;
-    }
-    return false;
-}
-
-export template <typename T>
-auto assign_if_fits(const string_view src, std::optional<T>& dst) noexcept
+[[nodiscard]] auto assign_if_fits(const string_view src, T& dst) noexcept
   -> bool {
     if(auto conv{from_string<T>(src)}) {
         dst = std::move(extract(conv));
@@ -449,8 +442,20 @@ auto assign_if_fits(const string_view src, std::optional<T>& dst) noexcept
 }
 
 export template <typename T>
-auto assign_if_fits(const memory::span<const string_view> src, T& dst) noexcept
-  -> bool {
+[[nodiscard]] auto assign_if_fits(
+  const string_view src,
+  std::optional<T>& dst) noexcept -> bool {
+    if(auto conv{from_string<T>(src)}) {
+        dst = std::move(extract(conv));
+        return true;
+    }
+    return false;
+}
+
+export template <typename T>
+[[nodiscard]] auto assign_if_fits(
+  const memory::span<const string_view> src,
+  T& dst) noexcept -> bool {
     if(auto conv{from_strings<T>(src)}) {
         dst = std::move(extract(conv));
         return true;
@@ -459,7 +464,7 @@ auto assign_if_fits(const memory::span<const string_view> src, T& dst) noexcept
 }
 
 export template <typename T>
-auto assign_if_fits(
+[[nodiscard]] auto assign_if_fits(
   const memory::span<const string_view> src,
   std::optional<T>& dst) noexcept -> bool {
     if(auto conv{from_strings<T>(src)}) {
@@ -476,7 +481,9 @@ auto assign_if_fits(
 /// This overload allows to specify a selector that can change the value
 /// conversion rules.
 export template <typename T, identifier_t V>
-auto from_string(const string_view src, const selector<V> sel) noexcept {
+[[nodiscard]] auto from_string(
+  const string_view src,
+  const selector<V> sel) noexcept {
     return from_string(src, std::type_identity<T>(), sel);
 }
 //------------------------------------------------------------------------------
@@ -487,7 +494,7 @@ auto from_string(const string_view src, const selector<V> sel) noexcept {
 /// This overload allows to specify a selector that can change the value
 /// conversion rules.
 export template <typename T, identifier_t V>
-auto string_has_value(
+[[nodiscard]] auto string_has_value(
   const string_view str,
   const T& value,
   const selector<V> sel) noexcept {
@@ -501,7 +508,9 @@ auto string_has_value(
 /// @ingroup type_utils
 /// @see from_string
 export template <typename T>
-auto string_has_value(const string_view str, const T& value) noexcept {
+[[nodiscard]] auto string_has_value(
+  const string_view str,
+  const T& value) noexcept {
     return string_has_value(str, value, default_selector);
 }
 //------------------------------------------------------------------------------

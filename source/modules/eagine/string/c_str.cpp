@@ -43,24 +43,24 @@ public:
     template <extractable E>
     constexpr basic_c_str(construct_from_t, const E& e) noexcept
         requires(has_value_type_v<E, span_type>)
-    : _span{_xtr_span(e)}
-    , _str{_xtr_str(e)} {}
+      : _span{_xtr_span(e)}
+      , _str{_xtr_str(e)} {}
 
     /// @brief Return a zero terminated C-string as pointer_type.
     /// @see view
-    constexpr auto c_str() const noexcept -> pointer_type {
+    [[nodiscard]] constexpr auto c_str() const noexcept -> pointer_type {
         return _span.empty() ? _str.c_str() : _span.data();
     }
 
     /// @brief Implicit conversion to character pointer_type.
     /// @see c_str
-    constexpr operator pointer_type() const noexcept {
+    [[nodiscard]] constexpr operator pointer_type() const noexcept {
         return c_str();
     }
 
     /// @brief Returns a const view of the string.
     /// @see c_str()
-    constexpr auto view() const noexcept -> span_type {
+    [[nodiscard]] constexpr auto view() const noexcept -> span_type {
         return _span.empty() ? span_type{_str} : _span;
     }
 
@@ -75,15 +75,17 @@ private:
 
     template <extractable E>
     static constexpr auto _xtr_span(const E& e) noexcept -> span_type
-      requires(has_value_type_v<E, span_type> && !std::is_same_v<E, span_type>) {
-          return has_value(e) ? _get_span(extract(e)) : span_type{};
-      }
+        requires(has_value_type_v<E, span_type> && !std::is_same_v<E, span_type>)
+    {
+        return has_value(e) ? _get_span(extract(e)) : span_type{};
+    }
 
     template <extractable E>
     static constexpr auto _xtr_str(const E& e) noexcept -> string_type
-      requires(has_value_type_v<E, span_type>) {
-          return has_value(e) ? _get_str(extract(e)) : string_type{};
-      }
+        requires(has_value_type_v<E, span_type>)
+    {
+        return has_value(e) ? _get_str(extract(e)) : string_type{};
+    }
 
     std::conditional_t<isConst, const span_type, span_type> _span{};
     std::conditional_t<isConst, const string_type, string_type> _str{};
@@ -102,7 +104,7 @@ struct get_basic_c_str<E> : get_basic_c_str<extracted_type_t<E>> {};
 /// @brief Functions that construct a basic_c_str from a basic_string_span.
 /// @ingroup string_utils
 export template <typename C, typename P, typename S>
-constexpr auto c_str(const memory::basic_span<C, P, S> s) noexcept
+[[nodiscard]] constexpr auto c_str(const memory::basic_span<C, P, S> s) noexcept
   -> basic_c_str<C, P, S>
     requires(std::is_convertible_v<
              memory::basic_span<C, P, S>,
@@ -112,7 +114,8 @@ constexpr auto c_str(const memory::basic_span<C, P, S> s) noexcept
 }
 
 export template <extractable E>
-constexpr auto c_str(const E& e) noexcept -> typename get_basic_c_str<E>::type {
+[[nodiscard]] constexpr auto c_str(const E& e) noexcept ->
+  typename get_basic_c_str<E>::type {
     return {construct_from, e};
 }
 //------------------------------------------------------------------------------

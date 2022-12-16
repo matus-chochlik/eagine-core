@@ -52,13 +52,15 @@ auto rev_seek_header_start(const string_view elem) noexcept -> span_size_t {
     return 0;
 }
 //------------------------------------------------------------------------------
-export auto front_value(const string_view list) noexcept -> string_view {
+export [[nodiscard]] auto front_value(const string_view list) noexcept
+  -> string_view {
     const span_size_t k = element_header_size(list);
     const span_size_t l = element_value_size(list, k);
     return slice(list, k, l);
 }
 //------------------------------------------------------------------------------
-export auto back_value(const string_view list) noexcept -> string_view {
+export [[nodiscard]] auto back_value(const string_view list) noexcept
+  -> string_view {
     const span_size_t i = rev_seek_header_start(list);
     const string_view header = skip(list, i);
     const span_size_t k = element_header_size(header);
@@ -66,7 +68,8 @@ export auto back_value(const string_view list) noexcept -> string_view {
     return slice(list, i - l, l);
 }
 //------------------------------------------------------------------------------
-export auto without_back(const string_view list) noexcept -> string_view {
+export [[nodiscard]] auto without_back(const string_view list) noexcept
+  -> string_view {
     const span_size_t i = rev_seek_header_start(list);
     const string_view header = skip(list, i);
     const span_size_t k = element_header_size(header);
@@ -141,31 +144,31 @@ public:
       const span_size_t foot_sz) noexcept
       : string_view(_rev_fit(ptr, rev_sz, foot_sz)) {}
 
-    auto header_size() const noexcept -> span_size_t {
+    [[nodiscard]] auto header_size() const noexcept -> span_size_t {
         return element_header_size(_base());
     }
 
-    auto header() const noexcept -> string_view {
+    [[nodiscard]] auto header() const noexcept -> string_view {
         return {data(), header_size()};
     }
 
-    auto value_size() const noexcept -> span_size_t {
+    [[nodiscard]] auto value_size() const noexcept -> span_size_t {
         return element_value_size(header());
     }
 
-    auto value_data() const noexcept -> const char* {
+    [[nodiscard]] auto value_data() const noexcept -> const char* {
         return data() + header_size();
     }
 
-    auto value() const noexcept -> string_view {
+    [[nodiscard]] auto value() const noexcept -> string_view {
         return {value_data(), value_size()};
     }
 
-    auto footer_size() const noexcept -> span_size_t {
+    [[nodiscard]] auto footer_size() const noexcept -> span_size_t {
         return element_header_size(_base());
     }
 
-    auto footer() const noexcept -> string_view {
+    [[nodiscard]] auto footer() const noexcept -> string_view {
         return {data() + safe_add(header_size(), value_size()), header_size()};
     }
 };
@@ -190,7 +193,8 @@ void for_each(const string_view list, Func func) noexcept {
     for_each_elem(list, adapted_func);
 }
 //------------------------------------------------------------------------------
-export auto element_count(const string_view list) noexcept -> span_size_t {
+export [[nodiscard]] auto element_count(const string_view list) noexcept
+  -> span_size_t {
     span_size_t result{0};
     const auto count_func = [&result](const element&, bool) {
         ++result;
@@ -286,14 +290,14 @@ auto split_c_str_into(std::string& dst, const char* str, const char sep) noexcep
       str, sep, [&dst](auto elem) { push_back(dst, elem); });
 }
 //------------------------------------------------------------------------------
-auto split_c_str(const char* str, const char sep) noexcept
+export [[nodiscard]] auto split_c_str(const char* str, const char sep) noexcept
   -> std::tuple<std::string, span_size_t> {
     std::string res;
     const auto cnt = split_c_str_into(res, str, sep);
     return std::make_tuple(std::move(res), cnt);
 }
 //------------------------------------------------------------------------------
-export auto join(
+export [[nodiscard]] auto join(
   const string_view list,
   const string_view sep,
   const bool trail_sep) noexcept -> std::string {
@@ -326,8 +330,9 @@ export auto join(
     return res;
 }
 //------------------------------------------------------------------------------
-export auto join(const string_view list, const string_view sep) noexcept
-  -> std::string {
+export [[nodiscard]] auto join(
+  const string_view list,
+  const string_view sep) noexcept -> std::string {
     return join(list, sep, false);
 }
 //------------------------------------------------------------------------------
@@ -343,14 +348,14 @@ public:
     iterator(Iter pos) noexcept
       : _pos{pos} {}
 
-    auto operator<=>(const iterator&) const noexcept = default;
+    [[nodiscard]] auto operator<=>(const iterator&) const noexcept = default;
 
-    auto operator*() const noexcept -> reference {
+    [[nodiscard]] auto operator*() const noexcept -> reference {
         _update();
         return _tmp;
     }
 
-    auto operator->() const noexcept -> pointer {
+    [[nodiscard]] auto operator->() const noexcept -> pointer {
         _update();
         return &_tmp;
     }
@@ -410,14 +415,14 @@ public:
     rev_iterator(Iter pos) noexcept
       : _pos{pos} {}
 
-    auto operator<=>(const rev_iterator&) const noexcept = default;
+    [[nodiscard]] auto operator<=>(const rev_iterator&) const noexcept = default;
 
-    auto operator*() const noexcept -> reference {
+    [[nodiscard]] auto operator*() const noexcept -> reference {
         _update();
         return _tmp;
     }
 
-    auto operator->() const noexcept -> pointer {
+    [[nodiscard]] auto operator->() const noexcept -> pointer {
         _update();
         return &_tmp;
     }
@@ -481,11 +486,11 @@ public:
     range_view(Range& range) noexcept
       : _range{range} {}
 
-    auto begin() const noexcept -> iterator {
+    [[nodiscard]] auto begin() const noexcept -> iterator {
         return {_range.begin()};
     }
 
-    auto end() const noexcept -> iterator {
+    [[nodiscard]] auto end() const noexcept -> iterator {
         return {_range.end()};
     }
 
@@ -502,11 +507,11 @@ public:
     rev_range_view(Range& range) noexcept
       : _range{range} {}
 
-    auto begin() const noexcept -> iterator {
+    [[nodiscard]] auto begin() const noexcept -> iterator {
         return {_range.end() - 1};
     }
 
-    auto end() const noexcept -> iterator {
+    [[nodiscard]] auto end() const noexcept -> iterator {
         return {_range.begin() - 1};
     }
 
@@ -528,19 +533,19 @@ public:
     basic_string_list(Range range) noexcept
       : _range{std::move(range)} {}
 
-    auto begin() const noexcept -> iterator {
+    [[nodiscard]] auto begin() const noexcept -> iterator {
         return {_range.begin()};
     }
 
-    auto end() const noexcept -> iterator {
+    [[nodiscard]] auto end() const noexcept -> iterator {
         return {_range.end()};
     }
 
-    auto rbegin() const noexcept -> reverse_iterator {
+    [[nodiscard]] auto rbegin() const noexcept -> reverse_iterator {
         return {_range.end() - 1};
     }
 
-    auto rend() const noexcept -> reverse_iterator {
+    [[nodiscard]] auto rend() const noexcept -> reverse_iterator {
         return {_range.begin() - 1};
     }
 
@@ -550,12 +555,12 @@ private:
 //------------------------------------------------------------------------------
 } // namespace string_list
 //------------------------------------------------------------------------------
-export auto make_string_list(std::string str)
+export [[nodiscard]] auto make_string_list(std::string str)
   -> string_list::basic_string_list<std::string> {
     return {std::move(str)};
 }
 //------------------------------------------------------------------------------
-export auto split_into_string_list(
+export [[nodiscard]] auto split_into_string_list(
   const string_view src,
   const char sep) noexcept {
     std::string temp;
@@ -563,7 +568,7 @@ export auto split_into_string_list(
     return make_string_list(std::move(temp));
 }
 //------------------------------------------------------------------------------
-export auto split_c_str_into_string_list(
+export [[nodiscard]] auto split_c_str_into_string_list(
   const char* src,
   const char sep) noexcept {
     std::string temp;

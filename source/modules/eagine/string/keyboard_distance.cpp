@@ -19,7 +19,7 @@ public:
 
     default_keyboard_layout(const float shift = 1.F);
 
-    auto get_coord(const char c) noexcept -> coord_type {
+    [[nodiscard]] auto get_coord(const char c) noexcept -> coord_type {
         const auto pos = _key_coord.find(c);
         if(pos != _key_coord.end()) {
             return pos->second;
@@ -28,7 +28,7 @@ public:
     }
 
     template <typename Function>
-    auto for_each_char_coord(Function function) const noexcept {
+    [[nodiscard]] auto for_each_char_coord(Function function) const noexcept {
         for(const auto& [kchr, coord] : _key_coord) {
             function(kchr, coord);
         }
@@ -57,7 +57,8 @@ public:
         });
     }
 
-    auto operator()(const string_view ls, const string_view rs) const -> float;
+    [[nodiscard]] auto operator()(const string_view ls, const string_view rs)
+      const -> float;
 
 private:
     flat_map<std::pair<char, char>, float> _key_dist;

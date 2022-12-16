@@ -17,8 +17,8 @@ namespace eagine {
 /// @brief Returns the value in the specified environment variable.
 /// @ingroup main_context
 /// @see application_config
-export auto get_environment_variable(const string_view variable_name) noexcept
-  -> std::optional<string_view> {
+export [[nodiscard]] auto get_environment_variable(
+  const string_view variable_name) noexcept -> std::optional<string_view> {
     if(const auto value{::getenv(c_str(variable_name))}) {
         return {string_view(value)};
     }
