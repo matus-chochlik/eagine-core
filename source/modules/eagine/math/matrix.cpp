@@ -653,7 +653,7 @@ export template <typename MC1, typename MC2>
 /// @ingroup math
 /// @see gauss_jordan_elimination
 export template <typename T, int Ca, int Cb, int R, bool V>
-constexpr auto gauss_elimination(
+[[nodiscard]] constexpr auto gauss_elimination(
   matrix<T, Ca, R, true, V>& a,
   matrix<T, Cb, R, true, V>& b) noexcept -> bool {
     using std::swap;
@@ -696,7 +696,7 @@ constexpr auto gauss_elimination(
 /// @ingroup math
 /// @see gauss_jordan_elimination
 export template <typename T, int Ca, int Cb, int R, bool V>
-constexpr auto gauss_elimination(
+[[nodiscard]] constexpr auto gauss_elimination(
   matrix<T, Ca, R, false, V>& a,
   matrix<T, Cb, R, true, V>& b) noexcept -> bool {
     auto ta = reorder(a);
@@ -711,7 +711,7 @@ constexpr auto gauss_elimination(
 /// @ingroup math
 /// @see gauss_jordan_elimination
 export template <typename T, int Ca, int Cb, int R, bool V>
-constexpr auto gauss_elimination(
+[[nodiscard]] constexpr auto gauss_elimination(
   matrix<T, Ca, R, true, V>& a,
   matrix<T, Cb, R, false, V>& b) noexcept -> bool {
     auto tb = reorder(b);
@@ -726,7 +726,7 @@ constexpr auto gauss_elimination(
 /// @ingroup math
 /// @see gauss_jordan_elimination
 export template <typename T, int Ca, int Cb, int R, bool V>
-constexpr auto gauss_elimination(
+[[nodiscard]] constexpr auto gauss_elimination(
   matrix<T, Ca, R, false, V>& a,
   matrix<T, Cb, R, false, V>& b) noexcept -> bool {
     auto ta = reorder(a);
@@ -744,7 +744,7 @@ constexpr auto gauss_elimination(
 /// @see gauss_elimination
 /// @see inverse_matrix
 export template <typename T, int Ca, int Cb, int R, bool V>
-constexpr auto gauss_jordan_elimination(
+[[nodiscard]] constexpr auto gauss_jordan_elimination(
   matrix<T, Ca, R, true, V>& a,
   matrix<T, Cb, R, true, V>& b) noexcept -> bool {
 
@@ -770,7 +770,7 @@ constexpr auto gauss_jordan_elimination(
 /// @see gauss_elimination
 /// @see inverse_matrix
 export template <typename T, int Ca, int Cb, int R, bool V>
-constexpr auto gauss_jordan_elimination(
+[[nodiscard]] constexpr auto gauss_jordan_elimination(
   matrix<T, Ca, R, false, V>& a,
   matrix<T, Cb, R, true, V>& b) noexcept -> bool {
     auto ta = reorder(a);
@@ -786,7 +786,7 @@ constexpr auto gauss_jordan_elimination(
 /// @see gauss_elimination
 /// @see inverse_matrix
 export template <typename T, int Ca, int Cb, int R, bool V>
-constexpr auto gauss_jordan_elimination(
+[[nodiscard]] constexpr auto gauss_jordan_elimination(
   matrix<T, Ca, R, true, V>& a,
   matrix<T, Cb, R, false, V>& b) noexcept -> bool {
     auto tb = reorder(b);
@@ -802,7 +802,7 @@ constexpr auto gauss_jordan_elimination(
 /// @see gauss_elimination
 /// @see inverse_matrix
 export template <typename T, int Ca, int Cb, int R, bool V>
-constexpr auto gauss_jordan_elimination(
+[[nodiscard]] constexpr auto gauss_jordan_elimination(
   matrix<T, Ca, R, false, V>& a,
   matrix<T, Cb, R, false, V>& b) noexcept -> bool {
     auto ta = reorder(a);
