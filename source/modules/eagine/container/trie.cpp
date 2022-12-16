@@ -184,7 +184,7 @@ public:
     /// @brief Inserts a new value under the specified key string.
     /// @see insert
     /// @see valid_chars
-    [[nodiscard]] auto add(const string_view key, Value value = {}) noexcept
+    auto add(const string_view key, Value value = {}) noexcept
       -> basic_trie_impl& {
         insert(key, std::move(value));
         return *this;

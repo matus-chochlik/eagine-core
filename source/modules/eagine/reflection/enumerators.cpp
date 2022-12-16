@@ -70,6 +70,7 @@ export template <typename T, identifier_t V>
             if(index != std::size_t(static_cast<UT>(info.enumerator))) {
                 return false;
             }
+            ++index;
         }
         return true;
     } else {

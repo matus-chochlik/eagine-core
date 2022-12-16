@@ -12,7 +12,7 @@ import eagine.core.memory;
 import <deque>;
 //------------------------------------------------------------------------------
 template <typename T>
-void memory_std_alloc_1_T(eagitest::case_& test, std::size_t n) {
+void memory_std_alloc_1_T(eagitest::case_& test, const std::size_t n) {
     using namespace eagine;
 
     memory::std_allocator<T> a;
@@ -36,7 +36,7 @@ void memory_std_alloc_1_T(eagitest::case_& test, std::size_t n) {
     for(std::size_t i = 1; i <= n; ++i) {
         v.push_back(T());
     }
-    test.check_equal(v.std_size(), n, "size is ok");
+    test.check_equal(v.size(), span_size(n), "size is ok");
 }
 //------------------------------------------------------------------------------
 void std_byte_allocator_1(unsigned i, auto& s) {
