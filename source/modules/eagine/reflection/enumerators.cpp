@@ -96,10 +96,11 @@ export template <typename T, identifier_t V>
         if(index < enum_map.size()) [[likely]] {
             return enum_map[index].name;
         }
-    }
-    for(const auto& info : enum_map) {
-        if(info.enumerator == enumerator) {
-            return info.name;
+    } else {
+        for(const auto& info : enum_map) {
+            if(info.enumerator == enumerator) {
+                return info.name;
+            }
         }
     }
     return {};
