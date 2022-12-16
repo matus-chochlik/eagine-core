@@ -29,6 +29,7 @@ import :user_info;
 import :watchdog;
 import <chrono>;
 import <filesystem>;
+import <queue>;
 import <string>;
 
 namespace eagine {
