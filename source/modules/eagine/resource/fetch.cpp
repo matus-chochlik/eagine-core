@@ -18,7 +18,7 @@ import :embedded;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export auto fetch_resource(
+export [[nodiscard]] auto fetch_resource(
   const string_view description,
   const string_view key,
   const memory::const_block embedded_blk,
@@ -58,7 +58,7 @@ export auto fetch_resource(
     return {};
 }
 //------------------------------------------------------------------------------
-export auto fetch_resource(
+export [[nodiscard]] auto fetch_resource(
   const string_view description,
   const string_view key,
   const memory::const_block embedded_blk,
