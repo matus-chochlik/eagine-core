@@ -214,23 +214,28 @@ def plot_stream_profile(options):
     fig, spl = plt.subplots(2, 1)
     options.init_plot(fig)
 
-    t, min_ms, avg_ms, max_ms = \
-        stream_profile_data(
-            options,
-            'MsgBusRutr',
-            'busUpdate',
-            options.stream_ids[0]
-        )
-
     spl[0].set_xlabel("execution time [s]")
     spl[0].set_ylabel("average\ninterval [ms]")
-    spl[0].plot(t, avg_ms)
     spl[0].grid(axis="y", alpha=0.25)
-
     spl[1].set_xlabel("execution time [s]")
     spl[1].set_ylabel("min/avg/max\nintervals [ms]")
-    spl[1].plot(t, min_ms, t, avg_ms, t, max_ms)
     spl[1].grid(axis="y", alpha=0.25)
+
+    for stream_id in options.stream_ids:
+        for source_id, tag in options.profile_intervals:
+            t, min_ms, avg_ms, max_ms = \
+                stream_profile_data(
+                    options,
+                    source_id,
+                    tag,
+                    stream_id
+                )
+
+            spl[0].plot(t, avg_ms)
+
+            spl[1].plot(t, min_ms)
+            spl[1].plot(t, avg_ms)
+            spl[1].plot(t, max_ms)
 
     fig.tight_layout()
     options.finish_plot(fig)
