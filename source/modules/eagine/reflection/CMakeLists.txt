@@ -47,5 +47,8 @@ eagine_add_module_tests(
 	eagine.core.reflection
 	UNITS
 		enumerators
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
 )
 
