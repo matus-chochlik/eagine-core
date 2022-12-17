@@ -15,7 +15,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 /// @brief Creates a default implementation of activity progress backend object.
 /// @ingroup progress
-export auto make_default_progress_tracker_backend(logger& parent)
+export [[nodiscard]] auto make_default_progress_tracker_backend(logger& parent)
   -> std::unique_ptr<progress_tracker_backend>;
 //------------------------------------------------------------------------------
 } // namespace eagine
