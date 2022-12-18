@@ -11,6 +11,7 @@ import sys
 import numpy
 import getpass
 import argparse
+import colorsys
 import psycopg2
 import matplotlib.pyplot as plt
 
@@ -168,11 +169,27 @@ class ArgumentParser(argparse.ArgumentParser):
                                 break
                             yield row
             # ------------------------------------------------------------------
-            def init_plot(self, fig):
-                fig.set_size_inches(8, 4.5)
+            def plot_color(self, i, n):
+                try:
+                    b = float(i) / float(n - 1)
+                except ZeroDivisionError:
+                    b = 1.0
+                a = 1.0 - b
+                h1,s1,v1 = colorsys.rgb_to_hsv(2/255, 179/255, 249/255)
+                h2,s2,v2 = colorsys.rgb_to_hsv(249/255, 179/255, 2/255)
+                return colorsys.hsv_to_rgb(h1*a+h2*b, s1*a+s2*b, v1*a+v2*b)
+
+            # ------------------------------------------------------------------
+            def init_plot(self, nrows, ncols):
+                mult = 1.0
+                plt.style.use('dark_background')
+                fig, spl = plt.subplots(nrows, ncols)
+                fig.set_size_inches(16.0*mult, 9.0*mult)
+                return fig, spl
             # ------------------------------------------------------------------
             def finish_plot(self, fig):
                 plt.show()
+            # ------------------------------------------------------------------
 
         return _Options(self.processParsedOptions(
             argparse.ArgumentParser.parse_args(self)
@@ -211,8 +228,7 @@ def stream_profile_data(options, source_id, tag, stream_id):
 
 # ------------------------------------------------------------------------------
 def plot_stream_profile(options):
-    fig, spl = plt.subplots(2, 1)
-    options.init_plot(fig)
+    fig, spl = options.init_plot(2, 1)
 
     spl[0].set_xlabel("execution time [s]")
     spl[0].set_ylabel("average\ninterval [ms]")
@@ -220,6 +236,9 @@ def plot_stream_profile(options):
     spl[1].set_xlabel("execution time [s]")
     spl[1].set_ylabel("min/avg/max\nintervals [ms]")
     spl[1].grid(axis="y", alpha=0.25)
+
+    plotnum = len(options.stream_ids) * len(options.profile_intervals)
+    plotidx = 0
 
     for stream_id in options.stream_ids:
         for source_id, tag in options.profile_intervals:
@@ -230,12 +249,14 @@ def plot_stream_profile(options):
                     tag,
                     stream_id
                 )
+            rgb = options.plot_color(plotidx, plotnum)
+            plotidx += 1
 
-            spl[0].plot(t, avg_ms)
+            spl[0].plot(t, avg_ms, color=rgb)
 
-            spl[1].plot(t, min_ms)
-            spl[1].plot(t, avg_ms)
-            spl[1].plot(t, max_ms)
+            spl[1].plot(t, min_ms, color=rgb)
+            spl[1].plot(t, avg_ms, color=rgb)
+            spl[1].plot(t, max_ms, color=rgb)
 
     fig.tight_layout()
     options.finish_plot(fig)
