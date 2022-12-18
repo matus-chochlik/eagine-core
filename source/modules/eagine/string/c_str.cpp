@@ -46,10 +46,15 @@ public:
       : _span{_xtr_span(e)}
       , _str{_xtr_str(e)} {}
 
-    /// @brief Return a zero terminated C-string as pointer_type.
+    /// @brief Returns a zero terminated C-string as pointer_type.
     /// @see view
     [[nodiscard]] constexpr auto c_str() const noexcept -> pointer_type {
         return _span.empty() ? _str.c_str() : _span.data();
+    }
+
+    /// @brief Returns the length of the wrapped C-string.
+    [[nodiscard]] constexpr auto size() const noexcept -> span_size_t {
+        return _span.empty() ? span_size(_str.size()) : _span.size();
     }
 
     /// @brief Implicit conversion to character pointer_type.
@@ -59,9 +64,31 @@ public:
     }
 
     /// @brief Returns a const view of the string.
-    /// @see c_str()
+    /// @see c_str
+    /// @see position_of
     [[nodiscard]] constexpr auto view() const noexcept -> span_type {
         return _span.empty() ? span_type{_str} : _span;
+    }
+
+    /// @brief Returns the offset of the given pointer within the C-string.
+    /// @see position_of
+    [[nodiscard]] constexpr auto offset_of(const char* ptr) const noexcept
+      -> std::ptrdiff_t {
+        if(ptr < c_str()) {
+            return 0;
+        } else if(ptr >= c_str() + size()) {
+            return size();
+        } else [[likely]] {
+            return span_size(std::distance(c_str(), ptr));
+        }
+    }
+
+    /// @brief Returns the position of the given pointer within the C-string.
+    /// @see offset_of
+    /// @see view
+    [[nodiscard]] constexpr auto position_of(const char* ptr) const noexcept
+      -> auto {
+        return view().begin() + offset_of(ptr);
     }
 
 private:

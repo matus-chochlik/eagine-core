@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <type_traits>
 module;
 
 #include <cassert>
@@ -44,6 +45,152 @@ using rebind_pointer_t = typename rebind_pointer<Ptr, U>::type;
 export template <typename T, typename U>
 struct rebind_pointer<T*, U> : std::type_identity<U*> {};
 //------------------------------------------------------------------------------
+// iterator
+//------------------------------------------------------------------------------
+export template <typename T>
+class basic_span_iterator {
+public:
+    /// @brief Alias for the value type.
+    using value_type = T;
+
+    /// @brief Alias for the difference type.
+    using difference_type =
+      decltype(std::distance(std::declval<T*>(), std::declval<T*>()));
+
+    /// @brief Default constructor.
+    constexpr basic_span_iterator() = default;
+
+    /// @brief Initializing constructor.
+    constexpr basic_span_iterator(T* ibgn, T* ipos, T* iend) noexcept
+      : _bgn{ibgn}
+      , _pos{ipos}
+      , _end{iend} {}
+
+    /// @brief Pre-increment operator.
+    constexpr auto operator++() noexcept -> auto& {
+        assert(_pos < _end);
+        ++_pos;
+        return *this;
+    }
+
+    /// @brief Addition operator.
+    constexpr auto operator+=(const difference_type d) noexcept -> auto& {
+        assert(std::distance(_pos, _end) <= d);
+        _pos += d;
+        return *this;
+    }
+
+    /// @brief Post-increment operator.
+    constexpr auto operator++(int) noexcept -> basic_span_iterator {
+        assert(_pos < _end);
+        auto res(*this);
+        ++_pos;
+        return res;
+    }
+
+    /// @brief Addition operator.
+    constexpr auto operator+(const difference_type d) noexcept {
+        assert(std::distance(_pos, _end) <= d);
+        auto res(*this);
+        res += d;
+        return res;
+    }
+
+    /// @brief Pre-decrement operator.
+    auto constexpr operator--() noexcept -> auto& {
+        assert(_bgn < _pos);
+        --_pos;
+        return *this;
+    }
+
+    /// @brief Subtraction operator.
+    auto constexpr operator-=(const difference_type d) noexcept -> auto& {
+        assert(std::distance(_bgn, _pos) <= d);
+        _pos -= d;
+        return *this;
+    }
+
+    /// @brief Post-decrement operator.
+    auto constexpr operator--(int) noexcept -> basic_span_iterator {
+        assert(_bgn < _pos);
+        auto res(*this);
+        --_pos;
+        return res;
+    }
+
+    /// @brief Difference operator.
+    constexpr auto operator-(const difference_type d) noexcept {
+        assert(std::distance(_bgn, _pos) <= d);
+        auto res(*this);
+        res -= d;
+        return res;
+    }
+
+    /// @brief Subtraction operator.
+    constexpr auto operator-(const basic_span_iterator that) noexcept
+      -> difference_type {
+        return std::distance(that._pos, _pos);
+    }
+
+    /// @brief Dereference.
+    constexpr auto operator*() const noexcept -> auto& {
+        assert(_bgn <= _pos && _pos < _end);
+        return *_pos;
+    }
+
+    /// @brief Arrow.
+    constexpr auto operator->() const noexcept -> auto* {
+        assert(_bgn <= _pos && _pos < _end);
+        return _pos;
+    }
+
+    /// @brief Comparison.
+    [[nodiscard]] constexpr auto operator<=>(
+      const basic_span_iterator&) const noexcept = default;
+    [[nodiscard]] constexpr auto operator==(
+      const basic_span_iterator&) const noexcept -> bool = default;
+    [[nodiscard]] constexpr auto operator!=(
+      const basic_span_iterator&) const noexcept -> bool = default;
+    [[nodiscard]] constexpr auto operator<(
+      const basic_span_iterator&) const noexcept -> bool = default;
+    [[nodiscard]] constexpr auto operator<=(
+      const basic_span_iterator&) const noexcept -> bool = default;
+    [[nodiscard]] constexpr auto operator>(
+      const basic_span_iterator&) const noexcept -> bool = default;
+    [[nodiscard]] constexpr auto operator>=(
+      const basic_span_iterator&) const noexcept -> bool = default;
+
+protected:
+    T* _bgn{nullptr};
+    T* _end{nullptr};
+    T* _pos{nullptr};
+};
+
+export template <typename T>
+constexpr auto as_address(const basic_span_iterator<T> pos) noexcept {
+    return basic_address<std::is_const_v<T>>(&*pos);
+}
+
+export template <typename T>
+constexpr auto is_aligned_to(
+  const basic_span_iterator<T>& pos,
+  const span_size_t alignment) noexcept {
+    return is_aligned_to(as_address(pos), alignment);
+}
+//------------------------------------------------------------------------------
+export template <typename I>
+struct get_span_iterator : std::type_identity<I> {};
+
+export template <typename I>
+using span_iterator_t = typename get_span_iterator<I>::type;
+
+export template <typename P>
+struct get_span_iterator<P*> : std::type_identity<basic_span_iterator<P>> {};
+
+export template <typename P>
+struct get_span_iterator<const P*>
+  : std::type_identity<basic_span_iterator<const P>> {};
+//------------------------------------------------------------------------------
 // basic_span
 //------------------------------------------------------------------------------
 /// @brief Non-owning view of a contiguous range of memory with ValueType elements.
@@ -73,10 +220,10 @@ public:
     using pointer = Pointer;
 
     /// @brief The iterator type.
-    using iterator = Pointer;
+    using iterator = span_iterator_t<pointer>;
 
     /// @brief The const iterator type.
-    using const_iterator = Pointer;
+    using const_iterator = iterator;
 
     /// @brief The reverse iterator type
     using reverse_iterator = std::reverse_iterator<iterator>;
@@ -95,6 +242,10 @@ public:
     /// @brief Construction from a pair of pointers.
     constexpr basic_span(pointer b, pointer e) noexcept
       : basic_span{b, b <= e ? e - b : 0} {}
+
+    /// @brief Construction from a pair of iterators.
+    constexpr basic_span(iterator b, iterator e) noexcept
+      : basic_span{&*b, &*e} {}
 
     /// @brief Construction from a pair of memory addresses.
     constexpr basic_span(const address_type ba, const address_type be) noexcept
@@ -227,12 +378,12 @@ public:
 
     /// @brief Returns an interator to the start of the span.
     constexpr auto begin() const noexcept -> iterator {
-        return _addr;
+        return {_addr, _addr, _addr + size()};
     }
 
     /// @brief Returns a iterator past the end of the span.
     constexpr auto end() const noexcept -> iterator {
-        return begin() + size();
+        return {_addr, _addr + size(), _addr + size()};
     }
 
     /// @brief Returns a reverse interator to the end of the span.
@@ -247,17 +398,17 @@ public:
 
     /// @brief Returns the memory address of the start of the span.
     constexpr auto addr() const noexcept -> address_type {
-        return as_address(begin());
+        return as_address(_addr);
     }
 
     /// @brief Returns the memory address of the start of the span.
     constexpr auto begin_addr() const noexcept -> address_type {
-        return as_address(begin());
+        return as_address(_addr);
     }
 
     /// @brief Returns the memory address past the end of the span.
     constexpr auto end_addr() const noexcept -> address_type {
-        return as_address(end());
+        return as_address(_addr + size());
     }
 
     /// @brief Checks if the start of the span is aligned as the alignment of X.

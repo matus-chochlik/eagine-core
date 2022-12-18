@@ -139,7 +139,7 @@ auto convert_from_string_with(
     const N result{converter(cstr, &end)};
     if((errno != ERANGE) && (end != cstr) && (end != nullptr)) {
         if(auto converted{multiply_and_convert_if_fits<T>(
-             result, skip_to(cstr.view(), end))}) {
+             result, skip_to(cstr.view(), cstr.position_of(end)))}) {
             return converted;
         }
     }
@@ -159,7 +159,7 @@ auto convert_from_string_with(
     const N result = converter(cstr, &end, base);
     if((errno != ERANGE) && (end != cstr) && (end != nullptr)) {
         if(auto converted{multiply_and_convert_if_fits<T>(
-             result, skip_to(cstr.view(), end))}) {
+             result, skip_to(cstr.view(), cstr.position_of(end)))}) {
             return converted;
         }
     }

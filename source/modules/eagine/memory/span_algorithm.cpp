@@ -23,16 +23,16 @@ import <type_traits>;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
-export template <typename T, typename P, typename S>
-constexpr auto clamp_span_iterator(const basic_span<T, P, S> s, P p) noexcept
-  -> P {
+export template <typename T, typename P, typename S, typename I>
+constexpr auto clamp_span_iterator(const basic_span<T, P, S> s, I p) noexcept
+  -> I {
     return (p < s.begin()) ? s.begin() : (p > s.end()) ? s.end() : p;
 }
 //------------------------------------------------------------------------------
 export template <typename T, typename P, typename S, std::integral I>
 constexpr auto clamp_span_position(
   const basic_span<T, P, S> s,
-  const I p) noexcept -> P {
+  const I p) noexcept -> auto {
     return clamp_span_iterator(s, s.begin() + p);
 }
 //------------------------------------------------------------------------------
@@ -348,7 +348,7 @@ constexpr auto find_element_if(
 export template <typename T, typename P, typename S, typename Pos>
 constexpr auto skip_to(const basic_span<T, P, S> spn, Pos pos) noexcept
   -> basic_span<T, P, S>
-    requires(std::is_convertible_v<Pos, P>)
+    requires(std::is_convertible_v<Pos, decltype(spn.end())>)
 {
     assert(spn.begin() <= pos && pos <= spn.end());
     return {pos, spn.end()};

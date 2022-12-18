@@ -189,13 +189,13 @@ public:
     /// @brief Implicit conversion to block.
     operator block() noexcept {
         assert(_is_ok());
-        return {_storage.begin(), _size};
+        return {_storage.data(), _size};
     }
 
     /// @brief Implicit conversion to const_block.
     operator const_block() const noexcept {
         assert(_is_ok());
-        return {_storage.begin(), _size};
+        return {_storage.data(), _size};
     }
 
 private:

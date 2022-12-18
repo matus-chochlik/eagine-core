@@ -230,7 +230,7 @@ public:
 
         assert(m <= b.size());
 
-        owned_block r{this->acquire_block({b.begin() + m, b.end()})};
+        owned_block r{this->acquire_block({b.data() + m, b.data() + b.size()})};
 
         this->release_block(std::move(b));
 

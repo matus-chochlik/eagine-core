@@ -154,7 +154,7 @@ public:
         int result{0};
         const auto p{_sw(_port)};
         [[maybe_unused]] const auto unused{
-          std::from_chars(p.begin(), p.end(), result)};
+          std::from_chars(p.data(), p.data() + p.size(), result)};
         return {result};
     }
 
