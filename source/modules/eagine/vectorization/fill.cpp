@@ -13,7 +13,7 @@ namespace eagine::vect {
 
 export template <typename T, int N, bool V>
 struct fill {
-    static auto apply(const T v) noexcept -> data_t<T, N, V> {
+    [[nodiscard]] static auto apply(const T v) noexcept -> data_t<T, N, V> {
         data_t<T, N, V> r;
         for(int i = 0; i < N; ++i) {
             r[i] = v;
@@ -24,42 +24,42 @@ struct fill {
 
 export template <typename T, bool V>
 struct fill<T, 0, V> {
-    static constexpr auto apply(const T) noexcept {
+    [[nodiscard]] static constexpr auto apply(const T) noexcept {
         return data_t<T, 0, V>{};
     }
 };
 
 export template <typename T, bool V>
 struct fill<T, 1, V> {
-    static constexpr auto apply(const T v) noexcept {
+    [[nodiscard]] static constexpr auto apply(const T v) noexcept {
         return data_t<T, 1, V>{v};
     }
 };
 
 export template <typename T, bool V>
 struct fill<T, 2, V> {
-    static constexpr auto apply(const T v) noexcept {
+    [[nodiscard]] static constexpr auto apply(const T v) noexcept {
         return data_t<T, 2, V>{v, v};
     }
 };
 
 export template <typename T, bool V>
 struct fill<T, 3, V> {
-    static constexpr auto apply(const T v) noexcept {
+    [[nodiscard]] static constexpr auto apply(const T v) noexcept {
         return data_t<T, 3, V>{v, v, v};
     }
 };
 
 export template <typename T, bool V>
 struct fill<T, 4, V> {
-    static constexpr auto apply(const T v) noexcept {
+    [[nodiscard]] static constexpr auto apply(const T v) noexcept {
         return data_t<T, 4, V>{v, v, v, v};
     }
 };
 
 export template <typename T, bool V>
 struct fill<T, 8, V> {
-    static constexpr auto apply(const T v) noexcept {
+    [[nodiscard]] static constexpr auto apply(const T v) noexcept {
         return data_t<T, 8, V>{v, v, v, v, v, v, v, v};
     }
 };

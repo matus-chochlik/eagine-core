@@ -16,7 +16,8 @@ import :vector;
 namespace eagine::math {
 //------------------------------------------------------------------------------
 export template <std::floating_point T, bool V>
-constexpr auto rgb_to_hsv(vector<T, 3, V> rgb) noexcept -> vector<T, 3, V> {
+[[nodiscard]] constexpr auto rgb_to_hsv(vector<T, 3, V> rgb) noexcept
+  -> vector<T, 3, V> {
     const auto mn{minimum(rgb.x(), rgb.y(), rgb.z())};
     const auto mx{maximum(rgb.x(), rgb.y(), rgb.z())};
     const auto zero{T(0)};
@@ -52,7 +53,8 @@ constexpr auto rgb_to_hsv(vector<T, 3, V> rgb) noexcept -> vector<T, 3, V> {
 }
 //------------------------------------------------------------------------------
 export template <std::floating_point T, bool V>
-constexpr auto hsv_to_rgb(vector<T, 3, V> hsv) noexcept -> vector<T, 3, V> {
+[[nodiscard]] constexpr auto hsv_to_rgb(vector<T, 3, V> hsv) noexcept
+  -> vector<T, 3, V> {
     using std::abs;
     using std::fmod;
 

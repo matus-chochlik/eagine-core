@@ -36,7 +36,7 @@ public:
 
     auto update(const float value) noexcept -> progress_bar&;
 
-    auto get() const noexcept -> string_view {
+    [[nodiscard]] auto get() const noexcept -> string_view {
         return {_buffer.c_str(), span_size_t(_idx)};
     }
 

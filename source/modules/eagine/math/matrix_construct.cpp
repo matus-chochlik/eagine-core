@@ -49,7 +49,7 @@ struct constructed_matrix<MC<matrix<T, C, R, RM, V>, I>>
 /// @brief Uses the specified matrix constructor @p c to construct a matrix.
 /// @ingroup math
 export template <bool RM, typename MC>
-constexpr auto construct_matrix(const MC& c) noexcept
+[[nodiscard]] constexpr auto construct_matrix(const MC& c) noexcept
   -> constructed_matrix_t<MC>
     requires(
       is_matrix_constructor_v<MC> &&
@@ -60,7 +60,7 @@ constexpr auto construct_matrix(const MC& c) noexcept
 
 // construct_matrix (reorder)
 export template <bool RM, typename MC>
-constexpr auto construct_matrix(const MC& c) noexcept
+[[nodiscard]] constexpr auto construct_matrix(const MC& c) noexcept
   -> reordered_matrix_t<constructed_matrix_t<MC>>
     requires(
       is_matrix_constructor_v<MC> &&
@@ -75,7 +75,7 @@ constexpr auto construct_matrix(const MC& c) noexcept
 /// This is typically more efficient than constructing the two matrices and
 /// multiplying them.
 export template <typename MC1, typename MC2>
-constexpr auto multiply(const MC1& mc1, const MC2& mc2) noexcept
+[[nodiscard]] constexpr auto multiply(const MC1& mc1, const MC2& mc2) noexcept
     requires(
       is_matrix_constructor_v<MC1> && is_matrix_constructor_v<MC2> &&
       are_multiplicable<constructed_matrix_t<MC1>, constructed_matrix_t<MC2>>::
@@ -126,7 +126,8 @@ export template <typename T, int R, int C, bool RM, bool V>
 class identity<matrix<T, R, C, RM, V>> {
 public:
     /// @brief Returns an identity matrix.
-    constexpr auto operator()() const noexcept -> matrix<T, R, C, RM, V> {
+    [[nodiscard]] constexpr auto operator()() const noexcept
+      -> matrix<T, R, C, RM, V> {
         using _riS = _make_useq<RM ? R : C>;
         return _identity(_riS());
     }
@@ -148,7 +149,7 @@ private:
 /// @brief Returns the inverse matrix to the matrix passed as argument.
 /// @ingroup math
 export template <typename T, int N, bool RM, bool V>
-constexpr auto inverse_matrix(matrix<T, N, N, RM, V> m) noexcept
+[[nodiscard]] constexpr auto inverse_matrix(matrix<T, N, N, RM, V> m) noexcept
   -> std::optional<matrix<T, N, N, RM, V>> {
     auto i = identity<matrix<T, N, N, RM, V>>()();
     if(gauss_jordan_elimination(m, i)) {
@@ -160,7 +161,7 @@ constexpr auto inverse_matrix(matrix<T, N, N, RM, V> m) noexcept
 /// @brief Returns the inverse matrix to the matrix constructed by the argument.
 /// @ingroup math
 export template <typename Ctr>
-constexpr auto inverse_matrix(const Ctr& ctr) noexcept
+[[nodiscard]] constexpr auto inverse_matrix(const Ctr& ctr) noexcept
     requires(is_matrix_constructor_v<Ctr>)
 {
     // TODO: reorder to row major?
@@ -195,11 +196,11 @@ public:
       : _v{vx, vy, vz} {}
 
     /// @brief Returns the constructed matrix.
-    constexpr auto operator()() const noexcept {
+    [[nodiscard]] constexpr auto operator()() const noexcept {
         return _make(std::bool_constant<RM>());
     }
 
-    friend constexpr auto reorder_mat_ctr(
+    [[nodiscard]] friend constexpr auto reorder_mat_ctr(
       const translation<matrix<T, 4, 4, RM, V>>& c) noexcept
       -> translation<matrix<T, 4, 4, !RM, V>> {
         return {c._v};
@@ -276,7 +277,7 @@ public:
       : _v{vx, vy, vz} {}
 
     /// @brief Returns the constructed matrix.
-    constexpr auto operator()() const noexcept {
+    [[nodiscard]] constexpr auto operator()() const noexcept {
         return matrix<T, 4, 4, RM, V>{
           {{_v[0], T(0), T(0), T(0)},
            {T(0), _v[1], T(0), T(0)},
@@ -284,7 +285,7 @@ public:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-    friend constexpr auto reorder_mat_ctr(
+    [[nodiscard]] friend constexpr auto reorder_mat_ctr(
       const scale<matrix<T, 4, 4, RM, V>>& c) noexcept
       -> scale<matrix<T, 4, 4, !RM, V>> {
         return {c._v};
@@ -296,7 +297,7 @@ private:
 
 // multiply
 export template <typename T, int N, bool RM1, bool RM2, bool V>
-constexpr auto multiply(
+[[nodiscard]] constexpr auto multiply(
   const scale<matrix<T, N, N, RM1, V>>& a,
   const scale<matrix<T, N, N, RM2, V>>& b) noexcept
   -> scale<matrix<T, N, N, RM1, V>> {
@@ -326,7 +327,7 @@ public:
       : _v(v) {}
 
     /// @brief Returns the constructed matrix.
-    constexpr auto operator()() const noexcept {
+    [[nodiscard]] constexpr auto operator()() const noexcept {
         return matrix<T, 4, 4, RM, V>{
           {{_v, T(0), T(0), T(0)},
            {T(0), _v, T(0), T(0)},
@@ -334,7 +335,7 @@ public:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-    friend constexpr auto reorder_mat_ctr(
+    [[nodiscard]] friend constexpr auto reorder_mat_ctr(
       const uniform_scale<matrix<T, 4, 4, RM, V>>& c) noexcept
       -> uniform_scale<matrix<T, 4, 4, !RM, V>> {
         return {c._v};
@@ -346,7 +347,7 @@ private:
 
 // multiply
 export template <typename T, int N, bool RM1, bool RM2, bool V>
-constexpr auto multiply(
+[[nodiscard]] constexpr auto multiply(
   const uniform_scale<matrix<T, N, N, RM1, V>>& a,
   const uniform_scale<matrix<T, N, N, RM2, V>>& b) noexcept
   -> uniform_scale<matrix<T, N, N, RM1, V>> {
@@ -403,12 +404,12 @@ public:
     constexpr reflection_I(const bool r = true) noexcept
       : _v{r ? T(-1) : T(1)} {}
 
-    constexpr auto v(const int i) const noexcept -> T {
+    [[nodiscard]] constexpr auto v(const int i) const noexcept -> T {
         return (I == i) ? _v : T(1);
     }
 
     /// @brief Returns the constructed matrix.
-    constexpr auto operator()() const noexcept {
+    [[nodiscard]] constexpr auto operator()() const noexcept {
         return matrix<T, 4, 4, RM, V>{
           {{v(0), T(0), T(0), T(0)},
            {T(0), v(1), T(0), T(0)},
@@ -422,7 +423,7 @@ private:
 
 // multiply
 export template <typename T, int N, bool RM1, bool RM2, bool V, int I>
-constexpr auto multiply(
+[[nodiscard]] constexpr auto multiply(
   const reflection_I<matrix<T, N, N, RM1, V>, I>& a,
   const reflection_I<matrix<T, N, N, RM2, V>, I>& b) noexcept
   -> reflection_I<matrix<T, N, N, RM1, V>, I> {
@@ -431,7 +432,7 @@ constexpr auto multiply(
 
 // reorder_mat_ctr(reflection_I)
 export template <typename T, int N, bool RM, bool V, int I>
-constexpr auto reorder_mat_ctr(
+[[nodiscard]] constexpr auto reorder_mat_ctr(
   const reflection_I<matrix<T, N, N, RM, V>, I>& c) noexcept
   -> reflection_I<matrix<T, N, N, !RM, V>, I> {
     return {c._v < T(0)};
@@ -520,12 +521,12 @@ public:
       : _v{v} {}
 
     /// @brief Returns the constructed matrix.
-    constexpr auto operator()() const {
+    [[nodiscard]] constexpr auto operator()() const {
         using _axis = int_constant<I>;
         return _make(cos(_v), sin(_v) * (RM ? 1 : -1), _axis());
     }
 
-    friend constexpr auto reorder_mat_ctr(
+    [[nodiscard]] friend constexpr auto reorder_mat_ctr(
       const rotation_I<matrix<T, 4, 4, RM, V>, I>& c) noexcept
       -> rotation_I<matrix<T, 4, 4, !RM, V>, I> {
         return {c._v};
@@ -565,7 +566,7 @@ private:
 
 // multiply
 export template <typename T, int N, bool RM1, bool RM2, bool V, int I>
-constexpr auto multiply(
+[[nodiscard]] constexpr auto multiply(
   const rotation_I<matrix<T, N, N, RM1, V>, I>& a,
   const rotation_I<matrix<T, N, N, RM2, V>, I>& b) noexcept
   -> rotation_I<matrix<T, N, N, RM1, V>, I> {
@@ -656,7 +657,7 @@ public:
       : _v{x_left, x_right, y_bottom, y_top, z_near, z_far} {}
 
     /// @brief Returns the constructed matrix.
-    constexpr auto operator()() const noexcept {
+    [[nodiscard]] constexpr auto operator()() const noexcept {
         return _make(std::bool_constant<RM>());
     }
 
@@ -726,7 +727,8 @@ private:
 
 // reorder_mat_ctr(ortho)
 export template <typename T, int N, bool RM, bool V>
-constexpr auto reorder_mat_ctr(const ortho<matrix<T, N, N, RM, V>>& c) noexcept
+[[nodiscard]] constexpr auto reorder_mat_ctr(
+  const ortho<matrix<T, N, N, RM, V>>& c) noexcept
   -> ortho<matrix<T, N, N, !RM, V>> {
     return {c._v};
 }
@@ -768,12 +770,12 @@ public:
       : _v{x_left, x_right, y_bottom, y_top, z_near, z_far} {}
 
     /// @brief Returns the constructed matrix.
-    constexpr auto operator()() const noexcept {
+    [[nodiscard]] constexpr auto operator()() const noexcept {
         return _make(std::bool_constant<RM>());
     }
 
     /// @brief Constructs perspective matrix with x-FOV angle and aspect ratio.
-    static auto x(
+    [[nodiscard]] static auto x(
       const radians_t<T> xfov,
       const T aspect,
       const T z_near,
@@ -791,7 +793,7 @@ public:
     }
 
     /// @brief Constructs perspective matrix with y-FOV angle and aspect ratio.
-    static auto y(
+    [[nodiscard]] static auto y(
       const radians_t<T> yfov,
       const T aspect,
       const T z_near,
@@ -809,7 +811,7 @@ public:
     }
 
     /// @brief Constructs perspective matrix with FOV angle and aspect ratio of 1.
-    static auto square(
+    [[nodiscard]] static auto square(
       const radians_t<T> fov,
       const T z_near,
       const T z_far) noexcept {
@@ -899,7 +901,7 @@ private:
 
 // reorder_mat_ctr(perspective)
 export template <typename T, int N, bool RM, bool V>
-constexpr auto reorder_mat_ctr(
+[[nodiscard]] constexpr auto reorder_mat_ctr(
   const perspective<matrix<T, N, N, RM, V>>& c) noexcept
   -> perspective<matrix<T, N, N, !RM, V>> {
     return {c._v};
@@ -986,7 +988,7 @@ private:
 
 // reorder_mat_ctr(looking_at_y_up)
 export template <typename T, int N, bool RM, bool V>
-constexpr auto reorder_mat_ctr(
+[[nodiscard]] constexpr auto reorder_mat_ctr(
   const looking_at_y_up<matrix<T, N, N, RM, V>>& c) noexcept
   -> looking_at_y_up<matrix<T, N, N, !RM, V>> {
     return {c._e, c._t};
@@ -1062,11 +1064,11 @@ public:
           cos(elevation)} {}
 
     /// @brief Returns the constructed matrix.
-    constexpr auto operator()() const noexcept {
+    [[nodiscard]] constexpr auto operator()() const noexcept {
         return _make(std::bool_constant<RM>());
     }
 
-    friend constexpr auto reorder_mat_ctr(
+    [[nodiscard]] friend constexpr auto reorder_mat_ctr(
       const orbiting_y_up<matrix<T, 4, 4, RM, V>>& c) noexcept
       -> orbiting_y_up<matrix<T, 4, 4, !RM, V>> {
         return {c._t, c._x, c._y, c._z, c._r};

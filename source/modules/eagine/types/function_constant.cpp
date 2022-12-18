@@ -38,20 +38,20 @@ struct member_function_constant<RV (C::*)(P...), Ptr> {
 
     /// @brief Returns the member function pointer.
     /// @see free_func
-    static constexpr auto get() noexcept -> pointer {
+    [[nodiscard]] static constexpr auto get() noexcept -> pointer {
         return Ptr;
     }
 
     /// @brief A function that calls the member function on an instance of @p C.
     /// @see make_free
-    static auto free_func(C* c, P... a) -> RV {
+    [[nodiscard]] static auto free_func(C* c, P... a) -> RV {
         return (c->*Ptr)(std::forward<P>(a)...);
     }
 
     /// @brief Returns pointer to a free function corresponding to the member function.
     /// @see get
     /// @see free_func
-    static auto make_free() noexcept -> free_pointer {
+    [[nodiscard]] static auto make_free() noexcept -> free_pointer {
         return &free_func;
     }
 };
@@ -76,20 +76,20 @@ struct member_function_constant<RV (C::*)(P...) const, Ptr> {
 
     /// @brief Returns the member function pointer.
     /// @see free_func
-    static constexpr auto get() noexcept -> pointer {
+    [[nodiscard]] static constexpr auto get() noexcept -> pointer {
         return Ptr;
     }
 
     /// @brief A function that calls the member function on an instance of @p C.
     /// @see make_free
-    static auto free_func(const C* c, P... a) -> RV {
+    [[nodiscard]] static auto free_func(const C* c, P... a) -> RV {
         return (c->*Ptr)(std::forward<P>(a)...);
     }
 
     /// @brief Returns pointer to a free function corresponding to the member function.
     /// @see get
     /// @see free_func
-    static auto make_free() noexcept -> free_pointer {
+    [[nodiscard]] static auto make_free() noexcept -> free_pointer {
         return &free_func;
     }
 };
@@ -114,20 +114,20 @@ struct member_function_constant<RV (C::*)(P...) noexcept, Ptr> {
 
     /// @brief Returns the member function pointer.
     /// @see free_func
-    static constexpr auto get() noexcept -> pointer {
+    [[nodiscard]] static constexpr auto get() noexcept -> pointer {
         return Ptr;
     }
 
     /// @brief A function that calls the member function on an instance of @p C.
     /// @see make_free
-    static auto free_func(C* c, P... a) noexcept -> RV {
+    [[nodiscard]] static auto free_func(C* c, P... a) noexcept -> RV {
         return (c->*Ptr)(std::forward<P>(a)...);
     }
 
     /// @brief Returns pointer to a free function corresponding to the member function.
     /// @see get
     /// @see free_func
-    static auto make_free() noexcept -> free_pointer {
+    [[nodiscard]] static auto make_free() noexcept -> free_pointer {
         return &free_func;
     }
 };
@@ -156,20 +156,20 @@ struct member_function_constant<RV (C::*)(P...) const noexcept, Ptr> {
 
     /// @brief Returns the member function pointer.
     /// @see free_func
-    static constexpr auto get() noexcept -> pointer {
+    [[nodiscard]] static constexpr auto get() noexcept -> pointer {
         return Ptr;
     }
 
     /// @brief A function that calls the member function on an instance of @p C.
     /// @see make_free
-    static auto free_func(const C* c, P... a) noexcept -> RV {
+    [[nodiscard]] static auto free_func(const C* c, P... a) noexcept -> RV {
         return (c->*Ptr)(std::forward<P>(a)...);
     }
 
     /// @brief Returns pointer to a free function corresponding to the member function.
     /// @see get
     /// @see free_func
-    static auto make_free() noexcept -> free_pointer {
+    [[nodiscard]] static auto make_free() noexcept -> free_pointer {
         return &free_func;
     }
 };

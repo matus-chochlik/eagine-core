@@ -64,7 +64,7 @@ public:
 
     basic_string_path(const string_view str, const span_size_t size) noexcept
       : _size{size}
-      , _str{str.data(), std_size(str.size())} {}
+      , _str{str.data(), str.std_size()} {}
 
     basic_string_path(std::string str, const span_size_t size) noexcept
       : _size{size}
@@ -109,19 +109,21 @@ public:
       : basic_string_path(_pack_names(name, view(names)...)) {}
 
     /// @brief Conversion to filesystem path.
-    operator std::filesystem::path() const {
+    [[nodiscard]] operator std::filesystem::path() const {
         return {as_string()};
     }
 
     /// @brief Comparison.
     /// @see like
-    auto operator<=>(const basic_string_path& that) const noexcept {
+    [[nodiscard]] auto operator<=>(
+      const basic_string_path& that) const noexcept {
         return _str.compare(that._str);
     }
 
-    auto operator==(const basic_string_path&) const noexcept -> bool = default;
+    [[nodiscard]] auto operator==(const basic_string_path&) const noexcept
+      -> bool = default;
 
-    static auto elements_match(
+    [[nodiscard]] static auto elements_match(
       const string_view elem,
       const string_view patt) noexcept -> bool {
         return (elem == patt) || (patt == string_view{"*"});
@@ -129,7 +131,8 @@ public:
 
     /// @brief Tests if this path matches a pattern.
     /// @see starts_with
-    auto like(const basic_string_path& pattern) const noexcept -> bool {
+    [[nodiscard]] auto like(const basic_string_path& pattern) const noexcept
+      -> bool {
         if(size() != pattern.size()) {
             return false;
         }
@@ -147,7 +150,8 @@ public:
 
     /// @brief Tests if the beginning of this path matches a pattern.
     /// @see like
-    auto starts_with(const basic_string_path& pattern) const noexcept -> bool {
+    [[nodiscard]] auto starts_with(
+      const basic_string_path& pattern) const noexcept -> bool {
         auto tp{begin()};
         auto pp{pattern.begin()};
         while(tp != end() && pp != pattern.end()) {
@@ -161,7 +165,7 @@ public:
     }
 
     /// @brief Concatenates two paths.
-    friend auto operator+(
+    [[nodiscard]] friend auto operator+(
       const basic_string_path& a,
       const basic_string_path& b) noexcept {
         return basic_string_path(a, b);
@@ -170,7 +174,7 @@ public:
     /// @brief Indicates if this path is empty.
     /// @see size
     /// @see clear
-    auto empty() const noexcept -> bool {
+    [[nodiscard]] auto empty() const noexcept -> bool {
         assert((size() == 0) == _str.empty());
         return _str.empty();
     }
@@ -184,17 +188,19 @@ public:
 
     /// @brief Returns the number of elements in this path.
     /// @see empty
-    auto size() const noexcept -> size_type {
+    [[nodiscard]] auto size() const noexcept -> size_type {
         return _size;
     }
 
-    static auto required_bytes(const size_type l) noexcept -> size_type {
+    [[nodiscard]] static auto required_bytes(const size_type l) noexcept
+      -> size_type {
         using namespace multi_byte;
         return safe_add(
           l, 2 * required_sequence_length(code_point_t(l)).value());
     }
 
-    static auto required_bytes(const string_view str) noexcept -> size_type {
+    [[nodiscard]] static auto required_bytes(const string_view str) noexcept
+      -> size_type {
         return required_bytes(size_type(str.size()));
     }
 
@@ -204,29 +210,31 @@ public:
     }
 
     /// @brief Returns the element at the front of the path.
-    auto front() const noexcept -> string_view {
+    [[nodiscard]] auto front() const noexcept -> string_view {
         assert(!empty());
         return string_list::front_value(_str);
     }
 
     /// @brief Returns the element at the back of the path.
-    auto back() const noexcept -> string_view {
+    [[nodiscard]] auto back() const noexcept -> string_view {
         assert(!empty());
         return string_list::back_value(_str);
     }
 
     /// @brief Indicates if the path starts with the specified entry.
-    auto starts_with(const string_view entry) const noexcept -> bool {
+    [[nodiscard]] auto starts_with(const string_view entry) const noexcept
+      -> bool {
         return !empty() && (front() == entry);
     }
 
     /// @brief Indicates if the path ends with the specified entry.
-    auto ends_with(const string_view entry) const noexcept -> bool {
+    [[nodiscard]] auto ends_with(const string_view entry) const noexcept
+      -> bool {
         return !empty() && (back() == entry);
     }
 
     /// @brief Indicates if the path has a single specified entry.
-    auto is(const string_view entry) const noexcept -> bool {
+    [[nodiscard]] auto is(const string_view entry) const noexcept -> bool {
         return (size() == 1) && (back() == entry);
     }
 
@@ -253,7 +261,7 @@ public:
 
     /// @brief Returns a new path that is a copy of this without the last n elements.
     /// @see pop_back
-    auto parent(span_size_t n = 1) const noexcept {
+    [[nodiscard]] auto parent(span_size_t n = 1) const noexcept {
         basic_string_path result{*this};
         while((n-- > 0) && !empty()) {
             result.pop_back();
@@ -264,14 +272,14 @@ public:
     /// @brief Returns an iterator pointing to the start of the path.
     /// @see end
     /// @see rbegin
-    auto begin() const noexcept -> iterator {
+    [[nodiscard]] auto begin() const noexcept -> iterator {
         return empty() ? iterator(nullptr) : iterator(_str.data());
     }
 
     /// @brief Returns an iterator pointing past the end of the path.
     /// @see begin
     /// @see rend
-    auto end() const noexcept -> iterator {
+    [[nodiscard]] auto end() const noexcept -> iterator {
         return empty() ? iterator(nullptr)
                        : iterator(_str.data() + _str.size());
     }
@@ -279,7 +287,7 @@ public:
     /// @brief Returns a reverse iterator pointing to the end of the path.
     /// @see rend
     /// @see begin
-    auto rbegin() const noexcept -> reverse_iterator {
+    [[nodiscard]] auto rbegin() const noexcept -> reverse_iterator {
         return empty() ? reverse_iterator(nullptr)
                        : reverse_iterator(_str.data() + _str.size() - 1);
     }
@@ -287,12 +295,13 @@ public:
     /// @brief Returns an iterator pointing past the start of the path.
     /// @see rbegin
     /// @see end
-    auto rend() const noexcept -> reverse_iterator {
+    [[nodiscard]] auto rend() const noexcept -> reverse_iterator {
         return empty() ? reverse_iterator(nullptr)
                        : reverse_iterator(_str.data() - 1);
     }
 
-    auto operator[](span_size_t idx) const noexcept -> iterator::reference {
+    [[nodiscard]] auto operator[](span_size_t idx) const noexcept
+      -> iterator::reference {
         assert(idx < size());
         auto it{begin()};
         std::advance(it, idx);
@@ -322,18 +331,18 @@ public:
     }
 
     /// @brief Returns this path as string with elements separated by @p sep.
-    auto as_string(const string_view sep, const bool trail_sep) const noexcept
-      -> std::string {
+    [[nodiscard]] auto as_string(const string_view sep, const bool trail_sep)
+      const noexcept -> std::string {
         return string_list::join(view(_str), sep, trail_sep);
     }
 
     /// @brief Returns this path as string with elements separated by '/'
-    auto as_string() const noexcept -> std::string {
+    [[nodiscard]] auto as_string() const noexcept -> std::string {
         return as_string({"/"}, false);
     }
 
     /// @brief Returns a block covering the internal representation of this path.
-    auto block() noexcept -> memory::const_block {
+    [[nodiscard]] auto block() noexcept -> memory::const_block {
         return as_bytes(view(_str));
     }
 
@@ -373,7 +382,8 @@ private:
     }
 };
 //------------------------------------------------------------------------------
-export auto to_string(const basic_string_path& path) -> std::string {
+export [[nodiscard]] auto to_string(const basic_string_path& path)
+  -> std::string {
     return path.as_string();
 }
 //------------------------------------------------------------------------------

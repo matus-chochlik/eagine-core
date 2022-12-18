@@ -53,7 +53,7 @@ public:
     }
 
     /// @brief Returns the unique id of this logger instance.
-    auto activity_id() const noexcept -> activity_progress_id_t {
+    [[nodiscard]] auto activity_id() const noexcept -> activity_progress_id_t {
         return _activity_id;
     }
 

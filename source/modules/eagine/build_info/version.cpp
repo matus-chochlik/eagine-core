@@ -35,13 +35,13 @@ public:
 
     /// @brief Creates an instance of git source version info.
     /// @see compiler
-    static auto git() noexcept -> version_info {
+    [[nodiscard]] static auto git() noexcept -> version_info {
         return {config_git_version_tuple()};
     }
 
     /// @brief Creates an instance of git source version info.
     /// @see git
-    static auto compiler() noexcept -> version_info {
+    [[nodiscard]] static auto compiler() noexcept -> version_info {
         return {compiler_version_tuple()};
     }
 
@@ -50,7 +50,7 @@ public:
     /// @see version_minor
     /// @see version_patch
     /// @see version_commit
-    auto version_tuple() const noexcept
+    [[nodiscard]] auto version_tuple() const noexcept
       -> const std::tuple<int, int, int, int>& {
         return get_structure();
     }
@@ -60,7 +60,8 @@ public:
     /// @see version_minor
     /// @see version_patch
     /// @see version_commit
-    auto version_major() const noexcept -> valid_if_nonnegative<int> {
+    [[nodiscard]] auto version_major() const noexcept
+      -> valid_if_nonnegative<int> {
         return {std::get<0>(version_tuple())};
     }
 
@@ -69,7 +70,8 @@ public:
     /// @see version_major
     /// @see version_patch
     /// @see version_commit
-    auto version_minor() const noexcept -> valid_if_nonnegative<int> {
+    [[nodiscard]] auto version_minor() const noexcept
+      -> valid_if_nonnegative<int> {
         return {std::get<1>(version_tuple())};
     }
 
@@ -78,7 +80,8 @@ public:
     /// @see version_major
     /// @see version_minor
     /// @see version_commit
-    auto version_patch() const noexcept -> valid_if_nonnegative<int> {
+    [[nodiscard]] auto version_patch() const noexcept
+      -> valid_if_nonnegative<int> {
         return {std::get<2>(version_tuple())};
     }
 
@@ -87,26 +90,31 @@ public:
     /// @see version_major
     /// @see version_minor
     /// @see version_patch
-    auto version_commit() const noexcept -> valid_if_nonnegative<int> {
+    [[nodiscard]] auto version_commit() const noexcept
+      -> valid_if_nonnegative<int> {
         return {std::get<3>(version_tuple())};
     }
 
     /// @brief Indicates if major and minor version numbers are known.
     /// @see version_major
     /// @see version_minor
-    auto has_version() const noexcept -> bool {
+    [[nodiscard]] auto has_version() const noexcept -> bool {
         return version_major() && version_minor();
     }
 
     /// @brief Checks if the project build version is at least as specified.
-    auto version_at_least(int major, int minor) const -> tribool;
+    [[nodiscard]] auto version_at_least(int major, int minor) const -> tribool;
 
     /// @brief Checks if the project build version is at least as specified.
-    auto version_at_least(int major, int minor, int patch) const -> tribool;
-
-    /// @brief Checks if the project build version is at least as specified.
-    auto version_at_least(int major, int minor, int patch, int commit) const
+    [[nodiscard]] auto version_at_least(int major, int minor, int patch) const
       -> tribool;
+
+    /// @brief Checks if the project build version is at least as specified.
+    [[nodiscard]] auto version_at_least(
+      int major,
+      int minor,
+      int patch,
+      int commit) const -> tribool;
 };
 //------------------------------------------------------------------------------
 auto version_info::version_at_least(int major, int minor) const -> tribool {

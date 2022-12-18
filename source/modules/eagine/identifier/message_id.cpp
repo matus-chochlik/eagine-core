@@ -49,13 +49,14 @@ public:
     constexpr message_id(const static_message_id<ClassId, MethodId>&) noexcept
       : message_id{ClassId, MethodId} {}
 
-    constexpr auto operator<=>(const message_id&) const noexcept = default;
+    [[nodiscard]] constexpr auto operator<=>(const message_id&) const noexcept =
+      default;
     /// @brief Equality comparison
-    constexpr auto operator==(const message_id&) const noexcept
+    [[nodiscard]] constexpr auto operator==(const message_id&) const noexcept
       -> bool = default;
 
     /// @brief Returns the class identifier value.
-    constexpr auto class_id() const noexcept -> identifier_t {
+    [[nodiscard]] constexpr auto class_id() const noexcept -> identifier_t {
 #if __SIZEOF_INT128__
         return static_cast<identifier_t>(_data >> 64U);
 #else
@@ -64,12 +65,12 @@ public:
     }
 
     /// @brief Returns the class identifier.
-    constexpr auto class_() const noexcept -> identifier {
+    [[nodiscard]] constexpr auto class_() const noexcept -> identifier {
         return identifier{class_id()};
     }
 
     /// @brief Returns the method identifier value.
-    constexpr auto method_id() const noexcept -> identifier_t {
+    [[nodiscard]] constexpr auto method_id() const noexcept -> identifier_t {
 #if __SIZEOF_INT128__
         return static_cast<identifier_t>(_data);
 #else
@@ -78,34 +79,34 @@ public:
     }
 
     /// @brief Returns the method identifier.
-    constexpr auto method() const noexcept -> identifier {
+    [[nodiscard]] constexpr auto method() const noexcept -> identifier {
         return identifier{method_id()};
     }
 
     /// @brief Checks if the stored identifier values are non-zero.
-    constexpr auto is_valid() const noexcept {
+    [[nodiscard]] constexpr auto is_valid() const noexcept {
         return (class_id() != 0U) && (method_id() != 0U);
     }
 
     /// @brief Returns the class and method identifiers in a tuple.
     /// See class_
     /// See method
-    constexpr auto id_tuple() const noexcept
+    [[nodiscard]] constexpr auto id_tuple() const noexcept
       -> std::tuple<identifier, identifier> {
         return {class_(), method()};
     }
 
     /// @brief Checks if the class identifier matches the argument.
     /// @see has_method
-    constexpr auto has_class(const identifier_value idv) const noexcept
-      -> bool {
+    [[nodiscard]] constexpr auto has_class(
+      const identifier_value idv) const noexcept -> bool {
         return class_id() == idv._value;
     }
 
     /// @brief Checks if the method identifier matches the argument.
     /// @see has_class
-    constexpr auto has_method(const identifier_value idv) const noexcept
-      -> bool {
+    [[nodiscard]] constexpr auto has_method(
+      const identifier_value idv) const noexcept -> bool {
         return method_id() == idv._value;
     }
 
@@ -128,22 +129,22 @@ struct static_message_id {
     using type = static_message_id;
 
     /// @brief Returns the class identifier value.
-    static constexpr auto class_id() noexcept -> identifier_t {
+    [[nodiscard]] static constexpr auto class_id() noexcept -> identifier_t {
         return ClassId;
     }
 
     /// @brief Returns the class identifier.
-    static constexpr auto class_() noexcept -> identifier {
+    [[nodiscard]] static constexpr auto class_() noexcept -> identifier {
         return identifier{class_id()};
     }
 
     /// @brief Returns the method identifier value.
-    static constexpr auto method_id() noexcept -> identifier_t {
+    [[nodiscard]] static constexpr auto method_id() noexcept -> identifier_t {
         return MethodId;
     }
 
     /// @brief Returns the method identifier.
-    static constexpr auto method() noexcept -> identifier {
+    [[nodiscard]] static constexpr auto method() noexcept -> identifier {
         return identifier{method_id()};
     }
 };
@@ -151,7 +152,7 @@ struct static_message_id {
 /// @brief Equality comparison between message_id and static_message_id.
 /// @ingroup identifiers
 export template <identifier_value ClassId, identifier_value MethodId>
-auto operator==(
+[[nodiscard]] auto operator==(
   const message_id l,
   const static_message_id<ClassId, MethodId> r) noexcept {
     return l == message_id{r};

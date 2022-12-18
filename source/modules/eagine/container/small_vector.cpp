@@ -35,7 +35,7 @@ public:
 
     constexpr small_vector() noexcept = default;
 
-    constexpr auto max_size() const noexcept -> size_type {
+    [[nodiscard]] constexpr auto max_size() const noexcept -> size_type {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage).max_size();
         } else {
@@ -43,7 +43,7 @@ public:
         }
     }
 
-    constexpr auto capacity() const noexcept -> size_type {
+    [[nodiscard]] constexpr auto capacity() const noexcept -> size_type {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage).size();
         } else {
@@ -59,7 +59,7 @@ public:
         }
     }
 
-    constexpr auto size() const noexcept -> size_type {
+    [[nodiscard]] constexpr auto size() const noexcept -> size_type {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage).size();
         } else {
@@ -82,7 +82,7 @@ public:
         }
     }
 
-    constexpr auto empty() const noexcept -> bool {
+    [[nodiscard]] constexpr auto empty() const noexcept -> bool {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage).empty();
         } else {
@@ -98,7 +98,7 @@ public:
         }
     }
 
-    constexpr auto data() noexcept -> pointer {
+    [[nodiscard]] constexpr auto data() noexcept -> pointer {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage).data();
         } else {
@@ -106,7 +106,7 @@ public:
         }
     }
 
-    constexpr auto data() const noexcept -> const_pointer {
+    [[nodiscard]] constexpr auto data() const noexcept -> const_pointer {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage).data();
         } else {
@@ -114,27 +114,27 @@ public:
         }
     }
 
-    constexpr auto begin() noexcept -> iterator {
+    [[nodiscard]] constexpr auto begin() noexcept -> iterator {
         return data();
     }
 
-    constexpr auto begin() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto begin() const noexcept -> const_iterator {
         return data();
     }
 
-    constexpr auto cbegin() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto cbegin() const noexcept -> const_iterator {
         return data();
     }
 
-    constexpr auto end() noexcept -> iterator {
+    [[nodiscard]] constexpr auto end() noexcept -> iterator {
         return data() + size();
     }
 
-    constexpr auto end() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto end() const noexcept -> const_iterator {
         return data() + size();
     }
 
-    constexpr auto cend() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto cend() const noexcept -> const_iterator {
         return data() + size();
     }
 
@@ -288,7 +288,7 @@ public:
         }
     }
 
-    constexpr auto front() noexcept -> value_type& {
+    [[nodiscard]] constexpr auto front() noexcept -> value_type& {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage).front();
         } else {
@@ -296,7 +296,7 @@ public:
         }
     }
 
-    constexpr auto front() const noexcept -> const value_type& {
+    [[nodiscard]] constexpr auto front() const noexcept -> const value_type& {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage).front();
         } else {
@@ -304,7 +304,7 @@ public:
         }
     }
 
-    constexpr auto back() noexcept -> value_type& {
+    [[nodiscard]] constexpr auto back() noexcept -> value_type& {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage).back();
         } else {
@@ -312,7 +312,7 @@ public:
         }
     }
 
-    constexpr auto back() const noexcept -> const value_type& {
+    [[nodiscard]] constexpr auto back() const noexcept -> const value_type& {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage).back();
         } else {
@@ -320,7 +320,8 @@ public:
         }
     }
 
-    constexpr auto operator[](size_type i) noexcept -> value_type& {
+    [[nodiscard]] constexpr auto operator[](size_type i) noexcept
+      -> value_type& {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage)[i];
         } else {
@@ -328,7 +329,8 @@ public:
         }
     }
 
-    constexpr auto operator[](size_type i) const noexcept -> const value_type& {
+    [[nodiscard]] constexpr auto operator[](size_type i) const noexcept
+      -> const value_type& {
         if(std::holds_alternative<T0>(_storage)) {
             return std::get<T0>(_storage)[i];
         } else {

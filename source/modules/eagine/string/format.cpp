@@ -44,7 +44,7 @@ public:
     format_string_and_list(std::string& fmt_str) noexcept
       : format_string_and_list_base{std::move(fmt_str)} {}
 
-    operator std::string() const noexcept {
+    [[nodiscard]] operator std::string() const noexcept {
         return _fmt({});
     }
 };
@@ -73,7 +73,7 @@ public:
           std::make_index_sequence<N - 1>()} {}
 
     /// @brief Implicit conversion to a string with the variable substituted.
-    operator std::string() const noexcept {
+    [[nodiscard]] operator std::string() const noexcept {
         return _fmt(view(_list));
     }
 
@@ -91,7 +91,7 @@ public:
       : format_string_and_list_base{construct_from, prev}
       , _list{{val}} {}
 
-    operator std::string() const noexcept {
+    [[nodiscard]] operator std::string() const noexcept {
         return _fmt(view(_list));
     }
 
@@ -109,14 +109,15 @@ auto operator<<(std::ostream& out, const format_string_and_list<N>& fsl)
 /// @ingroup string_utils
 /// @see format
 export template <span_size_t N>
-auto operator%(format_string_and_list<N>&& fsal, std::string&& val) noexcept
-  -> format_string_and_list<N + 1> {
+[[nodiscard]] auto operator%(
+  format_string_and_list<N>&& fsal,
+  std::string&& val) noexcept -> format_string_and_list<N + 1> {
     return {std::move(fsal), std::move(val)};
 }
 //------------------------------------------------------------------------------
 /// @brief Takes a format string, returns an object for variable specification.
 /// @ingroup string_utils
-export auto format(std::string&& fmt_str) noexcept
+export [[nodiscard]] auto format(std::string&& fmt_str) noexcept
   -> format_string_and_list<0> {
     return {fmt_str};
 }

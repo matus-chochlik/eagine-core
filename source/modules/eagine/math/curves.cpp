@@ -32,7 +32,8 @@ struct bezier_t {
 public:
     /// @brief Interpolate from control points in pack @p p at position @p t.
     template <typename... Points>
-    constexpr auto operator()(const Parameter t, Points&&... p) const noexcept
+    [[nodiscard]] constexpr auto operator()(const Parameter t, Points&&... p)
+      const noexcept
         requires(sizeof...(Points) == N)
     {
         return _calc(N - 1, 0, t, std::forward<Points>(p)...);
@@ -40,8 +41,9 @@ public:
 
     /// @brief Interpolate from control points in span @p p at position @p t.
     template <typename P, typename S>
-    auto operator()(const Parameter t, memory::basic_span<const Type, P, S> p)
-      const noexcept {
+    [[nodiscard]] auto operator()(
+      const Parameter t,
+      memory::basic_span<const Type, P, S> p) const noexcept {
         return _calc(N - 1, 0, t, p, std::make_index_sequence<N>());
     }
 
@@ -81,8 +83,9 @@ private:
 };
 //------------------------------------------------------------------------------
 export template <typename Parameter, typename... CP>
-constexpr auto bezier_point(const Parameter t, const CP... cps) noexcept
-  -> std::common_type_t<CP...> {
+[[nodiscard]] constexpr auto bezier_point(
+  const Parameter t,
+  const CP... cps) noexcept -> std::common_type_t<CP...> {
     using bt = bezier_t<std::common_type_t<CP...>, Parameter, sizeof...(CP)>;
     return bt{}(t, cps...);
 }
@@ -102,30 +105,30 @@ export template <typename Type, typename Parameter, span_size_t Order>
 class bezier_curves {
 public:
     /// @brief Returns whether the curves made from points are connected.
-    static auto are_connected(const std::vector<Type>& points) noexcept
-      -> bool {
+    [[nodiscard]] static auto are_connected(
+      const std::vector<Type>& points) noexcept -> bool {
         return ((points.size() - 1) != Order) &&
                ((points.size() - 1) % Order) == 0;
     }
 
     /// @brief Returns true if the individual curves are connected.
-    auto is_connected() const noexcept -> bool {
+    [[nodiscard]] auto is_connected() const noexcept -> bool {
         return _connected;
     }
 
-    static auto are_separated(const std::vector<Type>& points) noexcept
-      -> bool {
+    [[nodiscard]] static auto are_separated(
+      const std::vector<Type>& points) noexcept -> bool {
         return (points.size() % (Order + 1)) == 0;
     }
 
     /// @brief Returns true if the individual curves are disconnected.
-    auto is_separated() const noexcept -> bool {
+    [[nodiscard]] auto is_separated() const noexcept -> bool {
         return !_connected;
     }
 
     /// @brief checks if the sequence of control points is OK for this curve type.
-    static auto points_are_ok(const std::vector<Type>& points) noexcept
-      -> bool {
+    [[nodiscard]] static auto points_are_ok(
+      const std::vector<Type>& points) noexcept -> bool {
         return !points.empty() &&
                (are_connected(points) || are_separated(points));
     }
@@ -192,13 +195,13 @@ public:
         assert(are_connected(_points) == _connected);
     }
 
-    auto segment_step() const noexcept -> span_size_t {
+    [[nodiscard]] auto segment_step() const noexcept -> span_size_t {
         assert(points_are_ok(_points));
         return _connected ? Order : Order + 1;
     }
 
     /// @brief Returns the count of individual curves in the sequence.
-    auto segment_count() const noexcept -> span_size_t {
+    [[nodiscard]] auto segment_count() const noexcept -> span_size_t {
         assert(points_are_ok(_points));
 
         return _connected ? span_size(_points.size() - 1) / Order
@@ -206,7 +209,8 @@ public:
     }
 
     /// @brief Returns the contol points of the curve.
-    auto control_points() const noexcept -> const std::vector<Type>& {
+    [[nodiscard]] auto control_points() const noexcept
+      -> const std::vector<Type>& {
         return _points;
     }
 
@@ -217,7 +221,7 @@ public:
     }
 
     /// @brief Wraps the parameter value to [0.0, 1.0].
-    static auto wrap(Parameter t) noexcept -> Parameter {
+    [[nodiscard]] static auto wrap(Parameter t) noexcept -> Parameter {
         const Parameter zero{0};
         const Parameter one{1};
         if(t < zero) {
@@ -230,7 +234,7 @@ public:
     }
 
     /// @brief Gets the point on the curve at position t (must be in (0.0, 1.0)).
-    auto position01(Parameter t) const noexcept -> Type {
+    [[nodiscard]] auto position01(Parameter t) const noexcept -> Type {
         const Parameter zero{0};
         const Parameter one{1};
 
@@ -248,7 +252,7 @@ public:
     }
 
     /// @brief Gets the point on the curve at position t wrapped to [0.0, 1.0].
-    auto position(const Parameter t) const noexcept -> Type {
+    [[nodiscard]] auto position(const Parameter t) const noexcept -> Type {
         return position01(wrap(t));
     }
 
@@ -282,7 +286,7 @@ public:
     }
 
     /// @brief Returns a sequence of points on the curve (n points per segment).
-    auto approximate(const valid_if_positive<span_size_t> n) const
+    [[nodiscard]] auto approximate(const valid_if_positive<span_size_t> n) const
       -> std::vector<Type> {
         std::vector<Type> result;
         approximate(result, n);
@@ -290,7 +294,7 @@ public:
     }
 
     /// @brief Returns a derivative of this curve
-    auto derivative() const noexcept
+    [[nodiscard]] auto derivative() const noexcept
       -> bezier_curves<Type, Parameter, Order - 1> {
         const auto sstep = segment_step();
         const auto s = segment_count();

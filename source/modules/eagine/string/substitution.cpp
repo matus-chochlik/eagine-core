@@ -68,7 +68,7 @@ export auto substitute_variables_into(
 /// This function takes the format string @p src, finds variable references
 /// using substitution options and substitutes the variables with their values
 /// using the translation function and returns the resulting string.
-export auto substitute_variables(
+export [[nodiscard]] auto substitute_variables(
   const string_view src,
   const callable_ref<std::optional<string_view>(const string_view) noexcept>&
     translate,
@@ -81,7 +81,7 @@ export auto substitute_variables(
 /// This function takes the format string @p src, finds variable references
 /// using substitution options and substitutes the variables with their values
 /// using the dictionary map and returns the resulting string.
-export auto substitute_variables(
+export [[nodiscard]] auto substitute_variables(
   const std::string& str,
   const std::map<std::string, std::string, str_view_less>& dictionary,
   const variable_substitution_options = {}) noexcept -> std::string;
@@ -104,7 +104,8 @@ public:
     }
 
     /// @brief Uses the stored variables to do substitution in the given string.
-    auto operator()(const std::string& str) const noexcept -> std::string {
+    [[nodiscard]] auto operator()(const std::string& str) const noexcept
+      -> std::string {
         return substitute_variables(str, _dict);
     }
 
@@ -187,7 +188,7 @@ auto substitute_variables_into(
     return dst;
 }
 //------------------------------------------------------------------------------
-export auto substitute_variables(
+export [[nodiscard]] auto substitute_variables(
   const string_view src,
   const callable_ref<std::optional<string_view>(const string_view) noexcept>&
     translate,
@@ -196,7 +197,7 @@ export auto substitute_variables(
     return std::move(substitute_variables_into(result, src, translate, opts));
 }
 //------------------------------------------------------------------------------
-export auto substitute_variables(
+export [[nodiscard]] auto substitute_variables(
   const std::string& str,
   const span<const std::string> strings,
   const variable_substitution_options opts = {}) noexcept -> std::string {
@@ -212,7 +213,7 @@ export auto substitute_variables(
     return substitute_variables(str, {construct_from, translate_func}, opts);
 }
 //------------------------------------------------------------------------------
-export auto substitute_variables(
+export [[nodiscard]] auto substitute_variables(
   const std::string& str,
   const std::map<std::string, std::string, str_view_less>& dictionary,
   const variable_substitution_options opts) noexcept -> std::string {

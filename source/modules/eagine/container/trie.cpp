@@ -97,7 +97,7 @@ export class basic_trie_utils {
 
 public:
     template <memory::string_literal chars>
-    static constexpr auto get_char_index(char c) noexcept
+    [[nodiscard]] static constexpr auto get_char_index(char c) noexcept
       -> std::optional<std::size_t> {
         return do_get_char_index<chars>(
           c,
@@ -148,7 +148,7 @@ public:
     }
 
     /// @brief Returns a range of chars that valid keys for this trie can use.
-    constexpr auto valid_chars() const noexcept -> string_view {
+    [[nodiscard]] constexpr auto valid_chars() const noexcept -> string_view {
         return Chars;
     }
 
@@ -191,7 +191,7 @@ public:
     }
 
     /// @brief Checks if the specified key is contained in this trie.
-    auto contains(const string_view key) const noexcept -> bool {
+    [[nodiscard]] auto contains(const string_view key) const noexcept -> bool {
         auto [iidx, offs, can_insert] = _find_insert_pos(key);
         if(can_insert && (offs == key.size())) {
             return std::get<2>(_nodes[iidx]);
@@ -200,7 +200,7 @@ public:
     }
 
     /// @brief Tries to find the value stored under the specified key.
-    auto find(const string_view key) const noexcept
+    [[nodiscard]] auto find(const string_view key) const noexcept
       -> optional_reference_wrapper<const Value> {
         auto [fidx, offs, can_insert] = _find_insert_pos(key);
         if(can_insert && (offs == key.size())) {
@@ -212,7 +212,7 @@ public:
         return {nothing};
     }
 
-    auto underlying() const noexcept -> span<const node_type> {
+    [[nodiscard]] auto underlying() const noexcept -> span<const node_type> {
         return view(_nodes);
     }
 

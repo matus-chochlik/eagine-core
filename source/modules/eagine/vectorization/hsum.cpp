@@ -94,7 +94,7 @@ private:
     }
 
 public:
-    static constexpr auto apply(data_param_t<T, N, V> v) noexcept
+    [[nodiscard]] static constexpr auto apply(data_param_t<T, N, V> v) noexcept
       -> data_t<T, N, V> {
         return _hlp(v, int_constant<N>{}, has_simd_data<T, N, V>{});
     }

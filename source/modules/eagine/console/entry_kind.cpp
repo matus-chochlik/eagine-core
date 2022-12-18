@@ -14,7 +14,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 /// @brief Console entry kind enumeration.
 /// @ingroup console
-export enum class console_entry_kind {
+export enum class console_entry_kind : std::uint8_t {
     /// @brief Statistic entries.
     stat,
     /// @brief Informational entries.

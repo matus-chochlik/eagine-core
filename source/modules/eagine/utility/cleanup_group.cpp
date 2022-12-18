@@ -21,12 +21,11 @@ private:
 
 public:
     template <typename Func>
-    auto add(Func func)
-      -> auto& requires(std::is_invocable_v<Func>&&
-                          std::is_void_v<std::invoke_result_t<Func>>) {
-                   return _storage.template emplace<func_on_scope_exit<Func>>(
-                     std::move(func));
-               }
+    auto add(Func func) -> auto& requires(
+      std::is_invocable_v<Func>&& std::is_void_v<std::invoke_result_t<Func>>) {
+        return _storage.template emplace<func_on_scope_exit<Func>>(
+          std::move(func));
+    }
 
     template <typename Func>
     auto add_ret(Func func) -> auto&
@@ -39,7 +38,7 @@ public:
         _storage.reserve(n);
     }
 
-    auto is_empty() const noexcept {
+    [[nodiscard]] auto is_empty() const noexcept {
         return _storage.is_empty();
     }
 

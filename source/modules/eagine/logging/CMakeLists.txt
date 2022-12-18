@@ -42,9 +42,21 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION ostream_backend
+	eagine.core.logging PARTITION fast_xml_backend
 	IMPORTS
 		backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.identifier
+		eagine.core.reflection
+		eagine.core.utility
+)
+
+eagine_add_module(
+	eagine.core.logging PARTITION ostream_backend
+	IMPORTS
+		backend fast_xml_backend
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -210,6 +222,7 @@ eagine_add_module(
 		entry_arg
 		backend
 		null_backend
+		fast_xml_backend
 		ostream_backend
 		syslog_backend
 		asio_backend
@@ -231,6 +244,8 @@ eagine_add_module(
 		syslog_backend_impl
 		proxy_backend_impl
 		root_logger_impl
+	IMPORTS
+		eagine.core.debug
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/asio/asio/include"
 )

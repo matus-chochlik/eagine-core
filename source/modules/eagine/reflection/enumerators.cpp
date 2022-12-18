@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <type_traits>
 export module eagine.core.reflection:enumerators;
 
 import eagine.core.types;
@@ -35,50 +36,86 @@ using enumerator_map_type = std::array<const name_and_enumerator<T>, N>;
 //------------------------------------------------------------------------------
 export template <typename T, typename Selector>
 concept mapped_enum = requires(std::type_identity<T> tid, Selector s) {
-                          enumerator_mapping(tid, s);
-                      };
+    enumerator_mapping(tid, s);
+};
 
 export template <typename T>
 concept default_mapped_enum = requires(std::type_identity<T> tid) {
-                                  enumerator_mapping(tid, default_selector);
-                              };
+    enumerator_mapping(tid, default_selector);
+};
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t V>
     requires(mapped_enum<T, selector<V>>)
-constexpr auto enumerator_count(
+[[nodiscard]] constexpr auto enumerator_count(
   const std::type_identity<T> id,
   const selector<V> sel) noexcept -> span_size_t {
     return span_size_t(enumerator_mapping(id, sel).size());
 }
 //------------------------------------------------------------------------------
 export template <typename T>
-constexpr auto enumerator_count(const std::type_identity<T> id) noexcept {
+[[nodiscard]] constexpr auto enumerator_count(
+  const std::type_identity<T> id) noexcept {
     return enumerator_count(id, default_selector);
-}
-//------------------------------------------------------------------------------
-export template <typename T>
-constexpr auto enumerator_name(
-  const T value,
-  const std::type_identity<T> id = {}) noexcept {
-    return enumerator_name(value, id, default_selector);
 }
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t V>
     requires(mapped_enum<T, selector<V>>)
-auto enumerator_name(
+[[nodiscard]] constexpr auto is_consecutive(
+  const std::type_identity<T> id,
+  const selector<V> sel) noexcept -> bool {
+    using UT = std::underlying_type_t<T>;
+    if constexpr(std::is_unsigned_v<UT>) {
+        std::size_t index = 0;
+        for(const auto& info : enumerator_mapping(id, sel)) {
+            if(index != std::size_t(static_cast<UT>(info.enumerator))) {
+                return false;
+            }
+            ++index;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+//------------------------------------------------------------------------------
+export template <typename T>
+[[nodiscard]] constexpr auto is_consecutive(
+  const std::type_identity<T> id) noexcept -> bool {
+    return is_consecutive(id, default_selector);
+}
+//------------------------------------------------------------------------------
+export template <typename T, identifier_t V>
+    requires(mapped_enum<T, selector<V>>)
+[[nodiscard]] auto enumerator_name(
   const T enumerator,
   const std::type_identity<T> id,
   const selector<V> sel) noexcept -> decl_name {
-    for(const auto& info : enumerator_mapping(id, sel)) {
-        if(info.enumerator == enumerator) {
-            return info.name;
+    const auto enum_map{enumerator_mapping(id, sel)};
+    if constexpr(is_consecutive(id, sel)) {
+        using UT = std::underlying_type_t<T>;
+        const auto index{std::size_t(static_cast<UT>(enumerator))};
+        if(index < enum_map.size()) [[likely]] {
+            return enum_map[index].name;
+        }
+    } else {
+        for(const auto& info : enum_map) {
+            if(info.enumerator == enumerator) {
+                return info.name;
+            }
         }
     }
     return {};
 }
 //------------------------------------------------------------------------------
 export template <typename T>
-constexpr auto enumerator_value(
+[[nodiscard]] constexpr auto enumerator_name(
+  const T value,
+  const std::type_identity<T> id = {}) noexcept {
+    return enumerator_name(value, id, default_selector);
+}
+//------------------------------------------------------------------------------
+export template <typename T>
+[[nodiscard]] constexpr auto enumerator_value(
   const T value,
   const std::type_identity<T> = {}) noexcept {
     return static_cast<std::underlying_type_t<T>>(value);
@@ -109,7 +146,7 @@ using enum_value_and_name =
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t V>
     requires(mapped_enum<T, selector<V>>)
-auto enumerator_info(
+[[nodiscard]] auto enumerator_info(
   const T enumerator,
   const std::type_identity<T> id,
   const selector<V> sel) noexcept -> std::optional<enum_value_and_name<T>> {
@@ -122,7 +159,7 @@ auto enumerator_info(
 }
 //------------------------------------------------------------------------------
 export template <typename T>
-auto enumerator_info(
+[[nodiscard]] auto enumerator_info(
   const T enumerator,
   const std::type_identity<T> id = {}) noexcept {
     return enumerator_info(enumerator, id, default_selector);
@@ -130,7 +167,7 @@ auto enumerator_info(
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t V>
     requires(mapped_enum<T, selector<V>>)
-auto from_value(
+[[nodiscard]] auto from_value(
   const std::underlying_type_t<T> value,
   const std::type_identity<T> id,
   const selector<V> sel) noexcept -> std::optional<T> {
@@ -143,7 +180,7 @@ auto from_value(
 }
 //------------------------------------------------------------------------------
 export template <typename T>
-constexpr auto from_value(
+[[nodiscard]] constexpr auto from_value(
   const std::underlying_type_t<T> value,
   const std::type_identity<T> id = {}) noexcept {
     return from_value(value, id, default_selector);
@@ -151,7 +188,7 @@ constexpr auto from_value(
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t V>
     requires(mapped_enum<T, selector<V>>)
-auto from_string(
+[[nodiscard]] auto from_string(
   const string_view name,
   const std::type_identity<T> id,
   const selector<V> sel) noexcept -> std::optional<T> {

@@ -102,7 +102,7 @@ public:
       span_size_t& done,
       std::type_identity<I>) noexcept -> result {
         std::vector<I> temp;
-        temp.resize(std_size(values.size()));
+        temp.resize(values.std_size());
         do_read(cover(temp), done);
         if(done == values.size()) {
             span_size_t i{0};
@@ -123,7 +123,7 @@ public:
       span_size_t& done,
       std::type_identity<std::string>) noexcept -> result {
         std::vector<std::string> temp;
-        temp.resize(std_size(values.size()));
+        temp.resize(values.std_size());
         do_read(cover(temp), done);
         if(done == values.size()) {
             span_size_t i{0};
@@ -144,7 +144,7 @@ public:
       span_size_t& done,
       std::type_identity<std::string>) noexcept -> result {
         std::vector<std::string> temp;
-        temp.resize(std_size(values.size()));
+        temp.resize(values.std_size());
         do_read(cover(temp), done);
         if(done == values.size()) {
             span_size_t i{0};

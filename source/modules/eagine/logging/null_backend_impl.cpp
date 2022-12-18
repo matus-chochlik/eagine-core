@@ -32,6 +32,8 @@ struct null_log_backend final : logger_backend {
         return "Null";
     }
 
+    void begin_log() noexcept final {}
+
     void time_interval_begin(
       identifier,
       logger_instance_id,

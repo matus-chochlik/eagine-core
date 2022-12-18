@@ -80,19 +80,19 @@ public:
     template <typename... Args>
     explicit static_enum_map(const construct_from_t, const Args&... args)
         requires(sizeof...(Args) > 1)
-    : static_enum_map_unit<Enum, Unit, Keys>{args...}... {}
+      : static_enum_map_unit<Enum, Unit, Keys>{args...}... {}
 
     /// @brief Returns a reference to the unit with the specified enumerator key.
     /// @see visit
     template <Enum Key>
-    auto get() noexcept -> Unit<Key>& {
+    [[nodiscard]] auto get() noexcept -> Unit<Key>& {
         return _base<Key>();
     }
 
     /// @brief Returns a const reference to the unit with the specified enumerator key.
     /// @see visit
     template <Enum Key>
-    auto get() const noexcept -> const Unit<Key>& {
+    [[nodiscard]] auto get() const noexcept -> const Unit<Key>& {
         return _base<Key>();
     }
 

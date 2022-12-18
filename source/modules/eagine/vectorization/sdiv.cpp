@@ -26,6 +26,7 @@ struct sdiv {
 
 export template <typename T, bool V>
 struct sdiv<T, 3, V> {
+private:
     static constexpr auto _hlp(
       data_param_t<T, 3, V> a,
       data_param_t<T, 3, V> b,
@@ -40,7 +41,8 @@ struct sdiv<T, 3, V> {
         return a / b;
     }
 
-    static constexpr auto apply(
+public:
+    [[nodiscard]] static constexpr auto apply(
       data_param_t<T, 3, V> a,
       data_param_t<T, 3, V> b) noexcept -> data_t<T, 3, V> {
         return _hlp(a, b, has_simd_data<T, 3, V>{});

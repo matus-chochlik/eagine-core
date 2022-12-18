@@ -57,51 +57,52 @@ public:
       : _outcome{std::move(outcome)} {}
 
     /// @brief Indicates if the stored outcome contains valid result value.
-    explicit constexpr operator bool() noexcept(
+    [[nodiscard]] explicit constexpr operator bool() noexcept(
       noexcept(bool(std::declval<Outcome&>()))) {
         return bool(_outcome);
     }
 
     /// @brief Indicates if the stored outcome contains valid result value.
-    explicit constexpr operator bool() const
+    [[nodiscard]] explicit constexpr operator bool() const
       noexcept(noexcept(bool(std::declval<const Outcome&>()))) {
         return bool(_outcome);
     }
 
     /// @brief Extracts the stored outcome value.
     /// @pre bool(*this)
-    constexpr auto get() noexcept(noexcept(extract(_outcome)))
+    [[nodiscard]] constexpr auto get() noexcept(noexcept(extract(_outcome)))
       -> decltype(extract(_outcome)) {
         return extract(_outcome);
     }
 
     /// @brief Extracts the stored outcome value.
     /// @pre bool(*this)
-    constexpr auto get() const noexcept(noexcept(extract(_outcome)))
-      -> decltype(extract(_outcome)) {
+    [[nodiscard]] constexpr auto get() const
+      noexcept(noexcept(extract(_outcome))) -> decltype(extract(_outcome)) {
         return extract(_outcome);
     }
 
     /// @brief Implicit conversion to the stored outcome value.
     /// @pre bool(*this)
-    constexpr operator decltype(extract(std::declval<Outcome&>()))() noexcept(
-      noexcept(extract(_outcome))) {
+    [[nodiscard]] constexpr operator decltype(extract(
+      std::declval<Outcome&>()))() noexcept(noexcept(extract(_outcome))) {
         return extract(_outcome);
     }
 
     /// @brief Implicit conversion to the stored outcome value.
     /// @pre bool(*this)
-    constexpr operator decltype(extract(std::declval<const Outcome&>()))() const
+    [[nodiscard]] constexpr operator decltype(
+      extract(std::declval<const Outcome&>()))() const
       noexcept(noexcept(extract(_outcome))) {
         return extract(_outcome);
     }
 
-    constexpr auto nok() const noexcept
+    [[nodiscard]] constexpr auto nok() const noexcept
       -> decltype(_traits::nok_info(_outcome)) {
         return _traits::nok_info(_outcome);
     }
 
-    constexpr auto operator!() const noexcept
+    [[nodiscard]] constexpr auto operator!() const noexcept
       -> decltype(_traits::nok_info(_outcome)) {
         return _traits::nok_info(_outcome);
     }
@@ -113,21 +114,21 @@ ok(Outcome&& outcome) -> ok<Outcome>;
 /// @brief Overload of extract for instantiations of the ok template.
 /// @relates ok
 export template <typename Outcome>
-auto extract(const ok<Outcome>& x) noexcept -> const auto& {
+[[nodiscard]] auto extract(const ok<Outcome>& x) noexcept -> const auto& {
     return x.get();
 }
 
 /// @brief Overload of extract for instantiations of the ok template.
 /// @relates ok
 export template <typename Outcome>
-auto extract(ok<Outcome>& x) noexcept -> auto& {
+[[nodiscard]] auto extract(ok<Outcome>& x) noexcept -> auto& {
     return x.get();
 }
 //------------------------------------------------------------------------------
 /// @brief Overload of begin for instantiations of the ok template.
 /// @relates ok
 export template <typename Outcome>
-auto begin(
+[[nodiscard]] auto begin(
   const ok<Outcome>& x,
   decltype(std::declval<const ok<Outcome>&>().get().begin())* = nullptr) {
     return x.get().begin();
@@ -136,7 +137,7 @@ auto begin(
 /// @brief Overload of begin for instantiations of the ok template.
 /// @relates ok
 export template <typename Outcome>
-auto end(
+[[nodiscard]] auto end(
   const ok<Outcome>& x,
   decltype(std::declval<const ok<Outcome>&>().get().end())* = nullptr) {
     return x.get().end();

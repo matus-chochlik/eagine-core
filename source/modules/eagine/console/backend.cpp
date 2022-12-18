@@ -20,7 +20,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 /// @brief Console entry instance id type.
 /// @ingroup console
-using console_entry_id_t = std::uintptr_t;
+export using console_entry_id_t = std::uintptr_t;
 //------------------------------------------------------------------------------
 /// @brief Interface for console backend implementations.
 /// @ingroup console

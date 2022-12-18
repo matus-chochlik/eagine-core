@@ -34,15 +34,15 @@ public:
         return *this;
     }
 
-    auto get_sum() const noexcept -> T {
+    [[nodiscard]] auto get_sum() const noexcept -> T {
         return std::accumulate(_values.begin(), _values.end(), T{});
     }
 
-    auto get_count() const noexcept -> D {
+    [[nodiscard]] auto get_count() const noexcept -> D {
         return D(std::accumulate(_counts.begin(), _counts.end(), std_size(0)));
     }
 
-    auto get() const noexcept -> T {
+    [[nodiscard]] auto get() const noexcept -> T {
         if(const auto div{get_count()}; div != 0) [[likely]] {
             return get_sum() / div;
         }

@@ -18,12 +18,13 @@ export template <typename T, typename Selector = std::type_identity<T>>
 class protected_member {
 public:
     /// @brief Returns a reference to the stored member.
-    auto get_the_member(Selector = Selector()) noexcept -> T& {
+    [[nodiscard]] auto get_the_member(Selector = Selector()) noexcept -> T& {
         return _member;
     }
 
     /// @brief Returns a const reference to the stored member.
-    auto get_the_member(Selector = Selector()) const noexcept -> const T& {
+    [[nodiscard]] auto get_the_member(Selector = Selector()) const noexcept
+      -> const T& {
         return _member;
     }
 
@@ -40,7 +41,7 @@ private:
 /// @ingroup type_utils
 /// @relates protected_member
 export template <typename Selector, typename T>
-auto get_member(
+[[nodiscard]] auto get_member(
   protected_member<T, Selector>& pm,
   Selector selector = Selector()) noexcept -> T& {
     return pm.get_the_member(selector);
@@ -50,7 +51,7 @@ auto get_member(
 /// @ingroup type_utils
 /// @relates protected_member
 export template <typename Selector, typename T>
-auto get_member(
+[[nodiscard]] auto get_member(
   const protected_member<T, Selector>& pm,
   Selector selector = Selector()) noexcept -> const T& {
     return pm.get_the_member(selector);

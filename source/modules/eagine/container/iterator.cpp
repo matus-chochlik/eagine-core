@@ -103,8 +103,8 @@ public:
     }
 
     /// @brief Comparison.
-    constexpr auto operator<=>(const basic_iterable_type) const noexcept =
-      default;
+    [[nodiscard]] constexpr auto operator<=>(
+      const basic_iterable_type) const noexcept = default;
 
 protected:
     T _value{};
@@ -134,7 +134,7 @@ public:
     using basic_iterable_type<T, Derived>::basic_iterable_type;
 
     /// @brief Dereference operator.
-    constexpr auto operator*() const noexcept -> const T& {
+    [[nodiscard]] constexpr auto operator*() const noexcept -> const T& {
         return this->_value;
     }
 };
@@ -182,7 +182,7 @@ public:
     using pointer = const T*;
 
     /// @brief Dereference operation.
-    constexpr auto operator*() const -> const T& {
+    [[nodiscard]] constexpr auto operator*() const -> const T& {
         _tempval = _transf(**_base_iter());
         return _tempval;
     }
@@ -214,11 +214,11 @@ public:
     using reference = const T&;
     using pointer = const T*;
 
-    constexpr auto operator*() -> T& {
+    [[nodiscard]] constexpr auto operator*() -> T& {
         return _transf(**_base_iter());
     }
 
-    constexpr auto operator*() const -> const T& {
+    [[nodiscard]] constexpr auto operator*() const -> const T& {
         return _transf(**_base_iter());
     }
 
@@ -315,22 +315,22 @@ public:
       : _range{range} {}
 
     /// @brief Returns a reverse iterator to the last element in the adapted range.
-    constexpr auto begin() noexcept {
+    [[nodiscard]] constexpr auto begin() noexcept {
         return _range.rbegin();
     }
 
     /// @brief Returns a reverse iterator past the first element in the adapted range.
-    constexpr auto end() noexcept {
+    [[nodiscard]] constexpr auto end() noexcept {
         return _range.rend();
     }
 
     /// @brief Returns a reverse iterator to the last element in the adapted range.
-    constexpr auto begin() const noexcept {
+    [[nodiscard]] constexpr auto begin() const noexcept {
         return _range.rbegin();
     }
 
     /// @brief Returns a reverse iterator past the first element in the adapted range.
-    constexpr auto end() const noexcept {
+    [[nodiscard]] constexpr auto end() const noexcept {
         return _range.rend();
     }
 

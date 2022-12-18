@@ -40,9 +40,16 @@ public:
     root_logger(const program_args& args, root_logger_options& opts) noexcept
       : root_logger{"RootLogger", args, opts} {}
 
+    root_logger(root_logger&&) = delete;
+    root_logger(const root_logger&) = delete;
+    auto operator=(root_logger&&) = delete;
+    auto operator=(const root_logger&) = delete;
+    ~root_logger() noexcept;
+
 private:
     auto _log_os_info() -> void;
     auto _log_git_info() -> void;
+    auto _log_build_info() -> void;
     auto _log_compiler_info() -> void;
     auto _log_instance_info() -> void;
     auto _log_args(const program_args&) -> void;

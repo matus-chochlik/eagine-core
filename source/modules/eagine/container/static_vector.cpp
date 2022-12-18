@@ -30,11 +30,11 @@ public:
 
     constexpr static_vector() noexcept = default;
 
-    constexpr auto max_size() const noexcept -> size_type {
+    [[nodiscard]] constexpr auto max_size() const noexcept -> size_type {
         return N;
     }
 
-    constexpr auto capacity() const noexcept -> size_type {
+    [[nodiscard]] constexpr auto capacity() const noexcept -> size_type {
         return N;
     }
 
@@ -42,7 +42,7 @@ public:
         assert(n <= N);
     }
 
-    constexpr auto size() const noexcept -> std::size_t {
+    [[nodiscard]] constexpr auto size() const noexcept -> std::size_t {
         return _size;
     }
 
@@ -51,65 +51,60 @@ public:
         std::is_nothrow_destructible_v<T>) {
         assert(n <= max_size());
         if(n < _size) {
-            std::destroy(begin() + n, end());
-            _size = n;
-        } else if(n > _size) {
-            _size = n;
-            for(auto i{begin() + n}; i != end(); ++i) {
-                std::construct_at(i);
-            }
+            std::fill(_array.begin() + n, _array.begin() + _size, T{});
         }
+        _size = n;
     }
 
-    constexpr auto empty() const noexcept -> bool {
+    [[nodiscard]] constexpr auto empty() const noexcept -> bool {
         return size() == 0;
     }
 
-    constexpr auto full() const noexcept -> bool {
+    [[nodiscard]] constexpr auto full() const noexcept -> bool {
         return size() == max_size();
     }
 
     constexpr void clear() noexcept {
-        std::destroy(begin(), end());
+        std::fill(begin(), end(), T{});
         _size = 0;
     }
 
-    constexpr auto data() noexcept -> pointer {
+    [[nodiscard]] constexpr auto data() noexcept -> pointer {
         return _array.data();
     }
 
-    constexpr auto data() const noexcept -> const_pointer {
+    [[nodiscard]] constexpr auto data() const noexcept -> const_pointer {
         return _array.data();
     }
 
-    constexpr auto begin() noexcept -> iterator {
+    [[nodiscard]] constexpr auto begin() noexcept -> iterator {
         return data();
     }
 
-    constexpr auto begin() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto begin() const noexcept -> const_iterator {
         return data();
     }
 
-    constexpr auto cbegin() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto cbegin() const noexcept -> const_iterator {
         return data();
     }
 
-    constexpr auto end() noexcept -> iterator {
+    [[nodiscard]] constexpr auto end() noexcept -> iterator {
         return data() + size();
     }
 
-    constexpr auto end() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto end() const noexcept -> const_iterator {
         return data() + size();
     }
 
-    constexpr auto cend() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto cend() const noexcept -> const_iterator {
         return data() + size();
     }
 
     constexpr void push_back(const value_type& value) noexcept(
       std::is_nothrow_copy_constructible_v<T>) {
         assert(!full());
-        std::construct_at(end(), value);
+        *end() = value;
         ++_size;
     }
 
@@ -117,14 +112,14 @@ public:
     constexpr void emplace_back(Args&&... args) noexcept(
       std::is_nothrow_constructible_v<T, decltype(std::forward<Args>(args))...>) {
         assert(!full());
-        std::construct_at(end(), std::forward<Args>(args)...);
+        *end() = T(std::forward<Args>(args)...);
         ++_size;
     }
 
     constexpr void pop_back() noexcept(std::is_nothrow_destructible_v<T>) {
         assert(!empty());
         --_size;
-        std::destroy_at(end());
+        *end() = T{};
     }
 
     template <typename Iter>
@@ -137,7 +132,7 @@ public:
         auto ipos{bpos};
         std::move_backward(ipos, end(), end() + count);
         while(iter != iend) {
-            std::construct_at(ipos, *iter);
+            *ipos = *iter;
             ++ipos;
             ++iter;
         }
@@ -150,7 +145,7 @@ public:
         assert(!full() && _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
-        std::construct_at(ipos, value);
+        *ipos = value;
         ++_size;
         return ipos;
     }
@@ -160,7 +155,7 @@ public:
         assert(!full() && _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
-        std::construct_at(ipos, std::move(value));
+        *ipos = std::move(value);
         ++_size;
         return ipos;
     }
@@ -172,7 +167,7 @@ public:
         assert(!full() && _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
-        std::construct_at(ipos, std::forward<Args>(args)...);
+        *ipos = T(std::forward<Args>(args)...);
         ++_size;
         return ipos;
     }
@@ -183,7 +178,7 @@ public:
         const auto count{std::distance(iter, iend)};
         const auto epos{begin() + std::distance(cbegin(), iter)};
         const auto eend{begin() + std::distance(cbegin(), iend)};
-        std::destroy(epos, eend);
+        std::fill(epos, eend, T{});
         std::move(epos + count, end(), epos);
         _size -= count;
         return epos;
@@ -192,38 +187,40 @@ public:
     constexpr auto erase(const_iterator pos) noexcept -> iterator {
         assert(_valid_pos(pos));
         auto epos{begin() + std::distance(cbegin(), pos)};
-        std::destroy_at(epos);
+        *epos = T{};
         std::move(epos + 1, end(), epos);
         --_size;
         return epos;
     }
 
-    constexpr auto front() noexcept -> value_type& {
+    [[nodiscard]] constexpr auto front() noexcept -> value_type& {
         assert(!empty());
         return _array.front();
     }
 
-    constexpr auto front() const noexcept -> const value_type& {
+    [[nodiscard]] constexpr auto front() const noexcept -> const value_type& {
         assert(!empty());
         return _array.front();
     }
 
-    constexpr auto back() noexcept -> value_type& {
+    [[nodiscard]] constexpr auto back() noexcept -> value_type& {
         assert(!empty());
         return _array.back();
     }
 
-    constexpr auto back() const noexcept -> const value_type& {
+    [[nodiscard]] constexpr auto back() const noexcept -> const value_type& {
         assert(!empty());
         return _array.back();
     }
 
-    constexpr auto operator[](size_type i) noexcept -> value_type& {
+    [[nodiscard]] constexpr auto operator[](size_type i) noexcept
+      -> value_type& {
         assert(i < size());
         return _array[i];
     }
 
-    constexpr auto operator[](size_type i) const noexcept -> const value_type& {
+    [[nodiscard]] constexpr auto operator[](size_type i) const noexcept
+      -> const value_type& {
         assert(i < size());
         return _array[i];
     }

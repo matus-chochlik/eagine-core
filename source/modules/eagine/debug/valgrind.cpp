@@ -22,13 +22,14 @@ import eagine.core.types;
 namespace eagine {
 
 #if defined(RUNNING_ON_VALGRIND)
-export auto running_on_valgrind() noexcept -> tribool {
+export [[nodiscard]] auto running_on_valgrind() noexcept -> tribool {
     return bool(RUNNING_ON_VALGRIND); // NOLINT(hicpp-no-assembler)
 }
 #else
 /// @brief Indicates if the current process runs on top of valgrind.
 /// @ingroup interop
-export constexpr inline auto running_on_valgrind() noexcept -> tribool {
+export [[nodiscard]] constexpr inline auto running_on_valgrind() noexcept
+  -> tribool {
     return indeterminate;
 }
 #endif

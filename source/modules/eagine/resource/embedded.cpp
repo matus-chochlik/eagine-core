@@ -80,38 +80,40 @@ public:
       , _packed{packed} {}
 
     /// @brief Returns the path of the file this resource data comes from.
-    constexpr auto source_path() const noexcept -> string_view {
+    [[nodiscard]] constexpr auto source_path() const noexcept -> string_view {
         return _src_path;
     }
     /// @brief Returns the basic data format of the resource.
     /// @see is_packed
     /// @see is_utf8_text
-    constexpr auto format() const noexcept -> embedded_resource_format {
+    [[nodiscard]] constexpr auto format() const noexcept
+      -> embedded_resource_format {
         return _format;
     }
 
     /// @brief Indicates if the resource is a UTF-8-encoded text.
     /// @see format
-    auto is_utf8_text() const noexcept -> tribool;
+    [[nodiscard]] auto is_utf8_text() const noexcept -> tribool;
 
     /// @brief Indicates if the resource is packed and needs to be decompressed.
     /// @see format
     /// @see decompress
-    constexpr auto is_packed() const noexcept -> bool {
+    [[nodiscard]] constexpr auto is_packed() const noexcept -> bool {
         return _packed;
     }
 
     /// @brief Indicates if the resource is empty.
-    constexpr explicit operator bool() const noexcept {
+    [[nodiscard]] constexpr explicit operator bool() const noexcept {
         return !_res_blk.empty();
     }
 
-    constexpr auto embedded_block() const noexcept -> memory::const_block {
+    [[nodiscard]] constexpr auto embedded_block() const noexcept
+      -> memory::const_block {
         return _res_blk;
     }
 
     /// @brief Implicit conversion to const block.
-    constexpr operator memory::const_block() const noexcept {
+    [[nodiscard]] constexpr operator memory::const_block() const noexcept {
         assert(!is_packed());
         return _res_blk;
     }
@@ -130,7 +132,7 @@ public:
     /// @brief Unpacks this resource into a buffer using the provided compressor.
     /// @see fetch
     /// @see is_packed
-    auto unpack(data_compressor& comp, memory::buffer& buf) const
+    [[nodiscard]] auto unpack(data_compressor& comp, memory::buffer& buf) const
       -> memory::const_block {
         return append_to(comp, buf.clear());
     }
@@ -138,7 +140,7 @@ public:
     /// @brief Unpacks this resource into a buffer using compressor from main context.
     /// @see fetch
     /// @see is_packed
-    auto unpack(main_ctx& ctx) const -> memory::const_block {
+    [[nodiscard]] auto unpack(main_ctx& ctx) const -> memory::const_block {
         return unpack(ctx.compressor(), ctx.scratch_space());
     }
 
@@ -146,13 +148,14 @@ public:
     /// @see fetch
     /// @see is_packed
     /// @see make_unpacker
-    auto unpack(main_ctx_object& mco) const -> memory::const_block {
+    [[nodiscard]] auto unpack(main_ctx_object& mco) const
+      -> memory::const_block {
         return unpack(mco.main_context());
     }
 
     /// @brief Creates an object that can unpack the resource per-partes.
     /// @see unpack
-    auto make_unpacker(
+    [[nodiscard]] auto make_unpacker(
       memory::buffer_pool& buffers,
       block_stream_decompression::data_handler handler,
       span_size_t chunk_size = block_stream_decompression::default_chunk_size())
@@ -165,7 +168,7 @@ public:
 
     /// @brief Creates an object that can unpack the resource per-partes.
     /// @see unpack
-    auto make_unpacker(
+    [[nodiscard]] auto make_unpacker(
       main_ctx& ctx,
       block_stream_decompression::data_handler handler,
       span_size_t chunk_size = block_stream_decompression::default_chunk_size())
@@ -175,7 +178,7 @@ public:
 
     /// @brief Creates an object that can unpack the resource per-partes.
     /// @see unpack
-    auto make_unpacker(
+    [[nodiscard]] auto make_unpacker(
       main_ctx_object& mco,
       block_stream_decompression::data_handler handler,
       span_size_t chunk_size = block_stream_decompression::default_chunk_size())

@@ -36,11 +36,12 @@ auto get_embedded_resource(const selector<ResId>, const string_view) noexcept
 /// build systems the eagine_embed_packed_target_resources and
 /// eagine_embed_target_resources cmake functions can be used invoke it.
 export template <identifier_value ResId>
-auto embed(string_view src_path) noexcept -> embedded_resource {
+[[nodiscard]] auto embed(string_view src_path) noexcept -> embedded_resource {
     return get_embedded_resource(selector<ResId>{}, src_path);
 }
 
-auto search_embedded_resource(identifier_t) noexcept -> embedded_resource;
+[[nodiscard]] auto search_embedded_resource(identifier_t) noexcept
+  -> embedded_resource;
 
 /// @brief Class that can be used for searching of embedded resources.
 /// @ingroup embedding
@@ -48,13 +49,14 @@ auto search_embedded_resource(identifier_t) noexcept -> embedded_resource;
 export class embedded_resource_loader {
 public:
     /// @brief Searches embedded resource with the specified id.
-    auto search(identifier_value id) noexcept -> embedded_resource;
+    [[nodiscard]] auto search(identifier_value id) noexcept
+      -> embedded_resource;
 
     /// @brief Indicates if a resource with the specified id is embedded.
-    auto has_resource(identifier_value id) noexcept -> bool;
+    [[nodiscard]] auto has_resource(identifier_value id) noexcept -> bool;
 
     /// @brief Lists the ids of all available embedded resources.
-    auto resource_ids() noexcept -> span<const identifier_t>;
+    [[nodiscard]] auto resource_ids() noexcept -> span<const identifier_t>;
 
     /// @brief Calls a function for each embedded resource.
     /// The functions must take a single embedded_resource argument.
@@ -76,7 +78,8 @@ private:
 // NOTE: this has to be a template, otherwise there will be link errors.
 export template <auto L>
     requires(identifier_literal_length<L>)
-auto search_resource(const char (&res_id)[L]) noexcept -> embedded_resource {
+[[nodiscard]] auto search_resource(const char (&res_id)[L]) noexcept
+  -> embedded_resource {
     return search_embedded_resource(identifier_value(res_id));
 }
 

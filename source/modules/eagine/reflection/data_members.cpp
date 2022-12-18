@@ -148,7 +148,7 @@ constexpr auto do_map_data_members(
 }
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t Id>
-constexpr auto map_data_members(
+[[nodiscard]] constexpr auto map_data_members(
   const T& instance,
   const selector<Id> select) noexcept {
     return do_map_data_members(
@@ -158,7 +158,7 @@ constexpr auto map_data_members(
 }
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t Id>
-constexpr auto map_data_members(
+[[nodiscard]] constexpr auto map_data_members(
   T& instance,
   const selector<Id> select) noexcept {
     return do_map_data_members(
@@ -168,12 +168,12 @@ constexpr auto map_data_members(
 }
 //------------------------------------------------------------------------------
 export template <typename T>
-constexpr auto map_data_members(const T& instance) noexcept {
+[[nodiscard]] constexpr auto map_data_members(const T& instance) noexcept {
     return map_data_members(instance, default_selector);
 }
 //------------------------------------------------------------------------------
 export template <typename T>
-constexpr auto map_data_members(T& instance) noexcept {
+[[nodiscard]] constexpr auto map_data_members(T& instance) noexcept {
     return map_data_members(instance, default_selector);
 }
 //------------------------------------------------------------------------------

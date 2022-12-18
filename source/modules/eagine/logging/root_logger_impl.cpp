@@ -8,14 +8,26 @@
 module;
 
 #include <cassert>
+#if __has_include(<unistd.h>)
+#include <unistd.h>
+#ifndef EAGINE_POSIX
+#define EAGINE_POSIX 1
+#endif
+#else
+#ifndef EAGINE_POSIX
+#define EAGINE_POSIX 0
+#endif
+#endif
 
 module eagine.core.logging;
 
 import eagine.core.types;
+import eagine.core.debug;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.reflection;
+import eagine.core.build_config;
 import eagine.core.build_info;
 import eagine.core.valid_if;
 import eagine.core.utility;
@@ -161,9 +173,27 @@ auto root_logger::_log_git_info() -> void {
       .arg("gitVersion", "str", config_git_version(), not_available);
 }
 //------------------------------------------------------------------------------
+auto root_logger::_log_build_info() -> void {
+    info("source version information")
+      .tag("BuildInfo")
+      .arg("onValgrind", running_on_valgrind())
+      .arg("lowProfile", low_profile_build)
+      .arg("debug", debug_build);
+}
+//------------------------------------------------------------------------------
 auto root_logger::_log_instance_info() -> void {
+    std::array<char, 1024> hname{};
+#if EAGINE_POSIX
+    try {
+        if(::gethostname(hname.data(), hname.size() - 1) != 0) {
+            hname[0] = '\0';
+        }
+    } catch(...) {
+    }
+#endif
     info("instance information")
       .tag("Instance")
+      .arg("hostname", std::string{hname.data()})
       .arg("instanceId", process_instance_id());
 }
 //------------------------------------------------------------------------------
@@ -198,11 +228,17 @@ root_logger::root_logger(
   const program_args& args,
   root_logger_options& opts) noexcept
   : logger{logger_id, {root_logger_init_backend(args, opts)}} {
+    begin_log();
     _log_args(args);
     _log_instance_info();
+    _log_build_info();
     _log_git_info();
     _log_os_info();
     _log_compiler_info();
+}
+//------------------------------------------------------------------------------
+root_logger::~root_logger() noexcept {
+    finish_log();
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

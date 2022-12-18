@@ -39,11 +39,11 @@ struct data_array {
     constexpr auto operator==(const data_array&) const noexcept
       -> bool = default;
 
-    constexpr auto operator[](const int i) const noexcept -> T {
+    [[nodiscard]] constexpr auto operator[](const int i) const noexcept -> T {
         return _v[i];
     }
 
-    inline auto operator[](const int i) noexcept -> T& {
+    [[nodiscard]] constexpr auto operator[](const int i) noexcept -> T& {
         return _v[i];
     }
 
@@ -103,11 +103,11 @@ struct data_array {
         return *this;
     }
 
-    constexpr auto operator+() const noexcept {
+    [[nodiscard]] constexpr auto operator+() const noexcept {
         return *this;
     }
 
-    constexpr auto operator-() const noexcept {
+    [[nodiscard]] constexpr auto operator-() const noexcept {
         data_array a{*this};
         for(int i = 0; i < N; ++i) {
             a._v[i] = -a._v[i];
@@ -115,7 +115,7 @@ struct data_array {
         return a;
     }
 
-    constexpr auto operator+(param_t that) const noexcept {
+    [[nodiscard]] constexpr auto operator+(param_t that) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
             c._v[i] = _v[i] + that._v[i];
@@ -123,7 +123,7 @@ struct data_array {
         return c;
     }
 
-    constexpr auto operator+(const T v) const noexcept {
+    [[nodiscard]] constexpr auto operator+(const T v) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
             c._v[i] = _v[i] + v;
@@ -131,7 +131,7 @@ struct data_array {
         return c;
     }
 
-    constexpr auto operator-(param_t that) const noexcept {
+    [[nodiscard]] constexpr auto operator-(param_t that) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
             c._v[i] = _v[i] - that._v[i];
@@ -139,7 +139,7 @@ struct data_array {
         return c;
     }
 
-    constexpr auto operator-(const T v) const noexcept {
+    [[nodiscard]] constexpr auto operator-(const T v) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
             c._v[i] = _v[i] - v;
@@ -147,7 +147,7 @@ struct data_array {
         return c;
     }
 
-    constexpr auto operator*(param_t that) const noexcept {
+    [[nodiscard]] constexpr auto operator*(param_t that) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
             c._v[i] = _v[i] * that._v[i];
@@ -155,7 +155,7 @@ struct data_array {
         return c;
     }
 
-    constexpr auto operator*(const T v) const noexcept {
+    [[nodiscard]] constexpr auto operator*(const T v) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
             c._v[i] = _v[i] * v;
@@ -163,7 +163,7 @@ struct data_array {
         return c;
     }
 
-    constexpr auto operator/(param_t that) const noexcept {
+    [[nodiscard]] constexpr auto operator/(param_t that) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
             c._v[i] = _v[i] / that._v[i];
@@ -171,7 +171,7 @@ struct data_array {
         return c;
     }
 
-    constexpr auto operator/(const T v) const noexcept {
+    [[nodiscard]] constexpr auto operator/(const T v) const noexcept {
         data_array c{};
         for(int i = 0; i < N; ++i) {
             c._v[i] = _v[i] / v;

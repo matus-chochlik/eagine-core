@@ -29,17 +29,18 @@ public:
       , _direction{dir} {}
 
     /// @brief Returns the line origin.
-    constexpr auto origin() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto origin() const noexcept -> vector<T, N, V> {
         return _origin;
     }
 
     /// @brief Returns the line direction.
-    constexpr auto direction() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto direction() const noexcept -> vector<T, N, V> {
         return _direction;
     }
 
     /// @brief Returns a point on the line at the specified parameter @p t.
-    constexpr auto point_at(T t) const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto point_at(T t) const noexcept
+      -> vector<T, N, V> {
         return _origin + _direction * t;
     }
 
@@ -70,48 +71,49 @@ public:
 
     /// @brief Returns the point at the specified index.
     /// @pre index < 3
-    constexpr auto vertex(const span_size_t index) const noexcept
+    [[nodiscard]] constexpr auto vertex(const span_size_t index) const noexcept
       -> vector<T, N, V> {
         return _vertices[index];
     }
 
     /// @brief Returns the first point of the triangle.
-    constexpr auto a() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto a() const noexcept -> vector<T, N, V> {
         return _vertices[0];
     }
 
     /// @brief Returns the second point of the triangle.
-    constexpr auto b() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto b() const noexcept -> vector<T, N, V> {
         return _vertices[1];
     }
 
     /// @brief Returns the third point of the triangle.
-    constexpr auto c() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto c() const noexcept -> vector<T, N, V> {
         return _vertices[2];
     }
 
     /// @brief Returns the ab edge vector of the triangle.
-    constexpr auto ab() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto ab() const noexcept -> vector<T, N, V> {
         return b() - a();
     }
 
     /// @brief Returns the ac edge vector of the triangle.
-    constexpr auto ac() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto ac() const noexcept -> vector<T, N, V> {
         return c() - a();
     }
 
     /// @brief Returns the center of the triangle.
-    constexpr auto center() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto center() const noexcept -> vector<T, N, V> {
         return (a() + b() + c()) / T(3);
     }
 
     /// @brief Returns the normal vector of the triangle, in specified direction.
-    constexpr auto normal(bool cw) const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto normal(bool cw) const noexcept
+      -> vector<T, N, V> {
         return cw ? cross(ac(), ab()) : cross(ab(), ac());
     }
 
     /// @brief Returns the area of the triangle.
-    constexpr auto area() const noexcept -> T {
+    [[nodiscard]] constexpr auto area() const noexcept -> T {
         return length(cross(ab(), ac())) / T(2);
     }
 
@@ -137,12 +139,12 @@ public:
       : _params{vector<T, N + 1, V>::from(cntr, rad)} {}
 
     /// @brief Returns the sphere center.
-    constexpr auto center() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto center() const noexcept -> vector<T, N, V> {
         return vector<T, N, V>::from(_params);
     }
 
     /// @brief Returns the sphere radius.
-    constexpr auto radius() const noexcept -> T {
+    [[nodiscard]] constexpr auto radius() const noexcept -> T {
         return _params[N];
     }
 

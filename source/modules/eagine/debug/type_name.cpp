@@ -18,7 +18,7 @@ auto demangle_type_name(const char*) noexcept -> std::string;
 /// @ingroup type_utils
 /// @note The result is implementation dependent.
 export template <typename T>
-auto type_name(const T&) noexcept -> std::string {
+[[nodiscard]] auto type_name(const T&) noexcept -> std::string {
     return demangle_type_name(typeid(T).name());
 }
 
@@ -26,7 +26,7 @@ auto type_name(const T&) noexcept -> std::string {
 /// @ingroup type_utils
 /// @note The result is implementation dependent.
 export template <typename T>
-auto type_name() noexcept -> std::string {
+[[nodiscard]] auto type_name() noexcept -> std::string {
     return demangle_type_name(typeid(T).name());
 }
 

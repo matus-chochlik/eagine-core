@@ -45,6 +45,8 @@ public:
     auto allocator() noexcept -> memory::shared_byte_allocator final;
     auto type_id() noexcept -> identifier final;
 
+    void begin_log() noexcept final;
+
     void time_interval_begin(
       const identifier,
       const logger_instance_id,
@@ -159,6 +161,15 @@ auto proxy_log_backend::type_id() noexcept -> identifier {
         return _delegate->type_id();
     }
     return "Proxy";
+}
+//------------------------------------------------------------------------------
+void proxy_log_backend::begin_log() noexcept {
+    if(_delegate) {
+        _delegate->begin_log();
+    } else if(_delayed) {
+        assert(!_delegate);
+        _delayed->emplace_back([this]() { _delegate->begin_log(); });
+    }
 }
 //------------------------------------------------------------------------------
 void proxy_log_backend::time_interval_begin(
@@ -355,7 +366,9 @@ void proxy_log_backend::finish_message() noexcept {
 }
 //------------------------------------------------------------------------------
 void proxy_log_backend::finish_log() noexcept {
-    if(_delayed) [[likely]] {
+    if(_delegate) [[likely]] {
+        return _delegate->finish_log();
+    } else if(_delayed) [[likely]] {
         assert(!_delegate);
         _delayed->emplace_back([this]() { _delegate->finish_log(); });
     }

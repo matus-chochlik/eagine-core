@@ -23,7 +23,7 @@ namespace eagine::valtree {
 //------------------------------------------------------------------------------
 /// @brief Value tree value element data type enumeration.
 /// @ingroup valtree
-export enum class value_type {
+export enum class value_type : std::uint8_t {
     /// @brief Unknown value type.
     unknown,
     /// @brief Boolean value type.

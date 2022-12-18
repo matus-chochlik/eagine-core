@@ -22,11 +22,13 @@ export class build_info {
 public:
     /// @brief Paths to the install directory.
     /// @see config_dir_path
-    auto install_prefix() const noexcept -> valid_if_not_empty<string_view>;
+    [[nodiscard]] auto install_prefix() const noexcept
+      -> valid_if_not_empty<string_view>;
 
     /// @brief Paths to the install prefix configuration directory.
     /// @see install_prefix
-    auto config_dir_path() const noexcept -> valid_if_not_empty<string_view>;
+    [[nodiscard]] auto config_dir_path() const noexcept
+      -> valid_if_not_empty<string_view>;
 };
 
 } // namespace eagine

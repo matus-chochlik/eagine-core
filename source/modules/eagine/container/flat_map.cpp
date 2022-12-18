@@ -122,74 +122,74 @@ public:
     using key_compare = Cmp;
     using value_compare = flat_map_value_compare<Key, Val, Cmp>;
 
-    auto key_comp() const noexcept -> const key_compare& {
+    [[nodiscard]] auto key_comp() const noexcept -> const key_compare& {
         return _ops().value_comp().key_comp();
     }
 
-    auto value_comp() const noexcept -> const value_compare& {
+    [[nodiscard]] auto value_comp() const noexcept -> const value_compare& {
         return _ops().value_comp();
     }
 
-    auto empty() const noexcept {
+    [[nodiscard]] auto empty() const noexcept -> bool {
         return _ops().empty(_b(), _e());
     }
 
-    auto size() const noexcept {
+    [[nodiscard]] auto size() const noexcept {
         return _ops().size(_b(), _e());
     }
 
     template <typename K>
-    auto find(const K& key) noexcept {
+    [[nodiscard]] auto find(const K& key) noexcept {
         return _ops().find(_b(), _e(), key);
     }
 
     template <typename K>
-    auto find(const K& key) const noexcept {
+    [[nodiscard]] auto find(const K& key) const noexcept {
         return _ops().find(_b(), _e(), key);
     }
 
     template <typename K>
-    auto contains(const K& key) const noexcept {
+    [[nodiscard]] auto contains(const K& key) const noexcept {
         return _ops().find(_b(), _e(), key) != _e();
     }
 
     template <typename K>
-    auto lower_bound(const K& key) noexcept {
+    [[nodiscard]] auto lower_bound(const K& key) noexcept {
         return _ops().lower_bound(_b(), _e(), key);
     }
 
     template <typename K>
-    auto lower_bound(const K& key) const noexcept {
+    [[nodiscard]] auto lower_bound(const K& key) const noexcept {
         return _ops().lower_bound(_b(), _e(), key);
     }
 
     template <typename K>
-    auto upper_bound(const K& key) noexcept {
+    [[nodiscard]] auto upper_bound(const K& key) noexcept {
         return _ops().upper_bound(_b(), _e(), key);
     }
 
     template <typename K>
-    auto upper_bound(const K& key) const noexcept {
+    [[nodiscard]] auto upper_bound(const K& key) const noexcept {
         return _ops().upper_bound(_b(), _e(), key);
     }
 
     template <typename K>
-    auto equal_range(const K& key) noexcept {
+    [[nodiscard]] auto equal_range(const K& key) noexcept {
         return _ops().equal_range(_b(), _e(), key);
     }
 
     template <typename K>
-    auto equal_range(const K& key) const noexcept {
+    [[nodiscard]] auto equal_range(const K& key) const noexcept {
         return _ops().equal_range(_b(), _e(), key);
     }
 
     template <typename K>
-    auto at(const K& key) -> Val& {
+    [[nodiscard]] auto at(const K& key) -> Val& {
         return _ops().at(_b(), _e(), key);
     }
 
     template <typename K>
-    auto at(const K& key) const -> const Val& {
+    [[nodiscard]] auto at(const K& key) const -> const Val& {
         return _ops().at(_b(), _e(), key);
     }
 
@@ -274,15 +274,15 @@ public:
         std::sort(_vec.begin(), _vec.end(), value_comp());
     }
 
-    auto empty() const noexcept -> bool {
+    [[nodiscard]] auto empty() const noexcept -> bool {
         return _vec.empty();
     }
 
-    auto size() const noexcept -> size_type {
+    [[nodiscard]] auto size() const noexcept -> size_type {
         return _vec.size();
     }
 
-    auto max_size() const noexcept -> size_type {
+    [[nodiscard]] auto max_size() const noexcept -> size_type {
         return _vec.max_size();
     }
 
@@ -296,31 +296,31 @@ public:
         return *this;
     }
 
-    auto front() const noexcept -> auto& {
+    [[nodiscard]] auto front() const noexcept -> auto& {
         return _vec.front();
     }
 
-    auto back() const noexcept -> auto& {
+    [[nodiscard]] auto back() const noexcept -> auto& {
         return _vec.back();
     }
 
-    auto begin() noexcept -> iterator {
+    [[nodiscard]] auto begin() noexcept -> iterator {
         return _vec.begin();
     }
 
-    auto begin() const -> const_iterator {
+    [[nodiscard]] auto begin() const -> const_iterator {
         return _vec.begin();
     }
 
-    auto end() -> iterator {
+    [[nodiscard]] auto end() -> iterator {
         return _vec.end();
     }
 
-    auto end() const -> const_iterator {
+    [[nodiscard]] auto end() const -> const_iterator {
         return _vec.end();
     }
 
-    auto operator[](const Key& key) -> auto& {
+    [[nodiscard]] auto operator[](const Key& key) -> auto& {
         auto ip = _find_insert_pos(key);
         ip = _do_emplace(ip, key);
         return ip.first->second;
@@ -341,7 +341,7 @@ public:
         return ip;
     }
 
-    auto find_insert_position(const key_type& key)
+    [[nodiscard]] auto find_insert_position(const key_type& key)
       -> std::pair<iterator, bool> {
         return _find_insert_pos(key);
     }

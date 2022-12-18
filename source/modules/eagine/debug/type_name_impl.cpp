@@ -24,7 +24,8 @@ namespace eagine {
 //------------------------------------------------------------------------------
 // demangle_type_name
 //------------------------------------------------------------------------------
-auto demangle_type_name(const char* name) noexcept -> std::string {
+[[nodiscard]] auto demangle_type_name(const char* name) noexcept
+  -> std::string {
 #ifdef __GNUG__
     try {
         int status = -1;

@@ -14,7 +14,7 @@ namespace eagine {
 /// @brief Returns the number of elements in the array passed as argument.
 /// @ingroup type_utils
 export template <typename T, std::size_t N>
-constexpr auto array_size(const T (&)[N]) noexcept {
+[[nodiscard]] constexpr auto array_size(const T (&)[N]) noexcept {
     return span_size(N);
 }
 

@@ -35,10 +35,23 @@ public:
     ~logger_shared_backend_getter() noexcept = default;
 
     logger_shared_backend_getter(
-      std::shared_ptr<logger_backend> backend) noexcept
+      std::unique_ptr<logger_backend> backend) noexcept
       : _backend{std::move(backend)} {}
 
-    auto operator()() const noexcept -> logger_backend* {
+    void begin_log() noexcept {
+        if(_backend) {
+            _backend->begin_log();
+        }
+    }
+
+    void finish_log() noexcept {
+        if(_backend) {
+            _backend->finish_log();
+            _backend.reset();
+        }
+    }
+
+    auto get() const noexcept -> logger_backend* {
         return _backend.get();
     }
 
@@ -60,7 +73,7 @@ public:
 
     /// @brief Returns a pointer to the backend of this logger object.
     auto backend() const noexcept {
-        return _backend_getter()();
+        return _backend_getter().get();
     }
 
     /// @brief Returns the unique id of this logger instance.
@@ -94,6 +107,14 @@ protected:
     basic_logger(BackendGetter backend_getter) noexcept(
       std::is_nothrow_move_constructible_v<BackendGetter>)
       : BackendGetter(std::move(backend_getter)) {}
+
+    void begin_log() noexcept {
+        _backend_getter().begin_log();
+    }
+
+    void finish_log() noexcept {
+        _backend_getter().finish_log();
+    }
 
     void set_description(
       const identifier source,
@@ -276,6 +297,9 @@ protected:
     }
 
 private:
+    auto _backend_getter() noexcept -> BackendGetter& {
+        return *this;
+    }
     auto _backend_getter() const noexcept -> const BackendGetter& {
         return *this;
     }
@@ -307,11 +331,7 @@ public:
       const identifier id,
       BackendGetter backend_getter) noexcept
       : base{BackendGetter(std::move(backend_getter))}
-      , _object_id{id} {
-        log_lifetime(_object_id, "${self} created with ${backend} backend")
-          .arg("backend", this->backend())
-          .arg("self", "LogId", _object_id);
-    }
+      , _object_id{id} {}
 
     /// @brief Constructor from logger id and parent logging object.
     named_logging_object(
