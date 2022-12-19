@@ -408,7 +408,10 @@ SELECT
 	os_name,
 	hostname,
 	architecture,
-	compiler
+	compiler,
+	running_on_valgrind,
+	low_profile_build,
+	debug_build
 FROM eagilog.stream
 LEFT JOIN eagilog.stream_command USING(stream_command_id)
 WHERE finish_time IS NOT NULL;
@@ -425,7 +428,10 @@ SELECT
 	os_name,
 	hostname,
 	architecture,
-	compiler
+	compiler,
+	running_on_valgrind,
+	low_profile_build,
+	debug_build
 FROM eagilog.stream
 LEFT JOIN eagilog.stream_command USING(stream_command_id)
 WHERE finish_time IS NULL;
@@ -442,7 +448,10 @@ SELECT
 	os_name,
 	hostname,
 	architecture,
-	compiler
+	compiler,
+	running_on_valgrind,
+	low_profile_build,
+	debug_build
 FROM eagilog.stream
 LEFT JOIN eagilog.stream_command USING(stream_command_id);
 --------------------------------------------------------------------------------
