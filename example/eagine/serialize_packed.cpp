@@ -65,8 +65,9 @@ void bar(main_ctx& ctx, const memory::const_block data) {
     string_deserializer_backend backend(source);
     my_struct instance;
     auto member_map = map_data_members(instance);
-    deserialize(member_map, backend);
-    baz(instance);
+    if(deserialize(member_map, backend)) {
+        baz(instance);
+    }
 }
 //------------------------------------------------------------------------------
 void foo(main_ctx& ctx, const my_struct& instance) {
@@ -75,9 +76,10 @@ void foo(main_ctx& ctx, const my_struct& instance) {
     packed_block_data_sink sink(data_compressor{ctx.buffers()}, cover(data));
     string_serializer_backend backend(sink);
     auto member_map = map_data_members(instance);
-    serialize(member_map, backend);
-    std::cout << hexdump(sink.done());
-    bar(ctx, sink.done());
+    if(serialize(member_map, backend)) {
+        std::cout << hexdump(sink.done());
+        bar(ctx, sink.done());
+    }
 }
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {

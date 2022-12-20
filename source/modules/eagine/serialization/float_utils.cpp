@@ -52,7 +52,7 @@ using decomposed_t =
   std::tuple<decompose_fraction_t<F>, decompose_exponent_t<F>>;
 //------------------------------------------------------------------------------
 export template <typename F>
-constexpr auto max_fraction(std::type_identity<F> = {}) noexcept
+[[nodiscard]] constexpr auto max_fraction(std::type_identity<F> = {}) noexcept
   -> decompose_fraction_t<F>
     requires(std::is_floating_point_v<F>)
 {
@@ -61,8 +61,9 @@ constexpr auto max_fraction(std::type_identity<F> = {}) noexcept
 }
 //------------------------------------------------------------------------------
 export template <typename F>
-constexpr auto decompose(const F f, const std::type_identity<F> = {}) noexcept
-  -> decomposed_t<F> {
+[[nodiscard]] constexpr auto decompose(
+  const F f,
+  const std::type_identity<F> = {}) noexcept -> decomposed_t<F> {
     switch(std::fpclassify(f)) {
         case FP_ZERO:
             return {0, std::signbit(f) ? 1 : 0};
@@ -86,7 +87,7 @@ constexpr auto decompose(const F f, const std::type_identity<F> = {}) noexcept
 }
 //------------------------------------------------------------------------------
 export template <typename F>
-constexpr auto compose(
+[[nodiscard]] constexpr auto compose(
   const decomposed_t<F>& f,
   const std::type_identity<F> = {}) noexcept -> F {
     const auto fre = std::get<0>(f);

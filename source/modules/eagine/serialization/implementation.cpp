@@ -31,10 +31,10 @@ export template <typename Derived, typename Source = deserializer_data_source>
 class common_deserializer_backend : public deserializer_backend {
 public:
     /// @brief Default constructor.
-    common_deserializer_backend() noexcept = default;
+    [[nodiscard]] common_deserializer_backend() noexcept = default;
 
     /// @brief Construction from a reference to a Source.
-    common_deserializer_backend(Source& source) noexcept
+    [[nodiscard]] common_deserializer_backend(Source& source) noexcept
       : _source{&source} {}
 
     /// @brief Sets a reference to a new Source object.
@@ -283,10 +283,10 @@ template <typename Derived, typename Sink = serializer_data_sink>
 class common_serializer_backend : public serializer_backend {
 public:
     /// @brief Default constructor.
-    common_serializer_backend() noexcept = default;
+    [[nodiscard]] common_serializer_backend() noexcept = default;
 
     /// @brief Construction from a reference to a Sink.
-    common_serializer_backend(Sink& s) noexcept
+    [[nodiscard]] common_serializer_backend(Sink& s) noexcept
       : _sink{&s} {}
 
     /// @brief Sets a reference to a new Sink object.

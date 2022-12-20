@@ -49,8 +49,9 @@ void bar(std::istream& data) {
     fast_deserializer_backend backend(source);
     my_struct instance;
     auto member_map = map_data_members(instance);
-    deserialize(member_map, backend);
-    baz(instance);
+    if(deserialize(member_map, backend)) {
+        baz(instance);
+    }
 }
 //------------------------------------------------------------------------------
 void foo(const my_struct& instance) {
@@ -59,8 +60,9 @@ void foo(const my_struct& instance) {
     ostream_data_sink sink(data);
     fast_serializer_backend backend(sink);
     auto member_map = map_data_members(instance);
-    serialize(member_map, backend);
-    bar(data);
+    if(serialize(member_map, backend)) {
+        bar(data);
+    }
 }
 //------------------------------------------------------------------------------
 auto main(main_ctx&) -> int {

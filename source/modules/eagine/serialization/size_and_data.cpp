@@ -17,7 +17,7 @@ namespace eagine {
 /// @brief Encodes the size of the source block into destination, copies data afterwards.
 /// @ingroup serialization
 /// @see get_data_with_size
-export auto store_data_with_size(
+export [[nodiscard]] auto store_data_with_size(
   const memory::const_block src,
   memory::block dst) noexcept -> memory::block {
 
@@ -46,8 +46,8 @@ export auto store_data_with_size(
 /// @ingroup serialization
 /// @see store_data_with_size
 /// @see get_data_with_size
-export auto skip_data_with_size(const memory::const_block src) noexcept
-  -> span_size_t {
+export [[nodiscard]] auto skip_data_with_size(
+  const memory::const_block src) noexcept -> span_size_t {
     const auto opt_skip_len = multi_byte::decode_sequence_length(src);
     if(const auto opt_data_len{
          multi_byte::do_decode_code_point(src, opt_skip_len)}) {
@@ -59,7 +59,7 @@ export auto skip_data_with_size(const memory::const_block src) noexcept
 /// @brief Extracts a sub-block from a larger mutable block with encoded sub-block size.
 /// @ingroup serialization
 /// @see store_data_with_size
-export auto get_data_with_size(const memory::block src) noexcept
+export [[nodiscard]] auto get_data_with_size(const memory::block src) noexcept
   -> memory::block {
     const memory::const_block tmp{src};
     const auto opt_skip_len = multi_byte::decode_sequence_length(tmp);
@@ -75,8 +75,8 @@ export auto get_data_with_size(const memory::block src) noexcept
 /// @brief Extracts a sub-block from a larger const block with encoded sub-block size.
 /// @ingroup serialization
 /// @see store_data_with_size
-export auto get_data_with_size(const memory::const_block src) noexcept
-  -> memory::const_block {
+export [[nodiscard]] auto get_data_with_size(
+  const memory::const_block src) noexcept -> memory::const_block {
     const auto opt_skip_len = multi_byte::decode_sequence_length(src);
     if(const auto opt_data_len{
          multi_byte::do_decode_code_point(src, opt_skip_len)}) {

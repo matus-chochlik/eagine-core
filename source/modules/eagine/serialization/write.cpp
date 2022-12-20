@@ -162,7 +162,7 @@ struct common_serializer {
                   static_cast<const serializer<T>*>(this)->write(elem, backend);
                 errors |= backend.finish_element(i++);
                 if(!errors) [[likely]] {
-                    sink.commit(th);
+                    errors |= sink.commit(th);
                 } else if(errors.has_at_most(tmd)) {
                     errors.clear(tmd);
                     errors |= icw;
@@ -485,8 +485,8 @@ struct serializer
 /// @see deserialize
 /// @see serializer_backend
 export template <typename T, typename Backend>
-auto serialize(const T& value, Backend& backend) noexcept
-  -> serialization_errors
+[[nodiscard]] auto serialize(const T& value, Backend& backend) noexcept
+  -> serialization_result<const T&>
     requires(std::is_base_of_v<serializer_backend, Backend>)
 {
     auto errors{backend.begin()};
@@ -496,7 +496,7 @@ auto serialize(const T& value, Backend& backend) noexcept
         errors |= backend.finish();
     }
     errors |= extract(backend.sink()).finalize();
-    return errors;
+    return {value, errors};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

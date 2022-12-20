@@ -59,8 +59,9 @@ void bar(memory::const_block data) {
     string_deserializer_backend backend(source);
     my_struct instance;
     auto member_map = map_data_members(instance);
-    deserialize(member_map, backend);
-    baz(instance);
+    if(deserialize(member_map, backend)) {
+        baz(instance);
+    }
 }
 //------------------------------------------------------------------------------
 void foo(const my_struct& instance) {
@@ -70,9 +71,10 @@ void foo(const my_struct& instance) {
     block_data_sink sink(cover(data));
     string_serializer_backend backend(sink);
     auto member_map = map_data_members(instance);
-    serialize(member_map, backend);
-    std::cout << hexdump(as_bytes(view(data)));
-    bar(view(data));
+    if(serialize(member_map, backend)) {
+        std::cout << hexdump(as_bytes(view(data)));
+        bar(view(data));
+    }
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

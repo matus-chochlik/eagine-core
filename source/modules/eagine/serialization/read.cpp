@@ -504,7 +504,8 @@ struct deserializer
 /// @see serialize
 /// @see deserializer_backend
 export template <typename T, typename Backend>
-auto deserialize(T& value, Backend& backend) noexcept -> deserialization_errors
+[[nodiscard]] auto deserialize(T& value, Backend& backend) noexcept
+  -> deserialization_result<T&>
     requires(std::is_base_of_v<deserializer_backend, Backend>)
 {
     deserialization_errors errors{};
@@ -514,7 +515,7 @@ auto deserialize(T& value, Backend& backend) noexcept -> deserialization_errors
         errors |= reader.read(value, backend);
         errors |= backend.finish();
     }
-    return errors;
+    return {value, errors};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
