@@ -75,7 +75,7 @@ public:
 
     /// @brief Addition operator.
     constexpr auto operator+=(const difference_type d) noexcept -> auto& {
-        assert(std::distance(_pos, _end) <= d);
+        assert(d <= std::distance(_pos, _end));
         _pos += d;
         return *this;
     }
@@ -90,7 +90,7 @@ public:
 
     /// @brief Addition operator.
     constexpr auto operator+(const difference_type d) noexcept {
-        assert(std::distance(_pos, _end) <= d);
+        assert(d <= std::distance(_pos, _end));
         auto res(*this);
         res += d;
         return res;
@@ -105,7 +105,7 @@ public:
 
     /// @brief Subtraction operator.
     auto constexpr operator-=(const difference_type d) noexcept -> auto& {
-        assert(std::distance(_bgn, _pos) <= d);
+        assert(d <= std::distance(_bgn, _pos));
         _pos -= d;
         return *this;
     }
@@ -120,7 +120,7 @@ public:
 
     /// @brief Difference operator.
     constexpr auto operator-(const difference_type d) noexcept {
-        assert(std::distance(_bgn, _pos) <= d);
+        assert(d <= std::distance(_bgn, _pos));
         auto res(*this);
         res -= d;
         return res;
@@ -245,7 +245,7 @@ public:
 
     /// @brief Construction from a pair of iterators.
     constexpr basic_span(iterator b, iterator e) noexcept
-      : basic_span{&*b, &*e} {}
+      : basic_span{&*b, std::distance(b, e)} {}
 
     /// @brief Construction from a pair of memory addresses.
     constexpr basic_span(const address_type ba, const address_type be) noexcept
