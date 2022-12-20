@@ -137,4 +137,5 @@ eagine_add_module_tests(
 	eagine.core.runtime
 	UNITS
 		program_args
+		url
 )
