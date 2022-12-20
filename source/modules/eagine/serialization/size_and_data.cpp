@@ -21,20 +21,23 @@ export [[nodiscard]] auto store_data_with_size(
   const memory::const_block src,
   memory::block dst) noexcept -> memory::block {
 
-    const auto opt_size_cp = limit_cast<multi_byte::code_point>(src.size());
-    if(opt_size_cp) [[likely]] {
-        const auto size_cp = extract(opt_size_cp);
-        const auto opt_size_len = multi_byte::required_sequence_length(size_cp);
-        if(opt_size_len) [[likely]] {
+    if(const auto opt_size_cp{limit_cast<multi_byte::code_point>(src.size())})
+      [[likely]] {
+        const auto size_cp{extract(opt_size_cp)};
+        if(const auto opt_size_len{
+             multi_byte::required_sequence_length(size_cp)}) [[likely]] {
             if(extract(opt_size_len) + src.size() <= dst.size()) {
-                const auto opt_skip_len =
-                  multi_byte::encode_code_point(size_cp, dst);
-                if(opt_skip_len) [[likely]] {
-                    const auto skip_len =
-                      limit_cast<span_size_t>(extract(opt_skip_len));
+                if(const auto opt_skip_len{
+                     multi_byte::encode_code_point(size_cp, dst)}) [[likely]] {
+                    const auto skip_len{
+                      limit_cast<span_size_t>(extract(opt_skip_len))};
                     copy(src, skip(dst, skip_len));
                     return head(dst, skip_len + src.size());
+                } else {
+                    multi_byte::encode_nil(dst);
                 }
+            } else {
+                multi_byte::encode_nil(dst);
             }
         }
     }
@@ -96,13 +99,12 @@ void for_each_data_with_size(
   memory::const_block src,
   Function function) noexcept {
     while(src) {
-        const auto opt_skip_len = multi_byte::decode_sequence_length(src);
-        const auto opt_data_len =
-          multi_byte::do_decode_code_point(src, opt_skip_len);
-        if(opt_data_len) {
-            const auto skip_len = extract(opt_skip_len);
-            const auto data_len = extract(opt_data_len);
-            if(data_len > 0) {
+        if(const auto opt_skip_len{multi_byte::decode_sequence_length(src)}) {
+            const auto opt_data_len{
+              multi_byte::do_decode_code_point(src, opt_skip_len)};
+            if(opt_data_len) {
+                const auto skip_len{extract(opt_skip_len)};
+                const auto data_len{extract(opt_data_len)};
                 function(
                   head(skip(src, skip_len), limit_cast<span_size_t>(data_len)));
                 src = skip(src, skip_len + data_len);

@@ -348,6 +348,14 @@ export [[nodiscard]] auto encode_code_point(const code_point& cp)
     return {};
 }
 //------------------------------------------------------------------------------
+export auto encode_nil(span<byte> dest) noexcept -> valid_sequence_length {
+    if(dest) {
+        dest.front() = 0xFFU;
+        return 1;
+    }
+    return 0;
+}
+//------------------------------------------------------------------------------
 export [[nodiscard]] auto encoding_bytes_required(
   span<const code_point> cps) noexcept -> optionally_valid<span_size_t> {
     span_size_t result = 0;

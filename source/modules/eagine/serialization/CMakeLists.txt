@@ -214,4 +214,5 @@ eagine_add_module_tests(
 	eagine.core.serialization
 	UNITS
 		float_utils
+		size_and_data
 )
