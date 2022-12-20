@@ -524,6 +524,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 					-fcoverage-mapping
 					-mllvm
 					-runtime-counter-relocation
+					-Wno-unsafe-buffer-usage
 			)
 			target_link_options(
 				${TEST_NAME}

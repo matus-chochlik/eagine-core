@@ -163,11 +163,13 @@ void stack_allocator_2(auto& s) {
     }
 
     for(std::size_t n = blks.size(), i = 0; i < n; ++i) {
-        test.check(bool(a.has_allocated(blks[i], 0)), "has allocated");
+        if(!blks[i].empty()) {
+            test.check(bool(a.has_allocated(blks[i], 0)), "has allocated");
 
-        for(std::size_t j = i; j < n; ++j) {
-            test.check(blks[i].overlaps(blks[j]) == (i == j), "overlaps");
-            trck.passed_part(2);
+            for(std::size_t j = i; j < n; ++j) {
+                test.check(blks[i].overlaps(blks[j]) == (i == j), "overlaps");
+                trck.passed_part(2);
+            }
         }
     }
 

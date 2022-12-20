@@ -198,9 +198,17 @@ public:
         return *this = basic_offset_ptr(get() + 1);
     }
 
+    auto operator+(offset_type d) noexcept -> basic_offset_ptr {
+        return basic_offset_ptr(get() + d);
+    }
+
     /// @brief Pointer arithmentic decrement.
     auto operator--() noexcept -> auto& {
         return *this = basic_offset_ptr(get() - 1);
+    }
+
+    auto operator-(offset_type d) noexcept -> basic_offset_ptr {
+        return basic_offset_ptr(get() - d);
     }
 
     /// @brief Pointer array subscript operator.

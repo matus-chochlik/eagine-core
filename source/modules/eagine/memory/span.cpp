@@ -160,16 +160,15 @@ public:
     [[nodiscard]] constexpr auto operator>=(
       const basic_span_iterator&) const noexcept -> bool = default;
 
+    friend constexpr auto as_address(const basic_span_iterator<T> pos) noexcept {
+        return basic_address<std::is_const_v<T>>(pos._pos);
+    }
+
 protected:
     T* _bgn{nullptr};
-    T* _end{nullptr};
     T* _pos{nullptr};
+    T* _end{nullptr};
 };
-
-export template <typename T>
-constexpr auto as_address(const basic_span_iterator<T> pos) noexcept {
-    return basic_address<std::is_const_v<T>>(&*pos);
-}
 
 export template <typename T>
 constexpr auto is_aligned_to(
@@ -179,17 +178,22 @@ constexpr auto is_aligned_to(
 }
 //------------------------------------------------------------------------------
 export template <typename I>
-struct get_span_iterator : std::type_identity<I> {};
+struct span_iterator_traits : std::type_identity<I> {
+    static constexpr auto make_from(I bgn, auto ofs, auto) noexcept -> I {
+        return bgn + ofs;
+    }
+};
 
 export template <typename I>
-using span_iterator_t = typename get_span_iterator<I>::type;
+using span_iterator_t = typename span_iterator_traits<I>::type;
 
 export template <typename P>
-struct get_span_iterator<P*> : std::type_identity<basic_span_iterator<P>> {};
-
-export template <typename P>
-struct get_span_iterator<const P*>
-  : std::type_identity<basic_span_iterator<const P>> {};
+struct span_iterator_traits<P*> : std::type_identity<basic_span_iterator<P>> {
+    static constexpr auto make_from(P* addr, auto offs, auto size) noexcept
+      -> basic_span_iterator<P> {
+        return {addr, addr + offs, addr + size};
+    }
+};
 //------------------------------------------------------------------------------
 // basic_span
 //------------------------------------------------------------------------------
@@ -239,13 +243,14 @@ public:
     constexpr basic_span(const address_type addr, const size_type len) noexcept
       : basic_span{static_cast<pointer>(addr), len} {}
 
-    /// @brief Construction from a pair of pointers.
-    constexpr basic_span(pointer b, pointer e) noexcept
-      : basic_span{b, b <= e ? e - b : 0} {}
-
-    /// @brief Construction from a pair of iterators.
-    constexpr basic_span(iterator b, iterator e) noexcept
-      : basic_span{&*b, std::distance(b, e)} {}
+    /// @brief Construction from a pair of pointers or iterators.
+    template <typename I>
+        requires(
+          std::is_same_v<I, std::remove_const_t<value_type>*> or
+          std::is_same_v<I, value_type*> or std::is_same_v<I, pointer> or
+          std::is_same_v<I, iterator>)
+    constexpr basic_span(I b, I e) noexcept
+      : basic_span{b == e ? nullptr : &*b, std::distance(b, e)} {}
 
     /// @brief Construction from a pair of memory addresses.
     constexpr basic_span(const address_type ba, const address_type be) noexcept
@@ -378,12 +383,12 @@ public:
 
     /// @brief Returns an interator to the start of the span.
     constexpr auto begin() const noexcept -> iterator {
-        return {_addr, _addr, _addr + size()};
+        return span_iterator_traits<Pointer>::make_from(_addr, 0, size());
     }
 
     /// @brief Returns a iterator past the end of the span.
     constexpr auto end() const noexcept -> iterator {
-        return {_addr, _addr + size(), _addr + size()};
+        return span_iterator_traits<Pointer>::make_from(_addr, size(), size());
     }
 
     /// @brief Returns a reverse interator to the end of the span.
