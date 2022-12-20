@@ -124,6 +124,7 @@ auto bindump::to_stream(std::ostream& out) const noexcept -> std::ostream& {
 
     span_size_t i = 0;
 
+    using memory::as_address;
     _bindump_do_bin_dump(
       as_address(_mb.begin()).value(),
       make_span_getter(i, _mb),

@@ -7,6 +7,7 @@
 ///
 export module eagine.core.serialization;
 
+export import :float_utils;
 export import :size_and_data;
 export import :data_buffer;
 export import :result;
