@@ -141,6 +141,7 @@ eagine_add_module_tests(
 		array_size
 		bool_aggregate
 		callable_ref
+		double_buffer
 		memoized
 		network_sort
 		overloaded
