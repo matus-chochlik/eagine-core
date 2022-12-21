@@ -54,3 +54,20 @@ eagine_add_module(
 	IMPORTS
 )
 
+eagine_add_module_tests(
+	eagine.core.resource
+	UNITS
+		embedded
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.runtime
+)
+
+eagine_embed_target_resources(
+	TARGET test.eagine.core.resource.embedded
+	RESOURCES
+		CMakeLists "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt"
+	ENABLE_SEARCH
+)
+

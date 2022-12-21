@@ -132,7 +132,7 @@ public:
     /// @brief Unpacks this resource into a buffer using the provided compressor.
     /// @see fetch
     /// @see is_packed
-    [[nodiscard]] auto unpack(data_compressor& comp, memory::buffer& buf) const
+    auto unpack(data_compressor& comp, memory::buffer& buf) const
       -> memory::const_block {
         return append_to(comp, buf.clear());
     }
@@ -140,7 +140,7 @@ public:
     /// @brief Unpacks this resource into a buffer using compressor from main context.
     /// @see fetch
     /// @see is_packed
-    [[nodiscard]] auto unpack(main_ctx& ctx) const -> memory::const_block {
+    auto unpack(main_ctx& ctx) const -> memory::const_block {
         return unpack(ctx.compressor(), ctx.scratch_space());
     }
 
@@ -148,8 +148,7 @@ public:
     /// @see fetch
     /// @see is_packed
     /// @see make_unpacker
-    [[nodiscard]] auto unpack(main_ctx_object& mco) const
-      -> memory::const_block {
+    auto unpack(main_ctx_object& mco) const -> memory::const_block {
         return unpack(mco.main_context());
     }
 

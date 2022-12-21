@@ -52,7 +52,7 @@ class EmberArgumentParser(argparse.ArgumentParser):
             "yaml",
             "glsl",
             "cpp",
-            "utf8_text"
+            "text_utf8"
         ]
         self._ext_formats = {
             ".xml": "xml",
@@ -63,7 +63,7 @@ class EmberArgumentParser(argparse.ArgumentParser):
             ".yaml": "yaml",
             ".glsl": "glsl",
             ".cpp": "cpp",
-            ".txt": "utf8_text"
+            ".txt": "text_utf8"
         }
 
         self.add_argument(
@@ -340,7 +340,7 @@ def make_prologue(options):
     options.output.write("  -> embedded_resource;\n")
 
 # ------------------------------------------------------------------------------
-def make_switch_function(options):
+def make_switch_function(options, res_map):
     options.output.write("auto search_embedded_resource(identifier_t res_id) noexcept\n")
     options.output.write("  -> embedded_resource {\n")
     options.output.write("    switch(res_id) {\n")
@@ -349,7 +349,8 @@ def make_switch_function(options):
 
     for ident in idents:
         options.output.write('        case id_v("%s"):\n' % ident)
-        options.output.write('            return get_embedded_resource(selector<id_v("%s")>{}, {});\n' % ident)
+        options.output.write('            return get_embedded_resource(selector<id_v("%s")>{}, {"%s"});\n' % (
+            ident, res_map.get(ident, "")))
 
     options.output.write("        default: break;\n")
     options.output.write("    }\n")
@@ -430,6 +431,7 @@ def list_embedded_resources(options):
                     if embeds:
                         for ident, res_expr, res_path in embeds:
                             if res_expr == "__FILE__":
+                                options.format_map[ident] = "cpp"
                                 yield ident, path
                             else:
                                 yield ident, res_path
@@ -450,7 +452,7 @@ def make_resource_file(options):
         if not some_output:
             make_prologue(options)
             some_output = True
-        make_switch_function(options)
+        make_switch_function(options, res_map)
 
     if some_output:
         make_epilogue(options)
