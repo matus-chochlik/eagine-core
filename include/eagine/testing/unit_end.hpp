@@ -253,6 +253,10 @@ auto case_::check_close(const L& l, const R& r, std::string_view label) noexcept
                 const auto eps{C(1) / C(1000)};
                 if(exl == exr) {
                     return std::fabs(C(frl) - C(frr)) <= eps;
+                } else if(exl == exr + 1) {
+                    return std::fabs(C(l) - C(r)) <= (C(l) + C(r)) * eps;
+                } else if(exl + 1 == exr) {
+                    return std::fabs(C(l) - C(r)) <= (C(l) + C(r)) * eps;
                 }
             }
             return false;
