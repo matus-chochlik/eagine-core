@@ -182,8 +182,6 @@ export using pi_rad = scaled_dim_unit<
   si>;
 
 //------------------------------------------------------------------------------
-export using second = unit<time, si>;
-
 export template <>
 struct name_of<base::second> {
     static constexpr const char mp_str[] = "second";
@@ -215,7 +213,28 @@ struct symbol_of<base::hour> {
 };
 
 export template <>
+struct name_of<base::day> {
+    static constexpr const char mp_str[] = "day";
+};
+
+export template <>
+struct symbol_of<base::day> {
+    static constexpr const char mp_str[] = "d";
+};
+
+export template <>
 struct si::base_unit<base::time> : base::second {};
+
+export using second = unit<time, si>;
+
+export using millisecond =
+  make_scaled_unit_t<scales::rational<1, 1000>, second>;
+
+export using minute = make_scaled_unit_t<scales::constant<60>, second>;
+
+export using hour = make_scaled_unit_t<scales::constant<3600>, second>;
+
+export using day = make_scaled_unit_t<scales::constant<86400>, second>;
 //------------------------------------------------------------------------------
 export template <>
 struct name_of<base::steradian> {
