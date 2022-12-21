@@ -19,7 +19,7 @@ void trie_empty(auto& s) {
 
     for(unsigned i = 0; i < test.repeats(10000); ++i) {
         test.check(
-          !t.contains(rg.get_string_made_of(1, 50, t.valid_chars())),
+          not t.contains(rg.get_string_made_of(1, 50, t.valid_chars())),
           "does not contain");
     }
 }

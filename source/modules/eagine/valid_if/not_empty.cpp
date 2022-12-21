@@ -18,9 +18,9 @@ namespace eagine {
 export template <typename T>
 struct valid_if_not_empty_policy {
 
-    /// @brief Indicates value validity, true if !range.empty().
+    /// @brief Indicates value validity, true if not range.empty().
     constexpr auto operator()(const T& range) const noexcept {
-        return !range.empty();
+        return not range.empty();
     }
 
     struct do_log {

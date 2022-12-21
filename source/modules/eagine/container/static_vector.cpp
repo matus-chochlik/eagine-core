@@ -103,7 +103,7 @@ public:
 
     constexpr void push_back(const value_type& value) noexcept(
       std::is_nothrow_copy_constructible_v<T>) {
-        assert(!full());
+        assert(not full());
         *end() = value;
         ++_size;
     }
@@ -111,13 +111,13 @@ public:
     template <typename... Args>
     constexpr void emplace_back(Args&&... args) noexcept(
       std::is_nothrow_constructible_v<T, decltype(std::forward<Args>(args))...>) {
-        assert(!full());
+        assert(not full());
         *end() = T(std::forward<Args>(args)...);
         ++_size;
     }
 
     constexpr void pop_back() noexcept(std::is_nothrow_destructible_v<T>) {
-        assert(!empty());
+        assert(not empty());
         --_size;
         *end() = T{};
     }
@@ -127,7 +127,7 @@ public:
       std::is_nothrow_copy_constructible_v<T>) -> iterator {
         const auto count{std::distance(iter, iend)};
         assert((size() + count) <= max_size());
-        assert(_valid_pos(iter) && _valid_pos(iend));
+        assert(_valid_pos(iter) and _valid_pos(iend));
         const auto bpos{begin() + std::distance(cbegin(), iter)};
         auto ipos{bpos};
         std::move_backward(ipos, end(), end() + count);
@@ -142,7 +142,7 @@ public:
 
     constexpr auto insert(const_iterator pos, const value_type& value) noexcept(
       std::is_nothrow_copy_constructible_v<T>) -> iterator {
-        assert(!full() && _valid_pos(pos));
+        assert(not full() and _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
         *ipos = value;
@@ -152,7 +152,7 @@ public:
 
     constexpr auto insert(const_iterator pos, value_type&& value) noexcept(
       std::is_nothrow_copy_constructible_v<T>) -> iterator {
-        assert(!full() && _valid_pos(pos));
+        assert(not full() and _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
         *ipos = std::move(value);
@@ -164,7 +164,7 @@ public:
     constexpr auto emplace(const_iterator pos, Args&&... args) noexcept(
       std::is_nothrow_constructible_v<T, decltype(std::forward<Args>(args))...>)
       -> iterator {
-        assert(!full() && _valid_pos(pos));
+        assert(not full() and _valid_pos(pos));
         auto ipos{begin() + std::distance(cbegin(), pos)};
         std::move_backward(ipos, end(), end() + 1);
         *ipos = T(std::forward<Args>(args)...);
@@ -174,7 +174,7 @@ public:
 
     constexpr auto erase(const_iterator iter, const_iterator iend) noexcept
       -> iterator {
-        assert(_valid_pos(iter) && _valid_pos(iend));
+        assert(_valid_pos(iter) and _valid_pos(iend));
         const auto count{std::distance(iter, iend)};
         const auto epos{begin() + std::distance(cbegin(), iter)};
         const auto eend{begin() + std::distance(cbegin(), iend)};
@@ -194,22 +194,22 @@ public:
     }
 
     [[nodiscard]] constexpr auto front() noexcept -> value_type& {
-        assert(!empty());
+        assert(not empty());
         return _array.front();
     }
 
     [[nodiscard]] constexpr auto front() const noexcept -> const value_type& {
-        assert(!empty());
+        assert(not empty());
         return _array.front();
     }
 
     [[nodiscard]] constexpr auto back() noexcept -> value_type& {
-        assert(!empty());
+        assert(not empty());
         return _array.back();
     }
 
     [[nodiscard]] constexpr auto back() const noexcept -> const value_type& {
-        assert(!empty());
+        assert(not empty());
         return _array.back();
     }
 
@@ -227,7 +227,7 @@ public:
 
 private:
     constexpr auto _valid_pos(const_iterator pos) const noexcept -> bool {
-        return (begin() <= pos) && (pos <= end());
+        return (begin() <= pos) and (pos <= end());
     }
 
     std::array<T, N> _array{};

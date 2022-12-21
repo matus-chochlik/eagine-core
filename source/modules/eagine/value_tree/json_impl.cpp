@@ -106,7 +106,7 @@ public:
                 if(val.IsInt64()) {
                     return value_type::int64_type;
                 }
-                if(val.IsFloat() || val.IsDouble()) {
+                if(val.IsFloat() or val.IsDouble()) {
                     return value_type::float_type;
                 }
                 if(val.IsString()) {
@@ -216,7 +216,7 @@ public:
                             break;
                         }
                     }
-                    if(!found) {
+                    if(not found) {
                         if(member == result->MemberEnd()) {
                             member = result->FindMember(c_str(entry));
                             if(member != result->MemberEnd()) {
@@ -226,7 +226,7 @@ public:
                             }
                         }
                     }
-                    if(!found) {
+                    if(not found) {
                         result = nullptr;
                     }
                 } else if(result->IsArray()) {
@@ -261,7 +261,7 @@ public:
             if(val.IsArray()) {
                 return span_size(val.Size());
             }
-            if(!val.IsNull()) {
+            if(not val.IsNull()) {
                 return 1;
             }
         }
@@ -469,15 +469,15 @@ public:
             if(val.IsArray()) {
                 const auto n = span_size(val.Size());
                 span_size_t i = 0;
-                while((i + offset < n) && (i < dest.size())) {
-                    if(!convert(val[rapidjson_size(i + offset)], dest[i])) {
+                while((i + offset < n) and (i < dest.size())) {
+                    if(not convert(val[rapidjson_size(i + offset)], dest[i])) {
                         break;
                     }
                     ++i;
                 }
                 return i;
             } else {
-                if(!dest.empty()) {
+                if(not dest.empty()) {
                     if(convert(val, dest.front())) {
                         return 1;
                     }
@@ -812,7 +812,7 @@ public:
             _done += _offs;
             _offs = 0;
         }
-        if(!_current.empty()) {
+        if(not _current.empty()) {
             append_to(_current, _previous);
             _current = {};
         }
@@ -885,14 +885,14 @@ public:
 
     auto _do_parse_current() noexcept -> bool {
         return _json_reader.IterativeParseNext<_parse_flags()>(
-                 _json_stream, *this) &&
-               !_json_reader.IterativeParseComplete();
+                 _json_stream, *this) and
+               not _json_reader.IterativeParseComplete();
     }
 
     auto parse_data(memory::const_block data) noexcept -> bool {
         if(_visitor->should_continue()) [[likely]] {
             if(_in_unparsed) {
-                if(!data.empty()) {
+                if(not data.empty()) {
                     _visitor->unparsed_data(view_one(data));
                     return true;
                 }
@@ -900,7 +900,7 @@ public:
                 _json_stream.next(data);
                 bool parsed_something{false};
                 while(_json_stream.available() >= _max_token_size) {
-                    if(!_do_parse_current()) {
+                    if(not _do_parse_current()) {
                         break;
                     }
                     parsed_something = true;
@@ -915,7 +915,7 @@ public:
                     }
                 }
 
-                if(parsed_something && !_just_flushed) {
+                if(parsed_something and not _just_flushed) {
                     _visitor->flush();
                     _just_flushed = true;
                 }
@@ -932,7 +932,7 @@ public:
             assert(_json_stream.available() == 0);
         } else {
             while(_visitor->should_continue()) {
-                if(!_do_parse_current()) {
+                if(not _do_parse_current()) {
                     break;
                 }
             }
@@ -968,8 +968,8 @@ public:
       _cached_type cur_val_typ,
       _cached_type new_val_typ) noexcept {
         const auto should_flush{
-          ((_old_val_typ != new_val_typ) && !cache.empty()) ||
-          ((_old_val_typ == cur_val_typ) && (cache.size() >= 512))};
+          ((_old_val_typ != new_val_typ) and not cache.empty()) or
+          ((_old_val_typ == cur_val_typ) and (cache.size() >= 512))};
         if(should_flush) [[unlikely]] {
             _visitor->consume(memory::view(cache));
             cache.clear();
@@ -986,7 +986,7 @@ public:
 
     template <typename T>
     void _do_push(T value, std::vector<T>& cache, _cached_type new_val_typ) {
-        if(_list_stack.empty() || !_list_stack.top()) {
+        if(_list_stack.empty() or not _list_stack.top()) {
             _visitor->consume(view_one(value));
             _just_flushed = false;
         } else {
@@ -1041,9 +1041,9 @@ public:
         return true;
     }
     auto Key(const char* str, rapidjson::SizeType length, bool) -> bool {
-        assert(!_attr_stack.empty());
+        assert(not _attr_stack.empty());
         auto& attr_name = _attr_stack.top();
-        if(!attr_name.empty()) {
+        if(not attr_name.empty()) {
             _visitor->finish_attribute(attr_name);
         }
         attr_name.assign(str, std_size(length));
@@ -1051,9 +1051,9 @@ public:
         return true;
     }
     auto EndObject(rapidjson::SizeType) -> bool {
-        assert(!_attr_stack.empty());
+        assert(not _attr_stack.empty());
         auto& attr_name = _attr_stack.top();
-        if(!attr_name.empty()) {
+        if(not attr_name.empty()) {
             _visitor->finish_attribute(attr_name);
         }
         _attr_stack.pop();

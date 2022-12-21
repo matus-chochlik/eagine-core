@@ -38,7 +38,7 @@ auto embedded_resource::visit(
   std::shared_ptr<valtree::value_tree_visitor> visitor,
   span_size_t max_token_size) const -> bool {
     if(
-      (format() == embedded_resource_format::json) ||
+      (format() == embedded_resource_format::json) or
       (format() == embedded_resource_format::json_binary)) {
         auto input{traverse_json_stream(
           std::move(visitor), max_token_size, buffers, log)};

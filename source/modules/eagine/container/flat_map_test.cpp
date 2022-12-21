@@ -50,7 +50,7 @@ void flat_map_init_from_vector(auto& s) {
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] ok");
@@ -90,7 +90,7 @@ void flat_map_insert(auto& s) {
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] is ok");
@@ -130,7 +130,7 @@ void flat_map_insert_at_begin(auto& s) {
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] is ok");
@@ -170,7 +170,7 @@ void flat_map_insert_at_end(auto& s) {
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] is ok");
@@ -210,7 +210,7 @@ void flat_map_insert_at_lower_bound(auto& s) {
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] is ok");
@@ -250,7 +250,7 @@ void flat_map_try_emplace(auto& s) {
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] ok");
@@ -290,7 +290,7 @@ void flat_map_emplace(auto& s) {
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] ok");

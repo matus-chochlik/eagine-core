@@ -193,7 +193,7 @@ public:
     /// @brief Checks if the specified key is contained in this trie.
     [[nodiscard]] auto contains(const string_view key) const noexcept -> bool {
         auto [iidx, offs, can_insert] = _find_insert_pos(key);
-        if(can_insert && (offs == key.size())) {
+        if(can_insert and (offs == key.size())) {
             return std::get<2>(_nodes[iidx]);
         }
         return false;
@@ -203,7 +203,7 @@ public:
     [[nodiscard]] auto find(const string_view key) const noexcept
       -> optional_reference_wrapper<const Value> {
         auto [fidx, offs, can_insert] = _find_insert_pos(key);
-        if(can_insert && (offs == key.size())) {
+        if(can_insert and (offs == key.size())) {
             auto& node{_nodes[fidx]};
             if(std::get<2>(node)) {
                 return {std::get<1>(node)};

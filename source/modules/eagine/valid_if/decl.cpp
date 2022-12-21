@@ -55,7 +55,7 @@ export struct valid_flag_policy {
 export template <typename T, typename Policy, typename DoLog, typename... P>
 class basic_valid_if {
     static_assert(
-      std::is_nothrow_default_constructible_v<Policy> ||
+      std::is_nothrow_default_constructible_v<Policy> or
       std::is_nothrow_move_constructible_v<Policy>);
 
 public:
@@ -173,48 +173,48 @@ public:
     /// @brief Equality comparison.
     [[nodiscard]] constexpr auto operator==(
       const basic_valid_if& that) const noexcept -> bool {
-        return (_value == that._value) && is_valid() && that.is_valid();
+        return (_value == that._value) and is_valid() and that.is_valid();
     }
 
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() == v, !is_valid()};
+        return {this->value_anyway() == v, not is_valid()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() != v, !is_valid()};
+        return {this->value_anyway() != v, not is_valid()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() < v, !is_valid()};
+        return {this->value_anyway() < v, not is_valid()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() > v, !is_valid()};
+        return {this->value_anyway() > v, not is_valid()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() <= v, !is_valid()};
+        return {this->value_anyway() <= v, not is_valid()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() >= v, !is_valid()};
+        return {this->value_anyway() >= v, not is_valid()};
     }
 
     template <typename Log>
     constexpr void log_invalid(Log& log, const value_type& v, P... p) const {
-        assert(!is_valid(v, p...));
+        assert(not is_valid(v, p...));
         _do_log(log, v, p...);
     }
 
@@ -228,7 +228,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     template <typename Func>
     constexpr auto call_if_invalid(Func func, P... p) -> auto& {
-        if(!is_valid(p...)) {
+        if(not is_valid(p...)) {
             func(_do_log, _value, p...);
         }
         return *this;
@@ -238,7 +238,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
     void throw_if_invalid(P... p) const {
-        if(!is_valid(p...)) {
+        if(not is_valid(p...)) {
             std::stringstream ss;
             log_invalid(ss, p...);
             throw std::runtime_error(ss.str());
@@ -294,7 +294,7 @@ public:
     /// @brief Calls the specified function if the stored value is valid.
     /// @param func the function to be called.
     template <typename Func>
-        requires(!std::is_same_v<std::invoke_result_t<Func, T>, void>)
+        requires(not std::is_same_v<std::invoke_result_t<Func, T>, void>)
     [[nodiscard]] constexpr auto then(const Func& func) const -> basic_valid_if<
       std::invoke_result_t<Func, T>,
       valid_flag_policy,
@@ -360,7 +360,7 @@ private:
 export template <typename T, typename Policy, typename DoLog, typename... P>
 class basic_valid_if<T&, Policy, DoLog, P...> {
     static_assert(
-      std::is_nothrow_default_constructible_v<Policy> ||
+      std::is_nothrow_default_constructible_v<Policy> or
       std::is_nothrow_move_constructible_v<Policy>);
 
 public:
@@ -454,48 +454,48 @@ public:
     /// @brief Equality comparison.
     [[nodiscard]] constexpr auto operator==(
       const basic_valid_if& that) const noexcept -> bool {
-        return (_value == that._value) && is_valid() && that.is_valid();
+        return (_value == that._value) and is_valid() and that.is_valid();
     }
 
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() == v, !is_valid()};
+        return {this->value_anyway() == v, not is_valid()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() != v, !is_valid()};
+        return {this->value_anyway() != v, not is_valid()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() < v, !is_valid()};
+        return {this->value_anyway() < v, not is_valid()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() > v, !is_valid()};
+        return {this->value_anyway() > v, not is_valid()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() <= v, !is_valid()};
+        return {this->value_anyway() <= v, not is_valid()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() >= v, !is_valid()};
+        return {this->value_anyway() >= v, not is_valid()};
     }
 
     template <typename Log>
     constexpr void log_invalid(Log& log, const value_type& v, P... p) const {
-        assert(!is_valid(v, p...));
+        assert(not is_valid(v, p...));
         _do_log(log, v, p...);
     }
 
@@ -509,7 +509,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     template <typename Func>
     constexpr auto call_if_invalid(Func func, P... p) -> auto& {
-        if(!is_valid(p...)) {
+        if(not is_valid(p...)) {
             func(_do_log, _value, p...);
         }
         return *this;
@@ -519,7 +519,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
     void throw_if_invalid(P... p) const {
-        if(!is_valid(p...)) {
+        if(not is_valid(p...)) {
             std::stringstream ss;
             log_invalid(ss, p...);
             throw std::runtime_error(ss.str());
@@ -575,7 +575,7 @@ public:
     /// @brief Calls the specified function if the stored value is valid.
     /// @param func the function to be called.
     template <typename Func>
-        requires(!std::is_same_v<std::invoke_result_t<Func, T>, void>)
+        requires(not std::is_same_v<std::invoke_result_t<Func, T>, void>)
     [[nodiscard]] constexpr auto then(const Func& func) const -> basic_valid_if<
       std::invoke_result_t<Func, T>,
       valid_flag_policy,
@@ -653,7 +653,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() == v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 
 /// @brief Non-equality comparison of two conditionally valid values.
@@ -664,7 +664,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() != v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 
 /// @brief Less-than comparison of two conditionally valid values.
@@ -675,7 +675,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() < v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 
 /// @brief Greater-than comparison of two conditionally valid values.
@@ -686,7 +686,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() > v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 
 /// @brief Less-equal comparison of two conditionally valid values.
@@ -697,7 +697,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() <= v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 
 /// @brief Greater-equal comparison of two conditionally valid values.
@@ -708,7 +708,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() >= v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 //------------------------------------------------------------------------------
 /// @brief Primary template for conditionally valid values.
@@ -759,7 +759,7 @@ public:
     constexpr valid_if_or_fallback(basic_valid_if<T, P, L> vi, F fallback) noexcept(
       noexcept(basic_valid_if<T, P, L>(
         std::declval<
-          basic_valid_if<T, P, L>&&>())) && noexcept(F(std::declval<F&&>())))
+          basic_valid_if<T, P, L>&&>())) and noexcept(F(std::declval<F&&>())))
       : basic_valid_if<T, P, L>{std::move(vi)}
       , _fallback{std::move(fallback)} {}
 
@@ -783,7 +783,7 @@ export template <typename F, typename T, typename P, typename L>
 [[nodiscard]] auto either_or(basic_valid_if<T, P, L> vi, F f) noexcept(
   noexcept(basic_valid_if<T, P, L>(
     std::declval<
-      basic_valid_if<T, P, L>&&>())) && noexcept(F(std::declval<F&&>())))
+      basic_valid_if<T, P, L>&&>())) and noexcept(F(std::declval<F&&>())))
   -> valid_if_or_fallback<F, T, P, L> {
     return {std::move(vi), std::move(f)};
 }

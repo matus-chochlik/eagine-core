@@ -89,7 +89,7 @@ struct from_saafv {
       const span_size_t n,
       T v) noexcept {
         data_t<T, N, V> r{};
-        for(int i = 0; i < N && i < int(n); ++i) {
+        for(int i = 0; i < N and i < int(n); ++i) {
             r[i] = d[i];
         }
         for(int i = int(n); i < N; ++i) {

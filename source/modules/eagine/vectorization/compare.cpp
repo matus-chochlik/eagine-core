@@ -16,7 +16,7 @@ struct is_zero {
     [[nodiscard]] static auto apply(data_param_t<T, N, V> v) noexcept -> bool {
         bool result = true;
         for(int i = 0; i < N; ++i) {
-            result &= !(v[i] > T(0) || v[i] < T(0));
+            result &= not(v[i] > T(0) or v[i] < T(0));
         }
         return result;
     }

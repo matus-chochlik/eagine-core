@@ -104,7 +104,7 @@ public:
 
     /// @brief Indicates if the resource is empty.
     [[nodiscard]] constexpr explicit operator bool() const noexcept {
-        return !_res_blk.empty();
+        return not _res_blk.empty();
     }
 
     [[nodiscard]] constexpr auto embedded_block() const noexcept
@@ -114,7 +114,7 @@ public:
 
     /// @brief Implicit conversion to const block.
     [[nodiscard]] constexpr operator memory::const_block() const noexcept {
-        assert(!is_packed());
+        assert(not is_packed());
         return _res_blk;
     }
 

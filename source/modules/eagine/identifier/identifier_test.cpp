@@ -15,7 +15,7 @@ void identifier_default_construct(auto& s) {
     eagine::identifier i;
     test.constructed(i, "i");
 
-    test.check(!i, "is false");
+    test.check(not i, "is false");
     test.check_equal(i.size(), 0U, "size is zero");
     test.check_equal(i.name().size(), 0U, "name size is zero");
     test.check_equal(i.name().str().size(), 0U, "name string size is zero");

@@ -43,7 +43,7 @@ void flat_set_init_from_vector(auto& s) {
     auto ssi = ss.begin();
     auto fsi = fs.begin();
 
-    while((ssi != ss.end()) && (fsi != fs.end())) {
+    while((ssi != ss.end()) and (fsi != fs.end())) {
         test.check_equal(*ssi, *fsi, "elements same");
         ++ssi;
         ++fsi;
@@ -75,7 +75,7 @@ void flat_set_insert(auto& s) {
     auto ssi = ss.begin();
     auto fsi = fs.begin();
 
-    while((ssi != ss.end()) && (fsi != fs.end())) {
+    while((ssi != ss.end()) and (fsi != fs.end())) {
         test.check_equal(*ssi, *fsi, "elements same");
         ++ssi;
         ++fsi;
@@ -107,7 +107,7 @@ void flat_set_insert_at_begin(auto& s) {
     auto ssi = ss.begin();
     auto fsi = fs.begin();
 
-    while((ssi != ss.end()) && (fsi != fs.end())) {
+    while((ssi != ss.end()) and (fsi != fs.end())) {
         test.check_equal(*ssi, *fsi, "elements same");
         ++ssi;
         ++fsi;
@@ -139,7 +139,7 @@ void flat_set_insert_at_end(auto& s) {
     auto ssi = ss.begin();
     auto fsi = fs.begin();
 
-    while((ssi != ss.end()) && (fsi != fs.end())) {
+    while((ssi != ss.end()) and (fsi != fs.end())) {
         test.check_equal(*ssi, *fsi, "elements same");
         ++ssi;
         ++fsi;
@@ -171,7 +171,7 @@ void flat_set_insert_at_lower_bound(auto& s) {
     auto ssi = ss.begin();
     auto fsi = fs.begin();
 
-    while((ssi != ss.end()) && (fsi != fs.end())) {
+    while((ssi != ss.end()) and (fsi != fs.end())) {
         test.check_equal(*ssi, *fsi, "elements same");
         ++ssi;
         ++fsi;
@@ -228,7 +228,7 @@ void flat_set_erase(auto& s) {
 
         test.check(ssi == ss.end(), "std::set iterator ok");
         test.check(fsi == fs.end(), "flat_set iterator ok");
-        test.check(!fs.contains(k), "flat_set does not contain");
+        test.check(not fs.contains(k), "flat_set does not contain");
         trck.passed_part(3);
     }
 }

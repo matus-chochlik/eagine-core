@@ -28,7 +28,7 @@ public:
       , _right{std::move(right)} {}
 
     auto should_continue() noexcept -> bool {
-        return _left->should_continue() && _right->should_continue();
+        return _left->should_continue() and _right->should_continue();
     }
 
     void begin() noexcept final {
@@ -85,7 +85,7 @@ public:
     auto finish() noexcept -> bool final {
         const bool l{_left->finish()};
         const bool r{_right->finish()};
-        return l && r;
+        return l and r;
     }
 
     void failed() noexcept final {
@@ -198,7 +198,7 @@ public:
       : _builder{std::move(builder)} {}
 
     auto should_continue() noexcept -> bool final {
-        return _should_continue && _builder->should_continue();
+        return _should_continue and _builder->should_continue();
     }
 
     void begin() noexcept final {
@@ -221,7 +221,7 @@ public:
     }
 
     void finish_attribute(const string_view name) noexcept final {
-        if(!_path.empty() && _path.back() == name) {
+        if(not _path.empty() and _path.back() == name) {
             _path.pop_back();
         } else {
             _should_continue = false;
@@ -237,7 +237,7 @@ public:
     }
 
     void finish_list() noexcept final {
-        if(!_path.empty() && _path.back() == string_view{"_"}) {
+        if(not _path.empty() and _path.back() == string_view{"_"}) {
             _path.pop_back();
         } else {
             _should_continue = false;
@@ -251,7 +251,7 @@ public:
     }
 
     auto finish() noexcept -> bool final {
-        if(!_path.empty()) {
+        if(not _path.empty()) {
             _builder->failed();
         }
         return _builder->finish();

@@ -87,7 +87,7 @@ class overlay_attribute : public attribute_interface {
       overlay_compound& owner,
       std::pair<const std::string, _child_info>& entry) -> overlay_attribute* {
         auto& info = entry.second;
-        if(!info.cached) {
+        if(not info.cached) {
             basic_string_path path{_path};
             path.push_back(entry.first);
             info.cached = overlay_make_new_node(owner, std::move(path));

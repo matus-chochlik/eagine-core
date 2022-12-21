@@ -44,7 +44,7 @@ void compound::traverse(const stack_visit_handler visit) const {
             } else {
                 path.push_back(std::to_string(pos.back()));
             }
-            if(visit(*this, child, path, view(atr)) && !is_link(child)) {
+            if(visit(*this, child, path, view(atr)) and not is_link(child)) {
                 atr.push_back(child);
                 pos.push_back(0);
                 continue;

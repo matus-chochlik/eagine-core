@@ -118,7 +118,7 @@ public:
     }
 
     [[nodiscard]] auto contains(const Key& key) const noexcept {
-        return !_find_insert_pos(key).second;
+        return not _find_insert_pos(key).second;
     }
 
     auto clear() noexcept {
@@ -159,7 +159,7 @@ private:
         const auto e = _vec.end();
         const auto p = std::lower_bound(b, e, k, key_comp());
 
-        return std::pair{p, (p == e) || (k != *p)};
+        return std::pair{p, (p == e) or (k != *p)};
     }
 
     template <typename I>
@@ -167,7 +167,7 @@ private:
         auto b = _vec.begin();
         auto e = _vec.end();
         if(p == e) {
-            if(_vec.empty() || value_comp()(_vec.back(), k)) {
+            if(_vec.empty() or value_comp()(_vec.back(), k)) {
                 return std::pair{p, true};
             }
             p = std::lower_bound(b, e, k, key_comp());

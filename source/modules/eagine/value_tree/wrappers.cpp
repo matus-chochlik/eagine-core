@@ -53,7 +53,7 @@ public:
     attribute(const attribute& that)
       : _owner{that._owner}
       , _pimpl{that._pimpl} {
-        if(_owner && _pimpl) {
+        if(_owner and _pimpl) {
             _owner->add_ref(*_pimpl);
         }
     }
@@ -75,7 +75,7 @@ public:
             attribute temp{std::move(*this)};
             _owner = that._owner;
             _pimpl = that._pimpl;
-            if(_owner && _pimpl) {
+            if(_owner and _pimpl) {
                 _owner->add_ref(*_pimpl);
             }
         }
@@ -92,7 +92,7 @@ public:
 
     /// @brief Indicates if this attribute actually refers to something.
     explicit operator bool() const {
-        return _owner && _pimpl;
+        return _owner and _pimpl;
     }
 
     /// @brief Returns the implementation type id of this attribute.
@@ -105,7 +105,7 @@ public:
 
     /// @brief Returns the implementation type id of this attribute.
     auto name() const -> string_view {
-        if(_owner && _pimpl) {
+        if(_owner and _pimpl) {
             return _owner->attribute_name(*_pimpl);
         }
         return {};
@@ -279,7 +279,7 @@ public:
     /// @brief Returns the name of an attribute.
     /// @pre this->type_id() == attrib.type_id().
     auto attribute_name(const attribute& attrib) const -> string_view {
-        if(_pimpl && attrib._pimpl) {
+        if(_pimpl and attrib._pimpl) {
             return _pimpl->attribute_name(*attrib._pimpl);
         }
         return {};
@@ -292,7 +292,7 @@ public:
     /// the canonical type or using a different, related value type, if the
     /// necessary conversion is implemented.
     auto canonical_type(const attribute& attrib) const -> value_type {
-        if(_pimpl && attrib._pimpl) {
+        if(_pimpl and attrib._pimpl) {
             return _pimpl->canonical_type(*attrib._pimpl);
         }
         return value_type::unknown;
@@ -301,7 +301,7 @@ public:
     /// @brief Indicates if the specified attribute is immutable.
     /// @pre this->type_id() == attrib.type_id()
     auto is_immutable(const attribute& attrib) const -> bool {
-        if(_pimpl && attrib._pimpl) {
+        if(_pimpl and attrib._pimpl) {
             return _pimpl->is_immutable(*attrib._pimpl);
         }
         return false;
@@ -310,7 +310,7 @@ public:
     /// @brief Indicates if the specified attribute is a reference or link in the tree.
     /// @pre this->type_id() == attrib.type_id()
     auto is_link(const attribute& attrib) const -> bool {
-        if(_pimpl && attrib._pimpl) {
+        if(_pimpl and attrib._pimpl) {
             return _pimpl->is_link(*attrib._pimpl);
         }
         return false;
@@ -322,7 +322,7 @@ public:
     /// nested attributes. In such implementations the nested nodes can be
     /// traversed only by name.
     auto nested_count(const attribute& attrib) const -> span_size_t {
-        if(_pimpl && attrib._pimpl) {
+        if(_pimpl and attrib._pimpl) {
             return _pimpl->nested_count(*attrib._pimpl);
         }
         return 0;
@@ -340,7 +340,7 @@ public:
     /// Returns empty attribute handle if no such nested attribute exists.
     auto nested(const attribute& attrib, const span_size_t index) const
       -> attribute {
-        if(_pimpl && attrib._pimpl) {
+        if(_pimpl and attrib._pimpl) {
             return {_pimpl, _pimpl->nested(*attrib._pimpl, index)};
         }
         return {};
@@ -352,7 +352,7 @@ public:
     /// Returns empty attribute handle if no such nested attribute exists.
     auto nested(const attribute& attrib, const string_view name) const
       -> attribute {
-        if(_pimpl && attrib._pimpl) {
+        if(_pimpl and attrib._pimpl) {
             return {_pimpl, _pimpl->nested(*attrib._pimpl, name)};
         }
         return {};
@@ -371,7 +371,7 @@ public:
     /// Returns empty attribute handle if no such nested attribute exists.
     auto find(const attribute& attrib, const basic_string_path& path) const
       -> attribute {
-        if(_pimpl && attrib._pimpl) {
+        if(_pimpl and attrib._pimpl) {
             return {_pimpl, _pimpl->find(*attrib._pimpl, path)};
         }
         return {};
@@ -385,7 +385,7 @@ public:
       const attribute& attrib,
       const basic_string_path& path,
       const memory::span<const string_view> tags) const -> attribute {
-        if(_pimpl && attrib._pimpl) {
+        if(_pimpl and attrib._pimpl) {
             return {_pimpl, _pimpl->find(*attrib._pimpl, path, tags)};
         }
         return {};
@@ -409,7 +409,7 @@ public:
 
     /// @brief Returns the number of value elements accessible through an attribute.
     auto value_count(const attribute& attrib) const -> span_size_t {
-        if(_pimpl && attrib._pimpl) {
+        if(_pimpl and attrib._pimpl) {
             return _pimpl->value_count(*attrib._pimpl);
         }
         return 0;
@@ -431,7 +431,7 @@ public:
       const attribute& attrib,
       const span_size_t offset,
       memory::span<T> dest) const -> memory::span<T> {
-        if(_pimpl && attrib._pimpl) {
+        if(_pimpl and attrib._pimpl) {
             return head(
               dest, _pimpl->fetch_values(*attrib._pimpl, offset, dest));
         }
@@ -503,7 +503,7 @@ public:
       T& dest,
       const selector<V> sel) const -> bool {
         converted_value<T> conv{dest};
-        if(!fetch_values(attrib, offset, cover_one(conv.dest())).empty()) {
+        if(not fetch_values(attrib, offset, cover_one(conv.dest())).empty()) {
             return conv.apply(sel);
         }
         return false;
@@ -525,7 +525,7 @@ public:
       const selector<V> sel) const -> memory::span<T> {
         span_size_t index = 0;
         for(T& elem : dest) {
-            if(!select_value(attrib, offset + index, elem, sel)) {
+            if(not select_value(attrib, offset + index, elem, sel)) {
                 index = 0;
                 break;
             }
@@ -794,12 +794,12 @@ public:
     compound_attribute(compound c, attribute a) noexcept
       : _c{std::move(c)}
       , _a{std::move(a)} {
-        assert(!_c || !_a || (_c.type_id() == _a.type_id()));
+        assert(not _c or not _a or (_c.type_id() == _a.type_id()));
     }
 
     /// @brief Indicates if this attribute actually refers to something.
     explicit operator bool() const noexcept {
-        return _c && _a;
+        return _c and _a;
     }
 
     /// @brief Returns the shared implementation type id of the attribute and compound.

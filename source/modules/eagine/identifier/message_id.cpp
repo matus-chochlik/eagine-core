@@ -25,7 +25,7 @@ struct static_message_id;
 export class message_id {
 public:
     ///	@brief Default constructor.
-    /// @post !is_valid()
+    /// @post not is_valid()
     constexpr message_id() noexcept = default;
 
     ///	@brief Construction from two identifier values.
@@ -85,7 +85,7 @@ public:
 
     /// @brief Checks if the stored identifier values are non-zero.
     [[nodiscard]] constexpr auto is_valid() const noexcept {
-        return (class_id() != 0U) && (method_id() != 0U);
+        return (class_id() != 0U) and (method_id() != 0U);
     }
 
     /// @brief Returns the class and method identifiers in a tuple.

@@ -139,14 +139,14 @@ public:
 
     /// @brief Access the first element.
     /// @see back
-    /// @pre !empty()
+    /// @pre not empty()
     [[nodiscard]] constexpr auto front() const noexcept {
         return _transf()(_items.front());
     }
 
     /// @brief Access the last element.
     /// @see front
-    /// @pre !empty()
+    /// @pre not empty()
     [[nodiscard]] constexpr auto back() const noexcept {
         return _transf()(_items.back());
     }

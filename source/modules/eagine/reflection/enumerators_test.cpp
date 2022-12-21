@@ -216,7 +216,7 @@ void enum_for_each_1(auto& s) {
 
     eagine::for_each_enumerator(
       [&test, &trck](const auto& info) {
-          test.check(!info.name.empty(), "has name");
+          test.check(not info.name.empty(), "has name");
           trck.passed_part(1);
       },
       std::type_identity<eagine::test_enum_1>{});
@@ -232,7 +232,7 @@ void enum_for_each_2(auto& s) {
 
     eagine::for_each_enumerator(
       [&test, &trck](const auto& info) {
-          test.check(!info.name.empty(), "has name");
+          test.check(not info.name.empty(), "has name");
           trck.passed_part(1);
       },
       std::type_identity<eagine::test_enum_2>{});
@@ -248,7 +248,7 @@ void enum_for_each_3(auto& s) {
 
     eagine::for_each_enumerator(
       [&test, &trck](const auto& info) {
-          test.check(!info.name.empty(), "has name");
+          test.check(not info.name.empty(), "has name");
           trck.passed_part(1);
       },
       std::type_identity<eagine::test_enum_3>{});

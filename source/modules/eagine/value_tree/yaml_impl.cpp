@@ -90,7 +90,7 @@ class rapidyaml_attribute : public attribute_interface {
     ryml::NodeRef _node{};
 
     static inline auto _usable(const ryml::NodeRef& n) noexcept {
-        return n.valid() && !n.is_seed();
+        return n.valid() and not n.is_seed();
     }
 
 public:
@@ -102,7 +102,7 @@ public:
     }
 
     auto name() const noexcept -> string_view {
-        if(_usable(_node) && _node.has_key()) {
+        if(_usable(_node) and _node.has_key()) {
             return view(_node.key());
         }
         return {};
@@ -132,7 +132,7 @@ public:
             if(_node.is_seq()) {
                 return span_size(_node.num_children());
             }
-            if(!_node.is_map()) {
+            if(not _node.is_map()) {
                 return 1;
             }
         }
@@ -187,7 +187,7 @@ public:
                             break;
                         }
                     }
-                    if(!found) {
+                    if(not found) {
                         result = result.find_child(rapidyaml_cstrref(entry));
                     }
                 } else if(result.is_seq()) {
@@ -212,7 +212,7 @@ public:
 
     auto fetch_values(span_size_t offset, span<char> dest) -> span_size_t {
         if(_usable(_node)) {
-            if(!_node.is_seq()) {
+            if(not _node.is_seq()) {
                 if(_node.has_val()) {
                     const auto src{head(skip(view(_node.val()), offset), dest)};
                     copy(src, dest);
@@ -246,7 +246,7 @@ public:
                 }
                 return pos;
             }
-            if(!dest.empty()) {
+            if(not dest.empty()) {
                 if(_node.has_val()) {
                     if(auto opt_val{from_string<T>(view(_node.val()))}) {
                         dest.front() = std::move(extract(opt_val));

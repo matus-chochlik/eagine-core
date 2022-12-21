@@ -15,7 +15,7 @@ namespace eagine::vect {
 
 // has_simd_data
 export template <typename T, int N, bool V>
-using has_simd_data = std::bool_constant<(V && _has_simd_data<T, N>::value)>;
+using has_simd_data = std::bool_constant<(V and _has_simd_data<T, N>::value)>;
 
 // data
 export template <typename T, int N, bool V>

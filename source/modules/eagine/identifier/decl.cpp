@@ -50,7 +50,7 @@ public:
     /// @brief Indicates if the specified string view can be encoded by this.
     static constexpr auto can_be_encoded(string_view str) noexcept -> bool {
         for(const char c : str) {
-            if(!memory::has_element(chars(), c)) {
+            if(not memory::has_element(chars(), c)) {
                 return false;
             }
         }
@@ -68,7 +68,7 @@ private:
       const char c,
       const std::uint8_t i,
       const char (&enc)[L]) noexcept -> std::uint8_t {
-        return ((i < L) && (c != '\0'))
+        return ((i < L) and (c != '\0'))
                  ? ((c == enc[i]) ? i : _do_encode(c, i + 1, enc))
                  : invalid();
     }

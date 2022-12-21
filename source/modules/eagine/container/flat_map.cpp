@@ -85,7 +85,7 @@ struct flat_map_ops : flat_map_value_compare<Key, Val, Cmp> {
     template <typename I, typename K>
     auto find(I b, const I e, const K& key) const noexcept -> I {
         b = lower_bound(b, e, key);
-        if((b != e) && value_comp()(key, *b)) {
+        if((b != e) and value_comp()(key, *b)) {
             b = e;
         }
         return b;
@@ -386,7 +386,7 @@ private:
         const auto e = _vec.end();
         const auto p = _ops().lower_bound(b, e, k);
 
-        return std::pair{p, (p == e) || !are_equal(k, p->first)};
+        return std::pair{p, (p == e) or not are_equal(k, p->first)};
     }
 
     template <typename I, typename K>
@@ -394,7 +394,7 @@ private:
         auto b = _vec.begin();
         auto e = _vec.end();
         if(p == e) {
-            if(_vec.empty() || value_comp()(_vec.back(), k)) {
+            if(_vec.empty() or value_comp()(_vec.back(), k)) {
                 return std::pair{p, true};
             }
             p = _ops().lower_bound(b, e, k);
