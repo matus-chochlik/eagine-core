@@ -9,6 +9,8 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.units;
 //------------------------------------------------------------------------------
+// 1
+//------------------------------------------------------------------------------
 void units_si_1(auto& s) {
     eagitest::case_ test{s, 1, "1"};
 
@@ -35,6 +37,8 @@ void units_si_1(auto& s) {
     test.check_close(value(q_MiB(1)), value(q_MiB(q_b(8192 * 1024))), "Mib");
     test.check_close(value(q_MiB(1)), value(q_MiB(q_KiB(1024))), "MiB");
 }
+//------------------------------------------------------------------------------
+// angle
 //------------------------------------------------------------------------------
 void units_si_angle(auto& s) {
     eagitest::case_ test{s, 2, "angle"};
@@ -66,6 +70,8 @@ void units_si_angle(auto& s) {
     test.check_close(value(q_deg(1)), value(q_deg(q_rad(1) * pi / 180)), "J");
 }
 //------------------------------------------------------------------------------
+// mass
+//------------------------------------------------------------------------------
 void units_si_mass(auto& s) {
     eagitest::case_ test{s, 3, "mass"};
 
@@ -84,6 +90,8 @@ void units_si_mass(auto& s) {
     test.check_close(value(q_t(1)), value(q_t(q_mg(1000) * 1000 * 1000)), "D");
     test.check_close(value(q_mg(1)), value(q_mg(q_kg(0.001f) / 1000)), "E");
 }
+//------------------------------------------------------------------------------
+// length
 //------------------------------------------------------------------------------
 void units_si_length(auto& s) {
     eagitest::case_ test{s, 4, "length"};
@@ -110,6 +118,8 @@ void units_si_length(auto& s) {
     test.check_close(value(q_km(1)), value(q_km(q_mm(1000) * 1000)), "J");
 }
 //------------------------------------------------------------------------------
+// temperature
+//------------------------------------------------------------------------------
 void units_si_temperature(auto& s) {
     eagitest::case_ test{s, 5, "temperature"};
 
@@ -125,6 +135,8 @@ void units_si_temperature(auto& s) {
     test.check_close(value(q_mK(1)), value(q_mK(q_kK(0.001f) / 1000)), "C");
 }
 //------------------------------------------------------------------------------
+// luminous intensity
+//------------------------------------------------------------------------------
 void units_si_luminous_intensity(auto& s) {
     eagitest::case_ test{s, 6, "luminous intensity"};
 
@@ -138,6 +150,8 @@ void units_si_luminous_intensity(auto& s) {
     test.check_close(value(q_cd(1)), value(q_cd(q_kcd(1) / 1000)), "B");
 }
 //------------------------------------------------------------------------------
+// amount of substance
+//------------------------------------------------------------------------------
 void units_si_amount_of_substance(auto& s) {
     eagitest::case_ test{s, 7, "amount of substance"};
 
@@ -150,6 +164,8 @@ void units_si_amount_of_substance(auto& s) {
     test.check_close(value(q_kmol(1)), value(q_kmol(q_mol(1) * 1000)), "A");
     test.check_close(value(q_mol(1)), value(q_mol(q_kmol(1) / 1000)), "B");
 }
+//------------------------------------------------------------------------------
+// time
 //------------------------------------------------------------------------------
 void units_si_time(auto& s) {
     eagitest::case_ test{s, 8, "time"};
@@ -170,6 +186,8 @@ void units_si_time(auto& s) {
     test.check_close(value(q_hr(1)), value(q_hr(q_D(1) / 24)), "E");
     test.check_close(value(q_min(1)), value(q_min(q_D(1) / 1440)), "F");
 }
+//------------------------------------------------------------------------------
+// 2
 //------------------------------------------------------------------------------
 template <typename U1, typename U2>
 void units_si_2_U1_U2(eagitest::case_& test, double r) {
@@ -249,12 +267,57 @@ void units_si_2(auto& s) {
     units_si_2_U1_U2<day, hour>(test, 1 / 24.0);
 }
 //------------------------------------------------------------------------------
+// 3
+//------------------------------------------------------------------------------
+template <typename T>
+void units_si_3_T(eagitest::case_& test) {
+    using namespace eagine;
+    auto& rg{test.random()};
+
+    using eagine::tagged_quantity;
+    using namespace eagine::units;
+
+    const auto l1{rg.get_between<T>(1, 1000)};
+    const auto l2{rg.get_between<T>(1, 1000)};
+    const auto l3{rg.get_between<T>(1, 1000)};
+
+    tagged_quantity<T, meter> ql1_m(l1);
+    tagged_quantity<T, meter> ql2_m(l2);
+    tagged_quantity<T, meter> ql3_m(l3);
+
+    tagged_quantity<T, unit<area, si>> qa12_m2 = ql1_m * ql2_m;
+    tagged_quantity<T, unit<area, si>> qa13_m2 = ql1_m * ql3_m;
+    tagged_quantity<T, unit<area, si>> qa23_m2 = ql2_m * ql3_m;
+
+    tagged_quantity<T, unit<volume, si>> qv123_m3 = ql1_m * ql2_m * ql3_m;
+
+    test.check_close(value(ql1_m) * value(ql2_m), value(qa12_m2), "A");
+    test.check_close(value(ql1_m) * value(ql3_m), value(qa13_m2), "B");
+    test.check_close(value(ql2_m) * value(ql3_m), value(qa23_m2), "C");
+
+    test.check_close(
+      value(ql1_m) * value(ql2_m) * value(ql3_m), value(qv123_m3), "D");
+
+    test.check_close(value(qa12_m2) * value(ql3_m), value(qv123_m3), "E");
+    test.check_close(value(qa13_m2) * value(ql2_m), value(qv123_m3), "F");
+    test.check_close(value(ql1_m) * value(qa23_m2), value(qv123_m3), "G");
+    test.check_close(value(qa12_m2) / value(ql2_m), value(ql1_m), "H");
+    test.check_close(value(qa23_m2) / value(ql3_m), value(ql2_m), "I");
+    test.check_close(value(qv123_m3) / value(ql3_m), value(qa12_m2), "J");
+    test.check_close(value(qv123_m3) / value(qa13_m2), value(ql2_m), "K");
+}
+//------------------------------------------------------------------------------
+void units_si_3(unsigned, auto& s) {
+    eagitest::case_ test{s, 10, "3"};
+    units_si_3_T<float>(test);
+    units_si_3_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "si", 8};
+    eagitest::suite test{argc, argv, "si", 10};
     test.once(units_si_1);
-    test.once(units_si_2);
     test.once(units_si_angle);
     test.once(units_si_mass);
     test.once(units_si_length);
@@ -262,6 +325,8 @@ auto main(int argc, const char** argv) -> int {
     test.once(units_si_luminous_intensity);
     test.once(units_si_amount_of_substance);
     test.once(units_si_time);
+    test.once(units_si_2);
+    test.repeat(50, units_si_3);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

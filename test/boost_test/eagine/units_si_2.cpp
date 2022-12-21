@@ -41,60 +41,6 @@ BOOST_AUTO_TEST_SUITE(units_si_tests_2)
 static eagine::test_random_generator rg;
 
 template <typename T>
-T get() {
-    return rg.get<T>(1, 100);
-}
-
-template <typename T>
-void test_units_si_1() {
-    using eagine::tagged_quantity;
-    using namespace eagine::units;
-
-    T l1 = get<T>();
-    T l2 = get<T>();
-    T l3 = get<T>();
-
-    tagged_quantity<T, meter> ql1_m(l1);
-    tagged_quantity<T, meter> ql2_m(l2);
-    tagged_quantity<T, meter> ql3_m(l3);
-
-    tagged_quantity<T, unit<area, si>> qa12_m2 = ql1_m * ql2_m;
-    tagged_quantity<T, unit<area, si>> qa13_m2 = ql1_m * ql3_m;
-    tagged_quantity<T, unit<area, si>> qa23_m2 = ql2_m * ql3_m;
-
-    tagged_quantity<T, unit<volume, si>> qv123_m3 = ql1_m * ql2_m * ql3_m;
-
-    BOOST_CHECK_CLOSE(value(ql1_m) * value(ql2_m), value(qa12_m2), 0.001);
-
-    BOOST_CHECK_CLOSE(value(ql1_m) * value(ql3_m), value(qa13_m2), 0.001);
-
-    BOOST_CHECK_CLOSE(value(ql2_m) * value(ql3_m), value(qa23_m2), 0.001);
-
-    BOOST_CHECK_CLOSE(
-      value(ql1_m) * value(ql2_m) * value(ql3_m), value(qv123_m3), 0.001);
-
-    BOOST_CHECK_CLOSE(value(qa12_m2) * value(ql3_m), value(qv123_m3), 0.001);
-
-    BOOST_CHECK_CLOSE(value(qa13_m2) * value(ql2_m), value(qv123_m3), 0.001);
-
-    BOOST_CHECK_CLOSE(value(ql1_m) * value(qa23_m2), value(qv123_m3), 0.001);
-
-    BOOST_CHECK_CLOSE(value(qa12_m2) / value(ql2_m), value(ql1_m), 0.001);
-
-    BOOST_CHECK_CLOSE(value(qa23_m2) / value(ql3_m), value(ql2_m), 0.001);
-
-    BOOST_CHECK_CLOSE(value(qv123_m3) / value(ql3_m), value(qa12_m2), 0.001);
-
-    BOOST_CHECK_CLOSE(value(qv123_m3) / value(qa13_m2), value(ql2_m), 0.001);
-}
-
-BOOST_AUTO_TEST_CASE(units_si_1) {
-    for(int i = 0; i < 100; ++i) {
-        test_units_si_1<float>();
-    }
-}
-
-template <typename T>
 void test_units_si_2() {
     using eagine::tagged_quantity;
     using namespace eagine::units;
