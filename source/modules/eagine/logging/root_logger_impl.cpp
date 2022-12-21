@@ -89,7 +89,7 @@ auto root_logger_choose_backend(
             }
         } else if(arg.is_long_tag("use-asio-nw-log")) {
             string_view nw_addr;
-            if(arg.next() && !arg.next().starts_with("-")) {
+            if(arg.next() and not arg.next().starts_with("-")) {
                 nw_addr = arg.next();
             } else if(const auto env_var{get_environment_variable(
                         "EAGINE_LOG_NETWORK_ADDRESS")}) {

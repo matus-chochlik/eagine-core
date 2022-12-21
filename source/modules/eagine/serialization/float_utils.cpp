@@ -78,7 +78,7 @@ export template <typename F>
     const auto one = F(1);
     const auto two = F(2);
     const auto fr2 = std::fabs(std::frexp(f, &exp) * two);
-    assert(fr2 >= one && fr2 < two);
+    assert(fr2 >= one and fr2 < two);
     return {
       (static_cast<decompose_fraction_t<F>>((fr2 - one) * max_fraction<F>())
        << 1U) |
@@ -91,7 +91,7 @@ export template <typename F>
   const decomposed_t<F>& f,
   const std::type_identity<F> = {}) noexcept -> F {
     const auto fre = std::get<0>(f);
-    if(!fre) [[unlikely]] {
+    if(not fre) [[unlikely]] {
         switch(std::get<1>(f)) {
             case 0:
                 return static_cast<F>(0);

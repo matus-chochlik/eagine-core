@@ -302,7 +302,7 @@ constexpr auto operator!(U) noexcept -> lit_result_t<U>
 // addition
 export template <typename U1, typename U2>
 constexpr auto operator+(U1, U2) noexcept -> add_result_t<U1, U2>
-    requires(is_unit_v<U1> && is_unit_v<U2>)
+    requires(is_unit_v<U1> and is_unit_v<U2>)
 {
     return {};
 }
@@ -310,7 +310,7 @@ constexpr auto operator+(U1, U2) noexcept -> add_result_t<U1, U2>
 // subtraction
 export template <typename U1, typename U2>
 constexpr auto operator-(U1, U2) noexcept -> sub_result_t<U1, U2>
-    requires(is_unit_v<U1> && is_unit_v<U2>)
+    requires(is_unit_v<U1> and is_unit_v<U2>)
 {
     return {};
 }
@@ -318,7 +318,7 @@ constexpr auto operator-(U1, U2) noexcept -> sub_result_t<U1, U2>
 // multiplication
 export template <typename U1, typename U2>
 constexpr auto operator*(U1, U2) noexcept -> mul_result_t<U1, U2>
-    requires(is_unit_v<U1> && is_unit_v<U2>)
+    requires(is_unit_v<U1> and is_unit_v<U2>)
 {
     return {};
 }
@@ -326,7 +326,7 @@ constexpr auto operator*(U1, U2) noexcept -> mul_result_t<U1, U2>
 // division
 export template <typename U1, typename U2>
 constexpr auto operator/(U1, U2) noexcept -> div_result_t<U1, U2>
-    requires(is_unit_v<U1> && is_unit_v<U2>)
+    requires(is_unit_v<U1> and is_unit_v<U2>)
 {
     return {};
 }

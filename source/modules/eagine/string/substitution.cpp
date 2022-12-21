@@ -123,9 +123,9 @@ auto substitute_variable_into(
         if(const auto found{find_position(src, name)}) {
             const auto npos{extract(found)};
             if(
-              (npos >= 2) && (safe_add_lt(npos, name.size(), src.size())) &&
-              (src[npos - 1] == opts.opening_bracket) &&
-              (src[npos - 2] == opts.leading_sign) &&
+              (npos >= 2) and (safe_add_lt(npos, name.size(), src.size())) and
+              (src[npos - 1] == opts.opening_bracket) and
+              (src[npos - 2] == opts.leading_sign) and
               (src[npos + name.size()] == opts.closing_bracket)) {
                 append_to(head(src, npos - 2), dst);
                 append_to(value, dst);
@@ -138,7 +138,7 @@ auto substitute_variable_into(
             append_to(src, dst);
             src.reset();
         }
-    } while(!src.empty());
+    } while(not src.empty());
     return dst;
 }
 //------------------------------------------------------------------------------
@@ -183,7 +183,7 @@ auto substitute_variables_into(
             append_to(src, dst);
             src.reset();
         }
-    } while(!src.empty());
+    } while(not src.empty());
 
     return dst;
 }
@@ -205,7 +205,7 @@ export [[nodiscard]] auto substitute_variables(
       [&strings](string_view key) -> std::optional<string_view> {
         char* e = nullptr; // NOLINT(hicpp-vararg)
         const span_size_t idx = span_size(std::strtol(c_str(key), &e, 10));
-        if((0 < idx) && (idx <= strings.size())) {
+        if((0 < idx) and (idx <= strings.size())) {
             return {{strings[idx - 1]}};
         }
         return {};
@@ -219,7 +219,7 @@ export [[nodiscard]] auto substitute_variables(
   const variable_substitution_options opts) noexcept -> std::string {
     const auto translate_func =
       [&dictionary](string_view key) -> std::optional<string_view> {
-        if(!dictionary.empty()) {
+        if(not dictionary.empty()) {
             auto i = dictionary.find(key);
             if(i != dictionary.end()) {
                 return {i->second};

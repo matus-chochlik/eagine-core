@@ -44,7 +44,7 @@ auto main_impl(
         }
     } catch(const log_backend_error& log_err) {
         const auto code{log_err.code().value()};
-        if((code == ENOENT) || (code == ECONNREFUSED)) {
+        if((code == ENOENT) or (code == ECONNREFUSED)) {
             std::cerr << "Logger failed to connect to the formatter. "
                       << "Start one of the 'xml_logs-*' apps";
             if(const auto prefix{build_info().install_prefix()}) {

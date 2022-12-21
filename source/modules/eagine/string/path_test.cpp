@@ -32,7 +32,7 @@ void path_1(auto& s) {
               bsp.back().size(), span_size(n.size()), "back size");
             test.check(are_equal(bsp.back(), string_view(n)), "back");
 
-            if((rg.get_int(0, 9) == 0) && !bsp.empty()) {
+            if((rg.get_int(0, 9) == 0) and not bsp.empty()) {
                 bsp.pop_back();
                 --sz;
             }
@@ -44,7 +44,7 @@ void path_1(auto& s) {
         test.check_equal(bsp.size(), sz + sz, "path size 3");
 
         if(rg.get_bool()) {
-            while(!bsp.empty()) {
+            while(not bsp.empty()) {
                 bsp.pop_back();
             }
         } else {
@@ -68,7 +68,7 @@ void path_2(auto& s) {
             bsp.push_back(string_view(str));
 
             test.check(are_equal(bsp.back(), string_view(str)), "bsp back");
-            test.check(!bsp.empty(), "bsp not empty");
+            test.check(not bsp.empty(), "bsp not empty");
         }
 
         std::stack<std::string> stk;
@@ -80,7 +80,7 @@ void path_2(auto& s) {
         test.check_equal(bsp.size(), span_size(stk.size()), "size");
 
         bsp.rev_for_each([&](basic_string_path::value_type str) {
-            test.ensure(!stk.empty(), "stk not empty");
+            test.ensure(not stk.empty(), "stk not empty");
             test.check(are_equal(str, string_view(stk.top())), "stk top 2");
             stk.pop();
         });
@@ -102,7 +102,7 @@ void path_3(auto& s) {
             bsp.push_back(string_view(str));
 
             test.check(are_equal(bsp.back(), string_view(str)), "bsp back");
-            test.check(!bsp.empty(), "bsp not empty");
+            test.check(not bsp.empty(), "bsp not empty");
         }
 
         std::stack<std::string> stk;
@@ -114,7 +114,7 @@ void path_3(auto& s) {
         test.check_equal(bsp.size(), span_size(stk.size()), "size");
 
         for(auto p = bsp.rbegin(); p != bsp.rend(); ++p) {
-            test.ensure(!stk.empty(), "stk not empty");
+            test.ensure(not stk.empty(), "stk not empty");
             test.check(are_equal(*p, string_view(stk.top())), "dereference");
             stk.pop();
         }
@@ -152,7 +152,7 @@ void path_5(auto& s) {
 
     basic_string_path bsp("/usr/local/bin", split_by, "/");
 
-    test.ensure(!bsp.empty(), "not empty");
+    test.ensure(not bsp.empty(), "not empty");
     test.check_equal(bsp.size(), 4, "size");
     test.check(are_equal(bsp.front(), string_view("")), "front");
     test.check(are_equal(bsp.back(), string_view("bin")), "back");

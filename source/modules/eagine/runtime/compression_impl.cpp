@@ -340,17 +340,17 @@ public:
         while(true) {
             _zd_res = ::deflate(&_zsd, Z_NO_FLUSH);
             if(_zd_res == Z_BUF_ERROR) {
-                if(!compress_handle_data(handler)) {
+                if(not compress_handle_data(handler)) {
                     return false;
                 }
-            } else if((_zd_res == Z_OK) || (_zd_res == Z_STREAM_END)) {
+            } else if((_zd_res == Z_OK) or (_zd_res == Z_STREAM_END)) {
                 if(_zsd.avail_out == 0) {
-                    if(!compress_handle_data(handler)) {
+                    if(not compress_handle_data(handler)) {
                         return false;
                     }
                 }
                 if(_zsd.avail_in == 0) {
-                    if(!compress_handle_data(handler)) {
+                    if(not compress_handle_data(handler)) {
                         return false;
                     }
                     break;
@@ -370,8 +370,8 @@ public:
         })};
         while(_zd_res != Z_STREAM_END) {
             _zd_res = ::deflate(&_zsd, Z_FINISH);
-            if((_zd_res == Z_STREAM_END) || (_zd_res == Z_OK)) {
-                if(!compress_handle_data(handler)) {
+            if((_zd_res == Z_STREAM_END) or (_zd_res == Z_OK)) {
+                if(not compress_handle_data(handler)) {
                     return false;
                 }
                 return true;
@@ -426,17 +426,17 @@ public:
         while(true) {
             _zi_res = ::inflate(&_zsi, Z_NO_FLUSH);
             if(_zi_res == Z_BUF_ERROR) {
-                if(!decompress_handle_data(handler)) {
+                if(not decompress_handle_data(handler)) {
                     return false;
                 }
-            } else if((_zi_res == Z_OK) || (_zi_res == Z_STREAM_END)) {
+            } else if((_zi_res == Z_OK) or (_zi_res == Z_STREAM_END)) {
                 if(_zsi.avail_out == 0) {
-                    if(!decompress_handle_data(handler)) {
+                    if(not decompress_handle_data(handler)) {
                         return false;
                     }
                 }
                 if(_zsi.avail_in == 0) {
-                    if(!decompress_handle_data(handler)) {
+                    if(not decompress_handle_data(handler)) {
                         return false;
                     }
                     break;
@@ -456,8 +456,8 @@ public:
         })};
         while(_zi_res != Z_STREAM_END) {
             _zi_res = ::inflate(&_zsi, Z_FINISH);
-            if((_zi_res == Z_STREAM_END) || (_zi_res == Z_OK)) {
-                if(!decompress_handle_data(handler)) {
+            if((_zi_res == Z_STREAM_END) or (_zi_res == Z_OK)) {
+                if(not decompress_handle_data(handler)) {
                     return false;
                 }
                 return true;
@@ -704,7 +704,7 @@ auto data_compressor::default_decompress(
 auto stream_compression::next(
   const memory::const_block input,
   data_compression_level level) noexcept -> stream_compression& {
-    if(!_started) {
+    if(not _started) {
         if(_compressor.compress_begin(_method, level)) {
             _started = true;
         } else {
@@ -712,9 +712,9 @@ auto stream_compression::next(
         }
     }
     if(_started) {
-        if(input.empty() || !_compressor.compress_next(input, _handler)) {
+        if(input.empty() or not _compressor.compress_next(input, _handler)) {
             _finished = true;
-            _failed = !_compressor.compress_finish(_handler);
+            _failed = not _compressor.compress_finish(_handler);
         }
     }
     return *this;
@@ -722,9 +722,9 @@ auto stream_compression::next(
 //------------------------------------------------------------------------------
 auto stream_compression::finish() noexcept -> stream_compression& {
     if(_started) {
-        if(!_finished) {
+        if(not _finished) {
             _finished = true;
-            _failed = !_compressor.compress_finish(_handler);
+            _failed = not _compressor.compress_finish(_handler);
         }
     }
     return *this;
@@ -734,7 +734,7 @@ auto stream_compression::finish() noexcept -> stream_compression& {
 //------------------------------------------------------------------------------
 auto stream_decompression::next(const memory::const_block input) noexcept
   -> stream_decompression& {
-    if(!_started) {
+    if(not _started) {
         if(_compressor.decompress_begin(_method)) {
             _started = true;
         } else {
@@ -742,9 +742,9 @@ auto stream_decompression::next(const memory::const_block input) noexcept
         }
     }
     if(_started) {
-        if(input.empty() || !_compressor.decompress_next(input, _handler)) {
+        if(input.empty() or not _compressor.decompress_next(input, _handler)) {
             _finished = true;
-            _failed = !_compressor.decompress_finish(_handler);
+            _failed = not _compressor.decompress_finish(_handler);
         }
     }
     return *this;
@@ -752,9 +752,9 @@ auto stream_decompression::next(const memory::const_block input) noexcept
 //------------------------------------------------------------------------------
 auto stream_decompression::finish() noexcept -> stream_decompression& {
     if(_started) {
-        if(!_finished) {
+        if(not _finished) {
             _finished = true;
-            _failed = !_compressor.decompress_finish(_handler);
+            _failed = not _compressor.decompress_finish(_handler);
         }
     }
     return *this;

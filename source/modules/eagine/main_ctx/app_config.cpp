@@ -127,7 +127,7 @@ public:
             const auto count = attr.value_count();
             if(count > 0) {
                 dest.resize(safe_add(dest.size(), std_size(count)));
-                if(!attr.select_values(
+                if(not attr.select_values(
                      tail(memory::cover(dest), count), from_config)) {
                     _log.error("could not fetch configuration values '${key}'")
                       .arg("key", key);

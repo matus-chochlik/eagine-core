@@ -40,7 +40,7 @@ public:
       : _log{"Progress", parent} {}
 
     auto register_observer(progress_observer& observer) noexcept -> bool final {
-        if(!_observer) {
+        if(not _observer) {
             _observer = &observer;
             return true;
         }
@@ -158,7 +158,7 @@ private:
         if(_last_call < now) {
             _last_call = now + _min_interval;
             if(_callback) {
-                _keep_going = _callback() && _keep_going;
+                _keep_going = _callback() and _keep_going;
             }
         }
     }

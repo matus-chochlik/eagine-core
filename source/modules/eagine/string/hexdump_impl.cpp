@@ -51,11 +51,11 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
     bool row_none[16]{};
     byte row_byte[16]{};
 
-    while(!done) {
+    while(not done) {
         span_size_t pos = row;
         bool empty_row = true;
         for(const auto b : integer_range(16)) {
-            if(pos < bgn || done) {
+            if(pos < bgn or done) {
                 row_none[b] = true;
             } else {
                 if(const auto got{get_byte()}) {
@@ -125,7 +125,7 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
                 put_char(' ');
             }
 
-            if(row_none[b] || !std::isprint(row_byte[b])) {
+            if(row_none[b] or not std::isprint(row_byte[b])) {
                 put_char('.');
             } else {
                 put_char(char(row_byte[b]));

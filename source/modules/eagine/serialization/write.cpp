@@ -54,7 +54,7 @@ public:
     }
 
     auto is_done() const noexcept -> bool {
-        return !remaining();
+        return not remaining();
     }
 
 private:
@@ -92,7 +92,7 @@ struct plain_serializer {
             assert(errors.has(serialization_error_code::too_much_data));
         } else if(written < values.size()) [[unlikely]] {
             assert(
-              errors.has(serialization_error_code::incomplete_write) ||
+              errors.has(serialization_error_code::incomplete_write) or
               errors.has(serialization_error_code::too_much_data));
         }
         return errors;
@@ -157,11 +157,11 @@ struct common_serializer {
         for(const auto& elem : values) {
             const auto th = sink.begin_work();
             errors |= backend.begin_element(i);
-            if(!errors) [[likely]] {
+            if(not errors) [[likely]] {
                 errors |=
                   static_cast<const serializer<T>*>(this)->write(elem, backend);
                 errors |= backend.finish_element(i++);
-                if(!errors) [[likely]] {
+                if(not errors) [[likely]] {
                     errors |= sink.commit(th);
                 } else if(errors.has_at_most(tmd)) {
                     errors.clear(tmd);
@@ -191,7 +191,7 @@ struct serializer<std::tuple<T...>> : common_serializer<std::tuple<T...>> {
 
     auto write(const std::tuple<T...>& values, auto& backend) const noexcept {
         auto errors{backend.begin_list(span_size(sizeof...(T)))};
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             _write_elements(
               errors, values, backend, std::make_index_sequence<sizeof...(T)>());
             errors |= backend.finish_list();
@@ -218,9 +218,9 @@ private:
       Elem& elem,
       Backend& backend,
       Serializer& serial) const noexcept {
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             errors |= backend.begin_element(span_size(index));
-            if(!errors) [[likely]] {
+            if(not errors) [[likely]] {
                 errors |= serial.write(elem, backend);
                 errors |= backend.finish_element(span_size(index));
             }
@@ -238,7 +238,7 @@ struct serializer<std::tuple<std::pair<const string_view, T>...>>
       const std::tuple<std::pair<const string_view, T>...>& members,
       auto& backend) const noexcept {
         auto errors{backend.begin_struct(span_size(sizeof...(T)))};
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             _write_members(
               errors,
               members,
@@ -272,9 +272,9 @@ private:
       Memb& value,
       Backend& backend,
       Serializer& serial) const noexcept {
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             errors |= backend.begin_member(name);
-            if(!errors) [[likely]] {
+            if(not errors) [[likely]] {
                 errors |= serial.write(value, backend);
                 errors |= backend.finish_member(name);
             }
@@ -321,7 +321,7 @@ struct serializer<span<const T>> : common_serializer<span<const T>> {
 
     auto write(const span<const T> values, auto& backend) const noexcept {
         auto errors{backend.begin_list(values.size())};
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             errors |= _elem_serializer.write(values, backend);
             errors |= backend.finish_list();
         }
@@ -344,10 +344,10 @@ struct serializer<fragment_serialize_wrapper<span<const T>>>
     auto write(fragment_serialize_wrapper<span<const T>>& frag, auto& backend)
       const noexcept {
         auto errors{_size_serializer.write(frag.offset(), backend)};
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             const auto todo = frag.remaining();
             errors |= _size_serializer.write(todo.size(), backend);
-            if(!errors) [[likely]] {
+            if(not errors) [[likely]] {
                 span_size_t written{0};
                 errors |= backend.write(todo, written);
                 if(errors.has_at_most(
@@ -369,7 +369,7 @@ struct serializer<std::array<T, N>> : common_serializer<std::array<T, N>> {
 
     auto write(const std::array<T, N>& values, auto& backend) const noexcept {
         auto errors{backend.begin_list(span_size(N))};
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             errors |= _elem_serializer.write(view(values), backend);
             errors |= backend.finish_list();
         }
@@ -387,7 +387,7 @@ struct serializer<std::vector<T, A>> : common_serializer<std::vector<T, A>> {
 
     auto write(const std::vector<T, A>& values, auto& backend) const noexcept {
         auto errors{backend.begin_list(values.size())};
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             errors |= _elem_serializer.write(view(values), backend);
             errors |= backend.finish_list();
         }
@@ -417,7 +417,7 @@ struct serializer<valid_if<T, P>> : common_serializer<valid_if<T, P>> {
     auto write(const valid_if<T, P>& value, auto& backend) const noexcept {
         const bool is_valid{value.is_valid()};
         auto errors{backend.begin_list(span_size(is_valid))};
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             if(is_valid) {
                 errors |= _serializer.write(value.value_anyway(), backend);
             }
@@ -490,7 +490,7 @@ export template <typename T, typename Backend>
     requires(std::is_base_of_v<serializer_backend, Backend>)
 {
     auto errors{backend.begin()};
-    if(!errors) [[likely]] {
+    if(not errors) [[likely]] {
         serializer<std::remove_cv_t<T>> writer;
         errors |= writer.write(value, backend);
         errors |= backend.finish();

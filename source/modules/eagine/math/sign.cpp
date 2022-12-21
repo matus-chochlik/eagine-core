@@ -34,13 +34,13 @@ public:
     /// @brief Construction taking the sign from the specified numeric @p value.
     template <typename X>
     constexpr explicit sign(const X& value) noexcept
-        requires(!std::is_same_v<X, sign<T>>)
+        requires(not std::is_same_v<X, sign<T>>)
       : _positive{value >= X(0)} {}
 
     /// @brief Assignment taking the sign from the specified numeric @p value.
     template <typename X>
     auto operator=(const X& value) noexcept
-      -> auto& requires(!std::is_same_v<X, sign<T>>) {
+      -> auto& requires(not std::is_same_v<X, sign<T>>) {
           _positive = (value >= X(0));
           return *this;
       }
@@ -65,14 +65,14 @@ public:
     /// @brief Flip this sign from positive to negative or vice-versa.
     /// @see flipped
     auto flip() noexcept -> auto& {
-        _positive = !_positive;
+        _positive = not _positive;
         return *this;
     }
 
     /// @brief Returns a new sign opposite to this sign.
     /// @see flip
     [[nodiscard]] auto flipped() const noexcept -> sign {
-        return {!_positive};
+        return {not _positive};
     }
 
     /// @brief Returns a new sign opposite to this sign.

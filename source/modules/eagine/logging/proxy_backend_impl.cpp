@@ -167,7 +167,7 @@ void proxy_log_backend::begin_log() noexcept {
     if(_delegate) {
         _delegate->begin_log();
     } else if(_delayed) {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this]() { _delegate->begin_log(); });
     }
 }
@@ -196,7 +196,7 @@ void proxy_log_backend::set_description(
   const string_view name,
   const string_view desc) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this,
                                 source,
                                 instance,
@@ -214,7 +214,7 @@ auto proxy_log_backend::begin_message(
   const log_event_severity severity,
   const string_view format) noexcept -> bool {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back(
           [this, source, tag, instance, severity, format{to_string(format)}]() {
               _delegate->begin_message(source, tag, instance, severity, format);
@@ -228,7 +228,7 @@ void proxy_log_backend::add_nothing(
   const identifier arg,
   const identifier tag) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back(
           [this, arg, tag]() { _delegate->add_nothing(arg, tag); });
     }
@@ -239,7 +239,7 @@ void proxy_log_backend::add_identifier(
   const identifier tag,
   const identifier value) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this, arg, tag, value]() {
             _delegate->add_identifier(arg, tag, value);
         });
@@ -251,7 +251,7 @@ void proxy_log_backend::add_message_id(
   const identifier tag,
   const message_id value) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this, arg, tag, value]() {
             _delegate->add_message_id(arg, tag, value);
         });
@@ -263,7 +263,7 @@ void proxy_log_backend::add_bool(
   const identifier tag,
   const bool value) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back(
           [this, arg, tag, value]() { _delegate->add_bool(arg, tag, value); });
     }
@@ -274,7 +274,7 @@ void proxy_log_backend::add_integer(
   const identifier tag,
   const std::intmax_t value) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this, arg, tag, value]() {
             _delegate->add_integer(arg, tag, value);
         });
@@ -286,7 +286,7 @@ void proxy_log_backend::add_unsigned(
   const identifier tag,
   const std::uintmax_t value) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this, arg, tag, value]() {
             _delegate->add_unsigned(arg, tag, value);
         });
@@ -298,7 +298,7 @@ void proxy_log_backend::add_float(
   const identifier tag,
   const float value) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back(
           [this, arg, tag, value]() { _delegate->add_float(arg, tag, value); });
     }
@@ -311,7 +311,7 @@ void proxy_log_backend::add_float(
   const float value,
   const float max) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this, arg, tag, min, value, max]() {
             _delegate->add_float(arg, tag, min, value, max);
         });
@@ -323,7 +323,7 @@ void proxy_log_backend::add_duration(
   const identifier tag,
   const std::chrono::duration<float> value) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this, arg, tag, value]() {
             _delegate->add_duration(arg, tag, value);
         });
@@ -335,7 +335,7 @@ void proxy_log_backend::add_string(
   const identifier tag,
   const string_view value) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this, arg, tag, value{to_string(value)}]() {
             _delegate->add_string(arg, tag, value);
         });
@@ -347,7 +347,7 @@ void proxy_log_backend::add_blob(
   const identifier tag,
   const memory::const_block value) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back(
           [this,
            arg,
@@ -360,7 +360,7 @@ void proxy_log_backend::add_blob(
 //------------------------------------------------------------------------------
 void proxy_log_backend::finish_message() noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this]() { _delegate->finish_message(); });
     }
 }
@@ -369,7 +369,7 @@ void proxy_log_backend::finish_log() noexcept {
     if(_delegate) [[likely]] {
         return _delegate->finish_log();
     } else if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this]() { _delegate->finish_log(); });
     }
 }
@@ -380,7 +380,7 @@ void proxy_log_backend::log_chart_sample(
   const identifier series,
   const float value) noexcept {
     if(_delayed) [[likely]] {
-        assert(!_delegate);
+        assert(not _delegate);
         _delayed->emplace_back([this, source, instance, series, value]() {
             _delegate->log_chart_sample(source, instance, series, value);
         });
@@ -401,7 +401,7 @@ auto proxy_log_choose_backend(
         return false;
     }()};
 
-    if((name == "null") || (name == "none")) {
+    if((name == "null") or (name == "none")) {
         return make_null_log_backend();
     } else if(name == "cerr") {
         if(use_spinlock) {

@@ -102,7 +102,8 @@ private:
 
     template <extractable E>
     static constexpr auto _xtr_span(const E& e) noexcept -> span_type
-        requires(has_value_type_v<E, span_type> && !std::is_same_v<E, span_type>)
+        requires(
+          has_value_type_v<E, span_type> and not std::is_same_v<E, span_type>)
     {
         return has_value(e) ? _get_span(extract(e)) : span_type{};
     }

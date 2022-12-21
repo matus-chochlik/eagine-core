@@ -307,12 +307,12 @@ public:
 
     constexpr explicit operator bool() const noexcept {
         return (
-          ... && basic_adapted_function<
-                   Api,
-                   methods,
-                   CSignatures,
-                   CppSignatures,
-                   RvArgMaps>::operator bool());
+          ... and basic_adapted_function<
+                    Api,
+                    methods,
+                    CSignatures,
+                    CppSignatures,
+                    RvArgMaps>::operator bool());
     }
 
     using basic_adapted_function<

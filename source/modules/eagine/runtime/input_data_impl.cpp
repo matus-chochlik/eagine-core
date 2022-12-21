@@ -38,7 +38,7 @@ static inline auto do_read_stream_data(
           temp.begin(),
           std::istreambuf_iterator<char>(input),
           std::istreambuf_iterator<char>());
-        if(!input.bad()) {
+        if(not input.bad()) {
             dest.resize(span_size(temp.size()));
             memory::copy(as_bytes(cover(temp)), dest);
             return true;

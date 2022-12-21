@@ -126,7 +126,7 @@ public:
     [[nodiscard]] static auto elements_match(
       const string_view elem,
       const string_view patt) noexcept -> bool {
-        return (elem == patt) || (patt == string_view{"*"});
+        return (elem == patt) or (patt == string_view{"*"});
     }
 
     /// @brief Tests if this path matches a pattern.
@@ -138,8 +138,8 @@ public:
         }
         auto tp{begin()};
         auto pp{pattern.begin()};
-        while(tp != end() && pp != pattern.end()) {
-            if(!elements_match(*tp, *pp)) {
+        while(tp != end() and pp != pattern.end()) {
+            if(not elements_match(*tp, *pp)) {
                 return false;
             }
             ++tp;
@@ -154,8 +154,8 @@ public:
       const basic_string_path& pattern) const noexcept -> bool {
         auto tp{begin()};
         auto pp{pattern.begin()};
-        while(tp != end() && pp != pattern.end()) {
-            if(!elements_match(*tp, *pp)) {
+        while(tp != end() and pp != pattern.end()) {
+            if(not elements_match(*tp, *pp)) {
                 return false;
             }
             ++tp;
@@ -211,31 +211,31 @@ public:
 
     /// @brief Returns the element at the front of the path.
     [[nodiscard]] auto front() const noexcept -> string_view {
-        assert(!empty());
+        assert(not empty());
         return string_list::front_value(_str);
     }
 
     /// @brief Returns the element at the back of the path.
     [[nodiscard]] auto back() const noexcept -> string_view {
-        assert(!empty());
+        assert(not empty());
         return string_list::back_value(_str);
     }
 
     /// @brief Indicates if the path starts with the specified entry.
     [[nodiscard]] auto starts_with(const string_view entry) const noexcept
       -> bool {
-        return !empty() && (front() == entry);
+        return not empty() and (front() == entry);
     }
 
     /// @brief Indicates if the path ends with the specified entry.
     [[nodiscard]] auto ends_with(const string_view entry) const noexcept
       -> bool {
-        return !empty() && (back() == entry);
+        return not empty() and (back() == entry);
     }
 
     /// @brief Indicates if the path has a single specified entry.
     [[nodiscard]] auto is(const string_view entry) const noexcept -> bool {
-        return (size() == 1) && (back() == entry);
+        return (size() == 1) and (back() == entry);
     }
 
     /// @brief Appends a new element with the specified name to the end.
@@ -254,7 +254,7 @@ public:
     /// @see push_back
     /// @see parent
     void pop_back() noexcept {
-        assert(!empty());
+        assert(not empty());
         string_list::pop_back(_str);
         --_size;
     }
@@ -263,7 +263,7 @@ public:
     /// @see pop_back
     [[nodiscard]] auto parent(span_size_t n = 1) const noexcept {
         basic_string_path result{*this};
-        while((n-- > 0) && !empty()) {
+        while((n-- > 0) and not empty()) {
             result.pop_back();
         }
         return result;
@@ -365,7 +365,7 @@ private:
     }
 
     static auto _fix(string_view str) noexcept -> string_view {
-        while(!str.empty()) {
+        while(not str.empty()) {
             if(str.back() == '\0') {
                 str = string_view(str.data(), str.size() - 1);
             } else {

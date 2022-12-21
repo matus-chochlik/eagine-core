@@ -800,7 +800,7 @@ public:
     ~stream_log_entry() noexcept {
         try {
             auto fmt_str(_out.str());
-            if(!fmt_str.empty()) {
+            if(not fmt_str.empty()) {
                 if(_backend) {
                     if(_backend->begin_message(
                          _source_id,

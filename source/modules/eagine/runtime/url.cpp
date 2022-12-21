@@ -237,7 +237,7 @@ public:
         string_view result;
         for_each_delimited(_sw(_query), string_view{"+"}, [&](auto part) {
             auto [name, value] = split_by_first(part, string_view{"="});
-            if(!result && are_equal(name, arg_name)) {
+            if(not result and are_equal(name, arg_name)) {
                 result = value;
             }
         });
@@ -250,7 +250,7 @@ public:
     }
 
     /// @brief Releases the internally allocated URL string.
-    /// @post !is_valid()
+    /// @post not is_valid()
     auto release_string() noexcept -> std::string {
         _parsed = false;
         return {std::move(_url_str)};

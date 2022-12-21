@@ -269,7 +269,7 @@ public:
     }
 
     void skip_whitespaces() noexcept {
-        consume_until([](byte b) { return !std::isspace(b); });
+        consume_until([](byte b) { return not std::isspace(b); });
     }
 
     auto begin() noexcept -> result final {
@@ -279,7 +279,7 @@ public:
 
     auto begin_struct(span_size_t& count) noexcept -> result final {
         result errors = require('{');
-        if(!errors) {
+        if(not errors) {
             errors |= _read_one(count, '|');
         }
         return errors;
@@ -287,7 +287,7 @@ public:
 
     auto begin_member(const string_view name) noexcept -> result final {
         result errors = require(name);
-        if(!errors) {
+        if(not errors) {
             errors |= require(':');
         }
         return errors;
@@ -303,7 +303,7 @@ public:
 
     auto begin_list(span_size_t& count) noexcept -> result final {
         result errors = require('[');
-        if(!errors) {
+        if(not errors) {
             errors |= _read_one(count, '|');
         }
         return errors;
@@ -340,14 +340,14 @@ private:
 
     auto _read_one(char& value, const char delimiter) noexcept -> result {
         result errors = require('\'');
-        if(!errors) {
+        if(not errors) {
             if(const auto opt_char{this->top_char()}) {
                 value = extract(opt_char);
                 pop(1);
             } else {
                 errors |= error_code::not_enough_data;
             }
-            if(!errors) {
+            if(not errors) {
                 const char t[3] = {'\'', delimiter, '\0'};
                 errors |= require(string_view(t));
             }
@@ -466,10 +466,10 @@ private:
     auto _read_one(std::string& value, const char delimiter) noexcept
       -> result {
         result errors = require('"');
-        if(!errors) {
+        if(not errors) {
             span_size_t len{0};
             errors |= _read_one(len, '|');
-            if(!errors) {
+            if(not errors) {
                 auto str = this->top_string(len);
                 if(str.size() < len) {
                     errors |= error_code::not_enough_data;

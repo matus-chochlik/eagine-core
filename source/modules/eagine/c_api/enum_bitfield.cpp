@@ -24,7 +24,7 @@ struct enum_bits<T, mp_list<Classes...>> {
 };
 
 export template <typename T, typename TL1, typename TL2>
-    requires(!mp_is_empty_v<mp_union_t<TL1, TL2>>)
+    requires(not mp_is_empty_v<mp_union_t<TL1, TL2>>)
 constexpr auto operator|(
   const enum_value<T, TL1> a,
   const enum_value<T, TL2> b) noexcept {
@@ -33,7 +33,7 @@ constexpr auto operator|(
 }
 
 export template <typename T, typename TL1, typename TL2>
-    requires(!mp_is_empty_v<mp_union_t<TL1, TL2>>)
+    requires(not mp_is_empty_v<mp_union_t<TL1, TL2>>)
 constexpr auto operator|(
   const enum_bits<T, TL1> eb,
   const enum_value<T, TL2> ev) noexcept {
@@ -41,7 +41,7 @@ constexpr auto operator|(
 }
 
 export template <typename T, typename TL1, typename TL2>
-    requires(!mp_is_empty_v<mp_union_t<TL1, TL2>>)
+    requires(not mp_is_empty_v<mp_union_t<TL1, TL2>>)
 constexpr auto operator|(
   const enum_value<T, TL1> ev,
   const enum_bits<T, TL2> eb) noexcept {

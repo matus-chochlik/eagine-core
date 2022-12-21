@@ -21,16 +21,16 @@ void program_args_empty(auto& s) {
     eagine::program_args args{0, argv.data()};
     test.constructed(args, "args");
 
-    test.check(!args.command(), "no command");
-    test.check(!args.command().is_valid(), "command not valid");
+    test.check(not args.command(), "no command");
+    test.check(not args.command().is_valid(), "command not valid");
     test.check(args.none(), "none");
     test.check(args.empty(), "empty");
     test.check_equal(args.size(), 0, "size");
     test.check(args.begin() == args.end(), "begin == end");
-    test.check(!args.first(), "not first");
-    test.check(!args.first().is_valid(), "first not valid");
-    test.check(!args.find(""), "not found empty");
-    test.check(!args.find("eagitest"), "not found eagitest");
+    test.check(not args.first(), "not first");
+    test.check(not args.first().is_valid(), "first not valid");
+    test.check(not args.find(""), "not found empty");
+    test.check(not args.find("eagitest"), "not found eagitest");
     test.check_equal(
       args.find_value_or("test", 1234, out), 1234, "find fallback");
 }
@@ -47,13 +47,13 @@ void program_args_none(auto& s) {
     test.check(args.command() == "eagitest", "command ok");
     test.check(args.command().is_valid(), "command is valid");
     test.check(args.none(), "none");
-    test.check(!args.empty(), "not empty");
+    test.check(not args.empty(), "not empty");
     test.check_equal(args.size(), 1, "size");
     test.check(args.begin() == args.end(), "begin == end");
-    test.check(!args.first(), "not first");
-    test.check(!args.first().is_valid(), "first not valid");
-    test.check(!args.find(""), "not found empty");
-    test.check(!args.find("eagitest"), "not found eagitest");
+    test.check(not args.first(), "not first");
+    test.check(not args.first().is_valid(), "first not valid");
+    test.check(not args.find(""), "not found empty");
+    test.check(not args.find("eagitest"), "not found eagitest");
     test.check_equal(
       args.find_value_or("test", 1234, out), 1234, "find fallback");
 }
@@ -70,8 +70,8 @@ void program_args_some(auto& s) {
     test.check(args.command() == "eagitest", "command ok");
     test.check_equal(
       args.command().get(), eagine::string_view{"eagitest"}, "command ok");
-    test.check(!args.none(), "none");
-    test.check(!args.empty(), "not empty");
+    test.check(not args.none(), "none");
+    test.check(not args.empty(), "not empty");
     test.check_equal(args.size(), 3, "size");
     test.check(args.begin() != args.end(), "begin != end");
     test.check(bool(args.first()), "first");
@@ -81,8 +81,8 @@ void program_args_some(auto& s) {
     test.check(bool(args.find("--int")), "found arg");
     test.check_equal(args.find("--int").position(), 1, "found arg position");
     test.check_equal(args.find("2345").position(), 2, "found arg position");
-    test.check(!args.find(""), "not found empty");
-    test.check(!args.find("eagitest"), "not found eagitest");
+    test.check(not args.find(""), "not found empty");
+    test.check(not args.find("eagitest"), "not found eagitest");
     test.check_equal(
       args.find_value_or("--int", 1234, out), 2345, "find value");
 }
@@ -189,8 +189,8 @@ void program_args_parse(auto& s) {
     bool b{false};
     out = {};
     test.check(
-      !args.find("--string").parse_next(b, out), "parse bool expect fail");
-    test.check(!out.str().empty(), "parse bool expect fail message");
+      not args.find("--string").parse_next(b, out), "parse bool expect fail");
+    test.check(not out.str().empty(), "parse bool expect fail message");
     out = {};
     test.check(args.find("--bool").parse_next(b, out), "parse bool");
     test.check(out.str().empty(), "parse bool message empty");
@@ -199,8 +199,8 @@ void program_args_parse(auto& s) {
     int i{0};
     out = {};
     test.check(
-      !args.find("--string").parse_next(i, out), "parse int expect fail");
-    test.check(!out.str().empty(), "parse int expect fail message");
+      not args.find("--string").parse_next(i, out), "parse int expect fail");
+    test.check(not out.str().empty(), "parse int expect fail message");
     out = {};
     test.check(args.find("--negative").parse_next(i, out), "parse int");
     test.check(out.str().empty(), "parse int message empty");
@@ -213,8 +213,8 @@ void program_args_parse(auto& s) {
     float f{0};
     out = {};
     test.check(
-      !args.find("--string").parse_next(f, out), "parse float expect fail");
-    test.check(!out.str().empty(), "parse float expect fail message");
+      not args.find("--string").parse_next(f, out), "parse float expect fail");
+    test.check(not out.str().empty(), "parse float expect fail message");
     out = {};
     test.check(args.find("--float").parse_next(f, out), "parse float");
     test.check(out.str().empty(), "parse float message empty");

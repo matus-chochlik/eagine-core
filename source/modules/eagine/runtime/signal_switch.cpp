@@ -21,7 +21,7 @@ namespace eagine {
 export class signal_switch {
 public:
     /// @brief Default constructor. Stores the original handlers if any.
-    /// @post !bool(*this)
+    /// @post not bool(*this)
     signal_switch() noexcept
       : _intr_handler{std::signal(SIGINT, &_flip)}
       , _term_handler{std::signal(SIGTERM, &_flip)} {}
@@ -44,7 +44,7 @@ public:
     auto operator=(const signal_switch&) = delete;
 
     /// @brief Resets the signal state as if no signal was received.
-    /// @post !bool(*this)
+    /// @post not bool(*this)
     auto reset() noexcept -> signal_switch& {
         _state() = 0;
         return *this;

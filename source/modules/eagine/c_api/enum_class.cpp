@@ -163,7 +163,7 @@ struct opt_enum_value<bool, mp_list<Classes...>, Tag> {
       , is_valid{std::get<1>(init)} {}
 
     explicit constexpr operator bool() const noexcept {
-        return is_valid && value;
+        return is_valid and value;
     }
 };
 //------------------------------------------------------------------------------
@@ -299,7 +299,7 @@ export template <
   typename ValueType,
   typename Value>
 constexpr bool is_enum_parameter_value_v =
-  c_api::is_enum_class_value_v<ParameterEnumClass, Parameter> &&
+  c_api::is_enum_class_value_v<ParameterEnumClass, Parameter> and
       std::is_same_v<typename Parameter::tag_type, nothing_t>
     ? std::is_convertible_v<Value, ValueType>
     : c_api::is_enum_class_value_v<typename Parameter::tag_type, Value>;
@@ -407,7 +407,7 @@ struct enum_class {
     template <typename V>
     explicit constexpr operator V() const noexcept
         requires(
-          !std::is_same_v<bool, V> && std::is_convertible_v<value_type, V>)
+          not std::is_same_v<bool, V> and std::is_convertible_v<value_type, V>)
     {
         return limit_cast<T>(_value);
     }

@@ -45,7 +45,7 @@ public:
 
     /// @brief Indicates if the arguments is valid.
     auto is_valid() const noexcept -> bool {
-        return (0 <= _argi) && (_argi < _argc) && (_argv != nullptr) &&
+        return (0 <= _argi) and (_argi < _argc) and (_argv != nullptr) and
                (_argv[_argi] != nullptr);
     }
 
@@ -85,7 +85,7 @@ public:
 
     /// @brief Indicates if this argument's value is different than the specified string.
     auto operator!=(const value_type& v) const noexcept {
-        return !are_equal(get(), v);
+        return not are_equal(get(), v);
     }
 
     /// @brief Returns the value of this argument as a const memory block.
@@ -132,8 +132,8 @@ public:
     /// @see is_long_tag
     /// @see is_prefixed_tag
     auto is_short_tag(const value_type name) const noexcept {
-        return (safe_add_eq(1, name.size(), get().size()) && starts_with("-") &&
-                ends_with(name)) ||
+        return (safe_add_eq(1, name.size(), get().size()) and
+                starts_with("-") and ends_with(name)) or
                is_tag(name);
     }
 
@@ -142,15 +142,15 @@ public:
     /// @see is_short_tag
     /// @see is_prefixed_tag
     auto is_long_tag(const value_type name) const noexcept {
-        return (safe_add_eq(2, name.size(), get().size()) &&
-                starts_with("--") && ends_with(name)) ||
+        return (safe_add_eq(2, name.size(), get().size()) and
+                starts_with("--") and ends_with(name)) or
                is_tag(name);
     }
 
     /// @brief Indicates if this argument value is one of the two specified strings.
     auto is_tag(const value_type short_tag, const value_type long_tag)
       const noexcept {
-        return is_short_tag(short_tag) || is_long_tag(long_tag);
+        return is_short_tag(short_tag) or is_long_tag(long_tag);
     }
 
     /// @brief Indicates if argument is same as the specified string prefixed by '--'.
@@ -159,8 +159,8 @@ public:
     /// @see is_short_tag
     auto is_prefixed_tag(const value_type prefix, const value_type name)
       const noexcept {
-        return safe_add_eq(prefix.size(), name.size(), get().size()) &&
-               starts_with(prefix) && ends_with(name);
+        return safe_add_eq(prefix.size(), name.size(), get().size()) and
+               starts_with(prefix) and ends_with(name);
     }
 
     /// @brief Indicates if this argument is a "show help" argument (like "--help").
@@ -555,7 +555,7 @@ public:
     auto find(const value_type what) const noexcept -> program_arg {
         int i = 1;
         while(i < _argc) {
-            if((_argv != nullptr) && (_argv[i] != nullptr)) {
+            if((_argv != nullptr) and (_argv[i] != nullptr)) {
                 if(are_equal(value_type(_argv[i]), what)) {
                     break;
                 }

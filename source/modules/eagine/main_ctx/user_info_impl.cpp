@@ -72,7 +72,7 @@ private:
 
     static auto _get_config_dir_path() -> std::string {
         auto result = _get_home_dir_path();
-        if(!result.empty() && result.back() != '/') {
+        if(not result.empty() and result.back() != '/') {
             result.append("/");
         }
         result.append(".config");
@@ -81,7 +81,7 @@ private:
 };
 //------------------------------------------------------------------------------
 auto user_info::_impl() noexcept -> user_info_impl* {
-    if(!_pimpl) [[unlikely]] {
+    if(not _pimpl) [[unlikely]] {
         try {
             _pimpl = std::make_shared<user_info_impl>();
         } catch(...) {

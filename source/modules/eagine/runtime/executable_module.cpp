@@ -70,7 +70,7 @@ export struct executable_module : interface<executable_module> {
 export class shared_executable_module {
 public:
     /// @brief Default constructor.
-    /// @post !is_open()
+    /// @post not is_open()
     shared_executable_module() noexcept = default;
 
     /// @brief Loads the executable module from the current executable.

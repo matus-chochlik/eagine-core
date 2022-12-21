@@ -21,7 +21,7 @@ void hexdump_ostream(auto& s) {
 
     out << hexdump(as_bytes(view(buf)));
 
-    test.check(!out.str().empty(), "not empty");
+    test.check(not out.str().empty(), "not empty");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

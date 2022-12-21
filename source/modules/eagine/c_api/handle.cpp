@@ -34,7 +34,7 @@ public:
     ~basic_handle() noexcept = default;
 
     /// @brief Default constructor.
-    /// @post !is_valid()
+    /// @post not is_valid()
     constexpr basic_handle() noexcept = default;
 
     /// @brief Move constructor.
@@ -123,7 +123,7 @@ public:
     ~basic_owned_handle() noexcept = default;
 
     /// @brief Default constructor.
-    /// @post !is_valid()
+    /// @post not is_valid()
     constexpr basic_owned_handle() noexcept = default;
 
     /// @brief Move constructor.
@@ -151,7 +151,7 @@ public:
       : base{name} {}
 
     /// @brief Releases the underlying handle value.
-    /// @post !is_valid()
+    /// @post not is_valid()
     auto release() noexcept -> Handle {
         return this->_release();
     }

@@ -131,7 +131,7 @@ export struct serializer_data_sink : abstract<serializer_data_sink> {
       -> serialization_result<memory::const_split_block> {
         const auto before{remaining_size()};
         const auto errors{write(data.tail())};
-        if(!errors) {
+        if(not errors) {
             return {data.skip_to_end()};
         }
         if(errors.has_at_most(serialization_error_code::incomplete_write)) {

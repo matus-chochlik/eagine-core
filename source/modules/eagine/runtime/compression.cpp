@@ -293,7 +293,7 @@ public:
     /// @brief Indicates if compression has succeeded.
     /// @see has_failed
     auto has_succeeded() const noexcept -> bool {
-        return !_failed;
+        return not _failed;
     }
 
     /// @brief Indicates if compression has failed.
@@ -304,7 +304,7 @@ public:
 
     /// @brief Indicates if stream compression is progressing successfully.
     auto is_working() const noexcept -> bool {
-        return has_started() && !(has_finished() || has_failed());
+        return has_started() and not(has_finished() or has_failed());
     }
 
     /// @brief Indicates if stream compression is progressing successfully.

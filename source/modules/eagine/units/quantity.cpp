@@ -39,7 +39,7 @@ public:
     /// @brief Converting constructor from another tagged quantity.
     template <typename X, typename UX>
     constexpr tagged_quantity(const tagged_quantity<X, UX>& tq) noexcept
-        requires(std::is_convertible_v<X, T> && is_convertible_v<UX, U>)
+        requires(std::is_convertible_v<X, T> and is_convertible_v<UX, U>)
       : _v{value_conv<UX, U>()(T(tq._v))} {}
 
     /// @brief Conversion to a quantity in another unit type.
@@ -72,17 +72,17 @@ public:
     template <typename X, typename UX>
     auto operator+=(const tagged_quantity<X, UX>& q) noexcept
       -> auto& requires(std::is_convertible_v<X, T>&& is_convertible_v<UX, U>) {
-                   _v += value_conv<UX, U>()(T(q._v));
-                   return *this;
-               }
+          _v += value_conv<UX, U>()(T(q._v));
+          return *this;
+      }
 
     /// @brief Subtraction of another tagged quantity.
     template <typename X, typename UX>
     auto operator-=(const tagged_quantity<X, UX>& q) noexcept
       -> auto& requires(std::is_convertible_v<X, T>&& is_convertible_v<UX, U>) {
-                   _v -= value_conv<UX, U>()(T(q._v));
-                   return *this;
-               }
+          _v -= value_conv<UX, U>()(T(q._v));
+          return *this;
+      }
 
     private : static_assert(std::is_arithmetic_v<T>);
     T _v{};
@@ -122,7 +122,7 @@ struct is_convertible_quantity<tagged_quantity<T, QU>, U>
   : is_convertible<QU, U> {};
 //------------------------------------------------------------------------------
 export template <typename T, typename U>
-    requires(!is_tagged_quantity_v<T> && !is_unit_v<T> && is_unit_v<U>)
+    requires(not is_tagged_quantity_v<T> and not is_unit_v<T> and is_unit_v<U>)
 constexpr auto operator*(const T& v, U) {
     return make_tagged_quantity<U>(v);
 }
@@ -261,7 +261,7 @@ constexpr auto operator*(
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U, typename T2>
-    requires(!is_unit_v<T2> && !is_tagged_quantity_v<T2>)
+    requires(not is_unit_v<T2> and not is_tagged_quantity_v<T2>)
 constexpr auto operator*(const tagged_quantity<T1, U>& a, const T2& c) {
     return make_tagged_quantity<U>(value(a) * c);
 }
@@ -301,7 +301,7 @@ constexpr auto operator/(
 /// @ingroup units
 /// @relates tagged_quantity
 export template <typename T1, typename U, typename T2>
-    requires(!is_unit_v<T2>)
+    requires(not is_unit_v<T2>)
 constexpr auto operator/(const tagged_quantity<T1, U>& a, const T2& c) {
     return make_tagged_quantity<U>((1.F * value(a)) / c);
 }
