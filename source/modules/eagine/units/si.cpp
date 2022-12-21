@@ -44,11 +44,14 @@ export using gradian =
 
 // quarter
 export using quarter =
-  scaled_unit<scales::multiplied<scales::pi, scales::rational<1, 2>>, radian>;
+  scaled_unit<scales::divided<scales::pi, scales::constant<2>>, radian>;
 
 // turn
 export using turn =
   scaled_unit<scales::multiplied<scales::constant<2>, scales::pi>, radian>;
+
+// pi_rad
+export using pi_rad = scaled_unit<scales::pi, radian>;
 
 export struct steradian : unit<solid_angle, steradian> {};
 
@@ -83,53 +86,10 @@ export struct candela : unit<luminous_intensity, candela> {};
 
 export struct ampere : unit<electric_current, ampere> {};
 
+export struct bit : unit<amount_of_information, bit> {};
+export using byte = scaled_unit<scales::constant<8>, bit>;
+
 } // namespace base
-//------------------------------------------------------------------------------
-export using second = unit<time, si>;
-
-export using radian = unit<angle, si>;
-export using degree = scaled_dim_unit<
-  angle,
-  bits::unit_scales<
-    bits::
-      uni_sca<base::radian, scales::divided<scales::pi, scales::constant<180>>>,
-    nothing_t>,
-  si>;
-
-export using kelvin = unit<temperature, si>;
-//------------------------------------------------------------------------------
-export template <>
-struct name_of<base::second> {
-    static constexpr const char mp_str[] = "second";
-};
-
-export template <>
-struct symbol_of<base::second> {
-    static constexpr const char mp_str[] = "s";
-};
-
-export template <>
-struct name_of<base::minute> {
-    static constexpr const char mp_str[] = "minute";
-};
-
-export template <>
-struct symbol_of<base::minute> {
-    static constexpr const char mp_str[] = "min";
-};
-
-export template <>
-struct name_of<base::hour> {
-    static constexpr const char mp_str[] = "hour";
-};
-
-export template <>
-struct symbol_of<base::hour> {
-    static constexpr const char mp_str[] = "h";
-};
-
-export template <>
-struct si::base_unit<base::time> : base::second {};
 //------------------------------------------------------------------------------
 export template <>
 struct name_of<base::radian> {
@@ -183,6 +143,79 @@ struct symbol_of<base::turn> {
 
 export template <>
 struct si::base_unit<base::angle> : base::radian {};
+
+export using radian = unit<angle, si>;
+export using degree = scaled_dim_unit<
+  angle,
+  bits::unit_scales<
+    bits::
+      uni_sca<base::radian, scales::divided<scales::pi, scales::constant<180>>>,
+    nothing_t>,
+  si>;
+
+export using gradian = scaled_dim_unit<
+  angle,
+  bits::unit_scales<
+    bits::
+      uni_sca<base::radian, scales::divided<scales::pi, scales::constant<200>>>,
+    nothing_t>,
+  si>;
+
+export using quarter = scaled_dim_unit<
+  angle,
+  bits::unit_scales<
+    bits::uni_sca<base::radian, scales::divided<scales::pi, scales::constant<2>>>,
+    nothing_t>,
+  si>;
+
+export using turn = scaled_dim_unit<
+  angle,
+  bits::unit_scales<
+    bits::
+      uni_sca<base::radian, scales::multiplied<scales::constant<2>, scales::pi>>,
+    nothing_t>,
+  si>;
+
+export using pi_rad = scaled_dim_unit<
+  angle,
+  bits::unit_scales<bits::uni_sca<base::radian, scales::pi>, nothing_t>,
+  si>;
+
+//------------------------------------------------------------------------------
+export using second = unit<time, si>;
+
+export template <>
+struct name_of<base::second> {
+    static constexpr const char mp_str[] = "second";
+};
+
+export template <>
+struct symbol_of<base::second> {
+    static constexpr const char mp_str[] = "s";
+};
+
+export template <>
+struct name_of<base::minute> {
+    static constexpr const char mp_str[] = "minute";
+};
+
+export template <>
+struct symbol_of<base::minute> {
+    static constexpr const char mp_str[] = "min";
+};
+
+export template <>
+struct name_of<base::hour> {
+    static constexpr const char mp_str[] = "hour";
+};
+
+export template <>
+struct symbol_of<base::hour> {
+    static constexpr const char mp_str[] = "h";
+};
+
+export template <>
+struct si::base_unit<base::time> : base::second {};
 //------------------------------------------------------------------------------
 export template <>
 struct name_of<base::steradian> {
@@ -569,6 +602,30 @@ struct symbol_of<tesla> {
 };
 
 export using millitesla = make_scaled_unit_t<scales::milli, tesla>;
+//------------------------------------------------------------------------------
+export using bit = unit<amount_of_information, si>;
+
+export template <>
+struct name_of<bit> {
+    static constexpr const char mp_str[] = "bit";
+};
+
+export template <>
+struct symbol_of<bit> {
+    static constexpr const char mp_str[] = "b";
+};
+
+export using byte = make_scaled_unit_t<scales::constant<8>, bit>;
+
+export using kilobyte =
+  make_scaled_unit_t<scales::recombined<scales::kilo, scales::constant<8>>, bit>;
+export using kibibyte =
+  make_scaled_unit_t<scales::recombined<scales::kibi, scales::constant<8>>, bit>;
+
+export using megabyte =
+  make_scaled_unit_t<scales::recombined<scales::mega, scales::constant<8>>, bit>;
+export using mebibyte =
+  make_scaled_unit_t<scales::recombined<scales::mebi, scales::constant<8>>, bit>;
 //------------------------------------------------------------------------------
 } // namespace units
 } // namespace eagine
