@@ -42,7 +42,7 @@ void deserialize_data(
   const memory::const_block fragment,
   deserial_data_state<T>& state) {
 
-    if(!state.failed) {
+    if(not state.failed) {
         block_data_source source(fragment);
         state.backend.set_source(source);
         if(state.first) {
@@ -67,18 +67,18 @@ void deserialize_data(
 
         state.errors = {};
 
-        if(!state.defragmenter.is_done()) {
+        if(not state.defragmenter.is_done()) {
             state.errors |= deserializer<defragmenter_type>().read(
               state.defragmenter, state.backend);
 
-            if(!state.errors.has(error_code::not_enough_data)) {
+            if(not state.errors.has(error_code::not_enough_data)) {
                 if(state.errors.has_at_most(error_code::incomplete_read)) {
                     if(state.defragmenter.is_done()) {
                         std::cout << "deserialized " << state.count
                                   << " fragments " << std::endl;
                         use_data(state.data);
                     }
-                } else if(!state.first) {
+                } else if(not state.first) {
                     state.failed = true;
                 }
             }
@@ -98,16 +98,16 @@ void serialize_data(const std::vector<T>& instance) {
     fast_serializer_backend backend{sink};
     serialization_errors errors = backend.begin();
 
-    if(!errors) {
+    if(not errors) {
         errors |= serializer<std::size_t>().write(instance.size(), backend);
 
         using error_code = serialization_error_code;
         using fragmenter_type = fragment_serialize_wrapper<span<const T>>;
         fragmenter_type fragmenter(view(instance));
 
-        while(!fragmenter.is_done()) {
+        while(not fragmenter.is_done()) {
             errors = {};
-            if(!sink.free()) {
+            if(not sink.free()) {
                 sink = block_data_sink{cover(chunk)};
                 backend.set_sink(sink);
             }
@@ -117,7 +117,7 @@ void serialize_data(const std::vector<T>& instance) {
                 backend.set_sink(sink);
                 continue;
             }
-            if(!errors.has_at_most(error_code::incomplete_write)) {
+            if(not errors.has_at_most(error_code::incomplete_write)) {
                 break;
             }
             deserialize_data(sink.done(), state);

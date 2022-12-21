@@ -181,17 +181,17 @@ auto Connection::_handleBeginArgument() noexcept -> bool {
     _currentArgName = _toIdentifier(s);
     // tag
     s = _xmlReader.attributes().value("t");
-    if(!s.isEmpty()) {
+    if(not s.isEmpty()) {
         _currentArgTag = _toIdentifier(s);
     }
     // min
     s = _xmlReader.attributes().value("min");
-    if(!s.isEmpty()) {
+    if(not s.isEmpty()) {
         _currentMin = _toFloat(s, 0.F);
     }
     // max
     s = _xmlReader.attributes().value("max");
-    if(!s.isEmpty()) {
+    if(not s.isEmpty()) {
         _currentMax = _toFloat(s, 1.F);
     }
     return true;
@@ -248,11 +248,11 @@ auto Connection::_isBoolArg() const noexcept -> bool {
 }
 //------------------------------------------------------------------------------
 auto Connection::_isIntegerArg() const noexcept -> bool {
-    return _isArgTag("int64") || _isArgTag("int32") || _isArgTag("int16");
+    return _isArgTag("int64") or _isArgTag("int32") or _isArgTag("int16");
 }
 //------------------------------------------------------------------------------
 auto Connection::_isUnsignedArg() const noexcept -> bool {
-    return _isArgTag("uint64") || _isArgTag("uint32") || _isArgTag("uint16");
+    return _isArgTag("uint64") or _isArgTag("uint32") or _isArgTag("uint16");
 }
 //------------------------------------------------------------------------------
 auto Connection::_isFloatArg() const noexcept -> bool {

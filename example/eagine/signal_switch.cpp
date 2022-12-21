@@ -20,7 +20,7 @@ auto main() -> int {
     std::cout << "wait 10 seconds or send INT or TERM signal to exit"
               << std::endl;
 
-    while(!done) {
+    while(not done) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         if(i++ >= 10) {

@@ -12,7 +12,7 @@ namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
     for(const auto& arg : ctx.args()) {
-        if(!arg.starts_with("-")) {
+        if(not arg.starts_with("-")) {
             if(arg.prev().is_tag("-f", "--file")) {
                 file_contents fc(arg.get());
                 std::cout << arg << '|' << hexdump(fc.block()) << std::endl;

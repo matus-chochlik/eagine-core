@@ -66,7 +66,7 @@ auto StreamListModel::getStreamLogIdentity(const LogStreamInfo& info) const
 }
 //------------------------------------------------------------------------------
 auto StreamListModel::getOSName(const LogStreamInfo& info) const -> QVariant {
-    if(!info.osName.empty()) {
+    if(not info.osName.empty()) {
         return toQString(info.osName);
     }
     return {};
@@ -74,7 +74,7 @@ auto StreamListModel::getOSName(const LogStreamInfo& info) const -> QVariant {
 //------------------------------------------------------------------------------
 auto StreamListModel::getOSCodeName(const LogStreamInfo& info) const
   -> QVariant {
-    if(!info.osCodeName.empty()) {
+    if(not info.osCodeName.empty()) {
         return toQString(info.osCodeName);
     }
     return {};
@@ -82,7 +82,7 @@ auto StreamListModel::getOSCodeName(const LogStreamInfo& info) const
 //------------------------------------------------------------------------------
 auto StreamListModel::getGitBranch(const LogStreamInfo& info) const
   -> QVariant {
-    if(!info.gitBranch.empty()) {
+    if(not info.gitBranch.empty()) {
         return toQString(info.gitBranch);
     }
     return {};
@@ -90,7 +90,7 @@ auto StreamListModel::getGitBranch(const LogStreamInfo& info) const
 //------------------------------------------------------------------------------
 auto StreamListModel::getGitHashId(const LogStreamInfo& info) const
   -> QVariant {
-    if(!info.gitHashId.empty()) {
+    if(not info.gitHashId.empty()) {
         return toQString(info.gitHashId);
     }
     return {};
@@ -98,7 +98,7 @@ auto StreamListModel::getGitHashId(const LogStreamInfo& info) const
 //------------------------------------------------------------------------------
 auto StreamListModel::getGitVersion(const LogStreamInfo& info) const
   -> QVariant {
-    if(!info.gitVersion.empty()) {
+    if(not info.gitVersion.empty()) {
         return toQString(info.gitVersion);
     }
     return {};
@@ -106,7 +106,7 @@ auto StreamListModel::getGitVersion(const LogStreamInfo& info) const
 //------------------------------------------------------------------------------
 auto StreamListModel::getGitDescribe(const LogStreamInfo& info) const
   -> QVariant {
-    if(!info.gitDescribe.empty()) {
+    if(not info.gitDescribe.empty()) {
         return toQString(info.gitDescribe);
     }
     return {};
@@ -114,7 +114,7 @@ auto StreamListModel::getGitDescribe(const LogStreamInfo& info) const
 //------------------------------------------------------------------------------
 auto StreamListModel::getArchitecture(const LogStreamInfo& info) const
   -> QVariant {
-    if(!info.architecture.empty()) {
+    if(not info.architecture.empty()) {
         return toQString(info.architecture);
     }
     return {};
@@ -122,7 +122,7 @@ auto StreamListModel::getArchitecture(const LogStreamInfo& info) const
 //------------------------------------------------------------------------------
 auto StreamListModel::getCompilerName(const LogStreamInfo& info) const
   -> QVariant {
-    if(!info.compilerName.empty()) {
+    if(not info.compilerName.empty()) {
         return toQString(info.compilerName);
     }
     return {};

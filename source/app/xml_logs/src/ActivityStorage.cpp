@@ -41,7 +41,9 @@ auto ActivityData::update(
     min = std::get<0>(mvm);
     value = std::get<1>(mvm);
     max = std::get<2>(mvm);
-    if((max > min) && (value > min) && timeSinceStart() > std::chrono::seconds(5)) {
+    if(
+      (max > min) and (value > min) and
+      timeSinceStart() > std::chrono::seconds(5)) {
         remainingTimes[remainingUpdatePos++ % remainingTimes.size()] =
           timeSinceStart().count() * (todoRatio() / doneRatio());
     }
@@ -104,9 +106,9 @@ auto ActivityStorage::_getEntryActivity(
   const eagine::identifier entryArg) noexcept -> ActivityData& {
     const auto pos = std::find_if(
       _activities.begin(), _activities.end(), [&](const auto& existing) {
-          return (existing.streamId == entry.streamId) &&
-                 (existing.instance == entry.instance) &&
-                 (existing.source == entry.source) &&
+          return (existing.streamId == entry.streamId) and
+                 (existing.instance == entry.instance) and
+                 (existing.source == entry.source) and
                  (existing.arg == entryArg);
       });
     if(pos != _activities.end()) {

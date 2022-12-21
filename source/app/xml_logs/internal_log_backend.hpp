@@ -18,7 +18,7 @@ namespace eagine {
 class internal_log_backend final : public logger_backend {
 public:
     internal_log_backend() noexcept {
-        assert(!_single_instance_ptr());
+        assert(not _single_instance_ptr());
         _single_instance_ptr() = this;
         LogStreamInfo info{};
         info.logIdentity = "XML log viewer";

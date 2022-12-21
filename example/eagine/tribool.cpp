@@ -10,7 +10,7 @@ import <iostream>;
 
 void print(const char* expr, const eagine::weakbool v) {
     std::cout << "'" << expr << "': ";
-    if(!v) {
+    if(not v) {
         std::cout << "no" << std::endl;
     } else if(v) {
         std::cout << "yes" << std::endl;
@@ -23,7 +23,7 @@ void print(const char* expr, const eagine::tribool v) {
     std::cout << "'" << expr << "': ";
     if(v) {
         std::cout << "yes" << std::endl;
-    } else if(!v) {
+    } else if(not v) {
         std::cout << "no" << std::endl;
     } else {
         std::cout << "maybe" << std::endl;
@@ -47,21 +47,21 @@ auto main() -> int {
     EAG_PRINT(~no);
     EAG_PRINT(~maybe);
 
-    EAG_PRINT(yes && yes);
-    EAG_PRINT(yes && no);
-    EAG_PRINT(yes && maybe);
-    EAG_PRINT(no && yes);
-    EAG_PRINT(no && no);
-    EAG_PRINT(no && maybe);
-    EAG_PRINT(maybe && maybe);
+    EAG_PRINT(yes and yes);
+    EAG_PRINT(yes and no);
+    EAG_PRINT(yes and maybe);
+    EAG_PRINT(no and yes);
+    EAG_PRINT(no and no);
+    EAG_PRINT(no and maybe);
+    EAG_PRINT(maybe and maybe);
 
-    EAG_PRINT(yes || yes);
-    EAG_PRINT(yes || no);
-    EAG_PRINT(yes || maybe);
-    EAG_PRINT(no || yes);
-    EAG_PRINT(no || no);
-    EAG_PRINT(no || maybe);
-    EAG_PRINT(maybe || maybe);
+    EAG_PRINT(yes or yes);
+    EAG_PRINT(yes or no);
+    EAG_PRINT(yes or maybe);
+    EAG_PRINT(no or yes);
+    EAG_PRINT(no or no);
+    EAG_PRINT(no or maybe);
+    EAG_PRINT(maybe or maybe);
 
     return 0;
 }

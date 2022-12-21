@@ -17,7 +17,7 @@ auto main() -> int {
     float x = 0.F;
 
     progress_bar pb;
-    while(!interrupted) {
+    while(not interrupted) {
         std::cout << pb.update(std::sin(x)).reformat().get() << std::endl;
         x += 0.01F + 0.05F * (std::sin(1.618F * x) + 1.F);
         std::this_thread::sleep_for(std::chrono::milliseconds(20));

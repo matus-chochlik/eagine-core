@@ -25,7 +25,7 @@ auto main() -> int {
         std::cout << "can call function" << std::endl;
     }
 
-    if(!args_within_limits(&add, 123456, 789)) {
+    if(not args_within_limits(&add, 123456, 789)) {
         std::cout << "arguments out of range" << std::endl;
     }
 
@@ -33,7 +33,7 @@ auto main() -> int {
         std::cout << "can call function" << std::endl;
     }
 
-    if(!args_within_limits(&mul::apply, 12345678901234L, 789012)) {
+    if(not args_within_limits(&mul::apply, 12345678901234L, 789012)) {
         std::cout << "arguments out of range" << std::endl;
     }
 

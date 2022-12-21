@@ -36,7 +36,7 @@ void solve_sudoku(const eagine::program_args& args) {
     print(board);
 
     bool done = false;
-    while(!solutions.empty() && !done) {
+    while(not solutions.empty() and not done) {
         print(board);
         board = solutions.top();
         solutions.pop();
