@@ -25,7 +25,7 @@ export template <std::integral T>
 [[nodiscard]] constexpr auto is_positive_power_of_2(const T value) noexcept
   -> bool {
     using U = std::make_unsigned_t<T>;
-    return (value > 0) && ((U(value) & (U(value) - 1)) == 0);
+    return (value > 0) and ((U(value) & (U(value) - 1)) == 0);
 }
 //------------------------------------------------------------------------------
 /// @brief Returns the greates common divisor of arguments @p l and @p r.
@@ -85,7 +85,7 @@ export template <typename T, typename... P>
 export template <typename T>
 [[nodiscard]] constexpr auto ratio(const T a, const T b) noexcept
   -> std::optional<T> {
-    if(b > T(0) || (b < T(0))) [[likely]] {
+    if(b > T(0) or (b < T(0))) [[likely]] {
         return {a / b};
     }
     return {};
@@ -229,7 +229,7 @@ export template <std::integral T>
 /// @ingroup math
 export template <std::integral T>
 [[nodiscard]] constexpr auto binomial(const T n, const T k) noexcept -> T {
-    return ((n >= 0) && (k >= 0) && (k <= n))
+    return ((n >= 0) and (k >= 0) and (k <= n))
              ? (factorial(n) / (factorial(k) * factorial(n - k)))
              : 0;
 }

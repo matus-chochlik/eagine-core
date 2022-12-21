@@ -71,7 +71,7 @@ void enum_map_1(eagitest::suite& s) {
         test.check(counters.visit(test_enum::value_c, incr), "visit c");
         test.check(counters.visit(test_enum::value_e, incr), "visit d");
         test.check(counters.visit(test_enum::value_b, incr), "visit e");
-        test.check(!counters.visit(test_enum::value_f, incr), "not visit f");
+        test.check(not counters.visit(test_enum::value_f, incr), "not visit f");
         trck.passed_part(2);
     }
 
@@ -120,7 +120,8 @@ void enum_map_2(eagitest::suite& s) {
     test.check(ccounters.visit(test_enum::value_c, chk_value), "visit c");
     test.check(ccounters.visit(test_enum::value_d, chk_value), "visit d");
     test.check(ccounters.visit(test_enum::value_e, chk_value), "visit e");
-    test.check(!ccounters.visit(test_enum::value_f, chk_value), "not visit f");
+    test.check(
+      not ccounters.visit(test_enum::value_f, chk_value), "not visit f");
 }
 //------------------------------------------------------------------------------
 void enum_map_3(eagitest::suite& s) {
@@ -226,7 +227,7 @@ void enum_map_4(eagitest::suite& s) {
         test.check(counters.visit(test_enum::value_c, incr), "visit c");
         test.check(counters.visit(test_enum::value_e, incr), "visit e");
         test.check(counters.visit(test_enum::value_b, incr), "visit b");
-        test.check(!counters.visit(test_enum::value_f, incr), "not visit f");
+        test.check(not counters.visit(test_enum::value_f, incr), "not visit f");
         trck.passed_part(3);
     }
 
@@ -259,7 +260,8 @@ void enum_map_4(eagitest::suite& s) {
     test.check(ccounters.visit(test_enum::value_c, chk_tuple), "check c");
     test.check(ccounters.visit(test_enum::value_d, chk_tuple), "check d");
     test.check(ccounters.visit(test_enum::value_e, chk_tuple), "check e");
-    test.check(!ccounters.visit(test_enum::value_f, chk_tuple), "not check f");
+    test.check(
+      not ccounters.visit(test_enum::value_f, chk_tuple), "not check f");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

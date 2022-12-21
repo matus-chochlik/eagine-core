@@ -107,7 +107,7 @@ public:
     /// @brief Returns whether the curves made from points are connected.
     [[nodiscard]] static auto are_connected(
       const std::vector<Type>& points) noexcept -> bool {
-        return ((points.size() - 1) != Order) &&
+        return ((points.size() - 1) != Order) and
                ((points.size() - 1) % Order) == 0;
     }
 
@@ -123,14 +123,14 @@ public:
 
     /// @brief Returns true if the individual curves are disconnected.
     [[nodiscard]] auto is_separated() const noexcept -> bool {
-        return !_connected;
+        return not _connected;
     }
 
     /// @brief checks if the sequence of control points is OK for this curve type.
     [[nodiscard]] static auto points_are_ok(
       const std::vector<Type>& points) noexcept -> bool {
-        return !points.empty() &&
-               (are_connected(points) || are_separated(points));
+        return not points.empty() and
+               (are_connected(points) or are_separated(points));
     }
 
     /// @brief Default constructor.
@@ -229,7 +229,7 @@ public:
         } else if(t > one) {
             t -= std::floor(t);
         }
-        assert(t >= zero && t <= one);
+        assert(t >= zero and t <= one);
         return t;
     }
 
@@ -241,7 +241,7 @@ public:
         if(t >= one) {
             t = zero;
         }
-        assert(t >= zero && t < one);
+        assert(t >= zero and t < one);
 
         const auto toffs = t * Parameter(segment_count());
         const auto t_sub = toffs - std::floor(toffs);

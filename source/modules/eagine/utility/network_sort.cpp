@@ -564,7 +564,7 @@ public:
     }
 
     auto next_round() noexcept -> bool {
-        return !done() && (++_round < rounds());
+        return not done() and (++_round < rounds());
     }
 
     auto sort_single(span_size_t r, span_size_t i) -> auto& {
@@ -579,7 +579,7 @@ public:
     }
 
     auto sort_round() -> auto& {
-        assert(!done());
+        assert(not done());
         for(const auto i : integer_range(span_size(N))) {
             sort_single(i);
         }

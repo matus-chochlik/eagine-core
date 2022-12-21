@@ -71,7 +71,7 @@ public:
     auto allocate(size_type n, const void* = nullptr) -> T* {
         owned_block b = _sba.allocate(span_size_of<T>(n), span_align_of<T>());
 
-        if(!b) {
+        if(not b) {
             throw std::bad_alloc();
         }
 
@@ -86,7 +86,7 @@ public:
     }
 
     void deallocate(T* p, size_type n) {
-        if(p && n) {
+        if(p and n) {
             _sba.deallocate(
               acquire_block(as_bytes(cover(p, n))), span_align_of<T>());
         }

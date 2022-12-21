@@ -97,7 +97,7 @@ public:
     template <std::same_as<bit_type>... B>
     [[nodiscard]] constexpr auto has_all(const bit_type bit, B... bits)
       const noexcept -> bool {
-        return (has(bit) && ... && has(bits));
+        return (has(bit) and ... and has(bits));
     }
 
     /// @brief Tests if any of the specified bits are set.
@@ -110,7 +110,7 @@ public:
     template <std::same_as<bit_type>... B>
     [[nodiscard]] constexpr auto has_any(const bit_type bit, B... bits)
       const noexcept -> bool {
-        return (has(bit) || ... || has(bits));
+        return (has(bit) or ... or has(bits));
     }
 
     /// @brief Tests if none of the specified bits are set.
@@ -123,7 +123,7 @@ public:
     template <std::same_as<bit_type>... B>
     [[nodiscard]] constexpr auto has_none(const bit_type bit, B... bits)
       const noexcept -> bool {
-        return (has_not(bit) && ... && has_not(bits));
+        return (has_not(bit) and ... and has_not(bits));
     }
 
     /// @brief Tests if only the specified bit is set.
@@ -145,7 +145,7 @@ public:
     /// @see has_any
     /// @see has_none
     [[nodiscard]] constexpr auto has_at_most(const bit_type bit) const noexcept {
-        return is_empty() || has_only(bit);
+        return is_empty() or has_only(bit);
     }
 
     /// @brief Bitwise-or operator.

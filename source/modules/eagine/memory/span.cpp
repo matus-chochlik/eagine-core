@@ -134,13 +134,13 @@ public:
 
     /// @brief Dereference.
     constexpr auto operator*() const noexcept -> auto& {
-        assert(_bgn <= _pos && _pos < _end);
+        assert(_bgn <= _pos and _pos < _end);
         return *_pos;
     }
 
     /// @brief Arrow.
     constexpr auto operator->() const noexcept -> auto* {
-        assert(_bgn <= _pos && _pos < _end);
+        assert(_bgn <= _pos and _pos < _end);
         return _pos;
     }
 
@@ -280,11 +280,11 @@ public:
     /// @brief Converting copy constructor from span of compatible elements.
     template <typename T, typename P, typename S>
         requires(
-          std::is_convertible_v<T, ValueType> &&
-            std::is_convertible_v<P, Pointer> &&
-            std::is_convertible_v<S, SizeType> &&
-            !std::is_same_v<T, ValueType> ||
-          !std::is_same_v<P, Pointer> || !std::is_same_v<S, SizeType>)
+          std::is_convertible_v<T, ValueType> and
+            std::is_convertible_v<P, Pointer> and
+            std::is_convertible_v<S, SizeType> and
+            not std::is_same_v<T, ValueType> or
+          not std::is_same_v<P, Pointer> or not std::is_same_v<S, SizeType>)
     constexpr basic_span(basic_span<T, P, S> that) noexcept
       : basic_span{
           static_cast<pointer>(that.data()),
@@ -293,11 +293,11 @@ public:
     /// @brief Converting copy assignment from span of compatible elements.
     template <typename T, typename P, typename S>
         requires(
-          std::is_convertible_v<T, ValueType> &&
-            std::is_convertible_v<P, Pointer> &&
-            std::is_convertible_v<S, SizeType> &&
-            !std::is_same_v<T, ValueType> ||
-          !std::is_same_v<P, Pointer> || !std::is_same_v<S, SizeType>)
+          std::is_convertible_v<T, ValueType> and
+            std::is_convertible_v<P, Pointer> and
+            std::is_convertible_v<S, SizeType> and
+            not std::is_same_v<T, ValueType> or
+          not std::is_same_v<P, Pointer> or not std::is_same_v<S, SizeType>)
     auto operator=(basic_span<T, P, S> that) noexcept -> auto& {
         _addr = static_cast<pointer>(that.data());
         _size = limit_cast<size_type>(that.size());
@@ -425,13 +425,13 @@ public:
     /// @brief Indicates if this span encloses the specified address.
     /// @see contains
     auto encloses(const pointer p) const noexcept -> bool {
-        return (begin() <= p) && (p <= end());
+        return (begin() <= p) and (p <= end());
     }
 
     /// @brief Indicates if this span encloses the specified address.
     /// @see contains
     auto encloses(const const_address a) const noexcept -> bool {
-        return (addr() <= a) && (a <= end_addr());
+        return (addr() <= a) and (a <= end_addr());
     }
 
     /// @brief Indicates if this span encloses another span.
@@ -439,7 +439,7 @@ public:
     /// @see overlaps
     template <typename Ts, typename Ps, typename Ss>
     auto contains(basic_span<Ts, Ps, Ss> that) const noexcept -> bool {
-        return (addr() <= that.addr()) && (that.end_addr() <= end_addr());
+        return (addr() <= that.addr()) and (that.end_addr() <= end_addr());
     }
 
     /// @brief Indicates if this span overlaps with another span.
@@ -447,8 +447,8 @@ public:
     /// @see contains
     template <typename Ts, typename Ps, typename Ss>
     auto overlaps(const basic_span<Ts, Ps, Ss>& that) const noexcept -> bool {
-        return encloses(that.addr()) || encloses(that.end_addr()) ||
-               that.encloses(addr()) || that.encloses(end_addr());
+        return encloses(that.addr()) or encloses(that.end_addr()) or
+               that.encloses(addr()) or that.encloses(end_addr());
     }
 
     /// @brief Returns a const reference to value at the specified index.
@@ -468,7 +468,7 @@ public:
 
     /// @brief Returns a const reference to value at the front of the span.
     /// @see back
-    /// @pre !is_empty()
+    /// @pre not is_empty()
     auto front() const noexcept -> const value_type& {
         assert(0 < size());
         return _addr[0];
@@ -476,7 +476,7 @@ public:
 
     /// @brief Returns a reference to value at the front of the span.
     /// @see back
-    /// @pre !is_empty()
+    /// @pre not is_empty()
     auto front() noexcept -> value_type& {
         assert(0 < size());
         return _addr[0];
@@ -484,7 +484,7 @@ public:
 
     /// @brief Returns a const reference to value at the back of the span.
     /// @see front
-    /// @pre !is_empty()
+    /// @pre not is_empty()
     auto back() const noexcept -> const value_type& {
         assert(0 < size());
         return _addr[size() - 1];
@@ -492,7 +492,7 @@ public:
 
     /// @brief Returns a const reference to value at the back of the span.
     /// @see front
-    /// @pre !is_empty()
+    /// @pre not is_empty()
     auto back() noexcept -> value_type& {
         assert(0 < size());
         return _addr[size() - 1];
@@ -561,7 +561,7 @@ using span = basic_span<T, T*, span_size_t>;
 /// @brief Alias for span<T> if T is mutable type. Ill defined otherwise.
 /// @ingroup memory
 export template <typename T>
-using span_if_mutable = std::enable_if_t<!std::is_const_v<T>, span<T>>;
+using span_if_mutable = std::enable_if_t<not std::is_const_v<T>, span<T>>;
 //------------------------------------------------------------------------------
 /// @brief Alias for spans with const element type.
 /// @ingroup memory
@@ -677,7 +677,7 @@ constexpr auto can_accommodate(
   const basic_span<B, P, S> blk,
   const span_size_t count,
   const std::type_identity<T> tid = {}) noexcept {
-    return is_aligned_as(blk.begin_addr(), tid) &&
+    return is_aligned_as(blk.begin_addr(), tid) and
            can_accommodate_between(
              blk.begin_addr(), blk.end_addr(), count * span_size_of(tid));
 }
@@ -697,13 +697,13 @@ constexpr auto can_accommodate(
 /// @see as_chars
 export template <typename T, typename B, typename P, typename S>
     requires(
-      std::is_same_v<std::remove_const_t<B>, char> ||
+      std::is_same_v<std::remove_const_t<B>, char> or
       std::is_same_v<std::remove_const_t<B>, byte>)
 constexpr auto accommodate(
   const basic_span<B, P, S> blk,
   const std::type_identity<T> tid = {}) noexcept
   -> basic_span<T, rebind_pointer_t<P, T>, S> {
-    assert(blk.is_empty() || can_accommodate(blk, tid));
+    assert(blk.is_empty() or can_accommodate(blk, tid));
     return basic_span<T, rebind_pointer_t<P, T>, S>{
       blk.begin_addr(), blk.end_addr()};
 }
@@ -787,13 +787,13 @@ struct equal_cmp<memory::basic_span<Tl, Pl, Sl>, memory::basic_span<Tr, Pr, Sr>>
       const memory::basic_span<Tr, Pr, Sr> r) noexcept -> bool {
         if(are_equal(l.size(), r.size())) {
             if constexpr(
-              std::is_same_v<std::remove_const_t<Tl>, std::remove_const_t<Tr>> &&
+              std::is_same_v<std::remove_const_t<Tl>, std::remove_const_t<Tr>> and
               std::is_integral_v<std::remove_const_t<Tl>>) {
                 return 0 == std::memcmp(
                               l.data(), r.data(), sizeof(Tl) * l.std_size());
             } else {
                 for(const auto i : integer_range(span_size(l.size()))) {
-                    if(!are_equal(l[i], r[i])) {
+                    if(not are_equal(l[i], r[i])) {
                         return false;
                     }
                 }

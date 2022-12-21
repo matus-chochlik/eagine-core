@@ -49,7 +49,7 @@ concept basic_extractable = requires(T v) {
 };
 
 export template <typename T>
-concept extractable = basic_extractable<T> && requires(T v) {
+concept extractable = basic_extractable<T> and requires(T v) {
     { has_value(v) } -> std::convertible_to<bool>;
 };
 // clang-format on

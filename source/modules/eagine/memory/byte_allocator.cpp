@@ -110,7 +110,7 @@ public:
     }
 
     void deallocate(owned_block&& b, size_type) noexcept final {
-        if(!b.empty()) [[likely]] {
+        if(not b.empty()) [[likely]] {
             // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
             std::free(b.data());
             this->release_block(std::move(b));

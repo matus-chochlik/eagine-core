@@ -46,11 +46,11 @@ public:
     ~optional_reference_wrapper() noexcept = default;
 
     /// @brief Construction from nothing.
-    /// @post !is_valid()
+    /// @post not is_valid()
     constexpr optional_reference_wrapper(nothing_t) noexcept {}
 
     /// @brief Construction from nullptr.
-    /// @post !is_valid()
+    /// @post not is_valid()
     constexpr optional_reference_wrapper(std::nullptr_t) noexcept {}
 
     /// @brief Indicates if this stores a valid reference.

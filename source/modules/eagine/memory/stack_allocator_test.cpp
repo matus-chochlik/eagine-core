@@ -31,7 +31,7 @@ void memory_alloc_Tn_1(
 
     memory::owned_block b1 = a.allocate(sz, ao);
 
-    test.check(!b1.empty(), "not empty");
+    test.check(not b1.empty(), "not empty");
     test.check(b1.size() >= sz, "size");
     test.check(is_aligned_to(b1.addr(), ao), "is aligned to");
 
@@ -57,7 +57,7 @@ void memory_alloc_Tn_1(
         trck.passed_part(2);
     }
 
-    while(!blks.empty()) {
+    while(not blks.empty()) {
         auto i = blks.begin() + rg.get_int(0, int(blks.size() - 1));
         a.deallocate(std::move(*i), ao);
         blks.erase(i);
@@ -163,7 +163,7 @@ void stack_allocator_2(auto& s) {
     }
 
     for(std::size_t n = blks.size(), i = 0; i < n; ++i) {
-        if(!blks[i].empty()) {
+        if(not blks[i].empty()) {
             test.check(bool(a.has_allocated(blks[i], 0)), "has allocated");
 
             for(std::size_t j = i; j < n; ++j) {
@@ -173,7 +173,7 @@ void stack_allocator_2(auto& s) {
         }
     }
 
-    while(!blks.empty()) {
+    while(not blks.empty()) {
         auto i = blks.begin() + rg.get_int(0, int(blks.size() - 1));
         a.deallocate(std::move(*i), 0);
         blks.erase(i);

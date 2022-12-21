@@ -24,17 +24,17 @@ void byteset_N(
     test.check_equal(bs.size(), sz_t(N), "size");
 
     for(auto& b : bs) {
-        test.check((b >= bmin) && (b <= bmax), "in limits 1");
+        test.check((b >= bmin) and (b <= bmax), "in limits 1");
     }
 
     using iter = typename eagine::byteset<N>::const_iterator;
     for(iter i = bs.begin(); i != bs.end(); ++i) {
-        test.check((*i >= bmin) && (*i <= bmax), "in limits 2");
+        test.check((*i >= bmin) and (*i <= bmax), "in limits 2");
     }
 
     using sz_t = typename eagine::byteset<N>::size_type;
     for(sz_t i = 0; i < bs.size(); ++i) {
-        test.check((bs[i] >= bmin) && (bs[i] <= bmax), "in limits 3");
+        test.check((bs[i] >= bmin) and (bs[i] <= bmax), "in limits 3");
     }
 }
 //------------------------------------------------------------------------------

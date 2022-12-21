@@ -47,15 +47,15 @@ public:
     /// @brief Locks the spinlock.
     void lock() noexcept {
         unsigned i = 0;
-        while(_flag.test() || _flag.test_and_set(std::memory_order_acquire)) {
+        while(_flag.test() or _flag.test_and_set(std::memory_order_acquire)) {
             if((++i % yieldModulo) == 0U) {
-                if constexpr(!low_profile_build) {
+                if constexpr(not low_profile_build) {
                     _stats.yielded();
                 }
                 std::this_thread::yield();
             }
         }
-        if constexpr(!low_profile_build) {
+        if constexpr(not low_profile_build) {
             _stats.locked();
         }
     }
@@ -68,7 +68,7 @@ public:
     /// @brief Returns the number of times the spinlock was locked.
     [[nodiscard]] auto stats() const noexcept
       -> optional_reference_wrapper<const spinlock_stats> {
-        if constexpr(!low_profile_build) {
+        if constexpr(not low_profile_build) {
             return {_stats};
         } else {
             return {nothing};

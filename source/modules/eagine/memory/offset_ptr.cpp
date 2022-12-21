@@ -78,9 +78,9 @@ public:
     /// @brief Conversion copy constructor.
     template <typename P, typename O>
         requires(
-          std::is_convertible_v<O, OffsetType> &&
-          std::is_convertible_v<P*, Pointee*> &&
-          !std::is_same_v<O, OffsetType> && !std::is_same_v<P, Pointee>)
+          std::is_convertible_v<O, OffsetType> and
+          std::is_convertible_v<P*, Pointee*> and
+          not std::is_same_v<O, OffsetType> and not std::is_same_v<P, Pointee>)
     basic_offset_ptr(const basic_offset_ptr<P, O>& that) noexcept
       : _offs{_get_offs(that)} {}
 
@@ -117,7 +117,7 @@ public:
     /// @brief Indicates that the pointer is not null.
     /// @see is_null
     explicit constexpr operator bool() const noexcept {
-        return !is_null();
+        return not is_null();
     }
 
     /// @brief Returns the byte offset value.
@@ -171,25 +171,25 @@ public:
 
     /// @brief Dereferences this pointer.
     auto operator*() noexcept -> reference {
-        assert(!is_null());
+        assert(not is_null());
         return *get();
     }
 
     /// @brief Dereferences this pointer.
     constexpr auto operator*() const noexcept -> const_reference {
-        assert(!is_null());
+        assert(not is_null());
         return *get();
     }
 
     /// @brief Dereferences this pointer.
     auto operator->() noexcept -> pointer {
-        assert(!is_null());
+        assert(not is_null());
         return get();
     }
 
     /// @brief Dereferences this pointer.
     constexpr auto operator->() const noexcept -> const_pointer {
-        assert(!is_null());
+        assert(not is_null());
         return get();
     }
 
@@ -213,14 +213,14 @@ public:
 
     /// @brief Pointer array subscript operator.
     auto operator[](offset_type index) noexcept -> reference {
-        assert(!is_null());
+        assert(not is_null());
         return get()[index];
     }
 
     /// @brief Pointer array subscript operator.
     constexpr auto operator[](offset_type index) const noexcept
       -> const_reference {
-        assert(!is_null());
+        assert(not is_null());
         return get()[index];
     }
 

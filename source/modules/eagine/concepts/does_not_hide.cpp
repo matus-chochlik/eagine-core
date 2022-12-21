@@ -13,7 +13,7 @@ namespace eagine {
 
 export template <typename T, typename X>
 concept does_not_hide =
-  bool(!std::is_base_of_v<T, std::remove_cv_t<std::remove_reference_t<X>>>);
+  bool(not std::is_base_of_v<T, std::remove_cv_t<std::remove_reference_t<X>>>);
 
 } // namespace eagine
 

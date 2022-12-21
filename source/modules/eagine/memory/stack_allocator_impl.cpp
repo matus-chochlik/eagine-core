@@ -23,7 +23,7 @@ stack_byte_allocator::stack_byte_allocator(const block& blk)
 auto stack_byte_allocator::equal(byte_allocator* a) const noexcept -> bool {
     auto* sba = dynamic_cast<stack_byte_allocator*>(a);
 
-    return (sba != nullptr) && (this->_alloc == sba->_alloc);
+    return (sba != nullptr) and (this->_alloc == sba->_alloc);
 }
 //------------------------------------------------------------------------------
 auto stack_byte_allocator::allocate(size_type n, size_type a) noexcept
@@ -31,7 +31,7 @@ auto stack_byte_allocator::allocate(size_type n, size_type a) noexcept
     if(n > 0) [[likely]] {
         size_type m = a - _alloc.allocated_size() % a;
 
-        assert((m < 255) && "must fit into a byte");
+        assert((m < 255) and "must fit into a byte");
 
         owned_block b = _alloc.allocate(m + n);
 
@@ -52,7 +52,7 @@ auto stack_byte_allocator::allocate(size_type n, size_type a) noexcept
 }
 //------------------------------------------------------------------------------
 void stack_byte_allocator::deallocate(owned_block&& b, size_type) noexcept {
-    if(!b.empty()) [[likely]] {
+    if(not b.empty()) [[likely]] {
         assert(_alloc.has_allocated(b));
 
         byte* p = b.data();
@@ -81,7 +81,7 @@ auto stack_aligned_byte_allocator::equal(byte_allocator* a) const noexcept
   -> bool {
     auto* sba = dynamic_cast<_this_class*>(a);
 
-    return (sba != nullptr) && (this->_alloc == sba->_alloc);
+    return (sba != nullptr) and (this->_alloc == sba->_alloc);
 }
 //------------------------------------------------------------------------------
 auto stack_aligned_byte_allocator::has_allocated(

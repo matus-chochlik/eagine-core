@@ -43,7 +43,7 @@ struct equal_cmp_int<L, R, false, true> : equal_cmp_int<R, L, true, false> {};
 //------------------------------------------------------------------------------
 template <typename L, typename R>
 using equal_cmp_pick = std::conditional_t<
-  std::is_integral_v<L> && std::is_integral_v<R>,
+  std::is_integral_v<L> and std::is_integral_v<R>,
   equal_cmp_int<L, R, std::is_signed_v<L>, std::is_signed_v<R>>,
   equal_cmp_any<L, R>>;
 //------------------------------------------------------------------------------
@@ -53,14 +53,14 @@ struct equal_cmp : equal_cmp_pick<L, R> {};
 export template <>
 struct equal_cmp<float, float> {
     static constexpr auto check(const float l, const float r) noexcept {
-        return !((l - r) < 0.F || (l - r) > 0.F);
+        return not((l - r) < 0.F or (l - r) > 0.F);
     }
 };
 //------------------------------------------------------------------------------
 export template <>
 struct equal_cmp<double, double> {
     static constexpr auto check(const double l, const double r) noexcept {
-        return !((l - r) < 0.0 || (l - r) > 0.0);
+        return not((l - r) < 0.0 or (l - r) > 0.0);
     }
 };
 //------------------------------------------------------------------------------

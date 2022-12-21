@@ -114,13 +114,13 @@ public:
     /// @brief Equality comparison.
     [[nodiscard]] constexpr auto operator==(const tribool b) noexcept
       -> tribool {
-        return {_value == b._value, (*(*this) || *b)};
+        return {_value == b._value, (*(*this) or *b)};
     }
 
     /// @brief Non-equality comparison.
     [[nodiscard]] constexpr auto operator!=(const tribool b) noexcept
       -> tribool {
-        return {_value != b._value, (*(*this) || *b)};
+        return {_value != b._value, (*(*this) or *b)};
     }
 
 private:
@@ -131,44 +131,44 @@ private:
 export [[nodiscard]] constexpr auto operator&&(
   const tribool a,
   const tribool b) noexcept {
-    return !a   ? tribool{false}
-           : a  ? b
-           : !b ? tribool{false}
-                : tribool{indeterminate};
+    return not a   ? tribool{false}
+           : a     ? b
+           : not b ? tribool{false}
+                   : tribool{indeterminate};
 }
 
 export [[nodiscard]] constexpr auto operator&&(
   const bool a,
   const tribool b) noexcept {
-    return tribool(a) && b;
+    return tribool(a) and b;
 }
 
 export [[nodiscard]] constexpr auto operator&&(
   const tribool a,
   const bool b) noexcept {
-    return a && tribool(b);
+    return a and tribool(b);
 }
 
 /// @brief Tri-state boolean or operator.
 export [[nodiscard]] constexpr auto operator||(
   const tribool a,
   const tribool b) noexcept {
-    return a    ? tribool{true}
-           : !a ? b
-           : b  ? tribool{true}
-                : tribool{indeterminate};
+    return a       ? tribool{true}
+           : not a ? b
+           : b     ? tribool{true}
+                   : tribool{indeterminate};
 }
 
 export [[nodiscard]] constexpr auto operator||(
   const bool a,
   const tribool b) noexcept {
-    return tribool(a) || b;
+    return tribool(a) or b;
 }
 
 export [[nodiscard]] constexpr auto operator||(
   const tribool a,
   const bool b) noexcept {
-    return a || tribool(b);
+    return a or tribool(b);
 }
 
 } // namespace eagine

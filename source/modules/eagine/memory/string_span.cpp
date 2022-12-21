@@ -43,7 +43,7 @@ public:
 
     static consteval auto _ce_strlen(const char* str) noexcept {
         span_size_t len = 0U;
-        while(str && *str) {
+        while(str and *str) {
             ++len;
             ++str;
         }
@@ -53,14 +53,14 @@ public:
     template <typename R>
     consteval basic_string_span(immediate_function_t, R addr) noexcept
         requires(
-          !std::is_array_v<R> && std::is_convertible_v<R, P> &&
+          not std::is_array_v<R> and std::is_convertible_v<R, P> and
           std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>)
       : base{addr, -static_cast<S>(_ce_strlen(addr))} {}
 
     template <typename R>
     constexpr explicit basic_string_span(R addr) noexcept
         requires(
-          !std::is_array_v<R> && std::is_convertible_v<R, P> &&
+          not std::is_array_v<R> and std::is_convertible_v<R, P> and
           std::is_same_v<std::remove_const_t<std::remove_pointer_t<R>>, char>)
       : base{addr, addr ? -limit_cast<S>(std::strlen(addr)) : 0} {}
 
@@ -109,7 +109,7 @@ public:
     friend constexpr auto operator!=(
       basic_string_span l,
       basic_string_span r) noexcept -> bool {
-        return !are_equal(l, r);
+        return not are_equal(l, r);
     }
 
     /// @brief Named conversion to the corresponding standard string view.

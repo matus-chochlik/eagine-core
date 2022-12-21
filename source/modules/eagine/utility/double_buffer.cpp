@@ -34,7 +34,7 @@ public:
     /// @see front
     /// @see back
     void swap() noexcept {
-        _idx = !_idx;
+        _idx = not _idx;
     }
 
     /// @brief Returns a reference to the current "front" instance.
@@ -63,7 +63,7 @@ private:
     }
 
     auto back_index() const noexcept -> std::size_t {
-        return static_cast<std::size_t>(!_idx);
+        return static_cast<std::size_t>(not _idx);
     }
 
     std::array<T, 2> _values{};

@@ -47,7 +47,7 @@ public:
         auto key = 1U;
         auto pos = _slots.begin();
 
-        if(!_slots.empty()) {
+        if(not _slots.empty()) {
             key = get_key(_slots.back());
             key = key != std::numeric_limits<signal_binding_key>::max()
                     ? key + 1
@@ -161,7 +161,7 @@ public:
 
     /// 2Brief Disconnects the associated binding.
     ~signal_binding() noexcept {
-        if(_key && _disconnect) {
+        if(_key and _disconnect) {
             _disconnect(_key);
         }
     }
@@ -190,7 +190,7 @@ public:
 
     /// @brief Disconnects this binding from it's signal.
     void disconnect() noexcept {
-        if(_key && _disconnect) {
+        if(_key and _disconnect) {
             _disconnect(_key);
             _key = 0U;
         }

@@ -98,7 +98,7 @@ struct vector {
     [[nodiscard]] static constexpr auto from(
       const vector<P, M, W>& v,
       const T d = T(0)) noexcept
-        requires(!std::is_same_v<T, P> || (N != M) || (V != W))
+        requires(not std::is_same_v<T, P> or (N != M) or (V != W))
     {
         return vector{vect::cast<P, M, W, T, N, V>::apply(v._v, d)};
     }
@@ -453,7 +453,7 @@ struct tvec : vector<T, N, V> {
     /// @brief Construction from vector of different dimensionality.
     template <typename P, int M, bool W>
     constexpr tvec(const vector<P, M, W>& v) noexcept
-        requires(!std::is_same_v<P, T> || !(M == N))
+        requires(not std::is_same_v<P, T> or not(M == N))
       : base{base::from(v)} {}
 
     /// @brief Construction from vector of different dimensionality.
@@ -464,7 +464,7 @@ struct tvec : vector<T, N, V> {
     /// @brief Construction from vector of different dimensionality.
     template <std::convertible_to<T> P, int M, bool W, std::convertible_to<T>... R>
     constexpr tvec(const vector<P, M, W>& v, R&&... r) noexcept
-        requires((sizeof...(R) > 1) && (M + sizeof...(R) == N))
+        requires((sizeof...(R) > 1) and (M + sizeof...(R) == N))
       : base{base::from(v, vector<T, N - M, W>::make(std::forward<R>(r)...))} {}
 
     /// @brief Construction from a pair of vectors of different dimensionality.

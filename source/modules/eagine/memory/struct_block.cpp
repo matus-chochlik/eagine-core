@@ -23,7 +23,7 @@ private:
 
     template <typename X = T>
     auto _ptr() noexcept
-        requires(!std::is_const_v<X>)
+        requires(not std::is_const_v<X>)
     {
         assert(is_valid_block(_blk));
         return static_cast<X*>(_blk.addr());
@@ -36,7 +36,7 @@ private:
 
 public:
     static auto is_valid_block(const const_block blk) noexcept -> bool {
-        return !blk.empty() && (blk.is_aligned_as<T>()) &&
+        return not blk.empty() and (blk.is_aligned_as<T>()) and
                (can_accommodate(blk, std::type_identity<T>()));
     }
 
@@ -47,15 +47,15 @@ public:
 
     template <typename X = T>
     auto get() noexcept
-      -> X& requires(!std::is_const_v<X> && std::is_same_v<X, T>) {
-                return *_ptr();
-            }
+      -> X& requires(not std::is_const_v<X> and std::is_same_v<X, T>) {
+          return *_ptr();
+      }
 
     template <typename X = T>
     auto operator->() noexcept
-      -> X* requires(!std::is_const_v<X> && std::is_same_v<X, T>) {
-                return _ptr();
-            }
+      -> X* requires(not std::is_const_v<X> and std::is_same_v<X, T>) {
+          return _ptr();
+      }
 
     auto get() const noexcept -> const T& {
         return *_cptr();

@@ -29,7 +29,7 @@ public:
     }
 
     template <std::integral I>
-        requires(!std::is_same_v<T, I>)
+        requires(not std::is_same_v<T, I>)
     [[nodiscard]] constexpr operator I() const noexcept {
         assert(is_within_limits<I>(_value));
         return static_cast<I>(_value);

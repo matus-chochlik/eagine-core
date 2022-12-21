@@ -24,12 +24,12 @@ void mp_list_contains(auto& s) {
     test.check(mp_contains_v<lABC, type_A>, "ABC contains A");
     test.check(mp_contains_v<lABC, type_B>, "ABC contains B");
     test.check(mp_contains_v<lABC, type_C>, "ABC contains C");
-    test.check(!mp_contains_v<lABC, type_D>, "ABC does not contain D");
+    test.check(not mp_contains_v<lABC, type_D>, "ABC does not contain D");
 
     test.check(mp_contains_v<lDCB, type_D>, "DCB contains D");
     test.check(mp_contains_v<lDCB, type_C>, "DCB contains C");
     test.check(mp_contains_v<lDCB, type_B>, "DCB contains B");
-    test.check(!mp_contains_v<lDCB, type_A>, "DCB does not contain A");
+    test.check(not mp_contains_v<lDCB, type_A>, "DCB does not contain A");
 }
 //------------------------------------------------------------------------------
 void mp_list_union(auto& s) {
@@ -41,10 +41,10 @@ void mp_list_union(auto& s) {
 
     using lBC = mp_union_t<lABC, lDCB>;
 
-    test.check(!mp_contains_v<lBC, type_A>, "does not contain A");
+    test.check(not mp_contains_v<lBC, type_A>, "does not contain A");
     test.check(mp_contains_v<lBC, type_B>, "contains B");
     test.check(mp_contains_v<lBC, type_C>, "contains C");
-    test.check(!mp_contains_v<lBC, type_D>, "does not contain D");
+    test.check(not mp_contains_v<lBC, type_D>, "does not contain D");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

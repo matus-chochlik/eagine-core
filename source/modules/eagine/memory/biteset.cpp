@@ -70,7 +70,7 @@ public:
 
     /// @brief Indicates if this is a valid proxy object that can be used for access.
     constexpr auto is_valid() const noexcept -> bool {
-        return (_ptr != nullptr) && (_pos < _ptr->size());
+        return (_ptr != nullptr) and (_pos < _ptr->size());
     }
 
     /// @brief Gets the value of the referenced biteset element.
@@ -268,12 +268,12 @@ protected:
     constexpr biteset_iterator_base() noexcept = default;
 
     constexpr auto is_valid() const noexcept {
-        return (_ptr != nullptr) && (_pos < _ptr->size());
+        return (_ptr != nullptr) and (_pos < _ptr->size());
     }
 
     static constexpr auto _cmp(const self& a, const self& b) noexcept
       -> difference_type {
-        assert((a._ptr != nullptr) && (a._ptr == b._ptr));
+        assert((a._ptr != nullptr) and (a._ptr == b._ptr));
         return a._pos - b._pos;
     }
 
@@ -428,7 +428,7 @@ public:
     template <typename... P>
     explicit constexpr biteset(P... p) noexcept
         requires(
-          (sizeof...(P) == N) &&
+          (sizeof...(P) == N) and
           std::conjunction_v<std::is_convertible<P, T>...>)
       : _bytes{_make_bytes(T(p)...)} {}
 

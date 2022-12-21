@@ -59,7 +59,7 @@ auto do_dissolve_bits(Getter get, Putter put, const span_size_t bits) noexcept
 
     auto push = [&]() -> bool {
         while(r >= bits) {
-            if(!put(byte(w >> double_byte(r - bits)) & m)) {
+            if(not put(byte(w >> double_byte(r - bits)) & m)) {
                 return false;
             }
             r -= bits;
@@ -77,14 +77,14 @@ auto do_dissolve_bits(Getter get, Putter put, const span_size_t bits) noexcept
                 break;
             }
         }
-        if(!push()) {
+        if(not push()) {
             return false;
         }
     }
 
     if(r > 0) {
         assert(r < bits);
-        if(!put(byte(w << double_byte(bits - r)) & m)) {
+        if(not put(byte(w << double_byte(bits - r)) & m)) {
             return false;
         }
     }
@@ -103,7 +103,7 @@ auto do_concentrate_bits(Getter get, Putter put, const span_size_t bits) noexcep
 
     bool done = false;
 
-    while(!done) {
+    while(not done) {
         while(r < byte_bits()) {
             if(const auto src{get()}) {
                 w <<= bits; // NOLINT(hicpp-signed-bitwise)
@@ -116,7 +116,7 @@ auto do_concentrate_bits(Getter get, Putter put, const span_size_t bits) noexcep
             }
         }
         if(r >= byte_bits()) {
-            if(!put(byte(w >> double_byte(r - byte_bits())))) {
+            if(not put(byte(w >> double_byte(r - byte_bits())))) {
                 return false;
             }
             r -= byte_bits();

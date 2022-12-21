@@ -55,7 +55,7 @@ void callable_ref_default_construct(auto& s) {
     test.constructed(c, "c");
 
     test.check_equal(bool(c), false, "is false");
-    test.check_equal(!(c), true, "is not true");
+    test.check_equal(not(c), true, "is not true");
 }
 //------------------------------------------------------------------------------
 void callable_ref_foo(auto& s) {
@@ -64,7 +64,7 @@ void callable_ref_foo(auto& s) {
     eagine::callable_ref<float(float, float, float)> c(&::foo);
 
     test.check_equal(bool(c), true, "is true");
-    test.check_equal(!(c), false, "is not false");
+    test.check_equal(not(c), false, "is not false");
 
     test.check_equal(
       c(234.5f, 345.6f, 456.7f),
@@ -80,7 +80,7 @@ void callable_ref_bar_foo(auto& s) {
     eagine::callable_ref<float(float, float, float) noexcept> c(&br, &bar::foo);
 
     test.check_equal(bool(c), true, "is true");
-    test.check_equal(!(c), false, "is not false");
+    test.check_equal(not(c), false, "is not false");
 
     test.check_equal(
       c(234.5f, 345.6f, 456.7f),
@@ -97,7 +97,7 @@ void callable_ref_bar_call_op(auto& s) {
       eagine::construct_from, br);
 
     test.check_equal(bool(c), true, "is true");
-    test.check_equal(!(c), false, "is not false");
+    test.check_equal(not(c), false, "is not false");
 
     test.check_equal(
       c(456.7f, 567.8f, 678.9f),
@@ -117,7 +117,7 @@ void callable_ref_bar_foo_2(auto& s) {
         &bar::foo>());
 
     test.check_equal(bool(c), true, "is true");
-    test.check_equal(!(c), false, "is not false");
+    test.check_equal(not(c), false, "is not false");
 
     test.check_equal(
       c(567.8f, 678.9f, 789.0f),
@@ -133,7 +133,7 @@ void callable_ref_baz_inc(auto& s) {
       &bz, eagine::member_function_constant<baz& (baz::*)(), &baz::inc>());
 
     test.check_equal(bool(c), true, "is true");
-    test.check_equal(!(c), false, "is not false");
+    test.check_equal(not(c), false, "is not false");
 
     test.check_equal(bz.i, 2, "2");
     c();
@@ -152,7 +152,7 @@ void callable_ref_baz_add(auto& s) {
       eagine::member_function_constant<baz& (baz::*)(int) noexcept, &baz::add>());
 
     test.check_equal(bool(c), true, "is true");
-    test.check_equal(!(c), false, "is not false");
+    test.check_equal(not(c), false, "is not false");
 
     test.check_equal(bz.i, 3, "3");
     c(3);

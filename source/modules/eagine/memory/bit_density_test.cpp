@@ -23,7 +23,7 @@ void bit_density_length_trip(unsigned, auto& s) {
         const auto comp_size{concentrated_bits_length(thin_size, bits)};
 
         test.check(
-          ((thin_size > orig_size) == (bits < byte_bits())) ||
+          ((thin_size > orig_size) == (bits < byte_bits())) or
             ((thin_size == orig_size) == (orig_size == 0)),
           "A");
         test.check(thin_size >= 0, "B");

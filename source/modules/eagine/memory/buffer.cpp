@@ -180,7 +180,7 @@ public:
     /// @see resize
     /// @see reserve
     /// @see clear
-    /// @post empty() && capacity() == 0
+    /// @post empty() and  capacity() == 0
     void free() noexcept {
         _alloc.deallocate(std::move(_storage), _align);
         _size = 0;
@@ -205,7 +205,7 @@ private:
     shared_byte_allocator _alloc{default_shared_allocator()};
 
     auto _is_ok() const noexcept -> bool {
-        return bool(_alloc) && size() <= capacity();
+        return bool(_alloc) and size() <= capacity();
     }
 
     void _reallocate(const span_size_t new_size) noexcept {

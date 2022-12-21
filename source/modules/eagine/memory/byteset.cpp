@@ -56,22 +56,22 @@ public:
     template <typename... B>
     explicit constexpr byteset(const B... b) noexcept
         requires(
-          (sizeof...(B) == N) && (sizeof...(B) != 0) &&
+          (sizeof...(B) == N) and (sizeof...(B) != 0) and
           std::conjunction_v<std::is_convertible<B, value_type>...>)
-    : _bytes{value_type{b}...} {}
+      : _bytes{value_type{b}...} {}
 
     template <std::size_t... I, typename UInt>
     constexpr byteset(const std::index_sequence<I...>, const UInt init) noexcept
-        requires((sizeof(UInt) >= N) && std::is_integral_v<UInt>)
-    : _bytes{value_type((init >> (8 * (N - I - 1))) & 0xFFU)...} {}
+        requires((sizeof(UInt) >= N) and std::is_integral_v<UInt>)
+      : _bytes{value_type((init >> (8 * (N - I - 1))) & 0xFFU)...} {}
 
     /// @brief Construiction from unsigned integer that is then split into bytes.
     template <typename UInt>
     explicit constexpr byteset(const UInt init) noexcept
         requires(
-          (sizeof(UInt) >= N) && std::is_integral_v<UInt> &&
+          (sizeof(UInt) >= N) and std::is_integral_v<UInt> and
           std::is_unsigned_v<UInt>)
-    : byteset(std::make_index_sequence<N>(), init) {}
+      : byteset(std::make_index_sequence<N>(), init) {}
 
     /// @brief Returns a pointer to the byte sequence start.
     /// @see size
@@ -164,12 +164,12 @@ public:
     template <typename UInt>
     constexpr auto as(const UInt i = 0) const noexcept
         requires(
-          (sizeof(UInt) >= N) && (
+          (sizeof(UInt) >= N) and (
 #if __SIZEOF_INT128__
-                                   std::is_same_v<UInt, __uint128_t> ||
-                                   std::is_same_v<UInt, __int128_t> ||
+                                    std::is_same_v<UInt, __uint128_t> or
+                                    std::is_same_v<UInt, __int128_t> or
 #endif
-                                   std::is_integral_v<UInt>))
+                                    std::is_integral_v<UInt>))
     {
         return _push_back_to(i, 0);
     }

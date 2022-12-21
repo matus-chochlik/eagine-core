@@ -30,7 +30,7 @@ public:
     template <typename... C>
     constexpr fixed_size_string(const C... c) noexcept
         requires(sizeof...(C) == N)
-    : _str{c...} {}
+      : _str{c...} {}
 
     /// @brief Construction from a C-string literal.
     constexpr fixed_size_string(const char (&s)[N]) noexcept {
@@ -138,7 +138,7 @@ constexpr auto operator+(
 /// @brief Converts a single-digit decimal number into fixed_size_string.
 /// @ingroup string_utils
 export template <int I>
-    requires((I >= 0) && (I < 10))
+    requires((I >= 0) and (I < 10))
 constexpr auto to_fixed_size_string(const int_constant<I>) noexcept {
     return fixed_size_string<2>(char('0' + I), '\0');
 }

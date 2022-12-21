@@ -24,7 +24,7 @@ public:
     /// @brief The function call operator.
     template <typename... P>
     auto operator()(P&&... p) {
-        if(!_first) [[likely]] {
+        if(not _first) [[likely]] {
             _sep_func();
         } else {
             _first = false;

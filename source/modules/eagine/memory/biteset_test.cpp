@@ -26,7 +26,7 @@ void biteset_N_B(
     test.check_equal(bs.size(), sz_t(N), "size");
 
     for(sz_t i = 0; i < bs.size(); ++i) {
-        test.check((bs[i] >= bmin) && (bs[i] <= bmax), "in range");
+        test.check((bs[i] >= bmin) and (bs[i] <= bmax), "in range");
     }
 }
 //------------------------------------------------------------------------------

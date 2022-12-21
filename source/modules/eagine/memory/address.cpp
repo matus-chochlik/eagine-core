@@ -65,13 +65,14 @@ public:
     template <typename Int>
     constexpr basic_address(basic_address that, Int offs) noexcept
         requires(
-          std::is_integral_v<Int> && std::is_convertible_v<Int, std::ptrdiff_t>)
+          std::is_integral_v<Int> and
+          std::is_convertible_v<Int, std::ptrdiff_t>)
       // NOLINTNEXTLINE(performance-no-int-to-ptr)
       : _addr{reinterpret_cast<pointer>(that.value() + offs)} {}
 
     template <bool IsConst2>
     constexpr basic_address(basic_address<IsConst2> a) noexcept
-        requires(IsConst && !IsConst2)
+        requires(IsConst and not IsConst2)
       : _addr{pointer(a)} {}
 
     /// @brief Indicates if the stored address is null.
@@ -82,7 +83,7 @@ public:
     /// @brief Indicates if the stored address is not null.
     /// @see is_null
     constexpr explicit operator bool() const noexcept {
-        return !is_null();
+        return not is_null();
     }
 
     /// @brief Returns the byte pointer for this address.
@@ -111,7 +112,7 @@ public:
     /// @pre is_aligned_as<T>()
     template <typename T>
     constexpr explicit operator T*() const noexcept
-        requires(!std::is_void_v<T> && (std::is_const_v<T> || !IsConst))
+        requires(not std::is_void_v<T> and (std::is_const_v<T> or not IsConst))
     {
         assert(is_aligned_as<T>());
         return std::launder(static_cast<T*>(_addr));

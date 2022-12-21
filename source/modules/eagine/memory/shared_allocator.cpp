@@ -121,7 +121,7 @@ public:
     friend auto operator==(
       const basic_shared_byte_alloc& a,
       const basic_shared_byte_alloc& b) noexcept {
-        if((a._pballoc == nullptr) && (b._pballoc == nullptr)) {
+        if((a._pballoc == nullptr) and (b._pballoc == nullptr)) {
             return true;
         } else if(a._pballoc) {
             return a._pballoc->equal(b._pballoc.get());
@@ -132,7 +132,7 @@ public:
     friend auto operator!=(
       const basic_shared_byte_alloc& a,
       const basic_shared_byte_alloc& b) noexcept {
-        return !(a == b);
+        return not(a == b);
     }
 
     template <typename ByteAlloc>

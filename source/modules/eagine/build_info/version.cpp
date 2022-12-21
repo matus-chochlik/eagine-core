@@ -99,7 +99,7 @@ public:
     /// @see version_major
     /// @see version_minor
     [[nodiscard]] auto has_version() const noexcept -> bool {
-        return version_major() && version_minor();
+        return version_major() and version_minor();
     }
 
     /// @brief Checks if the project build version is at least as specified.
