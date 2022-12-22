@@ -220,20 +220,20 @@ struct dim_num<dimension<Dim>> : dim_num<Dim> {};
 template <typename Dimension>
 const int dim_num_v = dim_num<Dimension>::value;
 //------------------------------------------------------------------------------
-struct angle : dimension<angle> {};
-struct solid_angle : dimension<solid_angle> {};
+export struct angle : dimension<angle> {};
+export struct solid_angle : dimension<solid_angle> {};
 
-struct length : dimension<length> {};
-struct mass : dimension<mass> {};
-struct time : dimension<time> {};
+export struct length : dimension<length> {};
+export struct mass : dimension<mass> {};
+export struct time : dimension<time> {};
 
-struct temperature : dimension<temperature> {};
-struct electric_current : dimension<electric_current> {};
-struct number_of_cycles : dimension<number_of_cycles> {};
-struct number_of_decays : dimension<number_of_decays> {};
-struct luminous_intensity : dimension<luminous_intensity> {};
-struct amount_of_substance : dimension<amount_of_substance> {};
-struct amount_of_information : dimension<amount_of_information> {};
+export struct temperature : dimension<temperature> {};
+export struct electric_current : dimension<electric_current> {};
+export struct number_of_cycles : dimension<number_of_cycles> {};
+export struct number_of_decays : dimension<number_of_decays> {};
+export struct luminous_intensity : dimension<luminous_intensity> {};
+export struct amount_of_substance : dimension<amount_of_substance> {};
+export struct amount_of_information : dimension<amount_of_information> {};
 
 template <typename Func>
 auto for_each_dim(Func func) -> Func {
@@ -283,8 +283,8 @@ template <>
 struct dim_num<amount_of_information> : int_constant<12> {};
 
 // get_number
-template <typename Derived>
-static constexpr auto get_number(const dimension<Derived>) noexcept -> int {
+export template <typename Derived>
+constexpr auto get_number(const dimension<Derived>) noexcept -> int {
     return dim_num_v<Derived>;
 }
 //------------------------------------------------------------------------------
