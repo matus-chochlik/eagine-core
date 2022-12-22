@@ -151,4 +151,5 @@ eagine_add_module_tests(
 	eagine.core.math
 	UNITS
 		coordinates
+		functions
 )
