@@ -26,7 +26,9 @@ using dimension_of_t = typename dimension_of<X>::type;
 namespace scales {
 //------------------------------------------------------------------------------
 export template <typename X>
-struct scale_of : std::type_identity<scale_of<X>> {};
+struct scale_of {
+    using type = typename X::scale;
+};
 
 export template <typename X>
 using scale_of_t = typename scale_of<X>::type;

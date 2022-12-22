@@ -126,11 +126,8 @@ struct value_conv<unit<D, S>, custom_dim_unit<D, C, S>> {
     }
 };
 
-export template <typename D, typename C, typename S>
-struct value_conv<custom_dim_unit<D, C, S>, custom_dim_unit<D, C, S>>
-  : trivial_value_conv {};
-
 export template <typename D, typename C1, typename C2, typename S>
+    requires(not std::is_same_v<C1, C2>)
 struct value_conv<custom_dim_unit<D, C1, S>, custom_dim_unit<D, C2, S>> {
     template <typename T>
     constexpr auto operator()(const T v) const {
@@ -160,6 +157,7 @@ struct value_conv<
 };
 
 export template <typename D, typename AS1, typename AS2, typename US, typename System>
+    requires(not std::is_same_v<AS1, AS2>)
 struct value_conv<
   scaled_dim_unit<D, add_none_unit_scale_t<AS1, US>, System>,
   scaled_dim_unit<D, add_none_unit_scale_t<AS2, US>, System>> {

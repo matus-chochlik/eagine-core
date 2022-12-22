@@ -622,6 +622,20 @@ struct symbol_of<tesla> {
 
 export using millitesla = make_scaled_unit_t<scales::milli, tesla>;
 //------------------------------------------------------------------------------
+export using henry = unit<inductance, si>;
+
+export template <>
+struct name_of<henry> {
+    static constexpr const char mp_str[] = "henry";
+};
+
+export template <>
+struct symbol_of<henry> {
+    static constexpr const char mp_str[] = "H";
+};
+
+export using millihenry = make_scaled_unit_t<scales::milli, henry>;
+//------------------------------------------------------------------------------
 export using bit = unit<amount_of_information, si>;
 
 export template <>
