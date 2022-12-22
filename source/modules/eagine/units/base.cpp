@@ -235,7 +235,7 @@ export struct luminous_intensity : dimension<luminous_intensity> {};
 export struct amount_of_substance : dimension<amount_of_substance> {};
 export struct amount_of_information : dimension<amount_of_information> {};
 
-template <typename Func>
+export template <typename Func>
 auto for_each_dim(Func func) -> Func {
     func(angle());
     func(solid_angle());
@@ -337,8 +337,8 @@ template <typename D1, typename D2, int P, typename T>
 struct pow_of_dim<D1, dims<dim_pow<D2, P>, T>> : pow_of_dim<D1, T> {};
 
 // get_pow_of_dim
-template <typename D, typename H, typename T>
-static constexpr auto get_pow_of_dim(
+export template <typename D, typename H, typename T>
+constexpr auto get_pow_of_dim(
   const base::dimension<D>,
   const dims<H, T>) noexcept -> int {
     return pow_of_dim_v<D, dims<H, T>>;
