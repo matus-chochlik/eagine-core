@@ -96,7 +96,7 @@ class overlay_attribute : public attribute_interface {
     }
 
 public:
-    overlay_attribute(basic_string_path path) noexcept
+    [[nodiscard]] overlay_attribute(basic_string_path path) noexcept
       : _path{std::move(path)} {}
 
     auto type_id() const noexcept -> identifier final {
@@ -191,7 +191,7 @@ class overlay_compound
     overlay_attribute _root{{}};
 
 public:
-    overlay_compound(
+    [[nodiscard]] overlay_compound(
       const logger& parent,
       std::vector<compound_attribute> overlays)
       : _log{"OvrlyCmpnd", parent}
@@ -278,8 +278,9 @@ static auto overlay_make_new_node(
     return owner.make_node(std::move(path));
 }
 //------------------------------------------------------------------------------
-auto make_overlay(const logger& parent, std::vector<compound_attribute> overlays)
-  -> compound {
+[[nodiscard]] auto make_overlay(
+  const logger& parent,
+  std::vector<compound_attribute> overlays) -> compound {
     return compound::make<overlay_compound>(parent, std::move(overlays));
 }
 //------------------------------------------------------------------------------

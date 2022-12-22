@@ -24,21 +24,21 @@ namespace eagine::valtree {
 class filesystem_compound;
 class filesystem_node;
 //------------------------------------------------------------------------------
-static auto filesystem_make_node(
+[[nodiscard]] static auto filesystem_make_node(
   filesystem_compound& owner,
   const std::filesystem::path& fs_path) -> attribute_interface*;
-static auto get_log(filesystem_compound& owner) -> const logger&;
+[[nodiscard]] static auto get_log(filesystem_compound& owner) -> const logger&;
 //------------------------------------------------------------------------------
 class filesystem_node : public attribute_interface {
 public:
-    filesystem_node(
+    [[nodiscard]] filesystem_node(
       std::filesystem::path node_path,
       std::filesystem::path real_path)
       : _node_path{std::move(node_path)}
       , _real_path{std::move(real_path)}
       , _name{_node_path.filename()} {}
 
-    filesystem_node(const std::filesystem::path& fs_path)
+    [[nodiscard]] filesystem_node(const std::filesystem::path& fs_path)
       : filesystem_node{fs_path, canonical(fs_path)} {}
 
     friend auto operator==(
@@ -239,7 +239,7 @@ class filesystem_compound
     std::shared_ptr<file_compound_factory> _compound_factory;
 
 public:
-    filesystem_compound(
+    [[nodiscard]] filesystem_compound(
       const logger& parent,
       string_view fs_path,
       std::shared_ptr<file_compound_factory> factory)
@@ -247,7 +247,7 @@ public:
       , _root{std::string_view{fs_path}}
       , _compound_factory{std::move(factory)} {}
 
-    static auto make_shared(
+    [[nodiscard]] static auto make_shared(
       const logger& parent,
       string_view fs_path,
       std::shared_ptr<file_compound_factory> factory)
@@ -342,7 +342,7 @@ static inline auto filesystem_make_node(
     return nullptr;
 }
 //------------------------------------------------------------------------------
-auto from_filesystem_path(
+[[nodiscard]] auto from_filesystem_path(
   string_view fs_path,
   const logger& parent,
   std::shared_ptr<file_compound_factory> factory) -> compound {

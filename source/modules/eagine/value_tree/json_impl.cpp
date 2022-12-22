@@ -74,7 +74,9 @@ private:
     _val_t* _rj_name{nullptr};
 
 public:
-    rapidjson_value_node(_val_t& rj_val, _val_t* rj_name = nullptr) noexcept
+    [[nodiscard]] rapidjson_value_node(
+      _val_t& rj_val,
+      _val_t* rj_name = nullptr) noexcept
       : _rj_val{&rj_val}
       , _rj_name{rj_name} {}
 
@@ -610,7 +612,9 @@ private:
     _node_t _root{};
 
 public:
-    rapidjson_document_compound(_doc_t& rj_doc, const logger& parent)
+    [[nodiscard]] rapidjson_document_compound(
+      _doc_t& rj_doc,
+      const logger& parent)
       : _log{"JsnValTree", parent}
       , _rj_doc{std::move(rj_doc)}
       , _root{_rj_doc, nullptr} {}
@@ -630,8 +634,9 @@ public:
         return {};
     }
 
-    static auto make_shared(string_view json_str, const logger& parent)
-      -> std::shared_ptr<rapidjson_document_compound> {
+    [[nodiscard]] static auto make_shared(
+      string_view json_str,
+      const logger& parent) -> std::shared_ptr<rapidjson_document_compound> {
         _doc_t rj_doc;
         return do_make_shared(
           rj_doc,
@@ -639,7 +644,7 @@ public:
           parent);
     }
 
-    static auto make_shared(
+    [[nodiscard]] static auto make_shared(
       span<const memory::const_block> json_data,
       const logger& parent) -> std::shared_ptr<rapidjson_document_compound> {
         rapidjson_chunk_stream json_stream{json_data};
@@ -707,7 +712,7 @@ public:
 };
 //------------------------------------------------------------------------------
 template <typename Encoding, typename Allocator, typename StackAlloc>
-static inline auto rapidjson_make_value_node(
+[[nodiscard]] static inline auto rapidjson_make_value_node(
   rapidjson_document_compound<Encoding, Allocator, StackAlloc>& owner,
   rapidjson::GenericValue<Encoding, Allocator>& value,
   rapidjson::GenericValue<Encoding, Allocator>* name) -> attribute_interface* {
@@ -730,12 +735,13 @@ struct get_rapidjson_document_compound<
 using default_rapidjson_document_compound =
   get_rapidjson_document_compound_t<rapidjson::Document>;
 //------------------------------------------------------------------------------
-auto from_json_text(string_view json_text, const logger& parent) -> compound {
+[[nodiscard]] auto from_json_text(string_view json_text, const logger& parent)
+  -> compound {
     return compound::make<default_rapidjson_document_compound>(
       json_text, parent);
 }
 //------------------------------------------------------------------------------
-auto from_json_data(
+[[nodiscard]] auto from_json_data(
   span<const memory::const_block> json_data,
   const logger& parent) -> compound {
     return compound::make<default_rapidjson_document_compound>(
@@ -855,7 +861,7 @@ class json_value_tree_stream_parser
   , public rapidjson::
       BaseReaderHandler<rapidjson::UTF8<>, json_value_tree_stream_parser> {
 public:
-    json_value_tree_stream_parser(
+    [[nodiscard]] json_value_tree_stream_parser(
       std::shared_ptr<value_tree_visitor> visitor,
       span_size_t max_token_size,
       memory::buffer_pool& buffers,
@@ -1097,7 +1103,7 @@ private:
     bool _in_unparsed{false};
 };
 //------------------------------------------------------------------------------
-auto traverse_json_stream(
+[[nodiscard]] auto traverse_json_stream(
   std::shared_ptr<value_tree_visitor> visitor,
   span_size_t max_token_size,
   memory::buffer_pool& buffers,
@@ -1106,7 +1112,7 @@ auto traverse_json_stream(
       std::move(visitor), max_token_size, buffers, parent)};
 }
 //------------------------------------------------------------------------------
-auto traverse_json_stream(
+[[nodiscard]] auto traverse_json_stream(
   std::shared_ptr<object_builder> builder,
   memory::buffer_pool& buffers,
   const logger& parent) -> value_tree_stream_input {

@@ -21,7 +21,7 @@ namespace eagine::valtree {
 class combined_value_tree_visitor
   : public value_tree_visitor_impl<combined_value_tree_visitor> {
 public:
-    combined_value_tree_visitor(
+    [[nodiscard]] combined_value_tree_visitor(
       std::shared_ptr<value_tree_visitor> left,
       std::shared_ptr<value_tree_visitor> right) noexcept
       : _left{std::move(left)}
@@ -98,7 +98,7 @@ private:
     std::shared_ptr<value_tree_visitor> _right;
 };
 //------------------------------------------------------------------------------
-auto make_combined_value_tree_visitor(
+[[nodiscard]] auto make_combined_value_tree_visitor(
   std::shared_ptr<value_tree_visitor> left,
   std::shared_ptr<value_tree_visitor> right)
   -> std::unique_ptr<value_tree_visitor> {
@@ -186,7 +186,7 @@ private:
     span_size_t _unparsed_offs{0};
 };
 //------------------------------------------------------------------------------
-auto make_printing_value_tree_visitor(const console& cio)
+[[nodiscard]] auto make_printing_value_tree_visitor(const console& cio)
   -> std::unique_ptr<value_tree_visitor> {
     return std::make_unique<printing_value_tree_visitor>(cio);
 }
@@ -194,7 +194,8 @@ auto make_printing_value_tree_visitor(const console& cio)
 class building_value_tree_visitor
   : public value_tree_visitor_impl<building_value_tree_visitor> {
 public:
-    building_value_tree_visitor(std::shared_ptr<object_builder> builder) noexcept
+    [[nodiscard]] building_value_tree_visitor(
+      std::shared_ptr<object_builder> builder) noexcept
       : _builder{std::move(builder)} {}
 
     auto should_continue() noexcept -> bool final {
@@ -267,7 +268,8 @@ private:
     bool _should_continue{false};
 };
 //------------------------------------------------------------------------------
-auto make_building_value_tree_visitor(std::shared_ptr<object_builder> builder)
+[[nodiscard]] auto make_building_value_tree_visitor(
+  std::shared_ptr<object_builder> builder)
   -> std::unique_ptr<value_tree_visitor> {
     return std::make_unique<building_value_tree_visitor>(std::move(builder));
 }

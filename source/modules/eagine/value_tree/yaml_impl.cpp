@@ -94,7 +94,7 @@ class rapidyaml_attribute : public attribute_interface {
     }
 
 public:
-    rapidyaml_attribute(ryml::NodeRef node)
+    [[nodiscard]] rapidyaml_attribute(ryml::NodeRef node)
       : _node{node} {}
 
     auto type_id() const noexcept -> identifier final {
@@ -277,7 +277,7 @@ class rapidyaml_tree_compound final
     rapidyaml_attribute _root;
 
 public:
-    rapidyaml_tree_compound(ryml::Tree tree, const logger& parent)
+    [[nodiscard]] rapidyaml_tree_compound(ryml::Tree tree, const logger& parent)
       : _log{"YamlValTre", parent}
       , _tree{std::move(tree)}
       , _root{_tree} {}
@@ -363,13 +363,14 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-static auto rapidyaml_make_new_node(
+[[nodiscard]] static auto rapidyaml_make_new_node(
   rapidyaml_tree_compound& owner,
   ryml::NodeRef node) noexcept -> rapidyaml_attribute* {
     return owner.make_node(node);
 }
 //------------------------------------------------------------------------------
-auto from_yaml_text(string_view yaml_text, const logger& parent) -> compound {
+[[nodiscard]] auto from_yaml_text(string_view yaml_text, const logger& parent)
+  -> compound {
     return compound::make<rapidyaml_tree_compound>(yaml_text, parent);
 }
 //------------------------------------------------------------------------------

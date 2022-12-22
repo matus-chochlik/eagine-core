@@ -91,12 +91,12 @@ public:
     }
 
     /// @brief Indicates if this attribute actually refers to something.
-    explicit operator bool() const {
+    [[nodiscard]] explicit operator bool() const {
         return _owner and _pimpl;
     }
 
     /// @brief Returns the implementation type id of this attribute.
-    auto type_id() const noexcept -> identifier {
+    [[nodiscard]] auto type_id() const noexcept -> identifier {
         if(_pimpl) {
             return _pimpl->type_id();
         }
@@ -104,7 +104,7 @@ public:
     }
 
     /// @brief Returns the implementation type id of this attribute.
-    auto name() const -> string_view {
+    [[nodiscard]] auto name() const -> string_view {
         if(_owner and _pimpl) {
             return _owner->attribute_name(*_pimpl);
         }
@@ -113,7 +113,7 @@ public:
 
     template <typename Implementation>
         requires(std::is_base_of_v<attribute_interface, Implementation>)
-    auto as() noexcept -> Implementation* {
+    [[nodiscard]] auto as() noexcept -> Implementation* {
         return dynamic_cast<Implementation*>(_pimpl);
     }
 
@@ -241,19 +241,19 @@ public:
     /// @note Do not use directly in client code. Use one of the constructor
     /// functions that know which implementation to pick and how to initialize it.
     template <typename Compound, typename... Args>
-    static auto make(Args&&... args) -> compound
+    [[nodiscard]] static auto make(Args&&... args) -> compound
         requires(std::is_base_of_v<compound_interface, Compound>)
     {
         return {Compound::make_shared(std::forward<Args>(args)...)};
     }
 
     /// @brief Indicates if this compound actually refers to some tree.
-    explicit operator bool() const noexcept {
+    [[nodiscard]] explicit operator bool() const noexcept {
         return bool(_pimpl);
     }
 
     /// @brief Returns the implementation type id of this attribute.
-    auto type_id() const noexcept -> identifier {
+    [[nodiscard]] auto type_id() const noexcept -> identifier {
         if(_pimpl) {
             return _pimpl->type_id();
         }
@@ -265,7 +265,7 @@ public:
     ///
     /// The returned attribute can be used to explore and traverse the tree
     /// node hierarchy by getting the names, value types and nested nodes.
-    auto structure() const -> attribute {
+    [[nodiscard]] auto structure() const -> attribute {
         if(_pimpl) {
             return {_pimpl, _pimpl->structure()};
         }
@@ -274,11 +274,12 @@ public:
 
     /// @brief Returns the structure root as an compound_attribute.
     /// @see structure
-    auto root() const -> compound_attribute;
+    [[nodiscard]] auto root() const -> compound_attribute;
 
     /// @brief Returns the name of an attribute.
     /// @pre this->type_id() == attrib.type_id().
-    auto attribute_name(const attribute& attrib) const -> string_view {
+    [[nodiscard]] auto attribute_name(const attribute& attrib) const
+      -> string_view {
         if(_pimpl and attrib._pimpl) {
             return _pimpl->attribute_name(*attrib._pimpl);
         }
@@ -291,7 +292,8 @@ public:
     /// Tree data referred-to by an attribute can be fetched either using
     /// the canonical type or using a different, related value type, if the
     /// necessary conversion is implemented.
-    auto canonical_type(const attribute& attrib) const -> value_type {
+    [[nodiscard]] auto canonical_type(const attribute& attrib) const
+      -> value_type {
         if(_pimpl and attrib._pimpl) {
             return _pimpl->canonical_type(*attrib._pimpl);
         }
@@ -300,7 +302,7 @@ public:
 
     /// @brief Indicates if the specified attribute is immutable.
     /// @pre this->type_id() == attrib.type_id()
-    auto is_immutable(const attribute& attrib) const -> bool {
+    [[nodiscard]] auto is_immutable(const attribute& attrib) const -> bool {
         if(_pimpl and attrib._pimpl) {
             return _pimpl->is_immutable(*attrib._pimpl);
         }
@@ -309,7 +311,7 @@ public:
 
     /// @brief Indicates if the specified attribute is a reference or link in the tree.
     /// @pre this->type_id() == attrib.type_id()
-    auto is_link(const attribute& attrib) const -> bool {
+    [[nodiscard]] auto is_link(const attribute& attrib) const -> bool {
         if(_pimpl and attrib._pimpl) {
             return _pimpl->is_link(*attrib._pimpl);
         }
@@ -321,7 +323,8 @@ public:
     /// @note Some implementations may return zero here even if there are
     /// nested attributes. In such implementations the nested nodes can be
     /// traversed only by name.
-    auto nested_count(const attribute& attrib) const -> span_size_t {
+    [[nodiscard]] auto nested_count(const attribute& attrib) const
+      -> span_size_t {
         if(_pimpl and attrib._pimpl) {
             return _pimpl->nested_count(*attrib._pimpl);
         }
@@ -330,7 +333,7 @@ public:
 
     /// @brief Indicates if an attribute has nested attribute accessible by index.
     /// @pre this->type_id() == attrib.type_id()
-    auto has_nested(const attribute& attrib) const -> bool {
+    [[nodiscard]] auto has_nested(const attribute& attrib) const -> bool {
         return nested_count(attrib) != 0;
     }
 
@@ -338,8 +341,8 @@ public:
     /// @pre this->type_id() == attrib.type_id()
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto nested(const attribute& attrib, const span_size_t index) const
-      -> attribute {
+    [[nodiscard]] auto nested(const attribute& attrib, const span_size_t index)
+      const -> attribute {
         if(_pimpl and attrib._pimpl) {
             return {_pimpl, _pimpl->nested(*attrib._pimpl, index)};
         }
@@ -350,8 +353,8 @@ public:
     /// @pre this->type_id() == attrib.type_id()
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto nested(const attribute& attrib, const string_view name) const
-      -> attribute {
+    [[nodiscard]] auto nested(const attribute& attrib, const string_view name)
+      const -> attribute {
         if(_pimpl and attrib._pimpl) {
             return {_pimpl, _pimpl->nested(*attrib._pimpl, name)};
         }
@@ -361,7 +364,7 @@ public:
     /// @brief Returns nested attribute of the root attribute with the specified name.
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto nested(const string_view name) const -> attribute {
+    [[nodiscard]] auto nested(const string_view name) const -> attribute {
         return nested(structure(), name);
     }
 
@@ -381,7 +384,7 @@ public:
     /// @pre this->type_id() == attrib.type_id()
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto find(
+    [[nodiscard]] auto find(
       const attribute& attrib,
       const basic_string_path& path,
       const memory::span<const string_view> tags) const -> attribute {
@@ -394,21 +397,22 @@ public:
     /// @brief Returns nested attribute of root attribute at the specified path.
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto find(const basic_string_path& path) const -> attribute {
+    [[nodiscard]] auto find(const basic_string_path& path) const -> attribute {
         return find(structure(), path);
     }
 
     /// @brief Returns nested attribute of root attribute at path with tags.
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto find(
+    [[nodiscard]] auto find(
       const basic_string_path& path,
       const memory::span<const string_view> tags) const -> attribute {
         return find(structure(), path, tags);
     }
 
     /// @brief Returns the number of value elements accessible through an attribute.
-    auto value_count(const attribute& attrib) const -> span_size_t {
+    [[nodiscard]] auto value_count(const attribute& attrib) const
+      -> span_size_t {
         if(_pimpl and attrib._pimpl) {
             return _pimpl->value_count(*attrib._pimpl);
         }
@@ -416,18 +420,19 @@ public:
     }
 
     /// @brief Returns the number of value elements at the specified path.
-    auto value_count(const basic_string_path& path) const -> span_size_t {
+    [[nodiscard]] auto value_count(const basic_string_path& path) const
+      -> span_size_t {
         return value_count(find(path));
     }
 
     /// @brief Returns the number of value elements at attribute with the given name.
-    auto value_count(const string_view name) -> span_size_t {
+    [[nodiscard]] auto value_count(const string_view name) -> span_size_t {
         return value_count(nested(name));
     }
 
     /// @brief Fetches values at the given attribute, starting at offset into @p dest.
     template <typename T>
-    auto fetch_values(
+    [[nodiscard]] auto fetch_values(
       const attribute& attrib,
       const span_size_t offset,
       memory::span<T> dest) const -> memory::span<T> {
@@ -440,7 +445,7 @@ public:
 
     /// @brief Fetches values at the given path, starting at offset into @p dest.
     template <typename T>
-    auto fetch_values(
+    [[nodiscard]] auto fetch_values(
       const basic_string_path& path,
       const span_size_t offset,
       memory::span<T> dest) const -> memory::span<T> {
@@ -449,7 +454,7 @@ public:
 
     /// @brief Fetches values at the given name, starting at offset into @p dest.
     template <typename T>
-    auto fetch_values(
+    [[nodiscard]] auto fetch_values(
       const string_view name,
       const span_size_t offset,
       memory::span<T> dest) const -> memory::span<T> {
@@ -458,46 +463,50 @@ public:
 
     /// @brief Fetches values at the given attribute, into @p dest.
     template <typename T>
-    auto fetch_values(const attribute& attrib, memory::span<T> dest) const
-      -> memory::span<T> {
+    [[nodiscard]] auto fetch_values(
+      const attribute& attrib,
+      memory::span<T> dest) const -> memory::span<T> {
         return fetch_values(attrib, 0, dest);
     }
 
     /// @brief Fetches values at the attribute with the specified path, into @p dest.
     template <typename T>
-    auto fetch_values(const basic_string_path& path, memory::span<T> dest) const
-      -> memory::span<T> {
+    [[nodiscard]] auto fetch_values(
+      const basic_string_path& path,
+      memory::span<T> dest) const -> memory::span<T> {
         return fetch_values(path, 0, dest);
     }
 
     /// @brief Fetches values at the attribute with the specified name, into @p dest.
     template <typename T>
-    auto fetch_values(const string_view name, memory::span<T> dest) const
-      -> memory::span<T> {
+    [[nodiscard]] auto fetch_values(
+      const string_view name,
+      memory::span<T> dest) const -> memory::span<T> {
         return fetch_values(name, 0, dest);
     }
 
     /// @brief Fetches a BLOB at the given attribute, into @p dest.
-    auto fetch_blob(const attribute& attrib, memory::block dest) const
-      -> memory::block {
+    [[nodiscard]] auto fetch_blob(const attribute& attrib, memory::block dest)
+      const -> memory::block {
         return fetch_values(attrib, dest);
     }
 
     /// @brief Fetches a BLOB at the attribute with the specified path, into @p dest.
-    auto fetch_blob(const basic_string_path& path, memory::block dest) const
-      -> memory::block {
+    [[nodiscard]] auto fetch_blob(
+      const basic_string_path& path,
+      memory::block dest) const -> memory::block {
         return fetch_values(path, dest);
     }
 
     /// @brief Fetches a BLOB at the attribute with the specified name, into @p dest.
-    auto fetch_blob(const string_view name, memory::block dest) const
-      -> memory::block {
+    [[nodiscard]] auto fetch_blob(const string_view name, memory::block dest)
+      const -> memory::block {
         return fetch_values(name, dest);
     }
 
     /// @brief Fetches a single value at the specified attribute, with a selector.
     template <typename T, identifier_t V>
-    auto select_value(
+    [[nodiscard]] auto select_value(
       const attribute& attrib,
       const span_size_t offset,
       T& dest,
@@ -511,14 +520,16 @@ public:
 
     /// @brief Fetches a single value at the specified attribute, at offset into @p dest.
     template <typename T>
-    auto fetch_value(const attribute& attrib, const span_size_t offset, T& dest)
-      const -> bool {
+    [[nodiscard]] auto fetch_value(
+      const attribute& attrib,
+      const span_size_t offset,
+      T& dest) const -> bool {
         return select_value(attrib, offset, dest, default_selector);
     }
 
     /// @brief Fetches values at the specified attribute, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto select_values(
+    [[nodiscard]] auto select_values(
       const attribute& attrib,
       const span_size_t offset,
       memory::span<T> dest,
@@ -536,7 +547,7 @@ public:
 
     /// @brief Fetches values through the specified name, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto select_value(
+    [[nodiscard]] auto select_value(
       const string_view name,
       const span_size_t offset,
       T& dest,
@@ -546,14 +557,16 @@ public:
 
     /// @brief Fetches values through the specified name, into dest.
     template <typename T>
-    auto fetch_value(const string_view name, const span_size_t offset, T& dest)
-      const -> bool {
+    [[nodiscard]] auto fetch_value(
+      const string_view name,
+      const span_size_t offset,
+      T& dest) const -> bool {
         return select_value(name, offset, dest, default_selector);
     }
 
     /// @brief Fetches values through the specified path, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto select_value(
+    [[nodiscard]] auto select_value(
       const basic_string_path& path,
       const span_size_t offset,
       T& dest,
@@ -563,7 +576,7 @@ public:
 
     /// @brief Fetches values through the specified path, into dest.
     template <typename T>
-    auto fetch_value(
+    [[nodiscard]] auto fetch_value(
       const basic_string_path& path,
       const span_size_t offset,
       T& dest) const -> bool {
@@ -572,27 +585,32 @@ public:
 
     /// @brief Fetches values through the specified name, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto select_value(const string_view name, T& dest, const selector<V> sel)
-      const -> bool {
+    [[nodiscard]] auto select_value(
+      const string_view name,
+      T& dest,
+      const selector<V> sel) const -> bool {
         return select_value(name, 0, dest, sel);
     }
 
     /// @brief Fetches values through the specified name, into dest.
     template <typename T>
-    auto fetch_value(const string_view name, T& dest) const -> bool {
+    [[nodiscard]] auto fetch_value(const string_view name, T& dest) const
+      -> bool {
         return select_value(name, 0, dest, default_selector);
     }
 
     /// @brief Fetches a value at the specified attribute, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto select_value(const attribute& attrib, T& dest, const selector<V> sel)
-      const -> bool {
+    [[nodiscard]] auto select_value(
+      const attribute& attrib,
+      T& dest,
+      const selector<V> sel) const -> bool {
         return select_value(attrib, 0, dest, sel);
     }
 
     /// @brief Fetches values at the specified attribute, with a selector, into dest.
     template <typename T, identifier_t V>
-    auto select_values(
+    [[nodiscard]] auto select_values(
       const attribute& attrib,
       memory::span<T> dest,
       selector<V> sel) const -> memory::span<T> {
@@ -601,13 +619,14 @@ public:
 
     /// @brief Fetches a single value at the specified attribute, into dest.
     template <typename T>
-    auto fetch_value(const attribute& attrib, T& dest) const -> bool {
+    [[nodiscard]] auto fetch_value(const attribute& attrib, T& dest) const
+      -> bool {
         return select_value(attrib, 0, dest, default_selector);
     }
 
     /// @brief Fetches a value through the specified path, with selector, into dest.
     template <typename T, identifier_t V>
-    auto select_value(
+    [[nodiscard]] auto select_value(
       const basic_string_path& path,
       T& dest,
       const selector<V> sel) const -> bool {
@@ -616,14 +635,15 @@ public:
 
     /// @brief Fetches a value through the specified path, into dest.
     template <typename T>
-    auto fetch_value(const basic_string_path& path, T& dest) const -> bool {
+    [[nodiscard]] auto fetch_value(const basic_string_path& path, T& dest) const
+      -> bool {
         return selector_value(path, 0, dest, default_selector);
     }
 
     /// @brief Tests if there is an value at an attribute, that starts with @p what.
     template <std::size_t L>
-    auto has_value(const attribute& attrib, const char (&what)[L]) const
-      -> bool {
+    [[nodiscard]] auto has_value(const attribute& attrib, const char (&what)[L])
+      const -> bool {
         char temp[L]{};
         if(fetch_values(attrib, 0, cover(temp))) {
             return starts_with(string_view(temp), string_view(what));
@@ -633,7 +653,7 @@ public:
 
     /// @brief Returns the value of type T at an attribute, at offset, with selector.
     template <typename T, identifier_t V>
-    auto get(
+    [[nodiscard]] auto get(
       const attribute& attrib,
       const span_size_t offset,
       const std::type_identity<T>,
@@ -647,7 +667,7 @@ public:
 
     /// @brief Returns the value of type T at an attribute, at the given offset.
     template <typename T>
-    auto get(
+    [[nodiscard]] auto get(
       const attribute& attrib,
       const span_size_t offset,
       const std::type_identity<T> tid = {}) const -> std::optional<T> {
@@ -656,7 +676,7 @@ public:
 
     /// @brief Returns the value of type T at path, at given offset, with selector.
     template <typename T, identifier_t V>
-    auto get(
+    [[nodiscard]] auto get(
       const basic_string_path& path,
       const span_size_t offset,
       const std::type_identity<T>,
@@ -670,7 +690,7 @@ public:
 
     /// @brief Returns the value of type T at path, at given offset.
     template <typename T>
-    auto get(
+    [[nodiscard]] auto get(
       const basic_string_path& path,
       const span_size_t offset,
       const std::type_identity<T> tid = {}) const -> std::optional<T> {
@@ -679,7 +699,7 @@ public:
 
     /// @brief Returns the value of type T at name, at given offset, with selector.
     template <typename T, identifier_t V>
-    auto get(
+    [[nodiscard]] auto get(
       const string_view name,
       const span_size_t offset,
       const std::type_identity<T>,
@@ -693,7 +713,7 @@ public:
 
     /// @brief Returns the value of type T at name, at given offset.
     template <typename T>
-    auto get(
+    [[nodiscard]] auto get(
       const string_view name,
       const span_size_t offset,
       const std::type_identity<T> tid = {}) const -> std::optional<T> {
@@ -702,7 +722,7 @@ public:
 
     /// @brief Returns the value of type T at an attribute, with selector.
     template <typename T, identifier_t V>
-    auto get(
+    [[nodiscard]] auto get(
       const attribute& attrib,
       const std::type_identity<T> tid,
       const selector<V> sel) const -> std::optional<T> {
@@ -711,14 +731,15 @@ public:
 
     /// @brief Returns the value of type T at an attribute.
     template <typename T>
-    auto get(const attribute& attrib, const std::type_identity<T> tid = {}) const
-      -> std::optional<T> {
+    [[nodiscard]] auto get(
+      const attribute& attrib,
+      const std::type_identity<T> tid = {}) const -> std::optional<T> {
         return get<T>(attrib, tid, default_selector);
     }
 
     /// @brief Returns the value of type T at path, with selector.
     template <typename T, identifier_t V>
-    auto get(
+    [[nodiscard]] auto get(
       const basic_string_path& path,
       const std::type_identity<T> tid,
       const selector<V> sel) const -> std::optional<T> {
@@ -727,7 +748,7 @@ public:
 
     /// @brief Returns the value of type T at path.
     template <typename T>
-    auto get(
+    [[nodiscard]] auto get(
       const basic_string_path& path,
       const std::type_identity<T> tid = {}) const -> std::optional<T> {
         return get<T>(path, tid, default_selector);
@@ -735,7 +756,7 @@ public:
 
     /// @brief Returns the value of type T at name, with selector.
     template <typename T, identifier_t V>
-    auto get(
+    [[nodiscard]] auto get(
       const string_view name,
       const std::type_identity<T> tid,
       const selector<V> sel) const -> std::optional<T> {
@@ -744,8 +765,9 @@ public:
 
     /// @brief Returns the value of type T at name.
     template <typename T>
-    auto get(const string_view name, const std::type_identity<T> tid = {}) const
-      -> std::optional<T> {
+    [[nodiscard]] auto get(
+      const string_view name,
+      const std::type_identity<T> tid = {}) const -> std::optional<T> {
         return get<T>(name, tid, default_selector);
     }
 
@@ -768,7 +790,7 @@ public:
 
     template <typename Implementation>
         requires(std::is_base_of_v<compound_interface, Implementation>)
-    auto as() noexcept -> Implementation* {
+    [[nodiscard]] auto as() noexcept -> Implementation* {
         return dynamic_cast<Implementation*>(_pimpl.get());
     }
 
@@ -791,39 +813,39 @@ public:
 
     /// @brief Construction from a compound and attribute pair.
     /// @pre c.type_id() == a.type_id()
-    compound_attribute(compound c, attribute a) noexcept
+    [[nodiscard]] compound_attribute(compound c, attribute a) noexcept
       : _c{std::move(c)}
       , _a{std::move(a)} {
         assert(not _c or not _a or (_c.type_id() == _a.type_id()));
     }
 
     /// @brief Indicates if this attribute actually refers to something.
-    explicit operator bool() const noexcept {
+    [[nodiscard]] explicit operator bool() const noexcept {
         return _c and _a;
     }
 
     /// @brief Returns the shared implementation type id of the attribute and compound.
-    auto type_id() const noexcept {
+    [[nodiscard]] auto type_id() const noexcept {
         return _c.type_id();
     }
 
     /// @brief Returns the name of this attribute.
-    auto name() const noexcept -> string_view {
+    [[nodiscard]] auto name() const noexcept -> string_view {
         return _c.attribute_name(_a);
     }
 
     /// @brief Indicates if the specified attribute is immutable.
-    auto is_immutable() const noexcept -> bool {
+    [[nodiscard]] auto is_immutable() const noexcept -> bool {
         return _c.is_immutable(_a);
     }
 
     /// @brief Indicates if the specified attribute is a reference or link in the tree.
-    auto is_link() const noexcept -> bool {
+    [[nodiscard]] auto is_link() const noexcept -> bool {
         return _c.is_link(_a);
     }
 
     /// @brief Returns the canonical value type of this attribute.
-    auto canonical_type() const -> value_type {
+    [[nodiscard]] auto canonical_type() const -> value_type {
         return _c.canonical_type(_a);
     }
 
@@ -831,61 +853,66 @@ public:
     /// @note Some implementations may return zero here even if there are
     /// nested attributes. In such implementations the nested nodes can be
     /// traversed only by name.
-    auto nested_count() const -> span_size_t {
+    [[nodiscard]] auto nested_count() const -> span_size_t {
         return _c.nested_count(_a);
     }
 
     /// @brief Indicates if an attribute has nested attribute accessible by index.
-    auto has_nested() const -> span_size_t {
+    [[nodiscard]] auto has_nested() const -> span_size_t {
         return _c.has_nested(_a);
     }
 
     /// @brief Returns nested attribute of an attribute at the specified index.
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto nested(const span_size_t index) const -> compound_attribute {
+    [[nodiscard]] auto nested(const span_size_t index) const
+      -> compound_attribute {
         return {_c, _c.nested(_a, index)};
     }
 
     /// @brief Returns nested attribute of an attribute with the specified name.
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto nested(const string_view name) const -> compound_attribute {
+    [[nodiscard]] auto nested(const string_view name) const
+      -> compound_attribute {
         return {_c, _c.nested(_a, name)};
     }
 
     /// @brief Returns nested attribute of an attribute at the specified path.
     ///
     /// Returns empty attribute handle if no such nested attribute exists.
-    auto find(const basic_string_path& path) const -> compound_attribute {
+    [[nodiscard]] auto find(const basic_string_path& path) const
+      -> compound_attribute {
         return {_c, _c.find(_a, path)};
     }
 
     /// @brief Returns the number of value elements accessible through an attribute.
-    auto value_count() const -> span_size_t {
+    [[nodiscard]] auto value_count() const -> span_size_t {
         return _c.value_count(_a);
     }
 
     /// @brief Fetches values from this attribute, starting at offset, into dest.
     template <typename T>
-    auto fetch_values(const span_size_t offset, memory::span<T> dest) const {
+    [[nodiscard]] auto fetch_values(
+      const span_size_t offset,
+      memory::span<T> dest) const {
         return _c.fetch_values(_a, offset, dest);
     }
 
     /// @brief Fetches values from this attribute, into dest.
     template <typename T>
-    auto fetch_values(memory::span<T> dest) const {
+    [[nodiscard]] auto fetch_values(memory::span<T> dest) const {
         return _c.fetch_values(_a, dest);
     }
 
     /// @brief Fetches a BLOB from this attribute, into dest.
-    auto fetch_blob(memory::block dest) const {
+    [[nodiscard]] auto fetch_blob(memory::block dest) const {
         return _c.fetch_blob(_a, dest);
     }
 
     /// @brief Fetches a value from this attribute, starting at offset, with selector.
     template <typename T, identifier_t V>
-    auto fetch_value(
+    [[nodiscard]] auto fetch_value(
       const span_size_t offset,
       T& dest,
       const selector<V> sel = default_selector) const -> bool {
@@ -894,33 +921,36 @@ public:
 
     /// @brief Fetches a value from this attribute, with selector.
     template <typename T, identifier_t V>
-    auto select_value(T& dest, const selector<V> sel) const -> bool {
+    [[nodiscard]] auto select_value(T& dest, const selector<V> sel) const
+      -> bool {
         return _c.select_value(_a, dest, sel);
     }
 
     /// @brief Fetches a value from this attribute, with selector, into dest.
     template <typename T, identifier_t V>
-    auto select_values(memory::span<T> dest, const selector<V> sel) const
-      -> memory::span<T> {
+    [[nodiscard]] auto select_values(
+      memory::span<T> dest,
+      const selector<V> sel) const -> memory::span<T> {
         return _c.select_values(_a, dest, sel);
     }
 
     /// @brief Fetches a value from this attribute, into dest.
     template <typename T>
-    auto fetch_value(T& dest) const -> bool {
+    [[nodiscard]] auto fetch_value(T& dest) const -> bool {
         return _c.select_value(_a, dest, default_selector);
     }
 
     /// @brief Returns a value of type T, from this attribute, at offset.
     template <typename T>
-    auto get(const span_size_t offset, const std::type_identity<T> tid = {})
-      const {
+    [[nodiscard]] auto get(
+      const span_size_t offset,
+      const std::type_identity<T> tid = {}) const {
         return _c.get(_a, offset, tid);
     }
 
     /// @brief Returns a value of type T, from this attribute.
     template <typename T>
-    auto get(const std::type_identity<T> tid = {}) const {
+    [[nodiscard]] auto get(const std::type_identity<T> tid = {}) const {
         return _c.get(_a, tid);
     }
 
@@ -935,7 +965,8 @@ auto compound::root() const -> compound_attribute {
 //------------------------------------------------------------------------------
 /// @brief Operator for creating a compound_attribute from compound and attribute.
 /// @ingroup valtree
-export auto operator/(compound c, attribute a) noexcept -> compound_attribute {
+export [[nodiscard]] auto operator/(compound c, attribute a) noexcept
+  -> compound_attribute {
     return {std::move(c), std::move(a)};
 }
 //------------------------------------------------------------------------------
