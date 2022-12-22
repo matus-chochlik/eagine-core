@@ -88,23 +88,21 @@ public:
     }
 
     /// @brief Difference operator.
-    friend constexpr auto operator-(
-      const basic_iterable_type a,
-      const difference_type d) noexcept {
-        Derived res(a.self());
+    constexpr auto operator-(const difference_type d) const noexcept {
+        Derived res(self());
         res -= d;
         return res;
     }
 
     /// @brief Subtraction operator.
-    constexpr auto operator-(const basic_iterable_type that) noexcept
+    constexpr auto operator-(const basic_iterable_type that) const noexcept
       -> difference_type {
         return _value - that._value;
     }
 
     /// @brief Comparison.
     [[nodiscard]] constexpr auto operator<=>(
-      const basic_iterable_type) const noexcept = default;
+      const basic_iterable_type&) const noexcept = default;
 
 protected:
     T _value{};
