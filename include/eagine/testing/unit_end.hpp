@@ -250,7 +250,7 @@ auto case_::check_close(const L& l, const R& r, std::string_view label) noexcept
                 const auto frr{std::frexp(r, &exr)};
 
                 using C = std::common_type_t<L, R>;
-                const auto eps{C(1) / C(1000)};
+                const auto eps{C(1) / C(std::is_same_v<C, float> ? 100 : 1000)};
                 if(exl == exr) {
                     return std::fabs(C(frl) - C(frr)) <= eps;
                 } else if(exl == exr + 1) {
