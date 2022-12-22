@@ -169,16 +169,113 @@ void math_function_binomial(auto& s) {
     }
 }
 //------------------------------------------------------------------------------
+// bezier_point
+//------------------------------------------------------------------------------
+template <typename T>
+void math_functions_bezier_point_T_1(eagitest::case_& test) {
+    using eagine::math::bezier_point;
+    auto& rg{test.random()};
+
+    T t = rg.get_between<T>(0, 1);
+    T v0 = rg.get_between<T>(-1000, 1000);
+
+    test.check_close(bezier_point(t, v0), v0, "1");
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void math_functions_bezier_point_T_2(eagitest::case_& test) {
+    using eagine::math::bezier_point;
+    auto& rg{test.random()};
+
+    T t = rg.get_between<T>(0, 1);
+    T v0 = rg.get_between<T>(-1000, 1000);
+    T v1 = rg.get_between<T>(-1000, 1000);
+
+    test.check_close(bezier_point(t, v0, v1), (1 - t) * v0 + t * v1, "2");
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void math_functions_bezier_point_T_3(eagitest::case_& test) {
+    using eagine::math::bezier_point;
+    auto& rg{test.random()};
+
+    T t = rg.get_between<T>(0, 1);
+    T v0 = rg.get_between<T>(-1000, 1000);
+    T v1 = rg.get_between<T>(-1000, 1000);
+    T v2 = rg.get_between<T>(-1000, 1000);
+
+    test.check_close(
+      bezier_point(t, v0, v1, v2),
+      (1 - t) * (1 - t) * v0 + 2 * (1 - t) * t * v1 + t * t * v2,
+      "3");
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void math_functions_bezier_point_T_4(eagitest::case_& test) {
+    using eagine::math::bezier_point;
+    auto& rg{test.random()};
+
+    T t = rg.get_between<T>(0, 1);
+    T v0 = rg.get_between<T>(-1000, 1000);
+    T v1 = rg.get_between<T>(-1000, 1000);
+    T v2 = rg.get_between<T>(-1000, 1000);
+    T v3 = rg.get_between<T>(-1000, 1000);
+
+    test.check_close(
+      bezier_point(t, v0, v1, v2, v3),
+      (1 - t) * (1 - t) * (1 - t) * v0 + 3 * (1 - t) * (1 - t) * t * v1 +
+        3 * (1 - t) * t * t * v2 + t * t * t * v3,
+      "4");
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void math_functions_bezier_point_T_5(eagitest::case_& test) {
+    using eagine::math::bezier_point;
+    auto& rg{test.random()};
+
+    T t = rg.get_between<T>(0, 1);
+    T v0 = rg.get_between<T>(-1000, 1000);
+    T v1 = rg.get_between<T>(-1000, 1000);
+    T v2 = rg.get_between<T>(-1000, 1000);
+    T v3 = rg.get_between<T>(-1000, 1000);
+    T v4 = rg.get_between<T>(-1000, 1000);
+
+    test.check_close(
+      bezier_point(t, v0, v1, v2, v3, v4),
+      (1 - t) * (1 - t) * (1 - t) * (1 - t) * v0 +
+        4 * (1 - t) * (1 - t) * (1 - t) * t * v1 +
+        6 * (1 - t) * (1 - t) * t * t * v2 + 4 * (1 - t) * t * t * t * v3 +
+        t * t * t * t * v4,
+      "5");
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void math_functions_bezier_point_T(eagitest::case_& test) {
+    math_functions_bezier_point_T_1<T>(test);
+    math_functions_bezier_point_T_2<T>(test);
+    math_functions_bezier_point_T_3<T>(test);
+    math_functions_bezier_point_T_4<T>(test);
+    math_functions_bezier_point_T_5<T>(test);
+}
+//------------------------------------------------------------------------------
+void math_function_bezier_point(auto& s) {
+    eagitest::case_ test{s, 7, "bezier point"};
+
+    math_functions_bezier_point_T<float>(test);
+    math_functions_bezier_point_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "functions", 6};
+    eagitest::suite test{argc, argv, "functions", 7};
     test.once(math_function_is_ppo2_man);
     test.repeat(1000, math_function_is_ppo2_rand);
     test.repeat(1000, math_function_gcd);
     test.repeat(1000, math_function_min_max);
     test.once(math_function_factorial);
     test.once(math_function_binomial);
+    test.once(math_function_bezier_point);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

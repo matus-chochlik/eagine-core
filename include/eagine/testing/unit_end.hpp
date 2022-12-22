@@ -237,8 +237,11 @@ auto case_::check_equal(const L& l, const R& r, std::string_view label) noexcept
 }
 //------------------------------------------------------------------------------
 template <typename L, typename R>
-auto case_::check_close(const L& l, const R& r, std::string_view label) noexcept
-  -> case_& {
+auto case_::check_close(
+  const L& l,
+  const R& r,
+  const std::common_type_t<L, R>& eps,
+  std::string_view label) noexcept -> case_& {
     const auto _close = [&]() {
         if constexpr(std::is_floating_point_v<L> && std::is_floating_point_v<R>) {
             const auto cll{std::fpclassify(l)};
@@ -250,7 +253,6 @@ auto case_::check_close(const L& l, const R& r, std::string_view label) noexcept
                 const auto frr{std::frexp(r, &exr)};
 
                 using C = std::common_type_t<L, R>;
-                const auto eps{C(1) / C(std::is_same_v<C, float> ? 100 : 1000)};
                 if(exl == exr) {
                     return std::fabs(C(frl) - C(frr)) <= eps;
                 } else if(exl == exr + 1) {
@@ -271,6 +273,14 @@ auto case_::check_close(const L& l, const R& r, std::string_view label) noexcept
         _parent._checks_failed = true;
     }
     return *this;
+}
+//------------------------------------------------------------------------------
+template <typename L, typename R>
+auto case_::check_close(const L& l, const R& r, std::string_view label) noexcept
+  -> case_& {
+    using C = std::common_type_t<L, R>;
+    return check_close(
+      l, r, C(1) / C(std::is_same_v<C, float> ? 100 : 1000), label);
 }
 //------------------------------------------------------------------------------
 // test track

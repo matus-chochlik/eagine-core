@@ -152,6 +152,13 @@ public:
       -> case_&;
 
     template <typename L, typename R>
+    auto check_close(
+      const L& l,
+      const R& r,
+      const std::common_type_t<L, R>& eps,
+      std::string_view label) noexcept -> case_&;
+
+    template <typename L, typename R>
     auto check_close(const L& l, const R& r, std::string_view label) noexcept
       -> case_&;
 
