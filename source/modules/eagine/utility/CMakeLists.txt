@@ -145,5 +145,6 @@ eagine_add_module_tests(
 		memoized
 		network_sort
 		overloaded
+		protected_member
 		scope_exit
 )
