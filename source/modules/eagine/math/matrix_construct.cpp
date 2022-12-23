@@ -132,6 +132,12 @@ public:
         return _identity(_riS());
     }
 
+    [[nodiscard]] friend constexpr auto reorder_mat_ctr(
+      const identity<matrix<T, R, C, RM, V>>& c) noexcept
+      -> identity<matrix<T, C, R, not RM, V>> {
+        return identity<matrix<T, C, R, not RM, V>>{};
+    }
+
 private:
     template <int... U>
     using _useq = std::integer_sequence<int, U...>;
@@ -223,6 +229,7 @@ private:
            {_v[0], _v[1], _v[2], T(1)}}};
     }
 
+public:
     vect::data_t<T, 3, V> _v;
 };
 
@@ -291,7 +298,6 @@ public:
         return {c._v};
     }
 
-private:
     vect::data_t<T, 3, V> _v;
 };
 
@@ -341,7 +347,6 @@ public:
         return {c._v};
     }
 
-private:
     T _v;
 };
 
@@ -417,7 +422,6 @@ public:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-private:
     T _v{};
 };
 
@@ -561,6 +565,7 @@ private:
            {T(0), T(0), T(0), T(1)}}};
     }
 
+public:
     radians_t<T> _v;
 };
 
@@ -722,6 +727,8 @@ private:
     }
 
     using _dT = vect::data_t<T, 6, V>;
+
+public:
     _dT _v;
 };
 
@@ -896,6 +903,8 @@ private:
     }
 
     using _dT = vect::data_t<T, 6, V>;
+
+public:
     _dT _v;
 };
 
@@ -948,8 +957,6 @@ public:
 private:
     using _dT = vector<T, 3, V>;
 
-    vector<T, 3, V> _e, _t;
-
     static constexpr auto _make(
       const _dT& x,
       const _dT& y,
@@ -984,6 +991,9 @@ private:
     constexpr auto _make(std::false_type) const noexcept {
         return reorder(_make(std::true_type()));
     }
+
+public:
+    vector<T, 3, V> _e, _t;
 };
 
 // reorder_mat_ctr(looking_at_y_up)
@@ -1089,6 +1099,8 @@ private:
 
     vector<T, 3, V> _t;
     vector<T, 3, V> _x, _z, _y;
+
+public:
     T _r;
 };
 
