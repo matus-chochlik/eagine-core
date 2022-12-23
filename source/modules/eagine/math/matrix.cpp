@@ -424,11 +424,12 @@ export template <int I, typename T, bool RM, bool V>
   const matrix<T, 4, 4, RM, V>& m) noexcept -> vector<T, 4, V>
     requires(I < 4)
 {
-    return {vect::shuffle2<T, 4, V>::template apply<0, 1, 4, 5>(
-      vect::shuffle2<T, 4, V>::template apply<0 + I, 4 + I, -1, -1>(
-        m._v[0], m._v[1]),
-      vect::shuffle2<T, 4, V>::template apply<0 + I, 4 + I, -1, -1>(
-        m._v[2], m._v[3]))};
+    return {vect::shuffle2<T, 4, V>::apply(
+      vect::shuffle2<T, 4, V>::apply(
+        m._v[0], m._v[1], vect::shuffle_mask<0 + I, 4 + I, -1, -1>{}),
+      vect::shuffle2<T, 4, V>::apply(
+        m._v[2], m._v[3], vect::shuffle_mask<0 + I, 4 + I, -1, -1>{}),
+      vect::shuffle_mask<0, 1, 4, 5>{})};
 }
 //------------------------------------------------------------------------------
 /// @brief Returns the I-th row vector of a matrix. Row-major implementation.
@@ -497,8 +498,8 @@ export template <int I, typename T, int C, int R, bool V>
 }
 //------------------------------------------------------------------------------
 // _col_hlp
-template <typename T, int C, int R, bool RM, bool V>
-static constexpr auto _col_hlp(
+export template <typename T, int C, int R, bool RM, bool V>
+constexpr auto _col_hlp(
   const matrix<T, C, R, RM, V>& m,
   int_constant<0U>,
   [[maybe_unused]] const int i) noexcept -> vector<T, R, V> {
@@ -507,8 +508,8 @@ static constexpr auto _col_hlp(
 }
 //------------------------------------------------------------------------------
 // _col_hlp
-template <typename T, int C, int R, bool RM, bool V, int I>
-static constexpr auto _col_hlp(
+export template <typename T, int C, int R, bool RM, bool V, int I>
+constexpr auto _col_hlp(
   const matrix<T, C, R, RM, V>& m,
   int_constant<I>,
   const int i) noexcept -> vector<T, R, V> {

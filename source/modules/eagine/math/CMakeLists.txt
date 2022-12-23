@@ -154,6 +154,7 @@ eagine_add_module_tests(
 		functions
 		matrix_1
 		matrix_2
+		matrix_3
 	IMPORTS
 		eagine.core.vectorization
 )
