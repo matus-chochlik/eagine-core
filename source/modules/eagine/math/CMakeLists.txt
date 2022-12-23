@@ -153,4 +153,7 @@ eagine_add_module_tests(
 		coordinates
 		functions
 		matrix_1
+		matrix_2
+	IMPORTS
+		eagine.core.vectorization
 )
