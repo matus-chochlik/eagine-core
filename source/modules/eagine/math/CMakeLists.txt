@@ -152,4 +152,5 @@ eagine_add_module_tests(
 	UNITS
 		coordinates
 		functions
+		matrix_1
 )
