@@ -222,6 +222,7 @@ eagine_add_module_tests(
 		buffer
 		byte_allocator
 		byteset
+		fixed_size_string
 		offset_ptr
 		offset_span
 		span
