@@ -201,7 +201,7 @@ public:
 
     /// @brief Tries to find the value stored under the specified key.
     [[nodiscard]] auto find(const string_view key) const noexcept
-      -> optional_reference_wrapper<const Value> {
+      -> optional_reference<const Value> {
         auto [fidx, offs, can_insert] = _find_insert_pos(key);
         if(can_insert and (offs == key.size())) {
             auto& node{_nodes[fidx]};

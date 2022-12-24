@@ -55,7 +55,7 @@ public:
     auto make_generator() const -> generator;
 
     auto to_string(const basic_sudoku_glyph<S>& glyph) const
-      -> optional_reference_wrapper<const std::string>;
+      -> optional_reference<const std::string>;
 
     auto print(std::ostream&, const basic_sudoku_glyph<S>& glyph) const
       -> std::ostream&;
@@ -606,7 +606,7 @@ auto basic_sudoku_board_traits<S>::make_generator() const -> generator {
 //------------------------------------------------------------------------------
 template <unsigned S>
 auto basic_sudoku_board_traits<S>::to_string(const basic_sudoku_glyph<S>& glyph)
-  const -> optional_reference_wrapper<const std::string> {
+  const -> optional_reference<const std::string> {
     if(glyph.is_single()) {
         return {_glyphs[glyph.get_index()]};
     }

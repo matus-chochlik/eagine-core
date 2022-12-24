@@ -129,8 +129,7 @@ public:
         return _cleanup{*this, buf};
     }
 
-    auto stats() const noexcept
-      -> optional_reference_wrapper<const buffer_pool_stats> {
+    auto stats() const noexcept -> optional_reference<const buffer_pool_stats> {
         if constexpr(not low_profile_build) {
             return {_stats};
         } else {

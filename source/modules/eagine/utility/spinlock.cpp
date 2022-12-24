@@ -67,7 +67,7 @@ public:
 
     /// @brief Returns the number of times the spinlock was locked.
     [[nodiscard]] auto stats() const noexcept
-      -> optional_reference_wrapper<const spinlock_stats> {
+      -> optional_reference<const spinlock_stats> {
         if constexpr(not low_profile_build) {
             return {_stats};
         } else {
