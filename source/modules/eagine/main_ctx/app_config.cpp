@@ -37,7 +37,7 @@ export struct application_config_value_loader
   : interface<application_config_value_loader> {
 
     /// @brief Reloads the value from the application config.
-    virtual void reload() noexcept = 0;
+    virtual auto reload() noexcept -> bool = 0;
 };
 
 /// @brief Class for reading application configuration.
@@ -94,10 +94,10 @@ public:
     }
 
     template <typename Vector>
-    auto fetch_vector(
+    [[nodiscard]] auto fetch_vector(
       const string_view key,
       Vector& dest,
-      const string_view tag) noexcept {
+      const string_view tag) noexcept -> bool {
         using T = typename Vector::value_type;
         const auto arg_name{_prog_arg_name(key)};
         for(const auto arg : _prog_args()) {
@@ -143,7 +143,7 @@ public:
     auto fetch(
       const string_view key,
       std::vector<T, A>& dest,
-      const string_view tag = {}) noexcept {
+      const string_view tag = {}) noexcept -> bool {
         return fetch_vector(key, dest, tag);
     }
 
@@ -152,7 +152,7 @@ public:
     auto fetch(
       const string_view key,
       small_vector<T, N, A>& dest,
-      const string_view tag = {}) noexcept {
+      const string_view tag = {}) noexcept -> bool {
         return fetch_vector(key, dest, tag);
     }
 
@@ -178,8 +178,9 @@ public:
 
     /// @brief Returns the configuration value or type @p T, identified by @p key.
     template <typename T>
-    auto get(const string_view key, const std::type_identity<T> = {}) noexcept
-      -> optionally_valid<T> {
+    [[nodiscard]] auto get(
+      const string_view key,
+      const std::type_identity<T> = {}) noexcept -> optionally_valid<T> {
         T temp{};
         const auto fetched = fetch(key, temp);
         return {std::move(temp), fetched};
@@ -214,7 +215,7 @@ public:
     /// @brief Reloads the linked loadable configuration values.
     /// @see link
     /// @see unlink
-    void reload() noexcept;
+    auto reload() noexcept -> bool;
 
 private:
     main_ctx_getters& _main_ctx;
@@ -304,17 +305,18 @@ public:
     }
 
     /// @brief Returns the stored value converted to the @p As type.
-    auto value() const noexcept -> As {
+    [[nodiscard]] auto value() const noexcept -> As {
         return _value;
     }
 
     /// @brief Implicit conversion of the stored value to the @p As type.
     /// @see value
-    operator As() const noexcept {
+    [[nodiscard]] operator As() const noexcept {
         return value();
     }
 
-    friend auto extract(const application_config_value& that) noexcept -> As {
+    [[nodiscard]] friend auto extract(
+      const application_config_value& that) noexcept -> As {
         return that.value();
     }
 
@@ -363,23 +365,24 @@ public:
     }
 
     /// @brief Returns the stored value converted to the @p As type.
-    auto value() const noexcept -> As {
+    [[nodiscard]] auto value() const noexcept -> As {
         return _value;
     }
 
     /// @brief Implicit conversion of the stored value to the @p As type.
     /// @see value
-    operator As() const noexcept {
+    [[nodiscard]] operator As() const noexcept {
         return value();
     }
 
-    friend auto extract(const application_config_value& that) noexcept -> As {
+    [[nodiscard]] friend auto extract(
+      const application_config_value& that) noexcept -> As {
         return that.value();
     }
 
 private:
-    void reload() noexcept final {
-        _config.fetch(_key, _value, _tag);
+    auto reload() noexcept -> bool final {
+        return _config.fetch(_key, _value, _tag);
     }
 
     application_config& _config;

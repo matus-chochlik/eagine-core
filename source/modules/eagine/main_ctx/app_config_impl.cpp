@@ -116,14 +116,16 @@ public:
         _loaders.erase(&loader);
     }
 
-    void reload() noexcept {
+    auto reload() noexcept -> bool {
+        bool result{true};
         const std::lock_guard<decltype(_mutex)> lck{_mutex};
         if(not _loaders.empty()) {
             _open_configs.clear();
             for(auto loader : _loaders) {
-                extract(loader).reload();
+                result = extract(loader).reload() and result;
             }
         }
+        return result;
     }
 
 private:
@@ -356,10 +358,11 @@ void application_config::unlink(
     }
 }
 //------------------------------------------------------------------------------
-void application_config::reload() noexcept {
+auto application_config::reload() noexcept -> bool {
     if(const auto impl{_impl()}) {
         return extract(impl).reload();
     }
+    return false;
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

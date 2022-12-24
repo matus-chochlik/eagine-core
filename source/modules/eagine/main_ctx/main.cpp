@@ -19,7 +19,7 @@ export auto main_impl(
   main_ctx_options&,
   int (*main_func)(main_ctx&)) -> int;
 
-export auto default_main(
+export [[nodiscard]] auto default_main(
   int argc,
   const char** argv,
   int (*main_func)(main_ctx&)) -> int {

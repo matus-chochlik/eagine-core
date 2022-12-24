@@ -76,10 +76,11 @@ public:
     auto main_context() const noexcept -> main_ctx&;
 
     /// @brief Returns the process id.
-    auto process_instance_id() const noexcept -> process_instance_id_t;
+    [[nodiscard]] auto process_instance_id() const noexcept
+      -> process_instance_id_t;
 
     /// @brief Returns a reference to the application config object.
-    auto app_config() const noexcept -> application_config&;
+    [[nodiscard]] auto app_config() const noexcept -> application_config&;
 
     /// @brief Reads and returns the configuration value identified by @p key.
     template <typename T>
@@ -105,7 +106,7 @@ public:
     /// @brief Returns a reference to the console object.
     /// @see cio_warning
     /// @see cio_error
-    auto cio() const noexcept -> const console&;
+    [[nodiscard]] auto cio() const noexcept -> const console&;
 
     /// @brief Shorthand for cio().print(...)
     /// @see cio
@@ -131,19 +132,19 @@ public:
     auto cio_error(const string_view format) const noexcept -> console_entry;
 
     /// @brief Returns a reference to the root activity object.
-    auto progress() const noexcept -> const activity_progress&;
+    [[nodiscard]] auto progress() const noexcept -> const activity_progress&;
 
     /// @brief Returns a reference to the workshop object.
-    auto workers() const noexcept -> workshop&;
+    [[nodiscard]] auto workers() const noexcept -> workshop&;
 
     /// @brief Locates the specified service object.
-    auto locate_service(identifier type_id) const noexcept
+    [[nodiscard]] auto locate_service(identifier type_id) const noexcept
       -> std::shared_ptr<main_ctx_service>;
 
     /// @brief Locates the specified Service object.
     /// @see locate
     template <std::derived_from<main_ctx_service> Service>
-    auto locate() const noexcept -> std::shared_ptr<Service> {
+    [[nodiscard]] auto locate() const noexcept -> std::shared_ptr<Service> {
         return std::dynamic_pointer_cast<Service>(
           locate_service(Service::static_type_id()));
     }

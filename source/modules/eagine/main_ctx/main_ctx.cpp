@@ -55,106 +55,107 @@ public:
 
     ~main_ctx() noexcept override;
 
-    static auto try_get() noexcept -> main_ctx* {
+    [[nodiscard]] static auto try_get() noexcept -> main_ctx* {
         return _single_ptr();
     }
 
     /// @brief Returns the single instance.
-    static auto get() noexcept -> main_ctx& {
+    [[nodiscard]] static auto get() noexcept -> main_ctx& {
         assert(_single_ptr());
         return *_single_ptr();
     }
 
-    auto setters() noexcept -> main_ctx_setters* final {
+    [[nodiscard]] auto setters() noexcept -> main_ctx_setters* final {
         return _source.setters();
     }
 
     auto preinitialize() noexcept -> main_ctx& final;
 
-    auto instance_id() const noexcept -> process_instance_id_t final {
+    [[nodiscard]] auto instance_id() const noexcept
+      -> process_instance_id_t final {
         return _instance_id;
     }
 
-    auto default_allocator() const noexcept
+    [[nodiscard]] auto default_allocator() const noexcept
       -> const memory::shared_byte_allocator& final {
         return _default_alloc;
     }
 
-    auto exe_path() const noexcept -> string_view final {
+    [[nodiscard]] auto exe_path() const noexcept -> string_view final {
         return _exe_path;
     }
 
-    auto app_name() const noexcept -> string_view final {
+    [[nodiscard]] auto app_name() const noexcept -> string_view final {
         return _app_name;
     }
 
-    auto args() const noexcept -> const program_args& final {
+    [[nodiscard]] auto args() const noexcept -> const program_args& final {
         return _args;
     }
 
-    auto compiler() const noexcept -> const compiler_info& final {
+    [[nodiscard]] auto compiler() const noexcept -> const compiler_info& final {
         return _cmplr_info;
     }
 
-    auto build() const noexcept -> const build_info& final {
+    [[nodiscard]] auto build() const noexcept -> const build_info& final {
         return _bld_info;
     }
 
-    auto version() const noexcept -> const version_info& final {
+    [[nodiscard]] auto version() const noexcept -> const version_info& final {
         return _ver_info;
     }
 
-    auto system() noexcept -> system_info& final {
+    [[nodiscard]] auto system() noexcept -> system_info& final {
         return _sys_info;
     }
 
-    auto user() noexcept -> user_info& final {
+    [[nodiscard]] auto user() noexcept -> user_info& final {
         return _usr_info;
     }
 
-    auto cio() noexcept -> const console& final {
+    [[nodiscard]] auto cio() noexcept -> const console& final {
         return _cio;
     }
 
-    auto log() noexcept -> const logger& final {
+    [[nodiscard]] auto log() noexcept -> const logger& final {
         return _log;
     }
 
-    auto progress() noexcept -> const activity_progress& final {
+    [[nodiscard]] auto progress() noexcept -> const activity_progress& final {
         return _progress;
     }
 
-    auto config() noexcept -> application_config& final {
+    [[nodiscard]] auto config() noexcept -> application_config& final {
         return _app_config;
     }
 
-    auto watchdog() noexcept -> process_watchdog& final {
+    [[nodiscard]] auto watchdog() noexcept -> process_watchdog& final {
         return _watchdog;
     }
 
-    auto compressor() noexcept -> data_compressor& final {
+    [[nodiscard]] auto compressor() noexcept -> data_compressor& final {
         return _compressor;
     }
 
-    auto workers() noexcept -> workshop& final {
+    [[nodiscard]] auto workers() noexcept -> workshop& final {
         return _workers;
     };
 
-    auto buffers() noexcept -> memory::buffer_pool& final {
+    [[nodiscard]] auto buffers() noexcept -> memory::buffer_pool& final {
         return _buffers;
     }
 
-    auto scratch_space() noexcept -> memory::buffer& final {
+    [[nodiscard]] auto scratch_space() noexcept -> memory::buffer& final {
         return _scratch_space;
     }
 
-    auto locate_service(identifier type_id) noexcept
+    [[nodiscard]] auto locate_service(identifier type_id) noexcept
       -> std::shared_ptr<main_ctx_service> final {
         return _source.locate_service(type_id);
     }
 
     template <std::derived_from<main_ctx_service> Service>
-    auto locate() noexcept -> std::shared_ptr<Service> {
+    [[nodiscard]] auto locate() noexcept -> std::shared_ptr<Service> {
         return std::dynamic_pointer_cast<Service>(
           locate_service(Service::static_type_id()));
     }
