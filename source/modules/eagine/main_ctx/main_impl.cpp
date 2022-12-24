@@ -61,4 +61,11 @@ auto main_impl(
     return 1;
 }
 //------------------------------------------------------------------------------
+auto test_main_impl(int argc, const char** argv, int (*main_func)(test_ctx&))
+  -> int {
+    // TODO: update this when a separate test_ctx implementation is done
+    main_ctx_options options{};
+    return main_impl(argc, argv, options, main_func);
+}
+//------------------------------------------------------------------------------
 } // namespace eagine
