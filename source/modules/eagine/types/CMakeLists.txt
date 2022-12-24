@@ -98,6 +98,7 @@ eagine_add_module_tests(
 		bitfield
 		enum_map
 		metaprogramming
+		nothing
 		optional_reference
 		tribool
 )
