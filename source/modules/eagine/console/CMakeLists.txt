@@ -21,6 +21,16 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.console PARTITION null_backend
+	IMPORTS
+		entry_kind backend
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.identifier
+)
+
+eagine_add_module(
 	eagine.core.console PARTITION iostream_backend
 	IMPORTS
 		entry_kind backend
@@ -51,9 +61,11 @@ eagine_add_module(
 		entry_kind
 		entry
 		backend
+		null_backend
 		iostream_backend
 	SOURCES
 		console_impl
+		null_backend_impl
 		iostream_backend_impl
 	IMPORTS
 		eagine.core.types

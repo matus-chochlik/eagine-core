@@ -15,6 +15,7 @@ import eagine.core.build_info;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.valid_if;
+import eagine.core.console;
 import eagine.core.logging;
 import <iostream>;
 import <stdexcept>;
@@ -65,6 +66,8 @@ auto test_main_impl(int argc, const char** argv, int (*main_func)(test_ctx&))
   -> int {
     // TODO: update this when a separate test_ctx implementation is done
     main_ctx_options options{};
+    options.logger_opts.forced_backend = make_null_log_backend();
+    options.console_opts.forced_backend = make_null_console_backend();
     return main_impl(argc, argv, options, main_func);
 }
 //------------------------------------------------------------------------------
