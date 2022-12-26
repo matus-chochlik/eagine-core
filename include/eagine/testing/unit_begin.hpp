@@ -144,6 +144,8 @@ public:
     auto ensure(bool condition, std::string_view label, const auto&...)
       -> case_&;
 
+    auto fail(std::string_view label, const auto&...) -> case_&;
+
     auto check(bool condition, std::string_view label, const auto&...) noexcept
       -> case_&;
 

@@ -20,9 +20,13 @@ public:
       : suite{ctx.args().argc(), ctx.args().argv(), name, cases}
       , _ctx{ctx} {}
 
-    [[nodiscard]] auto ctx() const noexcept -> eagine::test_ctx& {
+    [[nodiscard]] auto context() const noexcept -> eagine::test_ctx& {
         return _ctx;
     }
+
+    auto once(void (*func)(eagitest::ctx_suite&)) noexcept -> ctx_suite&;
+    auto repeat(unsigned, void (*func)(unsigned, eagitest::ctx_suite&)) noexcept
+      -> ctx_suite&;
 
 private:
     eagine::test_ctx& _ctx;

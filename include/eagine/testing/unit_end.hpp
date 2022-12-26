@@ -203,6 +203,14 @@ auto case_::ensure(bool condition, std::string_view label, const auto&...)
     return *this;
 }
 //------------------------------------------------------------------------------
+auto case_::fail(std::string_view label, const auto&...) -> case_& {
+    std::clog << "  failure: '" << _parent._name << "/" << this->_name << "/"
+              << label << "' failed";
+    std::clog << std::endl;
+    _parent._checks_failed = true;
+    return *this;
+}
+//------------------------------------------------------------------------------
 auto case_::check(
   bool condition,
   std::string_view label,
