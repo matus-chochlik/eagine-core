@@ -21,6 +21,54 @@ CREATE FUNCTION eagilog.schema_data_size_mebi() RETURNS NUMERIC
 AS 'SELECT round(sum(total_bytes) / 1048576, 3)::NUMERIC FROM eagilog.schema_statistics;'
 LANGUAGE sql IMMUTABLE;
 --------------------------------------------------------------------------------
+-- benchmark type
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.benchmark_type (
+	benchmark_type_id SMALLINT PRIMARY KEY,
+	name VARCHAR(16) NOT NULL
+);
+
+CREATE UNIQUE INDEX benchmark_type_name_index
+ON eagilog.benchmark_type (name);
+
+CREATE FUNCTION eagilog.get_benchmark_type_id(
+	eagilog.benchmark_type.name%TYPE
+) RETURNS eagilog.benchmark_type.benchmark_type_id%TYPE
+AS $$
+DECLARE
+	result eagilog.benchmark_type.benchmark_type_id%TYPE;
+BEGIN
+	SELECT benchmark_type_id
+	INTO result
+	FROM eagilog.benchmark_type
+	WHERE name = $1;
+	return result;
+END
+$$ LANGUAGE plpgsql;
+
+INSERT INTO eagilog.benchmark_type (benchmark_type_id, name) VALUES(0, 'build_time');
+--------------------------------------------------------------------------------
+-- benchmark
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.benchmark (
+	benchmark_id SERIAL PRIMARY KEY,
+	benchmark_type_id INTEGER NOT NULL,
+	benchmark_time TIMESTAMP WITH TIME ZONE NOT NULL,
+	duration INTERVAL NOT NULL,
+	git_hash VARCHAR(64) NULL,
+	git_version VARCHAR(32) NULL,
+	os_name VARCHAR(64) NULL,
+	hostname VARCHAR(64) NULL,
+	architecture VARCHAR(32) NULL,
+	compiler VARCHAR(32) NULL,
+	low_profile_build BOOL NULL,
+	debug_build BOOL NULL
+);
+
+ALTER TABLE eagilog.benchmark
+ADD FOREIGN KEY(benchmark_type_id)
+REFERENCES eagilog.benchmark_type;
+--------------------------------------------------------------------------------
 -- severity
 --------------------------------------------------------------------------------
 CREATE TABLE eagilog.severity (
@@ -28,7 +76,7 @@ CREATE TABLE eagilog.severity (
 	name VARCHAR(9) NOT NULL
 );
 
-CREATE UNIQUE INDEX name_index
+CREATE UNIQUE INDEX severity_name_index
 ON eagilog.severity (name);
 
 CREATE FUNCTION eagilog.get_severity_id(
