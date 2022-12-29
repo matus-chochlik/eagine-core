@@ -153,6 +153,7 @@ eagine_add_module_tests(
 		coordinates
 		functions
 		scalar
+		vector
 		matrix_1
 		matrix_2
 		matrix_3
