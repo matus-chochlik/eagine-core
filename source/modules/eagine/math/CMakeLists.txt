@@ -152,6 +152,7 @@ eagine_add_module_tests(
 	UNITS
 		coordinates
 		functions
+		scalar
 		matrix_1
 		matrix_2
 		matrix_3
