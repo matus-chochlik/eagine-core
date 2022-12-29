@@ -571,6 +571,126 @@ void vector_from2_double(auto& s) {
     vector_from2_T<double>(test);
 }
 //------------------------------------------------------------------------------
+// from 3
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+void vector_from3_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
+    auto& rg{test.random()};
+
+    T a[N];
+    for(int i = 0; i < N; ++i) {
+        a[i] = rg.get_any<T>();
+    }
+
+    auto v = eagine::math::vector<T, N, V>::from(a, N);
+
+    for(int i = 0; i < N; ++i) {
+        test.check_equal(v[i], a[i], "equal");
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void vector_from3_TV(eagitest::case_& test) {
+    vector_from3_TNV<T, 1, V>(test);
+    vector_from3_TNV<T, 2, V>(test);
+    vector_from3_TNV<T, 3, V>(test);
+    vector_from3_TNV<T, 4, V>(test);
+    vector_from3_TNV<T, 5, V>(test);
+    vector_from3_TNV<T, 6, V>(test);
+    vector_from3_TNV<T, 7, V>(test);
+    vector_from3_TNV<T, 8, V>(test);
+    vector_from3_TNV<T, 12, V>(test);
+    vector_from3_TNV<T, 15, V>(test);
+    vector_from3_TNV<T, 20, V>(test);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void vector_from3_T(eagitest::case_& test) {
+    vector_from3_TV<T, true>(test);
+    vector_from3_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void vector_from3_int(auto& s) {
+    eagitest::case_ test{s, 25, "from 3 int"};
+    vector_from3_T<int>(test);
+}
+//------------------------------------------------------------------------------
+void vector_from3_float(auto& s) {
+    eagitest::case_ test{s, 26, "from 3 float"};
+    vector_from3_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void vector_from3_double(auto& s) {
+    eagitest::case_ test{s, 27, "from 3 double"};
+    vector_from3_T<double>(test);
+}
+//------------------------------------------------------------------------------
+// from 4
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+void vector_from4_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
+    auto& rg{test.random()};
+
+    for(int j = 0; j < N; ++j) {
+        T a[N];
+        for(int i = 0; i < N - j; ++i) {
+            a[i] = rg.get_any<T>();
+        }
+
+        T r = rg.get_any<T>();
+
+        auto v = eagine::math::vector<T, N, V>::from(a, N - j, r);
+
+        for(int i = 0; i < N - j; ++i) {
+            test.check_equal(v[i], a[i], "equal 1");
+        }
+
+        for(int i = N - j; i < N; ++i) {
+            test.check_equal(v[i], r, "equal 2");
+        }
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void vector_from4_TV(eagitest::case_& test) {
+    vector_from4_TNV<T, 1, V>(test);
+    vector_from4_TNV<T, 2, V>(test);
+    vector_from4_TNV<T, 3, V>(test);
+    vector_from4_TNV<T, 4, V>(test);
+    vector_from4_TNV<T, 5, V>(test);
+    vector_from4_TNV<T, 6, V>(test);
+    vector_from4_TNV<T, 7, V>(test);
+    vector_from4_TNV<T, 8, V>(test);
+    vector_from4_TNV<T, 12, V>(test);
+    vector_from4_TNV<T, 15, V>(test);
+    vector_from4_TNV<T, 20, V>(test);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void vector_from4_T(eagitest::case_& test) {
+    vector_from4_TV<T, true>(test);
+    vector_from4_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void vector_from4_int(auto& s) {
+    eagitest::case_ test{s, 28, "from 4 int"};
+    vector_from4_T<int>(test);
+}
+//------------------------------------------------------------------------------
+void vector_from4_float(auto& s) {
+    eagitest::case_ test{s, 29, "from 4 float"};
+    vector_from4_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void vector_from4_double(auto& s) {
+    eagitest::case_ test{s, 30, "from 4 double"};
+    vector_from4_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
@@ -599,6 +719,12 @@ auto main(int argc, const char** argv) -> int {
     test.once(vector_from2_int);
     test.once(vector_from2_float);
     test.once(vector_from2_double);
+    test.once(vector_from3_int);
+    test.once(vector_from3_float);
+    test.once(vector_from3_double);
+    test.once(vector_from4_int);
+    test.once(vector_from4_float);
+    test.once(vector_from4_double);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
