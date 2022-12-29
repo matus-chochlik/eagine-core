@@ -41,6 +41,12 @@ struct cast<T, 3, V, T, 4, V> {
       const T d) noexcept -> data_t<T, 4, V> {
         return {v[0], v[1], v[2], d};
     }
+
+    [[nodiscard]] static constexpr auto apply(
+      const data_param_t<T, 3, V> v,
+      const data_param_t<T, 1, V> d) noexcept -> data_t<T, 4, V> {
+        return {v[0], v[1], v[2], d[0]};
+    }
 };
 
 export template <typename TF, int NF, bool VF, typename TT, int NT, bool VT>

@@ -466,10 +466,115 @@ void vector_from_double(auto& s) {
     vector_from_T<double>(test);
 }
 //------------------------------------------------------------------------------
+// from 2
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void vector_from2_TV(eagitest::case_& test) {
+    test.parameter(V, "V");
+    auto& rg{test.random()};
+
+    T ra = rg.get_any<T>();
+    auto v1a = eagine::math::vector<T, 1, V>::make(ra);
+    test.check_equal(v1a[0], ra, "a0");
+
+    T rb = rg.get_any<T>();
+    auto v1b = eagine::math::vector<T, 1, V>::make(rb);
+    test.check_equal(v1b[0], rb, "b0");
+
+    auto v2aa = eagine::math::vector<T, 2, V>::from(v1a, v1a);
+    test.check_equal(v2aa[0], ra, "aa0");
+    test.check_equal(v2aa[1], ra, "aa1");
+
+    auto v2ab = eagine::math::vector<T, 2, V>::from(v1a, v1b);
+    test.check_equal(v2ab[0], ra, "ab0");
+    test.check_equal(v2ab[1], rb, "ab1");
+
+    auto v2bb = eagine::math::vector<T, 2, V>::from(v1b, v1b);
+    test.check_equal(v2bb[0], rb, "bb0");
+    test.check_equal(v2bb[1], rb, "bb1");
+
+    auto v3aba = eagine::math::vector<T, 3, V>::from(v2ab, v1a);
+    test.check_equal(v3aba[0], ra, "aba0");
+    test.check_equal(v3aba[1], rb, "aba1");
+    test.check_equal(v3aba[2], ra, "aba2");
+
+    auto v3bab = eagine::math::vector<T, 3, V>::from(v1b, v2ab);
+    test.check_equal(v3bab[0], rb, "bab0");
+    test.check_equal(v3bab[1], ra, "bab1");
+    test.check_equal(v3bab[2], rb, "bab2");
+
+    auto v4abab = eagine::math::vector<T, 4, V>::from(v1a, v3bab);
+    test.check_equal(v4abab[0], ra, "abab0");
+    test.check_equal(v4abab[1], rb, "abab1");
+    test.check_equal(v4abab[2], ra, "abab2");
+    test.check_equal(v4abab[3], rb, "abab3");
+
+    auto v4aabb = eagine::math::vector<T, 4, V>::from(v2aa, v2bb);
+    test.check_equal(v4aabb[0], ra, "aabb0");
+    test.check_equal(v4aabb[1], ra, "aabb1");
+    test.check_equal(v4aabb[2], rb, "aabb2");
+    test.check_equal(v4aabb[3], rb, "aabb3");
+
+    auto v4baba = eagine::math::vector<T, 4, V>::from(v3bab, v1a);
+    test.check_equal(v4baba[0], rb, "baba0");
+    test.check_equal(v4baba[1], ra, "baba1");
+    test.check_equal(v4baba[2], rb, "baba2");
+    test.check_equal(v4baba[3], ra, "baba3");
+
+    auto v5ababa = eagine::math::vector<T, 5, V>::from(v1a, v4baba);
+    test.check_equal(v5ababa[0], ra, "ababa0");
+    test.check_equal(v5ababa[1], rb, "ababa1");
+    test.check_equal(v5ababa[2], ra, "ababa2");
+    test.check_equal(v5ababa[3], rb, "ababa3");
+    test.check_equal(v5ababa[4], ra, "ababa4");
+
+    auto v5aabab = eagine::math::vector<T, 5, V>::from(v2aa, v3bab);
+    test.check_equal(v5aabab[0], ra, "aabab0");
+    test.check_equal(v5aabab[1], ra, "aabab1");
+    test.check_equal(v5aabab[2], rb, "aabab2");
+    test.check_equal(v5aabab[3], ra, "aabab3");
+    test.check_equal(v5aabab[4], rb, "aabab4");
+
+    auto v5ababb = eagine::math::vector<T, 5, V>::from(v3aba, v2bb);
+    test.check_equal(v5ababb[0], ra, "ababb0");
+    test.check_equal(v5ababb[1], rb, "ababb1");
+    test.check_equal(v5ababb[2], ra, "ababb2");
+    test.check_equal(v5ababb[3], rb, "ababb3");
+    test.check_equal(v5ababb[4], rb, "ababb4");
+
+    auto v5babab = eagine::math::vector<T, 5, V>::from(v4baba, v1b);
+    test.check_equal(v5babab[0], rb, "babab0");
+    test.check_equal(v5babab[1], ra, "babab1");
+    test.check_equal(v5babab[2], rb, "babab2");
+    test.check_equal(v5babab[3], ra, "babab3");
+    test.check_equal(v5babab[4], rb, "babab4");
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void vector_from2_T(eagitest::case_& test) {
+    vector_from2_TV<T, true>(test);
+    vector_from2_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void vector_from2_int(auto& s) {
+    eagitest::case_ test{s, 22, "from 2 int"};
+    vector_from2_T<int>(test);
+}
+//------------------------------------------------------------------------------
+void vector_from2_float(auto& s) {
+    eagitest::case_ test{s, 23, "from 2 float"};
+    vector_from2_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void vector_from2_double(auto& s) {
+    eagitest::case_ test{s, 24, "from 2 double"};
+    vector_from2_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "anything", 21};
+    eagitest::suite test{argc, argv, "anything", 24};
     test.once(vector_default_ctr_int);
     test.once(vector_default_ctr_float);
     test.once(vector_default_ctr_double);
@@ -491,6 +596,9 @@ auto main(int argc, const char** argv) -> int {
     test.once(vector_from_int);
     test.once(vector_from_float);
     test.once(vector_from_double);
+    test.once(vector_from2_int);
+    test.once(vector_from2_float);
+    test.once(vector_from2_double);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
