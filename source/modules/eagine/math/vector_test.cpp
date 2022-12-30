@@ -691,10 +691,139 @@ void vector_from4_double(auto& s) {
     vector_from4_T<double>(test);
 }
 //------------------------------------------------------------------------------
+// vector dimension
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+void vector_dimension_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
+    eagine::math::vector<T, N, V> v;
+    test.check_equal(dimension(v), N, "dimension");
+}
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void vector_dimension_TV(eagitest::case_& test) {
+    vector_dimension_TNV<T, 1, V>(test);
+    vector_dimension_TNV<T, 2, V>(test);
+    vector_dimension_TNV<T, 3, V>(test);
+    vector_dimension_TNV<T, 4, V>(test);
+    vector_dimension_TNV<T, 5, V>(test);
+    vector_dimension_TNV<T, 6, V>(test);
+    vector_dimension_TNV<T, 7, V>(test);
+    vector_dimension_TNV<T, 8, V>(test);
+    vector_dimension_TNV<T, 13, V>(test);
+    vector_dimension_TNV<T, 17, V>(test);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void vector_dimension_T(eagitest::case_& test) {
+    vector_dimension_TV<T, true>(test);
+    vector_dimension_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void vector_dimension(auto& s) {
+    eagitest::case_ test{s, 31, "dimension"};
+    vector_dimension_T<int>(test);
+    vector_dimension_T<float>(test);
+    vector_dimension_T<double>(test);
+}
+//------------------------------------------------------------------------------
+// magnitude
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+void vector_magnitude_TNV(eagitest::case_& test) {
+    T a[N];
+    T m = T(0);
+
+    for(int i = 0; i < N; ++i) {
+        a[i] = rg.get<T>(0, 5000);
+        m += a[i] * a[i];
+    }
+
+    auto v = eagine::math::vector<T, N, V>::from(a, N);
+
+    using std::sqrt;
+    BOOST_CHECK_EQUAL(magnitude(v), sqrt(m));
+}
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void vector_magnitude_TV(eagitest::case_& test) {
+    vector_magnitude_TNV<T, 1, V>(test);
+    vector_magnitude_TNV<T, 2, V>(test);
+    vector_magnitude_TNV<T, 3, V>(test);
+    vector_magnitude_TNV<T, 4, V>(test);
+    vector_magnitude_TNV<T, 5, V>(test);
+    vector_magnitude_TNV<T, 6, V>(test);
+    vector_magnitude_TNV<T, 7, V>(test);
+    vector_magnitude_TNV<T, 8, V>(test);
+    vector_magnitude_TNV<T, 13, V>(test);
+    vector_magnitude_TNV<T, 17, V>(test);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void vector_magnitude_T(eagitest::case_& test) {
+    vector_magnitude_TV<T, true>(test);
+    vector_magnitude_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void vector_magnitude(auto& s) {
+    eagitest::case_ test{s, 32, "magnitude"};
+    vector_magnitude_T<int>(test);
+    vector_magnitude_T<float>(test);
+    vector_magnitude_T<double>(test);
+}
+//------------------------------------------------------------------------------
+// dot product
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+void vector_dot_TNV(eagitest::case_& test) {
+    T a[N], b[N];
+    T d = T(0);
+
+    for(int i = 0; i < N; ++i) {
+        a[i] = rg.get_between<T>(-5000, 5000);
+        b[i] = rg.get_between<T>(-5000, 5000);
+        d += a[i] * b[i];
+    }
+
+    auto u = eagine::math::vector<T, N, V>::from(a, N);
+    auto v = eagine::math::vector<T, N, V>::from(b, N);
+
+    test.check_close(dot(u, v), d);
+    test.check_close(dot(u, v), dot(v, u));
+}
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void vector_dot_TV(eagitest::case_& test) {
+    vector_dot_TNV<T, 1, V>(test);
+    vector_dot_TNV<T, 2, V>(test);
+    vector_dot_TNV<T, 3, V>(test);
+    vector_dot_TNV<T, 4, V>(test);
+    vector_dot_TNV<T, 5, V>(test);
+    vector_dot_TNV<T, 6, V>(test);
+    vector_dot_TNV<T, 7, V>(test);
+    vector_dot_TNV<T, 8, V>(test);
+    vector_dot_TNV<T, 13, V>(test);
+    vector_dot_TNV<T, 17, V>(test);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void vector_dot_T(eagitest::case_& test) {
+    vector_dot_TV<T, true>(test);
+    vector_dot_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void vector_dot(auto& s) {
+    eagitest::case_ test{s, 33, "dot"};
+    vector_dot_T<int>(test);
+    vector_dot_T<float>(test);
+    vector_dot_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "anything", 24};
+    eagitest::suite test{argc, argv, "anything", 33};
     test.once(vector_default_ctr_int);
     test.once(vector_default_ctr_float);
     test.once(vector_default_ctr_double);
@@ -725,6 +854,9 @@ auto main(int argc, const char** argv) -> int {
     test.once(vector_from4_int);
     test.once(vector_from4_float);
     test.once(vector_from4_double);
+    test.once(vector_dimension);
+    test.once(vector_magnitude);
+    test.once(vector_dot);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
