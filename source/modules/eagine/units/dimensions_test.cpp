@@ -281,10 +281,121 @@ void dimension_electric_conductance(auto& s) {
     });
 }
 //------------------------------------------------------------------------------
+// electric_resistance
+//------------------------------------------------------------------------------
+void dimension_electric_resistance(auto& s) {
+    eagitest::case_ test{s, 16, "electric resistance"};
+    eagine::units::base::for_each_dim([&](auto bd) {
+        test.check(
+          get_pow_of_dim(bd, eagine::units::electrical_resistance()) ==
+            get_pow_of_dim(bd, eagine::units::electric_tension()) -
+              get_pow_of_dim(bd, eagine::units::electric_current()),
+          "1");
+
+        test.check(
+          get_pow_of_dim(bd, eagine::units::electrical_resistance()) ==
+            get_pow_of_dim(bd, eagine::units::dimensionless()) -
+              get_pow_of_dim(bd, eagine::units::electrical_conductance()),
+          "2");
+    });
+}
+//------------------------------------------------------------------------------
+// magnetic_flux
+//------------------------------------------------------------------------------
+void dimension_magnetic_flux(auto& s) {
+    eagitest::case_ test{s, 17, "magnetic_flux"};
+    eagine::units::base::for_each_dim([&](auto bd) {
+        test.check(
+          get_pow_of_dim(bd, eagine::units::magnetic_flux()) ==
+            get_pow_of_dim(bd, eagine::units::energy()) -
+              get_pow_of_dim(bd, eagine::units::electric_current()),
+          "1");
+
+        test.check(
+          get_pow_of_dim(bd, eagine::units::magnetic_flux()) ==
+            get_pow_of_dim(bd, eagine::units::electric_tension()) +
+              get_pow_of_dim(bd, eagine::units::time()),
+          "2");
+        test.check(
+          get_pow_of_dim(bd, eagine::units::magnetic_flux()) ==
+            get_pow_of_dim(bd, eagine::units::length()) * 2 -
+              get_pow_of_dim(bd, eagine::units::time()) * 2 +
+              get_pow_of_dim(bd, eagine::units::mass()) -
+              get_pow_of_dim(bd, eagine::units::electric_current()),
+          "3");
+    });
+}
+//------------------------------------------------------------------------------
+// magnetic_field_strength
+//------------------------------------------------------------------------------
+void dimension_magnetic_field_strength(auto& s) {
+    eagitest::case_ test{s, 18, "magnetic field strength"};
+    eagine::units::base::for_each_dim([&](auto bd) {
+        test.check(
+          get_pow_of_dim(bd, eagine::units::magnetic_field_strength()) ==
+            get_pow_of_dim(bd, eagine::units::magnetic_flux()) -
+              get_pow_of_dim(bd, eagine::units::area()),
+          "1");
+
+        test.check(
+          get_pow_of_dim(bd, eagine::units::magnetic_field_strength()) ==
+            get_pow_of_dim(bd, eagine::units::mass()) -
+              get_pow_of_dim(bd, eagine::units::electric_current()) -
+              get_pow_of_dim(bd, eagine::units::time()) * 2,
+          "2");
+    });
+}
+//------------------------------------------------------------------------------
+// inductance
+//------------------------------------------------------------------------------
+void dimension_inductance(auto& s) {
+    eagitest::case_ test{s, 19, "inductance"};
+    eagine::units::base::for_each_dim([&](auto bd) {
+        test.check(
+          get_pow_of_dim(bd, eagine::units::magnetic_field_strength()) ==
+            get_pow_of_dim(bd, eagine::units::magnetic_flux()) -
+              get_pow_of_dim(bd, eagine::units::area()),
+          "1");
+
+        test.check(
+          get_pow_of_dim(bd, eagine::units::magnetic_field_strength()) ==
+            get_pow_of_dim(bd, eagine::units::mass()) -
+              get_pow_of_dim(bd, eagine::units::electric_current()) -
+              get_pow_of_dim(bd, eagine::units::time()) * 2,
+          "2");
+    });
+}
+//------------------------------------------------------------------------------
+// frequency
+//------------------------------------------------------------------------------
+void dimension_frequency(auto& s) {
+    eagitest::case_ test{s, 20, "frequency"};
+    eagine::units::base::for_each_dim([&](auto bd) {
+        test.check(
+          get_pow_of_dim(bd, eagine::units::frequency()) ==
+            get_pow_of_dim(bd, eagine::units::number_of_cycles()) -
+              get_pow_of_dim(bd, eagine::units::time()),
+          "1");
+    });
+}
+//------------------------------------------------------------------------------
+// radioactivity
+//------------------------------------------------------------------------------
+void dimension_radioactivity(auto& s) {
+    eagitest::case_ test{s, 21, "radioactivity"};
+    eagine::units::base::for_each_dim([&](auto bd) {
+        test.check(
+          get_pow_of_dim(bd, eagine::units::radioactivity()) ==
+            get_pow_of_dim(bd, eagine::units::number_of_decays()) -
+              get_pow_of_dim(bd, eagine::units::time()),
+          "1");
+    });
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "dimension", 15};
+    eagitest::suite test{argc, argv, "dimension", 21};
     test.once(dimension_area);
     test.once(dimension_volume);
     test.once(dimension_mass_density);
@@ -300,6 +411,12 @@ auto main(int argc, const char** argv) -> int {
     test.once(dimension_electric_tension);
     test.once(dimension_electric_capacitance);
     test.once(dimension_electric_conductance);
+    test.once(dimension_electric_resistance);
+    test.once(dimension_magnetic_flux);
+    test.once(dimension_magnetic_field_strength);
+    test.once(dimension_inductance);
+    test.once(dimension_frequency);
+    test.once(dimension_radioactivity);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
