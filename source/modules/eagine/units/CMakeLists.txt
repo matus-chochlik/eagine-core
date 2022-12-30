@@ -62,5 +62,6 @@ eagine_add_module_tests(
 	eagine.core.units
 	UNITS
 		base
+		quantity
 		si
 )
