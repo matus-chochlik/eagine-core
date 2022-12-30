@@ -9,7 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.math;
 //------------------------------------------------------------------------------
-// default constructor
+// vector default constructor
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void vector_default_ctr_TNV(eagitest::case_& test) {
@@ -732,18 +732,22 @@ void vector_dimension(auto& s) {
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void vector_magnitude_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
+    auto& rg{test.random()};
+
     T a[N];
     T m = T(0);
 
     for(int i = 0; i < N; ++i) {
-        a[i] = rg.get<T>(0, 5000);
+        a[i] = rg.get_between<T>(-5000, 5000);
         m += a[i] * a[i];
     }
 
     auto v = eagine::math::vector<T, N, V>::from(a, N);
 
     using std::sqrt;
-    BOOST_CHECK_EQUAL(magnitude(v), sqrt(m));
+    test.check_close(T(magnitude(v)), T(sqrt(m)), "magnitude");
 }
 //------------------------------------------------------------------------------
 template <typename T, bool V>
@@ -777,6 +781,10 @@ void vector_magnitude(auto& s) {
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void vector_dot_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
+    auto& rg{test.random()};
+
     T a[N], b[N];
     T d = T(0);
 
@@ -789,8 +797,8 @@ void vector_dot_TNV(eagitest::case_& test) {
     auto u = eagine::math::vector<T, N, V>::from(a, N);
     auto v = eagine::math::vector<T, N, V>::from(b, N);
 
-    test.check_close(dot(u, v), d);
-    test.check_close(dot(u, v), dot(v, u));
+    test.check_close(T(dot(u, v)), d, "dot 1");
+    test.check_close(T(dot(u, v)), T(dot(v, u)), "dot 2");
 }
 //------------------------------------------------------------------------------
 template <typename T, bool V>
@@ -820,10 +828,136 @@ void vector_dot(auto& s) {
     vector_dot_T<double>(test);
 }
 //------------------------------------------------------------------------------
+// tvec default constructor
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+void tvec_default_ctr_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
+    eagine::math::tvec<T, N, V> v;
+    for(int i = 0; i < N; ++i) {
+        test.check_equal(v[i], T(0), "is zero");
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void tvec_default_ctr_TV(eagitest::case_& test) {
+    tvec_default_ctr_TNV<T, 1, V>(test);
+    tvec_default_ctr_TNV<T, 2, V>(test);
+    tvec_default_ctr_TNV<T, 3, V>(test);
+    tvec_default_ctr_TNV<T, 4, V>(test);
+    tvec_default_ctr_TNV<T, 5, V>(test);
+    tvec_default_ctr_TNV<T, 6, V>(test);
+    tvec_default_ctr_TNV<T, 7, V>(test);
+    tvec_default_ctr_TNV<T, 8, V>(test);
+    tvec_default_ctr_TNV<T, 11, V>(test);
+    tvec_default_ctr_TNV<T, 13, V>(test);
+    tvec_default_ctr_TNV<T, 19, V>(test);
+    tvec_default_ctr_TNV<T, 23, V>(test);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void tvec_default_ctr_T(eagitest::case_& test) {
+    tvec_default_ctr_TV<T, true>(test);
+    tvec_default_ctr_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void tvec_default_ctr(auto& s) {
+    eagitest::case_ test{s, 35, "tvec default constructor"};
+    tvec_default_ctr_T<int>(test);
+    tvec_default_ctr_T<float>(test);
+    tvec_default_ctr_T<double>(test);
+}
+//------------------------------------------------------------------------------
+// tvec fill
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+void tvec_fill_ctr_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
+    auto& rg{test.random()};
+
+    const T r = rg.get_any<T>();
+    eagine::math::tvec<T, N, V> v(r);
+    for(int i = 0; i < N; ++i) {
+        test.check_equal(v[i], r, "value");
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void tvec_fill_ctr_TV(eagitest::case_& test) {
+    tvec_fill_ctr_TNV<T, 1, V>(test);
+    tvec_fill_ctr_TNV<T, 2, V>(test);
+    tvec_fill_ctr_TNV<T, 3, V>(test);
+    tvec_fill_ctr_TNV<T, 4, V>(test);
+    tvec_fill_ctr_TNV<T, 5, V>(test);
+    tvec_fill_ctr_TNV<T, 6, V>(test);
+    tvec_fill_ctr_TNV<T, 7, V>(test);
+    tvec_fill_ctr_TNV<T, 8, V>(test);
+    tvec_fill_ctr_TNV<T, 11, V>(test);
+    tvec_fill_ctr_TNV<T, 13, V>(test);
+    tvec_fill_ctr_TNV<T, 19, V>(test);
+    tvec_fill_ctr_TNV<T, 23, V>(test);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void tvec_fill_ctr_T(eagitest::case_& test) {
+    tvec_fill_ctr_TV<T, true>(test);
+    tvec_fill_ctr_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void tvec_fill_ctr(auto& s) {
+    eagitest::case_ test{s, 36, "tvec fill constructor"};
+    tvec_fill_ctr_T<int>(test);
+    tvec_fill_ctr_T<float>(test);
+    tvec_fill_ctr_T<double>(test);
+}
+//------------------------------------------------------------------------------
+// tvec vector constructor
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+void tvec_vector_ctr_TNV(eagitest::case_& test) {
+    auto& rg{test.random()};
+    const T r = rg.get_any<T>();
+    eagine::math::tvec<T, N, V> v{eagine::math::vector<T, N, V>::fill(r)};
+    for(int i = 0; i < N; ++i) {
+        test.check_equal(v[i], r, "equal");
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void tvec_vector_ctr_TV(eagitest::case_& test) {
+    tvec_vector_ctr_TNV<T, 1, V>(test);
+    tvec_vector_ctr_TNV<T, 2, V>(test);
+    tvec_vector_ctr_TNV<T, 3, V>(test);
+    tvec_vector_ctr_TNV<T, 4, V>(test);
+    tvec_vector_ctr_TNV<T, 5, V>(test);
+    tvec_vector_ctr_TNV<T, 6, V>(test);
+    tvec_vector_ctr_TNV<T, 7, V>(test);
+    tvec_vector_ctr_TNV<T, 8, V>(test);
+    tvec_vector_ctr_TNV<T, 11, V>(test);
+    tvec_vector_ctr_TNV<T, 13, V>(test);
+    tvec_vector_ctr_TNV<T, 19, V>(test);
+    tvec_vector_ctr_TNV<T, 23, V>(test);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void tvec_vector_ctr_T(eagitest::case_& test) {
+    tvec_vector_ctr_TV<T, true>(test);
+    tvec_vector_ctr_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void tvec_vector_ctr(auto& s) {
+    eagitest::case_ test{s, 37, "tvec vector constructor"};
+    tvec_vector_ctr_T<int>(test);
+    tvec_vector_ctr_T<float>(test);
+    tvec_vector_ctr_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "anything", 33};
+    eagitest::suite test{argc, argv, "vector", 37};
     test.once(vector_default_ctr_int);
     test.once(vector_default_ctr_float);
     test.once(vector_default_ctr_double);
@@ -857,6 +991,8 @@ auto main(int argc, const char** argv) -> int {
     test.once(vector_dimension);
     test.once(vector_magnitude);
     test.once(vector_dot);
+    test.once(tvec_default_ctr);
+    test.once(tvec_fill_ctr);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
