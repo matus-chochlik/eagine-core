@@ -36,79 +36,11 @@
 
 BOOST_AUTO_TEST_SUITE(units_dimension_tests_2)
 
-struct electric_charge_base_dim_tester {
-    template <typename BD>
-    void operator()(BD) const {
-        BOOST_CHECK(
-          get_pow_of_dim(BD(), eagine::units::electric_charge()) ==
-          get_pow_of_dim(BD(), eagine::units::electric_current()) +
-            get_pow_of_dim(BD(), eagine::units::time()));
-    }
-};
-
-BOOST_AUTO_TEST_CASE(unit_dimensions_electric_charge) {
-    using namespace eagine::units;
-
-    base::for_each_dim(electric_charge_base_dim_tester());
-}
-
-struct electric_tension_base_dim_tester {
-    template <typename BD>
-    void operator()(BD) const {
-        BOOST_CHECK(
-          get_pow_of_dim(BD(), eagine::units::electric_tension()) ==
-          get_pow_of_dim(BD(), eagine::units::power()) -
-            get_pow_of_dim(BD(), eagine::units::electric_current()));
-        BOOST_CHECK(
-          get_pow_of_dim(BD(), eagine::units::electric_tension()) ==
-          get_pow_of_dim(BD(), eagine::units::length()) * 2 +
-            get_pow_of_dim(BD(), eagine::units::mass()) -
-            get_pow_of_dim(BD(), eagine::units::time()) * 3 -
-            get_pow_of_dim(BD(), eagine::units::electric_current()));
-    }
-};
-
-BOOST_AUTO_TEST_CASE(unit_dimensions_electric_tension) {
-    using namespace eagine::units;
-
-    base::for_each_dim(electric_tension_base_dim_tester());
-}
-
-struct electrical_capacitance_base_dim_tester {
-    template <typename BD>
-    void operator()(BD) const {
-        BOOST_CHECK(
-          get_pow_of_dim(BD(), eagine::units::electrical_capacitance()) ==
-          get_pow_of_dim(BD(), eagine::units::electric_charge()) -
-            get_pow_of_dim(BD(), eagine::units::electric_tension()));
-        BOOST_CHECK(
-          get_pow_of_dim(BD(), eagine::units::electrical_capacitance()) ==
-          get_pow_of_dim(BD(), eagine::units::electric_current()) * 2 -
-            get_pow_of_dim(BD(), eagine::units::length()) * 2 -
-            get_pow_of_dim(BD(), eagine::units::mass()) +
-            get_pow_of_dim(BD(), eagine::units::time()) * 4);
-    }
-};
-
-BOOST_AUTO_TEST_CASE(unit_dimensions_electrical_capacitance) {
-    using namespace eagine::units;
-
-    base::for_each_dim(electrical_capacitance_base_dim_tester());
-}
-
 struct electrical_conductance_base_dim_tester {
     template <typename BD>
     void operator()(BD) const {
-        BOOST_CHECK(
-          get_pow_of_dim(BD(), eagine::units::electrical_conductance()) ==
-          get_pow_of_dim(BD(), eagine::units::electric_current()) -
-            get_pow_of_dim(BD(), eagine::units::electric_tension()));
-        BOOST_CHECK(
-          get_pow_of_dim(BD(), eagine::units::electrical_conductance()) ==
-          get_pow_of_dim(BD(), eagine::units::electric_current()) * 2 -
-            get_pow_of_dim(BD(), eagine::units::length()) * 2 -
-            get_pow_of_dim(BD(), eagine::units::mass()) +
-            get_pow_of_dim(BD(), eagine::units::time()) * 3);
+        BOOST_CHECK();
+        BOOST_CHECK();
     }
 };
 

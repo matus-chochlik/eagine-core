@@ -170,16 +170,16 @@ void dimension_power(auto& s) {
     eagitest::case_ test{s, 10, "power"};
     eagine::units::base::for_each_dim([&](auto bd) {
         test.check(
-          get_pow_of_dim(BD(), eagine::units::power()) ==
-            get_pow_of_dim(BD(), eagine::units::energy()) -
-              get_pow_of_dim(BD(), eagine::units::time()),
+          get_pow_of_dim(bd, eagine::units::power()) ==
+            get_pow_of_dim(bd, eagine::units::energy()) -
+              get_pow_of_dim(bd, eagine::units::time()),
           "1");
 
         test.check(
-          get_pow_of_dim(BD(), eagine::units::power()) ==
-            get_pow_of_dim(BD(), eagine::units::area()) +
-              get_pow_of_dim(BD(), eagine::units::mass()) -
-              get_pow_of_dim(BD(), eagine::units::time()) * 3,
+          get_pow_of_dim(bd, eagine::units::power()) ==
+            get_pow_of_dim(bd, eagine::units::area()) +
+              get_pow_of_dim(bd, eagine::units::mass()) -
+              get_pow_of_dim(bd, eagine::units::time()) * 3,
           "2");
     });
 }
@@ -190,17 +190,93 @@ void dimension_pressure(auto& s) {
     eagitest::case_ test{s, 11, "pressure"};
     eagine::units::base::for_each_dim([&](auto bd) {
         test.check(
-          get_pow_of_dim(BD(), eagine::units::pressure()) ==
-            get_pow_of_dim(BD(), eagine::units::force()) -
-              get_pow_of_dim(BD(), eagine::units::area()),
+          get_pow_of_dim(bd, eagine::units::pressure()) ==
+            get_pow_of_dim(bd, eagine::units::force()) -
+              get_pow_of_dim(bd, eagine::units::area()),
           "1");
 
         test.check(
-          get_pow_of_dim(BD(), eagine::units::pressure()) ==
-            get_pow_of_dim(BD(), eagine::units::velocity()) +
-              get_pow_of_dim(BD(), eagine::units::mass()) -
-              get_pow_of_dim(BD(), eagine::units::time()) -
-              get_pow_of_dim(BD(), eagine::units::area()),
+          get_pow_of_dim(bd, eagine::units::pressure()) ==
+            get_pow_of_dim(bd, eagine::units::velocity()) +
+              get_pow_of_dim(bd, eagine::units::mass()) -
+              get_pow_of_dim(bd, eagine::units::time()) -
+              get_pow_of_dim(bd, eagine::units::area()),
+          "2");
+    });
+}
+//------------------------------------------------------------------------------
+// electric_charge
+//------------------------------------------------------------------------------
+void dimension_electric_charge(auto& s) {
+    eagitest::case_ test{s, 12, "electric charge"};
+    eagine::units::base::for_each_dim([&](auto bd) {
+        test.check(
+          get_pow_of_dim(bd, eagine::units::electric_charge()) ==
+            get_pow_of_dim(bd, eagine::units::electric_current()) +
+              get_pow_of_dim(bd, eagine::units::time()),
+          "1");
+    });
+}
+//------------------------------------------------------------------------------
+// electric_tension
+//------------------------------------------------------------------------------
+void dimension_electric_tension(auto& s) {
+    eagitest::case_ test{s, 13, "electric tension"};
+    eagine::units::base::for_each_dim([&](auto bd) {
+        test.check(
+          get_pow_of_dim(bd, eagine::units::electric_tension()) ==
+            get_pow_of_dim(bd, eagine::units::power()) -
+              get_pow_of_dim(bd, eagine::units::electric_current()),
+          "1");
+
+        test.check(
+          get_pow_of_dim(bd, eagine::units::electric_tension()) ==
+            get_pow_of_dim(bd, eagine::units::length()) * 2 +
+              get_pow_of_dim(bd, eagine::units::mass()) -
+              get_pow_of_dim(bd, eagine::units::time()) * 3 -
+              get_pow_of_dim(bd, eagine::units::electric_current()),
+          "2");
+    });
+}
+//------------------------------------------------------------------------------
+// electric_capacitance
+//------------------------------------------------------------------------------
+void dimension_electric_capacitance(auto& s) {
+    eagitest::case_ test{s, 14, "electric capacitance"};
+    eagine::units::base::for_each_dim([&](auto bd) {
+        test.check(
+          get_pow_of_dim(bd, eagine::units::electrical_capacitance()) ==
+            get_pow_of_dim(bd, eagine::units::electric_charge()) -
+              get_pow_of_dim(bd, eagine::units::electric_tension()),
+          "1");
+
+        test.check(
+          get_pow_of_dim(bd, eagine::units::electrical_capacitance()) ==
+            get_pow_of_dim(bd, eagine::units::electric_current()) * 2 -
+              get_pow_of_dim(bd, eagine::units::length()) * 2 -
+              get_pow_of_dim(bd, eagine::units::mass()) +
+              get_pow_of_dim(bd, eagine::units::time()) * 4,
+          "2");
+    });
+}
+//------------------------------------------------------------------------------
+// electric_conductance
+//------------------------------------------------------------------------------
+void dimension_electric_conductance(auto& s) {
+    eagitest::case_ test{s, 15, "electric conductance"};
+    eagine::units::base::for_each_dim([&](auto bd) {
+        test.check(
+          get_pow_of_dim(bd, eagine::units::electrical_conductance()) ==
+            get_pow_of_dim(bd, eagine::units::electric_current()) -
+              get_pow_of_dim(bd, eagine::units::electric_tension()),
+          "1");
+
+        test.check(
+          get_pow_of_dim(bd, eagine::units::electrical_conductance()) ==
+            get_pow_of_dim(bd, eagine::units::electric_current()) * 2 -
+              get_pow_of_dim(bd, eagine::units::length()) * 2 -
+              get_pow_of_dim(bd, eagine::units::mass()) +
+              get_pow_of_dim(bd, eagine::units::time()) * 3,
           "2");
     });
 }
@@ -208,7 +284,7 @@ void dimension_pressure(auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "dimension", 11};
+    eagitest::suite test{argc, argv, "dimension", 15};
     test.once(dimension_area);
     test.once(dimension_volume);
     test.once(dimension_mass_density);
@@ -220,6 +296,10 @@ auto main(int argc, const char** argv) -> int {
     test.once(dimension_energy);
     test.once(dimension_power);
     test.once(dimension_pressure);
+    test.once(dimension_electric_charge);
+    test.once(dimension_electric_tension);
+    test.once(dimension_electric_capacitance);
+    test.once(dimension_electric_conductance);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
