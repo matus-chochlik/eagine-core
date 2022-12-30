@@ -1155,6 +1155,97 @@ void tvec_vec_val_ctr(auto& s) {
     tvec_vec_val_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
+// tvec vector + vector constructor
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void tvec_vec_vec_ctr_TV(eagitest::case_& test) {
+    test.parameter(V, "V");
+    auto& rg{test.random()};
+
+    T ra = rg.get_any<T>();
+    eagine::math::tvec<T, 1, V> va(ra);
+    test.check_equal(va[0], ra, "vara");
+
+    T rb = rg.get_any<T>();
+    eagine::math::tvec<T, 1, V> vb(rb);
+    test.check_equal(vb[0], rb, "vbrb");
+
+    eagine::math::tvec<T, 2, V> vaa(va, va);
+    test.check_equal(vaa[0], ra, "vaa0ra");
+    test.check_equal(vaa[1], ra, "vaa1ra");
+
+    eagine::math::tvec<T, 2, V> vab(va, vb);
+    test.check_equal(vab[0], ra, "vab0ra");
+    test.check_equal(vab[1], rb, "vab1rb");
+
+    eagine::math::tvec<T, 2, V> vbb(vb, vb);
+    test.check_equal(vbb[0], rb, "vbb0rb");
+    test.check_equal(vbb[1], rb, "vbb1rb");
+
+    eagine::math::tvec<T, 3, V> vaba(vab, va);
+    test.check_equal(vaba[0], ra, "vaba0ra");
+    test.check_equal(vaba[1], rb, "vaba1rb");
+    test.check_equal(vaba[2], ra, "vaba2ra");
+
+    eagine::math::tvec<T, 3, V> vbab(vb, vab);
+    test.check_equal(vbab[0], rb, "vbab0rb");
+    test.check_equal(vbab[1], ra, "vbab1ra");
+    test.check_equal(vbab[2], rb, "vbab2rb");
+
+    eagine::math::tvec<T, 4, V> vabab(vaba, vb);
+    test.check_equal(vabab[0], ra, "vabab0ra");
+    test.check_equal(vabab[1], rb, "vabab1rb");
+    test.check_equal(vabab[2], ra, "vabab2ra");
+    test.check_equal(vabab[3], rb, "vabab3rb");
+
+    eagine::math::tvec<T, 4, V> vaabb(vaa, vbb);
+    test.check_equal(vaabb[0], ra, "vaabb0ra");
+    test.check_equal(vaabb[1], ra, "vaabb1ra");
+    test.check_equal(vaabb[2], rb, "vaabb2rb");
+    test.check_equal(vaabb[3], rb, "vaabb3rb");
+
+    eagine::math::tvec<T, 5, V> vababa(vabab, va);
+    test.check_equal(vababa[0], ra, "vababa0ra");
+    test.check_equal(vababa[1], rb, "vababa1rb");
+    test.check_equal(vababa[2], ra, "vababa2ra");
+    test.check_equal(vababa[3], rb, "vababa3rb");
+    test.check_equal(vababa[4], ra, "vababa4ra");
+
+    eagine::math::tvec<T, 5, V> vababb(vaba, vbb);
+    test.check_equal(vababb[0], ra, "vababb0ra");
+    test.check_equal(vababb[1], rb, "vababb1rb");
+    test.check_equal(vababb[2], ra, "vababb2ra");
+    test.check_equal(vababb[3], rb, "vababb3rb");
+    test.check_equal(vababb[4], rb, "vababb4rb");
+
+    eagine::math::tvec<T, 5, V> vaabab(vaa, vbab);
+    test.check_equal(vaabab[0], ra, "vaabab0ra");
+    test.check_equal(vaabab[1], ra, "vaabab1ra");
+    test.check_equal(vaabab[2], rb, "vaabab2rb");
+    test.check_equal(vaabab[3], ra, "vaabab3ra");
+    test.check_equal(vaabab[4], rb, "vaabab4rb");
+
+    eagine::math::tvec<T, 5, V> vbabab(vb, vabab);
+    test.check_equal(vbabab[0], rb, "vbabab0rb");
+    test.check_equal(vbabab[1], ra, "vbabab1ra");
+    test.check_equal(vbabab[2], rb, "vbabab2rb");
+    test.check_equal(vbabab[3], ra, "vbabab3ra");
+    test.check_equal(vbabab[4], rb, "vbabab4rb");
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void tvec_vec_vec_ctr_T(eagitest::case_& test) {
+    tvec_vec_vec_ctr_TV<T, true>(test);
+    tvec_vec_vec_ctr_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void tvec_vec_vec_ctr(auto& s) {
+    eagitest::case_ test{s, 40, "tvec vector + vector constructor"};
+    tvec_vec_vec_ctr_T<int>(test);
+    tvec_vec_vec_ctr_T<float>(test);
+    tvec_vec_vec_ctr_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
@@ -1198,6 +1289,7 @@ auto main(int argc, const char** argv) -> int {
     test.once(tvec_array_ctr);
     test.once(tvec_pack_ctr);
     test.once(tvec_vec_val_ctr);
+    test.once(tvec_vec_vec_ctr);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
