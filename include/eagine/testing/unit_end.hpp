@@ -251,6 +251,7 @@ auto case_::check_close(
   const std::common_type_t<L, R>& eps,
   std::string_view label) noexcept -> case_& {
     const auto _close = [&]() {
+        using std::fabs;
         if constexpr(std::is_floating_point_v<L> && std::is_floating_point_v<R>) {
             const auto cll{std::fpclassify(l)};
             const auto clr{std::fpclassify(r)};
@@ -262,12 +263,16 @@ auto case_::check_close(
 
                 using C = std::common_type_t<L, R>;
                 if(exl == exr) {
-                    return std::fabs(C(frl) - C(frr)) <= eps;
+                    return fabs(C(frl) - C(frr)) <= eps;
                 } else if(exl == exr + 1) {
-                    return std::fabs(C(l) - C(r)) <= (C(l) + C(r)) * eps;
+                    return fabs(C(l) - C(r)) <= (C(l) + C(r)) * eps;
                 } else if(exl + 1 == exr) {
-                    return std::fabs(C(l) - C(r)) <= (C(l) + C(r)) * eps;
+                    return fabs(C(l) - C(r)) <= (C(l) + C(r)) * eps;
                 }
+            } else if(cll == FP_ZERO) {
+                return fabs(r) <= eps;
+            } else if(clr == FP_ZERO) {
+                return fabs(l) <= eps;
             }
             return false;
         } else {
