@@ -50,12 +50,22 @@ struct rebind_pointer<T*, U> : std::type_identity<U*> {};
 export template <typename T>
 class basic_span_iterator {
 public:
-    /// @brief Alias for the value type.
-    using value_type = T;
+    static_assert(not std::is_reference_v<T>);
+    static_assert(std::contiguous_iterator<basic_span_iterator>);
 
-    /// @brief Alias for the difference type.
-    using difference_type =
-      decltype(std::distance(std::declval<T*>(), std::declval<T*>()));
+    /// @brief Iterator concept tag.
+    using iterator_concept = std::contiguous_iterator_tag;
+
+    /// @brief Iterator category tag.
+    using iterator_category =
+      typename std::iterator_traits<T*>::iterator_category;
+
+    /// @brief Alias for the value type.
+    using value_type = typename std::iterator_traits<T*>::value_type;
+
+    using difference_type = typename std::iterator_traits<T*>::difference_type;
+    using pointer = typename std::iterator_traits<T*>::pointer;
+    using reference = typename std::iterator_traits<T*>::reference;
 
     /// @brief Default constructor.
     constexpr basic_span_iterator() = default;
@@ -132,14 +142,21 @@ public:
         return std::distance(that._pos, _pos);
     }
 
-    /// @brief Dereference.
-    constexpr auto operator*() const noexcept -> auto& {
+    /// @brief Indirection.
+    constexpr auto operator*() const noexcept -> reference {
         assert(_bgn <= _pos and _pos < _end);
         return *_pos;
     }
 
+    /// @brief Subscript.
+    constexpr auto operator[](const difference_type idx) const noexcept
+      -> reference {
+        const basic_span_iterator pos{_bgn, _pos + idx, _end};
+        return *pos;
+    }
+
     /// @brief Arrow.
-    constexpr auto operator->() const noexcept -> auto* {
+    constexpr auto operator->() const noexcept -> pointer {
         assert(_bgn <= _pos and _pos < _end);
         return _pos;
     }
@@ -187,6 +204,8 @@ struct span_iterator_traits : std::type_identity<I> {
 export template <typename I>
 using span_iterator_t = typename span_iterator_traits<I>::type;
 
+/* TODO: this is disabled for now, because it causes clang to crash.
+ * Once this is resolved the -Wno-unsafe-buffer-usage option cen be removed.
 export template <typename P>
 struct span_iterator_traits<P*> : std::type_identity<basic_span_iterator<P>> {
     static constexpr auto make_from(P* addr, auto offs, auto size) noexcept
@@ -194,6 +213,16 @@ struct span_iterator_traits<P*> : std::type_identity<basic_span_iterator<P>> {
         return {addr, addr + offs, addr + size};
     }
 };
+
+export template <typename P>
+struct span_iterator_traits<const P*>
+  : std::type_identity<basic_span_iterator<const P>> {
+    static constexpr auto make_from(const P* addr, auto offs, auto size) noexcept
+      -> basic_span_iterator<const P> {
+        return {addr, addr + offs, addr + size};
+    }
+};
+*/
 //------------------------------------------------------------------------------
 // basic_span
 //------------------------------------------------------------------------------
@@ -811,3 +840,15 @@ export using memory::view;
 export using memory::view_one;
 //------------------------------------------------------------------------------
 } // namespace eagine
+
+namespace std {
+
+export template <typename T>
+struct pointer_traits<eagine::memory::basic_span_iterator<T>> {
+    auto to_address(
+      const eagine::memory::basic_span_iterator<T>& i) const noexcept -> auto* {
+        return i.operator->();
+    }
+};
+
+} // namespace std
