@@ -225,7 +225,7 @@ public:
         owned_block b = _alloc.allocate(m + n);
 
         if(b) {
-            assert(is_aligned_to(b.begin() + m, a));
+            assert(is_aligned_to(as_address(b.begin() + m), a));
         }
 
         assert(m <= b.size());

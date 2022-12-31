@@ -185,6 +185,16 @@ export using const_address = basic_address<true>;
 /// @ingroup memory
 export using address = basic_address<false>;
 //------------------------------------------------------------------------------
+/// @brief Casts a pointer-like type to basic_address.
+/// @ingroup memory
+export template <typename P>
+constexpr auto as_address(P addr) noexcept {
+    using Pt = std::pointer_traits<P>;
+    using std::to_address;
+    return basic_address<std::is_const_v<typename Pt::element_type>>(
+      to_address(addr));
+}
+//------------------------------------------------------------------------------
 /// @brief Casts a pointer to basic_address.
 /// @ingroup memory
 export template <typename T>

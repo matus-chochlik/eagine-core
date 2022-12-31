@@ -5,7 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#include <type_traits>
+#include <memory>
 module;
 
 #include <cassert>
@@ -19,9 +19,10 @@ import :address;
 import <cmath>;
 import <concepts>;
 import <cstring>;
+import <memory>;
 import <initializer_list>;
-import <iterator>;
 import <type_traits>;
+import <span>;
 
 namespace eagine {
 namespace memory {
@@ -45,185 +46,6 @@ using rebind_pointer_t = typename rebind_pointer<Ptr, U>::type;
 export template <typename T, typename U>
 struct rebind_pointer<T*, U> : std::type_identity<U*> {};
 //------------------------------------------------------------------------------
-// iterator
-//------------------------------------------------------------------------------
-export template <typename T>
-class basic_span_iterator {
-public:
-    static_assert(not std::is_reference_v<T>);
-    static_assert(std::contiguous_iterator<basic_span_iterator>);
-
-    /// @brief Iterator concept tag.
-    using iterator_concept = std::contiguous_iterator_tag;
-
-    /// @brief Iterator category tag.
-    using iterator_category =
-      typename std::iterator_traits<T*>::iterator_category;
-
-    /// @brief Alias for the value type.
-    using value_type = typename std::iterator_traits<T*>::value_type;
-
-    using difference_type = typename std::iterator_traits<T*>::difference_type;
-    using pointer = typename std::iterator_traits<T*>::pointer;
-    using reference = typename std::iterator_traits<T*>::reference;
-
-    /// @brief Default constructor.
-    constexpr basic_span_iterator() = default;
-
-    /// @brief Initializing constructor.
-    constexpr basic_span_iterator(T* ibgn, T* ipos, T* iend) noexcept
-      : _bgn{ibgn}
-      , _pos{ipos}
-      , _end{iend} {}
-
-    /// @brief Pre-increment operator.
-    constexpr auto operator++() noexcept -> auto& {
-        assert(_pos < _end);
-        ++_pos;
-        return *this;
-    }
-
-    /// @brief Addition operator.
-    constexpr auto operator+=(const difference_type d) noexcept -> auto& {
-        assert(d <= std::distance(_pos, _end));
-        _pos += d;
-        return *this;
-    }
-
-    /// @brief Post-increment operator.
-    constexpr auto operator++(int) noexcept -> basic_span_iterator {
-        assert(_pos < _end);
-        auto res(*this);
-        ++_pos;
-        return res;
-    }
-
-    /// @brief Addition operator.
-    constexpr auto operator+(const difference_type d) noexcept {
-        assert(d <= std::distance(_pos, _end));
-        auto res(*this);
-        res += d;
-        return res;
-    }
-
-    /// @brief Pre-decrement operator.
-    auto constexpr operator--() noexcept -> auto& {
-        assert(_bgn < _pos);
-        --_pos;
-        return *this;
-    }
-
-    /// @brief Subtraction operator.
-    auto constexpr operator-=(const difference_type d) noexcept -> auto& {
-        assert(d <= std::distance(_bgn, _pos));
-        _pos -= d;
-        return *this;
-    }
-
-    /// @brief Post-decrement operator.
-    auto constexpr operator--(int) noexcept -> basic_span_iterator {
-        assert(_bgn < _pos);
-        auto res(*this);
-        --_pos;
-        return res;
-    }
-
-    /// @brief Difference operator.
-    constexpr auto operator-(const difference_type d) noexcept {
-        assert(d <= std::distance(_bgn, _pos));
-        auto res(*this);
-        res -= d;
-        return res;
-    }
-
-    /// @brief Subtraction operator.
-    constexpr auto operator-(const basic_span_iterator that) noexcept
-      -> difference_type {
-        return std::distance(that._pos, _pos);
-    }
-
-    /// @brief Indirection.
-    constexpr auto operator*() const noexcept -> reference {
-        assert(_bgn <= _pos and _pos < _end);
-        return *_pos;
-    }
-
-    /// @brief Subscript.
-    constexpr auto operator[](const difference_type idx) const noexcept
-      -> reference {
-        const basic_span_iterator pos{_bgn, _pos + idx, _end};
-        return *pos;
-    }
-
-    /// @brief Arrow.
-    constexpr auto operator->() const noexcept -> pointer {
-        assert(_bgn <= _pos and _pos < _end);
-        return _pos;
-    }
-
-    /// @brief Comparison.
-    [[nodiscard]] constexpr auto operator<=>(
-      const basic_span_iterator&) const noexcept = default;
-    [[nodiscard]] constexpr auto operator==(
-      const basic_span_iterator&) const noexcept -> bool = default;
-    [[nodiscard]] constexpr auto operator!=(
-      const basic_span_iterator&) const noexcept -> bool = default;
-    [[nodiscard]] constexpr auto operator<(
-      const basic_span_iterator&) const noexcept -> bool = default;
-    [[nodiscard]] constexpr auto operator<=(
-      const basic_span_iterator&) const noexcept -> bool = default;
-    [[nodiscard]] constexpr auto operator>(
-      const basic_span_iterator&) const noexcept -> bool = default;
-    [[nodiscard]] constexpr auto operator>=(
-      const basic_span_iterator&) const noexcept -> bool = default;
-
-    friend constexpr auto as_address(const basic_span_iterator<T> pos) noexcept {
-        return basic_address<std::is_const_v<T>>(pos._pos);
-    }
-
-protected:
-    T* _bgn{nullptr};
-    T* _pos{nullptr};
-    T* _end{nullptr};
-};
-
-export template <typename T>
-constexpr auto is_aligned_to(
-  const basic_span_iterator<T>& pos,
-  const span_size_t alignment) noexcept {
-    return is_aligned_to(as_address(pos), alignment);
-}
-//------------------------------------------------------------------------------
-export template <typename I>
-struct span_iterator_traits : std::type_identity<I> {
-    static constexpr auto make_from(I bgn, auto ofs, auto) noexcept -> I {
-        return bgn + ofs;
-    }
-};
-
-export template <typename I>
-using span_iterator_t = typename span_iterator_traits<I>::type;
-
-/* TODO: this is disabled for now, because it causes clang to crash.
- * Once this is resolved the -Wno-unsafe-buffer-usage option cen be removed.
-export template <typename P>
-struct span_iterator_traits<P*> : std::type_identity<basic_span_iterator<P>> {
-    static constexpr auto make_from(P* addr, auto offs, auto size) noexcept
-      -> basic_span_iterator<P> {
-        return {addr, addr + offs, addr + size};
-    }
-};
-
-export template <typename P>
-struct span_iterator_traits<const P*>
-  : std::type_identity<basic_span_iterator<const P>> {
-    static constexpr auto make_from(const P* addr, auto offs, auto size) noexcept
-      -> basic_span_iterator<const P> {
-        return {addr, addr + offs, addr + size};
-    }
-};
-*/
-//------------------------------------------------------------------------------
 // basic_span
 //------------------------------------------------------------------------------
 /// @brief Non-owning view of a contiguous range of memory with ValueType elements.
@@ -240,26 +62,28 @@ struct span_iterator_traits<const P*>
 export template <typename ValueType, typename Pointer, typename SizeType>
 class basic_span {
 public:
-    /// @brief The element value type.
-    using value_type = ValueType;
+    /// @brief The value type.
+    using value_type = std::remove_cv_t<ValueType>;
+    //
+    /// @brief The element type.
+    using element_type = ValueType;
 
     /// @brief The element count type.
     using size_type = SizeType;
 
     /// @brief The memory address type.
-    using address_type = basic_address<std::is_const_v<ValueType>>;
+    using address_type = basic_address<std::is_const_v<element_type>>;
 
     /// @brief The pointer type.
     using pointer = Pointer;
 
     /// @brief The iterator type.
-    using iterator = span_iterator_t<pointer>;
+    using iterator = typename std::span<element_type>::iterator;
 
-    /// @brief The const iterator type.
     using const_iterator = iterator;
 
     /// @brief The reverse iterator type
-    using reverse_iterator = std::reverse_iterator<iterator>;
+    using reverse_iterator = typename std::span<element_type>::reverse_iterator;
 
     /// @brief Construction from pointer and length.
     constexpr basic_span(
@@ -275,9 +99,8 @@ public:
     /// @brief Construction from a pair of pointers or iterators.
     template <typename I>
         requires(
-          std::is_same_v<I, std::remove_const_t<value_type>*> or
-          std::is_same_v<I, value_type*> or std::is_same_v<I, pointer> or
-          std::is_same_v<I, iterator>)
+          std::is_same_v<I, value_type*> or std::is_same_v<I, element_type*> or
+          std::is_same_v<I, pointer> or std::is_same_v<I, iterator>)
     constexpr basic_span(I b, I e) noexcept
       : basic_span{b == e ? nullptr : &*b, std::distance(b, e)} {}
 
@@ -410,14 +233,19 @@ public:
         return _addr;
     }
 
+    constexpr auto std_span() const noexcept -> std::span<element_type> {
+        using std::to_address;
+        return {to_address(_addr), std_size()};
+    }
+
     /// @brief Returns an interator to the start of the span.
-    constexpr auto begin() const noexcept -> iterator {
-        return span_iterator_traits<Pointer>::make_from(_addr, 0, size());
+    constexpr auto begin() const noexcept {
+        return std_span().begin();
     }
 
     /// @brief Returns a iterator past the end of the span.
-    constexpr auto end() const noexcept -> iterator {
-        return span_iterator_traits<Pointer>::make_from(_addr, size(), size());
+    constexpr auto end() const noexcept {
+        return std_span().end();
     }
 
     /// @brief Returns a reverse interator to the end of the span.
@@ -490,7 +318,7 @@ public:
 
     /// @brief Returns a reference to value at the specified index.
     /// @pre index < size()
-    auto ref(const size_type index) noexcept -> value_type& {
+    auto ref(const size_type index) noexcept -> element_type& {
         assert(index < size());
         return _addr[index];
     }
@@ -498,7 +326,7 @@ public:
     /// @brief Returns a const reference to value at the front of the span.
     /// @see back
     /// @pre not is_empty()
-    auto front() const noexcept -> const value_type& {
+    auto front() const noexcept -> std::add_const_t<element_type>& {
         assert(0 < size());
         return _addr[0];
     }
@@ -506,7 +334,7 @@ public:
     /// @brief Returns a reference to value at the front of the span.
     /// @see back
     /// @pre not is_empty()
-    auto front() noexcept -> value_type& {
+    auto front() noexcept -> element_type& {
         assert(0 < size());
         return _addr[0];
     }
@@ -514,7 +342,7 @@ public:
     /// @brief Returns a const reference to value at the back of the span.
     /// @see front
     /// @pre not is_empty()
-    auto back() const noexcept -> const value_type& {
+    auto back() const noexcept -> std::add_const_t<element_type>& {
         assert(0 < size());
         return _addr[size() - 1];
     }
@@ -522,7 +350,7 @@ public:
     /// @brief Returns a const reference to value at the back of the span.
     /// @see front
     /// @pre not is_empty()
-    auto back() noexcept -> value_type& {
+    auto back() noexcept -> element_type& {
         assert(0 < size());
         return _addr[size() - 1];
     }
@@ -540,7 +368,7 @@ public:
     /// @brief Returns a reference to value at the specified index.
     /// @pre 0 <= index < size()
     template <typename Int>
-    auto element(const Int index) noexcept -> value_type&
+    auto element(const Int index) noexcept -> element_type&
         requires(std::is_integral_v<Int>)
     {
         return ref(span_size(index));
@@ -549,7 +377,7 @@ public:
     /// @brief Array subscript operator.
     /// @see element
     template <typename Int>
-    auto operator[](const Int index) noexcept -> value_type&
+    auto operator[](const Int index) noexcept -> element_type&
         requires(std::is_integral_v<Int>)
     {
         return element(index);
@@ -840,15 +668,3 @@ export using memory::view;
 export using memory::view_one;
 //------------------------------------------------------------------------------
 } // namespace eagine
-
-namespace std {
-
-export template <typename T>
-struct pointer_traits<eagine::memory::basic_span_iterator<T>> {
-    auto to_address(
-      const eagine::memory::basic_span_iterator<T>& i) const noexcept -> auto* {
-        return i.operator->();
-    }
-};
-
-} // namespace std

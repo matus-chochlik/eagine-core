@@ -36,7 +36,7 @@ auto stack_byte_allocator::allocate(size_type n, size_type a) noexcept
         owned_block b = _alloc.allocate(m + n);
 
         if(b) {
-            assert(is_aligned_to(b.begin() + m, a));
+            assert(is_aligned_to(as_address(b.begin() + m), a));
             b[m - 1] = byte(m);
         }
 

@@ -270,6 +270,11 @@ constexpr auto as_address(basic_offset_ptr<P, O> op) noexcept
     return op.addr();
 }
 //------------------------------------------------------------------------------
+export template <typename P, typename O>
+constexpr auto to_address(basic_offset_ptr<P, O> p) noexcept -> P* {
+    return p.get();
+}
+//------------------------------------------------------------------------------
 /// @brief Default type alias for basic offset pointer.
 /// @ingroup memory
 export template <typename Pointee>
@@ -291,3 +296,18 @@ struct extract_traits<memory::basic_offset_ptr<P, O>> {
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
+
+namespace std {
+export template <typename P, typename O>
+struct pointer_traits<eagine::memory::basic_offset_ptr<P, O>> {
+    using value_type = P;
+    using difference_type = O;
+
+    static constexpr auto to_address(
+      eagine::memory::basic_offset_ptr<P, O> p) noexcept
+      -> std::add_const_t<P>* {
+        return p.get();
+    }
+};
+
+} // namespace std
