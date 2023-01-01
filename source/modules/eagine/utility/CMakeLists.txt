@@ -146,5 +146,6 @@ eagine_add_module_tests(
 		network_sort
 		overloaded
 		protected_member
+		random_bytes
 		scope_exit
 )
