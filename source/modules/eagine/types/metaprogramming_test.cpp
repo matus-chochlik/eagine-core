@@ -128,18 +128,44 @@ void mp_string_int_to_string(auto& s) {
     using str1 = mp_int_to_string_t<-1234567890>;
     using str2 = mp_int_to_string_t<123456789>;
 
-    test.check_equal(std::strlen(str1::value), std::size_t(11), "strlen");
-    test.check_equal(mp_strlen<str1>::value, std::size_t(11), "length");
-    test.check(std::strcmp(str1::value, "-1234567890") == 0, "content");
-    test.check_equal(std::strlen(str2::value), std::size_t(9), "strlen");
-    test.check_equal(mp_strlen<str2>::value, std::size_t(9), "length");
-    test.check(std::strcmp(str2::value, "123456789") == 0, "content");
+    test.check_equal(std::strlen(str1::value), std::size_t(11), "strlen 1");
+    test.check_equal(mp_strlen<str1>::value, std::size_t(11), "length 1");
+    test.check(std::strcmp(str1::value, "-1234567890") == 0, "content 1");
+    test.check_equal(std::strlen(str2::value), std::size_t(9), "strlen 2");
+    test.check_equal(mp_strlen<str2>::value, std::size_t(9), "length 2");
+    test.check(std::strcmp(str2::value, "123456789") == 0, "content 2");
+}
+//------------------------------------------------------------------------------
+void mp_string_subscript(auto& s) {
+    eagitest::case_ test{s, 9, "string subscript"};
+    using namespace eagine;
+
+    using num = mp_int_to_string_t<-1234567890>;
+    using str1 = mp_translate_t<num, mp_subscript>;
+    using str2 = mp_translate_t<
+      mp_string<'9', '8', '7', '6', '5', '4', '3', '2', '1'>,
+      mp_subscript>;
+
+    test.check(std::strcmp(str1::value, "₋₁₂₃₄₅₆₇₈₉₀") == 0, "content 1");
+    test.check(std::strcmp(str2::value, "₉₈₇₆₅₄₃₂₁") == 0, "content 2");
+}
+//------------------------------------------------------------------------------
+void mp_string_superscript(auto& s) {
+    eagitest::case_ test{s, 10, "string superscript"};
+    using namespace eagine;
+
+    using num = mp_int_to_string_t<-1234567890>;
+    using str1 =
+      mp_concat_t<mp_string<'n', '1', '=', '('>, num, mp_string<')', '+', 'i'>>;
+    using str2 = mp_translate_t<str1, mp_superscript>;
+
+    test.check(std::strcmp(str2::value, "ⁿ¹⁼⁽⁻¹²³⁴⁵⁶⁷⁸⁹⁰⁾⁺ⁱ") == 0, "content");
 }
 //------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "metaprogramming", 8};
+    eagitest::suite test{argc, argv, "metaprogramming", 10};
     test.once(mp_list_contains);
     test.once(mp_list_union);
     test.once(mp_string_empty);
@@ -148,6 +174,8 @@ auto main(int argc, const char** argv) -> int {
     test.once(mp_string_concat);
     test.once(mp_string_translate);
     test.once(mp_string_int_to_string);
+    test.once(mp_string_subscript);
+    test.once(mp_string_superscript);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
