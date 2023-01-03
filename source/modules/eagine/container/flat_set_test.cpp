@@ -32,7 +32,7 @@ void flat_set_init_from_vector(auto& s) {
         int k = rg.get_any<int>();
         ss.insert(k);
         d.push_back(k);
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     eagine::flat_set<int> fs(d);
@@ -47,7 +47,7 @@ void flat_set_init_from_vector(auto& s) {
         test.check_equal(*ssi, *fsi, "elements same");
         ++ssi;
         ++fsi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(ssi == ss.end(), "std::set iterator ok");
@@ -66,7 +66,7 @@ void flat_set_insert(auto& s) {
         int k = rg.get_any<int>();
         ss.insert(k);
         fs.insert(k);
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(ss.empty(), fs.empty(), "empty is same");
@@ -79,7 +79,7 @@ void flat_set_insert(auto& s) {
         test.check_equal(*ssi, *fsi, "elements same");
         ++ssi;
         ++fsi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(ssi == ss.end(), "std::set iterator ok");
@@ -98,7 +98,7 @@ void flat_set_insert_at_begin(auto& s) {
         int k = rg.get_any<int>();
         ss.insert(ss.begin(), k);
         fs.insert(fs.begin(), k);
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(ss.empty(), fs.empty(), "empty is same");
@@ -111,7 +111,7 @@ void flat_set_insert_at_begin(auto& s) {
         test.check_equal(*ssi, *fsi, "elements same");
         ++ssi;
         ++fsi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(ssi == ss.end(), "std::set iterator ok");
@@ -130,7 +130,7 @@ void flat_set_insert_at_end(auto& s) {
         int k = rg.get_any<int>();
         ss.insert(ss.end(), k);
         fs.insert(fs.end(), k);
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(ss.empty(), fs.empty(), "empty is same");
@@ -143,7 +143,7 @@ void flat_set_insert_at_end(auto& s) {
         test.check_equal(*ssi, *fsi, "elements same");
         ++ssi;
         ++fsi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(ssi == ss.end(), "std::set iterator ok");
@@ -162,7 +162,7 @@ void flat_set_insert_at_lower_bound(auto& s) {
         int k = rg.get_any<int>();
         ss.insert(ss.lower_bound(k), k);
         fs.insert(fs.lower_bound(k), k);
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(ss.empty(), fs.empty(), "empty is same");
@@ -175,7 +175,7 @@ void flat_set_insert_at_lower_bound(auto& s) {
         test.check_equal(*ssi, *fsi, "elements same");
         ++ssi;
         ++fsi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(ssi == ss.end(), "std::set iterator ok");
@@ -198,7 +198,7 @@ void flat_set_erase(auto& s) {
 
         ss.insert(k);
         fs.insert(k);
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(ss.empty(), fs.empty(), "empty is same");
@@ -219,7 +219,7 @@ void flat_set_erase(auto& s) {
 
         test.check_equal(ss.size(), fs.size(), "size is same");
         test.check_equal(esmc, efmc, "erase count equal");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     for(int k : ks) {
@@ -229,7 +229,7 @@ void flat_set_erase(auto& s) {
         test.check(ssi == ss.end(), "std::set iterator ok");
         test.check(fsi == fs.end(), "flat_set iterator ok");
         test.check(not fs.contains(k), "flat_set does not contain");
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
 }
 //------------------------------------------------------------------------------

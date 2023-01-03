@@ -61,7 +61,7 @@ void enum_map_1(eagitest::suite& s) {
 
     const auto incr = [&](auto, auto& ctr) {
         ctr();
-        trck.passed_part(1);
+        trck.checkpoint(1);
     };
 
     const int n = 100;
@@ -72,7 +72,7 @@ void enum_map_1(eagitest::suite& s) {
         test.check(counters.visit(test_enum::value_e, incr), "visit d");
         test.check(counters.visit(test_enum::value_b, incr), "visit e");
         test.check(not counters.visit(test_enum::value_f, incr), "not visit f");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     const auto& ccounters = counters;
@@ -105,14 +105,14 @@ void enum_map_2(eagitest::suite& s) {
         counters.get<test_enum::value_c>()();
         counters.get<test_enum::value_d>()();
         counters.get<test_enum::value_e>()();
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     const auto& ccounters = counters;
 
     const auto chk_value = [&](auto, const auto& ctr) {
         test.check_equal(ctr.value(), n, "value is ok");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     };
 
     test.check(ccounters.visit(test_enum::value_a, chk_value), "visit a");
@@ -140,20 +140,20 @@ void enum_map_3(eagitest::suite& s) {
 
     const auto incr = [&](auto, auto& ctr) {
         ctr();
-        trck.passed_part(1);
+        trck.checkpoint(1);
     };
 
     const int n = 100;
     for(int i = 0; i < n; ++i) {
         test.check(counters.visit(test_enum::value_a, incr), "visit a");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     for(int i = 0; i < n; ++i) {
         test.check(
           counters.visit(test_enum::value_a | test_enum::value_b, incr),
           "visit ab");
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
 
     for(int i = 0; i < n; ++i) {
@@ -161,7 +161,7 @@ void enum_map_3(eagitest::suite& s) {
           counters.visit(
             test_enum::value_a | test_enum::value_b | test_enum::value_c, incr),
           "visit abc");
-        trck.passed_part(4);
+        trck.checkpoint(4);
     }
 
     for(int i = 0; i < n; ++i) {
@@ -171,7 +171,7 @@ void enum_map_3(eagitest::suite& s) {
               test_enum::value_d,
             incr),
           "visit abcd");
-        trck.passed_part(5);
+        trck.checkpoint(5);
     }
 
     for(int i = 0; i < n; ++i) {
@@ -181,7 +181,7 @@ void enum_map_3(eagitest::suite& s) {
               test_enum::value_d | test_enum::value_e,
             incr),
           "visit abcde");
-        trck.passed_part(6);
+        trck.checkpoint(6);
     }
 
     const auto& ccounters = counters;
@@ -210,14 +210,14 @@ void enum_map_4(eagitest::suite& s) {
     auto init = [&](auto val, auto& tup) {
         std::get<0>(tup) = val;
         std::get<1>(tup) = 1;
-        trck.passed_part(1);
+        trck.checkpoint(1);
     };
 
     test.check(counters.visit_all(init), "init ok");
 
     const auto incr = [&](auto, auto& tup) {
         std::get<1>(tup)++;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     };
 
     const int n = 100;
@@ -228,7 +228,7 @@ void enum_map_4(eagitest::suite& s) {
         test.check(counters.visit(test_enum::value_e, incr), "visit e");
         test.check(counters.visit(test_enum::value_b, incr), "visit b");
         test.check(not counters.visit(test_enum::value_f, incr), "not visit f");
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
 
     const auto& ccounters = counters;
@@ -252,7 +252,7 @@ void enum_map_4(eagitest::suite& s) {
     const auto chk_tuple = [&](auto value, const auto& tup) {
         test.check(std::get<0>(tup) == value, "get 0 ok");
         test.check(std::get<1>(tup) == n + 1, "get 1 ok");
-        trck.passed_part(4);
+        trck.checkpoint(4);
     };
 
     test.check(ccounters.visit(test_enum::value_a, chk_tuple), "check a");

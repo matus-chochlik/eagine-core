@@ -319,7 +319,7 @@ track::~track() noexcept {
     for(track_part_t p = 0U; p < _expected_parts; ++p) {
         if(
           static_cast<track_part_t>(0) ==
-          (_passed_parts & (static_cast<track_part_t>(1) << p))) {
+          (_checkpoints & (static_cast<track_part_t>(1) << p))) {
             std::clog << "  track '" << _parent._parent._name << "/"
                       << _parent._name << "/" << this->_name
                       << "' missed part (" << (p + 1) << "/" << _expected_parts
@@ -330,12 +330,12 @@ track::~track() noexcept {
     }
 }
 //------------------------------------------------------------------------------
-auto track::passed_part(track_part_t part_idx) noexcept -> track& {
+auto track::checkpoint(track_part_t part_idx) noexcept -> track& {
     ++_passed_points;
     if(_expected_parts != 0U) {
         assert(part_idx != 0U);
-        _passed_parts =
-          _passed_parts | (static_cast<track_part_t>(1) << (part_idx - 1U));
+        _checkpoints =
+          _checkpoints | (static_cast<track_part_t>(1) << (part_idx - 1U));
     }
     return *this;
 }

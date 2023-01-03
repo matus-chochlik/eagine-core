@@ -191,10 +191,7 @@ public:
     auto operator=(const track&) = delete;
     ~track() noexcept;
 
-    auto passed_part(track_part_t) noexcept -> track&;
-    auto passed() noexcept -> track& {
-        return passed_part(0U);
-    }
+    auto checkpoint(track_part_t) noexcept -> track&;
 
 private:
     case_& _parent;
@@ -202,7 +199,7 @@ private:
     const std::size_t _expected_points;
     const track_part_t _expected_parts;
     std::size_t _passed_points{0U};
-    track_part_t _passed_parts{0U};
+    track_part_t _checkpoints{0U};
 };
 //------------------------------------------------------------------------------
 } // namespace eagitest

@@ -50,22 +50,22 @@ void bitfield_default_construct(auto& s) {
     //
     for(auto [idx, bit] : test_bit_list()) {
         test.check(not b.has(bit), "not has(bit_{})", idx);
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
     //
     for(auto [idx, bit] : test_bit_list()) {
         test.check(b.has_not(bit), "has_not(bit_{}) bit", idx);
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
     //
     for(auto [idx, bit] : test_bit_list()) {
         test.check(not b.has_only(bit), "not has_only(bit_{})", idx);
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
     //
     for(auto [idx, bit] : test_bit_list()) {
         test.check(b.has_at_most(bit), "has_at_most(bit_{})", idx);
-        trck.passed_part(4);
+        trck.checkpoint(4);
     }
     //
     test.check(
@@ -122,7 +122,7 @@ void bitfield_underlying_bits_construct_impl(unsigned u, auto& s) {
     for(auto [idx, bit] : test_bit_list()) {
         test.check(
           b.has(bit) == (((u >> idx) & 0x1U) == 0x1U), "has(bit_{})", idx);
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
     //
     for(auto [idx, bit] : test_bit_list()) {
@@ -130,7 +130,7 @@ void bitfield_underlying_bits_construct_impl(unsigned u, auto& s) {
           b.has_not(bit) == (((u >> idx) & 0x1U) != 0x1U),
           "has_not(bit_{}) bit",
           idx);
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
     //
     for(auto [idx, bit] : test_bit_list()) {
@@ -139,7 +139,7 @@ void bitfield_underlying_bits_construct_impl(unsigned u, auto& s) {
             ((((~(1U << idx) & 0xFFU) & u) == 0x00U) and (u != 0U)),
           "has_only(bit_{})",
           idx);
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
     //
 }

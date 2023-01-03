@@ -42,7 +42,7 @@ void embed_self(auto& s) {
       comp,
       data_compressor::data_handler{
         construct_from, [&](const memory::const_block blk) {
-            trck.passed_part(1);
+            trck.checkpoint(1);
             memory::append_to(blk, buf3);
             return true;
         }});
@@ -92,7 +92,7 @@ void search_cmake(auto& s) {
       comp,
       data_compressor::data_handler{
         construct_from, [&](const memory::const_block blk) {
-            trck.passed_part(1);
+            trck.checkpoint(1);
             memory::append_to(blk, buf3);
             return true;
         }});

@@ -40,12 +40,12 @@ void offset_span_construct_1(auto& s) {
     for(int e : a) {
         test.check_equal(e, i * i, "range element");
         ++i;
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     for(i = 0; i < 10; ++i) {
         test.check_equal(a[eagine::span_size(i)], i * i, "element at index");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 }
 //------------------------------------------------------------------------------
@@ -67,12 +67,12 @@ void offset_span_construct_2(auto& s) {
     for(int e : acc) {
         test.check_equal(e, cstr[i], "range element");
         ++i;
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     for(i = 0; i < acc.size(); ++i) {
         test.check_equal(acc[i], cstr[i], "element at index");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 }
 //------------------------------------------------------------------------------
@@ -94,12 +94,12 @@ void offset_span_construct_3(auto& s) {
     for(int e : acc) {
         test.check_equal(e, cstr[i], "range element");
         ++i;
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     for(i = 0; i < acc.size(); ++i) {
         test.check_equal(acc[i], cstr[i], "element at index");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 }
 //------------------------------------------------------------------------------
@@ -120,12 +120,12 @@ void offset_span_construct_4(auto& s) {
     memory::offset_span<int>::size_type i = 0;
     for(const int e : cai) {
         test.check_equal(e, ++i, "range element");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     for(i = 0; i < cai.size(); ++i) {
         test.check_equal(cai[i], ia[i], "element at index");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 }
 //------------------------------------------------------------------------------

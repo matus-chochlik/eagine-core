@@ -55,14 +55,14 @@ void buffer_resize(unsigned, auto& s) {
             test.check(not blk.empty(), "is not empty");
             test.check_equal(blk.size(), buf.size(), "size is ok");
             test.check(blk.begin() != blk.end(), "begin != end");
-            trck.passed_part(1);
+            trck.checkpoint(1);
         } else {
             test.check(not bool(blk), "is false");
             test.check(not blk, "is not true");
             test.check(blk.empty(), "is empty");
             test.check_equal(blk.size(), 0, "size is 0");
             test.check(blk.begin() == blk.end(), "begin == end");
-            trck.passed_part(2);
+            trck.checkpoint(2);
         }
 
         r = rg.get_int(0, 1000);
@@ -95,13 +95,13 @@ void buffer_ensure(unsigned, auto& s) {
             test.check(not blk.empty(), "is not empty");
             test.check(blk.size() >= buf.size(), "size is ok");
             test.check(blk.begin() != blk.end(), "begin != end");
-            trck.passed_part(1);
+            trck.checkpoint(1);
         } else {
             test.check(not bool(blk), "is false");
             test.check(not blk, "is not true");
             test.check(blk.empty(), "is empty");
             test.check(blk.begin() == blk.end(), "begin == end");
-            trck.passed_part(2);
+            trck.checkpoint(2);
         }
 
         r = rg.get_int(0, 1000);
@@ -136,13 +136,13 @@ void buffer_enlarge_by(unsigned, auto& s) {
             test.check(not blk.empty(), "is not empty");
             test.check(blk.size() >= buf.size(), "size is ok");
             test.check(blk.begin() != blk.end(), "begin != end");
-            trck.passed_part(1);
+            trck.checkpoint(1);
         } else {
             test.check(not bool(blk), "is false");
             test.check(not blk, "is not true");
             test.check(blk.empty(), "is empty");
             test.check(blk.begin() == blk.end(), "begin == end");
-            trck.passed_part(2);
+            trck.checkpoint(2);
         }
 
         r = rg.get_int(0, 1000);

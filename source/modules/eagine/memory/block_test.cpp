@@ -67,7 +67,7 @@ void memory_block_3(Case& test) {
 
     for([[maybe_unused]] byte b : bmb) {
         ++s;
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(bmb.size(), s, "size is ok");
@@ -98,7 +98,7 @@ void memory_block_4(Case& test) {
 
     for([[maybe_unused]] byte b : bmb) {
         ++s;
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(bmb.size(), s, "size is ok");
@@ -132,7 +132,7 @@ void memory_block_5(Case& test) {
 
     for(span_size_t i = 0; i < bmb.size(); ++i) {
         test.check_equal(bmb.data()[i], x[i], "indexing is ok");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 }
 //------------------------------------------------------------------------------

@@ -161,7 +161,7 @@ void program_args_range_for(auto& s) {
         test.check(bool(arg), "bool");
         test.check(arg.is_valid(), "valid");
         test.check_equal(arg.position(), i++, "position");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     i = 1;
@@ -169,7 +169,7 @@ void program_args_range_for(auto& s) {
         test.check(bool(arg), "bool const");
         test.check(arg.is_valid(), "valid const");
         test.check_equal(arg.position(), i++, "position const");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 }
 //------------------------------------------------------------------------------
@@ -230,7 +230,7 @@ void program_args_parse(auto& s) {
       v.size(), std::size_t(6), "parse int vector size result ok");
     for(std::size_t idx = 0; idx < v.size(); ++idx) {
         test.check_equal(int(idx), v[idx], "parse vector element ok");
-        vect.passed_part(1);
+        vect.checkpoint(1);
     }
 }
 //------------------------------------------------------------------------------

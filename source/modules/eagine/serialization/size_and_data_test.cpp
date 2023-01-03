@@ -71,7 +71,7 @@ void for_each_1(auto& s) {
                 next = {};
             } else {
                 next = skip(next, stor.size());
-                trck.passed_part(1);
+                trck.checkpoint(1);
             }
         } while(next);
 
@@ -83,7 +83,7 @@ void for_each_1(auto& s) {
               test.check_equal(
                 b.size(), eagine::span_size(temp[count].size()), "size");
               ++count;
-              trck.passed_part(2);
+              trck.checkpoint(2);
           });
 
         test.check_equal(count, temp.size(), "count ok");

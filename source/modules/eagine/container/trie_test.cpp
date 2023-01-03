@@ -63,7 +63,7 @@ void trie_insert_2(auto& s) {
         test.check(t.contains(key), key);
         if(const auto found{t.find(key)}) {
             test.check_equal(extract(found), key, "key == value");
-            trck.passed_part(1);
+            trck.checkpoint(1);
         }
     }
 
@@ -112,7 +112,7 @@ void trie_add_2(auto& s) {
         test.check(t.contains(key), key);
         if(const auto found{t.find(key)}) {
             test.check_equal(extract(found), key, "key == value");
-            trck.passed_part(1);
+            trck.checkpoint(1);
         }
     }
 
