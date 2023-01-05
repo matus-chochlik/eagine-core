@@ -35,6 +35,16 @@ export template <typename T, std::size_t N>
 using enumerator_map_type = std::array<const name_and_enumerator<T>, N>;
 //------------------------------------------------------------------------------
 export template <typename T, typename Selector>
+auto enumerators(Selector s) noexcept {
+    return enumerator_mapping(std::type_identity<T>{}, s);
+}
+
+export template <typename T>
+auto enumerators() noexcept {
+    return enumerators<T>(default_selector);
+}
+//------------------------------------------------------------------------------
+export template <typename T, typename Selector>
 concept mapped_enum = requires(std::type_identity<T> tid, Selector s) {
     enumerator_mapping(tid, s);
 };
