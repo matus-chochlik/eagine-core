@@ -538,6 +538,9 @@ private:
 namespace std {
 
 template <typename T, int N, bool V>
+struct is_arithmetic<eagine::math::vector<T, N, V>> : true_type {};
+
+template <typename T, int N, bool V>
 struct is_arithmetic<eagine::math::tvec<T, N, V>> : true_type {};
 
 } // namespace std
