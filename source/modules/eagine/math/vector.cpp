@@ -423,7 +423,7 @@ export template <typename T, int N, bool V>
 
 /// @brief Generic template for N-dimensional vectors.
 /// @ingroup math
-export template <typename T, int N, bool V>
+export template <typename T, int N, bool V = true>
 struct tvec : vector<T, N, V> {
     /// @brief The base vector type.
     using base = vector<T, N, V>;
@@ -534,3 +534,10 @@ private:
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
+  //
+namespace std {
+
+template <typename T, int N, bool V>
+struct is_arithmetic<eagine::math::tvec<T, N, V>> : true_type {};
+
+} // namespace std
