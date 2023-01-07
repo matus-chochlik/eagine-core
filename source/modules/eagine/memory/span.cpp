@@ -233,6 +233,10 @@ public:
         return _addr;
     }
 
+    constexpr auto data_end() const noexcept -> pointer {
+        return data() + size();
+    }
+
     constexpr auto std_span() const noexcept -> std::span<element_type> {
         using std::to_address;
         return {to_address(_addr), std_size()};

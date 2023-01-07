@@ -403,7 +403,7 @@ def make_switch_function(options, res_map):
     options.output.write("    const auto list{eagine::embedded_resource_ids()};\n")
     options.output.write("    eagine_embedded_resources_list result{\n")
     options.output.write("        .begin = list.data(),\n")
-    options.output.write("        .end = list.data() + list.size()\n")
+    options.output.write("        .end = list.data_end()\n")
     options.output.write("    };\n")
     options.output.write("    return result;\n")
     options.output.write("}\n")
