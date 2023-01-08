@@ -5,7 +5,11 @@
 #
 cmake_minimum_required(VERSION 3.16)
 
-project(EAGineCore)
+project(
+	EAGineCore
+	LANGUAGES CXX
+	HOMEPAGE_URL https://github.com/matus-chochlik/eagine-core
+)
 if(NOT EAGINE_CORE_ROOT)
 	set(EAGINE_CORE_ROOT ${PROJECT_SOURCE_DIR})
 endif()
