@@ -91,23 +91,29 @@ auto suite::random() noexcept -> random_generator& {
     return _rand_gen;
 }
 //------------------------------------------------------------------------------
-auto suite::once(void (*func)(eagitest::suite&)) noexcept -> suite& {
+auto suite::once(void (*function)(eagitest::suite&)) noexcept -> suite& {
     try {
-        func(*this);
+        function(*this);
     } catch(const abort_test_case&) {
     } catch(...) {
+        _checks_failed = true;
+        std::clog << "  suite '" << this->_name << "' unexpected exception"
+                  << std::endl;
     }
     return *this;
 }
 //------------------------------------------------------------------------------
 auto suite::repeat(
   unsigned count,
-  void (*func)(unsigned, eagitest::suite&)) noexcept -> suite& {
+  void (*function)(unsigned, eagitest::suite&)) noexcept -> suite& {
     for(unsigned i = 0; i < count; ++i) {
         try {
-            func(i, *this);
+            function(i, *this);
         } catch(const abort_test_case&) {
         } catch(...) {
+            _checks_failed = true;
+            std::clog << "  suite '" << this->_name << "' unexpected exception"
+                      << std::endl;
         }
     }
     return *this;
