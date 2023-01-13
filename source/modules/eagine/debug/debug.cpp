@@ -5,8 +5,93 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#if defined(__GNUC__) || defined(__clang__)
+// clang-format off
+#if __has_include(<valgrind/valgrind.h>)
+// clang-format on
+#include <valgrind/valgrind.h>
+#endif
+#endif
+
 export module eagine.core.debug;
 
-export import :type_name;
-export import :valgrind;
-export import :slow_exec;
+import eagine.core.types;
+import <string>;
+import <typeinfo>;
+
+namespace eagine {
+//------------------------------------------------------------------------------
+// type name
+//------------------------------------------------------------------------------
+auto demangle_type_name(const char*) noexcept -> std::string;
+
+/// @brief Returns the demangled name for type T.
+/// @ingroup type_utils
+/// @note The result is implementation dependent.
+export template <typename T>
+[[nodiscard]] auto type_name(const T&) noexcept -> std::string {
+    return demangle_type_name(typeid(T).name());
+}
+
+/// @brief Returns the demangled name for type T.
+/// @ingroup type_utils
+/// @note The result is implementation dependent.
+export template <typename T>
+[[nodiscard]] auto type_name() noexcept -> std::string {
+    return demangle_type_name(typeid(T).name());
+}
+//------------------------------------------------------------------------------
+// valgrind
+//------------------------------------------------------------------------------
+#if defined(RUNNING_ON_VALGRIND)
+export [[nodiscard]] auto running_on_valgrind() noexcept -> tribool {
+    return bool(RUNNING_ON_VALGRIND); // NOLINT(hicpp-no-assembler)
+}
+#else
+/// @brief Indicates if the current process runs on top of valgrind.
+/// @ingroup interop
+export [[nodiscard]] constexpr inline auto running_on_valgrind() noexcept
+  -> tribool {
+    return indeterminate;
+}
+#endif
+//------------------------------------------------------------------------------
+// slow exec
+//------------------------------------------------------------------------------
+/// @brief Enumeration indicating (estimated) memory access rate.
+export enum class memory_access_rate {
+    /// @brief Minimal to none memory access.
+    minimal,
+    /// @brief Low memory access rate.
+    low,
+    /// @brief Average access rate.
+    medium,
+    /// @brief Above average to high access rate.
+    high,
+    /// @brief  Very high access rate.
+    very_high
+};
+
+export [[nodiscard]] auto temporal_slowdown_factor(
+  const memory_access_rate mem_access = memory_access_rate::medium) noexcept
+  -> int {
+    if(running_on_valgrind()) [[unlikely]] {
+        switch(mem_access) {
+            case memory_access_rate::minimal:
+                return 5;
+            case memory_access_rate::low:
+                return 7;
+            case memory_access_rate::medium:
+                return 12;
+            case memory_access_rate::high:
+                return 25;
+            case memory_access_rate::very_high:
+                return 45;
+        }
+    }
+    return 1;
+}
+//------------------------------------------------------------------------------
+} // namespace eagine
