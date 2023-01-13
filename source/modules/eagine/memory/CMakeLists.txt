@@ -62,13 +62,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.memory PARTITION string_literal
-	IMPORTS
-		string_span
-		eagine.core.types
-)
-
-eagine_add_module(
 	eagine.core.memory PARTITION span_io
 	IMPORTS span eagine.core.types
 )
@@ -189,7 +182,6 @@ eagine_add_module(
 		block
 		struct_block
 		string_span
-		string_literal
 		offset_span
 		span_io
 		span_algorithm
