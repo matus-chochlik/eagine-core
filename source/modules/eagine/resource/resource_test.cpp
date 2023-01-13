@@ -102,7 +102,7 @@ void search_cmake(auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "embedded", 3};
+    eagitest::suite test{argc, argv, "resource", 3};
     test.once(embed_self);
     test.once(search_self);
     test.once(search_cmake);
