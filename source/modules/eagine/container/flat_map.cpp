@@ -108,20 +108,34 @@ struct flat_map_ops : flat_map_value_compare<Key, Val, Cmp> {
     }
 };
 //------------------------------------------------------------------------------
+/// @brief Base class for flat_map.
+/// @ingroup container
+/// @note Do not use directly, use flat_map instead.
 export template <typename Key, typename Val, typename Cmp, typename Derived>
 class flat_map_view_crtp : flat_map_ops<Key, Val, Cmp> {
     using _ops_t = flat_map_ops<Key, Val, Cmp>;
 
 public:
+    /// @brief The key type.
     using key_type = Key;
+
+    /// @brief The mapped value type.
     using mapped_type = Val;
+
+    /// @brief The key/value pair type.
     using value_type = std::pair<const Key, Val>;
+
+    /// @brief Reference type.
     using reference = value_type&;
+
+    /// @brief Const reference type.
     using const_reference = const value_type&;
 
+    /// @brief Key comparator type.
     using key_compare = Cmp;
     using value_compare = flat_map_value_compare<Key, Val, Cmp>;
 
+    /// @brief Returns a reference to the key comparator object.
     [[nodiscard]] auto key_comp() const noexcept -> const key_compare& {
         return _ops().value_comp().key_comp();
     }
@@ -130,26 +144,36 @@ public:
         return _ops().value_comp();
     }
 
+    /// @brief Indicates if this map is empty.
+    /// @see size
     [[nodiscard]] auto empty() const noexcept -> bool {
         return _ops().empty(_b(), _e());
     }
 
+    /// @brief Returns the number of elements in this map.
+    /// @see empty
     [[nodiscard]] auto size() const noexcept {
         return _ops().size(_b(), _e());
     }
 
+    /// @brief Returns the iterator pointing to the specified key.
+    /// @see contains
     template <typename K>
     [[nodiscard]] auto find(const K& key) noexcept {
         return _ops().find(_b(), _e(), key);
     }
 
+    /// @brief Returns the iterator pointing to the specified key.
+    /// @see contains
     template <typename K>
     [[nodiscard]] auto find(const K& key) const noexcept {
         return _ops().find(_b(), _e(), key);
     }
 
+    /// @brief Indicates if this map contains the specified key.
+    /// @see find
     template <typename K>
-    [[nodiscard]] auto contains(const K& key) const noexcept {
+    [[nodiscard]] auto contains(const K& key) const noexcept -> bool {
         return _ops().find(_b(), _e(), key) != _e();
     }
 
@@ -183,11 +207,13 @@ public:
         return _ops().equal_range(_b(), _e(), key);
     }
 
+    /// @brief Returns the value stored under the specified key.
     template <typename K>
     [[nodiscard]] auto at(const K& key) -> Val& {
         return _ops().at(_b(), _e(), key);
     }
 
+    /// @brief Returns the value stored under the specified key.
     template <typename K>
     [[nodiscard]] auto at(const K& key) const -> const Val& {
         return _ops().at(_b(), _e(), key);
