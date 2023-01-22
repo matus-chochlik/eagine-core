@@ -19,6 +19,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 /// @brief Continuous pre-allocated container with specified maximum number of elements.
 /// @ingroup container
+/// @see small_vector
 export template <typename T, std::size_t N>
 class static_vector {
 public:
