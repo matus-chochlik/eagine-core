@@ -115,6 +115,14 @@ eagine_embed_target_resources(
 )
 #
 target_compile_options(
+	eagine-array_size
+	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unsafe-buffer-usage>
+)
+target_compile_options(
+	eagine-c_api_wrap
+	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unsafe-buffer-usage>
+)
+target_compile_options(
 	eagine-valgrind
 	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>
 )
