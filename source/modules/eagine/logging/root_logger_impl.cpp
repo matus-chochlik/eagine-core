@@ -120,7 +120,7 @@ auto root_logger_choose_backend(
 //------------------------------------------------------------------------------
 auto root_logger_init_backend(
   const program_args& args,
-  root_logger_options& opts) -> std::unique_ptr<logger_backend> {
+  root_logger_options& opts) -> std::shared_ptr<logger_backend> {
     if(opts.forced_backend) {
         return std::move(opts.forced_backend);
     }

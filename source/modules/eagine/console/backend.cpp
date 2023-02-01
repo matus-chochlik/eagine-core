@@ -153,7 +153,7 @@ export struct console_backend : interface<console_backend> {
 /// @ingroup console
 export struct console_options {
     /// @brief The explicitly-specified backend to be used by the console.
-    std::unique_ptr<console_backend> forced_backend{};
+    std::shared_ptr<console_backend> forced_backend{};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
