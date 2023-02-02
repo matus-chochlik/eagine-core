@@ -11,14 +11,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.valid_if PARTITION always
-	IMPORTS decl eagine.core.concepts
-)
-eagine_add_module(
-	eagine.core.valid_if PARTITION never
-	IMPORTS decl eagine.core.concepts
-)
-eagine_add_module(
 	eagine.core.valid_if PARTITION not_empty
 	IMPORTS decl eagine.core.concepts
 )
@@ -50,8 +42,6 @@ eagine_add_module(
 		valid_if
 	PARTITIONS
 		decl
-		always
-		never
 		compare
 		not_empty
 		indicated
