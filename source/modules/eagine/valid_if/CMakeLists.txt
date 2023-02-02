@@ -11,15 +11,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.valid_if PARTITION not_empty
-	IMPORTS decl eagine.core.concepts
-)
-eagine_add_module(
 	eagine.core.valid_if PARTITION compare
-	IMPORTS decl eagine.core.concepts
-)
-eagine_add_module(
-	eagine.core.valid_if PARTITION indicated
 	IMPORTS decl eagine.core.concepts
 )
 eagine_add_module(
@@ -43,8 +35,6 @@ eagine_add_module(
 	PARTITIONS
 		decl
 		compare
-		not_empty
-		indicated
 		filesystem
 		range
 )
