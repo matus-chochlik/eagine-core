@@ -7,6 +7,7 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
+import eagine.core.types;
 import eagine.core.container;
 import <map>;
 import <functional>;
@@ -45,7 +46,7 @@ void flat_map_init_from_vector(auto& s) {
     eagine::flat_map<int, std::size_t> fm(d);
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
@@ -85,7 +86,7 @@ void flat_map_insert(auto& s) {
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
@@ -125,7 +126,7 @@ void flat_map_insert_at_begin(auto& s) {
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
@@ -165,7 +166,7 @@ void flat_map_insert_at_end(auto& s) {
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
@@ -205,7 +206,7 @@ void flat_map_insert_at_lower_bound(auto& s) {
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
@@ -245,7 +246,7 @@ void flat_map_try_emplace(auto& s) {
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
@@ -285,7 +286,7 @@ void flat_map_emplace(auto& s) {
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
@@ -323,7 +324,7 @@ void flat_map_key_assign(auto& s) {
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
 
@@ -358,7 +359,7 @@ void flat_map_erase_key(auto& s) {
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     for(int k : ks) {
         auto smi = sm.find(k);
@@ -374,7 +375,8 @@ void flat_map_erase_key(auto& s) {
         const auto esmc = sm.erase(k);
         const auto efmc = fm.erase(k);
 
-        test.check_equal(sm.size(), fm.size(), "same erased size");
+        test.check_equal(
+          eagine::span_size_t(sm.size()), fm.size(), "same erased size");
         test.check_equal(esmc, efmc, "same erased count");
         trck.checkpoint(2);
     }
