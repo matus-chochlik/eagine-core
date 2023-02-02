@@ -31,6 +31,12 @@ void valid_if_non_ref(auto& s) {
     test.check(not not v, "is not false");
     test.ensure(v.has_value(), "has value");
     test.check_equal(v.value(), 123, "value ok");
+
+    const auto f{[](int i) {
+        return i * 2;
+    }};
+    test.ensure(v.and_then(f).has_value(), "and then has value");
+    test.check_equal(v.and_then(f).value(), 246, "and then value ok");
 }
 //------------------------------------------------------------------------------
 void valid_if_ref(auto& s) {
@@ -48,6 +54,12 @@ void valid_if_ref(auto& s) {
 
     test.ensure(v.has_value(), "has value");
     test.check_equal(v.value(), 456, "value 456");
+
+    const auto f{[](const int& j) {
+        return j * 2;
+    }};
+    test.check(v.and_then(f).has_value(), "and then has value");
+    test.check_equal(v.and_then(f).value(), i * 2, "and then value ok");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

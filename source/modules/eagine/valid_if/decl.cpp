@@ -590,7 +590,7 @@ public:
     /// @param function the function to be called.
     template <typename F>
         requires(not std::is_same_v<std::invoke_result_t<F, T>, void>)
-    [[nodiscard]] constexpr auto and_then(const F& function) const {
+    [[nodiscard]] constexpr auto and_then(F&& function) const {
         using R = std::invoke_result_t<F, T&>;
         if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
             using U = std::conditional_t<
