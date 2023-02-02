@@ -224,12 +224,12 @@ public:
     }
 
     /// @brief Calls the specified function if the stored value is invalid.
-    /// @param func the function to be called.
+    /// @param function the function to be called.
     /// @param p additional parameters for the policy validity check function.
     template <typename Func>
-    constexpr auto call_if_invalid(Func func, P... p) -> auto& {
+    constexpr auto call_if_invalid(Func function, P... p) -> auto& {
         if(not is_valid(p...)) {
-            func(_do_log, _value, p...);
+            function(_do_log, _value, p...);
         }
         return *this;
     }
@@ -292,37 +292,51 @@ public:
     }
 
     /// @brief Calls the specified function if the stored value is valid.
-    /// @param func the function to be called.
-    template <typename Func>
-        requires(not std::is_same_v<std::invoke_result_t<Func, T>, void>)
-    [[nodiscard]] constexpr auto then(const Func& func) const -> basic_valid_if<
-      std::invoke_result_t<Func, T>,
-      valid_flag_policy,
-      typename valid_flag_policy::do_log> {
-        if(is_valid()) {
-            return {func(this->value_anyway()), true};
+    /// @param function the function to be called.
+    template <typename F>
+        requires(not std::is_same_v<std::invoke_result_t<F, T>, void>)
+    [[nodiscard]] constexpr auto and_then(F&& function) const {
+        using R = std::invoke_result_t<F, T&>;
+        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+            using U = std::conditional_t<
+              std::is_reference_v<R>,
+              std::remove_reference_t<R>,
+              std::remove_pointer_t<R>>;
+            if(has_value()) {
+                return optional_reference<U>{
+                  std::invoke(std::forward<F>(function), this->value_anyway())};
+            } else {
+                return optional_reference<U>{nothing};
+            }
+        } else {
+            using V = std::remove_cvref_t<R>;
+            if(has_value()) {
+                return std::optional<V>{
+                  std::invoke(std::forward<F>(function), this->value_anyway())};
+            } else {
+                return std::optional<V>{};
+            }
         }
-        return {};
     }
 
     /// @brief Calls the specified function if the stored valus is valid.
-    /// @param func the function to call.
-    /// @see then
-    template <typename Func>
-    [[nodiscard]] constexpr auto operator|(const Func& func) const {
-        return then(func);
+    /// @param function the function to call.
+    /// @see and_then
+    template <typename F>
+    [[nodiscard]] constexpr auto operator|(const F& function) const {
+        return and_then(function);
     }
 
     /// @brief Calls a binary transforming function on {value, is_valid()} pair.
-    /// @param func the function to be called.
+    /// @param function the function to be called.
     template <typename Func>
-    [[nodiscard]] constexpr auto transformed(Func func, P... p) const noexcept
-      -> basic_valid_if<
+    [[nodiscard]] constexpr auto transformed(Func function, P... p)
+      const noexcept -> basic_valid_if<
         std::invoke_result_t<Func, T, bool>,
         valid_flag_policy,
         typename valid_flag_policy::do_log> {
         const auto v{is_valid(p...)};
-        auto r{func(_value, v)};
+        auto r{function(_value, v)};
         if constexpr(extractable<decltype(r)>) {
             return r;
         } else {
@@ -505,12 +519,12 @@ public:
     }
 
     /// @brief Calls the specified function if the stored value is invalid.
-    /// @param func the function to be called.
+    /// @param function the function to be called.
     /// @param p additional parameters for the policy validity check function.
     template <typename Func>
-    constexpr auto call_if_invalid(Func func, P... p) -> auto& {
+    constexpr auto call_if_invalid(Func function, P... p) -> auto& {
         if(not is_valid(p...)) {
-            func(_do_log, _value, p...);
+            function(_do_log, _value, p...);
         }
         return *this;
     }
@@ -573,37 +587,51 @@ public:
     }
 
     /// @brief Calls the specified function if the stored value is valid.
-    /// @param func the function to be called.
-    template <typename Func>
-        requires(not std::is_same_v<std::invoke_result_t<Func, T>, void>)
-    [[nodiscard]] constexpr auto then(const Func& func) const -> basic_valid_if<
-      std::invoke_result_t<Func, T>,
-      valid_flag_policy,
-      typename valid_flag_policy::do_log> {
-        if(is_valid()) {
-            return {func(this->value_anyway()), true};
+    /// @param function the function to be called.
+    template <typename F>
+        requires(not std::is_same_v<std::invoke_result_t<F, T>, void>)
+    [[nodiscard]] constexpr auto and_then(const F& function) const {
+        using R = std::invoke_result_t<F, T&>;
+        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+            using U = std::conditional_t<
+              std::is_reference_v<R>,
+              std::remove_reference_t<R>,
+              std::remove_pointer_t<R>>;
+            if(has_value()) {
+                return optional_reference<U>{
+                  std::invoke(std::forward<F>(function), this->value_anyway())};
+            } else {
+                return optional_reference<U>{nothing};
+            }
+        } else {
+            using V = std::remove_cvref_t<R>;
+            if(has_value()) {
+                return std::optional<V>{
+                  std::invoke(std::forward<F>(function), this->value_anyway())};
+            } else {
+                return std::optional<V>{};
+            }
         }
-        return {};
     }
 
     /// @brief Calls the specified function if the stored valus is valid.
-    /// @param func the function to call.
-    /// @see then
-    template <typename Func>
-    [[nodiscard]] constexpr auto operator|(const Func& func) const {
-        return then(func);
+    /// @param function the function to call.
+    /// @see and_then
+    template <typename F>
+    [[nodiscard]] constexpr auto operator|(const F& function) const {
+        return and_then(function);
     }
 
     /// @brief Calls a binary transforming function on {value, is_valid()} pair.
-    /// @param func the function to be called.
+    /// @param function the function to be called.
     template <typename Func>
-    [[nodiscard]] constexpr auto transformed(Func func, P... p) const noexcept
-      -> basic_valid_if<
+    [[nodiscard]] constexpr auto transformed(Func function, P... p)
+      const noexcept -> basic_valid_if<
         std::invoke_result_t<Func, T, bool>,
         valid_flag_policy,
         typename valid_flag_policy::do_log> {
         const auto v{is_valid(p...)};
-        auto r{func(_value, v)};
+        auto r{function(_value, v)};
         if constexpr(extractable<decltype(r)>) {
             return r;
         } else {
