@@ -66,3 +66,8 @@ eagine_add_module(
 		ryml
 )
 
+eagine_add_module_tests(
+	eagine.core.value_tree
+	UNITS
+		wrappers
+)
