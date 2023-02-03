@@ -43,4 +43,6 @@ eagine_add_module_tests(
 	eagine.core.valid_if
 	UNITS
 		decl
+		range
+		filesystem
 )
