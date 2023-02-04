@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <utility>
 module;
 
 #include <cassert>
@@ -226,10 +227,10 @@ public:
     /// @brief Calls the specified function if the stored value is invalid.
     /// @param function the function to be called.
     /// @param p additional parameters for the policy validity check function.
-    template <typename Func>
-    constexpr auto call_if_invalid(Func function, P... p) -> auto& {
+    template <typename F>
+    constexpr auto or_else(F&& function, P... p) -> auto& {
         if(not is_valid(p...)) {
-            function(_do_log, _value, p...);
+            std::forward<F>(function)(_do_log, _value, p...);
         }
         return *this;
     }
@@ -238,7 +239,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
     void throw_if_invalid(P... p) const {
-        if(not is_valid(p...)) {
+        if(not is_valid(p...)) [[unlikely]] {
             std::stringstream ss;
             log_invalid(ss, p...);
             throw std::runtime_error(ss.str());
@@ -248,7 +249,7 @@ public:
     /// @brief Returns the stored value if it is valid otherwise throws.
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
-    [[nodiscard]] auto value(P... p) -> T& {
+    [[nodiscard]] auto value(P... p) -> reference {
         throw_if_invalid(p...);
         return _value;
     }
@@ -256,7 +257,7 @@ public:
     /// @brief Returns the stored value if it is valid, otherwise throws.
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
-    [[nodiscard]] auto value(P... p) const -> const T& {
+    [[nodiscard]] auto value(P... p) const -> const_reference {
         throw_if_invalid(p...);
         return _value;
     }
@@ -264,7 +265,7 @@ public:
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     /// @param p additional parameters for the policy validity check function.
     [[nodiscard]] constexpr auto value_or(reference fallback, P... p) noexcept
-      -> auto& {
+      -> reference {
         if(is_valid(p...)) [[likely]] {
             return _value;
         }
@@ -274,7 +275,7 @@ public:
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     /// @param p additional parameters for the policy validity check function.
     [[nodiscard]] constexpr auto value_or(const_reference fallback, P... p)
-      const noexcept -> auto& {
+      const noexcept -> const_reference {
         if(is_valid(p...)) [[likely]] {
             return _value;
         }
@@ -311,10 +312,17 @@ public:
         } else {
             using V = std::remove_cvref_t<R>;
             if(has_value()) {
-                return std::optional<V>{
-                  std::invoke(std::forward<F>(function), this->value_anyway())};
+                return basic_valid_if<
+                  V,
+                  valid_flag_policy,
+                  typename valid_flag_policy::do_log>{
+                  std::invoke(std::forward<F>(function), this->value_anyway()),
+                  true};
             } else {
-                return std::optional<V>{};
+                return basic_valid_if<
+                  V,
+                  valid_flag_policy,
+                  typename valid_flag_policy::do_log>{};
             }
         }
     }
@@ -327,12 +335,32 @@ public:
         return and_then(function);
     }
 
+    template <typename M, std::same_as<T> C>
+    [[nodiscard]] auto member(M C::*ptr) noexcept {
+        if(has_value()) {
+            return optional_reference<M>{this->value_anyway().*ptr};
+        } else {
+            return optional_reference<M>{nothing};
+        }
+    }
+
+    template <typename M, typename C>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] auto member(M C::*ptr) const noexcept {
+        if(has_value()) {
+            return optional_reference<std::add_const_t<M>>{
+              this->anyway_value().*ptr};
+        } else {
+            return optional_reference<std::add_const_t<M>>{nothing};
+        }
+    }
+
     /// @brief Calls a binary transforming function on {value, is_valid()} pair.
     /// @param function the function to be called.
-    template <typename Func>
-    [[nodiscard]] constexpr auto transformed(Func function, P... p)
-      const noexcept -> basic_valid_if<
-        std::invoke_result_t<Func, T, bool>,
+    template <typename F>
+    [[nodiscard]] constexpr auto transformed(F function, P... p) const noexcept
+      -> basic_valid_if<
+        std::invoke_result_t<F, T, bool>,
         valid_flag_policy,
         typename valid_flag_policy::do_log> {
         const auto v{is_valid(p...)};
@@ -521,10 +549,10 @@ public:
     /// @brief Calls the specified function if the stored value is invalid.
     /// @param function the function to be called.
     /// @param p additional parameters for the policy validity check function.
-    template <typename Func>
-    constexpr auto call_if_invalid(Func function, P... p) -> auto& {
+    template <typename F>
+    constexpr auto or_else(F&& function, P... p) -> auto& {
         if(not is_valid(p...)) {
-            function(_do_log, _value, p...);
+            std::forward<F>(function)(_do_log, _value, p...);
         }
         return *this;
     }
@@ -606,10 +634,17 @@ public:
         } else {
             using V = std::remove_cvref_t<R>;
             if(has_value()) {
-                return std::optional<V>{
-                  std::invoke(std::forward<F>(function), this->value_anyway())};
+                return basic_valid_if<
+                  V,
+                  valid_flag_policy,
+                  typename valid_flag_policy::do_log>{
+                  std::invoke(std::forward<F>(function), this->value_anyway()),
+                  true};
             } else {
-                return std::optional<V>{};
+                return basic_valid_if<
+                  V,
+                  valid_flag_policy,
+                  typename valid_flag_policy::do_log>{};
             }
         }
     }
@@ -622,12 +657,32 @@ public:
         return and_then(function);
     }
 
+    template <typename M, std::same_as<T> C>
+    [[nodiscard]] auto member(M C::*ptr) noexcept {
+        if(has_value()) {
+            return optional_reference<M>{this->value_anyway().*ptr};
+        } else {
+            return optional_reference<M>{nothing};
+        }
+    }
+
+    template <typename M, typename C>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] auto member(M C::*ptr) const noexcept {
+        if(has_value()) {
+            return optional_reference<std::add_const_t<M>>{
+              this->anyway_value().*ptr};
+        } else {
+            return optional_reference<std::add_const_t<M>>{nothing};
+        }
+    }
+
     /// @brief Calls a binary transforming function on {value, is_valid()} pair.
     /// @param function the function to be called.
-    template <typename Func>
-    [[nodiscard]] constexpr auto transformed(Func function, P... p)
-      const noexcept -> basic_valid_if<
-        std::invoke_result_t<Func, T, bool>,
+    template <typename F>
+    [[nodiscard]] constexpr auto transformed(F function, P... p) const noexcept
+      -> basic_valid_if<
+        std::invoke_result_t<F, T, bool>,
         valid_flag_policy,
         typename valid_flag_policy::do_log> {
         const auto v{is_valid(p...)};
