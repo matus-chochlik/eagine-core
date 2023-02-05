@@ -148,6 +148,7 @@ eagine_add_module_tests(
 		protected_member
 		random_bytes
 		scope_exit
+		sudoku
 		timeout
 )
 
