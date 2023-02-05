@@ -152,4 +152,5 @@ eagine_add_module_tests(
 		timeout
 )
 
+set_tests_properties(execute-test.eagine.core.utility.sudoku PROPERTIES COST 30)
 set_tests_properties(execute-test.eagine.core.utility.timeout PROPERTIES COST 20)
