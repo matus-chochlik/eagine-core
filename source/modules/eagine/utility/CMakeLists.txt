@@ -151,4 +151,4 @@ eagine_add_module_tests(
 		timeout
 )
 
-set_tests_properties(execute-test.eagine.core.utility.timeout PROPERTIES COST 10)
+set_tests_properties(execute-test.eagine.core.utility.timeout PROPERTIES COST 20)
