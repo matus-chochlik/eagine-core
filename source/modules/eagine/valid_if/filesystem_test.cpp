@@ -28,7 +28,7 @@ void valid_if_default_construct_file(auto& s) {
 void valid_if_default_construct_dir(auto& s) {
     eagitest::case_ test{s, 2, "default construct directory"};
 
-    eagine::valid_if_existing_directory<std::string_view> v;
+    eagine::valid_if_existing_directory<std::filesystem::path> v;
 
     test.check(not v.has_value(), "has not value");
     test.check(not v, "is false");
@@ -38,10 +38,31 @@ void valid_if_default_construct_dir(auto& s) {
       not v.and_then([](auto) { return true; }).has_value(), "and then");
 }
 //------------------------------------------------------------------------------
+void valid_if_executable_path(auto& s) {
+    eagitest::case_ test{s, 3, "executable path"};
+
+    eagine::valid_if_existing_file<std::string_view> v{test.executable_path()};
+
+    test.check(v.has_value(), "has value");
+    test.check(not not v, "is not false");
+    test.check(bool(v), "is true");
+
+    test.check(
+      v.and_then([](std::string_view p) { return p.size(); }).value_or(0) > 0,
+      "length > 0");
+    test.check(
+      v.and_then([](std::string_view p) -> bool {
+           return p.find("filesystem") != std::string_view::npos;
+       })
+        .value_or(false),
+      "content");
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "valid_if filesystem", 2};
+    eagitest::suite test{argc, argv, "valid_if filesystem", 3};
     test.once(valid_if_default_construct_file);
     test.once(valid_if_default_construct_dir);
+    test.once(valid_if_executable_path);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
