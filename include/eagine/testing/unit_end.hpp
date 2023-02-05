@@ -73,7 +73,9 @@ suite::suite(
   const char** argv,
   std::string_view name,
   suite_case_t cases) noexcept
-  : _rand_gen{argc, argv}
+  : _argc{argc}
+  , _argv{argv}
+  , _rand_gen{argc, argv}
   , _name{name}
   , _expected_cases{cases} {
     if(_is_verbose) {
@@ -85,6 +87,11 @@ suite::~suite() noexcept {
     if(_is_verbose) {
         std::clog << "test suite '" << _name << "' finished" << std::endl;
     }
+}
+//------------------------------------------------------------------------------
+auto suite::executable_path() const noexcept -> std::string_view {
+    return (_argc > 0 and _argv != nullptr) ? std::string_view{_argv[0]}
+                                            : std::string_view{};
 }
 //------------------------------------------------------------------------------
 auto suite::random() noexcept -> random_generator& {

@@ -95,6 +95,8 @@ public:
     auto operator=(const suite&) = delete;
     ~suite() noexcept;
 
+    auto executable_path() const noexcept -> std::string_view;
+
     auto random() noexcept -> random_generator&;
 
     auto once(void (*func)(eagitest::suite&)) noexcept -> suite&;
@@ -108,6 +110,8 @@ private:
     friend class case_;
     friend class track;
 
+    const int _argc;
+    const char** _argv;
     random_generator _rand_gen;
     const std::string_view _name;
     const suite_case_t _expected_cases;
@@ -125,7 +129,11 @@ public:
     auto operator=(const case_&) = delete;
     ~case_() noexcept;
 
-    auto random() noexcept -> random_generator& {
+    auto executable_path() const noexcept -> std::string_view {
+        return _parent.executable_path();
+    }
+
+    auto random() const noexcept -> random_generator& {
         return _parent.random();
     }
 
