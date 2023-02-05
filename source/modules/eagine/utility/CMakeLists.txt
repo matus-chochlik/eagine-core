@@ -148,4 +148,7 @@ eagine_add_module_tests(
 		protected_member
 		random_bytes
 		scope_exit
+		timeout
 )
+
+set_tests_properties(execute-test.eagine.core.utility.timeout PROPERTIES COST 10)
