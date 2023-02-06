@@ -136,6 +136,11 @@ target_link_libraries(
 eagine_add_module_tests(
 	eagine.core.runtime
 	UNITS
+		compression
 		program_args
 		url
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
 )
+set_tests_properties(execute-test.eagine.core.runtime.compression PROPERTIES COST 10)

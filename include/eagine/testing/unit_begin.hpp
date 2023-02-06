@@ -73,6 +73,12 @@ public:
         }
     }
 
+    auto fill_with_bytes(auto& dest) noexcept {
+        for(auto& e : dest) {
+            e = get_any<unsigned char>();
+        }
+    }
+
 private:
     std::default_random_engine _re{};
 };
