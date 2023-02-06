@@ -22,13 +22,13 @@ void program_args_empty(auto& s) {
     test.constructed(args, "args");
 
     test.check(not args.command(), "no command");
-    test.check(not args.command().is_valid(), "command not valid");
+    test.check(not args.command().has_value(), "command not valid");
     test.check(args.none(), "none");
     test.check(args.empty(), "empty");
     test.check_equal(args.size(), 0, "size");
     test.check(args.begin() == args.end(), "begin == end");
     test.check(not args.first(), "not first");
-    test.check(not args.first().is_valid(), "first not valid");
+    test.check(not args.first().has_value(), "first not valid");
     test.check(not args.find(""), "not found empty");
     test.check(not args.find("eagitest"), "not found eagitest");
     test.check_equal(
@@ -45,13 +45,13 @@ void program_args_none(auto& s) {
 
     test.check(bool(args.command()), "command true");
     test.check(args.command() == "eagitest", "command ok");
-    test.check(args.command().is_valid(), "command is valid");
+    test.check(args.command().has_value(), "command is valid");
     test.check(args.none(), "none");
     test.check(not args.empty(), "not empty");
     test.check_equal(args.size(), 1, "size");
     test.check(args.begin() == args.end(), "begin == end");
     test.check(not args.first(), "not first");
-    test.check(not args.first().is_valid(), "first not valid");
+    test.check(not args.first().has_value(), "first not valid");
     test.check(not args.find(""), "not found empty");
     test.check(not args.find("eagitest"), "not found eagitest");
     test.check_equal(
@@ -159,7 +159,7 @@ void program_args_range_for(auto& s) {
     int i = 1;
     for(auto& arg : args) {
         test.check(bool(arg), "bool");
-        test.check(arg.is_valid(), "valid");
+        test.check(arg.has_value(), "valid");
         test.check_equal(arg.position(), i++, "position");
         trck.checkpoint(1);
     }
@@ -167,7 +167,7 @@ void program_args_range_for(auto& s) {
     i = 1;
     for(const auto& arg : static_cast<const eagine::program_args&>(args)) {
         test.check(bool(arg), "bool const");
-        test.check(arg.is_valid(), "valid const");
+        test.check(arg.has_value(), "valid const");
         test.check_equal(arg.position(), i++, "position const");
         trck.checkpoint(2);
     }

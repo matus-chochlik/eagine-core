@@ -44,15 +44,15 @@ public:
     using value_type = memory::string_view;
 
     /// @brief Indicates if the arguments is valid.
-    auto is_valid() const noexcept -> bool {
+    auto has_value() const noexcept -> bool {
         return (0 <= _argi) and (_argi < _argc) and (_argv != nullptr) and
                (_argv[_argi] != nullptr);
     }
 
     /// @brief Indicates if the arguments is valid.
-    /// @see is_valid
+    /// @see has_value
     operator bool() const noexcept {
-        return is_valid();
+        return has_value();
     }
 
     /// @brief Returns the index of this argument.
@@ -72,7 +72,7 @@ public:
 
     /// @brief Returns the value of this argument if valid, an empty string view otherwise.
     auto get() const noexcept -> value_type {
-        if(is_valid()) {
+        if(has_value()) {
             return value_type(_argv[_argi]);
         }
         return {};
@@ -185,7 +185,7 @@ public:
     template <typename T, identifier_t V>
     auto parse(T& dest, const selector<V> sel, std::ostream& parse_log) const
       -> bool {
-        if(is_valid()) {
+        if(has_value()) {
             T temp = dest;
             if(_do_parse(temp, sel, parse_log)) {
                 dest = std::move(temp);
@@ -520,13 +520,13 @@ public:
     }
 
     /// @brief Returns the command line argument value at the specified position.
-    /// @pre is_valid(pos)
+    /// @pre has_value(pos)
     auto get(const size_type pos) const noexcept -> program_arg {
         return {pos, _argc, _argv};
     }
 
     /// @brief Returns the command line argument value at the specified position.
-    /// @pre is_valid(pos)
+    /// @pre has_value(pos)
     auto operator[](const size_type pos) const noexcept -> value_type {
         return get(pos).get();
     }
