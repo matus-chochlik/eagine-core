@@ -132,3 +132,12 @@ eagine_add_module(
 		eagine.core.progress
 )
 
+eagine_add_module_tests(
+	eagine.core.main_ctx
+	UNITS
+		system_info
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+)
+set_tests_properties(execute-test.eagine.core.main_ctx.system_info PROPERTIES COST 10)
