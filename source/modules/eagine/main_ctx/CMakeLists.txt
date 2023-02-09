@@ -136,6 +136,7 @@ eagine_add_module_tests(
 	eagine.core.main_ctx
 	UNITS
 		system_info
+		user_info
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
