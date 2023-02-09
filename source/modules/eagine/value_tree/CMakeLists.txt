@@ -33,6 +33,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.utility
+		eagine.core.runtime
 		eagine.core.logging
 )
 
