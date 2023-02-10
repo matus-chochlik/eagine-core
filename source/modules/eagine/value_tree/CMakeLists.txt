@@ -71,4 +71,13 @@ eagine_add_module_tests(
 	eagine.core.value_tree
 	UNITS
 		wrappers
+		visitors
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.reflection
+		eagine.core.logging
 )
+
+set_tests_properties(execute-test.eagine.core.value_tree.visitors PROPERTIES COST 3)
