@@ -7,8 +7,8 @@ eagine_add_module(
 	INTERFACES
 		build_info
 	SOURCES
-		os_impl
-		build_info_impl
+		os
+		build_info
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory

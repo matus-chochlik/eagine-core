@@ -129,7 +129,7 @@ eagine_add_module(
 		random_bytes
 		unreachable
 	SOURCES
-		progress_bar_impl
+		progress_bar
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory

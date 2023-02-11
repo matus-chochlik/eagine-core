@@ -239,11 +239,11 @@ eagine_add_module(
 		adapt_version_info
 		adapt_program_args
 	SOURCES
-		null_backend_impl
-		asio_backend_impl
-		syslog_backend_impl
-		proxy_backend_impl
-		root_logger_impl
+		null_backend
+		asio_backend
+		syslog_backend
+		proxy_backend
+		root_logger
 	IMPORTS
 		eagine.core.debug
 	PRIVATE_INCLUDE_DIRECTORIES

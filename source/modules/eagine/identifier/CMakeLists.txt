@@ -7,7 +7,7 @@ eagine_add_module(
 	INTERFACES
 		identifier
 	SOURCES
-		identifier_impl
+		identifier
 	IMPORTS
 		eagine.core.memory
 		eagine.core.vectorization

@@ -8,7 +8,7 @@ eagine_add_module(
 	INTERFACES
 		resource
 	SOURCES
-		resource_impl
+		resource
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory

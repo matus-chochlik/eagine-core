@@ -115,13 +115,13 @@ eagine_add_module(
 		value_with_history
 		workshop
 	SOURCES
-		url_impl
-		process_impl
-		input_data_impl
-		executable_module_impl
-		file_contents_impl
-		compression_impl
-		workshop_impl
+		url
+		process
+		input_data
+		executable_module
+		file_contents
+		compression
+		workshop
 	IMPORTS
 		eagine.core.utility
 )

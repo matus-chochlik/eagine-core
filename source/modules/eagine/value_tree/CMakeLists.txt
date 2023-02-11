@@ -46,13 +46,13 @@ eagine_add_module(
 		wrappers
 		implementation
 	SOURCES
-		wrappers_impl
-		empty_impl
-		json_impl
-		yaml_impl
-		filesystem_impl
-		overlay_impl
-		visitors_impl
+		wrappers
+		empty
+		json
+		yaml
+		filesystem
+		overlay
+		visitors
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory

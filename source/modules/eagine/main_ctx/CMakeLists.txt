@@ -115,12 +115,12 @@ eagine_add_module(
 		storage
 		main
 	SOURCES
-		system_info_impl
-		user_info_impl
-		watchdog_impl
-		app_config_impl
-		main_ctx_impl
-		main_impl
+		system_info
+		user_info
+		watchdog
+		app_config
+		main_ctx
+		main
 	IMPORTS
 		eagine.core.build_config
 		eagine.core.types

@@ -148,10 +148,10 @@ eagine_add_module(
 		from_string
 		keyboard_distance
 	SOURCES
-		bindump_impl
-		hexdump_impl
-		from_string_impl
-		keyboard_distance_impl
+		bindump
+		hexdump
+		from_string
+		keyboard_distance
 )
 
 eagine_add_module_tests(

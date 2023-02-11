@@ -200,8 +200,8 @@ eagine_add_module(
 		buffer_pool
 		object_storage
 	SOURCES
-		memory_impl
-		stack_allocator_impl
+		memory
+		stack_allocator
 )
 
 eagine_add_module_tests(

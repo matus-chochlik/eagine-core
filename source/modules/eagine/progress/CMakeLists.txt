@@ -52,7 +52,7 @@ eagine_add_module(
 		activity
 		root_activity
 	SOURCES
-		default_backend_impl
-		root_activity_impl
+		default_backend
+		root_activity
 )
 

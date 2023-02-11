@@ -64,9 +64,9 @@ eagine_add_module(
 		null_backend
 		iostream_backend
 	SOURCES
-		console_impl
-		null_backend_impl
-		iostream_backend_impl
+		console
+		null_backend
+		iostream_backend
 	IMPORTS
 		eagine.core.types
 		eagine.core.identifier

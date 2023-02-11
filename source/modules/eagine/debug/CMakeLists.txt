@@ -7,7 +7,7 @@ eagine_add_module(
 	INTERFACES
 		debug
 	SOURCES
-		debug_impl
+		debug
 	IMPORTS
 		eagine.core.types
 )
