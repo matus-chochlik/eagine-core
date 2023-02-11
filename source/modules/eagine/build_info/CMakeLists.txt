@@ -17,3 +17,8 @@ eagine_add_module(
 		eagine-core-generated-headers
 )
 
+eagine_add_module_tests(
+	eagine.core.build_info
+	UNITS
+		build_info
+)

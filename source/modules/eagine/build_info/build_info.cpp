@@ -330,7 +330,7 @@ public:
     /// @brief Indicates if major and minor version numbers are known.
     /// @see version_major
     /// @see version_minor
-    [[nodiscard]] auto has_version() const noexcept -> bool {
+    [[nodiscard]] auto has_value() const noexcept -> bool {
         return version_major() and version_minor();
     }
 
