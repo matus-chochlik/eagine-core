@@ -305,7 +305,7 @@ void biteset_4(unsigned run, auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "biteset", 3};
+    eagitest::suite test{argc, argv, "biteset", 4};
     test.repeat(500, biteset_1);
     test.repeat(500, biteset_2);
     test.repeat(500, biteset_3);

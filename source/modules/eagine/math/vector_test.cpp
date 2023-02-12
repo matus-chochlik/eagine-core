@@ -1249,7 +1249,7 @@ void tvec_vec_vec_ctr(auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "vector", 39};
+    eagitest::suite test{argc, argv, "vector", 40};
     test.once(vector_default_ctr_int);
     test.once(vector_default_ctr_float);
     test.once(vector_default_ctr_double);

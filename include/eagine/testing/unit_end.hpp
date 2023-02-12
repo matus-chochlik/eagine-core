@@ -129,6 +129,7 @@ auto suite::repeat(
 auto suite::tested_case(suite_case_t case_idx) noexcept -> suite& {
     if(_expected_cases != 0U) {
         assert(case_idx != static_cast<suite_case_t>(0));
+        assert(case_idx <= _expected_cases);
         _tested_cases =
           _tested_cases | (static_cast<suite_case_t>(1) << (case_idx - 1U));
     }
@@ -347,6 +348,7 @@ auto track::checkpoint(track_part_t part_idx) noexcept -> track& {
     ++_passed_points;
     if(_expected_parts != 0U) {
         assert(part_idx != 0U);
+        assert(part_idx <= _expected_parts);
         _checkpoints =
           _checkpoints | (static_cast<track_part_t>(1) << (part_idx - 1U));
     }

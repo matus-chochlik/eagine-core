@@ -142,7 +142,7 @@ void program_args_iterator(auto& s) {
 //------------------------------------------------------------------------------
 void program_args_range_for(auto& s) {
     eagitest::case_ test{s, 5, "range for"};
-    eagitest::track trck{test, 12, 1};
+    eagitest::track trck{test, 12, 2};
 
     std::array<const char*, 8> argv{
       {"eagitest",
