@@ -165,3 +165,7 @@ eagine_add_module_tests(
 		list
 		path
 )
+
+set_tests_properties(execute-test.eagine.core.string.base64 PROPERTIES COST 60)
+set_tests_properties(execute-test.eagine.core.string.multi_byte PROPERTIES COST 45)
+set_tests_properties(execute-test.eagine.core.string.list PROPERTIES COST 2)
