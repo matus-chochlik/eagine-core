@@ -82,6 +82,16 @@ concept extractable = basic_extractable<T> and requires(T v) {
 };
 // clang-format on
 //------------------------------------------------------------------------------
+// optional_like
+//------------------------------------------------------------------------------
+export template <typename T>
+concept optional_like = requires(T v) {
+    v.value();
+    v.value_or(v.value());
+    v.transform([](auto x) { return x; });
+    { v.has_value() } -> std::convertible_to<bool>;
+};
+//------------------------------------------------------------------------------
 // does not hide
 //------------------------------------------------------------------------------
 export template <typename T, typename X>
