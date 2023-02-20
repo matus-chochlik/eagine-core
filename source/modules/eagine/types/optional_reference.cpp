@@ -110,7 +110,7 @@ public:
 
     /// @brief Invoke function on the stored value or return empty extractable.
     template <typename F>
-    [[nodiscard]] auto and_then(F&& function) {
+    [[nodiscard]] auto transform(F&& function) {
         using R = std::invoke_result_t<F, T&>;
         if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
             using P = std::conditional_t<
@@ -136,7 +136,7 @@ public:
 
     /// @brief Invoke function on the stored value or return empty extractable.
     template <typename F>
-    [[nodiscard]] auto and_then(F&& function) const {
+    [[nodiscard]] auto transform(F&& function) const {
         using R = std::invoke_result_t<F, std::add_const_t<T>&>;
         if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
             using P = std::conditional_t<

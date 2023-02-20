@@ -19,7 +19,7 @@ void valid_if_default_construct_char(auto& s) {
     test.check(not bool(v), "is not true");
 
     test.check(
-      not v.and_then([](char) { return false; }).has_value(), "and then");
+      not v.transform([](char) { return false; }).has_value(), "and then");
 }
 //------------------------------------------------------------------------------
 void valid_if_default_construct_int(auto& s) {
@@ -32,7 +32,7 @@ void valid_if_default_construct_int(auto& s) {
     test.check(not bool(v), "is not true");
 
     test.check(
-      not v.and_then([](int) { return true; }).has_value(), "and then");
+      not v.transform([](int) { return true; }).has_value(), "and then");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

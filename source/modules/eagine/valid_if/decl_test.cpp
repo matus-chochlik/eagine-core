@@ -24,7 +24,7 @@ void valid_if_default_construct(auto& s) {
     test.check(not bool(v), "is not true");
 
     test.check(
-      not v.and_then([](const test_person&) { return true; }).has_value(),
+      not v.transform([](const test_person&) { return true; }).has_value(),
       "and then");
     test.check(
       not v.member(&test_person::given_name).has_value(), "and then member");
@@ -43,8 +43,8 @@ void valid_if_non_ref(auto& s) {
     const auto f{[](int i) {
         return i * 2;
     }};
-    test.ensure(v.and_then(f).has_value(), "and then has value");
-    test.check_equal(v.and_then(f).value(), 246, "and then value ok");
+    test.ensure(v.transform(f).has_value(), "and then has value");
+    test.check_equal(v.transform(f).value(), 246, "and then value ok");
 
     eagine::always_valid<test_person> p{{"Jane", "Doe"}};
     test.check(bool(p), "is true");
@@ -75,8 +75,8 @@ void valid_if_ref(auto& s) {
     const auto f{[](const int& j) {
         return j * 2;
     }};
-    test.check(v.and_then(f).has_value(), "and then has value");
-    test.check_equal(v.and_then(f).value(), i * 2, "and then value ok");
+    test.check(v.transform(f).has_value(), "and then has value");
+    test.check_equal(v.transform(f).value(), i * 2, "and then value ok");
 
     eagine::never_valid<test_person> p{{"Bill", "Roe"}};
     test.check(not bool(p), "is not true");

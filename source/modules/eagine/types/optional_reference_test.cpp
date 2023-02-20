@@ -28,12 +28,12 @@ void optional_reference_empty(auto& s) {
     test.check_equal(r.value_or(2345), 2345, "value or 2345");
 
     test.check_equal(
-      r.and_then([](auto i) { return i + 1; }).value_or(3456),
+      r.transform([](auto i) { return i + 1; }).value_or(3456),
       3456,
       "and then 3456");
 
     test.check_equal(
-      r.and_then([](auto i) { return i + 1; }).value_or(4567),
+      r.transform([](auto i) { return i + 1; }).value_or(4567),
       4567,
       "and then 4567");
 }
@@ -52,14 +52,14 @@ void optional_reference_non_empty(auto& s) {
     test.check_equal(r.value().i.s, o.i.s, "o.i.s 2");
 
     test.check_equal(
-      r.and_then([](outer& x) -> inner& { return x.i; })
-        .and_then([](inner& x) -> short& { return x.s; })
+      r.transform([](outer& x) -> inner& { return x.i; })
+        .transform([](inner& x) -> short& { return x.s; })
         .value_or(2345),
       1234,
       "and then 1234");
     test.check_equal(
-      r.and_then([](auto& x) -> auto& { return x.i; })
-        .and_then([](auto& x) -> auto& { return x.b; })
+      r.transform([](auto& x) -> auto& { return x.i; })
+        .transform([](auto& x) -> auto& { return x.b; })
         .value_or(true),
       true,
       "and then true");
@@ -73,8 +73,8 @@ void optional_reference_non_empty(auto& s) {
     r = {eagine::nothing};
     test.check(not r.has_value(), "has not value");
     test.check_equal(
-      r.and_then([](const outer& x) -> const auto& { return x.i; })
-        .and_then([](const inner& x) -> const auto& { return x.s; })
+      r.transform([](const outer& x) -> const auto& { return x.i; })
+        .transform([](const inner& x) -> const auto& { return x.s; })
         .value_or(2345),
       2345,
       "and then 2345");
@@ -100,14 +100,14 @@ void optional_reference_non_empty_const(auto& s) {
     test.check_equal(r.value().i.s, o.i.s, "o.i.s 2");
 
     test.check_equal(
-      r.and_then([](const outer& x) -> const inner& { return x.i; })
-        .and_then([](const inner& x) -> const short& { return x.s; })
+      r.transform([](const outer& x) -> const inner& { return x.i; })
+        .transform([](const inner& x) -> const short& { return x.s; })
         .value_or(2345),
       1234,
       "and then 1234");
     test.check_equal(
-      r.and_then([](const outer& x) -> auto& { return x.i; })
-        .and_then([](const inner& x) -> auto& { return x.b; })
+      r.transform([](const outer& x) -> auto& { return x.i; })
+        .transform([](const inner& x) -> auto& { return x.b; })
         .value_or(true),
       true,
       "and then true");
@@ -121,8 +121,8 @@ void optional_reference_non_empty_const(auto& s) {
     r = {eagine::nothing};
     test.check(not r.has_value(), "has not value");
     test.check_equal(
-      r.and_then([](const outer& x) -> const inner& { return x.i; })
-        .and_then([](const inner& x) -> const short& { return x.s; })
+      r.transform([](const outer& x) -> const inner& { return x.i; })
+        .transform([](const inner& x) -> const short& { return x.s; })
         .value_or(2345),
       2345,
       "and then 2345");

@@ -22,7 +22,8 @@ void valid_if_default_construct_file(auto& s) {
     test.check(not bool(v), "is not true");
 
     test.check(
-      not v.and_then([](const auto&) { return true; }).has_value(), "and then");
+      not v.transform([](const auto&) { return true; }).has_value(),
+      "and then");
 }
 //------------------------------------------------------------------------------
 void valid_if_default_construct_dir(auto& s) {
@@ -35,7 +36,7 @@ void valid_if_default_construct_dir(auto& s) {
     test.check(not bool(v), "is not true");
 
     test.check(
-      not v.and_then([](auto) { return true; }).has_value(), "and then");
+      not v.transform([](auto) { return true; }).has_value(), "and then");
 }
 //------------------------------------------------------------------------------
 void valid_if_executable_path(auto& s) {
@@ -48,10 +49,10 @@ void valid_if_executable_path(auto& s) {
     test.check(bool(v), "is true");
 
     test.check(
-      v.and_then([](std::string_view p) { return p.size(); }).value_or(0) > 0,
+      v.transform([](std::string_view p) { return p.size(); }).value_or(0) > 0,
       "length > 0");
     test.check(
-      v.and_then([](std::string_view p) -> bool {
+      v.transform([](std::string_view p) -> bool {
            return p.find("filesystem") != std::string_view::npos;
        })
         .value_or(false),
