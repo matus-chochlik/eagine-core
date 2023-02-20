@@ -30,12 +30,20 @@ void optional_reference_empty(auto& s) {
     test.check_equal(
       r.transform([](auto i) { return i + 1; }).value_or(3456),
       3456,
-      "and then 3456");
+      "transform 3456");
 
     test.check_equal(
       r.transform([](auto i) { return i + 1; }).value_or(4567),
       4567,
-      "and then 4567");
+      "transform 4567");
+
+    test.check_equal(
+      r.and_then([](auto) -> eagine::optional_reference<long> {
+           return {eagine::nothing};
+       })
+        .value_or(5678L),
+      5678L,
+      "and then 5678");
 }
 //------------------------------------------------------------------------------
 void optional_reference_non_empty(auto& s) {
@@ -56,19 +64,28 @@ void optional_reference_non_empty(auto& s) {
         .transform([](inner& x) -> short& { return x.s; })
         .value_or(2345),
       1234,
+      "transform 1234");
+    test.check_equal(
+      r.and_then(
+         [](outer& x) -> eagine::optional_reference<inner> { return {x.i}; })
+        .and_then(
+          [](inner& x) -> eagine::optional_reference<short> { return {x.s}; })
+        .value_or(3456),
+      1234,
       "and then 1234");
+
     test.check_equal(
       r.transform([](auto& x) -> auto& { return x.i; })
         .transform([](auto& x) -> auto& { return x.b; })
         .value_or(true),
       true,
-      "and then true");
+      "transform true");
 
     o.i.s = 3456;
     test.check_equal(
       r.member(&outer::i).member(&inner::s).value_or(2345),
       3456,
-      "and then 3456");
+      "transform 3456");
 
     r = {eagine::nothing};
     test.check(not r.has_value(), "has not value");
@@ -77,13 +94,21 @@ void optional_reference_non_empty(auto& s) {
         .transform([](const inner& x) -> const auto& { return x.s; })
         .value_or(2345),
       2345,
-      "and then 2345");
+      "transform 2345");
+    test.check_equal(
+      r.and_then(
+         [](outer& x) -> eagine::optional_reference<inner> { return {x.i}; })
+        .and_then(
+          [](inner& x) -> eagine::optional_reference<short> { return {x.s}; })
+        .value_or(3456),
+      3456,
+      "and then 3456");
 
     o.i.s = 4567;
     test.check_equal(
       r.member(&outer::i).member(&inner::s).value_or(4567),
       4567,
-      "and then 4567");
+      "transform 4567");
 }
 //------------------------------------------------------------------------------
 void optional_reference_non_empty_const(auto& s) {
@@ -104,19 +129,31 @@ void optional_reference_non_empty_const(auto& s) {
         .transform([](const inner& x) -> const short& { return x.s; })
         .value_or(2345),
       1234,
+      "transform 1234");
+    test.check_equal(
+      r.and_then([](const outer& x) -> eagine::optional_reference<const inner> {
+           return {x.i};
+       })
+        .and_then(
+          [](const inner& x) -> eagine::optional_reference<const short> {
+              return {x.s};
+          })
+        .value_or(3456),
+      1234,
       "and then 1234");
+
     test.check_equal(
       r.transform([](const outer& x) -> auto& { return x.i; })
         .transform([](const inner& x) -> auto& { return x.b; })
         .value_or(true),
       true,
-      "and then true");
+      "transform true");
 
     o.i.s = 3456;
     test.check_equal(
       r.member(&outer::i).member(&inner::s).value_or(2345),
       3456,
-      "and then 3456");
+      "transform 3456");
 
     r = {eagine::nothing};
     test.check(not r.has_value(), "has not value");
@@ -125,13 +162,24 @@ void optional_reference_non_empty_const(auto& s) {
         .transform([](const inner& x) -> const short& { return x.s; })
         .value_or(2345),
       2345,
-      "and then 2345");
+      "transform 2345");
+    test.check_equal(
+      r.and_then([](const outer& x) -> eagine::optional_reference<const inner> {
+           return {x.i};
+       })
+        .and_then(
+          [](const inner& x) -> eagine::optional_reference<const short> {
+              return {x.s};
+          })
+        .value_or(3456),
+      3456,
+      "and then 3456");
 
     o.i.s = 4567;
     test.check_equal(
       r.member(&outer::i).member(&inner::s).value_or(4567),
       4567,
-      "and then 4567");
+      "transform 4567");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

@@ -52,6 +52,10 @@ public:
 
     ~optional_reference() noexcept = default;
 
+    /// @brief Default construction
+    /// @post not has_value()
+    constexpr optional_reference() noexcept = default;
+
     /// @brief Construction from nothing.
     /// @post not has_value()
     constexpr optional_reference(nothing_t) noexcept {}
@@ -109,6 +113,20 @@ public:
     }
 
     /// @brief Invoke function on the stored value or return empty extractable.
+    /// @see transform
+    template <typename F>
+        requires(optional_like<std::remove_cvref_t<std::invoke_result_t<F, T&>>>)
+    [[nodiscard]] auto and_then(F&& function) {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, T&>>;
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), this->value());
+        } else {
+            return R{};
+        }
+    }
+
+    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @see and_then
     template <typename F>
     [[nodiscard]] auto transform(F&& function) {
         using R = std::invoke_result_t<F, T&>;
@@ -135,6 +153,21 @@ public:
     }
 
     /// @brief Invoke function on the stored value or return empty extractable.
+    /// @see transform
+    template <typename F>
+        requires(
+          optional_like<std::remove_cvref_t<std::invoke_result_t<F, const T&>>>)
+    [[nodiscard]] auto and_then(F&& function) const {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>;
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), this->value());
+        } else {
+            return R{};
+        }
+    }
+
+    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @see and_then
     template <typename F>
     [[nodiscard]] auto transform(F&& function) const {
         using R = std::invoke_result_t<F, std::add_const_t<T>&>;
