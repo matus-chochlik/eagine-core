@@ -372,13 +372,6 @@ public:
         }
     }
 
-    /// @brief Returns the stored value if valid, returns fallback otherwise.
-    /// @see basic_valid_if::value_or
-    [[nodiscard]] constexpr auto operator/(
-      const_reference fallback) const noexcept -> const_reference {
-        return value_or(fallback);
-    }
-
     /// @brief Returns the stored value, throws if it is invalid.
     /// @see basic_valid_if::value
     /// @throws std::runtime_error
