@@ -85,8 +85,9 @@ public:
     }
 
     /// @brief The call operator.
-    void operator()(Params... args) const noexcept {
+    auto operator()(Params... args) const noexcept -> auto& {
         _call(args...);
+        return *this;
     }
 
     /// @brief Implicit conversion to a compatible callable_ref.
