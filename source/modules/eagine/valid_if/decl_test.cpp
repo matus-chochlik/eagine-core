@@ -25,13 +25,50 @@ void valid_if_default_construct(auto& s) {
 
     test.check(
       not v.transform([](const test_person&) { return true; }).has_value(),
+      "transform");
+    test.check(
+      not v.and_then([](const test_person& p) {
+               return eagine::optionally_valid<std::string>{p.family_name};
+           })
+            .has_value(),
       "and then");
     test.check(
-      not v.member(&test_person::given_name).has_value(), "and then member");
+      not v.member(&test_person::given_name).has_value(), "transform member");
+}
+//------------------------------------------------------------------------------
+void valid_if_initialized(auto& s) {
+    eagitest::case_ test{s, 2, "initialized"};
+
+    eagine::optionally_valid<test_person> v{{"John", "Doe"}, true};
+
+    test.check(v.has_value(), "has not value");
+    test.check(not not v, "is not false");
+    test.check(bool(v), "is true");
+
+    test.check(
+      v.transform([](const test_person&) { return true; }).has_value(),
+      "transform");
+    test.check(
+      v.and_then([](const test_person& p) {
+           return eagine::always_valid<std::string>{p.given_name};
+       })
+        .has_value(),
+      "and then always");
+    test.check(
+      v.transform([](const test_person&) { return true; }).has_value(),
+      "transform");
+    test.check(
+      not v.and_then([](const test_person& p) {
+               return eagine::never_valid<std::string>{p.given_name};
+           })
+            .has_value(),
+      "and then never");
+    test.check(
+      v.member(&test_person::family_name).has_value(), "transform member");
 }
 //------------------------------------------------------------------------------
 void valid_if_non_ref(auto& s) {
-    eagitest::case_ test{s, 2, "non-reference"};
+    eagitest::case_ test{s, 3, "non-reference"};
 
     eagine::optionally_valid<int> v{123, true};
 
@@ -43,8 +80,14 @@ void valid_if_non_ref(auto& s) {
     const auto f{[](int i) {
         return i * 2;
     }};
-    test.ensure(v.transform(f).has_value(), "and then has value");
-    test.check_equal(v.transform(f).value(), 246, "and then value ok");
+    test.ensure(v.transform(f).has_value(), "transform has value");
+    test.check_equal(v.transform(f).value(), 246, "transform value ok");
+
+    const auto g{[](int i) {
+        return eagine::valid_if_positive<int>(i * 3);
+    }};
+    test.ensure(v.and_then(g).has_value(), "and then has value");
+    test.check_equal(v.and_then(g).value(), 369, "and then value ok");
 
     eagine::always_valid<test_person> p{{"Jane", "Doe"}};
     test.check(bool(p), "is true");
@@ -53,11 +96,11 @@ void valid_if_non_ref(auto& s) {
     test.check_equal(
       p.member(&test_person::family_name).value(),
       "Doe",
-      "and then member value");
+      "transform member value");
 }
 //------------------------------------------------------------------------------
 void valid_if_ref(auto& s) {
-    eagitest::case_ test{s, 3, "reference"};
+    eagitest::case_ test{s, 4, "reference"};
 
     int i = 234;
     eagine::optionally_valid<int&> v{i, true};
@@ -75,8 +118,14 @@ void valid_if_ref(auto& s) {
     const auto f{[](const int& j) {
         return j * 2;
     }};
-    test.check(v.transform(f).has_value(), "and then has value");
-    test.check_equal(v.transform(f).value(), i * 2, "and then value ok");
+    test.check(v.transform(f).has_value(), "transform has value");
+    test.check_equal(v.transform(f).value(), i * 2, "transform value ok");
+
+    const auto g{[](int j) {
+        return eagine::valid_if_positive<int>(j * 3);
+    }};
+    test.ensure(v.and_then(g).has_value(), "and then has value");
+    test.check_equal(v.and_then(g).value(), 456 * 3, "and then value ok");
 
     eagine::never_valid<test_person> p{{"Bill", "Roe"}};
     test.check(not bool(p), "is not true");
@@ -85,12 +134,13 @@ void valid_if_ref(auto& s) {
     test.check_equal(
       p.member(&test_person::given_name).value_or("John"),
       "John",
-      "and then member value or");
+      "transform member value or");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "valid_if", 3};
+    eagitest::suite test{argc, argv, "valid_if", 4};
     test.once(valid_if_default_construct);
+    test.once(valid_if_initialized);
     test.once(valid_if_non_ref);
     test.once(valid_if_ref);
     return test.exit_code();

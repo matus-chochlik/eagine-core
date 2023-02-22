@@ -292,8 +292,22 @@ public:
         return _value;
     }
 
+    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @see transform
+    template <typename F>
+        requires(optional_like<std::remove_cvref_t<std::invoke_result_t<F, T&>>>)
+    [[nodiscard]] auto and_then(F&& function) {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, T&>>;
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), this->value());
+        } else {
+            return R{};
+        }
+    }
+
     /// @brief Calls the specified function if the stored value is valid.
     /// @param function the function to be called.
+    /// @see and_then
     template <typename F>
         requires(not std::is_same_v<std::invoke_result_t<F, T>, void>)
     [[nodiscard]] constexpr auto transform(F&& function) const {
@@ -605,6 +619,19 @@ public:
     /// @brief Returns the stored value regardless of its validity.
     [[nodiscard]] constexpr auto value_anyway() noexcept -> T& {
         return _value;
+    }
+
+    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @see transform
+    template <typename F>
+        requires(optional_like<std::remove_cvref_t<std::invoke_result_t<F, T&>>>)
+    [[nodiscard]] auto and_then(F&& function) {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, T&>>;
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), this->value());
+        } else {
+            return R{};
+        }
     }
 
     /// @brief Calls the specified function if the stored value is valid.
