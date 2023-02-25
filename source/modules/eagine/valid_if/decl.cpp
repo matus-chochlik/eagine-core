@@ -412,6 +412,15 @@ public:
         return &value();
     }
 
+    /// @brief Conversion to std::optional
+    [[nodiscard]] constexpr operator std::optional<T>() const
+      noexcept(std::is_nothrow_copy_constructible_v<T>) {
+        if(has_value()) {
+            return {this->value_anyway()};
+        }
+        return {};
+    }
+
 private:
     T _value{};
     [[no_unique_address]] Policy _policy;
