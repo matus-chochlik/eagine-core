@@ -17,8 +17,8 @@ import eagine.core.concepts;
 import <sstream>;
 import <stdexcept>;
 import <type_traits>;
-import <optional>;
 import <utility>;
+export import <optional>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -292,14 +292,26 @@ public:
         return _value;
     }
 
+    /// @brief Constructs value of type C from the stored value or an empty optional.
+    /// @see and_then
+    template <typename C>
+    [[nodiscard]] auto construct() noexcept(noexcept(T(std::declval<T&>())))
+      -> basic_valid_if<C, valid_flag_policy, typename valid_flag_policy::do_log> {
+        if(has_value()) {
+            return {C{this->value_anyway()}, true};
+        }
+        return {};
+    }
+
     /// @brief Invoke function on the stored value or return empty extractable.
+    /// @see construct
     /// @see transform
     template <typename F>
         requires(optional_like<std::remove_cvref_t<std::invoke_result_t<F, T&>>>)
     [[nodiscard]] auto and_then(F&& function) {
         using R = std::remove_cvref_t<std::invoke_result_t<F, T&>>;
         if(has_value()) {
-            return std::invoke(std::forward<F>(function), this->value());
+            return std::invoke(std::forward<F>(function), this->value_anyway());
         } else {
             return R{};
         }
@@ -363,7 +375,7 @@ public:
     [[nodiscard]] auto member(M C::*ptr) const noexcept {
         if(has_value()) {
             return optional_reference<std::add_const_t<M>>{
-              this->anyway_value().*ptr};
+              this->value_anyway().*ptr};
         } else {
             return optional_reference<std::add_const_t<M>>{nothing};
         }
@@ -621,11 +633,23 @@ public:
         return _value;
     }
 
+    /// @brief Constructs value of type C from the stored value or an empty optional.
+    /// @see and_then
+    template <typename C>
+    [[nodiscard]] auto construct() const noexcept(
+      noexcept(T(std::declval<const T&>())))
+      -> basic_valid_if<C, valid_flag_policy, typename valid_flag_policy::do_log> {
+        if(has_value()) {
+            return {C{this->value_anyway()}};
+        }
+        return {};
+    }
+
     /// @brief Invoke function on the stored value or return empty extractable.
     /// @see transform
     template <typename F>
         requires(optional_like<std::remove_cvref_t<std::invoke_result_t<F, T&>>>)
-    [[nodiscard]] auto and_then(F&& function) {
+    [[nodiscard]] auto and_then(F&& function) const {
         using R = std::remove_cvref_t<std::invoke_result_t<F, T&>>;
         if(has_value()) {
             return std::invoke(std::forward<F>(function), this->value());
@@ -691,7 +715,7 @@ public:
     [[nodiscard]] auto member(M C::*ptr) const noexcept {
         if(has_value()) {
             return optional_reference<std::add_const_t<M>>{
-              this->anyway_value().*ptr};
+              this->value_anyway().*ptr};
         } else {
             return optional_reference<std::add_const_t<M>>{nothing};
         }
@@ -968,7 +992,8 @@ export struct never_valid_policy {
 export template <typename T>
 using never_valid = valid_if<T, never_valid_policy>;
 //------------------------------------------------------------------------------
-/// @brief Policy class for containers valid if their empty() member function return false.
+/// @brief Policy class for containers valid if their empty() member
+/// function return false.
 /// @ingroup valid_if
 export template <typename T>
 struct valid_if_not_empty_policy {

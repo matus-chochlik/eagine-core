@@ -8,6 +8,8 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.valid_if;
+import <string>;
+import <string_view>;
 //------------------------------------------------------------------------------
 struct test_person {
     std::string given_name;
@@ -65,6 +67,12 @@ void valid_if_initialized(auto& s) {
       "and then never");
     test.check(
       v.member(&test_person::family_name).has_value(), "transform member");
+
+    test.check(
+      v.member(&test_person::family_name)
+        .construct<std::string_view>()
+        .has_value(),
+      "construct");
 }
 //------------------------------------------------------------------------------
 void valid_if_non_ref(auto& s) {
@@ -97,6 +105,12 @@ void valid_if_non_ref(auto& s) {
       p.member(&test_person::family_name).value(),
       "Doe",
       "transform member value");
+
+    test.check(
+      p.member(&test_person::given_name)
+        .construct<std::string_view>()
+        .has_value(),
+      "construct");
 }
 //------------------------------------------------------------------------------
 void valid_if_ref(auto& s) {
@@ -135,6 +149,12 @@ void valid_if_ref(auto& s) {
       p.member(&test_person::given_name).value_or("John"),
       "John",
       "transform member value or");
+
+    test.check(
+      not p.member(&test_person::given_name)
+            .construct<std::string_view>()
+            .has_value(),
+      "construct");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
