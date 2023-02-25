@@ -503,6 +503,15 @@ public:
         return method_id() == idv._value;
     }
 
+    /// @brief Checks if the method identifier matches the argument.
+    /// @see has_class
+    /// @see has_method
+    [[nodiscard]] constexpr auto is(
+      const identifier_value idc,
+      const identifier_value idm) const noexcept -> bool {
+        return has_class(idc) and has_method(idm);
+    }
+
 private:
 #if __SIZEOF_INT128__
     __uint128_t _data{0U};
