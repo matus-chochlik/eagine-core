@@ -87,6 +87,11 @@ void optional_reference_non_empty(auto& s) {
       3456,
       "transform 3456");
 
+    test.check_equal(
+      r.member(&outer::i).member(&inner::s).construct<long>().value_or(1111L),
+      3456L,
+      "construct 3456");
+
     r = {eagine::nothing};
     test.check(not r.has_value(), "has not value");
     test.check_equal(
@@ -109,6 +114,12 @@ void optional_reference_non_empty(auto& s) {
       r.member(&outer::i).member(&inner::s).value_or(4567),
       4567,
       "transform 4567");
+
+    o.i.s = 5678;
+    test.check_equal(
+      r.member(&outer::i).member(&inner::s).construct<long>().value_or(1111L),
+      1111L,
+      "construct 1111");
 }
 //------------------------------------------------------------------------------
 void optional_reference_non_empty_const(auto& s) {
@@ -155,6 +166,11 @@ void optional_reference_non_empty_const(auto& s) {
       3456,
       "transform 3456");
 
+    test.check_equal(
+      r.member(&outer::i).member(&inner::s).construct<long>().value_or(3333L),
+      3456L,
+      "construct 3456");
+
     r = {eagine::nothing};
     test.check(not r.has_value(), "has not value");
     test.check_equal(
@@ -180,6 +196,12 @@ void optional_reference_non_empty_const(auto& s) {
       r.member(&outer::i).member(&inner::s).value_or(4567),
       4567,
       "transform 4567");
+
+    o.i.s = 5678;
+    test.check_equal(
+      r.member(&outer::i).member(&inner::s).construct<long>().value_or(2222L),
+      2222L,
+      "construct 2222");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

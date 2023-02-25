@@ -17,9 +17,9 @@ import :tribool;
 import <cstddef>;
 import <concepts>;
 import <functional>;
-import <optional>;
 import <utility>;
 import <type_traits>;
+export import <optional>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -112,8 +112,20 @@ public:
         return value();
     }
 
+    /// @brief Constructs value of type C from the stored value or an empty optional.
+    /// @see and_then
+    template <typename C>
+    [[nodiscard]] auto construct() noexcept(noexcept(T(std::declval<T&>())))
+      -> std::optional<C> {
+        if(has_value()) {
+            return {C{this->value()}};
+        }
+        return {};
+    }
+
     /// @brief Invoke function on the stored value or return empty extractable.
     /// @see transform
+    /// @see construct
     template <typename F>
         requires(optional_like<std::remove_cvref_t<std::invoke_result_t<F, T&>>>)
     [[nodiscard]] auto and_then(F&& function) {
