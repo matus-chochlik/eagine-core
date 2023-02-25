@@ -768,6 +768,15 @@ public:
         return &value();
     }
 
+    /// @brief Conversion to std::optional
+    [[nodiscard]] constexpr operator std::optional<std::reference_wrapper<T>>()
+      const noexcept {
+        if(has_value()) {
+            return {this->value_anyway()};
+        }
+        return {};
+    }
+
 private:
     T& _value{};
     [[no_unique_address]] Policy _policy;

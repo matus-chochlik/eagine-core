@@ -246,6 +246,15 @@ public:
         return indeterminate;
     }
 
+    /// @brief Conversion to std::optional
+    [[nodiscard]] constexpr operator std::optional<std::reference_wrapper<T>>()
+      const noexcept {
+        if(has_value()) {
+            return {this->value()};
+        }
+        return {};
+    }
+
 private:
     T* _ptr{nullptr};
 };
