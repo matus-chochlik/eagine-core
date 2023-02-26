@@ -18,6 +18,7 @@ import <sstream>;
 import <stdexcept>;
 import <type_traits>;
 import <utility>;
+export import <functional>;
 export import <optional>;
 
 namespace eagine {

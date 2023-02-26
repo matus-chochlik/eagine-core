@@ -16,9 +16,9 @@ import :nothing;
 import :tribool;
 import <cstddef>;
 import <concepts>;
-import <functional>;
 import <utility>;
 import <type_traits>;
+export import <functional>;
 export import <optional>;
 
 namespace eagine {
