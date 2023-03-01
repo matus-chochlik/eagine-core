@@ -35,7 +35,6 @@ function(eagine_example_common EXAMPLE_NAME)
 endfunction()
 
 eagine_example_common(valgrind)
-eagine_example_common(array_size)
 eagine_example_common(integer_hash)
 eagine_example_common(signal)
 eagine_example_common(signal_switch)
@@ -115,10 +114,6 @@ eagine_embed_target_resources(
 	ENABLE_SEARCH
 )
 #
-target_compile_options(
-	eagine-array_size
-	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unsafe-buffer-usage>
-)
 target_compile_options(
 	eagine-c_api_wrap
 	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unsafe-buffer-usage>

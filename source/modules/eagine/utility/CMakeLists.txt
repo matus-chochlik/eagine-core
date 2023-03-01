@@ -14,11 +14,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.utility PARTITION array_size
-	IMPORTS eagine.core.types
-)
-
-eagine_add_module(
 	eagine.core.utility PARTITION callable_ref
 	IMPORTS
 		eagine.core.concepts
@@ -108,7 +103,6 @@ eagine_add_module(
 		utility
 	PARTITIONS
 		count
-		array_size
 		bool_aggregate
 		sliding_average
 		coroutine
@@ -140,7 +134,6 @@ eagine_add_module(
 eagine_add_module_tests(
 	eagine.core.utility
 	UNITS
-		array_size
 		bool_aggregate
 		callable_ref
 		double_buffer

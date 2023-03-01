@@ -8,7 +8,6 @@
 export module eagine.core.utility;
 
 export import :count;
-export import :array_size;
 export import :protected_member;
 export import :bool_aggregate;
 export import :sliding_average;
