@@ -13,7 +13,6 @@ import eagine.core.valid_if;
 import eagine.core.runtime;
 import eagine.core.logging;
 import :backend;
-import :entry_kind;
 import std;
 
 namespace eagine {

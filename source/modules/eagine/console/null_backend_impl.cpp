@@ -11,7 +11,6 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import :backend;
-import :entry_kind;
 import std;
 
 namespace eagine {

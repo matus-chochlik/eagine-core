@@ -14,7 +14,6 @@ import eagine.core.identifier;
 import eagine.core.container;
 import eagine.core.utility;
 import :backend;
-import :entry_kind;
 import std;
 
 namespace eagine {

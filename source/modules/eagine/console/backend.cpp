@@ -10,11 +10,35 @@ export module eagine.core.console:backend;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
+import eagine.core.reflection;
 import eagine.core.runtime;
-import :entry_kind;
 import std;
 
 namespace eagine {
+//------------------------------------------------------------------------------
+/// @brief Console entry kind enumeration.
+/// @ingroup console
+export enum class console_entry_kind : std::uint8_t {
+    /// @brief Statistic entries.
+    stat,
+    /// @brief Informational entries.
+    info,
+    /// @brief Warning entries, indicating potential problems.
+    warning,
+    /// @brief Error entries, indicating serious problems.
+    error
+};
+
+export template <typename Selector>
+constexpr auto enumerator_mapping(
+  const std::type_identity<console_entry_kind>,
+  const Selector) noexcept {
+    return enumerator_map_type<console_entry_kind, 4>{
+      {{"stat", console_entry_kind::stat},
+       {"info", console_entry_kind::info},
+       {"warning", console_entry_kind::warning},
+       {"error", console_entry_kind::error}}};
+}
 //------------------------------------------------------------------------------
 /// @brief Console entry instance id type.
 /// @ingroup console
@@ -153,6 +177,11 @@ export struct console_options {
     /// @brief The explicitly-specified backend to be used by the console.
     std::shared_ptr<console_backend> forced_backend{};
 };
+//------------------------------------------------------------------------------
+export auto make_iostream_console_backend(std::istream&, std::ostream&)
+  -> std::unique_ptr<console_backend>;
+//------------------------------------------------------------------------------
+export auto make_null_console_backend() -> std::unique_ptr<console_backend>;
 //------------------------------------------------------------------------------
 } // namespace eagine
 
