@@ -6,7 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <iostream>;
+import std;
 
 void print(const char* expr, const eagine::weakbool v) {
     std::cout << "'" << expr << "': ";

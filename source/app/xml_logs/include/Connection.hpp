@@ -8,7 +8,7 @@
 #define EAGINE_XML_LOGS_CONNECTION
 
 import eagine.core;
-import <memory>;
+import std;
 #include "EntryStorage.hpp"
 #include <QObject>
 #include <QTcpSocket>

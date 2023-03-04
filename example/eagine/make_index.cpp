@@ -6,11 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <array>;
-import <iostream>;
-import <functional>;
-import <string>;
-import <vector>;
+import std;
 
 auto main() -> int {
     using namespace eagine;

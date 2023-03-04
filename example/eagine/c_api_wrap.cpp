@@ -6,7 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <iostream>;
+import std;
 
 #if __has_include(<fcntl.h>) && \
 	__has_include(<sys/types.h>) && \

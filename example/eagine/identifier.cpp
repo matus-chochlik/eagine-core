@@ -6,7 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <iostream>;
+import std;
 //------------------------------------------------------------------------------
 static inline void print_info(const eagine::identifier id) {
     std::cout << id.name() << ':' << std::endl;

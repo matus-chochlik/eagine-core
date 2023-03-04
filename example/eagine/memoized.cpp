@@ -6,8 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <map>;
-import <cstdint>;
+import std;
 
 namespace eagine {
 

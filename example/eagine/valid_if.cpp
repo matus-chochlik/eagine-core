@@ -7,7 +7,7 @@
 ///
 
 import eagine.core;
-import <iostream>;
+import std;
 
 auto main(int argc, const char** argv) -> int {
     int i = 0;

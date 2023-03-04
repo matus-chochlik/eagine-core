@@ -6,8 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <iostream>;
-import <stack>;
+import std;
 
 template <unsigned S>
 void solve_sudoku(const eagine::program_args& args) {

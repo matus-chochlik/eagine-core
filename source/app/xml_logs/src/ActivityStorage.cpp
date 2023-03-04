@@ -5,8 +5,7 @@
 ///
 
 import eagine.core;
-import <algorithm>;
-import <numeric>;
+import std;
 #include "ActivityStorage.hpp"
 #include "EntryFormat.hpp"
 #include "EntryStorage.hpp"

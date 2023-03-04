@@ -8,14 +8,7 @@
 #define EAGINE_XML_LOGS_ENTRY_STORAGE_HPP
 
 import eagine.core;
-import <algorithm>;
-import <chrono>;
-import <cstdint>;
-import <map>;
-import <set>;
-import <string>;
-import <tuple>;
-import <variant>;
+import std;
 
 class Backend;
 //------------------------------------------------------------------------------

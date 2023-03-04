@@ -5,7 +5,7 @@
 ///
 
 import eagine.core;
-import <sstream>;
+import std;
 #include "EntryFormat.hpp"
 #include "EntryStorage.hpp"
 

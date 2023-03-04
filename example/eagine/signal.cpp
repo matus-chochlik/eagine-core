@@ -6,12 +6,12 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <iostream>;
+import std;
 
 auto main() -> int {
     using namespace eagine;
 
-    signal<void(int, int) noexcept> two_ints;
+    eagine::signal<void(int, int) noexcept> two_ints;
 
     const auto add = [](int l, int r) {
         std::cout << l << "+" << r << "=" << l + r << std::endl;
