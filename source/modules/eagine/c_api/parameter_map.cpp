@@ -14,7 +14,7 @@ import :buffer_data;
 import :enum_class;
 import :handle;
 import :key_value_list;
-import <utility>;
+import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------

@@ -20,7 +20,7 @@ import eagine.core.console;
 import eagine.core.progress;
 import :interface;
 import :parent;
-import <concepts>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

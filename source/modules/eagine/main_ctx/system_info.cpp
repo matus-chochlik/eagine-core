@@ -12,11 +12,7 @@ import eagine.core.memory;
 import eagine.core.reflection;
 import eagine.core.units;
 import eagine.core.valid_if;
-import <chrono>;
-import <cstdint>;
-import <memory>;
-import <string>;
-import <thread>;
+import std;
 
 namespace eagine {
 

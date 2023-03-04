@@ -17,12 +17,7 @@ import eagine.core.runtime;
 import eagine.core.logging;
 export import eagine.core.value_tree;
 import :interface;
-import <memory>;
-import <optional>;
-import <string>;
-import <vector>;
-import <utility>;
-export import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

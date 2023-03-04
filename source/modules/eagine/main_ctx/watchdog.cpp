@@ -12,7 +12,7 @@ import eagine.core.identifier;
 import :interface;
 import :parent;
 import :object;
-import <memory>;
+import std;
 
 namespace eagine {
 

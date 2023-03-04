@@ -22,10 +22,7 @@ import :float_utils;
 import :result;
 import :interface;
 import :implementation;
-import <cctype>;
-import <concepts>;
-import <optional>;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

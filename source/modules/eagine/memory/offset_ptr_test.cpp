@@ -8,7 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.memory;
-import <string>;
+import std;
 //------------------------------------------------------------------------------
 void offset_ptr_default_construct(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};

@@ -17,8 +17,7 @@ import eagine.core.vectorization;
 
 import :traits;
 import :vector;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 namespace math {

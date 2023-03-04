@@ -9,9 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.memory;
 import eagine.core.runtime;
-import <array>;
-import <vector>;
-import <sstream>;
+import std;
 //------------------------------------------------------------------------------
 void program_args_empty(auto& s) {
     eagitest::case_ test{s, 1, "empty"};

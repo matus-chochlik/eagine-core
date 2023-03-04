@@ -13,9 +13,7 @@ import eagine.core.runtime;
 import eagine.core.identifier;
 export import :severity;
 import :entry_arg;
-import <chrono>;
-import <cstdint>;
-import <string>;
+import std;
 
 namespace eagine {
 

@@ -7,8 +7,7 @@
 ///
 export module eagine.core.types:bitfield;
 
-import <concepts>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 

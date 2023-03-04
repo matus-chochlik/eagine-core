@@ -10,12 +10,7 @@ export module eagine.core.memory:string_span;
 import eagine.core.types;
 import eagine.core.concepts;
 import :span;
-import <array>;
-import <cstdint>;
-import <cstring>;
-import <string>;
-import <string_view>;
-import <utility>;
+import std;
 
 namespace eagine {
 namespace memory {

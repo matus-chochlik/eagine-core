@@ -9,6 +9,7 @@ export module eagine.core.console:entry_kind;
 
 import eagine.core.types;
 import eagine.core.reflection;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

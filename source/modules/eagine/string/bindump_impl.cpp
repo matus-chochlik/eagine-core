@@ -10,10 +10,7 @@ module eagine.core.string;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
-import <iomanip>;
-import <iostream>;
-import <optional>;
-import <sstream>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -10,9 +10,7 @@ export module eagine.core.string:base64;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
-import <array>;
-import <algorithm>;
-import <optional>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

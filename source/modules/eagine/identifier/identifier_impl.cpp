@@ -13,8 +13,7 @@ module eagine.core.identifier;
 
 import eagine.core.types;
 import eagine.core.memory;
-import <cstdint>;
-import <random>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

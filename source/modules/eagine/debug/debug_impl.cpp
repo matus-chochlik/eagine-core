@@ -13,12 +13,7 @@ module;
 
 module eagine.core.debug;
 
-import <string>;
-
-#ifdef __GNUG__
-import <cstdlib>;
-import <memory>;
-#endif
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

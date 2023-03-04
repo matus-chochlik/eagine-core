@@ -9,6 +9,7 @@ export module eagine.core.c_api:enum_bitfield;
 
 import eagine.core.types;
 import :enum_class;
+import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------

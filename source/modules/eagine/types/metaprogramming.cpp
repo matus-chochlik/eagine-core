@@ -8,9 +8,7 @@
 export module eagine.core.types:metaprogramming;
 
 import :basic;
-import <string_view>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 

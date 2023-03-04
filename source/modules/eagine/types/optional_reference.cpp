@@ -14,12 +14,7 @@ export module eagine.core.types:optional_reference;
 import eagine.core.concepts;
 import :nothing;
 import :tribool;
-import <cstddef>;
-import <concepts>;
-import <utility>;
-import <type_traits>;
-export import <functional>;
-export import <optional>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

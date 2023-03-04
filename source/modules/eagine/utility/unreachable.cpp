@@ -11,12 +11,12 @@ module;
 
 export module eagine.core.utility:unreachable;
 
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 export [[noreturn]] void unreachable() noexcept {
-#if defined(__GNUC__) // GCC, Clang, ICC
+#if defined(__GNUC__)   // GCC, Clang, ICC
     __builtin_unreachable();
 #elif defined(_MSC_VER) // MSVC
     __assume(false);

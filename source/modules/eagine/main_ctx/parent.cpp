@@ -11,7 +11,7 @@ module;
 
 export module eagine.core.main_ctx:parent;
 import :interface;
-import <variant>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -9,8 +9,7 @@ export module eagine.core.vectorization:view;
 
 import eagine.core.memory;
 import :data;
-import <cmath>;
-import <type_traits>;
+import std;
 
 namespace eagine::vect {
 

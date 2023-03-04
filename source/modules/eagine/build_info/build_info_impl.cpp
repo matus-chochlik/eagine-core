@@ -24,6 +24,7 @@ module eagine.core.build_info;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

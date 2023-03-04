@@ -11,9 +11,7 @@ module;
 
 export module eagine.core.container:static_vector;
 
-import <algorithm>;
-export import <array>;
-import <cstdint>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

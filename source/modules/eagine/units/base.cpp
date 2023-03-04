@@ -6,8 +6,7 @@
 export module eagine.core.units:base;
 
 import eagine.core.types;
-import <cmath>;
-import <type_traits>;
+import std;
 
 namespace eagine::units {
 //------------------------------------------------------------------------------

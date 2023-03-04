@@ -7,15 +7,8 @@
 ///
 export module eagine.core.math:functions;
 
-import <cmath>;
-
 import :constants;
-import <cmath>;
-import <concepts>;
-import <limits>;
-import <optional>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

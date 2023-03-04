@@ -14,12 +14,7 @@ export module eagine.core.valid_if:decl;
 
 import eagine.core.types;
 import eagine.core.concepts;
-import <sstream>;
-import <stdexcept>;
-import <type_traits>;
-import <utility>;
-export import <functional>;
-export import <optional>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

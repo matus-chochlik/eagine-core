@@ -7,7 +7,7 @@
 ///
 export module eagine.core.utility:overloaded;
 
-import <utility>;
+import std;
 
 namespace eagine {
 

@@ -10,8 +10,7 @@ export module eagine.core.c_api:constant;
 import eagine.core.types;
 import eagine.core.memory;
 import :enum_class;
-import <type_traits>;
-import <concepts>;
+import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------

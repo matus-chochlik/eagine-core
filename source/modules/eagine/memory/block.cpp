@@ -14,9 +14,7 @@ export module eagine.core.memory:block;
 import eagine.core.types;
 import :address;
 export import :span;
-import <cstddef>;
-import <memory>;
-import <utility>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

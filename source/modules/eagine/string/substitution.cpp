@@ -11,9 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
 import :c_str;
-import <map>;
-import <string>;
-import <optional>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

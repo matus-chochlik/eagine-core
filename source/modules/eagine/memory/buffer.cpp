@@ -16,8 +16,7 @@ export import :block;
 import :address;
 import :span_algorithm;
 import :shared_allocator;
-import <cstring>;
-import <utility>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

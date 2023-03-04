@@ -11,7 +11,7 @@ module;
 
 module eagine.core.memory;
 import eagine.core.types;
-import <memory>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

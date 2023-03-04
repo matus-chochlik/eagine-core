@@ -12,8 +12,7 @@ module;
 export module eagine.core.types:outcome;
 import :extract;
 import :nothing;
-import <memory>;
-import <optional>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

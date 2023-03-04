@@ -12,8 +12,7 @@ module;
 export module eagine.core.types:integer;
 
 import :limits;
-import <concepts>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 

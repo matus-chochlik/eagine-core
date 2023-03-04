@@ -11,8 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
 
-import <string>;
-import <tuple>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

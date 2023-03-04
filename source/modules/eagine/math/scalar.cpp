@@ -8,7 +8,7 @@
 export module eagine.core.math:scalar;
 
 import eagine.core.vectorization;
-import <type_traits>;
+import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

@@ -9,7 +9,7 @@ export module eagine.core.progress:default_backend;
 
 import eagine.core.logging;
 import :backend;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

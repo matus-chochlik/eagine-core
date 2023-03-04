@@ -8,7 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.vectorization;
-import <array>;
+import std;
 //------------------------------------------------------------------------------
 // shuffle
 //------------------------------------------------------------------------------

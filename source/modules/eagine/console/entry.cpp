@@ -14,10 +14,7 @@ import eagine.core.runtime;
 import eagine.core.logging;
 import :backend;
 import :entry_kind;
-import <chrono>;
-import <concepts>;
-import <string>;
-import <tuple>;
+import std;
 
 namespace eagine {
 export class console_entry;

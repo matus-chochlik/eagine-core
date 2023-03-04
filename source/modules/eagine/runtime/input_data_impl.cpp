@@ -11,8 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.utility;
-import <fstream>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

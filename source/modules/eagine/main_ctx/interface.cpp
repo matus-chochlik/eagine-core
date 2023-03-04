@@ -22,9 +22,7 @@ import eagine.core.progress;
 import eagine.core.console;
 import :system_info;
 import :user_info;
-import <chrono>;
-import <memory>;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

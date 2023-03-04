@@ -17,11 +17,7 @@ import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.logging;
-import <chrono>;
-import <memory>;
-import <optional>;
-import <string>;
-import <vector>;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------

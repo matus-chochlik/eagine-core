@@ -8,8 +8,7 @@
 export module eagine.core.utility:timeline;
 
 import eagine.core.types;
-import <cstdint>;
-import <chrono>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

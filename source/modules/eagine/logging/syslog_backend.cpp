@@ -9,6 +9,7 @@ export module eagine.core.logging:syslog_backend;
 
 import eagine.core.types;
 import :backend;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

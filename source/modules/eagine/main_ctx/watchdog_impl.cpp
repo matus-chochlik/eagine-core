@@ -22,9 +22,7 @@ module eagine.core.main_ctx;
 
 import eagine.core.types;
 import eagine.core.utility;
-import <chrono>;
-import <cstdint>;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

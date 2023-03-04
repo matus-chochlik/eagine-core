@@ -9,8 +9,7 @@ export module eagine.core.c_api:api_traits;
 
 import eagine.core.memory;
 import eagine.core.valid_if;
-import <tuple>;
-import <type_traits>;
+import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------

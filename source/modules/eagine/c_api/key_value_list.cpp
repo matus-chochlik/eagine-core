@@ -9,9 +9,7 @@ export module eagine.core.c_api:key_value_list;
 
 import eagine.core.types;
 import eagine.core.memory;
-import <type_traits>;
-import <utility>;
-import <vector>;
+import std;
 
 namespace eagine::c_api {
 

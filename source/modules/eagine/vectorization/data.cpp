@@ -9,7 +9,7 @@ export module eagine.core.vectorization:data;
 
 import :data_array;
 import :data_simd;
-import <type_traits>;
+import std;
 
 namespace eagine::vect {
 

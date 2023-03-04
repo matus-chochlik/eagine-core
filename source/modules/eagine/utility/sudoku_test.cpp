@@ -9,7 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
 import eagine.core.utility;
-import <stack>;
+import std;
 //------------------------------------------------------------------------------
 auto do_solve_sudoku(auto& test, auto board, eagine::timeout max_time) -> bool {
     eagitest::track trck{test, 0, 2};

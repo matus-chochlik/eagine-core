@@ -16,9 +16,7 @@ import eagine.core.memory;
 import eagine.core.valid_if;
 import eagine.core.utility;
 
-import <cstdint>;
-import <string>;
-import <array>;
+import std;
 
 namespace eagine::multi_byte {
 //------------------------------------------------------------------------------

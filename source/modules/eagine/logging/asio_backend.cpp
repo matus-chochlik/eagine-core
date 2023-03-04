@@ -9,7 +9,7 @@ export module eagine.core.logging:asio_backend;
 
 import eagine.core.memory;
 import :backend;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

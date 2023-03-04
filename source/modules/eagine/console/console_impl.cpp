@@ -9,8 +9,7 @@ module eagine.core.console;
 
 import eagine.core.identifier;
 import eagine.core.runtime;
-import <iostream>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

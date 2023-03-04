@@ -7,9 +7,7 @@
 ///
 export module eagine.core.types:compare;
 
-import <limits>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

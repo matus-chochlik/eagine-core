@@ -8,11 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
-import <array>;
-import <tuple>;
-//
-import <iostream>;
-import <iomanip>;
+import std;
 //------------------------------------------------------------------------------
 enum class test_bit : unsigned {
     bit_0 = 1U << 0U,

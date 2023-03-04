@@ -18,8 +18,7 @@ module;
 export module eagine.core.debug;
 
 import eagine.core.types;
-import <string>;
-import <typeinfo>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

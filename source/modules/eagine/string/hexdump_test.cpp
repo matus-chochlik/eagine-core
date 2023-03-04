@@ -9,7 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.string;
 import eagine.core.memory;
-import <sstream>;
+import std;
 //------------------------------------------------------------------------------
 void hexdump_ostream(auto& s) {
     eagitest::case_ test{s, 1, "ostream"};

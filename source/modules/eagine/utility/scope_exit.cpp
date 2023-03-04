@@ -9,9 +9,7 @@ export module eagine.core.utility:scope_exit;
 
 import eagine.core.types;
 import :callable_ref;
-import <exception>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 

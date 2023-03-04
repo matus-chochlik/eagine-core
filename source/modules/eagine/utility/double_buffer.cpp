@@ -7,8 +7,7 @@
 ///
 export module eagine.core.utility:double_buffer;
 
-import <array>;
-import <cstdint>;
+import std;
 
 namespace eagine {
 

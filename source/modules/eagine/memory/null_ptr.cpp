@@ -8,8 +8,7 @@
 export module eagine.core.memory:null_ptr;
 
 import eagine.core.types;
-import <concepts>;
-import <cstdint>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

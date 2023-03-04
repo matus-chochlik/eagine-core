@@ -19,14 +19,7 @@ import eagine.core.logging;
 import eagine.core.utility;
 import eagine.core.valid_if;
 import eagine.core.value_tree;
-import <array>;
-import <filesystem>;
-import <map>;
-import <set>;
-import <mutex>;
-import <memory>;
-import <optional>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

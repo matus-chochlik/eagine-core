@@ -9,7 +9,7 @@ export module eagine.core.runtime:input_data;
 
 import eagine.core.types;
 import eagine.core.memory;
-import <iosfwd>;
+import std;
 
 namespace eagine {
 

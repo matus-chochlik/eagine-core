@@ -14,13 +14,7 @@ export module eagine.core.utility:sudoku;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.container;
-import <array>;
-import <cstdint>;
-import <functional>;
-import <iomanip>;
-import <ostream>;
-import <random>;
-import <stack>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

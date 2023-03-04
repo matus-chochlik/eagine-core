@@ -16,10 +16,7 @@ import eagine.core.memory;
 import eagine.core.vectorization;
 import :traits;
 import :scalar;
-import <cmath>;
-import <concepts>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 namespace math {

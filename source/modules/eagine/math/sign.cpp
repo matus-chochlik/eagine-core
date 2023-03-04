@@ -7,7 +7,7 @@
 ///
 export module eagine.core.math:sign;
 
-import <type_traits>;
+import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

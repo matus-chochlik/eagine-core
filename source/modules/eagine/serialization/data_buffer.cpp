@@ -15,10 +15,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.reflection;
-import <array>;
-import <cstdint>;
-import <string>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

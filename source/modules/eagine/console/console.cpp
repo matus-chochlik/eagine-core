@@ -16,7 +16,7 @@ import eagine.core.types;
 import eagine.core.identifier;
 import eagine.core.memory;
 import eagine.core.runtime;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

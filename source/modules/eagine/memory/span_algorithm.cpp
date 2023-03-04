@@ -13,13 +13,7 @@ export module eagine.core.memory:span_algorithm;
 
 import eagine.core.types;
 import :span;
-import <algorithm>;
-import <concepts>;
-import <functional>;
-import <numeric>;
-import <optional>;
-import <tuple>;
-import <type_traits>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

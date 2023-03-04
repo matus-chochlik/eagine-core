@@ -11,8 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.reflection;
-import <tuple>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

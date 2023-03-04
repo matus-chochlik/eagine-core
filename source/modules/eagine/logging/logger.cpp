@@ -18,7 +18,7 @@ import :config;
 import :backend;
 import :entry;
 import :time_interval;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

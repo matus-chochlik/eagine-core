@@ -14,11 +14,7 @@ export module eagine.core.memory:biteset;
 
 import eagine.core.types;
 import :byteset;
-import <cstdint>;
-import <compare>;
-import <iterator>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 
@@ -386,7 +382,7 @@ export template <std::size_t N, std::size_t B, typename T>
 class biteset {
 public:
     static constexpr const std::size_t store_size =
-      ((N * B) / CHAR_BIT) + (((N * B) % CHAR_BIT != 0) ? 1 : 0);
+      ((N * B) / 8U) + (((N * B) % 8U != 0) ? 1 : 0);
 
 private:
     using _bytes_t = byteset<store_size>;
@@ -394,9 +390,9 @@ private:
     // the number of useful bits in T
     static constexpr const std::size_t _bite_s = B;
     // the number of bits in a byte
-    static constexpr const std::size_t _byte_s = CHAR_BIT;
+    static constexpr const std::size_t _byte_s = 8U;
     // the number of all bits in T
-    static constexpr const std::size_t _cell_s = sizeof(T) * CHAR_BIT;
+    static constexpr const std::size_t _cell_s = sizeof(T) * 8U;
 
 public:
     static_assert((B > 0), "bite size must be greater than zero");

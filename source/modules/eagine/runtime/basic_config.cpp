@@ -11,7 +11,7 @@ import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.utility;
 import eagine.core.reflection;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

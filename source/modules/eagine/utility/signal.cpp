@@ -14,9 +14,7 @@ export module eagine.core.utility:signal;
 import eagine.core.types;
 import eagine.core.container;
 import :callable_ref;
-import <cstdint>;
-import <limits>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

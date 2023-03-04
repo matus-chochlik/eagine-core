@@ -27,10 +27,7 @@ import :app_config;
 import :system_info;
 import :user_info;
 import :watchdog;
-import <chrono>;
-import <filesystem>;
-import <queue>;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

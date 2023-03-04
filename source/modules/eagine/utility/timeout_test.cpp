@@ -10,8 +10,7 @@
 #include <chrono>
 import eagine.core.types;
 import eagine.core.utility;
-import <chrono>;
-import <thread>;
+import std;
 //------------------------------------------------------------------------------
 void timeout_1(unsigned, auto& s) {
     eagitest::case_ test{s, 1, "1"};

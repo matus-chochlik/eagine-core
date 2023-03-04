@@ -18,12 +18,7 @@ import eagine.core.utility;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import :interface;
-import <chrono>;
-import <memory>;
-import <optional>;
-import <string>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------

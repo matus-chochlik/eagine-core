@@ -9,10 +9,7 @@ export module eagine.core.utility:spinlock;
 
 import eagine.core.build_config;
 import eagine.core.types;
-import <atomic>;
-import <cstdint>;
-import <optional>;
-import <thread>;
+import std;
 
 namespace eagine {
 

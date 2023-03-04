@@ -10,7 +10,7 @@ export module eagine.core.serialization:result;
 import eagine.core.types;
 import eagine.core.reflection;
 import eagine.core.valid_if;
-import <cstdint>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

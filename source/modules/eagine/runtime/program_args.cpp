@@ -17,9 +17,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.valid_if;
-import <iostream>;
-import <string>;
-import <optional>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

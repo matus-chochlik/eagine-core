@@ -80,7 +80,7 @@ eagine_example_common(value_tree)
 eagine_example_common(value_tree_overlay)
 eagine_example_common(value_tree_visitor)
 eagine_example_common(memoized)
-eagine_example_common(c_api_wrap)
+#eagine_example_common(c_api_wrap)
 eagine_example_common(dyn_lib_lookup)
 eagine_example_common(serialize_basic)
 eagine_example_common(serialize_string)
@@ -113,10 +113,6 @@ eagine_embed_target_resources(
 	ENABLE_SEARCH
 )
 #
-target_compile_options(
-	eagine-c_api_wrap
-	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unsafe-buffer-usage>
-)
 target_compile_options(
 	eagine-valgrind
 	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>

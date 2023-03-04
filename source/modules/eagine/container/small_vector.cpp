@@ -12,9 +12,7 @@ module;
 export module eagine.core.container:small_vector;
 
 import :static_vector;
-import <cstdint>;
-export import <vector>;
-export import <variant>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

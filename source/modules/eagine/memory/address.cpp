@@ -13,11 +13,7 @@ export module eagine.core.memory:address;
 
 import eagine.core.types;
 import :align;
-import <new>;
-import <compare>;
-import <cstddef>;
-import <cstdint>;
-import <type_traits>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

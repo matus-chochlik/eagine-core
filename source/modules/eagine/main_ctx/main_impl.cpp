@@ -17,9 +17,8 @@ import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.console;
 import eagine.core.logging;
-import <iostream>;
-import <stdexcept>;
-import <system_error>;
+import std;
+import <cerrno>;
 
 namespace eagine {
 //------------------------------------------------------------------------------

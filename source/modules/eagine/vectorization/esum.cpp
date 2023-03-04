@@ -10,7 +10,7 @@ export module eagine.core.vectorization:esum;
 import eagine.core.types;
 import :data;
 import :hsum;
-import <type_traits>;
+import std;
 
 namespace eagine::vect {
 

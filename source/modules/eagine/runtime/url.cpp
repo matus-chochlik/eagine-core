@@ -13,9 +13,7 @@ import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.container;
-export import <string>;
-import <charconv>;
-import <regex>;
+import std;
 
 namespace eagine {
 

@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.main_ctx;
 
+import std;
 import eagine.core.build_info;
 import eagine.core.types;
 import eagine.core.memory;

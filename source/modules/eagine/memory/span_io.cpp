@@ -9,8 +9,7 @@ export module eagine.core.memory:span_io;
 
 import eagine.core.types;
 import :span;
-import <iostream>;
-import <optional>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

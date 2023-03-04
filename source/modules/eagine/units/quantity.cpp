@@ -7,8 +7,7 @@ export module eagine.core.units:quantity;
 
 import eagine.core.types;
 import :base;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine::units {
 //------------------------------------------------------------------------------

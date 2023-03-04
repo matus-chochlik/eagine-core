@@ -15,10 +15,7 @@ import eagine.core.utility;
 import eagine.core.runtime;
 import eagine.core.logging;
 import :backend;
-import <atomic>;
-import <map>;
-import <mutex>;
-import <tuple>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

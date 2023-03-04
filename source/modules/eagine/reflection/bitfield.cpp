@@ -9,7 +9,7 @@ export module eagine.core.reflection:bitfield;
 
 import eagine.core.types;
 import :enumerators;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

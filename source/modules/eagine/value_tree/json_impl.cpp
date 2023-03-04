@@ -20,15 +20,7 @@ import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.logging;
-import <array>;
-import <chrono>;
-import <memory>;
-import <optional>;
-import <stack>;
-import <string>;
-import <vector>;
-
-import <iostream>;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------

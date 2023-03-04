@@ -8,13 +8,7 @@
 module eagine.core.runtime;
 
 import eagine.core.types;
-import <memory>;
-import <mutex>;
-import <latch>;
-import <queue>;
-import <thread>;
-import <tuple>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

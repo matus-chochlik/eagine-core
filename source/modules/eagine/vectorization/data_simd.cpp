@@ -8,9 +8,7 @@
 export module eagine.core.vectorization:data_simd;
 
 import eagine.core.concepts;
-import <cstdint>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine::vect {
 

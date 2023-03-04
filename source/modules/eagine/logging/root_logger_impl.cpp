@@ -40,10 +40,7 @@ import :null_backend;
 import :ostream_backend;
 import :syslog_backend;
 import :proxy_backend;
-import <cerrno>;
-import <iostream>;
-import <optional>;
-import <mutex>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

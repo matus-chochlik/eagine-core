@@ -10,7 +10,7 @@ export module eagine.core.runtime:file_contents;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
-import <memory>;
+import std;
 
 namespace eagine {
 

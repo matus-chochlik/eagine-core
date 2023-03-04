@@ -38,12 +38,7 @@ import eagine.core.string;
 import eagine.core.valid_if;
 import eagine.core.utility;
 import eagine.core.units;
-import <array>;
-import <chrono>;
-import <limits>;
-import <memory>;
-import <thread>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

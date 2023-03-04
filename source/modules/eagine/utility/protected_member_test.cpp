@@ -9,7 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
 import eagine.core.utility;
-import <utility>;
+import std;
 //------------------------------------------------------------------------------
 // 1
 //------------------------------------------------------------------------------

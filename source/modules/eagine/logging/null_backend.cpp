@@ -8,7 +8,7 @@
 export module eagine.core.logging:null_backend;
 
 import :backend;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

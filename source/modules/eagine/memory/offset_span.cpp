@@ -10,6 +10,7 @@ export module eagine.core.memory:offset_span;
 import eagine.core.types;
 import :offset_ptr;
 import :span;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

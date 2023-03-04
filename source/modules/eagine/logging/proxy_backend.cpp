@@ -8,8 +8,7 @@
 export module eagine.core.logging:proxy_backend;
 
 import :backend;
-import <memory>;
-import <system_error>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

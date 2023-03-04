@@ -15,10 +15,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
 import :multi_byte;
-import <compare>;
-import <iterator>;
-import <string>;
-import <tuple>;
+import std;
 
 namespace eagine {
 namespace string_list {

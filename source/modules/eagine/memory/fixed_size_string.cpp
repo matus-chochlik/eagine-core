@@ -13,7 +13,7 @@ export module eagine.core.memory:fixed_size_string;
 
 import eagine.core.types;
 import :string_span;
-import <algorithm>;
+import std;
 
 namespace eagine::memory {
 

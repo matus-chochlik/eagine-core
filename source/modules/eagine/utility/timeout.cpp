@@ -9,7 +9,7 @@ export module eagine.core.utility:timeout;
 
 import eagine.core.types;
 import eagine.core.debug;
-import <chrono>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

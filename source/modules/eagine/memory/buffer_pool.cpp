@@ -10,8 +10,7 @@ export module eagine.core.memory:buffer_pool;
 import eagine.core.build_config;
 import eagine.core.types;
 export import :buffer;
-import <algorithm>;
-import <vector>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

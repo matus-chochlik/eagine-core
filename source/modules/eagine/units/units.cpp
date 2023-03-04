@@ -15,7 +15,7 @@ export import :si;
 export import :quantity;
 export import :dimensions;
 export import :strings;
-import <cmath>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

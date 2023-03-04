@@ -7,7 +7,7 @@
 ///
 export module eagine.core.utility:interleaved_call;
 
-import <utility>;
+import std;
 
 namespace eagine {
 

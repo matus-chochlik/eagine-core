@@ -9,7 +9,7 @@ export module eagine.core.utility:progress_bar;
 
 import eagine.core.types;
 import eagine.core.memory;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

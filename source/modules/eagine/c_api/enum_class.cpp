@@ -16,10 +16,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.container;
 import eagine.core.identifier;
-import <compare>;
-import <cstdint>;
-import <tuple>;
-import <type_traits>;
+import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------

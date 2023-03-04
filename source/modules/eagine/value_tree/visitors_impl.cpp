@@ -15,6 +15,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.console;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------

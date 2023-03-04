@@ -10,8 +10,7 @@ export module eagine.core.logging:adapt_exception;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
-import <stdexcept>;
-import <system_error>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

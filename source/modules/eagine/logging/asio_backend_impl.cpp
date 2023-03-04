@@ -36,8 +36,7 @@ import eagine.core.string;
 import eagine.core.utility;
 import :backend;
 import :ostream_backend;
-import <iostream>;
-import <mutex>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

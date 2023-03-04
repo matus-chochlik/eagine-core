@@ -18,6 +18,7 @@ import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.progress;
 import eagine.core.console;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

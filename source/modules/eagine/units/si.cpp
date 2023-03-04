@@ -10,6 +10,7 @@ import :base;
 import :unit;
 import :dimension;
 import :dimensions;
+import std;
 
 namespace eagine {
 namespace units {

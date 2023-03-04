@@ -18,8 +18,7 @@ import eagine.core.units;
 import :traits;
 import :vector;
 import :matrix;
-import <optional>;
-import <utility>;
+import std;
 
 namespace eagine {
 namespace math {

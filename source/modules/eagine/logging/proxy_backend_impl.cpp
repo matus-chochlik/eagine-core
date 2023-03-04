@@ -22,13 +22,8 @@ import :null_backend;
 import :ostream_backend;
 import :syslog_backend;
 import :asio_backend;
-import <chrono>;
-import <functional>;
-import <iostream>;
-import <memory>;
-import <mutex>;
-import <string>;
-import <vector>;
+import std;
+import <cerrno>;
 
 namespace eagine {
 //------------------------------------------------------------------------------

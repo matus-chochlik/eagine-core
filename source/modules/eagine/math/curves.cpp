@@ -15,9 +15,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
 import :functions;
-import <cmath>;
-import <vector>;
-import <utility>;
+import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

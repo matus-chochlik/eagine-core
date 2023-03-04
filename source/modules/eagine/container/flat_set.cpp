@@ -12,11 +12,7 @@ module;
 export module eagine.core.container:flat_set;
 
 import eagine.core.types;
-import <algorithm>;
-import <functional>;
-import <stdexcept>;
-import <utility>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

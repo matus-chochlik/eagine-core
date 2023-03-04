@@ -13,11 +13,7 @@ export module eagine.core.runtime:value_with_history;
 
 import eagine.core.types;
 import eagine.core.valid_if;
-import <algorithm>;
-import <array>;
-import <cmath>;
-import <iterator>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

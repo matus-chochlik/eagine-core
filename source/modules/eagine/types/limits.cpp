@@ -12,12 +12,7 @@ module;
 export module eagine.core.types:limits;
 
 import :basic;
-import <cstdint>;
-import <concepts>;
-import <limits>;
-import <type_traits>;
-import <utility>;
-export import <optional>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

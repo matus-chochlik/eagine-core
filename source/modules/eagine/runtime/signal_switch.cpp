@@ -7,6 +7,7 @@
 ///
 export module eagine.core.runtime:signal_switch;
 
+import std;
 import <csignal>;
 
 namespace eagine {

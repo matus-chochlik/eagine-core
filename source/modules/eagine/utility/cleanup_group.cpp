@@ -10,8 +10,7 @@ export module eagine.core.utility:cleanup_group;
 import eagine.core.types;
 import eagine.core.memory;
 import :scope_exit;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

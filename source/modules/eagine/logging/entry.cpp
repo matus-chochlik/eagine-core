@@ -14,9 +14,7 @@ import eagine.core.valid_if;
 import eagine.core.utility;
 export import :entry_arg;
 import :backend;
-import <sstream>;
-import <optional>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

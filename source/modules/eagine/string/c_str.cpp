@@ -10,7 +10,7 @@ export module eagine.core.string:c_str;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

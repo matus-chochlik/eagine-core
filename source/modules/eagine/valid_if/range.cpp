@@ -11,6 +11,7 @@ import eagine.core.concepts;
 import eagine.core.types;
 import :decl;
 import :compare;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

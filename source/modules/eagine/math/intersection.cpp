@@ -12,9 +12,7 @@ import eagine.core.valid_if;
 import :functions;
 import :primitives;
 import :vector;
-import <cmath>;
-import <utility>;
-import <optional>;
+import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

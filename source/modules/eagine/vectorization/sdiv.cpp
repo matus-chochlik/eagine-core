@@ -9,7 +9,7 @@ export module eagine.core.vectorization:sdiv;
 
 import eagine.core.types;
 import :data;
-import <type_traits>;
+import std;
 
 namespace eagine::vect {
 

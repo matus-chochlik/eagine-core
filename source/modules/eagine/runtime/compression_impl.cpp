@@ -23,9 +23,7 @@ module eagine.core.runtime;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
-import <array>;
-import <memory>;
-import <stdexcept>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

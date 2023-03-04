@@ -21,9 +21,7 @@ import eagine.core.value_tree;
 import eagine.core.valid_if;
 import :result;
 import :interface;
-import <stack>;
-import <string>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -11,9 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import :backend;
-import <cstdint>;
-import <chrono>;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

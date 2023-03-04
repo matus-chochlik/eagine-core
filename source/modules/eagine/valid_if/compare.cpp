@@ -9,7 +9,7 @@ export module eagine.core.valid_if:compare;
 
 import eagine.core.concepts;
 import :decl;
-import <type_traits>;
+import std;
 
 namespace eagine {
 

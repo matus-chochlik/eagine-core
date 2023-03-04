@@ -13,7 +13,7 @@ export module eagine.core.utility:callable_ref;
 
 import eagine.core.concepts;
 import eagine.core.types;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

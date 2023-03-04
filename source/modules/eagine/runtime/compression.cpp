@@ -10,8 +10,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
 import eagine.core.reflection;
-import <cstdint>;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -7,8 +7,7 @@
 ///
 export module eagine.core.types:basic;
 
-import <cstdint>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

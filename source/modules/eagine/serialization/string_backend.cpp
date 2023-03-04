@@ -16,9 +16,7 @@ import eagine.core.valid_if;
 import :result;
 import :interface;
 import :implementation;
-import <cstdio>;
-import <cctype>;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -12,7 +12,7 @@ import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.logging;
-import <memory>;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------

@@ -8,8 +8,7 @@
 export module eagine.core.logging:severity;
 
 import eagine.core.reflection;
-import <cstdint>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

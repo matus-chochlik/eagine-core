@@ -14,7 +14,7 @@ import :handle;
 import :result;
 import :function;
 import :parameter_map;
-import <utility>;
+import std;
 
 namespace eagine::c_api {
 

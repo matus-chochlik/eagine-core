@@ -33,6 +33,7 @@ import eagine.core.identifier;
 import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.value_tree;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -13,11 +13,7 @@ import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.console;
-import <chrono>;
-import <cstdint>;
-import <memory>;
-import <string>;
-import <type_traits>;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------

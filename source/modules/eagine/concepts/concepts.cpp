@@ -7,9 +7,7 @@
 ///
 export module eagine.core.concepts;
 
-import <concepts>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -12,12 +12,7 @@ module;
 export module eagine.core.container:trie;
 import eagine.core.types;
 import eagine.core.memory;
-import <cstdint>;
-import <algorithm>;
-import <array>;
-import <optional>;
-import <vector>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

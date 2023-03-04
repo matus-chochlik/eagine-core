@@ -10,7 +10,7 @@
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.serialization;
-import <vector>;
+import std;
 //------------------------------------------------------------------------------
 void roundtrip_1(auto& s) {
     eagitest::case_ test{s, 1, "roundtrip 1"};

@@ -11,14 +11,8 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
 import :c_str;
-import <chrono>;
-import <concepts>;
+import std;
 import <cerrno>;
-import <cstdlib>;
-import <optional>;
-import <ratio>;
-import <string>;
-import <type_traits>;
 
 namespace eagine {
 //------------------------------------------------------------------------------

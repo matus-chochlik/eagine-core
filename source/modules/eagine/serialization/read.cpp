@@ -16,13 +16,7 @@ import eagine.core.valid_if;
 import eagine.core.units;
 import :result;
 import :interface;
-import <algorithm>;
-import <array>;
-import <chrono>;
-import <string>;
-import <tuple>;
-import <type_traits>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

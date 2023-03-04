@@ -12,7 +12,7 @@ module;
 export module eagine.core.memory:struct_block;
 
 import :block;
-import <type_traits>;
+import std;
 
 namespace eagine::memory {
 

@@ -11,8 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import :api_traits;
 import :result;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------

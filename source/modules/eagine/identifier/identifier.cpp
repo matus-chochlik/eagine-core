@@ -10,10 +10,7 @@ export module eagine.core.identifier;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.vectorization;
-import <cstdint>;
-import <iostream>;
-import <string>;
-import <tuple>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -11,7 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.c_api;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

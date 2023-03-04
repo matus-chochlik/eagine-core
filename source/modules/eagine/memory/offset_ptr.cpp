@@ -14,9 +14,7 @@ export module eagine.core.memory:offset_ptr;
 import eagine.core.concepts;
 import eagine.core.types;
 import :address;
-import <memory>;
-import <type_traits>;
-import <concepts>;
+import std;
 
 namespace eagine {
 namespace memory {

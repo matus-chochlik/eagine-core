@@ -8,8 +8,7 @@
 export module eagine.core.console:null_backend;
 
 import :backend;
-import <iosfwd>;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

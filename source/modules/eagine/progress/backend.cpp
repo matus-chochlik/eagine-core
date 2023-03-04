@@ -12,8 +12,7 @@ import eagine.core.memory;
 import eagine.core.utility;
 import eagine.core.runtime;
 
-import <chrono>;
-import <cstdint>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

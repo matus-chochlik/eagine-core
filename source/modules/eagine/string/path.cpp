@@ -16,12 +16,7 @@ import eagine.core.memory;
 import eagine.core.valid_if;
 import :multi_byte;
 import :list;
-import <compare>;
-import <iostream>;
-import <filesystem>;
-import <string>;
-import <tuple>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

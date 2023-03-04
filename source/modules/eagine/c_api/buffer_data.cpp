@@ -9,8 +9,7 @@ export module eagine.core.c_api:buffer_data;
 
 import eagine.core.types;
 import eagine.core.memory;
-import <cstdint>;
-import <type_traits>;
+import std;
 
 namespace eagine::c_api {
 

@@ -14,9 +14,7 @@ export module eagine.core.c_api:result;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.utility;
-import <stdexcept>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 namespace c_api {

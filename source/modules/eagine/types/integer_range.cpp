@@ -7,9 +7,7 @@
 ///
 export module eagine.core.types:integer_range;
 
-export import <ranges>;
-import <concepts>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 

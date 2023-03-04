@@ -9,7 +9,7 @@ export module eagine.core.vectorization:cast;
 
 import :data;
 import :fill;
-import <utility>;
+import std;
 
 namespace eagine::vect {
 

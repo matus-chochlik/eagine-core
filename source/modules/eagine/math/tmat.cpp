@@ -14,9 +14,7 @@ import :traits;
 import :vector;
 import :matrix;
 import :matrix_construct;
-import <concepts>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 namespace math {

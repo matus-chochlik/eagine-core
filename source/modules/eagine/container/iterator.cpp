@@ -7,9 +7,7 @@
 ///
 export module eagine.core.container:iterator;
 
-import <compare>;
-import <iterator>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

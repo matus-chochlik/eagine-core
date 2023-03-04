@@ -11,7 +11,7 @@ import eagine.core.types;
 import :data_simd;
 
 import :data;
-import <type_traits>;
+import std;
 
 namespace eagine::vect {
 

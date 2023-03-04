@@ -10,7 +10,7 @@ export module eagine.core.vectorization:hsum;
 import eagine.core.types;
 import :data;
 import :shuffle;
-import <type_traits>;
+import std;
 
 namespace eagine::vect {
 

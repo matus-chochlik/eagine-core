@@ -10,9 +10,7 @@ export module eagine.core.logging:adapt_filesystem;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
-import <filesystem>;
-import <system_error>;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

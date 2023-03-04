@@ -14,10 +14,7 @@ export module eagine.core.memory:byte_allocator;
 import eagine.core.types;
 import :block;
 import :address;
-import <cstdint>;
-import <cstdlib>;
-import <limits>;
-import <utility>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

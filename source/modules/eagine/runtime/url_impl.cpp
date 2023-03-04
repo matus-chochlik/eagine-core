@@ -8,9 +8,7 @@
 module eagine.core.runtime;
 
 import eagine.core.memory;
-import <cstdint>;
-import <string>;
-import <regex>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

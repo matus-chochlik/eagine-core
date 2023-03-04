@@ -10,7 +10,7 @@
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
-import <stack>;
+import std;
 //------------------------------------------------------------------------------
 void path_1(auto& s) {
     eagitest::case_ test{s, 1, "1"};

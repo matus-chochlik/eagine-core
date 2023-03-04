@@ -9,8 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
 import eagine.core.container;
-import <set>;
-import <string>;
+import std;
 //------------------------------------------------------------------------------
 void trie_empty(auto& s) {
     eagitest::case_ test{s, 1, "empty"};

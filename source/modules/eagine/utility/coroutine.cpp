@@ -7,8 +7,7 @@
 ///
 export module eagine.core.utility:coroutine;
 
-import <coroutine>;
-import <iterator>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

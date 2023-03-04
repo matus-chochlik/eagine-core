@@ -8,9 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.valid_if;
-import <filesystem>;
-import <string>;
-import <string_view>;
+import std;
 //------------------------------------------------------------------------------
 void valid_if_default_construct_file(auto& s) {
     eagitest::case_ test{s, 1, "default construct file"};

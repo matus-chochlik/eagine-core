@@ -9,7 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
 import eagine.core.memory;
-import <deque>;
+import std;
 //------------------------------------------------------------------------------
 // test 1
 //------------------------------------------------------------------------------

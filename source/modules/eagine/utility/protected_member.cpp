@@ -7,8 +7,7 @@
 ///
 export module eagine.core.utility:protected_member;
 
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 

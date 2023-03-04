@@ -9,10 +9,7 @@ export module eagine.core.memory:byteset;
 
 import eagine.core.types;
 import :block;
-import <climits>;
-import <compare>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 
@@ -181,7 +178,7 @@ private:
     constexpr auto _push_back_to(const UInt state, const std::size_t i)
       const noexcept -> UInt {
         // NOLINTNEXTLINE(hicpp-signed-bitwise)
-        return (i < N) ? _push_back_to((state << CHAR_BIT) | _bytes[i], i + 1)
+        return (i < N) ? _push_back_to((state << 8U) | _bytes[i], i + 1)
                        : state;
     }
 

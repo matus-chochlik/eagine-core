@@ -16,13 +16,7 @@ import eagine.core.concepts;
 import eagine.core.types;
 import :address;
 
-import <cmath>;
-import <concepts>;
-import <cstring>;
-import <memory>;
-import <initializer_list>;
-import <type_traits>;
-import <span>;
+import std;
 
 namespace eagine {
 namespace memory {

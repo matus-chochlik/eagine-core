@@ -12,7 +12,7 @@ import eagine.core.identifier;
 import eagine.core.runtime;
 import :backend;
 import :logger;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

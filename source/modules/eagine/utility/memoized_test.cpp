@@ -8,7 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.utility;
-import <map>;
+import std;
 //------------------------------------------------------------------------------
 unsigned long fib_calc(unsigned long n) {
     unsigned long m[3] = {1, 1, 2};

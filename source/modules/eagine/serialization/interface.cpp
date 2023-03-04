@@ -17,8 +17,7 @@ import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.valid_if;
 import :result;
-import <cstdint>;
-import <optional>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

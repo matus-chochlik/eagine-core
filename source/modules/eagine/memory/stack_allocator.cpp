@@ -15,7 +15,7 @@ import eagine.core.types;
 import :block;
 import :address;
 import :byte_allocator;
-import <type_traits>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

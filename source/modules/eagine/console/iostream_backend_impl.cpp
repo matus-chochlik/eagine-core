@@ -15,12 +15,7 @@ import eagine.core.container;
 import eagine.core.utility;
 import :backend;
 import :entry_kind;
-import <array>;
-import <charconv>;
-import <istream>;
-import <ostream>;
-import <optional>;
-import <mutex>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

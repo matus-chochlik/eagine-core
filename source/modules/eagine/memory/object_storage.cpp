@@ -18,9 +18,7 @@ import :block;
 import :byte_allocator;
 import :shared_allocator;
 import :std_allocator;
-export import <vector>;
-import <stdexcept>;
-import <type_traits>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
@@ -156,13 +154,12 @@ public:
     }
 
     template <typename T>
-    auto add(T x)
-      -> auto& requires(std::is_invocable_v<T, Params...>) {
-                   using A = std::remove_const_t<T>;
-                   auto& result = base::template emplace<A>(std::move(x));
-                   _clrs.push_back(&_call<A>);
-                   return result;
-               }
+    auto add(T x) -> auto& requires(std::is_invocable_v<T, Params...>) {
+        using A = std::remove_const_t<T>;
+        auto& result = base::template emplace<A>(std::move(x));
+        _clrs.push_back(&_call<A>);
+        return result;
+    }
 
     auto is_empty() const noexcept {
         assert(_blks.size() == _clrs.size());

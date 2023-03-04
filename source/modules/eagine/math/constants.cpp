@@ -7,7 +7,7 @@
 ///
 export module eagine.core.math:constants;
 
-import <cmath>;
+import std;
 
 namespace eagine::math {
 

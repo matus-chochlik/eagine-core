@@ -8,7 +8,7 @@
 export module eagine.core.vectorization:abs;
 
 import :data;
-import <cmath>;
+import std;
 
 namespace eagine::vect {
 
