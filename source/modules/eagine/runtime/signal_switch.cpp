@@ -8,7 +8,6 @@
 export module eagine.core.runtime:signal_switch;
 
 import std;
-import <csignal>;
 
 namespace eagine {
 
@@ -23,17 +22,10 @@ export class signal_switch {
 public:
     /// @brief Default constructor. Stores the original handlers if any.
     /// @post not bool(*this)
-    signal_switch() noexcept
-      : _intr_handler{std::signal(SIGINT, &_flip)}
-      , _term_handler{std::signal(SIGTERM, &_flip)} {}
+    signal_switch() noexcept;
 
     /// @brief Destructor. Restores the original signal handlers.
-    ~signal_switch() noexcept {
-        [[maybe_unused]] const auto unused_int{
-          std::signal(SIGINT, _intr_handler)};
-        [[maybe_unused]] const auto unused_trm{
-          std::signal(SIGTERM, _term_handler)};
-    }
+    ~signal_switch() noexcept;
 
     /// @brief Not moveable.
     signal_switch(signal_switch&&) = delete;
@@ -46,35 +38,21 @@ public:
 
     /// @brief Resets the signal state as if no signal was received.
     /// @post not bool(*this)
-    auto reset() noexcept -> signal_switch& {
-        _state() = 0;
-        return *this;
-    }
+    auto reset() noexcept -> signal_switch&;
 
     /// @brief Indicates if the interrupt signal was received.
-    auto interrupted() const noexcept -> bool {
-        return _state() == SIGINT;
-    }
+    auto interrupted() const noexcept -> bool;
 
     /// @brief Indicates if the terminate signal was received.
-    auto terminated() const noexcept -> bool {
-        return _state() == SIGTERM;
-    }
+    auto terminated() const noexcept -> bool;
 
     /// @brief Indicates if one of the tracked signals was received.
-    explicit operator bool() const noexcept {
-        return bool(_state());
-    }
+    explicit operator bool() const noexcept;
 
 private:
-    static auto _state() noexcept -> volatile std::sig_atomic_t& {
-        static volatile std::sig_atomic_t state{0};
-        return state;
-    }
+    static auto _state() noexcept -> volatile std::sig_atomic_t&;
 
-    static void _flip(const int sig_num) noexcept {
-        _state() = sig_num;
-    }
+    static void _flip(const int sig_num) noexcept;
 
     using _sighandler_t = void(int);
     _sighandler_t* _intr_handler{nullptr};

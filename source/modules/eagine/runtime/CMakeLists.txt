@@ -119,6 +119,7 @@ eagine_add_module(
 		process
 		input_data
 		executable_module
+		signal_switch
 		file_contents
 		compression
 		workshop
