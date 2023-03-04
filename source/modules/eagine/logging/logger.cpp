@@ -13,7 +13,6 @@ import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.runtime;
 import eagine.core.units;
-export import :severity;
 import :config;
 import :backend;
 import :entry;

@@ -11,7 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.runtime;
 import eagine.core.identifier;
-export import :severity;
+import eagine.core.reflection;
 import :entry_arg;
 import std;
 
@@ -25,6 +25,42 @@ export using logger_instance_id = std::uintptr_t;
 /// @ingroup logging
 export using time_interval_id = std::uintptr_t;
 
+//------------------------------------------------------------------------------
+/// @brief Log event severity enumeration.
+/// @ingroup logging
+export enum class log_event_severity : std::uint8_t {
+    /// @brief Backtracing log entries (the lowest severity).
+    backtrace,
+    /// @brief Trace log entries.
+    trace,
+    /// @brief Debug log entries.
+    debug,
+    /// @brief Statistic log entries.
+    stat,
+    /// @brief Informational log entries.
+    info,
+    /// @brief Warning log entries, indicating potential problems.
+    warning,
+    /// @brief Error log entries, indicating serious problems.
+    error,
+    /// @brief Fatal error log entries, indicating problem requiring termination.
+    fatal
+};
+
+export template <typename Selector>
+constexpr auto enumerator_mapping(
+  const std::type_identity<log_event_severity>,
+  const Selector) noexcept {
+    return enumerator_map_type<log_event_severity, 8>{
+      {{"backtrace", log_event_severity::backtrace},
+       {"trace", log_event_severity::trace},
+       {"debug", log_event_severity::debug},
+       {"stat", log_event_severity::stat},
+       {"info", log_event_severity::info},
+       {"warning", log_event_severity::warning},
+       {"error", log_event_severity::error},
+       {"fatal", log_event_severity::fatal}}};
+}
 //------------------------------------------------------------------------------
 /// @brief Structure used to supply initial log stream information to a logger.
 /// @ingroup logging
@@ -214,5 +250,42 @@ export struct logger_backend : interface<logger_backend> {
       const identifier series,
       const float value) noexcept = 0;
 };
+//------------------------------------------------------------------------------
+// backend getters
+//------------------------------------------------------------------------------
+export auto make_null_log_backend() -> std::unique_ptr<logger_backend>;
+//------------------------------------------------------------------------------
+export auto make_asio_local_ostream_log_backend_mutex(const log_stream_info&)
+  -> std::unique_ptr<logger_backend>;
+export auto make_asio_local_ostream_log_backend_spinlock(const log_stream_info&)
+  -> std::unique_ptr<logger_backend>;
+
+export auto make_asio_local_ostream_log_backend_mutex(
+  string_view addr,
+  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+export auto make_asio_local_ostream_log_backend_spinlock(
+  string_view addr,
+  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+
+export auto make_asio_tcpipv4_ostream_log_backend_mutex(
+  string_view addr,
+  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+export auto make_asio_tcpipv4_ostream_log_backend_spinlock(
+  string_view addr,
+  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+//------------------------------------------------------------------------------
+export class log_backend_error : public std::system_error {
+public:
+    log_backend_error(std::system_error& orig) noexcept
+      : std::system_error{std::move(orig)} {}
+};
+//------------------------------------------------------------------------------
+export auto make_proxy_log_backend(log_stream_info info)
+  -> std::unique_ptr<logger_backend>;
+//------------------------------------------------------------------------------
+export auto make_syslog_log_backend_mutex(const log_stream_info&)
+  -> std::unique_ptr<logger_backend>;
+export auto make_syslog_log_backend_spinlock(const log_stream_info&)
+  -> std::unique_ptr<logger_backend>;
 //------------------------------------------------------------------------------
 } // namespace eagine

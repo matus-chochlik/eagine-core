@@ -18,10 +18,7 @@ import eagine.core.string;
 import eagine.core.utility;
 import eagine.core.runtime;
 import eagine.core.identifier;
-import :null_backend;
 import :ostream_backend;
-import :syslog_backend;
-import :asio_backend;
 import std;
 import <cerrno>;
 

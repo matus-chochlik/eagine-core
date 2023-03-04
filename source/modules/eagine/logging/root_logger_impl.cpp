@@ -33,13 +33,9 @@ import eagine.core.valid_if;
 import eagine.core.utility;
 import eagine.core.runtime;
 import :config;
-import :severity;
 import :entry;
 import :backend;
-import :null_backend;
 import :ostream_backend;
-import :syslog_backend;
-import :proxy_backend;
 import std;
 
 namespace eagine {

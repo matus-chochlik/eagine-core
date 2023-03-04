@@ -23,7 +23,7 @@ export module eagine.core.logging:config;
 
 import eagine.core.build_config;
 import eagine.core.types;
-import :severity;
+import :backend;
 import std;
 
 namespace eagine {

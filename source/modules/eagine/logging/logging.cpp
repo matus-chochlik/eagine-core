@@ -7,15 +7,10 @@
 ///
 export module eagine.core.logging;
 
-export import :severity;
 export import :config;
 export import :backend;
 export import :entry_arg;
-export import :null_backend;
 export import :ostream_backend;
-export import :syslog_backend;
-export import :asio_backend;
-export import :proxy_backend;
 export import :time_interval;
 export import :entry;
 export import :logger;
