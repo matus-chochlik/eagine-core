@@ -5,10 +5,15 @@
 eagine_add_module(
 	eagine.core.logging PARTITION entry_arg
 	IMPORTS
+		eagine.core.build_info
 		eagine.core.types
 		eagine.core.reflection
 		eagine.core.identifier
+		eagine.core.valid_if
+		eagine.core.runtime
 		eagine.core.utility
+		eagine.core.string
+		eagine.core.c_api
 )
 
 eagine_add_module(
@@ -95,71 +100,13 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION adapt_enum
+	eagine.core.logging PARTITION adapt_entry_arg
 	IMPORTS
 		entry_arg
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
 		eagine.core.c_api
-)
-
-eagine_add_module(
-	eagine.core.logging PARTITION adapt_exception
-	IMPORTS
-		entry_arg
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.identifier
-)
-
-eagine_add_module(
-	eagine.core.logging PARTITION adapt_filesystem
-	IMPORTS
-		entry_arg
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.identifier
-)
-
-eagine_add_module(
-	eagine.core.logging PARTITION adapt_tribool
-	IMPORTS
-		entry_arg
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.identifier
-)
-
-eagine_add_module(
-	eagine.core.logging PARTITION adapt_version_info
-	IMPORTS
-		entry_arg
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.identifier
-		eagine.core.build_info
-		eagine.core.valid_if
-)
-
-eagine_add_module(
-	eagine.core.logging PARTITION adapt_program_args
-	IMPORTS
-		entry_arg
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.identifier
-		eagine.core.runtime
-)
-
-eagine_add_module(
-	eagine.core.logging PARTITION adapt_string_path
-	IMPORTS
-		entry_arg
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.string
-		eagine.core.identifier
 )
 
 eagine_add_module(
@@ -176,13 +123,7 @@ eagine_add_module(
 		entry
 		logger
 		root_logger
-		adapt_enum
-		adapt_tribool
-		adapt_exception
-		adapt_filesystem
-		adapt_string_path
-		adapt_version_info
-		adapt_program_args
+		adapt_entry_arg
 	SOURCES
 		null_backend
 		asio_backend
