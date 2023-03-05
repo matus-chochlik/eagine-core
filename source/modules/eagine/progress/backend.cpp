@@ -11,6 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
 import eagine.core.runtime;
+import eagine.core.logging;
 
 import std;
 
@@ -102,5 +103,12 @@ struct progress_tracker_backend : interface<progress_tracker_backend> {
     /// @see set_update_callback
     virtual void reset_update_callback() noexcept = 0;
 };
+//------------------------------------------------------------------------------
+// backends
+//------------------------------------------------------------------------------
+/// @brief Creates a default implementation of activity progress backend object.
+/// @ingroup progress
+export [[nodiscard]] auto make_default_progress_tracker_backend(logger& parent)
+  -> std::unique_ptr<progress_tracker_backend>;
 //------------------------------------------------------------------------------
 } // namespace eagine

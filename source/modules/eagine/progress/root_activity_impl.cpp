@@ -10,7 +10,7 @@ module eagine.core.progress;
 import eagine.core.types;
 import eagine.core.utility;
 import eagine.core.logging;
-import :default_backend;
+import :backend;
 import std;
 
 namespace eagine {

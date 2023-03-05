@@ -9,18 +9,6 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.utility
 		eagine.core.runtime
-)
-
-eagine_add_module(
-	eagine.core.progress PARTITION default_backend
-	IMPORTS
-		backend
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.utility
-		eagine.core.identifier
-		eagine.core.container
-		eagine.core.runtime
 		eagine.core.logging
 )
 
@@ -48,11 +36,13 @@ eagine_add_module(
 		progress
 	PARTITIONS
 		backend
-		default_backend
 		activity
 		root_activity
 	SOURCES
 		default_backend
 		root_activity
+	IMPORTS
+		eagine.core.identifier
+		eagine.core.container
 )
 

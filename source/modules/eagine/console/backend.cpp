@@ -171,6 +171,8 @@ export struct console_backend : interface<console_backend> {
     virtual void concluded(const console_entry_id_t) noexcept = 0;
 };
 //------------------------------------------------------------------------------
+// backends
+//------------------------------------------------------------------------------
 /// @brief Structure holding console customization options.
 /// @ingroup console
 export struct console_options {
