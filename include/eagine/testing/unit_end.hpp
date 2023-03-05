@@ -6,11 +6,6 @@
 /// http://www.boost.org/LICENSE_1_0.txt
 ///
 ///
-import <cmath>;
-import <format>;
-import <limits>;
-import <iostream>;
-
 #include <cassert>
 namespace eagitest {
 //------------------------------------------------------------------------------

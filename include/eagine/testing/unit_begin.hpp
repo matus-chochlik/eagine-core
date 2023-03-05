@@ -6,14 +6,7 @@
 /// http://www.boost.org/LICENSE_1_0.txt
 ///
 ///
-import <cstdint>;
-import <string_view>;
-import <vector>;
-import <random>;
-import <type_traits>;
-#if __cpp_lib_source_location >= 201907L
-import <source_location>;
-#endif
+import std;
 
 namespace eagitest {
 //------------------------------------------------------------------------------

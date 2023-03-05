@@ -333,7 +333,7 @@ def make_prologue(options):
     options.output.write("import eagine.core.types;\n");
     options.output.write("import eagine.core.memory;\n");
     options.output.write("import eagine.core.identifier;\n");
-    options.output.write("import <array>;\n");
+    options.output.write("import std;\n");
     options.output.write("namespace eagine {\n")
     options.output.write("template <identifier_t ResId>\n")
     options.output.write("auto get_embedded_resource(const selector<ResId>, const string_view) noexcept\n")
