@@ -140,13 +140,7 @@ public:
 
     auto parameter(const auto&, std::string_view name) noexcept -> case_&;
     auto constructed(const auto&, std::string_view name) noexcept -> case_&;
-    auto checkpoint(
-      std::string_view label
-#if __cpp_lib_source_location >= 201907L
-      ,
-      const std::source_location loc = std::source_location::current()
-#endif
-        ) noexcept -> case_&;
+    auto checkpoint(std::string_view label) noexcept -> case_&;
 
     auto ensure(bool condition, std::string_view label, const auto&...)
       -> case_&;

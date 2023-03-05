@@ -187,13 +187,7 @@ auto case_::constructed(const auto&, std::string_view name) noexcept -> case_& {
     return *this;
 }
 //------------------------------------------------------------------------------
-auto case_::checkpoint(
-  std::string_view label
-#if __cpp_lib_source_location >= 201907L
-  ,
-  const std::source_location
-#endif
-  ) noexcept -> case_& {
+auto case_::checkpoint(std::string_view label) noexcept -> case_& {
     std::clog << "  checkpoint '" << _parent._name << "/" << this->_name << "/"
               << label << "' reached" << std::endl;
 
