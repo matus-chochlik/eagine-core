@@ -10,7 +10,6 @@ export module eagine.core.c_api;
 export import :result;
 export import :api_traits;
 export import :enum_class;
-export import :enum_bitfield;
 export import :constant;
 export import :handle;
 export import :object;

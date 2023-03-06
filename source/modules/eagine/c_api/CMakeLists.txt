@@ -36,13 +36,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION enum_bitfield
-	IMPORTS
-		enum_class
-		eagine.core.types
-)
-
-eagine_add_module(
 	eagine.core.c_api PARTITION constant
 	IMPORTS
 		enum_class
@@ -106,7 +99,6 @@ eagine_add_module(
 		api_traits
 		key_value_list
 		enum_class
-		enum_bitfield
 		constant
 		handle
 		object
