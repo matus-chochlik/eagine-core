@@ -357,8 +357,15 @@ auto system_info::config_dir_path() noexcept
 auto system_info::memory_page_size() noexcept
   -> valid_if_positive<span_size_t> {
 #if EAGINE_POSIX
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmodules-ambiguous-internal-linkage"
+#endif
 #if defined(_SC_PAGESIZE)
     return {span_size(::sysconf(_SC_PAGESIZE))};
+#endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 #endif
     return {0};
