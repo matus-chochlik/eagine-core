@@ -18,79 +18,11 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.vectorization PARTITION shuffle
-	IMPORTS
-		data_vector data
-		eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION from
+	eagine.core.vectorization PARTITION ops
 	IMPORTS
 		data
+		data_simd
 		eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION hsum
-	IMPORTS
-		data shuffle
-		eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION esum
-	IMPORTS
-		data hsum
-		eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION sdiv
-	IMPORTS
-		data
-		eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION abs
-	IMPORTS data
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION sqrt
-	IMPORTS data
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION axis
-	IMPORTS data
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION fill
-	IMPORTS data
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION cast
-	IMPORTS data fill
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION compare
-	IMPORTS data
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION diff
-	IMPORTS data abs
-)
-
-eagine_add_module(
-	eagine.core.vectorization PARTITION view
-	IMPORTS
-		data
 		eagine.core.memory
 )
 
@@ -102,19 +34,7 @@ eagine_add_module(
 		data_array
 		data_simd
 		data
-		from
-		shuffle
-		abs
-		sqrt
-		axis
-		cast
-		fill
-		compare
-		diff
-		hsum
-		esum
-		sdiv
-		view
+		ops
 )
 
 eagine_add_module_tests(
