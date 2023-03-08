@@ -108,3 +108,8 @@ eagine_add_module(
 		adapted_function
 )
 
+eagine_add_module_tests(
+	eagine.core.c_api
+	UNITS
+		buffer_data
+)
