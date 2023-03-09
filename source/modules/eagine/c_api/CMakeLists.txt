@@ -112,4 +112,5 @@ eagine_add_module_tests(
 	eagine.core.c_api
 	UNITS
 		buffer_data
+		key_value_list
 )

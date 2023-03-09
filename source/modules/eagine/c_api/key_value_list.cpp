@@ -44,7 +44,9 @@ public:
     using conv_type = typename Traits::conv_type;
     using value_type = typename Traits::value_type;
 
-    constexpr key_value_list() noexcept = default;
+    constexpr key_value_list() noexcept {
+        _values.push_back(Traits::terminator());
+    }
 
     explicit constexpr key_value_list(
       const key_value_list_element<Traits>& e) noexcept {
@@ -96,7 +98,7 @@ private:
       const key_value_list& base,
       const key_value_list_element<Traits>& key_val) noexcept {
         _values.reserve(safe_add(base._values.size(), 2));
-        for(const auto i : integer_range(_values.size() - 1)) {
+        for(const auto i : integer_range(base._values.size() - 1)) {
             _values.push_back(base._values[i]);
         }
         _values.push_back(static_cast<conv_type>(key_val._key));
@@ -104,7 +106,7 @@ private:
         _values.push_back(Traits::terminator());
     }
 
-    std::vector<value_type> _values{Traits::terminator()};
+    std::vector<value_type> _values{};
 };
 
 /// @brief Concatenates two individual key/value elements into a key/value list.
