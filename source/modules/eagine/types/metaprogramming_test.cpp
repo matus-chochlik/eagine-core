@@ -34,14 +34,14 @@ void mp_list_contains(auto& s) {
     test.check(not mp_contains_v<lDCB, type_A>, "DCB does not contain A");
 }
 //------------------------------------------------------------------------------
-void mp_list_union(auto& s) {
-    eagitest::case_ test{s, 2, "list union"};
+void mp_list_intersection(auto& s) {
+    eagitest::case_ test{s, 2, "list intersection"};
 
     using namespace eagine;
     using lABC = mp_list<type_A, type_B, type_C>;
     using lDCB = mp_list<type_D, type_C, type_B>;
 
-    using lBC = mp_union_t<lABC, lDCB>;
+    using lBC = mp_intersection_t<lABC, lDCB>;
 
     test.check(not mp_contains_v<lBC, type_A>, "does not contain A");
     test.check(mp_contains_v<lBC, type_B>, "contains B");
@@ -167,7 +167,7 @@ void mp_string_superscript(auto& s) {
 auto main(int argc, const char** argv) -> int {
     eagitest::suite test{argc, argv, "metaprogramming", 10};
     test.once(mp_list_contains);
-    test.once(mp_list_union);
+    test.once(mp_list_intersection);
     test.once(mp_string_empty);
     test.once(mp_string_content);
     test.once(mp_string_make);
