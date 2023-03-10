@@ -6,6 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 export module eagine.core.utility:bool_aggregate;
+import std;
 
 namespace eagine {
 
@@ -40,8 +41,24 @@ private:
     bool _result{false};
 };
 
-/// @brief Type alias used as return value indicating that some work was done.
+/// @brief Type used as return value indicating that some work was done.
 /// @ingroup type_utils
-export using work_done = some_true;
+export class work_done : public some_true {
+public:
+    constexpr work_done() noexcept = default;
+    constexpr work_done(bool value) noexcept
+      : some_true{value} {}
+    constexpr work_done(some_true that) noexcept
+      : some_true{that} {}
+
+    /// @brief Suspend this thread for specified interval if no work was done.
+    template <typename R, typename P>
+    auto or_sleep_for(std::chrono::duration<R, P> interval) noexcept -> auto& {
+        if(not *this) {
+            std::this_thread::sleep_for(interval);
+        }
+        return *this;
+    }
+};
 
 } // namespace eagine
