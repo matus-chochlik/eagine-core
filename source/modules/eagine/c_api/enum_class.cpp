@@ -595,28 +595,28 @@ struct enum_bits<T, mp_list<Classes...>> {
 };
 
 export template <typename T, typename TL1, typename TL2>
-    requires(not mp_is_empty_v<mp_union_t<TL1, TL2>>)
+    requires(not mp_is_empty_v<mp_intersection_t<TL1, TL2>>)
 constexpr auto operator|(
   const enum_value<T, TL1> a,
   const enum_value<T, TL2> b) noexcept {
     // NOLINTNEXTLINE(hicpp-signed-bitwise)
-    return enum_bits<T, mp_union_t<TL1, TL2>>{a.value | b.value};
+    return enum_bits<T, mp_intersection_t<TL1, TL2>>{a.value | b.value};
 }
 
 export template <typename T, typename TL1, typename TL2>
-    requires(not mp_is_empty_v<mp_union_t<TL1, TL2>>)
+    requires(not mp_is_empty_v<mp_intersection_t<TL1, TL2>>)
 constexpr auto operator|(
   const enum_bits<T, TL1> eb,
   const enum_value<T, TL2> ev) noexcept {
-    return enum_bits<T, mp_union_t<TL1, TL2>>{eb._bits | ev.value};
+    return enum_bits<T, mp_intersection_t<TL1, TL2>>{eb._bits | ev.value};
 }
 
 export template <typename T, typename TL1, typename TL2>
-    requires(not mp_is_empty_v<mp_union_t<TL1, TL2>>)
+    requires(not mp_is_empty_v<mp_intersection_t<TL1, TL2>>)
 constexpr auto operator|(
   const enum_value<T, TL1> ev,
   const enum_bits<T, TL2> eb) noexcept {
-    return enum_bits<T, mp_union_t<TL1, TL2>>{ev._bits | eb.value};
+    return enum_bits<T, mp_intersection_t<TL1, TL2>>{ev._bits | eb.value};
 }
 //------------------------------------------------------------------------------
 export template <typename EnumClass>
