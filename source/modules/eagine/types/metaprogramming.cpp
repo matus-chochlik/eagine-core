@@ -119,12 +119,17 @@ export template <typename... Tr, typename... Tf>
 struct mp_union_add<mp_list<>, mp_list<Tr...>, mp_list<Tf...>>
   : mp_list<Tf..., Tr...> {};
 
-export template <typename H, typename... Tl, typename... Tr, typename... Tf>
-struct mp_union_add<mp_list<H, Tl...>, mp_list<Tr...>, mp_list<Tf...>>
+export template <
+  typename Hl,
+  typename Hr,
+  typename... Tl,
+  typename... Tr,
+  typename... Tf>
+struct mp_union_add<mp_list<Hl, Tl...>, mp_list<Hr, Tr...>, mp_list<Tf...>>
   : std::conditional_t<
-      mp_contains<mp_list<Tf...>, H>::value,
-      mp_union_add<mp_list<Tl...>, mp_list<Tr...>, mp_list<Tf...>>,
-      mp_union_add<mp_list<Tl...>, mp_list<Tr...>, mp_list<Tf..., H>>> {};
+      mp_contains<mp_list<Tf...>, Hl>::value,
+      mp_union_add<mp_list<Tl...>, mp_list<Hr, Tr...>, mp_list<Tf...>>,
+      mp_union_add<mp_list<Tl...>, mp_list<Hr, Tr...>, mp_list<Tf..., Hl>>> {};
 
 /// @brief Implements the union operation on compile-time type lists.
 /// @ingroup metaprogramming
