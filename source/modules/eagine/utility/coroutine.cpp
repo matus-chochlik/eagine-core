@@ -12,7 +12,8 @@ import std;
 namespace eagine {
 //------------------------------------------------------------------------------
 export template <typename... T>
-class tuple_generator {
+class tuple_generator
+  : public std::ranges::view_interface<tuple_generator<T...>> {
 public:
     class promise_type {
     public:
@@ -71,7 +72,7 @@ public:
         }
     }
 
-    struct sentinel {};
+    using sentinel = std::default_sentinel_t;
 
     class iterator {
     public:
@@ -114,7 +115,8 @@ private:
 };
 //------------------------------------------------------------------------------
 export template <std::forward_iterator Iterator>
-class pointee_generator {
+class pointee_generator
+  : public std::ranges::view_interface<pointee_generator<Iterator>> {
 public:
     class promise_type {
     public:
@@ -174,7 +176,7 @@ public:
         }
     }
 
-    struct sentinel {};
+    using sentinel = std::default_sentinel_t;
 
     class iterator {
     public:
