@@ -109,11 +109,11 @@ public:
 
     /// @brief Constructs value of type C from the stored value or an empty optional.
     /// @see and_then
-    template <typename C>
-    [[nodiscard]] auto construct() noexcept(noexcept(T(std::declval<T&>())))
-      -> std::optional<C> {
+    template <typename C, typename... Args>
+    [[nodiscard]] auto construct(Args&&... args) noexcept(
+      noexcept(T(std::declval<T&>()))) -> std::optional<C> {
         if(has_value()) {
-            return {C{this->value()}};
+            return {C{this->value(), std::forward<Args>(args)...}};
         }
         return {};
     }

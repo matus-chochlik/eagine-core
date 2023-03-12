@@ -290,11 +290,12 @@ public:
 
     /// @brief Constructs value of type C from the stored value or an empty optional.
     /// @see and_then
-    template <typename C>
-    [[nodiscard]] auto construct() noexcept(noexcept(T(std::declval<T&>())))
+    template <typename C, typename... Args>
+    [[nodiscard]] auto construct(Args&&... args) noexcept(
+      noexcept(T(std::declval<T&>())))
       -> basic_valid_if<C, valid_flag_policy, typename valid_flag_policy::do_log> {
         if(has_value()) {
-            return {C{this->value_anyway()}, true};
+            return {C{this->value_anyway(), std::forward<Args>(args)...}, true};
         }
         return {};
     }
@@ -640,12 +641,12 @@ public:
 
     /// @brief Constructs value of type C from the stored value or an empty optional.
     /// @see and_then
-    template <typename C>
-    [[nodiscard]] auto construct() const noexcept(
+    template <typename C, typename... Args>
+    [[nodiscard]] auto construct(Args&&... args) const noexcept(
       noexcept(T(std::declval<const T&>())))
       -> basic_valid_if<C, valid_flag_policy, typename valid_flag_policy::do_log> {
         if(has_value()) {
-            return {C{this->value_anyway()}};
+            return {C{this->value_anyway(), std::forward<Args>(args)...}, true};
         }
         return {};
     }
