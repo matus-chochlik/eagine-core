@@ -12,34 +12,47 @@ namespace eagine {
 
 /// @brief Class storing initially false value and logically or-ing other values.
 /// @ingroup type_utils
-export class some_true {
+export template <typename Bool>
+class basic_some_true {
 public:
     /// @brief Default constructible.
-    constexpr some_true() noexcept = default;
+    constexpr basic_some_true() noexcept = default;
     /// @brief Initializing constructior.
-    constexpr some_true(const bool init) noexcept
+    constexpr basic_some_true(const bool init) noexcept
       : _result{init} {}
+
+    /// @brief Copy  constructior.
+    template <typename B>
+    constexpr basic_some_true(const basic_some_true<B>& init) noexcept
+      : basic_some_true{bool(init)} {}
 
     /// @brief Logically or-s the stored state with the specified argument.
     constexpr auto operator()(const bool b = true) noexcept -> auto& {
-        _result |= b;
+        _result = b or _result;
         return *this;
     }
 
     /// @brief Logically or-s the stored state with the specified argument.
-    constexpr auto operator()(const some_true that) noexcept -> auto& {
-        _result |= that._result;
+    template <typename B>
+    constexpr auto operator()(const basic_some_true<B> that) noexcept -> auto& {
+        _result = bool(that) or _result;
         return *this;
     }
 
     /// @brief Returns the current boolean state.
     [[nodiscard]] constexpr explicit operator bool() const noexcept {
-        return _result;
+        return bool(_result);
     }
 
 private:
-    bool _result{false};
+    Bool _result{false};
 };
+
+/// @brief Class storing initially false value and logically or-ing other values.
+/// @ingroup type_utils
+export using some_true = basic_some_true<bool>;
+
+export using some_true_atomic = basic_some_true<std::atomic<bool>>;
 
 /// @brief Type used as return value indicating that some work was done.
 /// @ingroup type_utils
@@ -48,7 +61,9 @@ public:
     constexpr work_done() noexcept = default;
     constexpr work_done(bool value) noexcept
       : some_true{value} {}
-    constexpr work_done(some_true that) noexcept
+
+    template <typename Bool>
+    constexpr work_done(const basic_some_true<Bool>& that) noexcept
       : some_true{that} {}
 
     /// @brief Suspend this thread for specified interval if no work was done.
