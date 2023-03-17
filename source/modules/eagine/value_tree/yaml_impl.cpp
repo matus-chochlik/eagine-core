@@ -80,17 +80,17 @@ class rapidyaml_tree_compound;
 class rapidyaml_attribute;
 static auto rapidyaml_make_new_node(
   rapidyaml_tree_compound&,
-  ryml::NodeRef) noexcept -> rapidyaml_attribute*;
+  ryml::ConstNodeRef) noexcept -> rapidyaml_attribute*;
 //------------------------------------------------------------------------------
 class rapidyaml_attribute : public attribute_interface {
-    ryml::NodeRef _node{};
+    ryml::ConstNodeRef _node{};
 
-    static inline auto _usable(const ryml::NodeRef& n) noexcept {
-        return n.valid() and not n.is_seed();
+    static inline auto _usable(const ryml::ConstNodeRef& n) noexcept {
+        return n.valid();
     }
 
 public:
-    [[nodiscard]] rapidyaml_attribute(ryml::NodeRef node)
+    [[nodiscard]] rapidyaml_attribute(ryml::ConstNodeRef node)
       : _node{node} {}
 
     auto type_id() const noexcept -> identifier final {
@@ -190,10 +190,10 @@ public:
                     if(const auto opt_idx{from_string<span_size_t>(entry)}) {
                         result = result[extract(opt_idx)];
                     } else {
-                        result = {};
+                        result = ryml::ConstNodeRef{};
                     }
                 } else {
-                    result = {};
+                    result = ryml::ConstNodeRef{};
                 }
             } else {
                 break;
@@ -361,7 +361,7 @@ public:
 //------------------------------------------------------------------------------
 [[nodiscard]] static auto rapidyaml_make_new_node(
   rapidyaml_tree_compound& owner,
-  ryml::NodeRef node) noexcept -> rapidyaml_attribute* {
+  ryml::ConstNodeRef node) noexcept -> rapidyaml_attribute* {
     return owner.make_node(node);
 }
 //------------------------------------------------------------------------------
