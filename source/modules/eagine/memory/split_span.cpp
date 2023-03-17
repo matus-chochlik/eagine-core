@@ -11,7 +11,7 @@ import eagine.core.types;
 export import :span;
 export import :block;
 import :span_algorithm;
-import <type_traits>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

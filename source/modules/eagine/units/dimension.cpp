@@ -13,7 +13,7 @@ namespace eagine::units {
 // multiplication
 export template <typename D1, typename D2>
 auto operator*(const D1, const D2) noexcept -> bits::dim_add_t<D1, D2>
-    requires(is_dimension_v<D1> && is_dimension_v<D2>)
+    requires(is_dimension_v<D1> and is_dimension_v<D2>)
 {
     return {};
 }
@@ -21,7 +21,7 @@ auto operator*(const D1, const D2) noexcept -> bits::dim_add_t<D1, D2>
 // division
 export template <typename D1, typename D2>
 auto operator/(const D1, const D2) noexcept -> bits::dim_sub_t<D1, D2>
-    requires(is_dimension_v<D1> && is_dimension_v<D2>)
+    requires(is_dimension_v<D1> and is_dimension_v<D2>)
 {
     return {};
 }
@@ -30,6 +30,7 @@ auto operator/(const D1, const D2) noexcept -> bits::dim_sub_t<D1, D2>
 template <typename Dim, typename BaseDim>
 using base_dimension_power = bits::get_pow<Dim, BaseDim>;
 
+export using dimensionless = bits::dimless;
 // basic dimensions
 export using angle = dimension<base::angle, 1>;
 export using solid_angle = dimension<base::solid_angle, 1>;

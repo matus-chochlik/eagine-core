@@ -8,8 +8,7 @@
 #define EAGINE_XML_LOGS_ENTRY_FORMAT_HPP
 
 import eagine.core;
-import <optional>;
-import <chrono>;
+import std;
 
 //------------------------------------------------------------------------------
 struct LogEntryData;

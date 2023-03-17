@@ -30,10 +30,7 @@ import eagine.core.utility;
 import eagine.core.identifier;
 import eagine.core.container;
 import eagine.core.string;
-import <chrono>;
-import <mutex>;
-import <optional>;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

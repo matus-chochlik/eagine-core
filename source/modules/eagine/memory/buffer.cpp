@@ -16,8 +16,7 @@ export import :block;
 import :address;
 import :span_algorithm;
 import :shared_allocator;
-import <cstring>;
-import <utility>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
@@ -180,7 +179,7 @@ public:
     /// @see resize
     /// @see reserve
     /// @see clear
-    /// @post empty() && capacity() == 0
+    /// @post empty() and  capacity() == 0
     void free() noexcept {
         _alloc.deallocate(std::move(_storage), _align);
         _size = 0;
@@ -189,13 +188,13 @@ public:
     /// @brief Implicit conversion to block.
     operator block() noexcept {
         assert(_is_ok());
-        return {_storage.begin(), _size};
+        return {_storage.data(), _size};
     }
 
     /// @brief Implicit conversion to const_block.
     operator const_block() const noexcept {
         assert(_is_ok());
-        return {_storage.begin(), _size};
+        return {_storage.data(), _size};
     }
 
 private:
@@ -205,7 +204,7 @@ private:
     shared_byte_allocator _alloc{default_shared_allocator()};
 
     auto _is_ok() const noexcept -> bool {
-        return bool(_alloc) && size() <= capacity();
+        return bool(_alloc) and size() <= capacity();
     }
 
     void _reallocate(const span_size_t new_size) noexcept {

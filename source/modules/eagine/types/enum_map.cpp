@@ -10,7 +10,7 @@ export module eagine.core.types:enum_map;
 import :basic;
 import :bitfield;
 import :selector;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -101,7 +101,7 @@ public:
     /// @see get
     template <typename Visitor>
     auto visit(const Enum key, Visitor visitor) noexcept -> bool {
-        return (false || ... || _base<Keys>()._accept(key, visitor));
+        return (false or ... or _base<Keys>()._accept(key, visitor));
     }
 
     /// @brief Calls a visitor function on the unit with the specified key.
@@ -109,7 +109,7 @@ public:
     /// @see get
     template <typename Visitor>
     auto visit(const Enum key, Visitor visitor) const noexcept -> bool {
-        return (false || ... || _base<Keys>()._accept(key, visitor));
+        return (false or ... or _base<Keys>()._accept(key, visitor));
     }
 
     /// @brief Calls a visitor function on the unit with the specified keys.
@@ -134,14 +134,14 @@ public:
     /// @see visit
     template <typename Visitor>
     auto visit_all(Visitor visitor) noexcept -> bool {
-        return (true && ... && _base<Keys>()._accept(visitor));
+        return (true and ... and _base<Keys>()._accept(visitor));
     }
 
     /// @brief Calls a visitor function on all units.
     /// @see visit
     template <typename Visitor>
     auto visit_all(Visitor visitor) const noexcept -> bool {
-        return (true && ... && _base<Keys>()._accept(visitor));
+        return (true and ... and _base<Keys>()._accept(visitor));
     }
 
 private:

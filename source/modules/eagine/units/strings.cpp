@@ -12,6 +12,7 @@ import eagine.core.memory;
 import :base;
 import :dimension;
 import :unit;
+import std;
 
 namespace eagine::units {
 //------------------------------------------------------------------------------

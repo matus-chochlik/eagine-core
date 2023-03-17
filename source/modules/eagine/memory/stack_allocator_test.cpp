@@ -9,7 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
 import eagine.core.memory;
-import <deque>;
+import std;
 //------------------------------------------------------------------------------
 // test 1
 //------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ void memory_alloc_Tn_1(
 
     memory::owned_block b1 = a.allocate(sz, ao);
 
-    test.check(!b1.empty(), "not empty");
+    test.check(not b1.empty(), "not empty");
     test.check(b1.size() >= sz, "size");
     test.check(is_aligned_to(b1.addr(), ao), "is aligned to");
 
@@ -47,21 +47,21 @@ void memory_alloc_Tn_1(
 
     for(std::size_t i = 0; i < n; ++i) {
         blks.emplace_back(a.allocate(span_size_of<T>(), ao));
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     for(memory::owned_block& blk : blks) {
         test.check(blks.back().size() >= span_size_of<T>(), "size");
         test.check(is_aligned_to(blks.back().addr(), ao), "is aligned to 2");
         test.check(bool(a.has_allocated(blk, ao)), "has allocated 3");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
-    while(!blks.empty()) {
+    while(not blks.empty()) {
         auto i = blks.begin() + rg.get_int(0, int(blks.size() - 1));
         a.deallocate(std::move(*i), ao);
         blks.erase(i);
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
 }
 //------------------------------------------------------------------------------
@@ -159,23 +159,25 @@ void stack_allocator_2(auto& s) {
             default:
                 memory_stack_alloc_T_hlp_2<char>(blks, a, n);
         }
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     for(std::size_t n = blks.size(), i = 0; i < n; ++i) {
-        test.check(bool(a.has_allocated(blks[i], 0)), "has allocated");
+        if(not blks[i].empty()) {
+            test.check(bool(a.has_allocated(blks[i], 0)), "has allocated");
 
-        for(std::size_t j = i; j < n; ++j) {
-            test.check(blks[i].overlaps(blks[j]) == (i == j), "overlaps");
-            trck.passed_part(2);
+            for(std::size_t j = i; j < n; ++j) {
+                test.check(blks[i].overlaps(blks[j]) == (i == j), "overlaps");
+                trck.checkpoint(2);
+            }
         }
     }
 
-    while(!blks.empty()) {
+    while(not blks.empty()) {
         auto i = blks.begin() + rg.get_int(0, int(blks.size() - 1));
         a.deallocate(std::move(*i), 0);
         blks.erase(i);
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
 }
 //------------------------------------------------------------------------------

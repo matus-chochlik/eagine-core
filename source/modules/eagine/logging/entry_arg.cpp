@@ -10,7 +10,7 @@ export module eagine.core.logging:entry_arg;
 import eagine.core.types;
 import eagine.core.reflection;
 import eagine.core.identifier;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -37,8 +37,8 @@ constexpr auto adapt_entry_arg(
 //------------------------------------------------------------------------------
 export template <typename T>
 concept adapted_for_log_entry = requires(identifier id, std::decay_t<T> value) {
-                                    adapt_entry_arg(id, value);
-                                };
+    adapt_entry_arg(id, value);
+};
 
 export template <typename T, typename E>
 concept argument_of_log =

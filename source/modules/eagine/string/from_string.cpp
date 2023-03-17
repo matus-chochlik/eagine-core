@@ -11,14 +11,8 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
 import :c_str;
-import <chrono>;
-import <concepts>;
+import std;
 import <cerrno>;
-import <cstdlib>;
-import <optional>;
-import <ratio>;
-import <string>;
-import <type_traits>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -137,9 +131,9 @@ auto convert_from_string_with(
     const auto cstr{c_str(src)};
     errno = 0;
     const N result{converter(cstr, &end)};
-    if((errno != ERANGE) && (end != cstr) && (end != nullptr)) {
+    if((errno != ERANGE) and (end != cstr) and (end != nullptr)) {
         if(auto converted{multiply_and_convert_if_fits<T>(
-             result, skip_to(cstr.view(), end))}) {
+             result, skip_to(cstr.view(), cstr.position_of(end)))}) {
             return converted;
         }
     }
@@ -157,9 +151,9 @@ auto convert_from_string_with(
     const auto cstr{c_str(src)};
     errno = 0;
     const N result = converter(cstr, &end, base);
-    if((errno != ERANGE) && (end != cstr) && (end != nullptr)) {
+    if((errno != ERANGE) and (end != cstr) and (end != nullptr)) {
         if(auto converted{multiply_and_convert_if_fits<T>(
-             result, skip_to(cstr.view(), end))}) {
+             result, skip_to(cstr.view(), cstr.position_of(end)))}) {
             return converted;
         }
     }

@@ -23,7 +23,7 @@ void scope_exit_false_type(auto& s) {
         test.check_equal(i, 10, "A entry");
         eagine::on_scope_exit<std::false_type> se(inc_i);
         test.check_equal(i, 10, "A inside");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
     test.check_equal(i, 11, "A exit");
 
@@ -31,19 +31,19 @@ void scope_exit_false_type(auto& s) {
         test.check_equal(i, 11, "B entry");
         eagine::on_scope_exit<std::false_type> se(inc_i);
         test.check_equal(i, 11, "B inside");
-        trck.passed_part(2);
+        trck.checkpoint(2);
         se.cancel();
     }
     try {
         test.check_equal(i, 11, "C entry");
         eagine::on_scope_exit<std::false_type> se(inc_i);
         test.check_equal(i, 11, "C inside");
-        trck.passed_part(3);
+        trck.checkpoint(3);
 
         throw std::exception();
     } catch(const std::exception&) {
         test.check_equal(i, 11, "C exit");
-        trck.passed_part(4);
+        trck.checkpoint(4);
     }
 }
 //------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ void scope_exit_true_type(auto& s) {
         test.check_equal(i, 11, "A entry");
         eagine::on_scope_exit<std::true_type> se(inc_i);
         test.check_equal(i, 11, "A inside");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
     test.check_equal(i, 11, "A exit");
 
@@ -68,25 +68,25 @@ void scope_exit_true_type(auto& s) {
         test.check_equal(i, 11, "B entry");
         eagine::on_scope_exit<std::true_type> se(inc_i);
         test.check_equal(i, 11, "B inside");
-        trck.passed_part(2);
+        trck.checkpoint(2);
 
         throw std::exception();
     } catch(const std::exception&) {
         test.check_equal(i, 12, "B catch");
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
 
     try {
         test.check_equal(i, 12, "C entry");
         eagine::on_scope_exit<std::true_type> se(inc_i);
         test.check_equal(i, 12, "C inside");
-        trck.passed_part(4);
+        trck.checkpoint(4);
         se.cancel();
 
         throw std::exception();
     } catch(const std::exception&) {
         test.check_equal(i, 12, "C catch");
-        trck.passed_part(5);
+        trck.checkpoint(5);
     }
 }
 //------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ void scope_exit_nothing(auto& s) {
         test.check_equal(i, 41, "A entry");
         eagine::on_scope_exit<eagine::nothing_t> se(inc_i);
         test.check_equal(i, 41, "A inside");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
     test.check_equal(i, 42, "A exit");
 
@@ -111,7 +111,7 @@ void scope_exit_nothing(auto& s) {
         test.check_equal(i, 42, "B entry");
         eagine::on_scope_exit<eagine::nothing_t> se(inc_i);
         test.check_equal(i, 42, "B inside");
-        trck.passed_part(2);
+        trck.checkpoint(2);
         se.cancel();
     }
     test.check_equal(i, 42, "B exit");
@@ -120,24 +120,24 @@ void scope_exit_nothing(auto& s) {
         test.check_equal(i, 42, "C entry");
         eagine::on_scope_exit<eagine::nothing_t> se(inc_i);
         test.check_equal(i, 42, "C entry");
-        trck.passed_part(3);
+        trck.checkpoint(3);
 
         throw std::exception();
     } catch(const std::exception&) {
         test.check_equal(i, 43, "C catch");
-        trck.passed_part(4);
+        trck.checkpoint(4);
     }
     try {
         test.check_equal(i, 43, "D entry");
         eagine::on_scope_exit<eagine::nothing_t> se(inc_i);
         test.check_equal(i, 43, "D inside");
-        trck.passed_part(5);
+        trck.checkpoint(5);
         se.cancel();
 
         throw std::exception();
     } catch(const std::exception&) {
         test.check_equal(i, 43, "D catch");
-        trck.passed_part(6);
+        trck.checkpoint(6);
     }
 }
 //------------------------------------------------------------------------------
@@ -151,7 +151,7 @@ void scope_exit_finally(auto& s) {
         test.check_equal(i, 41, "A entry");
         auto fse = eagine::finally([&i]() { i += 2; });
         test.check_equal(i, 41, "A inside");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
     test.check_equal(i, 43, "A exit");
 
@@ -159,7 +159,7 @@ void scope_exit_finally(auto& s) {
         test.check_equal(i, 43, "B entry");
         auto fse = eagine::finally([&i]() { i += 2; });
         test.check_equal(i, 43, "B inside");
-        trck.passed_part(2);
+        trck.checkpoint(2);
         fse.cancel();
     }
     test.check_equal(i, 43, "B exit");
@@ -168,24 +168,24 @@ void scope_exit_finally(auto& s) {
         test.check_equal(i, 43, "C entry");
         auto fse = eagine::finally([&i]() { --i; });
         test.check_equal(i, 43, "C inside");
-        trck.passed_part(3);
+        trck.checkpoint(3);
 
         throw std::exception();
     } catch(const std::exception&) {
         test.check_equal(i, 42, "C catch");
-        trck.passed_part(4);
+        trck.checkpoint(4);
     }
     try {
         test.check_equal(i, 42, "D entry");
         auto fse = eagine::finally([&i]() { --i; });
         test.check_equal(i, 42, "D inside");
-        trck.passed_part(5);
+        trck.checkpoint(5);
         fse.cancel();
 
         throw std::exception();
     } catch(const std::exception&) {
         test.check_equal(i, 42, "D catch");
-        trck.passed_part(6);
+        trck.checkpoint(6);
     }
 }
 //------------------------------------------------------------------------------

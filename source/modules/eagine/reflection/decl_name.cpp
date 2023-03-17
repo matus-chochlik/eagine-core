@@ -9,8 +9,7 @@ export module eagine.core.reflection:decl_name;
 
 import eagine.core.types;
 import eagine.core.memory;
-import <array>;
-import <cstdint>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

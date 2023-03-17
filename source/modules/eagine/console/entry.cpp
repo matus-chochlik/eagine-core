@@ -13,11 +13,7 @@ import eagine.core.valid_if;
 import eagine.core.runtime;
 import eagine.core.logging;
 import :backend;
-import :entry_kind;
-import <chrono>;
-import <concepts>;
-import <string>;
-import <tuple>;
+import std;
 
 namespace eagine {
 export class console_entry;
@@ -326,7 +322,7 @@ public:
     /// @param name the argument name identifier. Used in message substitution.
     /// @param value the value of the argument.
     template <adapted_for_log_entry T>
-        requires(!std::integral<T> && !std::floating_point<T>)
+        requires(not std::integral<T> and not std::floating_point<T>)
     auto arg(const identifier name, T value) noexcept -> console_entry& {
         if(_backend) {
             _args.add(adapt_entry_arg(name, std::move(value)));

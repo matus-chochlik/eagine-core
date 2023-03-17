@@ -189,15 +189,15 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	unset(EAGINE_MODULE_SOURCE_FILES)
 	foreach(SOURCE ${EAGINE_MODULE_SOURCES})
 		if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
-			if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cpp")
+			if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}_impl.cpp")
 				list(
 					APPEND EAGINE_MODULE_SOURCE_FILES
-					"${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cpp"
+					"${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}_impl.cpp"
 				)
-			elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp")
+			elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}_impl.cpp")
 				list(
 					APPEND EAGINE_MODULE_SOURCE_FILES
-					"${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp"
+					"${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}_impl.cpp"
 				)
 			endif()
 		else()
@@ -524,6 +524,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 					-fcoverage-mapping
 					-mllvm
 					-runtime-counter-relocation
+					-Wno-unsafe-buffer-usage
 			)
 			target_link_options(
 				${TEST_NAME}

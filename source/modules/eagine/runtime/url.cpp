@@ -13,9 +13,7 @@ import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.container;
-export import <string>;
-import <charconv>;
-import <regex>;
+import std;
 
 namespace eagine {
 
@@ -154,7 +152,7 @@ public:
         int result{0};
         const auto p{_sw(_port)};
         [[maybe_unused]] const auto unused{
-          std::from_chars(p.begin(), p.end(), result)};
+          std::from_chars(p.data(), p.data() + p.size(), result)};
         return {result};
     }
 
@@ -237,7 +235,7 @@ public:
         string_view result;
         for_each_delimited(_sw(_query), string_view{"+"}, [&](auto part) {
             auto [name, value] = split_by_first(part, string_view{"="});
-            if(!result && are_equal(name, arg_name)) {
+            if(not result and are_equal(name, arg_name)) {
                 result = value;
             }
         });
@@ -250,7 +248,7 @@ public:
     }
 
     /// @brief Releases the internally allocated URL string.
-    /// @post !is_valid()
+    /// @post not is_valid()
     auto release_string() noexcept -> std::string {
         _parsed = false;
         return {std::move(_url_str)};

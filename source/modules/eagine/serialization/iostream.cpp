@@ -15,9 +15,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import :result;
 import :interface;
-import <iostream>;
-import <sstream>;
-import <stack>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -87,7 +85,7 @@ public:
         if(current().eof()) {
             return {serialization_error_code::too_much_data};
         }
-        if(!current().good()) {
+        if(not current().good()) {
             return {serialization_error_code::data_sink_error};
         }
         return {};

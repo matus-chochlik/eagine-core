@@ -456,10 +456,10 @@ void vect_data_divide_TNV(eagitest::case_& test) {
         for(int i = 0; i < N; ++i) {
             do {
                 a[i] = rg.get_between<T>(-1000, 1000);
-            } while(!((a[i] > T(0)) || (a[i] < T(0))));
+            } while(not((a[i] > T(0)) or (a[i] < T(0))));
             do {
                 b[i] = rg.get_between<T>(-1000, 1000);
-            } while(!((b[i] > T(0)) || (b[i] < T(0))));
+            } while(not((b[i] > T(0)) or (b[i] < T(0))));
         }
 
         typename eagine::vect::data<T, N, V>::type vNa = {};

@@ -8,9 +8,7 @@
 export module eagine.core.utility:sliding_average;
 
 import eagine.core.types;
-import <array>;
-import <cstdint>;
-import <numeric>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

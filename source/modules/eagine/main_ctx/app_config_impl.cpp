@@ -19,14 +19,7 @@ import eagine.core.logging;
 import eagine.core.utility;
 import eagine.core.valid_if;
 import eagine.core.value_tree;
-import <array>;
-import <filesystem>;
-import <map>;
-import <set>;
-import <mutex>;
-import <memory>;
-import <optional>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -74,7 +67,7 @@ public:
             const std::lock_guard<decltype(_mutex)> lck{_mutex};
             _tag_list.front() = tag;
             const auto tags{skip_until(
-              view(_tag_list), [](auto t) { return !t.is_empty(); })};
+              view(_tag_list), [](auto t) { return not t.is_empty(); })};
 
             auto app_name{_main_ctx.app_name()};
             if(auto found{_find_config_of(app_name, key, tags)}) {
@@ -116,14 +109,16 @@ public:
         _loaders.erase(&loader);
     }
 
-    void reload() noexcept {
+    auto reload() noexcept -> bool {
+        bool result{true};
         const std::lock_guard<decltype(_mutex)> lck{_mutex};
-        if(!_loaders.empty()) {
+        if(not _loaders.empty()) {
             _open_configs.clear();
             for(auto loader : _loaders) {
-                extract(loader).reload();
+                result = extract(loader).reload() and result;
             }
         }
+        return result;
     }
 
 private:
@@ -180,8 +175,8 @@ private:
       const std::filesystem::path& cfg_path,
       const string_view key,
       const span<const string_view> tags) -> valtree::compound_attribute {
-        if(!cfg_path.empty()) {
-            if(is_regular_file(cfg_path) || is_fifo(cfg_path)) {
+        if(not cfg_path.empty()) {
+            if(is_regular_file(cfg_path) or is_fifo(cfg_path)) {
                 if(auto comp{_get_config(cfg_path)}) {
                     if(auto attr{comp.find(
                          basic_string_path(key, split_by, "."), tags)}) {
@@ -273,7 +268,7 @@ auto application_config::_prog_arg_name(string_view key) noexcept
     arg_name.reserve(integer(safe_add(3, key.size())));
     arg_name.append("--");
     for(auto c : key) {
-        if(c == '.' || c == '_') {
+        if(c == '.' or c == '_') {
             c = '-';
         }
         arg_name.append(&c, 1U);
@@ -329,7 +324,7 @@ auto application_config::is_set(
 }
 //------------------------------------------------------------------------------
 auto application_config::_impl() noexcept -> application_config_impl* {
-    if(!_pimpl) [[unlikely]] {
+    if(not _pimpl) [[unlikely]] {
         try {
             _pimpl = std::make_shared<application_config_impl>(_log, _main_ctx);
         } catch(...) {
@@ -356,10 +351,11 @@ void application_config::unlink(
     }
 }
 //------------------------------------------------------------------------------
-void application_config::reload() noexcept {
+auto application_config::reload() noexcept -> bool {
     if(const auto impl{_impl()}) {
         return extract(impl).reload();
     }
+    return false;
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

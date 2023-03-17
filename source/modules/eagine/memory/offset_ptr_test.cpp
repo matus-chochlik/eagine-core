@@ -8,7 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.memory;
-import <string>;
+import std;
 //------------------------------------------------------------------------------
 void offset_ptr_default_construct(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};
@@ -17,7 +17,7 @@ void offset_ptr_default_construct(auto& s) {
     memory::offset_ptr<double> ps;
 
     test.check_equal(bool(ps), false, "is false");
-    test.check_equal(!ps, true, "is not true");
+    test.check_equal(not ps, true, "is not true");
     test.check_equal(!!ps, false, "is not not false");
 
     test.check(ps.get() == nullptr, "equal to nullptr");
@@ -35,7 +35,7 @@ void offset_ptr_copy_construct_1(auto& s) {
     memory::offset_ptr<const std::string> ps(&str);
 
     test.check_equal(bool(ps), true, "is true");
-    test.check_equal(!ps, false, "is not false");
+    test.check_equal(not ps, false, "is not false");
     test.check_equal(!!ps, true, "is not not true");
 
     test.ensure(ps.get() == &str, "get to original pointer");
@@ -56,7 +56,7 @@ void offset_ptr_copy_construct_2(auto& s) {
     memory::offset_ptr<std::string> ps(ops);
 
     test.check_equal(bool(ps), true, "is true");
-    test.check_equal(!ps, false, "is not false");
+    test.check_equal(not ps, false, "is not false");
     test.check_equal(!!ps, true, "is not not true");
 
     test.ensure(ps.get() == &str, "get to original pointer");
@@ -76,7 +76,7 @@ void offset_ptr_copy_construct_3(auto& s) {
     memory::offset_ptr<std::string> ps(ops);
 
     test.check_equal(bool(ps), false, "is false");
-    test.check_equal(!ps, true, "is not true");
+    test.check_equal(not ps, true, "is not true");
     test.check_equal(!!ps, false, "is not not false");
 
     test.check(ps.get() == nullptr, "equal to nullptr");

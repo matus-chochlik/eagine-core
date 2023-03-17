@@ -11,13 +11,12 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.reflection;
-import <tuple>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 export template <typename T, typename Selector, typename Func>
-    requires(!mapped_struct<T, Selector>)
+    requires(not mapped_struct<T, Selector>)
 void _do_traverse_mapped(basic_string_path& path, T& obj, Selector, Func& func) {
     func(static_cast<const basic_string_path&>(path), obj);
 }
@@ -36,7 +35,8 @@ void _do_traverse_mapped_idx(
   std::index_sequence<I...>,
   Selector sel,
   Func& func) {
-    (void)(..., _do_traverse_single_mapped(path, std::get<I>(members), sel, func));
+    (void)(...,
+           _do_traverse_single_mapped(path, std::get<I>(members), sel, func));
 }
 //------------------------------------------------------------------------------
 export template <typename... M, typename Selector, typename Func>

@@ -14,13 +14,7 @@ export module eagine.core.utility:sudoku;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.container;
-import <array>;
-import <cstdint>;
-import <functional>;
-import <iomanip>;
-import <ostream>;
-import <random>;
-import <stack>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -55,7 +49,7 @@ public:
     auto make_generator() const -> generator;
 
     auto to_string(const basic_sudoku_glyph<S>& glyph) const
-      -> optional_reference_wrapper<const std::string>;
+      -> optional_reference<const std::string>;
 
     auto print(std::ostream&, const basic_sudoku_glyph<S>& glyph) const
       -> std::ostream&;
@@ -220,7 +214,7 @@ public:
     }
 
     constexpr auto is_multiple() const noexcept {
-        return !is_empty() && !is_single();
+        return not is_empty() and not is_single();
     }
 
     auto cell_value() const noexcept -> cell_type {
@@ -283,7 +277,7 @@ private:
       : _cel_val{cel_val} {}
 
     static constexpr auto _is_pot(const cell_type v) noexcept {
-        return (v != 0U) && ((v & (v - 1U)) == 0U);
+        return (v != 0U) and ((v & (v - 1U)) == 0U);
     }
 
     cell_type _cel_val{0U};
@@ -312,7 +306,7 @@ public:
             for(const auto bx : integer_range(S)) {
                 for(const auto cy : integer_range(S)) {
                     for(const auto cx : integer_range(S)) {
-                        if(!func(coord_type{{bx, by, cx, cy}})) {
+                        if(not func(coord_type{{bx, by, cx, cy}})) {
                             return;
                         }
                     }
@@ -329,7 +323,7 @@ public:
         });
     }
 
-    basic_sudoku_board(const basic_sudoku_board<S, !Tight>& that) noexcept
+    basic_sudoku_board(const basic_sudoku_board<S, not Tight>& that) noexcept
       : _type{that._type}
       , _blocks{that._blocks} {}
 
@@ -357,7 +351,7 @@ public:
 
         for(const auto cy : integer_range(S)) {
             for(const auto cx : integer_range(S)) {
-                if((cx != ccx) || (cy != ccy)) {
+                if((cx != ccx) or (cy != ccy)) {
                     if(_cell_val({cbx, cby, cx, cy}) == cel_val) {
                         return false;
                     }
@@ -367,7 +361,7 @@ public:
 
         for(const auto bx : integer_range(S)) {
             for(const auto cx : integer_range(S)) {
-                if((bx != cbx) || (cx != ccx)) {
+                if((bx != cbx) or (cx != ccx)) {
                     if(_cell_val({bx, cby, cx, ccy}) == cel_val) {
                         return false;
                     }
@@ -377,7 +371,7 @@ public:
 
         for(const auto by : integer_range(S)) {
             for(const auto cy : integer_range(S)) {
-                if((by != cby) || (cy != ccy)) {
+                if((by != cby) or (cy != ccy)) {
                     if(_cell_val({cbx, by, ccx, cy}) == cel_val) {
                         return false;
                     }
@@ -391,7 +385,7 @@ public:
         bool result = true;
         for_each_coord([&](const auto& coord) {
             const auto value = get(coord);
-            if(!value.is_single()) {
+            if(not value.is_single()) {
                 result = false;
                 return false;
             }
@@ -434,7 +428,7 @@ public:
 
     auto calculate_alternatives() noexcept -> auto& {
         for_each_coord([&](const auto& coord) {
-            if(!get(coord).is_single()) {
+            if(not get(coord).is_single()) {
                 set_available_alternatives(coord);
             }
             return true;
@@ -447,7 +441,7 @@ public:
         auto min_alt = glyph_count + 1;
         for_each_coord([&](const auto& coord) {
             if(const auto num_alt{get(coord).alternative_count()}) {
-                if((num_alt > 1) && (min_alt > num_alt)) {
+                if((num_alt > 1) and (min_alt > num_alt)) {
                     min_alt = num_alt;
                     result = coord;
                 }
@@ -463,7 +457,7 @@ public:
             get(coord).for_each_alternative([&](glyph_type alt) {
                 auto candidate = This(*this).set(coord, alt);
                 if(candidate.is_possible(coord, alt)) {
-                    if(!candidate.calculate_alternatives().has_empty()) {
+                    if(not candidate.calculate_alternatives().has_empty()) {
                         func(candidate);
                     }
                 }
@@ -475,7 +469,7 @@ public:
         unsigned count = 0U;
         for_each_coord([&](const auto& coord) {
             const auto& cell = get(coord);
-            if(!cell.is_single()) {
+            if(not cell.is_single()) {
                 count += cell.alternative_count();
             }
             return true;
@@ -523,7 +517,7 @@ private:
         return blocks[y * S + x];
     }
 
-    friend class basic_sudoku_board<S, !Tight>;
+    friend class basic_sudoku_board<S, not Tight>;
 
     std::reference_wrapper<const board_traits> _type;
     blocks_type _blocks{};
@@ -549,7 +543,7 @@ public:
               _coord_dist(_rd),
               _coord_dist(_rd)};
 
-            if(!result.get(coord).is_single()) {
+            if(not result.get(coord).is_single()) {
                 while(true) {
                     const auto value{_glyph_dist(_rd)};
                     if(result.is_possible(coord, value)) {
@@ -606,7 +600,7 @@ auto basic_sudoku_board_traits<S>::make_generator() const -> generator {
 //------------------------------------------------------------------------------
 template <unsigned S>
 auto basic_sudoku_board_traits<S>::to_string(const basic_sudoku_glyph<S>& glyph)
-  const -> optional_reference_wrapper<const std::string> {
+  const -> optional_reference<const std::string> {
     if(glyph.is_single()) {
         return {_glyphs[glyph.get_index()]};
     }
@@ -646,7 +640,7 @@ auto basic_sudoku_board_traits<S>::print(
         if(by + 1 < S) {
             for(const auto s1 : integer_range(S)) {
                 for(const auto s2 : integer_range(S)) {
-                    if(s1 == 0 && s2 == 0) {
+                    if(s1 == 0 and s2 == 0) {
                         out << " -";
                     } else {
                         out << "--";
@@ -689,7 +683,7 @@ public:
         solutions.push(board);
 
         bool done = false;
-        while(!(solutions.empty() || done)) {
+        while(not(solutions.empty() or done)) {
             board = solutions.top();
             solutions.pop();
 
@@ -734,8 +728,8 @@ public:
 
     auto get(const span_size_t x, const span_size_t y) const noexcept
       -> unsigned {
-        assert((x >= 0) && (x < width()));
-        assert((y >= 0) && (y < height()));
+        assert((x >= 0) and (x < width()));
+        assert((y >= 0) and (y < height()));
         return _cells[integer(y * _width + x)];
     }
 

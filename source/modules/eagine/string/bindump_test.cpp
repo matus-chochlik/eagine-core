@@ -9,7 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.string;
 import eagine.core.memory;
-import <sstream>;
+import std;
 //------------------------------------------------------------------------------
 void bindump_ostream(auto& s) {
     eagitest::case_ test{s, 1, "ostream"};
@@ -21,7 +21,7 @@ void bindump_ostream(auto& s) {
 
     out << bindump(as_bytes(view(buf)));
 
-    test.check(!out.str().empty(), "not empty");
+    test.check(not out.str().empty(), "not empty");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

@@ -6,7 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <string>;
+import std;
 
 namespace eagine {
 
@@ -15,7 +15,7 @@ auto main(main_ctx& ctx) -> int {
 
     std::string temp;
     for(auto& arg : ctx.args()) {
-        if(!arg.starts_with("-")) {
+        if(not arg.starts_with("-")) {
             if(arg.prev().is_tag("-f", "--file")) {
                 file_contents fc(arg.get());
                 ctx.cio()

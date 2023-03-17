@@ -9,5 +9,4 @@ export module eagine.core.reflection;
 
 export import :decl_name;
 export import :enumerators;
-export import :bitfield;
 export import :data_members;

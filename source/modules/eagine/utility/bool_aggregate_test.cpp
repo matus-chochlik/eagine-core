@@ -13,7 +13,7 @@ void bool_aggregate_default_construct(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};
     const eagine::some_true t;
     test.constructed(t, "t");
-    test.check(!t, "is false");
+    test.check(not t, "is false");
 }
 //------------------------------------------------------------------------------
 void bool_aggregate_init_construct(auto& s) {
@@ -25,7 +25,7 @@ void bool_aggregate_init_construct(auto& s) {
 
     const eagine::some_true f{false};
     test.constructed(f, "f");
-    test.check(!f, "f is false");
+    test.check(not f, "f is false");
 }
 //------------------------------------------------------------------------------
 void bool_aggregate_copy_construct(auto& s) {
@@ -39,16 +39,16 @@ void bool_aggregate_copy_construct(auto& s) {
     const eagine::some_true f0{false};
     const eagine::some_true f{f0};
     test.constructed(f, "f");
-    test.check(!f, "f is false");
+    test.check(not f, "f is false");
 }
 //------------------------------------------------------------------------------
 void bool_aggregate_call_op_bool(auto& s) {
     eagitest::case_ test{s, 4, "call operator bool"};
     eagine::work_done x;
     test.constructed(x, "x");
-    test.check(!x, "is false");
+    test.check(not x, "is false");
     x(false);
-    test.check(!x, "is false");
+    test.check(not x, "is false");
     x();
     test.check(bool(x), "is true");
     x(false);
@@ -59,11 +59,11 @@ void bool_aggregate_call_op_self(auto& s) {
     eagitest::case_ test{s, 5, "call operator self"};
     eagine::work_done x;
     test.constructed(x, "x");
-    test.check(!x, "is false");
+    test.check(not x, "is false");
 
     const eagine::some_true f{false};
     x(f);
-    test.check(!x, "is false");
+    test.check(not x, "is false");
 
     const eagine::some_true t{true};
     x(t);

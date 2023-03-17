@@ -9,8 +9,7 @@ module eagine.core.runtime;
 
 import eagine.core.memory;
 import :input_data;
-import <memory>;
-import <system_error>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

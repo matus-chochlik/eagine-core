@@ -14,9 +14,7 @@ export module eagine.core.memory:offset_ptr;
 import eagine.core.concepts;
 import eagine.core.types;
 import :address;
-import <memory>;
-import <type_traits>;
-import <concepts>;
+import std;
 
 namespace eagine {
 namespace memory {
@@ -78,9 +76,9 @@ public:
     /// @brief Conversion copy constructor.
     template <typename P, typename O>
         requires(
-          std::is_convertible_v<O, OffsetType> &&
-          std::is_convertible_v<P*, Pointee*> &&
-          !std::is_same_v<O, OffsetType> && !std::is_same_v<P, Pointee>)
+          std::is_convertible_v<O, OffsetType> and
+          std::is_convertible_v<P*, Pointee*> and
+          not std::is_same_v<O, OffsetType> and not std::is_same_v<P, Pointee>)
     basic_offset_ptr(const basic_offset_ptr<P, O>& that) noexcept
       : _offs{_get_offs(that)} {}
 
@@ -117,7 +115,7 @@ public:
     /// @brief Indicates that the pointer is not null.
     /// @see is_null
     explicit constexpr operator bool() const noexcept {
-        return !is_null();
+        return not is_null();
     }
 
     /// @brief Returns the byte offset value.
@@ -171,25 +169,25 @@ public:
 
     /// @brief Dereferences this pointer.
     auto operator*() noexcept -> reference {
-        assert(!is_null());
+        assert(not is_null());
         return *get();
     }
 
     /// @brief Dereferences this pointer.
     constexpr auto operator*() const noexcept -> const_reference {
-        assert(!is_null());
+        assert(not is_null());
         return *get();
     }
 
     /// @brief Dereferences this pointer.
     auto operator->() noexcept -> pointer {
-        assert(!is_null());
+        assert(not is_null());
         return get();
     }
 
     /// @brief Dereferences this pointer.
     constexpr auto operator->() const noexcept -> const_pointer {
-        assert(!is_null());
+        assert(not is_null());
         return get();
     }
 
@@ -198,21 +196,29 @@ public:
         return *this = basic_offset_ptr(get() + 1);
     }
 
+    auto operator+(offset_type d) noexcept -> basic_offset_ptr {
+        return basic_offset_ptr(get() + d);
+    }
+
     /// @brief Pointer arithmentic decrement.
     auto operator--() noexcept -> auto& {
         return *this = basic_offset_ptr(get() - 1);
     }
 
+    auto operator-(offset_type d) noexcept -> basic_offset_ptr {
+        return basic_offset_ptr(get() - d);
+    }
+
     /// @brief Pointer array subscript operator.
     auto operator[](offset_type index) noexcept -> reference {
-        assert(!is_null());
+        assert(not is_null());
         return get()[index];
     }
 
     /// @brief Pointer array subscript operator.
     constexpr auto operator[](offset_type index) const noexcept
       -> const_reference {
-        assert(!is_null());
+        assert(not is_null());
         return get()[index];
     }
 
@@ -262,6 +268,11 @@ constexpr auto as_address(basic_offset_ptr<P, O> op) noexcept
     return op.addr();
 }
 //------------------------------------------------------------------------------
+export template <typename P, typename O>
+constexpr auto to_address(basic_offset_ptr<P, O> p) noexcept -> P* {
+    return p.get();
+}
+//------------------------------------------------------------------------------
 /// @brief Default type alias for basic offset pointer.
 /// @ingroup memory
 export template <typename Pointee>
@@ -283,3 +294,18 @@ struct extract_traits<memory::basic_offset_ptr<P, O>> {
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
+
+namespace std {
+export template <typename P, typename O>
+struct pointer_traits<eagine::memory::basic_offset_ptr<P, O>> {
+    using value_type = P;
+    using difference_type = O;
+
+    static constexpr auto to_address(
+      eagine::memory::basic_offset_ptr<P, O> p) noexcept
+      -> std::add_const_t<P>* {
+        return p.get();
+    }
+};
+
+} // namespace std

@@ -8,6 +8,5 @@
 export module eagine.core.progress;
 
 export import :backend;
-export import :default_backend;
 export import :activity;
 export import :root_activity;

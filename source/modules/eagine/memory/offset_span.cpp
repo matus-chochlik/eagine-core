@@ -10,6 +10,7 @@ export module eagine.core.memory:offset_span;
 import eagine.core.types;
 import :offset_ptr;
 import :span;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
@@ -32,7 +33,7 @@ auto view_one(basic_offset_ptr<T, O> ptr) -> memory::
 export template <typename T, typename O>
 auto cover_one(basic_offset_ptr<T, O> ptr)
   -> memory::basic_span<T, basic_offset_ptr<T, O>, O>
-    requires(!std::is_const_v<T>)
+    requires(not std::is_const_v<T>)
 {
     return {ptr, O(1)};
 }

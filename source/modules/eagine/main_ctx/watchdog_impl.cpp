@@ -22,9 +22,7 @@ module eagine.core.main_ctx;
 
 import eagine.core.types;
 import eagine.core.utility;
-import <chrono>;
-import <cstdint>;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -68,7 +66,7 @@ private:
 //------------------------------------------------------------------------------
 auto process_watchdog::_impl() noexcept -> process_watchdog_impl* {
 #if EAGINE_USE_SYSTEMD
-    if(!_pimpl) [[unlikely]] {
+    if(not _pimpl) [[unlikely]] {
         try {
             _pimpl = std::make_shared<process_watchdog_impl>();
         } catch(...) {

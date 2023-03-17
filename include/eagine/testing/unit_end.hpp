@@ -6,11 +6,6 @@
 /// http://www.boost.org/LICENSE_1_0.txt
 ///
 ///
-import <cmath>;
-import <format>;
-import <limits>;
-import <iostream>;
-
 #include <cassert>
 namespace eagitest {
 //------------------------------------------------------------------------------
@@ -73,7 +68,9 @@ suite::suite(
   const char** argv,
   std::string_view name,
   suite_case_t cases) noexcept
-  : _rand_gen{argc, argv}
+  : _argc{argc}
+  , _argv{argv}
+  , _rand_gen{argc, argv}
   , _name{name}
   , _expected_cases{cases} {
     if(_is_verbose) {
@@ -87,27 +84,38 @@ suite::~suite() noexcept {
     }
 }
 //------------------------------------------------------------------------------
+auto suite::executable_path() const noexcept -> std::string_view {
+    return (_argc > 0 and _argv != nullptr) ? std::string_view{_argv[0]}
+                                            : std::string_view{};
+}
+//------------------------------------------------------------------------------
 auto suite::random() noexcept -> random_generator& {
     return _rand_gen;
 }
 //------------------------------------------------------------------------------
-auto suite::once(void (*func)(eagitest::suite&)) noexcept -> suite& {
+auto suite::once(void (*function)(eagitest::suite&)) noexcept -> suite& {
     try {
-        func(*this);
+        function(*this);
     } catch(const abort_test_case&) {
     } catch(...) {
+        _checks_failed = true;
+        std::clog << "  suite '" << this->_name << "' unexpected exception"
+                  << std::endl;
     }
     return *this;
 }
 //------------------------------------------------------------------------------
 auto suite::repeat(
   unsigned count,
-  void (*func)(unsigned, eagitest::suite&)) noexcept -> suite& {
+  void (*function)(unsigned, eagitest::suite&)) noexcept -> suite& {
     for(unsigned i = 0; i < count; ++i) {
         try {
-            func(i, *this);
+            function(i, *this);
         } catch(const abort_test_case&) {
         } catch(...) {
+            _checks_failed = true;
+            std::clog << "  suite '" << this->_name << "' unexpected exception"
+                      << std::endl;
         }
     }
     return *this;
@@ -116,6 +124,7 @@ auto suite::repeat(
 auto suite::tested_case(suite_case_t case_idx) noexcept -> suite& {
     if(_expected_cases != 0U) {
         assert(case_idx != static_cast<suite_case_t>(0));
+        assert(case_idx <= _expected_cases);
         _tested_cases =
           _tested_cases | (static_cast<suite_case_t>(1) << (case_idx - 1U));
     }
@@ -178,13 +187,7 @@ auto case_::constructed(const auto&, std::string_view name) noexcept -> case_& {
     return *this;
 }
 //------------------------------------------------------------------------------
-auto case_::checkpoint(
-  std::string_view label
-#if __cpp_lib_source_location >= 201907L
-  ,
-  const std::source_location
-#endif
-  ) noexcept -> case_& {
+auto case_::checkpoint(std::string_view label) noexcept -> case_& {
     std::clog << "  checkpoint '" << _parent._name << "/" << this->_name << "/"
               << label << "' reached" << std::endl;
 
@@ -200,6 +203,14 @@ auto case_::ensure(bool condition, std::string_view label, const auto&...)
         _parent._checks_failed = true;
         throw abort_test_case{};
     }
+    return *this;
+}
+//------------------------------------------------------------------------------
+auto case_::fail(std::string_view label, const auto&...) -> case_& {
+    std::clog << "  failure: '" << _parent._name << "/" << this->_name << "/"
+              << label << "' failed";
+    std::clog << std::endl;
+    _parent._checks_failed = true;
     return *this;
 }
 //------------------------------------------------------------------------------
@@ -237,9 +248,13 @@ auto case_::check_equal(const L& l, const R& r, std::string_view label) noexcept
 }
 //------------------------------------------------------------------------------
 template <typename L, typename R>
-auto case_::check_close(const L& l, const R& r, std::string_view label) noexcept
-  -> case_& {
+auto case_::check_close(
+  const L& l,
+  const R& r,
+  const std::common_type_t<L, R>& eps,
+  std::string_view label) noexcept -> case_& {
     const auto _close = [&]() {
+        using std::fabs;
         if constexpr(std::is_floating_point_v<L> && std::is_floating_point_v<R>) {
             const auto cll{std::fpclassify(l)};
             const auto clr{std::fpclassify(r)};
@@ -250,10 +265,17 @@ auto case_::check_close(const L& l, const R& r, std::string_view label) noexcept
                 const auto frr{std::frexp(r, &exr)};
 
                 using C = std::common_type_t<L, R>;
-                const auto eps{C(1) / C(1000)};
                 if(exl == exr) {
-                    return std::fabs(C(frl) - C(frr)) <= eps;
+                    return fabs(C(frl) - C(frr)) <= eps;
+                } else if(exl == exr + 1) {
+                    return fabs(C(l) - C(r)) <= (C(l) + C(r)) * eps;
+                } else if(exl + 1 == exr) {
+                    return fabs(C(l) - C(r)) <= (C(l) + C(r)) * eps;
                 }
+            } else if(cll == FP_ZERO) {
+                return fabs(r) <= eps;
+            } else if(clr == FP_ZERO) {
+                return fabs(l) <= eps;
             }
             return false;
         } else {
@@ -267,6 +289,14 @@ auto case_::check_close(const L& l, const R& r, std::string_view label) noexcept
         _parent._checks_failed = true;
     }
     return *this;
+}
+//------------------------------------------------------------------------------
+template <typename L, typename R>
+auto case_::check_close(const L& l, const R& r, std::string_view label) noexcept
+  -> case_& {
+    using C = std::common_type_t<L, R>;
+    return check_close(
+      l, r, C(1) / C(std::is_same_v<C, float> ? 100 : 1000), label);
 }
 //------------------------------------------------------------------------------
 // test track
@@ -292,7 +322,7 @@ track::~track() noexcept {
     for(track_part_t p = 0U; p < _expected_parts; ++p) {
         if(
           static_cast<track_part_t>(0) ==
-          (_passed_parts & (static_cast<track_part_t>(1) << p))) {
+          (_checkpoints & (static_cast<track_part_t>(1) << p))) {
             std::clog << "  track '" << _parent._parent._name << "/"
                       << _parent._name << "/" << this->_name
                       << "' missed part (" << (p + 1) << "/" << _expected_parts
@@ -303,12 +333,13 @@ track::~track() noexcept {
     }
 }
 //------------------------------------------------------------------------------
-auto track::passed_part(track_part_t part_idx) noexcept -> track& {
+auto track::checkpoint(track_part_t part_idx) noexcept -> track& {
     ++_passed_points;
     if(_expected_parts != 0U) {
         assert(part_idx != 0U);
-        _passed_parts =
-          _passed_parts | (static_cast<track_part_t>(1) << (part_idx - 1U));
+        assert(part_idx <= _expected_parts);
+        _checkpoints =
+          _checkpoints | (static_cast<track_part_t>(1) << (part_idx - 1U));
     }
     return *this;
 }

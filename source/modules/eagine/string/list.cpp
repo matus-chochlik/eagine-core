@@ -15,10 +15,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
 import :multi_byte;
-import <compare>;
-import <iterator>;
-import <string>;
-import <tuple>;
+import std;
 
 namespace eagine {
 namespace string_list {
@@ -208,7 +205,7 @@ void rev_for_each_elem(const string_view list, Func func) noexcept {
     span_size_t i = list.size() - 1;
     bool first = true;
     while(i > 0) {
-        while(!multi_byte::is_valid_head_byte(byte(list[i]))) {
+        while(not multi_byte::is_valid_head_byte(byte(list[i]))) {
             assert(i > 0);
             --i;
         }
@@ -253,7 +250,7 @@ auto for_each_separated_c_str(const char* str, const char sep, Func func) noexce
     const char* bgn = str;
     const char* pos = bgn;
     if(sep != '\0') {
-        while(bool(str) && (*pos != '\0')) {
+        while(bool(str) and (*pos != '\0')) {
             if(*pos == sep) {
                 if(pos - bgn > 0) {
                     func(string_view(bgn, pos - bgn));
@@ -268,7 +265,7 @@ auto for_each_separated_c_str(const char* str, const char sep, Func func) noexce
         }
     } else {
         while(bool(str)) {
-            if((*pos == sep) || (*pos == char(0))) {
+            if((*pos == sep) or (*pos == char(0))) {
                 if(pos - bgn > 1) {
                     func(string_view(bgn, pos - bgn));
                     ++cnt;
@@ -304,7 +301,7 @@ export [[nodiscard]] auto join(
     const span_size_t slen = sep.size();
     span_size_t len = trail_sep ? slen : 0;
     const auto get_len = [&len, slen](const element& elem, bool first) {
-        if(!first) {
+        if(not first) {
             len += slen;
         }
         len += elem.value_size();
@@ -315,7 +312,7 @@ export [[nodiscard]] auto join(
     res.reserve(integer(len));
 
     auto fill = [&res, sep](const element& elem, bool first) {
-        if(!first) {
+        if(not first) {
             append_to(sep, res);
         }
         res.append(elem.value_data(), integer(elem.value_size()));
@@ -451,7 +448,7 @@ private:
     }
 
     void _rseek_head() const noexcept {
-        while(!multi_byte::is_valid_head_byte(_b())) {
+        while(not multi_byte::is_valid_head_byte(_b())) {
             --_pos;
         }
     }

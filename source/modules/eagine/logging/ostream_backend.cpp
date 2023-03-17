@@ -19,8 +19,7 @@ import eagine.core.reflection;
 import eagine.core.utility;
 import :backend;
 import :fast_xml_backend;
-import <string_view>;
-import <ostream>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

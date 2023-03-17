@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <utility>
 module;
 
 #include <cassert>
@@ -13,11 +14,7 @@ export module eagine.core.valid_if:decl;
 
 import eagine.core.types;
 import eagine.core.concepts;
-import <sstream>;
-import <stdexcept>;
-import <type_traits>;
-import <optional>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -55,7 +52,7 @@ export struct valid_flag_policy {
 export template <typename T, typename Policy, typename DoLog, typename... P>
 class basic_valid_if {
     static_assert(
-      std::is_nothrow_default_constructible_v<Policy> ||
+      std::is_nothrow_default_constructible_v<Policy> or
       std::is_nothrow_move_constructible_v<Policy>);
 
 public:
@@ -173,48 +170,48 @@ public:
     /// @brief Equality comparison.
     [[nodiscard]] constexpr auto operator==(
       const basic_valid_if& that) const noexcept -> bool {
-        return (_value == that._value) && is_valid() && that.is_valid();
+        return (_value == that._value) and is_valid() and that.is_valid();
     }
 
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() == v, !is_valid()};
+        return {this->value_anyway() == v, not is_valid()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() != v, !is_valid()};
+        return {this->value_anyway() != v, not is_valid()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() < v, !is_valid()};
+        return {this->value_anyway() < v, not is_valid()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() > v, !is_valid()};
+        return {this->value_anyway() > v, not is_valid()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() <= v, !is_valid()};
+        return {this->value_anyway() <= v, not is_valid()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() >= v, !is_valid()};
+        return {this->value_anyway() >= v, not is_valid()};
     }
 
     template <typename Log>
     constexpr void log_invalid(Log& log, const value_type& v, P... p) const {
-        assert(!is_valid(v, p...));
+        assert(not is_valid(v, p...));
         _do_log(log, v, p...);
     }
 
@@ -224,12 +221,12 @@ public:
     }
 
     /// @brief Calls the specified function if the stored value is invalid.
-    /// @param func the function to be called.
+    /// @param function the function to be called.
     /// @param p additional parameters for the policy validity check function.
-    template <typename Func>
-    constexpr auto call_if_invalid(Func func, P... p) -> auto& {
-        if(!is_valid(p...)) {
-            func(_do_log, _value, p...);
+    template <typename F>
+    constexpr auto or_else(F&& function, P... p) -> auto& {
+        if(not is_valid(p...)) {
+            std::forward<F>(function)(_do_log, _value, p...);
         }
         return *this;
     }
@@ -238,7 +235,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
     void throw_if_invalid(P... p) const {
-        if(!is_valid(p...)) {
+        if(not is_valid(p...)) [[unlikely]] {
             std::stringstream ss;
             log_invalid(ss, p...);
             throw std::runtime_error(ss.str());
@@ -248,7 +245,7 @@ public:
     /// @brief Returns the stored value if it is valid otherwise throws.
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
-    [[nodiscard]] auto value(P... p) -> T& {
+    [[nodiscard]] auto value(P... p) -> reference {
         throw_if_invalid(p...);
         return _value;
     }
@@ -256,7 +253,7 @@ public:
     /// @brief Returns the stored value if it is valid, otherwise throws.
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
-    [[nodiscard]] auto value(P... p) const -> const T& {
+    [[nodiscard]] auto value(P... p) const -> const_reference {
         throw_if_invalid(p...);
         return _value;
     }
@@ -264,7 +261,7 @@ public:
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     /// @param p additional parameters for the policy validity check function.
     [[nodiscard]] constexpr auto value_or(reference fallback, P... p) noexcept
-      -> auto& {
+      -> reference {
         if(is_valid(p...)) [[likely]] {
             return _value;
         }
@@ -274,7 +271,7 @@ public:
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     /// @param p additional parameters for the policy validity check function.
     [[nodiscard]] constexpr auto value_or(const_reference fallback, P... p)
-      const noexcept -> auto& {
+      const noexcept -> const_reference {
         if(is_valid(p...)) [[likely]] {
             return _value;
         }
@@ -291,50 +288,111 @@ public:
         return _value;
     }
 
-    /// @brief Calls the specified function if the stored value is valid.
-    /// @param func the function to be called.
-    template <typename Func>
-        requires(!std::is_same_v<std::invoke_result_t<Func, T>, void>)
-    [[nodiscard]] constexpr auto then(const Func& func) const -> basic_valid_if<
-      std::invoke_result_t<Func, T>,
-      valid_flag_policy,
-      typename valid_flag_policy::do_log> {
-        if(is_valid()) {
-            return {func(this->value_anyway()), true};
+    /// @brief Constructs value of type C from the stored value or an empty optional.
+    /// @see and_then
+    template <typename C, typename... Args>
+    [[nodiscard]] auto construct(Args&&... args) noexcept(
+      noexcept(T(std::declval<T&>())))
+      -> basic_valid_if<C, valid_flag_policy, typename valid_flag_policy::do_log> {
+        if(has_value()) {
+            return {C{this->value_anyway(), std::forward<Args>(args)...}, true};
         }
         return {};
     }
 
+    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @see construct
+    /// @see transform
+    template <typename F>
+        requires(optional_like<std::remove_cvref_t<std::invoke_result_t<F, T&>>>)
+    [[nodiscard]] auto and_then(F&& function) {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, T&>>;
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), this->value_anyway());
+        } else {
+            return R{};
+        }
+    }
+
+    /// @brief Calls the specified function if the stored value is valid.
+    /// @param function the function to be called.
+    /// @see and_then
+    template <typename F>
+        requires(not std::is_same_v<std::invoke_result_t<F, T>, void>)
+    [[nodiscard]] constexpr auto transform(F&& function) const {
+        using R = std::invoke_result_t<F, T&>;
+        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+            using U = std::conditional_t<
+              std::is_reference_v<R>,
+              std::remove_reference_t<R>,
+              std::remove_pointer_t<R>>;
+            if(has_value()) {
+                return optional_reference<U>{
+                  std::invoke(std::forward<F>(function), this->value_anyway())};
+            } else {
+                return optional_reference<U>{nothing};
+            }
+        } else {
+            using V = std::remove_cvref_t<R>;
+            if(has_value()) {
+                return basic_valid_if<
+                  V,
+                  valid_flag_policy,
+                  typename valid_flag_policy::do_log>{
+                  std::invoke(std::forward<F>(function), this->value_anyway()),
+                  true};
+            } else {
+                return basic_valid_if<
+                  V,
+                  valid_flag_policy,
+                  typename valid_flag_policy::do_log>{};
+            }
+        }
+    }
+
     /// @brief Calls the specified function if the stored valus is valid.
-    /// @param func the function to call.
-    /// @see then
-    template <typename Func>
-    [[nodiscard]] constexpr auto operator|(const Func& func) const {
-        return then(func);
+    /// @param function the function to call.
+    /// @see transform
+    template <typename F>
+    [[nodiscard]] constexpr auto operator|(const F& function) const {
+        return transform(function);
+    }
+
+    template <typename M, std::same_as<T> C>
+    [[nodiscard]] auto member(M C::*ptr) noexcept {
+        if(has_value()) {
+            return optional_reference<M>{this->value_anyway().*ptr};
+        } else {
+            return optional_reference<M>{nothing};
+        }
+    }
+
+    template <typename M, typename C>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] auto member(M C::*ptr) const noexcept {
+        if(has_value()) {
+            return optional_reference<std::add_const_t<M>>{
+              this->value_anyway().*ptr};
+        } else {
+            return optional_reference<std::add_const_t<M>>{nothing};
+        }
     }
 
     /// @brief Calls a binary transforming function on {value, is_valid()} pair.
-    /// @param func the function to be called.
-    template <typename Func>
-    [[nodiscard]] constexpr auto transformed(Func func, P... p) const noexcept
+    /// @param function the function to be called.
+    template <typename F>
+    [[nodiscard]] constexpr auto transformed(F function, P... p) const noexcept
       -> basic_valid_if<
-        std::invoke_result_t<Func, T, bool>,
+        std::invoke_result_t<F, T, bool>,
         valid_flag_policy,
         typename valid_flag_policy::do_log> {
         const auto v{is_valid(p...)};
-        auto r{func(_value, v)};
+        auto r{function(_value, v)};
         if constexpr(extractable<decltype(r)>) {
             return r;
         } else {
             return {std::move(r), v};
         }
-    }
-
-    /// @brief Returns the stored value if valid, returns fallback otherwise.
-    /// @see basic_valid_if::value_or
-    [[nodiscard]] constexpr auto operator/(
-      const_reference fallback) const noexcept -> const_reference {
-        return value_or(fallback);
     }
 
     /// @brief Returns the stored value, throws if it is invalid.
@@ -351,6 +409,15 @@ public:
         return &value();
     }
 
+    /// @brief Conversion to std::optional
+    [[nodiscard]] constexpr operator std::optional<T>() const
+      noexcept(std::is_nothrow_copy_constructible_v<T>) {
+        if(has_value()) {
+            return {this->value_anyway()};
+        }
+        return {};
+    }
+
 private:
     T _value{};
     [[no_unique_address]] Policy _policy;
@@ -360,7 +427,7 @@ private:
 export template <typename T, typename Policy, typename DoLog, typename... P>
 class basic_valid_if<T&, Policy, DoLog, P...> {
     static_assert(
-      std::is_nothrow_default_constructible_v<Policy> ||
+      std::is_nothrow_default_constructible_v<Policy> or
       std::is_nothrow_move_constructible_v<Policy>);
 
 public:
@@ -454,48 +521,48 @@ public:
     /// @brief Equality comparison.
     [[nodiscard]] constexpr auto operator==(
       const basic_valid_if& that) const noexcept -> bool {
-        return (_value == that._value) && is_valid() && that.is_valid();
+        return (_value == that._value) and is_valid() and that.is_valid();
     }
 
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() == v, !is_valid()};
+        return {this->value_anyway() == v, not is_valid()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() != v, !is_valid()};
+        return {this->value_anyway() != v, not is_valid()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() < v, !is_valid()};
+        return {this->value_anyway() < v, not is_valid()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() > v, !is_valid()};
+        return {this->value_anyway() > v, not is_valid()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() <= v, !is_valid()};
+        return {this->value_anyway() <= v, not is_valid()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() >= v, !is_valid()};
+        return {this->value_anyway() >= v, not is_valid()};
     }
 
     template <typename Log>
     constexpr void log_invalid(Log& log, const value_type& v, P... p) const {
-        assert(!is_valid(v, p...));
+        assert(not is_valid(v, p...));
         _do_log(log, v, p...);
     }
 
@@ -505,12 +572,12 @@ public:
     }
 
     /// @brief Calls the specified function if the stored value is invalid.
-    /// @param func the function to be called.
+    /// @param function the function to be called.
     /// @param p additional parameters for the policy validity check function.
-    template <typename Func>
-    constexpr auto call_if_invalid(Func func, P... p) -> auto& {
-        if(!is_valid(p...)) {
-            func(_do_log, _value, p...);
+    template <typename F>
+    constexpr auto or_else(F&& function, P... p) -> auto& {
+        if(not is_valid(p...)) {
+            std::forward<F>(function)(_do_log, _value, p...);
         }
         return *this;
     }
@@ -519,7 +586,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
     void throw_if_invalid(P... p) const {
-        if(!is_valid(p...)) {
+        if(not is_valid(p...)) {
             std::stringstream ss;
             log_invalid(ss, p...);
             throw std::runtime_error(ss.str());
@@ -572,38 +639,104 @@ public:
         return _value;
     }
 
-    /// @brief Calls the specified function if the stored value is valid.
-    /// @param func the function to be called.
-    template <typename Func>
-        requires(!std::is_same_v<std::invoke_result_t<Func, T>, void>)
-    [[nodiscard]] constexpr auto then(const Func& func) const -> basic_valid_if<
-      std::invoke_result_t<Func, T>,
-      valid_flag_policy,
-      typename valid_flag_policy::do_log> {
-        if(is_valid()) {
-            return {func(this->value_anyway()), true};
+    /// @brief Constructs value of type C from the stored value or an empty optional.
+    /// @see and_then
+    template <typename C, typename... Args>
+    [[nodiscard]] auto construct(Args&&... args) const noexcept(
+      noexcept(T(std::declval<const T&>())))
+      -> basic_valid_if<C, valid_flag_policy, typename valid_flag_policy::do_log> {
+        if(has_value()) {
+            return {C{this->value_anyway(), std::forward<Args>(args)...}, true};
         }
         return {};
     }
 
+    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @see transform
+    template <typename F>
+        requires(optional_like<std::remove_cvref_t<std::invoke_result_t<F, T&>>>)
+    [[nodiscard]] auto and_then(F&& function) const {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, T&>>;
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), this->value());
+        } else {
+            return R{};
+        }
+    }
+
+    /// @brief Calls the specified function if the stored value is valid.
+    /// @param function the function to be called.
+    template <typename F>
+        requires(not std::is_same_v<std::invoke_result_t<F, T>, void>)
+    [[nodiscard]] constexpr auto transform(F&& function) const {
+        using R = std::invoke_result_t<F, T&>;
+        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+            using U = std::conditional_t<
+              std::is_reference_v<R>,
+              std::remove_reference_t<R>,
+              std::remove_pointer_t<R>>;
+            if(has_value()) {
+                return optional_reference<U>{
+                  std::invoke(std::forward<F>(function), this->value_anyway())};
+            } else {
+                return optional_reference<U>{nothing};
+            }
+        } else {
+            using V = std::remove_cvref_t<R>;
+            if(has_value()) {
+                return basic_valid_if<
+                  V,
+                  valid_flag_policy,
+                  typename valid_flag_policy::do_log>{
+                  std::invoke(std::forward<F>(function), this->value_anyway()),
+                  true};
+            } else {
+                return basic_valid_if<
+                  V,
+                  valid_flag_policy,
+                  typename valid_flag_policy::do_log>{};
+            }
+        }
+    }
+
     /// @brief Calls the specified function if the stored valus is valid.
-    /// @param func the function to call.
-    /// @see then
-    template <typename Func>
-    [[nodiscard]] constexpr auto operator|(const Func& func) const {
-        return then(func);
+    /// @param function the function to call.
+    /// @see transform
+    template <typename F>
+    [[nodiscard]] constexpr auto operator|(const F& function) const {
+        return transform(function);
+    }
+
+    template <typename M, std::same_as<T> C>
+    [[nodiscard]] auto member(M C::*ptr) noexcept {
+        if(has_value()) {
+            return optional_reference<M>{this->value_anyway().*ptr};
+        } else {
+            return optional_reference<M>{nothing};
+        }
+    }
+
+    template <typename M, typename C>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] auto member(M C::*ptr) const noexcept {
+        if(has_value()) {
+            return optional_reference<std::add_const_t<M>>{
+              this->value_anyway().*ptr};
+        } else {
+            return optional_reference<std::add_const_t<M>>{nothing};
+        }
     }
 
     /// @brief Calls a binary transforming function on {value, is_valid()} pair.
-    /// @param func the function to be called.
-    template <typename Func>
-    [[nodiscard]] constexpr auto transformed(Func func, P... p) const noexcept
+    /// @param function the function to be called.
+    template <typename F>
+    [[nodiscard]] constexpr auto transformed(F function, P... p) const noexcept
       -> basic_valid_if<
-        std::invoke_result_t<Func, T, bool>,
+        std::invoke_result_t<F, T, bool>,
         valid_flag_policy,
         typename valid_flag_policy::do_log> {
         const auto v{is_valid(p...)};
-        auto r{func(_value, v)};
+        auto r{function(_value, v)};
         if constexpr(extractable<decltype(r)>) {
             return r;
         } else {
@@ -632,6 +765,15 @@ public:
         return &value();
     }
 
+    /// @brief Conversion to std::optional
+    [[nodiscard]] constexpr operator std::optional<std::reference_wrapper<T>>()
+      const noexcept {
+        if(has_value()) {
+            return {this->value_anyway()};
+        }
+        return {};
+    }
+
 private:
     T& _value{};
     [[no_unique_address]] Policy _policy;
@@ -653,7 +795,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() == v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 
 /// @brief Non-equality comparison of two conditionally valid values.
@@ -664,7 +806,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() != v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 
 /// @brief Less-than comparison of two conditionally valid values.
@@ -675,7 +817,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() < v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 
 /// @brief Greater-than comparison of two conditionally valid values.
@@ -686,7 +828,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() > v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 
 /// @brief Less-equal comparison of two conditionally valid values.
@@ -697,7 +839,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() <= v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 
 /// @brief Greater-equal comparison of two conditionally valid values.
@@ -708,7 +850,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() >= v2.value_anyway()),
-      (!v1.is_valid() || !v2.is_valid())};
+      (not v1.is_valid() or not v2.is_valid())};
 }
 //------------------------------------------------------------------------------
 /// @brief Primary template for conditionally valid values.
@@ -759,7 +901,7 @@ public:
     constexpr valid_if_or_fallback(basic_valid_if<T, P, L> vi, F fallback) noexcept(
       noexcept(basic_valid_if<T, P, L>(
         std::declval<
-          basic_valid_if<T, P, L>&&>())) && noexcept(F(std::declval<F&&>())))
+          basic_valid_if<T, P, L>&&>())) and noexcept(F(std::declval<F&&>())))
       : basic_valid_if<T, P, L>{std::move(vi)}
       , _fallback{std::move(fallback)} {}
 
@@ -783,7 +925,7 @@ export template <typename F, typename T, typename P, typename L>
 [[nodiscard]] auto either_or(basic_valid_if<T, P, L> vi, F f) noexcept(
   noexcept(basic_valid_if<T, P, L>(
     std::declval<
-      basic_valid_if<T, P, L>&&>())) && noexcept(F(std::declval<F&&>())))
+      basic_valid_if<T, P, L>&&>())) and noexcept(F(std::declval<F&&>())))
   -> valid_if_or_fallback<F, T, P, L> {
     return {std::move(vi), std::move(f)};
 }
@@ -812,5 +954,129 @@ struct within_limits<basic_valid_if<Dst, P, L, A...>, Src> {
         return within_limits<Dst, Src>::check(value);
     }
 };
+//------------------------------------------------------------------------------
+/// @brief Policy for always valid values.
+/// @ingroup valid_if
+export struct always_valid_policy {
+
+    /// @brief Indicates value validity. Always returns true.
+    template <typename T>
+    constexpr auto operator()(const T&) const noexcept {
+        return true;
+    }
+
+    struct do_log {
+        template <does_not_hide<do_log> X>
+        constexpr do_log(X&&) noexcept {}
+
+        template <typename Log, typename T>
+        void operator()(Log&, const T&) const {}
+    };
+};
+
+/// @brief Specialization of valid_if, for always valid values.
+/// @ingroup valid_if
+/// @see never_valid
+export template <typename T>
+using always_valid = valid_if<T, always_valid_policy>;
+//------------------------------------------------------------------------------
+/// @brief Policy for never-valid values.
+/// @ingroup valid_if
+export struct never_valid_policy {
+
+    /// @brief Indicates value validity. Always returns false.
+    template <typename T>
+    constexpr auto operator()(const T&) const noexcept {
+        return false;
+    }
+
+    struct do_log {
+        template <does_not_hide<do_log> X>
+        constexpr do_log(X&&) noexcept {}
+
+        template <typename Log, typename T>
+        void operator()(Log& log, const T&) const {
+            log << "value is not valid";
+        }
+    };
+};
+
+/// @brief Specialization of valid_if, for never-valid values.
+/// @ingroup valid_if
+/// @see always_valid
+export template <typename T>
+using never_valid = valid_if<T, never_valid_policy>;
+//------------------------------------------------------------------------------
+/// @brief Policy class for containers valid if their empty() member
+/// function return false.
+/// @ingroup valid_if
+export template <typename T>
+struct valid_if_not_empty_policy {
+
+    /// @brief Indicates value validity, true if not range.empty().
+    constexpr auto operator()(const T& range) const noexcept {
+        return not range.empty();
+    }
+
+    struct do_log {
+        template <does_not_hide<do_log> X>
+        constexpr do_log(X&&) noexcept {}
+
+        template <typename Log>
+        void operator()(Log& log, const T&) const {
+            log << "Empty range, string or container is invalid";
+        }
+    };
+};
+
+/// @brief Specialization of valid_if, for values valid if not empty.
+/// @ingroup valid_if
+/// @see valid_if_size_gt
+/// @see valid_if_lt_size
+export template <typename T>
+using valid_if_not_empty =
+  valid_if<T, valid_if_not_empty_policy<std::remove_reference_t<T>>>;
+//------------------------------------------------------------------------------
+/// @brief Policy for values valid when non-boolean Indicator has Value.
+/// @ingroup valid_if
+export template <typename Indicator, typename Comparable, Comparable Value>
+struct valid_if_indicated_policy {
+    Indicator _indicator{};
+
+    constexpr valid_if_indicated_policy() noexcept = default;
+
+    constexpr valid_if_indicated_policy(Indicator indicator) noexcept
+      : _indicator{std::move(indicator)} {}
+
+    /// @brief Indicates value validity, true if indicator == Value.
+    template <typename T>
+    constexpr auto operator()(const T&) const noexcept {
+        return Comparable(_indicator) == Value;
+    }
+
+    struct do_log {
+        template <does_not_hide<do_log> X>
+        constexpr do_log(X&&) noexcept {}
+
+        template <typename Log, typename T>
+        void operator()(Log& log, const T&) const {
+            log << "indicator is " << Value;
+        }
+    };
+};
+
+/// @brief Specialization of valid_if, for values with non-boolean indicator.
+/// @ingroup valid_if
+/// @see optionally_valid
+///
+/// This is a more generalized for of optionally_valid for indicators of types
+/// other than boolean.
+export template <
+  typename T,
+  typename Indicator,
+  typename Comparable = bool,
+  Comparable Value = true>
+using valid_if_indicated =
+  valid_if<T, valid_if_indicated_policy<Indicator, Comparable, Value>>;
 //------------------------------------------------------------------------------
 } // namespace eagine

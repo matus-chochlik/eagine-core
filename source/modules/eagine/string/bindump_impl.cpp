@@ -10,10 +10,7 @@ module eagine.core.string;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
-import <iomanip>;
-import <iostream>;
-import <optional>;
-import <sstream>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -40,11 +37,11 @@ void _bindump_do_bin_dump(
     bool row_none[4]{};
     byte row_byte[4]{};
 
-    while(!done) {
+    while(not done) {
         span_size_t pos = row;
         bool empty_row = true;
         for(const auto b : integer_range(4)) {
-            if(pos < bgn || done) {
+            if(pos < bgn or done) {
                 row_none[b] = true;
             } else {
                 if(const auto got{get_byte()}) {
@@ -96,7 +93,7 @@ void _bindump_do_bin_dump(
                 put_char(' ');
             }
 
-            if(row_none[b] || !std::isprint(row_byte[b])) {
+            if(row_none[b] or not std::isprint(row_byte[b])) {
                 put_char('.');
             } else {
                 put_char(char(row_byte[b]));
@@ -124,8 +121,9 @@ auto bindump::to_stream(std::ostream& out) const noexcept -> std::ostream& {
 
     span_size_t i = 0;
 
+    using memory::as_address;
     _bindump_do_bin_dump(
-      memory::const_address(_mb.begin()).value(),
+      as_address(_mb.begin()).value(),
       make_span_getter(i, _mb),
       [&out](char c) { out << c; });
     return out << std::flush;

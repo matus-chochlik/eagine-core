@@ -8,7 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
-import <string>;
+import std;
 //------------------------------------------------------------------------------
 void interleaved_call_default_1(unsigned, auto& s) {
     eagitest::case_ test{s, 1, "1"};

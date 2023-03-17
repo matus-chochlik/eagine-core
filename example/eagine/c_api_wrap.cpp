@@ -6,7 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <iostream>;
+import std;
 
 #if __has_include(<fcntl.h>) && \
 	__has_include(<sys/types.h>) && \
@@ -147,7 +147,7 @@ auto main(int, const char** argv) -> int {
     }
     */
 
-    if(api.make_pipe && api.write_block && api.read_block && api.close_file) {
+    if(api.make_pipe and api.write_block and api.read_block and api.close_file) {
         int pfd[2] = {-1, -1};
 
         api.make_pipe(pfd);
@@ -155,7 +155,7 @@ auto main(int, const char** argv) -> int {
         auto make_getbyte = [&api](int fd) {
             return [&api, fd]() -> std::optional<byte> {
                 byte b{};
-                if(!extract_or(api.read_block(fd, cover_one(b))).is_empty()) {
+                if(not extract_or(api.read_block(fd, cover_one(b))).is_empty()) {
                     return {b};
                 }
                 api.close_file(fd);

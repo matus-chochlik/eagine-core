@@ -14,9 +14,7 @@ export module eagine.core.c_api:result;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.utility;
-import <stdexcept>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 namespace c_api {
@@ -232,7 +230,7 @@ protected:
       IfFalse& if_false) const {
         result<void, Info, result_validity::always> result{};
         static_cast<Info&>(result) = static_cast<const Info&>(src);
-        if(!check(_value)) [[unlikely]] {
+        if(not check(_value)) [[unlikely]] {
             if_false(static_cast<Info&>(result));
         }
         return result;
@@ -384,7 +382,7 @@ protected:
       IfFalse& if_false) const {
         result<void, Info, result_validity::maybe> res{};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
-        if(src.is_valid() && !check(_value)) [[unlikely]] {
+        if(src.is_valid() and not check(_value)) [[unlikely]] {
             if_false(static_cast<Info&>(res));
         }
         return res;
@@ -457,7 +455,7 @@ public:
     using base::base;
 
     explicit constexpr operator bool() const noexcept {
-        return this->is_valid() && bool(*static_cast<const Info*>(this));
+        return this->is_valid() and bool(*static_cast<const Info*>(this));
     }
 
     template <typename T>
@@ -636,7 +634,7 @@ constexpr auto extract(
 export template <typename Result, typename Info>
 auto operator>>(result<Result, Info, result_validity::maybe> res, Result& dest)
   -> Result& {
-    if(!res._valid) {
+    if(not res._valid) {
         throw bad_result<Info>(static_cast<Info&&>(res));
     }
     return dest = std::move(res._value);

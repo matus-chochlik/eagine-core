@@ -7,11 +7,10 @@
 ///
 export module eagine.core.math:colors;
 
-import <cmath>;
-import <concepts>;
 import :constants;
 import :functions;
 import :vector;
+import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------
@@ -28,7 +27,7 @@ export template <std::floating_point T, bool V>
         const T div{sqrt(
           dot(rgb, rgb) -
           (rgb.x() * rgb.y() + rgb.y() * rgb.z() + rgb.z() * rgb.x()))};
-        if(div > zero || div < zero) {
+        if(div > zero or div < zero) {
             using std::acos;
             const T acs{acos((rgb.x() - half * (rgb.y() + rgb.z())) / div)};
             if(rgb.y() >= rgb.z()) {

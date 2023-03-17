@@ -2,6 +2,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
+eagine_add_module(eagine.core.utility PARTITION coroutine)
 eagine_add_module(eagine.core.utility PARTITION double_buffer)
 eagine_add_module(eagine.core.utility PARTITION integer_hash)
 eagine_add_module(eagine.core.utility PARTITION interleaved_call)
@@ -9,11 +10,6 @@ eagine_add_module(eagine.core.utility PARTITION protected_member)
 
 eagine_add_module(
 	eagine.core.utility PARTITION sliding_average
-	IMPORTS eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.utility PARTITION array_size
 	IMPORTS eagine.core.types
 )
 
@@ -107,9 +103,9 @@ eagine_add_module(
 		utility
 	PARTITIONS
 		count
-		array_size
 		bool_aggregate
 		sliding_average
+		coroutine
 		double_buffer
 		integer_hash
 		interleaved_call
@@ -129,7 +125,7 @@ eagine_add_module(
 		random_bytes
 		unreachable
 	SOURCES
-		progress_bar_impl
+		progress_bar
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
@@ -138,11 +134,18 @@ eagine_add_module(
 eagine_add_module_tests(
 	eagine.core.utility
 	UNITS
-		array_size
 		bool_aggregate
 		callable_ref
+		double_buffer
 		memoized
 		network_sort
 		overloaded
+		protected_member
+		random_bytes
 		scope_exit
+		sudoku
+		timeout
 )
+
+set_tests_properties(execute-test.eagine.core.utility.sudoku PROPERTIES COST 30)
+set_tests_properties(execute-test.eagine.core.utility.timeout PROPERTIES COST 20)

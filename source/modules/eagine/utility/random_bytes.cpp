@@ -9,8 +9,7 @@ export module eagine.core.utility:random_bytes;
 
 import eagine.core.types;
 import eagine.core.memory;
-import <climits>;
-import <random>;
+import std;
 
 namespace eagine {
 
@@ -18,8 +17,8 @@ export template <typename Engine>
 auto fill_with_random_bytes(span<byte> dst, Engine& engine) -> span<byte> {
     using ui_t = typename Engine::result_type;
 
-    const ui_t mask = ((1U << unsigned(CHAR_BIT)) - 1U);
-    std::independent_bits_engine<Engine, CHAR_BIT, ui_t> ibe(engine);
+    const ui_t mask = ((1U << 8U) - 1U);
+    std::independent_bits_engine<Engine, 8U, ui_t> ibe(engine);
 
     generate(dst, [&] { return static_cast<byte>(ibe() & mask); });
     return dst;

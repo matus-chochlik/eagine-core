@@ -9,8 +9,7 @@ export module eagine.core.utility:memoized;
 
 import eagine.core.concepts;
 import :callable_ref;
-import <map>;
-import <tuple>;
+import std;
 
 namespace eagine {
 

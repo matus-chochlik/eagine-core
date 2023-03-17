@@ -12,11 +12,7 @@ import eagine.core.memory;
 import eagine.core.reflection;
 import eagine.core.units;
 import eagine.core.valid_if;
-import <chrono>;
-import <cstdint>;
-import <memory>;
-import <string>;
-import <thread>;
+import std;
 
 namespace eagine {
 
@@ -55,85 +51,98 @@ public:
     auto preinitialize() noexcept -> system_info&;
 
     /// @brief Returns a unique numeric id of this host computer.
-    auto host_id() noexcept -> valid_if_positive<host_id_type>;
+    [[nodiscard]] auto host_id() noexcept -> valid_if_positive<host_id_type>;
 
     /// @brief Returns the hostname.
-    auto hostname() noexcept -> valid_if_not_empty<std::string>;
+    [[nodiscard]] auto hostname() noexcept -> valid_if_not_empty<std::string>;
 
     /// @brief Paths to the system's configuration directory.
-    auto config_dir_path() noexcept -> valid_if_not_empty<string_view>;
+    [[nodiscard]] auto config_dir_path() noexcept
+      -> valid_if_not_empty<string_view>;
 
     /// @brief Returns the system uptime.
-    auto uptime() noexcept -> std::chrono::duration<float>;
+    [[nodiscard]] auto uptime() noexcept -> std::chrono::duration<float>;
 
     /// @brief Returns the number of threads that can run concurrently.
-    auto cpu_concurrent_threads() noexcept -> valid_if_positive<span_size_t> {
+    [[nodiscard]] auto cpu_concurrent_threads() noexcept
+      -> valid_if_positive<span_size_t> {
         return {span_size(std::thread::hardware_concurrency())};
     }
 
     /// @brief Returns the number of running processes.
-    auto current_processes() noexcept -> valid_if_positive<span_size_t>;
+    [[nodiscard]] auto current_processes() noexcept
+      -> valid_if_positive<span_size_t>;
 
     /// @brief Returns the short-term average system load in range (0.0, 1.0).
-    auto short_average_load() noexcept -> valid_if_nonnegative<float>;
+    [[nodiscard]] auto short_average_load() noexcept
+      -> valid_if_nonnegative<float>;
 
     /// @brief Returns the long-term average system load in range (0.0, 1.0).
-    auto long_average_load() noexcept -> valid_if_nonnegative<float>;
+    [[nodiscard]] auto long_average_load() noexcept
+      -> valid_if_nonnegative<float>;
 
     /// @brief Returns the memory page size on this system.
-    auto memory_page_size() noexcept -> valid_if_positive<span_size_t>;
+    [[nodiscard]] auto memory_page_size() noexcept
+      -> valid_if_positive<span_size_t>;
 
     /// @brief Returns free RAM size.
-    auto free_ram_size() noexcept -> valid_if_positive<span_size_t>;
+    [[nodiscard]] auto free_ram_size() noexcept
+      -> valid_if_positive<span_size_t>;
 
     /// @brief Returns total RAM size.
-    auto total_ram_size() noexcept -> valid_if_positive<span_size_t>;
+    [[nodiscard]] auto total_ram_size() noexcept
+      -> valid_if_positive<span_size_t>;
 
     /// @brief Returns free swap size.
-    auto free_swap_size() noexcept -> valid_if_nonnegative<span_size_t>;
+    [[nodiscard]] auto free_swap_size() noexcept
+      -> valid_if_nonnegative<span_size_t>;
 
     /// @brief Returns total swap size.
-    auto total_swap_size() noexcept -> valid_if_nonnegative<span_size_t>;
+    [[nodiscard]] auto total_swap_size() noexcept
+      -> valid_if_nonnegative<span_size_t>;
 
     /// @brief Returns the number of system thermal sensors.
-    auto thermal_sensor_count() noexcept -> span_size_t;
+    [[nodiscard]] auto thermal_sensor_count() noexcept -> span_size_t;
 
     /// @brief Returns the temperature on the i-th thermal sensor.
-    auto sensor_temperature(span_size_t) noexcept
+    [[nodiscard]] auto sensor_temperature(span_size_t) noexcept
       -> valid_if_positive<kelvins_t<float>>;
 
     /// @brief Returns the minimum and maximum temperature on the thermal sensors.
-    auto temperature_min_max() noexcept -> std::tuple<
+    [[nodiscard]] auto temperature_min_max() noexcept -> std::tuple<
       valid_if_positive<kelvins_t<float>>,
       valid_if_positive<kelvins_t<float>>>;
 
     /// @brief Returns the temperature on the CPU thermal sensor if present.
-    auto cpu_temperature() noexcept -> valid_if_positive<kelvins_t<float>>;
+    [[nodiscard]] auto cpu_temperature() noexcept
+      -> valid_if_positive<kelvins_t<float>>;
 
     /// @brief Returns the temperature on the GPU thermal sensor if present.
-    auto gpu_temperature() noexcept -> valid_if_positive<kelvins_t<float>>;
+    [[nodiscard]] auto gpu_temperature() noexcept
+      -> valid_if_positive<kelvins_t<float>>;
 
     /// @brief Returns the number of cooling devices.
-    auto cooling_device_count() noexcept -> span_size_t;
+    [[nodiscard]] auto cooling_device_count() noexcept -> span_size_t;
 
     /// @brief Returns the state of the i-th cooling device.
-    auto cooling_device_state(span_size_t) noexcept
+    [[nodiscard]] auto cooling_device_state(span_size_t) noexcept
       -> valid_if_between_0_1<float>;
 
     /// @brief Returns the count of batteries in the system.
-    auto battery_count() noexcept -> span_size_t;
+    [[nodiscard]] auto battery_count() noexcept -> span_size_t;
 
     /// @brief Returns the capacity of the i-th battery.
-    auto battery_capacity(span_size_t) noexcept -> valid_if_between_0_1<float>;
+    [[nodiscard]] auto battery_capacity(span_size_t) noexcept
+      -> valid_if_between_0_1<float>;
 
     /// @brief Returns the count of AC power supplies in the system.
-    auto ac_supply_count() noexcept -> span_size_t;
+    [[nodiscard]] auto ac_supply_count() noexcept -> span_size_t;
 
     /// @brief Indicates whether the i-th power supply is online
-    auto ac_supply_online(span_size_t) noexcept -> tribool;
+    [[nodiscard]] auto ac_supply_online(span_size_t) noexcept -> tribool;
 
     /// @brief Returns the currently user power supply kind.
-    auto power_supply() noexcept -> power_supply_kind {
+    [[nodiscard]] auto power_supply() noexcept -> power_supply_kind {
         for(const auto i : integer_range(ac_supply_count())) {
             if(ac_supply_online(i)) {
                 return power_supply_kind::ac_supply;

@@ -20,15 +20,7 @@ import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.logging;
-import <array>;
-import <chrono>;
-import <memory>;
-import <optional>;
-import <stack>;
-import <string>;
-import <vector>;
-
-import <iostream>;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -74,7 +66,9 @@ private:
     _val_t* _rj_name{nullptr};
 
 public:
-    rapidjson_value_node(_val_t& rj_val, _val_t* rj_name = nullptr) noexcept
+    [[nodiscard]] rapidjson_value_node(
+      _val_t& rj_val,
+      _val_t* rj_name = nullptr) noexcept
       : _rj_val{&rj_val}
       , _rj_name{rj_name} {}
 
@@ -106,7 +100,7 @@ public:
                 if(val.IsInt64()) {
                     return value_type::int64_type;
                 }
-                if(val.IsFloat() || val.IsDouble()) {
+                if(val.IsFloat() or val.IsDouble()) {
                     return value_type::float_type;
                 }
                 if(val.IsString()) {
@@ -216,7 +210,7 @@ public:
                             break;
                         }
                     }
-                    if(!found) {
+                    if(not found) {
                         if(member == result->MemberEnd()) {
                             member = result->FindMember(c_str(entry));
                             if(member != result->MemberEnd()) {
@@ -226,7 +220,7 @@ public:
                             }
                         }
                     }
-                    if(!found) {
+                    if(not found) {
                         result = nullptr;
                     }
                 } else if(result->IsArray()) {
@@ -261,7 +255,7 @@ public:
             if(val.IsArray()) {
                 return span_size(val.Size());
             }
-            if(!val.IsNull()) {
+            if(not val.IsNull()) {
                 return 1;
             }
         }
@@ -469,15 +463,15 @@ public:
             if(val.IsArray()) {
                 const auto n = span_size(val.Size());
                 span_size_t i = 0;
-                while((i + offset < n) && (i < dest.size())) {
-                    if(!convert(val[rapidjson_size(i + offset)], dest[i])) {
+                while((i + offset < n) and (i < dest.size())) {
+                    if(not convert(val[rapidjson_size(i + offset)], dest[i])) {
                         break;
                     }
                     ++i;
                 }
                 return i;
             } else {
-                if(!dest.empty()) {
+                if(not dest.empty()) {
                     if(convert(val, dest.front())) {
                         return 1;
                     }
@@ -610,7 +604,9 @@ private:
     _node_t _root{};
 
 public:
-    rapidjson_document_compound(_doc_t& rj_doc, const logger& parent)
+    [[nodiscard]] rapidjson_document_compound(
+      _doc_t& rj_doc,
+      const logger& parent)
       : _log{"JsnValTree", parent}
       , _rj_doc{std::move(rj_doc)}
       , _root{_rj_doc, nullptr} {}
@@ -630,8 +626,9 @@ public:
         return {};
     }
 
-    static auto make_shared(string_view json_str, const logger& parent)
-      -> std::shared_ptr<rapidjson_document_compound> {
+    [[nodiscard]] static auto make_shared(
+      string_view json_str,
+      const logger& parent) -> std::shared_ptr<rapidjson_document_compound> {
         _doc_t rj_doc;
         return do_make_shared(
           rj_doc,
@@ -639,7 +636,7 @@ public:
           parent);
     }
 
-    static auto make_shared(
+    [[nodiscard]] static auto make_shared(
       span<const memory::const_block> json_data,
       const logger& parent) -> std::shared_ptr<rapidjson_document_compound> {
         rapidjson_chunk_stream json_stream{json_data};
@@ -707,7 +704,7 @@ public:
 };
 //------------------------------------------------------------------------------
 template <typename Encoding, typename Allocator, typename StackAlloc>
-static inline auto rapidjson_make_value_node(
+[[nodiscard]] static inline auto rapidjson_make_value_node(
   rapidjson_document_compound<Encoding, Allocator, StackAlloc>& owner,
   rapidjson::GenericValue<Encoding, Allocator>& value,
   rapidjson::GenericValue<Encoding, Allocator>* name) -> attribute_interface* {
@@ -730,12 +727,13 @@ struct get_rapidjson_document_compound<
 using default_rapidjson_document_compound =
   get_rapidjson_document_compound_t<rapidjson::Document>;
 //------------------------------------------------------------------------------
-auto from_json_text(string_view json_text, const logger& parent) -> compound {
+[[nodiscard]] auto from_json_text(string_view json_text, const logger& parent)
+  -> compound {
     return compound::make<default_rapidjson_document_compound>(
       json_text, parent);
 }
 //------------------------------------------------------------------------------
-auto from_json_data(
+[[nodiscard]] auto from_json_data(
   span<const memory::const_block> json_data,
   const logger& parent) -> compound {
     return compound::make<default_rapidjson_document_compound>(
@@ -812,7 +810,7 @@ public:
             _done += _offs;
             _offs = 0;
         }
-        if(!_current.empty()) {
+        if(not _current.empty()) {
             append_to(_current, _previous);
             _current = {};
         }
@@ -855,7 +853,7 @@ class json_value_tree_stream_parser
   , public rapidjson::
       BaseReaderHandler<rapidjson::UTF8<>, json_value_tree_stream_parser> {
 public:
-    json_value_tree_stream_parser(
+    [[nodiscard]] json_value_tree_stream_parser(
       std::shared_ptr<value_tree_visitor> visitor,
       span_size_t max_token_size,
       memory::buffer_pool& buffers,
@@ -885,14 +883,14 @@ public:
 
     auto _do_parse_current() noexcept -> bool {
         return _json_reader.IterativeParseNext<_parse_flags()>(
-                 _json_stream, *this) &&
-               !_json_reader.IterativeParseComplete();
+                 _json_stream, *this) and
+               not _json_reader.IterativeParseComplete();
     }
 
     auto parse_data(memory::const_block data) noexcept -> bool {
         if(_visitor->should_continue()) [[likely]] {
             if(_in_unparsed) {
-                if(!data.empty()) {
+                if(not data.empty()) {
                     _visitor->unparsed_data(view_one(data));
                     return true;
                 }
@@ -900,7 +898,7 @@ public:
                 _json_stream.next(data);
                 bool parsed_something{false};
                 while(_json_stream.available() >= _max_token_size) {
-                    if(!_do_parse_current()) {
+                    if(not _do_parse_current()) {
                         break;
                     }
                     parsed_something = true;
@@ -915,7 +913,7 @@ public:
                     }
                 }
 
-                if(parsed_something && !_just_flushed) {
+                if(parsed_something and not _just_flushed) {
                     _visitor->flush();
                     _just_flushed = true;
                 }
@@ -932,7 +930,7 @@ public:
             assert(_json_stream.available() == 0);
         } else {
             while(_visitor->should_continue()) {
-                if(!_do_parse_current()) {
+                if(not _do_parse_current()) {
                     break;
                 }
             }
@@ -968,8 +966,8 @@ public:
       _cached_type cur_val_typ,
       _cached_type new_val_typ) noexcept {
         const auto should_flush{
-          ((_old_val_typ != new_val_typ) && !cache.empty()) ||
-          ((_old_val_typ == cur_val_typ) && (cache.size() >= 512))};
+          ((_old_val_typ != new_val_typ) and not cache.empty()) or
+          ((_old_val_typ == cur_val_typ) and (cache.size() >= 512))};
         if(should_flush) [[unlikely]] {
             _visitor->consume(memory::view(cache));
             cache.clear();
@@ -986,7 +984,7 @@ public:
 
     template <typename T>
     void _do_push(T value, std::vector<T>& cache, _cached_type new_val_typ) {
-        if(_list_stack.empty() || !_list_stack.top()) {
+        if(_list_stack.empty() or not _list_stack.top()) {
             _visitor->consume(view_one(value));
             _just_flushed = false;
         } else {
@@ -1041,9 +1039,9 @@ public:
         return true;
     }
     auto Key(const char* str, rapidjson::SizeType length, bool) -> bool {
-        assert(!_attr_stack.empty());
+        assert(not _attr_stack.empty());
         auto& attr_name = _attr_stack.top();
-        if(!attr_name.empty()) {
+        if(not attr_name.empty()) {
             _visitor->finish_attribute(attr_name);
         }
         attr_name.assign(str, std_size(length));
@@ -1051,9 +1049,9 @@ public:
         return true;
     }
     auto EndObject(rapidjson::SizeType) -> bool {
-        assert(!_attr_stack.empty());
+        assert(not _attr_stack.empty());
         auto& attr_name = _attr_stack.top();
-        if(!attr_name.empty()) {
+        if(not attr_name.empty()) {
             _visitor->finish_attribute(attr_name);
         }
         _attr_stack.pop();
@@ -1097,7 +1095,7 @@ private:
     bool _in_unparsed{false};
 };
 //------------------------------------------------------------------------------
-auto traverse_json_stream(
+[[nodiscard]] auto traverse_json_stream(
   std::shared_ptr<value_tree_visitor> visitor,
   span_size_t max_token_size,
   memory::buffer_pool& buffers,
@@ -1106,7 +1104,7 @@ auto traverse_json_stream(
       std::move(visitor), max_token_size, buffers, parent)};
 }
 //------------------------------------------------------------------------------
-auto traverse_json_stream(
+[[nodiscard]] auto traverse_json_stream(
   std::shared_ptr<object_builder> builder,
   memory::buffer_pool& buffers,
   const logger& parent) -> value_tree_stream_input {

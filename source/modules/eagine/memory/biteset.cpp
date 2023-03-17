@@ -14,11 +14,7 @@ export module eagine.core.memory:biteset;
 
 import eagine.core.types;
 import :byteset;
-import <cstdint>;
-import <compare>;
-import <iterator>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 
@@ -70,7 +66,7 @@ public:
 
     /// @brief Indicates if this is a valid proxy object that can be used for access.
     constexpr auto is_valid() const noexcept -> bool {
-        return (_ptr != nullptr) && (_pos < _ptr->size());
+        return (_ptr != nullptr) and (_pos < _ptr->size());
     }
 
     /// @brief Gets the value of the referenced biteset element.
@@ -268,12 +264,12 @@ protected:
     constexpr biteset_iterator_base() noexcept = default;
 
     constexpr auto is_valid() const noexcept {
-        return (_ptr != nullptr) && (_pos < _ptr->size());
+        return (_ptr != nullptr) and (_pos < _ptr->size());
     }
 
     static constexpr auto _cmp(const self& a, const self& b) noexcept
       -> difference_type {
-        assert((a._ptr != nullptr) && (a._ptr == b._ptr));
+        assert((a._ptr != nullptr) and (a._ptr == b._ptr));
         return a._pos - b._pos;
     }
 
@@ -386,7 +382,7 @@ export template <std::size_t N, std::size_t B, typename T>
 class biteset {
 public:
     static constexpr const std::size_t store_size =
-      ((N * B) / CHAR_BIT) + (((N * B) % CHAR_BIT != 0) ? 1 : 0);
+      ((N * B) / 8U) + (((N * B) % 8U != 0) ? 1 : 0);
 
 private:
     using _bytes_t = byteset<store_size>;
@@ -394,9 +390,9 @@ private:
     // the number of useful bits in T
     static constexpr const std::size_t _bite_s = B;
     // the number of bits in a byte
-    static constexpr const std::size_t _byte_s = CHAR_BIT;
+    static constexpr const std::size_t _byte_s = 8U;
     // the number of all bits in T
-    static constexpr const std::size_t _cell_s = sizeof(T) * CHAR_BIT;
+    static constexpr const std::size_t _cell_s = sizeof(T) * 8U;
 
 public:
     static_assert((B > 0), "bite size must be greater than zero");
@@ -428,7 +424,7 @@ public:
     template <typename... P>
     explicit constexpr biteset(P... p) noexcept
         requires(
-          (sizeof...(P) == N) &&
+          (sizeof...(P) == N) and
           std::conjunction_v<std::is_convertible<P, T>...>)
       : _bytes{_make_bytes(T(p)...)} {}
 

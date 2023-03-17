@@ -15,20 +15,21 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.console;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
 class combined_value_tree_visitor
   : public value_tree_visitor_impl<combined_value_tree_visitor> {
 public:
-    combined_value_tree_visitor(
+    [[nodiscard]] combined_value_tree_visitor(
       std::shared_ptr<value_tree_visitor> left,
       std::shared_ptr<value_tree_visitor> right) noexcept
       : _left{std::move(left)}
       , _right{std::move(right)} {}
 
     auto should_continue() noexcept -> bool {
-        return _left->should_continue() && _right->should_continue();
+        return _left->should_continue() and _right->should_continue();
     }
 
     void begin() noexcept final {
@@ -85,7 +86,7 @@ public:
     auto finish() noexcept -> bool final {
         const bool l{_left->finish()};
         const bool r{_right->finish()};
-        return l && r;
+        return l and r;
     }
 
     void failed() noexcept final {
@@ -98,7 +99,7 @@ private:
     std::shared_ptr<value_tree_visitor> _right;
 };
 //------------------------------------------------------------------------------
-auto make_combined_value_tree_visitor(
+[[nodiscard]] auto make_combined_value_tree_visitor(
   std::shared_ptr<value_tree_visitor> left,
   std::shared_ptr<value_tree_visitor> right)
   -> std::unique_ptr<value_tree_visitor> {
@@ -186,7 +187,7 @@ private:
     span_size_t _unparsed_offs{0};
 };
 //------------------------------------------------------------------------------
-auto make_printing_value_tree_visitor(const console& cio)
+[[nodiscard]] auto make_printing_value_tree_visitor(const console& cio)
   -> std::unique_ptr<value_tree_visitor> {
     return std::make_unique<printing_value_tree_visitor>(cio);
 }
@@ -194,11 +195,12 @@ auto make_printing_value_tree_visitor(const console& cio)
 class building_value_tree_visitor
   : public value_tree_visitor_impl<building_value_tree_visitor> {
 public:
-    building_value_tree_visitor(std::shared_ptr<object_builder> builder) noexcept
+    [[nodiscard]] building_value_tree_visitor(
+      std::shared_ptr<object_builder> builder) noexcept
       : _builder{std::move(builder)} {}
 
     auto should_continue() noexcept -> bool final {
-        return _should_continue && _builder->should_continue();
+        return _should_continue and _builder->should_continue();
     }
 
     void begin() noexcept final {
@@ -221,7 +223,7 @@ public:
     }
 
     void finish_attribute(const string_view name) noexcept final {
-        if(!_path.empty() && _path.back() == name) {
+        if(not _path.empty() and _path.back() == name) {
             _path.pop_back();
         } else {
             _should_continue = false;
@@ -237,7 +239,7 @@ public:
     }
 
     void finish_list() noexcept final {
-        if(!_path.empty() && _path.back() == string_view{"_"}) {
+        if(not _path.empty() and _path.back() == string_view{"_"}) {
             _path.pop_back();
         } else {
             _should_continue = false;
@@ -251,7 +253,7 @@ public:
     }
 
     auto finish() noexcept -> bool final {
-        if(!_path.empty()) {
+        if(not _path.empty()) {
             _builder->failed();
         }
         return _builder->finish();
@@ -267,7 +269,8 @@ private:
     bool _should_continue{false};
 };
 //------------------------------------------------------------------------------
-auto make_building_value_tree_visitor(std::shared_ptr<object_builder> builder)
+[[nodiscard]] auto make_building_value_tree_visitor(
+  std::shared_ptr<object_builder> builder)
   -> std::unique_ptr<value_tree_visitor> {
     return std::make_unique<building_value_tree_visitor>(std::move(builder));
 }

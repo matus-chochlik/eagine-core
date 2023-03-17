@@ -15,8 +15,8 @@ void memory_block_1(Case& test) {
 
     eagine::memory::basic_block<is_const> bmb;
 
-    test.check(!bool(bmb), "is false");
-    test.check(!bmb, "is not true");
+    test.check(not bool(bmb), "is false");
+    test.check(not bmb, "is not true");
     test.check(bmb.empty(), "is empty");
     test.check_equal(bmb.size(), 0, "size is zero");
     test.check(bmb.begin() == bmb.end(), "begin == end");
@@ -35,8 +35,8 @@ void memory_block_2(Case& test) {
     memory::basic_block<false> bmb1;
     memory::basic_block<is_const> bmb2 = bmb1;
 
-    test.check(!bool(bmb2), "is false");
-    test.check(!bmb2, "is not true");
+    test.check(not bool(bmb2), "is false");
+    test.check(not bmb2, "is not true");
     test.check(bmb2.empty(), "is empty");
     test.check_equal(bmb2.size(), 0, "size is zero");
     test.check(bmb2.begin() == bmb2.end(), "begin == end");
@@ -59,7 +59,7 @@ void memory_block_3(Case& test) {
 
     test.check(bool(bmb), "is true");
     test.check(!!bmb, "is not false");
-    test.check(!bmb.empty(), "is not empty");
+    test.check(not bmb.empty(), "is not empty");
     test.check_equal(bmb.size(), span_size(sizeof(x)), "size is ok");
     test.check(bmb.begin() != bmb.end(), "begin != end");
 
@@ -67,7 +67,7 @@ void memory_block_3(Case& test) {
 
     for([[maybe_unused]] byte b : bmb) {
         ++s;
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(bmb.size(), s, "size is ok");
@@ -90,7 +90,7 @@ void memory_block_4(Case& test) {
 
     test.check(bool(bmb), "is true");
     test.check(!!bmb, "is not false");
-    test.check(!bmb.empty(), "is not empty");
+    test.check(not bmb.empty(), "is not empty");
     test.check_equal(bmb.size(), span_size(sizeof(x)), "size is ok");
     test.check(bmb.begin() != bmb.end(), "begin != end");
 
@@ -98,7 +98,7 @@ void memory_block_4(Case& test) {
 
     for([[maybe_unused]] byte b : bmb) {
         ++s;
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(bmb.size(), s, "size is ok");
@@ -126,13 +126,13 @@ void memory_block_5(Case& test) {
 
     test.check(bool(bmb), "is true");
     test.check(!!bmb, "is not false");
-    test.check(!bmb.empty(), "is not empty");
+    test.check(not bmb.empty(), "is not empty");
     test.check_equal(bmb.size(), span_size(sizeof(x)), "size is ok");
     test.check(bmb.begin() != bmb.end(), "begin != end");
 
     for(span_size_t i = 0; i < bmb.size(); ++i) {
         test.check_equal(bmb.data()[i], x[i], "indexing is ok");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 }
 //------------------------------------------------------------------------------
@@ -152,12 +152,12 @@ void memory_block_6(Case& test) {
 
     test.check(bool(bmb1), "is true");
     test.check(!!bmb1, "is not false");
-    test.check(!bmb1.empty(), "is not empty");
+    test.check(not bmb1.empty(), "is not empty");
     test.check_equal(bmb1.size(), span_size(sizeof(x)), "size is ok");
 
     memory::basic_block<is_const> bmb2(std::move(bmb1));
 
-    test.check(!bmb2.empty(), "is not empty");
+    test.check(not bmb2.empty(), "is not empty");
 
     memory::basic_block<is_const> bmb3;
 
@@ -165,7 +165,7 @@ void memory_block_6(Case& test) {
 
     bmb3 = std::move(bmb2);
 
-    test.check(!bmb3.empty(), "is not empty");
+    test.check(not bmb3.empty(), "is not empty");
 
     memory::basic_block<is_const> bmb4 = as_bytes(cover(x));
 

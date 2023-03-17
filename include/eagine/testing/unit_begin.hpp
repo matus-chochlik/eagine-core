@@ -6,14 +6,7 @@
 /// http://www.boost.org/LICENSE_1_0.txt
 ///
 ///
-import <cstdint>;
-import <string_view>;
-import <vector>;
-import <random>;
-import <type_traits>;
-#if __cpp_lib_source_location >= 201907L
-import <source_location>;
-#endif
+import std;
 
 namespace eagitest {
 //------------------------------------------------------------------------------
@@ -73,6 +66,12 @@ public:
         }
     }
 
+    auto fill_with_bytes(auto& dest) noexcept {
+        for(auto& e : dest) {
+            e = get_any<unsigned char>();
+        }
+    }
+
 private:
     std::default_random_engine _re{};
 };
@@ -95,6 +94,8 @@ public:
     auto operator=(const suite&) = delete;
     ~suite() noexcept;
 
+    auto executable_path() const noexcept -> std::string_view;
+
     auto random() noexcept -> random_generator&;
 
     auto once(void (*func)(eagitest::suite&)) noexcept -> suite&;
@@ -108,6 +109,8 @@ private:
     friend class case_;
     friend class track;
 
+    const int _argc;
+    const char** _argv;
     random_generator _rand_gen;
     const std::string_view _name;
     const suite_case_t _expected_cases;
@@ -125,7 +128,11 @@ public:
     auto operator=(const case_&) = delete;
     ~case_() noexcept;
 
-    auto random() noexcept -> random_generator& {
+    auto executable_path() const noexcept -> std::string_view {
+        return _parent.executable_path();
+    }
+
+    auto random() const noexcept -> random_generator& {
         return _parent.random();
     }
 
@@ -133,16 +140,12 @@ public:
 
     auto parameter(const auto&, std::string_view name) noexcept -> case_&;
     auto constructed(const auto&, std::string_view name) noexcept -> case_&;
-    auto checkpoint(
-      std::string_view label
-#if __cpp_lib_source_location >= 201907L
-      ,
-      const std::source_location loc = std::source_location::current()
-#endif
-        ) noexcept -> case_&;
+    auto checkpoint(std::string_view label) noexcept -> case_&;
 
     auto ensure(bool condition, std::string_view label, const auto&...)
       -> case_&;
+
+    auto fail(std::string_view label, const auto&...) -> case_&;
 
     auto check(bool condition, std::string_view label, const auto&...) noexcept
       -> case_&;
@@ -150,6 +153,13 @@ public:
     template <typename L, typename R>
     auto check_equal(const L& l, const R& r, std::string_view label) noexcept
       -> case_&;
+
+    template <typename L, typename R>
+    auto check_close(
+      const L& l,
+      const R& r,
+      const std::common_type_t<L, R>& eps,
+      std::string_view label) noexcept -> case_&;
 
     template <typename L, typename R>
     auto check_close(const L& l, const R& r, std::string_view label) noexcept
@@ -182,10 +192,7 @@ public:
     auto operator=(const track&) = delete;
     ~track() noexcept;
 
-    auto passed_part(track_part_t) noexcept -> track&;
-    auto passed() noexcept -> track& {
-        return passed_part(0U);
-    }
+    auto checkpoint(track_part_t) noexcept -> track&;
 
 private:
     case_& _parent;
@@ -193,7 +200,7 @@ private:
     const std::size_t _expected_points;
     const track_part_t _expected_parts;
     std::size_t _passed_points{0U};
-    track_part_t _passed_parts{0U};
+    track_part_t _checkpoints{0U};
 };
 //------------------------------------------------------------------------------
 } // namespace eagitest

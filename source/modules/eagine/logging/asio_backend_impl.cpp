@@ -36,8 +36,7 @@ import eagine.core.string;
 import eagine.core.utility;
 import :backend;
 import :ostream_backend;
-import <iostream>;
-import <mutex>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -60,7 +59,7 @@ public:
 protected:
     void _flush(bool always) {
         try {
-            if(always || _buffer.size() > 2048) {
+            if(always or _buffer.size() > 2048) {
                 if(_socket.is_open()) [[likely]] {
                     const auto done = asio::write(_socket, _buffer);
                     _buffer.consume(done);
@@ -106,7 +105,7 @@ public:
 protected:
     void _flush(bool always) {
         try {
-            if(always || _buffer.size() > 2048) {
+            if(always or _buffer.size() > 2048) {
                 if(_socket.is_open()) [[likely]] {
                     const auto done = asio::write(_socket, _buffer);
                     _buffer.consume(done);

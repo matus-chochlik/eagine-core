@@ -8,9 +8,7 @@
 export module eagine.core.types:metaprogramming;
 
 import :basic;
-import <string_view>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 
@@ -67,41 +65,83 @@ struct mp_contains<mp_list<H, C...>, T> : mp_contains<mp_list<C...>, T> {};
 export template <typename... C, typename T>
 struct mp_contains<mp_list<T, C...>, T> : std::true_type {};
 //------------------------------------------------------------------------------
+/// @brief Implements the intersection operation on compile-time type lists.
+/// @ingroup metaprogramming
+/// @note Do not use directly, use mp_intersection_t.
+export template <typename TLl, typename TLr, typename TLf>
+struct mp_intersection_add;
+
+export template <typename... Tf>
+struct mp_intersection_add<mp_list<>, mp_list<>, mp_list<Tf...>>
+  : mp_list<Tf...> {};
+
+export template <typename... Tl, typename... Tf>
+struct mp_intersection_add<mp_list<Tl...>, mp_list<>, mp_list<Tf...>>
+  : mp_list<Tf...> {};
+
+export template <typename... Tr, typename... Tf>
+struct mp_intersection_add<mp_list<>, mp_list<Tr...>, mp_list<Tf...>>
+  : mp_list<Tf...> {};
+
+export template <typename H, typename... Tl, typename... Tr, typename... Tf>
+struct mp_intersection_add<mp_list<H, Tl...>, mp_list<Tr...>, mp_list<Tf...>>
+  : std::conditional_t<
+      mp_contains<mp_list<Tr...>, H>::value,
+      mp_intersection_add<mp_list<Tl...>, mp_list<Tr...>, mp_list<Tf..., H>>,
+      mp_intersection_add<mp_list<Tl...>, mp_list<Tr...>, mp_list<Tf...>>> {};
+
+/// @brief Implements the intersection operation on compile-time type lists.
+/// @ingroup metaprogramming
+/// @note Do not use directly, use mp_intersection_t.
+export template <typename TLl, typename TLr>
+using mp_intersection = mp_intersection_add<TLl, TLr, mp_list<>>;
+
+/// @brief Trait returning the intersection of types in two type lists.
+/// @ingroup metaprogramming
+/// @see mp_list
+export template <typename TLl, typename TLr>
+using mp_intersection_t = typename mp_intersection<TLl, TLr>::type;
+//------------------------------------------------------------------------------
 /// @brief Implements the union operation on compile-time type lists.
 /// @ingroup metaprogramming
 /// @note Do not use directly, use mp_union_t.
-export template <typename TL1, typename TL2, typename TL3>
+export template <typename TLl, typename TLr, typename TLf>
 struct mp_union_add;
 
-export template <typename... T3>
-struct mp_union_add<mp_list<>, mp_list<>, mp_list<T3...>> : mp_list<T3...> {};
+export template <typename... Tf>
+struct mp_union_add<mp_list<>, mp_list<>, mp_list<Tf...>> : mp_list<Tf...> {};
 
-export template <typename... T1, typename... T3>
-struct mp_union_add<mp_list<T1...>, mp_list<>, mp_list<T3...>>
-  : mp_list<T3...> {};
+export template <typename... Tl, typename... Tf>
+struct mp_union_add<mp_list<Tl...>, mp_list<>, mp_list<Tf...>>
+  : mp_list<Tf..., Tl...> {};
 
-export template <typename... T2, typename... T3>
-struct mp_union_add<mp_list<>, mp_list<T2...>, mp_list<T3...>>
-  : mp_list<T3...> {};
+export template <typename... Tr, typename... Tf>
+struct mp_union_add<mp_list<>, mp_list<Tr...>, mp_list<Tf...>>
+  : mp_list<Tf..., Tr...> {};
 
-export template <typename H, typename... T1, typename... T2, typename... T3>
-struct mp_union_add<mp_list<H, T1...>, mp_list<T2...>, mp_list<T3...>>
+export template <
+  typename Hl,
+  typename Hr,
+  typename... Tl,
+  typename... Tr,
+  typename... Tf>
+struct mp_union_add<mp_list<Hl, Tl...>, mp_list<Hr, Tr...>, mp_list<Tf...>>
   : std::conditional_t<
-      mp_contains<mp_list<T2...>, H>::value,
-      mp_union_add<mp_list<T1...>, mp_list<T2...>, mp_list<T3..., H>>,
-      mp_union_add<mp_list<T1...>, mp_list<T2...>, mp_list<T3...>>> {};
+      mp_contains<mp_list<Tf...>, Hl>::value,
+      mp_union_add<mp_list<Tl...>, mp_list<Hr, Tr...>, mp_list<Tf...>>,
+      mp_union_add<mp_list<Tl...>, mp_list<Hr, Tr...>, mp_list<Tf..., Hl>>> {};
 
 /// @brief Implements the union operation on compile-time type lists.
 /// @ingroup metaprogramming
 /// @note Do not use directly, use mp_union_t.
-export template <typename TL1, typename TL2>
-using mp_union = mp_union_add<TL1, TL2, mp_list<>>;
+export template <typename TLl, typename TLr>
+using mp_union = mp_union_add<TLl, TLr, mp_list<>>;
 
 /// @brief Trait returning the union of types in two type lists.
 /// @ingroup metaprogramming
 /// @see mp_list
-export template <typename TL1, typename TL2>
-using mp_union_t = typename mp_union<TL1, TL2>::type;
+export template <typename TLl, typename TLr>
+using mp_union_t = typename mp_union<TLl, TLr>::type;
 //------------------------------------------------------------------------------
 // mp_string
 export template <char... C>

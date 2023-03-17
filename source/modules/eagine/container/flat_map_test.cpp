@@ -7,9 +7,9 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
+import eagine.core.types;
 import eagine.core.container;
-import <map>;
-import <functional>;
+import std;
 //------------------------------------------------------------------------------
 void flat_map_default_construct(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};
@@ -39,24 +39,24 @@ void flat_map_init_from_vector(auto& s) {
 
         sm.insert(p_t(k, v));
         d.push_back(p_t(k, v));
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     eagine::flat_map<int, std::size_t> fm(d);
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] ok");
         ++smi;
         ++fmi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(smi == sm.end(), "std::map iterator ok");
@@ -81,22 +81,22 @@ void flat_map_insert(auto& s) {
 
         sm.insert(p_t(k, v));
         fm.insert(p_t(k, v));
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] is ok");
         ++smi;
         ++fmi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(smi == sm.end(), "std::map iterator ok");
@@ -121,22 +121,22 @@ void flat_map_insert_at_begin(auto& s) {
 
         sm.insert(sm.begin(), p_t(k, v));
         fm.insert(fm.begin(), p_t(k, v));
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] is ok");
         ++smi;
         ++fmi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(smi == sm.end(), "std::map iterator ok");
@@ -161,22 +161,22 @@ void flat_map_insert_at_end(auto& s) {
 
         sm.insert(sm.end(), p_t(k, v));
         fm.insert(fm.end(), p_t(k, v));
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] is ok");
         ++smi;
         ++fmi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(smi == sm.end(), "std::map iterator ok");
@@ -201,22 +201,22 @@ void flat_map_insert_at_lower_bound(auto& s) {
 
         sm.insert(sm.lower_bound(k), p_t(k, v));
         fm.insert(fm.lower_bound(k), p_t(k, v));
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] is ok");
         ++smi;
         ++fmi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(smi == sm.end(), "std::map iterator ok");
@@ -241,22 +241,22 @@ void flat_map_try_emplace(auto& s) {
         const bool ifm = fm.try_emplace(k, v).second;
 
         test.check_equal(ism, ifm, "emplace result");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] ok");
         ++smi;
         ++fmi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(smi == sm.end(), "std::map iterator ok");
@@ -281,22 +281,22 @@ void flat_map_emplace(auto& s) {
         const bool ifm = fm.emplace(k, v).second;
 
         test.check_equal(ism, ifm, "emplace result");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
     auto fmi = fm.begin();
 
-    while((smi != sm.end()) && (fmi != fm.end())) {
+    while((smi != sm.end()) and (fmi != fm.end())) {
         test.check_equal(smi->first, fmi->first, "first is same");
         test.check_equal(smi->second, fmi->second, "second is same");
         test.check_equal(fm[smi->first], smi->second, "fm[] ok");
         ++smi;
         ++fmi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     test.check(smi == sm.end(), "std::map iterator ok");
@@ -319,18 +319,18 @@ void flat_map_key_assign(auto& s) {
 
         sm.emplace(k, v);
         fm[k] = v;
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     auto smi = sm.begin();
 
     while(smi != sm.end()) {
         test.check_equal(fm[smi->first], smi->second, "fm[] ok");
         ++smi;
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 }
 //------------------------------------------------------------------------------
@@ -354,11 +354,11 @@ void flat_map_erase_key(auto& s) {
 
         sm.insert(p_t(k, v));
         fm.insert(p_t(k, v));
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
-    test.check_equal(sm.size(), fm.size(), "size is same");
+    test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
 
     for(int k : ks) {
         auto smi = sm.find(k);
@@ -374,9 +374,10 @@ void flat_map_erase_key(auto& s) {
         const auto esmc = sm.erase(k);
         const auto efmc = fm.erase(k);
 
-        test.check_equal(sm.size(), fm.size(), "same erased size");
+        test.check_equal(
+          eagine::span_size_t(sm.size()), fm.size(), "same erased size");
         test.check_equal(esmc, efmc, "same erased count");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     for(int k : ks) {
@@ -385,7 +386,7 @@ void flat_map_erase_key(auto& s) {
 
         test.check(smi == sm.end(), "std::map key not found");
         test.check(fmi == fm.end(), "flat_map key not found");
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
 }
 //------------------------------------------------------------------------------
@@ -403,7 +404,7 @@ void flat_map_erase_if(auto& s) {
         std::size_t v = h(k + k);
 
         fm.emplace(k, v);
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
     const auto is_odd = [](auto& p) {
         return p.second % 2 != 0;
@@ -412,7 +413,7 @@ void flat_map_erase_if(auto& s) {
 
     for(auto& p : fm) {
         test.check_equal(p.second % 2, 0U, "all are even");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 }
 //------------------------------------------------------------------------------

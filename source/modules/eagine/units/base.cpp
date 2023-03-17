@@ -6,8 +6,7 @@
 export module eagine.core.units:base;
 
 import eagine.core.types;
-import <cmath>;
-import <type_traits>;
+import std;
 
 namespace eagine::units {
 //------------------------------------------------------------------------------
@@ -26,7 +25,9 @@ using dimension_of_t = typename dimension_of<X>::type;
 namespace scales {
 //------------------------------------------------------------------------------
 export template <typename X>
-struct scale_of : std::type_identity<scale_of<X>> {};
+struct scale_of {
+    using type = typename X::scale;
+};
 
 export template <typename X>
 using scale_of_t = typename scale_of<X>::type;
@@ -218,22 +219,22 @@ struct dim_num<dimension<Dim>> : dim_num<Dim> {};
 template <typename Dimension>
 const int dim_num_v = dim_num<Dimension>::value;
 //------------------------------------------------------------------------------
-struct angle : dimension<angle> {};
-struct solid_angle : dimension<solid_angle> {};
+export struct angle : dimension<angle> {};
+export struct solid_angle : dimension<solid_angle> {};
 
-struct length : dimension<length> {};
-struct mass : dimension<mass> {};
-struct time : dimension<time> {};
+export struct length : dimension<length> {};
+export struct mass : dimension<mass> {};
+export struct time : dimension<time> {};
 
-struct temperature : dimension<temperature> {};
-struct electric_current : dimension<electric_current> {};
-struct number_of_cycles : dimension<number_of_cycles> {};
-struct number_of_decays : dimension<number_of_decays> {};
-struct luminous_intensity : dimension<luminous_intensity> {};
-struct amount_of_substance : dimension<amount_of_substance> {};
-struct amount_of_information : dimension<amount_of_information> {};
+export struct temperature : dimension<temperature> {};
+export struct electric_current : dimension<electric_current> {};
+export struct number_of_cycles : dimension<number_of_cycles> {};
+export struct number_of_decays : dimension<number_of_decays> {};
+export struct luminous_intensity : dimension<luminous_intensity> {};
+export struct amount_of_substance : dimension<amount_of_substance> {};
+export struct amount_of_information : dimension<amount_of_information> {};
 
-template <typename Func>
+export template <typename Func>
 auto for_each_dim(Func func) -> Func {
     func(angle());
     func(solid_angle());
@@ -281,8 +282,8 @@ template <>
 struct dim_num<amount_of_information> : int_constant<12> {};
 
 // get_number
-template <typename Derived>
-static constexpr auto get_number(const dimension<Derived>) noexcept -> int {
+export template <typename Derived>
+constexpr auto get_number(const dimension<Derived>) noexcept -> int {
     return dim_num_v<Derived>;
 }
 //------------------------------------------------------------------------------
@@ -335,8 +336,8 @@ template <typename D1, typename D2, int P, typename T>
 struct pow_of_dim<D1, dims<dim_pow<D2, P>, T>> : pow_of_dim<D1, T> {};
 
 // get_pow_of_dim
-template <typename D, typename H, typename T>
-static constexpr auto get_pow_of_dim(
+export template <typename D, typename H, typename T>
+constexpr auto get_pow_of_dim(
   const base::dimension<D>,
   const dims<H, T>) noexcept -> int {
     return pow_of_dim_v<D, dims<H, T>>;

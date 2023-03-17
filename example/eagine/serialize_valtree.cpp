@@ -6,6 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -61,7 +62,7 @@ auto main(main_ctx& ctx) -> int {
         valtree_deserializer_backend backend{json_tree};
 
         tetrahedron object;
-        if(const auto errors{deserialize(object, backend)}; !errors) {
+        if(deserialize(object, backend)) {
             main_ctx_object out{identifier{"vt"}, ctx};
             out
               .cio_print(

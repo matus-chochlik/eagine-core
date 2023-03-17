@@ -13,10 +13,10 @@ export module eagine.core.utility:callable_ref;
 
 import eagine.core.concepts;
 import eagine.core.types;
-import <utility>;
+import std;
 
 namespace eagine {
-
+//------------------------------------------------------------------------------
 export template <typename Sig>
 struct is_noexcept_function;
 
@@ -31,7 +31,7 @@ struct is_noexcept_function<RV(P...)> : std::false_type {};
 
 export template <typename RV, typename... P>
 struct is_noexcept_function<RV(P...) noexcept> : std::true_type {};
-
+//------------------------------------------------------------------------------
 /// @brief Declaration of class template storing a reference to a callable object.
 /// @ingroup functional
 /// @see callable_ref
@@ -59,7 +59,7 @@ public:
     }
 
     /// @brief Default constructor.
-    /// @post !is_valid
+    /// @post not is_valid
     constexpr basic_callable_ref() noexcept = default;
 
     /// @brief Move constructor.
@@ -105,14 +105,14 @@ public:
     /// @brief Construction a reference to object with a call operator.
     template <typename C>
     basic_callable_ref(construct_from_t, C& obj) noexcept
-        requires(!std::is_same_v<C, basic_callable_ref>)
+        requires(not std::is_same_v<C, basic_callable_ref>)
       : _data{static_cast<void*>(&obj)}
       , _func{reinterpret_cast<_func_t>(&_cls_fn_call_op<C>)} {}
 
     /// @brief Construction a const reference to object with a call operator.
     template <typename C>
     basic_callable_ref(construct_from_t, const C& obj) noexcept
-        requires(!std::is_same_v<C, basic_callable_ref>)
+        requires(not std::is_same_v<C, basic_callable_ref>)
       : _data{static_cast<void*>(const_cast<C*>(&obj))}
       , _func{reinterpret_cast<_func_t>(&_cls_fn_call_op_c<C>)} {}
 
@@ -202,7 +202,44 @@ private:
 /// @ingroup functional
 export template <typename Sig>
 using callable_ref = basic_callable_ref<Sig, is_noexcept_function_v<Sig>>;
+//------------------------------------------------------------------------------
+export template <typename Sig, auto Ptr>
+struct member_function_callable_ref : callable_ref<Sig> {
+    constexpr member_function_callable_ref(auto* obj) noexcept
+      : callable_ref<Sig>{obj, member_function_constant_t<Ptr>{}} {}
+};
+//------------------------------------------------------------------------------
+export template <typename T, T Ptr>
+struct _member_callable_ref;
 
+export template <auto Ptr>
+using member_callable_ref_t =
+  typename _member_callable_ref<decltype(Ptr), Ptr>::type;
+
+export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...)>
+struct _member_callable_ref<RV (C::*)(P...), Ptr> {
+    using type = member_function_callable_ref<RV(P...), Ptr>;
+};
+
+export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...) noexcept>
+struct _member_callable_ref<RV (C::*)(P...) noexcept, Ptr> {
+    using type = member_function_callable_ref<RV(P...) noexcept, Ptr>;
+};
+
+export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...) const>
+struct _member_callable_ref<RV (C::*)(P...) const, Ptr> {
+    using type = member_function_callable_ref<RV(P...), Ptr>;
+};
+
+export template <
+  typename RV,
+  typename C,
+  typename... P,
+  RV (C::*Ptr)(P...) const noexcept>
+struct _member_callable_ref<RV (C::*)(P...) const noexcept, Ptr> {
+    using type = member_function_callable_ref<RV(P...) noexcept, Ptr>;
+};
+//------------------------------------------------------------------------------
 /// @brief Function constructing instances of callable_ref wrapping member functions.
 /// @ingroup functonal
 export template <
@@ -237,5 +274,5 @@ export template <auto MemFuncPtr, typename C>
 [[nodiscard]] constexpr auto make_callable_ref(C* obj) noexcept {
     return make_callable_ref(obj, member_function_constant_t<MemFuncPtr>{});
 }
-
+//------------------------------------------------------------------------------
 } // namespace eagine

@@ -8,9 +8,7 @@
 export module eagine.core.vectorization:data_simd;
 
 import eagine.core.concepts;
-import <cstdint>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine::vect {
 
@@ -119,10 +117,10 @@ export template <int N>
 struct _has_simd_data<int8_t, N>
   : std::bool_constant<
 #if defined(__SSE2__) && __SSE2__
-      ((N == 2) || (N == 4) || (N == 8) || (N == 16)) ||
+      ((N == 2) or (N == 4) or (N == 8) or (N == 16)) or
 #endif
 #if defined(__MMX__) && __MMX__
-      ((N == 2) || (N == 4) || (N == 8)) ||
+      ((N == 2) or (N == 4) or (N == 8)) or
 #endif
       false> {
 };
@@ -132,10 +130,10 @@ export template <int N>
 struct _has_simd_data<int16_t, N>
   : std::bool_constant<
 #if defined(__SSE2__) && __SSE2__
-      ((N == 2) || (N == 4) || (N == 8)) ||
+      ((N == 2) or (N == 4) or (N == 8)) or
 #endif
 #if defined(__MMX__) && __MMX__
-      ((N == 2) || (N == 4)) ||
+      ((N == 2) or (N == 4)) or
 #endif
       false> {
 };
@@ -145,10 +143,10 @@ export template <int N>
 struct _has_simd_data<int32_t, N>
   : std::bool_constant<
 #if defined(__SSE2__) && __SSE2__
-      ((N == 2) || (N == 4)) ||
+      ((N == 2) or (N == 4)) or
 #endif
 #if defined(__MMX__) && __MMX__
-      (N == 2) ||
+      (N == 2) or
 #endif
       false> {
 };
@@ -158,7 +156,7 @@ export template <int N>
 struct _has_simd_data<int64_t, N>
   : std::bool_constant<
 #if defined(__SSE2__) && __SSE2__
-      (N == 2) ||
+      (N == 2) or
 #endif
       false> {
 };
@@ -168,7 +166,7 @@ export template <int N>
 struct _has_simd_data<uint64_t, N>
   : std::bool_constant<
 #if defined(__SSE2__) && __SSE2__
-      (N == 2) ||
+      (N == 2) or
 #endif
       false> {
 };
@@ -178,10 +176,10 @@ export template <int N>
 struct _has_simd_data<float, N>
   : std::bool_constant<
 #if defined(__AVX__) && __AVX__
-      ((N == 2) || (N == 3) || (N == 4)) ||
+      ((N == 2) or (N == 3) or (N == 4)) or
 #endif
 #if defined(__SSE__) && __SSE__
-      ((N == 2) || (N == 3) || (N == 4)) ||
+      ((N == 2) or (N == 3) or (N == 4)) or
 #endif
       false> {
 };
@@ -191,10 +189,10 @@ export template <int N>
 struct _has_simd_data<double, N>
   : std::bool_constant<
 #if defined(__AVX__) && __AVX__
-      ((N == 2) || (N == 4)) ||
+      ((N == 2) or (N == 4)) or
 #endif
 #if defined(__SSE2__) && __SSE2__
-      (N == 2) ||
+      (N == 2) or
 #endif
       false> {
 };

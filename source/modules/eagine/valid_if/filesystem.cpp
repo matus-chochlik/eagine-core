@@ -10,8 +10,7 @@ export module eagine.core.valid_if:filesystem;
 import eagine.core.concepts;
 import eagine.core.memory;
 import :decl;
-import <string>;
-import <filesystem>;
+import std;
 
 namespace eagine {
 
@@ -47,8 +46,8 @@ struct valid_if_filesystem_policy {
 export struct valid_if_existing_file_policy
   : valid_if_filesystem_policy<valid_if_existing_file_policy> {
     auto is_valid(const std::filesystem::path& path) const noexcept {
-        return is_regular_file(path) ||
-               (is_symlink(path) && is_regular_file(read_symlink(path)));
+        return is_regular_file(path) or
+               (is_symlink(path) and is_regular_file(read_symlink(path)));
     }
 
     struct do_log {
@@ -70,8 +69,8 @@ using valid_if_existing_file = valid_if<T, valid_if_existing_file_policy>;
 export struct valid_if_existing_directory_policy
   : valid_if_filesystem_policy<valid_if_existing_directory_policy> {
     auto is_valid(const std::filesystem::path& path) const noexcept {
-        return is_directory(path) ||
-               (is_symlink(path) && is_directory(read_symlink(path)));
+        return is_directory(path) or
+               (is_symlink(path) and is_directory(read_symlink(path)));
     }
 
     struct do_log {
@@ -96,12 +95,13 @@ export struct valid_if_in_writable_directory_policy
     auto is_valid(std::filesystem::path path) const noexcept {
         path.remove_filename();
         const auto test = [](const auto& p) {
-            return is_directory(p) && (status(p).permissions() &
-                                       (std::filesystem::perms::owner_write |
-                                        std::filesystem::perms::group_write)) !=
-                                        std::filesystem::perms::none;
+            return is_directory(p) and
+                   (status(p).permissions() &
+                    (std::filesystem::perms::owner_write |
+                     std::filesystem::perms::group_write)) !=
+                     std::filesystem::perms::none;
         };
-        return test(path) || (is_symlink(path) && test(read_symlink(path)));
+        return test(path) or (is_symlink(path) and test(read_symlink(path)));
     }
 
     struct do_log {

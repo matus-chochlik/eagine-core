@@ -18,8 +18,7 @@ import eagine.core.units;
 import :traits;
 import :vector;
 import :matrix;
-import <optional>;
-import <utility>;
+import std;
 
 namespace eagine {
 namespace math {
@@ -52,7 +51,7 @@ export template <bool RM, typename MC>
 [[nodiscard]] constexpr auto construct_matrix(const MC& c) noexcept
   -> constructed_matrix_t<MC>
     requires(
-      is_matrix_constructor_v<MC> &&
+      is_matrix_constructor_v<MC> and
       is_row_major_v<constructed_matrix_t<MC>> == RM)
 {
     return c();
@@ -63,7 +62,7 @@ export template <bool RM, typename MC>
 [[nodiscard]] constexpr auto construct_matrix(const MC& c) noexcept
   -> reordered_matrix_t<constructed_matrix_t<MC>>
     requires(
-      is_matrix_constructor_v<MC> &&
+      is_matrix_constructor_v<MC> and
       is_row_major_v<constructed_matrix_t<MC>> != RM)
 {
     return reorder_mat_ctr(c)();
@@ -77,7 +76,7 @@ export template <bool RM, typename MC>
 export template <typename MC1, typename MC2>
 [[nodiscard]] constexpr auto multiply(const MC1& mc1, const MC2& mc2) noexcept
     requires(
-      is_matrix_constructor_v<MC1> && is_matrix_constructor_v<MC2> &&
+      is_matrix_constructor_v<MC1> and is_matrix_constructor_v<MC2> and
       are_multiplicable<constructed_matrix_t<MC1>, constructed_matrix_t<MC2>>::
         value)
 {
@@ -130,6 +129,12 @@ public:
       -> matrix<T, R, C, RM, V> {
         using _riS = _make_useq<RM ? R : C>;
         return _identity(_riS());
+    }
+
+    [[nodiscard]] friend constexpr auto reorder_mat_ctr(
+      const identity<matrix<T, R, C, RM, V>>& c) noexcept
+      -> identity<matrix<T, C, R, not RM, V>> {
+        return identity<matrix<T, C, R, not RM, V>>{};
     }
 
 private:
@@ -202,7 +207,7 @@ public:
 
     [[nodiscard]] friend constexpr auto reorder_mat_ctr(
       const translation<matrix<T, 4, 4, RM, V>>& c) noexcept
-      -> translation<matrix<T, 4, 4, !RM, V>> {
+      -> translation<matrix<T, 4, 4, not RM, V>> {
         return {c._v};
     }
 
@@ -223,6 +228,7 @@ private:
            {_v[0], _v[1], _v[2], T(1)}}};
     }
 
+public:
     vect::data_t<T, 3, V> _v;
 };
 
@@ -287,11 +293,10 @@ public:
 
     [[nodiscard]] friend constexpr auto reorder_mat_ctr(
       const scale<matrix<T, 4, 4, RM, V>>& c) noexcept
-      -> scale<matrix<T, 4, 4, !RM, V>> {
+      -> scale<matrix<T, 4, 4, not RM, V>> {
         return {c._v};
     }
 
-private:
     vect::data_t<T, 3, V> _v;
 };
 
@@ -337,11 +342,10 @@ public:
 
     [[nodiscard]] friend constexpr auto reorder_mat_ctr(
       const uniform_scale<matrix<T, 4, 4, RM, V>>& c) noexcept
-      -> uniform_scale<matrix<T, 4, 4, !RM, V>> {
+      -> uniform_scale<matrix<T, 4, 4, not RM, V>> {
         return {c._v};
     }
 
-private:
     T _v;
 };
 
@@ -417,7 +421,6 @@ public:
            {T(0), T(0), T(0), T(1)}}};
     }
 
-private:
     T _v{};
 };
 
@@ -427,14 +430,14 @@ export template <typename T, int N, bool RM1, bool RM2, bool V, int I>
   const reflection_I<matrix<T, N, N, RM1, V>, I>& a,
   const reflection_I<matrix<T, N, N, RM2, V>, I>& b) noexcept
   -> reflection_I<matrix<T, N, N, RM1, V>, I> {
-    return {(a._v < b._v) || (a._v > b._v)};
+    return {(a._v < b._v) or (a._v > b._v)};
 }
 
 // reorder_mat_ctr(reflection_I)
 export template <typename T, int N, bool RM, bool V, int I>
 [[nodiscard]] constexpr auto reorder_mat_ctr(
   const reflection_I<matrix<T, N, N, RM, V>, I>& c) noexcept
-  -> reflection_I<matrix<T, N, N, !RM, V>, I> {
+  -> reflection_I<matrix<T, N, N, not RM, V>, I> {
     return {c._v < T(0)};
 }
 
@@ -528,7 +531,7 @@ public:
 
     [[nodiscard]] friend constexpr auto reorder_mat_ctr(
       const rotation_I<matrix<T, 4, 4, RM, V>, I>& c) noexcept
-      -> rotation_I<matrix<T, 4, 4, !RM, V>, I> {
+      -> rotation_I<matrix<T, 4, 4, not RM, V>, I> {
         return {c._v};
     }
 
@@ -561,6 +564,7 @@ private:
            {T(0), T(0), T(0), T(1)}}};
     }
 
+public:
     radians_t<T> _v;
 };
 
@@ -722,6 +726,8 @@ private:
     }
 
     using _dT = vect::data_t<T, 6, V>;
+
+public:
     _dT _v;
 };
 
@@ -729,7 +735,7 @@ private:
 export template <typename T, int N, bool RM, bool V>
 [[nodiscard]] constexpr auto reorder_mat_ctr(
   const ortho<matrix<T, N, N, RM, V>>& c) noexcept
-  -> ortho<matrix<T, N, N, !RM, V>> {
+  -> ortho<matrix<T, N, N, not RM, V>> {
     return {c._v};
 }
 
@@ -896,6 +902,8 @@ private:
     }
 
     using _dT = vect::data_t<T, 6, V>;
+
+public:
     _dT _v;
 };
 
@@ -903,7 +911,7 @@ private:
 export template <typename T, int N, bool RM, bool V>
 [[nodiscard]] constexpr auto reorder_mat_ctr(
   const perspective<matrix<T, N, N, RM, V>>& c) noexcept
-  -> perspective<matrix<T, N, N, !RM, V>> {
+  -> perspective<matrix<T, N, N, not RM, V>> {
     return {c._v};
 }
 
@@ -948,8 +956,6 @@ public:
 private:
     using _dT = vector<T, 3, V>;
 
-    vector<T, 3, V> _e, _t;
-
     static constexpr auto _make(
       const _dT& x,
       const _dT& y,
@@ -984,13 +990,16 @@ private:
     constexpr auto _make(std::false_type) const noexcept {
         return reorder(_make(std::true_type()));
     }
+
+public:
+    vector<T, 3, V> _e, _t;
 };
 
 // reorder_mat_ctr(looking_at_y_up)
 export template <typename T, int N, bool RM, bool V>
 [[nodiscard]] constexpr auto reorder_mat_ctr(
   const looking_at_y_up<matrix<T, N, N, RM, V>>& c) noexcept
-  -> looking_at_y_up<matrix<T, N, N, !RM, V>> {
+  -> looking_at_y_up<matrix<T, N, N, not RM, V>> {
     return {c._e, c._t};
 }
 
@@ -1070,7 +1079,7 @@ public:
 
     [[nodiscard]] friend constexpr auto reorder_mat_ctr(
       const orbiting_y_up<matrix<T, 4, 4, RM, V>>& c) noexcept
-      -> orbiting_y_up<matrix<T, 4, 4, !RM, V>> {
+      -> orbiting_y_up<matrix<T, 4, 4, not RM, V>> {
         return {c._t, c._x, c._y, c._z, c._r};
     }
 
@@ -1089,6 +1098,8 @@ private:
 
     vector<T, 3, V> _t;
     vector<T, 3, V> _x, _z, _y;
+
+public:
     T _r;
 };
 

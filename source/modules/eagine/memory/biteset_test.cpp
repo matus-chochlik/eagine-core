@@ -8,7 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.memory;
-import <algorithm>;
+import std;
 //------------------------------------------------------------------------------
 constexpr const unsigned char bmin = 0x02;
 constexpr const unsigned char bmax = 0x0F;
@@ -26,7 +26,7 @@ void biteset_N_B(
     test.check_equal(bs.size(), sz_t(N), "size");
 
     for(sz_t i = 0; i < bs.size(); ++i) {
-        test.check((bs[i] >= bmin) && (bs[i] <= bmax), "in range");
+        test.check((bs[i] >= bmin) and (bs[i] <= bmax), "in range");
     }
 }
 //------------------------------------------------------------------------------
@@ -305,7 +305,7 @@ void biteset_4(unsigned run, auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "biteset", 3};
+    eagitest::suite test{argc, argv, "biteset", 4};
     test.repeat(500, biteset_1);
     test.repeat(500, biteset_2);
     test.repeat(500, biteset_3);

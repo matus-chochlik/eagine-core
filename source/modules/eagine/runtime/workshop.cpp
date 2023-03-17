@@ -8,15 +8,7 @@
 export module eagine.core.runtime:workshop;
 
 import eagine.core.types;
-import <algorithm>;
-import <condition_variable>;
-import <memory>;
-import <mutex>;
-import <latch>;
-import <queue>;
-import <thread>;
-import <tuple>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

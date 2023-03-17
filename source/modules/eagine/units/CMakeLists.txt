@@ -58,3 +58,12 @@ eagine_add_module(
 		eagine.core.units.framework
 )
 
+eagine_add_module_tests(
+	eagine.core.units
+	UNITS
+		base
+		dimensions
+		unit
+		quantity
+		si
+)

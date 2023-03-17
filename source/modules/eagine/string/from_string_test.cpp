@@ -18,34 +18,34 @@ void from_string_int(auto& s) {
 
     if(const auto conv{from_string<int>("0")}) {
         test.check_equal(extract(conv), 0, "0");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     if(const auto conv{from_string<int>("-1")}) {
         test.check_equal(extract(conv), -1, "-1");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     if(const auto conv{from_string<int>("1")}) {
         test.check_equal(extract(conv), 1, "1");
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
 
     if(const auto conv{from_string<int>("2.34")}) {
         (void)conv;
     } else {
-        trck.passed_part(4);
+        trck.checkpoint(4);
     }
 
     if(const auto conv{from_string<int>("12345")}) {
         test.check_equal(extract(conv), 12345, "12345");
-        trck.passed_part(5);
+        trck.checkpoint(5);
     }
 
     if(const auto conv{from_string<int>("ABC")}) {
         (void)conv;
     } else {
-        trck.passed_part(6);
+        trck.checkpoint(6);
     }
 }
 //------------------------------------------------------------------------------
@@ -57,35 +57,35 @@ void from_string_unsigned(auto& s) {
 
     if(const auto conv{from_string<unsigned>("0")}) {
         test.check_equal(extract(conv), 0U, "0");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     if(const auto conv{from_string<unsigned>("-1")}) {
         (void)conv;
     } else {
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     if(const auto conv{from_string<unsigned>("1")}) {
         test.check_equal(extract(conv), 1U, "1");
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
 
     if(const auto conv{from_string<unsigned>("2.34")}) {
         (void)conv;
     } else {
-        trck.passed_part(4);
+        trck.checkpoint(4);
     }
 
     if(const auto conv{from_string<unsigned>("12345")}) {
         test.check_equal(extract(conv), 12345U, "12345");
-        trck.passed_part(5);
+        trck.checkpoint(5);
     }
 
     if(const auto conv{from_string<unsigned>("ABC")}) {
         (void)conv;
     } else {
-        trck.passed_part(6);
+        trck.checkpoint(6);
     }
 }
 //------------------------------------------------------------------------------
@@ -97,38 +97,38 @@ void from_string_float(auto& s) {
 
     if(const auto conv{from_string<float>("0.0")}) {
         test.check_equal(extract(conv), 0.F, "0");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 
     if(const auto conv{from_string<float>("-1.0")}) {
         test.check_close(extract(conv), -1.F, "-1");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 
     if(const auto conv{from_string<float>("1.0")}) {
         test.check_close(extract(conv), 1.F, "1");
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
 
     if(const auto conv{from_string<float>("12345")}) {
         test.check_equal(extract(conv), 12345.F, "12345");
-        trck.passed_part(4);
+        trck.checkpoint(4);
     }
 
     if(const auto conv{from_string<float>("-12345")}) {
         test.check_equal(extract(conv), -12345.F, "-12345");
-        trck.passed_part(5);
+        trck.checkpoint(5);
     }
 
     if(const auto conv{from_string<float>("12345.6789")}) {
         test.check_equal(extract(conv), 12345.6789F, "12345.6789");
-        trck.passed_part(6);
+        trck.checkpoint(6);
     }
 
     if(const auto conv{from_string<float>("ABC")}) {
         (void)conv;
     } else {
-        trck.passed_part(7);
+        trck.checkpoint(7);
     }
 }
 //------------------------------------------------------------------------------

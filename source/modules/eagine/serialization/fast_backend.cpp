@@ -14,7 +14,7 @@ import eagine.core.reflection;
 import :result;
 import :interface;
 import :implementation;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

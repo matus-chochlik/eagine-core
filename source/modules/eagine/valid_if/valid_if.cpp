@@ -8,10 +8,6 @@
 export module eagine.core.valid_if;
 
 export import :decl;
-export import :always;
-export import :never;
 export import :compare;
-export import :not_empty;
-export import :indicated;
 export import :filesystem;
 export import :range;

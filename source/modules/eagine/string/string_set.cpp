@@ -16,7 +16,7 @@ class static_string_set {
 public:
     /// @brief Indicates if this string set contains the specified string.
     [[nodiscard]] constexpr auto contains(const string_view str) const noexcept {
-        return (... || (string_view{Strs} == str));
+        return (... or (string_view{Strs} == str));
     }
 };
 //------------------------------------------------------------------------------

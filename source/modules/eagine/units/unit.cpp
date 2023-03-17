@@ -7,8 +7,7 @@ export module eagine.core.units:unit;
 
 import eagine.core.types;
 import :base;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine::units {
 //------------------------------------------------------------------------------
@@ -126,11 +125,8 @@ struct value_conv<unit<D, S>, custom_dim_unit<D, C, S>> {
     }
 };
 
-export template <typename D, typename C, typename S>
-struct value_conv<custom_dim_unit<D, C, S>, custom_dim_unit<D, C, S>>
-  : trivial_value_conv {};
-
 export template <typename D, typename C1, typename C2, typename S>
+    requires(not std::is_same_v<C1, C2>)
 struct value_conv<custom_dim_unit<D, C1, S>, custom_dim_unit<D, C2, S>> {
     template <typename T>
     constexpr auto operator()(const T v) const {
@@ -160,6 +156,7 @@ struct value_conv<
 };
 
 export template <typename D, typename AS1, typename AS2, typename US, typename System>
+    requires(not std::is_same_v<AS1, AS2>)
 struct value_conv<
   scaled_dim_unit<D, add_none_unit_scale_t<AS1, US>, System>,
   scaled_dim_unit<D, add_none_unit_scale_t<AS2, US>, System>> {
@@ -302,7 +299,7 @@ constexpr auto operator!(U) noexcept -> lit_result_t<U>
 // addition
 export template <typename U1, typename U2>
 constexpr auto operator+(U1, U2) noexcept -> add_result_t<U1, U2>
-    requires(is_unit_v<U1> && is_unit_v<U2>)
+    requires(is_unit_v<U1> and is_unit_v<U2>)
 {
     return {};
 }
@@ -310,7 +307,7 @@ constexpr auto operator+(U1, U2) noexcept -> add_result_t<U1, U2>
 // subtraction
 export template <typename U1, typename U2>
 constexpr auto operator-(U1, U2) noexcept -> sub_result_t<U1, U2>
-    requires(is_unit_v<U1> && is_unit_v<U2>)
+    requires(is_unit_v<U1> and is_unit_v<U2>)
 {
     return {};
 }
@@ -318,7 +315,7 @@ constexpr auto operator-(U1, U2) noexcept -> sub_result_t<U1, U2>
 // multiplication
 export template <typename U1, typename U2>
 constexpr auto operator*(U1, U2) noexcept -> mul_result_t<U1, U2>
-    requires(is_unit_v<U1> && is_unit_v<U2>)
+    requires(is_unit_v<U1> and is_unit_v<U2>)
 {
     return {};
 }
@@ -326,7 +323,7 @@ constexpr auto operator*(U1, U2) noexcept -> mul_result_t<U1, U2>
 // division
 export template <typename U1, typename U2>
 constexpr auto operator/(U1, U2) noexcept -> div_result_t<U1, U2>
-    requires(is_unit_v<U1> && is_unit_v<U2>)
+    requires(is_unit_v<U1> and is_unit_v<U2>)
 {
     return {};
 }

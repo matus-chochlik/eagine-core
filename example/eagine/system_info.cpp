@@ -6,7 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <string>;
+import std;
 
 namespace eagine {
 
@@ -92,9 +92,9 @@ auto main(main_ctx& ctx) -> int {
         out.cio_print("  ${i}: ${status}")
           .arg(
             identifier{"status"},
-            online    ? string_view{"online"}
-            : !online ? string_view{"offline"}
-                      : na)
+            online       ? string_view{"online"}
+            : not online ? string_view{"offline"}
+                         : na)
           .arg(identifier{"i"}, i);
     }
 

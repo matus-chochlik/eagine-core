@@ -7,7 +7,7 @@
 ///
 export module eagine.core.types:structural;
 
-import <utility>;
+import std;
 
 namespace eagine {
 

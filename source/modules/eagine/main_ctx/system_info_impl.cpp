@@ -38,12 +38,7 @@ import eagine.core.string;
 import eagine.core.valid_if;
 import eagine.core.utility;
 import eagine.core.units;
-import <array>;
-import <chrono>;
-import <limits>;
-import <memory>;
-import <thread>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -76,7 +71,7 @@ public:
                                      const valtree::compound& c,
                                      const valtree::attribute& a,
                                      const basic_string_path& p) {
-            if(!c.is_link(a)) {
+            if(not c.is_link(a)) {
                 bool is_tz{false};
                 bool is_cd{false};
                 bool is_ps{false};
@@ -97,7 +92,7 @@ public:
                 if(is_tz) {
                     if(const auto temp_a{c.nested(a, "temp")}) {
                         if(const auto type_a{c.nested(a, "type")}) {
-                            if(!_cpu_temp_i) {
+                            if(not _cpu_temp_i) {
                                 if(c.has_value(type_a, "cpu-thermal")) {
                                     _cpu_temp_i = tz_count();
                                 } else if(c.has_value(type_a, "acpitz")) {
@@ -168,7 +163,7 @@ public:
     auto tz_temperature(const span_size_t index) noexcept
       -> valid_if_positive<kelvins_t<float>> {
 #ifdef NOT_DEFINED
-        assert((index >= 0) && (index < tz_count()));
+        assert((index >= 0) and (index < tz_count()));
         auto& temp_a = _tz_temp_a[integer(index)];
         if(temp_a) {
             float millicelsius{0.F};
@@ -231,13 +226,13 @@ public:
     auto cd_state(const span_size_t index) noexcept
       -> valid_if_between_0_1<float> {
 #ifdef NOT_DEFINED
-        assert((index >= 0) && (index < cd_count()));
+        assert((index >= 0) and (index < cd_count()));
         const auto& [cur_a, max_a] = _cd_cm_a[index];
-        if(cur_a && max_a) {
+        if(cur_a and max_a) {
             float cur_s{-1.F};
             float max_s{-1.F};
             if(
-              _sysfs.fetch_value(cur_a, cur_s) &&
+              _sysfs.fetch_value(cur_a, cur_s) and
               _sysfs.fetch_value(max_a, max_s)) {
                 if(max_s > 0.F) {
                     return {cur_s / max_s};
@@ -259,7 +254,7 @@ public:
     auto bat_capacity(const span_size_t index) noexcept
       -> valid_if_between_0_1<float> {
 #ifdef NOT_DEFINED
-        assert((index >= 0) && (index < bat_count()));
+        assert((index >= 0) and (index < bat_count()));
         const auto& cap_a = _bat_cap_a[index];
         if(cap_a) {
             float capacity{-1.F};
@@ -281,7 +276,7 @@ public:
 
     auto acps_online(const span_size_t index) noexcept -> tribool {
 #ifdef NOT_DEFINED
-        assert((index >= 0) && (index < acps_count()));
+        assert((index >= 0) and (index < acps_count()));
         const auto& onl_a = _ac_online_a[index];
         if(onl_a) {
             int online{0};
@@ -313,7 +308,7 @@ private:
 //------------------------------------------------------------------------------
 auto system_info::_impl() noexcept -> system_info_impl* {
 #if EAGINE_LINUX
-    if(!_pimpl) [[unlikely]] {
+    if(not _pimpl) [[unlikely]] {
         try {
             _pimpl = std::make_shared<system_info_impl>();
         } catch(...) {
@@ -362,8 +357,15 @@ auto system_info::config_dir_path() noexcept
 auto system_info::memory_page_size() noexcept
   -> valid_if_positive<span_size_t> {
 #if EAGINE_POSIX
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmodules-ambiguous-internal-linkage"
+#endif
 #if defined(_SC_PAGESIZE)
     return {span_size(::sysconf(_SC_PAGESIZE))};
+#endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 #endif
     return {0};

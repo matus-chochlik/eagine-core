@@ -7,23 +7,27 @@
 ///
 export module eagine.core.console;
 
-export import :entry_kind;
 export import :entry;
 export import :backend;
-export import :iostream_backend;
 import eagine.core.types;
 import eagine.core.identifier;
 import eagine.core.memory;
 import eagine.core.runtime;
-import <memory>;
+import std;
 
 namespace eagine {
+//------------------------------------------------------------------------------
+auto console_init_backend(const program_args&, console_options& opts)
+  -> std::shared_ptr<console_backend>;
+//------------------------------------------------------------------------------
 export class console {
 public:
     console(
       identifier app_id,
       const program_args& args,
-      console_options& opts) noexcept;
+      console_options& opts) noexcept
+      : _backend{console_init_backend(args, opts)}
+      , _app_id{app_id} {}
 
     auto print(
       const identifier source,
@@ -64,7 +68,8 @@ private:
         return {nullptr, 0};
     }
 
-    std::unique_ptr<console_backend> _backend;
+    std::shared_ptr<console_backend> _backend;
     identifier _app_id;
 };
+//------------------------------------------------------------------------------
 } // namespace eagine

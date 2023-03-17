@@ -33,6 +33,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.utility
+		eagine.core.runtime
 		eagine.core.logging
 )
 
@@ -45,13 +46,13 @@ eagine_add_module(
 		wrappers
 		implementation
 	SOURCES
-		wrappers_impl
-		empty_impl
-		json_impl
-		yaml_impl
-		filesystem_impl
-		overlay_impl
-		visitors_impl
+		wrappers
+		empty
+		json
+		yaml
+		filesystem
+		overlay
+		visitors
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
@@ -66,3 +67,17 @@ eagine_add_module(
 		ryml
 )
 
+eagine_add_module_tests(
+	eagine.core.value_tree
+	UNITS
+		wrappers
+		visitors
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.reflection
+		eagine.core.logging
+)
+
+set_tests_properties(execute-test.eagine.core.value_tree.visitors PROPERTIES COST 3)

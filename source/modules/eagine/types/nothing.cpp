@@ -7,7 +7,7 @@
 ///
 export module eagine.core.types:nothing;
 import eagine.core.build_config;
-import <type_traits>;
+import std;
 
 namespace eagine {
 

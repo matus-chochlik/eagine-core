@@ -10,8 +10,7 @@ export module eagine.core.c_api:constant;
 import eagine.core.types;
 import eagine.core.memory;
 import :enum_class;
-import <type_traits>;
-import <concepts>;
+import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------
@@ -75,7 +74,7 @@ public:
     template <typename I>
     constexpr auto operator+(const I index) const noexcept
       -> enum_value<T, ClassList, Tag>
-        requires(isIndexed && std::is_integral_v<I>)
+        requires(isIndexed and std::is_integral_v<I>)
     {
         using O = std::conditional_t<
           std::is_signed_v<T>,
@@ -112,7 +111,7 @@ public:
     template <typename I>
     constexpr auto operator+(const I index) const noexcept
       -> opt_enum_value<T, ClassList, Tag>
-        requires(isIndexed && std::is_integral_v<I>)
+        requires(isIndexed and std::is_integral_v<I>)
     {
         using O = std::conditional_t<
           std::is_signed_v<T>,

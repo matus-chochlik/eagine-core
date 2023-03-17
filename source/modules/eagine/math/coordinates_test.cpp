@@ -31,11 +31,11 @@ void math_coord_spherical_cartesian_roundtrip(eagitest::case_& test) {
         test.check_close(
           orig.elevation().value(), calc.elevation().value(), "elevation");
         const auto diff = (T(pi) / 2) - abs(elev.value());
-        trck.passed_part(1);
+        trck.checkpoint(1);
         if(diff > T(0)) {
             test.check_close(
               orig.azimuth().value(), calc.azimuth().value(), "azimuth");
-            trck.passed_part(2);
+            trck.checkpoint(2);
         }
     }
 }

@@ -10,9 +10,7 @@ export module eagine.core.string:base64;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
-import <array>;
-import <algorithm>;
-import <optional>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -73,7 +71,7 @@ export template <typename Ps, typename Ss, typename Pd, typename Sd>
 export template <typename P, typename S, typename Dst>
 [[nodiscard]] auto base64_encode(
   const memory::basic_span<const byte, P, S> src,
-  Dst& dst) -> optional_reference_wrapper<Dst> {
+  Dst& dst) -> optional_reference<Dst> {
     using Ds = typename Dst::size_type;
     dst.resize(Ds(base64_encoded_length(src.size())));
     span_size_t i = 0;
@@ -108,7 +106,7 @@ export template <typename Ps, typename Ss, typename Pd, typename Sd>
 export template <typename P, typename S, typename Dst>
 [[nodiscard]] auto base64_decode(
   const memory::basic_span<const char, P, S> src,
-  Dst& dst) -> optional_reference_wrapper<Dst> {
+  Dst& dst) -> optional_reference<Dst> {
     using Ds = typename Dst::size_type;
     dst.resize(Ds(base64_decoded_length(src.size())));
     span_size_t i = 0;

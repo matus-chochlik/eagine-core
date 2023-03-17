@@ -20,13 +20,7 @@ import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.utility;
 import :backend;
-import <array>;
-import <charconv>;
-import <chrono>;
-import <mutex>;
-import <string>;
-import <string_view>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

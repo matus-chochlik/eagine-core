@@ -11,7 +11,7 @@ module;
 
 export module eagine.core.main_ctx:parent;
 import :interface;
-import <variant>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -31,13 +31,13 @@ public:
     /// @brief Indicates if a pointer to the context object is stored
     /// @see context
     /// @see has_object
-    auto has_context() const noexcept -> bool {
+    [[nodiscard]] auto has_context() const noexcept -> bool {
         return std::holds_alternative<main_ctx_getters*>(_parent);
     }
 
     /// @brief Returns a pointer to the context object.
     /// @pre has_context
-    auto context() const noexcept -> main_ctx_getters& {
+    [[nodiscard]] auto context() const noexcept -> main_ctx_getters& {
         assert(has_context());
         return *std::get<main_ctx_getters*>(_parent);
     }
@@ -45,13 +45,13 @@ public:
     /// @brief Indicates if a pointer to the parent object.
     /// @see object
     /// @see has_context
-    auto has_object() const noexcept -> bool {
+    [[nodiscard]] auto has_object() const noexcept -> bool {
         return std::holds_alternative<const main_ctx_object*>(_parent);
     }
 
     /// @brief Returns a pointer to the parent object.
     /// @pre has_object
-    auto object() const noexcept -> const main_ctx_object& {
+    [[nodiscard]] auto object() const noexcept -> const main_ctx_object& {
         assert(has_object());
         return *std::get<const main_ctx_object*>(_parent);
     }

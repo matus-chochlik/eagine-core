@@ -17,11 +17,7 @@ import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.logging;
-import <chrono>;
-import <memory>;
-import <optional>;
-import <string>;
-import <vector>;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -90,11 +86,11 @@ class rapidyaml_attribute : public attribute_interface {
     ryml::NodeRef _node{};
 
     static inline auto _usable(const ryml::NodeRef& n) noexcept {
-        return n.valid() && !n.is_seed();
+        return n.valid() and not n.is_seed();
     }
 
 public:
-    rapidyaml_attribute(ryml::NodeRef node)
+    [[nodiscard]] rapidyaml_attribute(ryml::NodeRef node)
       : _node{node} {}
 
     auto type_id() const noexcept -> identifier final {
@@ -102,7 +98,7 @@ public:
     }
 
     auto name() const noexcept -> string_view {
-        if(_usable(_node) && _node.has_key()) {
+        if(_usable(_node) and _node.has_key()) {
             return view(_node.key());
         }
         return {};
@@ -132,7 +128,7 @@ public:
             if(_node.is_seq()) {
                 return span_size(_node.num_children());
             }
-            if(!_node.is_map()) {
+            if(not _node.is_map()) {
                 return 1;
             }
         }
@@ -187,7 +183,7 @@ public:
                             break;
                         }
                     }
-                    if(!found) {
+                    if(not found) {
                         result = result.find_child(rapidyaml_cstrref(entry));
                     }
                 } else if(result.is_seq()) {
@@ -212,7 +208,7 @@ public:
 
     auto fetch_values(span_size_t offset, span<char> dest) -> span_size_t {
         if(_usable(_node)) {
-            if(!_node.is_seq()) {
+            if(not _node.is_seq()) {
                 if(_node.has_val()) {
                     const auto src{head(skip(view(_node.val()), offset), dest)};
                     copy(src, dest);
@@ -246,7 +242,7 @@ public:
                 }
                 return pos;
             }
-            if(!dest.empty()) {
+            if(not dest.empty()) {
                 if(_node.has_val()) {
                     if(auto opt_val{from_string<T>(view(_node.val()))}) {
                         dest.front() = std::move(extract(opt_val));
@@ -277,7 +273,7 @@ class rapidyaml_tree_compound final
     rapidyaml_attribute _root;
 
 public:
-    rapidyaml_tree_compound(ryml::Tree tree, const logger& parent)
+    [[nodiscard]] rapidyaml_tree_compound(ryml::Tree tree, const logger& parent)
       : _log{"YamlValTre", parent}
       , _tree{std::move(tree)}
       , _root{_tree} {}
@@ -363,13 +359,14 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-static auto rapidyaml_make_new_node(
+[[nodiscard]] static auto rapidyaml_make_new_node(
   rapidyaml_tree_compound& owner,
   ryml::NodeRef node) noexcept -> rapidyaml_attribute* {
     return owner.make_node(node);
 }
 //------------------------------------------------------------------------------
-auto from_yaml_text(string_view yaml_text, const logger& parent) -> compound {
+[[nodiscard]] auto from_yaml_text(string_view yaml_text, const logger& parent)
+  -> compound {
     return compound::make<rapidyaml_tree_compound>(yaml_text, parent);
 }
 //------------------------------------------------------------------------------

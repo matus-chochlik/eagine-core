@@ -6,8 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <iostream>;
-import <stack>;
+import std;
 
 template <unsigned S>
 void solve_sudoku(const eagine::program_args& args) {
@@ -36,7 +35,7 @@ void solve_sudoku(const eagine::program_args& args) {
     print(board);
 
     bool done = false;
-    while(!solutions.empty() && !done) {
+    while(not solutions.empty() and not done) {
         print(board);
         board = solutions.top();
         solutions.pop();

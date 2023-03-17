@@ -9,9 +9,7 @@ export module eagine.core.memory:edit_distance;
 
 import eagine.core.types;
 import :span;
-import <algorithm>;
-import <numeric>;
-import <vector>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

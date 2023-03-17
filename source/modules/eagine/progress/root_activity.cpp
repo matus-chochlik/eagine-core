@@ -11,8 +11,7 @@ import eagine.core.logging;
 import eagine.core.utility;
 import :backend;
 import :activity;
-import <chrono>;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

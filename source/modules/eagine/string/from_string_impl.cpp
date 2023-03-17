@@ -24,11 +24,7 @@ import eagine.core.memory;
 
 #if EAGINE_USE_BOOST_SPIRIT
 import eagine.core.math;
-import <complex>;
-import <limits>;
-import <memory>;
-import <tuple>;
-import <utility>;
+import std;
 #endif
 
 namespace eagine {

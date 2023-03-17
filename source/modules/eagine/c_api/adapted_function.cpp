@@ -14,7 +14,7 @@ import :handle;
 import :result;
 import :function;
 import :parameter_map;
-import <utility>;
+import std;
 
 namespace eagine::c_api {
 
@@ -307,12 +307,12 @@ public:
 
     constexpr explicit operator bool() const noexcept {
         return (
-          ... && basic_adapted_function<
-                   Api,
-                   methods,
-                   CSignatures,
-                   CppSignatures,
-                   RvArgMaps>::operator bool());
+          ... and basic_adapted_function<
+                    Api,
+                    methods,
+                    CSignatures,
+                    CppSignatures,
+                    RvArgMaps>::operator bool());
     }
 
     using basic_adapted_function<

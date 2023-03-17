@@ -11,7 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.runtime;
 import :backend;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -138,7 +138,7 @@ public:
     auto update_progress(const Piece&... piece) noexcept -> bool {
         const bool result{
           activity_progress::update_progress((... + span_size_t(bool(piece))))};
-        _all_done = (bool(piece) && ...);
+        _all_done = (bool(piece) and ...);
         if(_all_done) {
             activity_progress::finish();
         }

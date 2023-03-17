@@ -10,8 +10,7 @@ export module eagine.core.memory:buffer_pool;
 import eagine.core.build_config;
 import eagine.core.types;
 export import :buffer;
-import <algorithm>;
-import <vector>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
@@ -69,12 +68,12 @@ public:
     /// @see eat
     auto get(const span_size_t req_size = 0) -> memory::buffer {
         memory::buffer result{};
-        if constexpr(!low_profile_build) {
+        if constexpr(not low_profile_build) {
             _stats._maxc = std::max(_stats._maxc, _pool.size());
             ++_stats._gets;
         }
-        if(!_pool.empty()) [[likely]] {
-            if constexpr(!low_profile_build) {
+        if(not _pool.empty()) [[likely]] {
+            if constexpr(not low_profile_build) {
                 ++_stats._hits;
             }
             result = std::move(_pool.back());
@@ -95,16 +94,16 @@ public:
                 } catch(...) {
                 }
             } else {
-                if constexpr(!low_profile_build) {
+                if constexpr(not low_profile_build) {
                     ++_stats._dscs;
                 }
             }
-            if constexpr(!low_profile_build) {
+            if constexpr(not low_profile_build) {
                 ++_stats._eats;
                 _stats._maxs = std::max(_stats._maxs, old_cap);
             }
         } else {
-            if constexpr(!low_profile_build) {
+            if constexpr(not low_profile_build) {
                 ++_stats._dscs;
             }
         }
@@ -129,9 +128,8 @@ public:
         return _cleanup{*this, buf};
     }
 
-    auto stats() const noexcept
-      -> optional_reference_wrapper<const buffer_pool_stats> {
-        if constexpr(!low_profile_build) {
+    auto stats() const noexcept -> optional_reference<const buffer_pool_stats> {
+        if constexpr(not low_profile_build) {
             return {_stats};
         } else {
             return {nothing};

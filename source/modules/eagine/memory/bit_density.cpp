@@ -13,16 +13,12 @@ module;
 export module eagine.core.memory:bit_density;
 
 import eagine.core.types;
-import <cstdint>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 // type at least twice the size of byte
-using double_byte = std::conditional_t<
-  (CHAR_BIT > 8),
-  uint_fast16_t,
-  std::conditional_t<(CHAR_BIT > 16), uint_fast32_t, uint_fast64_t>>;
+using double_byte = uint_fast16_t;
 //------------------------------------------------------------------------------
 export constexpr auto byte_bits() noexcept {
     return span_size_t(CHAR_BIT);
@@ -59,7 +55,7 @@ auto do_dissolve_bits(Getter get, Putter put, const span_size_t bits) noexcept
 
     auto push = [&]() -> bool {
         while(r >= bits) {
-            if(!put(byte(w >> double_byte(r - bits)) & m)) {
+            if(not put(byte(w >> double_byte(r - bits)) & m)) {
                 return false;
             }
             r -= bits;
@@ -77,14 +73,14 @@ auto do_dissolve_bits(Getter get, Putter put, const span_size_t bits) noexcept
                 break;
             }
         }
-        if(!push()) {
+        if(not push()) {
             return false;
         }
     }
 
     if(r > 0) {
         assert(r < bits);
-        if(!put(byte(w << double_byte(bits - r)) & m)) {
+        if(not put(byte(w << double_byte(bits - r)) & m)) {
             return false;
         }
     }
@@ -103,7 +99,7 @@ auto do_concentrate_bits(Getter get, Putter put, const span_size_t bits) noexcep
 
     bool done = false;
 
-    while(!done) {
+    while(not done) {
         while(r < byte_bits()) {
             if(const auto src{get()}) {
                 w <<= bits; // NOLINT(hicpp-signed-bitwise)
@@ -116,7 +112,7 @@ auto do_concentrate_bits(Getter get, Putter put, const span_size_t bits) noexcep
             }
         }
         if(r >= byte_bits()) {
-            if(!put(byte(w >> double_byte(r - byte_bits())))) {
+            if(not put(byte(w >> double_byte(r - byte_bits())))) {
                 return false;
             }
             r -= byte_bits();

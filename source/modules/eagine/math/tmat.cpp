@@ -14,9 +14,7 @@ import :traits;
 import :vector;
 import :matrix;
 import :matrix_construct;
-import <concepts>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 namespace math {
@@ -66,7 +64,7 @@ public:
 
     template <std::convertible_to<T> P, int M, int N>
     constexpr tmat(const matrix<P, M, N, RM, V>& m) noexcept
-        requires((C <= M) && (R <= N))
+        requires((C <= M) and (R <= N))
       : base{base::from(m)} {}
 };
 

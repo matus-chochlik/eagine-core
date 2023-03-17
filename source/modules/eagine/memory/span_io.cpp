@@ -9,8 +9,7 @@ export module eagine.core.memory:span_io;
 
 import eagine.core.types;
 import :span;
-import <iostream>;
-import <optional>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
@@ -60,7 +59,7 @@ auto write_to_stream(Output& out, const basic_span<T, P, S> s) -> auto& {
 /// @see list_to_stream
 /// @relates basic_span
 export template <typename T, typename P, typename S>
-    requires(!std::is_same_v<std::remove_const_t<T>, char>)
+    requires(not std::is_same_v<std::remove_const_t<T>, char>)
 auto operator<<(std::ostream& out, const basic_span<T, P, S> s)
   -> std::ostream& {
     return list_to_stream(out, s);

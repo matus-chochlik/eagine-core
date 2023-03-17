@@ -13,32 +13,28 @@ import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.logging;
-import <chrono>;
-import <filesystem>;
-import <fstream>;
-import <tuple>;
-import <vector>;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
 class filesystem_compound;
 class filesystem_node;
 //------------------------------------------------------------------------------
-static auto filesystem_make_node(
+[[nodiscard]] static auto filesystem_make_node(
   filesystem_compound& owner,
   const std::filesystem::path& fs_path) -> attribute_interface*;
-static auto get_log(filesystem_compound& owner) -> const logger&;
+[[nodiscard]] static auto get_log(filesystem_compound& owner) -> const logger&;
 //------------------------------------------------------------------------------
 class filesystem_node : public attribute_interface {
 public:
-    filesystem_node(
+    [[nodiscard]] filesystem_node(
       std::filesystem::path node_path,
       std::filesystem::path real_path)
       : _node_path{std::move(node_path)}
       , _real_path{std::move(real_path)}
       , _name{_node_path.filename()} {}
 
-    filesystem_node(const std::filesystem::path& fs_path)
+    [[nodiscard]] filesystem_node(const std::filesystem::path& fs_path)
       : filesystem_node{fs_path, canonical(fs_path)} {}
 
     friend auto operator==(
@@ -155,7 +151,7 @@ public:
                     break;
                 }
             }
-            if(!found) {
+            if(not found) {
                 spath.append(std::string_view(ent));
             }
         }
@@ -173,15 +169,15 @@ public:
     }
 
     auto fetch_values(span_size_t offset, memory::block dest) -> span_size_t {
-        if(exists(_real_path) && is_regular_file(_real_path)) {
+        if(exists(_real_path) and is_regular_file(_real_path)) {
             std::ifstream file;
             file.open(_real_path, std::ios::in | std::ios::binary);
             file.seekg(offset, std::ios::beg);
-            if(!file
-                  .read(
-                    reinterpret_cast<char*>(dest.data()),
-                    static_cast<std::streamsize>(dest.size()))
-                  .bad()) {
+            if(not file
+                     .read(
+                       reinterpret_cast<char*>(dest.data()),
+                       static_cast<std::streamsize>(dest.size()))
+                     .bad()) {
                 return span_size(file.gcount());
             }
         }
@@ -189,13 +185,14 @@ public:
     }
 
     auto fetch_values(span_size_t offset, span<char> dest) -> span_size_t {
-        if(exists(_real_path) && is_regular_file(_real_path)) {
+        if(exists(_real_path) and is_regular_file(_real_path)) {
             std::ifstream file;
             file.open(_real_path, std::ios::in);
             file.seekg(offset, std::ios::beg);
-            if(!file
-                  .read(dest.data(), static_cast<std::streamsize>(dest.size()))
-                  .bad()) {
+            if(not file
+                     .read(
+                       dest.data(), static_cast<std::streamsize>(dest.size()))
+                     .bad()) {
                 return span_size(file.gcount());
             }
         }
@@ -208,7 +205,7 @@ public:
             char temp[64];
             if(const auto len{fetch_values(offset, cover(temp))}) {
                 auto issep = [](char c) {
-                    return !c || std::isspace(c);
+                    return not c or std::isspace(c);
                 };
                 if(auto src{take_until(head(memory::view(temp), len), issep)}) {
                     if(auto fetched{from_string<T>(src)}) {
@@ -238,7 +235,7 @@ class filesystem_compound
     std::shared_ptr<file_compound_factory> _compound_factory;
 
 public:
-    filesystem_compound(
+    [[nodiscard]] filesystem_compound(
       const logger& parent,
       string_view fs_path,
       std::shared_ptr<file_compound_factory> factory)
@@ -246,7 +243,7 @@ public:
       , _root{std::string_view{fs_path}}
       , _compound_factory{std::move(factory)} {}
 
-    static auto make_shared(
+    [[nodiscard]] static auto make_shared(
       const logger& parent,
       string_view fs_path,
       std::shared_ptr<file_compound_factory> factory)
@@ -329,7 +326,7 @@ static inline auto get_log(filesystem_compound& owner) -> const logger& {
 static inline auto filesystem_make_node(
   filesystem_compound& owner,
   const std::filesystem::path& fs_path) -> attribute_interface* {
-    if(!fs_path.empty()) {
+    if(not fs_path.empty()) {
         try {
             return owner.make_node(fs_path, canonical(fs_path));
         } catch(const std::filesystem::filesystem_error&) {
@@ -341,7 +338,7 @@ static inline auto filesystem_make_node(
     return nullptr;
 }
 //------------------------------------------------------------------------------
-auto from_filesystem_path(
+[[nodiscard]] auto from_filesystem_path(
   string_view fs_path,
   const logger& parent,
   std::shared_ptr<file_compound_factory> factory) -> compound {

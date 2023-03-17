@@ -10,11 +10,7 @@ export module eagine.core.reflection:data_members;
 import eagine.core.types;
 import eagine.core.memory;
 import :decl_name;
-export import <array>;
-import <cstdint>;
-import <optional>;
-import <tuple>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

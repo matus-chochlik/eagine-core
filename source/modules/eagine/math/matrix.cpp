@@ -17,8 +17,7 @@ import eagine.core.vectorization;
 
 import :traits;
 import :vector;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 namespace math {
@@ -79,7 +78,7 @@ struct matrix {
     template <typename P, int M, int N, bool W>
     [[nodiscard]] static auto from(const matrix<P, M, N, RM, W>& m) noexcept
       -> matrix
-        requires((C <= M) && (R <= N))
+        requires((C <= M) and (R <= N))
     {
         return _from_hlp(m, _make_iseq < RM ? R : C > ());
     }
@@ -134,7 +133,7 @@ export template <typename T, int N, bool RM, bool V>
 export template <int CI, int RI, typename T, int C, int R, bool V>
 [[nodiscard]] constexpr auto get_cm(const matrix<T, C, R, false, V>& m) noexcept
   -> T
-    requires(CI < C && RI < R)
+    requires(CI < C and RI < R)
 {
     return m._v[CI][RI];
 }
@@ -144,7 +143,7 @@ export template <int CI, int RI, typename T, int C, int R, bool V>
 export template <int CI, int RI, typename T, int C, int R, bool V>
 [[nodiscard]] constexpr auto get_cm(const matrix<T, C, R, true, V>& m) noexcept
   -> T
-    requires(CI < C && RI < R)
+    requires(CI < C and RI < R)
 {
     return m._v[RI][CI];
 }
@@ -156,7 +155,7 @@ export template <typename T, int C, int R, bool V>
   const matrix<T, C, R, false, V>& m,
   const int ci,
   const int ri) noexcept -> T {
-    assert(ci < C && ri < R);
+    assert(ci < C and ri < R);
     return m._v[ci][ri];
 }
 //------------------------------------------------------------------------------
@@ -167,14 +166,14 @@ export template <typename T, int C, int R, bool V>
   const matrix<T, C, R, true, V>& m,
   const int ci,
   const int ri) noexcept -> T {
-    assert(ci < C && ri < R);
+    assert(ci < C and ri < R);
     return m._v[ri][ci];
 }
 //------------------------------------------------------------------------------
 /// @brief Returns the matrix element at [RI, CI]. Column-major implementation.
 /// @ingroup math
 export template <int RI, int CI, typename T, int C, int R, bool V>
-    requires(CI < C && RI < R)
+    requires(CI < C and RI < R)
 [[nodiscard]] constexpr auto get_rm(const matrix<T, C, R, false, V>& m) noexcept
   -> T {
     return m._v[CI][RI];
@@ -183,7 +182,7 @@ export template <int RI, int CI, typename T, int C, int R, bool V>
 /// @brief Returns the matrix element at [RI, CI]. Row-major implementation.
 /// @ingroup math
 export template <int RI, int CI, typename T, int C, int R, bool V>
-    requires(CI < C && RI < R)
+    requires(CI < C and RI < R)
 [[nodiscard]] constexpr auto get_rm(const matrix<T, C, R, true, V>& m) noexcept
   -> T {
     return m._v[RI][CI];
@@ -196,7 +195,7 @@ export template <typename T, int C, int R, bool V>
   const matrix<T, C, R, false, V>& m,
   const int ri,
   const int ci) noexcept -> T {
-    assert(ci < C && ri < R);
+    assert(ci < C and ri < R);
     return m._v[ci][ri];
 }
 //------------------------------------------------------------------------------
@@ -207,14 +206,14 @@ export template <typename T, int C, int R, bool V>
   const matrix<T, C, R, true, V>& m,
   const int ri,
   const int ci) noexcept -> T {
-    assert(ci < C && ri < R);
+    assert(ci < C and ri < R);
     return m._v[ri][ci];
 }
 //------------------------------------------------------------------------------
 /// @brief Sets the matrix element at [CI, RI]. Column-major implementation.
 /// @ingroup math
 export template <int CI, int RI, typename T, int C, int R, bool V>
-    requires(CI < C && RI < R)
+    requires(CI < C and RI < R)
 constexpr void set_cm(matrix<T, C, R, false, V>& m, const T v) noexcept {
     m._v[CI][RI] = v;
 }
@@ -222,7 +221,7 @@ constexpr void set_cm(matrix<T, C, R, false, V>& m, const T v) noexcept {
 /// @brief Sets the matrix element at [CI, RI]. Row-major implementation.
 /// @ingroup math
 export template <int CI, int RI, typename T, int C, int R, bool V>
-    requires(CI < C && RI < R)
+    requires(CI < C and RI < R)
 constexpr void set_cm(matrix<T, C, R, true, V>& m, const T v) noexcept {
     m._v[RI][CI] = v;
 }
@@ -235,7 +234,7 @@ constexpr void set_cm(
   const int ci,
   const int ri,
   const T v) noexcept {
-    assert(ci < C && ri < R);
+    assert(ci < C and ri < R);
     m._v[ci][ri] = v;
 }
 //------------------------------------------------------------------------------
@@ -247,14 +246,14 @@ constexpr void set_cm(
   const int ci,
   const int ri,
   const T v) noexcept {
-    assert(ci < C && ri < R);
+    assert(ci < C and ri < R);
     m._v[ri][ci] = v;
 }
 //------------------------------------------------------------------------------
 /// @brief Sets the matrix element at [RI, CI]. Column-major implementation.
 /// @ingroup math
 export template <int RI, int CI, typename T, int C, int R, bool V>
-    requires(CI < C && RI < R)
+    requires(CI < C and RI < R)
 constexpr void set_rm(matrix<T, C, R, false, V>& m, const T v) noexcept {
     m._v[CI][RI] = v;
 }
@@ -262,7 +261,7 @@ constexpr void set_rm(matrix<T, C, R, false, V>& m, const T v) noexcept {
 /// @brief Sets the matrix element at [RI, CI]. Row-major implementation.
 /// @ingroup math
 export template <int RI, int CI, typename T, int C, int R, bool V>
-    requires(CI < C && RI < R)
+    requires(CI < C and RI < R)
 constexpr void set_rm(matrix<T, C, R, true, V>& m, const T v) noexcept {
     m._v[RI][CI] = v;
 }
@@ -275,7 +274,7 @@ constexpr void set_rm(
   const int ri,
   const int ci,
   const T v) noexcept {
-    assert(ci < C && ri < R);
+    assert(ci < C and ri < R);
     m._v[ci][ri] = v;
 }
 //------------------------------------------------------------------------------
@@ -287,7 +286,7 @@ constexpr void set_rm(
   const int ri,
   const int ci,
   const T v) noexcept {
-    assert(ci < C && ri < R);
+    assert(ci < C and ri < R);
     m._v[ri][ci] = v;
 }
 //------------------------------------------------------------------------------
@@ -356,14 +355,14 @@ using reordered_matrix_t = typename reordered_matrix<X>::type;
 /// @brief Implementation of reordered_matrix_t.
 /// @ingroup math
 export template <typename T, int C, int R, bool RM, bool V>
-struct reordered_matrix<matrix<T, C, R, RM, V>> : matrix<T, R, C, !RM, V> {};
+struct reordered_matrix<matrix<T, C, R, RM, V>> : matrix<T, R, C, not RM, V> {};
 //------------------------------------------------------------------------------
 /// @brief Returns a matrix reordered (switches row/column major).
 /// @ingroup math
 export template <typename T, int C, int R, bool RM, bool V>
 [[nodiscard]] constexpr auto reorder(const matrix<T, C, R, RM, V>& m) noexcept
-  -> matrix<T, C, R, !RM, V> {
-    return transpose_tpl<!RM, RM, T>(m);
+  -> matrix<T, C, R, not RM, V> {
+    return transpose_tpl<not RM, RM, T>(m);
 }
 //------------------------------------------------------------------------------
 /// @brief Returns a matrix ordered as row-major.
@@ -424,11 +423,12 @@ export template <int I, typename T, bool RM, bool V>
   const matrix<T, 4, 4, RM, V>& m) noexcept -> vector<T, 4, V>
     requires(I < 4)
 {
-    return {vect::shuffle2<T, 4, V>::template apply<0, 1, 4, 5>(
-      vect::shuffle2<T, 4, V>::template apply<0 + I, 4 + I, -1, -1>(
-        m._v[0], m._v[1]),
-      vect::shuffle2<T, 4, V>::template apply<0 + I, 4 + I, -1, -1>(
-        m._v[2], m._v[3]))};
+    return {vect::shuffle2<T, 4, V>::apply(
+      vect::shuffle2<T, 4, V>::apply(
+        m._v[0], m._v[1], vect::shuffle_mask<0 + I, 4 + I, -1, -1>{}),
+      vect::shuffle2<T, 4, V>::apply(
+        m._v[2], m._v[3], vect::shuffle_mask<0 + I, 4 + I, -1, -1>{}),
+      vect::shuffle_mask<0, 1, 4, 5>{})};
 }
 //------------------------------------------------------------------------------
 /// @brief Returns the I-th row vector of a matrix. Row-major implementation.
@@ -497,8 +497,8 @@ export template <int I, typename T, int C, int R, bool V>
 }
 //------------------------------------------------------------------------------
 // _col_hlp
-template <typename T, int C, int R, bool RM, bool V>
-static constexpr auto _col_hlp(
+export template <typename T, int C, int R, bool RM, bool V>
+constexpr auto _col_hlp(
   const matrix<T, C, R, RM, V>& m,
   int_constant<0U>,
   [[maybe_unused]] const int i) noexcept -> vector<T, R, V> {
@@ -507,8 +507,8 @@ static constexpr auto _col_hlp(
 }
 //------------------------------------------------------------------------------
 // _col_hlp
-template <typename T, int C, int R, bool RM, bool V, int I>
-static constexpr auto _col_hlp(
+export template <typename T, int C, int R, bool RM, bool V, int I>
+constexpr auto _col_hlp(
   const matrix<T, C, R, RM, V>& m,
   int_constant<I>,
   const int i) noexcept -> vector<T, R, V> {
@@ -569,7 +569,7 @@ export template <bool RM, typename T, int C, int R, bool V>
 // construct_matrix (reorder)
 export template <bool RM, typename T, int C, int R, bool V>
 [[nodiscard]] constexpr auto construct_matrix(
-  const matrix<T, C, R, !RM, V>& m) noexcept -> matrix<T, C, R, RM, V> {
+  const matrix<T, C, R, not RM, V>& m) noexcept -> matrix<T, C, R, RM, V> {
     return reorder(m);
 }
 //------------------------------------------------------------------------------
@@ -642,7 +642,8 @@ export template <typename T, int C, int R, bool RM, bool V>
 export template <typename MC1, typename MC2>
 [[nodiscard]] constexpr auto operator*(const MC1& mc1, const MC2& mc2) noexcept
     requires(
-      is_matrix_constructor<MC1>::value && is_matrix_constructor<MC2>::value &&
+      is_matrix_constructor<MC1>::value and
+      is_matrix_constructor<MC2>::value and
       are_multiplicable<constructed_matrix_t<MC1>, constructed_matrix_t<MC2>>::
         value)
 {
@@ -665,7 +666,7 @@ export template <typename T, int Ca, int Cb, int R, bool V>
         auto d = a._v[i][i];
         if(is_zero(d)) {
             for(int k = i + 1; k < R; ++k) {
-                if(!is_zero(a._v[k][i])) {
+                if(not is_zero(a._v[k][i])) {
                     swap(a._v[k], a._v[i]);
                     swap(b._v[k], b._v[i]);
                     break;
@@ -683,7 +684,7 @@ export template <typename T, int Ca, int Cb, int R, bool V>
 
         for(int k = i + 1; k < R; ++k) {
             d = a._v[k][i];
-            if(!is_zero(d)) {
+            if(not is_zero(d)) {
                 a._v[k] -= a._v[i] * d;
                 b._v[k] -= b._v[i] * d;
             }
@@ -753,7 +754,7 @@ export template <typename T, int Ca, int Cb, int R, bool V>
         for(int i = R - 1; i > 0; --i) {
             for(int k = 0; k < i; ++k) {
                 const T d = a._v[k][i];
-                if(!are_equal(d, T(0))) {
+                if(not are_equal(d, T(0))) {
                     a._v[k] -= a._v[i] * d;
                     b._v[k] -= b._v[i] * d;
                 }

@@ -12,22 +12,17 @@ module;
 export module eagine.core.types:limits;
 
 import :basic;
-import <cstdint>;
-import <concepts>;
-import <limits>;
-import <type_traits>;
-import <utility>;
-export import <optional>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename Dst, typename Src>
 struct implicitly_within_limits
   : std::bool_constant<(
-      ((std::is_integral_v<Dst> && std::is_integral_v<Src>) ||
-       (std::is_floating_point_v<Dst> && std::is_floating_point_v<Src>)) &&
-      (std::is_signed_v<Dst> ==
-       std::is_signed_v<Src>)&&(sizeof(Dst) >= sizeof(Src)))> {};
+      ((std::is_integral_v<Dst> and std::is_integral_v<Src>) or
+       (std::is_floating_point_v<Dst> and std::is_floating_point_v<Src>)) and
+      (std::is_signed_v<Dst> == std::is_signed_v<Src>) and
+      (sizeof(Dst) >= sizeof(Src)))> {};
 
 template <typename Dst>
 struct implicitly_within_limits<Dst, bool> : std::is_integral<Dst> {};
@@ -65,7 +60,7 @@ struct within_limits_num<Dst, Src, IsInt, IsInt, IsSig, IsSig> {
     static constexpr auto check(const Src value) noexcept {
         using dnl = std::numeric_limits<Dst>;
 
-        return (dnl::min() <= value) && (value <= dnl::max());
+        return (dnl::min() <= value) and (value <= dnl::max());
     }
 };
 //------------------------------------------------------------------------------
@@ -119,7 +114,7 @@ struct within_limits<T, T> {
 /// a 16-bit integer without overflow.
 export template <typename Dst, typename Src>
 [[nodiscard]] constexpr auto is_within_limits(const Src value) noexcept {
-    return implicitly_within_limits<Dst, Src>::value ||
+    return implicitly_within_limits<Dst, Src>::value or
            within_limits<Dst, Src>().check(value);
 }
 //------------------------------------------------------------------------------
@@ -134,7 +129,7 @@ export template <typename Dst, typename Src>
     requires(std::is_convertible_v<Src, Dst>)
 {
     assert(is_within_limits<Dst>(value));
-    if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<Dst>) {
+    if constexpr(std::is_trivial_v<Src> and std::is_trivial_v<Dst>) {
         return Dst(value);
     } else {
         return Dst(std::move(value));
@@ -163,7 +158,7 @@ export template <typename Dst, typename Src>
 [[nodiscard]] constexpr auto convert_if_fits(Src value) noexcept
   -> std::optional<Dst> {
     if(is_within_limits<Dst>(value)) {
-        if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<Dst>) {
+        if constexpr(std::is_trivial_v<Src> and std::is_trivial_v<Dst>) {
             return {Dst(value)};
         } else {
             return {Dst(std::move(value))};
@@ -180,10 +175,10 @@ export template <typename Dst, typename Src>
 export template <typename Src, typename Dst>
 constexpr auto assign_if_fits(const Src& src, Dst& dst) noexcept -> bool
     requires(
-      std::is_convertible_v<Src, Dst> || std::is_constructible_v<Dst, Src>)
+      std::is_convertible_v<Src, Dst> or std::is_constructible_v<Dst, Src>)
 {
     if(is_within_limits<Dst>(src)) {
-        if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<Dst>) {
+        if constexpr(std::is_trivial_v<Src> and std::is_trivial_v<Dst>) {
             dst = Dst(src);
         } else {
             dst = Dst(std::move(src));
@@ -207,10 +202,10 @@ constexpr auto assign_if_fits(
   const Src& src,
   std::chrono::duration<DstR, DstP>& dst) noexcept -> bool
     requires(
-      std::is_convertible_v<Src, DstR> || std::is_constructible_v<DstR, Src>)
+      std::is_convertible_v<Src, DstR> or std::is_constructible_v<DstR, Src>)
 {
     if(is_within_limits<DstR>(src)) {
-        if constexpr(std::is_trivial_v<Src> && std::is_trivial_v<DstR>) {
+        if constexpr(std::is_trivial_v<Src> and std::is_trivial_v<DstR>) {
             dst = std::chrono::duration<DstR, DstP>{DstR(src)};
         } else {
             dst = std::chrono::duration<DstR, DstP>{DstR(std::move(src))};
@@ -224,7 +219,7 @@ export template <typename Src, typename Dst>
 constexpr auto assign_if_fits(const Src& src, std::optional<Dst>& dst) noexcept
   -> bool
     requires(
-      std::is_convertible_v<Src, Dst> || std::is_constructible_v<Dst, Src>)
+      std::is_convertible_v<Src, Dst> or std::is_constructible_v<Dst, Src>)
 {
     Dst temp{};
     if(assign_if_fits(src, temp)) {
@@ -331,19 +326,19 @@ export template <
 export template <std::integral L, std::integral R, std::integral C>
 [[nodiscard]] constexpr auto safe_add_eq(L l, R r, C c) noexcept -> bool {
     using T = std::common_type_t<L, R>;
-    return are_safe_to_add<T>(l, r) && (l + r == c);
+    return are_safe_to_add<T>(l, r) and (l + r == c);
 }
 //------------------------------------------------------------------------------
 export template <std::integral L, std::integral R, std::integral C>
 [[nodiscard]] constexpr auto safe_add_lt(L l, R r, C c) noexcept -> bool {
     using T = std::common_type_t<L, R>;
-    return are_safe_to_add<T>(l, r) && (l + r < c);
+    return are_safe_to_add<T>(l, r) and (l + r < c);
 }
 //------------------------------------------------------------------------------
 export template <std::integral L, std::integral R, std::integral C>
 [[nodiscard]] constexpr auto safe_add_gt(L l, R r, C c) noexcept -> bool {
     using T = std::common_type_t<L, R>;
-    return are_safe_to_add<T>(l, r) && (l + r > c);
+    return are_safe_to_add<T>(l, r) and (l + r > c);
 }
 //------------------------------------------------------------------------------
 export template <typename... Params, typename... Args>
@@ -351,7 +346,7 @@ export template <typename... Params, typename... Args>
   -> bool
     requires(sizeof...(Params) == sizeof...(Args))
 {
-    return (... && is_within_limits<std::decay_t<Params>>(args));
+    return (... and is_within_limits<std::decay_t<Params>>(args));
 }
 //------------------------------------------------------------------------------
 export template <typename RV, typename... Params, typename... Args>

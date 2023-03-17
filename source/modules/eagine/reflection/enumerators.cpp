@@ -11,10 +11,7 @@ export module eagine.core.reflection:enumerators;
 import eagine.core.types;
 import eagine.core.memory;
 import :decl_name;
-import <array>;
-import <cstdint>;
-import <optional>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -33,6 +30,16 @@ name_and_enumerator(const decl_name, const T) -> name_and_enumerator<T>;
 //------------------------------------------------------------------------------
 export template <typename T, std::size_t N>
 using enumerator_map_type = std::array<const name_and_enumerator<T>, N>;
+//------------------------------------------------------------------------------
+export template <typename T, typename Selector>
+auto enumerators(Selector s) noexcept {
+    return enumerator_mapping(std::type_identity<T>{}, s);
+}
+
+export template <typename T>
+auto enumerators() noexcept {
+    return enumerators<T>(default_selector);
+}
 //------------------------------------------------------------------------------
 export template <typename T, typename Selector>
 concept mapped_enum = requires(std::type_identity<T> tid, Selector s) {
@@ -216,6 +223,60 @@ void for_each_enumerator(
   Function function,
   const std::type_identity<T> id) noexcept {
     for_each_enumerator(function, id, default_selector);
+}
+//------------------------------------------------------------------------------
+// bitfield
+//------------------------------------------------------------------------------
+export template <typename Bit, typename Selector>
+[[nodiscard]] auto count_all_bits(
+  const bitfield<Bit>&,
+  const Selector sel) noexcept -> span_size_t
+    requires(mapped_enum<Bit, Selector>)
+{
+    return enumerator_count(std::type_identity<Bit>{}, sel);
+}
+//------------------------------------------------------------------------------
+export template <typename Bit>
+[[nodiscard]] auto count_all_bits(const bitfield<Bit>&) noexcept -> span_size_t
+    requires(mapped_enum<Bit, default_selector_t>)
+{
+    return enumerator_count(std::type_identity<Bit>{}, default_selector);
+}
+//------------------------------------------------------------------------------
+export template <typename Bit, typename Selector>
+[[nodiscard]] auto count_set_bits(
+  const bitfield<Bit> bits,
+  const Selector sel) noexcept -> span_size_t
+    requires(mapped_enum<Bit, Selector>)
+{
+    span_size_t result{0};
+    for(const auto& info : enumerator_mapping(std::type_identity<Bit>{}, sel)) {
+        result += (bits.has(info.enumerator) ? 1 : 0);
+    }
+    return result;
+}
+//------------------------------------------------------------------------------
+export template <default_mapped_enum Bit>
+[[nodiscard]] auto count_set_bits(const bitfield<Bit> bits) noexcept
+  -> span_size_t {
+    return count_set_bits(bits, default_selector);
+}
+//------------------------------------------------------------------------------
+export template <typename Function, typename Bit, typename Selector>
+void for_each_bit(
+  Function function,
+  const bitfield<Bit> bits,
+  const Selector sel) noexcept
+    requires(mapped_enum<Bit, Selector>)
+{
+    for(const auto& info : enumerator_mapping(std::type_identity<Bit>{}, sel)) {
+        function(bits, info);
+    }
+}
+//------------------------------------------------------------------------------
+export template <typename Function, default_mapped_enum Bit>
+void for_each_bit(Function function, const bitfield<Bit> bits) noexcept {
+    for_each_bit(function, bits, default_selector);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

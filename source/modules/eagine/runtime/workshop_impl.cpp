@@ -8,22 +8,17 @@
 module eagine.core.runtime;
 
 import eagine.core.types;
-import <memory>;
-import <mutex>;
-import <latch>;
-import <queue>;
-import <thread>;
-import <tuple>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 auto workshop::_fetch() noexcept -> std::tuple<work_unit*, bool> {
     work_unit* work = nullptr;
     std::unique_lock lock{_queue_lockable};
-    if(!_shutdown) [[likely]] {
-        _cond.wait(lock, [this] { return !_work_queue.empty() || _shutdown; });
-        if(!_work_queue.empty()) {
+    if(not _shutdown) [[likely]] {
+        _cond.wait(
+          lock, [this] { return not _work_queue.empty() or _shutdown; });
+        if(not _work_queue.empty()) {
             work = _work_queue.front();
             _work_queue.pop();
         }

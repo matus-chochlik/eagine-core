@@ -9,7 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
 import eagine.core.memory;
-import <deque>;
+import std;
 //------------------------------------------------------------------------------
 template <typename T>
 void memory_c_realloc_1_T(eagitest::case_& test, std::size_t n) {
@@ -51,7 +51,7 @@ void memory_c_realloc_1_T(eagitest::case_& test, std::size_t n) {
         test.check(!!a.has_allocated(blk, ao), "has allocated 2");
     }
 
-    while(!blks.empty()) {
+    while(not blks.empty()) {
         auto i = blks.begin() + rg.get_int(0, int(blks.size()) - 1);
         a.deallocate(std::move(*i), ao);
         blks.erase(i);

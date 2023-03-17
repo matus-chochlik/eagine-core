@@ -522,7 +522,7 @@ void span_find_pos_T_r1_r2_1(
         test.check(are_equal, "equal");
         test.check(contains(rng1, rng2), "contains");
     } else if(rng2.size() > 0) {
-        test.check(!contains(rng1, rng2), "not contains");
+        test.check(not contains(rng1, rng2), "not contains");
     }
 }
 //------------------------------------------------------------------------------
@@ -601,7 +601,7 @@ void span_rfind_pos_T_r1_r2_1(
         test.check(are_equal, "equal");
         test.check(contains(rng1, rng2), "contains");
     } else if(rng2.size() > 0) {
-        test.check(!contains(rng1, rng2), "not contains");
+        test.check(not contains(rng1, rng2), "not contains");
     }
 }
 //------------------------------------------------------------------------------
@@ -761,7 +761,7 @@ void span_find_if_T_m_m_h_1(eagitest::case_& test, T min, T max, bool has) {
             auto what = rg.get_between<T>(mid + 1, max);
             auto pos = find_element_if(
               eagine::view(v), [what](auto elem) { return elem == what; });
-            test.check(!pos, "not found");
+            test.check(not pos, "not found");
         }
     }
 }
@@ -905,13 +905,13 @@ void span_strip_prefix_T_r1_r2_1(
 
     eagine::span<T> rng3 = strip_prefix(rng1, rng2);
 
-    bool has_prefix = (rng3.size() == rng1.size()) && starts_with(rng3, rng2);
+    bool has_prefix = (rng3.size() == rng1.size()) and starts_with(rng3, rng2);
 
     if(had_prefix) {
-        test.check(!has_prefix || empty_prefix, "prefix 1");
+        test.check(not has_prefix or empty_prefix, "prefix 1");
         test.check_equal(rng1.size(), rng2.size() + rng3.size(), "size 1");
     } else {
-        test.check(!has_prefix, "prefix 2");
+        test.check(not has_prefix, "prefix 2");
         test.check_equal(rng1.size(), rng3.size(), "size 2");
     }
 }
@@ -972,13 +972,13 @@ void span_strip_suffix_T_r1_r2_1(
 
     eagine::span<T> rng3 = strip_suffix(rng1, rng2);
 
-    bool has_suffix = (rng3.size() == rng1.size()) && ends_with(rng3, rng2);
+    bool has_suffix = (rng3.size() == rng1.size()) and ends_with(rng3, rng2);
 
     if(had_suffix) {
-        test.check(!has_suffix || empty_suffix, "suffix 1");
+        test.check(not has_suffix or empty_suffix, "suffix 1");
         test.check_equal(rng1.size(), rng2.size() + rng3.size(), "size 1");
     } else {
-        test.check(!has_suffix, "suffix 2");
+        test.check(not has_suffix, "suffix 2");
         test.check_equal(rng1.size(), rng3.size(), "size 2");
     }
 }

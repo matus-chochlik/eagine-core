@@ -10,8 +10,7 @@ export module eagine.core.string:hexdump;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
-import <iosfwd>;
-import <optional>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

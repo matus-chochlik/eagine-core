@@ -8,7 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.utility;
-import <map>;
+import std;
 //------------------------------------------------------------------------------
 unsigned long fib_calc(unsigned long n) {
     unsigned long m[3] = {1, 1, 2};
@@ -43,11 +43,11 @@ void memoized_fibonacci(auto& s) {
     for(int j = 0; j < 20; ++j) {
         for(unsigned long i = 0; i < 90; ++i) {
             test.check_equal(fib_calc(i), fib_memo(i), "A");
-            trck.passed_part(1);
+            trck.checkpoint(1);
         }
         if(j % 3 == 1) {
             fib_memo.clear();
-            trck.passed_part(2);
+            trck.checkpoint(2);
         }
     }
 
@@ -58,17 +58,17 @@ void memoized_fibonacci(auto& s) {
 
     for(unsigned long i = 0; i < 90; ++i) {
         test.check_equal(f[i], fib_memo(i), "B");
-        trck.passed_part(3);
+        trck.checkpoint(3);
     }
 
     for(unsigned long i = 0; i < 90; ++i) {
         fib_memo.reset(i);
-        trck.passed_part(4);
+        trck.checkpoint(4);
     }
 
     for(unsigned long i = 0; i < 90; ++i) {
         test.check_equal(f[i], fib_memo(i), "C");
-        trck.passed_part(5);
+        trck.checkpoint(5);
     }
 }
 //------------------------------------------------------------------------------
@@ -98,11 +98,11 @@ void memoized_factorial(auto& s) {
     for(int j = 0; j < 20; ++j) {
         for(unsigned i = 0; i < 22; ++i) {
             test.check_equal(fact_calc(i), fact_memo(i), "A");
-            trck.passed_part(1);
+            trck.checkpoint(1);
         }
         if(j % 7 == 1) {
             fact_memo.clear();
-            trck.passed_part(2);
+            trck.checkpoint(2);
         }
     }
 }
@@ -137,7 +137,7 @@ void memoized_exponential(auto& s) {
     for(int j = 0; j < 10; ++j) {
         for(unsigned i = 0; i < 64; ++i) {
             test.check_equal(exp_calc(2, i), exp_memo(2, i), "A");
-            trck.passed_part(1);
+            trck.checkpoint(1);
         }
     }
 
@@ -145,7 +145,7 @@ void memoized_exponential(auto& s) {
         const auto x = rg.get_between(0U, 20U);
         const auto e = rg.get_between(0U, 20U - x);
         test.check_equal(exp_calc(x, e), exp_memo(x, e), "B");
-        trck.passed_part(2);
+        trck.checkpoint(2);
     }
 }
 //------------------------------------------------------------------------------

@@ -30,7 +30,7 @@ void vect_abs_TNV_1(eagitest::case_& test) {
 
         for(int i = 0; i < N; ++i) {
             using std::abs;
-            test.check(!(v[i] < T(0)), "not less than");
+            test.check(not(v[i] < T(0)), "not less than");
             test.check_equal(v[i], abs(a[i]), "compare 1");
             test.check_equal(v[i], abs(u[i]), "compare 2");
         }

@@ -14,9 +14,7 @@ import eagine.core.valid_if;
 import eagine.core.utility;
 export import :entry_arg;
 import :backend;
-import <sstream>;
-import <optional>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -800,7 +798,7 @@ public:
     ~stream_log_entry() noexcept {
         try {
             auto fmt_str(_out.str());
-            if(!fmt_str.empty()) {
+            if(not fmt_str.empty()) {
                 if(_backend) {
                     if(_backend->begin_message(
                          _source_id,

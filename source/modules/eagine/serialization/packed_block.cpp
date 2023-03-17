@@ -12,7 +12,7 @@ import eagine.core.memory;
 import eagine.core.runtime;
 import :result;
 import :block;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

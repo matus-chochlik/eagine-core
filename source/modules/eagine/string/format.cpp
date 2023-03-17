@@ -11,8 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
 import :substitution;
-import <array>;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

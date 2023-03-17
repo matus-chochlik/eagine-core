@@ -9,8 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
 import eagine.core.container;
-import <set>;
-import <string>;
+import std;
 //------------------------------------------------------------------------------
 void trie_empty(auto& s) {
     eagitest::case_ test{s, 1, "empty"};
@@ -19,7 +18,7 @@ void trie_empty(auto& s) {
 
     for(unsigned i = 0; i < test.repeats(10000); ++i) {
         test.check(
-          !t.contains(rg.get_string_made_of(1, 50, t.valid_chars())),
+          not t.contains(rg.get_string_made_of(1, 50, t.valid_chars())),
           "does not contain");
     }
 }
@@ -63,7 +62,7 @@ void trie_insert_2(auto& s) {
         test.check(t.contains(key), key);
         if(const auto found{t.find(key)}) {
             test.check_equal(extract(found), key, "key == value");
-            trck.passed_part(1);
+            trck.checkpoint(1);
         }
     }
 
@@ -112,7 +111,7 @@ void trie_add_2(auto& s) {
         test.check(t.contains(key), key);
         if(const auto found{t.find(key)}) {
             test.check_equal(extract(found), key, "key == value");
-            trck.passed_part(1);
+            trck.checkpoint(1);
         }
     }
 

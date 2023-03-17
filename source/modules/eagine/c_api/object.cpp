@@ -11,7 +11,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.container;
 import :handle;
-import <tuple>;
+import std;
 
 namespace eagine::c_api {
 
@@ -34,7 +34,7 @@ class basic_object : public basic_owned_handle<Tag, Handle, invalid> {
 
 public:
     /// @brief Default constructor.
-    /// @post !is_valid()
+    /// @post not is_valid()
     constexpr basic_object() noexcept = default;
 
     /// @brief Move constructor.

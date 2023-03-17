@@ -9,9 +9,7 @@ export module eagine.core.utility:scope_exit;
 
 import eagine.core.types;
 import :callable_ref;
-import <exception>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 
@@ -62,7 +60,7 @@ public:
     }
 
     /// @brief Moves out and returns the stored action.
-    /// @post !is_active()
+    /// @post not is_active()
     /// @see cancel
     /// @see is_active
     [[nodiscard]] auto release() noexcept -> action_type {
@@ -70,7 +68,7 @@ public:
     }
 
     /// @brief Resets the stored action to empty default.
-    /// @post !is_active()
+    /// @post not is_active()
     /// @see release
     /// @see is_active
     void cancel() noexcept {
@@ -93,7 +91,7 @@ private:
 
     void _invoke(const std::false_type) const {
         if(_action) {
-            if(!std::uncaught_exceptions()) {
+            if(not std::uncaught_exceptions()) {
                 _action();
             }
         }

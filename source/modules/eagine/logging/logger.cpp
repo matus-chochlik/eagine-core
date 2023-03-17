@@ -13,12 +13,11 @@ import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.runtime;
 import eagine.core.units;
-export import :severity;
 import :config;
 import :backend;
 import :entry;
 import :time_interval;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -35,7 +34,7 @@ public:
     ~logger_shared_backend_getter() noexcept = default;
 
     logger_shared_backend_getter(
-      std::unique_ptr<logger_backend> backend) noexcept
+      std::shared_ptr<logger_backend> backend) noexcept
       : _backend{std::move(backend)} {}
 
     void begin_log() noexcept {

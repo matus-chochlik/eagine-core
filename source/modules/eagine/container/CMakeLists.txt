@@ -50,6 +50,7 @@ eagine_add_module(
 eagine_add_module_tests(
 	eagine.core.container
 	UNITS
+		iterator
 		flat_map
 		flat_set
 		trie

@@ -8,7 +8,7 @@
 #define EAGINE_XML_LOGS_BACKEND
 
 import eagine.core;
-import <memory>;
+import std;
 #include "EntryLog.hpp"
 #include "Server.hpp"
 #include "Theme.hpp"

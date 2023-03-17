@@ -15,10 +15,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.reflection;
-import <array>;
-import <cstdint>;
-import <string>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -157,7 +154,7 @@ export template <identifier_t Sid, typename... T, typename Selector>
 struct get_serialize_buffer_size<Sid, std::tuple<T...>, Selector>
   : serialize_size_constant<
       (4 + ... + (2 + serialize_buffer_size_v<Sid, T, Selector>)),
-      (true && ... && (serialize_buffer_is_constant_v<Sid, T, Selector>))> {
+      (true and ... and (serialize_buffer_is_constant_v<Sid, T, Selector>))> {
 
     template <typename Tup>
     static constexpr auto get(string_view s, const Tup& v) noexcept {

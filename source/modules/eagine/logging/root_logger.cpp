@@ -12,7 +12,7 @@ import eagine.core.identifier;
 import eagine.core.runtime;
 import :backend;
 import :logger;
-import <memory>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ namespace eagine {
 /// @ingroup logging
 export struct root_logger_options {
     /// @brief The explicitly-specified backend to be used by the root logger.
-    std::unique_ptr<logger_backend> forced_backend{};
+    std::shared_ptr<logger_backend> forced_backend{};
 
     /// @brief Option saying that by default no logging should be done.
     bool default_no_log{false};

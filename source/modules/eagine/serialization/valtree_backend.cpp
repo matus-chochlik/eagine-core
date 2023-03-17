@@ -21,9 +21,7 @@ import eagine.core.value_tree;
 import eagine.core.valid_if;
 import :result;
 import :interface;
-import <stack>;
-import <string>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -68,7 +66,7 @@ public:
                     _errors.set(error_code::data_source_error);
                 }
             } else {
-                if(!_source) [[unlikely]] {
+                if(not _source) [[unlikely]] {
                     _errors.set(error_code::data_source_error);
                 }
                 if(auto root{_source.structure()}) {
@@ -85,7 +83,7 @@ public:
 
     template <typename T>
     auto do_read(span<T> values, span_size_t& done) noexcept -> result {
-        if(!_attribs.empty()) {
+        if(not _attribs.empty()) {
             done = _source.fetch_values(_attribs.top(), 0, values).size();
             if(done < values.size()) {
                 _errors.set(error_code::not_enough_data);
@@ -231,7 +229,7 @@ public:
     }
 
     auto begin_struct(span_size_t& count) noexcept -> result final {
-        if(!_attribs.empty()) {
+        if(not _attribs.empty()) {
             count = _source.nested_count(_attribs.top());
         } else {
             _errors.set(error_code::backend_error);
@@ -240,7 +238,7 @@ public:
     }
 
     auto begin_member(const string_view name) noexcept -> result final {
-        if(!_attribs.empty()) {
+        if(not _attribs.empty()) {
             if(auto nested{_source.nested(_attribs.top(), name)}) {
                 _attribs.emplace(std::move(nested));
             } else {
@@ -253,7 +251,7 @@ public:
     }
 
     auto finish_member(const string_view) noexcept -> result final {
-        if(!_attribs.empty()) {
+        if(not _attribs.empty()) {
             _attribs.pop();
         } else {
             _errors.set(error_code::backend_error);
@@ -266,7 +264,7 @@ public:
     }
 
     auto begin_list(span_size_t& count) noexcept -> result final {
-        if(!_attribs.empty()) {
+        if(not _attribs.empty()) {
             count = _source.nested_count(_attribs.top());
         } else {
             _errors.set(error_code::backend_error);
@@ -287,7 +285,7 @@ public:
     }
 
     auto finish() noexcept -> result final {
-        if(!_attribs.empty()) {
+        if(not _attribs.empty()) {
             _attribs.pop();
         } else {
             _errors.set(error_code::backend_error);

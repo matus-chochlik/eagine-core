@@ -15,8 +15,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import :result;
 import :interface;
-import <type_traits>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

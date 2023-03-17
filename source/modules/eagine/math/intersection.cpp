@@ -12,9 +12,7 @@ import eagine.core.valid_if;
 import :functions;
 import :primitives;
 import :vector;
-import <cmath>;
-import <utility>;
-import <optional>;
+import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------
@@ -163,11 +161,11 @@ export template <typename T, bool V>
         const vector<T, 3, V> s = ray.origin() - tri.a();
         const T u = f * dot(s, h);
 
-        if((u >= T(0)) && (u <= T(1))) {
+        if((u >= T(0)) and (u <= T(1))) {
             const vector<T, 3, V> q = cross(s, tri.ab());
             const T v = f * dot(ray.direction(), q);
 
-            if((v >= T(0)) && (u + v <= T(1))) {
+            if((v >= T(0)) and (u + v <= T(1))) {
                 const T t = f * dot(tri.ac(), q);
                 if(t >= T(0)) {
                     return {t};

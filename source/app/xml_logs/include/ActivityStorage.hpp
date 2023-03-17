@@ -8,11 +8,7 @@
 #define EAGINE_XML_LOGS_ACTIVITY_STORAGE_HPP
 
 import eagine.core;
-import <array>;
-import <algorithm>;
-import <chrono>;
-import <cstdint>;
-import <vector>;
+import std;
 
 class Backend;
 struct LogEntryData;

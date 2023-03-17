@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+import std;
 import eagine.core;
-import <chrono>;
-import <iostream>;
-import <random>;
-import <thread>;
 
 auto main() -> int {
     using namespace eagine;
@@ -27,7 +24,7 @@ auto main() -> int {
     using step_t = std::chrono::duration<float>;
     step_t step{0.020F};
 
-    while(!interrupted) {
+    while(not interrupted) {
         if(a.is_done()) {
             a.set(dis(gen), step_t(math::clamp(nrm(gen), 0.5F, 1.5F)));
         }

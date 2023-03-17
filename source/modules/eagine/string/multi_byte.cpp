@@ -16,9 +16,7 @@ import eagine.core.memory;
 import eagine.core.valid_if;
 import eagine.core.utility;
 
-import <cstdint>;
-import <string>;
-import <array>;
+import std;
 
 namespace eagine::multi_byte {
 //------------------------------------------------------------------------------
@@ -79,8 +77,9 @@ export [[nodiscard]] constexpr auto max_code_point(
   const valid_sequence_length& len) noexcept
   -> valid_if_nonnegative<span_size_t> {
     return {
-      (idx.is_valid() && len.is_valid()) ? (extract(len) - extract(idx) - 1) * 6
-                                         : -1};
+      (idx.is_valid() and len.is_valid())
+        ? (extract(len) - extract(idx) - 1) * 6
+        : -1};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto head_code_mask(
@@ -136,7 +135,7 @@ template <typename P1, typename P2>
   const byte b,
   const valid_if<byte, P1> mask,
   const valid_if<byte, P2> code) noexcept -> bool {
-    return (mask.is_valid() && code.is_valid())
+    return (mask.is_valid() and code.is_valid())
              ? (b & extract(mask)) == extract(code)
              : false;
 }
@@ -149,9 +148,9 @@ template <typename P1, typename P2>
 //------------------------------------------------------------------------------
 export [[nodiscard]] constexpr auto is_valid_head_byte(const byte b) noexcept
   -> bool {
-    return is_valid_head_byte(b, 1) || is_valid_head_byte(b, 2) ||
-           is_valid_head_byte(b, 3) || is_valid_head_byte(b, 4) ||
-           is_valid_head_byte(b, 5) || is_valid_head_byte(b, 6);
+    return is_valid_head_byte(b, 1) or is_valid_head_byte(b, 2) or
+           is_valid_head_byte(b, 3) or is_valid_head_byte(b, 4) or
+           is_valid_head_byte(b, 5) or is_valid_head_byte(b, 6);
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto is_valid_tail_byte(
@@ -193,12 +192,12 @@ export [[nodiscard]] auto is_valid_encoding(
         const span_size_t l = len.value_anyway();
         span<const byte> seq = vseq.value_anyway();
 
-        if(!is_valid_head_byte(seq[0], l)) {
+        if(not is_valid_head_byte(seq[0], l)) {
             return false;
         }
 
         for(const auto i : integer_range(1, l)) {
-            if(!is_valid_tail_byte(seq[i], i, l)) {
+            if(not is_valid_tail_byte(seq[i], i, l)) {
                 return false;
             }
         }
@@ -216,7 +215,7 @@ template <typename P1, typename P2>
 
     return {// NOLINTNEXTLINE(hicpp-signed-bitwise)
             code_point_t((b & mask.value_anyway()) << bitshift.value_anyway()),
-            (mask.is_valid() && bitshift.is_valid())};
+            (mask.is_valid() and bitshift.is_valid())};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] constexpr auto decode_code_point_head(
@@ -235,7 +234,7 @@ template <typename P1, typename P2>
 
     return {// NOLINTNEXTLINE(hicpp-signed-bitwise)
             code_point_t((b & mask.value_anyway()) << bitshift.value_anyway()),
-            (mask.is_valid() && bitshift.is_valid())};
+            (mask.is_valid() and bitshift.is_valid())};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] constexpr auto decode_code_point_tail(
@@ -282,7 +281,7 @@ template <typename P1, typename P2, typename P3>
         (code.value_anyway()) |
         // NOLINTNEXTLINE(hicpp-signed-bitwise)
         (mask.value_anyway() & (cp >> bitshift.value_anyway()))),
-      (code.is_valid() && mask.is_valid() && bitshift.is_valid())};
+      (code.is_valid() and mask.is_valid() and bitshift.is_valid())};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] constexpr auto encode_code_point_head(
@@ -305,7 +304,7 @@ export auto do_encode_code_point(
   const valid_byte_span& vdest,
   const valid_sequence_length& vl) noexcept -> bool {
 
-    if(cp && vl) {
+    if(cp and vl) {
         const span_size_t l = vl.value_anyway();
         if(vdest.is_valid(l - 1)) {
             span<byte> dest = vdest.value_anyway();
@@ -348,6 +347,14 @@ export [[nodiscard]] auto encode_code_point(const code_point& cp)
     return {};
 }
 //------------------------------------------------------------------------------
+export auto encode_nil(span<byte> dest) noexcept -> valid_sequence_length {
+    if(dest) {
+        dest.front() = 0xFFU;
+        return 1;
+    }
+    return 0;
+}
+//------------------------------------------------------------------------------
 export [[nodiscard]] auto encoding_bytes_required(
   span<const code_point> cps) noexcept -> optionally_valid<span_size_t> {
     span_size_t result = 0;
@@ -377,7 +384,7 @@ export [[nodiscard]] auto decoding_code_points_required(
         if(const auto len{do_decode_sequence_length(*i)}) {
             ++result;
             i += span_size(len.value());
-            assert(!(i > e));
+            assert(not(i > e));
         } else {
             return {0, false};
         }
@@ -392,14 +399,14 @@ export [[nodiscard]] auto encode_code_points(
     span_size_t i = 0;
 
     for(const code_point& cp : cps) {
-        if(!cp.is_valid()) {
+        if(not cp.is_valid()) {
             return false;
         }
 
         span<byte> sub{bytes.value(i).data() + i, bytes.value(i).size() - i};
         const auto len{encode_code_point(cp.value(), sub)};
 
-        if(!len.is_valid()) {
+        if(not len.is_valid()) {
             return false;
         }
 

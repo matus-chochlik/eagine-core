@@ -12,12 +12,7 @@ module;
 export module eagine.core.container:trie;
 import eagine.core.types;
 import eagine.core.memory;
-import <cstdint>;
-import <algorithm>;
-import <array>;
-import <optional>;
-import <vector>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -193,7 +188,7 @@ public:
     /// @brief Checks if the specified key is contained in this trie.
     [[nodiscard]] auto contains(const string_view key) const noexcept -> bool {
         auto [iidx, offs, can_insert] = _find_insert_pos(key);
-        if(can_insert && (offs == key.size())) {
+        if(can_insert and (offs == key.size())) {
             return std::get<2>(_nodes[iidx]);
         }
         return false;
@@ -201,9 +196,9 @@ public:
 
     /// @brief Tries to find the value stored under the specified key.
     [[nodiscard]] auto find(const string_view key) const noexcept
-      -> optional_reference_wrapper<const Value> {
+      -> optional_reference<const Value> {
         auto [fidx, offs, can_insert] = _find_insert_pos(key);
-        if(can_insert && (offs == key.size())) {
+        if(can_insert and (offs == key.size())) {
             auto& node{_nodes[fidx]};
             if(std::get<2>(node)) {
                 return {std::get<1>(node)};

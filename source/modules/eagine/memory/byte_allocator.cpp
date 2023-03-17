@@ -14,10 +14,7 @@ export module eagine.core.memory:byte_allocator;
 import eagine.core.types;
 import :block;
 import :address;
-import <cstdint>;
-import <cstdlib>;
-import <limits>;
-import <utility>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
@@ -110,7 +107,7 @@ public:
     }
 
     void deallocate(owned_block&& b, size_type) noexcept final {
-        if(!b.empty()) [[likely]] {
+        if(not b.empty()) [[likely]] {
             // NOLINTNEXTLINE(hicpp-no-malloc,-warnings-as-errors)
             std::free(b.data());
             this->release_block(std::move(b));

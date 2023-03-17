@@ -13,27 +13,15 @@ export module eagine.core.memory:span_algorithm;
 
 import eagine.core.types;
 import :span;
-import <algorithm>;
-import <concepts>;
-import <functional>;
-import <numeric>;
-import <optional>;
-import <tuple>;
-import <type_traits>;
+import std;
 
 namespace eagine::memory {
-//------------------------------------------------------------------------------
-export template <typename T, typename P, typename S>
-constexpr auto clamp_span_iterator(const basic_span<T, P, S> s, P p) noexcept
-  -> P {
-    return (p < s.begin()) ? s.begin() : (p > s.end()) ? s.end() : p;
-}
 //------------------------------------------------------------------------------
 export template <typename T, typename P, typename S, std::integral I>
 constexpr auto clamp_span_position(
   const basic_span<T, P, S> s,
-  const I p) noexcept -> P {
-    return clamp_span_iterator(s, s.begin() + p);
+  const I p) noexcept -> auto {
+    return (p < 0) ? s.begin() : (p > s.size()) ? s.end() : s.begin() + p;
 }
 //------------------------------------------------------------------------------
 export template <
@@ -344,13 +332,13 @@ constexpr auto find_element_if(
 /// @brief Returns
 /// @ingroup memory
 /// @see skip_until
-/// @pre spn.begin() <= pos && pos <= spn.end()
+/// @pre spn.begin() <= pos and  pos <= spn.end()
 export template <typename T, typename P, typename S, typename Pos>
 constexpr auto skip_to(const basic_span<T, P, S> spn, Pos pos) noexcept
   -> basic_span<T, P, S>
-    requires(std::is_convertible_v<Pos, P>)
+    requires(std::is_convertible_v<Pos, decltype(spn.end())>)
 {
-    assert(spn.begin() <= pos && pos <= spn.end());
+    assert(spn.begin() <= pos and pos <= spn.end());
     return {pos, spn.end()};
 }
 //------------------------------------------------------------------------------
@@ -547,7 +535,7 @@ auto slice_inside_brackets(
         spn = skip(spn, extract(found));
         int depth = 1;
         auto pos = S(1);
-        while((pos < spn.size()) && (depth > 0)) {
+        while((pos < spn.size()) and (depth > 0)) {
             if(are_equal(spn[pos], left)) {
                 ++depth;
             } else if(are_equal(spn[pos], right)) {
@@ -598,7 +586,7 @@ auto fill(const basic_span<T, P, S> spn, const V& v) -> basic_span<T, P, S> {
 /// @see generate
 export template <typename T, typename P, typename S>
 auto zero(basic_span<T, P, S> spn) -> basic_span<T, P, S>
-    requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
+    requires(std::is_integral_v<T> or std::is_floating_point_v<T>)
 {
     std::fill(spn.begin(), spn.end(), T(0));
     return spn;

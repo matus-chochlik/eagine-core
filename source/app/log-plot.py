@@ -11,6 +11,7 @@ import sys
 import numpy
 import getpass
 import argparse
+import colorsys
 import psycopg2
 import matplotlib.pyplot as plt
 
@@ -168,11 +169,39 @@ class ArgumentParser(argparse.ArgumentParser):
                                 break
                             yield row
             # ------------------------------------------------------------------
-            def init_plot(self, fig):
-                fig.set_size_inches(8, 4.5)
+            def plot_color(self, i, n):
+                try:
+                    b = float(i) / float(n - 1)
+                except ZeroDivisionError:
+                    b = 1.0
+                a = 1.0 - b
+                h1,s1,v1 = colorsys.rgb_to_hsv(2/255, 179/255, 249/255)
+                h2,s2,v2 = colorsys.rgb_to_hsv(249/255, 179/255, 2/255)
+                return colorsys.hsv_to_rgb(h1*a+h2*b, s1*a+s2*b, v1*a+v2*b)
+
+            # ------------------------------------------------------------------
+            def brighter_color(self, rgb):
+                r, g, b = rgb
+                h, s, v = colorsys.rgb_to_hsv(r, g, b)
+                return colorsys.hsv_to_rgb(h, s, min(v*1.212, 1.0))
+
+            # ------------------------------------------------------------------
+            def darker_color(self, rgb):
+                r, g, b = rgb
+                h, s, v = colorsys.rgb_to_hsv(r, g, b)
+                return colorsys.hsv_to_rgb(h, s, min(v*0.707, 1.0))
+
+            # ------------------------------------------------------------------
+            def init_plot(self, nrows, ncols):
+                mult = 1.0
+                plt.style.use('dark_background')
+                fig, spl = plt.subplots(nrows, ncols)
+                fig.set_size_inches(16.0*mult, 9.0*mult)
+                return fig, spl
             # ------------------------------------------------------------------
             def finish_plot(self, fig):
                 plt.show()
+            # ------------------------------------------------------------------
 
         return _Options(self.processParsedOptions(
             argparse.ArgumentParser.parse_args(self)
@@ -193,6 +222,9 @@ def getArgumentParser():
 def stream_profile_data(options, source_id, tag, stream_id):
     query = """
         SELECT
+            stream_id,
+            source_id,
+            tag,
             entry_time,
             min_duration_ms,
             avg_duration_ms,
@@ -205,14 +237,13 @@ def stream_profile_data(options, source_id, tag, stream_id):
     """
 
     return numpy.fromiter((
-        [row[0].total_seconds(), row[1], row[2], row[3]]
+        [row[3].total_seconds(), row[4], row[5], row[6]]
             for row in options.query_data(query, (source_id, tag, stream_id))),
                 numpy.dtype((float, 4))).transpose()
 
 # ------------------------------------------------------------------------------
 def plot_stream_profile(options):
-    fig, spl = plt.subplots(2, 1)
-    options.init_plot(fig)
+    fig, spl = options.init_plot(2, 1)
 
     spl[0].set_xlabel("execution time [s]")
     spl[0].set_ylabel("average\ninterval [ms]")
@@ -221,8 +252,42 @@ def plot_stream_profile(options):
     spl[1].set_ylabel("min/avg/max\nintervals [ms]")
     spl[1].grid(axis="y", alpha=0.25)
 
-    for stream_id in options.stream_ids:
-        for source_id, tag in options.profile_intervals:
+    interval_count = len(options.profile_intervals)
+
+    stream_ids = {}
+    plotnum = 0
+
+    for source_id, tag in options.profile_intervals:
+        if len(options.stream_ids) == 0:
+            stream_id_query = """
+                SELECT DISTINCT stream_id
+                FROM eagilog.profile_interval
+                WHERE source_id = coalesce(%s, source_id)
+                AND tag = %s
+            """
+            interval_id = (source_id, tag)
+            stream_ids[interval_id] =\
+                [row[0] for row in options.query_data(stream_id_query, interval_id)]
+            plotnum += len(stream_ids[interval_id])
+        else:
+            stream_ids[(source_id, tag)] = options.stream_ids
+            plotnum += len(options.stream_ids)
+
+    plotidx = 0
+
+    for source_id, tag in options.profile_intervals:
+        interval_id = (source_id, tag)
+        stream_count = len(stream_ids[interval_id])
+        if stream_count == 0:
+            stream_id_query = """
+                SELECT DISTINCT stream_id
+                FROM eagilog.profile_interval
+                WHERE source_id = coalesce(%s, source_id)
+                AND tag = %s
+            """
+            stream_ids = [row[0] for row in options.query_data(stream_id_query, interval_id)]
+            stream_count = len(stream_ids)
+        for stream_id in stream_ids[interval_id]:
             t, min_ms, avg_ms, max_ms = \
                 stream_profile_data(
                     options,
@@ -230,13 +295,18 @@ def plot_stream_profile(options):
                     tag,
                     stream_id
                 )
+            rgb = options.plot_color(plotidx, plotnum)
+            plotidx += 1
 
-            spl[0].plot(t, avg_ms)
+            avg_lbl = "stream %d" % stream_id
 
-            spl[1].plot(t, min_ms)
-            spl[1].plot(t, avg_ms)
-            spl[1].plot(t, max_ms)
+            spl[0].plot(t, avg_ms, label=avg_lbl, color=rgb)
 
+            spl[1].plot(t, min_ms, color=options.darker_color(rgb))
+            spl[1].plot(t, max_ms, color=rgb)
+            spl[1].plot(t, avg_ms, color=options.brighter_color(rgb))
+
+    spl[0].legend()
     fig.tight_layout()
     options.finish_plot(fig)
 

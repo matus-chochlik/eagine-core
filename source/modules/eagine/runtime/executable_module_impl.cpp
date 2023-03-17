@@ -23,9 +23,7 @@ module eagine.core.runtime;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
-import <memory>;
-import <optional>;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -36,14 +34,14 @@ public:
 
     posix_executable_module(module_load_options opts)
       : _handle{::dlopen(nullptr, _opts_to_flags(opts))} {
-        if(!_handle) {
+        if(not _handle) {
             _message.assign(::dlerror());
         }
     }
 
     posix_executable_module(const string_view filename, module_load_options opts)
       : _handle{::dlopen(c_str(filename), _opts_to_flags(opts))} {
-        if(!_handle) {
+        if(not _handle) {
             _message.assign(::dlerror());
         }
     }

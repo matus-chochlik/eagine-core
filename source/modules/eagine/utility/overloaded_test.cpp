@@ -8,7 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.utility;
-import <string_view>;
+import std;
 //------------------------------------------------------------------------------
 void overloaded_1(auto& s) {
     eagitest::case_ test{s, 1, "1"};

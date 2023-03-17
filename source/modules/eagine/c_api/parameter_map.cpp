@@ -14,7 +14,7 @@ import :buffer_data;
 import :enum_class;
 import :handle;
 import :key_value_list;
-import <utility>;
+import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ struct trivial_arg_map {
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
       -> decltype(auto)
-        requires(... || (I == J))
+        requires(... or (I == J))
     {
         return trivial_map{}(i, std::forward<P>(p)...);
     }
@@ -62,7 +62,7 @@ struct nullptr_arg_map {
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I>, P&&...) const noexcept
       -> decltype(auto)
-        requires(... || (I == J))
+        requires(... or (I == J))
     {
         return nullptr;
     }
@@ -153,7 +153,7 @@ struct cast_to_map {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
         if constexpr(
-          std::is_convertible_v<CP, CppP> ||
+          std::is_convertible_v<CP, CppP> or
           std::is_constructible_v<CppP, CP>) {
             return trivial_map{}(i, std::forward<P>(p)...)
               .cast_to(std::type_identity<CppP>{});
@@ -187,7 +187,7 @@ export struct c_string_view_map {
     constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
         return trivial_map{}(i, std::forward<P>(p)...)
           .transformed([=](const char* cstr, bool is_valid) -> string_view {
-              if(is_valid && cstr) {
+              if(is_valid and cstr) {
                   return string_view{cstr};
               }
               return {};
@@ -311,8 +311,8 @@ struct split_transform_map<S, 0, CppSpanI> {
 //------------------------------------------------------------------------------
 export template <typename Dst, typename Src>
 constexpr auto c_arg_cast(Src&& src) noexcept -> Dst {
-    if constexpr((std::is_integral_v<Dst> || std::is_floating_point_v<Dst>)&&(
-                   std::is_integral_v<Src> || std::is_floating_point_v<Src>)) {
+    if constexpr((std::is_integral_v<Dst> or std::is_floating_point_v<Dst>)&&(
+                   std::is_integral_v<Src> or std::is_floating_point_v<Src>)) {
         if constexpr(std::is_same_v<
                        std::remove_cv_t<std::remove_reference_t<Src>>,
                        bool>) {
@@ -363,7 +363,7 @@ struct convert<T, trivial_arg_map<J...>> {
     template <std::size_t I, typename... P>
     constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
       -> decltype(auto)
-        requires(... || (I == J))
+        requires(... or (I == J))
     {
         return c_arg_cast<T>(trivial_map{}(i, std::forward<P>(p)...));
     }
@@ -744,8 +744,8 @@ export template <
   typename CppP,
   typename CppS,
   typename... CppT>
-    requires(std::is_pointer_v<CP> && std::is_convertible_v<CppP, CP> &&
-             std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+    requires(std::is_pointer_v<CP> and std::is_convertible_v<CppP, CP> and
+             std::is_integral_v<CS> and std::is_convertible_v<CppS, CS>)
 struct make_args_map<
   CI,
   CppI,
@@ -770,8 +770,8 @@ export template <
   typename CppP,
   typename CppS,
   typename... CppT>
-    requires(std::is_pointer_v<CP> && std::is_convertible_v<CppP, CP> &&
-             std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+    requires(std::is_pointer_v<CP> and std::is_convertible_v<CppP, CP> and
+             std::is_integral_v<CS> and std::is_convertible_v<CppS, CS>)
 struct make_args_map<
   CI,
   CppI,
@@ -797,8 +797,8 @@ export template <
   typename CppS,
   CppS chunkSize,
   typename... CppT>
-    requires(std::is_pointer_v<CP> && std::is_convertible_v<CppP, CP> &&
-             std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+    requires(std::is_pointer_v<CP> and std::is_convertible_v<CppP, CP> and
+             std::is_integral_v<CS> and std::is_convertible_v<CppS, CS>)
 struct make_args_map<
   CI,
   CppI,
@@ -920,8 +920,8 @@ export template <
   typename CppP,
   typename CppS,
   typename... CppT>
-    requires(std::is_pointer_v<CP> && std::is_convertible_v<CppP, CP> &&
-             std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+    requires(std::is_pointer_v<CP> and std::is_convertible_v<CppP, CP> and
+             std::is_integral_v<CS> and std::is_convertible_v<CppS, CS>)
 struct make_args_map<
   CI,
   CppI,
@@ -946,8 +946,8 @@ export template <
   typename CppP,
   typename CppS,
   typename... CppT>
-    requires(std::is_pointer_v<CP> && std::is_convertible_v<CppP, CP> &&
-             std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+    requires(std::is_pointer_v<CP> and std::is_convertible_v<CppP, CP> and
+             std::is_integral_v<CS> and std::is_convertible_v<CppS, CS>)
 struct make_args_map<
   CI,
   CppI,
@@ -998,7 +998,7 @@ export template <
   typename... CT,
   typename CppS,
   typename... CppT>
-    requires(std::is_integral_v<CS> && std::is_convertible_v<CppS, CS>)
+    requires(std::is_integral_v<CS> and std::is_convertible_v<CppS, CS>)
 struct make_args_map<
   CI,
   CppI,
@@ -1018,7 +1018,7 @@ auto make_map(CSignature*, CppSignature*) -> trivial_map;
 
 export template <typename CRV, typename CppRV>
 auto make_map(CRV (*)(), CppRV (*)()) -> cast_to_map<CRV, CppRV>
-    requires(!std::is_same_v<CRV, CppRV>);
+    requires(not std::is_same_v<CRV, CppRV>);
 
 export template <typename RV, typename... CParam, typename... CppParam>
 auto make_map(RV (*)(CParam...), RV (*)(CppParam...))
@@ -1033,7 +1033,7 @@ export template <
 auto make_map(CRV (*)(CParam...), CppRV (*)(CppParam...)) -> combined_map<
   cast_to_map<CRV, CppRV>,
   make_args_map<1, 1, mp_list<CParam...>, mp_list<CppParam...>>>
-    requires(!std::is_same_v<CRV, CppRV> && (sizeof...(CParam) > 0));
+    requires(not std::is_same_v<CRV, CppRV> and (sizeof...(CParam) > 0));
 
 export template <typename CRV, typename CppRV, typename CParam, typename CppParam>
 auto make_map(CRV (*)(CppRV*, CParam), CppRV (*)(CppParam)) -> combined_map<

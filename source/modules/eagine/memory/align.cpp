@@ -8,7 +8,7 @@
 export module eagine.core.memory:align;
 
 import eagine.core.types;
-import <type_traits>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

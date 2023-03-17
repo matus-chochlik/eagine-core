@@ -13,11 +13,7 @@ export module eagine.core.memory:flatten;
 
 import eagine.core.types;
 import :span;
-import <array>;
-import <concepts>;
-import <tuple>;
-import <utility>;
-import <vector>;
+import std;
 
 namespace eagine {
 

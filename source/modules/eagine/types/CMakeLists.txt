@@ -28,7 +28,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION optional_ref
+	eagine.core.types PARTITION optional_reference
 	IMPORTS
 		nothing tribool
 		eagine.core.concepts
@@ -82,7 +82,7 @@ eagine_add_module(
 		integer_range
 		extract
 		tribool
-		optional_ref
+		optional_reference
 		outcome
 		bitfield
 		function_constant
@@ -97,6 +97,9 @@ eagine_add_module_tests(
 		anything
 		bitfield
 		enum_map
+		integer_range
 		metaprogramming
+		nothing
+		optional_reference
 		tribool
 )

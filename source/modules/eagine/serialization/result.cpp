@@ -10,7 +10,7 @@ export module eagine.core.serialization:result;
 import eagine.core.types;
 import eagine.core.reflection;
 import eagine.core.valid_if;
-import <cstdint>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -115,9 +115,29 @@ using serialization_result =
 /// @brief Returns the error bitfield from a serialization result.
 /// @ingroup serialization
 export template <typename T>
-auto get_errors(const serialization_result<T>& result) noexcept
+[[nodiscard]] auto get_errors(const serialization_result<T>& result) noexcept
   -> serialization_errors {
     return result.policy()._indicator;
+}
+//------------------------------------------------------------------------------
+export template <typename R, typename V, typename T>
+[[nodiscard]] auto rebind(
+  V&& value,
+  const serialization_result<T>& result) noexcept -> serialization_result<R> {
+    return {std::forward<V>(value), get_errors(result)};
+}
+//------------------------------------------------------------------------------
+export template <typename Tl>
+[[nodiscard]] auto merge(
+  const serialization_result<Tl>& l,
+  const serialization_errors r) noexcept -> serialization_result<Tl> {
+    return {l.value_anyway(), get_errors(l) | r};
+}
+export template <typename Tl, typename Tr>
+[[nodiscard]] auto merge(
+  const serialization_result<Tl>& l,
+  const serialization_result<Tr>& r) noexcept -> serialization_result<Tl> {
+    return {l.value_anyway(), get_errors(l) | get_errors(r)};
 }
 //------------------------------------------------------------------------------
 /// @brief Alias for result type of deserialization operations.
@@ -131,9 +151,30 @@ using deserialization_result =
 /// @brief Returns the error bitfield from a deserialization result.
 /// @ingroup serialization
 export template <typename T>
-auto get_errors(const deserialization_result<T>& result) noexcept
+[[nodiscard]] auto get_errors(const deserialization_result<T>& result) noexcept
   -> deserialization_errors {
     return result.policy()._indicator;
+}
+//------------------------------------------------------------------------------
+export template <typename R, typename V, typename T>
+[[nodiscard]] auto rebind(
+  V&& value,
+  const deserialization_result<T>& result) noexcept
+  -> deserialization_result<R> {
+    return {std::forward<V>(value), get_errors(result)};
+}
+//------------------------------------------------------------------------------
+export template <typename Tl>
+[[nodiscard]] auto merge(
+  const deserialization_result<Tl>& l,
+  const deserialization_errors r) noexcept -> deserialization_result<Tl> {
+    return {l.value_anyway(), get_errors(l) | r};
+}
+export template <typename Tl, typename Tr>
+[[nodiscard]] auto merge(
+  const deserialization_result<Tl>& l,
+  const deserialization_result<Tr>& r) noexcept -> deserialization_result<Tl> {
+    return {l.value_anyway(), get_errors(l) | get_errors(r)};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

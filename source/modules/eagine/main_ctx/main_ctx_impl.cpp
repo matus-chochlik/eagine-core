@@ -18,6 +18,7 @@ import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.progress;
 import eagine.core.console;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -47,7 +48,7 @@ main_ctx::main_ctx(main_ctx_getters& src)
   , _workers{src.workers()}
   , _exe_path{src.exe_path()}
   , _app_name{src.app_name()} {
-    assert(!_single_ptr());
+    assert(not _single_ptr());
     _single_ptr() = this;
     _log.configure(_app_config);
     _progress.configure(_app_config);

@@ -12,11 +12,7 @@ module;
 export module eagine.core.container:flat_map;
 
 import eagine.core.types;
-import <algorithm>;
-import <functional>;
-import <stdexcept>;
-import <utility>;
-export import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -85,7 +81,7 @@ struct flat_map_ops : flat_map_value_compare<Key, Val, Cmp> {
     template <typename I, typename K>
     auto find(I b, const I e, const K& key) const noexcept -> I {
         b = lower_bound(b, e, key);
-        if((b != e) && value_comp()(key, *b)) {
+        if((b != e) and value_comp()(key, *b)) {
             b = e;
         }
         return b;
@@ -108,20 +104,34 @@ struct flat_map_ops : flat_map_value_compare<Key, Val, Cmp> {
     }
 };
 //------------------------------------------------------------------------------
+/// @brief Base class for flat_map.
+/// @ingroup container
+/// @note Do not use directly, use flat_map instead.
 export template <typename Key, typename Val, typename Cmp, typename Derived>
 class flat_map_view_crtp : flat_map_ops<Key, Val, Cmp> {
     using _ops_t = flat_map_ops<Key, Val, Cmp>;
 
 public:
+    /// @brief The key type.
     using key_type = Key;
+
+    /// @brief The mapped value type.
     using mapped_type = Val;
+
+    /// @brief The key/value pair type.
     using value_type = std::pair<const Key, Val>;
+
+    /// @brief Reference type.
     using reference = value_type&;
+
+    /// @brief Const reference type.
     using const_reference = const value_type&;
 
+    /// @brief Key comparator type.
     using key_compare = Cmp;
     using value_compare = flat_map_value_compare<Key, Val, Cmp>;
 
+    /// @brief Returns a reference to the key comparator object.
     [[nodiscard]] auto key_comp() const noexcept -> const key_compare& {
         return _ops().value_comp().key_comp();
     }
@@ -130,26 +140,36 @@ public:
         return _ops().value_comp();
     }
 
+    /// @brief Indicates if this map is empty.
+    /// @see size
     [[nodiscard]] auto empty() const noexcept -> bool {
         return _ops().empty(_b(), _e());
     }
 
+    /// @brief Returns the number of elements in this map.
+    /// @see empty
     [[nodiscard]] auto size() const noexcept {
         return _ops().size(_b(), _e());
     }
 
+    /// @brief Returns the iterator pointing to the specified key.
+    /// @see contains
     template <typename K>
     [[nodiscard]] auto find(const K& key) noexcept {
         return _ops().find(_b(), _e(), key);
     }
 
+    /// @brief Returns the iterator pointing to the specified key.
+    /// @see contains
     template <typename K>
     [[nodiscard]] auto find(const K& key) const noexcept {
         return _ops().find(_b(), _e(), key);
     }
 
+    /// @brief Indicates if this map contains the specified key.
+    /// @see find
     template <typename K>
-    [[nodiscard]] auto contains(const K& key) const noexcept {
+    [[nodiscard]] auto contains(const K& key) const noexcept -> bool {
         return _ops().find(_b(), _e(), key) != _e();
     }
 
@@ -183,11 +203,13 @@ public:
         return _ops().equal_range(_b(), _e(), key);
     }
 
+    /// @brief Returns the value stored under the specified key.
     template <typename K>
     [[nodiscard]] auto at(const K& key) -> Val& {
         return _ops().at(_b(), _e(), key);
     }
 
+    /// @brief Returns the value stored under the specified key.
     template <typename K>
     [[nodiscard]] auto at(const K& key) const -> const Val& {
         return _ops().at(_b(), _e(), key);
@@ -221,6 +243,10 @@ private:
     }
 };
 //------------------------------------------------------------------------------
+/// @brief Drop-in replacement for std::map with a contiguous node key/value.
+/// @ingroup container
+/// @note Unlike with std::map insertion and deletion of elements invalidates
+/// existing iterators.
 export template <
   typename Key,
   typename Val,
@@ -249,13 +275,23 @@ public:
     using _base::lower_bound;
     using _base::value_comp;
 
+    /// @brief Default constructor.
     flat_map() noexcept = default;
+
+    /// @brief Copy constructor.
     flat_map(const flat_map&) = default;
+
+    /// @brief Move constructor.
     flat_map(flat_map&&) noexcept = default;
+
+    /// @brief Copy assignment.
     auto operator=(const flat_map&) -> flat_map& = default;
+
+    /// @brief Move assignment.
     auto operator=(flat_map&&) noexcept -> flat_map& = default;
     ~flat_map() noexcept = default;
 
+    /// @brief Construction from an initializer list of key/value pairs.
     flat_map(std::initializer_list<std::pair<Key, Val>> il) {
         assign(il);
     }
@@ -264,6 +300,7 @@ public:
         assign(v);
     }
 
+    /// @brief Replaces the elements with keys/values from an initializer list.
     void assign(std::initializer_list<std::pair<Key, Val>> il) {
         _vec.assign(il.begin(), il.end());
         std::sort(_vec.begin(), _vec.end(), value_comp());
@@ -274,58 +311,84 @@ public:
         std::sort(_vec.begin(), _vec.end(), value_comp());
     }
 
+    /// @brief Indicates if this map is empty.
+    /// @see size
+    /// @see clear
     [[nodiscard]] auto empty() const noexcept -> bool {
         return _vec.empty();
     }
 
-    [[nodiscard]] auto size() const noexcept -> size_type {
-        return _vec.size();
-    }
-
+    /// @brief Returns the maximum number of elements in this map.
     [[nodiscard]] auto max_size() const noexcept -> size_type {
         return _vec.max_size();
     }
 
+    /// @brief Reserves the underlying storage for the specified number of elements.
     auto reserve(const size_type sz) -> auto& {
         _vec.reserve(sz);
         return *this;
     }
 
+    /// @brief Clears all elements from this map.
+    /// @see empty
     auto clear() -> auto& {
         _vec.clear();
         return *this;
     }
 
+    /// @brief Returns the element with the lowest key value.
+    /// @pre not empty()
+    /// @see back
+    /// @see begin
     [[nodiscard]] auto front() const noexcept -> auto& {
         return _vec.front();
     }
 
+    /// @brief Returns the element with the highest key value.
+    /// @pre not empty()
+    /// @see front
+    /// @see end
     [[nodiscard]] auto back() const noexcept -> auto& {
         return _vec.back();
     }
 
+    /// @brief Returns an iterator pointing to the first element.
+    /// @see end
+    /// @see front
     [[nodiscard]] auto begin() noexcept -> iterator {
         return _vec.begin();
     }
 
+    /// @brief Returns a const iterator pointing to the first element.
+    /// @see end
+    /// @see front
     [[nodiscard]] auto begin() const -> const_iterator {
         return _vec.begin();
     }
 
+    /// @brief Returns an iterator pointing past the last element.
+    /// @see begin
+    /// @see back
     [[nodiscard]] auto end() -> iterator {
         return _vec.end();
     }
 
+    /// @brief Returns a const iterator pointing past the last element.
+    /// @see begin
+    /// @see back
     [[nodiscard]] auto end() const -> const_iterator {
         return _vec.end();
     }
 
+    /// @brief Returns a reference to the element with the specified key.
     [[nodiscard]] auto operator[](const Key& key) -> auto& {
         auto ip = _find_insert_pos(key);
         ip = _do_emplace(ip, key);
         return ip.first->second;
     }
 
+    /// @brief Constructs a new element with the specified arguments under specified key.
+    /// @see insert
     template <typename... Args>
     auto emplace(const Key& key, Args&&... args) -> std::pair<iterator, bool> {
         auto ip = _find_insert_pos(key);
@@ -333,6 +396,8 @@ public:
         return ip;
     }
 
+    /// @brief Constructs a new element with the specified arguments under specified key.
+    /// @see insert
     template <typename... Args>
     auto try_emplace(const Key& key, Args&&... args)
       -> std::pair<iterator, bool> {
@@ -346,25 +411,35 @@ public:
         return _find_insert_pos(key);
     }
 
+    /// @brief Inserts a new key/value pair.
+    /// @see emplace
     auto insert(const value_type& value) -> std::pair<iterator, bool> {
         auto ip = _find_insert_pos(value.first);
         ip = _do_insert(ip, value);
         return {ip.first, ip.second};
     }
 
+    /// @brief Inserts a new key/value pair with the specified hint.
+    /// @see emplace
     auto insert(iterator p, const value_type& value) -> iterator {
         const auto ip = _find_insert_pos(p, value.first);
         return _do_insert(ip, value).first;
     }
 
+    /// @brief Erases the element pointed to by the specified iterator.
+    /// @see erase_if
     auto erase(iterator p) -> iterator {
         return _vec.erase(p);
     }
 
+    /// @brief Erases elements between the given pair of iterators.
+    /// @see erase_if
     auto erase(iterator f, iterator t) -> iterator {
         return _vec.erase(f, t);
     }
 
+    /// @brief Erases the element stored under the specified key.
+    /// @see erase_if
     template <typename K>
     auto erase(const K& key) -> size_type {
         const auto p = _ops().equal_range(_vec.begin(), _vec.end(), key);
@@ -374,6 +449,8 @@ public:
         return res;
     }
 
+    /// @brief Erases all elements satisfying the specified predicate.
+    /// @see erase
     template <typename Predicate>
     auto erase_if(const Predicate& predicate) -> size_type {
         return std::erase_if(_vec, predicate);
@@ -386,7 +463,7 @@ private:
         const auto e = _vec.end();
         const auto p = _ops().lower_bound(b, e, k);
 
-        return std::pair{p, (p == e) || !are_equal(k, p->first)};
+        return std::pair{p, (p == e) or not are_equal(k, p->first)};
     }
 
     template <typename I, typename K>
@@ -394,7 +471,7 @@ private:
         auto b = _vec.begin();
         auto e = _vec.end();
         if(p == e) {
-            if(_vec.empty() || value_comp()(_vec.back(), k)) {
+            if(_vec.empty() or value_comp()(_vec.back(), k)) {
                 return std::pair{p, true};
             }
             p = _ops().lower_bound(b, e, k);

@@ -9,7 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
 import eagine.core.memory;
-import <deque>;
+import std;
 //------------------------------------------------------------------------------
 // test 1
 //------------------------------------------------------------------------------
@@ -22,26 +22,27 @@ void memory_alloc_1_T(eagitest::case_& test) {
 
     const span_size_t ao = span_align_of<T>();
 
-    test.check(!bool(a), "is not true");
-    test.check(!a, "is false");
+    test.check(not bool(a), "is not true");
+    test.check(not a, "is false");
 
-    test.check(!(a.max_size(ao) > 0), "max_size");
+    test.check(not(a.max_size(ao) > 0), "max_size");
 
     memory::owned_block b = a.allocate(0, ao);
 
-    test.check(!bool(b), "is not true");
-    test.check(!b, "is false");
+    test.check(not bool(b), "is not true");
+    test.check(not b, "is false");
 
     test.check(!!a.has_allocated(b, ao), "not not has allocated");
 
     test.check(a.can_reallocate(b, 0, ao), "can reallocate");
     test.check(
-      !a.can_reallocate(b, rg.get_span_size(1, 1000), ao), "cannot reallocate");
+      not a.can_reallocate(b, rg.get_span_size(1, 1000), ao),
+      "cannot reallocate");
 
     b = a.reallocate(std::move(b), 0, ao);
 
-    test.check(!bool(b), "is not true");
-    test.check(!b, "is false");
+    test.check(not bool(b), "is not true");
+    test.check(not b, "is false");
 
     a.deallocate(std::move(b), ao);
 }
@@ -122,8 +123,8 @@ void memory_alloc_2_Tn(eagitest::case_& test, std::size_t n) {
 
     a.deallocate(std::move(b), ao);
 
-    test.check(!bool(b), "b is false");
-    test.check(!b, "b not true");
+    test.check(not bool(b), "b is false");
+    test.check(not b, "b not true");
 }
 //------------------------------------------------------------------------------
 template <typename T>

@@ -151,4 +151,14 @@ eagine_add_module_tests(
 	eagine.core.math
 	UNITS
 		coordinates
+		functions
+		scalar
+		vector
+		matrix_1
+		matrix_2
+		matrix_3
+		matrix_construct
+	IMPORTS
+		eagine.core.vectorization
+		eagine.core.units
 )

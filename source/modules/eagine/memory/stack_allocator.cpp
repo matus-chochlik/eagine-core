@@ -15,13 +15,13 @@ import eagine.core.types;
 import :block;
 import :address;
 import :byte_allocator;
-import <type_traits>;
+import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------
 // base_stack_allocator
 // non-rebindable non-copyable stack allocator
-// use with care!
+// use with carenot
 //------------------------------------------------------------------------------
 export template <typename T>
 class base_stack_allocator : public block_owner {
@@ -57,7 +57,7 @@ public:
       : base_stack_allocator(blk, alignof(T)) {}
 
     ~base_stack_allocator() noexcept {
-        if(!std::is_trivially_destructible<T>()) {
+        if(not std::is_trivially_destructible<T>()) {
             assert(_allocated().empty());
         }
     }
@@ -153,7 +153,7 @@ public:
     friend auto operator==(
       const base_stack_allocator& a,
       const base_stack_allocator& b) noexcept {
-        if((a._btm == b._btm) && (a._top == b._top)) {
+        if((a._btm == b._btm) and (a._top == b._top)) {
             assert(a._pos == b._pos);
             assert(a._min == b._min);
             assert(a._dif == b._dif);
@@ -204,7 +204,7 @@ public:
     auto equal(byte_allocator* a) const noexcept -> bool override {
         auto* sba = dynamic_cast<stack_byte_allocator_only*>(a);
 
-        return (sba != nullptr) && (this->_alloc == sba->_alloc);
+        return (sba != nullptr) and (this->_alloc == sba->_alloc);
     }
 
     auto max_size(size_type) noexcept -> size_type override {
@@ -225,12 +225,12 @@ public:
         owned_block b = _alloc.allocate(m + n);
 
         if(b) {
-            assert(is_aligned_to(b.begin() + m, a));
+            assert(is_aligned_to(as_address(b.begin() + m), a));
         }
 
         assert(m <= b.size());
 
-        owned_block r{this->acquire_block({b.begin() + m, b.end()})};
+        owned_block r{this->acquire_block({b.data() + m, b.data() + b.size()})};
 
         this->release_block(std::move(b));
 

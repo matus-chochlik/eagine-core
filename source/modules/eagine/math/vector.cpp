@@ -16,10 +16,7 @@ import eagine.core.memory;
 import eagine.core.vectorization;
 import :traits;
 import :scalar;
-import <cmath>;
-import <concepts>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine {
 namespace math {
@@ -98,7 +95,7 @@ struct vector {
     [[nodiscard]] static constexpr auto from(
       const vector<P, M, W>& v,
       const T d = T(0)) noexcept
-        requires(!std::is_same_v<T, P> || (N != M) || (V != W))
+        requires(not std::is_same_v<T, P> or (N != M) or (V != W))
     {
         return vector{vect::cast<P, M, W, T, N, V>::apply(v._v, d)};
     }
@@ -423,7 +420,7 @@ export template <typename T, int N, bool V>
 
 /// @brief Generic template for N-dimensional vectors.
 /// @ingroup math
-export template <typename T, int N, bool V>
+export template <typename T, int N, bool V = true>
 struct tvec : vector<T, N, V> {
     /// @brief The base vector type.
     using base = vector<T, N, V>;
@@ -453,7 +450,7 @@ struct tvec : vector<T, N, V> {
     /// @brief Construction from vector of different dimensionality.
     template <typename P, int M, bool W>
     constexpr tvec(const vector<P, M, W>& v) noexcept
-        requires(!std::is_same_v<P, T> || !(M == N))
+        requires(not std::is_same_v<P, T> or not(M == N))
       : base{base::from(v)} {}
 
     /// @brief Construction from vector of different dimensionality.
@@ -464,7 +461,7 @@ struct tvec : vector<T, N, V> {
     /// @brief Construction from vector of different dimensionality.
     template <std::convertible_to<T> P, int M, bool W, std::convertible_to<T>... R>
     constexpr tvec(const vector<P, M, W>& v, R&&... r) noexcept
-        requires((sizeof...(R) > 1) && (M + sizeof...(R) == N))
+        requires((sizeof...(R) > 1) and (M + sizeof...(R) == N))
       : base{base::from(v, vector<T, N - M, W>::make(std::forward<R>(r)...))} {}
 
     /// @brief Construction from a pair of vectors of different dimensionality.
@@ -534,3 +531,13 @@ private:
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
+  //
+namespace std {
+
+template <typename T, int N, bool V>
+struct is_arithmetic<eagine::math::vector<T, N, V>> : true_type {};
+
+template <typename T, int N, bool V>
+struct is_arithmetic<eagine::math::tvec<T, N, V>> : true_type {};
+
+} // namespace std

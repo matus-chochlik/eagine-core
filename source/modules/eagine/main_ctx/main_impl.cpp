@@ -15,10 +15,10 @@ import eagine.core.build_info;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.valid_if;
+import eagine.core.console;
 import eagine.core.logging;
-import <iostream>;
-import <stdexcept>;
-import <system_error>;
+import std;
+import <cerrno>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ auto main_impl(
         }
     } catch(const log_backend_error& log_err) {
         const auto code{log_err.code().value()};
-        if((code == ENOENT) || (code == ECONNREFUSED)) {
+        if((code == ENOENT) or (code == ECONNREFUSED)) {
             std::cerr << "Logger failed to connect to the formatter. "
                       << "Start one of the 'xml_logs-*' apps";
             if(const auto prefix{build_info().install_prefix()}) {
@@ -59,6 +59,15 @@ auto main_impl(
         std::cerr << "unhandled system error: " << sys_err.what() << std::endl;
     }
     return 1;
+}
+//------------------------------------------------------------------------------
+auto test_main_impl(int argc, const char** argv, int (*main_func)(test_ctx&))
+  -> int {
+    // TODO: update this when a separate test_ctx implementation is done
+    main_ctx_options options{};
+    options.logger_opts.forced_backend = make_null_log_backend();
+    options.console_opts.forced_backend = make_null_console_backend();
+    return main_impl(argc, argv, options, main_func);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

@@ -9,7 +9,7 @@ export module eagine.core.math:traits;
 
 import eagine.core.types;
 import eagine.core.memory;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

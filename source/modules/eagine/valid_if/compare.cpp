@@ -9,7 +9,7 @@ export module eagine.core.valid_if:compare;
 
 import eagine.core.concepts;
 import :decl;
-import <type_traits>;
+import std;
 
 namespace eagine {
 
@@ -48,7 +48,7 @@ struct valid_if_nz_policy {
 
     /// @brief Indicates value validity, true if value != 0.
     constexpr auto operator()(const T value) const noexcept {
-        return (value > T(0)) || (value < T(0));
+        return (value > T(0)) or (value < T(0));
     }
 
     struct do_log {
@@ -148,7 +148,7 @@ struct valid_if_btwn_policy {
 
     /// @brief Indicates @p value validity, true if between Min and Max.
     constexpr auto operator()(const T value) const noexcept {
-        return (T(Min) <= value) && (value <= T(Max));
+        return (T(Min) <= value) and (value <= T(Max));
     }
 
     struct do_log {
@@ -212,7 +212,7 @@ struct valid_if_ge0_le1_policy {
 
     /// @brief Indicates value validity, true if 0 <= value <= 1.
     constexpr auto operator()(const T value) const noexcept {
-        return (T(0) <= value) && (value <= T(1));
+        return (T(0) <= value) and (value <= T(1));
     }
 
     struct do_log {
@@ -242,7 +242,7 @@ struct valid_if_ge0_lt1_policy {
 
     /// @brief Indicates value validity, true if 0 <= value < 1.
     constexpr auto operator()(const T value) const noexcept {
-        return (T(0) <= value) && (value < T(1));
+        return (T(0) <= value) and (value < T(1));
     }
 
     struct do_log {
@@ -268,7 +268,7 @@ using valid_if_ge0_lt1 =
 export template <typename T>
 struct valid_if_gt0_lt1_policy {
     constexpr auto operator()(const T value) const noexcept {
-        return (T(0) < value) && (value < T(1));
+        return (T(0) < value) and (value < T(1));
     }
 
     struct do_log {
@@ -392,12 +392,12 @@ struct valid_if_lt_size_ge0_policy {
 
     /// @brief Indicates value validity, true if 0 <= x < c.size().
     auto operator()(const T x, const C& c) const {
-        return (T(0) <= x) && (x < c.size());
+        return (T(0) <= x) and (x < c.size());
     }
 
     /// @brief Indicates value validity, true if 0 <= x < c.size() - o.
     auto operator()(const T x, const C& c, const T o) const {
-        return (T(0) <= x) && (x < c.size() - o);
+        return (T(0) <= x) and (x < c.size() - o);
     }
 
     struct do_log {
@@ -426,12 +426,12 @@ struct valid_if_le_size_ge0_policy {
 
     /// @brief Indicates value validity, true if 0 <= x <= c.size().
     auto operator()(const T x, const C& c) const {
-        return (T(0) <= x) && (x <= c.size());
+        return (T(0) <= x) and (x <= c.size());
     }
 
     /// @brief Indicates value validity, true if 0 <= x <= c.size() - o.
     auto operator()(const T x, const C& c, const T o) const {
-        return (T(0) <= x) && (x <= c.size() - o);
+        return (T(0) <= x) and (x <= c.size() - o);
     }
 
     struct do_log {

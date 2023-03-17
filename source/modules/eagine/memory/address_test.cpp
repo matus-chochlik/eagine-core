@@ -25,12 +25,12 @@ void memory_address_1(eagitest::case_& test) {
     memory::basic_address<is_const> bma2(nullptr);
     memory::basic_address<is_const> bma3 = bma1;
 
-    test.CHECK(!bool(bma1));
-    test.CHECK(!bool(bma2));
-    test.CHECK(!bool(bma3));
-    test.CHECK(bool(!bma1));
-    test.CHECK(bool(!bma2));
-    test.CHECK(bool(!bma3));
+    test.CHECK(not bool(bma1));
+    test.CHECK(not bool(bma2));
+    test.CHECK(not bool(bma3));
+    test.CHECK(bool(not bma1));
+    test.CHECK(bool(not bma2));
+    test.CHECK(bool(not bma3));
     test.CHECK(static_cast<ptr>(bma1) == nullptr);
     test.CHECK(static_cast<ptr>(bma2) == nullptr);
     test.CHECK(static_cast<ptr>(bma3) == nullptr);
@@ -52,12 +52,12 @@ void memory_address_1(eagitest::case_& test) {
     test.CHECK(bma1 == bma2);
     test.CHECK(bma1 == bma3);
     test.CHECK(bma2 == bma1);
-    test.CHECK(!(bma1 != bma2));
-    test.CHECK(!(bma1 != bma3));
-    test.CHECK(!(bma2 != bma1));
-    test.CHECK(!(bma1 != bma1));
-    test.CHECK(!(bma2 != bma2));
-    test.CHECK(!(bma3 != bma3));
+    test.CHECK(not(bma1 != bma2));
+    test.CHECK(not(bma1 != bma3));
+    test.CHECK(not(bma2 != bma1));
+    test.CHECK(not(bma1 != bma1));
+    test.CHECK(not(bma2 != bma2));
+    test.CHECK(not(bma3 != bma3));
     test.check_equal(bma1.misalignment(1), 0, "misalign 1");
     test.check_equal(bma1.misalignment(2), 0, "misalign 2");
     test.check_equal(bma1.misalignment(4), 0, "misalign 4");

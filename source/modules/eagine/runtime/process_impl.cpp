@@ -22,8 +22,7 @@ module;
 module eagine.core.runtime;
 import eagine.core.types;
 import eagine.core.utility;
-import <chrono>;
-import <cstdint>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

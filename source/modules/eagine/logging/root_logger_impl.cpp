@@ -33,17 +33,10 @@ import eagine.core.valid_if;
 import eagine.core.utility;
 import eagine.core.runtime;
 import :config;
-import :severity;
 import :entry;
 import :backend;
-import :null_backend;
 import :ostream_backend;
-import :syslog_backend;
-import :proxy_backend;
-import <cerrno>;
-import <iostream>;
-import <optional>;
-import <mutex>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -89,7 +82,7 @@ auto root_logger_choose_backend(
             }
         } else if(arg.is_long_tag("use-asio-nw-log")) {
             string_view nw_addr;
-            if(arg.next() && !arg.next().starts_with("-")) {
+            if(arg.next() and not arg.next().starts_with("-")) {
                 nw_addr = arg.next();
             } else if(const auto env_var{get_environment_variable(
                         "EAGINE_LOG_NETWORK_ADDRESS")}) {
@@ -120,7 +113,7 @@ auto root_logger_choose_backend(
 //------------------------------------------------------------------------------
 auto root_logger_init_backend(
   const program_args& args,
-  root_logger_options& opts) -> std::unique_ptr<logger_backend> {
+  root_logger_options& opts) -> std::shared_ptr<logger_backend> {
     if(opts.forced_backend) {
         return std::move(opts.forced_backend);
     }

@@ -13,18 +13,14 @@ export module eagine.core.runtime:value_with_history;
 
 import eagine.core.types;
 import eagine.core.valid_if;
-import <algorithm>;
-import <array>;
-import <cmath>;
-import <iterator>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 export template <typename T>
 constexpr auto value_with_history_changed(const T& a, const T& b) noexcept
   -> bool {
-    return !are_equal(a, b);
+    return not are_equal(a, b);
 }
 
 export template <typename T>
@@ -65,7 +61,7 @@ public:
     template <typename... I>
     constexpr value_with_history_storage(I&&... initial)
         requires(sizeof...(I) == N)
-    : _values{T(initial)...} {}
+      : _values{T(initial)...} {}
 
     /// @brief Initializes all revisions with the same initial value.
     constexpr value_with_history_storage(const T& initial) noexcept {

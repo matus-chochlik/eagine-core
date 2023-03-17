@@ -115,13 +115,14 @@ eagine_add_module(
 		value_with_history
 		workshop
 	SOURCES
-		url_impl
-		process_impl
-		input_data_impl
-		executable_module_impl
-		file_contents_impl
-		compression_impl
-		workshop_impl
+		url
+		process
+		input_data
+		executable_module
+		signal_switch
+		file_contents
+		compression
+		workshop
 	IMPORTS
 		eagine.core.utility
 )
@@ -136,5 +137,11 @@ target_link_libraries(
 eagine_add_module_tests(
 	eagine.core.runtime
 	UNITS
+		compression
 		program_args
+		url
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
 )
+set_tests_properties(execute-test.eagine.core.runtime.compression PROPERTIES COST 10)

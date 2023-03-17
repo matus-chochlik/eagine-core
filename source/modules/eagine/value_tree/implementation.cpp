@@ -16,13 +16,11 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.utility;
+import eagine.core.runtime;
 import eagine.core.logging;
 import :interface;
 import :wrappers;
-import <chrono>;
-import <memory>;
-import <vector>;
-import <type_traits>;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -189,7 +187,7 @@ export class object_builder_data_forwarder {
         }
 
         template <typename X>
-            requires(!assignable_if_fits_from<X, T>)
+            requires(not assignable_if_fits_from<X, T>)
         auto operator()(const X&) const noexcept -> bool {
             return false;
         }

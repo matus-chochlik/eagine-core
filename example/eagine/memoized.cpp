@@ -6,8 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <map>;
-import <cstdint>;
+import std;
 
 namespace eagine {
 
@@ -36,7 +35,7 @@ auto main(main_ctx& ctx) -> int {
 
     for(N n = 1; n <= 20; ++n) {
         ctx.cio()
-          .print(identifier{"memo"}, "${n}! = ${f}")
+          .print(identifier{"memo"}, "${n} != ${f}")
           .arg(identifier{"n"}, n)
           .arg(identifier{"f"}, fact_memo(n));
     }

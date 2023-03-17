@@ -10,6 +10,7 @@
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.reflection;
+import std;
 //------------------------------------------------------------------------------
 namespace eagine {
 enum class test_enum_1 : unsigned { a, b, c, d, e, f, g, h, i, j };
@@ -216,8 +217,8 @@ void enum_for_each_1(auto& s) {
 
     eagine::for_each_enumerator(
       [&test, &trck](const auto& info) {
-          test.check(!info.name.empty(), "has name");
-          trck.passed_part(1);
+          test.check(not info.name.empty(), "has name");
+          trck.checkpoint(1);
       },
       std::type_identity<eagine::test_enum_1>{});
 }
@@ -232,8 +233,8 @@ void enum_for_each_2(auto& s) {
 
     eagine::for_each_enumerator(
       [&test, &trck](const auto& info) {
-          test.check(!info.name.empty(), "has name");
-          trck.passed_part(1);
+          test.check(not info.name.empty(), "has name");
+          trck.checkpoint(1);
       },
       std::type_identity<eagine::test_enum_2>{});
 }
@@ -248,8 +249,8 @@ void enum_for_each_3(auto& s) {
 
     eagine::for_each_enumerator(
       [&test, &trck](const auto& info) {
-          test.check(!info.name.empty(), "has name");
-          trck.passed_part(1);
+          test.check(not info.name.empty(), "has name");
+          trck.checkpoint(1);
       },
       std::type_identity<eagine::test_enum_3>{});
 }
@@ -270,7 +271,7 @@ void enum_roundtrip_1(auto& s) {
         test.check(
           info.name == enumerator_name(info.enumerator, tid, default_selector),
           "same name");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 }
 //------------------------------------------------------------------------------
@@ -290,7 +291,7 @@ void enum_roundtrip_2(auto& s) {
         test.check(
           info.name == enumerator_name(info.enumerator, tid, default_selector),
           "same name");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 }
 //------------------------------------------------------------------------------
@@ -310,7 +311,7 @@ void enum_roundtrip_3(auto& s) {
         test.check(
           info.name == enumerator_name(info.enumerator, tid, default_selector),
           "same name");
-        trck.passed_part(1);
+        trck.checkpoint(1);
     }
 }
 //------------------------------------------------------------------------------

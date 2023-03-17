@@ -7,7 +7,7 @@
 ///
 export module eagine.core.types:function_constant;
 
-import <utility>;
+import std;
 
 namespace eagine {
 

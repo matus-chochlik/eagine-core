@@ -12,16 +12,16 @@ import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.logging;
-import <memory>;
+import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
 class empty_compound : public compound_implementation<empty_compound> {
 public:
-    empty_compound(const logger& parent)
+    [[nodiscard]] empty_compound(const logger& parent)
       : _log{"EmptyCmpnd", parent} {}
 
-    static auto make_shared(const logger& parent)
+    [[nodiscard]] static auto make_shared(const logger& parent)
       -> std::shared_ptr<empty_compound> {
         return std::make_shared<empty_compound>(parent);
     }
@@ -94,7 +94,7 @@ private:
     logger _log;
 };
 //------------------------------------------------------------------------------
-auto empty(const logger& parent) -> compound {
+[[nodiscard]] auto empty(const logger& parent) -> compound {
     return compound::make<empty_compound>(parent);
 }
 //------------------------------------------------------------------------------

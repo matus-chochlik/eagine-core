@@ -22,10 +22,7 @@ import :float_utils;
 import :result;
 import :interface;
 import :implementation;
-import <cctype>;
-import <concepts>;
-import <optional>;
-import <string>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -140,7 +137,7 @@ private:
             value >>= 4U;
         };
         encode();
-        while(!errors && value) {
+        while(not errors and value) {
             encode();
         }
         return errors;
@@ -234,7 +231,7 @@ public:
     }
 
     void skip_whitespaces() noexcept {
-        consume_until([](byte b) { return !std::isspace(b); });
+        consume_until([](byte b) { return not std::isspace(b); });
     }
 
     auto begin() noexcept -> result final {
@@ -244,7 +241,7 @@ public:
 
     auto begin_struct(span_size_t& count) noexcept -> result final {
         result errors = require('{');
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             errors |= _read_one(count, '|');
         }
         return errors;
@@ -252,7 +249,7 @@ public:
 
     auto begin_member(const string_view name) noexcept -> result final {
         result errors = require(name);
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             errors |= require(':');
         }
         return errors;
@@ -268,7 +265,7 @@ public:
 
     auto begin_list(span_size_t& count) noexcept -> result final {
         result errors = require('[');
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             errors |= _read_one(count, '|');
         }
         return errors;
@@ -311,12 +308,12 @@ private:
         if(src) [[likely]] {
             const auto skip_len = safe_add(src.size(), 1);
             unsigned shift = 0U;
-            while(!src.empty()) {
+            while(not src.empty()) {
                 const char c{src.front()};
                 I frag{};
-                if((c >= '0') && (c <= '9')) {
+                if((c >= '0') and (c <= '9')) {
                     frag = I(c - '0');
-                } else if((c >= 'A') && (c <= 'F')) {
+                } else if((c >= 'A') and (c <= 'F')) {
                     frag = I(10 + c - 'A');
                 } else {
                     errors |= deserialization_error_code::invalid_format;
@@ -339,7 +336,7 @@ private:
         using U = std::make_unsigned_t<I>;
         const char sign = extract_or(top_char(), '\0');
         result errors{};
-        if((sign == '+') || (sign == '-')) [[likely]] {
+        if((sign == '+') or (sign == '-')) [[likely]] {
             pop(1);
             U temp{};
             errors |= _read_one(temp, delimiter);
@@ -360,10 +357,10 @@ private:
         float_utils::decompose_fraction_t<F> f{};
 
         result errors = _read_one(f, '`');
-        if(!errors) [[likely]] {
+        if(not errors) [[likely]] {
             float_utils::decompose_exponent_t<F> e{};
             errors |= _read_one(e, delimiter);
-            if(!errors) [[likely]] {
+            if(not errors) [[likely]] {
                 value = float_utils::compose({f, e}, std::type_identity<F>{});
             }
         }
@@ -399,10 +396,10 @@ private:
     auto _read_one(std::string& value, const char delimiter) noexcept
       -> result {
         result errors = require('"');
-        if(!errors) {
+        if(not errors) {
             span_size_t len{0};
             errors |= _read_one(len, '|');
-            if(!errors) {
+            if(not errors) {
                 auto str{this->top_string(len)};
                 if(str.size() < len) {
                     errors |= error_code::not_enough_data;

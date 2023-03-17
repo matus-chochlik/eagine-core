@@ -6,7 +6,7 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
-import <iostream>;
+import std;
 
 namespace eagine {
 
@@ -17,7 +17,7 @@ auto main(main_ctx& ctx) -> int {
 
     if(const auto on_vg{running_on_valgrind()}) {
         ctx.cio().print(vgid, "running on valgrind");
-    } else if(!on_vg) {
+    } else if(not on_vg) {
         ctx.cio().print(vgid, "not running on valgrind");
     } else {
         ctx.cio().print(vgid, "maybe running on valgrind");

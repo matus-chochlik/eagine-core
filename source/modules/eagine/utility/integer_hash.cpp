@@ -7,8 +7,7 @@
 ///
 export module eagine.core.utility:integer_hash;
 
-import <cstdint>;
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

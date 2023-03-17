@@ -11,8 +11,7 @@ import eagine.core.valid_if;
 import eagine.core.units;
 import :functions;
 import :vector;
-import <cmath>;
-import <tuple>;
+import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

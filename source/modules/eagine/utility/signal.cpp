@@ -14,9 +14,7 @@ export module eagine.core.utility:signal;
 import eagine.core.types;
 import eagine.core.container;
 import :callable_ref;
-import <cstdint>;
-import <limits>;
-import <utility>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -47,7 +45,7 @@ public:
         auto key = 1U;
         auto pos = _slots.begin();
 
-        if(!_slots.empty()) {
+        if(not _slots.empty()) {
             key = get_key(_slots.back());
             key = key != std::numeric_limits<signal_binding_key>::max()
                     ? key + 1
@@ -85,8 +83,9 @@ public:
     }
 
     /// @brief The call operator.
-    void operator()(Params... args) const noexcept {
+    auto operator()(Params... args) const noexcept -> auto& {
         _call(args...);
+        return *this;
     }
 
     /// @brief Implicit conversion to a compatible callable_ref.
@@ -161,7 +160,7 @@ public:
 
     /// 2Brief Disconnects the associated binding.
     ~signal_binding() noexcept {
-        if(_key && _disconnect) {
+        if(_key and _disconnect) {
             _disconnect(_key);
         }
     }
@@ -190,7 +189,7 @@ public:
 
     /// @brief Disconnects this binding from it's signal.
     void disconnect() noexcept {
-        if(_key && _disconnect) {
+        if(_key and _disconnect) {
             _disconnect(_key);
             _key = 0U;
         }
