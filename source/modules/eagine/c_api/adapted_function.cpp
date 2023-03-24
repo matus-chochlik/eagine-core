@@ -10,7 +10,7 @@ export module eagine.core.c_api:adapted_function;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
-import :handle;
+import :object;
 import :result;
 import :function;
 import :parameter_map;

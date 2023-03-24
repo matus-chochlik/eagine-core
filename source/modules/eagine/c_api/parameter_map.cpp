@@ -12,7 +12,7 @@ import eagine.core.memory;
 import eagine.core.string;
 import :buffer_data;
 import :enum_class;
-import :handle;
+import :object;
 import :key_value_list;
 import std;
 
