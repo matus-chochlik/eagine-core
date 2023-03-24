@@ -7,7 +7,6 @@
 ///
 export module eagine.core.string;
 
-export import :string_set;
 export import :multi_byte;
 export import :list;
 export import :path;
