@@ -31,5 +31,4 @@ export import :stack_allocator;
 export import :shared_allocator;
 export import :std_allocator;
 export import :buffer;
-export import :buffer_pool;
 export import :object_storage;

@@ -148,14 +148,7 @@ eagine_add_module(
 		address block 
 		span_algorithm
 		shared_allocator
-		eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.memory PARTITION buffer_pool
-	IMPORTS
-		buffer
-		shared_allocator
+		eagine.core.build_config
 		eagine.core.types
 )
 
@@ -197,7 +190,6 @@ eagine_add_module(
 		shared_allocator
 		std_allocator
 		buffer
-		buffer_pool
 		object_storage
 	SOURCES
 		memory
