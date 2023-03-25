@@ -16,7 +16,7 @@ import eagine.core.types;
 export import :span;
 import :address;
 import :span_algorithm;
-import :shared_allocator;
+import :byte_allocator;
 import std;
 
 namespace eagine::memory {

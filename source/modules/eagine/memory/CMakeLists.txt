@@ -100,7 +100,10 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.memory PARTITION byte_allocator
-	IMPORTS span eagine.core.types
+	IMPORTS
+		span
+		eagine.core.concepts
+		eagine.core.types
 )
 
 eagine_add_module(
@@ -111,19 +114,10 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.memory PARTITION shared_allocator
-	IMPORTS
-		byte_allocator
-		eagine.core.concepts
-		eagine.core.types
-)
-
-eagine_add_module(
 	eagine.core.memory PARTITION std_allocator
 	IMPORTS
 		span
 		byte_allocator
-		shared_allocator
 		eagine.core.types
 )
 
@@ -132,7 +126,7 @@ eagine_add_module(
 	IMPORTS
 		address span
 		span_algorithm
-		shared_allocator
+		byte_allocator
 		eagine.core.build_config
 		eagine.core.types
 )
@@ -141,7 +135,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION object_storage
 	IMPORTS
 		byte_allocator
-		shared_allocator
 		std_allocator
 		eagine.core.types
 )
@@ -169,7 +162,6 @@ eagine_add_module(
 		fixed_size_string
 		byte_allocator
 		stack_allocator
-		shared_allocator
 		std_allocator
 		buffer
 		object_storage

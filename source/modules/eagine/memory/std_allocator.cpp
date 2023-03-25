@@ -14,7 +14,6 @@ export module eagine.core.memory:std_allocator;
 import eagine.core.types;
 import :span;
 import :byte_allocator;
-import :shared_allocator;
 import std;
 
 namespace eagine::memory {

@@ -16,7 +16,6 @@ import :align;
 import :address;
 import :span;
 import :byte_allocator;
-import :shared_allocator;
 import :std_allocator;
 import std;
 
