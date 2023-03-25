@@ -9,7 +9,6 @@ export module eagine.core.memory:split_span;
 
 import eagine.core.types;
 export import :span;
-export import :block;
 import :span_algorithm;
 import std;
 

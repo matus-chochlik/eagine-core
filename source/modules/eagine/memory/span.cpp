@@ -21,13 +21,11 @@ import std;
 namespace eagine {
 namespace memory {
 //------------------------------------------------------------------------------
-// clang-format off
 export template <typename T, typename P = anything, typename S = span_size_t>
 concept span_source = requires(T v) {
-	{ v.data() } -> std::convertible_to<P>;
+    { v.data() } -> std::convertible_to<P>;
     { v.size() } -> std::convertible_to<S>;
 };
-// clang-format on
 //------------------------------------------------------------------------------
 // rebind_pointer
 //------------------------------------------------------------------------------
@@ -619,6 +617,163 @@ public:
 /// @ingroup memory
 export template <typename T, span_size_t chunkSize>
 using chunk_span = basic_chunk_span<T, T*, span_size_t, chunkSize>;
+//------------------------------------------------------------------------------
+// block
+//------------------------------------------------------------------------------
+/// @brief Alias for byte spans.
+/// @ingroup type_utils
+export template <bool IsConst>
+using basic_block = span<std::conditional_t<IsConst, const byte, byte>>;
+//------------------------------------------------------------------------------
+/// @brief Alias for non-const byte memory span.
+/// @ingroup memory
+/// @see buffer
+export using block = basic_block<false>;
+
+/// @brief Alias for const byte memory span.
+/// @ingroup memory
+/// @see buffer
+export using const_block = basic_block<true>;
+//------------------------------------------------------------------------------
+/// @brief Converts a span into a basic_block.
+/// @ingroup memory
+/// @see accommodate
+/// @see as_chars
+export template <typename T, typename P, typename S>
+constexpr auto as_bytes(const basic_span<T, P, S> spn) noexcept
+  -> basic_block<std::is_const_v<T>> {
+    return {spn.begin_addr(), spn.end_addr()};
+}
+//------------------------------------------------------------------------------
+/// @brief Converts a block into a span of characters.
+/// @ingroup memory
+/// @see accommodate
+/// @see as_bytes
+export constexpr auto as_chars(const block blk) noexcept {
+    return accommodate<char>(blk);
+}
+//------------------------------------------------------------------------------
+/// @brief Converts a block into a span of characters.
+/// @ingroup memory
+/// @see accommodate
+/// @see as_bytes
+export constexpr auto as_chars(const const_block blk) noexcept {
+    return accommodate<const char>(blk);
+}
+//------------------------------------------------------------------------------
+export class block_owner;
+//------------------------------------------------------------------------------
+/// @brief Specialization of block indicating byte span ownership.
+/// @ingroup memory
+/// @see block
+/// @see block_owner
+export class owned_block : public block {
+public:
+    /// @brief Default constructor.
+    /// @post is_empty()
+    constexpr owned_block() noexcept = default;
+
+    /// @brief Move constructor.
+    owned_block(owned_block&& temp) noexcept
+      : block{static_cast<const block&>(temp)} {
+        temp.reset();
+    }
+
+    /// @brief Move assignment operator.
+    auto operator=(owned_block&& temp) noexcept -> owned_block& {
+        if(this != std::addressof(temp)) {
+            static_cast<block&>(*this) = static_cast<const block&>(temp);
+            temp.reset();
+        }
+        return *this;
+    }
+
+    /// @brief Not copy constructible.
+    owned_block(const owned_block&) = delete;
+
+    /// @brief Not copy assignable.
+    auto operator=(const owned_block&) = delete;
+
+    /// @brief Destructor.
+    /// @pre is_empty()
+    ~owned_block() noexcept {
+        assert(empty());
+    }
+
+private:
+    friend class block_owner;
+
+    constexpr owned_block(block b) noexcept
+      : block{b} {}
+};
+//------------------------------------------------------------------------------
+/// @brief Base class for classes that act as memory block owners.
+/// @ingroup memory
+/// @see owned_block
+export class block_owner {
+protected:
+    /// @brief Should be called to take the ownership of a memory block.
+    [[nodiscard]] static auto acquire_block(block b) noexcept -> owned_block {
+        return {b};
+    }
+
+    /// @brief Should be called to release the ownership of a memory block.
+    static void release_block(owned_block&& b) noexcept {
+        b.reset();
+    }
+};
+//------------------------------------------------------------------------------
+// structured block
+//------------------------------------------------------------------------------
+export template <typename T>
+class structured_block {
+private:
+    basic_block<std::is_const_v<T>> _blk;
+
+    template <typename X = T>
+    auto _ptr() noexcept
+        requires(not std::is_const_v<X>)
+    {
+        assert(is_valid_block(_blk));
+        return static_cast<X*>(_blk.addr());
+    }
+
+    auto _cptr() const noexcept {
+        assert(is_valid_block(_blk));
+        return static_cast<const T*>(_blk.addr());
+    }
+
+public:
+    static auto is_valid_block(const const_block blk) noexcept -> bool {
+        return not blk.empty() and (blk.is_aligned_as<T>()) and
+               (can_accommodate(blk, std::type_identity<T>()));
+    }
+
+    structured_block(basic_block<std::is_const_v<T>> blk) noexcept
+      : _blk{blk} {
+        assert(is_valid_block(_blk));
+    }
+
+    template <typename X = T>
+    auto get() noexcept
+      -> X& requires(not std::is_const_v<X> and std::is_same_v<X, T>) {
+          return *_ptr();
+      }
+
+    template <typename X = T>
+    auto operator->() noexcept
+      -> X* requires(not std::is_const_v<X> and std::is_same_v<X, T>) {
+          return _ptr();
+      }
+
+    auto get() const noexcept -> const T& {
+        return *_cptr();
+    }
+
+    auto operator->() const noexcept -> const T* {
+        return _cptr();
+    }
+};
 //------------------------------------------------------------------------------
 } // namespace memory
 //------------------------------------------------------------------------------

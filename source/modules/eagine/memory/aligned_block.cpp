@@ -8,7 +8,7 @@
 export module eagine.core.memory:aligned_block;
 
 import eagine.core.types;
-export import :block;
+export import :span;
 export import :span_algorithm;
 import std;
 

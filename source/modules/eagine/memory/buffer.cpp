@@ -13,7 +13,7 @@ export module eagine.core.memory:buffer;
 
 import eagine.core.build_config;
 import eagine.core.types;
-export import :block;
+export import :span;
 import :address;
 import :span_algorithm;
 import :shared_allocator;

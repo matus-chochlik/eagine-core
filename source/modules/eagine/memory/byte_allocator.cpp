@@ -12,7 +12,7 @@ module;
 export module eagine.core.memory:byte_allocator;
 
 import eagine.core.types;
-import :block;
+import :span;
 import :address;
 import std;
 

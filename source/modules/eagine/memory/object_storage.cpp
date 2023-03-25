@@ -14,7 +14,7 @@ export module eagine.core.memory:object_storage;
 import eagine.core.types;
 import :align;
 import :address;
-import :block;
+import :span;
 import :byte_allocator;
 import :shared_allocator;
 import :std_allocator;

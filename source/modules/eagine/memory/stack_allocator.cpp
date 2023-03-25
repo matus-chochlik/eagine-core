@@ -12,7 +12,7 @@ module;
 export module eagine.core.memory:stack_allocator;
 
 import eagine.core.types;
-import :block;
+import :span;
 import :address;
 import :byte_allocator;
 import std;

@@ -8,7 +8,7 @@
 export module eagine.core.memory:byteset;
 
 import eagine.core.types;
-import :block;
+import :span;
 import std;
 
 namespace eagine {
