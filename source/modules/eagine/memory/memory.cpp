@@ -15,7 +15,6 @@ export import :offset_ptr;
 export import :span;
 export import :offset_span;
 export import :string_span;
-export import :span_io;
 export import :span_algorithm;
 export import :split_span;
 export import :aligned_block;

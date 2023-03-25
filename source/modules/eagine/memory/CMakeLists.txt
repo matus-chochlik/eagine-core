@@ -52,11 +52,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.memory PARTITION span_io
-	IMPORTS span eagine.core.types
-)
-
-eagine_add_module(
 	eagine.core.memory PARTITION span_algorithm
 	IMPORTS span eagine.core.types
 )
@@ -164,7 +159,6 @@ eagine_add_module(
 		span
 		string_span
 		offset_span
-		span_io
 		span_algorithm
 		split_span
 		aligned_block
