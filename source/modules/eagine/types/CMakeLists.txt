@@ -56,13 +56,8 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION selector
-	IMPORTS basic
-)
-
-eagine_add_module(
 	eagine.core.types PARTITION enum_map
-	IMPORTS bitfield selector
+	IMPORTS basic bitfield
 )
 
 eagine_add_module(
@@ -81,7 +76,6 @@ eagine_add_module(
 		outcome
 		bitfield
 		function_constant
-		selector
 		enum_map
 		metaprogramming
 )
