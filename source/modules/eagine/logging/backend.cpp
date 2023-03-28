@@ -7,13 +7,13 @@
 ///
 export module eagine.core.logging:backend;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.runtime;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import :entry_arg;
-import std;
 
 namespace eagine {
 

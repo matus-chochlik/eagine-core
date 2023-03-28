@@ -24,7 +24,10 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.memory PARTITION offset_ptr
-	IMPORTS address eagine.core.types
+	IMPORTS
+		address
+		eagine.core.concepts
+		eagine.core.types
 )
 
 eagine_add_module(
@@ -168,6 +171,8 @@ eagine_add_module(
 	SOURCES
 		memory
 		stack_allocator
+	IMPORTS
+		eagine.core.types
 )
 
 eagine_add_module_tests(

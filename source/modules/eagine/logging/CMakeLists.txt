@@ -28,7 +28,10 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.logging PARTITION config
-	IMPORTS backend eagine.core.types
+	IMPORTS
+		backend
+		eagine.core.build_config
+		eagine.core.types
 )
 
 eagine_add_module(

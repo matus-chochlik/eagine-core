@@ -7,6 +7,7 @@
 ///
 export module eagine.core.logging:adapt_entry_arg;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
@@ -15,7 +16,6 @@ import eagine.core.build_info;
 import eagine.core.valid_if;
 import eagine.core.string;
 import eagine.core.c_api;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

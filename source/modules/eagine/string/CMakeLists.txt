@@ -134,6 +134,12 @@ eagine_add_module(
 		hexdump
 		from_string
 		keyboard_distance
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.math
+		eagine.core.container
+		eagine.core.utility
 )
 
 eagine_add_module_tests(

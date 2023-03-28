@@ -7,10 +7,10 @@
 ///
 export module eagine.core.logging:entry_arg;
 
+import std;
 import eagine.core.types;
 import eagine.core.reflection;
 import eagine.core.identifier;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -24,19 +24,11 @@ function(eagine_append_single_module_pcms)
 		TARGET ${EAGINE_MODULE_SOURCE}
 		PROPERTY EAGINE_MODULE_ID
 	)
-	if("${PCM_PATH}" MATCHES "${MODULE_ID}.pcm$")
-		set_property(
-			TARGET ${EAGINE_MODULE_TARGET}
-			APPEND PROPERTY COMPILE_OPTIONS
-			"-fmodule-file=${PCM_PATH}"
-		)
-	else()
-		set_property(
-			TARGET ${EAGINE_MODULE_TARGET}
-			APPEND PROPERTY COMPILE_OPTIONS
-			"-fmodule-file=${MODULE_ID}=${PCM_PATH}"
-		)
-	endif()
+	set_property(
+		TARGET ${EAGINE_MODULE_TARGET}
+		APPEND PROPERTY COMPILE_OPTIONS
+		"-fmodule-file=${MODULE_ID}=${PCM_PATH}"
+	)
 endfunction()
 # ------------------------------------------------------------------------------
 function(eagine_depend_single_module_pcms)
