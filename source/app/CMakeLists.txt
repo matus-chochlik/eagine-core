@@ -13,6 +13,11 @@ install(
 	RENAME eagine-xml_logs-psql
 	DESTINATION bin
 )
+install(
+	PROGRAMS log-schema-stats.sh
+	RENAME eagine-log-schema-stats
+	DESTINATION bin
+)
 
 install(
 	PROGRAMS servicectl.py
