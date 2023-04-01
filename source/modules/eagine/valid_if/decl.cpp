@@ -12,9 +12,9 @@ module;
 
 export module eagine.core.valid_if:decl;
 
+import std;
 import eagine.core.types;
 import eagine.core.concepts;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -82,30 +82,30 @@ public:
       : _value{std::move(val)} {}
 
     /// @brief Constructor initializing the stored value and policy.
-    constexpr basic_valid_if(T val, Policy plcy) noexcept(
-      noexcept(std::is_nothrow_move_constructible_v<value_type>&&
-                 std::is_nothrow_move_constructible_v<Policy>))
+    constexpr basic_valid_if(T val, Policy plcy) noexcept(noexcept(
+      std::is_nothrow_move_constructible_v<value_type> &&
+      std::is_nothrow_move_constructible_v<Policy>))
       : _value{std::move(val)}
       , _policy{std::move(plcy)} {}
 
     /// @brief Move constructor.
     constexpr basic_valid_if(basic_valid_if&& that) noexcept(
-      std::is_nothrow_move_constructible_v<value_type>&&
-        std::is_nothrow_move_constructible_v<Policy>)
+      std::is_nothrow_move_constructible_v<value_type> &&
+      std::is_nothrow_move_constructible_v<Policy>)
       : _value{std::move(that._value)}
       , _policy{std::move(that._policy)} {}
 
     /// @brief Copy constructor.
     constexpr basic_valid_if(const basic_valid_if& that) noexcept(
-      std::is_nothrow_copy_constructible_v<T>&&
-        std::is_nothrow_copy_constructible_v<Policy>)
+      std::is_nothrow_copy_constructible_v<T> &&
+      std::is_nothrow_copy_constructible_v<Policy>)
       : _value{that._value}
       , _policy{that._policy} {}
 
     /// @brief Move assignment operator.
     constexpr auto operator=(basic_valid_if&& that) noexcept(
-      std::is_nothrow_move_assignable_v<value_type>&&
-        std::is_nothrow_move_assignable_v<Policy>) -> auto& {
+      std::is_nothrow_move_assignable_v<value_type> &&
+      std::is_nothrow_move_assignable_v<Policy>) -> auto& {
         if(this != std::addressof(that)) {
             _value = std::move(that._value);
             _policy = std::move(that._policy);
@@ -117,8 +117,8 @@ public:
     /// @brief Copy assignment operator.
     // NOLINTNEXTLINE(bugprone-unhandled-self-assignment,cert-oop54-cpp)
     constexpr auto operator=(const basic_valid_if& that) noexcept(
-      std::is_nothrow_copy_constructible_v<value_type>&&
-        std::is_nothrow_copy_constructible_v<Policy>) -> auto& {
+      std::is_nothrow_copy_constructible_v<value_type> &&
+      std::is_nothrow_copy_constructible_v<Policy>) -> auto& {
         if(this != std::addressof(that)) {
             basic_valid_if temp{that};
             *this = std::move(temp);
@@ -459,15 +459,15 @@ public:
 
     /// @brief Move constructor.
     constexpr basic_valid_if(basic_valid_if&& that) noexcept(
-      std::is_nothrow_move_constructible_v<value_type>&&
-        std::is_nothrow_move_constructible_v<Policy>)
+      std::is_nothrow_move_constructible_v<value_type> &&
+      std::is_nothrow_move_constructible_v<Policy>)
       : _value{that._value}
       , _policy{std::move(that._policy)} {}
 
     /// @brief Copy constructor.
     constexpr basic_valid_if(const basic_valid_if& that) noexcept(
-      std::is_nothrow_copy_constructible_v<T>&&
-        std::is_nothrow_copy_constructible_v<Policy>)
+      std::is_nothrow_copy_constructible_v<T> &&
+      std::is_nothrow_copy_constructible_v<Policy>)
       : _value{that._value}
       , _policy{that._policy} {}
 

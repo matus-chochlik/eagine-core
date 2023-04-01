@@ -11,8 +11,8 @@ module;
 
 export module eagine.core.types:limits;
 
-import :basic;
 import std;
+import :basic;
 
 namespace eagine {
 //------------------------------------------------------------------------------

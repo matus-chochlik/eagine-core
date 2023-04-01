@@ -7,10 +7,10 @@
 ///
 export module eagine.core.math:colors;
 
+import std;
 import :constants;
 import :functions;
 import :vector;
-import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

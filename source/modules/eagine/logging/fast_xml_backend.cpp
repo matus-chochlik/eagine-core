@@ -13,6 +13,7 @@ module;
 
 export module eagine.core.logging:fast_xml_backend;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -20,7 +21,6 @@ import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.utility;
 import :backend;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

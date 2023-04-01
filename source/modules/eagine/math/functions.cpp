@@ -7,8 +7,8 @@
 ///
 export module eagine.core.math:functions;
 
-import :constants;
 import std;
+import :constants;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

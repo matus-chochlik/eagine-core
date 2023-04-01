@@ -7,9 +7,9 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
+import std;
 import eagine.core.string;
 import eagine.core.memory;
-import std;
 //------------------------------------------------------------------------------
 void bindump_ostream(auto& s) {
     eagitest::case_ test{s, 1, "ostream"};

@@ -7,9 +7,9 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
+import std;
 import eagine.core.memory;
 import eagine.core.runtime;
-import std;
 //------------------------------------------------------------------------------
 void program_args_empty(auto& s) {
     eagitest::case_ test{s, 1, "empty"};

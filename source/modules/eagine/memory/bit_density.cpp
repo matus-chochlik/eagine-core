@@ -12,8 +12,8 @@ module;
 
 export module eagine.core.memory:bit_density;
 
-import eagine.core.types;
 import std;
+import eagine.core.types;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -7,9 +7,9 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
+import std;
 import eagine.core.types;
 import eagine.core.utility;
-import std;
 //------------------------------------------------------------------------------
 // 1
 //------------------------------------------------------------------------------

@@ -11,9 +11,9 @@ module;
 
 export module eagine.core.utility:network_sort;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

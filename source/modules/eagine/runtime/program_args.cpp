@@ -11,13 +11,13 @@ module;
 
 export module eagine.core.runtime:program_args;
 
+import std;
 import eagine.core.debug;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.valid_if;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

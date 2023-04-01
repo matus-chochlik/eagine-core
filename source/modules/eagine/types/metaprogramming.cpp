@@ -7,8 +7,8 @@
 ///
 export module eagine.core.types:metaprogramming;
 
-import :basic;
 import std;
+import :basic;
 
 namespace eagine {
 

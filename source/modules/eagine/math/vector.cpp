@@ -11,12 +11,12 @@ module;
 
 export module eagine.core.math:vector;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.vectorization;
 import :traits;
 import :scalar;
-import std;
 
 namespace eagine {
 namespace math {

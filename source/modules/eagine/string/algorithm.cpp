@@ -7,8 +7,8 @@
 ///
 export module eagine.core.string:algorithm;
 
-import eagine.core.memory;
 import std;
+import eagine.core.memory;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -11,6 +11,7 @@ module;
 
 module eagine.core.logging;
 
+import std;
 import eagine.core.build_config;
 import eagine.core.types;
 import eagine.core.memory;
@@ -19,8 +20,6 @@ import eagine.core.utility;
 import eagine.core.runtime;
 import eagine.core.identifier;
 import :ostream_backend;
-import std;
-import <cerrno>;
 
 namespace eagine {
 //------------------------------------------------------------------------------

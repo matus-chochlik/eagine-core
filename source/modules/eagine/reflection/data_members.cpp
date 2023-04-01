@@ -7,10 +7,10 @@
 ///
 export module eagine.core.reflection:data_members;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import :decl_name;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

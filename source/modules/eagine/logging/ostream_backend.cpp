@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.logging:ostream_backend;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -19,7 +20,6 @@ import eagine.core.reflection;
 import eagine.core.utility;
 import :backend;
 import :fast_xml_backend;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

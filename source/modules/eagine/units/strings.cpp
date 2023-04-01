@@ -7,12 +7,12 @@
 ///
 export module eagine.core.units:strings;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import :base;
 import :dimension;
 import :unit;
-import std;
 
 namespace eagine::units {
 //------------------------------------------------------------------------------

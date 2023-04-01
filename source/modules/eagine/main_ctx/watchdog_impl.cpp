@@ -20,9 +20,9 @@ module;
 
 module eagine.core.main_ctx;
 
+import std;
 import eagine.core.types;
 import eagine.core.utility;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

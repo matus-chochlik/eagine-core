@@ -11,13 +11,13 @@ module;
 
 export module eagine.core.serialization:interface;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.valid_if;
 import :result;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

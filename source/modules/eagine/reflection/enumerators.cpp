@@ -8,10 +8,10 @@
 #include <type_traits>
 export module eagine.core.reflection:enumerators;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import :decl_name;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

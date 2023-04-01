@@ -11,9 +11,9 @@ module;
 
 export module eagine.core.memory:flatten;
 
+import std;
 import eagine.core.types;
 import :span;
-import std;
 
 namespace eagine {
 

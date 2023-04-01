@@ -20,10 +20,10 @@ module;
 
 module eagine.core.runtime;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

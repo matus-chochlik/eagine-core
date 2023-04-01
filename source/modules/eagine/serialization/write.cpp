@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.serialization:write;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
@@ -20,7 +21,6 @@ import eagine.core.valid_if;
 import eagine.core.units;
 import :result;
 import :interface;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.value_tree:wrappers;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -18,7 +19,6 @@ import eagine.core.utility;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import :interface;
-import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------

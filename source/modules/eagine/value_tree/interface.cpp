@@ -7,13 +7,13 @@
 ///
 export module eagine.core.value_tree:interface;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.console;
-import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------

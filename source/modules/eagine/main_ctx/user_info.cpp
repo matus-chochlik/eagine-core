@@ -7,9 +7,9 @@
 ///
 export module eagine.core.main_ctx:user_info;
 
+import std;
 import eagine.core.memory;
 import eagine.core.valid_if;
-import std;
 
 namespace eagine {
 

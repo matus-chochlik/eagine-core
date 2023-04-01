@@ -7,9 +7,9 @@
 ///
 export module eagine.core.valid_if:compare;
 
+import std;
 import eagine.core.concepts;
 import :decl;
-import std;
 
 namespace eagine {
 

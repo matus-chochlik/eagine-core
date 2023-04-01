@@ -10,9 +10,9 @@ module;
 #include <cassert>
 
 export module eagine.core.container:trie;
+import std;
 import eagine.core.types;
 import eagine.core.memory;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

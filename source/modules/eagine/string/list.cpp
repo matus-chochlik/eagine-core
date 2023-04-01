@@ -11,11 +11,11 @@ module;
 
 export module eagine.core.string:list;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
 import :multi_byte;
-import std;
 
 namespace eagine {
 namespace string_list {

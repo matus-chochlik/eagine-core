@@ -7,9 +7,9 @@
 ///
 export module eagine.core.types:enum_map;
 
+import std;
 import :basic;
 import :bitfield;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

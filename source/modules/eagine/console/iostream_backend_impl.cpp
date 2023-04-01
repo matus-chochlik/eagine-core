@@ -7,6 +7,7 @@
 ///
 module eagine.core.console;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -14,7 +15,6 @@ import eagine.core.identifier;
 import eagine.core.container;
 import eagine.core.utility;
 import :backend;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

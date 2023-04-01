@@ -11,9 +11,9 @@ module;
 
 export module eagine.core.memory:fixed_size_string;
 
+import std;
 import eagine.core.types;
 import :string_span;
-import std;
 
 namespace eagine::memory {
 

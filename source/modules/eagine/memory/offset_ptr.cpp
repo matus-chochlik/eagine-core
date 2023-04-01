@@ -11,10 +11,10 @@ module;
 
 export module eagine.core.memory:offset_ptr;
 
+import std;
 import eagine.core.concepts;
 import eagine.core.types;
 import :address;
-import std;
 
 namespace eagine {
 namespace memory {

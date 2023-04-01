@@ -7,8 +7,8 @@
 ///
 export module eagine.core.runtime:workshop;
 
-import eagine.core.types;
 import std;
+import eagine.core.types;
 
 namespace eagine {
 //------------------------------------------------------------------------------

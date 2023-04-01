@@ -7,9 +7,9 @@
 ///
 export module eagine.core.c_api:buffer_data;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
-import std;
 
 namespace eagine::c_api {
 

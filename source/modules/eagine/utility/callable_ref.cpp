@@ -11,9 +11,9 @@ module;
 
 export module eagine.core.utility:callable_ref;
 
+import std;
 import eagine.core.concepts;
 import eagine.core.types;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

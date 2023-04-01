@@ -7,6 +7,7 @@
 ///
 export module eagine.core.logging:logger;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
@@ -17,7 +18,6 @@ import :config;
 import :backend;
 import :entry;
 import :time_interval;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

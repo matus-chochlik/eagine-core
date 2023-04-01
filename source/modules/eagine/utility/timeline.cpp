@@ -7,8 +7,8 @@
 ///
 export module eagine.core.utility:timeline;
 
-import eagine.core.types;
 import std;
+import eagine.core.types;
 
 namespace eagine {
 //------------------------------------------------------------------------------

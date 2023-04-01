@@ -7,12 +7,12 @@
 ///
 export module eagine.core.string:base64dump;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
 import eagine.core.valid_if;
 import :base64;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

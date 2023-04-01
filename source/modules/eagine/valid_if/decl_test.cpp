@@ -7,8 +7,8 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.valid_if;
 import std;
+import eagine.core.valid_if;
 //------------------------------------------------------------------------------
 struct test_person {
     std::string given_name;

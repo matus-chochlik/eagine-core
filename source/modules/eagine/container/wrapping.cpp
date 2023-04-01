@@ -8,10 +8,10 @@
 export module eagine.core.container:wrapping;
 
 import eagine.core.types;
+import std;
 import eagine.core.memory;
 import eagine.core.valid_if;
 import :iterator;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

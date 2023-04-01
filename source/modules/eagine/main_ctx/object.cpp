@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.main_ctx:object;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
@@ -20,7 +21,6 @@ import eagine.core.console;
 import eagine.core.progress;
 import :interface;
 import :parent;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

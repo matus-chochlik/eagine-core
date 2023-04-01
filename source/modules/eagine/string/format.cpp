@@ -7,11 +7,11 @@
 ///
 export module eagine.core.string:format;
 
-import :c_str;
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
-import std;
+import :c_str;
 
 namespace eagine {
 //------------------------------------------------------------------------------

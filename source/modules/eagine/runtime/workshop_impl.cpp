@@ -7,8 +7,8 @@
 ///
 module eagine.core.runtime;
 
-import eagine.core.types;
 import std;
+import eagine.core.types;
 
 namespace eagine {
 //------------------------------------------------------------------------------

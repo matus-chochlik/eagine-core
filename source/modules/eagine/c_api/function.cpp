@@ -7,11 +7,11 @@
 ///
 export module eagine.core.c_api:function;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import :api_traits;
 import :result;
-import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------

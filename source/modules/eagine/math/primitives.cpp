@@ -7,9 +7,9 @@
 ///
 export module eagine.core.math:primitives;
 
+import std;
 import eagine.core.types;
 import :vector;
-import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

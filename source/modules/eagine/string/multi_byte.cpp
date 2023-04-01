@@ -11,12 +11,11 @@ module;
 
 export module eagine.core.string:multi_byte;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
 import eagine.core.utility;
-
-import std;
 
 namespace eagine::multi_byte {
 //------------------------------------------------------------------------------

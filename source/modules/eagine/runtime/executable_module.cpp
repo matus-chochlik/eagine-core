@@ -7,9 +7,9 @@
 ///
 export module eagine.core.runtime:executable_module;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

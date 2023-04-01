@@ -10,9 +10,9 @@ module;
 #include <cassert>
 
 export module eagine.core.types:outcome;
+import std;
 import :basic;
 import :extract;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

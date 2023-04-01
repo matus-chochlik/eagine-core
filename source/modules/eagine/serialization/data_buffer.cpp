@@ -11,11 +11,11 @@ module;
 
 export module eagine.core.serialization:data_buffer;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.reflection;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

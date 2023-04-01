@@ -7,9 +7,9 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
+import std;
 import eagine.core.types;
 import eagine.core.memory;
-import std;
 //------------------------------------------------------------------------------
 template <typename T>
 void memory_std_alloc_1_T(eagitest::case_& test, const std::size_t n) {

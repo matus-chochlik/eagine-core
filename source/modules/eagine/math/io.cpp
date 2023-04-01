@@ -7,10 +7,10 @@
 ///
 export module eagine.core.math:io;
 
+import std;
 import :primitives;
 import :vector;
 import :matrix;
-import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

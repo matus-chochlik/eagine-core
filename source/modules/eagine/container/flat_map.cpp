@@ -11,9 +11,9 @@ module;
 
 export module eagine.core.container:flat_map;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

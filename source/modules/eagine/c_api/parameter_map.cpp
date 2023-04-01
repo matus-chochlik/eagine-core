@@ -7,6 +7,7 @@
 ///
 export module eagine.core.c_api:parameter_map;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -14,7 +15,6 @@ import :buffer_data;
 import :enum_class;
 import :object;
 import :key_value_list;
-import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------

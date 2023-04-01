@@ -12,9 +12,9 @@ module;
 
 export module eagine.core.memory:biteset;
 
+import std;
 import eagine.core.types;
 import :byteset;
-import std;
 
 namespace eagine {
 

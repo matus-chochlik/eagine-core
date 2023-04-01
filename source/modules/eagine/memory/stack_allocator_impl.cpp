@@ -10,8 +10,8 @@ module;
 #include <cassert>
 
 module eagine.core.memory;
-import eagine.core.types;
 import std;
+import eagine.core.types;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

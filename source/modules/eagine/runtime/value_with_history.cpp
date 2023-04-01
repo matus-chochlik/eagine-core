@@ -11,9 +11,9 @@ module;
 
 export module eagine.core.runtime:value_with_history;
 
+import std;
 import eagine.core.types;
 import eagine.core.valid_if;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

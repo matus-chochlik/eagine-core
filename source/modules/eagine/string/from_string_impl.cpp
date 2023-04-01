@@ -23,8 +23,8 @@ module eagine.core.string;
 import eagine.core.memory;
 
 #if EAGINE_USE_BOOST_SPIRIT
-import eagine.core.math;
 import std;
+import eagine.core.math;
 #endif
 
 namespace eagine {

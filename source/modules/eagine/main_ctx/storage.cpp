@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.main_ctx:storage;
 
+import std;
 import eagine.core.build_info;
 import eagine.core.types;
 import eagine.core.memory;
@@ -27,7 +28,6 @@ import :app_config;
 import :system_info;
 import :user_info;
 import :watchdog;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

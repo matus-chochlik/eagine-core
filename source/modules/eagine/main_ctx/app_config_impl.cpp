@@ -7,6 +7,7 @@
 ///
 module eagine.core.main_ctx;
 
+import std;
 import eagine.core.build_config;
 import eagine.core.build_info;
 import eagine.core.debug;
@@ -19,7 +20,6 @@ import eagine.core.logging;
 import eagine.core.utility;
 import eagine.core.valid_if;
 import eagine.core.value_tree;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

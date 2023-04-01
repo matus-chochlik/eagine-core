@@ -21,10 +21,10 @@ module;
 
 export module eagine.core.logging:config;
 
+import std;
 import eagine.core.build_config;
 import eagine.core.types;
 import :backend;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

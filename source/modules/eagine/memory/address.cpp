@@ -11,9 +11,9 @@ module;
 
 export module eagine.core.memory:address;
 
+import std;
 import eagine.core.types;
 import :align;
-import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

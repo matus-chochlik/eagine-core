@@ -7,6 +7,7 @@
 ///
 export module eagine.core.c_api:adapted_function;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
@@ -14,7 +15,6 @@ import :object;
 import :result;
 import :function;
 import :parameter_map;
-import std;
 
 namespace eagine::c_api {
 

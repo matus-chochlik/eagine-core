@@ -11,8 +11,8 @@ module;
 
 export module eagine.core.types:extract;
 
-import eagine.core.concepts;
 import std;
+import eagine.core.concepts;
 
 namespace eagine {
 //------------------------------------------------------------------------------

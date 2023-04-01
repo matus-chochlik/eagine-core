@@ -15,12 +15,12 @@ module;
 
 module eagine.core.value_tree;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.logging;
-import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------

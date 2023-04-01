@@ -7,6 +7,7 @@
 ///
 export module eagine.core.main_ctx:app_config;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -15,9 +16,8 @@ import eagine.core.container;
 import eagine.core.valid_if;
 import eagine.core.runtime;
 import eagine.core.logging;
-export import eagine.core.value_tree;
+import eagine.core.value_tree;
 import :interface;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

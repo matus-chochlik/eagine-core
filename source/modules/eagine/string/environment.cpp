@@ -7,9 +7,9 @@
 ///
 export module eagine.core.string:environment;
 
+import std;
 import eagine.core.memory;
 import :c_str;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

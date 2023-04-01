@@ -7,8 +7,8 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.units;
 import std;
+import eagine.core.units;
 //------------------------------------------------------------------------------
 // dimension numbers
 //------------------------------------------------------------------------------

@@ -7,8 +7,8 @@
 ///
 export module eagine.core.vectorization:data_array;
 
-import eagine.core.concepts;
 import std;
+import eagine.core.concepts;
 
 namespace eagine::vect {
 

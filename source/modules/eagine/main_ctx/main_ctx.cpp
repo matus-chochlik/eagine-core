@@ -20,15 +20,15 @@ import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.progress;
 import eagine.core.console;
-export import :interface;
-export import :parent;
-export import :object;
-export import :app_config;
-export import :system_info;
-export import :user_info;
-export import :watchdog;
-export import :storage;
-export import :main;
+import :interface;
+import :parent;
+import :object;
+import :app_config;
+import :system_info;
+import :user_info;
+import :watchdog;
+import :storage;
+import :main;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -7,13 +7,13 @@
 ///
 export module eagine.core.console;
 
-export import :entry;
-export import :backend;
+import std;
 import eagine.core.types;
 import eagine.core.identifier;
 import eagine.core.memory;
 import eagine.core.runtime;
-import std;
+import :entry;
+import :backend;
 
 namespace eagine {
 //------------------------------------------------------------------------------

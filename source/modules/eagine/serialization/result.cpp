@@ -7,10 +7,10 @@
 ///
 export module eagine.core.serialization:result;
 
+import std;
 import eagine.core.types;
 import eagine.core.reflection;
 import eagine.core.valid_if;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

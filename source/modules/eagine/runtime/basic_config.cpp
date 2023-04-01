@@ -6,12 +6,12 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 export module eagine.core.runtime:basic_config;
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.utility;
 import eagine.core.reflection;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

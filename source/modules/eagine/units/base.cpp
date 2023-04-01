@@ -5,8 +5,8 @@
 ///
 export module eagine.core.units:base;
 
-import eagine.core.types;
 import std;
+import eagine.core.types;
 
 namespace eagine::units {
 //------------------------------------------------------------------------------

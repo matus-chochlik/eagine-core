@@ -7,9 +7,9 @@
 ///
 export module eagine.core.utility:scope_exit;
 
+import std;
 import eagine.core.types;
 import :callable_ref;
-import std;
 
 namespace eagine {
 

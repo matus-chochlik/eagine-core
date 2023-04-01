@@ -7,9 +7,9 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
+import std;
 import eagine.core.types;
 import eagine.core.container;
-import std;
 //------------------------------------------------------------------------------
 void flat_map_default_construct(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};

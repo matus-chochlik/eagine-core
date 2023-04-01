@@ -11,14 +11,13 @@ module;
 
 module eagine.core.main_ctx;
 
+import std;
 import eagine.core.build_info;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.console;
 import eagine.core.logging;
-import std;
-import <cerrno>;
 
 namespace eagine {
 //------------------------------------------------------------------------------

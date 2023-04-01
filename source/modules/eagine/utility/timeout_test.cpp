@@ -7,10 +7,9 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-#include <chrono>
+import std;
 import eagine.core.types;
 import eagine.core.utility;
-import std;
 //------------------------------------------------------------------------------
 void timeout_1(unsigned, auto& s) {
     eagitest::case_ test{s, 1, "1"};

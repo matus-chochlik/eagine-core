@@ -7,12 +7,12 @@
 ///
 export module eagine.core.serialization:packed_block;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.runtime;
 import :result;
 import :block;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -7,8 +7,8 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.types;
 import std;
+import eagine.core.types;
 //------------------------------------------------------------------------------
 struct inner {
     short s{0};

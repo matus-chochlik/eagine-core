@@ -11,8 +11,8 @@ module;
 
 export module eagine.core.container:flat_set;
 
-import eagine.core.types;
 import std;
+import eagine.core.types;
 
 namespace eagine {
 //------------------------------------------------------------------------------

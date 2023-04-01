@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.resource;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
@@ -21,7 +22,6 @@ import eagine.core.logging;
 import eagine.core.valid_if;
 import eagine.core.value_tree;
 import eagine.core.main_ctx;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

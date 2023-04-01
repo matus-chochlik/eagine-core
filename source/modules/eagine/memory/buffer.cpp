@@ -11,13 +11,13 @@ module;
 
 export module eagine.core.memory:buffer;
 
+import std;
 import eagine.core.build_config;
 import eagine.core.types;
-export import :span;
+import :span;
 import :address;
 import :span_algorithm;
 import :byte_allocator;
-import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

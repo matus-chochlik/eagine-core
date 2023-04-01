@@ -7,9 +7,9 @@
 ///
 export module eagine.core.math:animated_value;
 
+import std;
 import eagine.core.valid_if;
 import :functions;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

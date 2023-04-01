@@ -10,8 +10,8 @@ module;
 #include <cassert>
 
 export module eagine.core.main_ctx:parent;
-import :interface;
 import std;
+import :interface;
 
 namespace eagine {
 //------------------------------------------------------------------------------

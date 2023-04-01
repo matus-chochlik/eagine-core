@@ -11,11 +11,11 @@ module;
 
 export module eagine.core.memory:byte_allocator;
 
+import std;
 import eagine.core.types;
 import eagine.core.concepts;
 import :span;
 import :address;
-import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

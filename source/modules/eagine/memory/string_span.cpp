@@ -7,10 +7,10 @@
 ///
 export module eagine.core.memory:string_span;
 
+import std;
 import eagine.core.types;
 import eagine.core.concepts;
 import :span;
-import std;
 
 namespace eagine {
 namespace memory {

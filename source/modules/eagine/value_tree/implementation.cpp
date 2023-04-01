@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.value_tree:implementation;
 
+import std;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
@@ -20,7 +21,6 @@ import eagine.core.runtime;
 import eagine.core.logging;
 import :interface;
 import :wrappers;
-import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------

@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.serialization:valtree_backend;
 
+import std;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
@@ -21,7 +22,6 @@ import eagine.core.value_tree;
 import eagine.core.valid_if;
 import :result;
 import :interface;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

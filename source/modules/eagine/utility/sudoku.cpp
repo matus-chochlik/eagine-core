@@ -11,10 +11,10 @@ module;
 
 export module eagine.core.utility:sudoku;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.container;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

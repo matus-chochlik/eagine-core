@@ -7,6 +7,7 @@
 ///
 export module eagine.core.math:tmat;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.vectorization;
@@ -14,7 +15,6 @@ import :traits;
 import :vector;
 import :matrix;
 import :matrix_construct;
-import std;
 
 namespace eagine {
 namespace math {

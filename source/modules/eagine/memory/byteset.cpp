@@ -7,9 +7,9 @@
 ///
 export module eagine.core.memory:byteset;
 
+import std;
 import eagine.core.types;
 import :span;
-import std;
 
 namespace eagine {
 
