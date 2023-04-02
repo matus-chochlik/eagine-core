@@ -5,12 +5,9 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-
-#include <cerrno>
-
 export module eagine.core.string:from_string;
 
+import <cerrno>;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
