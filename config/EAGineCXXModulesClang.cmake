@@ -111,7 +111,6 @@ function(eagine_add_module_common_properties TARGET_NAME)
 		APPEND PROPERTY COMPILE_OPTIONS
 		"-fmodules"
 		"-fexperimental-library"
-		"-fbuiltin-module-map"
 	)
 	set_property(
 		TARGET ${TARGET_NAME}
