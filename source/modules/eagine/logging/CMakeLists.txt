@@ -135,6 +135,7 @@ eagine_add_module(
 		root_logger
 	IMPORTS
 		eagine.core.debug
+		eagine.core.memory
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/asio/asio/include"
 )
