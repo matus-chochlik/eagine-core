@@ -8,7 +8,6 @@
 module;
 
 #include <cassert>
-#include <climits>
 
 export module eagine.core.memory:biteset;
 
