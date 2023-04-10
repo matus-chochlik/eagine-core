@@ -24,11 +24,27 @@ function(eagine_append_single_module_pcms)
 		TARGET ${EAGINE_MODULE_SOURCE}
 		PROPERTY EAGINE_MODULE_ID
 	)
-	set_property(
+
+	set(ALREADY_FOUND False)
+	unset(COMPILE_OPTS)
+	get_property(
+		COMPILE_OPTS
 		TARGET ${EAGINE_MODULE_TARGET}
-		APPEND PROPERTY COMPILE_OPTIONS
-		"-fmodule-file=${MODULE_ID}=${PCM_PATH}"
+		PROPERTY COMPILE_OPTIONS
 	)
+	foreach(OPT ${COMPILE_OPTS})
+		if("${OPT}" STREQUAL "-fmodule-file=${MODULE_ID}=${PCM_PATH}")
+			set(ALREADY_FOUND True)
+			break()
+		endif()
+	endforeach()
+	if(NOT ${ALREADY_FOUND})
+		set_property(
+			TARGET ${EAGINE_MODULE_TARGET}
+			APPEND PROPERTY COMPILE_OPTIONS
+			"-fmodule-file=${MODULE_ID}=${PCM_PATH}"
+		)
+	endif()
 endfunction()
 # ------------------------------------------------------------------------------
 function(eagine_depend_single_module_pcms)
@@ -216,6 +232,16 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				${EAGINE_MODULE_TARGET}
 				PUBLIC ${EAGINE_MODULE_TARGET}-implement
 			)
+		foreach(INTF ${EAGINE_MODULE_PARTITIONS})
+				set(PCM_PATH
+					"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PROPER}.${INTF}.pcm"
+				)
+				set_property(
+					TARGET ${EAGINE_MODULE_TARGET}-implement
+					APPEND PROPERTY COMPILE_OPTIONS
+					"-fmodule-file=${EAGINE_MODULE_PROPER}:${INTF}=${PCM_PATH}"
+				)
+			endforeach()
 			foreach(LIBRARY ${EAGINE_MODULE_PRIVATE_LINK_LIBRARIES})
 				target_link_libraries(
 					${EAGINE_MODULE_TARGET}-implement
@@ -293,13 +319,6 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				TARGET ${EAGINE_MODULE_IMPORT}
 				PROPERTY EAGINE_MODULE_PP_NAME
 			)
-			if(NOT "${PP_NAME}" STREQUAL "")
-				set_property(
-					TARGET ${EAGINE_MODULE_TARGET}
-					APPEND PROPERTY COMPILE_DEFINITIONS
-					EAGINE_${PP_NAME}_MODULE=1
-				)
-			endif()
 		endif()
 	endforeach()
 
@@ -459,13 +478,6 @@ function(eagine_target_modules TARGET_NAME)
 			TARGET ${EAGINE_MODULE_SOURCE}
 			PROPERTY EAGINE_MODULE_PP_NAME
 		)
-		if(NOT "${PP_NAME}" STREQUAL "")
-			set_property(
-				TARGET ${TARGET_NAME}
-				APPEND PROPERTY COMPILE_DEFINITIONS
-				EAGINE_${PP_NAME}_MODULE=1
-			)
-		endif()
 		if(NOT TARGET ${TARGET_NAME}-imports)
 			add_custom_target(${TARGET_NAME}-imports)
 		endif()
