@@ -25,24 +25,18 @@ function(eagine_append_single_module_pcms)
 		PROPERTY EAGINE_MODULE_ID
 	)
 
-	set(ALREADY_FOUND False)
 	unset(COMPILE_OPTS)
 	get_property(
 		COMPILE_OPTS
 		TARGET ${EAGINE_MODULE_TARGET}
 		PROPERTY COMPILE_OPTIONS
 	)
-	foreach(OPT ${COMPILE_OPTS})
-		if("${OPT}" STREQUAL "-fmodule-file=${MODULE_ID}=${PCM_PATH}")
-			set(ALREADY_FOUND True)
-			break()
-		endif()
-	endforeach()
-	if(NOT ${ALREADY_FOUND})
+	set(OPTION "-fmodule-file=${MODULE_ID}=${PCM_PATH}")
+	if(NOT "${OPTION}" IN_LIST COMPILE_OPTS)
 		set_property(
 			TARGET ${EAGINE_MODULE_TARGET}
 			APPEND PROPERTY COMPILE_OPTIONS
-			"-fmodule-file=${MODULE_ID}=${PCM_PATH}"
+				"${OPTION}"
 		)
 	endif()
 endfunction()
