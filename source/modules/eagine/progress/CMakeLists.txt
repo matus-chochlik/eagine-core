@@ -44,5 +44,8 @@ eagine_add_module(
 	IMPORTS
 		eagine.core.identifier
 		eagine.core.container
+		eagine.core.utility
+		eagine.core.runtime
+		eagine.core.logging
 )
 

@@ -126,10 +126,12 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
+		eagine.core.units
 		eagine.core.runtime
 		eagine.core.logging
 		eagine.core.console
 		eagine.core.progress
+		eagine.core.value_tree
 )
 
 eagine_add_module_tests(

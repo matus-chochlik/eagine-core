@@ -11,6 +11,7 @@ module;
 
 module eagine.core.main_ctx;
 
+import <cerrno>;
 import std;
 import eagine.core.build_info;
 import eagine.core.memory;

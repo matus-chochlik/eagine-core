@@ -134,6 +134,7 @@ eagine_add_module(
 		root_logger
 	IMPORTS
 		eagine.core.build_config
+		eagine.core.build_info
 		eagine.core.debug
 		eagine.core.memory
 		eagine.core.string

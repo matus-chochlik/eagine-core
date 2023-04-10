@@ -28,5 +28,6 @@ export import eagine.core.logging;
 export import eagine.core.console;
 export import eagine.core.progress;
 export import eagine.core.serialization;
+export import eagine.core.value_tree;
 export import eagine.core.main_ctx;
 export import eagine.core.resource;

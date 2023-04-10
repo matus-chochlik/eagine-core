@@ -12,8 +12,8 @@ import eagine.core.types;
 import eagine.core.identifier;
 import eagine.core.memory;
 import eagine.core.runtime;
-import :entry;
-import :backend;
+export import :entry;
+export import :backend;
 
 namespace eagine {
 //------------------------------------------------------------------------------

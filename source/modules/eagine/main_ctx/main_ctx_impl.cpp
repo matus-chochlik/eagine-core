@@ -19,6 +19,7 @@ import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.progress;
 import eagine.core.console;
+import :interface;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -198,7 +198,7 @@ public:
 
     static constexpr auto to_cell_type(const unsigned index) noexcept {
         assert(index < glyph_count);
-        return cell_type(1U) << cell_type(index);
+        return cell_type(1U << index);
     }
 
     constexpr basic_sudoku_glyph() noexcept = default;
