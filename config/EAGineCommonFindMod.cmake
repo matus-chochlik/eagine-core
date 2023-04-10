@@ -25,10 +25,6 @@ macro(eagine_common_import_lib)
 		if(PC_${EAGINE_DEPS_PREFIX}_FOUND)
 			add_library(EAGine::Deps::${EAGINE_DEPS_PREFIX} INTERFACE IMPORTED)
 
-			target_compile_definitions(
-				EAGine::Deps::${EAGINE_DEPS_PREFIX}
-				INTERFACE EAGINE_USE_${EAGINE_DEPS_PREFIX}=1
-			)
 			if(PC_${EAGINE_DEPS_PREFIX}_CFLAGS_OTHER)
 				target_compile_options(
 					EAGine::Deps::${EAGINE_DEPS_PREFIX}

@@ -19,7 +19,7 @@ add_library(eagine-core-testing-headers INTERFACE)
 set_property(
 	TARGET eagine-core-testing-headers
 	APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
 # - generated headers or implementation files ----------------------------------
 add_library(eagine-core-generated-headers INTERFACE)
@@ -27,7 +27,7 @@ add_library(eagine-core-generated-headers INTERFACE)
 set_property(
 	TARGET eagine-core-generated-headers
 	APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-		$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+		${CMAKE_CURRENT_BINARY_DIR}	
 )
 
 foreach(FILENAME ${GEN_HPPS})
