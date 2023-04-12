@@ -138,7 +138,7 @@ endfunction()
 # ------------------------------------------------------------------------------
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
-	set(ARG_VALUES PARTITION PP_NAME)
+	set(ARG_VALUES PARTITION)
 	set(ARG_LISTS
 		INTERFACES
 		SOURCES
@@ -273,13 +273,6 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		)
 	endif()
 
-	if(NOT "${EAGINE_MODULE_PP_NAME}" STREQUAL "")
-		set_property(
-			TARGET ${EAGINE_MODULE_TARGET}
-			APPEND PROPERTY EAGINE_MODULE_PP_NAME
-			"${EAGINE_MODULE_PP_NAME}"
-		)
-	endif()
 	set_property(
 		TARGET ${EAGINE_MODULE_TARGET}
 		APPEND PROPERTY EAGINE_MODULE_PROPER
@@ -307,11 +300,6 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				TARGET ${EAGINE_MODULE_TARGET}
 				APPEND PROPERTY EAGINE_MODULE_IMPORTS
 				${EAGINE_MODULE_IMPORT}
-			)
-			get_property(
-				PP_NAME	
-				TARGET ${EAGINE_MODULE_IMPORT}
-				PROPERTY EAGINE_MODULE_PP_NAME
 			)
 		endif()
 	endforeach()
@@ -467,11 +455,6 @@ function(eagine_target_modules TARGET_NAME)
 		endforeach()
 
 
-		get_property(
-			PP_NAME	
-			TARGET ${EAGINE_MODULE_SOURCE}
-			PROPERTY EAGINE_MODULE_PP_NAME
-		)
 		if(NOT TARGET ${TARGET_NAME}-imports)
 			add_custom_target(${TARGET_NAME}-imports)
 		endif()
@@ -485,7 +468,7 @@ endfunction()
 # ------------------------------------------------------------------------------
 function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
-	set(ARG_VALUES PARTITION PP_NAME)
+	set(ARG_VALUES PARTITION)
 	set(ARG_LISTS
 		UNITS
 		IMPORTS
