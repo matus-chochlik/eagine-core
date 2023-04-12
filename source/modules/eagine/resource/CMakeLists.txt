@@ -4,7 +4,6 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
 	eagine.core.resource
-	PP_NAME CORE_RESOURCE
 	INTERFACES
 		resource
 	SOURCES
