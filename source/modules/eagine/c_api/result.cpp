@@ -153,6 +153,16 @@ public:
         return false;
     }
 
+    /// @brief Extraction operator for result_value.
+    /// @ingroup c_api_wrap
+    /// @throws bad_result<Info>
+    template <std::derived_from<Result> Dest>
+        requires(not std::is_void_v<Dest>)
+    auto operator>>(Dest& dest) -> Dest& {
+        throw bad_result<Info>(static_cast<Info&&>(*this));
+        return dest;
+    }
+
     template <typename T>
     auto replaced_with(const T&) const {
         result<T, Info, result_validity::never> res{};
@@ -198,7 +208,7 @@ public:
 
     /// @brief Indicates if the result value is valid.
     /// @returns true
-    constexpr auto is_valid() const noexcept {
+    constexpr auto has_value() const noexcept {
         return true;
     }
 
@@ -244,7 +254,7 @@ public:
 export template <>
 class result_value<void, result_validity::always> {
 public:
-    constexpr auto is_valid() const noexcept {
+    constexpr auto has_value() const noexcept {
         return true;
     }
 
@@ -294,6 +304,16 @@ public:
     /// @brief Tests if this result is valid and contains an extractable value.
     explicit constexpr operator bool() const noexcept {
         return bool(*static_cast<const Info*>(this));
+    }
+
+    /// @brief Extraction operator for result_value.
+    /// @ingroup c_api_wrap
+    ///
+    /// Extracts the value from this result
+    template <std::derived_from<Result> Dest>
+        requires(not std::is_void_v<Dest>)
+    auto operator>>(Dest& dest) -> Dest& {
+        return dest = std::move(this->_value);
     }
 
     /// @brief Returns a transformed result with a new stored value.
@@ -350,7 +370,7 @@ public:
       , _valid{true} {}
 
     /// @brief Indicates if the result value is valid.
-    constexpr auto is_valid() const noexcept {
+    constexpr auto has_value() const noexcept {
         return _valid;
     }
 
@@ -359,7 +379,7 @@ protected:
     auto _cast_to(
       const result<Result, Info, result_validity::maybe>& src,
       const std::type_identity<T>) const {
-        result<T, Info, result_validity::maybe> res{T(_value), src.is_valid()};
+        result<T, Info, result_validity::maybe> res{T(_value), src.has_value()};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
         return res;
     }
@@ -370,7 +390,7 @@ protected:
       Transform& transform) const {
         using T = decltype(transform(std::declval<Result>(), true));
         result<T, Info, result_validity::maybe> res{
-          transform(_value, src.is_valid()), src.is_valid()};
+          transform(_value, src.has_value()), src.has_value()};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
         return res;
     }
@@ -382,7 +402,7 @@ protected:
       IfFalse& if_false) const {
         result<void, Info, result_validity::maybe> res{};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
-        if(src.is_valid() and not check(_value)) [[unlikely]] {
+        if(src.has_value() and not check(_value)) [[unlikely]] {
             if_false(static_cast<Info&>(res));
         }
         return res;
@@ -408,7 +428,7 @@ public:
       const result_value<void, result_validity::always>&) noexcept
       : _valid{true} {}
 
-    constexpr auto is_valid() const noexcept {
+    constexpr auto has_value() const noexcept {
         return _valid;
     }
 
@@ -417,7 +437,7 @@ protected:
     auto _cast_to(
       const result<void, Info, result_validity::maybe>& src,
       const std::type_identity<T>) const {
-        result<T, Info, result_validity::maybe> res{T{}, src.is_valid()};
+        result<T, Info, result_validity::maybe> res{T{}, src.has_value()};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
         return res;
     }
@@ -428,7 +448,7 @@ protected:
       Transform& transform) const {
         using T = decltype(transform(nothing, true));
         result<T, Info, result_validity::maybe> res{
-          transform(nothing, src.is_valid()), src.is_valid()};
+          transform(nothing, src.has_value()), src.has_value()};
         static_cast<Info&>(res) = static_cast<const Info&>(src);
         return res;
     }
@@ -455,13 +475,27 @@ public:
     using base::base;
 
     explicit constexpr operator bool() const noexcept {
-        return this->is_valid() and bool(*static_cast<const Info*>(this));
+        return this->has_value() and bool(*static_cast<const Info*>(this));
+    }
+
+    /// @brief Extraction operator for result_value.
+    /// @ingroup c_api_wrap
+    /// @throws bad_result<Info>
+    ///
+    /// Extracts the value from an result, if it has value, throws otherwise.
+    template <std::derived_from<Result> Dest>
+        requires(not std::is_void_v<Dest>)
+    auto operator>>(Dest& dest) -> Dest& {
+        if(not this->has_value()) {
+            throw bad_result<Info>(static_cast<Info&&>(*this));
+        }
+        return dest = std::move(this->_value);
     }
 
     template <typename T>
     auto replaced_with(T value) const {
         result<T, Info, result_validity::maybe> res{
-          std::move(value), this->is_valid()};
+          std::move(value), this->has_value()};
         static_cast<Info&>(res) = static_cast<const Info&>(*this);
         return res;
     }
@@ -509,13 +543,6 @@ export constexpr auto extract(
   const result_value<void, result_validity::never>&) noexcept -> nothing_t {
     return {};
 }
-
-export template <typename Result, typename Info>
-auto operator>>(result<Result, Info, result_validity::never> res, Result& dest)
-  -> Result& {
-    throw bad_result<Info>(static_cast<Info&&>(res));
-    return dest;
-}
 //------------------------------------------------------------------------------
 // combined_result
 //------------------------------------------------------------------------------
@@ -536,7 +563,7 @@ public:
     combined_result(result<Result, SrcInfo, validity> src)
       : base{
           extract(static_cast<result_value<Result, validity>&&>(src)),
-          src.is_valid()} {
+          src.has_value()} {
         static_cast<Info&>(*this) = static_cast<SrcInfo&&>(src);
     }
 };
@@ -557,7 +584,7 @@ public:
 
     template <typename R, typename SrcInfo, result_validity validity>
     combined_result(const result<R, SrcInfo, validity>& src)
-      : base{src.is_valid()} {
+      : base{src.has_value()} {
         static_cast<Info&>(*this) = static_cast<const SrcInfo&>(src);
     }
 };
@@ -584,13 +611,6 @@ constexpr auto extract(
   const result_value<Result, result_validity::always>& res) noexcept
   -> const Result& {
     return res._value;
-}
-
-export template <typename Result>
-inline auto operator>>(
-  result_value<Result, result_validity::always> res,
-  Result& dest) noexcept -> Result& {
-    return dest = std::move(res._value);
 }
 
 export constexpr auto extract(
@@ -624,20 +644,6 @@ constexpr auto extract(
   -> const Result& {
     assert(res._valid);
     return res._value;
-}
-
-/// @brief Extraction operator for result_value.
-/// @ingroup c_api_wrap
-/// @throws bad_result<Info>
-///
-/// Extracts the value from an result, if the value is valid, throws otherwise.
-export template <typename Result, typename Info>
-auto operator>>(result<Result, Info, result_validity::maybe> res, Result& dest)
-  -> Result& {
-    if(not res._valid) {
-        throw bad_result<Info>(static_cast<Info&&>(res));
-    }
-    return dest = std::move(res._value);
 }
 
 export constexpr auto extract(
