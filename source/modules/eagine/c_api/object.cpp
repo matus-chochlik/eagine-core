@@ -32,7 +32,7 @@ public:
     ~basic_handle() noexcept = default;
 
     /// @brief Default constructor.
-    /// @post not is_valid()
+    /// @post not has_value()
     constexpr basic_handle() noexcept = default;
 
     /// @brief Move constructor.
@@ -56,14 +56,14 @@ public:
       : _name{name} {}
 
     /// @brief Indicates if this instance contains a valid handle.
-    constexpr auto is_valid() const noexcept -> bool {
+    constexpr auto has_value() const noexcept -> bool {
         return _name != invalid;
     }
 
     /// @brief Indicates if this instance contains a valid handle.
-    /// @see is_valid
+    /// @see has_value
     explicit constexpr operator bool() const noexcept {
-        return is_valid();
+        return has_value();
     }
 
     /// @brief Explicit conversion to the underlying handle type.
@@ -98,11 +98,11 @@ constexpr auto to_underlying(basic_handle<Tag, Handle, invalid> h) noexcept
 }
 //------------------------------------------------------------------------------
 /// @brief Overload of extract for basic handle values.
-/// @pre h.is_valid()
+/// @pre h.has_value()
 export template <typename Tag, typename Handle, Handle invalid>
 constexpr auto extract(const basic_handle<Tag, Handle, invalid>& h) noexcept
   -> const Handle& {
-    assert(h.is_valid());
+    assert(h.has_value());
     return *h;
 }
 //------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ public:
     ~basic_owned_handle() noexcept = default;
 
     /// @brief Default constructor.
-    /// @post not is_valid()
+    /// @post not has_value()
     constexpr basic_owned_handle() noexcept = default;
 
     /// @brief Move constructor.
@@ -149,7 +149,7 @@ public:
       : base{name} {}
 
     /// @brief Releases the underlying handle value.
-    /// @post not is_valid()
+    /// @post not has_value()
     auto release() noexcept -> Handle {
         return this->_release();
     }
@@ -245,7 +245,7 @@ class basic_object : public basic_owned_handle<Tag, Handle, invalid> {
 
 public:
     /// @brief Default constructor.
-    /// @post not is_valid()
+    /// @post not has_value()
     constexpr basic_object() noexcept = default;
 
     /// @brief Move constructor.
@@ -269,7 +269,7 @@ public:
 
     /// @brief Uses the associated Api to clean up this object.
     ~basic_object() noexcept {
-        if(this->is_valid()) {
+        if(this->has_value()) {
             _clean_up(std::make_index_sequence<sizeof...(P)>{});
         }
     }
