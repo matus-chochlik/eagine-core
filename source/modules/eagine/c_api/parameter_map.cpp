@@ -982,12 +982,12 @@ struct make_args_map<
 
     template <typename... P>
     constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
-        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).parameter;
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).parameter();
     }
 
     template <typename... P>
     constexpr auto operator()(size_constant<CI + 1> i, P&&... p) const noexcept {
-        return reorder_arg_map<CI + 1, CppI>{}(i, std::forward<P>(p)...).value;
+        return reorder_arg_map<CI + 1, CppI>{}(i, std::forward<P>(p)...).value();
     }
 };
 
