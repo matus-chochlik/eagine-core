@@ -77,12 +77,18 @@ public:
     constexpr result(Info info) noexcept
       : Info{std::move(info)} {}
 
-    constexpr auto has_value() const noexcept {
+    constexpr auto has_value() const noexcept -> bool {
         return false;
     }
 
     explicit constexpr operator bool() const noexcept {
         return false;
+    }
+
+    template <std::derived_from<Result> Dest>
+    auto operator>>(Dest& dest) -> Dest& {
+        throw bad_result<Info>(std::move(static_cast<Info*>(this)));
+        return dest;
     }
 
     template <std::convertible_to<Result> U>
@@ -94,10 +100,12 @@ public:
         return Result{};
     }
 
-    template <std::derived_from<Result> Dest>
-    auto operator>>(Dest& dest) -> Dest& {
-        throw bad_result<Info>(std::move(static_cast<Info*>(this)));
-        return dest;
+    template <
+      typename F,
+      optional_like R =
+        std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
+    [[nodiscard]] auto and_then(F&& function) const -> R {
+        return R{};
     }
 
     template <typename T>
@@ -144,7 +152,7 @@ public:
     constexpr result(Info info) noexcept
       : Info{std::move(info)} {}
 
-    constexpr auto has_value() const noexcept {
+    constexpr auto has_value() const noexcept -> bool {
         return false;
     }
 
@@ -207,7 +215,7 @@ public:
       , _value{std::move(value)} {}
 
     /// @brief Indicates if the result value is valid.
-    constexpr auto has_value() const noexcept {
+    constexpr auto has_value() const noexcept -> bool {
         return bool(*static_cast<const Info*>(this));
     }
 
@@ -232,6 +240,18 @@ public:
 
     [[nodiscard]] auto or_default() const noexcept -> Result {
         return _value;
+    }
+
+    template <
+      typename F,
+      optional_like R =
+        std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
+    [[nodiscard]] auto and_then(F&& function) const -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), _value);
+        } else {
+            return R{};
+        }
     }
 
     /// @brief Returns a transformed result with a new stored value.
@@ -286,7 +306,7 @@ public:
     constexpr result(Info info) noexcept
       : Info{std::move(info)} {}
 
-    constexpr auto has_value() const noexcept {
+    constexpr auto has_value() const noexcept -> bool {
         return bool(*static_cast<const Info*>(this));
     }
 
@@ -345,12 +365,20 @@ public:
       , _value{std::move(value)}
       , _valid{valid} {}
 
-    constexpr auto has_value() const noexcept {
+    constexpr auto has_value() const noexcept -> bool {
         return _valid and bool(*static_cast<const Info*>(this));
     }
 
     explicit constexpr operator bool() const noexcept {
         return has_value();
+    }
+
+    template <std::derived_from<Result> Dest>
+    auto operator>>(Dest& dest) -> Dest& {
+        if(not has_value()) {
+            throw bad_result<Info>(static_cast<Info&&>(*this));
+        }
+        return dest = std::move(_value);
     }
 
     template <std::convertible_to<Result> U>
@@ -368,12 +396,16 @@ public:
         return Result{};
     }
 
-    template <std::derived_from<Result> Dest>
-    auto operator>>(Dest& dest) -> Dest& {
-        if(not has_value()) {
-            throw bad_result<Info>(static_cast<Info&&>(*this));
+    template <
+      typename F,
+      optional_like R =
+        std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
+    [[nodiscard]] auto and_then(F&& function) const -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), _value);
+        } else {
+            return R{};
         }
-        return dest = std::move(_value);
     }
 
     template <typename T>
@@ -433,7 +465,7 @@ public:
       : Info{std::move(info)}
       , _valid{valid} {}
 
-    constexpr auto has_value() const noexcept {
+    constexpr auto has_value() const noexcept -> bool {
         return _valid;
     }
 
