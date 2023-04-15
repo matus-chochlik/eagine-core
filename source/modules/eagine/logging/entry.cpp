@@ -128,6 +128,29 @@ public:
         return arg(name, "MessageId", value);
     }
 
+    /// @brief Adds a new message argument with boolean value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    /// @param value the value of the argument.
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      const bool value) noexcept -> auto& {
+        if(_backend) {
+            _args.add([=](logger_backend& backend) {
+                backend.add_bool(name, tag, value);
+            });
+        }
+        return *this;
+    }
+
+    /// @brief Adds a new message argument with boolean value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param value the value of the argument.
+    auto arg(const identifier name, const bool value) noexcept -> auto& {
+        return arg(name, "bool", value);
+    }
+
     /// @brief Adds a new message argument with 64-bit signed integer value.
     /// @param name the argument name identifier. Used in message substitution.
     /// @param tag the argument type identifier. Used in value formatting.
