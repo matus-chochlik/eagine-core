@@ -42,9 +42,6 @@ export enum class result_validity {
     /// @brief Result is never valid.
     never
 };
-//------------------------------------------------------------------------------
-export template <typename Result, result_validity>
-class result_value;
 
 /// @brief Class wrapping the result of a C-API function call.
 /// @ingroup c_api_wrap
@@ -72,107 +69,47 @@ using no_result = result<Result, Info, result_validity::never>;
 //------------------------------------------------------------------------------
 // no result
 //------------------------------------------------------------------------------
-export template <typename Result>
-class result_value<Result, result_validity::never> {
-public:
-    constexpr result_value() noexcept = default;
-
-protected:
-    template <typename Info, typename T>
-    auto _cast_to(
-      const result<Result, Info, result_validity::never>& src,
-      std::type_identity<T>) const {
-        result<T, Info, result_validity::never> result{};
-        static_cast<Info&>(result) = static_cast<const Info&>(src);
-        return result;
-    }
-
-    template <typename Info, typename Transform>
-    auto _transformed(
-      const result<Result, Info, result_validity::never>& src,
-      Transform& transform) const {
-        using T = decltype(transform(std::declval<Result>(), false));
-        result<T, Info, result_validity::never> result{};
-        static_cast<Info&>(result) = static_cast<const Info&>(src);
-        return result;
-    }
-
-    template <typename Info, typename Check, typename IfFalse>
-    auto _collapsed(
-      const result<Result, Info, result_validity::never>& src,
-      Check&,
-      IfFalse&) const {
-        result<void, Info, result_validity::never> result{};
-        static_cast<Info&>(result) = static_cast<const Info&>(src);
-        return result;
-    }
-};
-
-export template <>
-class result_value<void, result_validity::never> {
-public:
-protected:
-    template <typename Info, typename T>
-    auto _cast_to(
-      const result<void, Info, result_validity::never>& src,
-      const std::type_identity<T>) const {
-        result<T, Info, result_validity::never> result{};
-        static_cast<Info&>(result) = static_cast<const Info&>(src);
-        return result;
-    }
-
-    template <typename Info, typename Transform>
-    auto _transformed(
-      const result<void, Info, result_validity::never>& src,
-      Transform& transform) const {
-        using T = decltype(transform(nothing, false));
-        result<T, Info, result_validity::never> result{};
-        static_cast<Info&>(result) = static_cast<const Info&>(src);
-        return result;
-    }
-
-    template <typename Info, typename Check, typename IfFalse>
-    auto _collapsed(
-      const result<void, Info, result_validity::never>& src,
-      Check&,
-      IfFalse&) const -> auto& {
-        return src;
-    }
-};
-//------------------------------------------------------------------------------
 export template <typename Result, typename Info>
-class result<Result, Info, result_validity::never>
-  : public Info
-  , public result_value<Result, result_validity::never> {
-    using base = result_value<Result, result_validity::never>;
-
+class result<Result, Info, result_validity::never> : public Info {
 public:
-    using base::base;
+    constexpr result() noexcept = default;
+
+    constexpr result(Info info) noexcept
+      : Info{std::move(info)} {}
+
+    constexpr auto has_value() const noexcept {
+        return false;
+    }
 
     explicit constexpr operator bool() const noexcept {
         return false;
     }
 
-    /// @brief Extraction operator for result_value.
-    /// @ingroup c_api_wrap
-    /// @throws bad_result<Info>
+    template <std::convertible_to<Result> U>
+    [[nodiscard]] auto value_or(U&& fallback) const noexcept -> Result {
+        return Result(std::forward<U>(fallback));
+    }
+
+    [[nodiscard]] auto or_default() const noexcept -> Result {
+        return Result{};
+    }
+
     template <std::derived_from<Result> Dest>
-        requires(not std::is_void_v<Dest>)
     auto operator>>(Dest& dest) -> Dest& {
-        throw bad_result<Info>(static_cast<Info&&>(*this));
+        throw bad_result<Info>(std::move(static_cast<Info*>(this)));
         return dest;
     }
 
     template <typename T>
-    auto replaced_with(const T&) const {
-        result<T, Info, result_validity::never> res{};
-        static_cast<Info&>(res) = static_cast<const Info&>(*this);
-        return res;
+    auto replaced_with(const T&) const
+      -> result<T, Info, result_validity::never> {
+        return {*this};
     }
 
     template <typename T>
-    auto cast_to(const std::type_identity<T> tid) const {
-        return this->_cast_to(*this, tid);
+    auto cast_to(const std::type_identity<T> tid) const
+      -> result<T, Info, result_validity::never> {
+        return {*this};
     }
 
     auto cast_to(const std::type_identity<void>) const noexcept -> auto& {
@@ -183,151 +120,131 @@ public:
         return *this;
     }
 
-    template <typename Transform>
-    auto transformed(Transform transform) const {
-        return this->_transformed(*this, transform);
+    template <typename F>
+    auto transformed(const F&) const -> result<
+      std::invoke_result_t<F, const Result&, bool>,
+      Info,
+      result_validity::never> {
+        return {*this};
     }
 
     template <typename Check, typename IfFalse>
-    auto collapsed(Check check, IfFalse if_false) const {
-        return this->_collapsed(*this, check, if_false);
+    auto collapsed(const Check&, IfFalse if_false) noexcept
+      -> result<void, Info, result_validity::never> {
+        if_false(*static_cast<Info*>(this));
+        return {*this};
+    }
+};
+//------------------------------------------------------------------------------
+export template <typename Info>
+class result<void, Info, result_validity::never> : public Info {
+public:
+    constexpr result() noexcept = default;
+
+    constexpr result(Info info) noexcept
+      : Info{std::move(info)} {}
+
+    constexpr auto has_value() const noexcept {
+        return false;
+    }
+
+    explicit constexpr operator bool() const noexcept {
+        return false;
+    }
+
+    template <typename T>
+    auto replaced_with(const T&) const noexcept
+      -> result<T, Info, result_validity::never> {
+        return {*this};
+    }
+
+    template <typename T>
+    auto cast_to(const std::type_identity<T> tid) const noexcept
+      -> result<T, Info, result_validity::never> {
+        return {*this};
+    }
+
+    auto cast_to(const std::type_identity<void>) const noexcept -> auto& {
+        return *this;
+    }
+
+    auto cast_to(const std::type_identity<nothing_t>) const noexcept -> auto& {
+        return *this;
+    }
+
+    template <typename F>
+    auto transformed(const F&) const -> result<
+      std::invoke_result_t<F, nothing_t, bool>,
+      Info,
+      result_validity::never> {
+        return {*this};
+    }
+
+    template <typename Check, typename IfFalse>
+    auto collapsed(const Check&, IfFalse if_false) noexcept -> auto& {
+        if_false(*static_cast<Info*>(this));
+        return *this;
     }
 };
 //------------------------------------------------------------------------------
 // result
-//------------------------------------------------------------------------------
-/// @brief Specialization for always-valid result value.
-/// @ingroup c_api_wrap
-export template <typename Result>
-class result_value<Result, result_validity::always> {
-public:
-    constexpr result_value() noexcept(noexcept(Result{})) = default;
-
-    constexpr result_value(Result value) noexcept
-      : _value{std::move(value)} {}
-
-    /// @brief Indicates if the result value is valid.
-    /// @returns true
-    constexpr auto has_value() const noexcept {
-        return true;
-    }
-
-protected:
-    template <typename Info, typename T>
-    auto _cast_to(
-      const result<Result, Info, result_validity::always>& src,
-      const std::type_identity<T>) const {
-        result<T, Info, result_validity::always> result{T(_value)};
-        static_cast<Info&>(result) = static_cast<const Info&>(src);
-        return result;
-    }
-
-    template <typename Info, typename Transform>
-    auto _transformed(
-      const result<Result, Info, result_validity::always>& src,
-      Transform& transform) const {
-        using T = decltype(transform(std::declval<Result>(), true));
-        result<T, Info, result_validity::always> result{
-          transform(_value, true)};
-        static_cast<Info&>(result) = static_cast<const Info&>(src);
-        return result;
-    }
-
-    template <typename Info, typename Check, typename IfFalse>
-    auto _collapsed(
-      const result<Result, Info, result_validity::always>& src,
-      Check& check,
-      IfFalse& if_false) const {
-        result<void, Info, result_validity::always> result{};
-        static_cast<Info&>(result) = static_cast<const Info&>(src);
-        if(not check(_value)) [[unlikely]] {
-            if_false(static_cast<Info&>(result));
-        }
-        return result;
-    }
-
-public:
-    friend class result_value<Result, result_validity::maybe>;
-    Result _value{};
-};
-//------------------------------------------------------------------------------
-export template <>
-class result_value<void, result_validity::always> {
-public:
-    constexpr auto has_value() const noexcept {
-        return true;
-    }
-
-protected:
-    template <typename Info, typename T>
-    auto _cast_to(
-      const result<void, Info, result_validity::always>& src,
-      const std::type_identity<T>) const {
-        result<T, Info, result_validity::always> result{};
-        static_cast<Info&>(result) = static_cast<const Info&>(src);
-        return result;
-    }
-
-    template <typename Info, typename Transform>
-    auto _transformed(
-      const result<void, Info, result_validity::always>& src,
-      Transform& transform) const {
-        using T = decltype(transform(nothing, true));
-        result<T, Info, result_validity::always> result{
-          transform(nothing, true)};
-        static_cast<Info&>(result) = static_cast<const Info&>(src);
-        return result;
-    }
-
-    template <typename Info, typename Check, typename IfFalse>
-    auto _collapsed(
-      const result<void, Info, result_validity::always>& src,
-      Check&,
-      IfFalse&) const -> auto& {
-        return src;
-    }
-};
 //------------------------------------------------------------------------------
 /// @brief Specialization of result for always-valid result values.
 /// @ingroup c_api_wrap
 ///
 /// The other specializations (@c maybe, @c never) has the same API as this one.
 export template <typename Result, typename Info>
-class result<Result, Info, result_validity::always>
-  : public Info
-  , public result_value<Result, result_validity::always> {
-    using base = result_value<Result, result_validity::always>;
+class result<Result, Info, result_validity::always> : public Info {
 
 public:
-    using base::base;
+    constexpr result() noexcept = default;
 
-    /// @brief Tests if this result is valid and contains an extractable value.
-    explicit constexpr operator bool() const noexcept {
+    constexpr result(Result value) noexcept
+      : _value{std::move(value)} {}
+
+    constexpr result(Result value, Info info) noexcept
+      : Info{std::move(info)}
+      , _value{std::move(value)} {}
+
+    /// @brief Indicates if the result value is valid.
+    constexpr auto has_value() const noexcept {
         return bool(*static_cast<const Info*>(this));
     }
 
-    /// @brief Extraction operator for result_value.
+    /// @brief Tests if this result is valid and contains an extractable value.
+    explicit constexpr operator bool() const noexcept {
+        return has_value();
+    }
+
+    /// @brief Extraction operator for result value.
     /// @ingroup c_api_wrap
     ///
     /// Extracts the value from this result
     template <std::derived_from<Result> Dest>
-        requires(not std::is_void_v<Dest>)
     auto operator>>(Dest& dest) -> Dest& {
-        return dest = std::move(this->_value);
+        return dest = std::move(_value);
+    }
+
+    template <std::convertible_to<Result> U>
+    [[nodiscard]] auto value_or(U&&) const noexcept -> Result {
+        return _value;
+    }
+
+    [[nodiscard]] auto or_default() const noexcept -> Result {
+        return _value;
     }
 
     /// @brief Returns a transformed result with a new stored value.
     template <typename T>
-    auto replaced_with(T value) const {
-        result<T, Info, result_validity::always> res{std::move(value)};
-        static_cast<Info&>(res) = static_cast<const Info&>(*this);
-        return res;
+    auto replaced_with(T value) const
+      -> result<T, Info, result_validity::always> {
+        return {std::move(value), *this};
     }
 
     /// @brief Returns an result with the stored value cast to different type.
     template <typename T>
     auto cast_to(const std::type_identity<T> tid) const {
-        return this->_cast_to(*this, tid);
+        return replaced_with(T(_value));
     }
 
     auto cast_to(const std::type_identity<void>) const noexcept -> auto& {
@@ -339,170 +256,54 @@ public:
     }
 
     /// @brief Returns an result with the value transformed by the specified function.
-    template <typename Transform>
-    auto transformed(Transform transform) const {
-        return this->_transformed(*this, transform);
+    template <typename F>
+    auto transformed(F&& function) const -> result<
+      std::invoke_result_t<F, const Result&, bool>,
+      Info,
+      result_validity::always> {
+        return {std::invoke(std::forward<F>(function), _value, true), *this};
     }
 
     template <typename Check, typename IfFalse>
-    auto collapsed(Check check, IfFalse if_false) const {
-        return this->_collapsed(*this, check, if_false);
-    }
-};
-//------------------------------------------------------------------------------
-/// @brief Specialization for conditionally-valid result value.
-/// @ingroup c_api_wrap
-export template <typename Result>
-class result_value<Result, result_validity::maybe> {
-public:
-    constexpr result_value() noexcept = default;
-
-    constexpr result_value(Result value, const bool valid) noexcept
-      : _value{std::move(value)}
-      , _valid{valid} {}
-
-    constexpr result_value(
-      const result_value<Result, result_validity::never>&) noexcept {}
-
-    constexpr result_value(
-      result_value<Result, result_validity::always> that) noexcept
-      : _value{std::move(that._value)}
-      , _valid{true} {}
-
-    /// @brief Indicates if the result value is valid.
-    constexpr auto has_value() const noexcept {
-        return _valid;
-    }
-
-protected:
-    template <typename Info, typename T>
-    auto _cast_to(
-      const result<Result, Info, result_validity::maybe>& src,
-      const std::type_identity<T>) const {
-        result<T, Info, result_validity::maybe> res{T(_value), src.has_value()};
-        static_cast<Info&>(res) = static_cast<const Info&>(src);
-        return res;
-    }
-
-    template <typename Info, typename Transform>
-    auto _transformed(
-      const result<Result, Info, result_validity::maybe>& src,
-      Transform& transform) const {
-        using T = decltype(transform(std::declval<Result>(), true));
-        result<T, Info, result_validity::maybe> res{
-          transform(_value, src.has_value()), src.has_value()};
-        static_cast<Info&>(res) = static_cast<const Info&>(src);
-        return res;
-    }
-
-    template <typename Info, typename Check, typename IfFalse>
-    auto _collapsed(
-      const result<Result, Info, result_validity::maybe>& src,
-      Check& check,
-      IfFalse& if_false) const {
-        result<void, Info, result_validity::maybe> res{};
-        static_cast<Info&>(res) = static_cast<const Info&>(src);
-        if(src.has_value() and not check(_value)) [[unlikely]] {
-            if_false(static_cast<Info&>(res));
+    auto collapsed(Check check, IfFalse if_false)
+      -> result<void, Info, result_validity::always> {
+        if(not check(_value)) [[unlikely]] {
+            if_false(*static_cast<Info*>(this));
         }
-        return res;
+        return {*this};
     }
 
 public:
     Result _value{};
-    bool _valid{false};
 };
 //------------------------------------------------------------------------------
-export template <>
-class result_value<void, result_validity::maybe> {
+export template <typename Info>
+class result<void, Info, result_validity::always> : public Info {
+
 public:
-    constexpr result_value() noexcept = default;
+    constexpr result() noexcept = default;
 
-    constexpr result_value(const bool valid) noexcept
-      : _valid{valid} {}
-
-    constexpr result_value(
-      const result_value<void, result_validity::never>&) noexcept {}
-
-    constexpr result_value(
-      const result_value<void, result_validity::always>&) noexcept
-      : _valid{true} {}
+    constexpr result(Info info) noexcept
+      : Info{std::move(info)} {}
 
     constexpr auto has_value() const noexcept {
-        return _valid;
+        return bool(*static_cast<const Info*>(this));
     }
-
-protected:
-    template <typename Info, typename T>
-    auto _cast_to(
-      const result<void, Info, result_validity::maybe>& src,
-      const std::type_identity<T>) const {
-        result<T, Info, result_validity::maybe> res{T{}, src.has_value()};
-        static_cast<Info&>(res) = static_cast<const Info&>(src);
-        return res;
-    }
-
-    template <typename Info, typename Transform>
-    auto _transformed(
-      const result<void, Info, result_validity::maybe>& src,
-      Transform& transform) const {
-        using T = decltype(transform(nothing, true));
-        result<T, Info, result_validity::maybe> res{
-          transform(nothing, src.has_value()), src.has_value()};
-        static_cast<Info&>(res) = static_cast<const Info&>(src);
-        return res;
-    }
-
-    template <typename Info, typename Check, typename IfFalse>
-    auto _collapsed(
-      const result<void, Info, result_validity::maybe>& src,
-      Check&,
-      IfFalse&) const -> auto& {
-        return src;
-    }
-
-public:
-    bool _valid{false};
-};
-//------------------------------------------------------------------------------
-export template <typename Result, typename Info>
-class result<Result, Info, result_validity::maybe>
-  : public Info
-  , public result_value<Result, result_validity::maybe> {
-    using base = result_value<Result, result_validity::maybe>;
-
-public:
-    using base::base;
 
     explicit constexpr operator bool() const noexcept {
-        return this->has_value() and bool(*static_cast<const Info*>(this));
-    }
-
-    /// @brief Extraction operator for result_value.
-    /// @ingroup c_api_wrap
-    /// @throws bad_result<Info>
-    ///
-    /// Extracts the value from an result, if it has value, throws otherwise.
-    template <std::derived_from<Result> Dest>
-        requires(not std::is_void_v<Dest>)
-    auto operator>>(Dest& dest) -> Dest& {
-        if(not this->has_value()) {
-            throw bad_result<Info>(static_cast<Info&&>(*this));
-        }
-        return dest = std::move(this->_value);
+        return has_value();
     }
 
     template <typename T>
-    auto replaced_with(T value) const {
-        result<T, Info, result_validity::maybe> res{
-          std::move(value), this->has_value()};
-        static_cast<Info&>(res) = static_cast<const Info&>(*this);
-        return res;
+    auto replaced_with(T value) const
+      -> result<T, Info, result_validity::always> {
+        return {std::move(value), *this};
     }
 
+    /// @brief Returns an result with the stored value cast to different type.
     template <typename T>
     auto cast_to(const std::type_identity<T> tid) const {
-        return this->_cast_to(*this, tid);
+        return replaced_with(T{});
     }
 
     auto cast_to(const std::type_identity<void>) const noexcept -> auto& {
@@ -513,34 +314,190 @@ public:
         return *this;
     }
 
-    template <typename Transform>
-    auto transformed(Transform transform) const {
-        return this->_transformed(*this, transform);
+    template <typename F>
+    auto transformed(F&& function) const -> result<
+      std::invoke_result_t<F, nothing_t, bool>,
+      Info,
+      result_validity::always> {
+        return {std::invoke(std::forward<F>(function), nothing, true), *this};
     }
 
     template <typename Check, typename IfFalse>
-    auto collapsed(Check check, IfFalse if_false) const {
-        return this->_collapsed(*this, check, if_false);
+    auto collapsed(const Check& check, const IfFalse&) const -> auto& {
+        return *this;
     }
 };
 //------------------------------------------------------------------------------
-/// @brief Overload of extract for result_value.
+// optional result
+//------------------------------------------------------------------------------
+export template <typename Result, typename Info>
+class result<Result, Info, result_validity::maybe> : public Info {
+
+public:
+    constexpr result() noexcept = default;
+
+    constexpr result(Result value, const bool valid) noexcept
+      : _value{std::move(value)}
+      , _valid{valid} {}
+
+    constexpr result(Result value, const bool valid, Info info) noexcept
+      : Info{std::move(info)}
+      , _value{std::move(value)}
+      , _valid{valid} {}
+
+    constexpr auto has_value() const noexcept {
+        return _valid and bool(*static_cast<const Info*>(this));
+    }
+
+    explicit constexpr operator bool() const noexcept {
+        return has_value();
+    }
+
+    template <std::convertible_to<Result> U>
+    [[nodiscard]] auto value_or(U&& fallback) const noexcept -> Result {
+        if(has_value()) {
+            return _value;
+        }
+        return Result(std::forward<U>(fallback));
+    }
+
+    [[nodiscard]] auto or_default() const noexcept -> Result {
+        if(has_value()) {
+            return _value;
+        }
+        return Result{};
+    }
+
+    template <std::derived_from<Result> Dest>
+    auto operator>>(Dest& dest) -> Dest& {
+        if(not has_value()) {
+            throw bad_result<Info>(static_cast<Info&&>(*this));
+        }
+        return dest = std::move(_value);
+    }
+
+    template <typename T>
+    auto replaced_with(T value) const
+      -> result<T, Info, result_validity::maybe> {
+        return {std::move(value), has_value(), *this};
+    }
+
+    template <typename T>
+    auto cast_to(const std::type_identity<T> tid) const {
+        return replaced_with(T{});
+    }
+
+    auto cast_to(const std::type_identity<void>) const noexcept -> auto& {
+        return *this;
+    }
+
+    auto cast_to(const std::type_identity<nothing_t>) const noexcept -> auto& {
+        return *this;
+    }
+
+    template <typename F>
+    auto transformed(F&& function) const -> result<
+      std::invoke_result_t<F, const Result&, bool>,
+      Info,
+      result_validity::maybe> {
+        return {
+          std::invoke(std::forward<F>(function), _value, has_value()),
+          has_value(),
+          *this};
+    }
+
+    template <typename Check, typename IfFalse>
+    auto collapsed(Check check, IfFalse if_false)
+      -> result<void, Info, result_validity::always> {
+        if(not check(_value)) [[unlikely]] {
+            if_false(*static_cast<Info*>(this));
+        }
+        return {*this};
+    }
+
+public: // TODO
+    Result _value{};
+    bool _valid{false};
+};
+//------------------------------------------------------------------------------
+export template <typename Info>
+class result<void, Info, result_validity::maybe> : public Info {
+
+public:
+    constexpr result() noexcept = default;
+
+    constexpr result(const bool valid) noexcept
+      : _valid{valid} {}
+
+    constexpr result(const bool valid, Info info) noexcept
+      : Info{std::move(info)}
+      , _valid{valid} {}
+
+    constexpr auto has_value() const noexcept {
+        return _valid;
+    }
+
+    explicit constexpr operator bool() const noexcept {
+        return has_value();
+    }
+
+    template <typename T>
+    auto replaced_with(T value) const
+      -> result<T, Info, result_validity::maybe> {
+        return {std::move(value), has_value(), *this};
+    }
+
+    template <typename T>
+    auto cast_to(const std::type_identity<T> tid) const {
+        return replaced_with(T{});
+    }
+
+    auto cast_to(const std::type_identity<void>) const noexcept -> auto& {
+        return *this;
+    }
+
+    auto cast_to(const std::type_identity<nothing_t>) const noexcept -> auto& {
+        return *this;
+    }
+
+    template <typename F>
+    auto transformed(F&& function) const -> result<
+      std::invoke_result_t<F, nothing_t, bool>,
+      Info,
+      result_validity::maybe> {
+        return {
+          std::invoke(std::forward<F>(function), nothing, has_value()),
+          has_value(),
+          *this};
+    }
+
+    template <typename Check, typename IfFalse>
+    auto collapsed(const Check&, const IfFalse&) const -> auto& {
+        return *this;
+    }
+
+private:
+    bool _valid{false};
+};
+//------------------------------------------------------------------------------
+/// @brief Overload of extract for result.
 /// @ingroup c_api_wrap
-export template <typename Result>
-constexpr auto extract(result_value<Result, result_validity::never>&) noexcept
+export template <typename Result, typename Info>
+constexpr auto extract(result<Result, Info, result_validity::never>&) noexcept
   -> Result& {
     return unreachable_reference(std::type_identity<Result>{});
 }
 
-export template <typename Result>
+export template <typename Result, typename Info>
 constexpr auto extract(
-  const result_value<Result, result_validity::never>&) noexcept
+  const result<Result, Info, result_validity::never>&) noexcept
   -> const Result& {
     return unreachable_reference(std::type_identity<Result>{});
 }
 
-export constexpr auto extract(
-  const result_value<void, result_validity::never>&) noexcept -> nothing_t {
+export template <typename Info>
+constexpr auto extract(
+  const result<void, Info, result_validity::never>&) noexcept -> nothing_t {
     return {};
 }
 //------------------------------------------------------------------------------
@@ -553,40 +510,9 @@ class combined_result : public result<Result, Info, result_validity::maybe> {
 public:
     constexpr combined_result() noexcept = default;
 
-    template <typename SrcInfo>
-    combined_result(result<Result, SrcInfo, result_validity::never> src)
-      : base{} {
-        static_cast<Info&>(*this) = static_cast<SrcInfo&&>(src);
-    }
-
     template <typename SrcInfo, result_validity validity>
     combined_result(result<Result, SrcInfo, validity> src)
-      : base{
-          extract(static_cast<result_value<Result, validity>&&>(src)),
-          src.has_value()} {
-        static_cast<Info&>(*this) = static_cast<SrcInfo&&>(src);
-    }
-};
-//------------------------------------------------------------------------------
-export template <typename Info>
-class combined_result<void, Info>
-  : public result<void, Info, result_validity::maybe> {
-    using base = result<void, Info, result_validity::maybe>;
-
-public:
-    constexpr combined_result() noexcept = default;
-
-    template <typename R, typename SrcInfo>
-    combined_result(const result<R, SrcInfo, result_validity::never>& src)
-      : base{} {
-        static_cast<Info&>(*this) = static_cast<const SrcInfo&>(src);
-    }
-
-    template <typename R, typename SrcInfo, result_validity validity>
-    combined_result(const result<R, SrcInfo, validity>& src)
-      : base{src.has_value()} {
-        static_cast<Info&>(*this) = static_cast<const SrcInfo&>(src);
-    }
+      : base{std::move(src)} {}
 };
 //------------------------------------------------------------------------------
 export template <typename Result, typename Info, result_validity validity>
@@ -594,78 +520,66 @@ constexpr auto has_value(const result<Result, Info, validity>& v) noexcept {
     return bool(v);
 }
 
-export template <typename Result>
+export template <typename Result, typename Info>
 constexpr auto extract(
-  result_value<Result, result_validity::always>&& res) noexcept -> Result {
+  result<Result, Info, result_validity::always>&& res) noexcept -> Result {
     return std::move(res._value);
 }
 
-export template <typename Result>
+export template <typename Result, typename Info>
 constexpr auto extract(
-  result_value<Result, result_validity::always>& res) noexcept -> Result& {
+  result<Result, Info, result_validity::always>& res) noexcept -> Result& {
     return res._value;
 }
 
-export template <typename Result>
+export template <typename Result, typename Info>
 constexpr auto extract(
-  const result_value<Result, result_validity::always>& res) noexcept
+  const result<Result, Info, result_validity::always>& res) noexcept
   -> const Result& {
     return res._value;
 }
 
-export constexpr auto extract(
-  const result_value<void, result_validity::always>&) noexcept -> nothing_t {
+export template <typename Info>
+constexpr auto extract(
+  const result<void, Info, result_validity::always>&) noexcept -> nothing_t {
     return {};
 }
 
-/// @brief Specialization of extract for result_value.
+/// @brief Specialization of extract for result.
 /// @ingroup c_api_wrap
-export template <typename Result>
+export template <typename Result, typename Info>
 constexpr auto extract(
-  result_value<Result, result_validity::maybe>&& res) noexcept -> Result {
+  result<Result, Info, result_validity::maybe>&& res) noexcept -> Result {
     assert(res._valid);
     return std::move(res._value);
 }
 
-/// @brief Specialization of extract for result_value.
+/// @brief Specialization of extract for result.
 /// @ingroup c_api_wrap
-export template <typename Result>
+export template <typename Result, typename Info>
 constexpr auto extract(
-  result_value<Result, result_validity::maybe>& res) noexcept -> Result& {
+  result<Result, Info, result_validity::maybe>& res) noexcept -> Result& {
     assert(res._valid);
     return res._value;
 }
 
-/// @brief Specialization of extract for result_value.
+/// @brief Specialization of extract for result.
 /// @ingroup c_api_wrap
-export template <typename Result>
+export template <typename Result, typename Info>
 constexpr auto extract(
-  const result_value<Result, result_validity::maybe>& res) noexcept
+  const result<Result, Info, result_validity::maybe>& res) noexcept
   -> const Result& {
     assert(res._valid);
     return res._value;
 }
 
-export constexpr auto extract(
-  const result_value<void, result_validity::maybe>&) noexcept -> nothing_t {
+export template <typename Info>
+constexpr auto extract(
+  const result<void, Info, result_validity::maybe>&) noexcept -> nothing_t {
     return {};
 }
 //------------------------------------------------------------------------------
 } // namespace c_api
-
-export template <typename Result, c_api::result_validity validity>
-struct extract_traits<c_api::result_value<Result, validity>> {
-    using value_type = Result;
-    using result_type = Result&;
-    using const_result_type = std::add_const_t<Result>&;
-};
-
-export template <c_api::result_validity validity>
-struct extract_traits<c_api::result_value<void, validity>> {
-    using value_type = void;
-    using result_type = void;
-    using const_result_type = void;
-};
 
 export template <typename Result, typename Info, c_api::result_validity validity>
 struct extract_traits<c_api::result<Result, Info, validity>> {
