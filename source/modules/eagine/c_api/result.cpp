@@ -416,7 +416,7 @@ public:
 
     template <typename T>
     auto cast_to(const std::type_identity<T> tid) const {
-        return replaced_with(T{});
+        return replaced_with(T(_value));
     }
 
     auto cast_to(const std::type_identity<void>) const noexcept -> auto& {
