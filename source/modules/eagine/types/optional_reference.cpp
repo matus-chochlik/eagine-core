@@ -120,10 +120,10 @@ public:
     /// @brief Invoke function on the stored value or return empty extractable.
     /// @see transform
     /// @see construct
-    template <typename F>
-        requires(optional_like<std::remove_cvref_t<std::invoke_result_t<F, T&>>>)
-    [[nodiscard]] auto and_then(F&& function) {
-        using R = std::remove_cvref_t<std::invoke_result_t<F, T&>>;
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
+    [[nodiscard]] auto and_then(F&& function) -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), this->value());
         } else {
@@ -160,11 +160,10 @@ public:
 
     /// @brief Invoke function on the stored value or return empty extractable.
     /// @see transform
-    template <typename F>
-        requires(
-          optional_like<std::remove_cvref_t<std::invoke_result_t<F, const T&>>>)
-    [[nodiscard]] auto and_then(F&& function) const {
-        using R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>;
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>>
+    [[nodiscard]] auto and_then(F&& function) const -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), this->value());
         } else {
