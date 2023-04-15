@@ -170,8 +170,8 @@ auto root_logger::_log_build_info() -> void {
     info("source version information")
       .tag("BuildInfo")
       .arg("onValgrind", running_on_valgrind())
-      .arg("lowProfile", low_profile_build)
-      .arg("debug", debug_build);
+      .arg("lowProfile", tribool{low_profile_build})
+      .arg("debug", tribool{debug_build});
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_instance_info() -> void {
