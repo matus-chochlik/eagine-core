@@ -7,6 +7,10 @@
 ///
 module;
 
+#if __has_include(<eagine/config/os_info.hpp>)
+#include <eagine/config/os_info.hpp>
+#endif
+
 #if __has_include(<eagine/config/git_info.hpp>)
 #include <eagine/config/git_info.hpp>
 #endif
