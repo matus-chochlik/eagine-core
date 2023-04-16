@@ -51,45 +51,55 @@ export [[nodiscard]] auto make_cbyte_span(const span<const char> s) noexcept
 export [[nodiscard]] constexpr auto max_code_point(
   const valid_sequence_length& len) noexcept
   -> valid_if_not_zero<code_point_t> {
-    return len == 1 ? 0x0000007F : //  7b
-             len == 2 ? 0x000007FF
-                      :            // 11b
-             len == 3 ? 0x0000FFFF
-                      :            // 16b
-             len == 4 ? 0x001FFFFF
-                      :            // 21b
-             len == 5 ? 0x03FFFFFF
-                      :            // 26b
-             len == 6 ? 0x7FFFFFFF
-                      :            // 31b
-             0x00000000;
+    switch(len.value_or(0)) {
+        case 1: //  7b
+            return 0x0000007FU;
+        case 2: // 11b
+            return 0x000007FFU;
+        case 3: // 16b
+            return 0x0000FFFFU;
+        case 4: // 21b
+            return 0x001FFFFFU;
+        case 5: // 26b
+            return 0x03FFFFFFU;
+        case 6: // 31b
+            return 0x7FFFFFFFU;
+        default:
+            return 0x00000000U;
+    }
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto head_data_bitshift(
   const valid_sequence_length& len) noexcept
   -> valid_if_nonnegative<span_size_t> {
-    return {len.is_valid() ? (extract(len) - 1) * 6 : -1};
+    return {len ? (*len - 1) * 6 : -1};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto tail_data_bitshift(
   const valid_sequence_length& idx,
   const valid_sequence_length& len) noexcept
   -> valid_if_nonnegative<span_size_t> {
-    return {
-      (idx.is_valid() and len.is_valid())
-        ? (extract(len) - extract(idx) - 1) * 6
-        : -1};
+    return {(idx and len) ? (*len - *idx - 1) * 6 : -1};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto head_code_mask(
   const valid_sequence_length& len) noexcept -> valid_if_not_zero<byte> {
-    return len == 1   ? 0x80
-           : len == 2 ? 0xE0
-           : len == 3 ? 0xF0
-           : len == 4 ? 0xF8
-           : len == 5 ? 0xFC
-           : len == 6 ? 0xFE
-                      : 0x00;
+    switch(len.value_or(0)) {
+        case 1:
+            return 0x80U;
+        case 2:
+            return 0xE0U;
+        case 3:
+            return 0xF0U;
+        case 4:
+            return 0xF8U;
+        case 5:
+            return 0xFCU;
+        case 6:
+            return 0xFEU;
+        default:
+            return 0x00U;
+    }
 }
 //------------------------------------------------------------------------------
 template <typename P>
@@ -105,19 +115,19 @@ template <typename P>
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto tail_code_mask() noexcept
   -> always_valid<byte> {
-    return 0xC0;
+    return 0xC0U;
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto tail_data_mask() noexcept
   -> always_valid<byte> {
-    return 0x3F;
+    return 0x3FU;
 }
 //------------------------------------------------------------------------------
 template <typename P>
 [[nodiscard]] static constexpr auto head_code_from_mask(
   const valid_if<byte, P> mask) noexcept -> optionally_valid<byte> {
     // NOLINTNEXTLINE(hicpp-signed-bitwise)
-    return {byte((mask.value_anyway() << 1) & 0xFF), mask.is_valid()};
+    return {byte((mask.value_anyway() << 1U) & 0xFFU), mask.is_valid()};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto head_code(
@@ -126,7 +136,7 @@ template <typename P>
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto tail_code() noexcept -> always_valid<byte> {
-    return 0x80;
+    return 0x80U;
 }
 //------------------------------------------------------------------------------
 template <typename P1, typename P2>
@@ -134,9 +144,7 @@ template <typename P1, typename P2>
   const byte b,
   const valid_if<byte, P1> mask,
   const valid_if<byte, P2> code) noexcept -> bool {
-    return (mask.is_valid() and code.is_valid())
-             ? (b & extract(mask)) == extract(code)
-             : false;
+    return (mask and code) ? (b & *mask) == *code : false;
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] constexpr auto is_valid_head_byte(
