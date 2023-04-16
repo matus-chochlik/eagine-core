@@ -129,7 +129,7 @@ public:
     }
 
     template <typename F>
-    auto transformed(const F&) const -> result<
+    auto transform(const F&) const -> result<
       std::invoke_result_t<F, const Result&, bool>,
       Info,
       result_validity::never> {
@@ -181,7 +181,7 @@ public:
     }
 
     template <typename F>
-    auto transformed(const F&) const -> result<
+    auto transform(const F&) const -> result<
       std::invoke_result_t<F, nothing_t, bool>,
       Info,
       result_validity::never> {
@@ -277,7 +277,7 @@ public:
 
     /// @brief Returns an result with the value transformed by the specified function.
     template <typename F>
-    auto transformed(F&& function) const -> result<
+    auto transform(F&& function) const -> result<
       std::invoke_result_t<F, const Result&, bool>,
       Info,
       result_validity::always> {
@@ -335,7 +335,7 @@ public:
     }
 
     template <typename F>
-    auto transformed(F&& function) const -> result<
+    auto transform(F&& function) const -> result<
       std::invoke_result_t<F, nothing_t, bool>,
       Info,
       result_validity::always> {
@@ -428,7 +428,7 @@ public:
     }
 
     template <typename F>
-    auto transformed(F&& function) const -> result<
+    auto transform(F&& function) const -> result<
       std::invoke_result_t<F, const Result&, bool>,
       Info,
       result_validity::maybe> {
@@ -493,7 +493,7 @@ public:
     }
 
     template <typename F>
-    auto transformed(F&& function) const -> result<
+    auto transform(F&& function) const -> result<
       std::invoke_result_t<F, nothing_t, bool>,
       Info,
       result_validity::maybe> {
