@@ -99,8 +99,8 @@ public:
       const string_view tag = {},
       const std::type_identity<Extractable> = {}) noexcept -> T {
         Extractable value(initial);
-        return extract_or(
-          application_config_initial(app_config(), key, value, tag), initial);
+        return application_config_initial(app_config(), key, value, tag)
+          .value_or(initial);
     }
 
     /// @brief Returns a reference to the console object.

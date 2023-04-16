@@ -432,7 +432,7 @@ export template <
 auto slice_before(
   const basic_span<T1, P1, S1> spn,
   const basic_span<T2, P2, S2> what) -> basic_span<T1, P1, S1> {
-    return head(spn, extract_or(find_position(spn, what), spn.size()));
+    return head(spn, find_position(spn, what).value_or(spn.size()));
 }
 //------------------------------------------------------------------------------
 /// @brief Returns a slice of span after the first occurrence of @p what.
@@ -450,7 +450,7 @@ auto slice_after(
   const basic_span<T1, P1, S1> spn,
   const basic_span<T2, P2, S2> what) -> basic_span<T1, P1, S1> {
     return skip(
-      spn, extract_or(find_position(spn, what), spn.size()) + what.size());
+      spn, find_position(spn, what).value_or(spn.size()) + what.size());
 }
 //------------------------------------------------------------------------------
 /// @brief Splits a span by the first occurrence of @p what (before and after, what)
@@ -467,7 +467,7 @@ auto split_by_first(
   const basic_span<T1, P1, S1> spn,
   const basic_span<T2, P2, S2> what)
   -> std::tuple<basic_span<T1, P1, S1>, basic_span<T1, P1, S1>> {
-    const auto pos{extract_or(find_position(spn, what), spn.size())};
+    const auto pos{find_position(spn, what).value_or(spn.size())};
     return {head(spn, pos), skip(spn, pos + what.size())};
 }
 //------------------------------------------------------------------------------
@@ -484,7 +484,7 @@ export template <
 auto slice_before_last(
   const basic_span<T1, P1, S1> spn,
   const basic_span<T2, P2, S2> what) -> basic_span<T1, P1, S1> {
-    return head(spn, extract_or(reverse_find_position(spn, what), spn.size()));
+    return head(spn, reverse_find_position(spn, what).value_or(spn.size()));
 }
 //------------------------------------------------------------------------------
 /// @brief Returns a slice of span after the last occurrence of @p what.
@@ -501,8 +501,7 @@ auto slice_after_last(
   const basic_span<T1, P1, S1> spn,
   const basic_span<T2, P2, S2> what) -> basic_span<T1, P1, S1> {
     return skip(
-      spn,
-      extract_or(reverse_find_position(spn, what), spn.size()) + what.size());
+      spn, reverse_find_position(spn, what).value_or(spn.size()) + what.size());
 }
 //------------------------------------------------------------------------------
 /// @brief Splits a span by the last occurrence of @p what (before and after, what)
@@ -519,7 +518,7 @@ auto split_by_last(
   const basic_span<T1, P1, S1> spn,
   const basic_span<T2, P2, S2> what)
   -> std::tuple<basic_span<T1, P1, S1>, basic_span<T1, P1, S1>> {
-    const auto pos{extract_or(reverse_find_position(spn, what), spn.size())};
+    const auto pos{reverse_find_position(spn, what).value_or(spn.size())};
     return {head(spn, pos), skip(spn, pos + what.size())};
 }
 //------------------------------------------------------------------------------

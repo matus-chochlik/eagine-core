@@ -17,11 +17,11 @@ auto main(main_ctx& ctx) -> int {
 
     ctx.cio()
       .print(identifier{"user"}, "login name: ${login}")
-      .arg(identifier{"login"}, extract_or(usr.login_name(), na));
+      .arg(identifier{"login"}, usr.login_name().value_or(na));
 
     ctx.cio()
       .print(identifier{"user"}, "home path: ${home}")
-      .arg(identifier{"home"}, extract_or(usr.home_dir_path(), na));
+      .arg(identifier{"home"}, usr.home_dir_path().value_or(na));
 
     return 0;
 }

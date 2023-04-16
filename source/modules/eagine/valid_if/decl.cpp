@@ -277,6 +277,16 @@ public:
         return fallback;
     }
 
+    /// @brief Returns the stored value if valid, otherwise returns default value.
+    /// @param p additional parameters for the policy validity check function.
+    [[nodiscard]] constexpr auto or_default(P... p) const noexcept
+      -> value_type {
+        if(is_valid(p...)) [[likely]] {
+            return _value;
+        }
+        return value_type{};
+    }
+
     /// @brief Returns the stored value regardless of its validity.
     [[nodiscard]] constexpr auto value_anyway() const noexcept -> const T& {
         return _value;

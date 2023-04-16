@@ -349,6 +349,27 @@ public:
         return _addr[size() - 1];
     }
 
+    /// @brief Returns the single value if size == 1 or fallback
+    /// @see size()
+    /// @pre front()
+    template <std::convertible_to<element_type> U>
+    auto value_or(U&& fallback) const noexcept -> element_type {
+        if(size() == 1) {
+            return front();
+        }
+        return element_type(std::forward<U>(fallback));
+    }
+
+    /// @brief Returns the single value if size == 1 or default constructed element_type
+    /// @see size()
+    /// @pre front()
+    auto or_default() const noexcept -> element_type {
+        if(size() == 1) {
+            return front();
+        }
+        return element_type{};
+    }
+
     /// @brief Returns a const reference to value at the specified index.
     /// @pre 0 <= index < size()
     template <typename Int>

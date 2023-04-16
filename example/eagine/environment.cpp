@@ -24,7 +24,7 @@ auto main() -> int {
            v("NONE")})) {
 
         std::cout << name << ": "
-                  << extract_or(get_environment_variable(name), "N/A")
+                  << get_environment_variable(name).value_or("N/A")
                   << std::endl;
     }
 

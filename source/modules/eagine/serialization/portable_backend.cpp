@@ -334,7 +334,7 @@ private:
     template <std::signed_integral I>
     auto _read_one(I& value, const char delimiter) noexcept -> result {
         using U = std::make_unsigned_t<I>;
-        const char sign = extract_or(top_char(), '\0');
+        const char sign = top_char().value_or('\0');
         result errors{};
         if((sign == '+') or (sign == '-')) [[likely]] {
             pop(1);

@@ -30,8 +30,8 @@ void sudoku_noise(
         }
     };
 
-    const auto width = extract_or(cfg.get<int>("width"), 16);
-    const auto height = extract_or(cfg.get<int>("height"), 8);
+    const auto width = cfg.get<int>("width").value_or(16);
+    const auto height = cfg.get<int>("height").value_or(8);
 
     basic_sudoku_tiling<S> bst{traits, initial()};
     bst.print(std::cout, 0, 0, width, height);
@@ -40,7 +40,7 @@ void sudoku_noise(
 auto main(main_ctx& ctx) -> int {
     auto& cfg = ctx.config();
 
-    const auto rank = extract_or(cfg.get<int>("rank"), 4);
+    const auto rank = cfg.get<int>("rank").value_or(4);
 
     switch(rank) {
         case 3: {

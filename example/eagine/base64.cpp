@@ -23,14 +23,14 @@ auto main(main_ctx& ctx) -> int {
                   .arg(identifier{"src"}, arg.get())
                   .arg(
                     identifier{"enc"},
-                    extract_or(base64_encode(fc.block(), temp), na));
+                    base64_encode(fc.block(), temp).value_or(na));
             } else if(arg.prev().is_tag("-s", "--string")) {
                 ctx.cio()
                   .print(identifier{"base64"}, "${src}|${enc}")
                   .arg(identifier{"src"}, arg.get())
                   .arg(
                     identifier{"enc"},
-                    extract_or(base64_encode(arg.block(), temp), "-"));
+                    base64_encode(arg.block(), temp).value_or("-"));
             }
         }
     }

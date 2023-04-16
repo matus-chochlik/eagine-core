@@ -155,7 +155,7 @@ auto main(int, const char** argv) -> int {
         auto make_getbyte = [&api](int fd) {
             return [&api, fd]() -> std::optional<byte> {
                 byte b{};
-                if(not extract_or(api.read_block(fd, cover_one(b))).is_empty()) {
+                if(not api.read_block(fd, cover_one(b)).or_default().is_empty()) {
                     return {b};
                 }
                 api.close_file(fd);

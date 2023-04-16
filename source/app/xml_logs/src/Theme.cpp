@@ -10,8 +10,7 @@ import eagine.core;
 Theme::Theme(eagine::main_ctx_parent parent)
   : QObject{nullptr}
   , eagine::main_ctx_object{"Theme", parent} {
-    setLight(
-      extract_or(app_config().get<bool>("log.viewer.theme.light"), false));
+    setLight(app_config().get<bool>("log.viewer.theme.light").value_or(false));
 }
 //------------------------------------------------------------------------------
 void Theme::setLight(bool value) {

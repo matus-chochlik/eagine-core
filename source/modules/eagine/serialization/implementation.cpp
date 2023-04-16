@@ -193,7 +193,7 @@ protected:
       const span_size_t max,
       const span_size_t step = 256) noexcept {
         auto found = scan_for(byte(c), max, step);
-        return top_string(extract_or(found, 0));
+        return top_string(found.value_or(0));
     }
 
     auto top_char() noexcept {

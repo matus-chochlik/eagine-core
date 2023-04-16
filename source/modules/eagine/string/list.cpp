@@ -27,13 +27,13 @@ auto encode_length(const span_size_t len) noexcept -> std::string {
 //------------------------------------------------------------------------------
 auto element_header_size(const string_view elem) noexcept -> span_size_t {
     using namespace multi_byte;
-    return extract_or(decode_sequence_length(make_cbyte_span(elem)), 0);
+    return decode_sequence_length(make_cbyte_span(elem)).value_or(0);
 }
 //------------------------------------------------------------------------------
 auto element_value_size(const string_view elem, const span_size_t l) noexcept
   -> span_size_t {
     using namespace multi_byte;
-    return extract_or(do_decode_code_point(make_cbyte_span(elem), l), 0U);
+    return do_decode_code_point(make_cbyte_span(elem), l).value_or(0U);
 }
 //------------------------------------------------------------------------------
 auto element_value_size(const string_view elem) noexcept -> span_size_t {
@@ -388,7 +388,7 @@ private:
     auto _val_len(const span_size_t ll) const noexcept -> span_size_t {
         string_view el{&*_pos, ll};
         using namespace multi_byte;
-        return extract_or(do_decode_code_point(make_cbyte_span(el), ll), 0U);
+        return do_decode_code_point(make_cbyte_span(el), ll).value_or(0U);
     }
 
     void _update() const noexcept {
@@ -462,7 +462,7 @@ private:
     auto _val_len(span_size_t ll) const noexcept -> span_size_t {
         string_view el{&*_pos, ll};
         using namespace multi_byte;
-        return extract_or(do_decode_code_point(make_cbyte_span(el), ll), 0U);
+        return do_decode_code_point(make_cbyte_span(el), ll).value_or(0U);
     }
 
     void _update() const noexcept {
