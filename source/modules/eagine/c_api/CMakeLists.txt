@@ -105,4 +105,7 @@ eagine_add_module_tests(
 	UNITS
 		buffer_data
 		key_value_list
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
 )

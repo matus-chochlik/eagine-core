@@ -56,4 +56,7 @@ eagine_add_module_tests(
 		flat_map
 		flat_set
 		trie
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
 )

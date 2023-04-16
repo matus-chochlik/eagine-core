@@ -50,4 +50,7 @@ eagine_add_module_tests(
 		hsum
 		shuffle
 		view
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
 )
