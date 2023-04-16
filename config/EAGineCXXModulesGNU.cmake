@@ -29,7 +29,7 @@ function(eagine_build_gnu_std_header_module HEADER_NAME)
 	add_custom_target(
 		eagine-std-${HEADER_NAME}
 		COMMAND ${CMAKE_CXX_COMPILER}
-			-std=c++${CMAKE_CXX_STANDARD}
+			-std=c++${EAGINE_CXX_STANDARD}
 			-fmodules-ts
 			${CMAKE_CXX_FLAGS}
 			-xc++-system-header ${HEADER_NAME}
