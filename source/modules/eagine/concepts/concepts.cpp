@@ -70,9 +70,7 @@ concept basic_extractable = requires(T v) {
 };
 
 export template <typename T>
-concept extractable = basic_extractable<T> and requires(T v) {
-    { has_value(v) } -> std::convertible_to<bool>;
-};
+concept extractable = basic_extractable<T> and std::convertible_to<T, bool>;
 // clang-format on
 //------------------------------------------------------------------------------
 // optional_like
