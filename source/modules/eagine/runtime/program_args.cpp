@@ -53,6 +53,16 @@ public:
         return has_value();
     }
 
+    /// @brief Indicates if this argument's value is equal to the specified string.
+    auto operator==(const value_type& v) const noexcept {
+        return are_equal(get(), v);
+    }
+
+    /// @brief Indicates if this argument's value is different than the specified string.
+    auto operator!=(const value_type& v) const noexcept {
+        return not are_equal(get(), v);
+    }
+
     /// @brief Returns the index of this argument.
     auto position() const noexcept {
         return _argi;
@@ -68,6 +78,30 @@ public:
         return _argi == _argc - 1;
     }
 
+    /// @brief Returns the stored value if has value or returns fallback.
+    template <std::convertible_to<value_type> U>
+    auto value_or(U&& fallback) noexcept -> value_type {
+        if(has_value()) {
+            return value_type(_argv[_argi]);
+        }
+        return value_type(std::forward<U>(fallback));
+    }
+
+    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @see transform
+    template <
+      typename F,
+      optional_like R =
+        std::remove_cvref_t<std::invoke_result_t<F, const value_type&>>>
+    [[nodiscard]] auto and_then(F&& function) const -> R {
+        if(has_value()) {
+            return std::invoke(
+              std::forward<F>(function), value_type(_argv[_argi]));
+        } else {
+            return R{};
+        }
+    }
+
     /// @brief Returns the value of this argument if valid, an empty string view otherwise.
     auto get() const noexcept -> value_type {
         if(has_value()) {
@@ -76,19 +110,15 @@ public:
         return {};
     }
 
-    /// @brief Indicates if this argument's value is equal to the specified string.
-    auto operator==(const value_type& v) const noexcept {
-        return are_equal(get(), v);
+    /// @brief Returns the value of this argument if valid, an empty string view otherwise.
+    auto or_default() noexcept -> value_type {
+        return get();
     }
 
-    /// @brief Indicates if this argument's value is different than the specified string.
-    auto operator!=(const value_type& v) const noexcept {
-        return not are_equal(get(), v);
-    }
-
-    /// @brief Returns the value of this argument as a const memory block.
-    auto block() const noexcept -> memory::const_block {
-        return memory::as_bytes(get());
+    /// @brief Implicit cast to value_type.
+    /// @see get
+    operator value_type() const noexcept {
+        return get();
     }
 
     /// @brief Returns the value of this argument as a standard string.
@@ -96,10 +126,9 @@ public:
         return get().to_string();
     }
 
-    /// @brief Implicit cast to value_type.
-    /// @see get
-    operator value_type() const noexcept {
-        return get();
+    /// @brief Returns the value of this argument as a const memory block.
+    auto block() const noexcept -> memory::const_block {
+        return memory::as_bytes(get());
     }
 
     /// @brief Indicates if this argument value starts with the specified string.
