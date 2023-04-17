@@ -547,11 +547,6 @@ public:
       : base{std::move(src)} {}
 };
 //------------------------------------------------------------------------------
-export template <typename Result, typename Info, result_validity validity>
-constexpr auto has_value(const result<Result, Info, validity>& v) noexcept {
-    return bool(v);
-}
-
 export template <typename Result, typename Info>
 constexpr auto extract(
   result<Result, Info, result_validity::always>&& res) noexcept -> Result {

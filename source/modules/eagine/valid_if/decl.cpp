@@ -789,13 +789,6 @@ private:
     [[no_unique_address]] DoLog _do_log{_policy};
 };
 //------------------------------------------------------------------------------
-export template <typename T, typename P, typename L, typename... A>
-[[nodiscard]] constexpr auto has_value(
-  const basic_valid_if<T, P, L>& v,
-  A&&... a) noexcept -> bool {
-    return v.has_value(std::forward<A>(a)...);
-}
-
 /// @brief Equality comparison of two conditionally valid values.
 /// @ingroup valid_if
 export template <typename T, typename Po1, typename Po2, typename L1, typename L2>

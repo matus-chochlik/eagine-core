@@ -42,11 +42,6 @@ using type_t = typename get_type<T, void>::type;
 export template <typename T>
 struct extract_traits {};
 
-export template <typename T>
-constexpr auto has_value(T&& xtr) noexcept -> bool {
-    return bool(std::forward<T>(xtr));
-}
-
 /// @brief Returns the value type of an extractable.
 /// @ingroup utilities
 /// @see extract
