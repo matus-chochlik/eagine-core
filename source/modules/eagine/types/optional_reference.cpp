@@ -69,6 +69,21 @@ public:
         return has_value();
     }
 
+    [[nodiscard]] auto operator*() & noexcept -> T& {
+        assert(has_value());
+        return *_ptr;
+    }
+
+    [[nodiscard]] auto operator*() const& noexcept -> const T& {
+        assert(has_value());
+        return *_ptr;
+    }
+
+    [[nodiscard]] auto operator*() && noexcept -> T&& {
+        assert(has_value());
+        return std::move(*_ptr);
+    }
+
     /// @brief Returns reference to the stored value.
     /// @pre has_value()
     [[nodiscard]] auto value() & noexcept -> T& {
