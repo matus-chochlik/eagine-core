@@ -92,10 +92,8 @@ public:
 
     /// @brief Returns the stored value if valid or @p fallback otherwise.
     /// @see has_value
-    template <typename U>
-    [[nodiscard]] auto value_or(U&& fallback) const noexcept -> T
-        requires(std::is_convertible_v<U, T>)
-    {
+    template <std::convertible_to<T> U>
+    [[nodiscard]] auto value_or(U&& fallback) const noexcept -> T {
         if(has_value()) {
             return *_ptr;
         }
