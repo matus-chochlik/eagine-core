@@ -108,6 +108,36 @@ export struct nothing_t {
 
     /// @brief Type alias to self.
     using type = nothing_t;
+
+    constexpr explicit operator bool() const noexcept {
+        return false;
+    }
+
+    constexpr auto has_value() const noexcept -> bool {
+        return false;
+    }
+
+    constexpr auto value() const noexcept -> nothing_t {
+        return {};
+    }
+
+    constexpr auto value_or(nothing_t) const noexcept -> nothing_t {
+        return {};
+    }
+
+    template <
+      typename F,
+      typename R = std::remove_cvref_t<std::invoke_result_t<F, nothing_t>>>
+    [[nodiscard]] auto and_then(F&&) -> R {
+        return R{};
+    }
+
+    template <
+      typename F,
+      typename R = std::remove_cvref_t<std::invoke_result_t<F, nothing_t>>>
+    [[nodiscard]] auto transform(F&& function) {
+        return std::optional<R>{};
+    }
 };
 
 /// @brief Constant of nothing_t type.
