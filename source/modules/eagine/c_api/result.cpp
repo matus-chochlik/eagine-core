@@ -104,7 +104,7 @@ public:
       typename F,
       optional_like R =
         std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
-    [[nodiscard]] auto and_then(F&& function) const -> R {
+    auto and_then(F&& function) const -> R {
         return R{};
     }
 
@@ -246,7 +246,7 @@ public:
       typename F,
       optional_like R =
         std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
-    [[nodiscard]] auto and_then(F&& function) const -> R {
+    auto and_then(F&& function) const -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), _value);
         } else {
@@ -400,7 +400,7 @@ public:
       typename F,
       optional_like R =
         std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
-    [[nodiscard]] auto and_then(F&& function) const -> R {
+    auto and_then(F&& function) const -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), _value);
         } else {

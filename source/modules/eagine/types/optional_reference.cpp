@@ -136,7 +136,7 @@ public:
     template <
       typename F,
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
-    [[nodiscard]] auto and_then(F&& function) -> R {
+    auto and_then(F&& function) -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), this->value());
         } else {
@@ -176,7 +176,7 @@ public:
     template <
       typename F,
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>>
-    [[nodiscard]] auto and_then(F&& function) const -> R {
+    auto and_then(F&& function) const -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), this->value());
         } else {

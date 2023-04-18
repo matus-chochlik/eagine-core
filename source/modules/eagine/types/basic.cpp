@@ -128,7 +128,7 @@ export struct nothing_t {
     template <
       typename F,
       typename R = std::remove_cvref_t<std::invoke_result_t<F, nothing_t>>>
-    [[nodiscard]] auto and_then(F&&) -> R {
+    auto and_then(F&&) -> R {
         return R{};
     }
 
@@ -139,6 +139,8 @@ export struct nothing_t {
         return std::optional<R>{};
     }
 };
+
+export using noopt = std::optional<nothing_t>;
 
 /// @brief Constant of nothing_t type.
 /// @ingroup type_utils
