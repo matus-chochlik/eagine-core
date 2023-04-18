@@ -350,24 +350,41 @@ public:
     }
 
     /// @brief Returns the single value if size == 1 or fallback
-    /// @see size()
-    /// @pre front()
+    /// @see has_single_value
+    /// @see size
+    /// @see front()
     template <std::convertible_to<element_type> U>
     auto value_or(U&& fallback) const noexcept -> element_type {
-        if(size() == 1) {
+        if(has_single_value()) {
             return front();
         }
         return element_type(std::forward<U>(fallback));
     }
 
     /// @brief Returns the single value if size == 1 or default constructed element_type
-    /// @see size()
-    /// @pre front()
+    /// @see has_single_value
+    /// @see size
+    /// @see front()
     auto or_default() const noexcept -> element_type {
-        if(size() == 1) {
+        if(has_single_value()) {
             return front();
         }
         return element_type{};
+    }
+
+    /// @brief Calls the specified function is size == 1
+    /// @see has_single_value
+    /// @see front()
+    template <
+      typename F,
+      optional_like R =
+        std::remove_cvref_t<std::invoke_result_t<F, const element_type&>>>
+    [[nodiscard]] auto and_then(F&& function) -> R {
+        if(has_single_value()) {
+            return std::invoke(std::forward<F>(function), front());
+        } else {
+            return R{};
+        }
     }
 
     /// @brief Returns a const reference to value at the specified index.
