@@ -148,7 +148,7 @@ auto root_logger::_log_args(const program_args& args) -> void {
     // args
     auto args_entry{info("program arguments:")};
     args_entry.tag("ProgArgs");
-    args_entry.arg("cmd", args.command().get());
+    args_entry.arg("cmd", "FsPath", args.command().get());
     for(const auto& arg : args) {
         args_entry.arg("arg", arg.get());
     }
@@ -193,7 +193,7 @@ auto root_logger::_log_instance_info() -> void {
 #endif
     info("instance information")
       .tag("Instance")
-      .arg("hostname", std::string{hname.data()})
+      .arg("hostname", "Hostname", std::string{hname.data()})
       .arg("instanceId", process_instance_id());
 }
 //------------------------------------------------------------------------------
