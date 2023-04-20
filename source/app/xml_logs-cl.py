@@ -311,6 +311,17 @@ class XmlLogFormatter(object):
         return self._ttyEsc("\x1b[1;37m")
 
     # --------------------------------------------------------------------------
+    def _formatAppName(self, n, src_id):
+        try:
+            parts = n.split("-")
+            assert len(parts) > 1
+            return self._ttyBoldBlue() + parts[0] + self._ttyReset() + "-" +\
+                self._ttyBoldCyan() + "-".join(parts[1:]) + self._ttyReset()
+
+        except:
+            return self._ttyBoldCyan() + n + self._ttyReset()
+
+    # --------------------------------------------------------------------------
     def _formatFsPath(self, p, src_id):
         if not os.path.isabs(p):
             p = os.path.normpath(os.path.join(self._work_dirs[src_id], p))
@@ -518,6 +529,7 @@ class XmlLogFormatter(object):
         self._translations = permanentTranslations()
 
         self._decorators = {
+            "AppName": self._formatAppName,
             "FsPath": self._formatFsPath,
             "Hostname": self._formatHostname,
             "URL": self._formatURL,
