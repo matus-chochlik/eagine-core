@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <filesystem>
 module;
 
 #include <cassert>
@@ -139,6 +140,12 @@ auto root_logger_init_backend(
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_args(const program_args& args) -> void {
+    // pwd
+    std::error_code ec;
+    info("working directory: ${workDir}")
+      .tag("pwd")
+      .arg("workDir", std::filesystem::current_path(ec));
+    // args
     auto args_entry{info("program arguments:")};
     args_entry.tag("ProgArgs");
     args_entry.arg("cmd", args.command().get());
