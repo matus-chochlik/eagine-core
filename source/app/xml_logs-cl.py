@@ -311,7 +311,9 @@ class XmlLogFormatter(object):
         return self._ttyEsc("\x1b[1;37m")
 
     # --------------------------------------------------------------------------
-    def _formatFsPath(self, p):
+    def _formatFsPath(self, p, src_id):
+        if not os.path.isabs(p):
+            p = os.path.normpath(os.path.join(self._work_dirs[src_id], p))
         if os.path.exists(p):
             if os.path.islink(p):
                 return self._ttyBlue() + p + self._ttyReset()
@@ -322,34 +324,34 @@ class XmlLogFormatter(object):
         return self._ttyBoldRed() + p + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatURL(self, p):
+    def _formatURL(self, p, src_id):
         return self._ttyBoldBlue() + p + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatIdentifier(self, p):
+    def _formatIdentifier(self, p, src_id):
         return "\"" + self._ttyBoldBlue() + p + self._ttyReset() + "\""
 
     # --------------------------------------------------------------------------
-    def _formatProgArg(self, p):
+    def _formatProgArg(self, p, src_id):
         return "«" + self._ttyBoldWhite() + p + self._ttyReset() + "»"
 
     # --------------------------------------------------------------------------
-    def _formatRatio(self, x):
+    def _formatRatio(self, x, src_id):
         return self._ttyBoldWhite() + ("%3.1f%%" % float(x * 100)) + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatDuration(self, sec):
+    def _formatDuration(self, sec, src_id):
         return self._ttyBoldWhite() + formatRelTime(float(sec)) + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatYesNoMaybe(self, v):
+    def _formatYesNoMaybe(self, v, src_id):
         if v == "yes":
             return self._ttyBoldGreen() + v + self._ttyReset()
         if v == "no":
             return self._ttyBoldRed() + v + self._ttyReset()
         return self._ttyYellow() + "maybe" + self._ttyReset()
     # --------------------------------------------------------------------------
-    def _formatByteSize(self, n):
+    def _formatByteSize(self, n, src_id):
         result = None
         if n > 0:
             umult = ["GiB", "MiB", "kiB"]
@@ -363,6 +365,14 @@ class XmlLogFormatter(object):
             result = str(n) + " B"
 
         return self._ttyBoldWhite() + result + self._ttyReset()
+
+    # --------------------------------------------------------------------------
+    def _formatInteger(self, s, src_id):
+        return f"{int(s):,}".replace(",", "'")
+
+    # --------------------------------------------------------------------------
+    def _formatReal(self, s, src_id):
+        return f"{float(s):,}".replace(",", "'")
 
     # --------------------------------------------------------------------------
     def _formatValueBar(self, mn, x, mx, width):
@@ -469,14 +479,6 @@ class XmlLogFormatter(object):
         return result
 
     # --------------------------------------------------------------------------
-    def _formatInteger(self, s):
-        return f"{int(s):,}".replace(",", "'")
-
-    # --------------------------------------------------------------------------
-    def _formatReal(self, s):
-        return f"{float(s):,}".replace(",", "'")
-
-    # --------------------------------------------------------------------------
     def __init__(self, options):
         self._options = options
         self._start_time = time.time()
@@ -512,6 +514,7 @@ class XmlLogFormatter(object):
         self._sources = []
         self._loggers = {}
         self._root_ids = {}
+        self._work_dirs = {}
         self._prev_times = {}
 
         with self._lock:
@@ -553,6 +556,7 @@ class XmlLogFormatter(object):
             self.write(" │ ╰────────────╯\n")
             self._sources.append(src_id)
             self._root_ids[src_id] = None
+            self._work_dirs[src_id] = None
             self._prev_times[src_id] = None
 
     # --------------------------------------------------------------------------
@@ -712,7 +716,7 @@ class XmlLogFormatter(object):
         return "%7s" % level
 
     # --------------------------------------------------------------------------
-    def doTranslateArg(self, arg, info):
+    def doTranslateArg(self, arg, info, src_id):
         if info.get("blob", False):
             return "BLOB"
 
@@ -723,8 +727,8 @@ class XmlLogFormatter(object):
                 trans = self._translations[typ]
                 value = trans["opts"][trans["type"](value)]
             except: pass
-            decorate = self._decorators.get(typ, lambda x: x)
-            value = decorate(value)
+            decorate = self._decorators.get(typ, lambda x, i: x)
+            value = decorate(value, src_id)
         except KeyError:
             value = arg
         return value
@@ -737,12 +741,12 @@ class XmlLogFormatter(object):
         return False
 
     # --------------------------------------------------------------------------
-    def translateArg(self, arg, info):
+    def translateArg(self, arg, info, src_id):
         info["used"] = True
         values = info.get("values", [])
         if len(values) == 1 and not self.alwaysTranslateAsList(values):
-            return self.doTranslateArg(arg, values[0])
-        values = [self.doTranslateArg(arg, v) for v in values]
+            return self.doTranslateArg(arg, values[0], src_id)
+        values = [self.doTranslateArg(arg, v, src_id) for v in values]
         return '[' + ", ".join(values) + ']'
 
     # --------------------------------------------------------------------------
@@ -777,6 +781,12 @@ class XmlLogFormatter(object):
     def previewMessage(self, src_id, info):
         if self._root_ids[src_id] is None:
             self._root_ids[src_id] = info["source"]
+        if self._work_dirs[src_id] is None:
+            try:
+                info["tag"] == "pwd"
+                self._work_dirs[src_id] = info["args"]["workDir"]["values"][0]["value"]
+            except:
+                pass
         return self.isVisible(info)
 
     # --------------------------------------------------------------------------
@@ -797,7 +807,8 @@ class XmlLogFormatter(object):
             prev = message[:found.start(1)]
             repl = self.translateArg(
                 found.group(2),
-                args.get(found.group(2), {})
+                args.get(found.group(2), {}),
+                src_id
             )
             folw = message[found.end(1):]
             message = prev + repl + folw
@@ -875,7 +886,7 @@ class XmlLogFormatter(object):
                             )
                             self.write("\n")
                         else:
-                            self.write(self.doTranslateArg(name, value))
+                            self.write(self.doTranslateArg(name, value, src_id))
                             self.write("\n")
                         if value["blob"]:
                             blob = value["value"]
