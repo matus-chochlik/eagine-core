@@ -324,8 +324,25 @@ class XmlLogFormatter(object):
         return self._ttyBoldRed() + p + self._ttyReset()
 
     # --------------------------------------------------------------------------
+    def _formatHostname(self, p, src_id):
+        return self._ttyBoldBlue() + p + self._ttyReset()
+
+    # --------------------------------------------------------------------------
     def _formatURL(self, p, src_id):
         return self._ttyBoldBlue() + p + self._ttyReset()
+
+    # --------------------------------------------------------------------------
+    def _formatGitBranch(self, b, src_id):
+        if b == "develop":
+            return self._ttyBoldYellow() + b + self._ttyReset()
+        if b == "main":
+            return self._ttyBoldGreen() + b + self._ttyReset()
+
+        return self._ttyBoldRed() + b + self._ttyReset()
+
+    # --------------------------------------------------------------------------
+    def _formatHash(self, p, src_id):
+        return self._ttyBoldCyan() + p + self._ttyReset()
 
     # --------------------------------------------------------------------------
     def _formatIdentifier(self, p, src_id):
@@ -338,6 +355,15 @@ class XmlLogFormatter(object):
     # --------------------------------------------------------------------------
     def _formatRatio(self, x, src_id):
         return self._ttyBoldWhite() + ("%3.1f%%" % float(x * 100)) + self._ttyReset()
+
+    # --------------------------------------------------------------------------
+    def _formatRFC2822(self, dt, src_id):
+        try:
+            import email.utils
+            dt = email.utils.format_datetime(email.utils.parsedate_to_datetime(dt))
+        except:
+            pass
+        return self._ttyBoldWhite() + dt + self._ttyReset()
 
     # --------------------------------------------------------------------------
     def _formatDuration(self, sec, src_id):
@@ -493,9 +519,14 @@ class XmlLogFormatter(object):
 
         self._decorators = {
             "FsPath": self._formatFsPath,
+            "Hostname": self._formatHostname,
             "URL": self._formatURL,
+            "Hash": self._formatHash,
+            "GitBranch": self._formatGitBranch,
+            "GitHash": self._formatHash,
             "Identifier": self._formatIdentifier,
             "ProgramArg": self._formatProgArg,
+            "RFC2822": self._formatRFC2822,
             "Ratio": lambda x: self._formatRatio(float(x)),
             "duration": lambda x: self._formatDuration(float(x)),
             "integer": self._formatInteger,
