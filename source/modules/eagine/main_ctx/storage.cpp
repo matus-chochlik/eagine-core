@@ -184,7 +184,7 @@ private:
       memory::default_byte_allocator()};
     program_args _args;
     build_info _bld_info;
-    version_info _ver_info;
+    version_info _ver_info{config_git_version_tuple()};
     system_info _sys_info;
     user_info _usr_info;
     console _console;
