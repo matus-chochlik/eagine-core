@@ -26,9 +26,10 @@ auto main(int argc, const char** argv) -> int {
 
     eagine::valid_if_existing_file<eagine::basic_string_path> vf{
       eagine::string_view{argv[0]}};
-    if(vf) {
-        std::cout << "D|" << extract(vf) << std::endl;
-    }
+    vf.and_then([](const auto x) {
+        std::cout << "D|" << x << std::endl;
+        return eagine::noopt{};
+    });
 
     eagine::valid_if_in_writable_directory<eagine::basic_string_path> vd{
       eagine::string_view{argv[0]}};

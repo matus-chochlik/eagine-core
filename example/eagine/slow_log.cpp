@@ -22,8 +22,8 @@ auto main(main_ctx& ctx) -> int {
     for(const auto i : integer_range(repeats)) {
         ctx.log()
           .log(severity, "cycle ${i} of ${count}")
-          .arg(identifier{"i"}, i)
-          .arg(identifier{"count"}, repeats);
+          .arg("i", i)
+          .arg("count", repeats);
         main_act.update_progress(i);
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }

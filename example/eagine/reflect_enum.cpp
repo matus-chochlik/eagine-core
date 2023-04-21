@@ -64,15 +64,15 @@ auto main(main_ctx& ctx) -> int {
 
     const std::type_identity<example_enum> tid{};
     ctx.cio()
-      .print(identifier{"enums"}, "enumerator count: ${count}")
-      .arg(identifier{"count"}, enumerator_count(tid));
+      .print("enums", "enumerator count: ${count}")
+      .arg("count", enumerator_count(tid));
 
     for_each_enumerator(
       [&](const auto& info) {
           ctx.cio()
-            .print(identifier{"enums"}, "${name}: ${value}")
-            .arg(identifier{"name"}, info.name)
-            .arg(identifier{"value"}, info.value);
+            .print("enums", "${name}: ${value}")
+            .arg("name", info.name)
+            .arg("value", info.value);
       },
       std::type_identity<example_enum>{});
 

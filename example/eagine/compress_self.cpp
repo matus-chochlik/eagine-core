@@ -15,7 +15,7 @@ static inline void pack_unpack(
   memory::const_block original) {
     ctx.log()
       .info("original size ${original}")
-      .arg(identifier{"original"}, identifier{"ByteSize"}, original.size());
+      .arg("original", "ByteSize", original.size());
 
     memory::buffer buf1{};
     const auto level = data_compression_level::highest;
@@ -24,7 +24,7 @@ static inline void pack_unpack(
 
         ctx.log()
           .info("packed size ${packed}")
-          .arg(identifier{"packed"}, identifier{"ByteSize"}, packed.size());
+          .arg("packed", "ByteSize", packed.size());
 
         memory::buffer buf2{};
 
@@ -32,18 +32,14 @@ static inline void pack_unpack(
 
             ctx.log()
               .info("unpacked size ${unpacked}")
-              .arg(
-                identifier{"unpacked"},
-                identifier{"ByteSize"},
-                unpacked.size());
+              .arg("unpacked", "ByteSize", unpacked.size());
 
             if(are_equal(original, unpacked)) {
                 const auto compr_ratio =
                   float(packed.size()) / float(unpacked.size());
                 ctx.log()
                   .info("original and unpacked block are equal")
-                  .arg(
-                    identifier{"comprRatio"}, identifier{"Ratio"}, compr_ratio);
+                  .arg("comprRatio", "Ratio", compr_ratio);
             } else {
                 ctx.log().error("original and unpacked block are different");
             }

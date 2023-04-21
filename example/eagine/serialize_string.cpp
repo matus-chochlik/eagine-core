@@ -86,7 +86,7 @@ auto main() -> int {
     x.b = true;
     x.c = '2';
     x.d = 3.4;
-    x.i = identifier("FiveSix");
+    x.i = "FiveSix";
     x.l = 7777777L;
     x.s = "eight";
     x.u = 90U;

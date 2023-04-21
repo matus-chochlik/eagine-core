@@ -16,14 +16,14 @@ auto main(main_ctx& ctx) -> int {
 
     const auto [major, minor, patch, commit] = vi.version_tuple();
     ctx.cio()
-      .print(identifier{"version"}, "${major}.${minor}.${patch}-${commit}")
-      .arg(identifier{"major"}, major)
-      .arg(identifier{"minor"}, minor)
-      .arg(identifier{"patch"}, patch)
-      .arg(identifier{"commit"}, commit);
+      .print("version", "${major}.${minor}.${patch}-${commit}")
+      .arg("major", major)
+      .arg("minor", minor)
+      .arg("patch", patch)
+      .arg("commit", commit);
 
     if(vi.version_at_least(0, 37, 2, 15)) {
-        ctx.cio().print(identifier{"version"}, "version recent enough");
+        ctx.cio().print("version", "version recent enough");
     }
 
     return 0;

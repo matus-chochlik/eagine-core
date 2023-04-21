@@ -63,7 +63,7 @@ auto main(main_ctx& ctx) -> int {
 
         tetrahedron object;
         if(deserialize(object, backend)) {
-            main_ctx_object out{identifier{"vt"}, ctx};
+            main_ctx_object out{"vt", ctx};
             out
               .cio_print(
                 "("
@@ -71,18 +71,18 @@ auto main(main_ctx& ctx) -> int {
                 "(${b_b_x},${b_b_y},${b_b_z}),"
                 "(${b_c_x},${b_c_y},${b_c_z})),"
                 "(${a_x},${a_y},${a_z})")
-              .arg(identifier{"b_a_x"}, object.base.a.x)
-              .arg(identifier{"b_a_y"}, object.base.a.y)
-              .arg(identifier{"b_a_z"}, object.base.a.z)
-              .arg(identifier{"b_b_x"}, object.base.b.x)
-              .arg(identifier{"b_b_y"}, object.base.b.y)
-              .arg(identifier{"b_b_z"}, object.base.b.z)
-              .arg(identifier{"b_c_x"}, object.base.c.x)
-              .arg(identifier{"b_c_y"}, object.base.c.y)
-              .arg(identifier{"b_c_z"}, object.base.c.z)
-              .arg(identifier{"a_x"}, object.apex.x)
-              .arg(identifier{"a_y"}, object.apex.y)
-              .arg(identifier{"a_z"}, object.apex.z);
+              .arg("b_a_x", object.base.a.x)
+              .arg("b_a_y", object.base.a.y)
+              .arg("b_a_z", object.base.a.z)
+              .arg("b_b_x", object.base.b.x)
+              .arg("b_b_y", object.base.b.y)
+              .arg("b_b_z", object.base.b.z)
+              .arg("b_c_x", object.base.c.x)
+              .arg("b_c_y", object.base.c.y)
+              .arg("b_c_z", object.base.c.z)
+              .arg("a_x", object.apex.x)
+              .arg("a_y", object.apex.y)
+              .arg("a_z", object.apex.z);
         }
     }
 

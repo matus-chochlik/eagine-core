@@ -24,14 +24,14 @@ auto main(main_ctx& ctx) -> int {
         const auto dim = get_dimension(q.unit());
         ctx.cio()
           .print(
-            identifier{"units"},
+            "units",
             "${dimName} (${dimForm}): "
             "${value} [${unitSymbol} (${unitForm})]")
-          .arg(identifier{"dimName"}, get_name(dim))
-          .arg(identifier{"dimForm"}, get_name_form(dim))
-          .arg(identifier{"unitSymbol"}, get_symbol(q.unit()))
-          .arg(identifier{"unitForm"}, get_name_form(q.unit()))
-          .arg(identifier{"value"}, q.value());
+          .arg("dimName", get_name(dim))
+          .arg("dimForm", get_name_form(dim))
+          .arg("unitSymbol", get_symbol(q.unit()))
+          .arg("unitForm", get_name_form(q.unit()))
+          .arg("value", q.value());
     };
 
     qty<meter> x{2.F};

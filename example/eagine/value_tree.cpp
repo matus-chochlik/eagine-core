@@ -25,27 +25,25 @@ auto main(main_ctx& ctx) -> int {
         auto ca{c / a};
         ctx.log()
           .info("visit")
-          .arg(identifier{"nested"}, ca.nested_count())
-          .arg(identifier{"values"}, ca.value_count())
-          .arg(identifier{"isLink"}, identifier{"bool"}, ca.is_link())
-          .arg(identifier{"canonType"}, ca.canonical_type())
-          .arg(identifier{"path"}, p.as_string("/", ca.nested_count() > 0))
-          .arg(identifier{"name"}, ca.name());
+          .arg("nested", ca.nested_count())
+          .arg("values", ca.value_count())
+          .arg("isLink", "bool", ca.is_link())
+          .arg("canonType", ca.canonical_type())
+          .arg("path", p.as_string("/", ca.nested_count() > 0))
+          .arg("name", ca.name());
 
         if(ca.canonical_type() == valtree::value_type::byte_type) {
             const auto s{ca.value_count()};
             if(s <= 256) {
                 std::array<byte, 256> temp{};
                 auto content{ca.fetch_blob(cover(temp))};
-                ctx.log().info("content").arg(
-                  identifier{"content"}, view(content));
+                ctx.log().info("content").arg("content", view(content));
             }
         } else if(ca.canonical_type() == valtree::value_type::string_type) {
             if(ca.value_count() == 1) {
                 std::array<char, 64> temp{};
                 auto content{ca.fetch_values(cover(temp))};
-                ctx.log().info("content").arg(
-                  identifier{"content"}, string_view(content));
+                ctx.log().info("content").arg("content", string_view(content));
             }
         }
         return true;
@@ -65,32 +63,22 @@ auto main(main_ctx& ctx) -> int {
         std::array<byte, 64> temp{};
         log.info("parsed from json")
           .arg(
-            identifier{"attribB"},
-            identifier{"int"},
-            json_tree.get<int>(path("attribA/attribB")),
-            n_a)
+            "attribB", "int", json_tree.get<int>(path("attribA/attribB")), n_a)
+          .arg("attribC0", "int", json_tree.get<int>(path("attribC/0")), n_a)
           .arg(
-            identifier{"attribC0"},
-            identifier{"int"},
-            json_tree.get<int>(path("attribC/0")),
-            n_a)
-          .arg(
-            identifier{"attribC1"},
-            identifier{"string"},
+            "attribC1",
+            "string",
             json_tree.get<std::string>(path("attribC/1")),
             n_a)
           .arg(
-            identifier{"attribC2"},
-            identifier{"float"},
-            json_tree.get<float>(path("attribC/2")),
-            n_a)
+            "attribC2", "float", json_tree.get<float>(path("attribC/2")), n_a)
           .arg(
-            identifier{"attribC3z"},
-            identifier{"bool"},
+            "attribC3z",
+            "bool",
             json_tree.get<bool>(path("attribC/3/zero")),
             n_a)
           .arg(
-            identifier{"attribD"},
+            "attribD",
             view(json_tree.fetch_blob(path("attribD"), cover(temp))));
         json_tree.traverse(
           valtree::compound::visit_handler{construct_from, visitor});
@@ -104,28 +92,18 @@ auto main(main_ctx& ctx) -> int {
     if(const auto yaml_tree{valtree::from_yaml_text(yaml_text, ctx)}) {
         log.info("parsed from yaml")
           .arg(
-            identifier{"attribB"},
-            identifier{"int"},
-            yaml_tree.get<int>(path("attribA/attribB")),
-            n_a)
+            "attribB", "int", yaml_tree.get<int>(path("attribA/attribB")), n_a)
+          .arg("attribC0", "int", yaml_tree.get<int>(path("attribC/0")), n_a)
           .arg(
-            identifier{"attribC0"},
-            identifier{"int"},
-            yaml_tree.get<int>(path("attribC/0")),
-            n_a)
-          .arg(
-            identifier{"attribC1"},
-            identifier{"string"},
+            "attribC1",
+            "string",
             yaml_tree.get<std::string>(path("attribC/1")),
             n_a)
           .arg(
-            identifier{"attribC2"},
-            identifier{"float"},
-            yaml_tree.get<float>(path("attribC/2")),
-            n_a)
+            "attribC2", "float", yaml_tree.get<float>(path("attribC/2")), n_a)
           .arg(
-            identifier{"attribC3z"},
-            identifier{"bool"},
+            "attribC3z",
+            "bool",
             yaml_tree.get<bool>(path("attribC/3/zero")),
             n_a);
         yaml_tree.traverse(
@@ -133,8 +111,7 @@ auto main(main_ctx& ctx) -> int {
     }
 
     if(const auto path_arg{ctx.args().find("--fs-tree").next()}) {
-        log.info("opening ${root} filesystem tree")
-          .arg(identifier{"root"}, path_arg.get());
+        log.info("opening ${root} filesystem tree").arg("root", path_arg.get());
         if(const auto fs_tree{valtree::from_filesystem_path(path_arg, ctx)}) {
             fs_tree.traverse(
               valtree::compound::visit_handler{construct_from, visitor});

@@ -16,12 +16,12 @@ auto main(main_ctx& ctx) -> int {
     auto& usr = ctx.user();
 
     ctx.cio()
-      .print(identifier{"user"}, "login name: ${login}")
-      .arg(identifier{"login"}, usr.login_name().value_or(na));
+      .print("user", "login name: ${login}")
+      .arg("login", usr.login_name().value_or(na));
 
     ctx.cio()
-      .print(identifier{"user"}, "home path: ${home}")
-      .arg(identifier{"home"}, usr.home_dir_path().value_or(na));
+      .print("user", "home path: ${home}")
+      .arg("home", usr.home_dir_path().value_or(na));
 
     return 0;
 }

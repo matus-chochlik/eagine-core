@@ -30,7 +30,7 @@ auto main(main_ctx& ctx) -> int {
           for(const auto i : integer_range(std_size(256))) {
               backend.add_float(
                 byte_to_identifier(byte(i)),
-                identifier{"Histogram"},
+                "Histogram",
                 float(0),
                 float(byte_counts[i]),
                 float(max_count));
