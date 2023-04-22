@@ -22,7 +22,66 @@ namespace eagine {
 /// @see valid_if
 export template <typename T>
 class optional_reference {
+    template <typename V, typename F>
+    [[nodiscard]] static auto _transform(V* ptr, F&& function) {
+        using R = std::invoke_result_t<F, V&>;
+        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+            using P = std::conditional_t<
+              std::is_reference_v<R>,
+              std::remove_reference_t<R>,
+              std::remove_pointer_t<R>>;
+            if(ptr) {
+                return optional_reference<P>{
+                  std::invoke(std::forward<F>(function), *ptr)};
+            } else {
+                return optional_reference<P>{nothing};
+            }
+        } else {
+            using O = std::remove_cvref_t<R>;
+            if(ptr) {
+                return std::optional<O>{
+                  std::invoke(std::forward<F>(function), *ptr)};
+            } else {
+                return std::optional<O>{};
+            }
+        }
+    }
+
+    template <typename V, typename... Args>
+    [[nodiscard]] auto _call_member(
+      V* ptr,
+      auto function,
+      Args&&... args) noexcept(noexcept(function)) {
+        using R = std::invoke_result_t<
+          decltype(function),
+          std::conditional_t<std::is_const_v<V>, std::add_const_t<T>, T>&,
+          Args...>;
+        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+            using P = std::conditional_t<
+              std::is_reference_v<R>,
+              std::remove_reference_t<R>,
+              std::remove_pointer_t<R>>;
+            if(_ptr) {
+                return optional_reference<P>{
+                  std::invoke(function, *_ptr, std::forward<Args>(args)...)};
+            } else {
+                return optional_reference<P>{nothing};
+            }
+        } else {
+            using O = std::remove_cvref_t<R>;
+            if(_ptr) {
+                return std::optional<O>{
+                  std::invoke(function, *_ptr, std::forward<Args>(args)...)};
+            } else {
+                return std::optional<O>{};
+            }
+        }
+    }
+
 public:
+    /// @brief Type of the referenced value.
+    using value_type = T;
+
     /// @brief Construction from a pointer to reference of type @p T.
     optional_reference(T* ptr) noexcept
       : _ptr{ptr} {}
@@ -183,54 +242,14 @@ public:
     /// @see and_then
     template <typename F>
     [[nodiscard]] auto transform(F&& function) {
-        using R = std::invoke_result_t<F, T&>;
-        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
-            using P = std::conditional_t<
-              std::is_reference_v<R>,
-              std::remove_reference_t<R>,
-              std::remove_pointer_t<R>>;
-            if(has_value()) {
-                return optional_reference<P>{
-                  std::invoke(std::forward<F>(function), this->value())};
-            } else {
-                return optional_reference<P>{nothing};
-            }
-        } else {
-            using V = std::remove_cvref_t<R>;
-            if(has_value()) {
-                return std::optional<V>{
-                  std::invoke(std::forward<F>(function), this->value())};
-            } else {
-                return std::optional<V>{};
-            }
-        }
+        return _transform(_ptr, std::forward<F>(function));
     }
 
     /// @brief Invoke function on the stored value or return empty extractable.
     /// @see and_then
     template <typename F>
     [[nodiscard]] auto transform(F&& function) const {
-        using R = std::invoke_result_t<F, std::add_const_t<T>&>;
-        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
-            using P = std::conditional_t<
-              std::is_reference_v<R>,
-              std::remove_reference_t<R>,
-              std::remove_pointer_t<R>>;
-            if(has_value()) {
-                return optional_reference<P>{
-                  std::invoke(std::forward<F>(function), this->value())};
-            } else {
-                return optional_reference<P>{nothing};
-            }
-        } else {
-            using V = std::remove_cvref_t<R>;
-            if(has_value()) {
-                return std::optional<V>{
-                  std::invoke(std::forward<F>(function), this->value())};
-            } else {
-                return std::optional<V>{};
-            }
-        }
+        return _transform(_ptr, std::forward<F>(function));
     }
 
     template <typename M, std::same_as<T> C>
@@ -252,18 +271,32 @@ public:
         }
     }
 
-    template <typename M, std::same_as<T> C>
-    [[nodiscard]] auto member(M (C::*ptr)() noexcept) noexcept {
-        if(has_value()) {
-            return optional_reference<M>{(this->value().*ptr)()};
-        } else {
-            return optional_reference<M>{nothing};
-        }
+    template <typename R, std::same_as<T> C, typename... Params, typename... Args>
+    [[nodiscard]] auto member(R (C::*function)(Params...), Args&&... args) {
+        return _call_member(_ptr, function, std::forward<Args>(args)...);
     }
 
-    template <typename M, std::same_as<T> C>
-    [[nodiscard]] auto call_member(auto* ptr) noexcept {
-        using R = std::invoke_result_t<decltype(ptr)>;
+    template <typename R, std::same_as<T> C, typename... Params, typename... Args>
+    [[nodiscard]] auto member(
+      R (C::*function)(Params...) noexcept,
+      Args&&... args) noexcept {
+        return _call_member(_ptr, function, std::forward<Args>(args)...);
+    }
+
+    template <typename R, typename C, typename... Params, typename... Args>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] auto member(
+      R (C::*function)(Params...) const,
+      Args&&... args) {
+        return _call_member(_ptr, function, std::forward<Args>(args)...);
+    }
+
+    template <typename R, typename C, typename... Params, typename... Args>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] auto member(
+      R (C::*function)(Params...) const noexcept,
+      Args&&... args) noexcept {
+        return _call_member(_ptr, function, std::forward<Args>(args)...);
     }
 
     /// @brief Returns the stored reference.
@@ -300,6 +333,26 @@ public:
 private:
     T* _ptr{nullptr};
 };
+//------------------------------------------------------------------------------
+template <typename T>
+optional_reference(T* ptr) -> optional_reference<T>;
+
+template <typename T>
+optional_reference(T& ptr) -> optional_reference<T>;
+
+template <typename T>
+optional_reference(std::unique_ptr<T>& ptr) -> optional_reference<T>;
+
+template <typename T>
+optional_reference(const std::unique_ptr<T>& ptr)
+  -> optional_reference<std::add_const_t<T>>;
+
+template <typename T>
+optional_reference(std::shared_ptr<T>& ptr) -> optional_reference<T>;
+
+template <typename T>
+optional_reference(const std::shared_ptr<T>& ptr)
+  -> optional_reference<std::add_const_t<T>>;
 //------------------------------------------------------------------------------
 export template <typename T>
 struct extract_traits<optional_reference<T>> {

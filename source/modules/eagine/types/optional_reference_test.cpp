@@ -13,6 +13,9 @@ import eagine.core.types;
 struct inner {
     short s{0};
     bool b{true};
+    int foo() const noexcept {
+        return 42;
+    }
 };
 
 struct outer {
@@ -50,8 +53,20 @@ void optional_reference_empty(auto& s) {
 void optional_reference_non_empty(auto& s) {
     eagitest::case_ test{s, 2, "non-empty"};
 
+    eagine::optional_reference<outer> r{};
+
+    test.check_equal(
+      r.member(&outer::i).member(&inner::foo).value_or(2345),
+      2345,
+      "member call 2345");
+
+    test.check_equal(
+      r.member(&outer::i).member(&inner::s).value_or(2345),
+      2345,
+      "member 2345");
+
     outer o{};
-    eagine::optional_reference<outer> r{o};
+    r = {o};
 
     test.ensure(r.has_value(), "has value");
     test.ensure(bool(r), "is true");
@@ -84,9 +99,14 @@ void optional_reference_non_empty(auto& s) {
 
     o.i.s = 3456;
     test.check_equal(
+      r.member(&outer::i).member(&inner::foo).value_or(2345),
+      42,
+      "member call 42");
+
+    test.check_equal(
       r.member(&outer::i).member(&inner::s).value_or(2345),
       3456,
-      "transform 3456");
+      "member 3456");
 
     test.check_equal(
       r.member(&outer::i).member(&inner::s).construct<long>().value_or(1111L),
