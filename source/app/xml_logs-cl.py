@@ -323,8 +323,11 @@ class XmlLogFormatter(object):
 
     # --------------------------------------------------------------------------
     def _formatFsPath(self, p, src_id):
-        if not os.path.isabs(p):
-            p = os.path.normpath(os.path.join(self._work_dirs[src_id], p))
+        try:
+            if not os.path.isabs(p):
+                p = os.path.normpath(os.path.join(self._work_dirs[src_id], p))
+        except:
+            pass
         if os.path.exists(p):
             if os.path.islink(p):
                 return self._ttyBlue() + p + self._ttyReset()
@@ -539,8 +542,6 @@ class XmlLogFormatter(object):
             "Identifier": self._formatIdentifier,
             "ProgramArg": self._formatProgArg,
             "RFC2822": self._formatRFC2822,
-            "Ratio": lambda x: self._formatRatio(float(x)),
-            "duration": lambda x: self._formatDuration(float(x)),
             "integer": self._formatInteger,
             "int64": self._formatInteger,
             "int32": self._formatInteger,
@@ -551,7 +552,9 @@ class XmlLogFormatter(object):
             "real": self._formatReal,
             "YesNo": self._formatYesNoMaybe,
             "YesNoMaybe": self._formatYesNoMaybe,
-            "ByteSize": lambda x: self._formatByteSize(int(float(x)))
+            "Ratio": lambda x, src_id: self._formatRatio(float(x), src_id),
+            "duration": lambda x, src_id: self._formatDuration(float(x), src_id),
+            "ByteSize": lambda x, src_id: self._formatByteSize(int(float(x)), src_id)
         }
         self._source_id = 0
         self._sources = []
@@ -735,7 +738,7 @@ class XmlLogFormatter(object):
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ╰╴hit count: %s\n" % self._formatInteger(hc))
+            self.write(" ╰╴hit count: %s\n" % self._formatInteger(hc, src_id))
             self._out.flush()
 
     # --------------------------------------------------------------------------
