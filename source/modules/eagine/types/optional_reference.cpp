@@ -167,6 +167,19 @@ public:
     }
 
     /// @brief Invoke function on the stored value or return empty extractable.
+    /// @see transform
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>>
+    auto and_then(F&& function) const -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), this->value());
+        } else {
+            return R{};
+        }
+    }
+
+    /// @brief Invoke function on the stored value or return empty extractable.
     /// @see and_then
     template <typename F>
     [[nodiscard]] auto transform(F&& function) {
@@ -190,19 +203,6 @@ public:
             } else {
                 return std::optional<V>{};
             }
-        }
-    }
-
-    /// @brief Invoke function on the stored value or return empty extractable.
-    /// @see transform
-    template <
-      typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>>
-    auto and_then(F&& function) const -> R {
-        if(has_value()) {
-            return std::invoke(std::forward<F>(function), this->value());
-        } else {
-            return R{};
         }
     }
 
@@ -250,6 +250,20 @@ public:
         } else {
             return optional_reference<std::add_const_t<M>>{nothing};
         }
+    }
+
+    template <typename M, std::same_as<T> C>
+    [[nodiscard]] auto member(M (C::*ptr)() noexcept) noexcept {
+        if(has_value()) {
+            return optional_reference<M>{(this->value().*ptr)()};
+        } else {
+            return optional_reference<M>{nothing};
+        }
+    }
+
+    template <typename M, std::same_as<T> C>
+    [[nodiscard]] auto call_member(auto* ptr) noexcept {
+        using R = std::invoke_result_t<decltype(ptr)>;
     }
 
     /// @brief Returns the stored reference.
