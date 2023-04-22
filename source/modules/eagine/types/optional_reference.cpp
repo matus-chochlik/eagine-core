@@ -23,13 +23,35 @@ namespace eagine {
 export template <typename T>
 class optional_reference {
 public:
-    /// @brief Construction from a pointer to value of type @p T.
+    /// @brief Construction from a pointer to reference of type @p T.
     optional_reference(T* ptr) noexcept
       : _ptr{ptr} {}
 
-    /// @brief Construction from a reference to value of type @p T.
+    /// @brief Construction from a reference to reference of type @p T.
     optional_reference(T& ref) noexcept
       : _ptr{&ref} {}
+
+    /// @brief Construction from a unique_ptr to reference of type @p T.
+    template <std::derived_from<T> U>
+    optional_reference(std::unique_ptr<U>& ptr) noexcept
+      : _ptr{ptr.get()} {}
+
+    /// @brief Construction from a unique_ptr to reference of type @p T.
+    template <std::derived_from<T> U>
+        requires(std::is_const_v<T>)
+    optional_reference(const std::unique_ptr<U>& ptr) noexcept
+      : _ptr{ptr.get()} {}
+
+    /// @brief Construction from a shared_ptr to reference of type @p T.
+    template <std::derived_from<T> U>
+    optional_reference(std::shared_ptr<U>& ptr) noexcept
+      : _ptr{ptr.get()} {}
+
+    /// @brief Construction from a shared_ptr to reference of type @p T.
+    template <std::derived_from<T> U>
+        requires(std::is_const_v<T>)
+    optional_reference(const std::shared_ptr<U>& ptr) noexcept
+      : _ptr{ptr.get()} {}
 
     /// @brief Move constructor.
     optional_reference(optional_reference&&) noexcept = default;
@@ -84,21 +106,21 @@ public:
         return std::move(*_ptr);
     }
 
-    /// @brief Returns reference to the stored value.
+    /// @brief Returns the stored reference.
     /// @pre has_value()
     [[nodiscard]] auto value() & noexcept -> T& {
         assert(has_value());
         return *_ptr;
     }
 
-    /// @brief Returns const reference to the stored value.
+    /// @brief Returns the stored const reference.
     /// @pre has_value()
     [[nodiscard]] auto value() const& noexcept -> const T& {
         assert(has_value());
         return *_ptr;
     }
 
-    /// @brief Returns rvalue reference to the stored value.
+    /// @brief Returns rvalue reference.
     /// @pre has_value()
     [[nodiscard]] auto value() && noexcept -> T&& {
         assert(has_value());
