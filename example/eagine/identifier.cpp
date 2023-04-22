@@ -24,5 +24,9 @@ auto main() -> int {
     print_info(identifier{"foobarbaz"});
     print_info(identifier{"0123456789"});
 
+    print_info("baz");
+    print_info("FooBarBaz");
+    print_info("1234567890");
+
     return 0;
 }
