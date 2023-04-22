@@ -85,7 +85,7 @@ export template <identifier_t V>
   const string_view src,
   const std::type_identity<char>,
   const selector<V>) noexcept -> std::optional<char> {
-    if(src.size() == 1) {
+    if(src.has_single_value()) {
         return {extract(src)};
     }
     return {};
@@ -96,7 +96,7 @@ constexpr auto multiply_and_convert_if_fits(const N n, string_view t) noexcept
   -> std::optional<T> {
     if(t.empty()) {
         return convert_if_fits<T>(n);
-    } else if(t.size() == 1) {
+    } else if(t.has_single_value()) {
         if(t.back() == 'k') {
             return convert_if_fits<T>(n * 1000);
         }

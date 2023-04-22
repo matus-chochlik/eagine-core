@@ -201,7 +201,7 @@ public:
 
     template <typename T>
     auto fetch_values(span_size_t offset, span<T> dest) -> span_size_t {
-        if(dest.size() == 1) {
+        if(dest.has_single_value()) {
             char temp[64];
             if(const auto len{fetch_values(offset, cover(temp))}) {
                 auto issep = [](char c) {
