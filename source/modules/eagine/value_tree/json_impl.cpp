@@ -51,7 +51,7 @@ static auto rapidjson_make_value_node(
   rapidjson_document_compound<Encoding, Allocator, StackAlloc>& owner,
   rapidjson::GenericValue<Encoding, Allocator>& value,
   rapidjson::GenericValue<Encoding, Allocator>* name = nullptr)
-  -> attribute_interface*;
+  -> optional_reference<attribute_interface>;
 //------------------------------------------------------------------------------
 template <typename Encoding, typename Allocator, typename StackAlloc>
 class rapidjson_value_node : public attribute_interface {
@@ -145,7 +145,7 @@ public:
     }
 
     auto nested(_comp_t& owner, const span_size_t index)
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         if(_rj_val) {
             auto& val = extract(_rj_val);
             if(val.IsArray()) {
@@ -166,7 +166,7 @@ public:
     }
 
     auto nested(_comp_t& owner, const string_view name)
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         if(_rj_val) {
             auto& val = extract(_rj_val);
             if(val.IsObject()) {
@@ -186,7 +186,8 @@ public:
     auto find(
       _comp_t& owner,
       const basic_string_path& path,
-      const span<const string_view> tags) -> attribute_interface* {
+      const span<const string_view> tags)
+      -> optional_reference<attribute_interface> {
         _val_t* result = _rj_val;
         _val_t* name = nullptr;
         std::string temp_str;
@@ -246,7 +247,7 @@ public:
             return rapidjson_make_value_node(owner, *result, name);
         }
 
-        return nullptr;
+        return {};
     }
 
     auto value_count() -> span_size_t {
@@ -649,7 +650,7 @@ public:
         return "rapidjson";
     }
 
-    auto structure() -> attribute_interface* final {
+    auto structure() -> optional_reference<attribute_interface> final {
         return &_root;
     }
 
@@ -674,19 +675,20 @@ public:
     }
 
     auto nested(attribute_interface& attrib, span_size_t index)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).nested(*this, index);
     }
 
     auto nested(attribute_interface& attrib, string_view name)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).nested(*this, name);
     }
 
     auto find(
       attribute_interface& attrib,
       const basic_string_path& path,
-      span<const string_view> tags) -> attribute_interface* final {
+      span<const string_view> tags)
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).find(*this, path, tags);
     }
 
@@ -707,7 +709,8 @@ template <typename Encoding, typename Allocator, typename StackAlloc>
 [[nodiscard]] static inline auto rapidjson_make_value_node(
   rapidjson_document_compound<Encoding, Allocator, StackAlloc>& owner,
   rapidjson::GenericValue<Encoding, Allocator>& value,
-  rapidjson::GenericValue<Encoding, Allocator>* name) -> attribute_interface* {
+  rapidjson::GenericValue<Encoding, Allocator>* name)
+  -> optional_reference<attribute_interface> {
     return owner.make_node(value, name);
 }
 //------------------------------------------------------------------------------

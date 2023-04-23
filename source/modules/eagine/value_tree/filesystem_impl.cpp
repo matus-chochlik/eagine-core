@@ -22,7 +22,8 @@ class filesystem_node;
 //------------------------------------------------------------------------------
 [[nodiscard]] static auto filesystem_make_node(
   filesystem_compound& owner,
-  const std::filesystem::path& fs_path) -> attribute_interface*;
+  const std::filesystem::path& fs_path)
+  -> optional_reference<attribute_interface>;
 [[nodiscard]] static auto get_log(filesystem_compound& owner) -> const logger&;
 //------------------------------------------------------------------------------
 class filesystem_node : public attribute_interface {
@@ -72,7 +73,7 @@ public:
     }
 
     auto nested(filesystem_compound& owner, span_size_t index)
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         try {
             if(is_directory(_real_path)) {
                 for(auto& ent :
@@ -91,11 +92,11 @@ public:
               .arg("path", _node_path)
               .arg("error", err);
         }
-        return nullptr;
+        return {};
     }
 
     auto nested(filesystem_compound& owner, string_view name)
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         try {
             if(is_directory(_real_path)) {
                 for(auto& ent :
@@ -114,11 +115,11 @@ public:
               .arg("path", _node_path)
               .arg("error", err);
         }
-        return nullptr;
+        return {};
     }
 
     auto find(filesystem_compound& owner, const basic_string_path& path)
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         auto spath{_node_path};
         for(auto ent : path) {
             spath.append(std::string_view(ent));
@@ -126,13 +127,13 @@ public:
         if(exists(spath)) {
             return filesystem_make_node(owner, spath);
         }
-        return nullptr;
+        return {};
     }
 
     auto find(
       filesystem_compound& owner,
       const basic_string_path& path,
-      span<const string_view> tags) -> attribute_interface* {
+      span<const string_view> tags) -> optional_reference<attribute_interface> {
         std::string temp_str;
         auto _cat =
           [&](string_view a, string_view b, string_view c) mutable -> auto& {
@@ -158,7 +159,7 @@ public:
         if(exists(spath)) {
             return filesystem_make_node(owner, spath);
         }
-        return nullptr;
+        return {};
     }
 
     auto value_count() -> span_size_t {
@@ -203,15 +204,11 @@ public:
     auto fetch_values(span_size_t offset, span<T> dest) -> span_size_t {
         if(dest.has_single_value()) {
             char temp[64];
-            if(const auto len{fetch_values(offset, cover(temp))}) {
-                auto issep = [](char c) {
-                    return not c or std::isspace(c);
-                };
-                if(auto src{take_until(head(memory::view(temp), len), issep)}) {
-                    if(auto fetched{from_string<T>(src)}) {
-                        dest.front() = std::move(extract(fetched));
-                        return 1;
-                    }
+            if(const string_view src{take_until(
+                 head(memory::view(temp), fetch_values(offset, cover(temp))),
+                 [](const char c) { return not c or std::isspace(c); })}) {
+                if(assign_if_fits(src, dest.front())) {
+                    return 1;
                 }
             }
         }
@@ -260,8 +257,8 @@ public:
         return "filesystem";
     }
 
-    auto structure() -> attribute_interface* final {
-        return &_root;
+    auto structure() -> optional_reference<attribute_interface> final {
+        return _root;
     }
 
     auto attribute_name(attribute_interface& attrib) -> string_view final {
@@ -285,24 +282,25 @@ public:
     }
 
     auto nested(attribute_interface& attrib, span_size_t index)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).nested(*this, index);
     }
 
     auto nested(attribute_interface& attrib, string_view name)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).nested(*this, name);
     }
 
     auto find(attribute_interface& attrib, const basic_string_path& path)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).find(*this, path);
     }
 
     auto find(
       attribute_interface& attrib,
       const basic_string_path& path,
-      span<const string_view> tags) -> attribute_interface* final {
+      span<const string_view> tags)
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).find(*this, path, tags);
     }
 
@@ -325,7 +323,8 @@ static inline auto get_log(filesystem_compound& owner) -> const logger& {
 //------------------------------------------------------------------------------
 static inline auto filesystem_make_node(
   filesystem_compound& owner,
-  const std::filesystem::path& fs_path) -> attribute_interface* {
+  const std::filesystem::path& fs_path)
+  -> optional_reference<attribute_interface> {
     if(not fs_path.empty()) {
         try {
             return owner.make_node(fs_path, canonical(fs_path));
@@ -335,7 +334,7 @@ static inline auto filesystem_make_node(
               .arg("path", "FsPath", fs_path);
         }
     }
-    return nullptr;
+    return {};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] auto from_filesystem_path(

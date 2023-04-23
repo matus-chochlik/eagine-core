@@ -92,10 +92,8 @@ public:
 
     /// @brief Returns the implementation type id of this attribute.
     [[nodiscard]] auto type_id() const noexcept -> identifier {
-        if(_pimpl) {
-            return _pimpl->type_id();
-        }
-        return {};
+        return _pimpl.member(&attribute_interface::type_id)
+          .value_or(identifier{});
     }
 
     /// @brief Returns the implementation type id of this attribute.
@@ -108,8 +106,8 @@ public:
 
     template <typename Implementation>
         requires(std::is_base_of_v<attribute_interface, Implementation>)
-    [[nodiscard]] auto as() noexcept -> Implementation* {
-        return dynamic_cast<Implementation*>(_pimpl);
+    [[nodiscard]] auto as() noexcept -> optional_reference<Implementation> {
+        return _pimpl.as<Implementation>();
     }
 
 private:
@@ -117,12 +115,12 @@ private:
 
     attribute(
       std::shared_ptr<compound_interface> owner,
-      attribute_interface* pimpl) noexcept
+      optional_reference<attribute_interface> impl) noexcept
       : _owner{std::move(owner)}
-      , _pimpl{pimpl} {}
+      , _pimpl{impl} {}
 
     std::shared_ptr<compound_interface> _owner;
-    attribute_interface* _pimpl{nullptr};
+    optional_reference<attribute_interface> _pimpl{};
 };
 //------------------------------------------------------------------------------
 export class compound_attribute;
@@ -158,13 +156,8 @@ public:
     }
 
     template <identifier_t V>
-    auto apply(const selector<V> sel) const {
-        if(const auto converted{
-             from_string(_temp, std::type_identity<T>(), sel)}) {
-            _dest = extract(converted);
-            return true;
-        }
-        return false;
+    auto apply(const selector<V> sel) const noexcept -> bool {
+        return assign_if_fits(_temp, _dest, sel);
     }
 
 private:

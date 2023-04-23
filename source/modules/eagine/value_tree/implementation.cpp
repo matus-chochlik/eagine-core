@@ -322,15 +322,15 @@ class compound_with_refcounted_node : public compound_implementation<Derived> {
 private:
     std::vector<std::tuple<span_size_t, std::unique_ptr<Node>>> _nodes{};
 
-    auto _do_make_new(Node&& temp) -> Node* {
+    auto _do_make_new(Node&& temp) -> optional_reference<Node> {
         for(auto& [ref_count, node_ptr] : _nodes) {
             if(temp == *node_ptr) {
                 ++ref_count;
-                return node_ptr.get();
+                return node_ptr;
             }
         }
         _nodes.emplace_back(1, std::make_unique<Node>(std::move(temp)));
-        return std::get<1>(_nodes.back()).get();
+        return std::get<1>(_nodes.back());
     }
 
 protected:
