@@ -5,6 +5,10 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#include <cassert>
+
 export module eagine.core.types:tribool;
 
 import std;
@@ -98,6 +102,13 @@ public:
         return _value != _value_t::_unknown;
     }
 
+    /// @brief Returns the store value if not indeterminate.
+    /// @pre has_value()
+    [[nodiscard]] constexpr auto value() const noexcept -> bool {
+        assert(has_value());
+        return bool(*this);
+    }
+
     /// @brief Returns the boolean value in not indeterminate, fallback otherwise.
     /// @see or_default
     [[nodiscard]] constexpr auto value_or(bool fallback) const noexcept
@@ -126,9 +137,10 @@ public:
         }
     }
 
-    /// @brief Returns true, if the stored value is indeterminate.
+    /// @brief Returns the store value if not indeterminate.
+    /// @pre has_value()
     [[nodiscard]] constexpr auto operator*() const noexcept -> bool {
-        return _value == _value_t::_unknown;
+        return value();
     }
 
     /// @brief Converts this value to @c weakbool.
@@ -150,13 +162,13 @@ public:
     /// @brief Equality comparison.
     [[nodiscard]] constexpr auto operator==(const tribool b) noexcept
       -> tribool {
-        return {_value == b._value, (*(*this) or *b)};
+        return {_value == b._value, (is(indeterminate) or b.is(indeterminate))};
     }
 
     /// @brief Non-equality comparison.
     [[nodiscard]] constexpr auto operator!=(const tribool b) noexcept
       -> tribool {
-        return {_value != b._value, (*(*this) or *b)};
+        return {_value != b._value, (is(indeterminate) or b.is(indeterminate))};
     }
 
 private:

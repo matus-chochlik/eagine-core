@@ -21,11 +21,12 @@ void tribool_default_construct(auto& s) {
 #define CHECK(X) check(bool(X), #X)
 //------------------------------------------------------------------------------
 void tribool_ops(auto& s) {
+    using eagine::indeterminate;
     eagitest::case_ test{s, 2, "ops"};
 
     eagine::tribool a = true;
     eagine::tribool b = false;
-    eagine::tribool c = eagine::indeterminate;
+    eagine::tribool c = indeterminate;
 
     test.CHECK(bool(a));
     test.CHECK(!!a);
@@ -36,7 +37,7 @@ void tribool_ops(auto& s) {
     test.CHECK(a == true);
     test.CHECK(!bool(b));
     test.CHECK(!b);
-    test.CHECK(!*b);
+    test.CHECK(!b.is(indeterminate));
     test.CHECK(!bool(~b));
     test.CHECK(!~b);
     test.CHECK(b == b);
@@ -45,12 +46,15 @@ void tribool_ops(auto& s) {
     test.CHECK(!(b == a));
     test.CHECK(!bool(c));
     test.CHECK(!!c);
-    test.CHECK(*c);
+    test.CHECK(not c.has_value());
+    test.CHECK(c.is(indeterminate));
     test.CHECK(bool(~c));
     test.CHECK(!~c);
 
     test.CHECK(a != false);
     test.CHECK(b != true);
+    test.CHECK(a.value());
+    test.CHECK(not b.value());
     test.CHECK(!(b != false));
     test.CHECK(!(a != a));
     test.CHECK(!(b != b));
@@ -91,9 +95,10 @@ void tribool_ops(auto& s) {
     test.CHECK(b || a);
     test.CHECK(c || a);
     test.CHECK(!(b || b));
-    test.CHECK(*(c || b));
-    test.CHECK(*(b || c));
-    test.CHECK(*(c || c));
+    test.CHECK(not(c || b).has_value());
+    test.CHECK((c || b).is(indeterminate));
+    test.CHECK((b || c).is(indeterminate));
+    test.CHECK((c || c).is(indeterminate));
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

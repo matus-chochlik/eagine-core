@@ -6,7 +6,10 @@ eagine_add_module(
 	eagine.core.types PARTITION basic
 	IMPORTS eagine.core.build_config
 )
-eagine_add_module(eagine.core.types PARTITION tribool)
+eagine_add_module(
+	eagine.core.types PARTITION tribool
+	IMPORTS eagine.core.concepts
+)
 eagine_add_module(eagine.core.types PARTITION interface)
 eagine_add_module(eagine.core.types PARTITION bitfield)
 
