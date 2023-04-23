@@ -7,6 +7,9 @@
 ///
 export module eagine.core.types:tribool;
 
+import std;
+import eagine.core.concepts;
+
 namespace eagine {
 
 enum class _tribool_value_t : unsigned char {
@@ -90,6 +93,39 @@ public:
         return _value == _value_t::_false;
     }
 
+    /// @brief Returns true, if the stored value is not indeterminate.
+    [[nodiscard]] constexpr auto has_value() const noexcept -> bool {
+        return _value != _value_t::_unknown;
+    }
+
+    /// @brief Returns the boolean value in not indeterminate, fallback otherwise.
+    /// @see or_default
+    [[nodiscard]] constexpr auto value_or(bool fallback) const noexcept
+      -> bool {
+        if(has_value()) {
+            return bool(*this);
+        }
+        return fallback;
+    }
+
+    /// @brief Returns the boolean value in not indeterminate, false otherwise.
+    /// @see value_or
+    [[nodiscard]] constexpr auto or_default() const noexcept -> bool {
+        return value_or(false);
+    }
+
+    /// @brief Invoke function on the stored value or return empty optional-like.
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, bool>>>
+    constexpr auto and_then(F&& function) const -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), bool(*this));
+        } else {
+            return R{};
+        }
+    }
+
     /// @brief Returns true, if the stored value is indeterminate.
     [[nodiscard]] constexpr auto operator*() const noexcept -> bool {
         return _value == _value_t::_unknown;
@@ -108,7 +144,7 @@ public:
     /// @brief Returns true if the stored value is indeterminate.
     [[nodiscard]] constexpr auto is(const indeterminate_t) const noexcept
       -> bool {
-        return *(*this);
+        return _value == _value_t::_unknown;
     }
 
     /// @brief Equality comparison.
