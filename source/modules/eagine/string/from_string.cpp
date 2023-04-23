@@ -85,8 +85,8 @@ export template <identifier_t V>
   const string_view src,
   const std::type_identity<char>,
   const selector<V>) noexcept -> std::optional<char> {
-    if(src.has_single_value()) {
-        return {extract(src)};
+    if(src.has_value()) {
+        return {*src};
     }
     return {};
 }
@@ -415,10 +415,9 @@ export template <typename T, identifier_t V>
 [[nodiscard]] auto from_strings(
   const span<const string_view> src,
   const std::type_identity<T> tid,
-  const selector<V> sel) noexcept
-  -> decltype(from_string(extract(src), tid, sel)) {
-    if(src.has_single_value()) {
-        return from_string(extract(src), tid, sel);
+  const selector<V> sel) noexcept -> decltype(from_string(*src, tid, sel)) {
+    if(src.has_value()) {
+        return from_string(*src, tid, sel);
     }
     return {};
 }
