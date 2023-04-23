@@ -17,17 +17,17 @@ void from_string_int(auto& s) {
     eagitest::track trck{test, 6, 6};
 
     if(const auto conv{from_string<int>("0")}) {
-        test.check_equal(extract(conv), 0, "0");
+        test.check_equal(*conv, 0, "0");
         trck.checkpoint(1);
     }
 
     if(const auto conv{from_string<int>("-1")}) {
-        test.check_equal(extract(conv), -1, "-1");
+        test.check_equal(*conv, -1, "-1");
         trck.checkpoint(2);
     }
 
     if(const auto conv{from_string<int>("1")}) {
-        test.check_equal(extract(conv), 1, "1");
+        test.check_equal(*conv, 1, "1");
         trck.checkpoint(3);
     }
 
@@ -38,7 +38,7 @@ void from_string_int(auto& s) {
     }
 
     if(const auto conv{from_string<int>("12345")}) {
-        test.check_equal(extract(conv), 12345, "12345");
+        test.check_equal(*conv, 12345, "12345");
         trck.checkpoint(5);
     }
 
@@ -56,7 +56,7 @@ void from_string_unsigned(auto& s) {
     eagitest::track trck{test, 6, 6};
 
     if(const auto conv{from_string<unsigned>("0")}) {
-        test.check_equal(extract(conv), 0U, "0");
+        test.check_equal(*conv, 0U, "0");
         trck.checkpoint(1);
     }
 
@@ -67,7 +67,7 @@ void from_string_unsigned(auto& s) {
     }
 
     if(const auto conv{from_string<unsigned>("1")}) {
-        test.check_equal(extract(conv), 1U, "1");
+        test.check_equal(*conv, 1U, "1");
         trck.checkpoint(3);
     }
 
@@ -78,7 +78,7 @@ void from_string_unsigned(auto& s) {
     }
 
     if(const auto conv{from_string<unsigned>("12345")}) {
-        test.check_equal(extract(conv), 12345U, "12345");
+        test.check_equal(*conv, 12345U, "12345");
         trck.checkpoint(5);
     }
 
@@ -96,32 +96,32 @@ void from_string_float(auto& s) {
     eagitest::track trck{test, 7, 7};
 
     if(const auto conv{from_string<float>("0.0")}) {
-        test.check_equal(extract(conv), 0.F, "0");
+        test.check_equal(*conv, 0.F, "0");
         trck.checkpoint(1);
     }
 
     if(const auto conv{from_string<float>("-1.0")}) {
-        test.check_close(extract(conv), -1.F, "-1");
+        test.check_close(*conv, -1.F, "-1");
         trck.checkpoint(2);
     }
 
     if(const auto conv{from_string<float>("1.0")}) {
-        test.check_close(extract(conv), 1.F, "1");
+        test.check_close(*conv, 1.F, "1");
         trck.checkpoint(3);
     }
 
     if(const auto conv{from_string<float>("12345")}) {
-        test.check_equal(extract(conv), 12345.F, "12345");
+        test.check_equal(*conv, 12345.F, "12345");
         trck.checkpoint(4);
     }
 
     if(const auto conv{from_string<float>("-12345")}) {
-        test.check_equal(extract(conv), -12345.F, "-12345");
+        test.check_equal(*conv, -12345.F, "-12345");
         trck.checkpoint(5);
     }
 
     if(const auto conv{from_string<float>("12345.6789")}) {
-        test.check_equal(extract(conv), 12345.6789F, "12345.6789");
+        test.check_equal(*conv, 12345.6789F, "12345.6789");
         trck.checkpoint(6);
     }
 

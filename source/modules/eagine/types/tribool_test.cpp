@@ -30,14 +30,14 @@ void tribool_ops(auto& s) {
 
     test.CHECK(bool(a));
     test.CHECK(!!a);
-    test.CHECK(!*a);
+    test.CHECK(not a.is(indeterminate));
     test.CHECK(~a);
     test.CHECK(!!~a);
     test.CHECK(a == a);
     test.CHECK(a == true);
     test.CHECK(!bool(b));
     test.CHECK(!b);
-    test.CHECK(!b.is(indeterminate));
+    test.CHECK(not b.is(indeterminate));
     test.CHECK(!bool(~b));
     test.CHECK(!~b);
     test.CHECK(b == b);
@@ -83,10 +83,10 @@ void tribool_ops(auto& s) {
     test.CHECK(!(a && b));
     test.CHECK(!(b && a));
     test.CHECK(!(b && b));
-    test.CHECK(*(a && c));
+    test.CHECK((a && c).is(indeterminate));
     test.CHECK(!(b && c));
-    test.CHECK(*(c && c));
-    test.CHECK(*(c && a));
+    test.CHECK((c && c).is(indeterminate));
+    test.CHECK((c && a).is(indeterminate));
     test.CHECK(!(c && b));
 
     test.CHECK(a || a);

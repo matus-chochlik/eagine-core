@@ -13,7 +13,7 @@ import eagine.core.types;
 struct inner {
     short s{0};
     bool b{true};
-    int foo() const noexcept {
+    auto foo() const noexcept -> int {
         return 42;
     }
 };
@@ -56,7 +56,7 @@ void optional_reference_non_empty(auto& s) {
     eagine::optional_reference<outer> r{};
 
     test.check_equal(
-      r.member(&outer::i).call(&inner::foo).value_or(2345),
+      r.member(&outer::i).member(&inner::foo).value_or(2345),
       2345,
       "member call 2345");
 
@@ -99,7 +99,7 @@ void optional_reference_non_empty(auto& s) {
 
     o.i.s = 3456;
     test.check_equal(
-      r.member(&outer::i).call(&inner::foo).value_or(2345),
+      r.member(&outer::i).member(&inner::foo).value_or(2345),
       42,
       "member call 42");
 

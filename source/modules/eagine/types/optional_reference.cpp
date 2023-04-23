@@ -216,7 +216,7 @@ public:
     [[nodiscard]] constexpr auto construct(Args&&... args) noexcept(
       noexcept(T(std::declval<T&>()))) -> std::optional<C> {
         if(has_value()) {
-            return {C{this->value(), std::forward<Args>(args)...}};
+            return {C{value(), std::forward<Args>(args)...}};
         }
         return {};
     }
@@ -229,7 +229,7 @@ public:
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
     constexpr auto and_then(F&& function) -> R {
         if(has_value()) {
-            return std::invoke(std::forward<F>(function), this->value());
+            return std::invoke(std::forward<F>(function), value());
         } else {
             return R{};
         }
@@ -242,7 +242,7 @@ public:
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>>
     constexpr auto and_then(F&& function) const -> R {
         if(has_value()) {
-            return std::invoke(std::forward<F>(function), this->value());
+            return std::invoke(std::forward<F>(function), value());
         } else {
             return R{};
         }
@@ -262,20 +262,13 @@ public:
         return _transform(_ptr, std::forward<F>(function));
     }
 
-    template <typename M, std::same_as<T> C>
-    [[nodiscard]] constexpr auto member(M C::*ptr) noexcept {
-        if(has_value()) {
-            return optional_reference<M>{this->value().*ptr};
-        } else {
-            return optional_reference<M>{nothing};
-        }
-    }
-
     template <typename M, typename C>
         requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
-    [[nodiscard]] constexpr auto member(M C::*ptr) const noexcept {
+    [[nodiscard]] constexpr auto member(M C::*ptr) const noexcept
+        requires(not std::is_member_function_pointer_v<decltype(ptr)>)
+    {
         if(has_value()) {
-            return optional_reference<std::add_const_t<M>>{this->value().*ptr};
+            return optional_reference<std::add_const_t<M>>{value().*ptr};
         } else {
             return optional_reference<std::add_const_t<M>>{nothing};
         }
@@ -284,14 +277,14 @@ public:
     template <typename R, std::same_as<T> C, typename... Params, typename... Args>
     [[nodiscard]] constexpr auto member(
       R (C::*function)(Params...),
-      Args&&... args) {
+      Args&&... args) const {
         return _call_member(_ptr, function, std::forward<Args>(args)...);
     }
 
     template <typename R, std::same_as<T> C, typename... Params, typename... Args>
     [[nodiscard]] constexpr auto member(
       R (C::*function)(Params...) noexcept,
-      Args&&... args) noexcept {
+      Args&&... args) const noexcept {
         return _call_member(_ptr, function, std::forward<Args>(args)...);
     }
 
@@ -347,7 +340,7 @@ public:
     [[nodiscard]] constexpr operator std::optional<std::reference_wrapper<T>>()
       const noexcept {
         if(has_value()) {
-            return {this->value()};
+            return {value()};
         }
         return {};
     }
