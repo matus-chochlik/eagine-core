@@ -192,8 +192,16 @@ public:
     /// @brief Indicates if the span has exactly one value.
     /// @see is_empty
     /// @see size
+    /// @see has_value
     constexpr auto has_single_value() const noexcept -> bool {
         return size() == 1;
+    }
+
+    /// @brief Indicates if the span has exactly one value.
+    /// @see is_empty
+    /// @see has_single_value
+    constexpr auto has_value() const noexcept -> bool {
+        return has_single_value();
     }
 
     /// @brief Indicates that the span is terminated with value T(0) if applicable.
@@ -321,7 +329,7 @@ public:
     /// @see back
     /// @pre not is_empty()
     auto front() const noexcept -> std::add_const_t<element_type>& {
-        assert(0 < size());
+        assert(not empty());
         return _addr[0];
     }
 
@@ -329,7 +337,7 @@ public:
     /// @see back
     /// @pre not is_empty()
     auto front() noexcept -> element_type& {
-        assert(0 < size());
+        assert(not empty());
         return _addr[0];
     }
 
@@ -337,7 +345,7 @@ public:
     /// @see front
     /// @pre not is_empty()
     auto back() const noexcept -> std::add_const_t<element_type>& {
-        assert(0 < size());
+        assert(not empty());
         return _addr[size() - 1];
     }
 
@@ -345,14 +353,22 @@ public:
     /// @see front
     /// @pre not is_empty()
     auto back() noexcept -> element_type& {
-        assert(0 < size());
+        assert(not empty());
         return _addr[size() - 1];
     }
 
+    /// @brief Returns the single value if size == 1
+    /// @see front
+    /// @pre has_single_value()
+    auto value() const noexcept -> element_type {
+        assert(has_single_value());
+        return front();
+    }
+
     /// @brief Returns the single value if size == 1 or fallback
-    /// @see has_single_value
     /// @see size
-    /// @see front()
+    /// @see front
+    /// @see has_single_value
     template <std::convertible_to<element_type> U>
     auto value_or(U&& fallback) const noexcept -> element_type {
         if(has_single_value()) {
@@ -404,6 +420,13 @@ public:
         requires(std::is_integral_v<Int>)
     {
         return ref(span_size(index));
+    }
+
+    /// @brief Returns the single value if size == 1
+    /// @see value
+    /// @pre has_value()
+    auto operator*() const noexcept -> element_type {
+        return value();
     }
 
     /// @brief Array subscript operator.
