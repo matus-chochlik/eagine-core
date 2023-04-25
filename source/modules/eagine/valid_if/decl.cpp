@@ -161,9 +161,12 @@ public:
     }
 
     /// @brief Equality comparison.
+    template <typename U, typename Po2, typename Lo2>
     [[nodiscard]] constexpr auto operator==(
-      const basic_valid_if& that) const noexcept -> bool {
-        return (_value == that._value) and has_value() and that.has_value();
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() == that.value_anyway(),
+          not has_value() or not that.has_value()};
     }
 
     /// @brief Equality comparison of the stored value with @p v.
@@ -172,10 +175,28 @@ public:
         return {value_anyway() == v, not has_value()};
     }
 
+    /// @brief Non-equality comparison.
+    template <typename U, typename Po2, typename Lo2>
+    [[nodiscard]] constexpr auto operator!=(
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() != that.value_anyway(),
+          not has_value() or not that.has_value()};
+    }
+
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
         return {value_anyway() != v, not has_value()};
+    }
+
+    /// @brief Less-than comparison.
+    template <typename U, typename Po2, typename Lo2>
+    [[nodiscard]] constexpr auto operator<(
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() < that.value_anyway(),
+          not has_value() or not that.has_value()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
@@ -184,16 +205,43 @@ public:
         return {value_anyway() < v, not has_value()};
     }
 
+    /// @brief Greater-than comparison.
+    template <typename U, typename Po2, typename Lo2>
+    [[nodiscard]] constexpr auto operator>(
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() > that.value_anyway(),
+          not has_value() or not that.has_value()};
+    }
+
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
         return {value_anyway() > v, not has_value()};
     }
 
+    /// @brief Less-than or equal comparison.
+    template <typename U, typename Po2, typename Lo2>
+    [[nodiscard]] constexpr auto operator<=(
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() <= that.value_anyway(),
+          not has_value() or not that.has_value()};
+    }
+
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
         return {value_anyway() <= v, not has_value()};
+    }
+
+    /// @brief Greater-than or equal comparison.
+    template <typename U, typename Po2, typename Lo2>
+    [[nodiscard]] constexpr auto operator>=(
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() >= that.value_anyway(),
+          not has_value() or not that.has_value()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
@@ -342,8 +390,7 @@ public:
                   V,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{
-                  std::invoke(std::forward<F>(function), value_anyway()),
-                  true};
+                  std::invoke(std::forward<F>(function), value_anyway()), true};
             } else {
                 return basic_valid_if<
                   V,
@@ -374,8 +421,7 @@ public:
         requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
     [[nodiscard]] auto member(M C::*ptr) const noexcept {
         if(has_value()) {
-            return optional_reference<std::add_const_t<M>>{
-              value_anyway().*ptr};
+            return optional_reference<std::add_const_t<M>>{value_anyway().*ptr};
         } else {
             return optional_reference<std::add_const_t<M>>{nothing};
         }
@@ -516,9 +562,11 @@ public:
     }
 
     /// @brief Equality comparison.
+    template <typename U, typename Po2, typename Lo2>
     [[nodiscard]] constexpr auto operator==(
-      const basic_valid_if& that) const noexcept -> bool {
-        return (_value == that._value) and has_value() and that.has_value();
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> bool {
+        return (value_anyway() == that.value_anyway()) and has_value() and
+               that.has_value();
     }
 
     /// @brief Equality comparison of the stored value with @p v.
@@ -527,10 +575,28 @@ public:
         return {value_anyway() == v, not has_value()};
     }
 
+    /// @brief Non-equality comparison.
+    template <typename U, typename Po2, typename Lo2>
+    [[nodiscard]] constexpr auto operator!=(
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() != that.value_anyway(),
+          not has_value() or not that.has_value()};
+    }
+
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
         return {value_anyway() != v, not has_value()};
+    }
+
+    /// @brief Less-than comparison.
+    template <typename U, typename Po2, typename Lo2>
+    [[nodiscard]] constexpr auto operator<(
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() < that.value_anyway(),
+          not has_value() or not that.has_value()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
@@ -539,16 +605,43 @@ public:
         return {value_anyway() < v, not has_value()};
     }
 
+    /// @brief Greater-than comparison.
+    template <typename U, typename Po2, typename Lo2>
+    [[nodiscard]] constexpr auto operator>(
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() > that.value_anyway(),
+          not has_value() or not that.has_value()};
+    }
+
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
         return {value_anyway() > v, not has_value()};
     }
 
+    /// @brief Less-than or equal comparison.
+    template <typename U, typename Po2, typename Lo2>
+    [[nodiscard]] constexpr auto operator<=(
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() <= that.value_anyway(),
+          not has_value() or not that.has_value()};
+    }
+
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
         return {value_anyway() <= v, not has_value()};
+    }
+
+    /// @brief Greater-than or equal comparison.
+    template <typename U, typename Po2, typename Lo2>
+    [[nodiscard]] constexpr auto operator>=(
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() >= that.value_anyway(),
+          not has_value() or not that.has_value()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
@@ -685,8 +778,7 @@ public:
                   V,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{
-                  std::invoke(std::forward<F>(function), value_anyway()),
-                  true};
+                  std::invoke(std::forward<F>(function), value_anyway()), true};
             } else {
                 return basic_valid_if<
                   V,
@@ -717,8 +809,7 @@ public:
         requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
     [[nodiscard]] auto member(M C::*ptr) const noexcept {
         if(has_value()) {
-            return optional_reference<std::add_const_t<M>>{
-              value_anyway().*ptr};
+            return optional_reference<std::add_const_t<M>>{value_anyway().*ptr};
         } else {
             return optional_reference<std::add_const_t<M>>{nothing};
         }
@@ -776,72 +867,6 @@ private:
     [[no_unique_address]] Policy _policy;
     [[no_unique_address]] DoLog _do_log{_policy};
 };
-//------------------------------------------------------------------------------
-/// @brief Equality comparison of two conditionally valid values.
-/// @ingroup valid_if
-export template <typename T, typename Po1, typename Po2, typename L1, typename L2>
-[[nodiscard]] constexpr auto operator==(
-  const basic_valid_if<T, Po1, L1>& v1,
-  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
-    return {
-      (v1.value_anyway() == v2.value_anyway()),
-      (not v1.has_value() or not v2.has_value())};
-}
-
-/// @brief Non-equality comparison of two conditionally valid values.
-/// @ingroup valid_if
-export template <typename T, typename Po1, typename Po2, typename L1, typename L2>
-[[nodiscard]] constexpr auto operator!=(
-  const basic_valid_if<T, Po1, L1>& v1,
-  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
-    return {
-      (v1.value_anyway() != v2.value_anyway()),
-      (not v1.has_value() or not v2.has_value())};
-}
-
-/// @brief Less-than comparison of two conditionally valid values.
-/// @ingroup valid_if
-export template <typename T, typename Po1, typename Po2, typename L1, typename L2>
-[[nodiscard]] constexpr auto operator<(
-  const basic_valid_if<T, Po1, L1>& v1,
-  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
-    return {
-      (v1.value_anyway() < v2.value_anyway()),
-      (not v1.has_value() or not v2.has_value())};
-}
-
-/// @brief Greater-than comparison of two conditionally valid values.
-/// @ingroup valid_if
-export template <typename T, typename Po1, typename Po2, typename L1, typename L2>
-[[nodiscard]] constexpr auto operator>(
-  const basic_valid_if<T, Po1, L1>& v1,
-  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
-    return {
-      (v1.value_anyway() > v2.value_anyway()),
-      (not v1.has_value() or not v2.has_value())};
-}
-
-/// @brief Less-equal comparison of two conditionally valid values.
-/// @ingroup valid_if
-export template <typename T, typename Po1, typename Po2, typename L1, typename L2>
-[[nodiscard]] constexpr auto operator<=(
-  const basic_valid_if<T, Po1, L1>& v1,
-  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
-    return {
-      (v1.value_anyway() <= v2.value_anyway()),
-      (not v1.has_value() or not v2.has_value())};
-}
-
-/// @brief Greater-equal comparison of two conditionally valid values.
-/// @ingroup valid_if
-export template <typename T, typename Po1, typename Po2, typename L1, typename L2>
-[[nodiscard]] constexpr auto operator>=(
-  const basic_valid_if<T, Po1, L1>& v1,
-  const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
-    return {
-      (v1.value_anyway() >= v2.value_anyway()),
-      (not v1.has_value() or not v2.has_value())};
-}
 //------------------------------------------------------------------------------
 /// @brief Primary template for conditionally valid values.
 /// @ingroup valid_if
