@@ -169,37 +169,37 @@ public:
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() == v, not has_value()};
+        return {value_anyway() == v, not has_value()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() != v, not has_value()};
+        return {value_anyway() != v, not has_value()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() < v, not has_value()};
+        return {value_anyway() < v, not has_value()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() > v, not has_value()};
+        return {value_anyway() > v, not has_value()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() <= v, not has_value()};
+        return {value_anyway() <= v, not has_value()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() >= v, not has_value()};
+        return {value_anyway() >= v, not has_value()};
     }
 
     template <typename Log>
@@ -298,7 +298,7 @@ public:
       noexcept(T(std::declval<T&>())))
       -> basic_valid_if<C, valid_flag_policy, typename valid_flag_policy::do_log> {
         if(has_value()) {
-            return {C{this->value_anyway(), std::forward<Args>(args)...}, true};
+            return {C{value_anyway(), std::forward<Args>(args)...}, true};
         }
         return {};
     }
@@ -311,7 +311,7 @@ public:
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
     auto and_then(F&& function) const -> R {
         if(has_value()) {
-            return std::invoke(std::forward<F>(function), this->value_anyway());
+            return std::invoke(std::forward<F>(function), value_anyway());
         } else {
             return R{};
         }
@@ -331,7 +331,7 @@ public:
               std::remove_pointer_t<R>>;
             if(has_value()) {
                 return optional_reference<U>{
-                  std::invoke(std::forward<F>(function), this->value_anyway())};
+                  std::invoke(std::forward<F>(function), value_anyway())};
             } else {
                 return optional_reference<U>{nothing};
             }
@@ -342,7 +342,7 @@ public:
                   V,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{
-                  std::invoke(std::forward<F>(function), this->value_anyway()),
+                  std::invoke(std::forward<F>(function), value_anyway()),
                   true};
             } else {
                 return basic_valid_if<
@@ -364,7 +364,7 @@ public:
     template <typename M, std::same_as<T> C>
     [[nodiscard]] auto member(M C::*ptr) noexcept {
         if(has_value()) {
-            return optional_reference<M>{this->value_anyway().*ptr};
+            return optional_reference<M>{value_anyway().*ptr};
         } else {
             return optional_reference<M>{nothing};
         }
@@ -375,7 +375,7 @@ public:
     [[nodiscard]] auto member(M C::*ptr) const noexcept {
         if(has_value()) {
             return optional_reference<std::add_const_t<M>>{
-              this->value_anyway().*ptr};
+              value_anyway().*ptr};
         } else {
             return optional_reference<std::add_const_t<M>>{nothing};
         }
@@ -416,7 +416,7 @@ public:
     [[nodiscard]] constexpr operator std::optional<T>() const
       noexcept(std::is_nothrow_copy_constructible_v<T>) {
         if(has_value()) {
-            return {this->value_anyway()};
+            return {value_anyway()};
         }
         return {};
     }
@@ -524,37 +524,37 @@ public:
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() == v, not has_value()};
+        return {value_anyway() == v, not has_value()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() != v, not has_value()};
+        return {value_anyway() != v, not has_value()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() < v, not has_value()};
+        return {value_anyway() < v, not has_value()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() > v, not has_value()};
+        return {value_anyway() > v, not has_value()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() <= v, not has_value()};
+        return {value_anyway() <= v, not has_value()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() >= v, not has_value()};
+        return {value_anyway() >= v, not has_value()};
     }
 
     template <typename Log>
@@ -643,7 +643,7 @@ public:
       noexcept(T(std::declval<const T&>())))
       -> basic_valid_if<C, valid_flag_policy, typename valid_flag_policy::do_log> {
         if(has_value()) {
-            return {C{this->value_anyway(), std::forward<Args>(args)...}, true};
+            return {C{value_anyway(), std::forward<Args>(args)...}, true};
         }
         return {};
     }
@@ -655,7 +655,7 @@ public:
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>>
     auto and_then(F&& function) const -> R {
         if(has_value()) {
-            return std::invoke(std::forward<F>(function), this->value());
+            return std::invoke(std::forward<F>(function), value());
         } else {
             return R{};
         }
@@ -674,7 +674,7 @@ public:
               std::remove_pointer_t<R>>;
             if(has_value()) {
                 return optional_reference<U>{
-                  std::invoke(std::forward<F>(function), this->value_anyway())};
+                  std::invoke(std::forward<F>(function), value_anyway())};
             } else {
                 return optional_reference<U>{nothing};
             }
@@ -685,7 +685,7 @@ public:
                   V,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{
-                  std::invoke(std::forward<F>(function), this->value_anyway()),
+                  std::invoke(std::forward<F>(function), value_anyway()),
                   true};
             } else {
                 return basic_valid_if<
@@ -707,7 +707,7 @@ public:
     template <typename M, std::same_as<T> C>
     [[nodiscard]] auto member(M C::*ptr) noexcept {
         if(has_value()) {
-            return optional_reference<M>{this->value_anyway().*ptr};
+            return optional_reference<M>{value_anyway().*ptr};
         } else {
             return optional_reference<M>{nothing};
         }
@@ -718,7 +718,7 @@ public:
     [[nodiscard]] auto member(M C::*ptr) const noexcept {
         if(has_value()) {
             return optional_reference<std::add_const_t<M>>{
-              this->value_anyway().*ptr};
+              value_anyway().*ptr};
         } else {
             return optional_reference<std::add_const_t<M>>{nothing};
         }
@@ -766,7 +766,7 @@ public:
     [[nodiscard]] constexpr operator std::optional<std::reference_wrapper<T>>()
       const noexcept {
         if(has_value()) {
-            return {this->value_anyway()};
+            return {value_anyway()};
         }
         return {};
     }
