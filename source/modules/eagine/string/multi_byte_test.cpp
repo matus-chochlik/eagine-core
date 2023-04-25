@@ -62,7 +62,7 @@ void multi_byte_seq_2(auto& s) {
         for(multi_byte::code_point cp : cps) {
             do {
                 cp = rg.get_any(std::type_identity<multi_byte::code_point_t>{});
-            } while(not cp.is_valid());
+            } while(not cp.has_value());
         }
 
         bytes.resize(

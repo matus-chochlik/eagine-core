@@ -286,7 +286,7 @@ private:
       std::ostream& parse_log) const -> bool {
         typename basic_valid_if<T, P, L>::value_type value{};
         if(parse(value, sel, parse_log)) {
-            if(dest.is_valid(value)) {
+            if(dest.has_value(value)) {
                 dest = std::move(value);
                 return true;
             } else {

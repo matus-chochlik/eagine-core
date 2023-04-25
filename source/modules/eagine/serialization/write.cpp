@@ -409,10 +409,10 @@ export template <typename T, typename P>
 struct serializer<valid_if<T, P>> : common_serializer<valid_if<T, P>> {
 
     auto write(const valid_if<T, P>& value, auto& backend) const noexcept {
-        const bool is_valid{value.is_valid()};
-        auto errors{backend.begin_list(span_size(is_valid))};
+        const bool has_value{value.has_value()};
+        auto errors{backend.begin_list(span_size(has_value))};
         if(not errors) [[likely]] {
-            if(is_valid) {
+            if(has_value) {
                 errors |= _serializer.write(value.value_anyway(), backend);
             }
             errors |= backend.finish_list();

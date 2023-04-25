@@ -105,7 +105,7 @@ export [[nodiscard]] constexpr auto max_code_point(
 template <typename P>
 [[nodiscard]] static constexpr auto inverted_byte(
   const valid_if<byte, P> b) noexcept -> optionally_valid<byte> {
-    return {byte(~b.value_anyway()), b.is_valid()};
+    return {byte(~b.value_anyway()), b.has_value()};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto head_data_mask(
@@ -127,7 +127,7 @@ template <typename P>
 [[nodiscard]] static constexpr auto head_code_from_mask(
   const valid_if<byte, P> mask) noexcept -> optionally_valid<byte> {
     // NOLINTNEXTLINE(hicpp-signed-bitwise)
-    return {byte((mask.value_anyway() << 1U) & 0xFFU), mask.is_valid()};
+    return {byte((mask.value_anyway() << 1U) & 0xFFU), mask.has_value()};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto head_code(
@@ -222,7 +222,7 @@ template <typename P1, typename P2>
 
     return {// NOLINTNEXTLINE(hicpp-signed-bitwise)
             code_point_t((b & mask.value_anyway()) << bitshift.value_anyway()),
-            (mask.is_valid() and bitshift.is_valid())};
+            (mask.has_value() and bitshift.has_value())};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] constexpr auto decode_code_point_head(
@@ -241,7 +241,7 @@ template <typename P1, typename P2>
 
     return {// NOLINTNEXTLINE(hicpp-signed-bitwise)
             code_point_t((b & mask.value_anyway()) << bitshift.value_anyway()),
-            (mask.is_valid() and bitshift.is_valid())};
+            (mask.has_value() and bitshift.has_value())};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] constexpr auto decode_code_point_tail(
@@ -255,9 +255,9 @@ template <typename P1, typename P2>
 export [[nodiscard]] auto do_decode_code_point(
   const valid_cbyte_span& vsrc,
   const valid_sequence_length& vl) noexcept -> code_point {
-    if(vl.is_valid()) {
+    if(vl.has_value()) {
         const span_size_t l = vl.value_anyway();
-        if(vsrc.is_valid(l - 1)) {
+        if(vsrc.has_value(l - 1)) {
             span<const byte> src = vsrc.value_anyway();
 
             if(const auto h = decode_code_point_head(src[0], vl)) {
@@ -288,7 +288,7 @@ template <typename P1, typename P2, typename P3>
         (code.value_anyway()) |
         // NOLINTNEXTLINE(hicpp-signed-bitwise)
         (mask.value_anyway() & (cp >> bitshift.value_anyway()))),
-      (code.is_valid() and mask.is_valid() and bitshift.is_valid())};
+      (code.has_value() and mask.has_value() and bitshift.has_value())};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] constexpr auto encode_code_point_head(
@@ -313,7 +313,7 @@ export auto do_encode_code_point(
 
     if(cp and vl) {
         const span_size_t l = vl.value_anyway();
-        if(vdest.is_valid(l - 1)) {
+        if(vdest.has_value(l - 1)) {
             span<byte> dest = vdest.value_anyway();
 
             const code_point_t val = cp.value_anyway();
@@ -406,14 +406,14 @@ export [[nodiscard]] auto encode_code_points(
     span_size_t i = 0;
 
     for(const code_point& cp : cps) {
-        if(not cp.is_valid()) {
+        if(not cp.has_value()) {
             return false;
         }
 
         span<byte> sub{bytes.value(i).data() + i, bytes.value(i).size() - i};
         const auto len{encode_code_point(cp.value(), sub)};
 
-        if(not len.is_valid()) {
+        if(not len.has_value()) {
             return false;
         }
 

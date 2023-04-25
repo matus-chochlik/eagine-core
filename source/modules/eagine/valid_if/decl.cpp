@@ -20,17 +20,17 @@ namespace eagine {
 /// @brief Policy for optionally valid values, indicated by a boolean flag.
 /// @ingroup valid_if
 export struct valid_flag_policy {
-    bool _is_valid{false};
+    bool _has_value{false};
 
     constexpr valid_flag_policy() noexcept = default;
 
-    constexpr valid_flag_policy(const bool is_valid) noexcept
-      : _is_valid{is_valid} {}
+    constexpr valid_flag_policy(const bool has_value) noexcept
+      : _has_value{has_value} {}
 
     /// @brief Returns value validity depending on internally stored flag.
     template <typename T>
     constexpr auto operator()(const T&) const noexcept -> bool {
-        return _is_valid;
+        return _has_value;
     }
 
     struct do_log {
@@ -143,74 +143,68 @@ public:
 
     /// @brief Checks if @p val is valid according to this object's policy.
     /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto is_valid(const_reference val, P... p)
+    [[nodiscard]] constexpr auto has_value(const_reference val, P... p)
       const noexcept -> bool {
         return _policy(val, p...);
     }
 
     /// @brief Checks if the stored value is valid according to policy.
     /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto is_valid(P... p) const noexcept -> bool {
+    [[nodiscard]] constexpr auto has_value(P... p) const noexcept {
         return _policy(_value, p...);
     }
 
-    /// @brief Checks if the stored value is valid according to policy.
-    /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto has_value(P... p) const noexcept {
-        return is_valid(p...);
-    }
-
     /// @brief Indicates if the stored value is valid according to policy.
-    /// @see is_valid
+    /// @see has_value
     [[nodiscard]] explicit constexpr operator bool() const noexcept {
-        return is_valid();
+        return has_value();
     }
 
     /// @brief Equality comparison.
     [[nodiscard]] constexpr auto operator==(
       const basic_valid_if& that) const noexcept -> bool {
-        return (_value == that._value) and is_valid() and that.is_valid();
+        return (_value == that._value) and has_value() and that.has_value();
     }
 
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() == v, not is_valid()};
+        return {this->value_anyway() == v, not has_value()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() != v, not is_valid()};
+        return {this->value_anyway() != v, not has_value()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() < v, not is_valid()};
+        return {this->value_anyway() < v, not has_value()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() > v, not is_valid()};
+        return {this->value_anyway() > v, not has_value()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() <= v, not is_valid()};
+        return {this->value_anyway() <= v, not has_value()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() >= v, not is_valid()};
+        return {this->value_anyway() >= v, not has_value()};
     }
 
     template <typename Log>
     constexpr void log_invalid(Log& log, const value_type& v, P... p) const {
-        assert(not is_valid(v, p...));
+        assert(not _policy(v, p...));
         _do_log(log, v, p...);
     }
 
@@ -224,7 +218,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     template <typename F>
     constexpr auto or_else(F&& function, P... p) -> auto& {
-        if(not is_valid(p...)) {
+        if(not _policy(_value, p...)) {
             std::forward<F>(function)(_do_log, _value, p...);
         }
         return *this;
@@ -234,7 +228,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
     void throw_if_invalid(P... p) const {
-        if(not is_valid(p...)) [[unlikely]] {
+        if(not _policy(_value, p...)) [[unlikely]] {
             std::stringstream ss;
             log_invalid(ss, p...);
             throw std::runtime_error(ss.str());
@@ -261,7 +255,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     [[nodiscard]] constexpr auto value_or(reference fallback, P... p) noexcept
       -> reference {
-        if(is_valid(p...)) [[likely]] {
+        if(_policy(_value, p...)) [[likely]] {
             return _value;
         }
         return fallback;
@@ -271,7 +265,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     [[nodiscard]] constexpr auto value_or(const_reference fallback, P... p)
       const noexcept -> const_reference {
-        if(is_valid(p...)) [[likely]] {
+        if(_policy(_value, p...)) [[likely]] {
             return _value;
         }
         return fallback;
@@ -281,7 +275,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     [[nodiscard]] constexpr auto or_default(P... p) const noexcept
       -> value_type {
-        if(is_valid(p...)) [[likely]] {
+        if(_policy(_value, p...)) [[likely]] {
             return _value;
         }
         return value_type{};
@@ -309,7 +303,7 @@ public:
         return {};
     }
 
-    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see construct
     /// @see transform
     template <
@@ -387,7 +381,7 @@ public:
         }
     }
 
-    /// @brief Calls a binary transforming function on {value, is_valid()} pair.
+    /// @brief Calls a binary transforming function on {value, has_value()} pair.
     /// @param function the function to be called.
     template <typename F>
     [[nodiscard]] constexpr auto transformed(F function, P... p) const noexcept
@@ -395,7 +389,7 @@ public:
         std::invoke_result_t<F, T, bool>,
         valid_flag_policy,
         typename valid_flag_policy::do_log> {
-        const auto v{is_valid(p...)};
+        const auto v{_policy(_value, p...)};
         auto r{function(_value, v)};
         if constexpr(extractable<decltype(r)>) {
             return r;
@@ -504,74 +498,68 @@ public:
 
     /// @brief Checks if @p val is valid according to this object's policy.
     /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto is_valid(const_reference val, P... p)
+    [[nodiscard]] constexpr auto has_value(const_reference val, P... p)
       const noexcept -> bool {
         return _policy(val, p...);
     }
 
     /// @brief Checks if the stored value is valid according to policy.
     /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto is_valid(P... p) const noexcept -> bool {
+    [[nodiscard]] constexpr auto has_value(P... p) const noexcept {
         return _policy(_value, p...);
     }
 
-    /// @brief Checks if the stored value is valid according to policy.
-    /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto has_value(P... p) const noexcept {
-        return is_valid(p...);
-    }
-
     /// @brief Indicates if the stored value is valid according to policy.
-    /// @see is_valid
+    /// @see has_value
     [[nodiscard]] explicit constexpr operator bool() const noexcept {
-        return is_valid();
+        return has_value();
     }
 
     /// @brief Equality comparison.
     [[nodiscard]] constexpr auto operator==(
       const basic_valid_if& that) const noexcept -> bool {
-        return (_value == that._value) and is_valid() and that.is_valid();
+        return (_value == that._value) and has_value() and that.has_value();
     }
 
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() == v, not is_valid()};
+        return {this->value_anyway() == v, not has_value()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() != v, not is_valid()};
+        return {this->value_anyway() != v, not has_value()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() < v, not is_valid()};
+        return {this->value_anyway() < v, not has_value()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() > v, not is_valid()};
+        return {this->value_anyway() > v, not has_value()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() <= v, not is_valid()};
+        return {this->value_anyway() <= v, not has_value()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {this->value_anyway() >= v, not is_valid()};
+        return {this->value_anyway() >= v, not has_value()};
     }
 
     template <typename Log>
     constexpr void log_invalid(Log& log, const value_type& v, P... p) const {
-        assert(not is_valid(v, p...));
+        assert(not has_value(v, p...));
         _do_log(log, v, p...);
     }
 
@@ -585,7 +573,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     template <typename F>
     constexpr auto or_else(F&& function, P... p) -> auto& {
-        if(not is_valid(p...)) {
+        if(not _policy(_value, p...)) {
             std::forward<F>(function)(_do_log, _value, p...);
         }
         return *this;
@@ -595,7 +583,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
     void throw_if_invalid(P... p) const {
-        if(not is_valid(p...)) {
+        if(not _policy(_value, p...)) {
             std::stringstream ss;
             log_invalid(ss, p...);
             throw std::runtime_error(ss.str());
@@ -622,7 +610,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     [[nodiscard]] constexpr auto value_or(reference fallback, P... p) noexcept
       -> auto& {
-        if(is_valid(p...)) [[likely]] {
+        if(_policy(_value, p...)) [[likely]] {
             return _value;
         }
         return fallback;
@@ -632,7 +620,7 @@ public:
     /// @param p additional parameters for the policy validity check function.
     [[nodiscard]] constexpr auto value_or(const_reference fallback, P... p)
       const noexcept -> auto& {
-        if(is_valid(p...)) [[likely]] {
+        if(_policy(_value, p...)) [[likely]] {
             return _value;
         }
         return fallback;
@@ -660,7 +648,7 @@ public:
         return {};
     }
 
-    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see transform
     template <
       typename F,
@@ -736,7 +724,7 @@ public:
         }
     }
 
-    /// @brief Calls a binary transforming function on {value, is_valid()} pair.
+    /// @brief Calls a binary transforming function on {value, has_value()} pair.
     /// @param function the function to be called.
     template <typename F>
     [[nodiscard]] constexpr auto transformed(F function, P... p) const noexcept
@@ -744,7 +732,7 @@ public:
         std::invoke_result_t<F, T, bool>,
         valid_flag_policy,
         typename valid_flag_policy::do_log> {
-        const auto v{is_valid(p...)};
+        const auto v{_policy(_value, p...)};
         auto r{function(_value, v)};
         if constexpr(extractable<decltype(r)>) {
             return r;
@@ -797,7 +785,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() == v2.value_anyway()),
-      (not v1.is_valid() or not v2.is_valid())};
+      (not v1.has_value() or not v2.has_value())};
 }
 
 /// @brief Non-equality comparison of two conditionally valid values.
@@ -808,7 +796,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() != v2.value_anyway()),
-      (not v1.is_valid() or not v2.is_valid())};
+      (not v1.has_value() or not v2.has_value())};
 }
 
 /// @brief Less-than comparison of two conditionally valid values.
@@ -819,7 +807,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() < v2.value_anyway()),
-      (not v1.is_valid() or not v2.is_valid())};
+      (not v1.has_value() or not v2.has_value())};
 }
 
 /// @brief Greater-than comparison of two conditionally valid values.
@@ -830,7 +818,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() > v2.value_anyway()),
-      (not v1.is_valid() or not v2.is_valid())};
+      (not v1.has_value() or not v2.has_value())};
 }
 
 /// @brief Less-equal comparison of two conditionally valid values.
@@ -841,7 +829,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() <= v2.value_anyway()),
-      (not v1.is_valid() or not v2.is_valid())};
+      (not v1.has_value() or not v2.has_value())};
 }
 
 /// @brief Greater-equal comparison of two conditionally valid values.
@@ -852,7 +840,7 @@ export template <typename T, typename Po1, typename Po2, typename L1, typename L
   const basic_valid_if<T, Po2, L2>& v2) noexcept -> tribool {
     return {
       (v1.value_anyway() >= v2.value_anyway()),
-      (not v1.is_valid() or not v2.is_valid())};
+      (not v1.has_value() or not v2.has_value())};
 }
 //------------------------------------------------------------------------------
 /// @brief Primary template for conditionally valid values.
@@ -868,7 +856,7 @@ struct extract_traits<basic_valid_if<T, P, L>> {
 };
 
 /// @brief Overload of extract for conditionally valid values.
-/// @pre opt.is_valid()
+/// @pre opt.has_value()
 export template <typename T, typename P, typename L>
 [[nodiscard]] constexpr auto extract(const basic_valid_if<T, P, L>& opt) noexcept
   -> const T& {
@@ -877,7 +865,7 @@ export template <typename T, typename P, typename L>
 }
 
 /// @brief Overload of extract for conditionally valid values.
-/// @pre opt.is_valid()
+/// @pre opt.has_value()
 export template <typename T, typename P, typename L>
 [[nodiscard]] constexpr auto extract(basic_valid_if<T, P, L>& opt) noexcept
   -> T& {
@@ -886,7 +874,7 @@ export template <typename T, typename P, typename L>
 }
 
 /// @brief Overload of extract for conditionally valid values.
-/// @pre opt.is_valid()
+/// @pre opt.has_value()
 export template <typename T, typename P, typename L>
 [[nodiscard]] constexpr auto extract(basic_valid_if<T, P, L>&& opt) noexcept
   -> T&& {

@@ -344,7 +344,7 @@ public:
       const identifier name,
       const identifier tag,
       valid_if_or_fallback<F, T, P, L>&& opt) noexcept -> console_entry& {
-        if(opt.is_valid()) {
+        if(opt.has_value()) {
             return arg(name, tag, std::move(opt.value()));
         }
         return arg(name, std::move(opt.fallback()));
@@ -358,7 +358,7 @@ public:
     auto arg(
       const identifier name,
       valid_if_or_fallback<F, T, P, L>&& opt) noexcept -> console_entry& {
-        if(opt.is_valid()) {
+        if(opt.has_value()) {
             return arg(name, std::move(opt.value()));
         }
         return arg(name, std::move(opt.fallback()));

@@ -21,31 +21,31 @@ struct valid_if_filesystem_policy {
     }
 
     auto operator()(const std::filesystem::path& value) const noexcept {
-        return self().is_valid(value);
+        return self().has_value(value);
     }
 
     auto operator()(const std::string& value) const noexcept {
-        return self().is_valid(value);
+        return self().has_value(value);
     }
 
     auto operator()(const std::string_view& value) const noexcept {
-        return self().is_valid(value);
+        return self().has_value(value);
     }
 
     auto operator()(const string_view& value) const noexcept {
-        return self().is_valid(value.std_view());
+        return self().has_value(value.std_view());
     }
 
     template <typename T>
     auto operator()(const T& value) const noexcept {
-        return self().is_valid(std::filesystem::path{value});
+        return self().has_value(std::filesystem::path{value});
     }
 };
 
 // existing file
 export struct valid_if_existing_file_policy
   : valid_if_filesystem_policy<valid_if_existing_file_policy> {
-    auto is_valid(const std::filesystem::path& path) const noexcept {
+    auto has_value(const std::filesystem::path& path) const noexcept {
         return is_regular_file(path) or
                (is_symlink(path) and is_regular_file(read_symlink(path)));
     }
@@ -68,7 +68,7 @@ using valid_if_existing_file = valid_if<T, valid_if_existing_file_policy>;
 // existing directory
 export struct valid_if_existing_directory_policy
   : valid_if_filesystem_policy<valid_if_existing_directory_policy> {
-    auto is_valid(const std::filesystem::path& path) const noexcept {
+    auto has_value(const std::filesystem::path& path) const noexcept {
         return is_directory(path) or
                (is_symlink(path) and is_directory(read_symlink(path)));
     }
@@ -92,15 +92,15 @@ using valid_if_existing_directory =
 // in writable directory
 export struct valid_if_in_writable_directory_policy
   : valid_if_filesystem_policy<valid_if_in_writable_directory_policy> {
-    auto is_valid(std::filesystem::path path) const noexcept {
+    auto has_value(std::filesystem::path path) const noexcept {
         path.remove_filename();
-        const auto test = [](const auto& p) {
+        const auto test{[](const auto& p) {
             return is_directory(p) and
                    (status(p).permissions() &
                     (std::filesystem::perms::owner_write |
                      std::filesystem::perms::group_write)) !=
                      std::filesystem::perms::none;
-        };
+        }};
         return test(path) or (is_symlink(path) and test(read_symlink(path)));
     }
 

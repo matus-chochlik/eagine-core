@@ -159,7 +159,7 @@ public:
       const string_view tag) noexcept -> bool {
         T temp{};
         if(fetch(key, temp, tag)) {
-            if(dest.is_valid(temp)) {
+            if(dest.has_value(temp)) {
                 dest = std::move(temp);
                 return true;
             } else {
