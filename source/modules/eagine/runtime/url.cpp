@@ -82,14 +82,14 @@ public:
     }
 
     /// @brief Indicates if the URL was parsed successfully.
-    auto is_valid() const noexcept {
+    auto has_value() const noexcept {
         return _parsed;
     }
 
     /// @brief Indicates if the URL was parsed successfully.
-    /// @see is_valid
+    /// @see has_value
     explicit operator bool() const noexcept {
-        return is_valid();
+        return has_value();
     }
 
     /// @brief Returns the whole URL string.
@@ -248,7 +248,7 @@ public:
     }
 
     /// @brief Releases the internally allocated URL string.
-    /// @post not is_valid()
+    /// @post not has_value()
     auto release_string() noexcept -> std::string {
         _parsed = false;
         return {std::move(_url_str)};
