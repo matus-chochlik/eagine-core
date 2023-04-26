@@ -429,18 +429,15 @@ public:
 
     /// @brief Calls a binary transforming function on {value, has_value()} pair.
     /// @param function the function to be called.
-    template <typename F>
+    template <typename F, typename R = std::invoke_result_t<F, const T&, bool>>
     [[nodiscard]] constexpr auto transformed(F function, P... p) const noexcept
-      -> basic_valid_if<
-        std::invoke_result_t<F, T, bool>,
-        valid_flag_policy,
-        typename valid_flag_policy::do_log> {
-        const auto v{_policy(_value, p...)};
-        auto r{function(_value, v)};
-        if constexpr(extractable<decltype(r)>) {
+      -> basic_valid_if<R, valid_flag_policy, typename valid_flag_policy::do_log> {
+        const auto has_val{_policy(_value, p...)};
+        auto r{function(_value, has_val)};
+        if constexpr(optional_like<R>) {
             return r;
         } else {
-            return {std::move(r), v};
+            return {std::move(r), has_val};
         }
     }
 
@@ -817,18 +814,15 @@ public:
 
     /// @brief Calls a binary transforming function on {value, has_value()} pair.
     /// @param function the function to be called.
-    template <typename F>
+    template <typename F, typename R = std::invoke_result_t<F, const T&, bool>>
     [[nodiscard]] constexpr auto transformed(F function, P... p) const noexcept
-      -> basic_valid_if<
-        std::invoke_result_t<F, T, bool>,
-        valid_flag_policy,
-        typename valid_flag_policy::do_log> {
-        const auto v{_policy(_value, p...)};
-        auto r{function(_value, v)};
-        if constexpr(extractable<decltype(r)>) {
+      -> basic_valid_if<R, valid_flag_policy, typename valid_flag_policy::do_log> {
+        const auto has_val{_policy(_value, p...)};
+        auto r{function(_value, has_val)};
+        if constexpr(optional_like<decltype(r)>) {
             return r;
         } else {
-            return {std::move(r), v};
+            return {std::move(r), has_val};
         }
     }
 

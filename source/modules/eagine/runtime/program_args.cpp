@@ -87,7 +87,7 @@ public:
         return value_type(std::forward<U>(fallback));
     }
 
-    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see transform
     template <
       typename F,

@@ -100,7 +100,7 @@ private:
         return s.is_zero_terminated() ? string_type{} : s.to_string();
     }
 
-    template <extractable E>
+    template <typename E>
     static constexpr auto _xtr_span(const E& e) noexcept -> span_type
         requires(
           has_value_type_v<E, span_type> and not std::is_same_v<E, span_type>)
@@ -108,7 +108,7 @@ private:
         return has_value(e) ? _get_span(extract(e)) : span_type{};
     }
 
-    template <extractable E>
+    template <typename E>
     static constexpr auto _xtr_str(const E& e) noexcept -> string_type
         requires(has_value_type_v<E, span_type>)
     {

@@ -219,7 +219,7 @@ public:
         return bool(*static_cast<const Info*>(this));
     }
 
-    /// @brief Tests if this result is valid and contains an extractable value.
+    /// @brief Tests if this result is valid and contains a value.
     explicit constexpr operator bool() const noexcept {
         return has_value();
     }

@@ -221,7 +221,7 @@ public:
         return {};
     }
 
-    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see transform
     /// @see construct
     template <
@@ -235,7 +235,7 @@ public:
         }
     }
 
-    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see transform
     template <
       typename F,
@@ -248,14 +248,14 @@ public:
         }
     }
 
-    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see and_then
     template <typename F>
     [[nodiscard]] constexpr auto transform(F&& function) {
         return _transform(_ptr, std::forward<F>(function));
     }
 
-    /// @brief Invoke function on the stored value or return empty extractable.
+    /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see and_then
     template <typename F>
     [[nodiscard]] constexpr auto transform(F&& function) const {
