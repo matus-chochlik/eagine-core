@@ -227,9 +227,9 @@ public:
     template <
       typename F,
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
-    constexpr auto and_then(F&& function) -> R {
+    constexpr auto and_then(F&& function) & -> R {
         if(has_value()) {
-            return std::invoke(std::forward<F>(function), value());
+            return std::invoke(std::forward<F>(function), *_ptr);
         } else {
             return R{};
         }
@@ -239,10 +239,23 @@ public:
     /// @see transform
     template <
       typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>>
-    constexpr auto and_then(F&& function) const -> R {
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
+    constexpr auto and_then(F&& function) const& -> R {
         if(has_value()) {
-            return std::invoke(std::forward<F>(function), value());
+            return std::invoke(std::forward<F>(function), *_ptr);
+        } else {
+            return R{};
+        }
+    }
+
+    /// @brief Invoke function on the stored value or return empty optional-like.
+    /// @see transform
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&&>>>
+    constexpr auto and_then(F&& function) && -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), std::move(*_ptr));
         } else {
             return R{};
         }
