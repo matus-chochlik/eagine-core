@@ -61,22 +61,19 @@ export template <typename E, typename V>
 constinit const auto has_value_type_v =
   std::is_convertible_v<extracted_type_t<E>, V>;
 //------------------------------------------------------------------------------
-// clang-format off
 export template <typename T>
-concept basic_extractable = requires(T v) {
-	{ std::declval<eagine::extracted_type_t<T>>() };
-	{ std::declval<eagine::extract_result_type_t<T>>() };
-	extract(v);
+concept extractable = std::convertible_to<T, bool> and requires(T v) {
+    { std::declval<eagine::extracted_type_t<T>>() };
+    { std::declval<eagine::extract_result_type_t<T>>() };
+    extract(v);
 };
 
-export template <typename T>
-concept extractable = basic_extractable<T> and std::convertible_to<T, bool>;
-// clang-format on
 //------------------------------------------------------------------------------
 // optional_like
 //------------------------------------------------------------------------------
 export template <typename T>
 concept optional_like = requires(T v) {
+    static_cast<bool>(v);
     v.value();
     v.value_or(v.value());
     v.transform([](auto x) { return x; });
