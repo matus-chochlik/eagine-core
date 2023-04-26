@@ -776,9 +776,8 @@ public:
     /// @brief Traverses the tree, calls the @p visitor function on each node.
     void traverse(const stack_visit_handler visitor) const;
 
-    template <typename Implementation>
-        requires(std::is_base_of_v<compound_interface, Implementation>)
-    [[nodiscard]] auto as() noexcept -> Implementation* {
+    template <std::derived_from<compound_interface> Implementation>
+    [[nodiscard]] auto as() noexcept -> optional_reference<Implementation> {
         return dynamic_cast<Implementation*>(_pimpl.get());
     }
 
