@@ -37,39 +37,31 @@ using get_type_t = typename get_type<T, F>::type;
 export template <typename T>
 using type_t = typename get_type<T, void>::type;
 //------------------------------------------------------------------------------
-// extractable
+// optional_like
 //------------------------------------------------------------------------------
 export template <typename T>
-struct extract_traits {};
+struct extract_traits {
+    using value_type = typename T::value_type;
+};
 
 /// @brief Returns the value type of an extractable.
 /// @ingroup utilities
 /// @see extract
 export template <typename T>
-using extracted_type_t = std::remove_cv_t<typename extract_traits<
-  std::remove_cv_t<std::remove_reference_t<T>>>::value_type>;
+using extracted_type_t =
+  std::remove_cv_t<typename extract_traits<std::remove_cvref_t<T>>::value_type>;
 
 export template <typename T>
-using extract_result_type_t = typename extract_traits<
-  std::remove_cv_t<std::remove_reference_t<T>>>::result_type;
+using extract_result_type_t =
+  typename extract_traits<std::remove_cvref_t<T>>::result_type;
 
 export template <typename T>
-using const_extract_result_type_t = typename extract_traits<
-  std::remove_cv_t<std::remove_reference_t<T>>>::const_result_type;
+using const_extract_result_type_t =
+  typename extract_traits<std::remove_cvref_t<T>>::const_result_type;
 
 export template <typename E, typename V>
 constinit const auto has_value_type_v =
   std::is_convertible_v<extracted_type_t<E>, V>;
-//------------------------------------------------------------------------------
-export template <typename T>
-concept extractable = std::convertible_to<T, bool> and requires(T v) {
-    { std::declval<eagine::extracted_type_t<T>>() };
-    { std::declval<eagine::extract_result_type_t<T>>() };
-    extract(v);
-};
-
-//------------------------------------------------------------------------------
-// optional_like
 //------------------------------------------------------------------------------
 export template <typename T>
 concept optional_like = requires(T v) {
@@ -78,7 +70,12 @@ concept optional_like = requires(T v) {
     v.value_or(v.value());
     v.transform([](auto x) { return x; });
     { v.has_value() } -> std::convertible_to<bool>;
+    { std::declval<eagine::extracted_type_t<T>>() };
 };
+
+export template <typename T, typename V>
+concept extracts_to =
+  optional_like<T> and std::is_convertible_v<extracted_type_t<T>, V>;
 //------------------------------------------------------------------------------
 // does not hide
 //------------------------------------------------------------------------------
