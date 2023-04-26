@@ -69,6 +69,8 @@ export class tribool {
     using _value_t = _tribool_value_t;
 
 public:
+    using value_type = bool;
+
     /// @brief Default constructor.
     constexpr tribool() noexcept = default;
 
@@ -126,6 +128,7 @@ public:
     }
 
     /// @brief Invoke function on the stored value or return empty optional-like.
+    /// @see transform
     template <
       typename F,
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, bool>>>
@@ -134,6 +137,20 @@ public:
             return std::invoke(std::forward<F>(function), bool(*this));
         } else {
             return R{};
+        }
+    }
+
+    /// @brief Invoke function on the stored value or return empty optional-like.
+    /// @see and_then
+    template <
+      typename F,
+      typename R = std::remove_cvref_t<std::invoke_result_t<F, bool>>>
+    [[nodiscard]] constexpr auto transform(F&& function) const {
+        if(has_value()) {
+            return std::optional<R>{
+              std::invoke(std::forward<F>(function), bool(*this))};
+        } else {
+            return std::optional<R>{};
         }
     }
 
