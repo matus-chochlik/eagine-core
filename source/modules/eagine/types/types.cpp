@@ -21,3 +21,4 @@ export import :enum_map;
 export import :function_constant;
 export import :structural;
 export import :metaprogramming;
+export import :placeholder;

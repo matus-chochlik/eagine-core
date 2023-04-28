@@ -12,6 +12,7 @@ eagine_add_module(
 )
 eagine_add_module(eagine.core.types PARTITION interface)
 eagine_add_module(eagine.core.types PARTITION bitfield)
+eagine_add_module(eagine.core.types PARTITION placeholder)
 
 eagine_add_module(
 	eagine.core.types PARTITION structural
@@ -78,6 +79,7 @@ eagine_add_module(
 		optional_reference
 		outcome
 		bitfield
+		placeholder
 		function_constant
 		enum_map
 		metaprogramming
