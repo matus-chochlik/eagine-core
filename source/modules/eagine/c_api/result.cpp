@@ -91,6 +91,16 @@ public:
         return dest;
     }
 
+    [[nodiscard]] constexpr auto operator*() const noexcept -> Result {
+        assert(has_value());
+        return {};
+    }
+
+    [[nodiscard]] constexpr auto value() const noexcept -> Result {
+        assert(has_value());
+        return {};
+    }
+
     template <std::convertible_to<Result> U>
     [[nodiscard]] auto value_or(U&& fallback) const noexcept -> Result {
         return Result(std::forward<U>(fallback));
@@ -231,6 +241,18 @@ public:
     template <std::derived_from<Result> Dest>
     auto operator>>(Dest& dest) -> Dest& {
         return dest = std::move(_value);
+    }
+
+    /// @brief Returns the stored value.
+    /// @pre has_value()
+    [[nodiscard]] constexpr auto operator*() const noexcept -> const Result& {
+        return _value;
+    }
+
+    /// @brief Returns the stored value.
+    /// @pre has_value()
+    [[nodiscard]] constexpr auto value() const noexcept -> const Result& {
+        return _value;
     }
 
     template <std::convertible_to<Result> U>
@@ -379,6 +401,16 @@ public:
             throw bad_result<Info>(static_cast<Info&&>(*this));
         }
         return dest = std::move(_value);
+    }
+
+    [[nodiscard]] constexpr auto operator*() const noexcept -> const Result& {
+        assert(has_value());
+        return _value;
+    }
+
+    [[nodiscard]] constexpr auto value() const noexcept -> const Result& {
+        assert(has_value());
+        return _value;
     }
 
     template <std::convertible_to<Result> U>

@@ -8,6 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import std;
+import eagine.core.concepts;
 import eagine.core.valid_if;
 //------------------------------------------------------------------------------
 struct test_person {
@@ -19,6 +20,8 @@ void valid_if_default_construct(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};
 
     eagine::optionally_valid<test_person> v;
+
+    test.check(eagine::optional_like<decltype(v)>, "optional-like");
 
     test.check(not v.has_value(), "has not value");
     test.check(not v, "is false");
@@ -41,6 +44,8 @@ void valid_if_initialized(auto& s) {
     eagitest::case_ test{s, 2, "initialized"};
 
     eagine::optionally_valid<test_person> v{{"John", "Doe"}, true};
+
+    test.check(eagine::optional_like<decltype(v)>, "optional-like");
 
     test.check(v.has_value(), "has not value");
     test.check(not not v, "is not false");
@@ -78,6 +83,8 @@ void valid_if_non_ref(auto& s) {
     eagitest::case_ test{s, 3, "non-reference"};
 
     eagine::optionally_valid<int> v{123, true};
+
+    test.check(eagine::optional_like<decltype(v)>, "optional-like");
 
     test.check(bool(v), "is true");
     test.check(not not v, "is not false");
@@ -117,6 +124,8 @@ void valid_if_ref(auto& s) {
 
     int i = 234;
     eagine::optionally_valid<int&> v{i, true};
+
+    test.check(eagine::optional_like<decltype(v)>, "optional-like");
 
     test.check(bool(v), "is true");
     test.check(not not v, "is not false");

@@ -96,4 +96,6 @@ eagine_add_module_tests(
 		nothing
 		optional_reference
 		tribool
+	IMPORTS
+		eagine.core.concepts
 )

@@ -8,6 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
+import eagine.core.concepts;
 //------------------------------------------------------------------------------
 void tribool_default_construct(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};
@@ -27,6 +28,10 @@ void tribool_ops(auto& s) {
     eagine::tribool a = true;
     eagine::tribool b = false;
     eagine::tribool c = indeterminate;
+
+    test.check(eagine::optional_like<decltype(a)>, "optional-like a");
+    test.check(eagine::optional_like<decltype(b)>, "optional-like b");
+    test.check(eagine::optional_like<decltype(c)>, "optional-like c");
 
     test.CHECK(bool(a));
     test.CHECK(!!a);

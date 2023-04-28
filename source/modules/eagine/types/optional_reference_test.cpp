@@ -9,6 +9,7 @@
 #include <eagine/testing/unit_begin.hpp>
 import std;
 import eagine.core.types;
+import eagine.core.concepts;
 //------------------------------------------------------------------------------
 struct inner {
     short s{0};
@@ -25,6 +26,8 @@ struct outer {
 void optional_reference_empty(auto& s) {
     eagitest::case_ test{s, 1, "empty"};
     eagine::optional_reference<int> r{eagine::nothing};
+
+    test.check(eagine::optional_like<decltype(r)>, "optional-like");
 
     test.check(not r.has_value(), "has not value");
     test.check(not bool(r), "is not true");
@@ -54,6 +57,8 @@ void optional_reference_non_empty(auto& s) {
     eagitest::case_ test{s, 2, "non-empty"};
 
     eagine::optional_reference<outer> r{};
+
+    test.check(eagine::optional_like<decltype(r)>, "optional-like");
 
     test.check_equal(
       r.member(&outer::i).member(&inner::foo).value_or(2345),
@@ -148,6 +153,8 @@ void optional_reference_non_empty_const(auto& s) {
 
     outer o{};
     eagine::optional_reference<const outer> r{o};
+
+    test.check(eagine::optional_like<decltype(r)>, "optional-like");
 
     test.ensure(r.has_value(), "has value");
     test.ensure(bool(r), "is true");
