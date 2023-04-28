@@ -63,14 +63,19 @@ export template <typename E, typename V>
 constinit const auto has_value_type_v =
   std::is_convertible_v<extracted_type_t<E>, V>;
 //------------------------------------------------------------------------------
-export template <typename T>
-concept optional_like = requires(T v) {
+export template <typename V>
+concept optional_like = requires(V v) {
+    v.transform([]<typename T>(T&& x) -> std::size_t {
+        return sizeof(std::forward<T>(x));
+    });
+    v.and_then([]<typename T>(T&& x) -> std::optional<std::size_t> {
+        return {sizeof(std::forward<T>(x))};
+    });
     static_cast<bool>(v);
     v.value();
     v.value_or(v.value());
-    v.transform([](auto x) { return x; });
     { v.has_value() } -> std::convertible_to<bool>;
-    { std::declval<eagine::extracted_type_t<T>>() };
+    { *v } -> std::convertible_to<eagine::extracted_type_t<V>>;
 };
 
 export template <typename T, typename V>
