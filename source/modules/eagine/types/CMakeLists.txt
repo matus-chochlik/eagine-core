@@ -12,7 +12,6 @@ eagine_add_module(
 )
 eagine_add_module(eagine.core.types PARTITION interface)
 eagine_add_module(eagine.core.types PARTITION bitfield)
-eagine_add_module(eagine.core.types PARTITION placeholder)
 
 eagine_add_module(
 	eagine.core.types PARTITION structural
@@ -34,6 +33,12 @@ eagine_add_module(
 	IMPORTS
 		basic tribool
 		eagine.core.concepts
+)
+
+eagine_add_module(
+	eagine.core.types PARTITION placeholder
+	IMPORTS
+		tribool optional_reference
 )
 
 eagine_add_module(
