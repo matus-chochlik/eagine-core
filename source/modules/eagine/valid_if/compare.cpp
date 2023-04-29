@@ -9,6 +9,7 @@ export module eagine.core.valid_if:compare;
 
 import std;
 import eagine.core.concepts;
+import eagine.core.reflection;
 import :decl;
 
 namespace eagine {
@@ -192,8 +193,8 @@ struct valid_if_ne_policy {
         constexpr do_log(X&&) noexcept {}
 
         template <typename Log>
-        void operator()(Log& log, const T&) const {
-            log << "Value equal to " << Cmp << " is invalid";
+        void operator()(Log& log, const T& v) const {
+            log << "Value " << v << ", equal to " << Cmp << " is invalid";
         }
     };
 };

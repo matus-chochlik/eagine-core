@@ -224,6 +224,11 @@ void for_each_enumerator(
     for_each_enumerator(function, id, default_selector);
 }
 //------------------------------------------------------------------------------
+export template <default_mapped_enum T>
+auto operator<<(std::ostream& out, T value) -> std::ostream& {
+    return out << enumerator_name(value, std::type_identity<T>{});
+}
+//------------------------------------------------------------------------------
 // bitfield
 //------------------------------------------------------------------------------
 export template <typename Bit, typename Selector>
