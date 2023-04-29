@@ -8,6 +8,7 @@
 export module eagine.core.console:entry;
 
 import std;
+import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.valid_if;
@@ -112,6 +113,21 @@ public:
     auto separate() noexcept -> auto& {
         if(_backend) {
             _backend->add_separator();
+        }
+        return *this;
+    }
+
+    /// @brief Adds a new message argument with no value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      const nothing_t) noexcept -> auto& {
+        if(_backend) {
+            _args.add([=](console_backend& backend) {
+                backend.add_nothing(name, tag);
+            });
         }
         return *this;
     }
@@ -328,6 +344,21 @@ public:
             _args.add(adapt_entry_arg(name, std::move(value)));
         }
         return *this;
+    }
+
+    /// @brief Adds a new message argument with ok value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    /// @param opt the value of the argument.
+    template <argument_of_log<console_entry> E>
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      const ok<E>& opt) noexcept -> console_entry& {
+        if(opt) [[likely]] {
+            return arg(name, tag, opt.get());
+        }
+        return arg(name, tag, nothing);
     }
 
     /// @brief Adds a new message argument with valid_if_or_fallback value.

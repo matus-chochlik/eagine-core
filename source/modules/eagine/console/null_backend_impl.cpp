@@ -39,6 +39,8 @@ public:
         return true;
     }
 
+    void add_nothing(const identifier, const identifier) noexcept final {}
+
     void add_identifier(
       const identifier,
       const identifier,

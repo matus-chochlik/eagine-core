@@ -62,6 +62,10 @@ public:
         return true;
     }
 
+    void add_nothing(const identifier arg, const identifier) noexcept final {
+        _add(arg, string_view{"N/A"});
+    }
+
     void add_identifier(
       const identifier arg,
       const identifier,

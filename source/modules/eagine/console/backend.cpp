@@ -78,6 +78,13 @@ export struct console_backend : interface<console_backend> {
       const console_entry_kind kind,
       const string_view format) noexcept -> bool = 0;
 
+    /// @brief Add argument with no value.
+    /// @param arg the argument name identifier.
+    /// @param tag the argument type identifier.
+    virtual void add_nothing(
+      const identifier arg,
+      const identifier tag) noexcept = 0;
+
     /// @brief Add argument with identifier value.
     /// @param arg the argument name identifier.
     /// @param tag the argument type identifier.
