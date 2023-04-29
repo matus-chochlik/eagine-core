@@ -13,6 +13,7 @@ export module eagine.core.types:limits;
 
 import std;
 import :basic;
+import :outcome;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -236,11 +237,21 @@ export template <std::integral T>
     return limit_cast<span_size_t>(v);
 }
 
+export template <typename T>
+[[nodiscard]] constexpr auto span_size(const ok<T>& v) noexcept {
+    return span_size(v.get());
+}
+
 /// @brief Converts argument to std size type.
 /// @ingroup type_utils
 export template <std::integral T>
 [[nodiscard]] constexpr auto std_size(const T v) noexcept {
     return limit_cast<std::size_t>(v);
+}
+
+export template <typename T>
+[[nodiscard]] constexpr auto std_size(const ok<T>& v) noexcept {
+    return std_size(v.get());
 }
 
 /// @brief Returns the byte alignment of type T as span_size_t.

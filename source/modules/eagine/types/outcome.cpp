@@ -50,6 +50,10 @@ private:
 
     using _traits = ok_traits<Outcome>;
 
+    using _elref_t = decltype(*std::declval<Outcome&>());
+    using _erref_t = decltype(*std::declval<Outcome&&>());
+    using _ecref_t = decltype(*std::declval<const Outcome&>());
+
 public:
     /// @brief Construction from a function call @p outcome object.
     constexpr ok(Outcome&& outcome) noexcept(noexcept(std::declval<Outcome&&>()))
@@ -69,31 +73,43 @@ public:
 
     /// @brief Extracts the stored outcome value.
     /// @pre bool(*this)
-    [[nodiscard]] constexpr auto get() noexcept(noexcept(extract(_outcome)))
-      -> decltype(extract(_outcome)) {
-        return extract(_outcome);
+    [[nodiscard]] constexpr auto get() & noexcept(noexcept(*_outcome))
+      -> _elref_t {
+        return *_outcome;
     }
 
     /// @brief Extracts the stored outcome value.
     /// @pre bool(*this)
-    [[nodiscard]] constexpr auto get() const
-      noexcept(noexcept(extract(_outcome))) -> decltype(extract(_outcome)) {
-        return extract(_outcome);
+    [[nodiscard]] constexpr auto get() && noexcept(noexcept(*_outcome))
+      -> _erref_t {
+        return std::move(*_outcome);
+    }
+
+    /// @brief Extracts the stored outcome value.
+    /// @pre bool(*this)
+    [[nodiscard]] constexpr auto get() const& noexcept(noexcept(*_outcome))
+      -> _ecref_t {
+        return *_outcome;
     }
 
     /// @brief Implicit conversion to the stored outcome value.
     /// @pre bool(*this)
-    [[nodiscard]] constexpr operator decltype(extract(
-      std::declval<Outcome&>()))() noexcept(noexcept(extract(_outcome))) {
-        return extract(_outcome);
+    [[nodiscard]] constexpr operator _elref_t() & noexcept(noexcept(*_outcome)) {
+        return *_outcome;
     }
 
     /// @brief Implicit conversion to the stored outcome value.
     /// @pre bool(*this)
-    [[nodiscard]] constexpr operator decltype(
-      extract(std::declval<const Outcome&>()))() const
-      noexcept(noexcept(extract(_outcome))) {
-        return extract(_outcome);
+    [[nodiscard]] constexpr operator _erref_t() && noexcept(
+      noexcept(*_outcome)) {
+        return std::move(*_outcome);
+    }
+
+    /// @brief Implicit conversion to the stored outcome value.
+    /// @pre bool(*this)
+    [[nodiscard]] constexpr operator _ecref_t() const& noexcept(
+      noexcept(*_outcome)) {
+        return *_outcome;
     }
 
     [[nodiscard]] constexpr auto nok() const noexcept
@@ -108,20 +124,11 @@ public:
 };
 
 export template <typename Outcome>
-ok(Outcome&& outcome) -> ok<Outcome>;
+ok(Outcome&& outcome) -> ok<std::remove_cvref_t<Outcome>>;
 //------------------------------------------------------------------------------
-/// @brief Overload of extract for instantiations of the ok template.
-/// @relates ok
 export template <typename Outcome>
-[[nodiscard]] auto extract(const ok<Outcome>& x) noexcept -> const auto& {
-    return x.get();
-}
-
-/// @brief Overload of extract for instantiations of the ok template.
-/// @relates ok
-export template <typename Outcome>
-[[nodiscard]] auto extract(ok<Outcome>& x) noexcept -> auto& {
-    return x.get();
+auto operator<<(std::ostream& out, const ok<Outcome>& x) -> std::ostream& {
+    return out << x.get();
 }
 //------------------------------------------------------------------------------
 /// @brief Overload of begin for instantiations of the ok template.

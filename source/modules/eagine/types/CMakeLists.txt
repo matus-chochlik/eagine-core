@@ -51,7 +51,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.types PARTITION limits
-	IMPORTS basic
+	IMPORTS basic outcome
 )
 
 eagine_add_module(
