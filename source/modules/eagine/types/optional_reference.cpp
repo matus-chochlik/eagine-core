@@ -382,13 +382,6 @@ template <typename T>
 optional_reference(const std::shared_ptr<T>& ptr)
   -> optional_reference<std::add_const_t<T>>;
 //------------------------------------------------------------------------------
-export template <typename T>
-struct extract_traits<optional_reference<T>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
 /// @brief Overload of extract for optional_reference.
 /// @ingroup valid_if
 export template <typename T>

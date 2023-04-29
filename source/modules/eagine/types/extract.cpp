@@ -20,8 +20,6 @@ namespace eagine {
 export template <typename T>
 struct extract_traits<T*> {
     using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
 };
 
 /// @brief Checks @p ptr and dereferences it.
@@ -32,13 +30,6 @@ export template <typename T>
     return *ptr;
 }
 //------------------------------------------------------------------------------
-export template <typename T>
-struct extract_traits<std::shared_ptr<T>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(ptr)
 export template <typename T>
@@ -57,13 +48,6 @@ export template <typename T>
     return *ptr;
 }
 //------------------------------------------------------------------------------
-export template <typename T, typename D>
-struct extract_traits<std::unique_ptr<T, D>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(ptr)
 export template <typename T, typename D>
@@ -81,14 +65,6 @@ export template <typename T, typename D>
     assert(ptr);
     return *ptr;
 }
-
-export template <typename T>
-struct extract_traits<std::optional<T>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
 } // namespace eagine
 //------------------------------------------------------------------------------
 namespace std {

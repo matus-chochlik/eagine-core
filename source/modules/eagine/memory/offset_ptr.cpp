@@ -16,8 +16,7 @@ import eagine.core.concepts;
 import eagine.core.types;
 import :address;
 
-namespace eagine {
-namespace memory {
+namespace eagine::memory {
 //------------------------------------------------------------------------------
 // basic_offset_ptr
 //------------------------------------------------------------------------------
@@ -26,6 +25,9 @@ namespace memory {
 export template <typename Pointee, std::signed_integral OffsetType>
 class basic_offset_ptr {
 public:
+    /// @brief The pointee value type.
+    using value_type = Pointee;
+
     /// @brief The non-const address types.
     using address = basic_address<std::is_const_v<Pointee>>;
 
@@ -283,17 +285,7 @@ using offset_ptr = basic_offset_ptr<Pointee, std::ptrdiff_t>;
 export template <typename Pointee>
 using short_offset_ptr = basic_offset_ptr<Pointee, short>;
 //------------------------------------------------------------------------------
-} // namespace memory
-// extract
-//------------------------------------------------------------------------------
-export template <typename P, typename O>
-struct extract_traits<memory::basic_offset_ptr<P, O>> {
-    using value_type = P;
-    using result_type = P&;
-    using const_result_type = std::add_const_t<P>&;
-};
-//------------------------------------------------------------------------------
-} // namespace eagine
+} // namespace eagine::memory
 
 namespace std {
 export template <typename P, typename O>

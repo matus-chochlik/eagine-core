@@ -831,13 +831,6 @@ public:
 //------------------------------------------------------------------------------
 } // namespace memory
 //------------------------------------------------------------------------------
-export template <typename T, typename P, typename S>
-struct extract_traits<memory::basic_span<T, P, S>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
 export template <
   typename Tl,
   typename Tr,

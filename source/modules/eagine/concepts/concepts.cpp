@@ -51,14 +51,6 @@ export template <typename T>
 using extracted_type_t =
   std::remove_cv_t<typename extract_traits<std::remove_cvref_t<T>>::value_type>;
 
-export template <typename T>
-using extract_result_type_t =
-  typename extract_traits<std::remove_cvref_t<T>>::result_type;
-
-export template <typename T>
-using const_extract_result_type_t =
-  typename extract_traits<std::remove_cvref_t<T>>::const_result_type;
-
 export template <typename E, typename V>
 constinit const auto has_value_type_v =
   std::is_convertible_v<extracted_type_t<E>, V>;

@@ -867,13 +867,6 @@ private:
 export template <typename T, typename Policy>
 using valid_if = basic_valid_if<T, Policy, typename Policy::do_log>;
 //------------------------------------------------------------------------------
-export template <typename T, typename P, typename L>
-struct extract_traits<basic_valid_if<T, P, L>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
 /// @brief Overload of extract for conditionally valid values.
 /// @pre opt.has_value()
 export template <typename T, typename P, typename L>
