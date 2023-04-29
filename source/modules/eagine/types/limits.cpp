@@ -136,6 +136,11 @@ export template <typename Dst, typename Src>
         return Dst(std::move(value));
     }
 }
+
+export template <typename Dst, typename E>
+[[nodiscard]] constexpr auto limit_cast(const ok<E>& value) noexcept -> Dst {
+    return limit_cast<Dst>(value.get());
+}
 //------------------------------------------------------------------------------
 /// @brief Casts @p value to a type with the opposite signedness.
 /// @ingroup type_utils
