@@ -72,6 +72,8 @@ using no_result = result<Result, Info, result_validity::never>;
 export template <typename Result, typename Info>
 class result<Result, Info, result_validity::never> : public Info {
 public:
+    using value_type = Result;
+
     constexpr result() noexcept = default;
 
     constexpr result(Info info) noexcept
@@ -157,6 +159,8 @@ public:
 export template <typename Info>
 class result<void, Info, result_validity::never> : public Info {
 public:
+    using value_type = void;
+
     constexpr result() noexcept = default;
 
     constexpr result(Info info) noexcept
@@ -215,6 +219,8 @@ export template <typename Result, typename Info>
 class result<Result, Info, result_validity::always> : public Info {
 
 public:
+    using value_type = Result;
+
     constexpr result() noexcept = default;
 
     constexpr result(Result value) noexcept
@@ -323,6 +329,8 @@ export template <typename Info>
 class result<void, Info, result_validity::always> : public Info {
 
 public:
+    using value_type = void;
+
     constexpr result() noexcept = default;
 
     constexpr result(Info info) noexcept
@@ -376,6 +384,8 @@ export template <typename Result, typename Info>
 class result<Result, Info, result_validity::maybe> : public Info {
 
 public:
+    using value_type = Result;
+
     constexpr result() noexcept = default;
 
     constexpr result(Result value, const bool valid) noexcept
@@ -488,6 +498,8 @@ export template <typename Info>
 class result<void, Info, result_validity::maybe> : public Info {
 
 public:
+    using value_type = void;
+
     constexpr result() noexcept = default;
 
     constexpr result(const bool valid) noexcept
@@ -572,6 +584,8 @@ class combined_result : public result<Result, Info, result_validity::maybe> {
     using base = result<Result, Info, result_validity::maybe>;
 
 public:
+    using value_type = Result;
+
     constexpr combined_result() noexcept = default;
 
     template <typename SrcInfo, result_validity validity>
@@ -641,42 +655,9 @@ constexpr auto extract(
 } // namespace c_api
 
 export template <typename Result, typename Info, c_api::result_validity validity>
-struct extract_traits<c_api::result<Result, Info, validity>> {
-    using value_type = Result;
-    using result_type = Result&;
-    using const_result_type = std::add_const_t<Result>&;
-};
-
-export template <typename Info, c_api::result_validity validity>
-struct extract_traits<c_api::result<void, Info, validity>> {
-    using value_type = void;
-    using result_type = void;
-    using const_result_type = void;
-};
-
-export template <typename Result, typename Info>
-struct ok_traits<c_api::result<Result, Info, c_api::result_validity::never>> {
+struct ok_traits<c_api::result<Result, Info, validity>> {
     static constexpr auto nok_info(
-      const c_api::result<Result, Info, c_api::result_validity::never>&
-        r) noexcept -> const Info& {
-        return r;
-    }
-};
-
-export template <typename Result, typename Info>
-struct ok_traits<c_api::result<Result, Info, c_api::result_validity::always>> {
-    static constexpr auto nok_info(
-      const c_api::result<Result, Info, c_api::result_validity::always>&
-        r) noexcept -> const Info& {
-        return r;
-    }
-};
-
-export template <typename Result, typename Info>
-struct ok_traits<c_api::result<Result, Info, c_api::result_validity::maybe>> {
-    static constexpr auto nok_info(
-      const c_api::result<Result, Info, c_api::result_validity::maybe>&
-        r) noexcept -> const Info& {
+      const c_api::result<Result, Info, validity>& r) noexcept -> const Info& {
         return r;
     }
 };
