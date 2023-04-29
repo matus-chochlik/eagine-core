@@ -362,23 +362,23 @@ private:
     T* _ptr{nullptr};
 };
 //------------------------------------------------------------------------------
-template <typename T>
+export template <typename T>
 optional_reference(T* ptr) -> optional_reference<T>;
 
-template <typename T>
+export template <typename T>
 optional_reference(T& ptr) -> optional_reference<T>;
 
-template <typename T>
+export template <typename T>
 optional_reference(std::unique_ptr<T>& ptr) -> optional_reference<T>;
 
-template <typename T>
+export template <typename T>
 optional_reference(const std::unique_ptr<T>& ptr)
   -> optional_reference<std::add_const_t<T>>;
 
-template <typename T>
+export template <typename T>
 optional_reference(std::shared_ptr<T>& ptr) -> optional_reference<T>;
 
-template <typename T>
+export template <typename T>
 optional_reference(const std::shared_ptr<T>& ptr)
   -> optional_reference<std::add_const_t<T>>;
 //------------------------------------------------------------------------------
