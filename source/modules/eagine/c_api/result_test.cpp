@@ -35,11 +35,21 @@ void opt_result_1(auto& s) {
     test.check(eagine::optional_like<decltype(r)>, "optional-like");
 }
 //------------------------------------------------------------------------------
+void combined_result_1(auto& s) {
+    eagitest::case_ test{s, 4, "combined result 1"};
+
+    eagine::c_api::opt_result<int, eagine::nothing_t> o{345, true};
+    eagine::c_api::combined_result<int, eagine::nothing_t> r{o};
+
+    test.check(eagine::optional_like<decltype(r)>, "optional-like");
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "C-API result", 3};
+    eagitest::suite test{argc, argv, "C-API result", 4};
     test.once(result_1);
     test.once(no_result_1);
     test.once(opt_result_1);
+    test.once(combined_result_1);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
