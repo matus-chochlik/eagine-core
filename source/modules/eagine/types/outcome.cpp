@@ -112,6 +112,18 @@ public:
         return *_outcome;
     }
 
+    [[nodiscard]] constexpr operator Outcome&() & noexcept {
+        return _outcome;
+    }
+
+    [[nodiscard]] constexpr operator Outcome&&() && noexcept {
+        return std::move(_outcome);
+    }
+
+    [[nodiscard]] constexpr operator const Outcome&() const& noexcept {
+        return _outcome;
+    }
+
     [[nodiscard]] constexpr auto nok() const noexcept
       -> decltype(_traits::nok_info(_outcome)) {
         return _traits::nok_info(_outcome);
