@@ -174,6 +174,10 @@ public:
         return false;
     }
 
+    constexpr void operator*() const noexcept {
+        assert(has_value());
+    }
+
     template <typename T>
     auto replaced_with(const T&) const noexcept
       -> result<T, Info, result_validity::never> {
@@ -249,9 +253,21 @@ public:
         return dest = std::move(_value);
     }
 
-    /// @brief Returns the stored value.
+    /// @brief Returns a reference the stored value.
     /// @pre has_value()
-    [[nodiscard]] constexpr auto operator*() const noexcept -> const Result& {
+    [[nodiscard]] constexpr auto operator*() & noexcept -> Result& {
+        return _value;
+    }
+
+    /// @brief Returns a rvalue reference the stored value.
+    /// @pre has_value()
+    [[nodiscard]] constexpr auto operator*() && noexcept -> Result&& {
+        return std::move(_value);
+    }
+
+    /// @brief Returns a const reference the stored value.
+    /// @pre has_value()
+    [[nodiscard]] constexpr auto operator*() const& noexcept -> const Result& {
         return _value;
     }
 
@@ -344,6 +360,10 @@ public:
         return has_value();
     }
 
+    constexpr void operator*() const noexcept {
+        assert(has_value());
+    }
+
     template <typename T>
     auto replaced_with(T value) const
       -> result<T, Info, result_validity::always> {
@@ -413,7 +433,17 @@ public:
         return dest = std::move(_value);
     }
 
-    [[nodiscard]] constexpr auto operator*() const noexcept -> const Result& {
+    [[nodiscard]] constexpr auto operator*() & noexcept -> Result& {
+        assert(has_value());
+        return _value;
+    }
+
+    [[nodiscard]] constexpr auto operator*() && noexcept -> Result&& {
+        assert(has_value());
+        return std::move(_value);
+    }
+
+    [[nodiscard]] constexpr auto operator*() const& noexcept -> const Result& {
         assert(has_value());
         return _value;
     }
@@ -515,6 +545,10 @@ public:
 
     explicit constexpr operator bool() const noexcept {
         return has_value();
+    }
+
+    constexpr void operator*() const noexcept {
+        assert(has_value());
     }
 
     template <typename T>
