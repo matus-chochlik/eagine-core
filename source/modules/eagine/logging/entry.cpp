@@ -82,6 +82,24 @@ public:
         }
     }
 
+    /// @brief Adds a new message argument with no value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      const nothing_t) noexcept -> auto& {
+        if(_backend) {
+            _args.add(
+              [=](logger_backend& backend) { backend.add_nothing(name, tag); });
+        }
+        return *this;
+    }
+
+    auto arg(const identifier name, const nothing_t value) noexcept -> auto& {
+        return arg(name, "Nothing", value);
+    }
+
     /// @brief Adds a new message argument with identifier value.
     /// @param name the argument name identifier. Used in message substitution.
     /// @param tag the argument type identifier. Used in value formatting.
@@ -661,6 +679,30 @@ public:
     template <adapted_for_log_entry T>
     auto arg(const identifier name, T&& value) noexcept -> log_entry& {
         return arg_func(adapt_entry_arg(name, std::forward<T>(value)));
+    }
+
+    /// @brief Adds a new message argument with valid_if_or_fallback value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    /// @param opt the value of the argument.
+    /// @see valid_if_or_fallback
+    template <argument_of_log<log_entry> E>
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      const ok<E>& opt) noexcept -> log_entry& {
+        if(opt) [[likely]] {
+            return arg(name, tag, opt.get());
+        }
+        return arg(name, tag, nothing);
+    }
+
+    template <argument_of_log<log_entry> E>
+    auto arg(const identifier name, const ok<E>& opt) noexcept -> log_entry& {
+        if(opt) [[likely]] {
+            return arg(name, opt.get());
+        }
+        return arg(name, nothing);
     }
 
     /// @brief Adds a new message argument with valid_if_or_fallback value.
