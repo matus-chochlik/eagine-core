@@ -146,8 +146,29 @@ void placeholder_tribool(auto& s) {
       "indeterminate");
 }
 //------------------------------------------------------------------------------
+void placeholder_dereference(auto& s) {
+    eagitest::case_ test{s, 9, "operator*"};
+    using eagine::_1;
+
+    std::optional<std::string> strng{"eagine.core"};
+    test.check_equal((*_1)(strng), "eagine.core", "dereferenced value");
+}
+//------------------------------------------------------------------------------
+void placeholder_ostream(auto& s) {
+    eagitest::case_ test{s, 10, "operator<<"};
+    using eagine::_1;
+    using eagine::_2;
+
+    std::stringstream temp;
+    std::string s1{"eagine"};
+    std::string s2{"core"};
+
+    (temp << _1 << std::string{"."} << _2)(s1, s2);
+    test.check_equal(temp.str(), "eagine.core", "ostream value");
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "placeholder expression", 8};
+    eagitest::suite test{argc, argv, "placeholder expression", 10};
     test.once(placeholder_member_object);
     test.once(placeholder_member_function);
     test.once(placeholder_empty);
@@ -156,6 +177,8 @@ auto main(int argc, const char** argv) -> int {
     test.once(placeholder_value_or);
     test.once(placeholder_and_then);
     test.once(placeholder_tribool);
+    test.once(placeholder_dereference);
+    test.once(placeholder_ostream);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

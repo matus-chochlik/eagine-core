@@ -22,10 +22,16 @@ struct placeholder_terminal {
     }
 };
 //------------------------------------------------------------------------------
-export template <typename T>
+template <typename T>
 constexpr auto adapt_placeholder_arg(T&& value)
   -> placeholder_terminal<std::remove_cvref_t<T>> {
     return {std::forward<T>(value)};
+}
+//------------------------------------------------------------------------------
+template <std::size_t N>
+constexpr auto adapt_placeholder_arg(const char (&value)[N])
+  -> placeholder_terminal<std::string_view> {
+    return {value};
 }
 //------------------------------------------------------------------------------
 export template <typename F>
@@ -46,7 +52,7 @@ class placeholder_ops {
 public:
     [[nodiscard]] constexpr auto operator*() noexcept {
         return make_placeholder_expression(
-          [g{derived()}](auto&&... args) mutable -> bool {
+          [g{derived()}](auto&&... args) mutable -> decltype(auto) {
               return *(g(decltype(args)(args)...));
           });
     }
@@ -209,7 +215,7 @@ constexpr auto adapt_placeholder_arg(placeholder_expression<F> expr)
 }
 //------------------------------------------------------------------------------
 template <std::size_t I>
-using placeholder_i = std::integral_constant<std::size_t, 1>;
+using placeholder_i = std::integral_constant<std::size_t, I>;
 //------------------------------------------------------------------------------
 export template <>
 struct placeholder_expression<placeholder_i<1>>
@@ -224,15 +230,35 @@ struct placeholder_expression<placeholder_i<1>>
         return decltype(arg1)(arg1);
     }
 };
-export constinit placeholder_expression<std::integral_constant<size_t, 1>> _1{};
+export constinit placeholder_expression<placeholder_i<1>> _1{};
+//------------------------------------------------------------------------------
+export template <>
+struct placeholder_expression<placeholder_i<2>>
+  : placeholder_ops<placeholder_expression<placeholder_i<2>>> {
+    constexpr auto operator()(auto&&, auto&& arg2, auto&&...) const noexcept
+      -> decltype(auto) {
+        return decltype(arg2)(arg2);
+    }
+};
+export constinit placeholder_expression<placeholder_i<2>> _2{};
 //------------------------------------------------------------------------------
 export template <typename X>
 constexpr auto operator<<(
   std::ostream& out,
   placeholder_expression<X> e) noexcept {
-    return placeholder_expression{[&out, e](auto&&... args) -> std::ostream& {
-        return out << e(decltype(args)(args)...);
-    }};
+    return placeholder_expression{
+      [&out, e](auto&&... args) mutable -> std::ostream& {
+          return out << e(decltype(args)(args)...);
+      }};
+}
+//------------------------------------------------------------------------------
+export template <typename X, typename R>
+constexpr auto operator<<(placeholder_expression<X> l, R&& r) noexcept {
+    return placeholder_expression{
+      [l, re{adapt_placeholder_arg(decltype(r)(r))}](
+        auto&&... args) mutable -> decltype(auto) {
+          return l(decltype(args)(args)...) << re(decltype(args)(args)...);
+      }};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
