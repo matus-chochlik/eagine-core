@@ -32,32 +32,24 @@ public:
     /// @brief Converts the block to base64 and calls the specified function on each char.
     template <typename Function>
     void apply(Function function) const {
-        span_size_t i = 0;
+        span_size_t i{0};
         do_dissolve_bits(
           make_span_getter(i, _mb),
-          [&function](byte b) {
-              if(const auto opt_c{make_base64_encode_transform()(b)}) {
-                  function(extract(opt_c));
-                  return true;
-              }
-              return false;
-          },
+          _1.bind(make_base64_encode_transform())
+            .and_then(_1.bind(function).return_true())
+            .value_or(false),
           6);
     }
 
     /// @brief Operator for writing instances of base64dump to standard output streams.
     friend auto operator<<(std::ostream& out, const base64dump& src)
       -> std::ostream& {
-        span_size_t i = 0;
+        span_size_t i{0};
         do_dissolve_bits(
           make_span_getter(i, src._mb),
-          [&out](byte b) {
-              if(const auto opt_c{make_base64_encode_transform()(b)}) {
-                  out << extract(opt_c);
-                  return true;
-              }
-              return false;
-          },
+          _1.bind(make_base64_encode_transform())
+            .and_then((out << _1).return_true())
+            .value_or(false),
           6);
         return out;
     }
