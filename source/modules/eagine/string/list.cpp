@@ -22,7 +22,7 @@ namespace string_list {
 //------------------------------------------------------------------------------
 auto encode_length(const span_size_t len) noexcept -> std::string {
     using namespace multi_byte;
-    return extract(encode_code_point(code_point_t(len)));
+    return *encode_code_point(code_point_t(len));
 }
 //------------------------------------------------------------------------------
 auto element_header_size(const string_view elem) noexcept -> span_size_t {
@@ -382,7 +382,7 @@ private:
     auto _len_len() const noexcept -> span_size_t {
         byte b = _b();
         assert(multi_byte::is_valid_head_byte(b));
-        return extract(multi_byte::do_decode_sequence_length(b));
+        return *multi_byte::do_decode_sequence_length(b);
     }
 
     auto _val_len(const span_size_t ll) const noexcept -> span_size_t {
@@ -456,7 +456,7 @@ private:
     auto _len_len() const noexcept -> span_size_t {
         byte b = _b();
         assert(multi_byte::is_valid_head_byte(b));
-        return extract(multi_byte::do_decode_sequence_length(b));
+        return *multi_byte::do_decode_sequence_length(b);
     }
 
     auto _val_len(span_size_t ll) const noexcept -> span_size_t {
