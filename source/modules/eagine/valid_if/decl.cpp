@@ -443,16 +443,16 @@ public:
 
     /// @brief Returns the stored value, throws if it is invalid.
     /// @see basic_valid_if::value
-    /// @throws std::runtime_error
-    [[nodiscard]] constexpr auto operator*() const -> const_reference {
-        return value();
+    [[nodiscard]] constexpr auto operator*() const noexcept -> const_reference {
+        assert(has_value());
+        return value_anyway();
     }
 
     /// @brief Returns pointer to the stored value, throws if it is invalid.
     /// @see basic_valid_if::value
-    /// @throws std::runtime_error
-    [[nodiscard]] constexpr auto operator->() const -> const_pointer {
-        return &value();
+    [[nodiscard]] constexpr auto operator->() const noexcept -> const_pointer {
+        assert(has_value());
+        return &value_anyway();
     }
 
     /// @brief Conversion to std::optional
@@ -835,16 +835,16 @@ public:
 
     /// @brief Returns the stored value, throws if it is invalid.
     /// @see basic_valid_if::value
-    /// @throws std::runtime_error
     [[nodiscard]] constexpr auto operator*() const -> const_reference {
-        return value();
+        assert(has_value());
+        return value_anyway();
     }
 
     /// @brief Returns pointer to the stored value, throws if it is invalid.
     /// @see basic_valid_if::value
-    /// @throws std::runtime_error
     [[nodiscard]] constexpr auto operator->() const -> const_pointer {
-        return &value();
+        assert(has_value());
+        return &value_anyway();
     }
 
     /// @brief Conversion to std::optional
