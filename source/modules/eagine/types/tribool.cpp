@@ -89,6 +89,13 @@ public:
           : value    ? _value_t::_true
                      : _value_t::_false) {}
 
+    /// @brief Construction from optional<bool>.
+    constexpr tribool(const std::optional<bool>& opt) noexcept
+      : _value(
+          not opt ? _value_t::_unknown
+          : *opt  ? _value_t::_true
+                  : _value_t::_false) {}
+
     /// @brief Returns true, if the stored value is true.
     [[nodiscard]] constexpr explicit operator bool() const noexcept {
         return _value == _value_t::_true;
