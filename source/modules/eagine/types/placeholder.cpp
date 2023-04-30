@@ -23,87 +23,151 @@ struct placeholder_terminal {
 };
 //------------------------------------------------------------------------------
 export template <typename T>
-consteval auto adapt_placeholder_arg(T&& value)
+constexpr auto adapt_placeholder_arg(T&& value)
   -> placeholder_terminal<std::remove_cvref_t<T>> {
     return {std::forward<T>(value)};
 }
 //------------------------------------------------------------------------------
 export template <typename F>
-struct placeholder_expression {
-    F f;
-
-    constexpr auto operator()(auto&&... args) noexcept(
-      noexcept(std::declval<F>()(decltype(args)(args)...))) -> decltype(auto) {
-        return f(decltype(args)(args)...);
-    }
-
-    constexpr auto operator()(auto&&... args) const
-      noexcept(noexcept(std::declval<const F>()(decltype(args)(args)...)))
-        -> decltype(auto) {
-        return f(decltype(args)(args)...);
-    }
-};
+struct placeholder_expression;
 
 template <typename F>
-consteval auto make_placeholder_expression(F&& f) noexcept
+constexpr auto make_placeholder_expression(F&& f) noexcept
   -> placeholder_expression<std::remove_cvref_t<F>> {
     return {f};
 }
+
+template <typename Derived>
+struct placeholder_ops {
+    auto derived() & noexcept -> Derived&& {
+        return std::move(*static_cast<Derived*>(this));
+    }
+
+    constexpr auto member(auto ptr)
+        requires(std::is_member_object_pointer_v<decltype(ptr)>)
+    {
+        return make_placeholder_expression(
+          [g{derived()}, ptr](auto&&... args) -> auto& {
+              return g(decltype(args)(args)...).*ptr;
+          });
+    }
+
+    constexpr auto member(auto ptr, auto&&... a)
+        requires(std::is_member_function_pointer_v<decltype(ptr)>)
+    {
+        return make_placeholder_expression(
+          [g{derived()}, ptr, ... exprs{adapt_placeholder_arg(decltype(a)(a))}](
+            const auto&... args) -> decltype(auto) {
+              return (g(decltype(args)(args)...).*ptr)(exprs(args...)...);
+          });
+    }
+
+    template <typename X>
+    constexpr auto and_then(placeholder_expression<X> e) noexcept {
+        return make_placeholder_expression(
+          [g{derived()}, e](auto&&... args) mutable {
+              return g(decltype(args)(args)...).and_then(e);
+          });
+    }
+
+    template <typename T>
+    constexpr auto value_or(T v) noexcept {
+        return make_placeholder_expression(
+          [g{derived()}, fallback{std::move(v)}](auto&&... args) mutable {
+              return g(decltype(args)(args)...).value_or(std::move(fallback));
+          });
+    }
+
+    template <typename T>
+    constexpr auto return_(T v) noexcept {
+        return make_placeholder_expression(
+          [g{derived()}, result{std::move(v)}](auto&&... args) mutable {
+              (void)g(decltype(args)(args)...);
+              return std::move(result);
+          });
+    }
+
+    constexpr auto return_true() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable -> tribool {
+              (void)g(decltype(args)(args)...);
+              return true;
+          });
+    }
+
+    constexpr auto return_false() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable -> tribool {
+              (void)g(decltype(args)(args)...);
+              return false;
+          });
+    }
+
+    constexpr auto to_tribool() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable {
+              return tribool{g(decltype(args)(args)...)};
+          });
+    }
+
+    constexpr auto to_optional() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable {
+              using R = decltype(g(decltype(args)(args)...));
+              if constexpr(std::is_pointer_v<R>) {
+                  return optional_reference<std::remove_pointer_t<R>>{
+                    g(decltype(args)(args)...)};
+              } else if constexpr(std::is_reference_v<R>) {
+                  return optional_reference<std::remove_reference_t<R>>{
+                    g(decltype(args)(args)...)};
+              } else {
+                  return std::optional<R>{g(decltype(args)(args)...)};
+              }
+          });
+    }
+};
+
+export template <typename F>
+class placeholder_expression
+  : public placeholder_ops<placeholder_expression<F>> {
+    F _f;
+
+    using Self = placeholder_expression;
+
+public:
+    constexpr placeholder_expression(F f) noexcept
+      : _f{std::move(f)} {}
+
+    constexpr placeholder_expression(Self&&) noexcept = default;
+    constexpr placeholder_expression(const Self&) noexcept = default;
+    constexpr auto operator=(Self&&) noexcept -> Self& = delete;
+    constexpr auto operator=(const Self&) noexcept -> Self& = delete;
+    constexpr ~placeholder_expression() noexcept = default;
+
+    constexpr auto operator()(auto&&... args) noexcept(
+      noexcept(std::declval<F>()(decltype(args)(args)...))) -> decltype(auto) {
+        return _f(decltype(args)(args)...);
+    }
+};
 
 export template <typename F>
 placeholder_expression(F) -> placeholder_expression<F>;
 
 export template <typename F>
-consteval auto adapt_placeholder_arg(placeholder_expression<F> expr)
+constexpr auto adapt_placeholder_arg(placeholder_expression<F> expr)
   -> placeholder_expression<F> {
     return expr;
 }
 //------------------------------------------------------------------------------
+template <std::size_t I>
+using placeholder_i = std::integral_constant<std::size_t, 1>;
+//------------------------------------------------------------------------------
 export template <>
-struct placeholder_expression<std::integral_constant<size_t, 1>> {
-    consteval auto member(auto ptr) const
-        requires(std::is_member_object_pointer_v<decltype(ptr)>)
-    {
-        return make_placeholder_expression(
-          [ptr](auto&& self, auto&&...) { return decltype(self)(self).*ptr; });
-    }
+struct placeholder_expression<placeholder_i<1>>
+  : placeholder_ops<placeholder_expression<placeholder_i<1>>> {
 
-    consteval auto optional(auto ptr) const
-        requires(std::is_member_object_pointer_v<decltype(ptr)>)
-    {
-        return make_placeholder_expression([ptr](auto&& self, auto&&...) {
-            return optional_reference(decltype(self)(self).*ptr);
-        });
-    }
-
-    consteval auto member(auto ptr, auto&&... args) const
-        requires(std::is_member_function_pointer_v<decltype(ptr)>)
-    {
-        return make_placeholder_expression(
-          [ptr, ... exprs{adapt_placeholder_arg(decltype(args)(args))}](
-            auto&& self, const auto&... as) {
-              return (decltype(self)(self).*ptr)(exprs(as...)...);
-          });
-    }
-
-    consteval auto optional(auto ptr, auto&&... args) const
-        requires(std::is_member_function_pointer_v<decltype(ptr)>)
-    {
-        return make_placeholder_expression(
-          [ptr, ... exprs{adapt_placeholder_arg(decltype(args)(args))}](
-            auto&& self, const auto&... as) {
-              using R = decltype((decltype(self)(self).*ptr)(exprs(as...)...));
-              if constexpr(std::is_pointer_v<R>) {
-                  return optional_reference<std::remove_pointer_t<R>>{
-                    (decltype(self)(self).*ptr)(exprs(as...)...)};
-              } else if constexpr(std::is_reference_v<R>) {
-                  return optional_reference<std::remove_reference_t<R>>{
-                    (decltype(self)(self).*ptr)(exprs(as...)...)};
-              } else {
-                  return std::optional<R>{
-                    (decltype(self)(self).*ptr)(exprs(as...)...)};
-              }
-          });
+    constexpr auto bind(auto&& f) const noexcept {
+        return make_placeholder_expression(decltype(f)(f));
     }
 
     constexpr auto operator()(auto&& arg1, auto&&...) const noexcept
@@ -111,20 +175,14 @@ struct placeholder_expression<std::integral_constant<size_t, 1>> {
         return decltype(arg1)(arg1);
     }
 };
-export constinit const placeholder_expression<std::integral_constant<size_t, 1>>
-  _1{};
+export constinit placeholder_expression<std::integral_constant<size_t, 1>> _1{};
 //------------------------------------------------------------------------------
 export template <typename X>
-consteval auto to_optional(placeholder_expression<X> e) noexcept {
-    return placeholder_expression{[e](auto&&... args) {
-        return std::optional{e(decltype(args)(args)...)};
-    }};
-}
-
-export template <typename X>
-consteval auto to_tribool(placeholder_expression<X> e) noexcept {
-    return placeholder_expression{[e](auto&&... args) {
-        return tribool{e(decltype(args)(args)...)};
+constexpr auto operator<<(
+  std::ostream& out,
+  placeholder_expression<X> e) noexcept {
+    return placeholder_expression{[&out, e](auto&&... args) -> std::ostream& {
+        return out << e(decltype(args)(args)...);
     }};
 }
 //------------------------------------------------------------------------------
