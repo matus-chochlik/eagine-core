@@ -96,6 +96,7 @@ eagine_add_module_tests(
 		anything
 		bitfield
 		enum_map
+		placeholder
 		integer_range
 		metaprogramming
 		nothing

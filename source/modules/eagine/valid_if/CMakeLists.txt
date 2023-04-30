@@ -48,5 +48,6 @@ eagine_add_module_tests(
 		range
 		filesystem
 	IMPORTS
+		eagine.core.types
 		eagine.core.concepts
 )

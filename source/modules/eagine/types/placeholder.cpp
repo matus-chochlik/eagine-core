@@ -55,7 +55,7 @@ public:
         requires(std::is_member_object_pointer_v<decltype(ptr)>)
     {
         return make_placeholder_expression(
-          [g{derived()}, ptr](auto&&... args) -> auto& {
+          [g{derived()}, ptr](auto&&... args) mutable -> auto& {
               return g(decltype(args)(args)...).*ptr;
           });
     }
@@ -65,8 +65,9 @@ public:
     {
         return make_placeholder_expression(
           [g{derived()}, ptr, ... exprs{adapt_placeholder_arg(decltype(a)(a))}](
-            const auto&... args) -> decltype(auto) {
-              return (g(decltype(args)(args)...).*ptr)(exprs(args...)...);
+            auto&&... args) mutable -> decltype(auto) {
+              return (g(decltype(args)(args)...).*ptr)(
+                exprs(decltype(args)(args)...)...);
           });
     }
 
@@ -114,6 +115,10 @@ public:
           });
     }
 
+    [[nodiscard]] constexpr auto and_then(auto&& e) noexcept {
+        return and_then(make_placeholder_expression(decltype(e)(e)));
+    }
+
     template <typename T>
     [[nodiscard]] constexpr auto return_(T v) noexcept {
         return make_placeholder_expression(
@@ -159,6 +164,14 @@ public:
               } else {
                   return std::optional<R>{g(decltype(args)(args)...)};
               }
+          });
+    }
+
+    template <typename T>
+    [[nodiscard]] constexpr auto cast_to() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable {
+              return static_cast<T>(g(decltype(args)(args)...));
           });
     }
 };
