@@ -38,12 +38,20 @@ constexpr auto make_placeholder_expression(F&& f) noexcept
 }
 
 template <typename Derived>
-struct placeholder_ops {
+class placeholder_ops {
     auto derived() & noexcept -> Derived&& {
         return std::move(*static_cast<Derived*>(this));
     }
 
-    constexpr auto member(auto ptr)
+public:
+    [[nodiscard]] constexpr auto operator*() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable -> bool {
+              return *(g(decltype(args)(args)...));
+          });
+    }
+
+    [[nodiscard]] constexpr auto member(auto ptr)
         requires(std::is_member_object_pointer_v<decltype(ptr)>)
     {
         return make_placeholder_expression(
@@ -52,7 +60,7 @@ struct placeholder_ops {
           });
     }
 
-    constexpr auto member(auto ptr, auto&&... a)
+    [[nodiscard]] constexpr auto member(auto ptr, auto&&... a)
         requires(std::is_member_function_pointer_v<decltype(ptr)>)
     {
         return make_placeholder_expression(
@@ -62,8 +70,44 @@ struct placeholder_ops {
           });
     }
 
+    [[nodiscard]] constexpr auto empty() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable {
+              return g(decltype(args)(args)...).empty();
+          });
+    }
+
+    [[nodiscard]] constexpr auto size() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable {
+              return g(decltype(args)(args)...).size();
+          });
+    }
+
+    [[nodiscard]] constexpr auto has_value() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable -> bool {
+              return g(decltype(args)(args)...).has_value();
+          });
+    }
+
+    [[nodiscard]] constexpr auto value() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable {
+              return g(decltype(args)(args)...).value();
+          });
+    }
+
+    template <typename T>
+    [[nodiscard]] constexpr auto value_or(T v) noexcept {
+        return make_placeholder_expression(
+          [g{derived()}, fallback{std::move(v)}](auto&&... args) mutable {
+              return g(decltype(args)(args)...).value_or(std::move(fallback));
+          });
+    }
+
     template <typename X>
-    constexpr auto and_then(placeholder_expression<X> e) noexcept {
+    [[nodiscard]] constexpr auto and_then(placeholder_expression<X> e) noexcept {
         return make_placeholder_expression(
           [g{derived()}, e](auto&&... args) mutable {
               return g(decltype(args)(args)...).and_then(e);
@@ -71,15 +115,7 @@ struct placeholder_ops {
     }
 
     template <typename T>
-    constexpr auto value_or(T v) noexcept {
-        return make_placeholder_expression(
-          [g{derived()}, fallback{std::move(v)}](auto&&... args) mutable {
-              return g(decltype(args)(args)...).value_or(std::move(fallback));
-          });
-    }
-
-    template <typename T>
-    constexpr auto return_(T v) noexcept {
+    [[nodiscard]] constexpr auto return_(T v) noexcept {
         return make_placeholder_expression(
           [g{derived()}, result{std::move(v)}](auto&&... args) mutable {
               (void)g(decltype(args)(args)...);
@@ -87,7 +123,7 @@ struct placeholder_ops {
           });
     }
 
-    constexpr auto return_true() noexcept {
+    [[nodiscard]] constexpr auto return_true() noexcept {
         return make_placeholder_expression(
           [g{derived()}](auto&&... args) mutable -> tribool {
               (void)g(decltype(args)(args)...);
@@ -95,7 +131,7 @@ struct placeholder_ops {
           });
     }
 
-    constexpr auto return_false() noexcept {
+    [[nodiscard]] constexpr auto return_false() noexcept {
         return make_placeholder_expression(
           [g{derived()}](auto&&... args) mutable -> tribool {
               (void)g(decltype(args)(args)...);
@@ -103,14 +139,14 @@ struct placeholder_ops {
           });
     }
 
-    constexpr auto to_tribool() noexcept {
+    [[nodiscard]] constexpr auto to_tribool() noexcept {
         return make_placeholder_expression(
           [g{derived()}](auto&&... args) mutable {
               return tribool{g(decltype(args)(args)...)};
           });
     }
 
-    constexpr auto to_optional() noexcept {
+    [[nodiscard]] constexpr auto to_optional() noexcept {
         return make_placeholder_expression(
           [g{derived()}](auto&&... args) mutable {
               using R = decltype(g(decltype(args)(args)...));
@@ -166,7 +202,7 @@ export template <>
 struct placeholder_expression<placeholder_i<1>>
   : placeholder_ops<placeholder_expression<placeholder_i<1>>> {
 
-    constexpr auto bind(auto&& f) const noexcept {
+    [[nodiscard]] constexpr auto bind(auto&& f) const noexcept {
         return make_placeholder_expression(decltype(f)(f));
     }
 
