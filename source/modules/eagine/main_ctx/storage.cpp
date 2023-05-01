@@ -40,14 +40,8 @@ public:
       const char** argv,
       main_ctx_options& options) noexcept
       : _args{argc, argv}
-      , _bld_info{}
-      , _sys_info{}
-      , _usr_info{}
       , _console{options.app_id, _args, options.console_opts}
       , _log_root{options.app_id, _args, options.logger_opts}
-      , _progress_root{_log_root}
-      , _watchdog{*this}
-      , _app_config{*this}
       , _app_name{options.app_name} {
         const auto fs_path = std::filesystem::path(to_string(_args.command()));
         if(_app_name.empty()) {
@@ -184,15 +178,15 @@ private:
       memory::default_byte_allocator()};
     program_args _args;
     build_info _bld_info;
+    compiler_info _cmplr_info;
     version_info _ver_info{config_git_version_tuple()};
-    system_info _sys_info;
-    user_info _usr_info;
     console _console;
     root_logger _log_root;
-    root_activity _progress_root;
-    compiler_info _cmplr_info;
-    process_watchdog _watchdog;
-    application_config _app_config;
+    root_activity _progress_root{_log_root};
+    system_info _sys_info{*this};
+    user_info _usr_info{*this};
+    process_watchdog _watchdog{*this};
+    application_config _app_config{*this};
     memory::buffer_pool _buffers;
     memory::buffer _scratch_space{_default_alloc};
     data_compressor _compressor{_buffers};

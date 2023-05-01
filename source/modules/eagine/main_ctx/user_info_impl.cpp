@@ -77,6 +77,9 @@ private:
     }
 };
 //------------------------------------------------------------------------------
+user_info::user_info(main_ctx_parent parent)
+  : main_ctx_object{"UserInfo", parent} {}
+//------------------------------------------------------------------------------
 auto user_info::_impl() noexcept -> user_info_impl* {
     if(not _pimpl) [[unlikely]] {
         try {

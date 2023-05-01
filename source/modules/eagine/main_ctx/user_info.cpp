@@ -10,6 +10,8 @@ export module eagine.core.main_ctx:user_info;
 import std;
 import eagine.core.memory;
 import eagine.core.valid_if;
+import :parent;
+import :object;
 
 namespace eagine {
 
@@ -17,8 +19,10 @@ class user_info_impl;
 
 /// @brief Class providing user-related information.
 /// @ingroup main_context
-export class user_info {
+export class user_info : public main_ctx_object {
 public:
+    user_info(main_ctx_parent);
+
     /// @brief The user's login name.
     [[nodiscard]] auto login_name() noexcept -> valid_if_not_empty<string_view>;
 

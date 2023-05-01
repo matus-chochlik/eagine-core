@@ -13,6 +13,8 @@ import eagine.core.memory;
 import eagine.core.reflection;
 import eagine.core.units;
 import eagine.core.valid_if;
+import :parent;
+import :object;
 
 namespace eagine {
 
@@ -42,8 +44,10 @@ class system_info_impl;
 
 /// @brief Class providing basic system information.
 /// @ingroup main_context
-export class system_info {
+export class system_info : public main_ctx_object {
 public:
+    system_info(main_ctx_parent);
+
     /// @brief Alias for host id type.
     using host_id_type = std::uint32_t;
 
