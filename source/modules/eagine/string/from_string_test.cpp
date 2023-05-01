@@ -11,10 +11,11 @@ import eagine.core.types;
 import eagine.core.string;
 //------------------------------------------------------------------------------
 void from_string_int(auto& s) {
+    using eagine::_1;
     using eagine::extract;
     using eagine::from_string;
     eagitest::case_ test{s, 1, "int"};
-    eagitest::track trck{test, 6, 6};
+    eagitest::track trck{test, 7, 7};
 
     if(const auto conv{from_string<int>("0")}) {
         test.check_equal(*conv, 0, "0");
@@ -42,18 +43,24 @@ void from_string_int(auto& s) {
         trck.checkpoint(5);
     }
 
+    if(const auto conv{from_string<int>(_1)("23456")}) {
+        test.check_equal(*conv, 23456, "23456");
+        trck.checkpoint(6);
+    }
+
     if(const auto conv{from_string<int>("ABC")}) {
         (void)conv;
     } else {
-        trck.checkpoint(6);
+        trck.checkpoint(7);
     }
 }
 //------------------------------------------------------------------------------
 void from_string_unsigned(auto& s) {
+    using eagine::_2;
     using eagine::extract;
     using eagine::from_string;
     eagitest::case_ test{s, 2, "unsigned"};
-    eagitest::track trck{test, 6, 6};
+    eagitest::track trck{test, 7, 7};
 
     if(const auto conv{from_string<unsigned>("0")}) {
         test.check_equal(*conv, 0U, "0");
@@ -82,18 +89,24 @@ void from_string_unsigned(auto& s) {
         trck.checkpoint(5);
     }
 
+    if(const auto conv{from_string<unsigned>(_2)("12345", "23456")}) {
+        test.check_equal(*conv, 23456U, "23456");
+        trck.checkpoint(6);
+    }
+
     if(const auto conv{from_string<unsigned>("ABC")}) {
         (void)conv;
     } else {
-        trck.checkpoint(6);
+        trck.checkpoint(7);
     }
 }
 //------------------------------------------------------------------------------
 void from_string_float(auto& s) {
+    using eagine::_1;
     using eagine::extract;
     using eagine::from_string;
     eagitest::case_ test{s, 3, "float"};
-    eagitest::track trck{test, 7, 7};
+    eagitest::track trck{test, 8, 8};
 
     if(const auto conv{from_string<float>("0.0")}) {
         test.check_equal(*conv, 0.F, "0");
@@ -125,10 +138,15 @@ void from_string_float(auto& s) {
         trck.checkpoint(6);
     }
 
+    if(const auto conv{from_string<float>(_1)("1234.567")}) {
+        test.check_equal(*conv, 1234.567F, "1234.567");
+        trck.checkpoint(7);
+    }
+
     if(const auto conv{from_string<float>("ABC")}) {
         (void)conv;
     } else {
-        trck.checkpoint(7);
+        trck.checkpoint(8);
     }
 }
 //------------------------------------------------------------------------------

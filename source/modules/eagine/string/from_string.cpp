@@ -518,6 +518,28 @@ export template <typename T, identifier_t V>
   const selector<V> sel) noexcept {
     return from_string(src, std::type_identity<T>(), sel);
 }
+
+export template <typename X, typename T, identifier_t V>
+[[nodiscard]] constexpr auto from_string(
+  placeholder_expression<X> e,
+  const std::type_identity<T> tid,
+  const selector<V> sel) noexcept {
+    return placeholder_expression{[e, tid, sel](auto&&... args) mutable {
+        return from_string(string_view{e(decltype(args)(args)...)}, tid, sel);
+    }};
+}
+
+export template <typename T, typename X, identifier_t V>
+[[nodiscard]] constexpr auto from_string(
+  placeholder_expression<X> e,
+  const selector<V> sel) noexcept {
+    return from_string(std::move(e), std::type_identity<T>(), sel);
+}
+
+export template <typename T, typename X>
+[[nodiscard]] constexpr auto from_string(placeholder_expression<X> e) noexcept {
+    return from_string(std::move(e), std::type_identity<T>(), default_selector);
+}
 //------------------------------------------------------------------------------
 /// @brief Checks if the string can be converted to a value equal to the one given.
 /// @ingroup type_utils
