@@ -472,6 +472,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 	set(ARG_LISTS
 		UNITS
 		IMPORTS
+		ENVIRONMENT
 	)
 	cmake_parse_arguments(
 		EAGINE_MODULE_TEST
@@ -557,6 +558,17 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 					FIXTURES_REQUIRED
 						"${TEST_NAME}-built"
 			)
+			foreach(ENV_VAR ${EAGINE_MODULE_TEST_ENVIRONMENT})
+				if("${ENV_VAR}" MATCHES "^[A-Z_][A-Z0-9_]+=.+$")
+					set_property(
+						TEST "execute-${TEST_NAME}"
+						APPEND PROPERTY
+							ENVIRONMENT "${ENV_VAR}"
+					)
+				else()
+					message(FATAL_ERROR "Invalid environment variable specification ${ENV_VAR}")
+				endif()
+			endforeach()
 			list(APPEND
 				EAGINE_MODULE_PROFRAW_FILES
 				"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PROPER}.${UNIT}.profraw"
