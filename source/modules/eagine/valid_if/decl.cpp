@@ -157,7 +157,7 @@ public:
     /// @brief Indicates if the stored value is valid according to policy.
     /// @see has_value
     [[nodiscard]] explicit constexpr operator bool() const noexcept {
-        return has_value();
+        return _policy(_value);
     }
 
     /// @brief Equality comparison.
@@ -555,15 +555,16 @@ public:
     /// @brief Indicates if the stored value is valid according to policy.
     /// @see has_value
     [[nodiscard]] explicit constexpr operator bool() const noexcept {
-        return has_value();
+        return _policy(_value);
     }
 
     /// @brief Equality comparison.
     template <typename U, typename Po2, typename Lo2>
     [[nodiscard]] constexpr auto operator==(
-      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> bool {
-        return (value_anyway() == that.value_anyway()) and has_value() and
-               that.has_value();
+      const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
+        return {
+          value_anyway() == that.value_anyway(),
+          not has_value() or not that.has_value()};
     }
 
     /// @brief Equality comparison of the stored value with @p v.
