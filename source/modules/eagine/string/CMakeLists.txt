@@ -147,11 +147,19 @@ eagine_add_module_tests(
 	UNITS
 		base64
 		bindump
+		environment
 		from_string
 		hexdump
 		multi_byte
 		list
 		path
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+	ENVIRONMENT
+		EAGINE_TEST_VAR1=eagine
+		EAGINE_TEST_VAR2=core
+		EAGINE_TEST_VAR3=string
 )
 
 set_tests_properties(execute-test.eagine.core.string.base64 PROPERTIES COST 60)
