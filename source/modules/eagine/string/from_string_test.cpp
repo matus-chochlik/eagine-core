@@ -102,7 +102,7 @@ void from_string_unsigned(auto& s) {
 }
 //------------------------------------------------------------------------------
 void from_string_float(auto& s) {
-    using eagine::_1;
+    using eagine::_3;
     using eagine::extract;
     using eagine::from_string;
     eagitest::case_ test{s, 3, "float"};
@@ -138,7 +138,7 @@ void from_string_float(auto& s) {
         trck.checkpoint(6);
     }
 
-    if(const auto conv{from_string<float>(_1)("1234.567")}) {
+    if(const auto conv{from_string<float>(_3)(1, 2, "1234.567")}) {
         test.check_equal(*conv, 1234.567F, "1234.567");
         trck.checkpoint(7);
     }

@@ -241,6 +241,16 @@ struct placeholder_expression<placeholder_i<2>>
     }
 };
 export constinit placeholder_expression<placeholder_i<2>> _2{};
+
+export template <>
+struct placeholder_expression<placeholder_i<3>>
+  : placeholder_ops<placeholder_expression<placeholder_i<3>>> {
+    constexpr auto operator()(auto&&, auto&&, auto&& arg3, auto&&...)
+      const noexcept -> decltype(auto) {
+        return decltype(arg3)(arg3);
+    }
+};
+export constinit placeholder_expression<placeholder_i<3>> _3{};
 //------------------------------------------------------------------------------
 export template <typename X>
 constexpr auto operator<<(

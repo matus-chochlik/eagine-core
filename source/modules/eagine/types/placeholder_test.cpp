@@ -158,13 +158,16 @@ void placeholder_ostream(auto& s) {
     eagitest::case_ test{s, 10, "operator<<"};
     using eagine::_1;
     using eagine::_2;
+    using eagine::_3;
 
     std::stringstream temp;
     std::string s1{"eagine"};
     std::string s2{"core"};
+    std::string s3{"types"};
 
-    (temp << _1 << std::string{"."} << _2)(s1, s2);
-    test.check_equal(temp.str(), "eagine.core", "ostream value");
+    const std::string dot{"."};
+    (temp << _1 << dot << _2 << dot << _3)(s1, s2, s3);
+    test.check_equal(temp.str(), "eagine.core.types", "ostream value");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
