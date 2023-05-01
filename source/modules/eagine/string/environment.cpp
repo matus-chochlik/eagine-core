@@ -8,6 +8,7 @@
 export module eagine.core.string:environment;
 
 import std;
+import eagine.core.types;
 import eagine.core.memory;
 import :c_str;
 
@@ -22,6 +23,15 @@ export [[nodiscard]] auto get_environment_variable(
         return {string_view(value)};
     }
     return {};
+}
+//------------------------------------------------------------------------------
+export template <typename X>
+[[nodiscard]] constexpr auto get_environment_variable(
+  placeholder_expression<X> e) noexcept {
+    return placeholder_expression{[e](auto&&... args) {
+        return get_environment_variable(
+          string_view{e(decltype(args)(args)...)});
+    }};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

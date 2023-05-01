@@ -46,6 +46,7 @@ eagine_add_module(
 	eagine.core.string PARTITION environment
 	IMPORTS
 		c_str
+		eagine.core.types
 		eagine.core.memory
 )
 
