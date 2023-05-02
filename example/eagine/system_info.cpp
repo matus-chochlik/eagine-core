@@ -69,7 +69,7 @@ auto main(main_ctx& ctx) -> int {
     }
 
     out.cio_print("status of ${count} AC power supplies: ")
-      .arg("count", sys.thermal_sensor_count());
+      .arg("count", sys.ac_supply_count());
 
     for(const auto i : integer_range(sys.ac_supply_count())) {
         const auto online = sys.ac_supply_online(i);
