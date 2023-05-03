@@ -138,6 +138,12 @@ public:
         return _ptr != nullptr;
     }
 
+    /// @brief Indicates in this reference specified to the specified object.
+    [[nodiscard]] constexpr auto refers_to(const T& object) const noexcept
+      -> tribool {
+        return {_ptr == &object, not has_value()};
+    }
+
     /// @brief Indicates if this stores a valid reference.
     /// @see has_value
     [[nodiscard]] constexpr explicit operator bool() const noexcept {
