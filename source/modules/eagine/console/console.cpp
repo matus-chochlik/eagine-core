@@ -61,11 +61,12 @@ private:
     }
 
     auto _entry_backend(const identifier source, const console_entry_kind kind)
-      const noexcept -> std::tuple<console_backend*, console_entry_id_t> {
+      const noexcept
+      -> std::tuple<optional_reference<console_backend>, console_entry_id_t> {
         if(_backend) [[likely]] {
             return _backend->entry_backend(source, kind);
         }
-        return {nullptr, 0};
+        return {{}, 0};
     }
 
     std::shared_ptr<console_backend> _backend;

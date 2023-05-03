@@ -26,7 +26,8 @@ public:
     }
 
     auto entry_backend(const identifier, const console_entry_kind) noexcept
-      -> std::tuple<console_backend*, console_entry_id_t> final {
+      -> std::
+        tuple<optional_reference<console_backend>, console_entry_id_t> final {
         return {this, 0};
     }
 

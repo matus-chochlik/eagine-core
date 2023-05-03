@@ -33,7 +33,8 @@ public:
     }
 
     auto entry_backend(const identifier, const console_entry_kind) noexcept
-      -> std::tuple<console_backend*, console_entry_id_t> override {
+      -> std::
+        tuple<optional_reference<console_backend>, console_entry_id_t> override {
         const std::lock_guard lock{_lockable};
         do {
             ++_entry_id_seq;

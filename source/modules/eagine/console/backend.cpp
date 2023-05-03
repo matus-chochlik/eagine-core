@@ -63,7 +63,7 @@ export struct console_backend : interface<console_backend> {
     virtual auto entry_backend(
       const identifier source,
       const console_entry_kind kind) noexcept
-      -> std::tuple<console_backend*, console_entry_id_t> = 0;
+      -> std::tuple<optional_reference<console_backend>, console_entry_id_t> = 0;
 
     /// @brief Begins a new console message.
     /// @param source the identifier of the entry source object.
