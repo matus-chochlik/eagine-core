@@ -159,6 +159,11 @@ public:
         return std::move(*_ptr);
     }
 
+    [[nodiscard]] constexpr auto operator->() const noexcept -> T* {
+        assert(has_value());
+        return _ptr;
+    }
+
     [[nodiscard]] constexpr auto get() const noexcept -> T* {
         return _ptr;
     }
