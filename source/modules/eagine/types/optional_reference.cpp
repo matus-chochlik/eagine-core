@@ -97,23 +97,11 @@ public:
 
     /// @brief Construction from a unique_ptr to reference of type @p T.
     template <std::derived_from<T> U>
-    constexpr optional_reference(std::unique_ptr<U>& ptr) noexcept
-      : _ptr{ptr.get()} {}
-
-    /// @brief Construction from a unique_ptr to reference of type @p T.
-    template <std::derived_from<T> U>
-        requires(std::is_const_v<T>)
     constexpr optional_reference(const std::unique_ptr<U>& ptr) noexcept
       : _ptr{ptr.get()} {}
 
     /// @brief Construction from a shared_ptr to reference of type @p T.
     template <std::derived_from<T> U>
-    constexpr optional_reference(std::shared_ptr<U>& ptr) noexcept
-      : _ptr{ptr.get()} {}
-
-    /// @brief Construction from a shared_ptr to reference of type @p T.
-    template <std::derived_from<T> U>
-        requires(std::is_const_v<T>)
     constexpr optional_reference(const std::shared_ptr<U>& ptr) noexcept
       : _ptr{ptr.get()} {}
 
@@ -369,18 +357,10 @@ export template <typename T>
 optional_reference(T& ptr) -> optional_reference<T>;
 
 export template <typename T>
-optional_reference(std::unique_ptr<T>& ptr) -> optional_reference<T>;
+optional_reference(const std::unique_ptr<T>& ptr) -> optional_reference<T>;
 
 export template <typename T>
-optional_reference(const std::unique_ptr<T>& ptr)
-  -> optional_reference<std::add_const_t<T>>;
-
-export template <typename T>
-optional_reference(std::shared_ptr<T>& ptr) -> optional_reference<T>;
-
-export template <typename T>
-optional_reference(const std::shared_ptr<T>& ptr)
-  -> optional_reference<std::add_const_t<T>>;
+optional_reference(const std::shared_ptr<T>& ptr) -> optional_reference<T>;
 //------------------------------------------------------------------------------
 /// @brief Overload of extract for optional_reference.
 /// @ingroup valid_if
