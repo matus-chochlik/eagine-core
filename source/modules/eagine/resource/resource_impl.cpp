@@ -69,52 +69,54 @@ auto embedded_resource::visit(
     return false;
 }
 //------------------------------------------------------------------------------
+auto embedded_resource_loader::_search_function() noexcept {
+    using search_func_type =
+      std::type_identity<struct eagine_embedded_resource_info(std::uint64_t)>;
+    return _self.find_function(
+      "eagine_search_embedded_resource", search_func_type{});
+}
+//------------------------------------------------------------------------------
+auto embedded_resource_loader::_list_function() noexcept {
+    using list_func_type =
+      std::type_identity<struct eagine_embedded_resources_list()>;
+    return _self.find_function(
+      "eagine_embedded_resource_ids", list_func_type{});
+}
+//------------------------------------------------------------------------------
+static auto _wrap(const struct eagine_embedded_resource_info info) noexcept {
+    return embedded_resource{
+      memory::const_block{info.data_pointer, info.data_size},
+      string_view{info.src_path, info.src_path_len},
+      embedded_resource_format{info.format},
+      info.is_packed};
+}
+//------------------------------------------------------------------------------
 auto embedded_resource_loader::search(identifier_value res_id) noexcept
   -> embedded_resource {
-    using search_func_type =
-      struct eagine_embedded_resource_info(std::uint64_t);
-    if(auto found{_self.find_function(
-         "eagine_search_embedded_resource",
-         std::type_identity<search_func_type>())}) {
-        if(auto search_func{extract(found)}) {
-            const auto info{search_func(res_id)};
-            return {
-              memory::const_block{info.data_pointer, info.data_size},
-              string_view{info.src_path, info.src_path_len},
-              embedded_resource_format{info.format},
-              info.is_packed};
-        }
-    }
-    return {};
+    using R = embedded_resource;
+    return _search_function()
+      .and_then(
+        [&](auto find) { return std::optional<R>{_wrap(find(res_id))}; })
+      .value_or(embedded_resource{});
 }
 //------------------------------------------------------------------------------
 auto embedded_resource_loader::has_resource(identifier_value res_id) noexcept
   -> bool {
-    using search_func_type =
-      struct eagine_embedded_resource_info(std::uint64_t);
-    if(auto found{_self.find_function(
-         "eagine_search_embedded_resource",
-         std::type_identity<search_func_type>())}) {
-        if(auto search_func{extract(found)}) {
-            const auto info{search_func(res_id)};
-            return info.data_size > 0;
-        }
-    }
-    return false;
+    return _search_function()
+      .and_then([&](auto find) { return tribool{find(res_id).data_size > 0}; })
+      .value_or(false);
+}
+//------------------------------------------------------------------------------
+static auto _wrap(const struct eagine_embedded_resources_list list) noexcept {
+    return memory::span<const identifier_t>{list.begin, list.end};
 }
 //------------------------------------------------------------------------------
 auto embedded_resource_loader::resource_ids() noexcept
   -> span<const identifier_t> {
-    using list_func_type = struct eagine_embedded_resources_list();
-    if(auto found{_self.find_function(
-         "eagine_embedded_resource_ids",
-         std::type_identity<list_func_type>())}) {
-        if(auto list_func{extract(found)}) {
-            const auto list{list_func()};
-            return memory::span<const identifier_t>{list.begin, list.end};
-        }
-    }
-    return {};
+    using R = span<const identifier_t>;
+    return _list_function()
+      .and_then([&](auto list) { return std::optional<R>{_wrap(list())}; })
+      .value_or(R{});
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

@@ -358,6 +358,8 @@ public:
     }
 
 private:
+    [[nodiscard]] auto _search_function() noexcept;
+    [[nodiscard]] auto _list_function() noexcept;
     shared_executable_module _self{nothing, module_load_option::load_lazy};
 };
 
