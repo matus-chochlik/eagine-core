@@ -197,12 +197,18 @@ public:
 
     /// @brief Returns the stored value if valid or @p fallback otherwise.
     /// @see has_value
-    template <std::convertible_to<T> U>
-    [[nodiscard]] constexpr auto value_or(U&& fallback) const noexcept -> T {
+    template <
+      std::convertible_to<T> U,
+      typename R = std::conditional_t<std::is_function_v<T>, T*, T>>
+    [[nodiscard]] constexpr auto value_or(U&& fallback) const noexcept -> R {
         if(has_value()) {
-            return *_ptr;
+            if constexpr(std::is_function_v<T>) {
+                return _ptr;
+            } else {
+                return *_ptr;
+            }
         }
-        return T(std::forward<U>(fallback));
+        return R(std::forward<U>(fallback));
     }
 
     [[nodiscard]] explicit constexpr operator T&() noexcept {

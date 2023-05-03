@@ -78,7 +78,7 @@ public:
     }
 
     auto find_function(const string_view name)
-      -> std::optional<void (*)()> final {
+      -> optional_reference<void()> final {
         ::dlerror();
         void* result = ::dlsym(_handle, c_str(name));
         if(const auto error{::dlerror()}) {
