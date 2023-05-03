@@ -59,7 +59,7 @@ public:
 
     auto configure(basic_config& config) const -> bool {
         if(auto pbe{backend()}) {
-            extract(pbe).configure(config);
+            return pbe->configure(config);
         }
         return false;
     }
@@ -73,7 +73,7 @@ public:
     /// was canceled and should discontinue.
     auto update_progress(span_size_t current) const noexcept -> bool {
         if(auto pbe{backend()}) {
-            return extract(pbe).update_progress(_activity_id, current);
+            return pbe->update_progress(_activity_id, current);
         }
         return true;
     }
@@ -87,7 +87,7 @@ public:
     /// was canceled and should discontinue.
     auto advance_progress(span_size_t increment = 1) const noexcept -> bool {
         if(auto pbe{backend()}) {
-            return extract(pbe).advance_progress(_activity_id, increment);
+            return pbe->advance_progress(_activity_id, increment);
         }
         return true;
     }
@@ -107,7 +107,7 @@ protected:
       : _backend{std::move(backend)} {}
 
     auto backend() const noexcept
-      -> const std::shared_ptr<progress_tracker_backend>& {
+      -> optional_reference<progress_tracker_backend> {
         return _backend;
     }
 

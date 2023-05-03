@@ -26,14 +26,14 @@ root_activity::root_activity(logger& parent) noexcept
 auto root_activity::register_observer(progress_observer& observer) noexcept
   -> bool {
     if(auto pbe{backend()}) {
-        return extract(pbe).register_observer(observer);
+        return pbe->register_observer(observer);
     }
     return false;
 }
 //------------------------------------------------------------------------------
 void root_activity::unregister_observer(progress_observer& observer) noexcept {
     if(auto pbe{backend()}) {
-        extract(pbe).unregister_observer(observer);
+        pbe->unregister_observer(observer);
     }
 }
 //------------------------------------------------------------------------------
@@ -41,13 +41,13 @@ void root_activity::set_update_callback(
   const callable_ref<bool() noexcept> callback,
   const std::chrono::milliseconds min_interval) noexcept {
     if(auto pbe{backend()}) {
-        extract(pbe).set_update_callback(callback, min_interval);
+        pbe->set_update_callback(callback, min_interval);
     }
 }
 //------------------------------------------------------------------------------
 void root_activity::reset_update_callback() noexcept {
     if(auto pbe{backend()}) {
-        extract(pbe).reset_update_callback();
+        pbe->reset_update_callback();
     }
 }
 //------------------------------------------------------------------------------
