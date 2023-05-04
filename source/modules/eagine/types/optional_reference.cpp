@@ -204,6 +204,7 @@ public:
 
     /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see transform
+    /// @see or_else
     template <
       typename F,
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
@@ -216,8 +217,26 @@ public:
         }
     }
 
+    /// @brief Return self if has value or the result of function.
+    /// @see and_then
+    /// @see transform
+    template <typename F, typename R = std::invoke_result_t<F>>
+        requires(
+          std::same_as<R, optional_reference> or
+          std::convertible_to<R, optional_reference>)
+    constexpr auto or_else(F&& function) const
+      noexcept(noexcept(std::invoke(std::forward<F>(function))))
+        -> optional_reference {
+        if(has_value()) {
+            return *this;
+        } else {
+            return std::invoke(std::forward<F>(function));
+        }
+    }
+
     /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see and_then
+    /// @see or_else
     template <typename F, typename R = std::invoke_result_t<F, T&>>
     [[nodiscard]] constexpr auto transform(F&& function) const noexcept(
       noexcept(std::invoke(std::forward<F>(function), std::declval<T&>())) and

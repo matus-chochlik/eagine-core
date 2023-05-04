@@ -51,6 +51,15 @@ void optional_reference_empty(auto& s) {
         .value_or(5678L),
       5678L,
       "and then 5678");
+
+    test.check_equal(
+      r.or_else([&]() -> int& {
+           static int i{678};
+           return i;
+       })
+        .value_or(567),
+      678,
+      "or else 678");
 }
 //------------------------------------------------------------------------------
 void optional_reference_non_empty(auto& s) {
@@ -70,7 +79,30 @@ void optional_reference_non_empty(auto& s) {
       2345,
       "member 2345");
 
+    test.check_equal(
+      r.or_else([]() -> auto& {
+           static outer so;
+           return so;
+       })
+        .member(&outer::i)
+        .member(&inner::foo)
+        .value_or(2345),
+      42,
+      "member call 42");
+
+    test.check_equal(
+      r.or_else([]() -> auto& {
+           static outer so{{5678, false}};
+           return so;
+       })
+        .member(&outer::i)
+        .member(&inner::s)
+        .value_or(3456),
+      5678,
+      "member 5678");
+
     outer o{};
+
     r = {o};
 
     test.ensure(r.has_value(), "has value");
@@ -79,6 +111,17 @@ void optional_reference_non_empty(auto& s) {
     test.check_equal(r.value().i.s, o.i.s, "o.i.s 1");
     o.i.s = 1234;
     test.check_equal(r.value().i.s, o.i.s, "o.i.s 2");
+
+    test.check_equal(
+      r.or_else([]() -> auto& {
+           static outer so{{6789, false}};
+           return so;
+       })
+        .member(&outer::i)
+        .member(&inner::s)
+        .value_or(3456),
+      o.i.s,
+      "member 1234");
 
     test.check_equal(
       r.transform([](outer& x) -> inner& { return x.i; })
