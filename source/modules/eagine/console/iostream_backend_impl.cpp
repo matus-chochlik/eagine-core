@@ -184,7 +184,7 @@ private:
     template <typename T>
     void _add(const identifier arg, T value) noexcept {
         if(const auto str_val{_to_str(value)}) {
-            _add(arg, extract(str_val));
+            _add(arg, *str_val);
         }
     }
 

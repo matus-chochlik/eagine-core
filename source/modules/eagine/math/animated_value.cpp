@@ -30,7 +30,7 @@ public:
       -> auto& {
         _curr = _next;
         _next = value;
-        _duration = extract(duration);
+        _duration = *duration;
         _phase = F(0);
         _slope = slope;
         return *this;

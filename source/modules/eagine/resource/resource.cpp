@@ -385,16 +385,16 @@ export [[nodiscard]] auto fetch_resource(
   application_config& cfg,
   const logger& log) -> memory::const_block {
 
-    if(const auto res_path{cfg.get<std::string>(key)}) {
-        if(const auto contents{file_contents(extract(res_path))}) {
-            const auto blk = contents.block();
+    if(const ok res_path{cfg.get<std::string>(key)}) {
+        if(const auto contents{file_contents(res_path.get())}) {
+            const auto blk{contents.block()};
             buf.resize(blk.size());
             copy(blk, cover(buf));
 
             log.debug("using ${resource} from file ${path}")
               .arg("resource", description)
               .arg("key", key)
-              .arg("path", "FsPath", extract(res_path));
+              .arg("path", "FsPath", res_path);
             log.trace("${resource} content:")
               .arg("resource", description)
               .arg("blob", view(buf));
@@ -403,7 +403,7 @@ export [[nodiscard]] auto fetch_resource(
             log.error("failed to load ${resource} from file ${path}")
               .arg("resource", description)
               .arg("key", key)
-              .arg("path", "FsPath", extract(res_path));
+              .arg("path", "FsPath", res_path);
         }
     } else if(embedded_blk) {
         log.debug("using embedded ${resource}").arg("resource", description);
