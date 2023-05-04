@@ -136,23 +136,49 @@ public:
 
     /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see transform
+    /// @see or_else
     template <
       typename F,
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, bool>>>
-    constexpr auto and_then(F&& function) const -> R {
+    constexpr auto and_then(F&& function) const
+      noexcept(noexcept(std::invoke(std::forward<F>(function), true))) -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), bool(*this));
         } else {
-            return R{};
+            if constexpr(std::same_as<R, tribool>) {
+                return tribool{indeterminate};
+            } else {
+                return R{};
+            }
+        }
+    }
+
+    /// @brief Return the stored value or the result of function.
+    /// @see transform
+    /// @see and_then
+    template <
+      typename F,
+      typename R = std::remove_cvref_t<std::invoke_result_t<F>>>
+        requires(std::same_as<R, tribool> or std::convertible_to<R, tribool>)
+    constexpr auto or_else(F&& function) const
+      noexcept(noexcept(std::invoke_r<tribool>(std::forward<F>(function))))
+        -> tribool {
+        if(has_value()) {
+            return *this;
+        } else {
+            return std::invoke_r<tribool>(std::forward<F>(function));
         }
     }
 
     /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see and_then
+    /// @see or_else
     template <
       typename F,
       typename R = std::remove_cvref_t<std::invoke_result_t<F, bool>>>
-    [[nodiscard]] constexpr auto transform(F&& function) const {
+    [[nodiscard]] constexpr auto transform(F&& function) const noexcept(
+      noexcept(std::invoke(std::forward<F>(function), true)) and
+      std::is_nothrow_move_constructible_v<R>) {
         if(has_value()) {
             return std::optional<R>{
               std::invoke(std::forward<F>(function), bool(*this))};

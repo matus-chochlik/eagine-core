@@ -106,10 +106,70 @@ void tribool_ops(auto& s) {
     test.CHECK((c || c).is(indeterminate));
 }
 //------------------------------------------------------------------------------
+void tribool_monadic(auto& s) {
+    using eagine::indeterminate;
+    using eagine::tribool;
+    eagitest::case_ test{s, 3, "monadic"};
+    eagitest::track trck{test, 0, 4};
+
+    tribool a = true;
+    tribool b = false;
+    tribool c = indeterminate;
+
+    test.check(a.value_or(false), "a value or");
+    test.check(not b.value_or(true), "b value or");
+    test.check(not c.value_or(false), "c value or false");
+    test.check(c.value_or(true), "c value or true");
+
+    test.check(
+      a.and_then([&](bool v) {
+           trck.checkpoint(1);
+           return tribool{v};
+       })
+        .value_or(false),
+      "and then value a");
+
+    test.check(
+      not b.and_then([&](bool v) {
+               trck.checkpoint(2);
+               return tribool{v};
+           })
+            .value_or(true),
+      "and then value b");
+
+    test.check(
+      c.and_then([&](bool) -> tribool { return false; }).value_or(true),
+      "and then c true");
+
+    test.check(
+      not c.and_then([&](bool) -> tribool { return true; }).value_or(false),
+      "and then c false");
+
+    test.check(
+      a.or_else([] { return tribool{false}; }).value(), "or else value a");
+    test.check(
+      not b.or_else([] { return tribool{true}; }).value(), "or else value b");
+    test.check(
+      c.or_else([&] {
+           trck.checkpoint(3);
+           return true;
+       })
+        .value(),
+      "or else c true");
+    test.check(
+      not c.or_else([&] {
+               trck.checkpoint(4);
+               return false;
+           })
+            .value(),
+      "or else c false");
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "tribool", 2};
+    eagitest::suite test{argc, argv, "tribool", 3};
     test.once(tribool_default_construct);
     test.once(tribool_ops);
+    test.once(tribool_monadic);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
