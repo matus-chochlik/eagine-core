@@ -356,8 +356,9 @@ public:
     /// @see transform
     template <
       typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
-    auto and_then(F&& function) const -> R {
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>>
+    auto and_then(F&& function) const noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<const T&>()))) -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), value_anyway());
         } else {
@@ -368,10 +369,12 @@ public:
     /// @brief Calls the specified function if the stored value is valid.
     /// @param function the function to be called.
     /// @see and_then
-    template <typename F>
-        requires(not std::is_same_v<std::invoke_result_t<F, T>, void>)
-    [[nodiscard]] constexpr auto transform(F&& function) const {
-        using R = std::invoke_result_t<F, T&>;
+    template <typename F, typename R = std::invoke_result_t<F, const T&>>
+        requires(not std::is_same_v<R, void>)
+    [[nodiscard]] constexpr auto transform(F&& function) const
+      noexcept(noexcept(
+        std::invoke(std::forward<F>(function), std::declval<const T&>()) and
+        std::is_nothrow_move_constructible_v<R>)) {
         if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
             using U = std::conditional_t<
               std::is_reference_v<R>,
@@ -743,10 +746,11 @@ public:
     /// @see transform
     template <
       typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>>
-    auto and_then(F&& function) const -> R {
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
+    auto and_then(F&& function) const noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<T&>()))) -> R {
         if(has_value()) {
-            return std::invoke(std::forward<F>(function), value());
+            return std::invoke(std::forward<F>(function), value_anyway());
         } else {
             return R{};
         }
@@ -754,10 +758,12 @@ public:
 
     /// @brief Calls the specified function if the stored value is valid.
     /// @param function the function to be called.
-    template <typename F>
-        requires(not std::is_same_v<std::invoke_result_t<F, T>, void>)
-    [[nodiscard]] constexpr auto transform(F&& function) const {
-        using R = std::invoke_result_t<F, T&>;
+    template <typename F, typename R = std::invoke_result_t<F, const T&>>
+        requires(not std::is_same_v<std::invoke_result_t<F, const T&>, void>)
+    [[nodiscard]] constexpr auto transform(F&& function) const
+      noexcept(noexcept(
+        std::invoke(std::forward<F>(function), std::declval<const T&>()) and
+        std::is_nothrow_move_constructible_v<R>)) {
         if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
             using U = std::conditional_t<
               std::is_reference_v<R>,
