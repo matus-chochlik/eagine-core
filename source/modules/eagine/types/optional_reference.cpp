@@ -22,30 +22,6 @@ namespace eagine {
 /// @see valid_if
 export template <typename T>
 class optional_reference {
-    template <typename V, typename F>
-    [[nodiscard]] static constexpr auto _transform(V* ptr, F&& function) {
-        using R = std::invoke_result_t<F, V&>;
-        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
-            using P = std::conditional_t<
-              std::is_reference_v<R>,
-              std::remove_reference_t<R>,
-              std::remove_pointer_t<R>>;
-            if(ptr) {
-                return optional_reference<P>{
-                  std::invoke(std::forward<F>(function), *ptr)};
-            } else {
-                return optional_reference<P>{nothing};
-            }
-        } else {
-            using O = std::remove_cvref_t<R>;
-            if(ptr) {
-                return std::optional<O>{
-                  std::invoke(std::forward<F>(function), *ptr)};
-            } else {
-                return std::optional<O>{};
-            }
-        }
-    }
 
     template <typename V, typename... Args>
     [[nodiscard]] static constexpr auto _call_member(
@@ -228,11 +204,11 @@ public:
 
     /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see transform
-    /// @see construct
     template <
       typename F,
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
-    constexpr auto and_then(F&& function) & -> R {
+    constexpr auto and_then(F&& function) const noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<T&>()))) -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), *_ptr);
         } else {
@@ -241,43 +217,31 @@ public:
     }
 
     /// @brief Invoke function on the stored value or return empty optional-like.
-    /// @see transform
-    template <
-      typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
-    constexpr auto and_then(F&& function) const& -> R {
-        if(has_value()) {
-            return std::invoke(std::forward<F>(function), *_ptr);
-        } else {
-            return R{};
-        }
-    }
-
-    /// @brief Invoke function on the stored value or return empty optional-like.
-    /// @see transform
-    template <
-      typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&&>>>
-    constexpr auto and_then(F&& function) && -> R {
-        if(has_value()) {
-            return std::invoke(std::forward<F>(function), std::move(*_ptr));
-        } else {
-            return R{};
-        }
-    }
-
-    /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see and_then
-    template <typename F>
-    [[nodiscard]] constexpr auto transform(F&& function) {
-        return _transform(_ptr, std::forward<F>(function));
-    }
-
-    /// @brief Invoke function on the stored value or return empty optional-like.
-    /// @see and_then
-    template <typename F>
-    [[nodiscard]] constexpr auto transform(F&& function) const {
-        return _transform(_ptr, std::forward<F>(function));
+    template <typename F, typename R = std::invoke_result_t<F, T&>>
+    [[nodiscard]] constexpr auto transform(F&& function) const noexcept(
+      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>())) and
+      std::is_nothrow_move_constructible_v<std::remove_cvref_t<R>>) {
+        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+            using P = std::conditional_t<
+              std::is_reference_v<R>,
+              std::remove_reference_t<R>,
+              std::remove_pointer_t<R>>;
+            if(_ptr) {
+                return optional_reference<P>{
+                  std::invoke(std::forward<F>(function), *_ptr)};
+            } else {
+                return optional_reference<P>{nothing};
+            }
+        } else {
+            using O = std::remove_cvref_t<R>;
+            if(_ptr) {
+                return std::optional<O>{
+                  std::invoke(std::forward<F>(function), *_ptr)};
+            } else {
+                return std::optional<O>{};
+            }
+        }
     }
 
     template <typename M, typename C>
