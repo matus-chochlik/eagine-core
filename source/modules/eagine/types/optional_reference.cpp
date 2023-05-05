@@ -127,6 +127,16 @@ public:
         return {_ptr == &object, not has_value()};
     }
 
+    /// @brief Indicates in this reference the same object as @p that.
+    template <std::derived_from<T> U>
+    [[nodiscard]] constexpr auto refers_to(
+      const optional_reference<U>& that) const noexcept -> tribool {
+        if(that.has_value()) {
+            return refers_to(*that);
+        }
+        return indeterminate;
+    }
+
     /// @brief Indicates if this stores a valid reference.
     /// @see has_value
     [[nodiscard]] constexpr explicit operator bool() const noexcept {
@@ -192,6 +202,13 @@ public:
             }
         }
         return R(std::forward<U>(fallback));
+    }
+
+    [[nodiscard]] constexpr auto value_or(T& fallback) const noexcept -> T& {
+        if(has_value()) {
+            return *_ptr;
+        }
+        return fallback;
     }
 
     [[nodiscard]] explicit constexpr operator T&() noexcept {

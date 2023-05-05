@@ -67,7 +67,7 @@ concept optional_like = requires(V v) {
     v.value();
     v.value_or(v.value());
     { v.has_value() } -> std::convertible_to<bool>;
-    { *v } -> std::convertible_to<eagine::extracted_type_t<V>>;
+    { *v } -> std::convertible_to<const extracted_type_t<V>&>;
 };
 
 export template <typename T, typename V>
