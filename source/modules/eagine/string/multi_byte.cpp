@@ -188,7 +188,7 @@ export [[nodiscard]] auto is_valid_encoding(const span<const byte> seq) noexcept
         if(not is_valid_head_byte(seq[0], l)) {
             return false;
         }
-        if(l >= seq.size()) {
+        if(l > seq.size()) {
             return false;
         }
 
