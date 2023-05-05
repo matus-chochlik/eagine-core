@@ -114,6 +114,13 @@ public:
         return _ptr != nullptr;
     }
 
+    /// @brief Resets the reference to invalid state.
+    /// @post not has_value()
+    constexpr auto reset() noexcept -> optional_reference& {
+        _ptr = nullptr;
+        return *this;
+    }
+
     /// @brief Indicates in this reference specified to the specified object.
     [[nodiscard]] constexpr auto refers_to(const T& object) const noexcept
       -> tribool {

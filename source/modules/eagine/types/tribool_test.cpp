@@ -163,6 +163,13 @@ void tribool_monadic(auto& s) {
            })
             .value(),
       "or else c false");
+
+    a.reset();
+    test.check(not a.has_value(), "a has not value after reset");
+    b.reset();
+    test.check(not b.has_value(), "b has not value after reset");
+    c.reset();
+    test.check(not c.has_value(), "c has not value after reset");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

@@ -60,6 +60,9 @@ void optional_reference_empty(auto& s) {
         .value_or(567),
       678,
       "or else 678");
+
+    r.reset();
+    test.check(not r.has_value(), "has not value after reset");
 }
 //------------------------------------------------------------------------------
 void optional_reference_non_empty(auto& s) {
@@ -189,6 +192,9 @@ void optional_reference_non_empty(auto& s) {
       r.member(&outer::i).member(&inner::s).construct<long>().value_or(1111L),
       1111L,
       "construct 1111");
+
+    r.reset();
+    test.check(not r.has_value(), "has not value after reset");
 }
 //------------------------------------------------------------------------------
 void optional_reference_non_empty_const(auto& s) {
@@ -273,6 +279,9 @@ void optional_reference_non_empty_const(auto& s) {
       r.member(&outer::i).member(&inner::s).construct<long>().value_or(2222L),
       2222L,
       "construct 2222");
+
+    r.reset();
+    test.check(not r.has_value(), "has not value after reset");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

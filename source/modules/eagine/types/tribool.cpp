@@ -111,6 +111,13 @@ public:
         return _value != _value_t::_unknown;
     }
 
+    /// @brief Resets the value to indeterminate.
+    /// @post not has_value()
+    constexpr auto reset() noexcept -> tribool& {
+        _value = _value_t::_unknown;
+        return *this;
+    }
+
     /// @brief Returns the store value if not indeterminate.
     /// @pre has_value()
     [[nodiscard]] constexpr auto value() const noexcept -> bool {
