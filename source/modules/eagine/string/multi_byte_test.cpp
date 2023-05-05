@@ -27,14 +27,9 @@ void multi_byte_seq_1(auto& s) {
 
             test.check(
               bool(multi_byte::encode_code_point(cp, cover(bytes))), "encode");
-            test.check(
-              multi_byte::is_valid_encoding(
-                multi_byte::make_cbyte_span(view(bytes))),
-              "is valid");
+            test.check(multi_byte::is_valid_encoding(view(bytes)), "is valid");
 
-            cp2 = multi_byte::decode_code_point(
-                    multi_byte::make_cbyte_span(view(bytes)))
-                    .value();
+            cp2 = multi_byte::decode_code_point(view(bytes)).value();
 
             test.check_equal(cp, cp2, "code points equal");
 
@@ -72,20 +67,15 @@ void multi_byte_seq_2(auto& s) {
           bool(multi_byte::encode_code_points(view(cps), cover(bytes))),
           "encode");
 
-        test.ensure(
-          multi_byte::is_valid_encoding(
-            multi_byte::make_cbyte_span(view(bytes))),
-          "is valid");
+        test.ensure(multi_byte::is_valid_encoding(view(bytes)), "is valid");
 
-        cps2.resize(std_size(multi_byte::decoding_code_points_required(
-                               multi_byte::make_cbyte_span(view(bytes)))
-                               .value()));
+        cps2.resize(std_size(
+          multi_byte::decoding_code_points_required(view(bytes)).value()));
 
         test.ensure(cps.size() == cps2.size(), "equal size");
 
         test.check(
-          bool(multi_byte::decode_code_points(
-            multi_byte::make_cbyte_span(view(bytes)), cover(cps2))),
+          bool(multi_byte::decode_code_points(view(bytes), cover(cps2))),
           "decode");
 
         test.check(are_equal(view(cps), view(cps2)), "equal encoding");

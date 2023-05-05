@@ -24,28 +24,15 @@ export constexpr code_point_t invalid_code_point = 0x7FFFFFFFU;
 export using code_point = valid_if_less_than<code_point_t, 0x7FFFFFFFU>;
 //------------------------------------------------------------------------------
 export using valid_sequence_length = valid_if_between<span_size_t, 1, 6>;
-export using valid_byte_span = valid_if_size_gt<span<byte>, span_size_t>;
 //------------------------------------------------------------------------------
-export [[nodiscard]] auto make_byte_span(const span<byte> s) noexcept
-  -> valid_byte_span {
-    return {s};
-}
-//------------------------------------------------------------------------------
-export [[nodiscard]] auto make_byte_span(const span<char> s) noexcept
-  -> valid_byte_span {
-    return {memory::accommodate<byte>(s)};
-}
-//------------------------------------------------------------------------------
-using valid_cbyte_span = valid_if_size_gt<span<const byte>, span_size_t>;
-//------------------------------------------------------------------------------
-export [[nodiscard]] auto make_cbyte_span(const span<const byte> s) noexcept
-  -> valid_cbyte_span {
-    return {s};
+export [[nodiscard]] constexpr auto make_byte_span(const span<char> s) noexcept
+  -> span<byte> {
+    return memory::accommodate<byte>(s);
 }
 //------------------------------------------------------------------------------
 export [[nodiscard]] auto make_cbyte_span(const span<const char> s) noexcept
-  -> valid_cbyte_span {
-    return {memory::accommodate<const byte>(s)};
+  -> span<const byte> {
+    return memory::accommodate<const byte>(s);
 }
 //------------------------------------------------------------------------------
 export [[nodiscard]] constexpr auto max_code_point(
@@ -189,17 +176,19 @@ export [[nodiscard]] constexpr auto required_sequence_length(
 }
 //------------------------------------------------------------------------------
 export [[nodiscard]] auto decode_sequence_length(
-  const valid_cbyte_span& seq) noexcept -> valid_sequence_length {
-    return do_decode_sequence_length(byte(seq.value(0)[0]));
+  const span<const byte> seq) noexcept -> valid_sequence_length {
+    return do_decode_sequence_length(byte(seq[0]));
 }
 //------------------------------------------------------------------------------
-export [[nodiscard]] auto is_valid_encoding(
-  const valid_cbyte_span& vseq) noexcept -> bool {
-    if(const auto len{decode_sequence_length(vseq)}) {
+export [[nodiscard]] auto is_valid_encoding(const span<const byte> seq) noexcept
+  -> bool {
+    if(const auto len{decode_sequence_length(seq)}) {
         const span_size_t l = len.value_anyway();
-        span<const byte> seq = vseq.value_anyway();
 
         if(not is_valid_head_byte(seq[0], l)) {
+            return false;
+        }
+        if(l >= seq.size()) {
             return false;
         }
 
@@ -253,13 +242,11 @@ template <typename P1, typename P2>
 }
 //------------------------------------------------------------------------------
 export [[nodiscard]] auto do_decode_code_point(
-  const valid_cbyte_span& vsrc,
+  const span<const byte>& src,
   const valid_sequence_length& vl) noexcept -> code_point {
     if(vl.has_value()) {
         const span_size_t l = vl.value_anyway();
-        if(vsrc.has_value(l - 1)) {
-            span<const byte> src = vsrc.value_anyway();
-
+        if(l - 1 < src.size()) {
             if(const auto h = decode_code_point_head(src[0], vl)) {
                 code_point_t cp = h.value_anyway();
 
@@ -308,14 +295,12 @@ template <typename P1, typename P2, typename P3>
 //------------------------------------------------------------------------------
 export auto do_encode_code_point(
   const code_point& cp,
-  const valid_byte_span& vdest,
+  span<byte> dest,
   const valid_sequence_length& vl) noexcept -> bool {
 
     if(cp and vl) {
         const span_size_t l = vl.value_anyway();
-        if(vdest.has_value(l - 1)) {
-            span<byte> dest = vdest.value_anyway();
-
+        if(l - 1 < dest.size()) {
             const code_point_t val = cp.value_anyway();
 
             if(const auto h = encode_code_point_head(val, vl)) {
@@ -337,7 +322,7 @@ export auto do_encode_code_point(
 //------------------------------------------------------------------------------
 export [[nodiscard]] auto encode_code_point(
   const code_point& cp,
-  const valid_byte_span& dest) noexcept -> valid_sequence_length {
+  const span<byte>& dest) noexcept -> valid_sequence_length {
     const auto len{required_sequence_length(cp.value())};
     do_encode_code_point(cp, dest, len);
     return len; // NOLINT(performance-no-automatic-move)
@@ -347,7 +332,7 @@ export [[nodiscard]] auto encode_code_point(const code_point& cp)
   -> valid_if_not_empty<std::string> {
     if(const auto len{required_sequence_length(cp.value())}) {
         std::array<byte, 7> tmp{};
-        do_encode_code_point(cp, make_byte_span(cover(tmp)), len.value());
+        do_encode_code_point(cp, cover(tmp), len.value());
         return {std::string(
           reinterpret_cast<const char*>(tmp.data()), integer(len.value()))};
     }
@@ -375,17 +360,17 @@ export [[nodiscard]] auto encoding_bytes_required(
     return {result, true};
 }
 //------------------------------------------------------------------------------
-export [[nodiscard]] auto decode_code_point(const valid_cbyte_span& src) noexcept
+export [[nodiscard]] auto decode_code_point(const span<const byte>& src) noexcept
   -> code_point {
     return do_decode_code_point(src, decode_sequence_length(src));
 }
 //------------------------------------------------------------------------------
 export [[nodiscard]] auto decoding_code_points_required(
-  const valid_cbyte_span& bytes) noexcept -> optionally_valid<span_size_t> {
+  const span<const byte> bytes) noexcept -> optionally_valid<span_size_t> {
     span_size_t result = 0;
 
-    auto i = bytes.value(0).begin();
-    const auto e = bytes.value(0).end();
+    auto i = bytes.begin();
+    const auto e = bytes.end();
 
     while(i != e) {
         if(const auto len{do_decode_sequence_length(*i)}) {
@@ -402,15 +387,18 @@ export [[nodiscard]] auto decoding_code_points_required(
 //------------------------------------------------------------------------------
 export [[nodiscard]] auto encode_code_points(
   span<const code_point> cps,
-  const valid_byte_span& bytes) noexcept -> bool {
+  const span<byte> bytes) noexcept -> bool {
     span_size_t i = 0;
 
     for(const code_point& cp : cps) {
         if(not cp.has_value()) {
             return false;
         }
+        if(i >= bytes.size()) {
+            return false;
+        }
 
-        span<byte> sub{bytes.value(i).data() + i, bytes.value(i).size() - i};
+        span<byte> sub{bytes.data() + i, bytes.size() - i};
         const auto len{encode_code_point(cp.value(), sub)};
 
         if(not len.has_value()) {
@@ -423,13 +411,15 @@ export [[nodiscard]] auto encode_code_points(
 }
 //------------------------------------------------------------------------------
 export [[nodiscard]] auto decode_code_points(
-  const valid_cbyte_span& bytes,
-  span<code_point> cps) -> bool {
+  const span<const byte>& bytes,
+  span<code_point> cps) noexcept -> bool {
     span_size_t i = 0;
 
     for(code_point& cp : cps) {
-        const span<const byte> sub{
-          bytes.value(i).data() + i, bytes.value(i).size() - i};
+        if(i >= bytes.size()) [[unlikely]] {
+            return false;
+        }
+        const span<const byte> sub{bytes.data() + i, bytes.size() - i};
         if(const auto len{decode_sequence_length(sub)}) {
             if(const auto tcp{do_decode_code_point(sub, len.value())}) {
                 cp = tcp;
