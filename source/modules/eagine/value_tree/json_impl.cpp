@@ -27,17 +27,88 @@ namespace eagine::valtree {
 static inline auto view(const rapidjson::GenericStringRef<char>& str) {
     return string_view{str.s, span_size(str.length)};
 }
-//------------------------------------------------------------------------------
+
+template <typename E, typename A>
+static inline auto to_string_view(rapidjson::GenericValue<E, A>& val)
+  -> string_view {
+    return {val.GetString(), span_size(val.GetStringLength())};
+}
+
 template <typename E, typename A>
 static inline auto view(rapidjson::GenericValue<E, A>& val) -> string_view {
     if(val.IsString()) {
-        return {val.GetString(), span_size(val.GetStringLength())};
+        return to_string_view(val);
     }
     return {};
 }
 //------------------------------------------------------------------------------
 static inline auto rapidjson_size(const span_size_t s) {
     return limit_cast<rapidjson::SizeType>(s);
+}
+//------------------------------------------------------------------------------
+template <typename E, typename A>
+static inline auto get_canonical_type(rapidjson::GenericValue<E, A>& val)
+  -> value_type {
+    const auto get_type{[&](const auto& v) {
+        if(v.IsBool()) {
+            return value_type::bool_type;
+        }
+        if(v.IsInt()) {
+            return value_type::int32_type;
+        }
+        if(v.IsInt64()) {
+            return value_type::int64_type;
+        }
+        if(v.IsFloat() or v.IsDouble()) {
+            return value_type::float_type;
+        }
+        if(v.IsString()) {
+            return value_type::string_type;
+        }
+        return value_type::unknown;
+    }};
+
+    if(val.IsObject()) {
+        return value_type::composite;
+    }
+    if(val.IsArray()) {
+        const auto n = span_size(val.Size());
+        if(n > 0) {
+            const auto common_type = get_type(val[0]);
+            for(const auto i : integer_range(n)) {
+                if(get_type(val[rapidjson_size(i)]) != common_type) {
+                    return value_type::composite;
+                }
+            }
+            return common_type;
+        }
+        return value_type::composite;
+    }
+    return get_type(val);
+}
+
+template <typename E, typename A>
+static inline auto get_nested_count(rapidjson::GenericValue<E, A>& val)
+  -> std::optional<span_size_t> {
+    if(val.IsArray()) {
+        return span_size(val.Size());
+    }
+    if(val.IsObject()) {
+        return span_size(val.MemberCount());
+    }
+    return {};
+}
+
+template <typename E, typename A>
+static inline auto get_value_count(rapidjson::GenericValue<E, A>& val)
+  -> std::optional<span_size_t> {
+    if(val.IsArray()) {
+        return span_size(val.Size());
+    }
+    if(not val.IsNull()) {
+        return 1;
+    }
+    return {};
 }
 //------------------------------------------------------------------------------
 template <typename Encoding, typename Allocator, typename StackAlloc>
@@ -47,11 +118,115 @@ template <typename Encoding, typename Allocator, typename StackAlloc>
 class rapidjson_document_compound;
 //------------------------------------------------------------------------------
 template <typename Encoding, typename Allocator, typename StackAlloc>
-static auto rapidjson_make_value_node(
+static auto make_value_node(
   rapidjson_document_compound<Encoding, Allocator, StackAlloc>& owner,
-  rapidjson::GenericValue<Encoding, Allocator>& value,
-  rapidjson::GenericValue<Encoding, Allocator>* name = nullptr)
+  optional_reference<rapidjson::GenericValue<Encoding, Allocator>> value,
+  optional_reference<rapidjson::GenericValue<Encoding, Allocator>> name)
   -> optional_reference<attribute_interface>;
+//------------------------------------------------------------------------------
+template <typename E, typename A, typename S>
+auto make_nested(
+  rapidjson::GenericValue<E, A>& val,
+  rapidjson_document_compound<E, A, S>& owner,
+  const span_size_t index) -> optional_reference<attribute_interface> {
+    if(val.IsArray()) {
+        if(index < span_size(val.Size())) {
+            return make_value_node(owner, {val[rapidjson_size(index)]}, {});
+        }
+    }
+    if(val.IsObject()) {
+        if(index < span_size(val.MemberCount())) {
+            auto pos{val.MemberBegin() + index};
+            return make_value_node(owner, {pos->value}, {pos->name});
+        }
+    }
+    return {};
+}
+
+template <typename E, typename A, typename S>
+auto make_nested(
+  rapidjson::GenericValue<E, A>& val,
+  rapidjson_document_compound<E, A, S>& owner,
+  const string_view name) -> optional_reference<attribute_interface> {
+    if(val.IsObject()) {
+        auto found{val.FindMember(c_str(name))};
+        if(found != val.MemberEnd()) {
+            return make_value_node(owner, {found->value}, {found->name});
+        }
+    }
+    if(const auto opt_idx{from_string<span_size_t>(name)}) {
+        return make_nested(val, owner, *opt_idx);
+    }
+    return {};
+}
+
+template <typename E, typename A, typename S>
+auto find_nested(
+  rapidjson::GenericValue<E, A>& val,
+  rapidjson_document_compound<E, A, S>& owner,
+  const basic_string_path& path,
+  const span<const string_view> tags)
+  -> optional_reference<attribute_interface> {
+    optional_reference<rapidjson::GenericValue<E, A>> result = val;
+    optional_reference<rapidjson::GenericValue<E, A>> name;
+    std::string temp_str;
+    auto _cat{
+      [&](string_view a, string_view b, string_view c) mutable -> auto& {
+          return append_to(c, append_to(b, assign_to(a, temp_str)));
+      }};
+
+    for(auto& entry : path) {
+        if(result) {
+            if(result->IsObject()) {
+                bool found = false;
+                auto member = result->MemberEnd();
+                for(auto tag : tags) {
+                    member = result->FindMember(_cat(entry, "@", tag).c_str());
+                    if(member != result->MemberEnd()) {
+                        result = member->value;
+                        name = member->name;
+                        found = true;
+                        break;
+                    }
+                }
+                if(not found) {
+                    if(member == result->MemberEnd()) {
+                        member = result->FindMember(c_str(entry));
+                        if(member != result->MemberEnd()) {
+                            result = member->value;
+                            name = member->name;
+                            found = true;
+                        }
+                    }
+                }
+                if(not found) {
+                    result = nullptr;
+                }
+            } else if(result->IsArray()) {
+                if(const auto opt_idx{from_string<span_size_t>(entry)}) {
+                    const auto index{*opt_idx};
+                    if(index < span_size(result->Size())) {
+                        result = (*result)[rapidjson_size(index)];
+                    } else {
+                        result = nullptr;
+                    }
+                } else {
+                    result = nullptr;
+                }
+            } else {
+                result = nullptr;
+            }
+        } else {
+            break;
+        }
+    }
+
+    if(result) {
+        return make_value_node(owner, result, name);
+    }
+
+    return {};
+}
 //------------------------------------------------------------------------------
 template <typename Encoding, typename Allocator, typename StackAlloc>
 class rapidjson_value_node : public attribute_interface {
@@ -62,18 +237,18 @@ private:
     using _comp_t =
       rapidjson_document_compound<Encoding, Allocator, StackAlloc>;
 
-    _val_t* _rj_val{nullptr};
-    _val_t* _rj_name{nullptr};
+    optional_reference<_val_t> _rj_val;
+    optional_reference<_val_t> _rj_name;
 
 public:
     [[nodiscard]] rapidjson_value_node(
-      _val_t& rj_val,
-      _val_t* rj_name = nullptr) noexcept
-      : _rj_val{&rj_val}
+      optional_reference<_val_t> rj_val,
+      optional_reference<_val_t> rj_name = {}) noexcept
+      : _rj_val{rj_val}
       , _rj_name{rj_name} {}
 
     constexpr auto operator==(const rapidjson_value_node& that) const noexcept {
-        return _rj_val == that._rj_val;
+        return _rj_val.refers_to(that._rj_val);
     }
 
     auto type_id() const noexcept -> identifier final {
@@ -81,106 +256,30 @@ public:
     }
 
     auto name() -> string_view {
-        if(_rj_name) {
-            const auto& name = extract(_rj_name);
-            return {name.GetString(), span_size(name.GetStringLength())};
-        }
-        return {};
+        return _rj_name.transform(to_string_view<Encoding, Allocator>)
+          .value_or(string_view{});
     }
 
     auto canonical_type() const -> value_type {
-        if(_rj_val) {
-            auto get_type = [&](const auto& val) {
-                if(val.IsBool()) {
-                    return value_type::bool_type;
-                }
-                if(val.IsInt()) {
-                    return value_type::int32_type;
-                }
-                if(val.IsInt64()) {
-                    return value_type::int64_type;
-                }
-                if(val.IsFloat() or val.IsDouble()) {
-                    return value_type::float_type;
-                }
-                if(val.IsString()) {
-                    return value_type::string_type;
-                }
-                return value_type::unknown;
-            };
-
-            const auto& val = extract(_rj_val);
-            if(val.IsObject()) {
-                return value_type::composite;
-            }
-            if(val.IsArray()) {
-                const auto n = span_size(val.Size());
-                if(n > 0) {
-                    const auto common_type = get_type(val[0]);
-                    for(const auto i : integer_range(n)) {
-                        if(get_type(val[rapidjson_size(i)]) != common_type) {
-                            return value_type::composite;
-                        }
-                    }
-                    return common_type;
-                }
-                return value_type::composite;
-            }
-            return get_type(val);
-        }
-        return value_type::unknown;
+        return _rj_val.transform(get_canonical_type<Encoding, Allocator>)
+          .value_or(value_type::unknown);
     }
 
     auto nested_count() -> span_size_t {
-        if(_rj_val) {
-            const auto& val = extract(_rj_val);
-            if(val.IsArray()) {
-                return span_size(val.Size());
-            }
-            if(val.IsObject()) {
-                return span_size(val.MemberCount());
-            }
-        }
-        return 0;
+        return _rj_val.and_then(get_nested_count<Encoding, Allocator>)
+          .value_or(0);
     }
 
     auto nested(_comp_t& owner, const span_size_t index)
       -> optional_reference<attribute_interface> {
-        if(_rj_val) {
-            auto& val = extract(_rj_val);
-            if(val.IsArray()) {
-                if(index < span_size(val.Size())) {
-                    return rapidjson_make_value_node(
-                      owner, val[rapidjson_size(index)]);
-                }
-            }
-            if(val.IsObject()) {
-                if(index < span_size(val.MemberCount())) {
-                    auto pos = val.MemberBegin() + index;
-                    return rapidjson_make_value_node(
-                      owner, pos->value, &pos->name);
-                }
-            }
-        }
-        return {};
+        return _rj_val.and_then(
+          [&](auto& val) { return make_nested(val, owner, index); });
     }
 
     auto nested(_comp_t& owner, const string_view name)
       -> optional_reference<attribute_interface> {
-        if(_rj_val) {
-            auto& val = extract(_rj_val);
-            if(val.IsObject()) {
-                auto found = val.FindMember(c_str(name));
-                if(found != val.MemberEnd()) {
-                    return rapidjson_make_value_node(
-                      owner, found->value, &found->name);
-                }
-            }
-            if(const auto opt_idx{from_string<span_size_t>(name)}) {
-                return nested(owner, extract(opt_idx));
-            }
-        }
-        return {};
+        return _rj_val.and_then(
+          [&](auto& val) { return make_nested(val, owner, name); });
     }
 
     auto find(
@@ -188,79 +287,13 @@ public:
       const basic_string_path& path,
       const span<const string_view> tags)
       -> optional_reference<attribute_interface> {
-        _val_t* result = _rj_val;
-        _val_t* name = nullptr;
-        std::string temp_str;
-        auto _cat =
-          [&](string_view a, string_view b, string_view c) mutable -> auto& {
-            return append_to(c, append_to(b, assign_to(a, temp_str)));
-        };
-
-        for(auto& entry : path) {
-            if(result) {
-                if(result->IsObject()) {
-                    bool found = false;
-                    auto member = result->MemberEnd();
-                    for(auto tag : tags) {
-                        member =
-                          result->FindMember(_cat(entry, "@", tag).c_str());
-                        if(member != result->MemberEnd()) {
-                            result = &member->value;
-                            name = &member->name;
-                            found = true;
-                            break;
-                        }
-                    }
-                    if(not found) {
-                        if(member == result->MemberEnd()) {
-                            member = result->FindMember(c_str(entry));
-                            if(member != result->MemberEnd()) {
-                                result = &member->value;
-                                name = &member->name;
-                                found = true;
-                            }
-                        }
-                    }
-                    if(not found) {
-                        result = nullptr;
-                    }
-                } else if(result->IsArray()) {
-                    if(const auto opt_idx{from_string<span_size_t>(entry)}) {
-                        const auto index{extract(opt_idx)};
-                        if(index < span_size(result->Size())) {
-                            result = &(*result)[rapidjson_size(index)];
-                        } else {
-                            result = nullptr;
-                        }
-                    } else {
-                        result = nullptr;
-                    }
-                } else {
-                    result = nullptr;
-                }
-            } else {
-                break;
-            }
-        }
-
-        if(result) {
-            return rapidjson_make_value_node(owner, *result, name);
-        }
-
-        return {};
+        return _rj_val.and_then(
+          [&](auto& val) { return find_nested(val, owner, path, tags); });
     }
 
     auto value_count() -> span_size_t {
-        if(_rj_val) {
-            auto& val = extract(_rj_val);
-            if(val.IsArray()) {
-                return span_size(val.Size());
-            }
-            if(not val.IsNull()) {
-                return 1;
-            }
-        }
-        return 0;
+        return _rj_val.and_then(get_value_count<Encoding, Allocator>)
+          .value_or(0);
     }
 
     auto convert(_val_t& val, std::string& dest) -> bool {
@@ -285,7 +318,7 @@ public:
         }
         if(val.IsString()) {
             if(const auto converted{from_string<T>(view(val))}) {
-                dest = extract(converted);
+                dest = *converted;
                 return true;
             }
         }
@@ -320,7 +353,7 @@ public:
         }
         if(val.IsString()) {
             if(const auto converted{from_string<T>(view(val))}) {
-                dest = extract(converted);
+                dest = *converted;
                 return true;
             }
         }
@@ -341,7 +374,7 @@ public:
         }
         if(val.IsString()) {
             if(const auto converted{from_string<T>(view(val))}) {
-                dest = extract(converted);
+                dest = *converted;
                 return true;
             }
         }
@@ -372,7 +405,7 @@ public:
         }
         if(val.IsString()) {
             if(const auto converted{from_string<T>(view(val))}) {
-                dest = extract(converted);
+                dest = *converted;
                 return true;
             }
         }
@@ -405,7 +438,7 @@ public:
         }
         if(val.IsString()) {
             if(const auto converted{from_string<_dur_t>(view(val))}) {
-                dest = extract(converted);
+                dest = *converted;
                 return true;
             }
         }
@@ -706,10 +739,10 @@ public:
 };
 //------------------------------------------------------------------------------
 template <typename Encoding, typename Allocator, typename StackAlloc>
-[[nodiscard]] static inline auto rapidjson_make_value_node(
+[[nodiscard]] static inline auto make_value_node(
   rapidjson_document_compound<Encoding, Allocator, StackAlloc>& owner,
-  rapidjson::GenericValue<Encoding, Allocator>& value,
-  rapidjson::GenericValue<Encoding, Allocator>* name)
+  optional_reference<rapidjson::GenericValue<Encoding, Allocator>> value,
+  optional_reference<rapidjson::GenericValue<Encoding, Allocator>> name)
   -> optional_reference<attribute_interface> {
     return owner.make_node(value, name);
 }
