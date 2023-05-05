@@ -251,7 +251,7 @@ public:
 
     template <typename Log>
     constexpr void log_invalid(Log& log, const value_type& v) const {
-        assert(not _policy(v));
+        assert(not has_value(v));
         _do_log(log, v);
     }
 
@@ -260,20 +260,10 @@ public:
         log_invalid(log, _value);
     }
 
-    /// @brief Calls the specified function if the stored value is invalid.
-    /// @param function the function to be called.
-    template <typename F>
-    constexpr auto or_else(F&& function) -> auto& {
-        if(not _policy(_value)) {
-            std::forward<F>(function)(_do_log, _value);
-        }
-        return *this;
-    }
-
     /// @brief Throws an exception if the stored value is invalid.
     /// @throws std::runtime_error
     void throw_if_invalid() const {
-        if(not _policy(_value)) [[unlikely]] {
+        if(not has_value(_value)) [[unlikely]] {
             std::stringstream ss;
             log_invalid(ss);
             throw std::runtime_error(ss.str());
@@ -299,7 +289,7 @@ public:
 
     [[nodiscard]] constexpr auto value_or(reference fallback) noexcept
       -> reference {
-        if(_policy(_value)) [[likely]] {
+        if(has_value(_value)) [[likely]] {
             return _value;
         }
         return fallback;
@@ -308,7 +298,7 @@ public:
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     [[nodiscard]] constexpr auto value_or(
       const_reference fallback) const noexcept -> const_reference {
-        if(_policy(_value)) [[likely]] {
+        if(has_value(_value)) [[likely]] {
             return _value;
         }
         return fallback;
@@ -316,7 +306,7 @@ public:
 
     /// @brief Returns the stored value if valid, otherwise returns default value.
     [[nodiscard]] constexpr auto or_default() const noexcept -> value_type {
-        if(_policy(_value)) [[likely]] {
+        if(has_value(_value)) [[likely]] {
             return _value;
         }
         return value_type{};
@@ -384,6 +374,45 @@ public:
             return std::invoke(std::forward<F>(function), value_anyway());
         } else {
             return R{};
+        }
+    }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
+    auto or_else(F&& function) & noexcept(
+      noexcept(std::invoke(std::forward<F>(function)))) -> R {
+        if(has_value()) {
+            return R{value_anyway()};
+        } else {
+            return std::invoke(std::forward<F>(function));
+        }
+    }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
+    auto or_else(F&& function) && noexcept(
+      noexcept(std::invoke(std::forward<F>(function)))) -> R {
+        if(has_value()) {
+            return R{std::move(value_anyway())};
+        } else {
+            return std::invoke(std::forward<F>(function));
+        }
+    }
+
+    /// @brief Return the stored value or the result or function.
+    /// @see and_then
+    /// @see transform
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
+    auto or_else(F&& function) const& noexcept(
+      noexcept(std::invoke(std::forward<F>(function)))) -> R {
+        if(has_value()) {
+            return R{value_anyway()};
+        } else {
+            return std::invoke(std::forward<F>(function));
         }
     }
 
@@ -491,7 +520,7 @@ public:
     template <typename F, typename R = std::invoke_result_t<F, const T&, bool>>
     [[nodiscard]] constexpr auto transformed(F function) const noexcept
       -> basic_valid_if<R, valid_flag_policy, typename valid_flag_policy::do_log> {
-        const auto has_val{_policy(_value)};
+        const auto has_val{has_value(_value)};
         auto r{function(_value, has_val)};
         if constexpr(optional_like<R>) {
             return r;
@@ -717,20 +746,10 @@ public:
         log_invalid(log, _value);
     }
 
-    /// @brief Calls the specified function if the stored value is invalid.
-    /// @param function the function to be called.
-    template <typename F>
-    constexpr auto or_else(F&& function) -> auto& {
-        if(not _policy(_value)) {
-            std::forward<F>(function)(_do_log, _value);
-        }
-        return *this;
-    }
-
     /// @brief Throws an exception if the stored value is invalid.
     /// @throws std::runtime_error
     void throw_if_invalid() const {
-        if(not _policy(_value)) {
+        if(not has_value(_value)) {
             std::stringstream ss;
             log_invalid(ss);
             throw std::runtime_error(ss.str());
@@ -754,7 +773,7 @@ public:
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     [[nodiscard]] constexpr auto value_or(reference fallback) noexcept
       -> auto& {
-        if(_policy(_value)) [[likely]] {
+        if(has_value(_value)) [[likely]] {
             return _value;
         }
         return fallback;
@@ -763,7 +782,7 @@ public:
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     [[nodiscard]] constexpr auto value_or(
       const_reference fallback) const noexcept -> auto& {
-        if(_policy(_value)) [[likely]] {
+        if(has_value(_value)) [[likely]] {
             return _value;
         }
         return fallback;
@@ -788,6 +807,7 @@ public:
 
     /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see transform
+    /// @see or_else
     template <
       typename F,
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
@@ -800,8 +820,25 @@ public:
         }
     }
 
+    /// @brief Return the stored value or the result or function.
+    /// @see and_then
+    /// @see transform
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
+    auto or_else(F&& function) const
+      noexcept(noexcept(std::invoke(std::forward<F>(function)))) -> R {
+        if(has_value()) {
+            return R{value_anyway()};
+        } else {
+            return std::invoke(std::forward<F>(function));
+        }
+    }
+
     /// @brief Calls the specified function if the stored value is valid.
     /// @param function the function to be called.
+    /// @see and_then
+    /// @see or_else
     template <typename F, typename R = std::invoke_result_t<F, const T&>>
         requires(not std::is_same_v<std::invoke_result_t<F, const T&>, void>)
     [[nodiscard]] constexpr auto transform(F&& function) const
@@ -868,7 +905,7 @@ public:
     template <typename F, typename R = std::invoke_result_t<F, const T&, bool>>
     [[nodiscard]] constexpr auto transformed(F function) const noexcept
       -> basic_valid_if<R, valid_flag_policy, typename valid_flag_policy::do_log> {
-        const auto has_val{_policy(_value)};
+        const auto has_val{has_value(_value)};
         auto r{function(_value, has_val)};
         if constexpr(optional_like<decltype(r)>) {
             return r;

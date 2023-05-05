@@ -37,6 +37,12 @@ void valid_if_default_construct(auto& s) {
             .has_value(),
       "and then");
     test.check(
+      v.or_else([] -> eagine::optionally_valid<test_person> {
+           return {test_person{}, true};
+       })
+        .has_value(),
+      "or else");
+    test.check(
       not v.member(&test_person::given_name).has_value(), "transform member");
 }
 //------------------------------------------------------------------------------
@@ -61,6 +67,11 @@ void valid_if_initialized(auto& s) {
         .has_value(),
       "and then always");
     test.check(
+      v.or_else([] -> std::optional<test_person> { return {test_person{}}; })
+        .has_value(),
+      "or else always");
+
+    test.check(
       v.transform([](const test_person&) { return true; }).has_value(),
       "transform");
     test.check(
@@ -69,6 +80,10 @@ void valid_if_initialized(auto& s) {
            })
             .has_value(),
       "and then never");
+    test.check(
+      v.or_else([] -> std::optional<test_person> { return {test_person{}}; })
+        .has_value(),
+      "or else never");
     test.check(
       v.member(&test_person::family_name).has_value(), "transform member");
 
@@ -102,6 +117,11 @@ void valid_if_non_ref(auto& s) {
     }};
     test.ensure(v.and_then(g).has_value(), "and then has value");
     test.check_equal(v.and_then(g).value(), 369, "and then value ok");
+
+    test.check_equal(
+      v.or_else([] -> std::optional<int> { return 468; }).value(),
+      123,
+      "or else value ok");
 
     eagine::always_valid<test_person> p{{"Jane", "Doe"}};
     test.check(bool(p), "is true");
@@ -148,6 +168,11 @@ void valid_if_ref(auto& s) {
     }};
     test.ensure(v.and_then(g).has_value(), "and then has value");
     test.check_equal(v.and_then(g).value(), 456 * 3, "and then value ok");
+
+    test.check_equal(
+      v.or_else([] -> std::optional<int> { return 789; }).value(),
+      456,
+      "or else value ok");
 
     eagine::never_valid<test_person> p{{"Bill", "Roe"}};
     test.check(not bool(p), "is not true");
