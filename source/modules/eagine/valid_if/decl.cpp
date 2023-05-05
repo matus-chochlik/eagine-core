@@ -283,24 +283,24 @@ public:
         }
     }
 
-    /// @brief Returns the stored value if it is valid otherwise throws.
-    /// @param p additional parameters for the policy validity check function.
-    /// @throws std::runtime_error
-    [[nodiscard]] auto value(P... p) -> reference {
+    [[nodiscard]] auto value(P... p) & -> T& {
         throw_if_invalid(p...);
         return _value;
+    }
+
+    [[nodiscard]] auto value(P... p) && -> T&& {
+        throw_if_invalid(p...);
+        return std::move(_value);
     }
 
     /// @brief Returns the stored value if it is valid, otherwise throws.
     /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
-    [[nodiscard]] auto value(P... p) const -> const_reference {
+    [[nodiscard]] auto value(P... p) const& -> const T& {
         throw_if_invalid(p...);
         return _value;
     }
 
-    /// @brief Returns the stored value if valid, otherwise returns fallback.
-    /// @param p additional parameters for the policy validity check function.
     [[nodiscard]] constexpr auto value_or(reference fallback, P... p) noexcept
       -> reference {
         if(_policy(_value, p...)) [[likely]] {
@@ -329,13 +329,16 @@ public:
         return value_type{};
     }
 
-    /// @brief Returns the stored value regardless of its validity.
-    [[nodiscard]] constexpr auto value_anyway() const noexcept -> const T& {
+    [[nodiscard]] constexpr auto value_anyway() & noexcept -> T& {
         return _value;
     }
 
+    [[nodiscard]] constexpr auto value_anyway() && noexcept -> T&& {
+        return std::move(_value);
+    }
+
     /// @brief Returns the stored value regardless of its validity.
-    [[nodiscard]] constexpr auto value_anyway() noexcept -> T& {
+    [[nodiscard]] constexpr auto value_anyway() const& noexcept -> const T& {
         return _value;
     }
 
@@ -351,13 +354,38 @@ public:
         return {};
     }
 
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
+    auto and_then(F&& function) & noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<T&>()))) -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), value_anyway());
+        } else {
+            return R{};
+        }
+    }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&&>>>
+    auto and_then(F&& function) && noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<T&&>()))) -> R {
+        if(has_value()) {
+            return std::invoke(
+              std::forward<F>(function), std::move(value_anyway()));
+        } else {
+            return R{};
+        }
+    }
+
     /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see construct
     /// @see transform
     template <
       typename F,
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>>
-    auto and_then(F&& function) const noexcept(noexcept(
+    auto and_then(F&& function) const& noexcept(noexcept(
       std::invoke(std::forward<F>(function), std::declval<const T&>()))) -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), value_anyway());
@@ -366,13 +394,48 @@ public:
         }
     }
 
+    template <typename F, typename R = std::invoke_result_t<F, T&&>>
+        requires(not std::is_same_v<R, void>)
+    [[nodiscard]] constexpr auto transform(F&& function) && noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<T&&>()) and
+      std::is_nothrow_move_constructible_v<R>)) {
+        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+            using U = std::conditional_t<
+              std::is_reference_v<R>,
+              std::remove_reference_t<R>,
+              std::remove_pointer_t<R>>;
+            if(has_value()) {
+                return optional_reference<U>{std::invoke(
+                  std::forward<F>(function), std::move(value_anyway()))};
+            } else {
+                return optional_reference<U>{nothing};
+            }
+        } else {
+            using V = std::remove_cvref_t<R>;
+            if(has_value()) {
+                return basic_valid_if<
+                  V,
+                  valid_flag_policy,
+                  typename valid_flag_policy::do_log>{
+                  std::invoke(
+                    std::forward<F>(function), std::move(value_anyway())),
+                  true};
+            } else {
+                return basic_valid_if<
+                  V,
+                  valid_flag_policy,
+                  typename valid_flag_policy::do_log>{};
+            }
+        }
+    }
+
     /// @brief Calls the specified function if the stored value is valid.
     /// @param function the function to be called.
     /// @see and_then
     template <typename F, typename R = std::invoke_result_t<F, const T&>>
         requires(not std::is_same_v<R, void>)
-    [[nodiscard]] constexpr auto transform(F&& function) const
-      noexcept(noexcept(
+    [[nodiscard]] constexpr auto transform(F&& function) const& noexcept(
+      noexcept(
         std::invoke(std::forward<F>(function), std::declval<const T&>()) and
         std::is_nothrow_move_constructible_v<R>)) {
         if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
@@ -721,12 +784,7 @@ public:
     }
 
     /// @brief Returns the stored value regardless of its validity.
-    [[nodiscard]] constexpr auto value_anyway() const noexcept -> const T& {
-        return _value;
-    }
-
-    /// @brief Returns the stored value regardless of its validity.
-    [[nodiscard]] constexpr auto value_anyway() noexcept -> T& {
+    [[nodiscard]] constexpr auto value_anyway() const noexcept -> T& {
         return _value;
     }
 
