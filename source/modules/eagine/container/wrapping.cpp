@@ -5,6 +5,10 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#include <cassert>
+
 export module eagine.core.container:wrapping;
 
 import eagine.core.types;
@@ -128,12 +132,13 @@ public:
     /// @pre index < size()
     [[nodiscard]] constexpr auto operator[](
       const span_size_t index) const noexcept {
-        return _transf()(_items[range_index<Container>(index)]);
+        assert(index < _items.size());
+        return _transf()(_items[index]);
     }
 
     /// @brief Access the element at the specified index.
     [[nodiscard]] constexpr auto at(const span_size_t index) const {
-        return _transf()(_items.at(range_index<Container>(index)));
+        return _transf()(_items.at(index));
     }
 
     /// @brief Access the first element.

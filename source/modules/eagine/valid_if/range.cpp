@@ -15,28 +15,6 @@ import :compare;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-template <typename R>
-struct range_index_type {
-    using type = typename R::size_type;
-};
-//------------------------------------------------------------------------------
-template <typename R>
-using range_index_t = typename range_index_type<R>::type;
-//------------------------------------------------------------------------------
-export template <typename R>
-using any_range_position = valid_if_nonnegative<range_index_t<R>>;
-//------------------------------------------------------------------------------
-export template <typename R>
-using valid_range_index = valid_if_lt_size_ge0<R, range_index_t<R>>;
-//------------------------------------------------------------------------------
-export template <typename R>
-using valid_range_position = valid_if_le_size_ge0<R, range_index_t<R>>;
-//------------------------------------------------------------------------------
-export template <typename R, typename T>
-constexpr auto range_index(const T i) noexcept {
-    return limit_cast<range_index_t<R>>(i);
-}
-//------------------------------------------------------------------------------
 export template <typename T, T... C>
 struct valid_if_one_of_policy {
     auto operator()(const T& value) const noexcept {

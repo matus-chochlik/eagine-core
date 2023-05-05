@@ -226,8 +226,8 @@ public:
         return value();
     }
 
-    template <typename U, typename Po, typename L, typename... P>
-    operator basic_valid_if<U, Po, L, P...>() const noexcept {
+    template <typename U, typename Po, typename L>
+    operator basic_valid_if<U, Po, L>() const noexcept {
         return {U(value())};
     }
 
@@ -358,15 +358,15 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-export template <typename T, typename Po, typename L, typename... P, std::size_t N>
-class variable_with_history<basic_valid_if<T, Po, L, P...>, N>
+export template <typename T, typename Po, typename L, std::size_t N>
+class variable_with_history<basic_valid_if<T, Po, L>, N>
   : public value_with_history<T, N> {
 public:
     constexpr variable_with_history(
-      const basic_valid_if<T, Po, L, P...>& initial) noexcept
+      const basic_valid_if<T, Po, L>& initial) noexcept
       : value_with_history<T, N>(initial.value()) {}
 
-    auto assign(const basic_valid_if<T, Po, L, P...>& new_value) -> bool {
+    auto assign(const basic_valid_if<T, Po, L>& new_value) -> bool {
         return this->_update_value(new_value.value());
     }
 
@@ -375,7 +375,7 @@ public:
         return *this;
     }
 
-    auto advance(const basic_valid_if<T, Po, L, P...>& delta_value) -> bool {
+    auto advance(const basic_valid_if<T, Po, L>& delta_value) -> bool {
         return this->_advance_value(delta_value.value());
     }
 };

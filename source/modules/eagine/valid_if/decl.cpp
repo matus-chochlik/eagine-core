@@ -48,7 +48,7 @@ export struct valid_flag_policy {
 /// @ingroup valid_if
 /// @tparam T type of the stored, conditionally valid value.
 /// @tparam Policy indicates under what conditions is the stored value valid.
-export template <typename T, typename Policy, typename DoLog, typename... P>
+export template <typename T, typename Policy, typename DoLog>
 class basic_valid_if {
     static_assert(
       std::is_nothrow_default_constructible_v<Policy> or
@@ -142,16 +142,15 @@ public:
     ~basic_valid_if() noexcept = default;
 
     /// @brief Checks if @p val is valid according to this object's policy.
-    /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto has_value(const_reference val, P... p)
-      const noexcept -> bool {
-        return _policy(val, p...);
+    [[nodiscard]] constexpr auto has_value(const_reference val) const noexcept
+      -> bool {
+        return _policy(val);
     }
 
     /// @brief Checks if the stored value is valid according to policy.
     /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto has_value(P... p) const noexcept {
-        return _policy(_value, p...);
+    [[nodiscard]] constexpr auto has_value() const noexcept {
+        return _policy(_value);
     }
 
     /// @brief Indicates if the stored value is valid according to policy.
@@ -251,79 +250,73 @@ public:
     }
 
     template <typename Log>
-    constexpr void log_invalid(Log& log, const value_type& v, P... p) const {
-        assert(not _policy(v, p...));
-        _do_log(log, v, p...);
+    constexpr void log_invalid(Log& log, const value_type& v) const {
+        assert(not _policy(v));
+        _do_log(log, v);
     }
 
     template <typename Log>
-    constexpr void log_invalid(Log& log, P... p) const {
-        log_invalid(log, _value, p...);
+    constexpr void log_invalid(Log& log) const {
+        log_invalid(log, _value);
     }
 
     /// @brief Calls the specified function if the stored value is invalid.
     /// @param function the function to be called.
-    /// @param p additional parameters for the policy validity check function.
     template <typename F>
-    constexpr auto or_else(F&& function, P... p) -> auto& {
-        if(not _policy(_value, p...)) {
-            std::forward<F>(function)(_do_log, _value, p...);
+    constexpr auto or_else(F&& function) -> auto& {
+        if(not _policy(_value)) {
+            std::forward<F>(function)(_do_log, _value);
         }
         return *this;
     }
 
     /// @brief Throws an exception if the stored value is invalid.
-    /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
-    void throw_if_invalid(P... p) const {
-        if(not _policy(_value, p...)) [[unlikely]] {
+    void throw_if_invalid() const {
+        if(not _policy(_value)) [[unlikely]] {
             std::stringstream ss;
-            log_invalid(ss, p...);
+            log_invalid(ss);
             throw std::runtime_error(ss.str());
         }
     }
 
-    [[nodiscard]] auto value(P... p) & -> T& {
-        throw_if_invalid(p...);
+    [[nodiscard]] auto value() & -> T& {
+        throw_if_invalid();
         return _value;
     }
 
-    [[nodiscard]] auto value(P... p) && -> T&& {
-        throw_if_invalid(p...);
+    [[nodiscard]] auto value() && -> T&& {
+        throw_if_invalid();
         return std::move(_value);
     }
 
     /// @brief Returns the stored value if it is valid, otherwise throws.
-    /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
-    [[nodiscard]] auto value(P... p) const& -> const T& {
-        throw_if_invalid(p...);
+    [[nodiscard]] auto value() const& -> const T& {
+        throw_if_invalid();
         return _value;
     }
 
-    [[nodiscard]] constexpr auto value_or(reference fallback, P... p) noexcept
+    [[nodiscard]] constexpr auto value_or(reference fallback) noexcept
       -> reference {
-        if(_policy(_value, p...)) [[likely]] {
+        if(_policy(_value)) [[likely]] {
             return _value;
         }
         return fallback;
     }
 
     /// @brief Returns the stored value if valid, otherwise returns fallback.
-    /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto value_or(const_reference fallback, P... p)
-      const noexcept -> const_reference {
-        if(_policy(_value, p...)) [[likely]] {
+    [[nodiscard]] constexpr auto value_or(
+      const_reference fallback) const noexcept -> const_reference {
+        if(_policy(_value)) [[likely]] {
             return _value;
         }
         return fallback;
     }
 
     /// @brief Returns the stored value if valid, otherwise returns default value.
-    /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto or_default(P... p) const noexcept
-      -> value_type {
-        if(_policy(_value, p...)) [[likely]] {
+    [[nodiscard]] constexpr auto or_default() const noexcept -> value_type {
+        if(_policy(_value)) [[likely]] {
             return _value;
         }
         return value_type{};
@@ -496,9 +489,9 @@ public:
     /// @brief Calls a binary transforming function on {value, has_value()} pair.
     /// @param function the function to be called.
     template <typename F, typename R = std::invoke_result_t<F, const T&, bool>>
-    [[nodiscard]] constexpr auto transformed(F function, P... p) const noexcept
+    [[nodiscard]] constexpr auto transformed(F function) const noexcept
       -> basic_valid_if<R, valid_flag_policy, typename valid_flag_policy::do_log> {
-        const auto has_val{_policy(_value, p...)};
+        const auto has_val{_policy(_value)};
         auto r{function(_value, has_val)};
         if constexpr(optional_like<R>) {
             return r;
@@ -536,8 +529,8 @@ private:
     [[no_unique_address]] DoLog _do_log{_policy};
 };
 //------------------------------------------------------------------------------
-export template <typename T, typename Policy, typename DoLog, typename... P>
-class basic_valid_if<T&, Policy, DoLog, P...> {
+export template <typename T, typename Policy, typename DoLog>
+class basic_valid_if<T&, Policy, DoLog> {
     static_assert(
       std::is_nothrow_default_constructible_v<Policy> or
       std::is_nothrow_move_constructible_v<Policy>);
@@ -607,15 +600,14 @@ public:
 
     /// @brief Checks if @p val is valid according to this object's policy.
     /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto has_value(const_reference val, P... p)
-      const noexcept -> bool {
-        return _policy(val, p...);
+    [[nodiscard]] constexpr auto has_value(const_reference val) const noexcept
+      -> bool {
+        return _policy(val);
     }
 
     /// @brief Checks if the stored value is valid according to policy.
-    /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto has_value(P... p) const noexcept {
-        return _policy(_value, p...);
+    [[nodiscard]] constexpr auto has_value() const noexcept {
+        return _policy(_value);
     }
 
     /// @brief Indicates if the stored value is valid according to policy.
@@ -715,69 +707,63 @@ public:
     }
 
     template <typename Log>
-    constexpr void log_invalid(Log& log, const value_type& v, P... p) const {
-        assert(not has_value(v, p...));
-        _do_log(log, v, p...);
+    constexpr void log_invalid(Log& log, const value_type& v) const {
+        assert(not has_value(v));
+        _do_log(log, v);
     }
 
     template <typename Log>
-    constexpr void log_invalid(Log& log, P... p) const {
-        log_invalid(log, _value, p...);
+    constexpr void log_invalid(Log& log) const {
+        log_invalid(log, _value);
     }
 
     /// @brief Calls the specified function if the stored value is invalid.
     /// @param function the function to be called.
-    /// @param p additional parameters for the policy validity check function.
     template <typename F>
-    constexpr auto or_else(F&& function, P... p) -> auto& {
-        if(not _policy(_value, p...)) {
-            std::forward<F>(function)(_do_log, _value, p...);
+    constexpr auto or_else(F&& function) -> auto& {
+        if(not _policy(_value)) {
+            std::forward<F>(function)(_do_log, _value);
         }
         return *this;
     }
 
     /// @brief Throws an exception if the stored value is invalid.
-    /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
-    void throw_if_invalid(P... p) const {
-        if(not _policy(_value, p...)) {
+    void throw_if_invalid() const {
+        if(not _policy(_value)) {
             std::stringstream ss;
-            log_invalid(ss, p...);
+            log_invalid(ss);
             throw std::runtime_error(ss.str());
         }
     }
 
     /// @brief Returns the stored value if it is valid otherwise throws.
-    /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
-    [[nodiscard]] auto value(P... p) -> T& {
-        throw_if_invalid(p...);
+    [[nodiscard]] auto value() -> T& {
+        throw_if_invalid();
         return _value;
     }
 
     /// @brief Returns the stored value if it is valid, otherwise throws.
-    /// @param p additional parameters for the policy validity check function.
     /// @throws std::runtime_error
-    [[nodiscard]] auto value(P... p) const -> const T& {
-        throw_if_invalid(p...);
+    [[nodiscard]] auto value() const -> const T& {
+        throw_if_invalid();
         return _value;
     }
 
     /// @brief Returns the stored value if valid, otherwise returns fallback.
-    /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto value_or(reference fallback, P... p) noexcept
+    [[nodiscard]] constexpr auto value_or(reference fallback) noexcept
       -> auto& {
-        if(_policy(_value, p...)) [[likely]] {
+        if(_policy(_value)) [[likely]] {
             return _value;
         }
         return fallback;
     }
 
     /// @brief Returns the stored value if valid, otherwise returns fallback.
-    /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto value_or(const_reference fallback, P... p)
-      const noexcept -> auto& {
-        if(_policy(_value, p...)) [[likely]] {
+    [[nodiscard]] constexpr auto value_or(
+      const_reference fallback) const noexcept -> auto& {
+        if(_policy(_value)) [[likely]] {
             return _value;
         }
         return fallback;
@@ -880,9 +866,9 @@ public:
     /// @brief Calls a binary transforming function on {value, has_value()} pair.
     /// @param function the function to be called.
     template <typename F, typename R = std::invoke_result_t<F, const T&, bool>>
-    [[nodiscard]] constexpr auto transformed(F function, P... p) const noexcept
+    [[nodiscard]] constexpr auto transformed(F function) const noexcept
       -> basic_valid_if<R, valid_flag_policy, typename valid_flag_policy::do_log> {
-        const auto has_val{_policy(_value, p...)};
+        const auto has_val{_policy(_value)};
         auto r{function(_value, has_val)};
         if constexpr(optional_like<decltype(r)>) {
             return r;
@@ -1015,8 +1001,8 @@ export template <typename F, typename T, typename P, typename L>
 export template <typename T>
 using optionally_valid = valid_if<T, valid_flag_policy>;
 //------------------------------------------------------------------------------
-export template <typename Dst, typename P, typename L, typename... A, typename Src>
-struct within_limits<basic_valid_if<Dst, P, L, A...>, Src> {
+export template <typename Dst, typename P, typename L, typename Src>
+struct within_limits<basic_valid_if<Dst, P, L>, Src> {
     static constexpr auto check(const Src value) noexcept {
         return within_limits<Dst, Src>::check(value);
     }
@@ -1098,8 +1084,6 @@ struct valid_if_not_empty_policy {
 
 /// @brief Specialization of valid_if, for values valid if not empty.
 /// @ingroup valid_if
-/// @see valid_if_size_gt
-/// @see valid_if_lt_size
 export template <typename T>
 using valid_if_not_empty =
   valid_if<T, valid_if_not_empty_policy<std::remove_reference_t<T>>>;
