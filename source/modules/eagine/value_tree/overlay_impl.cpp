@@ -121,6 +121,10 @@ public:
         return _path.back();
     }
 
+    auto preview(overlay_compound& owner) -> optionally_valid<string_view> {
+        return _find_source(owner).preview();
+    }
+
     auto canonical_type(overlay_compound& owner) -> value_type {
         return _find_source(owner).canonical_type();
     }
@@ -211,6 +215,11 @@ public:
 
     auto attribute_name(attribute_interface& attrib) -> string_view final {
         return _unwrap(attrib).name();
+    }
+
+    auto attribute_preview(attribute_interface& attrib)
+      -> optionally_valid<string_view> final {
+        return _unwrap(attrib).preview(*this);
     }
 
     auto canonical_type(attribute_interface& attrib) -> value_type final {

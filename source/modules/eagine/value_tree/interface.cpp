@@ -13,6 +13,7 @@ import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.reflection;
+import eagine.core.valid_if;
 import eagine.core.console;
 
 namespace eagine::valtree {
@@ -96,6 +97,11 @@ export struct compound_interface : interface<compound_interface> {
     /// @brief Returns the name of the specified attribute.
     /// @pre this->type_id() == attr.type_id()
     virtual auto attribute_name(attribute_interface& attr) -> string_view = 0;
+
+    /// @brief Returns the value of the specified attribute as string.
+    /// @pre this->type_id() == attr.type_id()
+    virtual auto attribute_preview(attribute_interface& attr)
+      -> optionally_valid<string_view> = 0;
 
     /// @brief Returns the value type of the specified attribute.
     /// @pre this->type_id() == attr.type_id()

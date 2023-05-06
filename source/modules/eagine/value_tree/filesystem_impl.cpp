@@ -215,6 +215,11 @@ public:
         return 0;
     }
 
+    auto preview() -> optionally_valid<string_view> {
+        // TODO: fetch couple of bytes from the start of the file?
+        return {};
+    }
+
 private:
     const std::filesystem::path _node_path;
     const std::filesystem::path _real_path;
@@ -263,6 +268,11 @@ public:
 
     auto attribute_name(attribute_interface& attrib) -> string_view final {
         return _unwrap(attrib).name();
+    }
+
+    auto attribute_preview(attribute_interface& attrib)
+      -> optionally_valid<string_view> final {
+        return _unwrap(attrib).preview();
     }
 
     auto canonical_type(attribute_interface&) -> value_type final {

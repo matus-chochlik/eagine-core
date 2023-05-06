@@ -18,6 +18,7 @@ import eagine.core.string;
 import eagine.core.utility;
 import eagine.core.identifier;
 import eagine.core.reflection;
+import eagine.core.valid_if;
 import :interface;
 
 namespace eagine::valtree {
@@ -96,10 +97,18 @@ public:
           .value_or(identifier{});
     }
 
-    /// @brief Returns the implementation type id of this attribute.
+    /// @brief Returns the name of this attribute.
     [[nodiscard]] auto name() const -> string_view {
         if(_owner and _pimpl) {
             return _owner->attribute_name(*_pimpl);
+        }
+        return {};
+    }
+
+    /// @brief Returns the value of this attribute if it is available.
+    [[nodiscard]] auto preview() const -> optionally_valid<string_view> {
+        if(_owner and _pimpl) {
+            return _owner->attribute_preview(*_pimpl);
         }
         return {};
     }
@@ -270,6 +279,16 @@ public:
       -> string_view {
         if(_pimpl and attrib._pimpl) {
             return _pimpl->attribute_name(*attrib._pimpl);
+        }
+        return {};
+    }
+
+    /// @brief Returns the value of an attribute if it is available as string.
+    /// @pre this->type_id() == attrib.type_id().
+    [[nodiscard]] auto attribute_preview(const attribute& attrib) const
+      -> optionally_valid<string_view> {
+        if(_pimpl and attrib._pimpl) {
+            return _pimpl->attribute_preview(*attrib._pimpl);
         }
         return {};
     }
@@ -819,6 +838,12 @@ public:
     /// @brief Returns the name of this attribute.
     [[nodiscard]] auto name() const noexcept -> string_view {
         return _c.attribute_name(_a);
+    }
+
+    /// @brief Returns the value of this attribute if it's available as string.
+    [[nodiscard]] auto preview() const noexcept
+      -> optionally_valid<string_view> {
+        return _c.attribute_preview(_a);
     }
 
     /// @brief Indicates if the specified attribute is immutable.

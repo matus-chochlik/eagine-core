@@ -12,6 +12,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
+import eagine.core.valid_if;
 import eagine.core.logging;
 
 namespace eagine::valtree {
@@ -39,6 +40,11 @@ public:
     }
 
     auto attribute_name(attribute_interface&) -> string_view final {
+        return {};
+    }
+
+    auto attribute_preview(attribute_interface&)
+      -> optionally_valid<string_view> final {
         return {};
     }
 

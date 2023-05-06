@@ -20,6 +20,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
+import eagine.core.valid_if;
 import eagine.core.logging;
 
 namespace eagine::valtree {
@@ -32,6 +33,15 @@ template <typename E, typename A>
 static inline auto to_string_view(rapidjson::GenericValue<E, A>& val)
   -> string_view {
     return {val.GetString(), span_size(val.GetStringLength())};
+}
+
+template <typename E, typename A>
+static inline auto to_string_view_if(rapidjson::GenericValue<E, A>& val)
+  -> optionally_valid<string_view> {
+    if(val.IsString()) {
+        return {{val.GetString(), span_size(val.GetStringLength())}, true};
+    }
+    return {};
 }
 
 template <typename E, typename A>
@@ -258,6 +268,10 @@ public:
     auto name() -> string_view {
         return _rj_name.transform(to_string_view<Encoding, Allocator>)
           .value_or(string_view{});
+    }
+
+    auto preview() -> optionally_valid<string_view> {
+        return _rj_val.and_then(to_string_view_if<Encoding, Allocator>);
     }
 
     auto canonical_type() const -> value_type {
@@ -689,6 +703,11 @@ public:
 
     auto attribute_name(attribute_interface& attrib) -> string_view final {
         return _unwrap(attrib).name();
+    }
+
+    auto attribute_preview(attribute_interface& attrib)
+      -> optionally_valid<string_view> final {
+        return _unwrap(attrib).preview();
     }
 
     auto canonical_type(attribute_interface& attrib) -> value_type final {

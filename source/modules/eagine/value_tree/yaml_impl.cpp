@@ -104,6 +104,13 @@ public:
         return {};
     }
 
+    auto preview() const noexcept -> optionally_valid<string_view> {
+        if(_usable(_node) and _node.has_val()) {
+            return view(_node.val());
+        }
+        return {};
+    }
+
     auto canonical_type() const noexcept -> value_type {
         if(_usable(_node)) {
             if(_node.is_container()) {
@@ -312,6 +319,11 @@ public:
 
     auto attribute_name(attribute_interface& attrib) -> string_view final {
         return _unwrap(attrib).name();
+    }
+
+    auto attribute_preview(attribute_interface& attrib)
+      -> optionally_valid<string_view> final {
+        return _unwrap(attrib).preview();
     }
 
     auto canonical_type(attribute_interface& attrib) -> value_type final {
