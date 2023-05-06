@@ -14,8 +14,8 @@ auto main(main_ctx& ctx) -> int {
 
     span_size_t repeats = 10;
     auto severity = log_event_severity::info;
-    ctx.args().find("--count").parse_next(repeats, ctx.log().error_stream());
-    ctx.args().find("--severity").parse_next(severity, ctx.log().error_stream());
+    ctx.config().fetch("count", repeats");
+	ctx.config().fetch("severity", severity");
 
     const auto main_act =
       ctx.progress().activity("Counting ${current} / ${total}", repeats);

@@ -187,41 +187,42 @@ void program_args_parse(auto& s) {
     bool b{false};
     out = {};
     test.check(
-      not args.find("--string").parse_next(b, out), "parse bool expect fail");
+      not args.find("--string").next().parse(b, out), "parse bool expect fail");
     test.check(not out.str().empty(), "parse bool expect fail message");
     out = {};
-    test.check(args.find("--bool").parse_next(b, out), "parse bool");
+    test.check(args.find("--bool").next().parse(b, out), "parse bool");
     test.check(out.str().empty(), "parse bool message empty");
     test.check_equal(b, true, "parse bool result ok");
 
     int i{0};
     out = {};
     test.check(
-      not args.find("--string").parse_next(i, out), "parse int expect fail");
+      not args.find("--string").next().parse(i, out), "parse int expect fail");
     test.check(not out.str().empty(), "parse int expect fail message");
     out = {};
-    test.check(args.find("--negative").parse_next(i, out), "parse int");
+    test.check(args.find("--negative").next().parse(i, out), "parse int");
     test.check(out.str().empty(), "parse int message empty");
     test.check_equal(i, -5, "parse int result ok");
     out = {};
-    test.check(args.find("--int").parse_next(i, out), "parse int");
+    test.check(args.find("--int").next().parse(i, out), "parse int");
     test.check(out.str().empty(), "parse int message empty");
     test.check_equal(i, 6789, "parse int result ok");
 
     float f{0};
     out = {};
     test.check(
-      not args.find("--string").parse_next(f, out), "parse float expect fail");
+      not args.find("--string").next().parse(f, out),
+      "parse float expect fail");
     test.check(not out.str().empty(), "parse float expect fail message");
     out = {};
-    test.check(args.find("--float").parse_next(f, out), "parse float");
+    test.check(args.find("--float").next().parse(f, out), "parse float");
     test.check(out.str().empty(), "parse float message empty");
 
     std::vector<int> v;
     out = {};
     for(const auto& arg : args) {
         if(arg == "--ints") {
-            test.check(arg.parse_next(v, out), "parse int vector");
+            test.check(arg.next().parse(v, out), "parse int vector");
         }
     }
     test.check_equal(
