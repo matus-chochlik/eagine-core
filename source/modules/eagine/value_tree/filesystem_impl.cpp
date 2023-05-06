@@ -192,7 +192,8 @@ public:
             file.seekg(offset, std::ios::beg);
             if(not file
                      .read(
-                       dest.data(), static_cast<std::streamsize>(dest.size()))
+                       reinterpret_cast<char*>(dest.data()),
+                       static_cast<std::streamsize>(dest.size()))
                      .bad()) {
                 return span_size(file.gcount());
             }
@@ -200,10 +201,52 @@ public:
         return 0;
     }
 
+    auto fetch_values(span_size_t offset, span<std::string> dest)
+      -> span_size_t {
+        if(dest.has_single_value()) {
+            std::ifstream file;
+            file.open(_real_path, std::ios::in);
+            file.seekg(offset, std::ios::beg);
+            std::array<char, 1024> temp{{}};
+            auto& dst_str{dest.front()};
+            dst_str.clear();
+            while(not file.eof()) {
+                const auto done{file
+                                  .read(
+                                    reinterpret_cast<char*>(temp.data()),
+                                    static_cast<std::streamsize>(temp.size()))
+                                  .gcount()};
+                if(file.bad()) {
+                    return 0;
+                }
+                if(not done) {
+                    break;
+                }
+                dst_str.append(temp.data(), span_size(done));
+            }
+            return span_size_t(1);
+        } else if(not dest.empty()) {
+            std::ifstream file;
+            file.open(_real_path, std::ios::in);
+            file.seekg(offset, std::ios::beg);
+            for(auto& dst_str : dest) {
+                if(file.eof()) {
+                    break;
+                }
+                if(file.bad()) {
+                    return 0;
+                }
+                std::getline(file, dst_str);
+            }
+            return dest.size();
+        }
+        return 0;
+    }
+
     template <typename T>
     auto fetch_values(span_size_t offset, span<T> dest) -> span_size_t {
         if(dest.has_single_value()) {
-            char temp[64];
+            std::array<char, 64> temp{{}};
             if(const string_view src{take_until(
                  head(memory::view(temp), fetch_values(offset, cover(temp))),
                  [](const char c) { return not c or std::isspace(c); })}) {
