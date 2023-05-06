@@ -93,7 +93,7 @@ public:
         return measure_time_interval(label, log_event_severity::stat);
     }
 
-    auto configure(basic_config& config) const -> bool {
+    auto configure(basic_config_intf& config) const -> bool {
         if(auto lbe{backend()}) {
             extract(lbe).configure(config);
         }

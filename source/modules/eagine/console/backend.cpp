@@ -47,7 +47,7 @@ export using console_entry_id_t = std::uintptr_t;
 /// @brief Interface for console backend implementations.
 /// @ingroup console
 export struct console_backend : interface<console_backend> {
-    virtual auto configure(basic_config&) -> bool {
+    virtual auto configure(basic_config_intf&) -> bool {
         return false;
     }
 

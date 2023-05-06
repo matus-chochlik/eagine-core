@@ -559,7 +559,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 						"${TEST_NAME}-built"
 			)
 			foreach(ENV_VAR ${EAGINE_MODULE_TEST_ENVIRONMENT})
-				if("${ENV_VAR}" MATCHES "^[A-Z_][A-Z0-9_]+=.+$")
+				if("${ENV_VAR}" MATCHES "^[A-Z_][A-Z0-9_]+=.*$")
 					set_property(
 						TEST "execute-${TEST_NAME}"
 						APPEND PROPERTY

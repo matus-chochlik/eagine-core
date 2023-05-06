@@ -57,7 +57,7 @@ public:
         return _activity_id;
     }
 
-    auto configure(basic_config& config) const -> bool {
+    auto configure(basic_config_intf& config) const -> bool {
         if(auto pbe{backend()}) {
             return pbe->configure(config);
         }
