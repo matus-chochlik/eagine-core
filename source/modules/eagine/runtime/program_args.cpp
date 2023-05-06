@@ -89,6 +89,7 @@ public:
 
     /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see transform
+    /// @see or_else
     template <
       typename F,
       optional_like R =
@@ -99,6 +100,20 @@ public:
               std::forward<F>(function), value_type(_argv[_argi]));
         } else {
             return R{};
+        }
+    }
+
+    /// @brief Returns the result of function if empty or argument value otherwise.
+    /// @transform
+    /// @and_then
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
+    auto or_else(F&& function) const -> R {
+        if(has_value()) {
+            return R{value_type(_argv[_argi])};
+        } else {
+            return std::invoke(std::forward<F>(function));
         }
     }
 
