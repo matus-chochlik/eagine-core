@@ -27,6 +27,9 @@ export struct valid_flag_policy {
     constexpr valid_flag_policy(const bool has_value) noexcept
       : _has_value{has_value} {}
 
+    constexpr valid_flag_policy(const tribool has_value) noexcept
+      : _has_value{bool(has_value)} {}
+
     /// @brief Returns value validity depending on internally stored flag.
     template <typename T>
     constexpr auto operator()(const T&) const noexcept -> bool {
@@ -54,6 +57,14 @@ class basic_valid_if {
       std::is_nothrow_default_constructible_v<Policy> or
       std::is_nothrow_move_constructible_v<Policy>);
 
+    static constexpr auto _policy_with_value(bool has_val) noexcept {
+        if constexpr(std::same_as<Policy, valid_flag_policy>) {
+            return Policy{has_val};
+        } else {
+            return Policy{};
+        }
+    }
+
 public:
     using value_type = std::remove_cv_t<std::remove_reference_t<T>>;
     using reference = T&;
@@ -78,7 +89,8 @@ public:
     /// @brief Constructor initializing the stored value by @p val.
     constexpr basic_valid_if(T val) noexcept(
       std::is_nothrow_move_constructible_v<T>)
-      : _value{std::move(val)} {}
+      : _value{std::move(val)}
+      , _policy{_policy_with_value(true)} {}
 
     /// @brief Constructor initializing the stored value and policy.
     constexpr basic_valid_if(T val, Policy plcy) noexcept(noexcept(
@@ -86,6 +98,13 @@ public:
       std::is_nothrow_move_constructible_v<Policy>))
       : _value{std::move(val)}
       , _policy{std::move(plcy)} {}
+
+    template <std::convertible_to<T> U>
+        requires(std::same_as<Policy, valid_flag_policy>)
+    constexpr basic_valid_if(std::optional<U> opt) noexcept(
+      std::is_nothrow_move_constructible_v<T>)
+      : _value{opt.has_value() ? *opt : T{}}
+      , _policy{_policy_with_value(opt.has_value())} {}
 
     /// @brief Move constructor.
     constexpr basic_valid_if(basic_valid_if&& that) noexcept(
@@ -564,6 +583,14 @@ class basic_valid_if<T&, Policy, DoLog> {
       std::is_nothrow_default_constructible_v<Policy> or
       std::is_nothrow_move_constructible_v<Policy>);
 
+    static constexpr auto _policy_with_value(bool has_val) noexcept {
+        if constexpr(std::same_as<Policy, valid_flag_policy>) {
+            return Policy{has_val};
+        } else {
+            return Policy{};
+        }
+    }
+
 public:
     using value_type = std::remove_cv_t<T>;
     using reference = T&;
@@ -583,7 +610,8 @@ public:
 
     /// @brief Constructor initializing the stored value by @p val.
     constexpr basic_valid_if(T& ref) noexcept
-      : _value{ref} {}
+      : _value{ref}
+      , _policy{_policy_with_value(true)} {}
 
     /// @brief Constructor initializing the stored value and policy.
     constexpr basic_valid_if(T& ref, Policy plcy) noexcept(
