@@ -48,6 +48,7 @@ eagine_add_module(
 		c_str
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.valid_if
 )
 
 eagine_add_module(
