@@ -387,7 +387,7 @@ auto proxy_log_choose_backend(
         std::string temp;
         if(config.fetch_string("log.use_spinlock", temp)) {
             if(const auto val{from_string<bool>(temp)}) {
-                return extract(val);
+                return *val;
             }
         }
         return false;

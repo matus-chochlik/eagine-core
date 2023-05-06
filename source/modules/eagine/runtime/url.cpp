@@ -26,9 +26,9 @@ export struct url_query_args
     /// @see arg_has_value
     /// @see arg_value_as
     auto arg_value(const string_view name) const noexcept
-      -> valid_if_not_empty<string_view> {
+      -> optionally_valid<string_view> {
         if(const auto pos{find(name)}; pos != end()) {
-            return {std::get<1>(*pos)};
+            return {std::get<1>(*pos), true};
         }
         return {};
     }
@@ -38,11 +38,10 @@ export struct url_query_args
     /// @see arg_value
     template <typename T>
     auto arg_value_as(const string_view name, std::type_identity<T> = {})
-      const noexcept -> std::optional<T> {
-        if(const auto pos{find(name)}; pos != end()) {
-            return from_string<T>(std::get<1>(*pos));
-        }
-        return {};
+      const noexcept -> optionally_valid<T> {
+        return arg_value(name)
+          .and_then(from_string<T>(_1))
+          .and_then(_1.cast_to<optionally_valid<T>>());
     }
 
     /// @brief Checks if the argument with the specified name has the specified value.
@@ -51,10 +50,9 @@ export struct url_query_args
     template <typename T>
     auto arg_has_value(const string_view name, const T& value) const noexcept
       -> bool {
-        if(const auto pos{find(name)}; pos != end()) {
-            return string_has_value(std::get<1>(*pos), value);
-        }
-        return false;
+        return arg_value(name)
+          .and_then(string_has_value(_1, value))
+          .value_or(false);
     }
 };
 
