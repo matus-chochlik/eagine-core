@@ -27,6 +27,10 @@ auto main(main_ctx& ctx) -> int {
         out.cio_print("string: ${s}").arg("s", s);
     }
 
+    if(cfg.fetch_string("section_a.secret_value_b", s)) {
+        out.cio_print("secret: ${s}").arg("s", s);
+    }
+
     if(cfg.fetch("section_a.subsection_b.value_c", i)) {
         out.cio_print("integer : ${i}").arg("i", i);
     }

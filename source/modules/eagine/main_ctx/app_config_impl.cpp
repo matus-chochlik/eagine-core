@@ -88,6 +88,9 @@ public:
             if(auto found{_find_config_of("defaults", key, tags)}) {
                 return found;
             }
+            if(auto found{_find_in_secrets_fs(key, tags)}) {
+                return found;
+            }
         } catch(...) {
             _log.error("exception while loading configuration value '${key}'")
               .arg("key", key);
@@ -134,6 +137,23 @@ private:
       const string_view d) noexcept -> const std::string& {
         return append_to(
           d, append_to(c, append_to(b, assign_to(a, _config_name))));
+    }
+
+    auto _secrets_fs_path() const noexcept -> const std::filesystem::path& {
+        static const std::filesystem::path p{"/run/secrets"};
+        return p;
+    }
+
+    auto _find_in_secrets_fs(
+      const string_view key,
+      const span<const string_view> tags) noexcept
+      -> valtree::compound_attribute {
+        if(auto comp{_get_config(_secrets_fs_path())}) {
+            if(auto attr{comp.find(basic_string_path(key), tags)}) {
+                return {std::move(comp), std::move(attr)};
+            }
+        }
+        return {};
     }
 
     auto _find_config_of(
@@ -217,7 +237,9 @@ private:
 
     auto _open_config(const std::filesystem::path& cfg_path)
       -> valtree::compound {
-        if(cfg_path.extension() == ".yaml") {
+        if(is_directory(cfg_path)) {
+            return valtree::from_filesystem_path(cfg_path.string(), _log);
+        } else if(cfg_path.extension() == ".yaml") {
             if(file_contents content{cfg_path.string()}) {
                 return valtree::from_yaml_text(memory::as_chars(content), _log);
             }
@@ -230,13 +252,17 @@ private:
     }
 
     auto _get_config(const std::filesystem::path& cfg_path)
-      -> valtree::compound& {
-        const auto path_str{canonical(cfg_path).string()};
-        auto pos = _open_configs.find(path_str);
-        if(pos == _open_configs.end()) {
-            pos = _open_configs.emplace(path_str, _open_config(cfg_path)).first;
+      -> valtree::compound {
+        if(exists(cfg_path)) {
+            const auto path_str{canonical(cfg_path).string()};
+            auto pos = _open_configs.find(path_str);
+            if(pos == _open_configs.end()) {
+                pos =
+                  _open_configs.emplace(path_str, _open_config(cfg_path)).first;
+            }
+            return pos->second;
         }
-        return pos->second;
+        return {};
     }
 
     main_ctx_getters& _main_ctx;
