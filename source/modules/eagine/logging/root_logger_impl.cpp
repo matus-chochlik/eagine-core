@@ -124,11 +124,11 @@ auto root_logger_init_backend(
 
     for(auto arg = args.first(); arg; arg = arg.next()) {
         if(arg.is_long_tag("min-log-severity")) {
-            if(arg.next().parse(info.min_severity, std::cerr)) {
+            if(assign_if_fits(arg.next(), info.min_severity)) {
                 arg = arg.next();
             }
         } else if(arg.is_long_tag("log-identity")) {
-            if(arg.next().parse(info.log_identity, std::cerr)) {
+            if(assign_if_fits(info.log_identity, info.min_severity)) {
                 arg = arg.next();
             }
         }

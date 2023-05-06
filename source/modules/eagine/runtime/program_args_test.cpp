@@ -8,12 +8,13 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import std;
+import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.string;
 import eagine.core.runtime;
 //------------------------------------------------------------------------------
 void program_args_empty(auto& s) {
     eagitest::case_ test{s, 1, "empty"};
-    std::stringstream out;
 
     std::array<const char*, 1> argv{{nullptr}};
     eagine::program_args args{0, argv.data()};
@@ -29,13 +30,10 @@ void program_args_empty(auto& s) {
     test.check(not args.first().has_value(), "first not valid");
     test.check(not args.find(""), "not found empty");
     test.check(not args.find("eagitest"), "not found eagitest");
-    test.check_equal(
-      args.find_value_or("test", 1234, out), 1234, "find fallback");
 }
 //------------------------------------------------------------------------------
 void program_args_none(auto& s) {
     eagitest::case_ test{s, 2, "none"};
-    std::stringstream out;
 
     std::array<const char*, 2> argv{{"eagitest", nullptr}};
     eagine::program_args args{1, argv.data()};
@@ -52,13 +50,10 @@ void program_args_none(auto& s) {
     test.check(not args.first().has_value(), "first not valid");
     test.check(not args.find(""), "not found empty");
     test.check(not args.find("eagitest"), "not found eagitest");
-    test.check_equal(
-      args.find_value_or("test", 1234, out), 1234, "find fallback");
 }
 //------------------------------------------------------------------------------
 void program_args_some(auto& s) {
     eagitest::case_ test{s, 3, "some"};
-    std::stringstream out;
 
     std::array<const char*, 4> argv{{"eagitest", "--int", "2345", nullptr}};
     eagine::program_args args{3, argv.data()};
@@ -81,8 +76,6 @@ void program_args_some(auto& s) {
     test.check_equal(args.find("2345").position(), 2, "found arg position");
     test.check(not args.find(""), "not found empty");
     test.check(not args.find("eagitest"), "not found eagitest");
-    test.check_equal(
-      args.find_value_or("--int", 1234, out), 2345, "find value");
 }
 //------------------------------------------------------------------------------
 void program_args_iterator(auto& s) {
@@ -173,8 +166,6 @@ void program_args_range_for(auto& s) {
 //------------------------------------------------------------------------------
 void program_args_parse(auto& s) {
     eagitest::case_ test{s, 6, "parse"};
-    eagitest::track vect{test, 6, 1};
-    std::stringstream out;
 
     std::array<const char*, 25> argv{
       {"eagitest", "--bool",  "true",  "--negative", "-5",     "--int",
@@ -185,52 +176,26 @@ void program_args_parse(auto& s) {
     test.constructed(args, "args");
 
     bool b{false};
-    out = {};
     test.check(
-      not args.find("--string").next().parse(b, out), "parse bool expect fail");
-    test.check(not out.str().empty(), "parse bool expect fail message");
-    out = {};
-    test.check(args.find("--bool").next().parse(b, out), "parse bool");
-    test.check(out.str().empty(), "parse bool message empty");
+      not assign_if_fits(args.find("--string").next(), b),
+      "parse bool expect fail");
+    test.check(assign_if_fits(args.find("--bool").next(), b), "parse bool");
     test.check_equal(b, true, "parse bool result ok");
 
     int i{0};
-    out = {};
     test.check(
-      not args.find("--string").next().parse(i, out), "parse int expect fail");
-    test.check(not out.str().empty(), "parse int expect fail message");
-    out = {};
-    test.check(args.find("--negative").next().parse(i, out), "parse int");
-    test.check(out.str().empty(), "parse int message empty");
+      not assign_if_fits(args.find("--string").next(), i),
+      "parse int expect fail");
+    test.check(assign_if_fits(args.find("--negative").next(), i), "parse int");
     test.check_equal(i, -5, "parse int result ok");
-    out = {};
-    test.check(args.find("--int").next().parse(i, out), "parse int");
-    test.check(out.str().empty(), "parse int message empty");
+    test.check(assign_if_fits(args.find("--int").next(), i), "parse int");
     test.check_equal(i, 6789, "parse int result ok");
 
     float f{0};
-    out = {};
     test.check(
-      not args.find("--string").next().parse(f, out),
+      not assign_if_fits(args.find("--string").next(), f),
       "parse float expect fail");
-    test.check(not out.str().empty(), "parse float expect fail message");
-    out = {};
-    test.check(args.find("--float").next().parse(f, out), "parse float");
-    test.check(out.str().empty(), "parse float message empty");
-
-    std::vector<int> v;
-    out = {};
-    for(const auto& arg : args) {
-        if(arg == "--ints") {
-            test.check(arg.next().parse(v, out), "parse int vector");
-        }
-    }
-    test.check_equal(
-      v.size(), std::size_t(6), "parse int vector size result ok");
-    for(std::size_t idx = 0; idx < v.size(); ++idx) {
-        test.check_equal(int(idx), v[idx], "parse vector element ok");
-        vect.checkpoint(1);
-    }
+    test.check(assign_if_fits(args.find("--float").next(), f), "parse float");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
