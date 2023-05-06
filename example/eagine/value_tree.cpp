@@ -29,7 +29,7 @@ auto main(main_ctx& ctx) -> int {
           .arg("values", ca.value_count())
           .arg("isLink", "bool", ca.is_link())
           .arg("canonType", ca.canonical_type())
-          .arg("path", p.as_string("/", ca.nested_count() > 0))
+          .arg("path", "string", p.as_string("/", ca.nested_count() > 0))
           .arg("name", ca.name());
 
         if(ca.canonical_type() == valtree::value_type::byte_type) {
@@ -37,7 +37,7 @@ auto main(main_ctx& ctx) -> int {
             if(s <= 256) {
                 std::array<byte, 256> temp{};
                 auto content{ca.fetch_blob(cover(temp))};
-                ctx.log().info("content").arg("content", view(content));
+                ctx.log().info("binary content").arg("content", view(content));
             }
         } else if(ca.canonical_type() == valtree::value_type::string_type) {
             if(ca.value_count() == 1) {

@@ -395,7 +395,7 @@ export auto from_filesystem_path(
   string_view root_path,
   does_not_hide<logger> auto& parent,
   std::shared_ptr<file_compound_factory> factory = {}) -> compound {
-    return from_filesystem_path(root_path, parent, std::move(factory));
+    return from_filesystem_path(root_path, parent.log(), std::move(factory));
 }
 //------------------------------------------------------------------------------
 /// @brief Creates a compound from a JSON text string view.
