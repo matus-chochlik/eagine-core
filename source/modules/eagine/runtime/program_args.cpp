@@ -244,21 +244,6 @@ public:
         return parse(dest, default_selector, parse_log);
     }
 
-    /// @brief Tries to parse the following argument's value into @p dest.
-    /// @returns True if the parse is successful, false otherwise.
-    template <typename T, identifier_t V>
-    auto parse_next(T& dest, const selector<V> sel, std::ostream& parse_log)
-      const {
-        return next().parse(dest, sel, parse_log);
-    }
-
-    /// @brief Tries to parse the following argument's value into @p dest.
-    /// @returns True if the parse is successful, false otherwise.
-    template <typename T>
-    auto parse_next(T& dest, std::ostream& parse_log) const {
-        return parse_next(dest, default_selector, parse_log);
-    }
-
 private:
     int _argi{0};
     int _argc{0};
@@ -607,7 +592,7 @@ public:
       T fallback,
       std::ostream& parse_log) const noexcept -> T {
         if(const auto arg{find(what)}) {
-            arg.parse_next(fallback, parse_log);
+            arg.next().parse(fallback, parse_log);
         }
         return fallback;
     }

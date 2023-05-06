@@ -108,7 +108,9 @@ public:
     void finish_activity(
       const activity_progress_id_t activity_id) noexcept final {
         if(activity_id) {
-            _do_log(_decode(activity_id));
+            auto& info = _decode(activity_id);
+            info.curr_steps = info.total_steps;
+            _do_log(info);
             const std::lock_guard<std::mutex> lock{_mutex};
             const auto ipos = _index.find(activity_id);
             if(ipos != _index.end()) {
