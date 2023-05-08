@@ -58,19 +58,13 @@ auto basic_config::eval_environment_var(string_view key, const string_view tag)
 //------------------------------------------------------------------------------
 auto basic_config::is_set(const string_view key, const string_view tag) noexcept
   -> bool {
-    const auto find_env_var{[=, this] {
-        return eval_environment_var(key, tag);
-    }};
-    const auto return_false{[] {
-        return optionally_valid<string_view>{{"false"}};
-    }};
-
-    return find_program_arg(key, tag)
-             .next()
-             .or_else(find_env_var)
-             .or_else(return_false)
-             .and_then(from_string<bool>(_1))
-             .value_or(true) != false;
+    if(const auto arg{find_program_arg(key, tag)}) {
+        return arg.next().and_then(from_string<bool>(_1)).value_or(true);
+    }
+    if(const auto var{eval_environment_var(key, tag)}) {
+        return var.and_then(from_string<bool>(_1)).value_or(true);
+    }
+    return false;
 }
 //------------------------------------------------------------------------------
 auto basic_config::fetch_string(

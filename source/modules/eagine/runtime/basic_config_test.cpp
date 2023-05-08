@@ -70,13 +70,36 @@ void basic_config_is_set_1(auto& s) {
     test.check(cfg.is_set("var-12345"), "D");
 }
 //------------------------------------------------------------------------------
+void basic_config_is_set_2(auto& s) {
+    eagitest::case_ test{s, 4, "is-set 2"};
+    std::array<const char*, 9> argv{
+      {"basic_config_test",
+       "--var-flag-12345",
+       "false",
+       "--arg-flag",
+       "--arg-flag-true",
+       "true",
+       "--arg-flag-false",
+       "false",
+       nullptr}};
+    eagine::program_args args{1, argv.data()};
+
+    eagine::basic_config cfg{args};
+
+    test.check(cfg.is_set("arg.flag-true"), "A");
+    test.check(not cfg.is_set("arg-flag_false"), "B");
+    test.check(cfg.is_set("arg.flag"), "C");
+    test.check(not cfg.is_set("var-12345"), "D");
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "basic_config", 3};
+    eagitest::suite test{argc, argv, "basic_config", 4};
     test.once(basic_config_find_1);
     test.once(basic_config_find_2);
     test.once(basic_config_is_set_1);
+    test.once(basic_config_is_set_2);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
