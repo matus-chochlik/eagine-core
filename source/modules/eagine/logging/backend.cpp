@@ -65,6 +65,8 @@ constexpr auto enumerator_mapping(
 /// @brief Structure used to supply initial log stream information to a logger.
 /// @ingroup logging
 export struct log_stream_info {
+    /// @brief Unique session identity name.
+    std::string session_identity;
     /// @brief Unique stream identity name.
     std::string log_identity;
     /// @brief The minimum severity of log messages.

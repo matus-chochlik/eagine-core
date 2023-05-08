@@ -128,7 +128,11 @@ auto root_logger_init_backend(
                 arg = arg.next();
             }
         } else if(arg.is_long_tag("log-identity")) {
-            if(assign_if_fits(info.log_identity, info.min_severity)) {
+            if(assign_if_fits(arg.next(), info.log_identity)) {
+                arg = arg.next();
+            }
+        } else if(arg.is_long_tag("session-identity")) {
+            if(assign_if_fits(arg.next(), info.session_identity)) {
                 arg = arg.next();
             }
         }
