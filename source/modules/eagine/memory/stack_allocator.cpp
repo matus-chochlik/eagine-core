@@ -11,11 +11,11 @@ module;
 
 export module eagine.core.memory:stack_allocator;
 
+import std;
 import eagine.core.types;
-import :block;
+import :span;
 import :address;
 import :byte_allocator;
-import std;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

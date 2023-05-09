@@ -7,6 +7,7 @@
 ///
 export module eagine.core.serialization:string_backend;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -16,7 +17,6 @@ import eagine.core.valid_if;
 import :result;
 import :interface;
 import :implementation;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

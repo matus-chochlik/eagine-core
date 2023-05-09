@@ -9,7 +9,8 @@ add_subdirectory(app)
 set(EAGINE_CORE_EXPORT_TARGETS)
 
 if(TARGET eagine-xml_logs-gui)
-	list(APPEND EAGINE_CORE_EXPORT_TARGETS eagine-xml_logs-gui)
+	# TODO: re-enable this when clang is fixed
+	# list(APPEND EAGINE_CORE_EXPORT_TARGETS eagine-xml_logs-gui)
 endif()
 
 install(

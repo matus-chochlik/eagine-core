@@ -20,14 +20,12 @@ auto main(main_ctx& ctx) -> int {
     for(int i = -n; i <= n; ++i) {
         i2.assign(i * i);
         ctx.cio()
-          .print(
-            identifier{"history"},
-            "${old}|${new}|${delta}|${distance}|${delta2}")
-          .arg(identifier{"old"}, i2.old_value())
-          .arg(identifier{"new"}, i2.value())
-          .arg(identifier{"delta"}, i2.delta())
-          .arg(identifier{"distance"}, i2.distance())
-          .arg(identifier{"delta2"}, i2.deltas().delta());
+          .print("history", "${old}|${new}|${delta}|${distance}|${delta2}")
+          .arg("old", i2.old_value())
+          .arg("new", i2.value())
+          .arg("delta", i2.delta())
+          .arg("distance", i2.distance())
+          .arg("delta2", i2.deltas().delta());
     }
 
     return 0;

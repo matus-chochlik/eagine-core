@@ -7,6 +7,7 @@
 ///
 module eagine.core.console;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -14,7 +15,6 @@ import eagine.core.identifier;
 import eagine.core.container;
 import eagine.core.utility;
 import :backend;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -33,7 +33,8 @@ public:
     }
 
     auto entry_backend(const identifier, const console_entry_kind) noexcept
-      -> std::tuple<console_backend*, console_entry_id_t> override {
+      -> std::
+        tuple<optional_reference<console_backend>, console_entry_id_t> override {
         const std::lock_guard lock{_lockable};
         do {
             ++_entry_id_seq;
@@ -60,6 +61,10 @@ public:
             _depth = 0;
         }
         return true;
+    }
+
+    void add_nothing(const identifier arg, const identifier) noexcept final {
+        _add(arg, string_view{"N/A"});
     }
 
     void add_identifier(
@@ -179,7 +184,7 @@ private:
     template <typename T>
     void _add(const identifier arg, T value) noexcept {
         if(const auto str_val{_to_str(value)}) {
-            _add(arg, extract(str_val));
+            _add(arg, *str_val);
         }
     }
 

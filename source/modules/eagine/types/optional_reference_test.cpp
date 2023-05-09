@@ -7,12 +7,16 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.types;
 import std;
+import eagine.core.types;
+import eagine.core.concepts;
 //------------------------------------------------------------------------------
 struct inner {
     short s{0};
     bool b{true};
+    auto foo() const noexcept -> int {
+        return 42;
+    }
 };
 
 struct outer {
@@ -22,6 +26,8 @@ struct outer {
 void optional_reference_empty(auto& s) {
     eagitest::case_ test{s, 1, "empty"};
     eagine::optional_reference<int> r{eagine::nothing};
+
+    test.check(eagine::optional_like<decltype(r)>, "optional-like");
 
     test.check(not r.has_value(), "has not value");
     test.check(not bool(r), "is not true");
@@ -45,13 +51,62 @@ void optional_reference_empty(auto& s) {
         .value_or(5678L),
       5678L,
       "and then 5678");
+
+    test.check_equal(
+      r.or_else([&]() -> int& {
+           static int i{678};
+           return i;
+       })
+        .value_or(567),
+      678,
+      "or else 678");
+
+    r.reset();
+    test.check(not r.has_value(), "has not value after reset");
 }
 //------------------------------------------------------------------------------
 void optional_reference_non_empty(auto& s) {
     eagitest::case_ test{s, 2, "non-empty"};
 
+    eagine::optional_reference<outer> r{};
+
+    test.check(eagine::optional_like<decltype(r)>, "optional-like");
+
+    test.check_equal(
+      r.member(&outer::i).member(&inner::foo).value_or(2345),
+      2345,
+      "member call 2345");
+
+    test.check_equal(
+      r.member(&outer::i).member(&inner::s).value_or(2345),
+      2345,
+      "member 2345");
+
+    test.check_equal(
+      r.or_else([]() -> auto& {
+           static outer so;
+           return so;
+       })
+        .member(&outer::i)
+        .member(&inner::foo)
+        .value_or(2345),
+      42,
+      "member call 42");
+
+    test.check_equal(
+      r.or_else([]() -> auto& {
+           static outer so{{5678, false}};
+           return so;
+       })
+        .member(&outer::i)
+        .member(&inner::s)
+        .value_or(3456),
+      5678,
+      "member 5678");
+
     outer o{};
-    eagine::optional_reference<outer> r{o};
+
+    r = {o};
 
     test.ensure(r.has_value(), "has value");
     test.ensure(bool(r), "is true");
@@ -59,6 +114,17 @@ void optional_reference_non_empty(auto& s) {
     test.check_equal(r.value().i.s, o.i.s, "o.i.s 1");
     o.i.s = 1234;
     test.check_equal(r.value().i.s, o.i.s, "o.i.s 2");
+
+    test.check_equal(
+      r.or_else([]() -> auto& {
+           static outer so{{6789, false}};
+           return so;
+       })
+        .member(&outer::i)
+        .member(&inner::s)
+        .value_or(3456),
+      o.i.s,
+      "member 1234");
 
     test.check_equal(
       r.transform([](outer& x) -> inner& { return x.i; })
@@ -84,9 +150,14 @@ void optional_reference_non_empty(auto& s) {
 
     o.i.s = 3456;
     test.check_equal(
+      r.member(&outer::i).member(&inner::foo).value_or(2345),
+      42,
+      "member call 42");
+
+    test.check_equal(
       r.member(&outer::i).member(&inner::s).value_or(2345),
       3456,
-      "transform 3456");
+      "member 3456");
 
     test.check_equal(
       r.member(&outer::i).member(&inner::s).construct<long>().value_or(1111L),
@@ -121,6 +192,9 @@ void optional_reference_non_empty(auto& s) {
       r.member(&outer::i).member(&inner::s).construct<long>().value_or(1111L),
       1111L,
       "construct 1111");
+
+    r.reset();
+    test.check(not r.has_value(), "has not value after reset");
 }
 //------------------------------------------------------------------------------
 void optional_reference_non_empty_const(auto& s) {
@@ -128,6 +202,8 @@ void optional_reference_non_empty_const(auto& s) {
 
     outer o{};
     eagine::optional_reference<const outer> r{o};
+
+    test.check(eagine::optional_like<decltype(r)>, "optional-like");
 
     test.ensure(r.has_value(), "has value");
     test.ensure(bool(r), "is true");
@@ -203,6 +279,9 @@ void optional_reference_non_empty_const(auto& s) {
       r.member(&outer::i).member(&inner::s).construct<long>().value_or(2222L),
       2222L,
       "construct 2222");
+
+    r.reset();
+    test.check(not r.has_value(), "has not value after reset");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

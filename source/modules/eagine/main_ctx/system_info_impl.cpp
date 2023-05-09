@@ -32,13 +32,17 @@ module;
 
 module eagine.core.main_ctx;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.valid_if;
 import eagine.core.utility;
+import eagine.core.runtime;
+import eagine.core.logging;
+import eagine.core.value_tree;
 import eagine.core.units;
-import std;
+import :parent;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -64,8 +68,7 @@ static inline auto system_info_linux_load_avg(const std::size_t which) noexcept
 //------------------------------------------------------------------------------
 class system_info_impl {
 public:
-    system_info_impl()
-#ifdef NOT_DEFINED
+    system_info_impl(const logger& parent)
       : _sysfs{valtree::from_filesystem_path("/sys/devices", parent)} {
         const auto sysfs_scanner = [this](
                                      const valtree::compound& c,
@@ -145,24 +148,17 @@ public:
               });
         }
     }
-#endif
-    {}
 
     auto host_id() noexcept {
         return _host_id;
     }
 
     auto tz_count() noexcept -> span_size_t {
-#ifdef NOT_DEFINED
         return span_size(_tz_temp_a.size());
-#else
-        return 0;
-#endif
     }
 
     auto tz_temperature(const span_size_t index) noexcept
       -> valid_if_positive<kelvins_t<float>> {
-#ifdef NOT_DEFINED
         assert((index >= 0) and (index < tz_count()));
         auto& temp_a = _tz_temp_a[integer(index)];
         if(temp_a) {
@@ -171,14 +167,12 @@ public:
                 return kelvins_(millicelsius * 0.001F + 273.15F);
             }
         }
-#endif
         return {kelvins_(0.F)};
     }
 
     auto tz_min_max() noexcept -> std::tuple<
       valid_if_positive<kelvins_t<float>>,
       valid_if_positive<kelvins_t<float>>> {
-#ifdef NOT_DEFINED
         auto min{std::numeric_limits<float>::max()};
         auto max{std::numeric_limits<float>::min()};
         for(auto& temp_a : _tz_temp_a) {
@@ -193,39 +187,29 @@ public:
               kelvins_(min * 0.001F + 273.15F),
               kelvins_(max * 0.001F + 273.15F)};
         }
-#endif
         return {{kelvins_(0.F)}, {kelvins_(0.F)}};
     }
 
     auto cpu_temperature() noexcept -> valid_if_positive<kelvins_t<float>> {
-#ifdef NOT_DEFINED
         if(_cpu_temp_i) {
             return tz_temperature(extract(_cpu_temp_i));
         }
-#endif
         return {kelvins_(0.F)};
     }
 
     auto gpu_temperature() noexcept -> valid_if_positive<kelvins_t<float>> {
-#ifdef NOT_DEFINED
         if(_gpu_temp_i) {
             return tz_temperature(extract(_gpu_temp_i));
         }
-#endif
         return {kelvins_(0.F)};
     }
 
     auto cd_count() noexcept -> span_size_t {
-#ifdef NOT_DEFINED
         return span_size(_cd_cm_a.size());
-#else
-        return 0;
-#endif
     }
 
     auto cd_state(const span_size_t index) noexcept
       -> valid_if_between_0_1<float> {
-#ifdef NOT_DEFINED
         assert((index >= 0) and (index < cd_count()));
         const auto& [cur_a, max_a] = _cd_cm_a[index];
         if(cur_a and max_a) {
@@ -239,21 +223,15 @@ public:
                 }
             }
         }
-#endif
         return {-1.F};
     }
 
     auto bat_count() noexcept -> span_size_t {
-#ifdef NOT_DEFINED
         return span_size(_bat_cap_a.size());
-#else
-        return 0;
-#endif
     }
 
     auto bat_capacity(const span_size_t index) noexcept
       -> valid_if_between_0_1<float> {
-#ifdef NOT_DEFINED
         assert((index >= 0) and (index < bat_count()));
         const auto& cap_a = _bat_cap_a[index];
         if(cap_a) {
@@ -262,20 +240,14 @@ public:
                 return {capacity * 0.01F};
             }
         }
-#endif
         return {-1.F};
     }
 
     auto acps_count() noexcept -> span_size_t {
-#ifdef NOT_DEFINED
         return span_size(_ac_online_a.size());
-#else
-        return 0;
-#endif
     }
 
     auto acps_online(const span_size_t index) noexcept -> tribool {
-#ifdef NOT_DEFINED
         assert((index >= 0) and (index < acps_count()));
         const auto& onl_a = _ac_online_a[index];
         if(onl_a) {
@@ -284,13 +256,11 @@ public:
                 return {online != 0};
             }
         }
-#endif
         return indeterminate;
     }
 
 private:
     host_id_t _host_id{0};
-#ifdef NOT_DEFINED
     valtree::compound _sysfs;
     std::vector<valtree::attribute> _tz_temp_a;
     valid_if_nonnegative<span_size_t> _cpu_temp_i{-1};
@@ -300,17 +270,19 @@ private:
 
     std::vector<valtree::attribute> _bat_cap_a;
     std::vector<valtree::attribute> _ac_online_a;
-#endif
 };
 //------------------------------------------------------------------------------
 #else
 #endif
 //------------------------------------------------------------------------------
+system_info::system_info(main_ctx_parent parent)
+  : main_ctx_object{"SystemInfo", parent} {}
+//------------------------------------------------------------------------------
 auto system_info::_impl() noexcept -> system_info_impl* {
 #if EAGINE_LINUX
     if(not _pimpl) [[unlikely]] {
         try {
-            _pimpl = std::make_shared<system_info_impl>();
+            _pimpl = std::make_shared<system_info_impl>(main_context().log());
         } catch(...) {
         }
     }

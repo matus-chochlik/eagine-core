@@ -18,16 +18,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION basic_config
-	IMPORTS
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.string
-		eagine.core.utility
-		eagine.core.reflection
-)
-
-eagine_add_module(
 	eagine.core.runtime PARTITION program_args
 	IMPORTS
 		eagine.core.debug
@@ -36,6 +26,17 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.valid_if
+)
+
+eagine_add_module(
+	eagine.core.runtime PARTITION basic_config
+	IMPORTS
+		program_args
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.utility
+		eagine.core.reflection
 )
 
 eagine_add_module(
@@ -118,6 +119,7 @@ eagine_add_module(
 		url
 		process
 		input_data
+		basic_config
 		executable_module
 		signal_switch
 		file_contents
@@ -125,6 +127,9 @@ eagine_add_module(
 		workshop
 	IMPORTS
 		eagine.core.utility
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.valid_if
 )
 target_link_libraries(
 	eagine.core.runtime
@@ -137,11 +142,21 @@ target_link_libraries(
 eagine_add_module_tests(
 	eagine.core.runtime
 	UNITS
+		basic_config
 		compression
 		program_args
 		url
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.string
+	ENVIRONMENT
+		EAGINE_VAR_MODULE_1=eagine
+		EAGINE_VAR_MODULE_2=core
+		EAGINE_VAR_MODULE_3=runtime
+		EAGINE_VAR_12345=12345
+		EAGINE_VAR_FLAG_TRUE=true
+		EAGINE_VAR_FLAG_FALSE=false
+		EAGINE_VAR_FLAG=
 )
 set_tests_properties(execute-test.eagine.core.runtime.compression PROPERTIES COST 10)

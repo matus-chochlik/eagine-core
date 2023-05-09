@@ -7,10 +7,10 @@
 ///
 export module eagine.core.memory:aligned_block;
 
-import eagine.core.types;
-export import :block;
-export import :span_algorithm;
 import std;
+import eagine.core.types;
+import :span;
+import :span_algorithm;
 
 namespace eagine::memory {
 //------------------------------------------------------------------------------

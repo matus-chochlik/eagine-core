@@ -5,15 +5,9 @@
 eagine_add_module(
 	eagine.core.logging PARTITION entry_arg
 	IMPORTS
-		eagine.core.build_info
 		eagine.core.types
 		eagine.core.reflection
 		eagine.core.identifier
-		eagine.core.valid_if
-		eagine.core.runtime
-		eagine.core.utility
-		eagine.core.string
-		eagine.core.c_api
 )
 
 eagine_add_module(
@@ -24,11 +18,15 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.runtime
 		eagine.core.identifier
+		eagine.core.reflection
 )
 
 eagine_add_module(
 	eagine.core.logging PARTITION config
-	IMPORTS backend eagine.core.types
+	IMPORTS
+		backend
+		eagine.core.build_config
+		eagine.core.types
 )
 
 eagine_add_module(
@@ -103,9 +101,13 @@ eagine_add_module(
 	eagine.core.logging PARTITION adapt_entry_arg
 	IMPORTS
 		entry_arg
+		eagine.core.build_info
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.string
 		eagine.core.identifier
+		eagine.core.runtime
+		eagine.core.valid_if
 		eagine.core.c_api
 )
 
@@ -131,7 +133,15 @@ eagine_add_module(
 		proxy_backend
 		root_logger
 	IMPORTS
+		eagine.core.build_config
+		eagine.core.build_info
 		eagine.core.debug
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.identifier
+		eagine.core.reflection
+		eagine.core.utility
+		eagine.core.runtime
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/asio/asio/include"
 )

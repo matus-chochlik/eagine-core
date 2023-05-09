@@ -7,11 +7,11 @@
 ///
 export module eagine.core.runtime:traverse;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.reflection;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

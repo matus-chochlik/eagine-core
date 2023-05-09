@@ -7,11 +7,11 @@
 ///
 module eagine.core.console;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import :backend;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -26,7 +26,8 @@ public:
     }
 
     auto entry_backend(const identifier, const console_entry_kind) noexcept
-      -> std::tuple<console_backend*, console_entry_id_t> final {
+      -> std::
+        tuple<optional_reference<console_backend>, console_entry_id_t> final {
         return {this, 0};
     }
 
@@ -38,6 +39,8 @@ public:
       const string_view) noexcept -> bool final {
         return true;
     }
+
+    void add_nothing(const identifier, const identifier) noexcept final {}
 
     void add_identifier(
       const identifier,

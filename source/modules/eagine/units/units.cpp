@@ -7,6 +7,7 @@
 ///
 export module eagine.core.units;
 
+import std;
 import eagine.core.types;
 export import :base;
 export import :dimension;
@@ -15,7 +16,6 @@ export import :si;
 export import :quantity;
 export import :dimensions;
 export import :strings;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

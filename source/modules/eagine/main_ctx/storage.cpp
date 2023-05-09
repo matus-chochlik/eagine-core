@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.main_ctx:storage;
 
+import std;
 import eagine.core.build_info;
 import eagine.core.types;
 import eagine.core.memory;
@@ -27,7 +28,6 @@ import :app_config;
 import :system_info;
 import :user_info;
 import :watchdog;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -40,14 +40,8 @@ public:
       const char** argv,
       main_ctx_options& options) noexcept
       : _args{argc, argv}
-      , _bld_info{}
-      , _sys_info{}
-      , _usr_info{}
       , _console{options.app_id, _args, options.console_opts}
       , _log_root{options.app_id, _args, options.logger_opts}
-      , _progress_root{_log_root}
-      , _watchdog{*this}
-      , _app_config{*this}
       , _app_name{options.app_name} {
         const auto fs_path = std::filesystem::path(to_string(_args.command()));
         if(_app_name.empty()) {
@@ -56,8 +50,8 @@ public:
         _exe_path = fs_path.lexically_normal().string();
 
         _log_root.info("application ${appName} starting")
-          .arg("appName", _app_name)
-          .arg("exePath", _exe_path);
+          .arg("appName", "AppName", _app_name)
+          .arg("exePath", "FsPath", _exe_path);
     }
 
     auto setters() noexcept -> main_ctx_setters* final {
@@ -184,15 +178,15 @@ private:
       memory::default_byte_allocator()};
     program_args _args;
     build_info _bld_info;
-    version_info _ver_info;
-    system_info _sys_info;
-    user_info _usr_info;
+    compiler_info _cmplr_info;
+    version_info _ver_info{config_git_version_tuple()};
     console _console;
     root_logger _log_root;
-    root_activity _progress_root;
-    compiler_info _cmplr_info;
-    process_watchdog _watchdog;
-    application_config _app_config;
+    root_activity _progress_root{_log_root};
+    system_info _sys_info{*this};
+    user_info _usr_info{*this};
+    process_watchdog _watchdog{*this};
+    application_config _app_config{*this};
     memory::buffer_pool _buffers;
     memory::buffer _scratch_space{_default_alloc};
     data_compressor _compressor{_buffers};

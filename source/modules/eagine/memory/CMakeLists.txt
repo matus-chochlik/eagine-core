@@ -24,7 +24,10 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.memory PARTITION offset_ptr
-	IMPORTS address eagine.core.types
+	IMPORTS
+		address
+		eagine.core.concepts
+		eagine.core.types
 )
 
 eagine_add_module(
@@ -33,16 +36,6 @@ eagine_add_module(
 		address
 		eagine.core.concepts
 		eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.memory PARTITION block
-	IMPORTS span eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.memory PARTITION struct_block
-	IMPORTS block
 )
 
 eagine_add_module(
@@ -62,11 +55,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.memory PARTITION span_io
-	IMPORTS span eagine.core.types
-)
-
-eagine_add_module(
 	eagine.core.memory PARTITION span_algorithm
 	IMPORTS span eagine.core.types
 )
@@ -74,14 +62,14 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.memory PARTITION split_span
 	IMPORTS
-		span block span_algorithm
+		span span_algorithm
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION aligned_block
 	IMPORTS
-		block span_algorithm
+		span span_algorithm
 		eagine.core.types
 )
 
@@ -105,7 +93,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.memory PARTITION byteset
-	IMPORTS block eagine.core.types
+	IMPORTS span eagine.core.types
 )
 
 eagine_add_module(
@@ -115,47 +103,34 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.memory PARTITION byte_allocator
-	IMPORTS block eagine.core.types
+	IMPORTS
+		span
+		eagine.core.concepts
+		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION stack_allocator
 	IMPORTS
-		block byte_allocator
-		eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.memory PARTITION shared_allocator
-	IMPORTS
-		byte_allocator
-		eagine.core.concepts
+		span byte_allocator
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION std_allocator
 	IMPORTS
-		block
+		span
 		byte_allocator
-		shared_allocator
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION buffer
 	IMPORTS
-		address block 
+		address span
 		span_algorithm
-		shared_allocator
-		eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.memory PARTITION buffer_pool
-	IMPORTS
-		buffer
-		shared_allocator
+		byte_allocator
+		eagine.core.build_config
 		eagine.core.types
 )
 
@@ -163,7 +138,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION object_storage
 	IMPORTS
 		byte_allocator
-		shared_allocator
 		std_allocator
 		eagine.core.types
 )
@@ -179,11 +153,8 @@ eagine_add_module(
 		null_ptr
 		offset_ptr
 		span
-		block
-		struct_block
 		string_span
 		offset_span
-		span_io
 		span_algorithm
 		split_span
 		aligned_block
@@ -194,14 +165,14 @@ eagine_add_module(
 		fixed_size_string
 		byte_allocator
 		stack_allocator
-		shared_allocator
 		std_allocator
 		buffer
-		buffer_pool
 		object_storage
 	SOURCES
 		memory
 		stack_allocator
+	IMPORTS
+		eagine.core.types
 )
 
 eagine_add_module_tests(

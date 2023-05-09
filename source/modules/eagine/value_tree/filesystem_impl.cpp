@@ -7,13 +7,13 @@
 ///
 module eagine.core.value_tree;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.logging;
-import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -22,7 +22,8 @@ class filesystem_node;
 //------------------------------------------------------------------------------
 [[nodiscard]] static auto filesystem_make_node(
   filesystem_compound& owner,
-  const std::filesystem::path& fs_path) -> attribute_interface*;
+  const std::filesystem::path& fs_path)
+  -> optional_reference<attribute_interface>;
 [[nodiscard]] static auto get_log(filesystem_compound& owner) -> const logger&;
 //------------------------------------------------------------------------------
 class filesystem_node : public attribute_interface {
@@ -72,7 +73,7 @@ public:
     }
 
     auto nested(filesystem_compound& owner, span_size_t index)
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         try {
             if(is_directory(_real_path)) {
                 for(auto& ent :
@@ -91,11 +92,11 @@ public:
               .arg("path", _node_path)
               .arg("error", err);
         }
-        return nullptr;
+        return {};
     }
 
     auto nested(filesystem_compound& owner, string_view name)
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         try {
             if(is_directory(_real_path)) {
                 for(auto& ent :
@@ -114,11 +115,11 @@ public:
               .arg("path", _node_path)
               .arg("error", err);
         }
-        return nullptr;
+        return {};
     }
 
     auto find(filesystem_compound& owner, const basic_string_path& path)
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         auto spath{_node_path};
         for(auto ent : path) {
             spath.append(std::string_view(ent));
@@ -126,13 +127,13 @@ public:
         if(exists(spath)) {
             return filesystem_make_node(owner, spath);
         }
-        return nullptr;
+        return {};
     }
 
     auto find(
       filesystem_compound& owner,
       const basic_string_path& path,
-      span<const string_view> tags) -> attribute_interface* {
+      span<const string_view> tags) -> optional_reference<attribute_interface> {
         std::string temp_str;
         auto _cat =
           [&](string_view a, string_view b, string_view c) mutable -> auto& {
@@ -158,7 +159,7 @@ public:
         if(exists(spath)) {
             return filesystem_make_node(owner, spath);
         }
-        return nullptr;
+        return {};
     }
 
     auto value_count() -> span_size_t {
@@ -191,7 +192,8 @@ public:
             file.seekg(offset, std::ios::beg);
             if(not file
                      .read(
-                       dest.data(), static_cast<std::streamsize>(dest.size()))
+                       reinterpret_cast<char*>(dest.data()),
+                       static_cast<std::streamsize>(dest.size()))
                      .bad()) {
                 return span_size(file.gcount());
             }
@@ -199,23 +201,66 @@ public:
         return 0;
     }
 
+    auto fetch_values(span_size_t offset, span<std::string> dest)
+      -> span_size_t {
+        if(dest.has_single_value()) {
+            std::ifstream file;
+            file.open(_real_path, std::ios::in);
+            file.seekg(offset, std::ios::beg);
+            std::array<char, 1024> temp{{}};
+            auto& dst_str{dest.front()};
+            dst_str.clear();
+            while(not file.eof()) {
+                const auto done{file
+                                  .read(
+                                    reinterpret_cast<char*>(temp.data()),
+                                    static_cast<std::streamsize>(temp.size()))
+                                  .gcount()};
+                if(file.bad()) {
+                    return 0;
+                }
+                if(not done) {
+                    break;
+                }
+                dst_str.append(temp.data(), span_size(done));
+            }
+            return span_size_t(1);
+        } else if(not dest.empty()) {
+            std::ifstream file;
+            file.open(_real_path, std::ios::in);
+            file.seekg(offset, std::ios::beg);
+            for(auto& dst_str : dest) {
+                if(file.eof()) {
+                    break;
+                }
+                if(file.bad()) {
+                    return 0;
+                }
+                std::getline(file, dst_str);
+            }
+            return dest.size();
+        }
+        return 0;
+    }
+
     template <typename T>
     auto fetch_values(span_size_t offset, span<T> dest) -> span_size_t {
-        if(dest.size() == 1) {
-            char temp[64];
-            if(const auto len{fetch_values(offset, cover(temp))}) {
-                auto issep = [](char c) {
-                    return not c or std::isspace(c);
-                };
-                if(auto src{take_until(head(memory::view(temp), len), issep)}) {
-                    if(auto fetched{from_string<T>(src)}) {
-                        dest.front() = std::move(extract(fetched));
-                        return 1;
-                    }
+        if(dest.has_single_value()) {
+            std::array<char, 64> temp{{}};
+            if(const string_view src{take_until(
+                 head(memory::view(temp), fetch_values(offset, cover(temp))),
+                 [](const char c) { return not c or std::isspace(c); })}) {
+                if(assign_if_fits(src, dest.front())) {
+                    return 1;
                 }
             }
         }
         return 0;
+    }
+
+    auto preview() -> optionally_valid<string_view> {
+        // TODO: fetch couple of bytes from the start of the file?
+        return {};
     }
 
 private:
@@ -260,12 +305,17 @@ public:
         return "filesystem";
     }
 
-    auto structure() -> attribute_interface* final {
-        return &_root;
+    auto structure() -> optional_reference<attribute_interface> final {
+        return _root;
     }
 
     auto attribute_name(attribute_interface& attrib) -> string_view final {
         return _unwrap(attrib).name();
+    }
+
+    auto attribute_preview(attribute_interface& attrib)
+      -> optionally_valid<string_view> final {
+        return _unwrap(attrib).preview();
     }
 
     auto canonical_type(attribute_interface&) -> value_type final {
@@ -285,24 +335,25 @@ public:
     }
 
     auto nested(attribute_interface& attrib, span_size_t index)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).nested(*this, index);
     }
 
     auto nested(attribute_interface& attrib, string_view name)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).nested(*this, name);
     }
 
     auto find(attribute_interface& attrib, const basic_string_path& path)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).find(*this, path);
     }
 
     auto find(
       attribute_interface& attrib,
       const basic_string_path& path,
-      span<const string_view> tags) -> attribute_interface* final {
+      span<const string_view> tags)
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).find(*this, path, tags);
     }
 
@@ -325,7 +376,8 @@ static inline auto get_log(filesystem_compound& owner) -> const logger& {
 //------------------------------------------------------------------------------
 static inline auto filesystem_make_node(
   filesystem_compound& owner,
-  const std::filesystem::path& fs_path) -> attribute_interface* {
+  const std::filesystem::path& fs_path)
+  -> optional_reference<attribute_interface> {
     if(not fs_path.empty()) {
         try {
             return owner.make_node(fs_path, canonical(fs_path));
@@ -335,7 +387,7 @@ static inline auto filesystem_make_node(
               .arg("path", "FsPath", fs_path);
         }
     }
-    return nullptr;
+    return {};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] auto from_filesystem_path(

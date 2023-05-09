@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <filesystem>
 module;
 
 #include <cassert>
@@ -21,6 +22,7 @@ module;
 
 module eagine.core.logging;
 
+import std;
 import eagine.core.types;
 import eagine.core.debug;
 import eagine.core.memory;
@@ -36,7 +38,6 @@ import :config;
 import :entry;
 import :backend;
 import :ostream_backend;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -123,11 +124,15 @@ auto root_logger_init_backend(
 
     for(auto arg = args.first(); arg; arg = arg.next()) {
         if(arg.is_long_tag("min-log-severity")) {
-            if(arg.next().parse(info.min_severity, std::cerr)) {
+            if(assign_if_fits(arg.next(), info.min_severity)) {
                 arg = arg.next();
             }
         } else if(arg.is_long_tag("log-identity")) {
-            if(arg.next().parse(info.log_identity, std::cerr)) {
+            if(assign_if_fits(arg.next(), info.log_identity)) {
+                arg = arg.next();
+            }
+        } else if(arg.is_long_tag("session-identity")) {
+            if(assign_if_fits(arg.next(), info.session_identity)) {
                 arg = arg.next();
             }
         }
@@ -139,9 +144,15 @@ auto root_logger_init_backend(
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_args(const program_args& args) -> void {
+    // pwd
+    std::error_code ec;
+    info("working directory: ${workDir}")
+      .tag("pwd")
+      .arg("workDir", std::filesystem::current_path(ec));
+    // args
     auto args_entry{info("program arguments:")};
     args_entry.tag("ProgArgs");
-    args_entry.arg("cmd", args.command().get());
+    args_entry.arg("cmd", "FsPath", args.command().get());
     for(const auto& arg : args) {
         args_entry.arg("arg", arg.get());
     }
@@ -170,8 +181,8 @@ auto root_logger::_log_build_info() -> void {
     info("source version information")
       .tag("BuildInfo")
       .arg("onValgrind", running_on_valgrind())
-      .arg("lowProfile", low_profile_build)
-      .arg("debug", debug_build);
+      .arg("lowProfile", tribool{low_profile_build})
+      .arg("debug", tribool{debug_build});
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_instance_info() -> void {
@@ -186,7 +197,7 @@ auto root_logger::_log_instance_info() -> void {
 #endif
     info("instance information")
       .tag("Instance")
-      .arg("hostname", std::string{hname.data()})
+      .arg("hostname", "Hostname", std::string{hname.data()})
       .arg("instanceId", process_instance_id());
 }
 //------------------------------------------------------------------------------

@@ -7,9 +7,9 @@
 ///
 export module eagine.core.runtime:executable_module;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ export struct executable_module : interface<executable_module> {
     /// @see find_object
     /// @see error_message
     virtual auto find_function(const string_view name)
-      -> std::optional<void (*)()> = 0;
+      -> optional_reference<void()> = 0;
 
     /// @brief Returns the user-readable error message from the last failed operation.
     virtual auto error_message() const noexcept -> string_view = 0;
@@ -137,7 +137,7 @@ public:
     /// @see error_message
     template <typename RV, typename... P>
     auto find_function(const string_view name, std::type_identity<RV(P...)>)
-      -> std::optional<RV (*)(P...)> {
+      -> optional_reference<RV(P...)> {
         if(_module) {
             if(auto found{_module->find_function(name)}) {
                 return {reinterpret_cast<RV (*)(P...)>(*found)};

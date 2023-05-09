@@ -215,4 +215,7 @@ eagine_add_module_tests(
 	UNITS
 		float_utils
 		size_and_data
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
 )

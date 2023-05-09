@@ -11,9 +11,18 @@ module;
 #include <cxxabi.h>
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+// clang-format off
+#if __has_include(<valgrind/valgrind.h>)
+// clang-format on
+#include <valgrind/valgrind.h>
+#endif
+#endif
+
 module eagine.core.debug;
 
 import std;
+import eagine.core.types;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -34,5 +43,19 @@ namespace eagine {
 #endif
     return name;
 }
+//------------------------------------------------------------------------------
+// valgrind
+//------------------------------------------------------------------------------
+#if defined(RUNNING_ON_VALGRIND)
+[[nodiscard]] auto running_on_valgrind() noexcept -> tribool {
+    return bool(RUNNING_ON_VALGRIND); // NOLINT(hicpp-no-assembler)
+}
+#else
+/// @brief Indicates if the current process runs on top of valgrind.
+/// @ingroup interop
+[[nodiscard]] auto running_on_valgrind() noexcept -> tribool {
+    return indeterminate;
+}
+#endif
 //------------------------------------------------------------------------------
 } // namespace eagine

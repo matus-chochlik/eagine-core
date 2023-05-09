@@ -11,12 +11,12 @@ module;
 
 export module eagine.core.c_api:enum_class;
 
+import std;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.container;
 import eagine.core.identifier;
-import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ namespace eagine::c_api {
 /// @see opt_enum_value
 /// @see no_enum_value
 export template <typename T, typename ClassList, typename Tag = nothing_t>
-struct enum_value;
+class enum_value;
 
 /// @brief Class holding the value of a symbolic constant or enumerator.
 /// @ingroup c_api_wrap
@@ -40,7 +40,8 @@ struct enum_value;
 /// @see opt_enum_value
 /// @see no_enum_value
 export template <typename T, typename... Classes, typename Tag>
-struct enum_value<T, mp_list<Classes...>, Tag> {
+class enum_value<T, mp_list<Classes...>, Tag> {
+public:
     using type = enum_value;
 
     /// @brief The constant or enumerator value type.
@@ -49,39 +50,50 @@ struct enum_value<T, mp_list<Classes...>, Tag> {
     /// @brief The tag type specified as template argument.
     using tag_type = Tag;
 
-    /// @brief The actual enumerator or constant value.
-    const T value{};
-
     /// @brief Initialization from the specified value.
     constexpr enum_value(const value_type val) noexcept
-      : value{val} {}
+      : _value{val} {}
+
+    constexpr auto value() const noexcept {
+        return _value;
+    }
 
     /// @brief Explicit conversion to the value type.
     explicit constexpr operator value_type() const noexcept {
-        return value;
+        return value();
     }
 
     /// @brief Indicates whether the value is valid or not (always true here).
     explicit constexpr operator bool() const noexcept {
         return true;
     }
+
+private:
+    /// @brief The actual enumerator or constant value.
+    const T _value{};
 };
 
 export template <typename... Classes, typename Tag>
-struct enum_value<bool, mp_list<Classes...>, Tag> {
+class enum_value<bool, mp_list<Classes...>, Tag> {
+public:
     using type = enum_value;
 
     using value_type = bool;
     using tag_type = Tag;
 
-    const bool value{false};
-
     constexpr enum_value(const bool val) noexcept
-      : value{val} {}
+      : _value{val} {}
+
+    constexpr auto value() const noexcept {
+        return _value;
+    }
 
     explicit constexpr operator bool() const noexcept {
-        return value;
+        return value();
     }
+
+private:
+    const bool _value{false};
 };
 //------------------------------------------------------------------------------
 /// @brief Class holding optional value of a (typically C-API) symbolic constant.
@@ -95,7 +107,7 @@ struct enum_value<bool, mp_list<Classes...>, Tag> {
 /// @see any_enum_value
 /// @see no_enum_value
 export template <typename T, typename ClassList, typename Tag = nothing_t>
-struct opt_enum_value;
+class opt_enum_value;
 
 /// @brief Class holding optional value of a symbolic constant or enumerator.
 /// @ingroup c_api_wrap
@@ -104,7 +116,8 @@ struct opt_enum_value;
 /// @see any_enum_value
 /// @see no_enum_value
 export template <typename T, typename... Classes, typename Tag>
-struct opt_enum_value<T, mp_list<Classes...>, Tag> {
+class opt_enum_value<T, mp_list<Classes...>, Tag> {
+public:
     using type = opt_enum_value;
 
     /// @brief The constant or enumerator value type.
@@ -113,55 +126,72 @@ struct opt_enum_value<T, mp_list<Classes...>, Tag> {
     /// @brief The tag type specified as template argument.
     using tag_type = Tag;
 
-    /// @brief The actual enumerator or constant value.
-    const T value{};
-
-    /// @brief Flag indicating if the value is valid.
-    const bool is_valid{false};
-
     /// @brief Initialization from the specified value and validity indicator.
     constexpr opt_enum_value(const T val, const bool valid) noexcept
-      : value{val}
-      , is_valid{valid} {}
+      : _value{val}
+      , _is_valid{valid} {}
 
     /// @brief Initialization from the specified value and validity indicator.
     constexpr opt_enum_value(const std::tuple<value_type, bool> init) noexcept
-      : value{std::get<0>(init)}
-      , is_valid{std::get<1>(init)} {}
+      : _value{std::get<0>(init)}
+      , _is_valid{std::get<1>(init)} {}
+
+    constexpr auto value() const noexcept {
+        return _value;
+    }
 
     /// @brief Explicit conversion to the value type.
     explicit constexpr operator value_type() const noexcept {
-        return value;
+        return value();
     }
 
     /// @brief Indicates whether the value is valid or not.
-    /// @see is_valid
-    explicit constexpr operator bool() const noexcept {
-        return is_valid;
+    constexpr auto has_value() const noexcept -> bool {
+        return _is_valid;
     }
+
+    /// @brief Indicates whether the value is valid or not.
+    /// @see has_value
+    explicit constexpr operator bool() const noexcept {
+        return has_value();
+    }
+
+private:
+    const T _value{};
+    const bool _is_valid{false};
 };
 
 export template <typename... Classes, typename Tag>
-struct opt_enum_value<bool, mp_list<Classes...>, Tag> {
+class opt_enum_value<bool, mp_list<Classes...>, Tag> {
+public:
     using type = opt_enum_value;
 
     using value_type = bool;
     using tag_type = Tag;
 
-    const bool value{};
-    const bool is_valid{false};
-
     constexpr opt_enum_value(const bool val, const bool valid) noexcept
-      : value(val)
-      , is_valid{valid} {}
+      : _value{val}
+      , _is_valid{valid} {}
 
     constexpr opt_enum_value(const std::tuple<bool, bool> init) noexcept
-      : value(std::get<0>(init))
-      , is_valid{std::get<1>(init)} {}
+      : _value{std::get<0>(init)}
+      , _is_valid{std::get<1>(init)} {}
+
+    constexpr auto has_value() const noexcept -> bool {
+        return _is_valid;
+    }
+
+    constexpr auto value() const noexcept {
+        return _value;
+    }
 
     explicit constexpr operator bool() const noexcept {
-        return is_valid and value;
+        return has_value() and value();
     }
+
+private:
+    const bool _value{};
+    const bool _is_valid{false};
 };
 //------------------------------------------------------------------------------
 /// @brief Class representing undefined value of a (typically C-API) symbolic constant.
@@ -173,7 +203,8 @@ struct opt_enum_value<bool, mp_list<Classes...>, Tag> {
 /// @see any_enum_value
 /// @see opt_enum_value
 export template <typename T, typename Tag = nothing_t>
-struct no_enum_value {
+class no_enum_value {
+public:
     using type = no_enum_value;
 
     /// @brief The constant or enumerator value type.
@@ -182,25 +213,39 @@ struct no_enum_value {
     /// @brief The tag type specified as template argument.
     using tag_type = Tag;
 
-    const T value{};
+    constexpr auto value() const noexcept {
+        return _value;
+    }
 
     /// @brief Explicit conversion to the value type.
     explicit constexpr operator T() const noexcept {
-        return value;
+        return value();
+    }
+
+    constexpr auto has_value() const noexcept -> bool {
+        return false;
     }
 
     /// @brief Indicates whether the value is valid or not (always false here).
     explicit constexpr operator bool() const noexcept {
         return false;
     }
+
+private:
+    const T _value{};
 };
 
 export template <typename Tag>
-struct no_enum_value<bool, Tag> {
+class no_enum_value<bool, Tag> {
+public:
     using type = no_enum_value;
 
     using value_type = bool;
     using tag_type = Tag;
+
+    constexpr auto has_value() const noexcept -> bool {
+        return false;
+    }
 
     explicit constexpr operator bool() const noexcept {
         return false;
@@ -208,14 +253,14 @@ struct no_enum_value<bool, Tag> {
 };
 //------------------------------------------------------------------------------
 export template <identifier_value LibId>
-struct any_enum_value;
+class any_enum_value;
 
 export template <
   typename Self,
   typename T,
   identifier_value LibId,
   identifier_value Id>
-struct enum_class;
+class enum_class;
 
 /// @brief Implementation of is_enum_class trait.
 /// @ingroup c_api_wrap
@@ -302,7 +347,8 @@ constexpr bool is_enum_parameter_value_v =
     : c_api::is_enum_class_value_v<typename Parameter::tag_type, Value>;
 //------------------------------------------------------------------------------
 export template <typename ParameterEnumClass, typename ValueType>
-struct enum_parameter_value {
+class enum_parameter_value {
+public:
     template <typename Parameter, typename Value>
         requires(is_enum_parameter_value_v<
                   ParameterEnumClass,
@@ -310,17 +356,30 @@ struct enum_parameter_value {
                   ValueType,
                   Value>)
     constexpr enum_parameter_value(Parameter param, Value val) noexcept
-      : parameter{param.value}
-      , value{eagine::limit_cast<ValueType>(val.value)} {}
+      : _parameter{param}
+      , _value{eagine::limit_cast<ValueType>(val.value())} {}
 
     constexpr enum_parameter_value(
       ParameterEnumClass param,
       ValueType val) noexcept
-      : parameter{param._value}
-      , value{val} {}
+      : _parameter{param}
+      , _value{val} {}
 
-    typename ParameterEnumClass::value_type parameter{};
-    ValueType value{};
+    constexpr auto parameter() const noexcept {
+        return _parameter;
+    }
+
+    constexpr auto value() const noexcept {
+        return _value;
+    }
+
+    explicit constexpr operator ValueType() const noexcept {
+        return value();
+    }
+
+private:
+    typename ParameterEnumClass::value_type _parameter{};
+    ValueType _value{};
 };
 //------------------------------------------------------------------------------
 /// @brief Enum class for constants or enumerators (typically from a C-API).
@@ -350,7 +409,8 @@ export template <
   typename T,
   identifier_value LibId,
   identifier_value Id>
-struct enum_class {
+class enum_class {
+public:
     using type = enum_class;
 
     /// @brief The constant or enumerator value type.
@@ -369,14 +429,14 @@ struct enum_class {
     template <typename Classes, typename Tag>
     constexpr enum_class(const enum_value<T, Classes, Tag> ev) noexcept
         requires(mp_contains_v<Classes, Self>)
-      : _value{ev.value} {}
+      : _value{ev} {}
 
     /// @brief Construction from a related opt_enum_value.
     template <typename Classes, typename Tag>
     constexpr enum_class(const opt_enum_value<T, Classes, Tag> ev) noexcept
         requires(mp_contains_v<Classes, Self>)
-      : _value{ev.value} {
-        assert(ev.is_valid);
+      : _value{ev} {
+        assert(ev);
     }
 
     /// @brief Construction from a no_enum_value.
@@ -392,13 +452,17 @@ struct enum_class {
     explicit constexpr enum_class(const value_type value) noexcept
       : _value{value} {}
 
+    constexpr auto value() const noexcept {
+        return _value;
+    }
+
     constexpr operator Self() const noexcept {
-        return Self{_value};
+        return Self{value()};
     }
 
     /// @brief Explicit conversion to value type.
     explicit constexpr operator value_type() const noexcept {
-        return _value;
+        return value();
     }
 
     template <typename V>
@@ -406,7 +470,7 @@ struct enum_class {
         requires(
           not std::is_same_v<bool, V> and std::is_convertible_v<value_type, V>)
     {
-        return limit_cast<T>(_value);
+        return limit_cast<T>(value());
     }
 
     /// @brief Comparison.
@@ -425,7 +489,7 @@ export template <
   identifier_value LibId,
   identifier_value Id>
 constexpr auto to_underlying(enum_class<Self, T, LibId, Id> val) noexcept -> T {
-    return val._value;
+    return val.value();
 }
 
 export template <
@@ -437,7 +501,7 @@ export template <
 constexpr auto limit_cast(enum_class<Self, Src, LibId, Id> val) noexcept -> Dst
     requires(std::is_convertible_v<Src, Dst>)
 {
-    return limit_cast<Dst>(val._value);
+    return limit_cast<Dst>(val.value());
 }
 //------------------------------------------------------------------------------
 /// @brief Type erasure for instantiations of enum_class from a specified library.
@@ -446,10 +510,8 @@ constexpr auto limit_cast(enum_class<Self, Src, LibId, Id> val) noexcept -> Dst
 /// @see enum_class
 /// @see any_enum_value
 export template <identifier_value LibId>
-struct any_enum_class {
-
-    identifier_value _type_id{~identifier_t(0)};
-
+class any_enum_class {
+public:
     /// @brief Default constructor.
     constexpr any_enum_class() noexcept = default;
 
@@ -464,6 +526,11 @@ struct any_enum_class {
     constexpr any_enum_class(const any_enum_value<LibId>& aev) noexcept
       : _type_id{aev._type_id} {}
 
+    /// @brief Id of the stored value type.
+    constexpr auto type_id() const noexcept -> identifier_value {
+        return _type_id;
+    }
+
     /// @brief Indicates if this is a valid enumeration class.
     explicit constexpr operator bool() const noexcept {
         return _type_id != ~identifier_t(0);
@@ -471,6 +538,9 @@ struct any_enum_class {
 
     /// @brief Comparison.
     constexpr auto operator<=>(const any_enum_class&) const noexcept = default;
+
+private:
+    identifier_value _type_id{~identifier_t(0)};
 };
 
 /// @brief Type erasure for instantiations of enum_value from a specified library.
@@ -479,9 +549,7 @@ struct any_enum_class {
 /// @see enum_value
 /// @see any_enum_class
 export template <identifier_value LibId>
-struct any_enum_value {
-    long _value{0};
-    identifier_value _type_id{~identifier_t(0)};
+class any_enum_value {
 
     /// @brief Default constructor.
     constexpr any_enum_value() noexcept = default;
@@ -494,13 +562,26 @@ struct any_enum_value {
         static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
     }
 
+    /// @brief Id of the stored value type.
+    constexpr auto type_id() const noexcept -> identifier_value {
+        return _type_id;
+    }
+
     /// @brief Indicates if this value has a valid enumeration class.
     explicit constexpr operator bool() const noexcept {
         return _type_id != ~identifier_t(0);
     }
 
+    constexpr auto value() const noexcept {
+        return _value;
+    }
+
     /// @brief Equality comparison.
     constexpr auto operator<=>(const any_enum_value&) const noexcept = default;
+
+private:
+    long _value{0};
+    identifier_value _type_id{~identifier_t(0)};
 };
 
 /// @brief Tests if two instances of any_enum_class belong to the same enum class.
@@ -510,7 +591,7 @@ export template <identifier_value LibId>
 constexpr auto same_enum_class(
   const any_enum_class<LibId> a,
   const any_enum_class<LibId> b) noexcept {
-    return a._type_id == b._type_id;
+    return a.type_id() == b.type_id();
 }
 //------------------------------------------------------------------------------
 /// @brief Template for containers of enum_class.
@@ -584,14 +665,27 @@ constexpr auto limit_cast(c_api::no_enum_value<Src, Tag> val) noexcept -> Dst
 }
 //------------------------------------------------------------------------------
 export template <typename T, typename ClassList>
-struct enum_bits;
+class enum_bits;
 
 export template <typename T, typename... Classes>
-struct enum_bits<T, mp_list<Classes...>> {
-    T _bits{0};
-
+class enum_bits<T, mp_list<Classes...>> {
+public:
     explicit constexpr enum_bits(const T bits) noexcept
       : _bits{bits} {}
+
+    explicit constexpr enum_bits(const T l, const T r) noexcept
+      : _bits{l | r} {}
+
+    constexpr auto value() const noexcept {
+        return _bits;
+    }
+
+    explicit constexpr operator T() const noexcept {
+        return value();
+    }
+
+private:
+    T _bits{0};
 };
 
 export template <typename T, typename TL1, typename TL2>
@@ -600,7 +694,7 @@ constexpr auto operator|(
   const enum_value<T, TL1> a,
   const enum_value<T, TL2> b) noexcept {
     // NOLINTNEXTLINE(hicpp-signed-bitwise)
-    return enum_bits<T, mp_intersection_t<TL1, TL2>>{a.value | b.value};
+    return enum_bits<T, mp_intersection_t<TL1, TL2>>{T(a), T(b)};
 }
 
 export template <typename T, typename TL1, typename TL2>
@@ -608,7 +702,7 @@ export template <typename T, typename TL1, typename TL2>
 constexpr auto operator|(
   const enum_bits<T, TL1> eb,
   const enum_value<T, TL2> ev) noexcept {
-    return enum_bits<T, mp_intersection_t<TL1, TL2>>{eb._bits | ev.value};
+    return enum_bits<T, mp_intersection_t<TL1, TL2>>{T(eb), T(ev)};
 }
 
 export template <typename T, typename TL1, typename TL2>
@@ -616,14 +710,13 @@ export template <typename T, typename TL1, typename TL2>
 constexpr auto operator|(
   const enum_value<T, TL1> ev,
   const enum_bits<T, TL2> eb) noexcept {
-    return enum_bits<T, mp_intersection_t<TL1, TL2>>{ev._bits | eb.value};
+    return enum_bits<T, mp_intersection_t<TL1, TL2>>{T(ev), T(eb)};
 }
 //------------------------------------------------------------------------------
 export template <typename EnumClass>
-struct enum_bitfield {
+class enum_bitfield {
+public:
     using value_type = typename EnumClass::value_type;
-
-    value_type _value{0};
 
     constexpr enum_bitfield() noexcept = default;
 
@@ -631,50 +724,53 @@ struct enum_bitfield {
       : _value{value} {}
 
     constexpr enum_bitfield(const EnumClass e) noexcept
-      : _value{e._value} {}
+      : _value{e} {}
 
     template <typename Classes>
     constexpr enum_bitfield(const enum_value<value_type, Classes> ev) noexcept
         requires(mp_contains_v<Classes, EnumClass>)
-      : _value{ev.value} {}
+      : _value{ev} {}
 
     template <typename Classes>
     constexpr enum_bitfield(const enum_bits<value_type, Classes> eb) noexcept
         requires(mp_contains_v<Classes, EnumClass>)
-      : _value{eb._bits} {}
+      : _value{eb} {}
 
-    explicit constexpr operator value_type() const noexcept {
+    constexpr auto value() const noexcept {
         return _value;
     }
 
+    explicit constexpr operator value_type() const noexcept {
+        return value();
+    }
+
     auto add(const EnumClass ev) noexcept -> auto& {
-        _value |= ev._value; // NOLINT(hicpp-signed-bitwise)
+        _value |= ev.value(); // NOLINT(hicpp-signed-bitwise)
         return *this;
     }
 
     auto clear(const EnumClass ev) noexcept -> auto& {
-        _value &= ~ev._value; // NOLINT(hicpp-signed-bitwise)
+        _value &= ~ev.value(); // NOLINT(hicpp-signed-bitwise)
         return *this;
     }
 
     constexpr auto has(const EnumClass ev) const noexcept -> bool {
         // NOLINTNEXTLINE(hicpp-signed-bitwise)
-        return (_value & ev._value) == ev._value;
+        return (_value & ev.value()) == ev.value();
     }
 
     constexpr auto operator<=>(const enum_bitfield&) const noexcept = default;
 
-    friend constexpr auto operator|(
-      const enum_bitfield a,
-      const enum_bitfield b) noexcept {
-        return enum_bitfield{value_type(a._value) | value_type(b._value)};
+    constexpr auto operator|(const enum_bitfield that) const noexcept {
+        return enum_bitfield{value() | that.value()};
     }
 
-    friend constexpr auto operator&(
-      const enum_bitfield a,
-      const enum_bitfield b) noexcept {
-        return enum_bitfield{value_type(a._value) & value_type(b._value)};
+    constexpr auto operator&(const enum_bitfield that) const noexcept {
+        return enum_bitfield{value() & that.value()};
     }
+
+private:
+    value_type _value{0};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine::c_api

@@ -7,13 +7,14 @@
 ///
 export module eagine.core.value_tree:interface;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.reflection;
+import eagine.core.valid_if;
 import eagine.core.console;
-import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -91,11 +92,16 @@ export struct compound_interface : interface<compound_interface> {
     virtual void release(attribute_interface& attr) noexcept = 0;
 
     /// @brief Returns the root of attribute hierarch, describing the tree structure.
-    virtual auto structure() -> attribute_interface* = 0;
+    virtual auto structure() -> optional_reference<attribute_interface> = 0;
 
     /// @brief Returns the name of the specified attribute.
     /// @pre this->type_id() == attr.type_id()
     virtual auto attribute_name(attribute_interface& attr) -> string_view = 0;
+
+    /// @brief Returns the value of the specified attribute as string.
+    /// @pre this->type_id() == attr.type_id()
+    virtual auto attribute_preview(attribute_interface& attr)
+      -> optionally_valid<string_view> = 0;
 
     /// @brief Returns the value type of the specified attribute.
     /// @pre this->type_id() == attr.type_id()
@@ -116,17 +122,17 @@ export struct compound_interface : interface<compound_interface> {
     /// @brief Returns the nested attribute of an attribute at given @p index.
     /// @pre this->type_id() == attr.type_id()
     virtual auto nested(attribute_interface& attr, span_size_t index)
-      -> attribute_interface* = 0;
+      -> optional_reference<attribute_interface> = 0;
 
     /// @brief Returns the nested attribute of an attribute with specified @p name.
     /// @pre this->type_id() == attr.type_id()
     virtual auto nested(attribute_interface&, string_view name)
-      -> attribute_interface* = 0;
+      -> optional_reference<attribute_interface> = 0;
 
     /// @brief Finds the nested attribute of an attribute at the given @p path.
     /// @pre this->type_id() == attr.type_id()
     virtual auto find(attribute_interface& attr, const basic_string_path& path)
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         return find(attr, path, {});
     }
 
@@ -135,7 +141,8 @@ export struct compound_interface : interface<compound_interface> {
     virtual auto find(
       attribute_interface& attr,
       const basic_string_path&,
-      span<const string_view> tags) -> attribute_interface* = 0;
+      span<const string_view> tags)
+      -> optional_reference<attribute_interface> = 0;
 
     /// @brief Returns the count of individual values stored in an attribute.
     /// @pre this->type_id() == attr.type_id()

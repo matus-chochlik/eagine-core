@@ -7,11 +7,11 @@
 ///
 export module eagine.core.c_api:function;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import :api_traits;
 import :result;
-import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------
@@ -258,7 +258,7 @@ struct function_traits<static_function<ApiTraits, Tag, RV(P...), f>> {
     static constexpr auto call(
       c_api::static_function<ApiTraits, Tag, RV(P...), f>& function,
       Args&&... args) noexcept -> result_type<RV> {
-        return {std::move(function(std::forward<Args>(args)...))};
+        return {function(std::forward<Args>(args)...)};
     }
 
     template <typename R = RV>
@@ -311,8 +311,7 @@ struct function_traits<dynamic_function<ApiTraits, Tag, RV(P...)>> {
     static constexpr auto call(
       c_api::dynamic_function<ApiTraits, Tag, RV(P...)>& function,
       Args&&... args) noexcept -> result_type<RV> {
-        return {
-          std::move(function(std::forward<Args>(args)...)), bool(function)};
+        return {function(std::forward<Args>(args)...), bool(function)};
     }
 
     template <typename R = RV>

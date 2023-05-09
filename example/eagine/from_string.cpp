@@ -13,29 +13,23 @@ namespace eagine {
 auto main(main_ctx& ctx) -> int {
     using duration = std::chrono::duration<float, std::milli>;
 
-    main_ctx_object out{identifier{"fromString"}, ctx};
+    main_ctx_object out{"fromString", ctx};
 
     for(auto& arg : ctx.args()) {
         if(const auto opt_int{from_string<int>(arg)}) {
-            out.cio_print("integer: ${value}")
-              .arg(identifier{"value"}, extract(opt_int));
+            out.cio_print("integer: ${value}").arg("value", *opt_int);
         } else if(const auto opt_float{from_string<float>(arg)}) {
-            out.cio_print("float: ${value}")
-              .arg(identifier{"value"}, extract(opt_float));
+            out.cio_print("float: ${value}").arg("value", *opt_float);
         } else if(const auto opt_double{from_string<double>(arg)}) {
-            out.cio_print("double: ${value}")
-              .arg(identifier{"value"}, extract(opt_double));
+            out.cio_print("double: ${value}").arg("value", *opt_double);
         } else if(const auto opt_char{from_string<char>(arg)}) {
-            out.cio_print("character: ${value}")
-              .arg(identifier{"value"}, extract(opt_char));
+            out.cio_print("character: ${value}").arg("value", *opt_char);
         } else if(const auto opt_bool{from_string<bool>(arg)}) {
-            out.cio_print("boolean: ${value}")
-              .arg(identifier{"value"}, extract(opt_bool));
+            out.cio_print("boolean: ${value}").arg("value", *opt_bool);
         } else if(const auto opt_dur{from_string<duration>(arg)}) {
-            out.cio_print("duration: ${value}")
-              .arg(identifier{"value"}, extract(opt_dur));
+            out.cio_print("duration: ${value}").arg("value", *opt_dur);
         } else {
-            out.cio_print("other: ${value}").arg(identifier{"value"}, arg.get());
+            out.cio_print("other: ${value}").arg("value", arg.get());
         }
     }
 

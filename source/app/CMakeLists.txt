@@ -13,6 +13,11 @@ install(
 	RENAME eagine-xml_logs-psql
 	DESTINATION bin
 )
+install(
+	PROGRAMS log-schema-stats.sh
+	RENAME eagine-log-schema-stats
+	DESTINATION bin
+)
 
 install(
 	PROGRAMS servicectl.py
@@ -24,5 +29,5 @@ find_package(Qt5 COMPONENTS Core Widgets Xml Qml Quick)
 if(Qt5_FOUND)
 	set(CMAKE_AUTOMOC ON)
 	set(CMAKE_AUTORCC ON)
- 	add_subdirectory(xml_logs)
+	add_subdirectory(xml_logs)
 endif()

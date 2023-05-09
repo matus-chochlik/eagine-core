@@ -11,14 +11,15 @@ module;
 
 export module eagine.core.value_tree:wrappers;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.utility;
 import eagine.core.identifier;
 import eagine.core.reflection;
+import eagine.core.valid_if;
 import :interface;
-import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -92,13 +93,11 @@ public:
 
     /// @brief Returns the implementation type id of this attribute.
     [[nodiscard]] auto type_id() const noexcept -> identifier {
-        if(_pimpl) {
-            return _pimpl->type_id();
-        }
-        return {};
+        return _pimpl.member(&attribute_interface::type_id)
+          .value_or(identifier{});
     }
 
-    /// @brief Returns the implementation type id of this attribute.
+    /// @brief Returns the name of this attribute.
     [[nodiscard]] auto name() const -> string_view {
         if(_owner and _pimpl) {
             return _owner->attribute_name(*_pimpl);
@@ -106,10 +105,18 @@ public:
         return {};
     }
 
+    /// @brief Returns the value of this attribute if it is available.
+    [[nodiscard]] auto preview() const -> optionally_valid<string_view> {
+        if(_owner and _pimpl) {
+            return _owner->attribute_preview(*_pimpl);
+        }
+        return {};
+    }
+
     template <typename Implementation>
         requires(std::is_base_of_v<attribute_interface, Implementation>)
-    [[nodiscard]] auto as() noexcept -> Implementation* {
-        return dynamic_cast<Implementation*>(_pimpl);
+    [[nodiscard]] auto as() noexcept -> optional_reference<Implementation> {
+        return _pimpl.as<Implementation>();
     }
 
 private:
@@ -117,12 +124,12 @@ private:
 
     attribute(
       std::shared_ptr<compound_interface> owner,
-      attribute_interface* pimpl) noexcept
+      optional_reference<attribute_interface> impl) noexcept
       : _owner{std::move(owner)}
-      , _pimpl{pimpl} {}
+      , _pimpl{impl} {}
 
     std::shared_ptr<compound_interface> _owner;
-    attribute_interface* _pimpl{nullptr};
+    optional_reference<attribute_interface> _pimpl{};
 };
 //------------------------------------------------------------------------------
 export class compound_attribute;
@@ -158,13 +165,8 @@ public:
     }
 
     template <identifier_t V>
-    auto apply(const selector<V> sel) const {
-        if(const auto converted{
-             from_string(_temp, std::type_identity<T>(), sel)}) {
-            _dest = extract(converted);
-            return true;
-        }
-        return false;
+    auto apply(const selector<V> sel) const noexcept -> bool {
+        return assign_if_fits(_temp, _dest, sel);
     }
 
 private:
@@ -277,6 +279,16 @@ public:
       -> string_view {
         if(_pimpl and attrib._pimpl) {
             return _pimpl->attribute_name(*attrib._pimpl);
+        }
+        return {};
+    }
+
+    /// @brief Returns the value of an attribute if it is available as string.
+    /// @pre this->type_id() == attrib.type_id().
+    [[nodiscard]] auto attribute_preview(const attribute& attrib) const
+      -> optionally_valid<string_view> {
+        if(_pimpl and attrib._pimpl) {
+            return _pimpl->attribute_preview(*attrib._pimpl);
         }
         return {};
     }
@@ -783,9 +795,8 @@ public:
     /// @brief Traverses the tree, calls the @p visitor function on each node.
     void traverse(const stack_visit_handler visitor) const;
 
-    template <typename Implementation>
-        requires(std::is_base_of_v<compound_interface, Implementation>)
-    [[nodiscard]] auto as() noexcept -> Implementation* {
+    template <std::derived_from<compound_interface> Implementation>
+    [[nodiscard]] auto as() noexcept -> optional_reference<Implementation> {
         return dynamic_cast<Implementation*>(_pimpl.get());
     }
 
@@ -827,6 +838,12 @@ public:
     /// @brief Returns the name of this attribute.
     [[nodiscard]] auto name() const noexcept -> string_view {
         return _c.attribute_name(_a);
+    }
+
+    /// @brief Returns the value of this attribute if it's available as string.
+    [[nodiscard]] auto preview() const noexcept
+      -> optionally_valid<string_view> {
+        return _c.attribute_preview(_a);
     }
 
     /// @brief Indicates if the specified attribute is immutable.

@@ -7,14 +7,12 @@
 ///
 export module eagine.core.string;
 
-export import :string_set;
 export import :multi_byte;
 export import :list;
 export import :path;
 export import :c_str;
 export import :algorithm;
 export import :environment;
-export import :substitution;
 export import :format;
 export import :base64;
 export import :base64dump;

@@ -7,9 +7,9 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
+import std;
 import eagine.core.utility;
 import eagine.core.memory;
-import std;
 //------------------------------------------------------------------------------
 template <typename T, std::size_t N, typename Cmp, typename Case>
 void network_sorter_1_TNC(Case& test, int n) {

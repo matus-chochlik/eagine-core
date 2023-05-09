@@ -15,6 +15,5 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(EAGINE_GXX_COMPILER TRUE)
 endif()
 
-add_definitions(-D_USE_MATH_DEFINES)
 # TODO: remove this when valgrind catches up
 add_compile_options(-gdwarf-4)

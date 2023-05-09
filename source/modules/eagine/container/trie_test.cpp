@@ -7,9 +7,9 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
+import std;
 import eagine.core.types;
 import eagine.core.container;
-import std;
 //------------------------------------------------------------------------------
 void trie_empty(auto& s) {
     eagitest::case_ test{s, 1, "empty"};
@@ -61,7 +61,7 @@ void trie_insert_2(auto& s) {
     for(const auto& key : b) {
         test.check(t.contains(key), key);
         if(const auto found{t.find(key)}) {
-            test.check_equal(extract(found), key, "key == value");
+            test.check_equal(*found, key, "key == value");
             trck.checkpoint(1);
         }
     }
@@ -110,7 +110,7 @@ void trie_add_2(auto& s) {
     for(const auto& key : b) {
         test.check(t.contains(key), key);
         if(const auto found{t.find(key)}) {
-            test.check_equal(extract(found), key, "key == value");
+            test.check_equal(*found, key, "key == value");
             trck.checkpoint(1);
         }
     }

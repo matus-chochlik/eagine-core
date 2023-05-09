@@ -21,9 +21,9 @@ auto main(main_ctx& ctx) -> int {
 
     for(N n = 1; n <= 91; ++n) {
         ctx.cio()
-          .print(identifier{"memo"}, "fib(${n}) = ${f}")
-          .arg(identifier{"n"}, n)
-          .arg(identifier{"f"}, fib_memo(n));
+          .print("memo", "fib(${n}) = ${f}")
+          .arg("n", n)
+          .arg("f", fib_memo(n));
     }
 
     memoized<N(N)> fact_memo([](N i, auto& memo) -> N {
@@ -35,9 +35,9 @@ auto main(main_ctx& ctx) -> int {
 
     for(N n = 1; n <= 20; ++n) {
         ctx.cio()
-          .print(identifier{"memo"}, "${n} != ${f}")
-          .arg(identifier{"n"}, n)
-          .arg(identifier{"f"}, fact_memo(n));
+          .print("memo", "${n} != ${f}")
+          .arg("n", n)
+          .arg("f", fact_memo(n));
     }
 
     return 0;

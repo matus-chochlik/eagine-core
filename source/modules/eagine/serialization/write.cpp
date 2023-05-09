@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.serialization:write;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
@@ -20,7 +21,6 @@ import eagine.core.valid_if;
 import eagine.core.units;
 import :result;
 import :interface;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -409,10 +409,10 @@ export template <typename T, typename P>
 struct serializer<valid_if<T, P>> : common_serializer<valid_if<T, P>> {
 
     auto write(const valid_if<T, P>& value, auto& backend) const noexcept {
-        const bool is_valid{value.is_valid()};
-        auto errors{backend.begin_list(span_size(is_valid))};
+        const bool has_value{value.has_value()};
+        auto errors{backend.begin_list(span_size(has_value))};
         if(not errors) [[likely]] {
-            if(is_valid) {
+            if(has_value) {
                 errors |= _serializer.write(value.value_anyway(), backend);
             }
             errors |= backend.finish_list();

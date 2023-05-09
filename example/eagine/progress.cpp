@@ -15,7 +15,7 @@ class example_observer final
   , public progress_observer {
 public:
     example_observer(main_ctx_parent parent) noexcept
-      : main_ctx_object{identifier{"Observer"}, parent} {}
+      : main_ctx_object{"Observer", parent} {}
 
     void activity_begun(
       const activity_progress_id_t parent_id,
@@ -25,10 +25,10 @@ public:
         cio_print(
           "activity ${parent}/${activity} has begun: '${title}' "
           "(total=${total})")
-          .arg(identifier{"parent"}, parent_id)
-          .arg(identifier{"activity"}, activity_id)
-          .arg(identifier{"total"}, total_steps)
-          .arg(identifier{"title"}, title);
+          .arg("parent", parent_id)
+          .arg("activity", activity_id)
+          .arg("total", total_steps)
+          .arg("title", title);
     }
 
     void activity_finished(
@@ -39,10 +39,10 @@ public:
         cio_print(
           "activity ${parent}/${activity} has ended: '${title}' "
           "(total=${total})")
-          .arg(identifier{"parent"}, parent_id)
-          .arg(identifier{"activity"}, activity_id)
-          .arg(identifier{"total"}, total_steps)
-          .arg(identifier{"title"}, title);
+          .arg("parent", parent_id)
+          .arg("activity", activity_id)
+          .arg("total", total_steps)
+          .arg("title", title);
     }
 
     void activity_updated(
@@ -53,9 +53,9 @@ public:
         cio_print(
           "activity ${parent}/${activity} was updated: "
           "${current}")
-          .arg(identifier{"parent"}, parent_id)
-          .arg(identifier{"activity"}, activity_id)
-          .arg(identifier{"current"}, current, total);
+          .arg("parent", parent_id)
+          .arg("activity", activity_id)
+          .arg("current", current, total);
     }
 };
 //------------------------------------------------------------------------------

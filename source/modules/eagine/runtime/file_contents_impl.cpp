@@ -7,9 +7,8 @@
 ///
 module eagine.core.runtime;
 
-import eagine.core.memory;
-import :input_data;
 import std;
+import eagine.core.memory;
 
 namespace eagine {
 //------------------------------------------------------------------------------

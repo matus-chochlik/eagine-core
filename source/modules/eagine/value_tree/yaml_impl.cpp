@@ -11,13 +11,13 @@ module;
 
 module eagine.core.value_tree;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.logging;
-import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -80,17 +80,17 @@ class rapidyaml_tree_compound;
 class rapidyaml_attribute;
 static auto rapidyaml_make_new_node(
   rapidyaml_tree_compound&,
-  ryml::NodeRef) noexcept -> rapidyaml_attribute*;
+  ryml::ConstNodeRef) noexcept -> optional_reference<rapidyaml_attribute>;
 //------------------------------------------------------------------------------
 class rapidyaml_attribute : public attribute_interface {
-    ryml::NodeRef _node{};
+    ryml::ConstNodeRef _node{};
 
-    static inline auto _usable(const ryml::NodeRef& n) noexcept {
-        return n.valid() and not n.is_seed();
+    static inline auto _usable(const ryml::ConstNodeRef& n) noexcept {
+        return n.valid();
     }
 
 public:
-    [[nodiscard]] rapidyaml_attribute(ryml::NodeRef node)
+    [[nodiscard]] rapidyaml_attribute(ryml::ConstNodeRef node)
       : _node{node} {}
 
     auto type_id() const noexcept -> identifier final {
@@ -100,6 +100,13 @@ public:
     auto name() const noexcept -> string_view {
         if(_usable(_node) and _node.has_key()) {
             return view(_node.key());
+        }
+        return {};
+    }
+
+    auto preview() const noexcept -> optionally_valid<string_view> {
+        if(_usable(_node) and _node.has_val()) {
+            return view(_node.val());
         }
         return {};
     }
@@ -136,18 +143,18 @@ public:
     }
 
     auto nested(rapidyaml_tree_compound& owner, span_size_t index) const noexcept
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         if(_usable(_node)) {
             auto child{_node[integer(index)]};
             if(_usable(child)) {
                 return rapidyaml_make_new_node(owner, child);
             }
         }
-        return nullptr;
+        return {};
     }
 
     auto nested(rapidyaml_tree_compound& owner, string_view name) const noexcept
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         if(_usable(_node)) {
             if(_node.is_map()) {
                 auto child{_node.find_child(rapidyaml_cstrref(name))};
@@ -156,13 +163,14 @@ public:
                 }
             }
         }
-        return nullptr;
+        return {};
     }
 
     auto find(
       rapidyaml_tree_compound& owner,
       const basic_string_path& path,
-      span<const string_view> tags) const noexcept -> attribute_interface* {
+      span<const string_view> tags) const noexcept
+      -> optional_reference<attribute_interface> {
         std::string temp_str;
         auto _cat =
           [&](string_view a, string_view b, string_view c) mutable -> auto& {
@@ -190,10 +198,10 @@ public:
                     if(const auto opt_idx{from_string<span_size_t>(entry)}) {
                         result = result[extract(opt_idx)];
                     } else {
-                        result = {};
+                        result = ryml::ConstNodeRef{};
                     }
                 } else {
-                    result = {};
+                    result = ryml::ConstNodeRef{};
                 }
             } else {
                 break;
@@ -203,7 +211,7 @@ public:
         if(_usable(result)) {
             return rapidyaml_make_new_node(owner, result);
         }
-        return nullptr;
+        return {};
     }
 
     auto fetch_values(span_size_t offset, span<char> dest) -> span_size_t {
@@ -305,12 +313,17 @@ public:
         return "rapidyaml";
     }
 
-    auto structure() -> attribute_interface* final {
-        return &_root;
+    auto structure() -> optional_reference<attribute_interface> final {
+        return _root;
     }
 
     auto attribute_name(attribute_interface& attrib) -> string_view final {
         return _unwrap(attrib).name();
+    }
+
+    auto attribute_preview(attribute_interface& attrib)
+      -> optionally_valid<string_view> final {
+        return _unwrap(attrib).preview();
     }
 
     auto canonical_type(attribute_interface& attrib) -> value_type final {
@@ -330,19 +343,20 @@ public:
     }
 
     auto nested(attribute_interface& attrib, span_size_t index)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).nested(*this, index);
     }
 
     auto nested(attribute_interface& attrib, string_view name)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).nested(*this, name);
     }
 
     auto find(
       attribute_interface& attrib,
       const basic_string_path& path,
-      span<const string_view> tags) -> attribute_interface* final {
+      span<const string_view> tags)
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).find(*this, path, tags);
     }
 
@@ -361,7 +375,7 @@ public:
 //------------------------------------------------------------------------------
 [[nodiscard]] static auto rapidyaml_make_new_node(
   rapidyaml_tree_compound& owner,
-  ryml::NodeRef node) noexcept -> rapidyaml_attribute* {
+  ryml::ConstNodeRef node) noexcept -> optional_reference<rapidyaml_attribute> {
     return owner.make_node(node);
 }
 //------------------------------------------------------------------------------

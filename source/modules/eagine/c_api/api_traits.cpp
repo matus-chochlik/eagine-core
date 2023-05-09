@@ -7,9 +7,9 @@
 ///
 export module eagine.core.c_api:api_traits;
 
+import std;
 import eagine.core.memory;
 import eagine.core.valid_if;
-import std;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------

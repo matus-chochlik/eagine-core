@@ -11,13 +11,13 @@ module;
 
 export module eagine.core.runtime:program_args;
 
+import std;
 import eagine.core.debug;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.valid_if;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -53,6 +53,16 @@ public:
         return has_value();
     }
 
+    /// @brief Indicates if this argument's value is equal to the specified string.
+    auto operator==(const value_type& v) const noexcept {
+        return are_equal(get(), v);
+    }
+
+    /// @brief Indicates if this argument's value is different than the specified string.
+    auto operator!=(const value_type& v) const noexcept {
+        return not are_equal(get(), v);
+    }
+
     /// @brief Returns the index of this argument.
     auto position() const noexcept {
         return _argi;
@@ -68,6 +78,45 @@ public:
         return _argi == _argc - 1;
     }
 
+    /// @brief Returns the stored value if has value or returns fallback.
+    template <std::convertible_to<value_type> U>
+    auto value_or(U&& fallback) noexcept -> value_type {
+        if(has_value()) {
+            return value_type(_argv[_argi]);
+        }
+        return value_type(std::forward<U>(fallback));
+    }
+
+    /// @brief Invoke function on the stored value or return empty optional-like.
+    /// @see transform
+    /// @see or_else
+    template <
+      typename F,
+      optional_like R =
+        std::remove_cvref_t<std::invoke_result_t<F, const value_type&>>>
+    auto and_then(F&& function) const -> R {
+        if(has_value()) {
+            return std::invoke(
+              std::forward<F>(function), value_type(_argv[_argi]));
+        } else {
+            return R{};
+        }
+    }
+
+    /// @brief Returns the result of function if empty or argument value otherwise.
+    /// @transform
+    /// @and_then
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
+    auto or_else(F&& function) const -> R {
+        if(has_value()) {
+            return R{value_type(_argv[_argi])};
+        } else {
+            return std::invoke(std::forward<F>(function));
+        }
+    }
+
     /// @brief Returns the value of this argument if valid, an empty string view otherwise.
     auto get() const noexcept -> value_type {
         if(has_value()) {
@@ -76,19 +125,15 @@ public:
         return {};
     }
 
-    /// @brief Indicates if this argument's value is equal to the specified string.
-    auto operator==(const value_type& v) const noexcept {
-        return are_equal(get(), v);
+    /// @brief Returns the value of this argument if valid, an empty string view otherwise.
+    auto or_default() noexcept -> value_type {
+        return get();
     }
 
-    /// @brief Indicates if this argument's value is different than the specified string.
-    auto operator!=(const value_type& v) const noexcept {
-        return not are_equal(get(), v);
-    }
-
-    /// @brief Returns the value of this argument as a const memory block.
-    auto block() const noexcept -> memory::const_block {
-        return memory::as_bytes(get());
+    /// @brief Implicit cast to value_type.
+    /// @see get
+    operator value_type() const noexcept {
+        return get();
     }
 
     /// @brief Returns the value of this argument as a standard string.
@@ -96,10 +141,9 @@ public:
         return get().to_string();
     }
 
-    /// @brief Implicit cast to value_type.
-    /// @see get
-    operator value_type() const noexcept {
-        return get();
+    /// @brief Returns the value of this argument as a const memory block.
+    auto block() const noexcept -> memory::const_block {
+        return memory::as_bytes(get());
     }
 
     /// @brief Indicates if this argument value starts with the specified string.
@@ -178,43 +222,6 @@ public:
         return {_argi - 1, _argc, _argv};
     }
 
-    /// @brief Tries to parse this argument's value into @p dest.
-    /// @returns True if the parse is successful, false otherwise.
-    template <typename T, identifier_t V>
-    auto parse(T& dest, const selector<V> sel, std::ostream& parse_log) const
-      -> bool {
-        if(has_value()) {
-            T temp = dest;
-            if(_do_parse(temp, sel, parse_log)) {
-                dest = std::move(temp);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /// @brief Tries to parse this argument's value into @p dest.
-    /// @returns True if the parse is successful, false otherwise.
-    template <typename T>
-    auto parse(T& dest, std::ostream& parse_log) const {
-        return parse(dest, default_selector, parse_log);
-    }
-
-    /// @brief Tries to parse the following argument's value into @p dest.
-    /// @returns True if the parse is successful, false otherwise.
-    template <typename T, identifier_t V>
-    auto parse_next(T& dest, const selector<V> sel, std::ostream& parse_log)
-      const {
-        return next().parse(dest, sel, parse_log);
-    }
-
-    /// @brief Tries to parse the following argument's value into @p dest.
-    /// @returns True if the parse is successful, false otherwise.
-    template <typename T>
-    auto parse_next(T& dest, std::ostream& parse_log) const {
-        return parse_next(dest, default_selector, parse_log);
-    }
-
 private:
     int _argi{0};
     int _argc{0};
@@ -222,75 +229,32 @@ private:
 
     friend class program_arg_iterator;
     friend class program_args;
-
-    template <typename T, identifier_t V>
-    auto _do_parse(T& dest, const selector<V> sel, std::ostream& parse_log)
-      const noexcept -> bool {
-        if(auto opt_val{from_string<T>(get(), sel)}) {
-            dest = std::move(extract(opt_val));
-            return true;
-        } else {
-            parse_log << "'" << get() << "' "
-                      << "is not a valid `" << type_name<T>() << "` value";
-        }
-        return false;
-    }
-
-    template <identifier_t V>
-    auto _do_parse(string_view& dest, const selector<V>, std::ostream&)
-      const noexcept -> bool {
-        dest = get();
-        return true;
-    }
-
-    template <identifier_t V>
-    auto _do_parse(std::string& dest, const selector<V>, std::ostream&) const
-      -> bool {
-        dest = get_string();
-        return true;
-    }
-
-    template <typename T, typename P, typename L, identifier_t V>
-    auto _do_parse(
-      basic_valid_if<T, P, L>& dest,
-      const selector<V> sel,
-      std::ostream& parse_log) const -> bool {
-        typename basic_valid_if<T, P, L>::value_type value{};
-        if(parse(value, sel, parse_log)) {
-            if(dest.is_valid(value)) {
-                dest = std::move(value);
-                return true;
-            } else {
-                dest.log_invalid(parse_log, value);
-            }
-        } else {
-            parse_log << "'" << get() << "' "
-                      << "is not a valid `" << type_name<T>() << "` value";
-        }
-        return false;
-    }
-
-    template <typename T, typename A, identifier_t V>
-    auto _do_parse(
-      std::vector<T, A>& dest,
-      const selector<V> sel,
-      std::ostream& parse_log) const -> bool {
-        T value{};
-        if(parse(value, sel, parse_log)) {
-            dest.push_back(std::move(value));
-            return true;
-        }
-        return false;
-    }
 };
 //------------------------------------------------------------------------------
-export template <>
-struct extract_traits<program_arg> {
-    using value_type = typename program_arg::value_type;
-    using result_type = value_type;
-    using const_result_type = value_type;
-};
+export template <typename T, identifier_t V>
+auto from_string(
+  const program_arg& arg,
+  const std::type_identity<T> tid,
+  const selector<V> self) noexcept -> optionally_valid<T> {
+    if(arg.has_value()) {
+        return from_string(arg.get(), tid, self);
+    }
+    return {};
+}
 
+export template <typename T, identifier_t V>
+auto assign_if_fits(
+  const program_arg& src,
+  T& dst,
+  const selector<V> sel = default_selector) noexcept -> bool {
+    return assign_if_fits(src.get(), dst, sel);
+}
+
+export template <typename T>
+auto assign_if_fits(const program_arg& src, T& dst) noexcept -> bool {
+    return assign_if_fits(src, dst, default_selector);
+}
+//------------------------------------------------------------------------------
 export auto extract(const program_arg& arg) noexcept {
     return arg.get();
 }
@@ -561,18 +525,6 @@ public:
             ++i;
         }
         return get(i);
-    }
-
-    /// @brief Finds the specified argument and tries to parse value in the next one.
-    template <typename T>
-    auto find_value_or(
-      const value_type what,
-      T fallback,
-      std::ostream& parse_log) const noexcept -> T {
-        if(const auto arg{find(what)}) {
-            arg.parse_next(fallback, parse_log);
-        }
-        return fallback;
     }
 
 private:

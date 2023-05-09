@@ -11,12 +11,12 @@ module;
 
 export module eagine.core.string:path;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
 import :multi_byte;
 import :list;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

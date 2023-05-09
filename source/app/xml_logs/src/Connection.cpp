@@ -32,19 +32,17 @@ auto Connection::_toIdentifier(const QStringRef& s) noexcept
 }
 //------------------------------------------------------------------------------
 auto Connection::_toFloat(const QStringRef& s, float f) noexcept -> float {
-    return eagine::extract_or(
-      eagine::from_string<float>(eagine::view(s.toUtf8())), f);
+    return eagine::from_string<float>(eagine::view(s.toUtf8())).value_or(f);
 }
 //------------------------------------------------------------------------------
 auto Connection::_toInt(const QStringRef& s, int i) noexcept -> int {
-    return eagine::extract_or(
-      eagine::from_string<int>(eagine::view(s.toUtf8())), i);
+    return eagine::from_string<int>(eagine::view(s.toUtf8())).value_or(i);
 }
 //------------------------------------------------------------------------------
 auto Connection::_toUnsigned64(const QStringRef& s, std::uint64_t f) noexcept
   -> std::uint64_t {
-    return eagine::extract_or(
-      eagine::from_string<std::uint64_t>(eagine::view(s.toUtf8())), f);
+    return eagine::from_string<std::uint64_t>(eagine::view(s.toUtf8()))
+      .value_or(f);
 }
 //------------------------------------------------------------------------------
 auto Connection::_toSeverity(const QStringRef& s) noexcept

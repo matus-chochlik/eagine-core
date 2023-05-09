@@ -5,14 +5,13 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#include <iterator>
-#include <system_error>
 module;
 
 #include <cassert>
 
 export module eagine.core.logging:fast_xml_backend;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -20,7 +19,6 @@ import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.utility;
 import :backend;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -106,7 +104,8 @@ class fast_xml_log_backend : public logger_backend {
 
 public:
     fast_xml_log_backend(const log_stream_info& info) noexcept
-      : _log_identity{info.log_identity}
+      : _session_identity{info.session_identity}
+      , _log_identity{info.log_identity}
       , _min_severity{info.min_severity}
       , _start{std::chrono::steady_clock::now()} {
         _buffer.reserve(1024);
@@ -143,17 +142,17 @@ public:
                 _start.time_since_epoch())
                 .count()};
 
-            if(_log_identity.empty()) {
-                _add("<log start_tse_us='");
-                _add(start_tse);
-                _add("'>\n");
-            } else {
-                _add("<log start_tse_us='");
-                _add(start_tse);
+            _add("<log start_tse_us='");
+            _add(start_tse);
+            if(not _session_identity.empty()) {
+                _add("' session='");
+                _add(_session_identity);
+            }
+            if(not _log_identity.empty()) {
                 _add("' identity='");
                 _add(_log_identity);
-                _add("'>\n");
             }
+            _add("'>\n");
             _flush();
         } catch(...) {
         }
@@ -403,6 +402,7 @@ public:
 
 private:
     Lockable _lockable{};
+    const std::string _session_identity;
     const std::string _log_identity;
     const log_event_severity _min_severity;
     const std::chrono::steady_clock::time_point _start;

@@ -7,8 +7,8 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.memory;
 import std;
+import eagine.core.memory;
 //------------------------------------------------------------------------------
 constexpr const unsigned char bmin = 0x02;
 constexpr const unsigned char bmax = 0x0F;

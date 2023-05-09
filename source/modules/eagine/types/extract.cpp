@@ -11,32 +11,15 @@ module;
 
 export module eagine.core.types:extract;
 
-import eagine.core.concepts;
 import std;
+import eagine.core.concepts;
 
 namespace eagine {
-//------------------------------------------------------------------------------
-export template <extractable T>
-[[nodiscard]] constexpr auto extract_or(
-  T& opt_val,
-  extract_result_type_t<T> fallback = {}) noexcept -> extract_result_type_t<T> {
-    return has_value(opt_val) ? extract(opt_val) : fallback;
-}
-
-export template <extractable T>
-[[nodiscard]] constexpr auto extract_or(
-  const T& opt_val,
-  const_extract_result_type_t<T> fallback = {}) noexcept
-  -> const_extract_result_type_t<T> {
-    return has_value(opt_val) ? extract(opt_val) : fallback;
-}
 //------------------------------------------------------------------------------
 // pointers
 export template <typename T>
 struct extract_traits<T*> {
     using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
 };
 
 /// @brief Checks @p ptr and dereferences it.
@@ -47,13 +30,6 @@ export template <typename T>
     return *ptr;
 }
 //------------------------------------------------------------------------------
-export template <typename T>
-struct extract_traits<std::shared_ptr<T>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(ptr)
 export template <typename T>
@@ -72,13 +48,6 @@ export template <typename T>
     return *ptr;
 }
 //------------------------------------------------------------------------------
-export template <typename T, typename D>
-struct extract_traits<std::unique_ptr<T, D>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
 /// @brief Checks @p ptr and dereferences it.
 /// @pre has_value(ptr)
 export template <typename T, typename D>
@@ -96,14 +65,6 @@ export template <typename T, typename D>
     assert(ptr);
     return *ptr;
 }
-
-export template <typename T>
-struct extract_traits<std::optional<T>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
 } // namespace eagine
 //------------------------------------------------------------------------------
 namespace std {

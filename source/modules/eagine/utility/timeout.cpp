@@ -7,9 +7,9 @@
 ///
 export module eagine.core.utility:timeout;
 
+import std;
 import eagine.core.types;
 import eagine.core.debug;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

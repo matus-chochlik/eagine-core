@@ -5,26 +5,12 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-
-#ifndef EAGINE_MIN_LOG_SEVERITY
-#if EAGINE_LOW_PROFILE
-#define EAGINE_MIN_LOG_SEVERITY warning
-#else
-#if EAGINE_DEBUG
-#define EAGINE_MIN_LOG_SEVERITY trace
-#else
-#define EAGINE_MIN_LOG_SEVERITY stat
-#endif
-#endif
-#endif
-
 export module eagine.core.logging:config;
 
+import std;
 import eagine.core.build_config;
 import eagine.core.types;
 import :backend;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

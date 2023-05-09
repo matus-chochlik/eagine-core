@@ -11,8 +11,8 @@ module;
 
 export module eagine.core.container:small_vector;
 
-import :static_vector;
 import std;
+import :static_vector;
 
 namespace eagine {
 //------------------------------------------------------------------------------

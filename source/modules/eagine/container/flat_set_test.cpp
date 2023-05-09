@@ -7,8 +7,8 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.container;
 import std;
+import eagine.core.container;
 //------------------------------------------------------------------------------
 void flat_set_default_construct(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};

@@ -7,13 +7,14 @@
 ///
 export module eagine.core.console:entry;
 
+import std;
+import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.runtime;
 import eagine.core.logging;
 import :backend;
-import std;
 
 namespace eagine {
 export class console_entry;
@@ -38,13 +39,14 @@ public:
 
 private:
     auto _entry_backend(const identifier source, const console_entry_kind kind)
-      const noexcept -> std::tuple<console_backend*, console_entry_id_t>;
+      const noexcept
+      -> std::tuple<optional_reference<console_backend>, console_entry_id_t>;
 
     auto _make_log_entry(
       const console_entry_kind kind,
       const string_view format) const noexcept -> console_entry;
 
-    console_backend* const _backend{};
+    const optional_reference<console_backend> _backend{};
     const console_entry_id_t _parent_id{};
     const console_entry_id_t _entry_id{};
     const identifier _source_id{};
@@ -63,7 +65,7 @@ public:
       const console_entry_id_t entry_id,
       const console_entry_kind kind,
       const string_view format,
-      console_backend* backend) noexcept
+      const optional_reference<console_backend> backend) noexcept
       : _backend{backend}
       , _parent_id{parent_id}
       , _entry_id{entry_id}
@@ -112,6 +114,21 @@ public:
     auto separate() noexcept -> auto& {
         if(_backend) {
             _backend->add_separator();
+        }
+        return *this;
+    }
+
+    /// @brief Adds a new message argument with no value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      const nothing_t) noexcept -> auto& {
+        if(_backend) {
+            _args.add([=](console_backend& backend) {
+                backend.add_nothing(name, tag);
+            });
         }
         return *this;
     }
@@ -330,6 +347,21 @@ public:
         return *this;
     }
 
+    /// @brief Adds a new message argument with ok value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    /// @param opt the value of the argument.
+    template <argument_of_log<console_entry> E>
+    auto arg(
+      const identifier name,
+      const identifier tag,
+      const ok<E>& opt) noexcept -> console_entry& {
+        if(opt) [[likely]] {
+            return arg(name, tag, opt.get());
+        }
+        return arg(name, tag, nothing);
+    }
+
     /// @brief Adds a new message argument with valid_if_or_fallback value.
     /// @param name the argument name identifier. Used in message substitution.
     /// @param tag the argument type identifier. Used in value formatting.
@@ -344,7 +376,7 @@ public:
       const identifier name,
       const identifier tag,
       valid_if_or_fallback<F, T, P, L>&& opt) noexcept -> console_entry& {
-        if(opt.is_valid()) {
+        if(opt.has_value()) {
             return arg(name, tag, std::move(opt.value()));
         }
         return arg(name, std::move(opt.fallback()));
@@ -358,7 +390,7 @@ public:
     auto arg(
       const identifier name,
       valid_if_or_fallback<F, T, P, L>&& opt) noexcept -> console_entry& {
-        if(opt.is_valid()) {
+        if(opt.has_value()) {
             return arg(name, std::move(opt.value()));
         }
         return arg(name, std::move(opt.fallback()));
@@ -371,7 +403,7 @@ public:
 private:
     friend class console_entry_continuation;
 
-    console_backend* const _backend{nullptr};
+    const optional_reference<console_backend> _backend{nullptr};
     const console_entry_id_t _parent_id{};
     const console_entry_id_t _entry_id{};
     const identifier _source_id{};
@@ -379,7 +411,8 @@ private:
     memory::callable_storage<void(console_backend&)> _args;
     const console_entry_kind _kind{console_entry_kind::info};
 
-    static auto _be_alloc(console_backend* backend) noexcept
+    static auto _be_alloc(
+      const optional_reference<console_backend> backend) noexcept
       -> memory::shared_byte_allocator {
         if(backend) {
             return backend->allocator();
@@ -409,11 +442,11 @@ console_entry_continuation::~console_entry_continuation() noexcept {
 auto console_entry_continuation::_entry_backend(
   const identifier source,
   const console_entry_kind kind) const noexcept
-  -> std::tuple<console_backend*, console_entry_id_t> {
+  -> std::tuple<optional_reference<console_backend>, console_entry_id_t> {
     if(_backend) [[likely]] {
         return _backend->entry_backend(source, kind);
     }
-    return {nullptr, 0};
+    return {{}, 0};
 }
 
 auto console_entry_continuation::_make_log_entry(

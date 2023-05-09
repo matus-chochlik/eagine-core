@@ -11,8 +11,9 @@ module;
 
 export module eagine.core.container:flat_map;
 
-import eagine.core.types;
 import std;
+import eagine.core.types;
+import eagine.core.memory;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -456,6 +457,14 @@ public:
         return std::erase_if(_vec, predicate);
     }
 
+    auto _vec_ref() const noexcept -> const auto& {
+        return _vec;
+    }
+
+    auto _vec_ref() noexcept -> auto& {
+        return _vec;
+    }
+
 private:
     template <typename K>
     auto _find_insert_pos(const K& k) noexcept {
@@ -506,5 +515,17 @@ private:
         return ip;
     }
 };
+//------------------------------------------------------------------------------
+export template <typename Key, typename Val, typename Cmp, typename Container>
+auto view(const flat_map<Key, Val, Cmp, Container>& c) noexcept {
+    using memory::view;
+    return view(c._vec_ref());
+}
+
+export template <typename Key, typename Val, typename Cmp, typename Container>
+auto cover(flat_map<Key, Val, Cmp, Container>& c) noexcept {
+    using memory::cover;
+    return cover(c._vec_ref());
+}
 //------------------------------------------------------------------------------
 } // namespace eagine

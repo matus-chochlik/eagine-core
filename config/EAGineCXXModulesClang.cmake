@@ -24,17 +24,19 @@ function(eagine_append_single_module_pcms)
 		TARGET ${EAGINE_MODULE_SOURCE}
 		PROPERTY EAGINE_MODULE_ID
 	)
-	if("${PCM_PATH}" MATCHES "${MODULE_ID}.pcm$")
+
+	unset(COMPILE_OPTS)
+	get_property(
+		COMPILE_OPTS
+		TARGET ${EAGINE_MODULE_TARGET}
+		PROPERTY COMPILE_OPTIONS
+	)
+	set(OPTION "-fmodule-file=${MODULE_ID}=${PCM_PATH}")
+	if(NOT "${OPTION}" IN_LIST COMPILE_OPTS)
 		set_property(
 			TARGET ${EAGINE_MODULE_TARGET}
 			APPEND PROPERTY COMPILE_OPTIONS
-			"-fmodule-file=${PCM_PATH}"
-		)
-	else()
-		set_property(
-			TARGET ${EAGINE_MODULE_TARGET}
-			APPEND PROPERTY COMPILE_OPTIONS
-			"-fmodule-file=${MODULE_ID}=${PCM_PATH}"
+				"${OPTION}"
 		)
 	endif()
 endfunction()
@@ -119,18 +121,11 @@ function(eagine_add_module_common_properties TARGET_NAME)
 		APPEND PROPERTY COMPILE_OPTIONS
 		"-fmodules"
 		"-fexperimental-library"
-		"-fbuiltin-module-map"
-	)
-	set_property(
-		TARGET ${TARGET_NAME}
-		APPEND PROPERTY COMPILE_DEFINITIONS
-		EAGINE_DEBUG=${EAGINE_DEBUG}
-		EAGINE_LOW_PROFILE=${LOW_PROFILE}
 	)
 	set_property(
 		TARGET ${TARGET_NAME}
 		APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
-		"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused;-Wno-c++1z-extensions;-Wno-c++2b-extensions"
+		"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused"
 	)
 	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 		set_property(
@@ -143,7 +138,7 @@ endfunction()
 # ------------------------------------------------------------------------------
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
-	set(ARG_VALUES PARTITION PP_NAME)
+	set(ARG_VALUES PARTITION)
 	set(ARG_LISTS
 		INTERFACES
 		SOURCES
@@ -231,10 +226,27 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				${EAGINE_MODULE_TARGET}
 				PUBLIC ${EAGINE_MODULE_TARGET}-implement
 			)
+		foreach(INTF ${EAGINE_MODULE_PARTITIONS})
+				set(PCM_PATH
+					"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PROPER}.${INTF}.pcm"
+				)
+				set_property(
+					TARGET ${EAGINE_MODULE_TARGET}-implement
+					APPEND PROPERTY COMPILE_OPTIONS
+					"-fmodule-file=${EAGINE_MODULE_PROPER}:${INTF}=${PCM_PATH}"
+				)
+			endforeach()
 			foreach(LIBRARY ${EAGINE_MODULE_PRIVATE_LINK_LIBRARIES})
 				target_link_libraries(
 					${EAGINE_MODULE_TARGET}-implement
 					PRIVATE ${LIBRARY}
+				)
+			endforeach()
+		else()
+			foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
+				target_include_directories(
+					${EAGINE_MODULE_TARGET}
+					PRIVATE ${DIR}
 				)
 			endforeach()
 		endif()
@@ -261,13 +273,6 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		)
 	endif()
 
-	if(NOT "${EAGINE_MODULE_PP_NAME}" STREQUAL "")
-		set_property(
-			TARGET ${EAGINE_MODULE_TARGET}
-			APPEND PROPERTY EAGINE_MODULE_PP_NAME
-			"${EAGINE_MODULE_PP_NAME}"
-		)
-	endif()
 	set_property(
 		TARGET ${EAGINE_MODULE_TARGET}
 		APPEND PROPERTY EAGINE_MODULE_PROPER
@@ -296,18 +301,6 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				APPEND PROPERTY EAGINE_MODULE_IMPORTS
 				${EAGINE_MODULE_IMPORT}
 			)
-			get_property(
-				PP_NAME	
-				TARGET ${EAGINE_MODULE_IMPORT}
-				PROPERTY EAGINE_MODULE_PP_NAME
-			)
-			if(NOT "${PP_NAME}" STREQUAL "")
-				set_property(
-					TARGET ${EAGINE_MODULE_TARGET}
-					APPEND PROPERTY COMPILE_DEFINITIONS
-					EAGINE_${PP_NAME}_MODULE=1
-				)
-			endif()
 		endif()
 	endforeach()
 
@@ -402,7 +395,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		OUTPUT ${EAGINE_MODULE_TARGET}.pcm
 		COMMAND ${CMAKE_CXX_COMPILER}
 		ARGS
-			-std=c++${CMAKE_CXX_STANDARD}
+			-std=c++${EAGINE_CXX_STANDARD}
 			${CMAKE_CXX_FLAGS}
 			${PCM_COMPILE_OPTIONS}
 			${PCM_COMPILE_DEFINITIONS}
@@ -462,18 +455,6 @@ function(eagine_target_modules TARGET_NAME)
 		endforeach()
 
 
-		get_property(
-			PP_NAME	
-			TARGET ${EAGINE_MODULE_SOURCE}
-			PROPERTY EAGINE_MODULE_PP_NAME
-		)
-		if(NOT "${PP_NAME}" STREQUAL "")
-			set_property(
-				TARGET ${TARGET_NAME}
-				APPEND PROPERTY COMPILE_DEFINITIONS
-				EAGINE_${PP_NAME}_MODULE=1
-			)
-		endif()
 		if(NOT TARGET ${TARGET_NAME}-imports)
 			add_custom_target(${TARGET_NAME}-imports)
 		endif()
@@ -487,10 +468,11 @@ endfunction()
 # ------------------------------------------------------------------------------
 function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
-	set(ARG_VALUES PARTITION PP_NAME)
+	set(ARG_VALUES PARTITION)
 	set(ARG_LISTS
 		UNITS
 		IMPORTS
+		ENVIRONMENT
 	)
 	cmake_parse_arguments(
 		EAGINE_MODULE_TEST
@@ -576,6 +558,17 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 					FIXTURES_REQUIRED
 						"${TEST_NAME}-built"
 			)
+			foreach(ENV_VAR ${EAGINE_MODULE_TEST_ENVIRONMENT})
+				if("${ENV_VAR}" MATCHES "^[A-Z_][A-Z0-9_]+=.*$")
+					set_property(
+						TEST "execute-${TEST_NAME}"
+						APPEND PROPERTY
+							ENVIRONMENT "${ENV_VAR}"
+					)
+				else()
+					message(FATAL_ERROR "Invalid environment variable specification ${ENV_VAR}")
+				endif()
+			endforeach()
 			list(APPEND
 				EAGINE_MODULE_PROFRAW_FILES
 				"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PROPER}.${UNIT}.profraw"

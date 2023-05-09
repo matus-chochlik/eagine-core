@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.main_ctx:object;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
@@ -20,7 +21,6 @@ import eagine.core.console;
 import eagine.core.progress;
 import :interface;
 import :parent;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -99,8 +99,8 @@ public:
       const string_view tag = {},
       const std::type_identity<Extractable> = {}) noexcept -> T {
         Extractable value(initial);
-        return extract_or(
-          application_config_initial(app_config(), key, value, tag), initial);
+        return application_config_initial(app_config(), key, value, tag)
+          .value_or(initial);
     }
 
     /// @brief Returns a reference to the console object.

@@ -7,6 +7,7 @@
 ///
 export module eagine.core.serialization:fast_backend;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
@@ -14,7 +15,6 @@ import eagine.core.reflection;
 import :result;
 import :interface;
 import :implementation;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

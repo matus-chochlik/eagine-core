@@ -24,13 +24,13 @@ module;
 
 module eagine.core.logging;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
 import eagine.core.identifier;
 import eagine.core.container;
 import eagine.core.string;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

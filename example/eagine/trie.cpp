@@ -13,7 +13,7 @@ auto main() -> int {
 
     auto print = [](const auto& opt) {
         if(opt) {
-            std::cout << extract(opt) << std::endl;
+            std::cout << *opt << std::endl;
         } else {
             std::cout << "<none>" << std::endl;
         }

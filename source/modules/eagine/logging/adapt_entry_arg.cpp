@@ -7,6 +7,7 @@
 ///
 export module eagine.core.logging:adapt_entry_arg;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
@@ -15,7 +16,6 @@ import eagine.core.build_info;
 import eagine.core.valid_if;
 import eagine.core.string;
 import eagine.core.c_api;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -173,15 +173,14 @@ struct version_info_entry_adapter {
     const version_info& value;
 
     void operator()(auto& backend) const noexcept {
-        if(const auto opt_maj{value.version_major()}) {
-            backend.add_integer(name, "VerMajor", extract(opt_maj));
-            if(const auto opt_min{value.version_minor()}) {
-                backend.add_integer(name, "VerMinor", extract(opt_min));
-                if(const auto opt_ptch{value.version_patch()}) {
-                    backend.add_integer(name, "VerPatch", extract(opt_ptch));
-                    if(const auto opt_cmit{value.version_commit()}) {
-                        backend.add_integer(
-                          name, "VerCommit", extract(opt_cmit));
+        if(const ok maj{value.version_major()}) {
+            backend.add_integer(name, "VerMajor", maj);
+            if(const ok min{value.version_minor()}) {
+                backend.add_integer(name, "VerMinor", min);
+                if(const ok ptch{value.version_patch()}) {
+                    backend.add_integer(name, "VerPatch", ptch);
+                    if(const ok cmit{value.version_commit()}) {
+                        backend.add_integer(name, "VerCommit", cmit);
                     }
                 }
             }

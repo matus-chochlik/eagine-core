@@ -7,14 +7,14 @@
 ///
 export module eagine.core.c_api:adapted_function;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
-import :handle;
+import :object;
 import :result;
 import :function;
 import :parameter_map;
-import std;
 
 namespace eagine::c_api {
 
@@ -45,6 +45,11 @@ struct adapted_function_raii_parameter {
 export template <typename T>
 using adapted_function_raii_parameter_t =
   typename adapted_function_raii_parameter<T>::type;
+
+export template <typename E>
+struct adapted_function_raii_parameter<ok<E>> {
+    using type = E&;
+};
 
 export template <typename Tag, typename Handle, Handle invalid>
 struct adapted_function_raii_parameter<basic_owned_handle<Tag, Handle, invalid>> {

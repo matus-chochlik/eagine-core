@@ -23,8 +23,8 @@ auto main(int argc, const char** argv) -> int {
     eagine::program_args args{argc, argv};
 
     sudoku_tiling<4>(
-      args.find_value_or("--width", 32, std::cerr),
-      args.find_value_or("--height", 24, std::cerr));
+      from_string<int>(args.find("--width")).value_or(32),
+      from_string<int>(args.find("--height")).value_or(24));
 
     return 0;
 }

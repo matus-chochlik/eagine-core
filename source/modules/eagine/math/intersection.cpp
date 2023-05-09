@@ -7,12 +7,12 @@
 ///
 export module eagine.core.math:intersection;
 
+import std;
 import eagine.core.types;
 import eagine.core.valid_if;
 import :functions;
 import :primitives;
 import :vector;
-import std;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

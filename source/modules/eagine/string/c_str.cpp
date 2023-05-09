@@ -7,10 +7,10 @@
 ///
 export module eagine.core.string:c_str;
 
+import std;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -40,9 +40,8 @@ public:
       : _span{_get_span(s)}
       , _str{_get_str(s)} {}
 
-    template <extractable E>
+    template <extracts_to<span_type> E>
     constexpr basic_c_str(construct_from_t, const E& e) noexcept
-        requires(has_value_type_v<E, span_type>)
       : _span{_xtr_span(e)}
       , _str{_xtr_str(e)} {}
 
@@ -100,19 +99,14 @@ private:
         return s.is_zero_terminated() ? string_type{} : s.to_string();
     }
 
-    template <extractable E>
-    static constexpr auto _xtr_span(const E& e) noexcept -> span_type
-        requires(
-          has_value_type_v<E, span_type> and not std::is_same_v<E, span_type>)
-    {
-        return has_value(e) ? _get_span(extract(e)) : span_type{};
+    template <extracts_to<span_type> E>
+    static constexpr auto _xtr_span(const E& e) noexcept -> span_type {
+        return e ? _get_span(*e) : span_type{};
     }
 
-    template <extractable E>
-    static constexpr auto _xtr_str(const E& e) noexcept -> string_type
-        requires(has_value_type_v<E, span_type>)
-    {
-        return has_value(e) ? _get_str(extract(e)) : string_type{};
+    template <extracts_to<span_type> E>
+    static constexpr auto _xtr_str(const E& e) noexcept -> string_type {
+        return e ? _get_str(*e) : string_type{};
     }
 
     std::conditional_t<isConst, const span_type, span_type> _span{};
@@ -126,7 +120,7 @@ template <typename C, typename P, typename S>
 struct get_basic_c_str<memory::basic_string_span<C, P, S>>
   : std::type_identity<basic_c_str<C, P, S>> {};
 
-template <extractable E>
+template <optional_like E>
 struct get_basic_c_str<E> : get_basic_c_str<extracted_type_t<E>> {};
 //------------------------------------------------------------------------------
 /// @brief Functions that construct a basic_c_str from a basic_string_span.
@@ -141,7 +135,7 @@ export template <typename C, typename P, typename S>
     return {s};
 }
 
-export template <extractable E>
+export template <optional_like E>
 [[nodiscard]] constexpr auto c_str(const E& e) noexcept ->
   typename get_basic_c_str<E>::type {
     return {construct_from, e};

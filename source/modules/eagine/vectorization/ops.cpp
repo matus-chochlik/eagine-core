@@ -11,11 +11,11 @@ module;
 
 export module eagine.core.vectorization:ops;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import :data_simd;
 import :data;
-import std;
 
 namespace eagine::vect {
 //------------------------------------------------------------------------------

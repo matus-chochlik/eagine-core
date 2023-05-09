@@ -8,12 +8,9 @@
 export module eagine.core.types;
 
 export import :basic;
-export import :nothing;
-export import :anything;
 export import :interface;
 export import :compare;
 export import :limits;
-export import :integer;
 export import :integer_range;
 export import :extract;
 export import :tribool;
@@ -22,6 +19,6 @@ export import :outcome;
 export import :bitfield;
 export import :enum_map;
 export import :function_constant;
-export import :selector;
 export import :structural;
 export import :metaprogramming;
+export import :placeholder;

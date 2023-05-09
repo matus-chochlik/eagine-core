@@ -12,9 +12,9 @@ namespace eagine {
 
 template <typename T, typename V>
 void print(const console& cio, V value) {
-    cio.print(identifier{"hash"}, "hash(${value}) = ${hash}")
-      .arg(identifier{"value"}, value)
-      .arg(identifier{"hash"}, integer_hash<T>(value));
+    cio.print("hash", "hash(${value}) = ${hash}")
+      .arg("value", value)
+      .arg("hash", integer_hash<T>(value));
 }
 
 auto main(main_ctx& ctx) -> int {

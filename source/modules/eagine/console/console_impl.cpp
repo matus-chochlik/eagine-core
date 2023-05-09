@@ -7,9 +7,10 @@
 ///
 module eagine.core.console;
 
+import std;
 import eagine.core.identifier;
 import eagine.core.runtime;
-import std;
+import :backend;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -3,12 +3,6 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.string PARTITION string_set
-	IMPORTS
-		eagine.core.memory
-)
-
-eagine_add_module(
 	eagine.core.string PARTITION multi_byte
 	IMPORTS
 		eagine.core.types
@@ -52,23 +46,15 @@ eagine_add_module(
 	eagine.core.string PARTITION environment
 	IMPORTS
 		c_str
-		eagine.core.memory
-)
-
-eagine_add_module(
-	eagine.core.string PARTITION substitution
-	IMPORTS
-		c_str
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.valid_if
-		eagine.core.utility
 )
 
 eagine_add_module(
 	eagine.core.string PARTITION format
 	IMPORTS
-		substitution
+		c_str
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
@@ -132,14 +118,12 @@ eagine_add_module(
 	INTERFACES
 		string
 	PARTITIONS
-		string_set
 		multi_byte
 		list
 		path
 		c_str
 		algorithm
 		environment
-		substitution
 		format
 		base64
 		base64dump
@@ -152,6 +136,12 @@ eagine_add_module(
 		hexdump
 		from_string
 		keyboard_distance
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.math
+		eagine.core.container
+		eagine.core.utility
 )
 
 eagine_add_module_tests(
@@ -159,11 +149,19 @@ eagine_add_module_tests(
 	UNITS
 		base64
 		bindump
+		environment
 		from_string
 		hexdump
 		multi_byte
 		list
 		path
+	IMPORTS
+		eagine.core.types
+		eagine.core.memory
+	ENVIRONMENT
+		EAGINE_TEST_VAR1=eagine
+		EAGINE_TEST_VAR2=core
+		EAGINE_TEST_VAR3=string
 )
 
 set_tests_properties(execute-test.eagine.core.string.base64 PROPERTIES COST 60)

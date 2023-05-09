@@ -7,6 +7,7 @@
 ///
 module eagine.core.main_ctx;
 
+import std;
 import eagine.core.build_config;
 import eagine.core.build_info;
 import eagine.core.debug;
@@ -19,7 +20,6 @@ import eagine.core.logging;
 import eagine.core.utility;
 import eagine.core.valid_if;
 import eagine.core.value_tree;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -88,6 +88,9 @@ public:
             if(auto found{_find_config_of("defaults", key, tags)}) {
                 return found;
             }
+            if(auto found{_find_in_secrets_fs(key, tags)}) {
+                return found;
+            }
         } catch(...) {
             _log.error("exception while loading configuration value '${key}'")
               .arg("key", key);
@@ -134,6 +137,23 @@ private:
       const string_view d) noexcept -> const std::string& {
         return append_to(
           d, append_to(c, append_to(b, assign_to(a, _config_name))));
+    }
+
+    auto _secrets_fs_path() const noexcept -> const std::filesystem::path& {
+        static const std::filesystem::path p{"/run/secrets"};
+        return p;
+    }
+
+    auto _find_in_secrets_fs(
+      const string_view key,
+      const span<const string_view> tags) noexcept
+      -> valtree::compound_attribute {
+        if(auto comp{_get_config(_secrets_fs_path())}) {
+            if(auto attr{comp.find(basic_string_path(key), tags)}) {
+                return {std::move(comp), std::move(attr)};
+            }
+        }
+        return {};
     }
 
     auto _find_config_of(
@@ -217,7 +237,9 @@ private:
 
     auto _open_config(const std::filesystem::path& cfg_path)
       -> valtree::compound {
-        if(cfg_path.extension() == ".yaml") {
+        if(is_directory(cfg_path)) {
+            return valtree::from_filesystem_path(cfg_path.string(), _log);
+        } else if(cfg_path.extension() == ".yaml") {
             if(file_contents content{cfg_path.string()}) {
                 return valtree::from_yaml_text(memory::as_chars(content), _log);
             }
@@ -230,13 +252,17 @@ private:
     }
 
     auto _get_config(const std::filesystem::path& cfg_path)
-      -> valtree::compound& {
-        const auto path_str{canonical(cfg_path).string()};
-        auto pos = _open_configs.find(path_str);
-        if(pos == _open_configs.end()) {
-            pos = _open_configs.emplace(path_str, _open_config(cfg_path)).first;
+      -> valtree::compound {
+        if(exists(cfg_path)) {
+            const auto path_str{canonical(cfg_path).string()};
+            auto pos = _open_configs.find(path_str);
+            if(pos == _open_configs.end()) {
+                pos =
+                  _open_configs.emplace(path_str, _open_config(cfg_path)).first;
+            }
+            return pos->second;
         }
-        return pos->second;
+        return {};
     }
 
     main_ctx_getters& _main_ctx;
@@ -248,6 +274,20 @@ private:
     std::string _config_name;
     std::string _hostname;
 };
+//------------------------------------------------------------------------------
+// application_config
+//------------------------------------------------------------------------------
+void application_config::_log_could_not_read_value(
+  const string_view key,
+  const string_view tag,
+  const optionally_valid<string_view> val,
+  const config_source src) noexcept {
+    _log.error("could not read configuration ${key} value '${val}' from ${src}")
+      .arg("key", key)
+      .arg("tag", tag)
+      .arg("val", val.or_default())
+      .arg("src", src);
+}
 //------------------------------------------------------------------------------
 auto application_config::_find_comp_attr(
   const string_view key,
@@ -262,66 +302,10 @@ auto application_config::_prog_args() noexcept -> const program_args& {
     return _main_ctx.args();
 }
 //------------------------------------------------------------------------------
-auto application_config::_prog_arg_name(string_view key) noexcept
-  -> std::string {
-    std::string arg_name;
-    arg_name.reserve(integer(safe_add(3, key.size())));
-    arg_name.append("--");
-    for(auto c : key) {
-        if(c == '.' or c == '_') {
-            c = '-';
-        }
-        arg_name.append(&c, 1U);
-    }
-    return arg_name;
-}
-//------------------------------------------------------------------------------
-auto application_config::_find_prog_arg(const string_view key) noexcept
-  -> program_arg {
-    return _prog_args().find(_prog_arg_name(key));
-}
-//------------------------------------------------------------------------------
-auto application_config::_eval_env_var(const string_view key) noexcept
-  -> std::optional<string_view> {
-    std::string arg_name;
-    arg_name.reserve(integer(safe_add(7, key.size())));
-    arg_name.append("EAGINE_");
-    for(auto c : key) {
-        if(c == '.') {
-            c = '_';
-        } else {
-            c = static_cast<char>(std::toupper(c));
-        }
-        arg_name.append(&c, 1U);
-    }
-    return get_environment_variable(arg_name);
-}
-//------------------------------------------------------------------------------
 application_config::application_config(main_ctx_getters& ctx) noexcept
-  : _main_ctx{ctx}
+  : basic_config{ctx.args()}
+  , _main_ctx{ctx}
   , _log{"AppConfig", ctx.log()} {}
-//------------------------------------------------------------------------------
-auto application_config::is_set(
-  const string_view key,
-  const string_view tag) noexcept -> bool {
-    if(const auto attr{_find_comp_attr(key, tag)}) {
-        bool flag{false};
-        if(attr.select_value(flag, from_config)) {
-            return flag;
-        }
-    }
-    if(const auto arg{_find_prog_arg(key)}) {
-        bool result{true};
-        arg.parse_next(result, from_config, _log.debug_stream());
-        return result;
-    }
-    if(const auto opt_val{_eval_env_var(key)}) {
-        if(const auto converted{from_string<bool>(extract(opt_val))}) {
-            return extract(converted);
-        }
-    }
-    return false;
-}
 //------------------------------------------------------------------------------
 auto application_config::_impl() noexcept -> application_config_impl* {
     if(not _pimpl) [[unlikely]] {
@@ -331,6 +315,36 @@ auto application_config::_impl() noexcept -> application_config_impl* {
         }
     }
     return _pimpl.get();
+}
+//------------------------------------------------------------------------------
+auto application_config::is_set(
+  const string_view key,
+  const string_view tag) noexcept -> bool {
+    if(basic_config::is_set(key, tag)) {
+        return true;
+    }
+    if(const auto attr{_find_comp_attr(key, tag)}) {
+        bool flag{false};
+        if(attr.select_value(flag, from_config)) {
+            return flag;
+        }
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto application_config::fetch_string(
+  const string_view key,
+  const string_view tag,
+  std::string& dest) noexcept -> bool {
+    if(basic_config::fetch_string(key, tag, dest)) {
+        return true;
+    }
+    if(const auto attr{_find_comp_attr(key, tag)}) {
+        if(attr.select_value(dest, from_config)) {
+            return true;
+        }
+    }
+    return false;
 }
 //------------------------------------------------------------------------------
 void application_config::link(

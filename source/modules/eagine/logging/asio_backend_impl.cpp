@@ -31,12 +31,12 @@ module;
 
 module eagine.core.logging;
 
+import std;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.utility;
 import :backend;
 import :ostream_backend;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

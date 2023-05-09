@@ -7,11 +7,11 @@
 ///
 export module eagine.core.progress:root_activity;
 
+import std;
 import eagine.core.logging;
 import eagine.core.utility;
 import :backend;
 import :activity;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

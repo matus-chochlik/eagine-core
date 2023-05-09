@@ -7,13 +7,13 @@
 ///
 export module eagine.core.logging:backend;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.runtime;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import :entry_arg;
-import std;
 
 namespace eagine {
 
@@ -65,6 +65,8 @@ constexpr auto enumerator_mapping(
 /// @brief Structure used to supply initial log stream information to a logger.
 /// @ingroup logging
 export struct log_stream_info {
+    /// @brief Unique session identity name.
+    std::string session_identity;
     /// @brief Unique stream identity name.
     std::string log_identity;
     /// @brief The minimum severity of log messages.
@@ -74,7 +76,7 @@ export struct log_stream_info {
 /// @brief Interface for logging backend implementations.
 /// @ingroup logging
 export struct logger_backend : interface<logger_backend> {
-    virtual auto configure(basic_config&) -> bool {
+    virtual auto configure(basic_config_intf&) -> bool {
         return false;
     }
 

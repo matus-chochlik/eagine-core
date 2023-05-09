@@ -48,20 +48,23 @@ set(XML_LOGS_HEADERS
 )
 add_executable(
 	eagine-xml_logs-gui
-	${XML_LOGS_RESOURCES}
-	${XML_LOGS_SOURCES}
-	${XML_LOGS_HEADERS}
+	EXCLUDE_FROM_ALL
+		${XML_LOGS_RESOURCES}
+		${XML_LOGS_SOURCES}
+		${XML_LOGS_HEADERS}
 )
 
 eagine_add_exe_analysis(eagine-xml_logs-gui)
 
 target_compile_options(
 	eagine-xml_logs-gui
-	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unsafe-buffer-usage>
+	PRIVATE
+		$<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unsafe-buffer-usage>
 )
 target_compile_options(
 	eagine-xml_logs-gui
-	PRIVATE $<$<BOOL:${EAGINE_GNUCXX_COMPILER}>:-Wno-extra-semi-stmt;-Wno-redundant-parens;-Wno-auto-import>
+	PRIVATE
+		$<$<BOOL:${EAGINE_GNUCXX_COMPILER}>:-Wno-extra-semi-stmt;-Wno-redundant-parens;-Wno-auto-import>
 )
 target_include_directories(
 	eagine-xml_logs-gui

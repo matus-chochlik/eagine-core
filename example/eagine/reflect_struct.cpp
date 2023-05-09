@@ -43,9 +43,9 @@ auto main(main_ctx& ctx) -> int {
     std::get<1>(get<1>(m)) = 'R';
     std::get<1>(get<2>(m)) = 3.F;
 
-    ctx.cio().print(identifier{"struct"}, "b: ${b}").arg(identifier{"b"}, s.b);
-    ctx.cio().print(identifier{"struct"}, "c: ${c}").arg(identifier{"c"}, s.c);
-    ctx.cio().print(identifier{"struct"}, "f: ${f}").arg(identifier{"f"}, s.f);
+    ctx.cio().print("struct", "b: ${b}").arg("b", s.b);
+    ctx.cio().print("struct", "c: ${c}").arg("c", s.c);
+    ctx.cio().print("struct", "f: ${f}").arg("f", s.f);
 
     traverse_mapped(s, [&](const auto& path, const auto& value) {
         ctx.cio()

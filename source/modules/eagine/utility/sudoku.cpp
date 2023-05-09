@@ -11,10 +11,10 @@ module;
 
 export module eagine.core.utility:sudoku;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.container;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -197,20 +197,20 @@ public:
     static constexpr const unsigned glyph_count = board_traits::glyph_count;
 
     static constexpr auto to_cell_type(const unsigned index) noexcept {
-        // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
+        assert(index < glyph_count);
         return cell_type(1U << index);
     }
 
     constexpr basic_sudoku_glyph() noexcept = default;
     constexpr basic_sudoku_glyph(const unsigned index) noexcept
-      : _cel_val{to_cell_type(index)} {}
+      : _cell_val{to_cell_type(index)} {}
 
     constexpr auto is_empty() const noexcept {
-        return _cel_val == 0U;
+        return _cell_val == 0U;
     }
 
     constexpr auto is_single() const noexcept {
-        return _is_pot(_cel_val);
+        return _is_pot(_cell_val);
     }
 
     constexpr auto is_multiple() const noexcept {
@@ -218,39 +218,36 @@ public:
     }
 
     auto cell_value() const noexcept -> cell_type {
-        return _cel_val;
+        return _cell_val;
     }
 
     auto get_index() const noexcept -> unsigned {
-        unsigned result = 0U;
-        while(result < glyph_count) {
-            if(_cel_val == to_cell_type(result)) {
-                break;
+        assert(is_single());
+        for(const auto index : integer_range(glyph_count)) {
+            if(to_cell_type(index) == _cell_val) {
+                return index;
             }
-            ++result;
         }
-        assert(result < glyph_count);
-        return result;
+        return S;
     }
 
     constexpr auto set(const unsigned index) noexcept -> auto& {
         assert(index < glyph_count);
-        _cel_val = to_cell_type(index);
+        _cell_val = to_cell_type(index);
         return *this;
     }
 
     constexpr auto add(const unsigned index) noexcept -> auto& {
         assert(index < glyph_count);
-        _cel_val |= to_cell_type(index);
+        _cell_val |= to_cell_type(index);
         return *this;
     }
 
     template <typename Function>
     void for_each_alternative(Function func) const noexcept {
-
         for(const auto index : integer_range(glyph_count)) {
             const auto mask = to_cell_type(index);
-            if((_cel_val & mask) == mask) {
+            if((_cell_val & mask) == mask) {
                 func(index);
             }
         }
@@ -258,7 +255,7 @@ public:
 
     auto alternative_count() const noexcept -> unsigned {
         unsigned count = 0U;
-        cell_type bits = _cel_val;
+        cell_type bits = _cell_val;
         while(bits) {
             bits &= (bits - 1U);
             ++count;
@@ -272,15 +269,15 @@ private:
 
     struct from_cell_value_tag {};
     constexpr basic_sudoku_glyph(
-      const cell_type cel_val,
+      const cell_type cell_val,
       from_cell_value_tag) noexcept
-      : _cel_val{cel_val} {}
+      : _cell_val{cell_val} {}
 
     static constexpr auto _is_pot(const cell_type v) noexcept {
         return (v != 0U) and ((v & (v - 1U)) == 0U);
     }
 
-    cell_type _cel_val{0U};
+    cell_type _cell_val{0U};
 };
 //------------------------------------------------------------------------------
 export template <unsigned S, bool Tight>
@@ -347,12 +344,12 @@ public:
     auto is_possible(const coord_type& coord, const glyph_type value)
       const noexcept {
         const auto [cbx, cby, ccx, ccy] = coord;
-        const auto cel_val = value.cell_value();
+        const auto cell_val = value.cell_value();
 
         for(const auto cy : integer_range(S)) {
             for(const auto cx : integer_range(S)) {
                 if((cx != ccx) or (cy != ccy)) {
-                    if(_cell_val({cbx, cby, cx, cy}) == cel_val) {
+                    if(_cell_val({cbx, cby, cx, cy}) == cell_val) {
                         return false;
                     }
                 }
@@ -362,7 +359,7 @@ public:
         for(const auto bx : integer_range(S)) {
             for(const auto cx : integer_range(S)) {
                 if((bx != cbx) or (cx != ccx)) {
-                    if(_cell_val({bx, cby, cx, ccy}) == cel_val) {
+                    if(_cell_val({bx, cby, cx, ccy}) == cell_val) {
                         return false;
                     }
                 }
@@ -372,7 +369,7 @@ public:
         for(const auto by : integer_range(S)) {
             for(const auto cy : integer_range(S)) {
                 if((by != cby) or (cy != ccy)) {
-                    if(_cell_val({cbx, by, ccx, cy}) == cel_val) {
+                    if(_cell_val({cbx, by, ccx, cy}) == cell_val) {
                         return false;
                     }
                 }

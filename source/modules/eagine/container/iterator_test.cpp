@@ -7,8 +7,8 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.container;
 import std;
+import eagine.core.container;
 //------------------------------------------------------------------------------
 using int_iterator = eagine::selfref_iterator<int>;
 

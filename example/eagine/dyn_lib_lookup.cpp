@@ -16,14 +16,14 @@ auto main(main_ctx& ctx) -> int {
             if(string_view sym_name{ctx.args().find("--symbol").next()}) {
                 if(module.exports(sym_name)) {
                     ctx.cio()
-                      .print(identifier{"DynLib"}, "symbol found")
-                      .arg(identifier{"library"}, lib_path)
-                      .arg(identifier{"symbol"}, sym_name);
+                      .print("DynLib", "symbol found")
+                      .arg("library", lib_path)
+                      .arg("symbol", sym_name);
                 } else {
                     ctx.cio()
-                      .print(identifier{"DynLib"}, "symbol not found")
-                      .arg(identifier{"library"}, lib_path)
-                      .arg(identifier{"symbol"}, sym_name);
+                      .print("DynLib", "symbol not found")
+                      .arg("library", lib_path)
+                      .arg("symbol", sym_name);
                 }
             } else {
                 ctx.log().error("missing symbol name argument");
@@ -31,8 +31,8 @@ auto main(main_ctx& ctx) -> int {
         } else {
             ctx.log()
               .error("failed to open ${lib}: ${message}")
-              .arg(identifier{"lib"}, lib_path)
-              .arg(identifier{"message"}, module.error_message());
+              .arg("lib", lib_path)
+              .arg("message", module.error_message());
         }
     } else {
         ctx.log().error("missing library path argument");

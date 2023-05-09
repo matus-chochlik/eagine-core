@@ -7,8 +7,8 @@
 ///
 export module eagine.core.runtime:workshop;
 
-import eagine.core.types;
 import std;
+import eagine.core.types;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ private:
     std::condition_variable _cond{};
     bool _shutdown{false};
 
-    auto _fetch() noexcept -> std::tuple<work_unit*, bool>;
+    auto _fetch() noexcept -> std::tuple<optional_reference<work_unit>, bool>;
     void _employ() noexcept;
 
 public:

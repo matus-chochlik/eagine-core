@@ -7,10 +7,10 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.reflection;
-import std;
 //------------------------------------------------------------------------------
 namespace eagine {
 enum class test_enum_1 : unsigned { a, b, c, d, e, f, g, h, i, j };

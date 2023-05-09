@@ -7,12 +7,12 @@
 ///
 export module eagine.core.main_ctx:watchdog;
 
+import std;
 import eagine.core.types;
 import eagine.core.identifier;
 import :interface;
 import :parent;
 import :object;
-import std;
 
 namespace eagine {
 

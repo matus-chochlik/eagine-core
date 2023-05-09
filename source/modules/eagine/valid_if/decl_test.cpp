@@ -7,8 +7,9 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.valid_if;
 import std;
+import eagine.core.concepts;
+import eagine.core.valid_if;
 //------------------------------------------------------------------------------
 struct test_person {
     std::string given_name;
@@ -19,6 +20,8 @@ void valid_if_default_construct(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};
 
     eagine::optionally_valid<test_person> v;
+
+    test.check(eagine::optional_like<decltype(v)>, "optional-like");
 
     test.check(not v.has_value(), "has not value");
     test.check(not v, "is false");
@@ -34,6 +37,12 @@ void valid_if_default_construct(auto& s) {
             .has_value(),
       "and then");
     test.check(
+      v.or_else([] -> eagine::optionally_valid<test_person> {
+           return {test_person{}, true};
+       })
+        .has_value(),
+      "or else");
+    test.check(
       not v.member(&test_person::given_name).has_value(), "transform member");
 }
 //------------------------------------------------------------------------------
@@ -41,6 +50,8 @@ void valid_if_initialized(auto& s) {
     eagitest::case_ test{s, 2, "initialized"};
 
     eagine::optionally_valid<test_person> v{{"John", "Doe"}, true};
+
+    test.check(eagine::optional_like<decltype(v)>, "optional-like");
 
     test.check(v.has_value(), "has not value");
     test.check(not not v, "is not false");
@@ -56,6 +67,11 @@ void valid_if_initialized(auto& s) {
         .has_value(),
       "and then always");
     test.check(
+      v.or_else([] -> std::optional<test_person> { return {test_person{}}; })
+        .has_value(),
+      "or else always");
+
+    test.check(
       v.transform([](const test_person&) { return true; }).has_value(),
       "transform");
     test.check(
@@ -64,6 +80,10 @@ void valid_if_initialized(auto& s) {
            })
             .has_value(),
       "and then never");
+    test.check(
+      v.or_else([] -> std::optional<test_person> { return {test_person{}}; })
+        .has_value(),
+      "or else never");
     test.check(
       v.member(&test_person::family_name).has_value(), "transform member");
 
@@ -78,6 +98,8 @@ void valid_if_non_ref(auto& s) {
     eagitest::case_ test{s, 3, "non-reference"};
 
     eagine::optionally_valid<int> v{123, true};
+
+    test.check(eagine::optional_like<decltype(v)>, "optional-like");
 
     test.check(bool(v), "is true");
     test.check(not not v, "is not false");
@@ -95,6 +117,11 @@ void valid_if_non_ref(auto& s) {
     }};
     test.ensure(v.and_then(g).has_value(), "and then has value");
     test.check_equal(v.and_then(g).value(), 369, "and then value ok");
+
+    test.check_equal(
+      v.or_else([] -> std::optional<int> { return 468; }).value(),
+      123,
+      "or else value ok");
 
     eagine::always_valid<test_person> p{{"Jane", "Doe"}};
     test.check(bool(p), "is true");
@@ -118,6 +145,8 @@ void valid_if_ref(auto& s) {
     int i = 234;
     eagine::optionally_valid<int&> v{i, true};
 
+    test.check(eagine::optional_like<decltype(v)>, "optional-like");
+
     test.check(bool(v), "is true");
     test.check(not not v, "is not false");
     test.ensure(v.has_value(), "has value");
@@ -139,6 +168,11 @@ void valid_if_ref(auto& s) {
     }};
     test.ensure(v.and_then(g).has_value(), "and then has value");
     test.check_equal(v.and_then(g).value(), 456 * 3, "and then value ok");
+
+    test.check_equal(
+      v.or_else([] -> std::optional<int> { return 789; }).value(),
+      456,
+      "or else value ok");
 
     eagine::never_valid<test_person> p{{"Bill", "Roe"}};
     test.check(not bool(p), "is not true");

@@ -7,9 +7,9 @@
 ///
 export module eagine.core.vectorization:data;
 
+import std;
 import :data_array;
 import :data_simd;
-import std;
 
 namespace eagine::vect {
 

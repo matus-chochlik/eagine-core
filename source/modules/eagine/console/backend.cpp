@@ -7,12 +7,12 @@
 ///
 export module eagine.core.console:backend;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.runtime;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ export using console_entry_id_t = std::uintptr_t;
 /// @brief Interface for console backend implementations.
 /// @ingroup console
 export struct console_backend : interface<console_backend> {
-    virtual auto configure(basic_config&) -> bool {
+    virtual auto configure(basic_config_intf&) -> bool {
         return false;
     }
 
@@ -63,7 +63,7 @@ export struct console_backend : interface<console_backend> {
     virtual auto entry_backend(
       const identifier source,
       const console_entry_kind kind) noexcept
-      -> std::tuple<console_backend*, console_entry_id_t> = 0;
+      -> std::tuple<optional_reference<console_backend>, console_entry_id_t> = 0;
 
     /// @brief Begins a new console message.
     /// @param source the identifier of the entry source object.
@@ -77,6 +77,13 @@ export struct console_backend : interface<console_backend> {
       const console_entry_id_t entry_id,
       const console_entry_kind kind,
       const string_view format) noexcept -> bool = 0;
+
+    /// @brief Add argument with no value.
+    /// @param arg the argument name identifier.
+    /// @param tag the argument type identifier.
+    virtual void add_nothing(
+      const identifier arg,
+      const identifier tag) noexcept = 0;
 
     /// @brief Add argument with identifier value.
     /// @param arg the argument name identifier.

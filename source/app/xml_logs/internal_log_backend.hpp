@@ -22,17 +22,17 @@ public:
         _single_instance_ptr() = this;
         LogStreamInfo info{};
         info.logIdentity = "XML log viewer";
-        info.osName = extract_or(config_os_name(), string_view{});
-        info.osCodeName = extract_or(config_os_code_name(), string_view{});
-        info.gitBranch = extract_or(config_git_branch(), string_view{});
-        info.gitHashId = extract_or(config_git_hash_id(), string_view{});
-        info.gitVersion = extract_or(config_git_version(), string_view{});
-        info.gitDescribe = extract_or(config_git_describe(), string_view{});
-        info.architecture = extract_or(architecture_name(), string_view{});
-        info.compilerName = extract_or(compiler_name(), string_view{});
-        info.compilerVersionMajor = extract_or(compiler_version_major(), -1);
-        info.compilerVersionMinor = extract_or(compiler_version_minor(), -1);
-        info.compilerVersionPatch = extract_or(compiler_version_patch(), -1);
+        info.osName = config_os_name().or_default();
+        info.osCodeName = config_os_code_name().or_default();
+        info.gitBranch = config_git_branch().or_default();
+        info.gitHashId = config_git_hash_id().or_default();
+        info.gitVersion = config_git_version().or_default();
+        info.gitDescribe = config_git_describe().or_default();
+        info.architecture = architecture_name().or_default();
+        info.compilerName = compiler_name().or_default();
+        info.compilerVersionMajor = compiler_version_major().value_or(-1);
+        info.compilerVersionMinor = compiler_version_minor().value_or(-1);
+        info.compilerVersionPatch = compiler_version_patch().value_or(-1);
         _entries->beginStream(0, info);
     }
 

@@ -12,7 +12,7 @@ namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
 
-    const identifier cioid{identifier{"words"}};
+    const identifier cioid{"words"};
     std::ifstream input("/usr/share/dict/words");
     std::vector<std::string> words;
     std::string word;
@@ -37,16 +37,16 @@ auto main(main_ctx& ctx) -> int {
             if(are_equal(min_dist, 0.F)) {
                 ctx.cio()
                   .print(cioid, "found: ${word}")
-                  .arg(identifier{"word"}, words[min_idx]);
+                  .arg("word", words[min_idx]);
             } else {
                 ctx.cio()
                   .print(cioid, "did you mean ${word}?")
-                  .arg(identifier{"word"}, words[min_idx]);
+                  .arg("word", words[min_idx]);
             }
         } else {
             ctx.cio()
               .print(cioid, "did not find anything similar to ${word}")
-              .arg(identifier{"word"}, word);
+              .arg("word", word);
         }
     }
 

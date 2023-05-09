@@ -7,10 +7,10 @@
 ///
 module eagine.core.string;
 
+import std;
 import eagine.core.math;
 import eagine.core.memory;
 import eagine.core.container;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

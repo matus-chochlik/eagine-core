@@ -7,9 +7,9 @@
 ///
 export module eagine.core.utility:spinlock;
 
+import std;
 import eagine.core.build_config;
 import eagine.core.types;
-import std;
 
 namespace eagine {
 

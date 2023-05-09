@@ -20,10 +20,10 @@ module;
 
 module eagine.core.runtime;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -78,7 +78,7 @@ public:
     }
 
     auto find_function(const string_view name)
-      -> std::optional<void (*)()> final {
+      -> optional_reference<void()> final {
         ::dlerror();
         void* result = ::dlsym(_handle, c_str(name));
         if(const auto error{::dlerror()}) {

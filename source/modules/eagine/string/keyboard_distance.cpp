@@ -7,10 +7,10 @@
 ///
 export module eagine.core.string:keyboard_distance;
 
+import std;
 import eagine.core.memory;
 import eagine.core.math;
 import eagine.core.container;
-import std;
 
 namespace eagine {
 

@@ -44,18 +44,11 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION handle
+	eagine.core.c_api PARTITION object
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
-)
-
-eagine_add_module(
-	eagine.core.c_api PARTITION object
-	IMPORTS
-		handle
-		eagine.core.types
 )
 
 eagine_add_module(
@@ -77,7 +70,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION parameter_map
 	IMPORTS
-		handle buffer_data enum_class key_value_list
+		object buffer_data enum_class key_value_list
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -86,7 +79,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION adapted_function
 	IMPORTS
-		handle result function parameter_map
+		object result function parameter_map
 		eagine.core.types
 		eagine.core.memory;
 )
@@ -100,7 +93,6 @@ eagine_add_module(
 		key_value_list
 		enum_class
 		constant
-		handle
 		object
 		function
 		buffer_data
@@ -113,4 +105,9 @@ eagine_add_module_tests(
 	UNITS
 		buffer_data
 		key_value_list
+		result
+	IMPORTS
+		eagine.core.types
+		eagine.core.concepts
+		eagine.core.memory
 )

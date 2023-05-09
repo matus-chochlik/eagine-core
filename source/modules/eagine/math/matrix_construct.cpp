@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.math:matrix_construct;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.vectorization;
@@ -18,7 +19,6 @@ import eagine.core.units;
 import :traits;
 import :vector;
 import :matrix;
-import std;
 
 namespace eagine {
 namespace math {

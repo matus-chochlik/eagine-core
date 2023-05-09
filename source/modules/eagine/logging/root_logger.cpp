@@ -7,12 +7,12 @@
 ///
 export module eagine.core.logging:root_logger;
 
+import std;
 import eagine.core.types;
 import eagine.core.identifier;
 import eagine.core.runtime;
 import :backend;
 import :logger;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

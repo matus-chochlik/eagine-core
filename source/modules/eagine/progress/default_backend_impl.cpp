@@ -7,6 +7,7 @@
 ///
 module eagine.core.progress;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
@@ -15,7 +16,6 @@ import eagine.core.utility;
 import eagine.core.runtime;
 import eagine.core.logging;
 import :backend;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -37,16 +37,18 @@ public:
       : _log{"Progress", parent} {}
 
     auto register_observer(progress_observer& observer) noexcept -> bool final {
+        const std::lock_guard<std::mutex> lock{_mutex};
         if(not _observer) {
-            _observer = &observer;
+            _observer = {observer};
             return true;
         }
         return false;
     }
 
     void unregister_observer(progress_observer& observer) noexcept final {
-        if(_observer == &observer) {
-            _observer = nullptr;
+        const std::lock_guard<std::mutex> lock{_mutex};
+        if(_observer.refers_to(observer)) {
+            _observer = {};
         }
     }
 
@@ -67,8 +69,8 @@ public:
             auto& result = _activities[_id_sequence];
             const auto activity_id = _encode(result);
             _index[activity_id] = _id_sequence;
-            if(auto observer{_observer.load()}) {
-                extract(observer).activity_begun(
+            if(_observer) {
+                _observer->activity_begun(
                   parent_id, activity_id, title, total_steps);
             }
             return {activity_id, result};
@@ -106,15 +108,17 @@ public:
     void finish_activity(
       const activity_progress_id_t activity_id) noexcept final {
         if(activity_id) {
-            _do_log(_decode(activity_id));
+            auto& info = _decode(activity_id);
+            info.curr_steps = info.total_steps;
+            _do_log(info);
             const std::lock_guard<std::mutex> lock{_mutex};
             const auto ipos = _index.find(activity_id);
             if(ipos != _index.end()) {
-                if(auto observer{_observer.load()}) {
+                if(_observer) {
                     const auto apos = _activities.find(ipos->second);
                     if(apos != _activities.end()) {
                         auto& activity = apos->second;
-                        extract(observer).activity_finished(
+                        _observer->activity_finished(
                           activity.parent_id,
                           activity_id,
                           activity.title,
@@ -169,8 +173,9 @@ private:
             info.prev_steps = info.curr_steps;
             _do_log(info);
         }
-        if(auto observer{_observer.load()}) {
-            extract(observer).activity_updated(
+        const std::lock_guard<std::mutex> lock{_mutex};
+        if(_observer) {
+            _observer->activity_updated(
               info.parent_id, activity_id, info.curr_steps, info.total_steps);
         }
     }
@@ -190,7 +195,7 @@ private:
     std::mutex _mutex;
     logger _log;
     callable_ref<bool() noexcept> _callback{};
-    std::atomic<progress_observer*> _observer{nullptr};
+    optional_reference<progress_observer> _observer{};
     std::chrono::milliseconds _min_interval{500};
     std::chrono::steady_clock::time_point _last_call{};
     std::chrono::steady_clock _clock;

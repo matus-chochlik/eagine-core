@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.value_tree:implementation;
 
+import std;
 import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
@@ -20,7 +21,6 @@ import eagine.core.runtime;
 import eagine.core.logging;
 import :interface;
 import :wrappers;
-import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -322,15 +322,15 @@ class compound_with_refcounted_node : public compound_implementation<Derived> {
 private:
     std::vector<std::tuple<span_size_t, std::unique_ptr<Node>>> _nodes{};
 
-    auto _do_make_new(Node&& temp) -> Node* {
+    auto _do_make_new(Node&& temp) -> optional_reference<Node> {
         for(auto& [ref_count, node_ptr] : _nodes) {
             if(temp == *node_ptr) {
                 ++ref_count;
-                return node_ptr.get();
+                return node_ptr;
             }
         }
         _nodes.emplace_back(1, std::make_unique<Node>(std::move(temp)));
-        return std::get<1>(_nodes.back()).get();
+        return std::get<1>(_nodes.back());
     }
 
 protected:
@@ -395,7 +395,7 @@ export auto from_filesystem_path(
   string_view root_path,
   does_not_hide<logger> auto& parent,
   std::shared_ptr<file_compound_factory> factory = {}) -> compound {
-    return from_filesystem_path(root_path, parent, std::move(factory));
+    return from_filesystem_path(root_path, parent.log(), std::move(factory));
 }
 //------------------------------------------------------------------------------
 /// @brief Creates a compound from a JSON text string view.

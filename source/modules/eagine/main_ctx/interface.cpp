@@ -11,6 +11,7 @@ module;
 
 export module eagine.core.main_ctx:interface;
 
+import std;
 import eagine.core.build_info;
 import eagine.core.types;
 import eagine.core.identifier;
@@ -20,15 +21,13 @@ import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.progress;
 import eagine.core.console;
-import :system_info;
-import :user_info;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
 export class application_config;
 export class process_watchdog;
 
+export class user_info;
 export class system_info;
 export class main_ctx_log_backend_getter;
 export class main_ctx_object;

@@ -6,5 +6,9 @@ eagine_add_module(
 	eagine.core.build_config
 	INTERFACES
 		build_config
+	PRIVATE_INCLUDE_DIRECTORIES
+		"${PROJECT_BINARY_DIR}/include"
+	PRIVATE_LINK_LIBRARIES
+		eagine-core-generated-headers
 )
 

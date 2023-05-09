@@ -7,13 +7,14 @@
 ///
 module eagine.core.runtime;
 
-import eagine.core.types;
 import std;
+import eagine.core.types;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-auto workshop::_fetch() noexcept -> std::tuple<work_unit*, bool> {
-    work_unit* work = nullptr;
+auto workshop::_fetch() noexcept
+  -> std::tuple<optional_reference<work_unit>, bool> {
+    optional_reference<work_unit> work;
     std::unique_lock lock{_queue_lockable};
     if(not _shutdown) [[likely]] {
         _cond.wait(
@@ -29,15 +30,15 @@ auto workshop::_fetch() noexcept -> std::tuple<work_unit*, bool> {
 void workshop::_employ() noexcept {
     while(true) {
         auto [opt_work, shutdown] = _fetch();
-        if(opt_work) {
-            auto& work = extract(opt_work);
+        opt_work.and_then([this](auto& work) {
             if(work.do_it()) {
                 work.deliver();
                 _cond.notify_all();
             } else {
                 enqueue(work);
             }
-        }
+            return noopt{};
+        });
         if(shutdown) {
             break;
         }

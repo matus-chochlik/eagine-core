@@ -11,10 +11,10 @@ module;
 
 export module eagine.core.utility:signal;
 
+import std;
 import eagine.core.types;
 import eagine.core.container;
 import :callable_ref;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

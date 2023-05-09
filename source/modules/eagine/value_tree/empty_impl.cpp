@@ -7,12 +7,13 @@
 ///
 module eagine.core.value_tree;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
+import eagine.core.valid_if;
 import eagine.core.logging;
-import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
@@ -34,11 +35,16 @@ public:
 
     void release(attribute_interface&) noexcept final {}
 
-    auto structure() -> attribute_interface* final {
-        return nullptr;
+    auto structure() -> optional_reference<attribute_interface> final {
+        return {};
     }
 
     auto attribute_name(attribute_interface&) -> string_view final {
+        return {};
+    }
+
+    auto attribute_preview(attribute_interface&)
+      -> optionally_valid<string_view> final {
         return {};
     }
 
@@ -59,25 +65,26 @@ public:
     }
 
     auto nested(attribute_interface&, span_size_t)
-      -> attribute_interface* final {
-        return nullptr;
+      -> optional_reference<attribute_interface> final {
+        return {};
     }
 
     auto nested(attribute_interface&, string_view)
-      -> attribute_interface* final {
-        return nullptr;
+      -> optional_reference<attribute_interface> final {
+        return {};
     }
 
     auto find(attribute_interface&, const basic_string_path&)
-      -> attribute_interface* final {
-        return nullptr;
+      -> optional_reference<attribute_interface> final {
+        return {};
     }
 
     auto find(
       attribute_interface&,
       const basic_string_path&,
-      span<const string_view>) -> attribute_interface* final {
-        return nullptr;
+      span<const string_view>)
+      -> optional_reference<attribute_interface> final {
+        return {};
     }
 
     auto value_count(attribute_interface&) -> span_size_t final {

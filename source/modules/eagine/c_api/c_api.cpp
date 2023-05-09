@@ -11,7 +11,6 @@ export import :result;
 export import :api_traits;
 export import :enum_class;
 export import :constant;
-export import :handle;
 export import :object;
 export import :function;
 export import :key_value_list;

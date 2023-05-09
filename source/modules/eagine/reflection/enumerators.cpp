@@ -5,13 +5,12 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#include <type_traits>
 export module eagine.core.reflection:enumerators;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import :decl_name;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -223,6 +222,11 @@ void for_each_enumerator(
   Function function,
   const std::type_identity<T> id) noexcept {
     for_each_enumerator(function, id, default_selector);
+}
+//------------------------------------------------------------------------------
+export template <default_mapped_enum T>
+auto operator<<(std::ostream& out, T value) -> std::ostream& {
+    return out << enumerator_name(value, std::type_identity<T>{});
 }
 //------------------------------------------------------------------------------
 // bitfield

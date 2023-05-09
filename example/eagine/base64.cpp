@@ -19,18 +19,14 @@ auto main(main_ctx& ctx) -> int {
             if(arg.prev().is_tag("-f", "--file")) {
                 file_contents fc(arg.get());
                 ctx.cio()
-                  .print(identifier{"base64"}, "${src}|${enc}")
-                  .arg(identifier{"src"}, arg.get())
-                  .arg(
-                    identifier{"enc"},
-                    extract_or(base64_encode(fc.block(), temp), na));
+                  .print("base64", "${src}|${enc}")
+                  .arg("src", arg.get())
+                  .arg("enc", base64_encode(fc.block(), temp).value_or(na));
             } else if(arg.prev().is_tag("-s", "--string")) {
                 ctx.cio()
-                  .print(identifier{"base64"}, "${src}|${enc}")
-                  .arg(identifier{"src"}, arg.get())
-                  .arg(
-                    identifier{"enc"},
-                    extract_or(base64_encode(arg.block(), temp), "-"));
+                  .print("base64", "${src}|${enc}")
+                  .arg("src", arg.get())
+                  .arg("enc", base64_encode(arg.block(), temp).value_or("-"));
             }
         }
     }

@@ -10,6 +10,7 @@ eagine_add_module(
 		eagine.core.string
 		eagine.core.identifier
 		eagine.core.reflection
+		eagine.core.valid_if
 		eagine.core.console
 )
 
@@ -22,6 +23,7 @@ eagine_add_module(
 		eagine.core.identifier
 		eagine.core.utility
 		eagine.core.reflection
+		eagine.core.valid_if
 )
 
 eagine_add_module(

@@ -20,23 +20,20 @@ auto main(main_ctx& ctx) -> int {
 
     ctx.cio()
       .print(cioid, "architecture: ${arch}")
-      .arg(identifier{"arch"}, either_or(compiler.architecture_name(), na));
+      .arg("arch", either_or(compiler.architecture_name(), na));
     ctx.cio()
       .print(cioid, "compiler name: ${name}")
-      .arg(identifier{"name"}, either_or(compiler.name(), na));
+      .arg("name", either_or(compiler.name(), na));
 
     ctx.cio()
       .print(cioid, "compiler version: ${major}.${minor}.${patch}")
-      .arg(identifier{"major"}, either_or(compiler.version_major(), na))
-      .arg(identifier{"minor"}, either_or(compiler.version_minor(), na))
-      .arg(identifier{"patch"}, either_or(compiler.version_patch(), na));
+      .arg("major", either_or(compiler.version_major(), na))
+      .arg("minor", either_or(compiler.version_minor(), na))
+      .arg("patch", either_or(compiler.version_patch(), na));
 
     ctx.cio()
       .print(cioid, "install prefix: ${path}")
-      .arg(
-        identifier{"path"},
-        identifier{"FsPath"},
-        either_or(build.install_prefix(), na));
+      .arg("path", "FsPath", either_or(build.install_prefix(), na));
 
     return 0;
 }

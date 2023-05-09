@@ -5,29 +5,25 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#include <memory>
 module;
 
 #include <cassert>
 
 export module eagine.core.memory:span;
 
+import std;
 import eagine.core.concepts;
 import eagine.core.types;
 import :address;
 
-import std;
-
 namespace eagine {
 namespace memory {
 //------------------------------------------------------------------------------
-// clang-format off
 export template <typename T, typename P = anything, typename S = span_size_t>
 concept span_source = requires(T v) {
-	{ v.data() } -> std::convertible_to<P>;
+    { v.data() } -> std::convertible_to<P>;
     { v.size() } -> std::convertible_to<S>;
 };
-// clang-format on
 //------------------------------------------------------------------------------
 // rebind_pointer
 //------------------------------------------------------------------------------
@@ -196,8 +192,16 @@ public:
     /// @brief Indicates if the span has exactly one value.
     /// @see is_empty
     /// @see size
+    /// @see has_value
     constexpr auto has_single_value() const noexcept -> bool {
         return size() == 1;
+    }
+
+    /// @brief Indicates if the span has exactly one value.
+    /// @see is_empty
+    /// @see has_single_value
+    constexpr auto has_value() const noexcept -> bool {
+        return has_single_value();
     }
 
     /// @brief Indicates that the span is terminated with value T(0) if applicable.
@@ -325,7 +329,7 @@ public:
     /// @see back
     /// @pre not is_empty()
     auto front() const noexcept -> std::add_const_t<element_type>& {
-        assert(0 < size());
+        assert(not empty());
         return _addr[0];
     }
 
@@ -333,7 +337,7 @@ public:
     /// @see back
     /// @pre not is_empty()
     auto front() noexcept -> element_type& {
-        assert(0 < size());
+        assert(not empty());
         return _addr[0];
     }
 
@@ -341,7 +345,7 @@ public:
     /// @see front
     /// @pre not is_empty()
     auto back() const noexcept -> std::add_const_t<element_type>& {
-        assert(0 < size());
+        assert(not empty());
         return _addr[size() - 1];
     }
 
@@ -349,8 +353,54 @@ public:
     /// @see front
     /// @pre not is_empty()
     auto back() noexcept -> element_type& {
-        assert(0 < size());
+        assert(not empty());
         return _addr[size() - 1];
+    }
+
+    /// @brief Returns the single value if size == 1
+    /// @see front
+    /// @pre has_single_value()
+    auto value() const noexcept -> element_type {
+        assert(has_single_value());
+        return front();
+    }
+
+    /// @brief Returns the single value if size == 1 or fallback
+    /// @see size
+    /// @see front
+    /// @see has_single_value
+    template <std::convertible_to<element_type> U>
+    auto value_or(U&& fallback) const noexcept -> element_type {
+        if(has_single_value()) {
+            return front();
+        }
+        return element_type(std::forward<U>(fallback));
+    }
+
+    /// @brief Returns the single value if size == 1 or default constructed element_type
+    /// @see has_single_value
+    /// @see size
+    /// @see front()
+    auto or_default() const noexcept -> element_type {
+        if(has_single_value()) {
+            return front();
+        }
+        return element_type{};
+    }
+
+    /// @brief Calls the specified function is size == 1
+    /// @see has_single_value
+    /// @see front()
+    template <
+      typename F,
+      optional_like R =
+        std::remove_cvref_t<std::invoke_result_t<F, const element_type&>>>
+    auto and_then(F&& function) -> R {
+        if(has_single_value()) {
+            return std::invoke(std::forward<F>(function), front());
+        } else {
+            return R{};
+        }
     }
 
     /// @brief Returns a const reference to value at the specified index.
@@ -370,6 +420,13 @@ public:
         requires(std::is_integral_v<Int>)
     {
         return ref(span_size(index));
+    }
+
+    /// @brief Returns the single value if size == 1
+    /// @see value
+    /// @pre has_value()
+    auto operator*() const noexcept -> element_type {
+        return value();
     }
 
     /// @brief Array subscript operator.
@@ -565,24 +622,19 @@ constexpr auto accommodate(
 //------------------------------------------------------------------------------
 // extract
 //------------------------------------------------------------------------------
-export template <typename T, typename P, typename S>
-constexpr auto has_value(basic_span<T, P, S> spn) noexcept -> bool {
-    return spn.has_single_value();
-}
-
 /// @brief Overload of extract for spans. Returns the first element,
 /// @pre spn.size() >= 1
 /// @ingroup memory
 export template <typename T, typename P, typename S>
 constexpr auto extract(basic_span<T, P, S> spn) noexcept -> T& {
-    assert(has_value(spn));
+    assert(spn.has_single_value());
     return spn.front();
 }
 
 export template <typename T, typename P, typename S, typename Dst>
 constexpr auto assign_if_fits(basic_span<T, P, S> src, Dst& dst) noexcept
   -> bool {
-    if(has_value(src)) {
+    if(src.has_single_value()) {
         return eagine::assign_if_fits(extract(src), dst);
     }
     return false;
@@ -620,15 +672,165 @@ public:
 export template <typename T, span_size_t chunkSize>
 using chunk_span = basic_chunk_span<T, T*, span_size_t, chunkSize>;
 //------------------------------------------------------------------------------
+// block
+//------------------------------------------------------------------------------
+/// @brief Alias for byte spans.
+/// @ingroup type_utils
+export template <bool IsConst>
+using basic_block = span<std::conditional_t<IsConst, const byte, byte>>;
+//------------------------------------------------------------------------------
+/// @brief Alias for non-const byte memory span.
+/// @ingroup memory
+/// @see buffer
+export using block = basic_block<false>;
+
+/// @brief Alias for const byte memory span.
+/// @ingroup memory
+/// @see buffer
+export using const_block = basic_block<true>;
+//------------------------------------------------------------------------------
+/// @brief Converts a span into a basic_block.
+/// @ingroup memory
+/// @see accommodate
+/// @see as_chars
+export template <typename T, typename P, typename S>
+constexpr auto as_bytes(const basic_span<T, P, S> spn) noexcept
+  -> basic_block<std::is_const_v<T>> {
+    return {spn.begin_addr(), spn.end_addr()};
+}
+//------------------------------------------------------------------------------
+/// @brief Converts a block into a span of characters.
+/// @ingroup memory
+/// @see accommodate
+/// @see as_bytes
+export constexpr auto as_chars(const block blk) noexcept {
+    return accommodate<char>(blk);
+}
+//------------------------------------------------------------------------------
+/// @brief Converts a block into a span of characters.
+/// @ingroup memory
+/// @see accommodate
+/// @see as_bytes
+export constexpr auto as_chars(const const_block blk) noexcept {
+    return accommodate<const char>(blk);
+}
+//------------------------------------------------------------------------------
+export class block_owner;
+//------------------------------------------------------------------------------
+/// @brief Specialization of block indicating byte span ownership.
+/// @ingroup memory
+/// @see block
+/// @see block_owner
+export class owned_block : public block {
+public:
+    /// @brief Default constructor.
+    /// @post is_empty()
+    constexpr owned_block() noexcept = default;
+
+    /// @brief Move constructor.
+    owned_block(owned_block&& temp) noexcept
+      : block{static_cast<const block&>(temp)} {
+        temp.reset();
+    }
+
+    /// @brief Move assignment operator.
+    auto operator=(owned_block&& temp) noexcept -> owned_block& {
+        if(this != std::addressof(temp)) {
+            static_cast<block&>(*this) = static_cast<const block&>(temp);
+            temp.reset();
+        }
+        return *this;
+    }
+
+    /// @brief Not copy constructible.
+    owned_block(const owned_block&) = delete;
+
+    /// @brief Not copy assignable.
+    auto operator=(const owned_block&) = delete;
+
+    /// @brief Destructor.
+    /// @pre is_empty()
+    ~owned_block() noexcept {
+        assert(empty());
+    }
+
+private:
+    friend class block_owner;
+
+    constexpr owned_block(block b) noexcept
+      : block{b} {}
+};
+//------------------------------------------------------------------------------
+/// @brief Base class for classes that act as memory block owners.
+/// @ingroup memory
+/// @see owned_block
+export class block_owner {
+protected:
+    /// @brief Should be called to take the ownership of a memory block.
+    [[nodiscard]] static auto acquire_block(block b) noexcept -> owned_block {
+        return {b};
+    }
+
+    /// @brief Should be called to release the ownership of a memory block.
+    static void release_block(owned_block&& b) noexcept {
+        b.reset();
+    }
+};
+//------------------------------------------------------------------------------
+// structured block
+//------------------------------------------------------------------------------
+export template <typename T>
+class structured_block {
+private:
+    basic_block<std::is_const_v<T>> _blk;
+
+    template <typename X = T>
+    auto _ptr() noexcept
+        requires(not std::is_const_v<X>)
+    {
+        assert(is_valid_block(_blk));
+        return static_cast<X*>(_blk.addr());
+    }
+
+    auto _cptr() const noexcept {
+        assert(is_valid_block(_blk));
+        return static_cast<const T*>(_blk.addr());
+    }
+
+public:
+    static auto is_valid_block(const const_block blk) noexcept -> bool {
+        return not blk.empty() and (blk.is_aligned_as<T>()) and
+               (can_accommodate(blk, std::type_identity<T>()));
+    }
+
+    structured_block(basic_block<std::is_const_v<T>> blk) noexcept
+      : _blk{blk} {
+        assert(is_valid_block(_blk));
+    }
+
+    template <typename X = T>
+    auto get() noexcept
+      -> X& requires(not std::is_const_v<X> and std::is_same_v<X, T>) {
+          return *_ptr();
+      }
+
+    template <typename X = T>
+    auto operator->() noexcept
+      -> X* requires(not std::is_const_v<X> and std::is_same_v<X, T>) {
+          return _ptr();
+      }
+
+    auto get() const noexcept -> const T& {
+        return *_cptr();
+    }
+
+    auto operator->() const noexcept -> const T* {
+        return _cptr();
+    }
+};
+//------------------------------------------------------------------------------
 } // namespace memory
 //------------------------------------------------------------------------------
-export template <typename T, typename P, typename S>
-struct extract_traits<memory::basic_span<T, P, S>> {
-    using value_type = T;
-    using result_type = T&;
-    using const_result_type = std::add_const_t<T>&;
-};
-
 export template <
   typename Tl,
   typename Tr,

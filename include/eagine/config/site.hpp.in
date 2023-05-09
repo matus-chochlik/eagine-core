@@ -12,9 +12,7 @@
 
 // clang-format off
 #ifndef EAGINE_LOW_PROFILE
-#if @CONFIG_SET_LOW_PROFILE@
 #define EAGINE_LOW_PROFILE @LOW_PROFILE@
-#endif
 #endif
 
 #ifndef EAGINE_DEBUG

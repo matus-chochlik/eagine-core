@@ -8,10 +8,10 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
+import std;
 import eagine.core.types;
 import eagine.core.math;
 import eagine.core.vectorization;
-import std;
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V, int K, int... I>
 static auto get_math_matrix_vec(

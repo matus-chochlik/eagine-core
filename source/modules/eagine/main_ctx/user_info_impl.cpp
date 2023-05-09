@@ -22,11 +22,11 @@ module;
 
 module eagine.core.main_ctx;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.valid_if;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -76,6 +76,9 @@ private:
         return result;
     }
 };
+//------------------------------------------------------------------------------
+user_info::user_info(main_ctx_parent parent)
+  : main_ctx_object{"UserInfo", parent} {}
 //------------------------------------------------------------------------------
 auto user_info::_impl() noexcept -> user_info_impl* {
     if(not _pimpl) [[unlikely]] {

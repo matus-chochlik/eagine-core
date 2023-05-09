@@ -11,8 +11,8 @@ module;
 
 export module eagine.core.serialization:float_utils;
 
-import eagine.core.types;
 import std;
+import eagine.core.types;
 
 namespace eagine::float_utils {
 //------------------------------------------------------------------------------

@@ -7,6 +7,10 @@
 ///
 module;
 
+#if __has_include(<eagine/config/os_info.hpp>)
+#include <eagine/config/os_info.hpp>
+#endif
+
 #if __has_include(<eagine/config/git_info.hpp>)
 #include <eagine/config/git_info.hpp>
 #endif
@@ -21,10 +25,10 @@ module;
 
 module eagine.core.build_info;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -304,14 +308,14 @@ auto config_os_code_name() noexcept -> valid_if_not_empty<string_view> {
 //------------------------------------------------------------------------------
 auto version_info::version_at_least(int major, int minor) const -> tribool {
     if(const auto opt_maj{version_major()}) {
-        if(extract(opt_maj) < major) {
+        if(opt_maj < major) {
             return false;
         }
-        if(extract(opt_maj) > major) {
+        if(opt_maj > major) {
             return true;
         }
         if(const auto opt_min{version_minor()}) {
-            if(extract(opt_min) < minor) {
+            if(opt_min < minor) {
                 return false;
             }
             return true;
@@ -323,21 +327,21 @@ auto version_info::version_at_least(int major, int minor) const -> tribool {
 auto version_info::version_at_least(int major, int minor, int patch) const
   -> tribool {
     if(const auto opt_maj{version_major()}) {
-        if(extract(opt_maj) < major) {
+        if(opt_maj < major) {
             return false;
         }
-        if(extract(opt_maj) > major) {
+        if(opt_maj > major) {
             return true;
         }
         if(const auto opt_min{version_minor()}) {
-            if(extract(opt_min) < minor) {
+            if(opt_min < minor) {
                 return false;
             }
-            if(extract(opt_min) > minor) {
+            if(opt_min > minor) {
                 return true;
             }
             if(const auto opt_ptch{version_patch()}) {
-                if(extract(opt_ptch) < patch) {
+                if(opt_ptch < patch) {
                     return false;
                 }
                 return true;
@@ -350,28 +354,28 @@ auto version_info::version_at_least(int major, int minor, int patch) const
 auto version_info::version_at_least(int major, int minor, int patch, int commit)
   const -> tribool {
     if(const auto opt_maj{version_major()}) {
-        if(extract(opt_maj) < major) {
+        if(opt_maj < major) {
             return false;
         }
-        if(extract(opt_maj) > major) {
+        if(opt_maj > major) {
             return true;
         }
         if(const auto opt_min{version_minor()}) {
-            if(extract(opt_min) < minor) {
+            if(opt_min < minor) {
                 return false;
             }
-            if(extract(opt_min) > minor) {
+            if(opt_min > minor) {
                 return true;
             }
             if(const auto opt_ptch{version_patch()}) {
-                if(extract(opt_ptch) < patch) {
+                if(opt_ptch < patch) {
                     return false;
                 }
-                if(extract(opt_ptch) > patch) {
+                if(opt_ptch > patch) {
                     return true;
                 }
                 if(const auto opt_cmit{version_commit()}) {
-                    if(extract(opt_cmit) < commit) {
+                    if(opt_cmit < commit) {
                         return false;
                     }
                     return true;

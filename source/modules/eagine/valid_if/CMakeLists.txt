@@ -12,7 +12,9 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.valid_if PARTITION compare
-	IMPORTS decl eagine.core.concepts
+	IMPORTS decl
+		eagine.core.concepts
+		eagine.core.reflection
 )
 eagine_add_module(
 	eagine.core.valid_if PARTITION filesystem
@@ -45,4 +47,7 @@ eagine_add_module_tests(
 		decl
 		range
 		filesystem
+	IMPORTS
+		eagine.core.types
+		eagine.core.concepts
 )

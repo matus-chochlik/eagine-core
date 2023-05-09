@@ -7,6 +7,7 @@
 ///
 export module eagine.core.logging:logger;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
@@ -17,7 +18,6 @@ import :config;
 import :backend;
 import :entry;
 import :time_interval;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ public:
         return measure_time_interval(label, log_event_severity::stat);
     }
 
-    auto configure(basic_config& config) const -> bool {
+    auto configure(basic_config_intf& config) const -> bool {
         if(auto lbe{backend()}) {
             extract(lbe).configure(config);
         }

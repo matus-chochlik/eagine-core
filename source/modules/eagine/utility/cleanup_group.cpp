@@ -7,10 +7,10 @@
 ///
 export module eagine.core.utility:cleanup_group;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import :scope_exit;
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -11,6 +11,8 @@ module;
 
 module eagine.core.logging;
 
+import <cerrno>;
+import std;
 import eagine.core.build_config;
 import eagine.core.types;
 import eagine.core.memory;
@@ -19,8 +21,6 @@ import eagine.core.utility;
 import eagine.core.runtime;
 import eagine.core.identifier;
 import :ostream_backend;
-import std;
-import <cerrno>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ public:
     proxy_log_backend(log_stream_info info) noexcept
       : _info{std::move(info)} {}
 
-    auto configure(basic_config&) -> bool final;
+    auto configure(basic_config_intf&) -> bool final;
 
     auto entry_backend(const log_event_severity severity) noexcept
       -> logger_backend* final;
@@ -380,14 +380,14 @@ void proxy_log_backend::log_chart_sample(
 }
 //------------------------------------------------------------------------------
 auto proxy_log_choose_backend(
-  basic_config& config,
+  basic_config_intf& config,
   const std::string& name,
   const log_stream_info& info) -> std::unique_ptr<logger_backend> {
     const bool use_spinlock{[&]() -> bool {
         std::string temp;
         if(config.fetch_string("log.use_spinlock", temp)) {
             if(const auto val{from_string<bool>(temp)}) {
-                return extract(val);
+                return *val;
             }
         }
         return false;
@@ -469,7 +469,7 @@ auto proxy_log_choose_backend(
     return std::make_unique<ostream_log_backend<std::mutex>>(std::clog, info);
 }
 //------------------------------------------------------------------------------
-auto proxy_log_backend::configure(basic_config& config) -> bool {
+auto proxy_log_backend::configure(basic_config_intf& config) -> bool {
     std::string backend_name;
     config.fetch_string("log.backend", backend_name);
     config.fetch("log.severity", _info.min_severity);

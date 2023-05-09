@@ -14,26 +14,30 @@ auto main(main_ctx& ctx) -> int {
     const std::string na{"N/A"};
 
     auto& cfg = ctx.config();
-    main_ctx_object out{identifier{"config"}, ctx};
+    main_ctx_object out{"config", ctx};
     std::string s;
     int i{0};
     std::vector<float> v;
 
     if(cfg.fetch("value_1", s)) {
-        out.cio_print("string: ${s}").arg(identifier{"s"}, s);
+        out.cio_print("string: ${s}").arg("s", s);
     }
 
     if(cfg.fetch("value_2", s)) {
-        out.cio_print("string: ${s}").arg(identifier{"s"}, s);
+        out.cio_print("string: ${s}").arg("s", s);
+    }
+
+    if(cfg.fetch_string("section_a.secret_value_b", s)) {
+        out.cio_print("secret: ${s}").arg("s", s);
     }
 
     if(cfg.fetch("section_a.subsection_b.value_c", i)) {
-        out.cio_print("integer : ${i}").arg(identifier{"i"}, i);
+        out.cio_print("integer : ${i}").arg("i", i);
     }
 
     if(cfg.fetch("section_a.subsection_b.values", v)) {
         for(auto e : v) {
-            out.cio_print("float : ${f}").arg(identifier{"f"}, e);
+            out.cio_print("float : ${f}").arg("f", e);
         }
     }
 

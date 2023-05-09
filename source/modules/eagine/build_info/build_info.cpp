@@ -7,11 +7,10 @@
 ///
 export module eagine.core.build_info;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
-
-import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -150,9 +149,9 @@ export [[nodiscard]] auto compiler_version_patch() noexcept
 export [[nodiscard]] auto compiler_version_tuple() noexcept
   -> std::tuple<int, int, int> {
     return {
-      extract_or(compiler_version_major(), -1),
-      extract_or(compiler_version_minor(), -1),
-      extract_or(compiler_version_patch(), -1)};
+      compiler_version_major().value_or(-1),
+      compiler_version_minor().value_or(-1),
+      compiler_version_patch().value_or(-1)};
 }
 //------------------------------------------------------------------------------
 /// @brief Class providing compiler and architecture information.

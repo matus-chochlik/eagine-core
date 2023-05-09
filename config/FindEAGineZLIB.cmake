@@ -20,10 +20,6 @@ if(ZLIB_FOUND)
 		)
 	endif()
 
-	target_compile_definitions(
-		EAGine::Deps::ZLIB INTERFACE EAGINE_USE_ZLIB=1
-	)
-
 	target_link_libraries(
 		EAGine::Deps::ZLIB INTERFACE "${ZLIB_LIBRARIES}"
 	)

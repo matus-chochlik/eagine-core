@@ -7,20 +7,20 @@
 ///
 module eagine.core.value_tree;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.logging;
-import std;
 
 namespace eagine::valtree {
 //------------------------------------------------------------------------------
 class overlay_compound;
 class overlay_attribute;
 static auto overlay_make_new_node(overlay_compound&, basic_string_path) noexcept
-  -> overlay_attribute*;
+  -> optional_reference<overlay_attribute>;
 //------------------------------------------------------------------------------
 struct overlay_context {
     std::vector<compound_attribute> overlays;
@@ -34,7 +34,7 @@ auto get_context(overlay_compound&) noexcept -> overlay_context&;
 class overlay_attribute : public attribute_interface {
     struct _child_info {
         std::size_t index{0};
-        overlay_attribute* cached{nullptr};
+        optional_reference<overlay_attribute> cached{};
     };
 
     std::map<std::string, _child_info, str_view_less> _children;
@@ -80,7 +80,8 @@ class overlay_attribute : public attribute_interface {
 
     auto _get_child(
       overlay_compound& owner,
-      std::pair<const std::string, _child_info>& entry) -> overlay_attribute* {
+      std::pair<const std::string, _child_info>& entry)
+      -> optional_reference<overlay_attribute> {
         auto& info = entry.second;
         if(not info.cached) {
             basic_string_path path{_path};
@@ -120,6 +121,10 @@ public:
         return _path.back();
     }
 
+    auto preview(overlay_compound& owner) -> optionally_valid<string_view> {
+        return _find_source(owner).preview();
+    }
+
     auto canonical_type(overlay_compound& owner) -> value_type {
         return _find_source(owner).canonical_type();
     }
@@ -137,31 +142,32 @@ public:
     }
 
     auto nested(overlay_compound& owner, span_size_t index)
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         auto& children = _scan(owner);
         if(index < span_size(children.size())) {
             auto pos = children.begin();
             std::advance(pos, index);
             return _get_child(owner, *pos);
         }
-        return nullptr;
+        return {};
     }
 
     auto nested(overlay_compound& owner, string_view name)
-      -> attribute_interface* {
+      -> optional_reference<attribute_interface> {
         auto& children = _scan(owner);
         auto pos = children.find(name);
         if(pos != children.end()) {
             return _get_child(owner, *pos);
         }
-        return nullptr;
+        return {};
     }
 
     auto find(
       [[maybe_unused]] overlay_compound& owner,
       [[maybe_unused]] const basic_string_path& path,
-      [[maybe_unused]] span<const string_view> tags) -> attribute_interface* {
-        return nullptr;
+      [[maybe_unused]] span<const string_view> tags)
+      -> optional_reference<attribute_interface> {
+        return {};
     }
 
     auto value_count(overlay_compound& owner) -> span_size_t {
@@ -203,12 +209,17 @@ public:
         return "overlay";
     }
 
-    auto structure() -> attribute_interface* final {
-        return &_root;
+    auto structure() -> optional_reference<attribute_interface> final {
+        return _root;
     }
 
     auto attribute_name(attribute_interface& attrib) -> string_view final {
         return _unwrap(attrib).name();
+    }
+
+    auto attribute_preview(attribute_interface& attrib)
+      -> optionally_valid<string_view> final {
+        return _unwrap(attrib).preview(*this);
     }
 
     auto canonical_type(attribute_interface& attrib) -> value_type final {
@@ -228,19 +239,20 @@ public:
     }
 
     auto nested(attribute_interface& attrib, span_size_t index)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).nested(*this, index);
     }
 
     auto nested(attribute_interface& attrib, string_view name)
-      -> attribute_interface* final {
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).nested(*this, name);
     }
 
     auto find(
       attribute_interface& attrib,
       const basic_string_path& path,
-      span<const string_view> tags) -> attribute_interface* final {
+      span<const string_view> tags)
+      -> optional_reference<attribute_interface> final {
         return _unwrap(attrib).find(*this, path, tags);
     }
 
@@ -269,7 +281,7 @@ public:
 //------------------------------------------------------------------------------
 static auto overlay_make_new_node(
   overlay_compound& owner,
-  basic_string_path path) noexcept -> overlay_attribute* {
+  basic_string_path path) noexcept -> optional_reference<overlay_attribute> {
     return owner.make_node(std::move(path));
 }
 //------------------------------------------------------------------------------
