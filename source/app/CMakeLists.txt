@@ -25,6 +25,12 @@ install(
 	DESTINATION bin
 )
 
+install(
+	PROGRAMS procman.py
+	RENAME eagine-procman
+	DESTINATION bin
+)
+
 find_package(Qt5 COMPONENTS Core Widgets Xml Qml Quick)
 if(Qt5_FOUND)
 	set(CMAKE_AUTOMOC ON)
