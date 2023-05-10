@@ -135,6 +135,13 @@ class ArgumentParser(argparse.ArgumentParser):
         argparse.ArgumentParser.__init__(self, **kw)
 
         self.add_argument(
+            "--local-socket", "-L",
+            dest='local_socket',
+            action="store",
+            default="/tmp/eagine-xmllog"
+        )
+
+        self.add_argument(
             "--network-socket", "-n",
             dest='network_socket',
             action="store_true",
@@ -1228,7 +1235,7 @@ class NetworkLogSocket(socket.socket):
 def open_socket(options):
     if options.network_socket:
         return NetworkLogSocket(options.socket_port)
-    return LocalLogSocket("/tmp/eagine-xmllog")
+    return LocalLogSocket(options.local_socket)
 
 # ------------------------------------------------------------------------------
 def handle_connections(log_sock, formatter):

@@ -97,10 +97,17 @@ auto root_logger_choose_backend(
                   nw_addr, info);
             }
         } else if(arg.is_long_tag("use-asio-log")) {
+            string_view path;
+            if(arg.next() and not arg.next().starts_with("-")) {
+                path = arg.next();
+            } else if(const auto env_var{
+                        get_environment_variable("EAGINE_LOG_LOCAL_PATH")}) {
+                path = extract(env_var);
+            }
             if(use_spinlock) {
-                return make_asio_local_ostream_log_backend_spinlock(info);
+                return make_asio_local_ostream_log_backend_spinlock(path, info);
             } else {
-                return make_asio_local_ostream_log_backend_mutex(info);
+                return make_asio_local_ostream_log_backend_mutex(path, info);
             }
         }
     }

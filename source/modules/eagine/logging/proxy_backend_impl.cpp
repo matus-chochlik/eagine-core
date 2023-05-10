@@ -427,10 +427,12 @@ auto proxy_log_choose_backend(
             return make_asio_tcpipv4_ostream_log_backend_mutex(nw_addr, info);
         }
     } else if(name == "local") {
+        std::string path;
+        config.fetch_string("log.local.address", path);
         if(use_spinlock) {
-            return make_asio_local_ostream_log_backend_spinlock(info);
+            return make_asio_local_ostream_log_backend_spinlock(path, info);
         } else {
-            return make_asio_local_ostream_log_backend_mutex(info);
+            return make_asio_local_ostream_log_backend_mutex(path, info);
         }
     }
 
