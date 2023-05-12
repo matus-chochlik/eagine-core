@@ -22,6 +22,8 @@ import argparse
 import tempfile
 import subprocess
 
+import xml.etree.ElementTree as etree
+
 try:
     import selectors
 except ImportError:
@@ -364,6 +366,41 @@ def mergeConfigs(source, destination):
     return destination
 
 # ------------------------------------------------------------------------------
+#  Log message info
+# ------------------------------------------------------------------------------
+class LogMessageInfo(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, source):
+        self._et = etree.Element("root")
+        self._et.append(self._maketree(source, "log"))
+
+    # --------------------------------------------------------------------------
+    def has(self, xpath):
+        return len(self._et.findall(xpath)) > 0
+
+    # --------------------------------------------------------------------------
+    def _item2etree(self, name, value, node):
+        if type(value) is dict:
+            self._dict2etree(value, etree.SubElement(node, name))
+        elif type(value) is list:
+            for elem in value:
+                self._item2etree(name, elem, node)
+            pass
+        else:
+            node.set(name, str(value))
+
+    # --------------------------------------------------------------------------
+    def _dict2etree(self, source, node):
+        for name, value in source.items():
+            self._item2etree(name, value, node)
+        return node
+
+    # --------------------------------------------------------------------------
+    def _maketree(self, source, root_name):
+        root = etree.Element(root_name)
+        return self._dict2etree(source, root)
+
+# ------------------------------------------------------------------------------
 #  Expectations
 # ------------------------------------------------------------------------------
 class ExpectCleanShutdown(object):
@@ -410,6 +447,49 @@ class ExpectExitCode(object):
                 value,
                 self._identity,
                 self._expected_value))
+
+        return False
+
+# ------------------------------------------------------------------------------
+class ExpectXPathCount(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, xpath, oper, value):
+        self._count = 0
+        self._xpath = xpath
+        self._oper = oper
+        self._value = value
+
+    # --------------------------------------------------------------------------
+    def update(self, message_info):
+        if message_info.has(self._xpath):
+            self._count += 1
+
+    # --------------------------------------------------------------------------
+    def applyOp(self, l, r):
+        if self._oper == "=":
+            return l == r
+        if self._oper == "!=":
+            return l != r
+        if self._oper == "<=":
+            return l <= r
+        if self._oper == ">=":
+            return l >= r
+        if self._oper == "<":
+            return l < r
+        if self._oper == ">":
+            return l > r
+
+    # --------------------------------------------------------------------------
+    def check(self):
+        if self.applyOp(self._count, self._value):
+            return True
+
+        logging.error("count %d of '%s' is expected to be %s %d" % (
+            self._count,
+            self._xpath,
+            self._oper,
+            self._value
+        ))
 
         return False
 
@@ -663,6 +743,31 @@ class PipelineConfig(object):
         return dict(
             (identity, ExpectExitCode(identity, int(value)))
             for identity, value in expectations.get("exit_code", {}).items())
+
+    # --------------------------------------------------------------------------
+    def logMessageInfoExpectations(self):
+        expectations = self.full_config.get("expect", {}).get("xpath", {})
+        count_re = re.compile("^count\((.*)\)(=|!=|<|>|<=|>=)([0-9]+)$")
+
+        result = {}
+        def _addToResult(identity, exp):
+            try:
+                dst = result[identity]
+            except KeyError:
+                dst = result[identity] = []
+            dst.append(exp)
+
+        for identity, xpath in expectations.items():
+            found = re.match(count_re, xpath)
+            if found:
+                _addToResult(
+                    identity,
+                    ExpectXPathCount(
+                        found.group(1),
+                        found.group(2),
+                        int(found.group(3))))
+
+        return result
 
 # ------------------------------------------------------------------------------
 class ProcessInstance(object):
@@ -1145,6 +1250,8 @@ class ProcessLogTracker(object):
             composition.config().cleanShutdownExpectations()
         self._expect_exit_code =\
             composition.config().exitCodeExpectations()
+        self._expect_in_log_message =\
+            composition.config().logMessageInfoExpectations()
 
     # --------------------------------------------------------------------------
     def beginLog(self, src_id, info):
@@ -1164,7 +1271,14 @@ class ProcessLogTracker(object):
 
     # --------------------------------------------------------------------------
     def addMessage(self, src_id, info):
-        pass
+        try:
+            message_info = None
+            msg_identity = self._identities[src_id]
+            for expectation in self._expect_in_log_message[msg_identity]:
+                if message_info is None:
+                    message_info = LogMessageInfo(info)
+                expectation.update(message_info)
+        except KeyError: pass
 
     # --------------------------------------------------------------------------
     def addLoggerInfos(self, src_id, infos):
@@ -1193,6 +1307,9 @@ class ProcessLogTracker(object):
             yield exp
         for exp in self._expect_exit_code.values():
             yield exp
+        for exps in self._expect_in_log_message.values():
+            for exp in exps:
+                yield exp
 
     # --------------------------------------------------------------------------
     def result(self):
