@@ -16,6 +16,7 @@ import errno
 import random
 import signal
 import socket
+import logging
 import xml.sax
 import argparse
 import tempfile
@@ -26,6 +27,8 @@ try:
 except ImportError:
     import selectors2 as selectors
 
+# ------------------------------------------------------------------------------
+#  Argument parsing
 # ------------------------------------------------------------------------------
 class ArgumentParser(argparse.ArgumentParser):
     # --------------------------------------------------------------------------
@@ -115,6 +118,13 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
         self.add_argument(
+            "--dry-run",
+            action="store_true",
+            default=False,
+            help="""Does not actually start anything just prints selected information."""
+        )
+
+        self.add_argument(
             "--print-config", "-P",
             action="store_true",
             default=False,
@@ -172,6 +182,8 @@ def getArgumentParser():
     )
 
 # ------------------------------------------------------------------------------
+#  Configuration parse utilities
+# ------------------------------------------------------------------------------
 class ExpansionRegExprs(object):
     # --------------------------------------------------------------------------
     def __init__(self, options):
@@ -208,7 +220,11 @@ class ExpansionRegExprs(object):
         ]
 
         self.adjustments = [
-            ("instance",
+            ("identity",
+                re.compile(".*(\$<identity ([^)]+)>).*"),
+                lambda inst, mtch : self._resolveProcIdentity(mtch.group(2))
+            ),
+            ("timestamp",
                 re.compile(".*(\$<timestamp>).*"),
                 lambda inst, mtch: time.time()
             ),
@@ -253,6 +269,10 @@ class ExpansionRegExprs(object):
                 if stat.S_IXUSR & os.stat(cmd_path)[stat.ST_MODE]:
                     return cmd_path
         return name
+
+    # --------------------------------------------------------------------------
+    def _resolveProcIdentity(self, expr):
+        return ["--log-identity", expr]
 
     # --------------------------------------------------------------------------
     def _resolveCmdEAGiApp(self, name):
@@ -313,10 +333,63 @@ def mergeConfigs(source, destination):
     return destination
 
 # ------------------------------------------------------------------------------
+#  Expectations
+# ------------------------------------------------------------------------------
+class ExpectCleanShutdown(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, identity):
+        self._satisfied = False
+        self._identity = identity
+
+    # --------------------------------------------------------------------------
+    def update(self, arg):
+        self._satisfied = arg
+
+    # --------------------------------------------------------------------------
+    def check(self):
+        if self._satisfied:
+            return True
+
+        logging.error("unexpected failed shutdown of '%s'" % self._identity)
+        return False
+
+# ------------------------------------------------------------------------------
+class ExpectExitCode(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, identity, value):
+        self._expected_value = value
+        self._actual_values = []
+        self._identity = identity
+
+    # --------------------------------------------------------------------------
+    def update(self, instance, value):
+        self._actual_values.append(value)
+
+    # --------------------------------------------------------------------------
+    def check(self):
+        actual = set(self._actual_values)
+        if all(v == self._expected_value for v in actual):
+            return True
+
+        if len(actual) == 0:
+            logging.error("did not receive exit notification of '%s'", self._identity) 
+
+        for value in actual: 
+            logging.error("unexpected exit code %d of '%s', expected: %d" % (
+                value,
+                self._identity,
+                self._expected_value))
+
+        return False
+
+# ------------------------------------------------------------------------------
+#  Configuration
+# ------------------------------------------------------------------------------
 class PipelineConfig(object):
     # --------------------------------------------------------------------------
     def __init__(self, options):
         self._res = ExpansionRegExprs(options)
+        self._options = options
         self.full_config = {}
 
         if options.config_paths:
@@ -338,12 +411,12 @@ class PipelineConfig(object):
                             partial_config,
                             self.full_config)
                 except IOError as io_error:
-                    print("error reading '%s': %s" % (config_path, io_error))
+                    logging.error("reading '%s': %s" % (config_path, io_error))
                 except ValueError as value_error:
-                    print("error parsing '%s': %s" % (config_path, value_error))
+                    logging.error("parsing '%s': %s" % (config_path, io_error))
 
         for pipeline in self.full_config.get("pipelines", []):
-            variables = {}
+            variables = self.full_config.get("variables", {}).copy()
             for name, expr in pipeline.get("variables", {}).items():
                 values = self.resolve(expr, variables)
                 if len(values) == 1:
@@ -375,14 +448,14 @@ class PipelineConfig(object):
 
     # --------------------------------------------------------------------------
     def _fallback(self, name):
-        if name in ["SELF"]:
-            return os.path.abspath(__file__)
-
-        if name in ["TEMPDIR"]:
-            return tempfile.gettempdir()
+        if name in ["WORK_DIR"]:
+            return self._options.workDir()
 
         if name in ["HOME"]:
             return os.path.expanduser("~")
+
+        if name in ["SELF"]:
+            return os.path.abspath(__file__)
 
         return name
 
@@ -537,24 +610,66 @@ class PipelineConfig(object):
     def pipelineConfigs(self):
         return self.full_config.get("pipelines", [])
 
+    # --------------------------------------------------------------------------
+    def cleanShutdownExpectations(self):
+        expectations = self.full_config.get("expect", {})
+        return dict(
+            (identity, ExpectCleanShutdown(identity))
+            for identity in expectations.get("clean_shutdown", []))
+
+    # --------------------------------------------------------------------------
+    def exitCodeExpectations(self):
+        expectations = self.full_config.get("expect", {})
+        return dict(
+            (identity, ExpectExitCode(identity, int(value)))
+            for identity, value in expectations.get("exit_code", {}).items())
+
 # ------------------------------------------------------------------------------
 class ProcessInstance(object):
     # --------------------------------------------------------------------------
     def __init__(self, parent, args):
         self._parent = parent
         self._args = [str(arg) for arg in args]
-        print(self._args)
+        self._identity = None
+        for i in range(len(self._args) - 1):
+            if self._args[i] == "--log-identity":
+                self._identity = self._args[i + 1]
+                break
         self._handle = subprocess.Popen(self._args)
-        self._exit_code = None if self._handle else -1
+        if self._handle:
+            self._exit_code = None
+        else:
+            self._exit_code = -1
+            self.onProcessExit()
+
+    # --------------------------------------------------------------------------
+    def identity(self):
+        return self._identity
+
+    # --------------------------------------------------------------------------
+    def exitCode(self):
+        return self._exit_code
+
+    # --------------------------------------------------------------------------
+    def onProcessExit(self):
+        if self._identity is not None:
+            assert self._exit_code is not None
+            self._parent.onProcessExit(self)
 
     # --------------------------------------------------------------------------
     def handleExit(self, pid):
         if self._handle.pid == pid:
             self._handle.wait()
             self._exit_code = self._handle.returncode
+            self.onProcessExit()
 
     # --------------------------------------------------------------------------
     def isFinished(self):
+        if self._exit_code is None:
+            self._exit_code = self._handle.poll()
+            if self._exit_code is not None:
+                self.onProcessExit()
+
         return self._exit_code is not None
 
 # ------------------------------------------------------------------------------
@@ -570,6 +685,12 @@ class PipelineInstance(object):
     # --------------------------------------------------------------------------
     def instanceIndex(self):
         return self._index
+
+    # --------------------------------------------------------------------------
+    def onProcessExit(self, process):
+        self._parent.onProcessExit(self._index, process)
+        if self.isFinished():
+            self._parent.onInstanceFinished(self)
 
     # --------------------------------------------------------------------------
     def handleExit(self, pid):
@@ -589,7 +710,10 @@ class Pipeline(object):
         self._instance_counter = 0
         self._required_instances = int(config.get("instances", 1))
         assert self._required_instances > 0
-        self._parallel_instances = int(config.get("parallel", 1))
+        parallel = config.get("parallel", 1)
+        if type(parallel) is bool:
+            parallel = self._required_instances
+        self._parallel_instances = parallel
         assert self._parallel_instances > 0
         self._instances = [None] * self._parallel_instances
 
@@ -605,6 +729,10 @@ class Pipeline(object):
         commands = self._config["commands"]
         for args in commands:
             yield self._prepareArgs(instance, args)
+
+    # --------------------------------------------------------------------------
+    def handle(self):
+        return self._config.get("handle")
 
     # --------------------------------------------------------------------------
     def needsNewInstance(self):
@@ -625,6 +753,15 @@ class Pipeline(object):
                 self._instance_counter += 1
 
         return instance
+
+    # --------------------------------------------------------------------------
+    def onProcessExit(self, instance_index, process):
+        self._parent.onProcessExit(self, instance_index, process)
+
+    # --------------------------------------------------------------------------
+    def onInstanceFinished(self, index):
+        if self.isFinished():
+            self._parent.onPipelineFinished(self)
 
     # --------------------------------------------------------------------------
     def handleExit(self, pid):
@@ -651,14 +788,33 @@ class PipelineComposition(object):
     # --------------------------------------------------------------------------
     def __init__(self, options, config):
         self._config = config
+        self._tracker = None
         self._pipelines = [
             Pipeline(options, self, cfg)
             for cfg in config.pipelineConfigs()]
 
     # --------------------------------------------------------------------------
+    def setTracker(self, tracker):
+        self._tracker = tracker
+
+    # --------------------------------------------------------------------------
+    def config(self):
+        return self._config
+
+    # --------------------------------------------------------------------------
     def adjustArgsOf(self, instance, arg, variables):
         for value in self._config.adjustArgsOf(instance, arg, variables):
             yield value
+
+    # --------------------------------------------------------------------------
+    def onProcessExit(self, pipeline, pipeline_instance, process):
+        assert self._tracker is not None
+        self._tracker.onProcessExit(pipeline, pipeline_instance, process)
+
+    # --------------------------------------------------------------------------
+    def onPipelineFinished(self, pipeline):
+        assert self._tracker is not None
+        self._tracker.onPipelineFinished(pipeline)
 
     # --------------------------------------------------------------------------
     def handleExit(self, pid):
@@ -722,7 +878,6 @@ class XmlLogProcessor(xml.sax.ContentHandler):
             try: self._info["args"][self._carg]["values"].append(iarg)
             except KeyError:
                 self._info["args"][self._carg] = {
-                    "used": False,
                     "values": [iarg]
                 }
         elif tag == "i":
@@ -807,17 +962,22 @@ class XmlLogClientHandler(xml.sax.ContentHandler):
                 done = 0
                 for line in lines[:-1]:
                     try:
-                        self._processor.processLine(line.decode('utf-8'))
+                        line = line.decode('utf-8')
+                        self._processor.processLine(line)
                         done += 1
                     except UnicodeDecodeError:
-                        print(line)
+                        log.error("failed to decode: '%s'" % line)
+                        break
+                    except:
+                        log.error("failed parse XML: '%s'" % line)
                         break
                 self._buffer = sep.join(lines[done:])
             else:
                 self.disconnect()
         except socket.error:
             self.disconnect()
-
+# ------------------------------------------------------------------------------
+#  Tracker
 # ------------------------------------------------------------------------------
 class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
@@ -827,14 +987,28 @@ class ProcessLogTracker(object):
         self._start_time = time.time()
         self._source_id = 0
         self._loggers = {}
+        self._identities = {}
+
+        self._expect_clean_shutdown =\
+            composition.config().cleanShutdownExpectations()
+        self._expect_exit_code =\
+            composition.config().exitCodeExpectations()
 
     # --------------------------------------------------------------------------
     def beginLog(self, src_id, info):
-        pass
+        if "identity" in  info:
+            self._identities[src_id] = info["identity"]
+            print("beginLog", self._identities)
 
     # --------------------------------------------------------------------------
     def finishLog(self, src_id, clean_shutdown):
-        pass
+        try:
+            identity = self._identities[src_id]
+            self._expect_clean_shutdown[identity].update(clean_shutdown)
+        except KeyError: pass
+
+        try: del self._identities[src_id]
+        except KeyError: pass
 
     # --------------------------------------------------------------------------
     def addMessage(self, src_id, info):
@@ -850,9 +1024,30 @@ class ProcessLogTracker(object):
         return XmlLogProcessor(self._source_id, self)
 
     # --------------------------------------------------------------------------
-    def result(self):
+    def onProcessExit(self, pipeline, pipeline_index, process):
+        try:
+            self._expect_exit_code[process.identity()]\
+                .update(process.identity(), process.exitCode())
+        except KeyError: pass
+
+    # --------------------------------------------------------------------------
+    def onPipelineFinished(self, pipeline):
         # TODO
-        return 0
+        print("pipeline", pipeline.handle())
+
+    # --------------------------------------------------------------------------
+    def allExpectations(self):
+        for exp in self._expect_clean_shutdown.values():
+            yield exp
+        for exp in self._expect_exit_code.values():
+            yield exp
+
+    # --------------------------------------------------------------------------
+    def result(self):
+        success = True
+        for expectation in self.allExpectations():
+            success = expectation.check() and success
+        return 0 if success else 1
 
 # ------------------------------------------------------------------------------
 class LocalLogSocket(socket.socket):
@@ -875,6 +1070,8 @@ class LocalLogSocket(socket.socket):
             os.unlink(self._socket_path)
         except: pass
 
+# ------------------------------------------------------------------------------
+#  Main loop
 # ------------------------------------------------------------------------------
 def manageProcesses(options, composition, tracker):
     global keepRunning
@@ -910,6 +1107,8 @@ def manageProcesses(options, composition, tracker):
     return tracker.result()
 
 # ------------------------------------------------------------------------------
+#  Signal handling
+# ------------------------------------------------------------------------------
 def handleInterrupt(sig, frame):
     global keepRunning
     keepRunning = False
@@ -925,6 +1124,8 @@ def handleChildExit(signum, frame):
         pass
 
 # ------------------------------------------------------------------------------
+#  Initialization and startup
+# ------------------------------------------------------------------------------
 def main():
     global composition
     signal.signal(signal.SIGINT, handleInterrupt)
@@ -934,9 +1135,12 @@ def main():
     options = argparser.parseArgs()
     composition = PipelineComposition(options, PipelineConfig(options))
     tracker = ProcessLogTracker(options, composition)
+    composition.setTracker(tracker)
 
-    sys.exit(manageProcesses(options, composition, tracker))
+    if not options.dry_run:
+        return manageProcesses(options, composition, tracker)
+    return 0
 
 # ------------------------------------------------------------------------------
-if __name__ == "__main__": main()
+if __name__ == "__main__": sys.exit(main())
 
