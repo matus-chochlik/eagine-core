@@ -208,9 +208,9 @@ public:
             _add(source.name());
             _add("' iid='");
             _add(instance);
-            _add(" dn='");
+            _add("' dn='");
             _add(display_name);
-            _add(" desc='");
+            _add("' desc='");
             _add(description);
             _add("'/>\n");
             _flush();
