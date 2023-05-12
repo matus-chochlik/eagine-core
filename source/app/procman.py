@@ -143,6 +143,7 @@ class ArgumentParser(argparse.ArgumentParser):
             def __init__(self, base):
                 self.__dict__.update(base.__dict__)
                 self._hashes = set()
+                self._named_hashes = dict()
                 self._work_dir = tempfile.TemporaryDirectory(prefix="eagi")
 
             # ------------------------------------------------------------------
@@ -154,11 +155,19 @@ class ArgumentParser(argparse.ArgumentParser):
                 return "%032x" % random.getrandbits(128)
 
             # ------------------------------------------------------------------
-            def uniqueHash(self):
+            def uniqueHash(self, key):
+                if key is not None:
+                    try:
+                        return self._named_hashes[key]
+                    except KeyError:
+                        pass
+
                 while True:
                     h = self._genHash()
                     if h not in self._hashes:
                         self._hashes.add(h)
+                        if key is not None:
+                            self._named_hashes[key] = h
                         return h
 
             # ------------------------------------------------------------------
@@ -167,7 +176,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
             # ------------------------------------------------------------------
             def logSocketPath(self):
-                return os.path.join(self.workDir(), "log.socket")
+                return os.path.join(self.workDir(), "eagilog.socket")
 
         # ----------------------------------------------------------------------
         return _Options(self.processParsedOptions(
@@ -182,6 +191,8 @@ def getArgumentParser():
     )
 
 # ------------------------------------------------------------------------------
+keepRunning = True
+# ------------------------------------------------------------------------------
 #  Configuration parse utilities
 # ------------------------------------------------------------------------------
 class ExpansionRegExprs(object):
@@ -190,32 +201,44 @@ class ExpansionRegExprs(object):
         self._options = options
         self.commands = [
             ("pathid",
-                re.compile(".*(\$\(pathid ([^)]+)\)).*"),
+                re.compile(".*(\$\(pathid\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdPathId(mtch.group(2))
             ),
+            ("in_work_dir",
+                re.compile(".*(\$\(in_work_dir\s+([^)]+)\)).*"),
+                lambda mtch : self._resolveCmdInWorkDir(mtch.group(2))
+            ),
             ("basename",
-                re.compile(".*(\$\(basename ([^)]+)\)).*"),
+                re.compile(".*(\$\(basename\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdBasename(mtch.group(2))
             ),
             ("dirname",
-                re.compile(".*(\$\(dirname ([^)]+)\)).*"),
+                re.compile(".*(\$\(dirname\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdDirname(mtch.group(2))
             ),
             ("wildcard",
-                re.compile(".*(\$\(wildcard ([^)]+)\)).*"),
+                re.compile(".*(\$\(wildcard\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdWildcard(mtch.group(2))
             ),
             ("which",
-                re.compile(".*(\$\(which ([^)]+)\)).*"),
+                re.compile(".*(\$\(which\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdWhich(mtch.group(2))
             ),
             ("eagiapp",
-                re.compile(".*(\$\(eagiapp ([^)]+)\)).*"),
+                re.compile(".*(\$\(eagiapp\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdEAGiApp(mtch.group(2))
+            ),
+            ("range",
+                re.compile(".*(\$\(range\s+([0-9]+)\s+([0-9]+)\)).*"),
+                lambda mtch : self._resolveCmdRange(mtch.group(2), mtch.group(3))
+            ),
+            ("nuid",
+                re.compile(".*(\$\(uid\s+([^)]+)\)).*"),
+                lambda mtch : self._resolveCmdUid(mtch.group(2))
             ),
             ("uid",
                 re.compile(".*(\$\(uid\)).*"),
-                lambda mtch : self._resolveCmdUid()
+                lambda mtch : self._resolveCmdUid(None)
             )
         ]
 
@@ -242,6 +265,10 @@ class ExpansionRegExprs(object):
         self.list_exp = re.compile(".*(\$\[([A-Za-z][A-Za-z_0-9]*)\.\.\.\]).*")
         self.sbsc_exp = re.compile(".*(\$\[([A-Za-z][A-Za-z_0-9]*)\[([0-9]+)\]\]).*")
         self.eval_exp = re.compile(".*(\$\(([0-9+*/%-]*)\)).*")
+
+    # --------------------------------------------------------------------------
+    def _resolveCmdInWorkDir(self, name):
+        return os.path.join(self._options.workDir(), name)
 
     # --------------------------------------------------------------------------
     def _resolveCmdBasename(self, name):
@@ -315,8 +342,12 @@ class ExpansionRegExprs(object):
                 return [found, "--use-asio-log", self._options.logSocketPath()]
 
     # --------------------------------------------------------------------------
-    def _resolveCmdUid(self):
-        return self._options.uniqueHash()
+    def _resolveCmdRange(self, ifrom, ito):
+        return [i for i in range(int(ifrom), int(ito)+1)]
+
+    # --------------------------------------------------------------------------
+    def _resolveCmdUid(self, key):
+        return self._options.uniqueHash(key)
 
 # ------------------------------------------------------------------------------
 def mergeConfigs(source, destination):
@@ -465,20 +496,25 @@ class PipelineConfig(object):
             yield expr
             return
 
-        value = str(variables.get(expr, os.environ.get(expr, self._fallback(expr))))
-        while True:
-            found = re.match(self._res.variable, value)
-            if found:
-                prev = value[:found.start(1)]
-                folw = value[found.end(1):]
-                for repl in self._doSubstitute(
-                    found.group(2),
-                    variables):
-                    yield prev + repl + folw
-                break
-            else:
-                yield value
-                break
+        def _expandVar(name):
+            return str(variables.get(name, os.environ.get(name, self._fallback(name))))
+
+        value = _expandVar(expr)
+
+        if re.match(self._res.variable, value):
+            global keepRunning
+            while keepRunning:
+                found = re.match(self._res.variable, value)
+                if found:
+                    prev = value[:found.start(1)]
+                    repl = _expandVar(found.group(2))
+                    folw = value[found.end(1):]
+                    value = prev + repl + folw
+                else:
+                    yield value
+                    return
+        else:
+            yield value
 
     # --------------------------------------------------------------------------
     def _doSubEvals(self, expr, variables):
@@ -486,14 +522,14 @@ class PipelineConfig(object):
             if type(value) is not str:
                 yield value
             else:
-                while True:
+                global keepRunning
+                while keepRunning:
                     found = re.match(self._res.eval_exp, value)
                     if found:
                         prev = value[:found.start(1)]
                         repl = str(eval(found.group(2)))
                         folw = value[found.end(1):]
                         yield prev + repl + folw
-                        break;
                     else:
                         yield value
                         break
@@ -517,7 +553,10 @@ class PipelineConfig(object):
                         if type(repl) is not list:
                             repl = [repl]
                         for item in repl:
-                            yield prev + item + folw
+                            if prev or folw:
+                                yield prev + str(item) + folw
+                            else:
+                                yield item
                     else:
                         yield value
 
@@ -554,16 +593,17 @@ class PipelineConfig(object):
                             prev = value[:found.start(1)]
                             repl = variables.get(found.group(2), [])
                             folw = value[found.end(1):]
-                            if type(repl) is not list:
-                                repl = [repl]
+                            indx = int(found.group(3))
+
+                            if prev or folw:
+                                value = prev + str(repl) + folw
+                            else:
+                                value = repl
+
+                            repl = [e for e in self._substitute(value, variables)]
 
                             try:
-                                elem = repl[int(found.group(3)) % len(repl)]
-
-                                for nested_value in self._substitute(
-                                    [prev+str(elem)+folw],
-                                    variables):
-                                    yield nested_value
+                                yield repl[indx % len(repl)]
                             except ValueError:
                                 yield value
                         else:
@@ -647,6 +687,16 @@ class ProcessInstance(object):
         return self._identity
 
     # --------------------------------------------------------------------------
+    def terminate(self):
+        if self._exit_code is None:
+            self._handle.send_signal(signal.SIGTERM)
+
+    # --------------------------------------------------------------------------
+    def kill(self):
+        if self._exit_code is None:
+            self._handle.send_signal(signal.SIGKILL)
+
+    # --------------------------------------------------------------------------
     def exitCode(self):
         return self._exit_code
 
@@ -662,6 +712,10 @@ class ProcessInstance(object):
             self._handle.wait()
             self._exit_code = self._handle.returncode
             self.onProcessExit()
+
+    # --------------------------------------------------------------------------
+    def isRunning(self):
+        return self._handle is not None and not self.isFinished()
 
     # --------------------------------------------------------------------------
     def isFinished(self):
@@ -687,6 +741,17 @@ class PipelineInstance(object):
         return self._index
 
     # --------------------------------------------------------------------------
+    def terminate(self):
+        for process in self._processes:
+            process.terminate()
+            break # only the first one
+
+    # --------------------------------------------------------------------------
+    def kill(self):
+        for process in self._processes:
+            process.kill()
+
+    # --------------------------------------------------------------------------
     def onProcessExit(self, process):
         self._parent.onProcessExit(self._index, process)
         if self.isFinished():
@@ -694,12 +759,18 @@ class PipelineInstance(object):
 
     # --------------------------------------------------------------------------
     def handleExit(self, pid):
-        for p in self._processes:
-            p.handleExit(pid)
+        for process in self._processes:
+            process.handleExit(pid)
+
+    # --------------------------------------------------------------------------
+    def isRunning(self):
+        return self._processes is not None and \
+            all(p.isRunning() for p in self._processes)
 
     # --------------------------------------------------------------------------
     def isFinished(self):
-        return any(p.isFinished() for p in self._processes)
+        return self._processes is None or \
+            any(p.isFinished() for p in self._processes)
 
 # ------------------------------------------------------------------------------
 class Pipeline(object):
@@ -708,14 +779,21 @@ class Pipeline(object):
         self._parent = parent
         self._config = config
         self._instance_counter = 0
-        self._required_instances = int(config.get("instances", 1))
-        assert self._required_instances > 0
+        if config.get("instances") == "*":
+            self._required_instances = None
+        else:
+            self._required_instances = int(config.get("instances", 1))
+            assert self._required_instances > 0
         parallel = config.get("parallel", 1)
         if type(parallel) is bool:
-            parallel = self._required_instances
+            if self._required_instances is not None:
+                parallel = self._required_instances
+            else:
+                parallel = 1
         self._parallel_instances = parallel
         assert self._parallel_instances > 0
         self._instances = [None] * self._parallel_instances
+        self._termination_start = None
 
     # --------------------------------------------------------------------------
     def _prepareArgs(self, instance, args):
@@ -731,28 +809,39 @@ class Pipeline(object):
             yield self._prepareArgs(instance, args)
 
     # --------------------------------------------------------------------------
-    def handle(self):
-        return self._config.get("handle")
+    def identity(self):
+        return self._config.get("identity")
+
+    # --------------------------------------------------------------------------
+    def keepRestarting(self):
+        return self._required_instances is None
+
+    # --------------------------------------------------------------------------
+    def isRequiredBy(self, pipeline_identity):
+        for identity in self._config.get("required_by", []):
+            if pipeline_identity == identity:
+                return True
+        return False
 
     # --------------------------------------------------------------------------
     def needsNewInstance(self):
-        if self._required_instances is None:
+        if self.keepRestarting():
             return True
         if self._instance_counter < self._required_instances:
             return True
         return False
 
     # --------------------------------------------------------------------------
-    def manageInstance(self, instance, tracker):
-        if instance is not None and instance.isFinished():
-            instance = None
+    def terminate(self):
+        for instance in self._instances:
+            if instance is not None:
+                instance.terminate()
 
-        if instance is None:
-            if self.needsNewInstance():
-                instance = PipelineInstance(self, self._instance_counter)
-                self._instance_counter += 1
-
-        return instance
+    # --------------------------------------------------------------------------
+    def kill(self):
+        for instance in self._instances:
+            if instance is not None:
+                instance.kill()
 
     # --------------------------------------------------------------------------
     def onProcessExit(self, instance_index, process):
@@ -770,17 +859,64 @@ class Pipeline(object):
                 instance.handleExit(pid)
 
     # --------------------------------------------------------------------------
-    def isFinished(self):
+    def isRunning(self):
+        if len(self._instances) == 0:
+            return False
         for instance in self._instances:
-            if instance is not None and not instance.isFinished():
-                return False
-            if self.needsNewInstance():
+            if instance is None or not instance.isRunning():
                 return False
         return True
 
     # --------------------------------------------------------------------------
+    def areInstancesFinished(self):
+        for instance in self._instances:
+            if instance is not None and not instance.isFinished():
+                return False
+        return True
+
+    # --------------------------------------------------------------------------
+    def isFinished(self):
+        if not self.areInstancesFinished():
+            return False
+
+        if self.needsNewInstance():
+            return False
+        return True
+
+    # --------------------------------------------------------------------------
+    def isWaitingForOthers(self):
+        return not self._parent.areRequirementsRunning(self)
+
+    # --------------------------------------------------------------------------
+    def shouldBeRunning(self):
+        if self._parent.isRequiredByOthers(self):
+            return True
+        return self._required_instances is not None
+
+    # --------------------------------------------------------------------------
+    def manageInstance(self, instance, tracker):
+        if instance is not None and instance.isFinished():
+            instance = None
+
+        if instance is None:
+            if self.needsNewInstance() and not self.isWaitingForOthers():
+                instance = PipelineInstance(self, self._instance_counter)
+                self._instance_counter += 1
+
+        return instance
+
+    # --------------------------------------------------------------------------
     def manage(self, tracker):
-        self._instances = [self.manageInstance(i, tracker) for i in self._instances]
+        if self.shouldBeRunning():
+            self._instances = \
+                [self.manageInstance(i, tracker) for i in self._instances]
+        else:
+            if self._termination_start is None:
+                self._termination_start = time.time()
+                self.terminate()
+            elif (time.time() - self._termination_start) > 10:
+                self.kill()
+                return False
         return not self.isFinished()
 
 # ------------------------------------------------------------------------------
@@ -807,6 +943,23 @@ class PipelineComposition(object):
             yield value
 
     # --------------------------------------------------------------------------
+    def areRequirementsRunning(self, tested_pipeline):
+        for pipeline in self._pipelines:
+            if pipeline.isRequiredBy(tested_pipeline.identity()):
+                if not pipeline.isRunning():
+                    return False
+
+        return True
+
+    # --------------------------------------------------------------------------
+    def isRequiredByOthers(self, tested_pipeline):
+        for pipeline in self._pipelines:
+            if tested_pipeline.isRequiredBy(pipeline.identity()):
+                return True
+
+        return False
+
+    # --------------------------------------------------------------------------
     def onProcessExit(self, pipeline, pipeline_instance, process):
         assert self._tracker is not None
         self._tracker.onProcessExit(pipeline, pipeline_instance, process)
@@ -823,14 +976,13 @@ class PipelineComposition(object):
 
     # --------------------------------------------------------------------------
     def manage(self, tracker):
-        result = False
-        for pl in self._pipelines:
-            result  = pl.manage(tracker) or result
-        return result
+        self._pipelines = [
+            pipeline for pipeline in self._pipelines
+            if pipeline.manage(tracker)]
+        return len(self._pipelines) > 0
 
 # ------------------------------------------------------------------------------
 composition = None
-keepRunning = True
 # ------------------------------------------------------------------------------
 class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
@@ -966,10 +1118,10 @@ class XmlLogClientHandler(xml.sax.ContentHandler):
                         self._processor.processLine(line)
                         done += 1
                     except UnicodeDecodeError:
-                        log.error("failed to decode: '%s'" % line)
+                        logging.error("failed to decode: '%s'" % line)
                         break
                     except:
-                        log.error("failed parse XML: '%s'" % line)
+                        logging.error("failed parse XML: '%s'" % line)
                         break
                 self._buffer = sep.join(lines[done:])
             else:
@@ -1033,7 +1185,7 @@ class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
     def onPipelineFinished(self, pipeline):
         # TODO
-        print("pipeline", pipeline.handle())
+        print("pipeline", pipeline.identity())
 
     # --------------------------------------------------------------------------
     def allExpectations(self):
