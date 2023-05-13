@@ -133,8 +133,26 @@ class ArgumentParser(argparse.ArgumentParser):
             help="""Prints the fully loaded and merged process configuration."""
         )
 
+        self.add_argument(
+            "--forward-local-socket", "-l",
+            dest='local_socket',
+            action="store",
+            default=False
+        )
+
+        self.add_argument(
+            "--forward-network-socket", "-n",
+            dest='network_socket',
+            action="store",
+            default=False
+        )
+
     # --------------------------------------------------------------------------
     def processParsedOptions(self, options):
+        if options.local_socket == "-":
+            options.local_socket = "/tmp/eagine-xmllog"
+        if options.network_socket == "-":
+            options.network_socket = "localhost:34917"
         return options
 
     # --------------------------------------------------------------------------
@@ -1089,6 +1107,49 @@ class PipelineComposition(object):
 # ------------------------------------------------------------------------------
 composition = None
 # ------------------------------------------------------------------------------
+#  Socket wrappers
+# ------------------------------------------------------------------------------
+class LocalListeningLogSocket(socket.socket):
+    # --------------------------------------------------------------------------
+    def __init__(self, socket_path):
+        self._socket_path = socket_path
+        try: os.unlink(self._socket_path)
+        except OSError as os_error:
+            if os_error.errno != errno.ENOENT:
+                raise
+        socket.socket.__init__(self, socket.AF_UNIX, socket.SOCK_STREAM)
+        self.bind(self._socket_path)
+        self.listen(50)
+        self.setblocking(False)
+
+    # --------------------------------------------------------------------------
+    def __del__(self):
+        try:
+            self.close()
+            os.unlink(self._socket_path)
+        except: pass
+
+# ------------------------------------------------------------------------------
+class LocalForwardingLogSocket(socket.socket):
+    # --------------------------------------------------------------------------
+    def __init__(self, socket_path):
+        self._socket_path = socket_path
+        socket.socket.__init__(self, socket.AF_UNIX, socket.SOCK_STREAM)
+        self.connect(self._socket_path)
+        self.setblocking(False)
+
+# ------------------------------------------------------------------------------
+class NetworkForwardingLogSocket(socket.socket):
+    # --------------------------------------------------------------------------
+    def __init__(self, socket_addr):
+        self._socket_host, self._socket_port = socket_addr.split(":")
+        self._socket_port = int(self._socket_port)
+        socket.socket.__init__(self, socket.AF_INET, socket.SOCK_STREAM)
+        print(self._socket_host, self._socket_port)
+        self.connect((self._socket_host, self._socket_port))
+        self.setblocking(False)
+
+# ------------------------------------------------------------------------------
 class XmlLogProcessor(xml.sax.ContentHandler):
     # --------------------------------------------------------------------------
     def __init__(self, src_id, tracker):
@@ -1192,7 +1253,13 @@ class XmlLogProcessor(xml.sax.ContentHandler):
 class XmlLogClientHandler(xml.sax.ContentHandler):
 
     # --------------------------------------------------------------------------
-    def __init__(self, processor, connection, selector):
+    def __init__(self, options, processor, connection, selector):
+        if options.local_socket:
+            self._forward_socket = LocalForwardingLogSocket(options.local_socket)
+        elif options.network_socket:
+            self._forward_socket = NetworkForwardingLogSocket(options.network_socket)
+        else:
+            self._forward_socket = None
         self._processor = processor
         self._connection = connection
         self._selector = selector
@@ -1213,6 +1280,9 @@ class XmlLogClientHandler(xml.sax.ContentHandler):
         try:
             data = self._connection.recv(4096)
             if data:
+                if self._forward_socket:
+                    self._forward_socket.send(data)
+
                 sep = bytes('\n','utf-8')
                 self._buffer += data
                 lines = self._buffer.split(sep)
@@ -1233,6 +1303,7 @@ class XmlLogClientHandler(xml.sax.ContentHandler):
                 self.disconnect()
         except socket.error:
             self.disconnect()
+
 # ------------------------------------------------------------------------------
 #  Tracker
 # ------------------------------------------------------------------------------
@@ -1319,33 +1390,12 @@ class ProcessLogTracker(object):
         return 0 if success else 1
 
 # ------------------------------------------------------------------------------
-class LocalLogSocket(socket.socket):
-    # --------------------------------------------------------------------------
-    def __init__(self, socket_path):
-        self._socket_path = socket_path
-        try: os.unlink(self._socket_path)
-        except OSError as os_error:
-            if os_error.errno != errno.ENOENT:
-                raise
-        socket.socket.__init__(self, socket.AF_UNIX, socket.SOCK_STREAM)
-        self.bind(self._socket_path)
-        self.listen(50)
-        self.setblocking(False)
-
-    # --------------------------------------------------------------------------
-    def __del__(self):
-        try:
-            self.close()
-            os.unlink(self._socket_path)
-        except: pass
-
-# ------------------------------------------------------------------------------
 #  Main loop
 # ------------------------------------------------------------------------------
 def manageProcesses(options, composition, tracker):
     global keepRunning
     with selectors.DefaultSelector() as selector:
-        log_sock = LocalLogSocket(options.logSocketPath())
+        log_sock = LocalListeningLogSocket(options.logSocketPath())
         selector.register(
             log_sock,
             selectors.EVENT_READ,
@@ -1364,6 +1414,7 @@ def manageProcesses(options, composition, tracker):
                         connection,
                         selectors.EVENT_READ,
                         data = XmlLogClientHandler(
+                            options,
                             key.data.makeProcessor(),
                             connection,
                             selector
