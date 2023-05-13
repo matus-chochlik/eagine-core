@@ -76,6 +76,13 @@ class ArgumentParser(argparse.ArgumentParser):
     def __init__(self, **kw):
         argparse.ArgumentParser.__init__(self, **kw)
 
+        self.add_argument(
+            "--debug", "-D",
+            action="store_true",
+            default=False,
+            help="""Starts process manager in debug mode."""
+        )
+
         def config_path(arg):
             result = self.findConfigPath(arg)
             return result if result else arg
@@ -298,7 +305,7 @@ class ExpansionRegExprs(object):
             ),
             ("uid",
                 re.compile(".*(\$<uid>).*"),
-                lambda inst, mtch: self._resolveCmdUid()
+                lambda inst, mtch: self._resolveCmdUid(None)
             )
         ]
 
@@ -823,6 +830,10 @@ class ProcessInstance(object):
             if self._args[i] == "--log-identity":
                 self._identity = self._args[i + 1]
                 break
+        if not self._args or self._args[0] is None or self._args[0] == "None":
+            logging.error("failed to find executable in pipeline '%s'" % (
+                parent.identity()
+            ))
         self._handle = subprocess.Popen(self._args)
         if self._handle:
             self._exit_code = None
@@ -883,6 +894,10 @@ class PipelineInstance(object):
         self._processes = [
             ProcessInstance(self, args)
             for args in parent.commandLineOf(self)]
+
+    # --------------------------------------------------------------------------
+    def identity(self):
+        return self._parent.identity()
 
     # --------------------------------------------------------------------------
     def instanceIndex(self):
@@ -1483,7 +1498,12 @@ def main():
     composition.setTracker(tracker)
 
     if not options.dry_run:
-        return manageProcesses(options, composition, tracker)
+        try:
+            return manageProcesses(options, composition, tracker)
+        except Exception as error:
+            logging.error(str(error))
+            if options.debug:
+                raise
     return 0
 
 # ------------------------------------------------------------------------------
