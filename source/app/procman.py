@@ -113,8 +113,29 @@ class ArgumentParser(argparse.ArgumentParser):
             action="append",
             default=[],
             help="""
-                Specifies new values for the config variables.
-                Variables from loaded configuration files are always overriden,
+                Specifies new values for the configuration variables.
+                Variables from loaded configuration files are always overridden,
+                by values specified on the command-line.
+            """
+        )
+
+        def ident_positive_int(arg):
+            sep = '='
+            tmp = arg.split(sep)
+            tmp = (tmp[0], int(sep.join(tmp[1:])))
+            assert tmp[1] > 0
+            return tmp
+
+        self.add_argument(
+            "--instances", "-I",
+            dest="instance_counts",
+            metavar="identifier=integer",
+            type=ident_positive_int,
+            action="append",
+            default=[],
+            help="""
+                Specifies new values for the pipeline instance counts.
+                Counts from loaded configuration files are always overridden,
                 by values specified on the command-line.
             """
         )
@@ -554,6 +575,10 @@ class PipelineConfig(object):
                     variables[name] = values
             variables.update(options.overrides)
             pipeline["variables"] = variables
+
+            for identity, inst_count in options.instance_counts:
+                if pipeline.get("identity") == identity:
+                    pipeline["instances"] = inst_count
 
             if "commands" in pipeline:
                 commands = pipeline["commands"]
