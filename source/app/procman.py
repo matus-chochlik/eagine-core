@@ -421,8 +421,12 @@ class LogMessageInfo(object):
         self._et.append(self._maketree(source, "log"))
 
     # --------------------------------------------------------------------------
+    def find(self, xpath):
+        return self._et.findall(xpath)
+
+    # --------------------------------------------------------------------------
     def has(self, xpath):
-        return len(self._et.findall(xpath)) > 0
+        return len(self.find(xpath)) > 0
 
     # --------------------------------------------------------------------------
     def _item2etree(self, name, value, node):
@@ -499,11 +503,16 @@ class ExpectExitCode(object):
 # ------------------------------------------------------------------------------
 class ExpectXPathCount(object):
     # --------------------------------------------------------------------------
-    def __init__(self, xpath, oper, value):
-        self._count = 0
+    @staticmethod
+    def regex():
+        return re.compile("^count\((.*)\)(=|!=|<|>|<=|>=)([0-9]+)$")
+
+    # --------------------------------------------------------------------------
+    def __init__(self, xpath, compare, value):
         self._xpath = xpath
-        self._oper = oper
+        self._compare = compare
         self._value = value
+        self._count = 0
 
     # --------------------------------------------------------------------------
     def update(self, message_info):
@@ -511,29 +520,102 @@ class ExpectXPathCount(object):
             self._count += 1
 
     # --------------------------------------------------------------------------
-    def applyOp(self, l, r):
-        if self._oper == "=":
+    def doCompare(self, l, r):
+        if self._compare == "=":
             return l == r
-        if self._oper == "!=":
+        if self._compare == "!=":
             return l != r
-        if self._oper == "<=":
+        if self._compare == "<=":
             return l <= r
-        if self._oper == ">=":
+        if self._compare == ">=":
             return l >= r
-        if self._oper == "<":
+        if self._compare == "<":
             return l < r
-        if self._oper == ">":
+        if self._compare == ">":
             return l > r
 
     # --------------------------------------------------------------------------
     def check(self):
-        if self.applyOp(self._count, self._value):
+        if self.doCompare(self._count, self._value):
             return True
 
         logging.error("count %d of '%s' is expected to be %s %d" % (
             self._count,
             self._xpath,
-            self._oper,
+            self._compare,
+            self._value
+        ))
+
+        return False
+
+# ------------------------------------------------------------------------------
+class ExpectXPathAggregate(object):
+    # --------------------------------------------------------------------------
+    @staticmethod
+    def regex():
+        return re.compile("^(sum|min|max|avg)\((.*)/@(\w+)\)(=|!=|<|>|<=|>=)([0-9]+)$")
+
+    # --------------------------------------------------------------------------
+    def __init__(self, func_name, xpath, attrib, compare, value):
+        self._func_name = func_name
+        self._functions = self._get_functions(func_name)
+        self._xpath = xpath
+        self._attrib = attrib
+        self._compare = compare
+        self._value = value
+        self._aggregate = None
+
+    # --------------------------------------------------------------------------
+    def _get_functions(self, name):
+        if name == "sum":
+            return (
+                lambda s, n: s + n if s is not None else n,
+                lambda s: s)
+        if name == "min":
+            return (
+                lambda s, n: min(s, n) if s is not None else n,
+                lambda s: s)
+        if name == "max":
+            return (
+                lambda s, n: max(s, n) if s is not None else n,
+                lambda s: s)
+        if name == "avg":
+            return (
+                lambda s, n: (s[0]+n, s[1]+1) if s is not None else (n, 1),
+                lambda s: s[0] / s[1] if s is not None else None)
+
+    # --------------------------------------------------------------------------
+    def update(self, message_info):
+        for node in message_info.find(self._xpath):
+            attr_val = float(node.attrib[self._attrib])
+            self._aggregate = self._functions[0](self._aggregate, attr_val)
+
+    # --------------------------------------------------------------------------
+    def doCompare(self, l, r):
+        if self._compare == "=":
+            return l == r
+        if self._compare == "!=":
+            return l != r
+        if self._compare == "<=":
+            return l <= r
+        if self._compare == ">=":
+            return l >= r
+        if self._compare == "<":
+            return l < r
+        if self._compare == ">":
+            return l > r
+
+    # --------------------------------------------------------------------------
+    def check(self):
+        final_val = self._functions[1](self._aggregate)
+        if final_val is None or self.doCompare(final_val, self._value):
+            return True
+
+        logging.error("%s %f of '%s' is expected to be %s %f" % (
+            self._func_name,
+            final_val,
+            self._xpath,
+            self._compare,
             self._value
         ))
 
@@ -797,7 +879,6 @@ class PipelineConfig(object):
     # --------------------------------------------------------------------------
     def logMessageInfoExpectations(self):
         expectations = self.full_config.get("expect", {}).get("xpath", {})
-        count_re = re.compile("^count\((.*)\)(=|!=|<|>|<=|>=)([0-9]+)$")
 
         result = {}
         def _addToResult(identity, exp):
@@ -808,7 +889,7 @@ class PipelineConfig(object):
             dst.append(exp)
 
         for identity, xpath in expectations.items():
-            found = re.match(count_re, xpath)
+            found = re.match(ExpectXPathCount.regex(), xpath)
             if found:
                 _addToResult(
                     identity,
@@ -817,6 +898,16 @@ class PipelineConfig(object):
                         found.group(2),
                         int(found.group(3))))
 
+            found = re.match(ExpectXPathAggregate.regex(), xpath)
+            if found:
+                _addToResult(
+                    identity,
+                    ExpectXPathAggregate(
+                        found.group(1),
+                        found.group(2),
+                        found.group(3),
+                        found.group(4),
+                        float(found.group(5))))
         return result
 
 # ------------------------------------------------------------------------------
@@ -1052,6 +1143,9 @@ class Pipeline(object):
 
     # --------------------------------------------------------------------------
     def shouldBeRunning(self):
+        global keepRunning
+        if not keepRunning:
+            return False
         if self._parent.isRequiredByOthers(self):
             return True
         return self._required_instances is not None
@@ -1077,7 +1171,7 @@ class Pipeline(object):
             if self._termination_start is None:
                 self._termination_start = time.time()
                 self.terminate()
-            elif (time.time() - self._termination_start) > 10:
+            elif (time.time() - self._termination_start) > 30:
                 self.kill()
                 return False
         return not self.isFinished()
@@ -1433,7 +1527,6 @@ class ProcessLogTracker(object):
 #  Main loop
 # ------------------------------------------------------------------------------
 def manageProcesses(options, composition, tracker):
-    global keepRunning
     with selectors.DefaultSelector() as selector:
         log_sock = LocalListeningLogSocket(options.logSocketPath())
         selector.register(
@@ -1442,9 +1535,7 @@ def manageProcesses(options, composition, tracker):
             data = tracker
         )
 
-        while keepRunning:
-            if not composition.manage(tracker):
-                break
+        while composition.manage(tracker):
             events = selector.select(timeout=1.0)
             for key, mask in events:
                 if type(key.data) is ProcessLogTracker:
