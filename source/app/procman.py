@@ -315,7 +315,7 @@ class ExpansionRegExprs(object):
             ),
             ("instance",
                 re.compile(".*(\$<instance>).*"),
-                lambda inst, mtch: inst.instanceIndex()
+                lambda inst, mtch: inst.index()
             ),
             ("uid",
                 re.compile(".*(\$<uid>).*"),
@@ -467,6 +467,21 @@ class LogMessageInfo(object):
 # ------------------------------------------------------------------------------
 #  Expectations
 # ------------------------------------------------------------------------------
+def getCompareFunc(operator):
+    if operator == "=":
+        return lambda l, r: l == r
+    if operator == "!=":
+        return lambda l, r: l != r
+    if operator == "<=":
+        return lambda l, r: l <= r
+    if operator == ">=":
+        return lambda l, r: l >= r
+    if operator == "<":
+        return lambda l, r: l < r
+    if operator == ">":
+        return lambda l, r: l > r
+
+# ------------------------------------------------------------------------------
 class ExpectCleanShutdown(object):
     # --------------------------------------------------------------------------
     def __init__(self, identity):
@@ -478,17 +493,20 @@ class ExpectCleanShutdown(object):
         self._satisfied = arg
 
     # --------------------------------------------------------------------------
-    def check(self):
+    def check(self, tracker):
         if self._satisfied:
             return True
 
-        logging.error("unexpected failed shutdown of '%s'" % self._identity)
+        tracker.log().error(
+            "unexpected failed shutdown of '%s'",
+            self._identity)
         return False
 
 # ------------------------------------------------------------------------------
 class ExpectExitCode(object):
     # --------------------------------------------------------------------------
     def __init__(self, identity, value):
+        assert type(value) is int
         self._expected_value = value
         self._actual_values = []
         self._identity = identity
@@ -498,33 +516,102 @@ class ExpectExitCode(object):
         self._actual_values.append(value)
 
     # --------------------------------------------------------------------------
-    def check(self):
+    def check(self, tracker):
         actual = set(self._actual_values)
         if all(v == self._expected_value for v in actual):
             return True
 
         if len(actual) == 0:
-            logging.error("did not receive exit notification of '%s'", self._identity) 
+            tracker.log().error(
+                "did not receive exit notification of '%s'",
+                self._identity) 
 
         for value in actual: 
-            logging.error("unexpected exit code %d of '%s', expected: %d" % (
+            tracker.log().error(
+                "unexpected exit code %d of '%s', expected: %d",
                 value,
                 self._identity,
-                self._expected_value))
+                self._expected_value)
 
         return False
+
+# ------------------------------------------------------------------------------
+class ExpectRunTime(object):
+    # --------------------------------------------------------------------------
+    @staticmethod
+    def factory():
+        # ----------------------------------------------------------------------
+        class _Factory(object):
+            # ------------------------------------------------------------------
+            def __init__(self):
+                self._re = re.compile("^(=|!=|<|>|<=|>=)([0-9]+)$");
+
+            # ------------------------------------------------------------------
+            def __call__(self, identity, data):
+                parsed = re.match(self._re, data)
+                if parsed:
+                    return ExpectRunTime(
+                        identity,
+                        parsed.group(1),
+                        float(parsed.group(2)))
+                return None
+
+        return _Factory()
+
+    # --------------------------------------------------------------------------
+    def __init__(self, identity, operator, value):
+        self._identity = identity
+        self._operator = operator
+        self._compare = getCompareFunc(operator)
+        self._expected_value = value
+        self._actual_values = []
+
+    # --------------------------------------------------------------------------
+    def update(self, value):
+        self._actual_values.append(value)
+
+    # --------------------------------------------------------------------------
+    def check(self, tracker):
+        for value in self._actual_values:
+            if not self._compare(value, self._expected_value):
+                tracker.log().error(
+                    "run time %f[s] of '%s' is expected to be %s %f",
+                    value,
+                    self._identity,
+                    self._operator,
+                    self._expected_value)
+                return False
+        return True
 
 # ------------------------------------------------------------------------------
 class ExpectXPathCount(object):
     # --------------------------------------------------------------------------
     @staticmethod
-    def regex():
-        return re.compile("^count\((.*)\)(=|!=|<|>|<=|>=)([0-9]+)$")
+    def factory():
+        # ----------------------------------------------------------------------
+        class _Factory(object):
+            # ------------------------------------------------------------------
+            def __init__(self):
+                self._re = re.compile("^count\((.*)\)(=|!=|<|>|<=|>=)([0-9]+)$")
+
+            # ------------------------------------------------------------------
+            def __call__(self, identity, data):
+                parsed = re.match(self._re, data)
+                if parsed:
+                    return ExpectXPathCount(
+                        identity,
+                        found.group(1),
+                        found.group(2),
+                        int(found.group(3)))
+
+        return _Factory()
 
     # --------------------------------------------------------------------------
-    def __init__(self, xpath, compare, value):
+    def __init__(self, identity, xpath, operator, value):
+        self._identity = identity
         self._xpath = xpath
-        self._compare = compare
+        self._operator = operator
+        self._compare = getCompareFunc(operator)
         self._value = value
         self._count = 0
 
@@ -534,31 +621,18 @@ class ExpectXPathCount(object):
             self._count += 1
 
     # --------------------------------------------------------------------------
-    def doCompare(self, l, r):
-        if self._compare == "=":
-            return l == r
-        if self._compare == "!=":
-            return l != r
-        if self._compare == "<=":
-            return l <= r
-        if self._compare == ">=":
-            return l >= r
-        if self._compare == "<":
-            return l < r
-        if self._compare == ">":
-            return l > r
-
-    # --------------------------------------------------------------------------
-    def check(self):
-        if self.doCompare(self._count, self._value):
+    def check(self, tracker):
+        if self._compare(self._count, self._value):
             return True
 
-        logging.error("count %d of '%s' is expected to be %s %d" % (
+        tracker.log().error(
+            "count %d of '%s' from '%s' is expected to be %s %d",
             self._count,
             self._xpath,
-            self._compare,
+            self._identity,
+            self._operator,
             self._value
-        ))
+        )
 
         return False
 
@@ -566,16 +640,37 @@ class ExpectXPathCount(object):
 class ExpectXPathAggregate(object):
     # --------------------------------------------------------------------------
     @staticmethod
-    def regex():
-        return re.compile("^(sum|min|max|avg)\((.*)/@(\w+)\)(=|!=|<|>|<=|>=)([0-9]+)$")
+    def factory():
+        # ----------------------------------------------------------------------
+        class _Factory(object):
+            # ------------------------------------------------------------------
+            def __init__(self):
+                self._re = re.compile(
+                    "^(sum|min|max|avg)\((.*)/@(\w+)\)(=|!=|<|>|<=|>=)([0-9]+)$")
+
+            # ------------------------------------------------------------------
+            def __call__(self, identity, data):
+                parsed = re.match(self._re, data)
+                if parsed:
+                    return ExpectXPathAggregate(
+                        identity,
+                        parsed.group(1),
+                        parsed.group(2),
+                        parsed.group(3),
+                        parsed.group(4),
+                        float(parsed.group(5)))
+
+        return _Factory()
 
     # --------------------------------------------------------------------------
-    def __init__(self, func_name, xpath, attrib, compare, value):
+    def __init__(self, identity, func_name, xpath, attrib, operator, value):
+        self._identity = identity
         self._func_name = func_name
         self._functions = self._get_functions(func_name)
         self._xpath = xpath
         self._attrib = attrib
-        self._compare = compare
+        self.operator = operator
+        self._compare = getCompareFunc(operator)
         self._value = value
         self._aggregate = None
 
@@ -605,33 +700,20 @@ class ExpectXPathAggregate(object):
             self._aggregate = self._functions[0](self._aggregate, attr_val)
 
     # --------------------------------------------------------------------------
-    def doCompare(self, l, r):
-        if self._compare == "=":
-            return l == r
-        if self._compare == "!=":
-            return l != r
-        if self._compare == "<=":
-            return l <= r
-        if self._compare == ">=":
-            return l >= r
-        if self._compare == "<":
-            return l < r
-        if self._compare == ">":
-            return l > r
-
-    # --------------------------------------------------------------------------
-    def check(self):
+    def check(self, tracker):
         final_val = self._functions[1](self._aggregate)
-        if final_val is None or self.doCompare(final_val, self._value):
+        if final_val is None or self._compare(final_val, self._value):
             return True
 
-        logging.error("%s %f of '%s' is expected to be %s %f" % (
+        tracker.log().error(
+            "%s %f of '%s' from '%s' is expected to be %s %f",
+            self._identity,
             self._func_name,
             final_val,
             self._xpath,
-            self._compare,
+            self.operator,
             self._value
-        ))
+        )
 
         return False
 
@@ -641,6 +723,7 @@ class ExpectXPathAggregate(object):
 class PipelineConfig(object):
     # --------------------------------------------------------------------------
     def __init__(self, options):
+        self._log = logging.getLogger("eagiproc.config")
         self._res = ExpansionRegExprs(options)
         self._options = options
         self.full_config = {}
@@ -664,9 +747,9 @@ class PipelineConfig(object):
                             partial_config,
                             self.full_config)
                 except IOError as io_error:
-                    logging.error("reading '%s': %s" % (config_path, io_error))
+                    self._log.error("reading '%s': %s", config_path, io_error)
                 except ValueError as value_error:
-                    logging.error("parsing '%s': %s" % (config_path, io_error))
+                    self._log.error("parsing '%s': %s", config_path, io_error)
 
         for pipeline in self.full_config.get("pipelines", []):
             variables = self.full_config.get("variables", {}).copy()
@@ -895,37 +978,47 @@ class PipelineConfig(object):
             for identity, value in expectations.get("exit_code", {}).items())
 
     # --------------------------------------------------------------------------
-    def logMessageInfoExpectations(self):
-        expectations = self.full_config.get("expect", {}).get("xpath", {})
+    def runTimeExpectations(self):
+        expectations = self.full_config.get("expect", {}).get("run_time", {})
+        factory = ExpectRunTime.factory()
 
         result = {}
         def _addToResult(identity, exp):
-            try:
-                dst = result[identity]
-            except KeyError:
-                dst = result[identity] = []
-            dst.append(exp)
+            if exp is not None:
+                try:
+                    dst = result[identity]
+                except KeyError:
+                    dst = result[identity] = []
+                dst.append(exp)
+
+        for identity, data in expectations.items():
+            _addToResult(identity, factory(identity, data))
+
+        return result
+
+    # --------------------------------------------------------------------------
+    def logMessageInfoExpectations(self):
+        expectations = self.full_config.get("expect", {}).get("xpath", {})
+        factories = [
+            ExpectXPathCount.factory(),
+            ExpectXPathAggregate.factory()]
+
+        result = {}
+        def _addToResult(identity, exp):
+            if exp is not None:
+                try:
+                    dst = result[identity]
+                except KeyError:
+                    dst = result[identity] = []
+                dst.append(exp)
+                return True
+            return False
 
         for identity, xpath in expectations.items():
-            found = re.match(ExpectXPathCount.regex(), xpath)
-            if found:
-                _addToResult(
-                    identity,
-                    ExpectXPathCount(
-                        found.group(1),
-                        found.group(2),
-                        int(found.group(3))))
+            for factory in factories:
+                if _addToResult(identity, factory(identity, xpath)):
+                    break
 
-            found = re.match(ExpectXPathAggregate.regex(), xpath)
-            if found:
-                _addToResult(
-                    identity,
-                    ExpectXPathAggregate(
-                        found.group(1),
-                        found.group(2),
-                        found.group(3),
-                        found.group(4),
-                        float(found.group(5))))
         return result
 
 # ------------------------------------------------------------------------------
@@ -940,15 +1033,19 @@ class ProcessInstance(object):
                 self._identity = self._args[i + 1]
                 break
         if not self._args or self._args[0] is None or self._args[0] == "None":
-            logging.error("failed to find executable in pipeline '%s'" % (
-                parent.identity()
-            ))
+            self.tracker().log().error(
+                "failed to find executable in pipeline '%s'",
+                parent.identity())
         self._handle = subprocess.Popen(self._args)
         if self._handle:
             self._exit_code = None
         else:
             self._exit_code = -1
             self.onProcessExit()
+
+    # --------------------------------------------------------------------------
+    def tracker(self):
+        return self._parent.tracker()
 
     # --------------------------------------------------------------------------
     def identity(self):
@@ -1005,11 +1102,19 @@ class PipelineInstance(object):
             for args in parent.commandLineOf(self)]
 
     # --------------------------------------------------------------------------
+    def tracker(self):
+        return self._parent.tracker()
+
+    # --------------------------------------------------------------------------
+    def pipeline(self):
+        return self._parent
+
+    # --------------------------------------------------------------------------
     def identity(self):
         return self._parent.identity()
 
     # --------------------------------------------------------------------------
-    def instanceIndex(self):
+    def index(self):
         return self._index
 
     # --------------------------------------------------------------------------
@@ -1081,6 +1186,10 @@ class Pipeline(object):
             yield self._prepareArgs(instance, args)
 
     # --------------------------------------------------------------------------
+    def tracker(self):
+        return self._parent.tracker()
+
+    # --------------------------------------------------------------------------
     def identity(self):
         return self._config.get("identity")
 
@@ -1120,7 +1229,8 @@ class Pipeline(object):
         self._parent.onProcessExit(self, instance_index, process)
 
     # --------------------------------------------------------------------------
-    def onInstanceFinished(self, index):
+    def onInstanceFinished(self, instance):
+        self._parent.onPipelineInstanceFinished(instance)
         if self.isFinished():
             self._parent.onPipelineFinished(self)
 
@@ -1205,6 +1315,10 @@ class PipelineComposition(object):
             for cfg in config.pipelineConfigs()]
 
     # --------------------------------------------------------------------------
+    def tracker(self):
+        return self._tracker
+
+    # --------------------------------------------------------------------------
     def setTracker(self, tracker):
         self._tracker = tracker
 
@@ -1238,6 +1352,11 @@ class PipelineComposition(object):
     def onProcessExit(self, pipeline, pipeline_instance, process):
         assert self._tracker is not None
         self._tracker.onProcessExit(pipeline, pipeline_instance, process)
+
+    # --------------------------------------------------------------------------
+    def onPipelineInstanceFinished(self, instance):
+        assert self._tracker is not None
+        self._tracker.onPipelineInstanceFinished(instance)
 
     # --------------------------------------------------------------------------
     def onPipelineFinished(self, pipeline):
@@ -1397,7 +1516,6 @@ class XmlLogProcessor(xml.sax.ContentHandler):
 
     # --------------------------------------------------------------------------
     def processDisconnect(self):
-        self._tracker.addLoggerInfos(self._src_id, self._loggers)
         self._tracker.finishLog(self._src_id, self._clean_shutdown)
 
 # ------------------------------------------------------------------------------
@@ -1411,6 +1529,7 @@ class XmlLogClientHandler(xml.sax.ContentHandler):
             self._forward_socket = NetworkForwardingLogSocket(options.network_socket)
         else:
             self._forward_socket = None
+        self._log = logging.getLogger("eagiproc.xmlhandler")
         self._processor = processor
         self._connection = connection
         self._selector = selector
@@ -1444,10 +1563,10 @@ class XmlLogClientHandler(xml.sax.ContentHandler):
                         self._processor.processLine(line)
                         done += 1
                     except UnicodeDecodeError:
-                        logging.error("failed to decode: '%s'" % line)
+                        self._log.error("failed to decode: '%s'", line)
                         break
                     except:
-                        logging.error("failed parse XML: '%s'" % line)
+                        self._log.error("failed parse XML: '%s'", line)
                         break
                 self._buffer = sep.join(lines[done:])
             else:
@@ -1461,50 +1580,71 @@ class XmlLogClientHandler(xml.sax.ContentHandler):
 class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
     def __init__(self, options, composition):
+        self._log = logging.getLogger("eagiproc.tracker")
         self._options = options
         self._composition = composition
         self._start_time = time.time()
         self._source_id = 0
-        self._loggers = {}
-        self._identities = {}
+        self._processes = {}
 
         self._expect_clean_shutdown =\
             composition.config().cleanShutdownExpectations()
         self._expect_exit_code =\
             composition.config().exitCodeExpectations()
+        self._expect_run_time =\
+            composition.config().runTimeExpectations()
         self._expect_in_log_message =\
             composition.config().logMessageInfoExpectations()
 
     # --------------------------------------------------------------------------
+    def log(self):
+        return self._log
+
+    # --------------------------------------------------------------------------
     def beginLog(self, src_id, info):
         if "identity" in  info:
-            self._identities[src_id] = info["identity"]
-            print("beginLog", self._identities)
+            proc_info = self._processes[src_id] = {}
+            proc_info["identity"] = info["identity"]
+            proc_info["start"] = time.time()
+            self._log.info(
+                "process %d '%s' started",
+                src_id,
+                proc_info["identity"])
 
     # --------------------------------------------------------------------------
     def finishLog(self, src_id, clean_shutdown):
         try:
-            identity = self._identities[src_id]
-            self._expect_clean_shutdown[identity].update(clean_shutdown)
+            proc_info = self._processes[src_id]
+            identity = proc_info["identity"]
+            run_time = time.time() - proc_info["start"]
+
+            try: self._expect_clean_shutdown[identity].update(clean_shutdown)
+            except KeyError: pass
+            try:
+                for expectation in self._expect_run_time[identity]:
+                    expectation.update(run_time)
+            except KeyError: pass
+
+            self._log.info(
+                "process %d '%s' finished",
+                src_id,
+                proc_info["identity"])
         except KeyError: pass
 
-        try: del self._identities[src_id]
+        try: del self._processes[src_id]
         except KeyError: pass
 
     # --------------------------------------------------------------------------
     def addMessage(self, src_id, info):
         try:
             message_info = None
-            msg_identity = self._identities[src_id]
+            proc_info = self._processes[src_id]
+            msg_identity = proc_info["identity"]
             for expectation in self._expect_in_log_message[msg_identity]:
                 if message_info is None:
                     message_info = LogMessageInfo(info)
                 expectation.update(message_info)
         except KeyError: pass
-
-    # --------------------------------------------------------------------------
-    def addLoggerInfos(self, src_id, infos):
-        self._loggers[src_id] = infos
 
     # --------------------------------------------------------------------------
     def makeProcessor(self):
@@ -1519,8 +1659,15 @@ class ProcessLogTracker(object):
         except KeyError: pass
 
     # --------------------------------------------------------------------------
+    def onPipelineInstanceFinished(self, instance):
+        self._log.info(
+            "instance %d of pipeline '%s' finished",
+            instance.index(),
+            instance.identity())
+
+    # --------------------------------------------------------------------------
     def onPipelineFinished(self, pipeline):
-        logging.info("pipeline '%s' finished" % pipeline.identity())
+        self._log.info("pipeline '%s' finished", pipeline.identity())
 
     # --------------------------------------------------------------------------
     def allExpectations(self):
@@ -1528,6 +1675,9 @@ class ProcessLogTracker(object):
             yield exp
         for exp in self._expect_exit_code.values():
             yield exp
+        for exps in self._expect_run_time.values():
+            for exp in exps:
+                yield exp
         for exps in self._expect_in_log_message.values():
             for exp in exps:
                 yield exp
@@ -1536,7 +1686,7 @@ class ProcessLogTracker(object):
     def result(self):
         success = True
         for expectation in self.allExpectations():
-            success = expectation.check() and success
+            success = expectation.check(self) and success
         return 0 if success else 1
 
 # ------------------------------------------------------------------------------
@@ -1600,6 +1750,11 @@ def main():
     signal.signal(signal.SIGCHLD, handleChildExit)
     argparser = getArgumentParser()
     options = argparser.parseArgs()
+    logging.basicConfig(
+        encoding="utf-8",
+        format='[%(asctime)s] %(levelname)s: %(message)s',
+        level=logging.DEBUG if options.debug else logging.INFO)
+
     composition = PipelineComposition(options, PipelineConfig(options))
     tracker = ProcessLogTracker(options, composition)
     composition.setTracker(tracker)
