@@ -148,6 +148,20 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
         self.add_argument(
+            "--parallel", "-P",
+            dest="parallel_counts",
+            metavar="identifier=integer",
+            type=ident_positive_int,
+            action="append",
+            default=[],
+            help="""
+                Specifies new values for the parallel pipeline instance counts.
+                Counts from loaded configuration files are always overridden,
+                by values specified on the command-line.
+            """
+        )
+
+        self.add_argument(
             "--dry-run",
             action="store_true",
             default=False,
@@ -155,7 +169,7 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
         self.add_argument(
-            "--print-config", "-P",
+            "--print-config", "-C",
             action="store_true",
             default=False,
             help="""Prints the fully loaded and merged process configuration."""
@@ -668,6 +682,10 @@ class PipelineConfig(object):
             for identity, inst_count in options.instance_counts:
                 if pipeline.get("identity") == identity:
                     pipeline["instances"] = inst_count
+
+            for identity, parl_count in options.parallel_counts:
+                if pipeline.get("identity") == identity:
+                    pipeline["parallel"] = parl_count
 
             if "commands" in pipeline:
                 commands = pipeline["commands"]
@@ -1279,7 +1297,6 @@ class NetworkForwardingLogSocket(socket.socket):
         self._socket_host, self._socket_port = socket_addr.split(":")
         self._socket_port = int(self._socket_port)
         socket.socket.__init__(self, socket.AF_INET, socket.SOCK_STREAM)
-        print(self._socket_host, self._socket_port)
         self.connect((self._socket_host, self._socket_port))
         self.setblocking(False)
 
@@ -1503,8 +1520,7 @@ class ProcessLogTracker(object):
 
     # --------------------------------------------------------------------------
     def onPipelineFinished(self, pipeline):
-        # TODO
-        print("pipeline", pipeline.identity())
+        logging.info("pipeline '%s' finished" % pipeline.identity())
 
     # --------------------------------------------------------------------------
     def allExpectations(self):
