@@ -30,6 +30,28 @@ except ImportError:
     import selectors2 as selectors
 
 # ------------------------------------------------------------------------------
+#  Utilities
+# ------------------------------------------------------------------------------
+def formatDuration(s):
+    if s >= 60480000:
+        return "%dw" % (int(s) / 604800)
+    if s >= 604800:
+        return "%2dw %2dd" % (int(s) / 604800, (int(s) % 604800) / 86400)
+    if s >= 86400:
+        return "%2dd %2dh" % (int(s) / 86400, (int(s) % 86400) / 3600)
+    if s >= 3600:
+        return "%2dh %02dm" % (int(s) / 3600, (int(s) % 3600) / 60)
+    if s >= 60:
+        return "%2dm %02ds" % (int(s) / 60, int(s) % 60)
+    if s >= 15:
+        return "%3ds" % int(round(s))
+    if s >= 0.01:
+        return "%4dms" % int(s*10**3)
+    if s <= 0.0:
+        return "0s"
+    return "%dμs" % int(s*10**6)
+
+# ------------------------------------------------------------------------------
 #  Argument parsing
 # ------------------------------------------------------------------------------
 class ArgumentParser(argparse.ArgumentParser):
@@ -572,16 +594,17 @@ class ExpectRunTime(object):
 
     # --------------------------------------------------------------------------
     def check(self, tracker):
+        result = True
         for value in self._actual_values:
             if not self._compare(value, self._expected_value):
                 tracker.log().error(
-                    "run time %f[s] of '%s' is expected to be %s %f",
-                    value,
+                    "run time %s of '%s' is expected to be %s %s",
+                    formatDuration(value),
                     self._identity,
                     self._operator,
-                    self._expected_value)
-                return False
-        return True
+                    formatDuration(self._expected_value))
+                result = False
+        return result
 
 # ------------------------------------------------------------------------------
 class ExpectXPathCount(object):
@@ -1566,8 +1589,8 @@ class XmlLogClientHandler(xml.sax.ContentHandler):
                         self._log.error("failed to decode: '%s'", line)
                         break
                     except:
-                        self._log.error("failed parse XML: '%s'", line)
-                        break
+                        self._log.error("failed to process XML '%s'", line)
+                        raise
                 self._buffer = sep.join(lines[done:])
             else:
                 self.disconnect()
@@ -1583,7 +1606,6 @@ class ProcessLogTracker(object):
         self._log = logging.getLogger("eagiproc.tracker")
         self._options = options
         self._composition = composition
-        self._start_time = time.time()
         self._source_id = 0
         self._processes = {}
 
@@ -1595,6 +1617,8 @@ class ProcessLogTracker(object):
             composition.config().runTimeExpectations()
         self._expect_in_log_message =\
             composition.config().logMessageInfoExpectations()
+
+        self._start_time = time.time()
 
     # --------------------------------------------------------------------------
     def log(self):
