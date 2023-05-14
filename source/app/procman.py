@@ -669,7 +669,7 @@ class ExpectXPathAggregate(object):
             # ------------------------------------------------------------------
             def __init__(self):
                 self._re = re.compile(
-                    "^(sum|min|max|avg)\((.*)/@(\w+)\)(=|!=|<|>|<=|>=)([0-9]+)$")
+                    "^(sum|min|max|avg|lean)\((.*)/@(\w+)\)(=|!=|<|>|<=|>=)([0-9]+(\.[0-9]+)?)$")
 
             # ------------------------------------------------------------------
             def __call__(self, identity, data):
@@ -701,20 +701,32 @@ class ExpectXPathAggregate(object):
     def _get_functions(self, name):
         if name == "sum":
             return (
-                lambda s, n: s + n if s is not None else n,
+                lambda s, n: n if s is None else s + n,
                 lambda s: s)
         if name == "min":
             return (
-                lambda s, n: min(s, n) if s is not None else n,
+                lambda s, n: n if s is None else min(s, n),
                 lambda s: s)
         if name == "max":
             return (
-                lambda s, n: max(s, n) if s is not None else n,
+                lambda s, n: n if s is None else max(s, n),
                 lambda s: s)
         if name == "avg":
             return (
-                lambda s, n: (s[0]+n, s[1]+1) if s is not None else (n, 1),
-                lambda s: s[0] / s[1] if s is not None else None)
+                lambda s, n: (n, 1) if s is None else (s[0]+n, s[1]+1),
+                lambda s: None if s is None else s[0] / s[1])
+        if name == "lean":
+            def _lean_step(s, n):
+                if s is None:
+                    return (n, n, n, 1)
+                return (min(s[0], n), s[1]+n, max(s[2], n), s[3]+1)
+            def _lean_calc(s):
+                if s is None:
+                    return None
+                if s[0] >= s[2]:
+                    return 0.0
+                return (((s[1] / s[3] - s[0])/(s[2] - s[0])) - 0.5) * 2.0
+            return (_lean_step, _lean_calc)
 
     # --------------------------------------------------------------------------
     def update(self, message_info):
@@ -730,13 +742,12 @@ class ExpectXPathAggregate(object):
 
         tracker.log().error(
             "%s %f of '%s' from '%s' is expected to be %s %f",
-            self._identity,
             self._func_name,
             final_val,
+            self._identity,
             self._xpath,
             self.operator,
-            self._value
-        )
+            self._value)
 
         return False
 
@@ -1014,8 +1025,11 @@ class PipelineConfig(object):
                     dst = result[identity] = []
                 dst.append(exp)
 
-        for identity, data in expectations.items():
-            _addToResult(identity, factory(identity, data))
+        for identity, definitions in expectations.items():
+            if type(definitions) is not list:
+                definitions = [definitions]
+            for data in definitions:
+                _addToResult(identity, factory(identity, data))
 
         return result
 
@@ -1037,10 +1051,13 @@ class PipelineConfig(object):
                 return True
             return False
 
-        for identity, xpath in expectations.items():
-            for factory in factories:
-                if _addToResult(identity, factory(identity, xpath)):
-                    break
+        for identity, definitions in expectations.items():
+            if type(definitions) is not list:
+                definitions = [definitions]
+            for xpath in definitions:
+                for factory in factories:
+                    if _addToResult(identity, factory(identity, xpath)):
+                        break
 
         return result
 
