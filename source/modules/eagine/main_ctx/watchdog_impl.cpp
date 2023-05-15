@@ -7,6 +7,8 @@
 ///
 module;
 
+#include <cassert>
+
 #if __has_include(<systemd/sd-daemon.h>)
 #include <systemd/sd-daemon.h>
 #ifndef EAGINE_USE_SYSTEMD
@@ -26,79 +28,77 @@ import eagine.core.utility;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+struct process_watchdog_backend : interface<process_watchdog_backend> {
+    virtual void declare_initialized() noexcept = 0;
+    virtual void notify_alive() noexcept = 0;
+    virtual void announce_shutdown() noexcept = 0;
+};
+//------------------------------------------------------------------------------
+class null_process_watchdog_backend final : public process_watchdog_backend {
+    void declare_initialized() noexcept final {}
+    void notify_alive() noexcept final {}
+    void announce_shutdown() noexcept final {}
+};
+//------------------------------------------------------------------------------
 #if EAGINE_USE_SYSTEMD
-class process_watchdog_impl {
+class systemd_process_watchdog_backend final : public process_watchdog_backend {
 public:
-    process_watchdog_impl() {
-        std::uint64_t _interval_us{0};
-        if(sd_watchdog_enabled(0, &_interval_us) > 0) {
-            _should_notify.reset(
-              std::chrono::microseconds(_interval_us / 2), nothing);
-            _enabled = true;
+    systemd_process_watchdog_backend(std::chrono::microseconds interval) noexcept
+      : _should_notify{interval, nothing} {}
+
+    void declare_initialized() noexcept final {
+        ::sd_notify(0, "READY=1");
+    }
+
+    void notify_alive() noexcept final {
+        if(_should_notify) {
+            ::sd_notify(0, "WATCHDOG=1");
         }
     }
 
-    void ready() noexcept {
-        if(_enabled) {
-            ::sd_notify(0, "READY=1");
-        }
-    }
-
-    void watchdog() noexcept {
-        if(_enabled) {
-            if(_should_notify) {
-                ::sd_notify(0, "WATCHDOG=1");
-            }
-        }
-    }
-
-    void stopping() noexcept {
-        if(_enabled) {
-            ::sd_notify(0, "STOPPING=1");
-        }
+    void announce_shutdown() noexcept final {
+        ::sd_notify(0, "STOPPING=1");
     }
 
 private:
     resetting_timeout _should_notify;
-    bool _enabled{false};
 };
 #endif
 //------------------------------------------------------------------------------
-auto process_watchdog::_impl() noexcept -> process_watchdog_impl* {
+static auto make_process_watchdog_backend() noexcept
+  -> std::shared_ptr<process_watchdog_backend> {
 #if EAGINE_USE_SYSTEMD
-    if(not _pimpl) [[unlikely]] {
-        try {
-            _pimpl = std::make_shared<process_watchdog_impl>();
-        } catch(...) {
-        }
+    std::uint64_t _interval_us{0};
+    if(sd_watchdog_enabled(0, &_interval_us) > 0) {
+        return std::make_shared<systemd_process_watchdog_backend>(
+          std::chrono::microseconds{_interval_us / 2});
     }
-    return _pimpl.get();
 #endif
-    return nullptr;
+    return std::make_shared<null_process_watchdog_backend>();
 }
 //------------------------------------------------------------------------------
+process_watchdog::process_watchdog(main_ctx_parent parent) noexcept
+  : main_ctx_object{"Watchdog", parent}
+  , _backend{make_process_watchdog_backend()}
+  , _should_log_heartbeat{std::chrono::seconds{60}, nothing} {}
+//------------------------------------------------------------------------------
 void process_watchdog::declare_initialized() noexcept {
-#if EAGINE_USE_SYSTEMD
-    if(auto impl{_impl()}) {
-        extract(impl).ready();
-    }
-#endif
+    assert(_backend);
+    _backend->declare_initialized();
 }
 //------------------------------------------------------------------------------
 void process_watchdog::notify_alive() noexcept {
-#if EAGINE_USE_SYSTEMD
-    if(auto impl{_impl()}) {
-        extract(impl).watchdog();
+    assert(_backend);
+    _backend->notify_alive();
+    if(_should_log_heartbeat) [[unlikely]] {
+        main_context().log().heartbeat();
+        _should_log_heartbeat.reset();
     }
-#endif
 }
 //------------------------------------------------------------------------------
 void process_watchdog::announce_shutdown() noexcept {
-#if EAGINE_USE_SYSTEMD
-    if(auto impl{_impl()}) {
-        extract(impl).stopping();
-    }
-#endif
+    assert(_backend);
+    _backend->announce_shutdown();
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

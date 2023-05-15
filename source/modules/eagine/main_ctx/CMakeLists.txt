@@ -62,6 +62,7 @@ eagine_add_module(
 	IMPORTS
 		interface parent object
 		eagine.core.types
+		eagine.core.utility
 		eagine.core.identifier
 )
 
