@@ -75,6 +75,13 @@ public:
         return _backend_getter().get();
     }
 
+    /// @brief Indicates that this process is alive.
+    void heartbeat() const noexcept {
+        if(auto lbe{backend()}) {
+            extract(lbe).heartbeat();
+        }
+    }
+
     /// @brief Returns the unique id of this logger instance.
     auto instance_id() const noexcept -> logger_instance_id {
         return reinterpret_cast<logger_instance_id>(this);

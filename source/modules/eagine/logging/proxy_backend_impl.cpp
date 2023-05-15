@@ -118,13 +118,15 @@ public:
 
     void finish_message() noexcept final;
 
-    void finish_log() noexcept final;
-
     void log_chart_sample(
       const identifier source,
       const logger_instance_id instance,
       const identifier series,
       const float value) noexcept final;
+
+    void heartbeat() noexcept final;
+
+    void finish_log() noexcept final;
 
 private:
     std::unique_ptr<logger_backend> _delegate;
@@ -357,15 +359,6 @@ void proxy_log_backend::finish_message() noexcept {
     }
 }
 //------------------------------------------------------------------------------
-void proxy_log_backend::finish_log() noexcept {
-    if(_delegate) [[likely]] {
-        return _delegate->finish_log();
-    } else if(_delayed) [[likely]] {
-        assert(not _delegate);
-        _delayed->emplace_back([this]() { _delegate->finish_log(); });
-    }
-}
-//------------------------------------------------------------------------------
 void proxy_log_backend::log_chart_sample(
   const identifier source,
   const logger_instance_id instance,
@@ -376,6 +369,24 @@ void proxy_log_backend::log_chart_sample(
         _delayed->emplace_back([this, source, instance, series, value]() {
             _delegate->log_chart_sample(source, instance, series, value);
         });
+    }
+}
+//------------------------------------------------------------------------------
+void proxy_log_backend::heartbeat() noexcept {
+    if(_delegate) [[likely]] {
+        return _delegate->heartbeat();
+    } else if(_delayed) [[likely]] {
+        assert(not _delegate);
+        _delayed->emplace_back([this]() { _delegate->heartbeat(); });
+    }
+}
+//------------------------------------------------------------------------------
+void proxy_log_backend::finish_log() noexcept {
+    if(_delegate) [[likely]] {
+        return _delegate->finish_log();
+    } else if(_delayed) [[likely]] {
+        assert(not _delegate);
+        _delayed->emplace_back([this]() { _delegate->finish_log(); });
     }
 }
 //------------------------------------------------------------------------------

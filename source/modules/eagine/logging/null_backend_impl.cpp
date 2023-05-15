@@ -109,13 +109,15 @@ struct null_log_backend final : logger_backend {
 
     void finish_message() noexcept final {}
 
-    void finish_log() noexcept final {}
-
     void log_chart_sample(
       const identifier,
       const logger_instance_id,
       const identifier,
       const float) noexcept final {}
+
+    void heartbeat() noexcept final {}
+
+    void finish_log() noexcept final {}
 };
 //------------------------------------------------------------------------------
 auto make_null_log_backend() -> std::unique_ptr<logger_backend> {

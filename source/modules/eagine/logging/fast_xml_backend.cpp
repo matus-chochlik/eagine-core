@@ -381,21 +381,30 @@ public:
         }
     }
 
-    void finish_log() noexcept final {
-        try {
-            const std::lock_guard<Lockable> lock{_lockable};
-            _add("</log>\n");
-            _flush(true);
-        } catch(...) {
-        }
-    }
-
     void log_chart_sample(
       const identifier source,
       const logger_instance_id instance,
       const identifier series,
       const float value) noexcept final {
         try {
+        } catch(...) {
+        }
+    }
+
+    void heartbeat() noexcept final {
+        try {
+            const std::lock_guard<Lockable> lock{_lockable};
+            _add("<hb/>\n");
+            _flush();
+        } catch(...) {
+        }
+    }
+
+    void finish_log() noexcept final {
+        try {
+            const std::lock_guard<Lockable> lock{_lockable};
+            _add("</log>\n");
+            _flush(true);
         } catch(...) {
         }
     }

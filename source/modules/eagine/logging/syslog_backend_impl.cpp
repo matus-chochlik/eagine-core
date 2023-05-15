@@ -222,17 +222,19 @@ public:
         _del_message();
     }
 
-    void finish_log() noexcept final {
-#if EAGINE_POSIX
-        ::closelog();
-#endif
-    }
-
     void log_chart_sample(
       const identifier,
       const logger_instance_id,
       const identifier,
       const float) noexcept final {}
+
+    void heartbeat() noexcept final {}
+
+    void finish_log() noexcept final {
+#if EAGINE_POSIX
+        ::closelog();
+#endif
+    }
 
 private:
     Lockable _lockable{};

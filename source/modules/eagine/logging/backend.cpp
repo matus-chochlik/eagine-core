@@ -238,9 +238,6 @@ export struct logger_backend : interface<logger_backend> {
     /// @brief Finishes the current logging message.
     virtual void finish_message() noexcept = 0;
 
-    /// @brief Finishes the current log.
-    virtual void finish_log() noexcept = 0;
-
     /// @brief Adds a chart/graph sample to the log.
     /// @param source the identifier of the source logger object.
     /// @param instance unique instance id of the source logger object.
@@ -251,6 +248,12 @@ export struct logger_backend : interface<logger_backend> {
       const logger_instance_id instance,
       const identifier series,
       const float value) noexcept = 0;
+
+    /// @brief Indicates that the running process is alive.
+    virtual void heartbeat() noexcept = 0;
+
+    /// @brief Finishes the current log.
+    virtual void finish_log() noexcept = 0;
 };
 //------------------------------------------------------------------------------
 // backend getters
