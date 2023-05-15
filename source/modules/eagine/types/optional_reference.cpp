@@ -241,6 +241,28 @@ public:
         }
     }
 
+    template <
+      typename F,
+      typename R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
+        requires(std::is_void_v<R>)
+    constexpr void and_then(F&& function) const noexcept(
+      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>()))) {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), *_ptr);
+        }
+    }
+
+    template <typename F>
+    constexpr auto and_then_true(F&& function) const noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<T&>()))) -> tribool {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), *_ptr);
+            return true;
+        } else {
+            return indeterminate;
+        }
+    }
+
     /// @brief Return self if has value or the result of function.
     /// @see and_then
     /// @see transform
@@ -330,7 +352,8 @@ public:
     }
 
     template <std::derived_from<T> Derived>
-    [[nodiscard]] auto as() const noexcept -> optional_reference<Derived> {
+    [[nodiscard]] auto as(std::type_identity<Derived> = {}) const noexcept
+      -> optional_reference<Derived> {
         if(auto derived{dynamic_cast<Derived*>(_ptr)}) {
             return {derived};
         }
