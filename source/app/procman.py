@@ -1511,19 +1511,9 @@ class XmlLogProcessor(xml.sax.ContentHandler):
         elif tag == "i":
             pass
         elif tag == "c":
-            try: logger = self._loggers[attr["src"]]
-            except KeyError:
-                logger = self._loggers[attr["src"]] = {}
-            try: inst = logger[attr["iid"]]
-            except KeyError:
-                inst = logger[attr["iid"]] = {}
-            try: charts = inst["charts"]
-            except KeyError:
-                charts = inst["charts"] = {}
-            try: series = charts[attr["ser"]]
-            except KeyError:
-                series = charts[attr["ser"]] = []
-            series.append((time_ofs+float(attr["ts"]), float(attr["v"])))
+            pass
+        elif tag == "hb":
+            self._tracker.heartbeat(self._src_id)
         elif tag == "d":
             try: logger = self._loggers[attr["src"]]
             except KeyError:
@@ -1541,6 +1531,8 @@ class XmlLogProcessor(xml.sax.ContentHandler):
         elif tag == "m":
             self._tracker.addMessage(self._src_id, self._info)
             self._info = None
+        elif tag == "hb":
+            self._tracker.heartbeat(self._src_id)
 
     # --------------------------------------------------------------------------
     def characters(self, content):
@@ -1647,6 +1639,7 @@ class ProcessLogTracker(object):
             proc_info = self._processes[src_id] = {}
             proc_info["identity"] = info["identity"]
             proc_info["start"] = time.time()
+            proc_info["update"] = time.time()
             self._log.info(
                 "process %d '%s' started",
                 src_id,
@@ -1680,11 +1673,19 @@ class ProcessLogTracker(object):
         try:
             message_info = None
             proc_info = self._processes[src_id]
+            proc_info["update"] = time.time()
             msg_identity = proc_info["identity"]
             for expectation in self._expect_in_log_message[msg_identity]:
                 if message_info is None:
                     message_info = LogMessageInfo(info)
                 expectation.update(message_info)
+        except KeyError: pass
+
+    # --------------------------------------------------------------------------
+    def heartbeat(self, src_id):
+        try:
+            proc_info = self._processes[src_id]
+            proc_info["update"] = time.time()
         except KeyError: pass
 
     # --------------------------------------------------------------------------
