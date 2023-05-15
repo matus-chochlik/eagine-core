@@ -1048,12 +1048,18 @@ export template <typename F, typename T, typename P, typename L>
     return {std::move(vi), std::move(f)};
 }
 //------------------------------------------------------------------------------
+export template <typename F, typename T, typename P>
+auto operator<<(std::ostream& out, const basic_valid_if<F, T, P>& vif)
+  -> std::ostream& {
+    assert(vif.has_value());
+    return out << vif.value_anyway();
+}
+
 export template <typename F, typename T, typename P, typename L>
-[[nodiscard]] auto operator<<(
-  std::ostream& out,
-  const valid_if_or_fallback<F, T, P, L>& viof) -> std::ostream& {
+auto operator<<(std::ostream& out, const valid_if_or_fallback<F, T, P, L>& viof)
+  -> std::ostream& {
     if(viof.has_value()) {
-        out << viof.value();
+        out << viof.value_anyway();
     } else {
         out << viof.fallback();
     }
