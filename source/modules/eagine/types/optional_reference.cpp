@@ -143,19 +143,9 @@ public:
         return has_value();
     }
 
-    [[nodiscard]] constexpr auto operator*() & noexcept -> T& {
+    [[nodiscard]] constexpr auto operator*() const noexcept -> T& {
         assert(has_value());
         return *_ptr;
-    }
-
-    [[nodiscard]] constexpr auto operator*() const& noexcept -> T& {
-        assert(has_value());
-        return *_ptr;
-    }
-
-    [[nodiscard]] constexpr auto operator*() && noexcept -> T&& {
-        assert(has_value());
-        return std::move(*_ptr);
     }
 
     [[nodiscard]] constexpr auto operator->() const noexcept -> T* {
@@ -169,23 +159,9 @@ public:
 
     /// @brief Returns the stored reference.
     /// @pre has_value()
-    [[nodiscard]] constexpr auto value() & noexcept -> T& {
+    [[nodiscard]] constexpr auto value() const noexcept -> T& {
         assert(has_value());
         return *_ptr;
-    }
-
-    /// @brief Returns the stored const reference.
-    /// @pre has_value()
-    [[nodiscard]] constexpr auto value() const& noexcept -> const T& {
-        assert(has_value());
-        return *_ptr;
-    }
-
-    /// @brief Returns rvalue reference.
-    /// @pre has_value()
-    [[nodiscard]] constexpr auto value() && noexcept -> T&& {
-        assert(has_value());
-        return std::move(*_ptr);
     }
 
     /// @brief Returns the stored value if valid or @p fallback otherwise.
