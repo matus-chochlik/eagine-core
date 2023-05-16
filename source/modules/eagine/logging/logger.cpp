@@ -354,26 +354,38 @@ public:
     constexpr named_logging_object() noexcept = default;
 
     /// @brief Move constructor.
-    named_logging_object(named_logging_object&& temp) noexcept
+    constexpr named_logging_object(named_logging_object&& temp) noexcept
       : base{static_cast<base&&>(temp)}
-      , _object_id{temp._object_id} {
+      , _object_id{std::exchange(temp._object_id, identifier{})} {
         log_lifetime(_object_id, "being moved").tag("objMove");
     }
 
     /// @brief Copy constructor.
-    named_logging_object(const named_logging_object& that) noexcept
+    constexpr named_logging_object(const named_logging_object& that) noexcept
       : base{static_cast<const base&>(that)}
       , _object_id{that._object_id} {
         log_lifetime(_object_id, "being copied").tag("objCopy");
     }
 
     /// @brief Move assignment operator.
-    auto operator=(named_logging_object&&) noexcept
-      -> named_logging_object& = default;
+    constexpr auto operator=(named_logging_object&& temp) noexcept
+      -> named_logging_object& {
+        if(this != &temp) {
+            using std::swap;
+            swap(static_cast<base&>(*this), static_cast<base&>(temp));
+            swap(_object_id, temp._object_id);
+        }
+        return *this;
+    }
 
     /// @brief Copy assignment operator.
-    auto operator=(const named_logging_object&)
-      -> named_logging_object& = default;
+    auto operator=(const named_logging_object& that) -> named_logging_object& {
+        if(this != &that) {
+            static_cast<base&>(*this) = static_cast<const base&>(that);
+            _object_id = that._object_id;
+        }
+        return *this;
+    }
 
     ~named_logging_object() noexcept {
         log_lifetime(_object_id, "being destroyed").tag("objDestroy");
@@ -533,7 +545,7 @@ protected:
     }
 
 private:
-    identifier _object_id{"Object"};
+    identifier _object_id{};
 };
 //------------------------------------------------------------------------------
 /// @brief Standalone logger object type.

@@ -72,11 +72,23 @@ auto try_get_main_ctx() noexcept -> optional_reference<main_ctx_getters> {
 // main_ctx_object-related
 //------------------------------------------------------------------------------
 main_ctx_log_backend_getter::main_ctx_log_backend_getter(
-  main_ctx_getters& c) noexcept
-  : _backend{c.log().backend()} {}
+  main_ctx_getters& c) noexcept {
+    const auto new_ptr{c.log().backend()};
+    if(_backend_ptr()) [[likely]] {
+        assert(not new_ptr or _backend_ptr() == new_ptr);
+    } else if(new_ptr) {
+        _backend_ptr() = new_ptr;
+    }
+}
 //------------------------------------------------------------------------------
-main_ctx_log_backend_getter::main_ctx_log_backend_getter() noexcept
-  : _backend{main_ctx::get().log().backend()} {}
+main_ctx_log_backend_getter::main_ctx_log_backend_getter() noexcept {
+    const auto new_ptr{main_ctx::get().log().backend()};
+    if(_backend_ptr()) [[likely]] {
+        assert(not new_ptr or _backend_ptr() == new_ptr);
+    } else if(new_ptr) {
+        _backend_ptr() = new_ptr;
+    }
+}
 //------------------------------------------------------------------------------
 auto main_ctx_object::main_context() const noexcept -> main_ctx& {
     return main_ctx::get();
