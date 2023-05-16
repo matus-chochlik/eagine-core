@@ -56,7 +56,8 @@ public:
 
     ~main_ctx() noexcept override;
 
-    [[nodiscard]] static auto try_get() noexcept -> main_ctx* {
+    [[nodiscard]] static auto try_get() noexcept
+      -> optional_reference<main_ctx> {
         return _single_ptr();
     }
 
@@ -66,7 +67,8 @@ public:
         return *_single_ptr();
     }
 
-    [[nodiscard]] auto setters() noexcept -> main_ctx_setters* final {
+    [[nodiscard]] auto setters() noexcept
+      -> optional_reference<main_ctx_setters> final {
         return _source.setters();
     }
 
@@ -151,14 +153,25 @@ public:
     }
 
     [[nodiscard]] auto locate_service(identifier type_id) noexcept
-      -> std::shared_ptr<main_ctx_service> final {
+      -> optional_reference<main_ctx_service> final {
         return _source.locate_service(type_id);
     }
 
     template <std::derived_from<main_ctx_service> Service>
-    [[nodiscard]] auto locate() noexcept -> std::shared_ptr<Service> {
+    [[nodiscard]] auto locate() noexcept -> optional_reference<Service> {
+        return locate_service(Service::static_type_id())
+          .as(std::type_identity<Service>{});
+    }
+
+    [[nodiscard]] auto share_service(identifier type_id) noexcept
+      -> std::shared_ptr<main_ctx_service> final {
+        return _source.share_service(type_id);
+    }
+
+    template <std::derived_from<main_ctx_service> Service>
+    [[nodiscard]] auto share() noexcept -> std::shared_ptr<Service> {
         return std::dynamic_pointer_cast<Service>(
-          locate_service(Service::static_type_id()));
+          share_service(Service::static_type_id()));
     }
 
 private:

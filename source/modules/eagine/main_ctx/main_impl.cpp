@@ -48,7 +48,7 @@ auto main_impl(
             std::cerr << "Logger failed to connect to the formatter. "
                       << "Start one of the 'xml_logs-*' apps";
             if(const auto prefix{build_info().install_prefix()}) {
-                std::cerr << " installed in '" << extract(prefix) << "/bin'";
+                std::cerr << " installed in '" << prefix << "/bin'";
             }
             std::cerr << "." << std::endl;
         } else {

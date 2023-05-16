@@ -74,7 +74,7 @@ export struct main_ctx_setters : interface<main_ctx_setters> {
 /// @see main_ctx
 export struct main_ctx_getters : interface<main_ctx_getters> {
     /// @brief Returns the associated setter object (may return nullptr).
-    virtual auto setters() noexcept -> main_ctx_setters* = 0;
+    virtual auto setters() noexcept -> optional_reference<main_ctx_setters> = 0;
 
     /// @brief Does potentially expensive initialization and caching.
     virtual auto preinitialize() noexcept -> main_ctx_getters& = 0;
@@ -144,10 +144,14 @@ export struct main_ctx_getters : interface<main_ctx_getters> {
 
     /// @brief Locates a service object by it's type name.
     virtual auto locate_service(identifier type_id) noexcept
+      -> optional_reference<main_ctx_service> = 0;
+
+    /// @brief Locates a service object by it's type name.
+    virtual auto share_service(identifier type_id) noexcept
       -> std::shared_ptr<main_ctx_service> = 0;
 };
 
-export auto try_get_main_ctx() noexcept -> main_ctx_getters*;
+export auto try_get_main_ctx() noexcept -> optional_reference<main_ctx_getters>;
 //------------------------------------------------------------------------------
 /// @brief Registers the activity progress observer.
 /// @ingroup main_context
@@ -155,9 +159,10 @@ export auto try_get_main_ctx() noexcept -> main_ctx_getters*;
 export auto register_progress_observer(
   main_ctx_getters& ctx,
   progress_observer& observer) noexcept -> bool {
-    auto setters{ctx.setters()};
-    assert(setters);
-    return extract(setters).register_observer(observer);
+    assert(ctx.setters());
+    return ctx.setters()
+      .and_then([&](auto& s) { return tribool{s.register_observer(observer)}; })
+      .value_or(false);
 }
 
 /// @brief Un-registers the activity progress observer.
@@ -166,9 +171,9 @@ export auto register_progress_observer(
 export void unregister_progress_observer(
   main_ctx_getters& ctx,
   progress_observer& observer) noexcept {
-    auto setters{ctx.setters()};
-    assert(setters);
-    extract(setters).unregister_observer(observer);
+    assert(ctx.setters());
+    return ctx.setters().and_then(
+      [&](auto& s) { s.unregister_observer(observer); });
 }
 
 /// @brief Assigns a progress update callback function.
@@ -179,9 +184,9 @@ export void set_progress_update_callback(
   main_ctx_getters& ctx,
   const callable_ref<bool() noexcept>& callback,
   const std::chrono::milliseconds min_interval) noexcept {
-    auto setters{ctx.setters()};
-    assert(setters);
-    extract(setters).set_progress_update_callback(callback, min_interval);
+    assert(ctx.setters());
+    return ctx.setters().and_then(
+      [&](auto& s) { s.set_progress_update_callback(callback, min_interval); });
 }
 
 /// @brief Resets the progress update callback function.
@@ -189,9 +194,9 @@ export void set_progress_update_callback(
 /// @see main_ctx_setters
 /// @see set_progress_update_callback
 export void reset_progress_update_callback(main_ctx_getters& ctx) noexcept {
-    auto setters{ctx.setters()};
-    assert(setters);
-    extract(setters).reset_progress_update_callback();
+    assert(ctx.setters());
+    return ctx.setters().and_then(
+      [](auto& s) { s.reset_progress_update_callback(); });
 }
 //------------------------------------------------------------------------------
 /// @brief Structure storing customization options for main context.

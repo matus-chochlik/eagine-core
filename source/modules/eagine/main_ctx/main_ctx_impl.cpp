@@ -65,7 +65,7 @@ auto main_ctx::preinitialize() noexcept -> main_ctx& {
     return *this;
 }
 //------------------------------------------------------------------------------
-auto try_get_main_ctx() noexcept -> main_ctx_getters* {
+auto try_get_main_ctx() noexcept -> optional_reference<main_ctx_getters> {
     return main_ctx::try_get();
 }
 //------------------------------------------------------------------------------
@@ -125,8 +125,13 @@ auto main_ctx_object::workers() const noexcept -> workshop& {
 }
 //------------------------------------------------------------------------------
 auto main_ctx_object::locate_service(identifier type_id) const noexcept
-  -> std::shared_ptr<main_ctx_service> {
+  -> optional_reference<main_ctx_service> {
     return main_context().locate_service(type_id);
+}
+//------------------------------------------------------------------------------
+auto main_ctx_object::share_service(identifier type_id) const noexcept
+  -> std::shared_ptr<main_ctx_service> {
+    return main_context().share_service(type_id);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

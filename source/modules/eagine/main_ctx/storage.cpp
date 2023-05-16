@@ -54,7 +54,7 @@ public:
           .arg("exePath", "FsPath", _exe_path);
     }
 
-    auto setters() noexcept -> main_ctx_setters* final {
+    auto setters() noexcept -> optional_reference<main_ctx_setters> final {
         return this;
     }
 
@@ -157,6 +157,14 @@ public:
     }
 
     auto locate_service(identifier type_id) noexcept
+      -> optional_reference<main_ctx_service> final {
+        if(const auto pos{_services.find(type_id)}; pos != _services.end()) {
+            return std::get<1>(*pos);
+        }
+        return {};
+    }
+
+    auto share_service(identifier type_id) noexcept
       -> std::shared_ptr<main_ctx_service> final {
         if(const auto pos{_services.find(type_id)}; pos != _services.end()) {
             return std::get<1>(*pos);

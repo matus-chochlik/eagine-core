@@ -139,14 +139,26 @@ public:
 
     /// @brief Locates the specified service object.
     [[nodiscard]] auto locate_service(identifier type_id) const noexcept
+      -> optional_reference<main_ctx_service>;
+
+    /// @brief Locates the specified Service object.
+    /// @see locate
+    template <std::derived_from<main_ctx_service> Service>
+    [[nodiscard]] auto locate() const noexcept -> optional_reference<Service> {
+        return locate_service(Service::static_type_id())
+          .as(std::type_identity<Service>{});
+    }
+
+    /// @brief Locates the specified service object.
+    [[nodiscard]] auto share_service(identifier type_id) const noexcept
       -> std::shared_ptr<main_ctx_service>;
 
     /// @brief Locates the specified Service object.
     /// @see locate
     template <std::derived_from<main_ctx_service> Service>
-    [[nodiscard]] auto locate() const noexcept -> std::shared_ptr<Service> {
+    [[nodiscard]] auto share() const noexcept -> std::shared_ptr<Service> {
         return std::dynamic_pointer_cast<Service>(
-          locate_service(Service::static_type_id()));
+          share_service(Service::static_type_id()));
     }
 
 private:
