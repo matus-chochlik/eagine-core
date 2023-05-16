@@ -22,7 +22,7 @@ auto basic_config::program_arg_name(string_view key, string_view) const noexcept
     arg_name.reserve(integer(safe_add(3, key.size())));
     arg_name.append("--");
     for(auto c : key) {
-        if(c == '.' or c == '_') {
+        if((c == '.') or (c == '_')) {
             c = '-';
         }
         arg_name.append(&c, 1U);
@@ -36,7 +36,7 @@ auto basic_config::environment_var_name(string_view key, string_view)
     var_name.reserve(integer(safe_add(7, key.size())));
     var_name.append("EAGINE_");
     for(auto c : key) {
-        if(c == '.' or c == '-') {
+        if((c == '.') or (c == '-')) {
             c = '_';
         } else {
             c = static_cast<char>(std::toupper(c));

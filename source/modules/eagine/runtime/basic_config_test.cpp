@@ -82,14 +82,14 @@ void basic_config_is_set_2(auto& s) {
        "--arg-flag-false",
        "false",
        nullptr}};
-    eagine::program_args args{1, argv.data()};
+    eagine::program_args args{8, argv.data()};
 
     eagine::basic_config cfg{args};
 
     test.check(cfg.is_set("arg.flag-true"), "A");
     test.check(not cfg.is_set("arg-flag_false"), "B");
     test.check(cfg.is_set("arg.flag"), "C");
-    test.check(not cfg.is_set("var-12345"), "D");
+    test.check(not cfg.is_set("var-23456"), "D");
 }
 //------------------------------------------------------------------------------
 // main
