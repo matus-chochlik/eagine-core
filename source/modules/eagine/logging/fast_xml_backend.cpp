@@ -218,6 +218,27 @@ public:
         }
     }
 
+    void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) noexcept final {
+        try {
+            const std::lock_guard<Lockable> lock{_lockable};
+            _add("<s src='");
+            _add(source.name());
+            _add("' tag='");
+            _add(state_tag.name());
+            _add("' bgn='");
+            _add(begin_tag.name());
+            _add("' end='");
+            _add(end_tag.name());
+            _add("'/>\n");
+            _flush();
+        } catch(...) {
+        }
+    }
+
     auto begin_message(
       const identifier source,
       const identifier tag,

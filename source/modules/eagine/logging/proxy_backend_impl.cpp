@@ -55,6 +55,12 @@ public:
       const string_view name,
       const string_view desc) noexcept final;
 
+    void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) noexcept final;
+
     auto begin_message(
       const identifier source,
       const identifier tag,
@@ -197,6 +203,19 @@ void proxy_log_backend::set_description(
                                 name{to_string(name)},
                                 desc{to_string(desc)}]() {
             _delegate->set_description(source, instance, name, desc);
+        });
+    }
+}
+//------------------------------------------------------------------------------
+void proxy_log_backend::declare_state(
+  const identifier source,
+  const identifier state_tag,
+  const identifier begin_tag,
+  const identifier end_tag) noexcept {
+    if(_delayed) [[likely]] {
+        assert(not _delegate);
+        _delayed->emplace_back([this, source, state_tag, begin_tag, end_tag]() {
+            _delegate->declare_state(source, state_tag, begin_tag, end_tag);
         });
     }
 }

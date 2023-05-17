@@ -125,10 +125,20 @@ protected:
     void set_description(
       const identifier source,
       const string_view display_name,
-      const string_view description) noexcept {
+      const string_view description) const noexcept {
         if(auto lbe{backend()}) {
             extract(lbe).set_description(
               source, instance_id(), display_name, description);
+        }
+    }
+
+    void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) const noexcept {
+        if(auto lbe{backend()}) {
+            extract(lbe).declare_state(source, state_tag, begin_tag, end_tag);
         }
     }
 
@@ -399,8 +409,16 @@ public:
     ///@brief Sets the human-readable name and description of this object.
     void object_description(
       const string_view display_name,
-      const string_view description) noexcept {
+      const string_view description) const noexcept {
         base::set_description(_object_id, display_name, description);
+    }
+
+    /// @brief Declares a possible special state delimited by pair of messages.
+    void declare_state(
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) const noexcept {
+        base::declare_state(_object_id, state_tag, begin_tag, end_tag);
     }
 
     /// @brief Create a log message entry with specified severity and format.

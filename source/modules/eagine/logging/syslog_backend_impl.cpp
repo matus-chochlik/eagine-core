@@ -94,6 +94,12 @@ public:
 #endif
     }
 
+    void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) noexcept final {}
+
     auto begin_message(
       const identifier src,
       const identifier tag,

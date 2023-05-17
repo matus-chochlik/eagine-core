@@ -116,6 +116,17 @@ export struct logger_backend : interface<logger_backend> {
       const string_view display_name,
       const string_view description) noexcept = 0;
 
+    /// @brief Declares a state delimited by a pair of messages with specified tags.
+    /// @param source the identifier of the source logger object.
+    /// @param state_tag the identifier of the declared state.
+    /// @param begin_tag the tag of the message that begins the declared state.
+    /// @param end_tag the tag of the message that ends the declared state.
+    virtual void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) noexcept = 0;
+
     /// @brief Begins a new logging message.
     /// @param source the identifier of the source logger object.
     /// @param tag the identifier of this message type or instance.

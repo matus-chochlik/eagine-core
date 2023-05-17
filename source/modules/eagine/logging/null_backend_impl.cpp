@@ -48,6 +48,12 @@ struct null_log_backend final : logger_backend {
       const string_view,
       const string_view) noexcept final {}
 
+    void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) noexcept final {}
+
     auto begin_message(
       const identifier,
       const identifier,

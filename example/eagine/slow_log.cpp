@@ -17,6 +17,9 @@ auto main(main_ctx& ctx) -> int {
     ctx.config().fetch("count", repeats);
     ctx.config().fetch("severity", severity);
 
+    ctx.log().declare_state("running", "start", "finish");
+    ctx.log().info("starting").tag("start");
+
     const auto main_act =
       ctx.progress().activity("Counting ${current} / ${total}", repeats);
     for(const auto i : integer_range(repeats)) {
@@ -27,6 +30,7 @@ auto main(main_ctx& ctx) -> int {
         main_act.update_progress(i);
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+    ctx.log().info("finishing").tag("finish");
 
     return 0;
 }
