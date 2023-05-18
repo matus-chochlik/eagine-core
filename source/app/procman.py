@@ -1508,12 +1508,19 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                 self._info["args"][self._carg] = {
                     "values": [iarg]
                 }
+        elif tag == "hb":
+            self._tracker.heartbeat(self._src_id)
         elif tag == "i":
             pass
         elif tag == "c":
             pass
-        elif tag == "hb":
-            self._tracker.heartbeat(self._src_id)
+        elif tag == "s":
+            self._tracker.declareState(
+                self._src_id,
+                attr.get("src"),
+                attr.get("tag"),
+                attr.get("bgn"),
+                attr.get("end"))
         elif tag == "d":
             try: logger = self._loggers[attr["src"]]
             except KeyError:
@@ -1617,6 +1624,9 @@ class ProcessLogTracker(object):
         self._composition = composition
         self._source_id = 0
         self._processes = {}
+        self._state_begin_triggers = {}
+        self._state_end_triggers = {}
+        self._active_states = {}
 
         self._expect_clean_shutdown =\
             composition.config().cleanShutdownExpectations()
@@ -1636,6 +1646,9 @@ class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
     def beginLog(self, src_id, info):
         if "identity" in  info:
+            self._state_begin_triggers[src_id] = {}
+            self._state_end_triggers[src_id] = {}
+            self._active_states[src_id] = {}
             proc_info = self._processes[src_id] = {}
             proc_info["identity"] = info["identity"]
             proc_info["start"] = time.time()
@@ -1647,6 +1660,14 @@ class ProcessLogTracker(object):
 
     # --------------------------------------------------------------------------
     def finishLog(self, src_id, clean_shutdown):
+        try:
+            remaining_states = self._active_states[src_id].copy()
+            for source, source_states in remaining_states.items():
+                for state_tag, state_infos in source_states.items():
+                    for info in state_infos:
+                        self.endState(src_id, source, info["instance"], state_tag)
+        except KeyError: pass
+
         try:
             proc_info = self._processes[src_id]
             identity = proc_info["identity"]
@@ -1665,6 +1686,12 @@ class ProcessLogTracker(object):
                 proc_info["identity"])
         except KeyError: pass
 
+        try: del self._active_states[src_id]
+        except KeyError: pass
+        try: del self._state_begin_triggers[src_id]
+        except KeyError: pass
+        try: del self._state_end_triggers[src_id]
+        except KeyError: pass
         try: del self._processes[src_id]
         except KeyError: pass
 
@@ -1680,6 +1707,68 @@ class ProcessLogTracker(object):
                     message_info = LogMessageInfo(info)
                 expectation.update(message_info)
         except KeyError: pass
+
+        try:
+            source = info["source"]
+            state_tag = self._state_begin_triggers[src_id][(source, info["tag"])]
+            self.beginState(src_id, source, info["instance"], state_tag)
+        except KeyError: pass
+
+        try:
+            source = info["source"]
+            state_tag = self._state_end_triggers[src_id][(source, info["tag"])]
+            self.endState(src_id, source, info["instance"], state_tag)
+        except KeyError: pass
+
+    # --------------------------------------------------------------------------
+    def declareState(self, src_id, source, state_tag, begin_tag, end_tag):
+        self._state_begin_triggers[src_id][(source, begin_tag)] = state_tag
+        self._state_end_triggers[src_id][(source, end_tag)] = state_tag
+
+    # --------------------------------------------------------------------------
+    def beginState(self, src_id, source, instance, state_tag):
+        try:
+            source_state = self._active_states[src_id][source]
+        except KeyError:
+            source_state = self._active_states[src_id][source] = {}
+
+        try:
+            states = source_state[state_tag]
+        except KeyError:
+            states = source_state[state_tag] = []
+
+        states.append({
+            "instance": instance,
+            "begin": time.time()
+        })
+
+    # --------------------------------------------------------------------------
+    def endState(self, src_id, source, instance, state_tag):
+        try:
+            now = time.time()
+            src_states = self._active_states[src_id]
+            states = src_states[source][state_tag]
+            index = None
+            for i in range(len(states)):
+                if states[i]["instance"] == instance:
+                    index = i
+                    break
+            if index is None:
+                raise KeyError()
+
+            finished_state = states[index]
+            finished_state["duration"] = now - finished_state["begin"]
+
+            self.handleFinishedState(src_id, src_states)
+
+            del src_states[source][state_tag][index]
+        except KeyError:
+            self._log.warning("%d ending unregistered state '%s'", src_id, state_tag)
+
+    # --------------------------------------------------------------------------
+    def handleFinishedState(self, src_id, info):
+        # TODO
+        pass
 
     # --------------------------------------------------------------------------
     def heartbeat(self, src_id):
