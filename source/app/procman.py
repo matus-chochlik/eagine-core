@@ -1069,6 +1069,7 @@ class ProcessInstance(object):
         self._args = [str(arg) for arg in args]
         self._identity = None
         self._number = None
+        self._active_states = set()
         self._current_states = {}
         for i in range(len(self._args) - 1):
             if self._args[i] == "--session-identity":
@@ -1080,6 +1081,7 @@ class ProcessInstance(object):
                 "failed to find executable in pipeline '%s'",
                 parent.identity())
         self._handle = subprocess.Popen(self._args)
+        self._start_time = time.time()
         if self._handle:
             self._exit_code = None
         else:
@@ -1103,12 +1105,16 @@ class ProcessInstance(object):
         return self._current_states.keys()
 
     # --------------------------------------------------------------------------
-    def handleStateBegin(self, process_number, state, is_active, begin_time):
+    def addActiveState(self, process_number, state):
+        self._active_states.add(state)
+
+    # --------------------------------------------------------------------------
+    def handleStateBegin(self, process_number, state, begin_time):
         if self._number == process_number:
-            state_info = {
-                "begin_time": begin_time,
-                "is_active": is_active
-            }
+            state_info = {}
+            state_info["begin_time"] = begin_time
+            if state in self._active_states:
+                state_info["is_active"] = True
             self.onProcessStateBegin(state, state_info)
             self._current_states[state] = state_info
 
@@ -1117,6 +1123,7 @@ class ProcessInstance(object):
         if self._number == process_number:
             try:
                 state_info = self._current_states[state]
+                state_info["end_time"] = end_time
                 del self._current_states[state]
                 self.onProcessStateEnd(state, state_info)
             except KeyError: pass
@@ -1160,12 +1167,19 @@ class ProcessInstance(object):
 
     # --------------------------------------------------------------------------
     def isRunning(self):
-        return self._handle is not None and not self.isFinished()
+        if self._handle is not None and not self.isFinished():
+            if time.time() - self._start_time > 0.5: # [s]
+                return True
+        return False
 
     # --------------------------------------------------------------------------
     def isActive(self):
         if self.isRunning():
-            return any(s for s in self._current_states if s.get("is_active", False))
+            if len(self._active_states) == 0:
+                return True
+            for state in self._current_states:
+                if state in self._active_states:
+                    return True
         return False
 
     # --------------------------------------------------------------------------
@@ -1204,10 +1218,16 @@ class PipelineInstance(object):
         return self._index
 
     # --------------------------------------------------------------------------
-    def handleProcessStateBegin(self, process_number, state, active, begin_time):
+    def addProcessActiveState(self, process_number, state):
         for process in self._processes:
             if process is not None:
-                process.handleStateBegin(process_number, state, active, begin_time)
+                process.addActiveState(process_number, state)
+
+    # --------------------------------------------------------------------------
+    def handleProcessStateBegin(self, process_number, state, begin_time):
+        for process in self._processes:
+            if process is not None:
+                process.handleStateBegin(process_number, state, begin_time)
 
     # --------------------------------------------------------------------------
     def handleProcessStateEnd(self, process_number, state, end_time):
@@ -1307,11 +1327,17 @@ class Pipeline(object):
         return self._parent.newProcessNumber()
 
     # --------------------------------------------------------------------------
-    def handleProcessStateBegin(self, process_number, state, active, begin_time):
+    def addProcessActiveState(self, process_number, state):
+        for instance in self._instances:
+            if instance is not None:
+                instance.addProcessActiveState(process_number, state)
+
+    # --------------------------------------------------------------------------
+    def handleProcessStateBegin(self, process_number, state, begin_time):
         for instance in self._instances:
             if instance is not None:
                 instance.handleProcessStateBegin(
-                    process_number, state, active, begin_time)
+                    process_number, state, begin_time)
 
     # --------------------------------------------------------------------------
     def handleProcessStateEnd(self, process_number, state, end_time):
@@ -1469,10 +1495,15 @@ class PipelineComposition(object):
         return self._process_number
 
     # --------------------------------------------------------------------------
-    def handleProcessStateBegin(self, process_number, state, active, begin_time):
+    def addProcessActiveState(self, process_number, state):
+        for pipeline in self._pipelines:
+            pipeline.addProcessActiveState(process_number, state)
+
+    # --------------------------------------------------------------------------
+    def handleProcessStateBegin(self, process_number, state, begin_time):
         for pipeline in self._pipelines:
             pipeline.handleProcessStateBegin(
-                process_number, state, active, begin_time)
+                process_number, state, begin_time)
 
     # --------------------------------------------------------------------------
     def handleProcessStateEnd(self, process_number, state, end_time):
@@ -1759,7 +1790,6 @@ class ProcessLogTracker(object):
         self._processes = {}
         self._state_begin_triggers = {}
         self._state_end_triggers = {}
-        self._active_states = {}
         self._current_states = {}
 
         self._expect_clean_shutdown =\
@@ -1783,7 +1813,6 @@ class ProcessLogTracker(object):
             self._state_begin_triggers[src_id] = {}
             self._state_end_triggers[src_id] = {}
             self._current_states[src_id] = {}
-            self._active_states[src_id] = set()
             proc_info = self._processes[src_id] = {}
             proc_info["identity"] = info["session"]
             proc_info["number"] = int(info["identity"])
@@ -1822,8 +1851,6 @@ class ProcessLogTracker(object):
                 proc_info["identity"])
         except KeyError: pass
 
-        try: del self._active_states[src_id]
-        except KeyError: pass
         try: del self._current_states[src_id]
         except KeyError: pass
         try: del self._state_begin_triggers[src_id]
@@ -1865,7 +1892,11 @@ class ProcessLogTracker(object):
 
     # --------------------------------------------------------------------------
     def activeState(self, src_id, source, state_tag):
-        self._active_states[src_id].add((source, state_tag))
+        try:
+            self._composition.addProcessActiveState(
+                self._processes[src_id]["number"],
+                (source, state_tag))
+        except KeyError: pass
 
     # --------------------------------------------------------------------------
     def beginState(self, src_id, source, instance, state_tag):
@@ -1888,7 +1919,6 @@ class ProcessLogTracker(object):
             self._composition.handleProcessStateBegin(
                 self._processes[src_id]["number"],
                 (source, state_tag),
-                (source, state_tag) in self._active_states[src_id],
                 now)
         except KeyError: pass
 
