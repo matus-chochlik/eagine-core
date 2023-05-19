@@ -428,6 +428,8 @@ public:
         base::declare_state(_object_id, state_tag, begin_tag, end_tag);
     }
 
+    using base::active_state;
+
     /// @brief Declares a possible active state.
     void active_state(const identifier state_tag) const noexcept {
         base::active_state(_object_id, state_tag);
