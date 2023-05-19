@@ -239,6 +239,21 @@ public:
         }
     }
 
+    void active_state(
+      const identifier source,
+      const identifier state_tag) noexcept final {
+        try {
+            const std::lock_guard<Lockable> lock{_lockable};
+            _add("<a src='");
+            _add(source.name());
+            _add("' tag='");
+            _add(state_tag.name());
+            _add("'/>\n");
+            _flush();
+        } catch(...) {
+        }
+    }
+
     auto begin_message(
       const identifier source,
       const identifier tag,

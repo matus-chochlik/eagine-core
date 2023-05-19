@@ -142,6 +142,13 @@ protected:
         }
     }
 
+    void active_state(const identifier source, const identifier state_tag)
+      const noexcept {
+        if(auto lbe{backend()}) {
+            extract(lbe).active_state(source, state_tag);
+        }
+    }
+
     auto make_log_entry(
       const identifier source,
       const log_event_severity severity,
@@ -419,6 +426,11 @@ public:
       const identifier begin_tag,
       const identifier end_tag) const noexcept {
         base::declare_state(_object_id, state_tag, begin_tag, end_tag);
+    }
+
+    /// @brief Declares a possible active state.
+    void active_state(const identifier state_tag) const noexcept {
+        base::active_state(_object_id, state_tag);
     }
 
     /// @brief Create a log message entry with specified severity and format.

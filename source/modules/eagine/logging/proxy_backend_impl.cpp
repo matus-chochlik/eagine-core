@@ -61,6 +61,10 @@ public:
       const identifier begin_tag,
       const identifier end_tag) noexcept final;
 
+    void active_state(
+      const identifier source,
+      const identifier state_tag) noexcept final;
+
     auto begin_message(
       const identifier source,
       const identifier tag,
@@ -216,6 +220,17 @@ void proxy_log_backend::declare_state(
         assert(not _delegate);
         _delayed->emplace_back([this, source, state_tag, begin_tag, end_tag]() {
             _delegate->declare_state(source, state_tag, begin_tag, end_tag);
+        });
+    }
+}
+//------------------------------------------------------------------------------
+void proxy_log_backend::active_state(
+  const identifier source,
+  const identifier state_tag) noexcept {
+    if(_delayed) [[likely]] {
+        assert(not _delegate);
+        _delayed->emplace_back([this, source, state_tag]() {
+            _delegate->active_state(source, state_tag);
         });
     }
 }

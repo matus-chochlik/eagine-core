@@ -121,11 +121,22 @@ export struct logger_backend : interface<logger_backend> {
     /// @param state_tag the identifier of the declared state.
     /// @param begin_tag the tag of the message that begins the declared state.
     /// @param end_tag the tag of the message that ends the declared state.
+    /// @see active_state
     virtual void declare_state(
       const identifier source,
       const identifier state_tag,
       const identifier begin_tag,
       const identifier end_tag) noexcept = 0;
+
+    /// @brief Indicates that the specified state is considered an active state.
+    /// @param source the identifier of the source logger object.
+    /// @param state_tag the identifier of the declared state.
+    /// @see declare_state
+    /// An active state is indicating that the application is working on it's
+    /// main task and is initialized and prepared to handle input.
+    virtual void active_state(
+      const identifier source,
+      const identifier state_tag) noexcept = 0;
 
     /// @brief Begins a new logging message.
     /// @param source the identifier of the source logger object.
