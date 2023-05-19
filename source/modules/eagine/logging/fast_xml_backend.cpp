@@ -225,7 +225,7 @@ public:
       const identifier end_tag) noexcept final {
         try {
             const std::lock_guard<Lockable> lock{_lockable};
-            _add("<s src='");
+            _add("<ds src='");
             _add(source.name());
             _add("' tag='");
             _add(state_tag.name());
@@ -244,7 +244,7 @@ public:
       const identifier state_tag) noexcept final {
         try {
             const std::lock_guard<Lockable> lock{_lockable};
-            _add("<a src='");
+            _add("<as src='");
             _add(source.name());
             _add("' tag='");
             _add(state_tag.name());

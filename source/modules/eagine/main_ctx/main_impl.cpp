@@ -32,7 +32,6 @@ auto main_impl(
         main_ctx_storage storage{argc, argv, options};
         main_ctx ctx{storage};
         ctx.log().declare_state("inMainFunc", "mainStart", "mainFinish");
-        ctx.log().active_state("inMainFunc");
         ctx.log().info("calling main function").tag("mainStart");
         try {
             assert(main_func);
