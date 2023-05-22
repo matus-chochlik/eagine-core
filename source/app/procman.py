@@ -783,9 +783,9 @@ class PipelineConfig(object):
                             partial_config,
                             self.full_config)
                 except IOError as io_error:
-                    self._log.error("reading '%s': %s", config_path, io_error)
+                    self._log.error("reading '%s': %s" % (config_path, io_error))
                 except ValueError as value_error:
-                    self._log.error("parsing '%s': %s", config_path, io_error)
+                    self._log.error("parsing '%s': %s" % (config_path, io_error))
 
         for pipeline in self.full_config.get("pipelines", []):
             variables = self.full_config.get("variables", {}).copy()
@@ -1768,10 +1768,10 @@ class XmlLogClientHandler(xml.sax.ContentHandler):
                         self._processor.processLine(line)
                         done += 1
                     except UnicodeDecodeError:
-                        self._log.error("failed to decode: '%s'", line)
+                        self._log.error("failed to decode: '%s'" % line)
                         break
                     except:
-                        self._log.error("failed to process XML '%s'", line)
+                        self._log.error("failed to process XML '%s'" % line)
                         raise
                 self._buffer = sep.join(lines[done:])
             else:
@@ -1824,9 +1824,9 @@ class ProcessLogTracker(object):
             proc_info["update"] = time.time()
             self._process_number_to_src_id[number] = src_id
             self._log.info(
-                "process %d '%s' started",
+                "process %d '%s' started" % (
                 src_id,
-                proc_info["identity"])
+                proc_info["identity"]))
 
     # --------------------------------------------------------------------------
     def finishLog(self, src_id, clean_shutdown):
@@ -1851,9 +1851,9 @@ class ProcessLogTracker(object):
             except KeyError: pass
 
             self._log.info(
-                "process %d '%s' finished",
+                "process %d '%s' finished" % (
                 src_id,
-                proc_info["identity"])
+                proc_info["identity"]))
         except KeyError: pass
 
         try: del self._current_states[src_id]
@@ -1956,7 +1956,10 @@ class ProcessLogTracker(object):
 
             del src_states[source][state_tag][index]
         except KeyError:
-            self._log.warning("%d ending unregistered state '%s'", src_id, state_tag)
+            self._log.warning(
+                "%d ending unregistered state '%s'" % (
+                src_id,
+                state_tag))
 
     # --------------------------------------------------------------------------
     def handleFinishedState(self, src_id, info):
@@ -1978,21 +1981,21 @@ class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
     def onProcessStateBegin(self, pipeline, instance_index, process, state, state_info):
         self._log.info(
-            "process %d '%s' entered %s/%s %sstate", 
+            "process %d '%s' entered %s/%s %sstate" % (
             self._process_number_to_src_id[process.number()],
             pipeline.identity(),
             state[0],
             state[1],
-            "active " if state_info.get("is_active", False) else "")
+            "active " if state_info.get("is_active", False) else ""))
 
     # --------------------------------------------------------------------------
     def onProcessStateEnd(self, pipeline, instance_index, process, state, state_info):
         self._log.info(
-            "process %d '%s' left %s/%s state", 
+            "process %d '%s' left %s/%s state" % (
             self._process_number_to_src_id[process.number()],
             pipeline.identity(),
             state[0],
-            state[1])
+            state[1]))
 
     # --------------------------------------------------------------------------
     def onProcessExit(self, pipeline, pipeline_index, process):
@@ -2004,13 +2007,13 @@ class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
     def onPipelineInstanceFinished(self, instance):
         self._log.info(
-            "instance %d of pipeline '%s' finished",
+            "instance %d of pipeline '%s' finished" % (
             instance.index(),
-            instance.identity())
+            instance.identity()))
 
     # --------------------------------------------------------------------------
     def onPipelineFinished(self, pipeline):
-        self._log.info("pipeline '%s' finished", pipeline.identity())
+        self._log.info("pipeline '%s' finished" % pipeline.identity())
 
     # --------------------------------------------------------------------------
     def allExpectations(self):
