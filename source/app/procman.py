@@ -452,9 +452,11 @@ def mergeConfigs(source, destination):
 # ------------------------------------------------------------------------------
 class LogMessageInfo(object):
     # --------------------------------------------------------------------------
-    def __init__(self, source):
+    def __init__(self, message_info, state_info):
         self._et = etree.Element("root")
-        self._et.append(self._maketree(source, "log"))
+        self._et.append(self._maketree(message_info, "log"))
+        self._et.append(self._maketree(state_info, "state"))
+        print(state_info)
 
     # --------------------------------------------------------------------------
     def find(self, xpath):
@@ -1788,6 +1790,7 @@ class ProcessLogTracker(object):
         self._composition = composition
         self._source_id = 0
         self._processes = {}
+        self._process_number_to_src_id = {}
         self._state_begin_triggers = {}
         self._state_end_triggers = {}
         self._current_states = {}
@@ -1810,14 +1813,16 @@ class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
     def beginLog(self, src_id, info):
         if "session" in  info:
+            number = int(info["identity"])
             self._state_begin_triggers[src_id] = {}
             self._state_end_triggers[src_id] = {}
             self._current_states[src_id] = {}
             proc_info = self._processes[src_id] = {}
             proc_info["identity"] = info["session"]
-            proc_info["number"] = int(info["identity"])
+            proc_info["number"] = number 
             proc_info["start"] = time.time()
             proc_info["update"] = time.time()
+            self._process_number_to_src_id[number] = src_id
             self._log.info(
                 "process %d '%s' started",
                 src_id,
@@ -1863,20 +1868,21 @@ class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
     def addMessage(self, src_id, info):
         try:
+            source = info["source"]
+            state_tag = self._state_begin_triggers[src_id][(source, info["tag"])]
+            self.beginState(src_id, source, info["instance"], state_tag)
+        except KeyError: pass
+
+        try:
             message_info = None
             proc_info = self._processes[src_id]
             proc_info["update"] = time.time()
             msg_identity = proc_info["identity"]
             for expectation in self._expect_in_log_message[msg_identity]:
                 if message_info is None:
-                    message_info = LogMessageInfo(info)
+                    src_states = self._current_states[src_id]
+                    message_info = LogMessageInfo(info, src_states)
                 expectation.update(message_info)
-        except KeyError: pass
-
-        try:
-            source = info["source"]
-            state_tag = self._state_begin_triggers[src_id][(source, info["tag"])]
-            self.beginState(src_id, source, info["instance"], state_tag)
         except KeyError: pass
 
         try:
@@ -1972,7 +1978,8 @@ class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
     def onProcessStateBegin(self, pipeline, instance_index, process, state, state_info):
         self._log.info(
-            "process in '%s' entered %s/%s %sstate", 
+            "process %d '%s' entered %s/%s %sstate", 
+            self._process_number_to_src_id[process.number()],
             pipeline.identity(),
             state[0],
             state[1],
@@ -1981,7 +1988,8 @@ class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
     def onProcessStateEnd(self, pipeline, instance_index, process, state, state_info):
         self._log.info(
-            "process in '%s' left %s/%s state", 
+            "process %d '%s' left %s/%s state", 
+            self._process_number_to_src_id[process.number()],
             pipeline.identity(),
             state[0],
             state[1])
