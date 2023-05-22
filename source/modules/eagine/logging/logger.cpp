@@ -245,6 +245,14 @@ protected:
           control, source, log_event_severity::warning, format);
     }
 
+    constexpr auto log_change(const identifier source, const string_view format)
+      const noexcept {
+        return make_log_entry(
+          source,
+          log_event_severity_constant<log_event_severity::change>{},
+          format);
+    }
+
     constexpr auto log_info(const identifier source, const string_view format)
       const noexcept {
         return make_log_entry(
@@ -483,6 +491,12 @@ public:
         return base::log_warning(control, _object_id, format);
     }
 
+    /// @brief Create a log message entry about state change, with specified format.
+    /// @see log_event_severity
+    auto log_change(const string_view format) const noexcept {
+        return base::log_change(_object_id, format);
+    }
+
     /// @brief Create a log message entry for information, with specified format.
     /// @see log_event_severity
     auto log_info(const string_view format) const noexcept {
@@ -698,6 +712,13 @@ public:
     /// @see log
     auto warning(const string_view format) const noexcept {
         return log_warning(format);
+    }
+
+    /// @brief Returns a statu-change log entry.
+    /// @param format the log message format string.
+    /// @see log
+    auto change(const string_view format) const noexcept {
+        return log_change(format);
     }
 
     /// @brief Returns an informational log entry.

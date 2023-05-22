@@ -289,6 +289,7 @@ private:
                 return LOG_ERR;
             case log_event_severity::warning:
                 return LOG_WARNING;
+            case log_event_severity::change:
             case log_event_severity::info:
             case log_event_severity::stat:
                 return LOG_INFO;

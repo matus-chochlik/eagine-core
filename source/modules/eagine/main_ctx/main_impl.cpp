@@ -32,7 +32,7 @@ auto main_impl(
         main_ctx_storage storage{argc, argv, options};
         main_ctx ctx{storage};
         ctx.log().declare_state("inMainFunc", "mainStart", "mainFinish");
-        ctx.log().info("calling main function").tag("mainStart");
+        ctx.log().change("calling main function").tag("mainStart");
         try {
             assert(main_func);
             result = main_func(ctx);
@@ -47,7 +47,7 @@ auto main_impl(
               .arg("error", err);
             result = 124;
         }
-        ctx.log().info("main function finished").tag("mainFinish");
+        ctx.log().change("main function finished").tag("mainFinish");
     } catch(const log_backend_error& log_err) {
         const auto code{log_err.code().value()};
         if((code == ENOENT) or (code == ECONNREFUSED)) {

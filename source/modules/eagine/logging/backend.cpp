@@ -39,7 +39,9 @@ export enum class log_event_severity : std::uint8_t {
     stat,
     /// @brief Informational log entries.
     info,
-    /// @brief Warning log entries, indicating potential problems.
+    /// @brief Entries informing about potential process state change.
+    change,
+    /// @brief log entries, indicating potential problems.
     warning,
     /// @brief Error log entries, indicating serious problems.
     error,
@@ -51,12 +53,13 @@ export template <typename Selector>
 constexpr auto enumerator_mapping(
   const std::type_identity<log_event_severity>,
   const Selector) noexcept {
-    return enumerator_map_type<log_event_severity, 8>{
+    return enumerator_map_type<log_event_severity, 9>{
       {{"backtrace", log_event_severity::backtrace},
        {"trace", log_event_severity::trace},
        {"debug", log_event_severity::debug},
        {"stat", log_event_severity::stat},
        {"info", log_event_severity::info},
+       {"change", log_event_severity::change},
        {"warning", log_event_severity::warning},
        {"error", log_event_severity::error},
        {"fatal", log_event_severity::fatal}}};
