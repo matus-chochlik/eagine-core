@@ -835,65 +835,6 @@ export struct no_log_entry {
     }
 };
 //------------------------------------------------------------------------------
-/// @brief Log entry helper containing an istream for creating the log message.
-/// @ingroup logging
-/// @note Do not use directly, use logger instead.
-export class stream_log_entry {
-public:
-    /// @brief Implicit conversion to an istream.
-    operator std::ostream&() noexcept {
-        return _out;
-    }
-
-    stream_log_entry(
-      const identifier source_id,
-      const logger_instance_id instance_id,
-      const log_event_severity severity,
-      logger_backend* backend) noexcept
-      : _source_id{source_id}
-      , _instance_id{instance_id}
-      , _backend{backend}
-      , _severity{severity} {}
-
-    stream_log_entry(stream_log_entry&&) = default;
-    stream_log_entry(const stream_log_entry&) = delete;
-    auto operator=(stream_log_entry&&) = delete;
-    auto operator=(const stream_log_entry&) = delete;
-
-    ~stream_log_entry() noexcept {
-        try {
-            auto fmt_str(_out.str());
-            if(not fmt_str.empty()) {
-                if(_backend) {
-                    if(_backend->begin_message(
-                         _source_id,
-                         _entry_tag,
-                         _instance_id,
-                         _severity,
-                         fmt_str)) [[likely]] {
-                        _backend->finish_message();
-                        _backend = nullptr;
-                    }
-                }
-            }
-        } catch(...) {
-        }
-    }
-
-    auto tag(const identifier entry_tag) noexcept -> auto& {
-        _entry_tag = entry_tag;
-        return *this;
-    }
-
-private:
-    std::stringstream _out{};
-    identifier _source_id{};
-    identifier _entry_tag{};
-    logger_instance_id _instance_id{};
-    logger_backend* _backend{nullptr};
-    const log_event_severity _severity{log_event_severity::info};
-};
-//------------------------------------------------------------------------------
 /// @brief Class controlling how often are quickly repeating messages logged.
 /// @ingroup logging
 /// @see logger

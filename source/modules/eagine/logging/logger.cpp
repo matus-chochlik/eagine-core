@@ -299,12 +299,6 @@ protected:
         return log_info(source, format);
     }
 
-    auto make_log_stream(
-      const identifier source,
-      const log_event_severity severity) const noexcept -> stream_log_entry {
-        return {source, instance_id(), severity, _entry_backend(severity)};
-    }
-
     void log_chart_sample(
       [[maybe_unused]] const identifier source,
       [[maybe_unused]] const identifier series,
@@ -527,20 +521,6 @@ public:
         return base::log_backtrace(_object_id, format);
     }
 
-    /// @brief Returns a log entry stream for debug messages.
-    /// @see log_event_severity
-    /// @see stream_log_entry
-    auto log_debug_stream() const noexcept {
-        return make_log_stream(log_event_severity::debug);
-    }
-
-    /// @brief Returns a log entry stream for error messages.
-    /// @see log_event_severity
-    /// @see stream_log_entry
-    auto log_error_stream() const noexcept {
-        return make_log_stream(log_event_severity::error);
-    }
-
     /// @brief Stores a new @p value in the specified chart data @p series.
     auto log_chart_sample(const identifier series, const float value)
       const noexcept -> const named_logging_object& {
@@ -650,20 +630,6 @@ public:
     auto log(const log_event_severity severity, const string_view format)
       const noexcept {
         return make_log_entry(severity, format);
-    }
-
-    /// @brief Returns a log entry stream for debug messages.
-    /// @see log_event_severity
-    /// @see stream_log_entry
-    auto debug_stream() const noexcept {
-        return log_debug_stream();
-    }
-
-    /// @brief Returns a log entry stream for error messages.
-    /// @see log_event_severity
-    /// @see stream_log_entry
-    auto error_stream() const noexcept {
-        return log_error_stream();
     }
 
     /// @brief Stores a new @p value in the specified chart data @p series.
