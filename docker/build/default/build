@@ -1,0 +1,48 @@
+#!/bin/bash -e
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+origin=https://github.com/matus-chochlik
+sub_module=all
+branch=develop
+build_type=Debug
+cpu_count=$(grep -c -i -e 'processor\s\+:\s*[0-9]\+' /proc/cpuinfo)
+
+while [[ "${1}" != "" ]]
+do
+	case "${1}" in
+		--origin)
+			origin="${2}"
+			shift;;
+		--sub-module)
+			sub_module="${2}"
+			shift;;
+		--branch)
+			branch="${2}"
+			shift;;
+		--build-type)
+			build_type="${2}"
+			shift;;
+		--cpu-count)
+			cpu_count="${2}"
+			shift;;
+		*)
+			break;;
+	esac
+	shift
+done
+
+docker build "$(dirname ${0})" \
+	--network host \
+	--tag ${EAGINE_DOCKER_REGISTRY_HOST:-localhost}:${EAGINE_DOCKER_REGISTRY_PORT:-5000}/eagine:build-default \
+	--build-arg "EAGINE_ORIGIN=${origin}" \
+	--build-arg "EAGINE_SUB_MODULE=${sub_module}" \
+	--build-arg "EAGINE_BRANCH=${branch}" \
+	--build-arg "EAGINE_BUILD_TYPE=${build_type}" \
+	--build-arg "EAGINE_CPU_COUNT=${cpu_count}"
+
+docker tag \
+	${EAGINE_DOCKER_REGISTRY_HOST:-localhost}:${EAGINE_DOCKER_REGISTRY_PORT:-5000}/eagine:build-default \
+	eagine:build-default
