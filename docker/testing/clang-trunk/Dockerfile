@@ -17,11 +17,11 @@ COPY 80_llvm.list /etc/apt/sources.list.d/
 RUN apt update \
  && apt --yes upgrade \
  && apt --yes install \
- 		libc++-16-dev \
-		libc++abi-16-dev \
-		clang-16 \
-		clang-tools-16 \
-		lld-16
+ 		libc++-17-dev \
+		libc++abi-17-dev \
+		clang-17 \
+		clang-tools-17 \
+		lld-17
 
 RUN adduser \
 		--shell /bin/bash \

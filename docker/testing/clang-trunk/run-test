@@ -26,11 +26,13 @@ do
 done
 
 docker build "$(dirname ${0})" \
+	--network host \
+	--tag eagine:core-test-llvm-trunk \
 	--build-arg "EAGINE_BRANCH=${branch}" \
 	--build-arg "EAGINE_BUILD_TYPE=${build_type}" \
 	--build-arg "EAGINE_CPU_COUNT=${cpu_count}"
 
 docker-compose -f "$(dirname ${0})/docker-compose.yml" up \
 	--abort-on-container-exit \
-	--exit-code-from eagine-core-test-llvm-16
+	--exit-code-from eagine-core-test-llvm-trunk
 
