@@ -2,16 +2,19 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
+eagine_add_module(eagine.core.types PARTITION function_constant)
+eagine_add_module(eagine.core.types PARTITION interface)
+eagine_add_module(eagine.core.types PARTITION bitfield)
+
 eagine_add_module(
 	eagine.core.types PARTITION basic
 	IMPORTS eagine.core.build_config
 )
+
 eagine_add_module(
 	eagine.core.types PARTITION tribool
 	IMPORTS eagine.core.concepts
 )
-eagine_add_module(eagine.core.types PARTITION interface)
-eagine_add_module(eagine.core.types PARTITION bitfield)
 
 eagine_add_module(
 	eagine.core.types PARTITION structural
@@ -46,7 +49,6 @@ eagine_add_module(
 	IMPORTS
 		extract basic
 		eagine.core.concepts
-		eagine.core.types
 )
 
 eagine_add_module(

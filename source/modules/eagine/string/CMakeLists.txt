@@ -17,6 +17,7 @@ eagine_add_module(
 		multi_byte
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.valid_if
 )
 
 eagine_add_module(

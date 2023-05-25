@@ -9,6 +9,7 @@ eagine_add_module(
 	SOURCES
 		identifier
 	IMPORTS
+		eagine.core.types
 		eagine.core.memory
 		eagine.core.vectorization
 )

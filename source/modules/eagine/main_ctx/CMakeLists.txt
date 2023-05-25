@@ -8,6 +8,7 @@ eagine_add_module(
 		eagine.core.build_info
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.identifier
 		eagine.core.utility
 		eagine.core.runtime
 		eagine.core.logging
@@ -42,6 +43,7 @@ eagine_add_module(
 		parent object
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.string
 		eagine.core.valid_if
 		eagine.core.reflection
 		eagine.core.units
@@ -74,6 +76,8 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.container
+		eagine.core.identifier
+		eagine.core.reflection
 		eagine.core.valid_if
 		eagine.core.runtime
 		eagine.core.logging
@@ -90,6 +94,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.identifier
 		eagine.core.container
+		eagine.core.utility
 		eagine.core.runtime
 		eagine.core.logging
 		eagine.core.console
@@ -125,14 +130,19 @@ eagine_add_module(
 		main
 	IMPORTS
 		eagine.core.build_config
+		eagine.core.build_info
 		eagine.core.types
+		eagine.core.debug
 		eagine.core.memory
+		eagine.core.string
 		eagine.core.identifier
 		eagine.core.units
+		eagine.core.utility
 		eagine.core.runtime
 		eagine.core.logging
 		eagine.core.console
 		eagine.core.progress
+		eagine.core.valid_if
 		eagine.core.value_tree
 )
 

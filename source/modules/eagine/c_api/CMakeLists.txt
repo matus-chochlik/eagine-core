@@ -82,6 +82,7 @@ eagine_add_module(
 		object result function parameter_map
 		eagine.core.types
 		eagine.core.memory;
+		eagine.core.utility;
 )
 
 eagine_add_module(

@@ -2,6 +2,8 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
+eagine_add_module(eagine.core.runtime PARTITION signal_switch)
+
 eagine_add_module(
 	eagine.core.runtime PARTITION process
 	IMPORTS
@@ -36,6 +38,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.utility
+		eagine.core.valid_if
 		eagine.core.reflection
 )
 
@@ -126,6 +129,7 @@ eagine_add_module(
 		compression
 		workshop
 	IMPORTS
+		eagine.core.types
 		eagine.core.utility
 		eagine.core.memory
 		eagine.core.string

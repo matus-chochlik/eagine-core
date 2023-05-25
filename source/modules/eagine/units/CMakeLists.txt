@@ -55,6 +55,7 @@ eagine_add_module(
 		quantity
 		strings
 	IMPORTS
+		eagine.core.types
 		eagine.core.units.framework
 )
 

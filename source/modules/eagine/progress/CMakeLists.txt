@@ -18,6 +18,7 @@ eagine_add_module(
 		backend
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.utility
 		eagine.core.runtime
 )
 
@@ -27,6 +28,7 @@ eagine_add_module(
 		backend activity
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.utility
 		eagine.core.logging
 )
 
@@ -42,10 +44,13 @@ eagine_add_module(
 		default_backend
 		root_activity
 	IMPORTS
+		eagine.core.types
+		eagine.core.memory
 		eagine.core.identifier
 		eagine.core.container
 		eagine.core.utility
 		eagine.core.runtime
+		eagine.core.valid_if
 		eagine.core.logging
 )
 

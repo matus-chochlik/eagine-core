@@ -7,7 +7,6 @@ eagine_add_module(
 	INTERFACES
 		build_info
 	SOURCES
-		os
 		build_info
 	IMPORTS
 		eagine.core.types

@@ -19,8 +19,10 @@ eagine_add_module(
 		backend
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.string
 		eagine.core.identifier
 		eagine.core.valid_if
+		eagine.core.runtime
 		eagine.core.logging
 )
 
@@ -38,7 +40,10 @@ eagine_add_module(
 	IMPORTS
 		eagine.core.types
 		eagine.core.identifier
+		eagine.core.container
 		eagine.core.memory
+		eagine.core.string
+		eagine.core.utility
 		eagine.core.runtime
 )
 
