@@ -77,7 +77,7 @@ concept extracts_to =
 // does not hide
 //------------------------------------------------------------------------------
 export template <typename T, typename X>
-concept does_not_hide = not std::is_base_of_v<T, std::remove_cvref_t<X>>;
+concept does_not_hide = not std::is_base_of_v<std::remove_cvref_t<X>, T>;
 //------------------------------------------------------------------------------
 } // namespace eagine
 

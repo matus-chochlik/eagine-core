@@ -25,6 +25,23 @@ export template <typename C, typename P = C*, typename S = span_size_t>
 class basic_string_span : public basic_span<C, P, S> {
     using base = basic_span<C, P, S>;
 
+    static consteval auto _ce_strlen(const char* str) noexcept {
+        span_size_t len = 0U;
+        while(str and *str) {
+            ++len;
+            ++str;
+        }
+        return len;
+    }
+
+    static constexpr auto _get_size(auto& str) noexcept -> S {
+        if constexpr(requires { str.zero_terminated_size(); }) {
+            return limit_cast<S>(str.zero_terminated_size());
+        } else {
+            return limit_cast<S>(str.size());
+        }
+    }
+
 public:
     /// @brief Related standard string type.
     using string_type = std::basic_string<std::remove_const_t<C>>;
@@ -38,15 +55,6 @@ public:
 
     constexpr basic_string_span(P addr, const S length) noexcept
       : base{addr, length} {}
-
-    static consteval auto _ce_strlen(const char* str) noexcept {
-        span_size_t len = 0U;
-        while(str and *str) {
-            ++len;
-            ++str;
-        }
-        return len;
-    }
 
     template <typename R>
     consteval basic_string_span(immediate_function_t, R addr) noexcept
@@ -83,16 +91,18 @@ public:
     /// The container passed as argument should have @c data and @c size
     /// member functions with the same semantics as std::string does.
     template <span_source<P, S> Str>
+        requires(does_not_hide<Str, basic_string_span>)
     constexpr basic_string_span(Str& str) noexcept
-      : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
+      : base{static_cast<P>(str.data()), _get_size(str)} {}
 
     /// @brief Construction from compatible container const reference.
     ///
     /// The container passed as argument should have @c data and @c size
     /// member functions with the same semantics as std::string does.
-    template <span_source<P, S> Str>
+    template <const_span_source<P, S> Str>
+        requires(does_not_hide<Str, basic_string_span>)
     constexpr basic_string_span(const Str& str) noexcept
-      : base{static_cast<P>(str.data()), limit_cast<S>(str.size())} {}
+      : base{static_cast<P>(str.data()), _get_size(str)} {}
 
     using base::data;
     using base::empty;

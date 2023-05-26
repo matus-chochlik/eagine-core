@@ -20,7 +20,12 @@ namespace eagine {
 namespace memory {
 //------------------------------------------------------------------------------
 export template <typename T, typename P = anything, typename S = span_size_t>
-concept span_source = requires(T v) {
+concept span_source = requires(T& v) {
+    { v.data() } -> std::convertible_to<P>;
+    { v.size() } -> std::convertible_to<S>;
+};
+export template <typename T, typename P = anything, typename S = span_size_t>
+concept const_span_source = requires(const T& v) {
     { v.data() } -> std::convertible_to<P>;
     { v.size() } -> std::convertible_to<S>;
 };
@@ -207,6 +212,10 @@ public:
     /// @brief Indicates that the span is terminated with value T(0) if applicable.
     constexpr auto is_zero_terminated() const noexcept -> bool {
         return _size < 0;
+    }
+
+    constexpr auto zero_terminated_size() const noexcept -> size_type {
+        return _size;
     }
 
     /// @brief Returns the number of elements in the span.
@@ -561,7 +570,7 @@ constexpr auto view(std::initializer_list<T> il) noexcept -> const_span<T> {
 //------------------------------------------------------------------------------
 /// @brief Creates a const view over a compatible contiguous container.
 /// @ingroup memory
-export template <span_source C>
+export template <const_span_source C>
 constexpr auto view(const C& container) noexcept {
     return view(container.data(), container.size());
 }
