@@ -90,6 +90,8 @@ eagine_add_module(
 		function_constant
 		enum_map
 		metaprogramming
+	IMPORTS
+		eagine.core.build_config
 )
 
 eagine_add_module_tests(

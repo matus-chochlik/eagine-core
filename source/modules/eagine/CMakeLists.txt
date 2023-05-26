@@ -27,7 +27,6 @@ add_subdirectory(serialization)
 add_subdirectory(main_ctx)
 add_subdirectory(resource)
 
-
 eagine_add_module(
 	eagine.core
 	INTERFACES core

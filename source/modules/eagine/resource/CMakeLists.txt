@@ -16,6 +16,7 @@ eagine_add_module(
 		eagine.core.utility
 		eagine.core.runtime
 		eagine.core.logging
+		eagine.core.valid_if
 		eagine.core.value_tree
 		eagine.core.main_ctx
 )
@@ -36,4 +37,3 @@ eagine_embed_target_resources(
 		CMakeLists "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt"
 	ENABLE_SEARCH
 )
-
