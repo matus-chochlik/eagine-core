@@ -765,7 +765,7 @@ class XmlLogFormatter(object):
         if level == "stat":
             return self._ttyBoldWhite()  + "  stat   " + self._ttyReset()
         if level == "change":
-            return self._ttyYellow()     + " change  " + self._ttyReset()
+            return self._ttyBoldYellow() + " change  " + self._ttyReset()
         if level == "warning":
             return self._ttyYellow()     + " warning " + self._ttyReset()
         if level == "error":

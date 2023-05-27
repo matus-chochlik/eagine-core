@@ -547,9 +547,9 @@ class ExpectExitCode(object):
         if len(actual) == 0:
             tracker.log().error(
                 "did not receive exit notification of '%s'",
-                self._identity) 
+                self._identity)
 
-        for value in actual: 
+        for value in actual:
             tracker.log().error(
                 "unexpected exit code %d of '%s', expected: %d",
                 value,
@@ -1085,10 +1085,12 @@ class ProcessInstance(object):
         self._start_time = time.time()
         if self._handle:
             self._exit_code = None
-        else:
-            self._exit_code = -1
-            self.onProcessExit()
-        self._progress = parent.makeProcessProgress(self)
+            self._progress = parent.makeProcessProgress(self)
+
+    # --------------------------------------------------------------------------
+    def __del__(self):
+        self._exit_code = -1
+        self.onProcessExit()
 
     # --------------------------------------------------------------------------
     def tracker(self):
@@ -1163,14 +1165,17 @@ class ProcessInstance(object):
     def onProgressChange(self, progress_info):
         if self._identity is not None:
             self._parent.onProcessProgressChange(self, progress_info)
-            self._progress.update(progress_info)
+            if self._progress is not None:
+                self._progress.update(progress_info)
 
     # --------------------------------------------------------------------------
     def onProcessExit(self):
         if self._identity is not None:
             assert self._exit_code is not None
-            self._progress.processExitted(self)
+            if self._progress is not None:
+                self._progress.onProcessExit(self)
             self._parent.onProcessExit(self)
+            self._identity = None
 
     # --------------------------------------------------------------------------
     def handleExit(self, pid):
@@ -1286,7 +1291,7 @@ class PipelineInstance(object):
     # --------------------------------------------------------------------------
     def onProcessExit(self, process):
         self._parent.onProcessExit(self._index, process)
-        self._progress.processExitted(self)
+        self._progress.onProcessExit(self)
         if self.isFinished():
             self._parent.onInstanceFinished(self)
 
@@ -1889,12 +1894,12 @@ class NoProgressTracker(object):
                                 pass
 
                             # --------------------------------------------------
-                            def processExitted(self, process):
+                            def onProcessExit(self, process):
                                 pass
 
                         return _ProcessProgress(process)
                     # ----------------------------------------------------------
-                    def processExitted(self, instance):
+                    def onProcessExit(self, instance):
                         pass
 
                 return _InstanceProgress(instance)
@@ -1920,11 +1925,19 @@ class EnlightenProgressTracker(object):
         self._manager = manager
 
     # --------------------------------------------------------------------------
+    def makeBar(self, total, desc):
+        return self._manager.counter(
+            total=total,
+            bar_format=u"{desc}{desc_pad}{percentage:3.0f}%|{bar}|{elapsed}<{eta}",
+            desc=desc,
+            leave=False)
+
+    # --------------------------------------------------------------------------
     def pipelineProgress(self, pipeline):
         class _PipelineProgress(object):
             # ------------------------------------------------------------------
-            def __init__(self, manager, pipeline):
-                self._manager = manager
+            def __init__(self, parent, pipeline):
+                self._parent = parent
 
             # ------------------------------------------------------------------
             def isTracking(self):
@@ -1944,10 +1957,16 @@ class EnlightenProgressTracker(object):
                             def __init__(self, parent, process):
                                 self._parent = parent
                                 self._desc = process.identity()
-                                self._total = 100
+                                self._total = 1000
                                 self._bar = None
                                 self._val = 0.0
                                 self._cur = 0
+
+                            # --------------------------------------------------
+                            def makeBar(self):
+                                return self._parent._parent._parent.makeBar(
+                                    self._total,
+                                    self._desc)
 
                             # --------------------------------------------------
                             def update(self, progress_info):
@@ -1962,11 +1981,7 @@ class EnlightenProgressTracker(object):
                                     self._val = 0.0
                                     self._min = progress_info["min"]
                                     self._max = progress_info["max"]
-                                    self._bar = self._parent._parent._manager.counter(
-                                        total=self._total,
-                                        bar_format=u'{desc}{desc_pad}{percentage:3.0f}%|{bar}|',
-                                        desc=self._desc,
-                                        leave=False)
+                                    self._bar = self.makeBar()
 
                                 pos = int(self._total*(value-self._min)/(self._max-self._min))
                                 while self._cur < pos:
@@ -1976,12 +1991,13 @@ class EnlightenProgressTracker(object):
                                     except: pass
 
                             # --------------------------------------------------
-                            def processExitted(self, process):
-                                self._bar.close()
+                            def onProcessExit(self, process):
+                                if self._bar is not None:
+                                    self._bar.close()
 
                         return _ProcessProgress(parent, process)
                     # ----------------------------------------------------------
-                    def processExitted(self, instance):
+                    def onProcessExit(self, instance):
                         pass
 
                 return _InstanceProgress(parent, instance)
@@ -1998,7 +2014,7 @@ class EnlightenProgressTracker(object):
             def finished(self, unused):
                 pass
 
-        return _PipelineProgress(self._manager, pipeline)
+        return _PipelineProgress(self, pipeline)
 
 # ------------------------------------------------------------------------------
 def getProgressTracker(tracker, options):
@@ -2055,7 +2071,7 @@ class ProcessLogTracker(object):
             self._current_states[src_id] = {}
             proc_info = self._processes[src_id] = {}
             proc_info["identity"] = info["session"]
-            proc_info["number"] = number 
+            proc_info["number"] = number
             proc_info["start"] = time.time()
             proc_info["update"] = time.time()
             self._process_number_to_src_id[number] = src_id
