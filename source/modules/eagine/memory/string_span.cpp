@@ -52,6 +52,10 @@ public:
     /// @brief Default constructor.
     /// @post empty
     constexpr basic_string_span() noexcept = default;
+    constexpr basic_string_span(const basic_string_span&) noexcept = default;
+    constexpr auto operator=(const basic_string_span&) noexcept
+      -> basic_string_span& = default;
+    constexpr ~basic_string_span() noexcept = default;
 
     constexpr basic_string_span(P addr, const S length) noexcept
       : base{addr, length} {}
