@@ -7,26 +7,24 @@ eagine_add_module(
 	PARTITION decl
 	IMPORTS
 		eagine.core.types
-		eagine.core.concepts
 )
 
 eagine_add_module(
 	eagine.core.valid_if PARTITION compare
 	IMPORTS decl
-		eagine.core.concepts
+		eagine.core.types
 		eagine.core.reflection
 )
 eagine_add_module(
 	eagine.core.valid_if PARTITION filesystem
 	IMPORTS decl
-		eagine.core.concepts
+		eagine.core.types
 		eagine.core.memory
 )
 eagine_add_module(
 	eagine.core.valid_if PARTITION range
 	IMPORTS
 		decl compare
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -41,7 +39,6 @@ eagine_add_module(
 		range
 	IMPORTS
 		eagine.core.types
-		eagine.core.concepts
 		eagine.core.reflection
 )
 
@@ -54,6 +51,5 @@ eagine_add_module_tests(
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.concepts
 		eagine.core.reflection
 )

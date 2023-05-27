@@ -32,7 +32,6 @@ eagine_add_module(
 	eagine.core.math PARTITION vector
 	IMPORTS
 		traits scalar
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.vectorization
@@ -42,7 +41,6 @@ eagine_add_module(
 	eagine.core.math PARTITION matrix
 	IMPORTS
 		traits vector
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.vectorization
 )
@@ -62,7 +60,6 @@ eagine_add_module(
 	IMPORTS
 		traits vector
 		matrix matrix_construct
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.vectorization
@@ -162,7 +159,6 @@ eagine_add_module_tests(
 		matrix_3
 		matrix_construct
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.debug
 		eagine.core.types
 		eagine.core.memory

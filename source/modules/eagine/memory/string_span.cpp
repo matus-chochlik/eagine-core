@@ -9,7 +9,6 @@ export module eagine.core.memory:string_span;
 
 import std;
 import eagine.core.types;
-import eagine.core.concepts;
 import :span;
 
 namespace eagine {
@@ -194,7 +193,10 @@ struct string_literal : std::array<const char, N> {
     constexpr string_literal(
       const char (&s)[N],
       std::index_sequence<I...>) noexcept
-      : std::array<const char, N>{{s[I]...}} {}
+      : std::array<const char, N> {
+        { s[I]... }
+    }
+    {}
 
     /// @brief Construction from a string literal (or char array).
     constexpr string_literal(const char (&s)[N]) noexcept

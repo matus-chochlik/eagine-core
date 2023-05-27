@@ -5,7 +5,6 @@
 eagine_add_module(
 	eagine.core.c_api PARTITION result
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.utility
 )
@@ -28,7 +27,6 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION enum_class
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
@@ -110,7 +108,6 @@ eagine_add_module_tests(
 	IMPORTS
 		eagine.core.debug
 		eagine.core.types
-		eagine.core.concepts
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.utility

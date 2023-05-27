@@ -7,6 +7,7 @@
 ///
 export module eagine.core.types;
 
+export import :concepts;
 export import :basic;
 export import :interface;
 export import :compare;

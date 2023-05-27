@@ -12,7 +12,6 @@ module;
 export module eagine.core.c_api:enum_class;
 
 import std;
-import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.container;

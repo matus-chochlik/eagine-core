@@ -26,7 +26,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION offset_ptr
 	IMPORTS
 		address
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -34,7 +33,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION span
 	IMPORTS
 		address
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -42,7 +40,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION offset_span
 	IMPORTS
 		span offset_ptr
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -50,7 +47,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION string_span
 	IMPORTS
 		span
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -77,7 +73,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION flatten
 	IMPORTS
 		span
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -105,7 +100,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION byte_allocator
 	IMPORTS
 		span
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -194,6 +188,5 @@ eagine_add_module_tests(
 		stack_allocator
 		std_allocator
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 )

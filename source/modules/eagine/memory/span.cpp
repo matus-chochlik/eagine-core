@@ -12,7 +12,6 @@ module;
 export module eagine.core.memory:span;
 
 import std;
-import eagine.core.concepts;
 import eagine.core.types;
 import :address;
 

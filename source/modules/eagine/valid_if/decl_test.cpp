@@ -8,7 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import std;
-import eagine.core.concepts;
+import eagine.core.types;
 import eagine.core.valid_if;
 //------------------------------------------------------------------------------
 struct test_person {

@@ -2,6 +2,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
+eagine_add_module(eagine.core.types PARTITION concepts)
 eagine_add_module(eagine.core.types PARTITION function_constant)
 eagine_add_module(eagine.core.types PARTITION interface)
 eagine_add_module(eagine.core.types PARTITION bitfield)
@@ -13,7 +14,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.types PARTITION tribool
-	IMPORTS eagine.core.concepts
+	IMPORTS concepts
 )
 
 eagine_add_module(
@@ -28,14 +29,14 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.types PARTITION extract
-	IMPORTS eagine.core.concepts
+	IMPORTS concepts
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION optional_reference
 	IMPORTS
 		basic tribool
-		eagine.core.concepts
+		concepts
 )
 
 eagine_add_module(
@@ -48,7 +49,7 @@ eagine_add_module(
 	eagine.core.types PARTITION outcome
 	IMPORTS
 		extract basic
-		eagine.core.concepts
+		concepts
 )
 
 eagine_add_module(
@@ -106,6 +107,4 @@ eagine_add_module_tests(
 		nothing
 		optional_reference
 		tribool
-	IMPORTS
-		eagine.core.concepts
 )

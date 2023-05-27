@@ -19,6 +19,5 @@ eagine_add_module_tests(
 	UNITS
 		identifier
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 )

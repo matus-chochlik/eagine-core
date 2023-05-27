@@ -31,7 +31,6 @@ eagine_add_module(
 	eagine.core.value_tree PARTITION implementation
 	IMPORTS
 		interface wrappers
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string

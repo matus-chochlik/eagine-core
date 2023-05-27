@@ -134,7 +134,6 @@ eagine_add_module(
 	eagine.core.serialization PARTITION portable_backend
 	IMPORTS
 		float_utils result implementation
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -147,7 +146,6 @@ eagine_add_module(
 	eagine.core.serialization PARTITION valtree_backend
 	IMPORTS
 		result interface
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -216,7 +214,6 @@ eagine_add_module_tests(
 		float_utils
 		size_and_data
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.debug
 		eagine.core.memory

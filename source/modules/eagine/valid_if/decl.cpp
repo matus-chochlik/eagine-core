@@ -13,7 +13,6 @@ export module eagine.core.valid_if:decl;
 
 import std;
 import eagine.core.types;
-import eagine.core.concepts;
 
 namespace eagine {
 //------------------------------------------------------------------------------

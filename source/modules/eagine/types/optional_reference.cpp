@@ -11,7 +11,7 @@ module;
 export module eagine.core.types:optional_reference;
 
 import std;
-import eagine.core.concepts;
+import :concepts;
 import :basic;
 import :tribool;
 

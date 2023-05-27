@@ -12,7 +12,7 @@ module;
 export module eagine.core.types:extract;
 
 import std;
-import eagine.core.concepts;
+import :concepts;
 
 namespace eagine {
 //------------------------------------------------------------------------------

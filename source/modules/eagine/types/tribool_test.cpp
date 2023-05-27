@@ -8,7 +8,6 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
-import eagine.core.concepts;
 //------------------------------------------------------------------------------
 void tribool_default_construct(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};

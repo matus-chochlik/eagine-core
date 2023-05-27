@@ -20,7 +20,6 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.utility PARTITION callable_ref
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -43,7 +42,7 @@ eagine_add_module(
 	eagine.core.utility PARTITION memoized
 	IMPORTS
 		callable_ref
-		eagine.core.concepts
+		eagine.core.types
 )
 
 eagine_add_module(
@@ -150,7 +149,6 @@ eagine_add_module_tests(
 		sudoku
 		timeout
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.debug

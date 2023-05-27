@@ -32,7 +32,6 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION c_str
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 )
@@ -157,7 +156,6 @@ eagine_add_module_tests(
 		list
 		path
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.debug
 		eagine.core.memory

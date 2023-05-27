@@ -8,7 +8,6 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
-import eagine.core.concepts;
 import eagine.core.c_api;
 //------------------------------------------------------------------------------
 void result_1(auto& s) {
