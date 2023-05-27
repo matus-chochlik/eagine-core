@@ -1088,6 +1088,7 @@ class ProcessInstance(object):
         else:
             self._exit_code = -1
             self.onProcessExit()
+        self._progress = parent.makeProcessProgress(self)
 
     # --------------------------------------------------------------------------
     def tracker(self):
@@ -1162,11 +1163,13 @@ class ProcessInstance(object):
     def onProgressChange(self, progress_info):
         if self._identity is not None:
             self._parent.onProcessProgressChange(self, progress_info)
+            self._progress.update(progress_info)
 
     # --------------------------------------------------------------------------
     def onProcessExit(self):
         if self._identity is not None:
             assert self._exit_code is not None
+            self._progress.processExitted(self)
             self._parent.onProcessExit(self)
 
     # --------------------------------------------------------------------------
@@ -1208,6 +1211,7 @@ class PipelineInstance(object):
     def __init__(self, parent, index):
         self._parent = parent
         self._index = index
+        self._progress = parent.makeInstanceProgress(self)
         self._processes = [
             ProcessInstance(self, args)
             for args in parent.commandLineOf(self)]
@@ -1227,6 +1231,10 @@ class PipelineInstance(object):
     # --------------------------------------------------------------------------
     def index(self):
         return self._index
+
+    # --------------------------------------------------------------------------
+    def makeProcessProgress(self, process):
+        return self._progress.processProgress(self._progress, process)
 
     # --------------------------------------------------------------------------
     def addProcessActiveState(self, process_number, state):
@@ -1278,6 +1286,7 @@ class PipelineInstance(object):
     # --------------------------------------------------------------------------
     def onProcessExit(self, process):
         self._parent.onProcessExit(self._index, process)
+        self._progress.processExitted(self)
         if self.isFinished():
             self._parent.onInstanceFinished(self)
 
@@ -1308,6 +1317,7 @@ class Pipeline(object):
         self._parent = parent
         self._config = config
         self._instance_counter = 0
+        self._finished_instances = 0
         if config.get("instances") == "*":
             self._required_instances = None
         else:
@@ -1323,6 +1333,7 @@ class Pipeline(object):
         assert self._parallel_instances > 0
         self._instances = [None] * self._parallel_instances
         self._termination_start = None
+        self._progress = parent.makePipelineProgress(self)
 
     # --------------------------------------------------------------------------
     def _prepareArgs(self, instance, args):
@@ -1344,8 +1355,24 @@ class Pipeline(object):
         return self._parent.tracker()
 
     # --------------------------------------------------------------------------
+    def makeInstanceProgress(self, instance):
+        return self._progress.instanceProgress(self._progress, instance)
+
+    # --------------------------------------------------------------------------
     def newProcessNumber(self):
         return self._parent.newProcessNumber()
+
+    # --------------------------------------------------------------------------
+    def requiredInstances(self):
+        return self._required_instances
+
+    # --------------------------------------------------------------------------
+    def startedInstances(self):
+        return self._instance_counter
+
+    # --------------------------------------------------------------------------
+    def finishedInstances(self):
+        return self._finished_instances
 
     # --------------------------------------------------------------------------
     def addProcessActiveState(self, process_number, state):
@@ -1428,9 +1455,12 @@ class Pipeline(object):
 
     # --------------------------------------------------------------------------
     def onInstanceFinished(self, instance):
+        self._finished_instances += 1
         self._parent.onPipelineInstanceFinished(instance)
+        self._progress.instanceFinished(self)
         if self.isFinished():
             self._parent.onPipelineFinished(self)
+            self._progress.finished(self)
 
     # --------------------------------------------------------------------------
     def handleExit(self, pid):
@@ -1485,6 +1515,7 @@ class Pipeline(object):
             if self.needsNewInstance() and not self.isWaitingForOthers():
                 instance = PipelineInstance(self, self._instance_counter)
                 self._instance_counter += 1
+                self._progress.instanceStarted(self)
 
         return instance
 
@@ -1507,11 +1538,9 @@ class PipelineComposition(object):
     # --------------------------------------------------------------------------
     def __init__(self, options, config):
         self._config = config
+        self._options = options
         self._tracker = None
         self._process_number = 0
-        self._pipelines = [
-            Pipeline(options, self, cfg)
-            for cfg in config.pipelineConfigs()]
 
     # --------------------------------------------------------------------------
     def tracker(self):
@@ -1520,6 +1549,13 @@ class PipelineComposition(object):
     # --------------------------------------------------------------------------
     def setTracker(self, tracker):
         self._tracker = tracker
+        self._pipelines = [
+            Pipeline(self._options, self, cfg)
+            for cfg in self._config.pipelineConfigs()]
+
+    # --------------------------------------------------------------------------
+    def makePipelineProgress(self, pipeline):
+        return self._tracker.makePipelineProgress(pipeline)
 
     # --------------------------------------------------------------------------
     def newProcessNumber(self):
@@ -1820,13 +1856,169 @@ class XmlLogClientHandler(xml.sax.ContentHandler):
             self.disconnect()
 
 # ------------------------------------------------------------------------------
+#  Progress tracking
+# ------------------------------------------------------------------------------
+class NoProgressTracker(object):
+    # --------------------------------------------------------------------------
+    def __init__(self):
+        pass
+
+    # --------------------------------------------------------------------------
+    def pipelineProgress(self, pipeline):
+        class _PipelineProgress(object):
+            # ------------------------------------------------------------------
+            def __init__(self, pipeline):
+                pass
+
+            # ------------------------------------------------------------------
+            def instanceProgress(self, parent, instance):
+                class _InstanceProgress(object):
+                    # ----------------------------------------------------------
+                    def __init__(self, instance):
+                        pass
+
+                    # ----------------------------------------------------------
+                    def processProgress(self, parent, process):
+                        class _ProcessProgress(object):
+                            # --------------------------------------------------
+                            def __init__(self, process):
+                                pass
+
+                            # --------------------------------------------------
+                            def update(self, progress_info):
+                                pass
+
+                            # --------------------------------------------------
+                            def processExitted(self, process):
+                                pass
+
+                        return _ProcessProgress(process)
+                    # ----------------------------------------------------------
+                    def processExitted(self, instance):
+                        pass
+
+                return _InstanceProgress(instance)
+
+            # ------------------------------------------------------------------
+            def instanceStarted(self, pipeline):
+                pass
+
+            # ------------------------------------------------------------------
+            def instanceFinished(self, pipeline):
+                pass
+
+            # ------------------------------------------------------------------
+            def finished(self, pipeline):
+                pass
+
+        return _PipelineProgress(pipeline)
+
+# ------------------------------------------------------------------------------
+class EnlightenProgressTracker(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, manager):
+        self._manager = manager
+
+    # --------------------------------------------------------------------------
+    def pipelineProgress(self, pipeline):
+        class _PipelineProgress(object):
+            # ------------------------------------------------------------------
+            def __init__(self, manager, pipeline):
+                self._manager = manager
+
+            # ------------------------------------------------------------------
+            def isTracking(self):
+                return self._total is not None
+
+            # ------------------------------------------------------------------
+            def instanceProgress(self, parent, instance):
+                class _InstanceProgress(object):
+                    # ----------------------------------------------------------
+                    def __init__(self, parent, instance):
+                        self._parent = parent
+
+                    # ----------------------------------------------------------
+                    def processProgress(self, parent, process):
+                        class _ProcessProgress(object):
+                            # --------------------------------------------------
+                            def __init__(self, parent, process):
+                                self._parent = parent
+                                self._desc = process.identity()
+                                self._total = 100
+                                self._bar = None
+                                self._val = 0.0
+                                self._cur = 0
+
+                            # --------------------------------------------------
+                            def update(self, progress_info):
+                                value = progress_info["value"]
+                                if self._val <= value:
+                                    self._val = value
+                                else:
+                                    self._bar = None
+
+                                if self._bar is None:
+                                    self._cur = 0
+                                    self._val = 0.0
+                                    self._min = progress_info["min"]
+                                    self._max = progress_info["max"]
+                                    self._bar = self._parent._parent._manager.counter(
+                                        total=self._total,
+                                        bar_format=u'{desc}{desc_pad}{percentage:3.0f}%|{bar}|',
+                                        desc=self._desc,
+                                        leave=False)
+
+                                pos = int(self._total*(value-self._min)/(self._max-self._min))
+                                while self._cur < pos:
+                                    try:
+                                        self._cur += 1
+                                        self._bar.update(force=(self._cur==pos))
+                                    except: pass
+
+                            # --------------------------------------------------
+                            def processExitted(self, process):
+                                self._bar.close()
+
+                        return _ProcessProgress(parent, process)
+                    # ----------------------------------------------------------
+                    def processExitted(self, instance):
+                        pass
+
+                return _InstanceProgress(parent, instance)
+
+            # ------------------------------------------------------------------
+            def instanceStarted(self, pipeline):
+                pass
+
+            # ------------------------------------------------------------------
+            def instanceFinished(self, pipeline):
+                pass
+
+            # ------------------------------------------------------------------
+            def finished(self, unused):
+                pass
+
+        return _PipelineProgress(self._manager, pipeline)
+
+# ------------------------------------------------------------------------------
+def getProgressTracker(tracker, options):
+    try:
+        import enlighten
+        return EnlightenProgressTracker(enlighten.get_manager())
+    except ImportError:
+        pass
+    return NoProgressTracker()
+# ------------------------------------------------------------------------------
 #  Tracker
 # ------------------------------------------------------------------------------
 class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
+
+    # --------------------------------------------------------------------------
     def __init__(self, options, composition):
         self._log = logging.getLogger("eagiproc.tracker")
         self._options = options
+        self._progress = getProgressTracker(self, options)
         self._composition = composition
         self._source_id = 0
         self._processes = {}
@@ -1849,6 +2041,10 @@ class ProcessLogTracker(object):
     # --------------------------------------------------------------------------
     def log(self):
         return self._log
+
+    # --------------------------------------------------------------------------
+    def makePipelineProgress(self, pipeline):
+        return self._progress.pipelineProgress(pipeline)
 
     # --------------------------------------------------------------------------
     def beginLog(self, src_id, info):
@@ -2061,7 +2257,7 @@ class ProcessLogTracker(object):
         mn = progress_info["min"]
         vl = progress_info["value"]
         mx = progress_info["max"]
-        self._log.info(
+        self._log.debug(
             "process %d '%s' %.1f%% done" % (
             self._process_number_to_src_id[process.number()],
             pipeline.identity(),
