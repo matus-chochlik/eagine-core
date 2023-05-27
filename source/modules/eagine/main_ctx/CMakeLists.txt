@@ -154,5 +154,6 @@ eagine_add_module_tests(
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.c_api
 )
 set_tests_properties(execute-test.eagine.core.main_ctx.system_info PROPERTIES COST 10)

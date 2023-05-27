@@ -108,7 +108,14 @@ eagine_add_module_tests(
 		key_value_list
 		result
 	IMPORTS
+		eagine.core.debug
 		eagine.core.types
 		eagine.core.concepts
 		eagine.core.memory
+		eagine.core.string
+		eagine.core.utility
+		eagine.core.identifier
+		eagine.core.container
+		eagine.core.valid_if
+		eagine.core.units
 )

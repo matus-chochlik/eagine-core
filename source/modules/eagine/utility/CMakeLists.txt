@@ -149,6 +149,13 @@ eagine_add_module_tests(
 		scope_exit
 		sudoku
 		timeout
+	IMPORTS
+		eagine.core.concepts
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.debug
+		eagine.core.container
+		eagine.core.valid_if
 )
 
 set_tests_properties(execute-test.eagine.core.utility.sudoku PROPERTIES COST 30)

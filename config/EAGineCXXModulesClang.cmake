@@ -57,9 +57,9 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			TARGET ${EAGINE_MODULE_PROPER}
 			PROPERTY EAGINE_MODULE_PCM_PATH "${CMAKE_CURRENT_BINARY_DIR}"
 		)
-		set_property(
-			TARGET ${EAGINE_MODULE_PROPER}
-			APPEND PROPERTY COMPILE_OPTIONS
+		target_compile_options(
+			${EAGINE_MODULE_PROPER}
+			PUBLIC
 				-Wno-read-modules-implicitly
 				-fmodules
 				"-fprebuilt-module-path=${CMAKE_CURRENT_BINARY_DIR}"
@@ -99,12 +99,11 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 					"-fprebuilt-module-path=${PCM_PATH}"
 				)
 				if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
-					set_property(
-						TARGET ${EAGINE_MODULE_PROPER}
-						APPEND PROPERTY COMPILE_OPTIONS
-							"-fprebuilt-module-path=${PCM_PATH}"
+					target_compile_options(
+						${EAGINE_MODULE_PROPER}
+						PUBLIC "-fprebuilt-module-path=${PCM_PATH}"
 					)
-				target_link_libraries(${EAGINE_MODULE_PROPER} PRIVATE ${NAME})
+					target_link_libraries(${EAGINE_MODULE_PROPER} PUBLIC ${NAME})
 				endif()
 			endif()
 		elseif(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.cppm")
@@ -120,10 +119,9 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	endforeach()
 
 	foreach(NAME ${EAGINE_MODULE_SOURCES})
-		set_property(
-			TARGET ${EAGINE_MODULE_PROPER}
-			APPEND PROPERTY SOURCES "${NAME}_impl.cpp"
-		)
+		target_sources(
+			${EAGINE_MODULE_PROPER}
+				PRIVATE "${NAME}_impl.cpp")
 	endforeach()
 
 	list(REMOVE_DUPLICATES EAGINE_MODULE_DEPENDS)
@@ -178,17 +176,17 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			COMMENT "Compiling CXX object ${EAGINE_MODULE_INTERFACE}"
 		)
 
-		set_property(
-			TARGET ${EAGINE_MODULE_PROPER}
-			APPEND PROPERTY SOURCES "${EAGINE_MODULE_INTERFACE}.o"
+		target_sources(
+			${EAGINE_MODULE_PROPER}
+				PRIVATE "${EAGINE_MODULE_INTERFACE}.o"
 		)
 	endforeach()
 endfunction()
 # ------------------------------------------------------------------------------
 function(eagine_target_modules TARGET_NAME)
-	set_property(
-		TARGET ${TARGET_NAME}
-		APPEND PROPERTY COMPILE_OPTIONS
+	target_compile_options(
+		${TARGET_NAME}
+		PUBLIC
 			-fmodules
 			-Wno-read-modules-implicitly
 	)
@@ -197,11 +195,9 @@ function(eagine_target_modules TARGET_NAME)
 			PCM_PATH TARGET ${EAGINE_MODULE}
 			PROPERTY EAGINE_MODULE_PCM_PATH
 		)
-		set_property(
-			TARGET ${TARGET_NAME}
-			APPEND PROPERTY COMPILE_OPTIONS
-				"-fprebuilt-module-path=${PCM_PATH}"
-		)
+		target_compile_options(
+			${TARGET_NAME}
+			PUBLIC "-fprebuilt-module-path=${PCM_PATH}")
 		target_link_libraries(${TARGET_NAME} PUBLIC ${EAGINE_MODULE})
 	endforeach()
 endfunction()

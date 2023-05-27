@@ -145,6 +145,9 @@ eagine_add_module(
 		coordinates
 		animated_value
 		io
+	IMPORTS
+		eagine.core.types
+		eagine.core.vectorization
 )
 
 eagine_add_module_tests(
@@ -159,7 +162,11 @@ eagine_add_module_tests(
 		matrix_3
 		matrix_construct
 	IMPORTS
+		eagine.core.concepts
+		eagine.core.debug
 		eagine.core.types
+		eagine.core.memory
 		eagine.core.vectorization
+		eagine.core.valid_if
 		eagine.core.units
 )

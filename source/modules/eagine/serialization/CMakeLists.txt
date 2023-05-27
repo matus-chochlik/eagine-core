@@ -216,6 +216,16 @@ eagine_add_module_tests(
 		float_utils
 		size_and_data
 	IMPORTS
+		eagine.core.concepts
 		eagine.core.types
+		eagine.core.debug
 		eagine.core.memory
+		eagine.core.string
+		eagine.core.identifier
+		eagine.core.build_info
+		eagine.core.utility
+		eagine.core.valid_if
+		eagine.core.value_tree
+		eagine.core.c_api
+		eagine.core.units
 )

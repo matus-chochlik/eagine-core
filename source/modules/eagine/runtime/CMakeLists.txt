@@ -151,9 +151,13 @@ eagine_add_module_tests(
 		program_args
 		url
 	IMPORTS
+		eagine.core.debug
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
+		eagine.core.identifier
+		eagine.core.reflection
+		eagine.core.units
 	ENVIRONMENT
 		EAGINE_VAR_MODULE_1=eagine
 		EAGINE_VAR_MODULE_2=core

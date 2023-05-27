@@ -157,8 +157,13 @@ eagine_add_module_tests(
 		list
 		path
 	IMPORTS
+		eagine.core.concepts
 		eagine.core.types
+		eagine.core.debug
 		eagine.core.memory
+		eagine.core.vectorization
+		eagine.core.valid_if
+		eagine.core.units
 	ENVIRONMENT
 		EAGINE_TEST_VAR1=eagine
 		EAGINE_TEST_VAR2=core

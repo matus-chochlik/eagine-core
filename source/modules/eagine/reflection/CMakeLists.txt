@@ -40,6 +40,7 @@ eagine_add_module_tests(
 	UNITS
 		enumerators
 	IMPORTS
+		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 )

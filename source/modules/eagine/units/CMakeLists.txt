@@ -67,4 +67,8 @@ eagine_add_module_tests(
 		unit
 		quantity
 		si
+	IMPORTS
+		eagine.core.concepts
+		eagine.core.types
+		eagine.core.memory
 )

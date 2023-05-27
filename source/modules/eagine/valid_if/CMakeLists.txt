@@ -39,6 +39,10 @@ eagine_add_module(
 		compare
 		filesystem
 		range
+	IMPORTS
+		eagine.core.types
+		eagine.core.concepts
+		eagine.core.reflection
 )
 
 eagine_add_module_tests(
@@ -49,5 +53,7 @@ eagine_add_module_tests(
 		filesystem
 	IMPORTS
 		eagine.core.types
+		eagine.core.memory
 		eagine.core.concepts
+		eagine.core.reflection
 )

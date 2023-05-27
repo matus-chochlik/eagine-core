@@ -21,19 +21,3 @@ eagine_add_module(
 		eagine.core.main_ctx
 )
 
-eagine_add_module_tests(
-	eagine.core.resource
-	UNITS
-		resource
-	IMPORTS
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.runtime
-)
-
-eagine_embed_target_resources(
-	TARGET test.eagine.core.resource.resource
-	RESOURCES
-		CMakeLists "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt"
-	ENABLE_SEARCH
-)

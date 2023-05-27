@@ -193,4 +193,7 @@ eagine_add_module_tests(
 		shared_allocator
 		stack_allocator
 		std_allocator
+	IMPORTS
+		eagine.core.concepts
+		eagine.core.types
 )

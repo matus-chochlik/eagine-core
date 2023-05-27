@@ -82,6 +82,8 @@ eagine_add_module_tests(
 		eagine.core.string
 		eagine.core.reflection
 		eagine.core.logging
+		eagine.core.units
+		eagine.core.c_api
 )
 
 set_tests_properties(execute-test.eagine.core.value_tree.visitors PROPERTIES COST 3)

@@ -59,4 +59,5 @@ eagine_add_module_tests(
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.valid_if
 )
