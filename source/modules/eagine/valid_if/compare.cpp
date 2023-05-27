@@ -48,7 +48,7 @@ export template <typename T>
 struct valid_if_nz_policy {
 
     /// @brief Indicates value validity, true if value != 0.
-    constexpr auto operator()(const T value) const noexcept {
+    constexpr auto operator()(const T& value) const noexcept {
         return (value > T(0)) or (value < T(0));
     }
 
@@ -82,7 +82,7 @@ export template <typename T>
 struct valid_if_positive_policy {
 
     /// @brief Indicates value validity, true if 0 < value.
-    constexpr auto operator()(const T value) const noexcept {
+    constexpr auto operator()(const T& value) const noexcept {
         return value > T(0);
     }
 
@@ -113,7 +113,7 @@ export template <typename T>
 struct valid_if_nonneg_policy {
 
     /// @brief Indicates value validity, true if 0 <= value.
-    constexpr auto operator()(const T value) const noexcept {
+    constexpr auto operator()(const T& value) const noexcept -> bool {
         return value >= T(0);
     }
 
@@ -148,7 +148,7 @@ export template <typename T, typename C, C Min, C Max>
 struct valid_if_btwn_policy {
 
     /// @brief Indicates @p value validity, true if between Min and Max.
-    constexpr auto operator()(const T value) const noexcept {
+    constexpr auto operator()(const T& value) const noexcept {
         return (T(Min) <= value) and (value <= T(Max));
     }
 
@@ -184,7 +184,7 @@ export template <typename T, T Cmp>
 struct valid_if_ne_policy {
 
     /// @brief Indicates value validity, true if value != Cmp.
-    constexpr auto operator()(const T value) const noexcept {
+    constexpr auto operator()(const T& value) const noexcept {
         return value != Cmp;
     }
 
@@ -212,7 +212,7 @@ export template <typename T>
 struct valid_if_ge0_le1_policy {
 
     /// @brief Indicates value validity, true if 0 <= value <= 1.
-    constexpr auto operator()(const T value) const noexcept {
+    constexpr auto operator()(const T& value) const noexcept {
         return (T(0) <= value) and (value <= T(1));
     }
 
@@ -242,7 +242,7 @@ export template <typename T>
 struct valid_if_ge0_lt1_policy {
 
     /// @brief Indicates value validity, true if 0 <= value < 1.
-    constexpr auto operator()(const T value) const noexcept {
+    constexpr auto operator()(const T& value) const noexcept {
         return (T(0) <= value) and (value < T(1));
     }
 
@@ -268,7 +268,7 @@ using valid_if_ge0_lt1 =
 
 export template <typename T>
 struct valid_if_gt0_lt1_policy {
-    constexpr auto operator()(const T value) const noexcept {
+    constexpr auto operator()(const T& value) const noexcept {
         return (T(0) < value) and (value < T(1));
     }
 
@@ -296,7 +296,7 @@ using valid_if_gt0_lt1 =
 /// @ingroup valid_if
 export template <typename T, T Cmp>
 struct valid_if_gt_policy {
-    constexpr auto operator()(const T value) const noexcept {
+    constexpr auto operator()(const T& value) const noexcept {
         return value > Cmp;
     }
 
@@ -326,7 +326,7 @@ export template <typename T, T Cmp>
 struct valid_if_lt_policy {
 
     /// @brief Indicates value validity, true if value < Cmp.
-    constexpr auto operator()(const T value) const noexcept {
+    constexpr auto operator()(const T& value) const noexcept {
         return value < Cmp;
     }
 

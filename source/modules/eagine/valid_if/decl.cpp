@@ -161,7 +161,7 @@ public:
     ~basic_valid_if() noexcept = default;
 
     /// @brief Checks if @p val is valid according to this object's policy.
-    [[nodiscard]] constexpr auto has_value(const_reference val) const noexcept
+    [[nodiscard]] constexpr auto has_value(const value_type& val) const noexcept
       -> bool {
         return _policy(val);
     }
@@ -316,7 +316,7 @@ public:
 
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     [[nodiscard]] constexpr auto value_or(
-      const_reference fallback) const noexcept -> const_reference {
+      const value_type& fallback) const noexcept -> const_reference {
         if(has_value(_value)) [[likely]] {
             return _value;
         }
@@ -657,7 +657,7 @@ public:
 
     /// @brief Checks if @p val is valid according to this object's policy.
     /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto has_value(const_reference val) const noexcept
+    [[nodiscard]] constexpr auto has_value(const value_type& val) const noexcept
       -> bool {
         return _policy(val);
     }
@@ -809,7 +809,7 @@ public:
 
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     [[nodiscard]] constexpr auto value_or(
-      const_reference fallback) const noexcept -> auto& {
+      const value_type& fallback) const noexcept -> auto& {
         if(has_value(_value)) [[likely]] {
             return _value;
         }
@@ -940,13 +940,6 @@ public:
         } else {
             return {std::move(r), has_val};
         }
-    }
-
-    /// @brief Returns the stored value if valid, returns fallback otherwise.
-    /// @see basic_valid_if::value_or
-    [[nodiscard]] constexpr auto operator/(
-      const_reference fallback) const noexcept -> const_reference {
-        return value_or(fallback);
     }
 
     /// @brief Returns the stored value, throws if it is invalid.
