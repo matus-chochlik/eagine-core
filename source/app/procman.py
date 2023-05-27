@@ -456,7 +456,6 @@ class LogMessageInfo(object):
         self._et = etree.Element("root")
         self._et.append(self._maketree(message_info, "log"))
         self._et.append(self._maketree(state_info, "state"))
-        print(state_info)
 
     # --------------------------------------------------------------------------
     def find(self, xpath):
@@ -1117,7 +1116,7 @@ class ProcessInstance(object):
             state_info["begin_time"] = begin_time
             if state in self._active_states:
                 state_info["is_active"] = True
-            self.onProcessStateBegin(state, state_info)
+            self.onStateBegin(state, state_info)
             self._current_states[state] = state_info
 
     # --------------------------------------------------------------------------
@@ -1127,8 +1126,13 @@ class ProcessInstance(object):
                 state_info = self._current_states[state]
                 state_info["end_time"] = end_time
                 del self._current_states[state]
-                self.onProcessStateEnd(state, state_info)
+                self.onStateEnd(state, state_info)
             except KeyError: pass
+
+    # --------------------------------------------------------------------------
+    def updateProgress(self, process_number, progress_info):
+        if self._number == process_number:
+            self.onProgressChange(progress_info)
 
     # --------------------------------------------------------------------------
     def terminate(self):
@@ -1145,14 +1149,19 @@ class ProcessInstance(object):
         return self._exit_code
 
     # --------------------------------------------------------------------------
-    def onProcessStateBegin(self, state, state_info):
+    def onStateBegin(self, state, state_info):
         if self._identity is not None:
             self._parent.onProcessStateBegin(self, state, state_info)
 
     # --------------------------------------------------------------------------
-    def onProcessStateEnd(self, state, state_info):
+    def onStateEnd(self, state, state_info):
         if self._identity is not None:
             self._parent.onProcessStateEnd(self, state, state_info)
+
+    # --------------------------------------------------------------------------
+    def onProgressChange(self, progress_info):
+        if self._identity is not None:
+            self._parent.onProcessProgressChange(self, progress_info)
 
     # --------------------------------------------------------------------------
     def onProcessExit(self):
@@ -1238,6 +1247,12 @@ class PipelineInstance(object):
                 process.handleStateEnd(process_number, state, end_time)
 
     # --------------------------------------------------------------------------
+    def updateProcessProgress(self, process_number, info):
+        for process in self._processes:
+            if process is not None:
+                process.updateProgress(process_number, info)
+
+    # --------------------------------------------------------------------------
     def terminate(self):
         for process in self._processes:
             process.terminate()
@@ -1255,6 +1270,10 @@ class PipelineInstance(object):
     # --------------------------------------------------------------------------
     def onProcessStateEnd(self, process, state, state_info):
         self._parent.onProcessStateEnd(self._index, process, state, state_info)
+
+    # --------------------------------------------------------------------------
+    def onProcessProgressChange(self, process, progress_info):
+        self._parent.onProcessProgressChange(self._index, process, progress_info)
 
     # --------------------------------------------------------------------------
     def onProcessExit(self, process):
@@ -1348,6 +1367,12 @@ class Pipeline(object):
                 instance.handleProcessStateEnd(process_number, state, end_time)
 
     # --------------------------------------------------------------------------
+    def updateProcessProgress(self, process_number, info):
+        for instance in self._instances:
+            if instance is not None:
+                instance.updateProcessProgress(process_number, info)
+
+    # --------------------------------------------------------------------------
     def identity(self):
         return self._config.get("identity")
 
@@ -1391,6 +1416,11 @@ class Pipeline(object):
     def onProcessStateEnd(self, instance_index, process, state, state_info):
         self._parent.onProcessStateEnd(
             self, instance_index, process, state, state_info)
+
+    # --------------------------------------------------------------------------
+    def onProcessProgressChange(self, instance_index, process, progress_info):
+        self._parent.onProcessProgressChange(
+            self, instance_index, process, progress_info)
 
     # --------------------------------------------------------------------------
     def onProcessExit(self, instance_index, process):
@@ -1513,6 +1543,11 @@ class PipelineComposition(object):
             pipeline.handleProcessStateEnd(process_number, state, end_time)
 
     # --------------------------------------------------------------------------
+    def updateProcessProgress(self, process_number, info):
+        for pipeline in self._pipelines:
+            pipeline.updateProcessProgress(process_number, info)
+
+    # --------------------------------------------------------------------------
     def config(self):
         return self._config
 
@@ -1547,6 +1582,11 @@ class PipelineComposition(object):
     def onProcessStateEnd(self, pipeline, instance_index, process, state, state_info):
         self._tracker.onProcessStateEnd(
             pipeline, instance_index, process, state, state_info)
+
+    # --------------------------------------------------------------------------
+    def onProcessProgressChange(self, pipeline, instance_index, process, progress_info):
+        self._tracker.onProcessProgressChange(
+            pipeline, instance_index, process, progress_info)
 
     # --------------------------------------------------------------------------
     def onProcessExit(self, pipeline, pipeline_instance, process):
@@ -1885,6 +1925,17 @@ class ProcessLogTracker(object):
                 expectation.update(message_info)
         except KeyError: pass
 
+        def _get_progr_info(v):
+            ktmap = [("min", float),("value",float),("max",float)]
+            return {k: t(v[k]) for k, t in ktmap}
+
+        try:
+            for name, data in info["args"].items():
+                for value in data["values"]:
+                    if value["type"] == "MainPrgrss":
+                        self.progress(src_id, _get_progr_info(value))
+        except KeyError: pass
+
         try:
             source = info["source"]
             state_tag = self._state_end_triggers[src_id][(source, info["tag"])]
@@ -1967,6 +2018,14 @@ class ProcessLogTracker(object):
         pass
 
     # --------------------------------------------------------------------------
+    def progress(self, src_id, info):
+        try:
+            self._composition.updateProcessProgress(
+                self._processes[src_id]["number"],
+                info)
+        except KeyError: pass
+
+    # --------------------------------------------------------------------------
     def heartbeat(self, src_id):
         try:
             proc_info = self._processes[src_id]
@@ -1996,6 +2055,17 @@ class ProcessLogTracker(object):
             pipeline.identity(),
             state[0],
             state[1]))
+
+    # --------------------------------------------------------------------------
+    def onProcessProgressChange(self, pipeline, instance_index, process, progress_info):
+        mn = progress_info["min"]
+        vl = progress_info["value"]
+        mx = progress_info["max"]
+        self._log.info(
+            "process %d '%s' %.1f%% done" % (
+            self._process_number_to_src_id[process.number()],
+            pipeline.identity(),
+            100.0 * (vl - mn) / (mx - mn)))
 
     # --------------------------------------------------------------------------
     def onProcessExit(self, pipeline, pipeline_index, process):

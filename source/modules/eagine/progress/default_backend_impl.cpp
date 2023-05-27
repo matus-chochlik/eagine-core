@@ -167,7 +167,7 @@ private:
     void _update(
       const activity_progress_id_t activity_id,
       default_progress_info& info,
-      span_size_t current) {
+      span_size_t current) noexcept {
         info.curr_steps = current;
         if(info.curr_steps - info.prev_steps >= info.increment) {
             info.prev_steps = info.curr_steps;
@@ -180,13 +180,19 @@ private:
         }
     }
 
-    void _do_log(const default_progress_info& info) const {
+    auto _get_tag(const default_progress_info& info) const noexcept
+      -> identifier {
+        return info.parent_id ? identifier{"Progress"}
+                              : identifier{"MainPrgrss"};
+    }
+
+    void _do_log(const default_progress_info& info) const noexcept {
         _log.log(info.log_level, info.title)
           .arg("current", info.curr_steps)
           .arg("total", info.total_steps)
           .arg(
             "progress",
-            "Progress",
+            _get_tag(info),
             0.F,
             float(info.curr_steps),
             float(info.total_steps));

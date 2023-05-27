@@ -945,7 +945,7 @@ class XmlLogFormatter(object):
                                     float(value["value"]),
                                     float(value["max"]),
                                     cols - len(name) - 2,
-                                    value["type"] in ["Progress", "mainPrgrss"]
+                                    value["type"] in ["Progress", "MainPrgrss"]
                                 )
                             )
                             self.write("\n")
