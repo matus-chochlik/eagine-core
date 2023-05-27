@@ -628,7 +628,7 @@ class XmlLogFormatter(object):
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ╭─────────┬────────────┬─────────╮\n")
+            self.write(" ╭─────────┬──────────┬────────────┬─────────╮\n")
             # L1
             self.write("┊")
             conn = False
@@ -642,6 +642,7 @@ class XmlLogFormatter(object):
                     self.write(" │")
             self.write("━┥")
             self.write("%9s│" % formatRelTime(float(total_time)))
+            self.write("%10s│" % self._root_ids[src_id])
             self.write(self._ttyBlue())
             self.write(" closing log")
             self.write(self._ttyReset())
@@ -666,7 +667,7 @@ class XmlLogFormatter(object):
                     self.write("╭╯")
                 else:
                     self.write(" │")
-            self.write(" ╰─────────┴────────────┴─────────╯\n")
+            self.write(" ╰─────────┴──────────┴────────────┴─────────╯\n")
             # L3
             self.write("┊")
             conn = False
