@@ -64,6 +64,10 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				-fmodules
 				"-fprebuilt-module-path=${CMAKE_CURRENT_BINARY_DIR}"
 		)
+		target_include_directories(
+			${EAGINE_MODULE_PROPER}
+			PRIVATE "${EAGINE_CORE_BINARY_ROOT}/include"
+		)
 	endif()
 
 	foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
@@ -81,7 +85,9 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	endforeach()
 
 	set(EAGINE_MODULE_OBJECT_DEPENDS)
-	set(EAGINE_MODULE_OBJECT_OPTIONS -fprebuilt-module-path=.)
+	set(EAGINE_MODULE_OBJECT_OPTIONS
+		"-I${EAGINE_CORE_BINARY_ROOT}/include"
+		"-fprebuilt-module-path=.")
 
 	foreach(NAME ${EAGINE_MODULE_IMPORTS})
 		if(TARGET ${NAME})
