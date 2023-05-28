@@ -184,6 +184,13 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
         self.add_argument(
+            "--memcheck",
+            action="store_true",
+            default=False,
+            help="""Runs EAGine applications in valgrind --memcheck"""
+        )
+
+        self.add_argument(
             "--dry-run",
             action="store_true",
             default=False,
@@ -351,6 +358,12 @@ class ExpansionRegExprs(object):
         self.eval_exp = re.compile(".*(\$\(([0-9+*/%-]*)\)).*")
 
     # --------------------------------------------------------------------------
+    def _addCmdWrappers(self, args):
+        if self._options.memcheck:
+            return ["valgrind", "--tool=memcheck"] + args
+        return args
+
+    # --------------------------------------------------------------------------
     def _resolveCmdInWorkDir(self, name):
         return os.path.join(self._options.workDir(), name)
 
@@ -423,7 +436,10 @@ class ExpansionRegExprs(object):
 
         for found in _search():
             if found:
-                return [found, "--use-asio-log", self._options.logSocketPath()]
+                return self._addCmdWrappers([
+                    found,
+                    "--use-asio-log",
+                    self._options.logSocketPath()])
 
     # --------------------------------------------------------------------------
     def _resolveCmdRange(self, ifrom, ito):
