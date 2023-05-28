@@ -183,11 +183,41 @@ class ArgumentParser(argparse.ArgumentParser):
             """
         )
 
-        self.add_argument(
+        wrappers = self.add_mutually_exclusive_group()
+
+        wrappers.add_argument(
+            "--cachegrind",
+            action="store_true",
+            default=False,
+            help="""Runs EAGine applications in valgrind --cachegrind"""
+        )
+
+        wrappers.add_argument(
+            "--callgrind",
+            action="store_true",
+            default=False,
+            help="""Runs EAGine applications in valgrind --callgrind"""
+        )
+
+        wrappers.add_argument(
             "--memcheck",
             action="store_true",
             default=False,
             help="""Runs EAGine applications in valgrind --memcheck"""
+        )
+
+        wrappers.add_argument(
+            "--massif",
+            action="store_true",
+            default=False,
+            help="""Runs EAGine applications in valgrind --massif"""
+        )
+
+        wrappers.add_argument(
+            "--helgrind",
+            action="store_true",
+            default=False,
+            help="""Runs EAGine applications in valgrind --helgrind"""
         )
 
         self.add_argument(
@@ -361,6 +391,14 @@ class ExpansionRegExprs(object):
     def _addCmdWrappers(self, args):
         if self._options.memcheck:
             return ["valgrind", "--tool=memcheck"] + args
+        elif self._options.callgrind:
+            return ["valgrind", "--tool=callgrind"] + args
+        elif self._options.cachegrind:
+            return ["valgrind", "--tool=cachegrind"] + args
+        elif self._options.helgrind:
+            return ["valgrind", "--tool=helgrind"] + args
+        elif self._options.massif:
+            return ["valgrind", "--tool=massif"] + args
         return args
 
     # --------------------------------------------------------------------------
