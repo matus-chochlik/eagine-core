@@ -145,7 +145,7 @@ auto root_logger_init_backend(
         }
     }
 
-    auto backend = root_logger_choose_backend(args, opts, info);
+    auto backend{root_logger_choose_backend(args, opts, info)};
 
     return backend;
 }
@@ -240,6 +240,19 @@ root_logger::root_logger(
   root_logger_options& opts) noexcept
   : logger{logger_id, {root_logger_init_backend(args, opts)}} {
     begin_log();
+
+    for(auto arg = args.first(); arg; arg = arg.next()) {
+        if(arg.is_long_tag("--log-active-state")) {
+            if(
+              identifier::can_be_encoded(arg.next().get()) and
+              identifier::can_be_encoded(arg.next().next().get())) {
+                active_state(
+                  identifier{arg.next().get()},
+                  identifier{arg.next().next().get()});
+            }
+        }
+    }
+
     _log_args(args);
     _log_instance_info();
     _log_build_info();
