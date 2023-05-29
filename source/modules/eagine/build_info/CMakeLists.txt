@@ -4,8 +4,6 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
 	eagine.core.build_info
-	INTERFACES
-		build_info
 	SOURCES
 		build_info
 	IMPORTS

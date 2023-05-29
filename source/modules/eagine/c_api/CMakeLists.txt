@@ -85,18 +85,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.c_api
-	INTERFACES c_api
-	PARTITIONS
-		result
-		api_traits
-		key_value_list
-		enum_class
-		constant
-		object
-		function
-		buffer_data
-		parameter_map
-		adapted_function
 )
 
 eagine_add_module_tests(

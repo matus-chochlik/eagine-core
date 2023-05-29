@@ -7,7 +7,7 @@
 install(
 	FILES
 		EAGineEmbedCommon.cmake
-	DESTINATION lib/cmake/EAGine
+	DESTINATION share/cmake/EAGine
 )
 
 add_subdirectory(tools)

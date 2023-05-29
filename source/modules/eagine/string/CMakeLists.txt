@@ -115,22 +115,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.string
-	INTERFACES
-		string
-	PARTITIONS
-		multi_byte
-		list
-		path
-		c_str
-		algorithm
-		environment
-		format
-		base64
-		base64dump
-		bindump
-		hexdump
-		from_string
-		keyboard_distance
 	SOURCES
 		bindump
 		hexdump

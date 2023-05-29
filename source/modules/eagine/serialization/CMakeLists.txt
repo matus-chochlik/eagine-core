@@ -184,28 +184,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.serialization
-	INTERFACES
-		serialization
-	PARTITIONS
-		float_utils
-		data_buffer
-		size_and_data
-		result
-		interface
-		read
-		write
-		implementation
-		iostream
-		block
-		packed_block
-		fast_backend
-		string_backend
-		portable_backend
-		valtree_backend
-		type_sudoku
-		type_compiler_info
-		type_version_info
-	SOURCES
 )
 
 eagine_add_module_tests(

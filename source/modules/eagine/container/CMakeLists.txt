@@ -38,15 +38,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.container
-	INTERFACES container
-	PARTITIONS
-		iterator
-		static_vector
-		small_vector
-		flat_set
-		flat_map
-		trie
-		wrapping
 )
 
 eagine_add_module_tests(

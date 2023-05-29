@@ -123,25 +123,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.math
-	INTERFACES
-		math
-	PARTITIONS
-		sign
-		traits
-		constants
-		functions
-		scalar
-		vector
-		matrix
-		matrix_construct
-		tmat
-		colors
-		curves
-		primitives
-		intersection
-		coordinates
-		animated_value
-		io
 	IMPORTS
 		eagine.core.types
 		eagine.core.vectorization

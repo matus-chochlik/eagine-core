@@ -115,19 +115,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.logging
-	INTERFACES
-		logging
-	PARTITIONS
-		config
-		entry_arg
-		backend
-		fast_xml_backend
-		ostream_backend
-		time_interval
-		entry
-		logger
-		root_logger
-		adapt_entry_arg
 	SOURCES
 		null_backend
 		asio_backend

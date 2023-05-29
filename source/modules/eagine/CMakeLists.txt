@@ -28,8 +28,7 @@ add_subdirectory(resource)
 
 eagine_add_module(
 	eagine.core
-	INTERFACES core
-	IMPORTS
+	SUBMODULES
 		eagine.core.build_config
 		eagine.core.types
 		eagine.core.debug

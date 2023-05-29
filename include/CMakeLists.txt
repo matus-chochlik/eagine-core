@@ -19,20 +19,30 @@ add_library(eagine-core-testing-headers INTERFACE)
 set_property(
 	TARGET eagine-core-testing-headers
 	APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-)
+		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 # - generated headers or implementation files ----------------------------------
 add_library(eagine-core-generated-headers INTERFACE)
 
 set_property(
 	TARGET eagine-core-generated-headers
 	APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-		${CMAKE_CURRENT_BINARY_DIR}	
-)
+		${CMAKE_CURRENT_BINARY_DIR})
 
-foreach(FILENAME ${GEN_HPPS})
+foreach(FILEPATH ${GEN_HPPS})
 	set_property(
 		TARGET eagine-core-generated-headers
-		APPEND PROPERTY PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME}
-	)
+		APPEND PROPERTY PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/${FILEPATH})
+endforeach()
+
+foreach(FILEPATH ${GEN_HPPS})
+	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+		install(
+			FILES "${CMAKE_CURRENT_BINARY_DIR}/${FILEPATH}"
+			DESTINATION share/eagine/debug/include)
+	endif()
+	if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+		install(
+			FILES "${CMAKE_CURRENT_BINARY_DIR}/${FILEPATH}"
+			DESTINATION share/eagine/release/include)
+	endif()
 endforeach()

@@ -4,10 +4,8 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
 	eagine.core.build_config
-	INTERFACES
-		build_config
 	PRIVATE_INCLUDE_DIRECTORIES
-		"${PROJECT_BINARY_DIR}/include"
+		"${EAGINE_CORE_BINARY_ROOT}/include"
 	PRIVATE_LINK_LIBRARIES
 		eagine-core-generated-headers
 )

@@ -27,12 +27,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.reflection
-	INTERFACES
-		reflection
-	PARTITIONS
-		decl_name
-		enumerators
-		data_members
 )
 
 eagine_add_module_tests(

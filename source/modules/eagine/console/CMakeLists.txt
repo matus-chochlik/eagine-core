@@ -28,11 +28,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.console
-	INTERFACES
-		console
-	PARTITIONS
-		entry
-		backend
 	SOURCES
 		console
 		null_backend

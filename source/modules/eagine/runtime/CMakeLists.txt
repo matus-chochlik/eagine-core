@@ -102,21 +102,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.runtime
-	INTERFACES
-		runtime
-	PARTITIONS
-		signal_switch
-		traverse	
-		basic_config
-		process
-		program_args
-		url
-		input_data
-		executable_module
-		file_contents
-		compression
-		value_with_history
-		workshop
 	SOURCES
 		url
 		process

@@ -74,23 +74,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.types
-	INTERFACES types
-	PARTITIONS
-		basic
-		structural
-		interface
-		compare
-		limits
-		integer_range
-		extract
-		tribool
-		optional_reference
-		outcome
-		bitfield
-		placeholder
-		function_constant
-		enum_map
-		metaprogramming
 	IMPORTS
 		eagine.core.build_config
 )

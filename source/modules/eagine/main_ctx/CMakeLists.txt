@@ -109,18 +109,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.main_ctx
-	INTERFACES
-		main_ctx
-	PARTITIONS
-		interface
-		parent
-		object
-		system_info
-		user_info
-		watchdog
-		app_config
-		storage
-		main
 	SOURCES
 		system_info
 		user_info

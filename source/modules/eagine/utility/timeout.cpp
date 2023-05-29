@@ -54,6 +54,7 @@ export template <typename R, typename P>
 /// @see time_measure
 /// @see referencing_timeout
 /// @see resetting_timeout
+/// @see backing_off_timeout
 export class timeout {
     using _clock = std::chrono::steady_clock;
 
@@ -64,7 +65,7 @@ public:
     /// @brief Default construction. Saves current time. Immediately expires.
     /// @post is_expired()
     timeout() noexcept
-      : _timeout{_clock::now()} {}
+      : _deadline{_clock::now()} {}
 
     /// @brief Construction from the default and initial timeout duration.
     /// @see reset
@@ -72,8 +73,8 @@ public:
     timeout(
       const _clock::duration duration,
       const _clock::duration initial) noexcept
-      : _duration{duration}
-      , _timeout{_clock::now() + initial} {}
+      : _period{duration}
+      , _deadline{_clock::now() + initial} {}
 
     /// @brief Construction from the default and zero initial timeout duration.
     /// @see reset
@@ -99,14 +100,14 @@ public:
     template <typename Rd, typename Pd>
     auto set_duration(const std::chrono::duration<Rd, Pd> duration) noexcept
       -> auto& {
-        _duration = std::chrono::duration_cast<_clock::duration>(duration);
+        _period = std::chrono::duration_cast<_clock::duration>(duration);
         return *this;
     }
 
     /// @brief Resets the timeout using the previously specified duration.
     /// @brief set_duration
     auto reset() noexcept -> auto& {
-        _timeout = std::chrono::steady_clock::now() + _duration;
+        _deadline = std::chrono::steady_clock::now() + _period;
         return *this;
     }
 
@@ -116,9 +117,9 @@ public:
     auto reset(
       const std::chrono::duration<Rd, Pd> duration,
       const std::chrono::duration<Ri, Pi> initial) noexcept -> auto& {
-        _duration = std::chrono::duration_cast<_clock::duration>(duration);
-        _timeout = std::chrono::steady_clock::now() +
-                   std::chrono::duration_cast<_clock::duration>(initial);
+        _period = std::chrono::duration_cast<_clock::duration>(duration);
+        _deadline = std::chrono::steady_clock::now() +
+                    std::chrono::duration_cast<_clock::duration>(initial);
         return *this;
     }
 
@@ -142,14 +143,14 @@ public:
 
     /// @brief Returns the time since reset as clocks duration type.
     [[nodiscard]] auto elapsed_time() const noexcept -> duration_type {
-        return _clock::now() - _timeout + _duration;
+        return _clock::now() - _deadline + _period;
     }
 
     /// @brief Indicates if the timeout is expired.
     /// @see reset
     /// @see period
     [[nodiscard]] auto is_expired() const noexcept -> bool {
-        return _clock::now() >= _timeout;
+        return _clock::now() >= _deadline;
     }
 
     /// @brief Indicates if the timeout is expired.
@@ -162,12 +163,12 @@ public:
     /// @see reset
     /// @see is_expired
     [[nodiscard]] auto period() const noexcept -> const auto& {
-        return _duration;
+        return _period;
     }
 
 private:
-    _clock::duration _duration{};
-    _clock::time_point _timeout{};
+    _clock::duration _period{};
+    _clock::time_point _deadline{};
 };
 //------------------------------------------------------------------------------
 /// @brief Class representing a timeout since construction or reset.
@@ -184,7 +185,7 @@ public:
 
     /// @brief Constructor initializing the reference to the timeout interval.
     referencing_timeout(const duration_type& interval) noexcept
-      : _duration{interval}
+      : _period{interval}
       , _prev_reset{_clock::now()} {}
 
     /// @brief Resets the timeout using the referenced specified duration.
@@ -202,7 +203,7 @@ public:
     /// @see reset
     /// @see period
     [[nodiscard]] auto is_expired() const noexcept -> bool {
-        return _clock::now() >= _prev_reset + _duration;
+        return _clock::now() >= _prev_reset + _period;
     }
 
     /// @brief Indicates if the timeout is expired.
@@ -215,11 +216,11 @@ public:
     /// @see reset
     /// @see is_expired
     [[nodiscard]] auto period() const noexcept -> const auto& {
-        return _duration;
+        return _period;
     }
 
 private:
-    const _clock::duration& _duration;
+    const _clock::duration& _period;
     _clock::time_point _prev_reset{};
 };
 //------------------------------------------------------------------------------
@@ -227,6 +228,7 @@ private:
 /// @ingroup time_utils
 /// @see timeout
 /// @see referencing_timeout
+/// @see backing_off_timeout
 /// @see time_measure
 export class resetting_timeout : public timeout {
 public:
@@ -241,6 +243,86 @@ public:
         return result;
     }
 };
+//------------------------------------------------------------------------------
+/// @brief Timeout that can be doubled (extended) or reset back to minimum duration.
+/// @ingroup time_utils
+/// @see timeout
+/// @see resetting_timeout
+export class backing_off_timeout {
+    using _clock = std::chrono::steady_clock;
 
+public:
+    /// @brief Alias for the duration type used by this timeout.
+    using duration_type = _clock::duration;
+
+    /// @brief Construction from min and max period.
+    template <typename Rmin, typename Pmin, typename Rmax, typename Pmax>
+    backing_off_timeout(
+      std::chrono::duration<Rmin, Pmin> min,
+      std::chrono::duration<Rmax, Pmax> max) noexcept
+      : _min_period{std::chrono::duration_cast<_clock::duration>(min)}
+      , _max_period{std::chrono::duration_cast<_clock::duration>(max)}
+      , _cur_period{_min_period}
+      , _deadline{_clock::now() + _cur_period} {}
+
+    /// @brief Construction from min and max period.
+    template <typename Rmin, typename Pmin, typename Rmax, typename Pmax>
+    backing_off_timeout(
+      std::chrono::duration<Rmin, Pmin> min,
+      std::chrono::duration<Rmax, Pmax> max,
+      nothing_t) noexcept
+      : _min_period{std::chrono::duration_cast<_clock::duration>(min)}
+      , _max_period{std::chrono::duration_cast<_clock::duration>(max)}
+      , _cur_period{_min_period}
+      , _deadline{_clock::now()} {}
+
+    /// @brief Indicates if the timeout is expired.
+    /// @see reset
+    /// @see rewind
+    /// @see extend
+    auto is_expired() const noexcept -> bool {
+        return _clock::now() >= _deadline;
+    }
+
+    /// @brief Returns the timeout period.
+    /// @see reset
+    /// @see is_expired
+    auto period() const noexcept -> duration_type {
+        return _cur_period;
+    }
+
+    /// @brief Sets a new deadline to period, starting from now.
+    /// @see period
+    /// @see rewind
+    auto reset() noexcept -> backing_off_timeout& {
+        _deadline = _clock::now() + _cur_period;
+        return *this;
+    }
+
+    /// @brief Resets the period to minimum and sets a new deadline.
+    /// @see reset
+    /// @see extend
+    auto rewind() noexcept -> backing_off_timeout& {
+        _cur_period = _min_period;
+        return reset();
+    }
+
+    /// @brief Extends the period to double of the current or max and set new deadline.
+    /// @see reset
+    /// @see rewind
+    /// @see period
+    auto extend() noexcept -> backing_off_timeout& {
+        _cur_period =
+          std::min(_cur_period * duration_type::rep(2), _max_period);
+        return reset();
+    }
+
+private:
+    duration_type _min_period;
+    duration_type _max_period;
+    duration_type _cur_period;
+    _clock::time_point _deadline{};
+};
+//------------------------------------------------------------------------------
 } // namespace eagine
 

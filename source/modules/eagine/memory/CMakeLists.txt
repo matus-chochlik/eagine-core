@@ -138,30 +138,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.memory
-	INTERFACES
-		memory
-	PARTITIONS
-		align
-		address
-		bit_density
-		null_ptr
-		offset_ptr
-		span
-		string_span
-		offset_span
-		span_algorithm
-		split_span
-		aligned_block
-		byteset
-		biteset
-		flatten
-		edit_distance
-		fixed_size_string
-		byte_allocator
-		stack_allocator
-		std_allocator
-		buffer
-		object_storage
 	SOURCES
 		memory
 		stack_allocator

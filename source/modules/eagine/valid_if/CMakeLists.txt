@@ -30,13 +30,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.valid_if
-	INTERFACES
-		valid_if
-	PARTITIONS
-		decl
-		compare
-		filesystem
-		range
 	IMPORTS
 		eagine.core.types
 		eagine.core.reflection

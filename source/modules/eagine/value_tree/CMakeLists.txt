@@ -41,12 +41,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.value_tree
-	INTERFACES
-		value_tree
-	PARTITIONS
-		interface
-		wrappers
-		implementation
 	SOURCES
 		wrappers
 		empty

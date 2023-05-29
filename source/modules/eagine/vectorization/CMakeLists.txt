@@ -28,13 +28,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.vectorization
-	INTERFACES
-		vectorization
-	PARTITIONS
-		data_array
-		data_simd
-		data
-		ops
 )
 
 eagine_add_module_tests(

@@ -102,31 +102,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.utility
-	INTERFACES
-		utility
-	PARTITIONS
-		count
-		bool_aggregate
-		sliding_average
-		coroutine
-		double_buffer
-		integer_hash
-		interleaved_call
-		callable_ref
-		signal
-		spinlock
-		memoized
-		network_sort
-		scope_exit
-		sudoku
-		cleanup_group
-		overloaded
-		timeline
-		timeout
-		protected_member
-		progress_bar
-		random_bytes
-		unreachable
 	SOURCES
 		progress_bar
 	IMPORTS

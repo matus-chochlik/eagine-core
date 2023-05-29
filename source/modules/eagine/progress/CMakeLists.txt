@@ -34,12 +34,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.progress
-	INTERFACES
-		progress
-	PARTITIONS
-		backend
-		activity
-		root_activity
 	SOURCES
 		default_backend
 		root_activity
