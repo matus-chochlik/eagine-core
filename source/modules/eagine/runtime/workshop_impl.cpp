@@ -32,6 +32,7 @@ void workshop::_employ() noexcept {
         auto [opt_work, shutdown] = _fetch();
         opt_work.and_then([this](auto& work) {
             if(work.do_it()) {
+                std::unique_lock lock{_queue_lockable};
                 work.deliver();
                 _cond.notify_all();
             } else {
@@ -48,8 +49,8 @@ void workshop::_employ() noexcept {
 auto workshop::shutdown() noexcept -> workshop& {
     if(const std::lock_guard lock{_queue_lockable}; true) {
         _shutdown = true;
+        _cond.notify_all();
     }
-    _cond.notify_all();
     return *this;
 }
 //------------------------------------------------------------------------------
