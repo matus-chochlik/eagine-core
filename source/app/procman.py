@@ -479,6 +479,8 @@ class ExpansionRegExprs(object):
                     "--use-asio-log",
                     self._options.logSocketPath()])
 
+        raise RuntimeError("Failed to find eagine application '%s'" % name)
+
     # --------------------------------------------------------------------------
     def _resolveCmdRange(self, ifrom, ito):
         return [i for i in range(int(ifrom), int(ito)+1)]
@@ -1121,9 +1123,18 @@ class ProcessInstance(object):
     # --------------------------------------------------------------------------
     def __init__(self, parent, args):
         self._parent = parent
-        self._args = [str(arg) for arg in args]
         self._identity = None
         self._number = None
+        self._progress = None
+
+        if args is None:
+            raise RuntimeError("Invalid argument list")
+        if not all(arg is not None for arg in args):
+            raise RuntimeError("None value is arguments")
+        self._args = [str(arg) for arg in args]
+        if len(self._args) == 0:
+            raise RuntimeError("Empty argument list")
+
         self._active_states = set()
         self._current_states = {}
         for i in range(len(self._args) - 1):
@@ -1270,6 +1281,7 @@ class PipelineInstance(object):
     def __init__(self, parent, index):
         self._parent = parent
         self._index = index
+        self._processes = None
         self._progress = parent.makeInstanceProgress(self)
         self._processes = [
             ProcessInstance(self, args)
@@ -2437,17 +2449,17 @@ def main():
         format='[%(asctime)s] %(levelname)s: %(message)s',
         level=logging.DEBUG if options.debug else logging.INFO)
 
-    composition = PipelineComposition(options, PipelineConfig(options))
-    tracker = ProcessLogTracker(options, composition)
-    composition.setTracker(tracker)
+    try:
+        if not options.dry_run:
+            composition = PipelineComposition(options, PipelineConfig(options))
+            tracker = ProcessLogTracker(options, composition)
+            composition.setTracker(tracker)
 
-    if not options.dry_run:
-        try:
             return manageProcesses(options, composition, tracker)
-        except Exception as error:
-            logging.error(str(error))
-            if options.debug:
-                raise
+    except Exception as error:
+        logging.error(str(error))
+        if options.debug:
+            raise
     return 0
 
 # ------------------------------------------------------------------------------
