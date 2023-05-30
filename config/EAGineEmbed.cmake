@@ -5,8 +5,8 @@
 #
 set(
 	EAGINE_EMBED_GENERATOR
-	"python3" "${EAGINE_CORE_ROOT}/config/tools/embed_generator"
-)
+	"python3" "${EAGINE_CORE_ROOT}/config/tools/embed_generator")
+set(EAGINE_EMBED_INSTALLED FALSE)
 
 file(WRITE "${PROJECT_BINARY_DIR}/empty" "")
 set(EAGINE_EMPTY_FILE "${PROJECT_BINARY_DIR}/empty")

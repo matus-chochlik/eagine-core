@@ -3,11 +3,10 @@
 #  See accompanying file LICENSE_1_0.txt or copy at
 #   http://www.boost.org/LICENSE_1_0.txt
 #
+set(
+	EAGINE_EMBED_GENERATOR
+	"python3" "${_IMPORT_PREFIX}/bin/eagine-embed-generator")
+set(EAGINE_EMBED_INSTALLED TRUE)
 
-# install the embed generator tool
-install(
-	PROGRAMS embed_generator
-	RENAME eagine-embed-generator
-	PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE
-	DESTINATION bin
-)
+include(${CMAKE_CURRENT_LIST_DIR}/EAGineEmbedCommon.cmake)
+

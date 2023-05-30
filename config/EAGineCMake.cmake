@@ -3,11 +3,8 @@
 #  See accompanying file LICENSE_1_0.txt or copy at
 #   http://www.boost.org/LICENSE_1_0.txt
 #
-
-# install the embed generator tool
-install(
-	PROGRAMS embed_generator
-	RENAME eagine-embed-generator
-	PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE
-	DESTINATION bin
-)
+if(EAGINE_BUILD_MULTIARCH)
+	set(EAGINE_CMAKE_CONFIG_DEST "lib/${EAGINE_BUILD_MULTIARCH}/cmake/EAGine")
+else()
+	set(EAGINE_CMAKE_CONFIG_DEST "lib/cmake/EAGine")
+endif()

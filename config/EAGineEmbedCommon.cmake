@@ -156,11 +156,14 @@ function(eagine_embed_target_resources)
 	add_dependencies(${EAGINE_RESOURCE_TARGET} eagine.core eagine.core.resource)
 
 	if(${EAGINE_CLANGXX_COMPILER})
-		set_property(
-			TARGET ${EAGINE_RESOURCE_TARGET}
-			APPEND PROPERTY COMPILE_OPTIONS
-			"-fprebuilt-module-path=${EAGINE_CORE_BINARY_ROOT}/source/modules/eagine;-fprebuilt-module-path=${EAGINE_CORE_BINARY_ROOT}/source/modules/eagine/resource"
-		)
+		if(${EAGINE_EMBED_INSTALLED})
+			# TODO
+		else()
+			set_property(
+				TARGET ${EAGINE_RESOURCE_TARGET}
+				APPEND PROPERTY COMPILE_OPTIONS
+				"-fprebuilt-module-path=${EAGINE_CORE_BINARY_ROOT}/source/modules/eagine;-fprebuilt-module-path=${EAGINE_CORE_BINARY_ROOT}/source/modules/eagine/resource")
+		endif()
 	endif()
 endfunction()
 
