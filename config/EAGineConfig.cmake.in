@@ -22,4 +22,6 @@ if(_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()
 
+include(${CMAKE_CURRENT_LIST_DIR}/EAGineEmbed.cmake)
+
 add_library(EAGine UNKNOWN IMPORTED)

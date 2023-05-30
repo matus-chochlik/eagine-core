@@ -38,11 +38,11 @@ foreach(FILEPATH ${GEN_HPPS})
 	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 		install(
 			FILES "${CMAKE_CURRENT_BINARY_DIR}/${FILEPATH}"
-			DESTINATION share/eagine/debug/include)
+			DESTINATION share/eagine/include/debug)
 	endif()
 	if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
 		install(
 			FILES "${CMAKE_CURRENT_BINARY_DIR}/${FILEPATH}"
-			DESTINATION share/eagine/release/include)
+			DESTINATION share/eagine/include/release)
 	endif()
 endforeach()
