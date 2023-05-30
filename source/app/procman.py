@@ -439,13 +439,19 @@ class ExpansionRegExprs(object):
     # --------------------------------------------------------------------------
     def _resolveCmdEAGiApp(self, name):
         file_dir = os.path.dirname(__file__)
-        def _get_build_dir():
-            bdf_path = os.path.join(file_dir, os.pardir, os.pardir, "BINARY_DIR")
+        def _get_path_from(filename):
+            bdf_path = os.path.join(file_dir, os.pardir, os.pardir, filename)
             try:
                 with open(bdf_path, "r") as bdf:
                     return os.path.realpath(os.path.join(
                             bdf.readline().strip(), os.pardir, os.pardir))
             except: pass
+
+        def _get_build_dir():
+            return _get_path_from("BINARY_DIR")
+
+        def _get_install_prefix():
+            return _get_path_from("INSTALL_PREFIX")
 
         def _scantree(what, path):
             try:
@@ -470,6 +476,7 @@ class ExpansionRegExprs(object):
             yield _scanopts(file_dir)
             yield _scanopts(os.path.join(file_dir, os.pardir, "share", "eagine"))
             yield _scanopts(_get_build_dir())
+            yield _scanopts(_get_install_prefix())
             yield self._resolveCmdWildcard(name)
 
         for found in _search():
