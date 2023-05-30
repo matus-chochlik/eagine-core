@@ -1129,6 +1129,7 @@ class ProcessInstance(object):
 
         if args is None:
             raise RuntimeError("Invalid argument list")
+        args = [arg for arg in args]
         if not all(arg is not None for arg in args):
             raise RuntimeError("None value is arguments")
         self._args = [str(arg) for arg in args]
@@ -2450,8 +2451,8 @@ def main():
         level=logging.DEBUG if options.debug else logging.INFO)
 
     try:
+        composition = PipelineComposition(options, PipelineConfig(options))
         if not options.dry_run:
-            composition = PipelineComposition(options, PipelineConfig(options))
             tracker = ProcessLogTracker(options, composition)
             composition.setTracker(tracker)
 
