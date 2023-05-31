@@ -340,7 +340,7 @@ private:
         result errors = require('\'');
         if(not errors) {
             if(const auto opt_char{this->top_char()}) {
-                value = extract(opt_char);
+                value = *opt_char;
                 pop(1);
             } else {
                 errors |= error_code::not_enough_data;

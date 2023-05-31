@@ -631,22 +631,11 @@ constexpr auto accommodate(
       blk.begin_addr(), blk.end_addr()};
 }
 //------------------------------------------------------------------------------
-// extract
-//------------------------------------------------------------------------------
-/// @brief Overload of extract for spans. Returns the first element,
-/// @pre spn.size() >= 1
-/// @ingroup memory
-export template <typename T, typename P, typename S>
-constexpr auto extract(basic_span<T, P, S> spn) noexcept -> T& {
-    assert(spn.has_single_value());
-    return spn.front();
-}
-
 export template <typename T, typename P, typename S, typename Dst>
 constexpr auto assign_if_fits(basic_span<T, P, S> src, Dst& dst) noexcept
   -> bool {
     if(src.has_single_value()) {
-        return eagine::assign_if_fits(extract(src), dst);
+        return eagine::assign_if_fits(src.front(), dst);
     }
     return false;
 }
