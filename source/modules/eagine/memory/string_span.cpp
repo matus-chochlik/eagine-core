@@ -279,7 +279,7 @@ auto make_span_putter(
     return [&i, &str, transform](auto value) mutable -> bool {
         if(i < span_size_t(str.size())) {
             if(auto transformed{transform(value)}) {
-                str[i++] = std::move(extract(transformed));
+                str[i++] = std::move(*transformed);
                 return true;
             }
         }

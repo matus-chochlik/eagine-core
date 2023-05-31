@@ -385,11 +385,4 @@ optional_reference(const std::unique_ptr<T>& ptr) -> optional_reference<T>;
 export template <typename T>
 optional_reference(const std::shared_ptr<T>& ptr) -> optional_reference<T>;
 //------------------------------------------------------------------------------
-/// @brief Overload of extract for optional_reference.
-/// @ingroup valid_if
-export template <typename T>
-[[nodiscard]] auto extract(optional_reference<T> ref) noexcept -> T& {
-    return ref.value();
-}
-//------------------------------------------------------------------------------
 } // namespace eagine

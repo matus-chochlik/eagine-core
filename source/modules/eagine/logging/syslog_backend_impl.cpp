@@ -306,14 +306,14 @@ private:
 
     static void _translate(string_view format, _message_state& msg) {
         while(auto pos{find_position(format, string_view{"${"})}) {
-            const string_view prev{head(format, extract(pos))};
+            const string_view prev{head(format, *pos)};
             msg.format.append(prev);
-            format = skip(format, extract(pos) + 2);
+            format = skip(format, *pos + 2);
             if(const auto end{find_position(format, string_view{"}"})}) {
                 msg.arg_idx[msg.arg_count++] =
-                  identifier(head(format, extract(end))).value();
+                  identifier(head(format, *end)).value();
                 msg.format.append("%s");
-                format = skip(format, extract(end) + 1);
+                format = skip(format, *end + 1);
             }
         }
         msg.format.append(format);

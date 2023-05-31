@@ -254,10 +254,6 @@ auto assign_if_fits(const program_arg& src, T& dst) noexcept -> bool {
     return assign_if_fits(src, dst, default_selector);
 }
 //------------------------------------------------------------------------------
-export auto extract(const program_arg& arg) noexcept {
-    return arg.get();
-}
-//------------------------------------------------------------------------------
 export auto to_string(const program_arg& arg) {
     return arg.get_string();
 }

@@ -109,7 +109,7 @@ public:
         _needs_scan = true;
         for(auto& entry : _children) {
             if(auto child{entry.second.cached}) {
-                extract(child).mark_for_scan();
+                child->mark_for_scan();
             }
         }
     }
@@ -293,7 +293,7 @@ static auto overlay_make_new_node(
 //------------------------------------------------------------------------------
 auto add_overlay(compound& c, const compound_attribute& overlay) -> bool {
     if(auto oc{c.as<overlay_compound>()}) {
-        extract(oc).add_overlay(std::move(overlay));
+        oc->add_overlay(std::move(overlay));
         return true;
     }
     return false;

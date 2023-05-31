@@ -108,9 +108,9 @@ protected:
 
     template <typename T>
     static void _destroy(block blk) noexcept {
-        auto spn = accommodate<T>(blk);
+        auto spn{accommodate<T>(blk)};
         assert(spn);
-        auto& x{extract(spn)};
+        auto& x{*spn};
         x.~T();
     }
 
@@ -185,9 +185,9 @@ private:
 
     template <typename T>
     static void _call(block blk, Params... params) noexcept {
-        auto spn = accommodate<T>(blk);
+        auto spn{accommodate<T>(blk)};
         assert(spn);
-        auto& x{extract(spn)};
+        auto& x{*spn};
         x(params...);
     }
 };

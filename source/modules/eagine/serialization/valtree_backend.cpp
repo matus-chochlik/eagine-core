@@ -104,8 +104,8 @@ public:
         if(done == values.size()) {
             span_size_t i{0};
             for(const auto& val : temp) {
-                if(const auto conv{convert_if_fits<T>(val)}) {
-                    values[i++] = extract(conv);
+                if(auto conv{convert_if_fits<T>(val)}) {
+                    values[i++] = std::move(*conv);
                 } else {
                     _errors.set(error_code::invalid_format);
                     break;

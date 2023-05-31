@@ -507,7 +507,7 @@ public:
     auto do_fetch_values(const span_size_t offset, span<T> dest)
       -> span_size_t {
         if(_rj_val) {
-            auto& val = extract(_rj_val);
+            auto& val = *_rj_val;
             if(val.IsArray()) {
                 const auto n = span_size(val.Size());
                 span_size_t i = 0;
@@ -537,7 +537,7 @@ public:
     auto fetch_values(const span_size_t offset, span<char> dest)
       -> span_size_t {
         if(_rj_val) {
-            auto& val = extract(_rj_val);
+            auto& val = *_rj_val;
             if(val.IsString()) {
                 auto src{head(skip(view(val), offset), dest)};
                 copy(src, dest);
@@ -550,7 +550,7 @@ public:
     auto fetch_values(const span_size_t offset, span<byte> dest)
       -> span_size_t {
         if(_rj_val) {
-            auto& val = extract(_rj_val);
+            auto& val = *_rj_val;
             // blobs can also be decoded from base64 strings
             using memory::skip;
             if(val.IsString()) {
@@ -560,7 +560,7 @@ public:
                     std::vector<byte> temp{};
                     if(const auto dec{base64_decode(view(val), temp)}) {
                         if(const auto src{
-                             head(skip(cover(extract(dec)), offset), dest)}) {
+                             head(skip(cover(*dec), offset), dest)}) {
                             copy(src, dest);
                             return src.size();
                         }

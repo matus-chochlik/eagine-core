@@ -87,7 +87,7 @@ auto root_logger_choose_backend(
                 nw_addr = arg.next();
             } else if(const auto env_var{get_environment_variable(
                         "EAGINE_LOG_NETWORK_ADDRESS")}) {
-                nw_addr = extract(env_var);
+                nw_addr = *env_var;
             }
             if(use_spinlock) {
                 return make_asio_tcpipv4_ostream_log_backend_spinlock(
@@ -102,7 +102,7 @@ auto root_logger_choose_backend(
                 path = arg.next();
             } else if(const auto env_var{
                         get_environment_variable("EAGINE_LOG_LOCAL_PATH")}) {
-                path = extract(env_var);
+                path = *env_var;
             }
             if(use_spinlock) {
                 return make_asio_local_ostream_log_backend_spinlock(path, info);
@@ -220,16 +220,13 @@ auto root_logger::_log_compiler_info() -> void {
         string_view{"not_available"})
       .arg_func([](logger_backend& backend) {
           if(const auto version_major{compiler_version_major()}) {
-              backend.add_integer(
-                "complrMajr", "VrsnMajor", extract(version_major));
+              backend.add_integer("complrMajr", "VrsnMajor", *version_major);
           }
           if(const auto version_minor{compiler_version_minor()}) {
-              backend.add_integer(
-                "complrMinr", "VrsnMinor", extract(version_minor));
+              backend.add_integer("complrMinr", "VrsnMinor", *version_minor);
           }
           if(const auto version_patch{compiler_version_patch()}) {
-              backend.add_integer(
-                "complrPtch", "VrsnPatch", extract(version_patch));
+              backend.add_integer("complrPtch", "VrsnPatch", *version_patch);
           }
       });
 }

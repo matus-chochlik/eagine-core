@@ -55,8 +55,8 @@ export struct deserializer_data_source : interface<deserializer_data_source> {
         span_size_t start{0};
         span_size_t total{inc};
         while(const auto blk = top(total)) {
-            if(const auto found = find_element_if(skip(blk, start), predicate)) {
-                return {start + extract(found)};
+            if(const auto found{find_element_if(skip(blk, start), predicate)}) {
+                return {start + *found};
             }
             if(blk.size() < total) {
                 break;

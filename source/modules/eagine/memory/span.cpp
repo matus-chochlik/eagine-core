@@ -432,27 +432,30 @@ public:
 
     /// @brief Returns the single value if size == 1
     /// @see value
-    /// @pre has_value()
-    auto operator*() const noexcept -> element_type {
-        return value();
+    /// @pre has_single_value()
+    auto operator*() const noexcept -> std::add_const_t<element_type>& {
+        return front();
+    }
+
+    /// @brief Returns pointer to the single value if size == 1
+    /// @see value
+    /// @pre has_single_value()
+    auto operator->() const noexcept -> std::add_const_t<element_type>* {
+        return &front();
     }
 
     /// @brief Array subscript operator.
     /// @see element
-    template <typename Int>
-    auto operator[](const Int index) noexcept -> element_type&
-        requires(std::is_integral_v<Int>)
-    {
+    template <std::integral Int>
+    auto operator[](const Int index) noexcept -> element_type& {
         return element(index);
     }
 
     /// @brief Array subscript operator.
     /// @see element
-    template <typename Int>
+    template <std::integral Int>
     constexpr auto operator[](const Int index) const noexcept
-      -> std::add_const_t<value_type>&
-        requires(std::is_integral_v<Int>)
-    {
+      -> std::add_const_t<value_type>& {
         return element(index);
     }
 
