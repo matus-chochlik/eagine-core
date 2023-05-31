@@ -66,8 +66,8 @@ public:
     constexpr optional_reference(T& ref) noexcept
       : _ptr{&ref} {}
 
-    template <std::derived_from<T> U>
-        requires(not std::is_same_v<std::remove_cv_t<U>, std::remove_cv_t<T>>)
+    template <typename U>
+        requires(std::is_convertible_v<U*, T*> and not std::is_same_v<U, T>)
     constexpr optional_reference(optional_reference<U> that) noexcept
       : _ptr{that.get()} {}
 
@@ -290,10 +290,12 @@ public:
     [[nodiscard]] constexpr auto member(M C::*ptr) const noexcept
         requires(not std::is_member_function_pointer_v<decltype(ptr)>)
     {
+        using R =
+          std::conditional_t<std::is_const_v<T>, std::add_const_t<M>, M>;
         if(has_value()) {
-            return optional_reference<std::add_const_t<M>>{value().*ptr};
+            return optional_reference<R>{value().*ptr};
         } else {
-            return optional_reference<std::add_const_t<M>>{nothing};
+            return optional_reference<R>{nothing};
         }
     }
 
