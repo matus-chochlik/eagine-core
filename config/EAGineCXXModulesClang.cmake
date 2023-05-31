@@ -88,10 +88,15 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	endforeach()
 
 	foreach(NAME ${EAGINE_MODULE_SOURCES})
-		configure_file(
-			${NAME}_impl.cpp
-			${EAGINE_MODULE_PROPER}-${NAME}_impl.cpp
-			COPYONLY)
+		add_custom_command(
+			OUTPUT ${EAGINE_MODULE_PROPER}-${NAME}_impl.cpp
+			COMMAND ${CMAKE_COMMAND}
+			ARGS
+				-E copy_if_different
+				"${CMAKE_CURRENT_SOURCE_DIR}/${NAME}_impl.cpp"
+				"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PROPER}-${NAME}_impl.cpp"
+			DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}_impl.cpp"
+			COMMENT "Copying CXX module implementation ${NAME}_impl.cpp")
 		target_sources(
 			${EAGINE_MODULE_OBJECTS} PRIVATE
 			"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PROPER}-${NAME}_impl.cpp")
@@ -130,7 +135,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				endif()
 				list(APPEND EAGINE_MODULE_DEPENDS ${NAME})
 			endif()
-		elseif(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.cppm")
+		elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}.cpp")
 			list(
 				APPEND EAGINE_MODULE_DEPENDS
 				${EAGINE_MODULE_PROPER}-${NAME}.pcm)
@@ -195,7 +200,15 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	endif()
 
 	if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp")
-		configure_file(${SOURCE}.cpp ${SOURCE}.cppm COPYONLY)
+		add_custom_command(
+			OUTPUT ${SOURCE}.cppm
+			COMMAND ${CMAKE_COMMAND}
+			ARGS
+				-E copy_if_different
+				"${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp"
+				"${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm"
+			DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp"
+			COMMENT "Copying CXX module interface ${SOURCE}.cpp")
 	elseif(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm")
 		message(FATAL_ERROR "Missing source ${SOURCE}.cppm")
 	endif()
@@ -235,6 +248,11 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	list(REMOVE_DUPLICATES EAGINE_MODULE_DEPENDS)
 	list(REMOVE_DUPLICATES EAGINE_MODULE_COMPILE_OPTIONS)
 
+	set(EAGINE_MODULE_PCM_DEPENDS "${SOURCE}.cppm")
+	if(NOT "${EAGINE_MODULE_DEPENDS}" STREQUAL "")
+		list(APPEND EAGINE_MODULE_PCM_DEPENDS "${EAGINE_MODULE_DEPENDS}")
+	endif()
+
 	add_custom_command(
 		OUTPUT ${OUTPUT}.pcm
 		COMMAND ${CMAKE_CXX_COMPILER}
@@ -247,7 +265,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			${SOURCE}.cppm
 			--precompile
 			--output ${OUTPUT}.pcm
-			DEPENDS ${EAGINE_MODULE_DEPENDS}
+			DEPENDS ${EAGINE_MODULE_PCM_DEPENDS}
 		COMMENT "Precompiling CXX module ${OUTPUT}")
 
 	if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
