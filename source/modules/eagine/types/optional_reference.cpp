@@ -274,13 +274,19 @@ public:
             } else {
                 return optional_reference<P>{nothing};
             }
-        } else {
-            using O = std::remove_cvref_t<R>;
+        } else if constexpr(std::is_same_v<R, bool>) {
             if(_ptr) {
-                return std::optional<O>{
+                return tribool{
+                  std::invoke(std::forward<F>(function), *_ptr), true};
+            } else {
+                return tribool{indeterminate};
+            }
+        } else {
+            if(_ptr) {
+                return std::optional<R>{
                   std::invoke(std::forward<F>(function), *_ptr)};
             } else {
-                return std::optional<O>{};
+                return std::optional<R>{};
             }
         }
     }

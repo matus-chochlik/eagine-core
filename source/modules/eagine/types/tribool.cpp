@@ -198,11 +198,20 @@ public:
     [[nodiscard]] constexpr auto transform(F&& function) const noexcept(
       noexcept(std::invoke(std::forward<F>(function), true)) and
       std::is_nothrow_move_constructible_v<R>) {
-        if(has_value()) {
-            return std::optional<R>{
-              std::invoke(std::forward<F>(function), bool(*this))};
+        if constexpr(std::is_same_v<R, bool>) {
+            if(has_value()) {
+                return tribool{
+                  std::invoke(std::forward<F>(function), bool(*this)), true};
+            } else {
+                return tribool{indeterminate};
+            }
         } else {
-            return std::optional<R>{};
+            if(has_value()) {
+                return std::optional<R>{
+                  std::invoke(std::forward<F>(function), bool(*this))};
+            } else {
+                return std::optional<R>{};
+            }
         }
     }
 

@@ -483,11 +483,19 @@ public:
             } else {
                 return optional_reference<U>{nothing};
             }
+        } else if constexpr(std::is_same_v<R, bool>) {
+            if(has_value()) {
+                return tribool{
+                  std::invoke(
+                    std::forward<F>(function), std::move(value_anyway())),
+                  true};
+            } else {
+                return tribool{indeterminate};
+            }
         } else {
-            using V = std::remove_cvref_t<R>;
             if(has_value()) {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{
                   std::invoke(
@@ -495,7 +503,7 @@ public:
                   true};
             } else {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{};
             }
@@ -522,17 +530,23 @@ public:
             } else {
                 return optional_reference<U>{nothing};
             }
+        } else if constexpr(std::is_same_v<R, bool>) {
+            if(has_value()) {
+                return tribool{
+                  std::invoke(std::forward<F>(function), value_anyway()), true};
+            } else {
+                return tribool{indeterminate};
+            }
         } else {
-            using V = std::remove_cvref_t<R>;
             if(has_value()) {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{
                   std::invoke(std::forward<F>(function), value_anyway()), true};
             } else {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{};
             }
@@ -926,17 +940,23 @@ public:
             } else {
                 return optional_reference<U>{nothing};
             }
+        } else if constexpr(std::is_same_v<R, bool>) {
+            if(has_value()) {
+                return tribool{
+                  std::invoke(std::forward<F>(function), value_anyway()), true};
+            } else {
+                return tribool{indeterminate};
+            }
         } else {
-            using V = std::remove_cvref_t<R>;
             if(has_value()) {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{
                   std::invoke(std::forward<F>(function), value_anyway()), true};
             } else {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{};
             }
