@@ -124,7 +124,7 @@ public:
     /// @brief Indicates in this reference specified to the specified object.
     [[nodiscard]] constexpr auto refers_to(const T& object) const noexcept
       -> tribool {
-        return {_ptr == &object, not has_value()};
+        return tribool{_ptr == &object, has_value()};
     }
 
     /// @brief Indicates in this reference the same object as @p that.

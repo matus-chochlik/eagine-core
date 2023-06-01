@@ -68,7 +68,7 @@ export template <identifier_t V>
   const std::type_identity<tribool>,
   const selector<V> sel) noexcept -> optionally_valid<tribool> {
     if(const auto val{from_string(src, std::type_identity<bool>{}, sel)}) {
-        return {tribool{*val, false}, true};
+        return {tribool{*val, true}, true};
     }
 
     const string_view unknown_strs[] = {

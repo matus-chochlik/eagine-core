@@ -83,18 +83,18 @@ public:
       : _value{_value_t::_unknown} {}
 
     /// @brief Construction with separate true/false, known/unknown arguments.
-    constexpr tribool(const bool value, const bool is_unknown) noexcept
-      : _value(
-          is_unknown ? _value_t::_unknown
-          : value    ? _value_t::_true
-                     : _value_t::_false) {}
+    constexpr tribool(const bool value, const bool is_known) noexcept
+      : _value{
+          not is_known ? _value_t::_unknown
+          : value      ? _value_t::_true
+                       : _value_t::_false} {}
 
     /// @brief Construction from optional<bool>.
     constexpr tribool(const std::optional<bool>& opt) noexcept
-      : _value(
+      : _value{
           not opt ? _value_t::_unknown
           : *opt  ? _value_t::_true
-                  : _value_t::_false) {}
+                  : _value_t::_false} {}
 
     /// @brief Returns true, if the stored value is true.
     [[nodiscard]] constexpr explicit operator bool() const noexcept {
@@ -219,13 +219,17 @@ public:
     /// @brief Equality comparison.
     [[nodiscard]] constexpr auto operator==(const tribool b) noexcept
       -> tribool {
-        return {_value == b._value, (is(indeterminate) or b.is(indeterminate))};
+        return {
+          _value == b._value,
+          (not is(indeterminate) and not b.is(indeterminate))};
     }
 
     /// @brief Non-equality comparison.
     [[nodiscard]] constexpr auto operator!=(const tribool b) noexcept
       -> tribool {
-        return {_value != b._value, (is(indeterminate) or b.is(indeterminate))};
+        return {
+          _value != b._value,
+          (not is(indeterminate) and not b.is(indeterminate))};
     }
 
 private:

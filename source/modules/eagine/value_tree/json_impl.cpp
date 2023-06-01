@@ -343,7 +343,7 @@ public:
     auto convert_tribool(_val_t& val, T& dest) -> bool {
         bool temp{};
         if(convert_bool(val, temp)) {
-            dest = {temp, false};
+            dest = tribool{temp, true};
             return true;
         }
         if(val.IsNull()) {

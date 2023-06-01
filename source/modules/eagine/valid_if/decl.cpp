@@ -183,13 +183,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() == that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() == v, not has_value()};
+        return {value_anyway() == v, has_value()};
     }
 
     /// @brief Non-equality comparison.
@@ -198,13 +198,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() != that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() != v, not has_value()};
+        return {value_anyway() != v, has_value()};
     }
 
     /// @brief Less-than comparison.
@@ -213,13 +213,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() < that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() < v, not has_value()};
+        return {value_anyway() < v, has_value()};
     }
 
     /// @brief Greater-than comparison.
@@ -228,13 +228,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() > that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() > v, not has_value()};
+        return {value_anyway() > v, has_value()};
     }
 
     /// @brief Less-than or equal comparison.
@@ -243,13 +243,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() <= that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() <= v, not has_value()};
+        return {value_anyway() <= v, has_value()};
     }
 
     /// @brief Greater-than or equal comparison.
@@ -258,13 +258,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() >= that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() >= v, not has_value()};
+        return {value_anyway() >= v, has_value()};
     }
 
     template <typename Log>
@@ -711,13 +711,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() == that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() == v, not has_value()};
+        return {value_anyway() == v, has_value()};
     }
 
     /// @brief Non-equality comparison.
@@ -726,13 +726,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() != that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() != v, not has_value()};
+        return {value_anyway() != v, has_value()};
     }
 
     /// @brief Less-than comparison.
@@ -741,13 +741,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() < that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() < v, not has_value()};
+        return {value_anyway() < v, has_value()};
     }
 
     /// @brief Greater-than comparison.
@@ -756,13 +756,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() > that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() > v, not has_value()};
+        return {value_anyway() > v, has_value()};
     }
 
     /// @brief Less-than or equal comparison.
@@ -771,13 +771,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() <= that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() <= v, not has_value()};
+        return {value_anyway() <= v, has_value()};
     }
 
     /// @brief Greater-than or equal comparison.
@@ -786,13 +786,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() >= that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() >= v, not has_value()};
+        return {value_anyway() >= v, has_value()};
     }
 
     template <typename Log>
