@@ -50,9 +50,7 @@ export struct url_query_args
     template <typename T>
     auto arg_has_value(const string_view name, const T& value) const noexcept
       -> bool {
-        return arg_value(name)
-          .and_then(string_has_value(_1, value))
-          .value_or(false);
+        return arg_value(name).and_then(string_has_value(_1, value)).or_false();
     }
 };
 

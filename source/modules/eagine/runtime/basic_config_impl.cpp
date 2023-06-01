@@ -59,10 +59,10 @@ auto basic_config::eval_environment_var(string_view key, const string_view tag)
 auto basic_config::is_set(const string_view key, const string_view tag) noexcept
   -> bool {
     if(const auto arg{find_program_arg(key, tag)}) {
-        return arg.next().and_then(from_string<bool>(_1)).value_or(true);
+        return arg.next().and_then(from_string<bool>(_1)).or_true();
     }
     if(const auto var{eval_environment_var(key, tag)}) {
-        return var.and_then(from_string<bool>(_1)).value_or(true);
+        return var.and_then(from_string<bool>(_1)).or_true();
     }
     return false;
 }
@@ -79,7 +79,7 @@ auto basic_config::fetch_string(
       .next()
       .or_else(find_env_var)
       .and_then(assign_if_fits(_1, dest))
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

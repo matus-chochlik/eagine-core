@@ -135,10 +135,22 @@ public:
         return fallback;
     }
 
-    /// @brief Returns the boolean value in not indeterminate, false otherwise.
+    /// @brief Returns the boolean value if not indeterminate, true otherwise.
+    /// @see value_or
+    [[nodiscard]] constexpr auto or_true() const noexcept -> bool {
+        return value_or(true);
+    }
+
+    /// @brief Returns the boolean value if not indeterminate, false otherwise.
+    /// @see value_or
+    [[nodiscard]] constexpr auto or_false() const noexcept -> bool {
+        return value_or(false);
+    }
+
+    /// @brief Returns the boolean value if not indeterminate, false otherwise.
     /// @see value_or
     [[nodiscard]] constexpr auto or_default() const noexcept -> bool {
-        return value_or(false);
+        return or_false();
     }
 
     /// @brief Invoke function on the stored value or return empty optional-like.

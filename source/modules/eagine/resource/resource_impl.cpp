@@ -104,7 +104,7 @@ auto embedded_resource_loader::has_resource(identifier_value res_id) noexcept
   -> bool {
     return _search_function()
       .and_then([&](auto find) { return tribool{find(res_id).data_size > 0}; })
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 static auto _wrap(const struct eagine_embedded_resources_list list) noexcept {

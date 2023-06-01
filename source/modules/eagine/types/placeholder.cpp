@@ -113,6 +113,20 @@ public:
           });
     }
 
+    [[nodiscard]] constexpr auto or_true() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable {
+              return g(decltype(args)(args)...).or_true();
+          });
+    }
+
+    [[nodiscard]] constexpr auto or_false() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable {
+              return g(decltype(args)(args)...).or_false();
+          });
+    }
+
     template <typename X>
     [[nodiscard]] constexpr auto and_then(placeholder_expression<X> e) noexcept {
         return make_placeholder_expression(

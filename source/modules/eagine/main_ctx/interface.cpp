@@ -162,7 +162,7 @@ export auto register_progress_observer(
     assert(ctx.setters());
     return ctx.setters()
       .and_then([&](auto& s) { return tribool{s.register_observer(observer)}; })
-      .value_or(false);
+      .or_false();
 }
 
 /// @brief Un-registers the activity progress observer.
