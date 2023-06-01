@@ -51,6 +51,9 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				"-fprebuilt-module-path=${CMAKE_CURRENT_BINARY_DIR}")
 	endif()
 
+	set(EAGINE_MODULE_CMAKE_FILE
+		"${CMAKE_CURRENT_BINARY_DIR}/module-${EAGINE_MODULE_PROPER}.cmake")
+
 	if(NOT TARGET ${EAGINE_MODULE_PROPER})
 		add_library(
 			${EAGINE_MODULE_PROPER} STATIC
@@ -67,6 +70,14 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				-fmodules
 				-Wno-read-modules-implicitly
 				"-fprebuilt-module-path=${CMAKE_CURRENT_BINARY_DIR}")
+		file(
+			WRITE "${EAGINE_MODULE_CMAKE_FILE}"
+			"# Generated file. All manual changes will be lost!\n"
+			"#\n"
+			"file(MAKE_DIRECTORY \"\${PROJECT_BINARY_DIR}/EAGine\")\n")
+		install(
+			FILES "${EAGINE_MODULE_CMAKE_FILE}"
+			DESTINATION "${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}")
 		install(
 			TARGETS ${EAGINE_MODULE_PROPER}
 			DESTINATION lib)
@@ -217,16 +228,9 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		TARGET ${EAGINE_MODULE_PROPER}
 		APPEND PROPERTY EAGINE_MODULE_INTERFACES
 			"${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm")
-	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-		install(
-			FILES "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm"
-			DESTINATION share/eagine/source/debug/${EAGINE_MODULE_DIRECTORY})
-	endif()
-	if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-		install(
-			FILES "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm"
-			DESTINATION share/eagine/source/release/${EAGINE_MODULE_DIRECTORY})
-	endif()
+	install(
+		FILES "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm"
+		DESTINATION share/eagine/source/${CMAKE_BUILD_TYPE}/${EAGINE_MODULE_DIRECTORY})
 
 	if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
 		set(OUTPUT ${EAGINE_MODULE_PROPER})
@@ -267,6 +271,23 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			--output ${OUTPUT}.pcm
 			DEPENDS ${EAGINE_MODULE_PCM_DEPENDS}
 		COMMENT "Precompiling CXX module ${OUTPUT}")
+
+	file(
+		APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+		"add_custom_command(\n"
+		"	OUTPUT \"\${PROJECT_BINARY_DIR}/EAGine/${OUTPUT}.pcm\"\n"
+		"	COMMAND \${CMAKE_CXX_COMPILER}\n"
+		"	ARGS\n"
+		"		-std=c++\${CMAKE_CXX_STANDARD}\n"
+		"		-fmodules\n"
+		"		-Wno-read-modules-implicitly\n"
+		"		\"-fprebuilt-module-path=\${PROJECT_BINARY_DIR}/EAGine\"\n"
+		"		\${CMAKE_CXX_FLAGS}\n"
+		"		\"\${_IMPORT_PREFIX}/share/eagine/source/${CMAKE_BUILD_TYPE}/${EAGINE_MODULE_DIRECTORY}/${SOURCE}.cppm\"\n"
+		"		--precompile\n"
+		"		--output \"\${PROJECT_BINARY_DIR}/EAGine/${OUTPUT}.pcm\"\n"
+		"	COMMENT \"Precompiling CXX module ${OUTPUT}.pcm\"\n"
+		")\n")
 
 	if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
 		set(EAGINE_MODULE_DEPENDS "${OUTPUT}.pcm")
