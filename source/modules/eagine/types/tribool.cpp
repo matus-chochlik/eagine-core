@@ -137,12 +137,16 @@ public:
 
     /// @brief Returns the boolean value if not indeterminate, true otherwise.
     /// @see value_or
+    /// @see or_false
+    /// @see or_default
     [[nodiscard]] constexpr auto or_true() const noexcept -> bool {
         return value_or(true);
     }
 
     /// @brief Returns the boolean value if not indeterminate, false otherwise.
     /// @see value_or
+    /// @see or_true
+    /// @see or_default
     [[nodiscard]] constexpr auto or_false() const noexcept -> bool {
         return value_or(false);
     }
