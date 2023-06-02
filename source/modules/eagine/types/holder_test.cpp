@@ -40,6 +40,17 @@ void test_holder_empty(auto& test, auto& h) {
       "MNOP",
       "or else MNOP");
 
+    test.check_equal(
+      h.member(&std::string::size).value_or(123U), 123U, "member size 123");
+
+    test.check_equal(
+      h.member(&std::string::empty).value_or(true), true, "member empty true");
+
+    test.check_equal(
+      h.member(&std::string::empty).value_or(false),
+      false,
+      "member empty false");
+
     h.reset();
     test.check(not h.has_value(), "has not value after reset");
 }
@@ -89,6 +100,14 @@ void test_holder_string(auto& test, auto& h) {
         .value_or("STUV"),
       "CDEF",
       "or else CDEF");
+
+    test.check_equal(
+      h.member(&std::string::size).value_or(123U), 4U, "member size 4");
+
+    test.check_equal(
+      h.member(&std::string::empty).value_or(true),
+      false,
+      "member empty false");
 
     h.reset();
     test.check(not h.has_value(), "has not value after reset");

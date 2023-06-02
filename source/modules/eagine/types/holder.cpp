@@ -86,7 +86,12 @@ public:
 
     using Base::operator bool;
 
-    /// @brief Conversion to optional_reference to the held_type.
+    /// @brief Gets optional_reference to the held type.
+    [[nodiscard]] auto ref() const noexcept -> optional_reference<T> {
+        return {this->get()};
+    }
+
+    /// @brief Conversion to optional_reference to the held type.
     [[nodiscard]] operator optional_reference<T>() const noexcept {
         return {this->get()};
     }
@@ -214,6 +219,12 @@ public:
                 return std::optional<R>{};
             }
         }
+    }
+
+    [[nodiscard]] constexpr auto member(auto ptr) const noexcept
+        requires(std::is_member_pointer_v<decltype(ptr)>)
+    {
+        return ref().member(ptr);
     }
 
     using Base::reset;
