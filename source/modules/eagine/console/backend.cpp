@@ -184,13 +184,13 @@ export struct console_backend : interface<console_backend> {
 /// @ingroup console
 export struct console_options {
     /// @brief The explicitly-specified backend to be used by the console.
-    std::shared_ptr<console_backend> forced_backend{};
+    shared_holder<console_backend> forced_backend{};
 };
 //------------------------------------------------------------------------------
 export auto make_iostream_console_backend(std::istream&, std::ostream&)
-  -> std::unique_ptr<console_backend>;
+  -> unique_holder<console_backend>;
 //------------------------------------------------------------------------------
-export auto make_null_console_backend() -> std::unique_ptr<console_backend>;
+export auto make_null_console_backend() -> unique_holder<console_backend>;
 //------------------------------------------------------------------------------
 } // namespace eagine
 
