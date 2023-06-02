@@ -8,6 +8,7 @@
 export module eagine.core.main_ctx:user_info;
 
 import std;
+import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.valid_if;
 import :parent;
@@ -35,8 +36,8 @@ public:
       -> valid_if_not_empty<string_view>;
 
 private:
-    std::shared_ptr<user_info_impl> _pimpl;
-    auto _impl() noexcept -> user_info_impl*;
+    shared_holder<user_info_impl> _pimpl;
+    auto _impl() noexcept -> optional_reference<user_info_impl>;
 };
 
 } // namespace eagine

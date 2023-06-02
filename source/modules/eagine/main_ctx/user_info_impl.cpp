@@ -42,7 +42,7 @@ private:
     static auto _get_username() -> std::string {
 #if EAGINE_POSIX
         if(const auto pw{::getpwuid(::getuid())}) {
-            return {extract(pw).pw_name};
+            return {pw->pw_name};
         }
         std::array<char, 128> temp{};
         if(::getlogin_r(temp.data(), temp.size())) {
@@ -50,7 +50,7 @@ private:
         }
 #endif
         if(const auto opt_var{get_environment_variable("USER")}) {
-            return to_string(extract(opt_var));
+            return to_string(*opt_var);
         }
         return {};
     }
@@ -58,11 +58,11 @@ private:
     static auto _get_home_dir_path() -> std::string {
 #if EAGINE_POSIX
         if(const auto pw{::getpwuid(::getuid())}) {
-            return {extract(pw).pw_dir};
+            return {pw->pw_dir};
         }
 #endif
         if(const auto opt_var{get_environment_variable("HOME")}) {
-            return to_string(extract(opt_var));
+            return to_string(*opt_var);
         }
         return {};
     }
@@ -80,33 +80,33 @@ private:
 user_info::user_info(main_ctx_parent parent)
   : main_ctx_object{"UserInfo", parent} {}
 //------------------------------------------------------------------------------
-auto user_info::_impl() noexcept -> user_info_impl* {
+auto user_info::_impl() noexcept -> optional_reference<user_info_impl> {
     if(not _pimpl) [[unlikely]] {
         try {
-            _pimpl = std::make_shared<user_info_impl>();
+            _pimpl.emplace(hold<user_info_impl>);
         } catch(...) {
         }
     }
-    return _pimpl.get();
+    return _pimpl;
 }
 //------------------------------------------------------------------------------
 auto user_info::login_name() noexcept -> valid_if_not_empty<string_view> {
     if(const auto impl{_impl()}) {
-        return {extract(impl).login_name};
+        return {impl->login_name};
     }
     return {};
 }
 //------------------------------------------------------------------------------
 auto user_info::home_dir_path() noexcept -> valid_if_not_empty<string_view> {
     if(const auto impl{_impl()}) {
-        return {extract(impl).home_dir_path};
+        return {impl->home_dir_path};
     }
     return {};
 }
 //------------------------------------------------------------------------------
 auto user_info::config_dir_path() noexcept -> valid_if_not_empty<string_view> {
     if(const auto impl{_impl()}) {
-        return {extract(impl).config_dir_path};
+        return {impl->config_dir_path};
     }
     return {};
 }

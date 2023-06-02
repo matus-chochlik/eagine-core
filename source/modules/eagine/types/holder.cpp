@@ -84,6 +84,16 @@ public:
       noexcept(_traits::make(h, std::forward<Args>(args)...)))
       : Base{_traits::make(h, std::forward<Args>(args)...)} {}
 
+    /// @brief Emplaces object of type D from the given arguments in this holder.
+    template <std::derived_from<T> D, typename... Args>
+        requires(not std::is_abstract_v<D>)
+    auto emplace(hold_t<D> h, Args&&... args) noexcept(noexcept(
+      _traits::make(h, std::forward<Args>(args)...))) -> basic_holder& {
+        static_cast<Base&>(*this) =
+          _traits::make(h, std::forward<Args>(args)...);
+        return *this;
+    }
+
     using Base::operator bool;
 
     /// @brief Gets optional_reference to the held type.
