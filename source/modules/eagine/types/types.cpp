@@ -16,6 +16,7 @@ export import :integer_range;
 export import :extract;
 export import :tribool;
 export import :optional_reference;
+export import :holder;
 export import :outcome;
 export import :bitfield;
 export import :enum_map;
