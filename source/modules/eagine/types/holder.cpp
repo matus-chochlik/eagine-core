@@ -163,6 +163,23 @@ public:
         }
     }
 
+    /// @brief Return optional_reference if has value or the result of function.
+    /// @see and_then
+    /// @see transform
+    template <typename F, typename R = std::invoke_result_t<F>>
+        requires(
+          std::same_as<R, optional_reference<T>> or
+          std::convertible_to<R, optional_reference<T>>)
+    constexpr auto or_else(F&& function) const
+      noexcept(noexcept(std::invoke(std::forward<F>(function))))
+        -> optional_reference<T> {
+        if(has_value()) {
+            return {Base::operator*()};
+        } else {
+            return std::invoke(std::forward<F>(function));
+        }
+    }
+
     /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see and_then
     /// @see or_else

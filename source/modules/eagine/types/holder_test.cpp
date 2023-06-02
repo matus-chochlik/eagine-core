@@ -30,6 +30,18 @@ void test_holder_empty(auto& test, auto& h) {
       h.transform([](auto s) { return s + s; }).value_or("KLMN"),
       "KLMN",
       "transform KLMN");
+
+    test.check_equal(
+      h.or_else([&]() -> std::string& {
+           static std::string s{"MNOP"};
+           return s;
+       })
+        .value_or("STUV"),
+      "MNOP",
+      "or else MNOP");
+
+    h.reset();
+    test.check(not h.has_value(), "has not value after reset");
 }
 //------------------------------------------------------------------------------
 void unique_holder_empty(auto& s) {
@@ -68,6 +80,18 @@ void test_holder_string(auto& test, auto& h) {
       h.transform([](auto s) { return s + s; }).value_or("KLMN"),
       "CDEFCDEF",
       "transform CDEF");
+
+    test.check_equal(
+      h.or_else([&]() -> std::string& {
+           static std::string s{"MNOP"};
+           return s;
+       })
+        .value_or("STUV"),
+      "CDEF",
+      "or else CDEF");
+
+    h.reset();
+    test.check(not h.has_value(), "has not value after reset");
 }
 //------------------------------------------------------------------------------
 void unique_holder_string(auto& s) {
