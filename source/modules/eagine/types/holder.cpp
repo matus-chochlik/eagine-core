@@ -13,6 +13,8 @@ export module eagine.core.types:holder;
 
 import std;
 import :concepts;
+import :basic;
+import :tribool;
 import :optional_reference;
 
 namespace eagine {
@@ -135,6 +137,9 @@ public:
         return fallback;
     }
 
+    /// @brief Invoke function on the stored value or return empty optional-like.
+    /// @see transform
+    /// @see or_else
     template <
       typename F,
       optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
@@ -155,6 +160,42 @@ public:
       noexcept(std::invoke(std::forward<F>(function), std::declval<T&>()))) {
         if(has_value()) {
             std::invoke(std::forward<F>(function), Base::operator*());
+        }
+    }
+
+    /// @brief Invoke function on the stored value or return empty optional-like.
+    /// @see and_then
+    /// @see or_else
+    template <typename F, typename R = std::invoke_result_t<F, T&>>
+    [[nodiscard]] constexpr auto transform(F&& function) const noexcept(
+      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>())) and
+      std::is_nothrow_move_constructible_v<std::remove_cvref_t<R>>) {
+        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+            using P = std::conditional_t<
+              std::is_reference_v<R>,
+              std::remove_reference_t<R>,
+              std::remove_pointer_t<R>>;
+            if(has_value()) {
+                return optional_reference<P>{
+                  std::invoke(std::forward<F>(function), Base::operator*())};
+            } else {
+                return optional_reference<P>{nothing};
+            }
+        } else if constexpr(std::is_same_v<R, bool>) {
+            if(has_value()) {
+                return tribool{
+                  std::invoke(std::forward<F>(function), Base::operator*()),
+                  true};
+            } else {
+                return tribool{indeterminate};
+            }
+        } else {
+            if(has_value()) {
+                return std::optional<R>{
+                  std::invoke(std::forward<F>(function), Base::operator*())};
+            } else {
+                return std::optional<R>{};
+            }
         }
     }
 

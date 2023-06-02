@@ -42,6 +42,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.types PARTITION holder
 	IMPORTS
+		basic tribool
 		concepts optional_reference
 )
 

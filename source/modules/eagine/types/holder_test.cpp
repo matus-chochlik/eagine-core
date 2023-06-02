@@ -25,6 +25,11 @@ void test_holder_empty(auto& test, auto& h) {
         .value_or("GHIJ"),
       "GHIJ",
       "and then GHIJ");
+
+    test.check_equal(
+      h.transform([](auto s) { return s + s; }).value_or("KLMN"),
+      "KLMN",
+      "transform KLMN");
 }
 //------------------------------------------------------------------------------
 void unique_holder_empty(auto& s) {
@@ -58,6 +63,11 @@ void test_holder_string(auto& test, auto& h) {
       h.and_then([&](auto& s) -> eagine::tribool { return s == "CDEF"; })
         .or_false(),
       "and then CDEF");
+
+    test.check_equal(
+      h.transform([](auto s) { return s + s; }).value_or("KLMN"),
+      "CDEFCDEF",
+      "transform CDEF");
 }
 //------------------------------------------------------------------------------
 void unique_holder_string(auto& s) {
