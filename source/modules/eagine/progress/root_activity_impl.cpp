@@ -16,7 +16,7 @@ import :backend;
 namespace eagine {
 //------------------------------------------------------------------------------
 auto root_activity_init_backend(logger& parent)
-  -> std::unique_ptr<progress_tracker_backend> {
+  -> unique_holder<progress_tracker_backend> {
     return make_default_progress_tracker_backend(parent);
 }
 //------------------------------------------------------------------------------

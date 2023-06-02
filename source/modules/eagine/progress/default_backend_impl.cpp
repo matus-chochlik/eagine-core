@@ -212,8 +212,8 @@ private:
 };
 //------------------------------------------------------------------------------
 auto make_default_progress_tracker_backend(logger& parent)
-  -> std::unique_ptr<progress_tracker_backend> {
-    return std::make_unique<default_progress_tracker_backend>(parent);
+  -> unique_holder<progress_tracker_backend> {
+    return {hold<default_progress_tracker_backend>, parent};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
