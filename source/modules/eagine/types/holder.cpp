@@ -77,6 +77,14 @@ public:
     constexpr basic_holder(basic_holder<Other, D>&& temp) noexcept
       : Base{std::move(temp).release()} {}
 
+    /// @brief Construction with held object of type T from the given arguments.
+    /// @post has_value()
+    template <typename... Args>
+        requires(not std::is_abstract_v<T>)
+    constexpr basic_holder(default_selector_t, Args&&... args) noexcept(
+      noexcept(_traits::make(hold<T>, std::forward<Args>(args)...)))
+      : Base{_traits::make(hold<T>, std::forward<Args>(args)...)} {}
+
     /// @brief Construction with held object of type D from the given arguments.
     /// @post has_value()
     template <std::derived_from<T> D, typename... Args>
@@ -183,9 +191,21 @@ public:
 
     /// @brief Returns copy of the stored object if any or @p fallback otherwise.
     /// @see has_value
+    /// @see or_default
     template <std::convertible_to<T> U>
     [[nodiscard]] constexpr auto value_or(U&& fallback) const noexcept -> T {
         return ref().value_or(std::forward<U>(fallback));
+    }
+
+    /// @brief Returns copy of the stored object if any or default constructed T
+    /// @see has_value
+    /// @see value_or
+    template <std::convertible_to<T> U>
+    [[nodiscard]] constexpr auto or_default() const noexcept -> T {
+        if(has_value()) {
+            return Base::operator*();
+        }
+        return T{};
     }
 
     /// @brief Returns reference to the stored object if any or @p fallback otherwise.

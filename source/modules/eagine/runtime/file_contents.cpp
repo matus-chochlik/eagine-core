@@ -13,13 +13,18 @@ import eagine.core.memory;
 import eagine.core.utility;
 
 namespace eagine {
-
+//------------------------------------------------------------------------------
+export auto read_stream_data(std::istream&, memory::buffer& dest) noexcept
+  -> bool;
+export auto read_file_data(const string_view path, memory::buffer& dest) noexcept
+  -> bool;
+//------------------------------------------------------------------------------
 /// @brief Interface for file content getter implementations.
 /// @see file_contents
 export struct file_contents_intf : interface<file_contents_intf> {
     virtual auto block() noexcept -> memory::const_block = 0;
 };
-
+//------------------------------------------------------------------------------
 /// @brief Class providing access to the contents of a file.
 /// @see structured_file_content
 export class file_contents {
@@ -33,7 +38,7 @@ public:
     /// @brief Checks if the contents were loaded.
     /// @see block
     auto is_loaded() const noexcept -> bool {
-        return bool(_pimpl);
+        return bool(_impl);
     }
 
     /// @brief Checks if the contents were loaded.
@@ -45,11 +50,8 @@ public:
     /// @brief Returns the block viewing the loaded file contents.
     /// @see is_loaded
     auto block() const noexcept -> memory::const_block {
-        if(_pimpl) [[likely]] {
-            return _pimpl->block();
-        } else {
-            return {};
-        }
+        return _impl.member(&file_contents_intf::block)
+          .value_or(memory::const_block{});
     }
 
     /// @brief Implicit conversion to the block viewing the loaded file contents.
@@ -60,9 +62,9 @@ public:
     }
 
 private:
-    std::shared_ptr<file_contents_intf> _pimpl{};
+    shared_holder<file_contents_intf> _impl{};
 };
-
+//------------------------------------------------------------------------------
 /// @brief Class loading a baked structured data from a file.
 /// @see file_contents
 export template <typename T>
@@ -81,6 +83,6 @@ public:
       : protected_member<file_contents>(std::move(fc))
       , memory::structured_block<const T>(get_the_member()) {}
 };
-
+//------------------------------------------------------------------------------
 } // namespace eagine
 

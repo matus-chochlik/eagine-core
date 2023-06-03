@@ -12,7 +12,6 @@ export import :traverse;
 export import :process;
 export import :program_args;
 export import :url;
-export import :input_data;
 export import :executable_module;
 export import :file_contents;
 export import :basic_config;

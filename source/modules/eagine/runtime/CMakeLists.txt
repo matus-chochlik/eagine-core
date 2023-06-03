@@ -62,15 +62,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION input_data
-	IMPORTS
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.string
-		eagine.core.utility
-)
-
-eagine_add_module(
 	eagine.core.runtime PARTITION executable_module
 	IMPORTS
 		eagine.core.types
@@ -84,6 +75,7 @@ eagine_add_module(
 		input_data
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.string
 		eagine.core.utility
 )
 
@@ -105,7 +97,6 @@ eagine_add_module(
 	SOURCES
 		url
 		process
-		input_data
 		basic_config
 		executable_module
 		signal_switch
