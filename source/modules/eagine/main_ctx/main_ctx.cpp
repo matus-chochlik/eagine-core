@@ -190,6 +190,28 @@ public:
       memory::const_block input,
       std::string& output) noexcept -> bool;
 
+    [[nodiscard]] auto encrypt_shared_password(
+      const string_view key,
+      const string_view tag,
+      memory::buffer& encrypted) noexcept -> bool;
+
+    [[nodiscard]] auto encrypt_shared_password(
+      const string_view key,
+      memory::buffer& encrypted) noexcept -> bool {
+        return encrypt_shared_password(key, {}, encrypted);
+    }
+
+    [[nodiscard]] auto matches_encrypted_shared_password(
+      const string_view key,
+      const string_view tag,
+      memory::buffer& encrypted) noexcept -> bool;
+
+    [[nodiscard]] auto matches_encrypted_shared_password(
+      const string_view key,
+      memory::buffer& encrypted) noexcept -> bool {
+        return matches_encrypted_shared_password(key, {}, encrypted);
+    }
+
 private:
     const process_instance_id_t _instance_id;
     main_ctx_getters& _source;

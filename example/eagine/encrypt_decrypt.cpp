@@ -27,6 +27,16 @@ auto main(main_ctx& ctx) -> int {
         out.cio_error("failed to encrypt string");
     }
 
+    if(ctx.encrypt_shared_password("test.password", encrypted)) {
+        if(ctx.matches_encrypted_shared_password("test.password", encrypted)) {
+            out.cio_print("tested password matches");
+        } else {
+            out.cio_error("failed to match password");
+        }
+    } else {
+        out.cio_error("failed to encrypt password");
+    }
+
     return 0;
 }
 

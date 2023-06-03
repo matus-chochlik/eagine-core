@@ -142,13 +142,12 @@ auto main_ctx::decrypt_shared(
     return false;
 }
 //------------------------------------------------------------------------------
-[[nodiscard]] auto main_ctx::encrypt_shared(
-  string_view input,
-  memory::buffer& output) noexcept -> bool {
+auto main_ctx::encrypt_shared(string_view input, memory::buffer& output) noexcept
+  -> bool {
     return encrypt_shared(as_bytes(input), output);
 }
 //------------------------------------------------------------------------------
-[[nodiscard]] auto main_ctx::decrypt_shared(
+auto main_ctx::decrypt_shared(
   memory::const_block input,
   std::string& output) noexcept -> bool {
     memory::buffer temp;
@@ -157,6 +156,31 @@ auto main_ctx::decrypt_shared(
         auto src{as_chars(view(temp))};
         std::copy(src.begin(), src.end(), output.begin());
         return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto main_ctx::encrypt_shared_password(
+  const string_view key,
+  const string_view tag,
+  memory::buffer& encrypted) noexcept -> bool {
+    std::string passwd;
+    if(config().fetch(key, passwd, tag)) {
+        return encrypt_shared(passwd, encrypted);
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto main_ctx::matches_encrypted_shared_password(
+  const string_view key,
+  const string_view tag,
+  memory::buffer& encrypted) noexcept -> bool {
+    std::string received;
+    if(decrypt_shared(view(encrypted), received)) {
+        std::string passwd;
+        if(config().fetch(key, passwd, tag)) {
+            return received == passwd;
+        }
     }
     return false;
 }
