@@ -13,6 +13,8 @@ import eagine.core.types;
 // empty
 //------------------------------------------------------------------------------
 void test_holder_empty(auto& test, auto& h) {
+    test.check(eagine::optional_like<decltype(h)>, "optional-like");
+
     test.check(not h.has_value(), "has not value");
     test.check(not bool(h), "is not true");
     test.check_equal(h.value_or("ABCDE"), "ABCDE", "value or ABCDE");
@@ -73,6 +75,8 @@ void shared_holder_empty(auto& s) {
 //------------------------------------------------------------------------------
 void test_holder_string(auto& test, auto& h) {
     eagitest::track trck{test, 0, 1};
+
+    test.check(eagine::optional_like<decltype(h)>, "optional-like");
 
     test.check(h.has_value(), "has value");
     test.check(bool(h), "is true");
