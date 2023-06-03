@@ -57,6 +57,7 @@ struct basic_holder_traits<std::shared_ptr<T>> {
 template <typename Base, typename T>
 class basic_holder : private Base {
     using _traits = basic_holder_traits<Base>;
+    using _opt_ref = optional_reference<T>;
 
 public:
     using value_type = T;
@@ -136,71 +137,40 @@ public:
     /// @see has_value
     template <std::convertible_to<T> U>
     [[nodiscard]] constexpr auto value_or(U&& fallback) const noexcept -> T {
-        if(has_value()) {
-            return Base::operator*();
-        }
-        return T(std::forward<U>(fallback));
+        return ref().value_or(std::forward<U>(fallback));
     }
 
     /// @brief Returns reference to the stored object if any or @p fallback otherwise.
     /// @see has_value
     [[nodiscard]] constexpr auto value_or(value_type& fallback) const noexcept
       -> value_type& {
-        if(has_value()) {
-            return Base::operator*();
-        }
-        return fallback;
+        return ref().value_or(fallback);
     }
 
     /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see transform
     /// @see or_else
-    template <
-      typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
-    constexpr auto and_then(F&& function) const noexcept(noexcept(
-      std::invoke(std::forward<F>(function), std::declval<T&>()))) -> R {
-        if(has_value()) {
-            return std::invoke(std::forward<F>(function), Base::operator*());
-        } else {
-            return R{};
-        }
-    }
-
-    template <
-      typename F,
-      typename R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
-        requires(std::is_void_v<R>)
-    constexpr void and_then(F&& function) const noexcept(
-      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>()))) {
-        if(has_value()) {
-            std::invoke(std::forward<F>(function), Base::operator*());
-        }
+    template <typename F>
+    constexpr auto and_then(F&& function) const noexcept(
+      noexcept(std::declval<_opt_ref>().and_then(std::forward<F>(function)))) {
+        return ref().and_then(std::forward<F>(function));
     }
 
     /// @brief Return optional_reference if has value or the result of function.
     /// @see and_then
     /// @see transform
-    template <typename F, typename R = std::invoke_result_t<F>>
-        requires(
-          std::same_as<R, optional_reference<T>> or
-          std::convertible_to<R, optional_reference<T>>)
-    constexpr auto or_else(F&& function) const
-      noexcept(noexcept(std::invoke(std::forward<F>(function))))
-        -> optional_reference<T> {
-        if(has_value()) {
-            return {Base::operator*()};
-        } else {
-            return std::invoke(std::forward<F>(function));
-        }
+    template <typename F>
+    constexpr auto or_else(F&& function) const noexcept(
+      noexcept(std::declval<_opt_ref>().or_else(std::forward<F>(function)))) {
+        return ref().or_else(std::forward<F>(function));
     }
 
     /// @brief Invoke function on the stored value or return empty optional-like.
     /// @see and_then
     /// @see or_else
     template <typename F, typename R = std::invoke_result_t<F, T&>>
-    [[nodiscard]] constexpr auto transform(F&& function) const noexcept(
-      noexcept(std::declval<optional_reference<T>>().transform(function))) {
+    [[nodiscard]] constexpr auto transform(F&& function) const
+      noexcept(noexcept(std::declval<_opt_ref>().transform(function))) {
         return ref().transform(std::forward<F>(function));
     }
 
