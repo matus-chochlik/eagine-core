@@ -90,7 +90,7 @@ public:
 
     /// @brief Indicates if this compressor object is initialized and usable.
     explicit operator bool() const noexcept {
-        return bool(_pimpl);
+        return bool(_impl);
     }
 
     /// @brief Alias for data handler callable type.
@@ -226,7 +226,7 @@ public:
       -> memory::const_block;
 
 private:
-    std::shared_ptr<data_compressor_intf> _pimpl{};
+    shared_holder<data_compressor_intf> _impl{};
 };
 //------------------------------------------------------------------------------
 /// @brief Base class for stream compression and decompression helpers
