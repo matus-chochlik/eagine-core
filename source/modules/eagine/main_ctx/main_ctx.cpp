@@ -174,42 +174,66 @@ public:
           share_service(Service::static_type_id()));
     }
 
+    void fill_with_random_bytes(memory::block dest) noexcept final {
+        _source.fill_with_random_bytes(dest);
+    }
+
+    void random_uniform_01(memory::span<float> dest) noexcept final {
+        _source.random_uniform_01(dest);
+    }
+
+    void random_uniform_11(memory::span<float> dest) noexcept final {
+        _source.random_uniform_11(dest);
+    }
+
+    void random_normal(memory::span<float> dest) noexcept final {
+        _source.random_normal(dest);
+    }
+
     [[nodiscard]] auto encrypt_shared(
+      memory::const_block nonce,
       memory::const_block input,
       memory::buffer& output) noexcept -> bool;
 
     [[nodiscard]] auto decrypt_shared(
+      memory::const_block nonce,
       memory::const_block input,
       memory::buffer& output) noexcept -> bool;
 
     [[nodiscard]] auto encrypt_shared(
+      memory::const_block nonce,
       string_view input,
       memory::buffer& output) noexcept -> bool;
 
     [[nodiscard]] auto decrypt_shared(
+      memory::const_block nonce,
       memory::const_block input,
       std::string& output) noexcept -> bool;
 
     [[nodiscard]] auto encrypt_shared_password(
+      memory::const_block nonce,
       const string_view key,
       const string_view tag,
       memory::buffer& encrypted) noexcept -> bool;
 
     [[nodiscard]] auto encrypt_shared_password(
+      memory::const_block nonce,
       const string_view key,
       memory::buffer& encrypted) noexcept -> bool {
-        return encrypt_shared_password(key, {}, encrypted);
+        return encrypt_shared_password(nonce, key, {}, encrypted);
     }
 
     [[nodiscard]] auto matches_encrypted_shared_password(
+      memory::const_block nonce,
       const string_view key,
       const string_view tag,
       memory::buffer& encrypted) noexcept -> bool;
 
     [[nodiscard]] auto matches_encrypted_shared_password(
+      memory::const_block nonce,
       const string_view key,
       memory::buffer& encrypted) noexcept -> bool {
-        return matches_encrypted_shared_password(key, {}, encrypted);
+        return matches_encrypted_shared_password(nonce, key, {}, encrypted);
     }
 
 private:

@@ -94,6 +94,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.identifier
 		eagine.core.container
+		eagine.core.valid_if
 		eagine.core.utility
 		eagine.core.runtime
 		eagine.core.logging

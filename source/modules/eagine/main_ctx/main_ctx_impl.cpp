@@ -86,6 +86,7 @@ static void main_ctx_unscramble_encrypted(
 }
 //------------------------------------------------------------------------------
 static auto main_ctx_encrypt_shared_with(
+  memory::const_block nonce,
   const memory::const_block key,
   const memory::const_block input,
   memory::buffer& output) noexcept -> bool {
@@ -93,15 +94,17 @@ static auto main_ctx_encrypt_shared_with(
     auto src{main_ctx_scramble_encrypted(input, temp)};
     output.resize(src.size());
     auto dst{cover(output)};
+    const auto n{nonce.size()};
     const auto m{key.size()};
     assert(src.size() == dst.size());
     for(auto i : integer_range(src.size())) {
-        dst[i] = (src[i] ^ key[i % m]);
+        dst[i] = (src[i] ^ key[i % m] ^ nonce[i % n]);
     }
     return true;
 }
 //------------------------------------------------------------------------------
 static auto main_ctx_decrypt_shared_with(
+  memory::const_block nonce,
   const memory::const_block key,
   const memory::const_block input,
   memory::buffer& output) noexcept -> bool {
@@ -109,49 +112,61 @@ static auto main_ctx_decrypt_shared_with(
     memory::buffer temp;
     temp.resize(src.size());
     auto dst{cover(temp)};
+    const auto n{nonce.size()};
     const auto m{key.size()};
     assert(src.size() == dst.size());
     for(auto i : integer_range(src.size())) {
-        dst[i] = (src[i] ^ key[i % m]);
+        dst[i] = (src[i] ^ key[i % m] ^ nonce[i % n]);
     }
     main_ctx_unscramble_encrypted(dst, output);
     return true;
 }
 //------------------------------------------------------------------------------
 auto main_ctx::encrypt_shared(
+  memory::const_block nonce,
   memory::const_block input,
   memory::buffer& output) noexcept -> bool {
-    memory::buffer key{};
-    if(config().fetch("main_key", key)) {
-        if(not key.empty()) {
-            return main_ctx_encrypt_shared_with(view(key), input, output);
+    if(not nonce.empty()) {
+        memory::buffer key{};
+        if(config().fetch("main_key", key)) {
+            if(not key.empty()) {
+                return main_ctx_encrypt_shared_with(
+                  nonce, view(key), input, output);
+            }
         }
     }
     return false;
 }
 //------------------------------------------------------------------------------
 auto main_ctx::decrypt_shared(
+  memory::const_block nonce,
   memory::const_block input,
   memory::buffer& output) noexcept -> bool {
-    memory::buffer key{};
-    if(config().fetch("main_key", key)) {
-        if(not key.empty()) {
-            return main_ctx_decrypt_shared_with(view(key), input, output);
+    if(not nonce.empty()) {
+        memory::buffer key{};
+        if(config().fetch("main_key", key)) {
+            if(not key.empty()) {
+                return main_ctx_decrypt_shared_with(
+                  nonce, view(key), input, output);
+            }
         }
     }
     return false;
 }
 //------------------------------------------------------------------------------
-auto main_ctx::encrypt_shared(string_view input, memory::buffer& output) noexcept
-  -> bool {
-    return encrypt_shared(as_bytes(input), output);
+auto main_ctx::encrypt_shared(
+  memory::const_block nonce,
+  string_view input,
+  memory::buffer& output) noexcept -> bool {
+    return encrypt_shared(nonce, as_bytes(input), output);
 }
 //------------------------------------------------------------------------------
 auto main_ctx::decrypt_shared(
+  memory::const_block nonce,
   memory::const_block input,
   std::string& output) noexcept -> bool {
     memory::buffer temp;
-    if(decrypt_shared(input, temp)) {
+    if(decrypt_shared(nonce, input, temp)) {
         output.resize(std_size(temp.size()));
         auto src{as_chars(view(temp))};
         std::copy(src.begin(), src.end(), output.begin());
@@ -161,22 +176,24 @@ auto main_ctx::decrypt_shared(
 }
 //------------------------------------------------------------------------------
 auto main_ctx::encrypt_shared_password(
+  memory::const_block nonce,
   const string_view key,
   const string_view tag,
   memory::buffer& encrypted) noexcept -> bool {
     std::string passwd;
     if(config().fetch(key, passwd, tag)) {
-        return encrypt_shared(passwd, encrypted);
+        return encrypt_shared(nonce, passwd, encrypted);
     }
     return false;
 }
 //------------------------------------------------------------------------------
 auto main_ctx::matches_encrypted_shared_password(
+  memory::const_block nonce,
   const string_view key,
   const string_view tag,
   memory::buffer& encrypted) noexcept -> bool {
     std::string received;
-    if(decrypt_shared(view(encrypted), received)) {
+    if(decrypt_shared(nonce, view(encrypted), received)) {
         std::string passwd;
         if(config().fetch(key, passwd, tag)) {
             return received == passwd;

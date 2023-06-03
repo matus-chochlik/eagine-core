@@ -149,6 +149,18 @@ export struct main_ctx_getters : interface<main_ctx_getters> {
     /// @brief Locates a service object by it's type name.
     virtual auto share_service(identifier type_id) noexcept
       -> std::shared_ptr<main_ctx_service> = 0;
+
+    /// @brief Fills the given memory block with random bytes.
+    virtual void fill_with_random_bytes(memory::block) noexcept = 0;
+
+    /// @brief Fills the given span with uniform random values in range <0, 1>.
+    virtual void random_uniform_01(memory::span<float>) noexcept = 0;
+
+    /// @brief Fills the given span with uniform random values in range <-1, 1>.
+    virtual void random_uniform_11(memory::span<float>) noexcept = 0;
+
+    /// @brief Fills the given span with normal-distributed random values.
+    virtual void random_normal(memory::span<float>) noexcept = 0;
 };
 
 export auto try_get_main_ctx() noexcept -> optional_reference<main_ctx_getters>;
