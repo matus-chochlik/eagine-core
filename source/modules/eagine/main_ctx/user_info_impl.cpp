@@ -80,35 +80,16 @@ private:
 user_info::user_info(main_ctx_parent parent)
   : main_ctx_object{"UserInfo", parent} {}
 //------------------------------------------------------------------------------
-auto user_info::_impl() noexcept -> optional_reference<user_info_impl> {
-    if(not _pimpl) [[unlikely]] {
-        try {
-            _pimpl.emplace(hold<user_info_impl>);
-        } catch(...) {
-        }
-    }
-    return _pimpl;
-}
-//------------------------------------------------------------------------------
 auto user_info::login_name() noexcept -> valid_if_not_empty<string_view> {
-    if(const auto impl{_impl()}) {
-        return {impl->login_name};
-    }
-    return {};
+    return {_impl().member(&user_info_impl::login_name), nothing};
 }
 //------------------------------------------------------------------------------
 auto user_info::home_dir_path() noexcept -> valid_if_not_empty<string_view> {
-    if(const auto impl{_impl()}) {
-        return {impl->home_dir_path};
-    }
-    return {};
+    return {_impl().member(&user_info_impl::home_dir_path), nothing};
 }
 //------------------------------------------------------------------------------
 auto user_info::config_dir_path() noexcept -> valid_if_not_empty<string_view> {
-    if(const auto impl{_impl()}) {
-        return {impl->config_dir_path};
-    }
-    return {};
+    return {_impl().member(&user_info_impl::config_dir_path), nothing};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

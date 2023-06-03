@@ -36,8 +36,7 @@ public:
       -> valid_if_not_empty<string_view>;
 
 private:
-    shared_holder<user_info_impl> _pimpl;
-    auto _impl() noexcept -> optional_reference<user_info_impl>;
+    shared_holder<user_info_impl> _impl;
 };
 
 } // namespace eagine

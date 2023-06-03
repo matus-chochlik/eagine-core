@@ -85,14 +85,62 @@ public:
       noexcept(_traits::make(h, std::forward<Args>(args)...)))
       : Base{_traits::make(h, std::forward<Args>(args)...)} {}
 
+    /// @brief Emplaces object of type T from the given arguments in this holder.
+    /// @see emplace_derived
+    /// @see ensure
+    template <typename... Args>
+    auto emplace(Args&&... args) noexcept(noexcept(
+      _traits::make(hold<T>, std::forward<Args>(args)...))) -> basic_holder& {
+        static_cast<Base&>(*this) =
+          _traits::make(hold<T>, std::forward<Args>(args)...);
+        return *this;
+    }
+
     /// @brief Emplaces object of type D from the given arguments in this holder.
+    /// @see emplace
+    /// @see ensure_derived
     template <std::derived_from<T> D, typename... Args>
         requires(not std::is_abstract_v<D>)
-    auto emplace(hold_t<D> h, Args&&... args) noexcept(noexcept(
+    auto emplace_derived(hold_t<D> h, Args&&... args) noexcept(noexcept(
       _traits::make(h, std::forward<Args>(args)...))) -> basic_holder& {
         static_cast<Base&>(*this) =
           _traits::make(h, std::forward<Args>(args)...);
         return *this;
+    }
+
+    /// @brief Ensures object of type T construted from argument is in this holder.
+    /// @see emplace
+    /// @see ensure_derived
+    template <typename... Args>
+    auto ensure(Args&&... args) noexcept -> basic_holder& {
+        if(not has_value()) [[unlikely]] {
+            try {
+                return emplace(std::forward<Args>(args)...);
+            } catch(...) {
+            }
+        }
+        return *this;
+    }
+
+    /// @brief Ensures object of type D construted from argument is in this holder.
+    /// @see emplace_derived
+    /// @see ensure
+    template <std::derived_from<T> D, typename... Args>
+    auto ensure_derived(hold_t<D> h, Args&&... args) noexcept -> basic_holder& {
+        if(not has_value()) [[unlikely]] {
+            try {
+                return emplace_derived(h, std::forward<Args>(args)...);
+            } catch(...) {
+            }
+        }
+        return *this;
+    }
+
+    /// @brief Ensures object of type T construted from argument is in this holder.
+    /// @see ensure
+    template <typename... Args>
+    [[nodiscard]] auto operator()(Args&&... args) noexcept -> basic_holder& {
+        return ensure(std::forward<Args>(args)...);
     }
 
     using Base::operator bool;
