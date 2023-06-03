@@ -69,6 +69,98 @@ auto try_get_main_ctx() noexcept -> optional_reference<main_ctx_getters> {
     return main_ctx::try_get();
 }
 //------------------------------------------------------------------------------
+static auto main_ctx_scramble_encrypted(
+  const memory::const_block input,
+  memory::buffer& output) noexcept -> memory::const_block {
+    (void)output;
+    // TODO pad to % 8 redistribute bits of octets
+    return input;
+}
+//------------------------------------------------------------------------------
+static void main_ctx_unscramble_encrypted(
+  const memory::const_block input,
+  memory::buffer& output) noexcept {
+    (void)output;
+    // TODO remove padding to % 8 redistribute bits of octets
+    memory::copy_into(input, output);
+}
+//------------------------------------------------------------------------------
+static auto main_ctx_encrypt_shared_with(
+  const memory::const_block key,
+  const memory::const_block input,
+  memory::buffer& output) noexcept -> bool {
+    memory::buffer temp;
+    auto src{main_ctx_scramble_encrypted(input, temp)};
+    output.resize(src.size());
+    auto dst{cover(output)};
+    const auto m{key.size()};
+    assert(src.size() == dst.size());
+    for(auto i : integer_range(src.size())) {
+        dst[i] = (src[i] ^ key[i % m]);
+    }
+    return true;
+}
+//------------------------------------------------------------------------------
+static auto main_ctx_decrypt_shared_with(
+  const memory::const_block key,
+  const memory::const_block input,
+  memory::buffer& output) noexcept -> bool {
+    auto src{input};
+    memory::buffer temp;
+    temp.resize(src.size());
+    auto dst{cover(temp)};
+    const auto m{key.size()};
+    assert(src.size() == dst.size());
+    for(auto i : integer_range(src.size())) {
+        dst[i] = (src[i] ^ key[i % m]);
+    }
+    main_ctx_unscramble_encrypted(dst, output);
+    return true;
+}
+//------------------------------------------------------------------------------
+auto main_ctx::encrypt_shared(
+  memory::const_block input,
+  memory::buffer& output) noexcept -> bool {
+    memory::buffer key{};
+    if(config().fetch("main_key", key)) {
+        if(not key.empty()) {
+            return main_ctx_encrypt_shared_with(view(key), input, output);
+        }
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto main_ctx::decrypt_shared(
+  memory::const_block input,
+  memory::buffer& output) noexcept -> bool {
+    memory::buffer key{};
+    if(config().fetch("main_key", key)) {
+        if(not key.empty()) {
+            return main_ctx_decrypt_shared_with(view(key), input, output);
+        }
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+[[nodiscard]] auto main_ctx::encrypt_shared(
+  string_view input,
+  memory::buffer& output) noexcept -> bool {
+    return encrypt_shared(as_bytes(input), output);
+}
+//------------------------------------------------------------------------------
+[[nodiscard]] auto main_ctx::decrypt_shared(
+  memory::const_block input,
+  std::string& output) noexcept -> bool {
+    memory::buffer temp;
+    if(decrypt_shared(input, temp)) {
+        output.resize(std_size(temp.size()));
+        auto src{as_chars(view(temp))};
+        std::copy(src.begin(), src.end(), output.begin());
+        return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
 // main_ctx_object-related
 //------------------------------------------------------------------------------
 main_ctx_log_backend_getter::main_ctx_log_backend_getter(

@@ -174,6 +174,22 @@ public:
           share_service(Service::static_type_id()));
     }
 
+    [[nodiscard]] auto encrypt_shared(
+      memory::const_block input,
+      memory::buffer& output) noexcept -> bool;
+
+    [[nodiscard]] auto decrypt_shared(
+      memory::const_block input,
+      memory::buffer& output) noexcept -> bool;
+
+    [[nodiscard]] auto encrypt_shared(
+      string_view input,
+      memory::buffer& output) noexcept -> bool;
+
+    [[nodiscard]] auto decrypt_shared(
+      memory::const_block input,
+      std::string& output) noexcept -> bool;
+
 private:
     const process_instance_id_t _instance_id;
     main_ctx_getters& _source;
