@@ -98,11 +98,23 @@ public:
       : _value{std::move(val)}
       , _policy{std::move(plcy)} {}
 
-    template <std::convertible_to<T> U>
+    template <optional_like O, typename U>
+        requires(not std::same_as<Policy, valid_flag_policy>)
+    constexpr basic_valid_if(O opt, U&& fallback) noexcept(
+      std::is_nothrow_copy_constructible_v<T>)
+      : _value{opt ? *opt : T(std::forward<U>(fallback))} {}
+
+    template <optional_like O>
+        requires(not std::same_as<Policy, valid_flag_policy>)
+    constexpr basic_valid_if(O opt, nothing_t) noexcept(
+      std::is_nothrow_copy_constructible_v<T>)
+      : _value{opt ? *opt : T{}} {}
+
+    template <optional_like O>
         requires(std::same_as<Policy, valid_flag_policy>)
-    constexpr basic_valid_if(std::optional<U> opt) noexcept(
-      std::is_nothrow_move_constructible_v<T>)
-      : _value{opt.has_value() ? *opt : T{}}
+    constexpr basic_valid_if(O opt) noexcept(
+      std::is_nothrow_copy_constructible_v<T>)
+      : _value{opt ? *opt : T{}}
       , _policy{_policy_with_value(opt.has_value())} {}
 
     /// @brief Move constructor.
