@@ -75,6 +75,10 @@ public:
     constexpr basic_holder(Base base) noexcept
       : Base{std::move(base)} {}
 
+    template <std::derived_from<T> U>
+    constexpr basic_holder(typename _traits::template rebind<U> derived) noexcept
+      : Base{std::move(derived)} {}
+
     /// @brief Conversion from another, compatible holder object.
     template <typename Other, std::derived_from<T> D>
         requires(
