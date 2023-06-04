@@ -66,15 +66,16 @@ private:
 #endif
 //------------------------------------------------------------------------------
 static auto make_process_watchdog_backend() noexcept
-  -> std::shared_ptr<process_watchdog_backend> {
+  -> shared_holder<process_watchdog_backend> {
 #if EAGINE_USE_SYSTEMD
     std::uint64_t _interval_us{0};
     if(sd_watchdog_enabled(0, &_interval_us) > 0) {
-        return std::make_shared<systemd_process_watchdog_backend>(
-          std::chrono::microseconds{_interval_us / 2});
+        return {
+          hold<systemd_process_watchdog_backend>,
+          std::chrono::microseconds{_interval_us / 2}};
     }
 #endif
-    return std::make_shared<null_process_watchdog_backend>();
+    return {hold<null_process_watchdog_backend>};
 }
 //------------------------------------------------------------------------------
 process_watchdog::process_watchdog(main_ctx_parent parent) noexcept
@@ -83,12 +84,10 @@ process_watchdog::process_watchdog(main_ctx_parent parent) noexcept
   , _should_log_heartbeat{std::chrono::seconds{60}, nothing} {}
 //------------------------------------------------------------------------------
 void process_watchdog::declare_initialized() noexcept {
-    assert(_backend);
     _backend->declare_initialized();
 }
 //------------------------------------------------------------------------------
 void process_watchdog::notify_alive() noexcept {
-    assert(_backend);
     _backend->notify_alive();
     if(_should_log_heartbeat) [[unlikely]] {
         main_context().log().heartbeat();
@@ -97,7 +96,6 @@ void process_watchdog::notify_alive() noexcept {
 }
 //------------------------------------------------------------------------------
 void process_watchdog::announce_shutdown() noexcept {
-    assert(_backend);
     _backend->announce_shutdown();
 }
 //------------------------------------------------------------------------------

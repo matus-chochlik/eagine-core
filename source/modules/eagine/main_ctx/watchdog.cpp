@@ -35,7 +35,7 @@ public:
     void announce_shutdown() noexcept;
 
 private:
-    std::shared_ptr<process_watchdog_backend> _backend;
+    shared_holder<process_watchdog_backend> _backend;
     timeout _should_log_heartbeat;
 };
 
