@@ -159,7 +159,7 @@ public:
     /// @brief Locates the specified Service object.
     /// @see locate
     template <std::derived_from<main_ctx_service> Service>
-    [[nodiscard]] auto share() const noexcept -> std::shared_ptr<Service> {
+    [[nodiscard]] auto share() const noexcept -> shared_holder<Service> {
         return share_service(Service::static_type_id())
           .as(std::type_identity<Service>{});
     }
