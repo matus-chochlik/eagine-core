@@ -38,6 +38,9 @@ struct basic_holder_traits<std::unique_ptr<T>> {
         return std::unique_ptr<T>{
           std::make_unique<D>(std::forward<Args>(args)...)};
     }
+
+    template <typename U>
+    using rebind = std::unique_ptr<U>;
 };
 
 template <typename T>
@@ -48,6 +51,9 @@ struct basic_holder_traits<std::shared_ptr<T>> {
         return std::shared_ptr<T>{
           std::make_shared<D>(std::forward<Args>(args)...)};
     }
+
+    template <typename U>
+    using rebind = std::shared_ptr<U>;
 };
 //------------------------------------------------------------------------------
 /// @brief Wrapper for smart pointers providing optional-like monadic API
@@ -252,6 +258,12 @@ public:
 
     [[nodiscard]] auto release() && noexcept -> Base&& {
         return static_cast<Base&&>(*this);
+    }
+
+    template <std::derived_from<T> D>
+    [[nodiscard]] auto as(std::type_identity<D> = {}) && noexcept
+      -> basic_holder<typename _traits::template rebind<D>, D> {
+        return {std::dynamic_pointer_cast<D>(release())};
     }
 };
 //------------------------------------------------------------------------------
