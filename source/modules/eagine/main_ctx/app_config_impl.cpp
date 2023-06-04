@@ -32,12 +32,12 @@ public:
         _tag_list.emplace_back();
 
         if(auto hostname{ctx.system().hostname()}) {
-            _hostname = std::move(extract(hostname));
+            _hostname = std::move(*hostname);
             _tag_list.emplace_back(_hostname);
         }
 
         if(const auto architecture{architecture_tag()}) {
-            _tag_list.push_back(extract(architecture));
+            _tag_list.push_back(*architecture);
         }
 
         std::array<string_view, 2> tag_labels{
@@ -118,7 +118,7 @@ public:
         if(not _loaders.empty()) {
             _open_configs.clear();
             for(auto loader : _loaders) {
-                result = extract(loader).reload() and result;
+                result = loader->reload() and result;
             }
         }
         return result;
@@ -215,19 +215,19 @@ private:
         std::filesystem::path config_path;
         if(kind == config_path_kind::user) {
             if(auto config_dir{_main_ctx.user().config_dir_path()}) {
-                config_path.append(std::string_view{extract(config_dir)});
+                config_path.append(std::string_view{*config_dir});
                 config_path.append("eagine");
                 config_path.append(std::string_view{name});
             }
         } else if(kind == config_path_kind::system) {
             if(auto config_dir{_main_ctx.system().config_dir_path()}) {
-                config_path.append(std::string_view{extract(config_dir)});
+                config_path.append(std::string_view{*config_dir});
                 config_path.append("eagine");
                 config_path.append(std::string_view{name});
             }
         } else if(kind == config_path_kind::install) {
             if(auto config_dir{_main_ctx.build().config_dir_path()}) {
-                config_path.append(std::string_view{extract(config_dir)});
+                config_path.append(std::string_view{*config_dir});
                 config_path.append("eagine");
                 config_path.append(std::string_view{name});
             }
@@ -292,10 +292,7 @@ void application_config::_log_could_not_read_value(
 auto application_config::_find_comp_attr(
   const string_view key,
   const string_view tag) noexcept -> valtree::compound_attribute {
-    if(const auto impl{_impl()}) {
-        return extract(impl).find_compound_attribute(key, tag);
-    }
-    return {};
+    return _impl(_log, _main_ctx)->find_compound_attribute(key, tag);
 }
 //------------------------------------------------------------------------------
 auto application_config::_prog_args() noexcept -> const program_args& {
@@ -306,16 +303,6 @@ application_config::application_config(main_ctx_getters& ctx) noexcept
   : basic_config{ctx.args()}
   , _main_ctx{ctx}
   , _log{"AppConfig", ctx.log()} {}
-//------------------------------------------------------------------------------
-auto application_config::_impl() noexcept -> application_config_impl* {
-    if(not _pimpl) [[unlikely]] {
-        try {
-            _pimpl = std::make_shared<application_config_impl>(_log, _main_ctx);
-        } catch(...) {
-        }
-    }
-    return _pimpl.get();
-}
 //------------------------------------------------------------------------------
 auto application_config::is_set(
   const string_view key,
@@ -351,25 +338,20 @@ void application_config::link(
   const string_view key,
   const string_view tag,
   application_config_value_loader& loader) noexcept {
-    if(const auto impl{_impl()}) {
-        return extract(impl).link(key, tag, loader);
-    }
+    _impl(_log, _main_ctx)->link(key, tag, loader);
 }
 //------------------------------------------------------------------------------
 void application_config::unlink(
   const string_view key,
   const string_view tag,
   application_config_value_loader& loader) noexcept {
-    if(const auto impl{_impl()}) {
-        return extract(impl).unlink(key, tag, loader);
-    }
+    _impl(_log, _main_ctx)->unlink(key, tag, loader);
 }
 //------------------------------------------------------------------------------
 auto application_config::reload() noexcept -> bool {
-    if(const auto impl{_impl()}) {
-        return extract(impl).reload();
-    }
-    return false;
+    return _impl(_log, _main_ctx)
+      .member(&application_config_impl::reload)
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

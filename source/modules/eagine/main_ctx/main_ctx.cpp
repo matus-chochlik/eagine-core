@@ -164,14 +164,14 @@ public:
     }
 
     [[nodiscard]] auto share_service(identifier type_id) noexcept
-      -> std::shared_ptr<main_ctx_service> final {
+      -> shared_holder<main_ctx_service> final {
         return _source.share_service(type_id);
     }
 
     template <std::derived_from<main_ctx_service> Service>
-    [[nodiscard]] auto share() noexcept -> std::shared_ptr<Service> {
-        return std::dynamic_pointer_cast<Service>(
-          share_service(Service::static_type_id()));
+    [[nodiscard]] auto share() noexcept -> shared_holder<Service> {
+        return share_service(Service::static_type_id())
+          .as(std::type_identity<Service>{});
     }
 
     void fill_with_random_bytes(memory::block dest) noexcept final {

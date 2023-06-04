@@ -154,14 +154,14 @@ public:
 
     /// @brief Locates the specified service object.
     [[nodiscard]] auto share_service(identifier type_id) const noexcept
-      -> std::shared_ptr<main_ctx_service>;
+      -> shared_holder<main_ctx_service>;
 
     /// @brief Locates the specified Service object.
     /// @see locate
     template <std::derived_from<main_ctx_service> Service>
     [[nodiscard]] auto share() const noexcept -> std::shared_ptr<Service> {
-        return std::dynamic_pointer_cast<Service>(
-          share_service(Service::static_type_id()));
+        return share_service(Service::static_type_id())
+          .as(std::type_identity<Service>{});
     }
 
 private:

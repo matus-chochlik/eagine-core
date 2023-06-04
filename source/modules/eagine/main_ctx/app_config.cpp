@@ -242,8 +242,7 @@ public:
 private:
     main_ctx_getters& _main_ctx;
     logger _log;
-    std::shared_ptr<application_config_impl> _pimpl;
-    auto _impl() noexcept -> application_config_impl*;
+    shared_holder<application_config_impl> _impl;
 
     void _log_could_not_read_value(
       const string_view key,

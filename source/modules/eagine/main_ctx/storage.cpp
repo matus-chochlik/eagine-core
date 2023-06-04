@@ -137,7 +137,7 @@ public:
         return _scratch_space;
     }
 
-    void inject(std::shared_ptr<main_ctx_service> service) final {
+    void inject(shared_holder<main_ctx_service> service) final {
         if(service) {
             _services[service->type_id()] = service;
         }
@@ -152,7 +152,7 @@ public:
     }
 
     auto share_service(identifier type_id) noexcept
-      -> std::shared_ptr<main_ctx_service> final {
+      -> shared_holder<main_ctx_service> final {
         if(const auto pos{_services.find(type_id)}; pos != _services.end()) {
             return std::get<1>(*pos);
         }
@@ -205,7 +205,7 @@ private:
     std::string _exe_path{};
     std::string _app_name{};
 
-    flat_map<identifier, std::shared_ptr<main_ctx_service>> _services;
+    flat_map<identifier, shared_holder<main_ctx_service>> _services;
 
     valid_if_positive<std::default_random_engine::result_type> _rand_seed;
     std::default_random_engine::result_type _rand_init;

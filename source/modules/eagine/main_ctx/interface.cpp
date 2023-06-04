@@ -52,7 +52,7 @@ struct main_ctx_service_impl : main_ctx_service {
 /// @see main_ctx_setters
 export struct main_ctx_setters : interface<main_ctx_setters> {
     /// @brief Injects the service object to main context.
-    virtual void inject(std::shared_ptr<main_ctx_service>) = 0;
+    virtual void inject(shared_holder<main_ctx_service>) = 0;
 
     /// @brief Registers a activity progress observer.
     virtual auto register_observer(progress_observer&) -> bool = 0;
@@ -148,7 +148,7 @@ export struct main_ctx_getters : interface<main_ctx_getters> {
 
     /// @brief Locates a service object by it's type name.
     virtual auto share_service(identifier type_id) noexcept
-      -> std::shared_ptr<main_ctx_service> = 0;
+      -> shared_holder<main_ctx_service> = 0;
 
     /// @brief Fills the given memory block with random bytes.
     virtual void fill_with_random_bytes(memory::block) noexcept = 0;

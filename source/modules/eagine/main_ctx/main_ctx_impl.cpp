@@ -275,7 +275,7 @@ auto main_ctx_object::locate_service(identifier type_id) const noexcept
 }
 //------------------------------------------------------------------------------
 auto main_ctx_object::share_service(identifier type_id) const noexcept
-  -> std::shared_ptr<main_ctx_service> {
+  -> shared_holder<main_ctx_service> {
     return main_context().share_service(type_id);
 }
 //------------------------------------------------------------------------------
