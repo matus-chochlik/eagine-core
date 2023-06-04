@@ -139,9 +139,9 @@ public:
     void finish_log() noexcept final;
 
 private:
-    std::unique_ptr<logger_backend> _delegate;
-    std::unique_ptr<std::vector<std::function<void()>>> _delayed{
-      std::make_unique<std::vector<std::function<void()>>>()};
+    unique_holder<logger_backend> _delegate;
+    unique_holder<std::vector<std::function<void()>>> _delayed{
+      default_selector};
     log_stream_info _info;
 };
 //------------------------------------------------------------------------------
@@ -427,7 +427,7 @@ void proxy_log_backend::finish_log() noexcept {
 auto proxy_log_choose_backend(
   basic_config_intf& config,
   const std::string& name,
-  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
+  const log_stream_info& info) -> unique_holder<logger_backend> {
     const bool use_spinlock{[&]() -> bool {
         std::string temp;
         if(config.fetch_string("log.use_spinlock", temp)) {
@@ -442,19 +442,15 @@ auto proxy_log_choose_backend(
         return make_null_log_backend();
     } else if(name == "cerr") {
         if(use_spinlock) {
-            return std::make_unique<ostream_log_backend<spinlock>>(
-              std::cerr, info);
+            return {hold<ostream_log_backend<spinlock>>, std::cerr, info};
         } else {
-            return std::make_unique<ostream_log_backend<std::mutex>>(
-              std::cerr, info);
+            return {hold<ostream_log_backend<std::mutex>>, std::cerr, info};
         }
     } else if(name == "cout") {
         if(use_spinlock) {
-            return std::make_unique<ostream_log_backend<spinlock>>(
-              std::cout, info);
+            return {hold<ostream_log_backend<spinlock>>, std::cout, info};
         } else {
-            return std::make_unique<ostream_log_backend<std::mutex>>(
-              std::cout, info);
+            return {hold<ostream_log_backend<std::mutex>>, std::cout, info};
         }
     } else if(name == "syslog") {
         if(use_spinlock) {
@@ -511,9 +507,9 @@ auto proxy_log_choose_backend(
     }
 
     if(use_spinlock) {
-        return std::make_unique<ostream_log_backend<spinlock>>(std::clog, info);
+        return {hold<ostream_log_backend<spinlock>>, std::clog, info};
     }
-    return std::make_unique<ostream_log_backend<std::mutex>>(std::clog, info);
+    return {hold<ostream_log_backend<std::mutex>>, std::clog, info};
 }
 //------------------------------------------------------------------------------
 auto proxy_log_backend::configure(basic_config_intf& config) -> bool {
@@ -539,8 +535,8 @@ auto proxy_log_backend::configure(basic_config_intf& config) -> bool {
 }
 //------------------------------------------------------------------------------
 auto make_proxy_log_backend(log_stream_info info)
-  -> std::unique_ptr<logger_backend> {
-    return std::make_unique<proxy_log_backend>(std::move(info));
+  -> unique_holder<logger_backend> {
+    return {hold<proxy_log_backend>, std::move(info)};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

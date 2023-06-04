@@ -206,20 +206,20 @@ auto main_ctx::matches_encrypted_shared_password(
 //------------------------------------------------------------------------------
 main_ctx_log_backend_getter::main_ctx_log_backend_getter(
   main_ctx_getters& c) noexcept {
-    const auto new_ptr{c.log().backend()};
-    if(_backend_ptr()) [[likely]] {
-        assert(not new_ptr or _backend_ptr() == new_ptr);
-    } else if(new_ptr) {
-        _backend_ptr() = new_ptr;
+    const auto new_ref{c.log().backend()};
+    if(_backend_ref()) [[likely]] {
+        assert(not new_ref or _backend_ref().refers_to(new_ref));
+    } else if(new_ref) {
+        _backend_ref() = new_ref;
     }
 }
 //------------------------------------------------------------------------------
 main_ctx_log_backend_getter::main_ctx_log_backend_getter() noexcept {
-    const auto new_ptr{main_ctx::get().log().backend()};
-    if(_backend_ptr()) [[likely]] {
-        assert(not new_ptr or _backend_ptr() == new_ptr);
-    } else if(new_ptr) {
-        _backend_ptr() = new_ptr;
+    const auto new_ref{main_ctx::get().log().backend()};
+    if(_backend_ref()) [[likely]] {
+        assert(not new_ref or _backend_ref().refers_to(new_ref));
+    } else if(new_ref) {
+        _backend_ref() = new_ref;
     }
 }
 //------------------------------------------------------------------------------

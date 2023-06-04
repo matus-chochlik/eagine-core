@@ -283,26 +283,26 @@ export struct logger_backend : interface<logger_backend> {
 //------------------------------------------------------------------------------
 // backend getters
 //------------------------------------------------------------------------------
-export auto make_null_log_backend() -> std::unique_ptr<logger_backend>;
+export auto make_null_log_backend() -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
 export auto make_asio_local_ostream_log_backend_mutex(const log_stream_info&)
-  -> std::unique_ptr<logger_backend>;
+  -> unique_holder<logger_backend>;
 export auto make_asio_local_ostream_log_backend_spinlock(const log_stream_info&)
-  -> std::unique_ptr<logger_backend>;
+  -> unique_holder<logger_backend>;
 
 export auto make_asio_local_ostream_log_backend_mutex(
   string_view addr,
-  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+  const log_stream_info&) -> unique_holder<logger_backend>;
 export auto make_asio_local_ostream_log_backend_spinlock(
   string_view addr,
-  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+  const log_stream_info&) -> unique_holder<logger_backend>;
 
 export auto make_asio_tcpipv4_ostream_log_backend_mutex(
   string_view addr,
-  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+  const log_stream_info&) -> unique_holder<logger_backend>;
 export auto make_asio_tcpipv4_ostream_log_backend_spinlock(
   string_view addr,
-  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+  const log_stream_info&) -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
 export class log_backend_error : public std::system_error {
 public:
@@ -311,11 +311,11 @@ public:
 };
 //------------------------------------------------------------------------------
 export auto make_proxy_log_backend(log_stream_info info)
-  -> std::unique_ptr<logger_backend>;
+  -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
 export auto make_syslog_log_backend_mutex(const log_stream_info&)
-  -> std::unique_ptr<logger_backend>;
+  -> unique_holder<logger_backend>;
 export auto make_syslog_log_backend_spinlock(const log_stream_info&)
-  -> std::unique_ptr<logger_backend>;
+  -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
 } // namespace eagine

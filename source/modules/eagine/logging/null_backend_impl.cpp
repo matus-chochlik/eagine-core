@@ -130,8 +130,8 @@ struct null_log_backend final : logger_backend {
     void finish_log() noexcept final {}
 };
 //------------------------------------------------------------------------------
-auto make_null_log_backend() -> std::unique_ptr<logger_backend> {
-    return std::make_unique<null_log_backend>();
+auto make_null_log_backend() -> unique_holder<logger_backend> {
+    return {hold<null_log_backend>};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

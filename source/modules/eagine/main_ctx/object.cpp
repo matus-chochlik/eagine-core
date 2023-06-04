@@ -45,14 +45,14 @@ public:
     main_ctx_log_backend_getter() noexcept;
     main_ctx_log_backend_getter(main_ctx_getters&) noexcept;
 
-    auto get() const noexcept -> auto* {
-        return _backend_ptr();
+    auto get() const noexcept -> optional_reference<logger_backend> {
+        return _backend_ref();
     }
 
 private:
-    static auto _backend_ptr() noexcept -> logger_backend*& {
-        static logger_backend* beptr{nullptr};
-        return beptr;
+    static auto _backend_ref() noexcept -> optional_reference<logger_backend>& {
+        static optional_reference<logger_backend> beref{};
+        return beref;
     }
 };
 

@@ -354,13 +354,13 @@ private:
 };
 //------------------------------------------------------------------------------
 auto make_syslog_log_backend_mutex(const log_stream_info& info)
-  -> std::unique_ptr<logger_backend> {
-    return std::make_unique<syslog_log_backend<std::mutex>>(info);
+  -> unique_holder<logger_backend> {
+    return {hold<syslog_log_backend<std::mutex>>, info};
 }
 
 auto make_syslog_log_backend_spinlock(const log_stream_info& info)
-  -> std::unique_ptr<logger_backend> {
-    return std::make_unique<syslog_log_backend<spinlock>>(info);
+  -> unique_holder<logger_backend> {
+    return {hold<syslog_log_backend<spinlock>>, info};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

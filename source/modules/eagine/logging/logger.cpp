@@ -33,8 +33,7 @@ public:
 
     ~logger_shared_backend_getter() noexcept = default;
 
-    logger_shared_backend_getter(
-      std::shared_ptr<logger_backend> backend) noexcept
+    logger_shared_backend_getter(shared_holder<logger_backend> backend) noexcept
       : _backend{std::move(backend)} {}
 
     void begin_log() noexcept {
@@ -50,12 +49,12 @@ public:
         }
     }
 
-    auto get() const noexcept -> logger_backend* {
-        return _backend.get();
+    auto get() const noexcept -> optional_reference<logger_backend> {
+        return _backend;
     }
 
 private:
-    std::shared_ptr<logger_backend> _backend{};
+    shared_holder<logger_backend> _backend{};
 };
 //------------------------------------------------------------------------------
 /// @brief Basic template for logger objects.
@@ -78,7 +77,7 @@ public:
     /// @brief Indicates that this process is alive.
     void heartbeat() const noexcept {
         if(auto lbe{backend()}) {
-            extract(lbe).heartbeat();
+            lbe->heartbeat();
         }
     }
 
@@ -102,7 +101,7 @@ public:
 
     auto configure(basic_config_intf& config) const -> bool {
         if(auto lbe{backend()}) {
-            extract(lbe).configure(config);
+            lbe->configure(config);
         }
         return false;
     }
@@ -127,7 +126,7 @@ protected:
       const string_view display_name,
       const string_view description) const noexcept {
         if(auto lbe{backend()}) {
-            extract(lbe).set_description(
+            lbe->set_description(
               source, instance_id(), display_name, description);
         }
     }
@@ -138,14 +137,14 @@ protected:
       const identifier begin_tag,
       const identifier end_tag) const noexcept {
         if(auto lbe{backend()}) {
-            extract(lbe).declare_state(source, state_tag, begin_tag, end_tag);
+            lbe->declare_state(source, state_tag, begin_tag, end_tag);
         }
     }
 
     void active_state(const identifier source, const identifier state_tag)
       const noexcept {
         if(auto lbe{backend()}) {
-            extract(lbe).active_state(source, state_tag);
+            lbe->active_state(source, state_tag);
         }
     }
 
@@ -305,8 +304,7 @@ protected:
       [[maybe_unused]] const float value) const noexcept {
         if constexpr(is_log_level_enabled_v<log_event_severity::stat>) {
             if(auto lbe{_entry_backend(log_event_severity::stat)}) {
-                extract(lbe).log_chart_sample(
-                  source, instance_id(), series, value);
+                lbe->log_chart_sample(source, instance_id(), series, value);
             }
         }
     }
@@ -545,8 +543,7 @@ public:
       const valid_if<T, P>& opt_value) const noexcept
       -> const named_logging_object& {
         if(opt_value) {
-            base::log_chart_sample(
-              _object_id, series, float(extract(opt_value)));
+            base::log_chart_sample(_object_id, series, float(*opt_value));
         }
         return *this;
     }
@@ -654,7 +651,7 @@ public:
     auto chart_sample(const identifier series, const valid_if<T, P>& opt_value)
       const noexcept -> const logger& {
         if(opt_value) {
-            base::log_chart_sample(series, float(extract(opt_value)));
+            base::log_chart_sample(series, float(*opt_value));
         }
         return *this;
     }

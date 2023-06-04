@@ -51,8 +51,7 @@ static constexpr auto default_log_severity() noexcept {
 auto root_logger_choose_backend(
   const program_args& args,
   const root_logger_options& opts,
-  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
-    std::unique_ptr<logger_backend> result{};
+  const log_stream_info& info) -> unique_holder<logger_backend> {
 
     const bool use_spinlock{args.find("--log-use-spinlock")};
 
@@ -61,19 +60,15 @@ auto root_logger_choose_backend(
             return make_null_log_backend();
         } else if(arg.is_long_tag("use-cerr-log")) {
             if(use_spinlock) {
-                return std::make_unique<ostream_log_backend<spinlock>>(
-                  std::cerr, info);
+                return {hold<ostream_log_backend<spinlock>>, std::cerr, info};
             } else {
-                return std::make_unique<ostream_log_backend<std::mutex>>(
-                  std::cerr, info);
+                return {hold<ostream_log_backend<std::mutex>>, std::cerr, info};
             }
         } else if(arg.is_long_tag("use-cout-log")) {
             if(use_spinlock) {
-                return std::make_unique<ostream_log_backend<spinlock>>(
-                  std::cout, info);
+                return {hold<ostream_log_backend<spinlock>>, std::cout, info};
             } else {
-                return std::make_unique<ostream_log_backend<std::mutex>>(
-                  std::cout, info);
+                return {hold<ostream_log_backend<std::mutex>>, std::cout, info};
             }
         } else if(arg.is_long_tag("use-syslog")) {
             if(use_spinlock) {
@@ -121,7 +116,7 @@ auto root_logger_choose_backend(
 //------------------------------------------------------------------------------
 auto root_logger_init_backend(
   const program_args& args,
-  root_logger_options& opts) -> std::shared_ptr<logger_backend> {
+  root_logger_options& opts) -> shared_holder<logger_backend> {
     if(opts.forced_backend) {
         return std::move(opts.forced_backend);
     }
