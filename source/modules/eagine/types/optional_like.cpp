@@ -291,12 +291,20 @@ public:
     [[nodiscard]] constexpr auto member(M C::*ptr) const noexcept
         requires(not std::is_member_function_pointer_v<decltype(ptr)>)
     {
-        using R =
-          std::conditional_t<std::is_const_v<T>, std::add_const_t<M>, M>;
-        if(has_value()) {
-            return optional_reference<R>{value().*ptr};
+        if constexpr(optional_like<M>) {
+            if(has_value()) {
+                return value().*ptr;
+            } else {
+                return M{};
+            }
         } else {
-            return optional_reference<R>{nothing};
+            using R =
+              std::conditional_t<std::is_const_v<T>, std::add_const_t<M>, M>;
+            if(has_value()) {
+                return optional_reference<R>{value().*ptr};
+            } else {
+                return optional_reference<R>{nothing};
+            }
         }
     }
 
@@ -328,6 +336,13 @@ public:
       R (C::*function)(Params...) const noexcept,
       Args&&... args) const noexcept {
         return _call_member(_ptr, function, std::forward<Args>(args)...);
+    }
+
+    template <typename... Args>
+    [[nodiscard]] auto bind_member(auto* ptr, Args&&... args) const noexcept {
+        return [this, ptr, ... args{std::forward<Args>(args)}] {
+            return this->member(ptr, args...);
+        };
     }
 
     template <std::derived_from<T> Derived>
@@ -1421,12 +1436,20 @@ template <typename V, typename... Args>
             return optional_reference<P>{nothing};
         }
     } else {
-        using O = std::remove_cvref_t<R>;
-        if(ptr) {
-            return optionally_valid<O>{
-              std::invoke(function, *ptr, std::forward<Args>(args)...), true};
+        if constexpr(optional_like<R>) {
+            if(ptr) {
+                return std::invoke(function, *ptr, std::forward<Args>(args)...);
+            } else {
+                return R{};
+            }
         } else {
-            return optionally_valid<O>{};
+            if(ptr) {
+                return optionally_valid<R>{
+                  std::invoke(function, *ptr, std::forward<Args>(args)...),
+                  true};
+            } else {
+                return optionally_valid<R>{};
+            }
         }
     }
 }

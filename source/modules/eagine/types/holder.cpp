@@ -262,6 +262,13 @@ public:
         return ref().member(ptr, std::forward<Args>(args)...);
     }
 
+    template <typename... Args>
+    [[nodiscard]] auto bind_member(auto* ptr, Args&&... args) const noexcept {
+        return [this, ptr, ... args{std::forward<Args>(args)}] {
+            return this->member(ptr, args...);
+        };
+    }
+
     using Base::reset;
 
     [[nodiscard]] auto release() && noexcept -> Base&& {
