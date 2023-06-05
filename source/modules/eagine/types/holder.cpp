@@ -252,10 +252,14 @@ public:
         return ref().transform(std::forward<F>(function));
     }
 
-    [[nodiscard]] constexpr auto member(auto ptr) const noexcept
-        requires(std::is_member_pointer_v<decltype(ptr)>)
+    template <typename... Args>
+    [[nodiscard]] constexpr auto member(auto ptr, Args&&... args) const noexcept
+        requires(
+          std::is_member_pointer_v<decltype(ptr)> and
+          (std::is_member_object_pointer_v<decltype(ptr)> or
+           (sizeof...(args) == 0U)))
     {
-        return ref().member(ptr);
+        return ref().member(ptr, std::forward<Args>(args)...);
     }
 
     using Base::reset;
