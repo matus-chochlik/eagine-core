@@ -3,28 +3,21 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.valid_if
-	PARTITION decl
-	IMPORTS
-		eagine.core.types
-)
-
-eagine_add_module(
 	eagine.core.valid_if PARTITION compare
-	IMPORTS decl
+	IMPORTS
 		eagine.core.types
 		eagine.core.reflection
 )
 eagine_add_module(
 	eagine.core.valid_if PARTITION filesystem
-	IMPORTS decl
+	IMPORTS
 		eagine.core.types
 		eagine.core.memory
 )
 eagine_add_module(
 	eagine.core.valid_if PARTITION range
 	IMPORTS
-		decl compare
+		compare
 		eagine.core.types
 )
 
@@ -38,7 +31,6 @@ eagine_add_module(
 eagine_add_module_tests(
 	eagine.core.valid_if
 	UNITS
-		decl
 		range
 		filesystem
 	IMPORTS

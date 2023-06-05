@@ -15,7 +15,7 @@ import std;
 import :concepts;
 import :basic;
 import :tribool;
-import :optional_reference;
+import :optional_like;
 
 namespace eagine {
 //------------------------------------------------------------------------------

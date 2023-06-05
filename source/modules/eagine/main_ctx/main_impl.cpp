@@ -14,6 +14,7 @@ module eagine.core.main_ctx;
 import <cerrno>;
 import std;
 import eagine.core.build_info;
+import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.valid_if;

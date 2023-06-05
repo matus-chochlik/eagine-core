@@ -9,7 +9,7 @@ export module eagine.core.types:placeholder;
 
 import std;
 import :tribool;
-import :optional_reference;
+import :optional_like;
 
 namespace eagine {
 //------------------------------------------------------------------------------

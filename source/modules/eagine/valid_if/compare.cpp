@@ -10,7 +10,6 @@ export module eagine.core.valid_if:compare;
 import std;
 import eagine.core.types;
 import eagine.core.reflection;
-import :decl;
 
 namespace eagine {
 

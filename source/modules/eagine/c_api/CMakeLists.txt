@@ -14,7 +14,6 @@ eagine_add_module(
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.valid_if
 )
 
 eagine_add_module(

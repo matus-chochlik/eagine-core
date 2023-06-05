@@ -33,40 +33,40 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION optional_reference
+	eagine.core.types PARTITION limits
+	IMPORTS basic
+)
+
+eagine_add_module(
+	eagine.core.types PARTITION optional_like
 	IMPORTS
 		basic tribool
-		concepts
+		limits concepts
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION holder
 	IMPORTS
 		basic tribool
-		concepts optional_reference
+		concepts optional_like
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION placeholder
 	IMPORTS
-		tribool optional_reference
+		tribool optional_like
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION outcome
 	IMPORTS
 		extract basic
-		concepts
+		limits concepts
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION compare
 	IMPORTS basic
-)
-
-eagine_add_module(
-	eagine.core.types PARTITION limits
-	IMPORTS basic outcome
 )
 
 eagine_add_module(
@@ -96,6 +96,7 @@ eagine_add_module_tests(
 		metaprogramming
 		nothing
 		optional_reference
+		valid_if
 		tribool
 		holder
 )

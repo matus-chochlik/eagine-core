@@ -10,7 +10,6 @@ export module eagine.core.valid_if:filesystem;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
-import :decl;
 
 namespace eagine {
 

@@ -7,7 +7,6 @@
 ///
 export module eagine.core.valid_if;
 
-export import :decl;
 export import :compare;
 export import :filesystem;
 export import :range;
