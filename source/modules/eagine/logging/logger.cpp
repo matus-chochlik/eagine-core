@@ -405,7 +405,9 @@ public:
     }
 
     ~named_logging_object() noexcept {
-        log_lifetime(_object_id, "being destroyed").tag("objDestroy");
+        if(_object_id) {
+            log_lifetime(_object_id, "being destroyed").tag("objDestroy");
+        }
     }
 
     /// @brief Returns the identifier of this logging object.
