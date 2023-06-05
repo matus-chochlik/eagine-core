@@ -292,7 +292,9 @@ void application_config::_log_could_not_read_value(
 auto application_config::_find_comp_attr(
   const string_view key,
   const string_view tag) noexcept -> valtree::compound_attribute {
-    return _impl(_log, _main_ctx)->find_compound_attribute(key, tag);
+    return _impl(_log, _main_ctx)
+      .member(&application_config_impl::find_compound_attribute, key, tag)
+      .or_default();
 }
 //------------------------------------------------------------------------------
 auto application_config::_prog_args() noexcept -> const program_args& {
@@ -338,20 +340,22 @@ void application_config::link(
   const string_view key,
   const string_view tag,
   application_config_value_loader& loader) noexcept {
-    _impl(_log, _main_ctx)->link(key, tag, loader);
+    _impl(_log, _main_ctx)
+      .member(&application_config_impl::link, key, tag, loader);
 }
 //------------------------------------------------------------------------------
 void application_config::unlink(
   const string_view key,
   const string_view tag,
   application_config_value_loader& loader) noexcept {
-    _impl(_log, _main_ctx)->unlink(key, tag, loader);
+    _impl(_log, _main_ctx)
+      .member(&application_config_impl::unlink, key, tag, loader);
 }
 //------------------------------------------------------------------------------
 auto application_config::reload() noexcept -> bool {
     return _impl(_log, _main_ctx)
       .member(&application_config_impl::reload)
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

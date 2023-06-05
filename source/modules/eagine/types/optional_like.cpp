@@ -1398,7 +1398,18 @@ template <typename V, typename... Args>
       decltype(function),
       std::conditional_t<std::is_const_v<V>, std::add_const_t<T>, T>&,
       Args...>;
-    if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+    if constexpr(std::is_void_v<R>) {
+        if(ptr) {
+            std::invoke(function, *ptr, std::forward<Args>(args)...);
+        }
+    } else if constexpr(std::is_same_v<R, bool>) {
+        if(ptr) {
+            return tribool{
+              std::invoke(function, *ptr, std::forward<Args>(args)...), true};
+        } else {
+            return tribool{indeterminate};
+        }
+    } else if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
         using P = std::conditional_t<
           std::is_reference_v<R>,
           std::remove_reference_t<R>,
@@ -1412,10 +1423,10 @@ template <typename V, typename... Args>
     } else {
         using O = std::remove_cvref_t<R>;
         if(ptr) {
-            return std::optional<O>{
-              std::invoke(function, *ptr, std::forward<Args>(args)...)};
+            return optionally_valid<O>{
+              std::invoke(function, *ptr, std::forward<Args>(args)...), true};
         } else {
-            return std::optional<O>{};
+            return optionally_valid<O>{};
         }
     }
 }

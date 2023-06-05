@@ -256,7 +256,7 @@ public:
     [[nodiscard]] constexpr auto member(auto ptr, Args&&... args) const noexcept
         requires(
           std::is_member_pointer_v<decltype(ptr)> and
-          (std::is_member_object_pointer_v<decltype(ptr)> or
+          (std::is_member_function_pointer_v<decltype(ptr)> or
            (sizeof...(args) == 0U)))
     {
         return ref().member(ptr, std::forward<Args>(args)...);

@@ -53,7 +53,7 @@ void valid_if_executable_path(auto& s) {
       v.transform([](std::string_view p) -> bool {
            return p.find("filesystem") != std::string_view::npos;
        })
-        .value_or(false),
+        .or_false(),
       "content");
 }
 //------------------------------------------------------------------------------
