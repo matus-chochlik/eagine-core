@@ -236,10 +236,12 @@ main_ctx_storage::main_ctx_storage(
     _exe_path = fs_path.lexically_normal().string();
 
     _log_root.info("application ${appName} starting")
+      .tag("appStart")
       .arg("appName", "AppName", _app_name)
       .arg("exePath", "FsPath", _exe_path);
 
     _log_root.info("using ${init} to initialize random generator")
+      .tag("rndGenSeed")
       .arg("init", _rand_init);
 }
 //------------------------------------------------------------------------------
