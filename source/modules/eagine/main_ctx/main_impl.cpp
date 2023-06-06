@@ -57,7 +57,8 @@ auto main_impl(
             if(const auto prefix{build_info().install_prefix()}) {
                 std::cerr << " installed in '" << prefix << "/bin'";
             }
-            std::cerr << "." << std::endl;
+            std::cerr << ", or re-run with the --use-null-log option."
+                      << std::endl;
             result = 121;
         } else {
             std::cerr << "unhandled log back-end error: " << log_err.what()
