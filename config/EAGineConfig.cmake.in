@@ -26,7 +26,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/EAGineEmbed.cmake)
 
 add_library(EAGine UNKNOWN IMPORTED)
 
-target_compile_definitions(
-	EAGine
-	"-fmodule-file=${MODULE_ID}=${PCM_PATH}"
-	IMPORTED_LOCATION_DEBUG
+foreach(COMPONENT ${EAGine_FIND_COMPONENTS})
+	set(CMP_PATH "${CMAKE_CURRENT_LIST_DIR}/${CMAKE_BUILD_TYPE}/module-eagine.${COMPONENT}.cmake")
+	if(EXISTS "${CMP_PATH}")
+		include("${CMP_PATH}")
+	else()
+		message(FATAL_ERROR "Could not find EAGine component '${COMPONENT}'")
+	endif()
+endforeach()

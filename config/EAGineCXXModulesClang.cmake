@@ -27,7 +27,8 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		IMPORTS
 		SUBMODULES
 		PRIVATE_INCLUDE_DIRECTORIES
-		PRIVATE_LINK_LIBRARIES)
+		PRIVATE_LINK_LIBRARIES
+		PUBLIC_LINK_LIBRARIES)
 	cmake_parse_arguments(
 		EAGINE_MODULE
 		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
@@ -97,6 +98,14 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			${EAGINE_MODULE_PROPER}
 			PRIVATE "${LIB}")
 	endforeach()
+	foreach(LIB ${EAGINE_MODULE_PUBLIC_LINK_LIBRARIES})
+		target_link_libraries(
+			${EAGINE_MODULE_OBJECTS}
+			PUBLIC "${LIB}")
+		target_link_libraries(
+			${EAGINE_MODULE_PROPER}
+			PUBLIC "${LIB}")
+	endforeach()
 
 	foreach(NAME ${EAGINE_MODULE_SOURCES})
 		add_custom_command(
@@ -114,6 +123,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	endforeach()
 
 	set(EAGINE_MODULE_DEPENDS)
+	set(EAGINE_MODULE_IMPORT_PCM_DEPENDS)
 	set(EAGINE_MODULE_COMPILE_OPTIONS
 		"-I${EAGINE_CORE_BINARY_ROOT}/include"
 		"-fprebuilt-module-path=.")
@@ -145,11 +155,22 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 						PUBLIC ${NAME})
 				endif()
 				list(APPEND EAGINE_MODULE_DEPENDS ${NAME})
+				list(
+					APPEND EAGINE_MODULE_IMPORT_PCM_DEPENDS
+					"\${PROJECT_BINARY_DIR}/EAGine/${NAME}.pcm")
 			endif()
+			file(
+				APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+				"if(NOT TARGET ${NAME})\n"
+				"	include(\"\${_IMPORT_PREFIX}/${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}/module-${NAME}.cmake\")\n"
+				"endif()\n")
 		elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}.cpp")
 			list(
 				APPEND EAGINE_MODULE_DEPENDS
 				${EAGINE_MODULE_PROPER}-${NAME}.pcm)
+			list(
+				APPEND EAGINE_MODULE_IMPORT_PCM_DEPENDS
+				"\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}-${NAME}.pcm")
 		endif()
 	endforeach()
 
@@ -199,6 +220,14 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		endforeach()
 
 		list(APPEND EAGINE_MODULE_DEPENDS ${NAME})
+		list(
+			APPEND EAGINE_MODULE_IMPORT_PCM_DEPENDS
+			"\${PROJECT_BINARY_DIR}/EAGine/${NAME}.pcm")
+		file(
+			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+			"if(NOT TARGET ${NAME})\n"
+			"	include(\"\${_IMPORT_PREFIX}/${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}/module-${NAME}.cmake\")\n"
+			"endif()\n")
 	endforeach()
 
 	string(REPLACE "." "/" EAGINE_MODULE_DIRECTORY ${EAGINE_MODULE_PROPER})
@@ -241,6 +270,9 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			list(
 				APPEND EAGINE_MODULE_DEPENDS
 				"${EAGINE_MODULE_PROPER}-${PARTITION}.pcm")
+			list(
+				APPEND EAGINE_MODULE_IMPORT_PCM_DEPENDS
+				"\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}-${PARTITION}.pcm")
 		endforeach()
 	else()
 		set(OUTPUT ${EAGINE_MODULE_PROPER}-${EAGINE_MODULE_PARTITION})
@@ -250,6 +282,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	endif()
 
 	list(REMOVE_DUPLICATES EAGINE_MODULE_DEPENDS)
+	list(REMOVE_DUPLICATES EAGINE_MODULE_IMPORT_PCM_DEPENDS)
 	list(REMOVE_DUPLICATES EAGINE_MODULE_COMPILE_OPTIONS)
 
 	set(EAGINE_MODULE_PCM_DEPENDS "${SOURCE}.cppm")
@@ -269,7 +302,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			${SOURCE}.cppm
 			--precompile
 			--output ${OUTPUT}.pcm
-			DEPENDS ${EAGINE_MODULE_PCM_DEPENDS}
+		DEPENDS ${EAGINE_MODULE_PCM_DEPENDS}
 		COMMENT "Precompiling CXX module ${OUTPUT}")
 
 	file(
@@ -285,12 +318,45 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		"		\${CMAKE_CXX_FLAGS}\n"
 		"		\"\${_IMPORT_PREFIX}/share/eagine/source/${CMAKE_BUILD_TYPE}/${EAGINE_MODULE_DIRECTORY}/${SOURCE}.cppm\"\n"
 		"		--precompile\n"
-		"		--output \"\${PROJECT_BINARY_DIR}/EAGine/${OUTPUT}.pcm\"\n"
-		"	COMMENT \"Precompiling CXX module ${OUTPUT}.pcm\"\n"
-		")\n")
+		"		--output \"\${PROJECT_BINARY_DIR}/EAGine/${OUTPUT}.pcm\"\n")
+	if(NOT "${EAGINE_MODULE_IMPORT_PCM_DEPENDS}" STREQUAL "")
+		file(
+			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+			"	DEPENDS \"${EAGINE_MODULE_IMPORT_PCM_DEPENDS}\"\n")
+	endif()
+	file(
+		APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+		"	COMMENT \"Precompiling CXX module ${OUTPUT}.pcm\")\n")
 
 	if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
+		if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+			set(CONFIG_POSTFIX "${CMAKE_RELEASE_POSTFIX}")
+		elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+			set(CONFIG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
+		endif()
 		set(EAGINE_MODULE_DEPENDS "${OUTPUT}.pcm")
+		file(
+			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+			"add_custom_target(${EAGINE_MODULE_PROPER}-pcm DEPENDS \"\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}.pcm\")\n"
+			"add_library(${EAGINE_MODULE_PROPER} STATIC IMPORTED)\n"
+			"set_target_properties(\n"
+			"	${EAGINE_MODULE_PROPER} PROPERTIES\n"
+			"	IMPORTED_LOCATION \"\${_IMPORT_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${EAGINE_MODULE_PROPER}${CONFIG_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}\")\n"
+			"set_target_properties(\n"
+			"	${EAGINE_MODULE_PROPER} PROPERTIES\n"
+			"	INTERFACE_COMPILE_OPTIONS\n" 
+			"		\"-fmodules;-Wno-read-modules-implicitly;-fmodule-file=${EAGINE_MODULE_PROPER}=\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}.pcm\"\n"
+			"	INTERFACE_LINK_DIRECTORIES\n" 
+			"		\"\${_IMPORT_PREFIX}/lib\"\n")
+		if(NOT "${EAGINE_MODULE_PUBLIC_LINK_LIBRARIES}" STREQUAL "")
+			file(
+				APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+				"	INTERFACE_LINK_LIBRARIES\n"
+				"		\"${EAGINE_MODULE_PUBLIC_LINK_LIBRARIES}\"\n")
+		endif()
+		file(
+			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+			")\n")
 	else()
 		list(APPEND EAGINE_MODULE_DEPENDS "${OUTPUT}.pcm")
 	endif()

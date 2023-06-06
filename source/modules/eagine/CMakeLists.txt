@@ -52,6 +52,8 @@ eagine_add_module(
 		eagine.core.serialization
 		eagine.core.main_ctx
 		eagine.core.resource
+	PUBLIC_LINK_LIBRARIES
+		ryml
 )
 
 eagine_add_module_tests(
