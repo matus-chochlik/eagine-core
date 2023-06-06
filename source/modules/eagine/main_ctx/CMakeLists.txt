@@ -133,6 +133,8 @@ eagine_add_module(
 		eagine.core.progress
 		eagine.core.valid_if
 		eagine.core.value_tree
+	INTERFACE_LINK_LIBRARIES
+		systemd
 )
 
 eagine_add_module_tests(

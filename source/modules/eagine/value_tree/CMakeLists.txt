@@ -60,7 +60,9 @@ eagine_add_module(
 		eagine.core.console
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/rapidjson/include"
-	PUBLIC_LINK_LIBRARIES
+	PRIVATE_LINK_LIBRARIES
+		ryml
+	INTERFACE_LINK_LIBRARIES
 		ryml
 )
 

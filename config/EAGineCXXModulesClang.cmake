@@ -28,7 +28,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		SUBMODULES
 		PRIVATE_INCLUDE_DIRECTORIES
 		PRIVATE_LINK_LIBRARIES
-		PUBLIC_LINK_LIBRARIES)
+		INTERFACE_LINK_LIBRARIES)
 	cmake_parse_arguments(
 		EAGINE_MODULE
 		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
@@ -97,14 +97,6 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		target_link_libraries(
 			${EAGINE_MODULE_PROPER}
 			PRIVATE "${LIB}")
-	endforeach()
-	foreach(LIB ${EAGINE_MODULE_PUBLIC_LINK_LIBRARIES})
-		target_link_libraries(
-			${EAGINE_MODULE_OBJECTS}
-			PUBLIC "${LIB}")
-		target_link_libraries(
-			${EAGINE_MODULE_PROPER}
-			PUBLIC "${LIB}")
 	endforeach()
 
 	foreach(NAME ${EAGINE_MODULE_SOURCES})
@@ -338,7 +330,8 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		file(
 			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
 			"add_custom_target(${EAGINE_MODULE_PROPER}-pcm DEPENDS \"\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}.pcm\")\n"
-			"add_library(${EAGINE_MODULE_PROPER} STATIC IMPORTED)\n"
+			"add_library(${EAGINE_MODULE_PROPER} STATIC IMPORTED GLOBAL)\n"
+			"add_dependencies(${EAGINE_MODULE_PROPER} ${EAGINE_MODULE_PROPER}-pcm)\n"
 			"set_target_properties(\n"
 			"	${EAGINE_MODULE_PROPER} PROPERTIES\n"
 			"	IMPORTED_LOCATION \"\${_IMPORT_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${EAGINE_MODULE_PROPER}${CONFIG_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}\")\n"
@@ -348,11 +341,21 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			"		\"-fmodules;-Wno-read-modules-implicitly;-fmodule-file=${EAGINE_MODULE_PROPER}=\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}.pcm\"\n"
 			"	INTERFACE_LINK_DIRECTORIES\n" 
 			"		\"\${_IMPORT_PREFIX}/lib\"\n")
-		if(NOT "${EAGINE_MODULE_PUBLIC_LINK_LIBRARIES}" STREQUAL "")
+		if(NOT "${EAGINE_MODULE_INTERFACE_LINK_LIBRARIES}" STREQUAL "")
+			unset(INTERFACE_LIBS)
+			foreach(LIB ${EAGINE_MODULE_INTERFACE_LINK_LIBRARIES})
+				if(TARGET ${LIB})
+					list(APPEND INTERFACE_LIBS "${LIB}${CONFIG_POSTFIX}")
+				else()
+					list(APPEND INTERFACE_LIBS ${LIB})
+				endif()
+			endforeach()
+			if(NOT "${INTERFACE_LIBS}" STREQUAL "")
 			file(
 				APPEND "${EAGINE_MODULE_CMAKE_FILE}"
 				"	INTERFACE_LINK_LIBRARIES\n"
-				"		\"${EAGINE_MODULE_PUBLIC_LINK_LIBRARIES}\"\n")
+				"		\"${INTERFACE_LIBS}\"\n")
+			endif()
 		endif()
 		file(
 			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
