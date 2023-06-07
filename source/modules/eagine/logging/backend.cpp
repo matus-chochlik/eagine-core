@@ -39,7 +39,9 @@ export enum class log_event_severity : std::uint8_t {
     stat,
     /// @brief Informational log entries.
     info,
-    /// @brief Warning log entries, indicating potential problems.
+    /// @brief Entries informing about potential process state change.
+    change,
+    /// @brief log entries, indicating potential problems.
     warning,
     /// @brief Error log entries, indicating serious problems.
     error,
@@ -51,12 +53,13 @@ export template <typename Selector>
 constexpr auto enumerator_mapping(
   const std::type_identity<log_event_severity>,
   const Selector) noexcept {
-    return enumerator_map_type<log_event_severity, 8>{
+    return enumerator_map_type<log_event_severity, 9>{
       {{"backtrace", log_event_severity::backtrace},
        {"trace", log_event_severity::trace},
        {"debug", log_event_severity::debug},
        {"stat", log_event_severity::stat},
        {"info", log_event_severity::info},
+       {"change", log_event_severity::change},
        {"warning", log_event_severity::warning},
        {"error", log_event_severity::error},
        {"fatal", log_event_severity::fatal}}};
@@ -115,6 +118,28 @@ export struct logger_backend : interface<logger_backend> {
       const logger_instance_id instance,
       const string_view display_name,
       const string_view description) noexcept = 0;
+
+    /// @brief Declares a state delimited by a pair of messages with specified tags.
+    /// @param source the identifier of the source logger object.
+    /// @param state_tag the identifier of the declared state.
+    /// @param begin_tag the tag of the message that begins the declared state.
+    /// @param end_tag the tag of the message that ends the declared state.
+    /// @see active_state
+    virtual void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) noexcept = 0;
+
+    /// @brief Indicates that the specified state is considered an active state.
+    /// @param source the identifier of the source logger object.
+    /// @param state_tag the identifier of the declared state.
+    /// @see declare_state
+    /// An active state is indicating that the application is working on it's
+    /// main task and is initialized and prepared to handle input.
+    virtual void active_state(
+      const identifier source,
+      const identifier state_tag) noexcept = 0;
 
     /// @brief Begins a new logging message.
     /// @param source the identifier of the source logger object.
@@ -238,9 +263,6 @@ export struct logger_backend : interface<logger_backend> {
     /// @brief Finishes the current logging message.
     virtual void finish_message() noexcept = 0;
 
-    /// @brief Finishes the current log.
-    virtual void finish_log() noexcept = 0;
-
     /// @brief Adds a chart/graph sample to the log.
     /// @param source the identifier of the source logger object.
     /// @param instance unique instance id of the source logger object.
@@ -251,30 +273,36 @@ export struct logger_backend : interface<logger_backend> {
       const logger_instance_id instance,
       const identifier series,
       const float value) noexcept = 0;
+
+    /// @brief Indicates that the running process is alive.
+    virtual void heartbeat() noexcept = 0;
+
+    /// @brief Finishes the current log.
+    virtual void finish_log() noexcept = 0;
 };
 //------------------------------------------------------------------------------
 // backend getters
 //------------------------------------------------------------------------------
-export auto make_null_log_backend() -> std::unique_ptr<logger_backend>;
+export auto make_null_log_backend() -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
 export auto make_asio_local_ostream_log_backend_mutex(const log_stream_info&)
-  -> std::unique_ptr<logger_backend>;
+  -> unique_holder<logger_backend>;
 export auto make_asio_local_ostream_log_backend_spinlock(const log_stream_info&)
-  -> std::unique_ptr<logger_backend>;
+  -> unique_holder<logger_backend>;
 
 export auto make_asio_local_ostream_log_backend_mutex(
   string_view addr,
-  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+  const log_stream_info&) -> unique_holder<logger_backend>;
 export auto make_asio_local_ostream_log_backend_spinlock(
   string_view addr,
-  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+  const log_stream_info&) -> unique_holder<logger_backend>;
 
 export auto make_asio_tcpipv4_ostream_log_backend_mutex(
   string_view addr,
-  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+  const log_stream_info&) -> unique_holder<logger_backend>;
 export auto make_asio_tcpipv4_ostream_log_backend_spinlock(
   string_view addr,
-  const log_stream_info&) -> std::unique_ptr<logger_backend>;
+  const log_stream_info&) -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
 export class log_backend_error : public std::system_error {
 public:
@@ -283,11 +311,11 @@ public:
 };
 //------------------------------------------------------------------------------
 export auto make_proxy_log_backend(log_stream_info info)
-  -> std::unique_ptr<logger_backend>;
+  -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
 export auto make_syslog_log_backend_mutex(const log_stream_info&)
-  -> std::unique_ptr<logger_backend>;
+  -> unique_holder<logger_backend>;
 export auto make_syslog_log_backend_spinlock(const log_stream_info&)
-  -> std::unique_ptr<logger_backend>;
+  -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
 } // namespace eagine

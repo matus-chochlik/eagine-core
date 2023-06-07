@@ -48,6 +48,16 @@ struct null_log_backend final : logger_backend {
       const string_view,
       const string_view) noexcept final {}
 
+    void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) noexcept final {}
+
+    void active_state(
+      const identifier source,
+      const identifier state_tag) noexcept final {}
+
     auto begin_message(
       const identifier,
       const identifier,
@@ -109,17 +119,19 @@ struct null_log_backend final : logger_backend {
 
     void finish_message() noexcept final {}
 
-    void finish_log() noexcept final {}
-
     void log_chart_sample(
       const identifier,
       const logger_instance_id,
       const identifier,
       const float) noexcept final {}
+
+    void heartbeat() noexcept final {}
+
+    void finish_log() noexcept final {}
 };
 //------------------------------------------------------------------------------
-auto make_null_log_backend() -> std::unique_ptr<logger_backend> {
-    return std::make_unique<null_log_backend>();
+auto make_null_log_backend() -> unique_holder<logger_backend> {
+    return {hold<null_log_backend>};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

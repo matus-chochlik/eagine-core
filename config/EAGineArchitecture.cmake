@@ -1,0 +1,30 @@
+#  Copyright Matus Chochlik.
+#  Distributed under the Boost Software License, Version 1.0.
+#  See accompanying file LICENSE_1_0.txt or copy at
+#   http://www.boost.org/LICENSE_1_0.txt
+#
+find_program(DPKG_ARCHITECTURE_COMMAND dpkg-architecture)
+find_program(ARCH_COMMAND arch)
+
+if(DPKG_ARCHITECTURE_COMMAND)
+	execute_process(
+		COMMAND ${DPKG_ARCHITECTURE_COMMAND} --query DEB_BUILD_ARCH
+		OUTPUT_VARIABLE EAGINE_BUILD_ARCH
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+	)
+	execute_process(
+		COMMAND ${DPKG_ARCHITECTURE_COMMAND} --query DEB_BUILD_MULTIARCH
+		OUTPUT_VARIABLE EAGINE_BUILD_MULTIARCH
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+	)
+elseif(ARCH_COMMAND)
+	execute_process(
+		COMMAND ${ARCH_COMMAND}
+		OUTPUT_VARIABLE EAGINE_BUILD_ARCH
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+	)
+	set(EAGINE_BUILD_MULTIARCH "${EAGINE_BUILD_ARCH}")
+else()
+	unset(EAGINE_BUILD_ARCH)
+	unset(EAGINE_BUILD_MULTIARCH)
+endif()

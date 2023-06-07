@@ -9,7 +9,6 @@
 #include <eagine/testing/unit_begin.hpp>
 import std;
 import eagine.core.types;
-import eagine.core.concepts;
 //------------------------------------------------------------------------------
 struct inner {
     short s{0};

@@ -5,7 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-export module eagine.core.concepts;
+export module eagine.core.types:concepts;
 
 import std;
 
@@ -77,8 +77,7 @@ concept extracts_to =
 // does not hide
 //------------------------------------------------------------------------------
 export template <typename T, typename X>
-concept does_not_hide =
-  bool(not std::is_base_of_v<T, std::remove_cv_t<std::remove_reference_t<X>>>);
+concept does_not_hide = not std::is_base_of_v<std::remove_cvref_t<X>, T>;
 //------------------------------------------------------------------------------
 } // namespace eagine
 

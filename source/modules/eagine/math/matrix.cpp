@@ -12,7 +12,6 @@ module;
 export module eagine.core.math:matrix;
 
 import std;
-import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.vectorization;
 
@@ -824,7 +823,7 @@ struct is_known_matrix_type<math::matrix<T, C, R, RM, V>>
 
 export template <typename T, int C, int R, bool RM, bool V>
 struct canonical_compound_type<math::matrix<T, C, R, RM, V>>
-  : std::type_identity<std::remove_cv_t<T[C][R]>>{};
+  : std::type_identity<std::remove_cv_t<T[C][R]>> {};
 
 export template <typename T, int C, int R, bool RM, bool V>
 struct compound_view_maker<math::matrix<T, C, R, RM, V>> {

@@ -65,18 +65,163 @@ auto main_ctx::preinitialize() noexcept -> main_ctx& {
     return *this;
 }
 //------------------------------------------------------------------------------
-auto try_get_main_ctx() noexcept -> main_ctx_getters* {
+auto try_get_main_ctx() noexcept -> optional_reference<main_ctx_getters> {
     return main_ctx::try_get();
+}
+//------------------------------------------------------------------------------
+static auto main_ctx_scramble_encrypted(
+  const memory::const_block input,
+  memory::buffer& output) noexcept -> memory::const_block {
+    (void)output;
+    // TODO pad to % 8 redistribute bits of octets
+    return input;
+}
+//------------------------------------------------------------------------------
+static void main_ctx_unscramble_encrypted(
+  const memory::const_block input,
+  memory::buffer& output) noexcept {
+    (void)output;
+    // TODO remove padding to % 8 redistribute bits of octets
+    memory::copy_into(input, output);
+}
+//------------------------------------------------------------------------------
+static auto main_ctx_encrypt_shared_with(
+  memory::const_block nonce,
+  const memory::const_block key,
+  const memory::const_block input,
+  memory::buffer& output) noexcept -> bool {
+    memory::buffer temp;
+    auto src{main_ctx_scramble_encrypted(input, temp)};
+    output.resize(src.size());
+    auto dst{cover(output)};
+    const auto n{nonce.size()};
+    const auto m{key.size()};
+    assert(src.size() == dst.size());
+    for(auto i : integer_range(src.size())) {
+        dst[i] = (src[i] ^ key[i % m] ^ nonce[i % n]);
+    }
+    return true;
+}
+//------------------------------------------------------------------------------
+static auto main_ctx_decrypt_shared_with(
+  memory::const_block nonce,
+  const memory::const_block key,
+  const memory::const_block input,
+  memory::buffer& output) noexcept -> bool {
+    auto src{input};
+    memory::buffer temp;
+    temp.resize(src.size());
+    auto dst{cover(temp)};
+    const auto n{nonce.size()};
+    const auto m{key.size()};
+    assert(src.size() == dst.size());
+    for(auto i : integer_range(src.size())) {
+        dst[i] = (src[i] ^ key[i % m] ^ nonce[i % n]);
+    }
+    main_ctx_unscramble_encrypted(dst, output);
+    return true;
+}
+//------------------------------------------------------------------------------
+auto main_ctx::encrypt_shared(
+  memory::const_block nonce,
+  memory::const_block input,
+  memory::buffer& output) noexcept -> bool {
+    if(not nonce.empty()) {
+        memory::buffer key{};
+        if(config().fetch("main_key", key)) {
+            if(not key.empty()) {
+                return main_ctx_encrypt_shared_with(
+                  nonce, view(key), input, output);
+            }
+        }
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto main_ctx::decrypt_shared(
+  memory::const_block nonce,
+  memory::const_block input,
+  memory::buffer& output) noexcept -> bool {
+    if(not nonce.empty()) {
+        memory::buffer key{};
+        if(config().fetch("main_key", key)) {
+            if(not key.empty()) {
+                return main_ctx_decrypt_shared_with(
+                  nonce, view(key), input, output);
+            }
+        }
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto main_ctx::encrypt_shared(
+  memory::const_block nonce,
+  string_view input,
+  memory::buffer& output) noexcept -> bool {
+    return encrypt_shared(nonce, as_bytes(input), output);
+}
+//------------------------------------------------------------------------------
+auto main_ctx::decrypt_shared(
+  memory::const_block nonce,
+  memory::const_block input,
+  std::string& output) noexcept -> bool {
+    memory::buffer temp;
+    if(decrypt_shared(nonce, input, temp)) {
+        output.resize(std_size(temp.size()));
+        auto src{as_chars(view(temp))};
+        std::copy(src.begin(), src.end(), output.begin());
+        return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto main_ctx::encrypt_shared_password(
+  memory::const_block nonce,
+  const string_view key,
+  const string_view tag,
+  memory::buffer& encrypted) noexcept -> bool {
+    std::string passwd;
+    if(config().fetch(key, passwd, tag)) {
+        return encrypt_shared(nonce, passwd, encrypted);
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto main_ctx::matches_encrypted_shared_password(
+  memory::const_block nonce,
+  const string_view key,
+  const string_view tag,
+  memory::buffer& encrypted) noexcept -> bool {
+    std::string received;
+    if(decrypt_shared(nonce, view(encrypted), received)) {
+        std::string passwd;
+        if(config().fetch(key, passwd, tag)) {
+            return received == passwd;
+        }
+    }
+    return false;
 }
 //------------------------------------------------------------------------------
 // main_ctx_object-related
 //------------------------------------------------------------------------------
 main_ctx_log_backend_getter::main_ctx_log_backend_getter(
-  main_ctx_getters& c) noexcept
-  : _backend{c.log().backend()} {}
+  main_ctx_getters& c) noexcept {
+    const auto new_ref{c.log().backend()};
+    if(_backend_ref()) [[likely]] {
+        assert(not new_ref or _backend_ref().refers_to(new_ref));
+    } else if(new_ref) {
+        _backend_ref() = new_ref;
+    }
+}
 //------------------------------------------------------------------------------
-main_ctx_log_backend_getter::main_ctx_log_backend_getter() noexcept
-  : _backend{main_ctx::get().log().backend()} {}
+main_ctx_log_backend_getter::main_ctx_log_backend_getter() noexcept {
+    const auto new_ref{main_ctx::get().log().backend()};
+    if(_backend_ref()) [[likely]] {
+        assert(not new_ref or _backend_ref().refers_to(new_ref));
+    } else if(new_ref) {
+        _backend_ref() = new_ref;
+    }
+}
 //------------------------------------------------------------------------------
 auto main_ctx_object::main_context() const noexcept -> main_ctx& {
     return main_ctx::get();
@@ -125,8 +270,13 @@ auto main_ctx_object::workers() const noexcept -> workshop& {
 }
 //------------------------------------------------------------------------------
 auto main_ctx_object::locate_service(identifier type_id) const noexcept
-  -> std::shared_ptr<main_ctx_service> {
+  -> optional_reference<main_ctx_service> {
     return main_context().locate_service(type_id);
+}
+//------------------------------------------------------------------------------
+auto main_ctx_object::share_service(identifier type_id) const noexcept
+  -> shared_holder<main_ctx_service> {
+    return main_context().share_service(type_id);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

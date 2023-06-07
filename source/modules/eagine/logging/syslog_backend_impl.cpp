@@ -94,6 +94,16 @@ public:
 #endif
     }
 
+    void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) noexcept final {}
+
+    void active_state(
+      const identifier source,
+      const identifier state_tag) noexcept final {}
+
     auto begin_message(
       const identifier src,
       const identifier tag,
@@ -222,17 +232,19 @@ public:
         _del_message();
     }
 
-    void finish_log() noexcept final {
-#if EAGINE_POSIX
-        ::closelog();
-#endif
-    }
-
     void log_chart_sample(
       const identifier,
       const logger_instance_id,
       const identifier,
       const float) noexcept final {}
+
+    void heartbeat() noexcept final {}
+
+    void finish_log() noexcept final {
+#if EAGINE_POSIX
+        ::closelog();
+#endif
+    }
 
 private:
     Lockable _lockable{};
@@ -277,6 +289,7 @@ private:
                 return LOG_ERR;
             case log_event_severity::warning:
                 return LOG_WARNING;
+            case log_event_severity::change:
             case log_event_severity::info:
             case log_event_severity::stat:
                 return LOG_INFO;
@@ -293,14 +306,14 @@ private:
 
     static void _translate(string_view format, _message_state& msg) {
         while(auto pos{find_position(format, string_view{"${"})}) {
-            const string_view prev{head(format, extract(pos))};
+            const string_view prev{head(format, *pos)};
             msg.format.append(prev);
-            format = skip(format, extract(pos) + 2);
+            format = skip(format, *pos + 2);
             if(const auto end{find_position(format, string_view{"}"})}) {
                 msg.arg_idx[msg.arg_count++] =
-                  identifier(head(format, extract(end))).value();
+                  identifier(head(format, *end)).value();
                 msg.format.append("%s");
-                format = skip(format, extract(end) + 1);
+                format = skip(format, *end + 1);
             }
         }
         msg.format.append(format);
@@ -341,13 +354,13 @@ private:
 };
 //------------------------------------------------------------------------------
 auto make_syslog_log_backend_mutex(const log_stream_info& info)
-  -> std::unique_ptr<logger_backend> {
-    return std::make_unique<syslog_log_backend<std::mutex>>(info);
+  -> unique_holder<logger_backend> {
+    return {hold<syslog_log_backend<std::mutex>>, info};
 }
 
 auto make_syslog_log_backend_spinlock(const log_stream_info& info)
-  -> std::unique_ptr<logger_backend> {
-    return std::make_unique<syslog_log_backend<spinlock>>(info);
+  -> unique_holder<logger_backend> {
+    return {hold<syslog_log_backend<spinlock>>, info};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

@@ -145,7 +145,7 @@ struct common_serializer {
     auto write(const span<const T> values, auto& backend) const noexcept {
         const auto tmd = serialization_error_code::too_much_data;
         const auto icw = serialization_error_code::incomplete_write;
-        auto& sink = extract(backend.sink());
+        auto& sink = backend.sink();
         serialization_errors errors{};
         span_size_t i = 0;
         for(const auto& elem : values) {
@@ -489,7 +489,7 @@ export template <typename T, typename Backend>
         errors |= writer.write(value, backend);
         errors |= backend.finish();
     }
-    errors |= extract(backend.sink()).finalize();
+    errors |= backend.sink().finalize();
     return {value, errors};
 }
 //------------------------------------------------------------------------------

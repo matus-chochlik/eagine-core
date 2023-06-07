@@ -33,8 +33,7 @@ public:
 
     ~logger_shared_backend_getter() noexcept = default;
 
-    logger_shared_backend_getter(
-      std::shared_ptr<logger_backend> backend) noexcept
+    logger_shared_backend_getter(shared_holder<logger_backend> backend) noexcept
       : _backend{std::move(backend)} {}
 
     void begin_log() noexcept {
@@ -50,12 +49,12 @@ public:
         }
     }
 
-    auto get() const noexcept -> logger_backend* {
-        return _backend.get();
+    auto get() const noexcept -> optional_reference<logger_backend> {
+        return _backend;
     }
 
 private:
-    std::shared_ptr<logger_backend> _backend{};
+    shared_holder<logger_backend> _backend{};
 };
 //------------------------------------------------------------------------------
 /// @brief Basic template for logger objects.
@@ -73,6 +72,13 @@ public:
     /// @brief Returns a pointer to the backend of this logger object.
     auto backend() const noexcept {
         return _backend_getter().get();
+    }
+
+    /// @brief Indicates that this process is alive.
+    void heartbeat() const noexcept {
+        if(auto lbe{backend()}) {
+            lbe->heartbeat();
+        }
     }
 
     /// @brief Returns the unique id of this logger instance.
@@ -95,7 +101,7 @@ public:
 
     auto configure(basic_config_intf& config) const -> bool {
         if(auto lbe{backend()}) {
-            extract(lbe).configure(config);
+            lbe->configure(config);
         }
         return false;
     }
@@ -118,10 +124,27 @@ protected:
     void set_description(
       const identifier source,
       const string_view display_name,
-      const string_view description) noexcept {
+      const string_view description) const noexcept {
         if(auto lbe{backend()}) {
-            extract(lbe).set_description(
+            lbe->set_description(
               source, instance_id(), display_name, description);
+        }
+    }
+
+    void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) const noexcept {
+        if(auto lbe{backend()}) {
+            lbe->declare_state(source, state_tag, begin_tag, end_tag);
+        }
+    }
+
+    void active_state(const identifier source, const identifier state_tag)
+      const noexcept {
+        if(auto lbe{backend()}) {
+            lbe->active_state(source, state_tag);
         }
     }
 
@@ -221,6 +244,14 @@ protected:
           control, source, log_event_severity::warning, format);
     }
 
+    constexpr auto log_change(const identifier source, const string_view format)
+      const noexcept {
+        return make_log_entry(
+          source,
+          log_event_severity_constant<log_event_severity::change>{},
+          format);
+    }
+
     constexpr auto log_info(const identifier source, const string_view format)
       const noexcept {
         return make_log_entry(
@@ -267,20 +298,13 @@ protected:
         return log_info(source, format);
     }
 
-    auto make_log_stream(
-      const identifier source,
-      const log_event_severity severity) const noexcept -> stream_log_entry {
-        return {source, instance_id(), severity, _entry_backend(severity)};
-    }
-
     void log_chart_sample(
       [[maybe_unused]] const identifier source,
       [[maybe_unused]] const identifier series,
       [[maybe_unused]] const float value) const noexcept {
         if constexpr(is_log_level_enabled_v<log_event_severity::stat>) {
             if(auto lbe{_entry_backend(log_event_severity::stat)}) {
-                extract(lbe).log_chart_sample(
-                  source, instance_id(), series, value);
+                lbe->log_chart_sample(source, instance_id(), series, value);
             }
         }
     }
@@ -347,29 +371,43 @@ public:
     constexpr named_logging_object() noexcept = default;
 
     /// @brief Move constructor.
-    named_logging_object(named_logging_object&& temp) noexcept
+    constexpr named_logging_object(named_logging_object&& temp) noexcept
       : base{static_cast<base&&>(temp)}
-      , _object_id{temp._object_id} {
+      , _object_id{std::exchange(temp._object_id, identifier{})} {
         log_lifetime(_object_id, "being moved").tag("objMove");
     }
 
     /// @brief Copy constructor.
-    named_logging_object(const named_logging_object& that) noexcept
+    constexpr named_logging_object(const named_logging_object& that) noexcept
       : base{static_cast<const base&>(that)}
       , _object_id{that._object_id} {
         log_lifetime(_object_id, "being copied").tag("objCopy");
     }
 
     /// @brief Move assignment operator.
-    auto operator=(named_logging_object&&) noexcept
-      -> named_logging_object& = default;
+    constexpr auto operator=(named_logging_object&& temp) noexcept
+      -> named_logging_object& {
+        if(this != &temp) {
+            using std::swap;
+            swap(static_cast<base&>(*this), static_cast<base&>(temp));
+            swap(_object_id, temp._object_id);
+        }
+        return *this;
+    }
 
     /// @brief Copy assignment operator.
-    auto operator=(const named_logging_object&)
-      -> named_logging_object& = default;
+    auto operator=(const named_logging_object& that) -> named_logging_object& {
+        if(this != &that) {
+            static_cast<base&>(*this) = static_cast<const base&>(that);
+            _object_id = that._object_id;
+        }
+        return *this;
+    }
 
     ~named_logging_object() noexcept {
-        log_lifetime(_object_id, "being destroyed").tag("objDestroy");
+        if(_object_id) {
+            log_lifetime(_object_id, "being destroyed").tag("objDestroy");
+        }
     }
 
     /// @brief Returns the identifier of this logging object.
@@ -380,8 +418,23 @@ public:
     ///@brief Sets the human-readable name and description of this object.
     void object_description(
       const string_view display_name,
-      const string_view description) noexcept {
+      const string_view description) const noexcept {
         base::set_description(_object_id, display_name, description);
+    }
+
+    /// @brief Declares a possible special state delimited by pair of messages.
+    void declare_state(
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) const noexcept {
+        base::declare_state(_object_id, state_tag, begin_tag, end_tag);
+    }
+
+    using base::active_state;
+
+    /// @brief Declares a possible active state.
+    void active_state(const identifier state_tag) const noexcept {
+        base::active_state(_object_id, state_tag);
     }
 
     /// @brief Create a log message entry with specified severity and format.
@@ -432,6 +485,12 @@ public:
         return base::log_warning(control, _object_id, format);
     }
 
+    /// @brief Create a log message entry about state change, with specified format.
+    /// @see log_event_severity
+    auto log_change(const string_view format) const noexcept {
+        return base::log_change(_object_id, format);
+    }
+
     /// @brief Create a log message entry for information, with specified format.
     /// @see log_event_severity
     auto log_info(const string_view format) const noexcept {
@@ -462,20 +521,6 @@ public:
         return base::log_backtrace(_object_id, format);
     }
 
-    /// @brief Returns a log entry stream for debug messages.
-    /// @see log_event_severity
-    /// @see stream_log_entry
-    auto log_debug_stream() const noexcept {
-        return make_log_stream(log_event_severity::debug);
-    }
-
-    /// @brief Returns a log entry stream for error messages.
-    /// @see log_event_severity
-    /// @see stream_log_entry
-    auto log_error_stream() const noexcept {
-        return make_log_stream(log_event_severity::error);
-    }
-
     /// @brief Stores a new @p value in the specified chart data @p series.
     auto log_chart_sample(const identifier series, const float value)
       const noexcept -> const named_logging_object& {
@@ -500,8 +545,7 @@ public:
       const valid_if<T, P>& opt_value) const noexcept
       -> const named_logging_object& {
         if(opt_value) {
-            base::log_chart_sample(
-              _object_id, series, float(extract(opt_value)));
+            base::log_chart_sample(_object_id, series, float(*opt_value));
         }
         return *this;
     }
@@ -526,7 +570,7 @@ protected:
     }
 
 private:
-    identifier _object_id{"Object"};
+    identifier _object_id{};
 };
 //------------------------------------------------------------------------------
 /// @brief Standalone logger object type.
@@ -587,20 +631,6 @@ public:
         return make_log_entry(severity, format);
     }
 
-    /// @brief Returns a log entry stream for debug messages.
-    /// @see log_event_severity
-    /// @see stream_log_entry
-    auto debug_stream() const noexcept {
-        return log_debug_stream();
-    }
-
-    /// @brief Returns a log entry stream for error messages.
-    /// @see log_event_severity
-    /// @see stream_log_entry
-    auto error_stream() const noexcept {
-        return log_error_stream();
-    }
-
     /// @brief Stores a new @p value in the specified chart data @p series.
     auto chart_sample(const identifier series, const float value) const noexcept
       -> const logger& {
@@ -623,7 +653,7 @@ public:
     auto chart_sample(const identifier series, const valid_if<T, P>& opt_value)
       const noexcept -> const logger& {
         if(opt_value) {
-            base::log_chart_sample(series, float(extract(opt_value)));
+            base::log_chart_sample(series, float(*opt_value));
         }
         return *this;
     }
@@ -647,6 +677,13 @@ public:
     /// @see log
     auto warning(const string_view format) const noexcept {
         return log_warning(format);
+    }
+
+    /// @brief Returns a statu-change log entry.
+    /// @param format the log message format string.
+    /// @see log
+    auto change(const string_view format) const noexcept {
+        return log_change(format);
     }
 
     /// @brief Returns an informational log entry.

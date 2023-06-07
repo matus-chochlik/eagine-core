@@ -756,7 +756,7 @@ void span_find_if_T_m_m_h_1(eagitest::case_& test, T min, T max, bool has) {
             auto pos = find_element_if(
               eagine::view(v), [what](auto elem) { return elem == what; });
             test.ensure(bool(pos), "position");
-            test.check_equal(extract(pos), what - min, "position is ok");
+            test.check_equal(*pos, what - min, "position is ok");
         } else {
             auto what = rg.get_between<T>(mid + 1, max);
             auto pos = find_element_if(

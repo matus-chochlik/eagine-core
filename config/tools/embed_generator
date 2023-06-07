@@ -62,6 +62,7 @@ class EmberArgumentParser(argparse.ArgumentParser):
             ".eagitexi": "json_binary",
             ".yaml": "yaml",
             ".glsl": "glsl",
+            ".cppm": "cpp",
             ".cpp": "cpp",
             ".txt": "text_utf8"
         }
@@ -165,7 +166,7 @@ class EmberArgumentParser(argparse.ArgumentParser):
             if os.path.isdir(options.output_path):
                 options.output_path = os.path.join(
                     options.output_path,
-                    'resources.cpp'
+                    'resources.cppm'
                 )
             options.output = open(options.output_path, "wt")
 
@@ -330,9 +331,7 @@ def make_res_function(options, ident, path):
 # ------------------------------------------------------------------------------
 def make_prologue(options):
     options.output.write("module eagine.core.resource;\n");
-    options.output.write("import eagine.core.types;\n");
-    options.output.write("import eagine.core.memory;\n");
-    options.output.write("import eagine.core.identifier;\n");
+    options.output.write("import eagine.core;\n");
     options.output.write("import std;\n");
     options.output.write("namespace eagine {\n")
     options.output.write("template <identifier_t ResId>\n")
@@ -424,18 +423,22 @@ def list_embedded_resources(options):
     for path in options.input:
         with open(path, "rt") as ifd:
             source = str()
-            for line in ifd.readlines():
-                source += line
-                for embed_re in embed_res:
-                    embeds = re.findall(embed_re, source)
-                    if embeds:
-                        for ident, res_expr, res_path in embeds:
-                            if res_expr == "__FILE__":
-                                options.format_map[ident] = "cpp"
-                                yield ident, path
-                            else:
-                                yield ident, res_path
-                        source = str()
+            try:
+                for line in ifd.readlines():
+                    source += line
+                    for embed_re in embed_res:
+                        embeds = re.findall(embed_re, source)
+                        if embeds:
+                            for ident, res_expr, res_path in embeds:
+                                if res_expr == "__FILE__":
+                                    options.format_map[ident] = "cpp"
+                                    yield ident, path
+                                else:
+                                    yield ident, res_path
+                            source = str()
+            except UnicodeDecodeError:
+                # skip scanning of binary files
+                pass
 # ------------------------------------------------------------------------------
 def make_resource_file(options):
     some_output = False

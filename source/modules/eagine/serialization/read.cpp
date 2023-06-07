@@ -446,7 +446,7 @@ struct enum_deserializer {
                      temp_name.get(),
                      std::type_identity<T>{},
                      default_selector)}) {
-                    enumerator = extract(found);
+                    enumerator = *found;
                 } else {
                     errors |= deserialization_error_code::unexpected_data;
                 }
@@ -457,7 +457,7 @@ struct enum_deserializer {
             if(not errors) [[likely]] {
                 if(const auto found{
                      from_value(temp_value, std::type_identity<T>{})}) {
-                    enumerator = extract(found);
+                    enumerator = *found;
                 } else {
                     errors |= deserialization_error_code::unexpected_data;
                 }

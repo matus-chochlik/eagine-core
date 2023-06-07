@@ -525,6 +525,20 @@ public:
         return false;
     }
 
+    template <identifier_t V>
+    [[nodiscard]] auto select_value(
+      const attribute& attrib,
+      const span_size_t offset,
+      memory::buffer& dest,
+      const selector<V> sel) const -> bool {
+        std::string b64s;
+        if(select_value(attrib, offset, b64s, sel)) {
+            dest.clear();
+            return assign_if_fits(b64s, dest, sel);
+        }
+        return false;
+    }
+
     /// @brief Fetches a single value at the specified attribute, at offset into @p dest.
     template <typename T>
     [[nodiscard]] auto fetch_value(

@@ -8,8 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import std;
-import eagine.core.concepts;
-import eagine.core.valid_if;
+import eagine.core.types;
 //------------------------------------------------------------------------------
 struct test_person {
     std::string given_name;
@@ -113,7 +112,7 @@ void valid_if_non_ref(auto& s) {
     test.check_equal(v.transform(f).value(), 246, "transform value ok");
 
     const auto g{[](int i) {
-        return eagine::valid_if_positive<int>(i * 3);
+        return eagine::optionally_valid<int>{i * 3, true};
     }};
     test.ensure(v.and_then(g).has_value(), "and then has value");
     test.check_equal(v.and_then(g).value(), 369, "and then value ok");
@@ -164,7 +163,7 @@ void valid_if_ref(auto& s) {
     test.check_equal(v.transform(f).value(), i * 2, "transform value ok");
 
     const auto g{[](int j) {
-        return eagine::valid_if_positive<int>(j * 3);
+        return eagine::optionally_valid<int>{j * 3, true};
     }};
     test.ensure(v.and_then(g).has_value(), "and then has value");
     test.check_equal(v.and_then(g).value(), 456 * 3, "and then value ok");

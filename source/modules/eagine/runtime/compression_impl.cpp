@@ -477,23 +477,24 @@ auto default_data_compression_method() noexcept -> data_compression_method {
 #endif
 //------------------------------------------------------------------------------
 static inline auto make_data_compressor_impl(
-  memory::buffer_pool& buffers) noexcept {
+  memory::buffer_pool& buffers) noexcept
+  -> shared_holder<data_compressor_intf> {
 #if EAGINE_USE_ZLIB
-    return std::make_shared<zlib_data_compressor_impl>(buffers);
+    return {hold<zlib_data_compressor_impl>, buffers};
 #else
-    return std::make_shared<noop_data_compressor_impl>(buffers);
+    return {hold<noop_data_compressor_impl>, buffers};
 #endif
 }
 //------------------------------------------------------------------------------
 static inline auto make_data_compressor_impl_for_method(
   data_compression_method method,
-  memory::buffer_pool& buffers) -> std::shared_ptr<data_compressor_intf> {
+  memory::buffer_pool& buffers) -> shared_holder<data_compressor_intf> {
     switch(method) {
         case data_compression_method::none:
-            return std::make_shared<noop_data_compressor_impl>(buffers);
+            return {hold<noop_data_compressor_impl>, buffers};
         case data_compression_method::zlib:
 #if EAGINE_USE_ZLIB
-            return std::make_shared<zlib_data_compressor_impl>(buffers);
+            return {hold<zlib_data_compressor_impl>, buffers};
 #else
             break;
 #endif
@@ -504,23 +505,23 @@ static inline auto make_data_compressor_impl_for_method(
 }
 //------------------------------------------------------------------------------
 data_compressor::data_compressor(memory::buffer_pool& buffers) noexcept
-  : _pimpl{make_data_compressor_impl(buffers)} {}
+  : _impl{make_data_compressor_impl(buffers)} {}
 //------------------------------------------------------------------------------
 data_compressor::data_compressor(
   data_compression_method method,
   memory::buffer_pool& buffers)
-  : _pimpl{make_data_compressor_impl_for_method(method, buffers)} {}
+  : _impl{make_data_compressor_impl_for_method(method, buffers)} {}
 //------------------------------------------------------------------------------
 auto data_compressor::supported_methods() const noexcept
   -> data_compression_methods {
-    assert(_pimpl);
-    return _pimpl->supported_methods();
+    assert(_impl);
+    return _impl->supported_methods();
 }
 //------------------------------------------------------------------------------
 auto data_compressor::default_method() const noexcept
   -> data_compression_method {
-    assert(_pimpl);
-    return _pimpl->default_method();
+    assert(_impl);
+    return _impl->default_method();
 }
 //------------------------------------------------------------------------------
 auto data_compression_method_from_header(const memory::const_block data) noexcept
@@ -546,28 +547,28 @@ auto data_compressor::supported_method_from_header(
   const memory::const_block data) const noexcept
   -> std::tuple<data_compression_method, memory::const_block> {
 
-    assert(_pimpl);
-    return _pimpl->supported_method_from_header(data);
+    assert(_impl);
+    return _impl->supported_method_from_header(data);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress_begin(
   const data_compression_method method,
   const data_compression_level level) noexcept -> bool {
-    assert(_pimpl);
-    return _pimpl->compress_begin(method, level);
+    assert(_impl);
+    return _impl->compress_begin(method, level);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress_next(
   const memory::const_block input,
   const data_handler& handler) noexcept -> bool {
-    assert(_pimpl);
-    return _pimpl->compress_next(input, handler);
+    assert(_impl);
+    return _impl->compress_next(input, handler);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress_finish(const data_handler& handler) noexcept
   -> bool {
-    assert(_pimpl);
-    return _pimpl->compress_finish(handler);
+    assert(_impl);
+    return _impl->compress_finish(handler);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress(
@@ -575,17 +576,17 @@ auto data_compressor::compress(
   const memory::const_block input,
   const data_handler& handler,
   const data_compression_level level) noexcept -> bool {
-    assert(_pimpl);
-    return _pimpl->compress(method, input, handler, level);
+    assert(_impl);
+    return _impl->compress(method, input, handler, level);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress(
   const memory::const_block input,
   const data_handler& handler,
   const data_compression_level level) noexcept -> bool {
-    assert(_pimpl);
-    handler(_pimpl->default_method_header());
-    return _pimpl->compress(_pimpl->default_method(), input, handler, level);
+    assert(_impl);
+    handler(_impl->default_method_header());
+    return _impl->compress(_impl->default_method(), input, handler, level);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress(
@@ -593,67 +594,67 @@ auto data_compressor::compress(
   const memory::const_block input,
   memory::buffer& output,
   const data_compression_level level) noexcept -> memory::const_block {
-    assert(_pimpl);
-    return _pimpl->compress(method, input, output, level);
+    assert(_impl);
+    return _impl->compress(method, input, output, level);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress(
   const memory::const_block input,
   memory::buffer& output,
   const data_compression_level level) noexcept -> memory::const_block {
-    assert(_pimpl);
-    append_to(_pimpl->default_method_header(), output);
-    return _pimpl->compress(_pimpl->default_method(), input, output, level);
+    assert(_impl);
+    append_to(_impl->default_method_header(), output);
+    return _impl->compress(_impl->default_method(), input, output, level);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::compress(
   const data_compression_method method,
   const memory::const_block input,
   const data_compression_level level) noexcept -> memory::const_block {
-    assert(_pimpl);
-    return _pimpl->compress(method, input, level);
+    assert(_impl);
+    return _impl->compress(method, input, level);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::default_compress(
   const memory::const_block input,
   const data_compression_level level) noexcept -> memory::const_block {
-    assert(_pimpl);
-    return _pimpl->compress(_pimpl->default_method(), input, level);
+    assert(_impl);
+    return _impl->compress(_impl->default_method(), input, level);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::decompress_begin(
   const data_compression_method method) noexcept -> bool {
-    assert(_pimpl);
-    return _pimpl->decompress_begin(method);
+    assert(_impl);
+    return _impl->decompress_begin(method);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::decompress_next(
   const memory::const_block input,
   const data_handler& handler) noexcept -> bool {
-    assert(_pimpl);
-    return _pimpl->decompress_next(input, handler);
+    assert(_impl);
+    return _impl->decompress_next(input, handler);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::decompress_finish(const data_handler& handler) noexcept
   -> bool {
-    assert(_pimpl);
-    return _pimpl->decompress_finish(handler);
+    assert(_impl);
+    return _impl->decompress_finish(handler);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::decompress(
   const data_compression_method method,
   const memory::const_block input,
   const data_handler& handler) noexcept -> bool {
-    assert(_pimpl);
-    return _pimpl->decompress(method, input, handler);
+    assert(_impl);
+    return _impl->decompress(method, input, handler);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::decompress(
   const memory::const_block data,
   const data_handler& handler) noexcept -> bool {
-    assert(_pimpl);
-    const auto [method, input] = _pimpl->supported_method_from_header(data);
-    return _pimpl->decompress(method, input, handler);
+    assert(_impl);
+    const auto [method, input] = _impl->supported_method_from_header(data);
+    return _impl->decompress(method, input, handler);
 }
 //------------------------------------------------------------------------------
 auto data_compressor::decompress(
@@ -661,8 +662,8 @@ auto data_compressor::decompress(
   const memory::const_block input,
   memory::buffer& output) noexcept -> memory::const_block {
     if(input) {
-        assert(_pimpl);
-        return _pimpl->decompress(method, input, output);
+        assert(_impl);
+        return _impl->decompress(method, input, output);
     }
     return {};
 }
@@ -671,9 +672,9 @@ auto data_compressor::decompress(
   const memory::const_block data,
   memory::buffer& output) noexcept -> memory::const_block {
     if(data) {
-        assert(_pimpl);
-        const auto [method, input] = _pimpl->supported_method_from_header(data);
-        return _pimpl->decompress(method, input, output);
+        assert(_impl);
+        const auto [method, input] = _impl->supported_method_from_header(data);
+        return _impl->decompress(method, input, output);
     }
     return {};
 }
@@ -682,8 +683,8 @@ auto data_compressor::decompress(
   const data_compression_method method,
   const memory::const_block input) noexcept -> memory::const_block {
     if(input) {
-        assert(_pimpl);
-        return _pimpl->decompress(method, input);
+        assert(_impl);
+        return _impl->decompress(method, input);
     }
     return {};
 }
@@ -691,8 +692,8 @@ auto data_compressor::decompress(
 auto data_compressor::default_decompress(
   const memory::const_block input) noexcept -> memory::const_block {
     if(input) {
-        assert(_pimpl);
-        return _pimpl->decompress(_pimpl->default_method(), input);
+        assert(_impl);
+        return _impl->decompress(_impl->default_method(), input);
     }
     return {};
 }

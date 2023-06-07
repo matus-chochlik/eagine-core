@@ -4,11 +4,10 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
 	eagine.core.identifier
-	INTERFACES
-		identifier
 	SOURCES
 		identifier
 	IMPORTS
+		eagine.core.types
 		eagine.core.memory
 		eagine.core.vectorization
 )
@@ -17,4 +16,6 @@ eagine_add_module_tests(
 	eagine.core.identifier
 	UNITS
 		identifier
+	IMPORTS
+		eagine.core.types
 )

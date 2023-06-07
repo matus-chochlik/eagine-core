@@ -1,0 +1,17 @@
+#!/bin/bash -e
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+source ~/.local/bin/parse_args.sh
+set -x
+cd "${HOME}/source"
+if [[ -d "${HOME}/source/eagine-${sub_module}" ]]
+then cd "${HOME}/source/eagine-${sub_module}" && git checkout "${branch}" && git pull origin "${branch}"
+else git clone --branch "${branch}" "${origin}/eagine-${sub_module}.git" && cd "eagine-${sub_module}"
+fi
+if [[ "${sub_module}" == "all" ]]
+then "${HOME}/source/eagine-all/tools/pull_all" origin "${branch}"
+else git submodule update --recursive
+fi

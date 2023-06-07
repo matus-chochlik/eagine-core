@@ -5,7 +5,6 @@
 eagine_add_module(
 	eagine.core.c_api PARTITION result
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.utility
 )
@@ -15,7 +14,6 @@ eagine_add_module(
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.valid_if
 )
 
 eagine_add_module(
@@ -28,7 +26,6 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION enum_class
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
@@ -82,22 +79,11 @@ eagine_add_module(
 		object result function parameter_map
 		eagine.core.types
 		eagine.core.memory;
+		eagine.core.utility;
 )
 
 eagine_add_module(
 	eagine.core.c_api
-	INTERFACES c_api
-	PARTITIONS
-		result
-		api_traits
-		key_value_list
-		enum_class
-		constant
-		object
-		function
-		buffer_data
-		parameter_map
-		adapted_function
 )
 
 eagine_add_module_tests(
@@ -107,7 +93,13 @@ eagine_add_module_tests(
 		key_value_list
 		result
 	IMPORTS
+		eagine.core.debug
 		eagine.core.types
-		eagine.core.concepts
 		eagine.core.memory
+		eagine.core.string
+		eagine.core.utility
+		eagine.core.identifier
+		eagine.core.container
+		eagine.core.valid_if
+		eagine.core.units
 )

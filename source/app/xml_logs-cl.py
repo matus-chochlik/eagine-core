@@ -135,6 +135,13 @@ class ArgumentParser(argparse.ArgumentParser):
         argparse.ArgumentParser.__init__(self, **kw)
 
         self.add_argument(
+            "--local-socket", "-L",
+            dest='local_socket',
+            action="store",
+            default="/tmp/eagine-xmllog"
+        )
+
+        self.add_argument(
             "--network-socket", "-n",
             dest='network_socket',
             action="store_true",
@@ -442,32 +449,39 @@ class XmlLogFormatter(object):
         return result
 
     # --------------------------------------------------------------------------
-    def _formatProgress(self, inst, mn, x, mx, width, progress):
-        try: progress_begin = self._progress_info[inst]
-        except KeyError:
-            progress_begin = self._progress_info[inst] = time.time()
-        progress_seconds = time.time() - progress_begin
+    def _formatProgress(self, src, inst, tag, mn, x, mx, width, progress):
+        if src is not None and tag is not None:
+            key = (src, inst, tag)
+            try: progress_begin = self._progress_info[key]
+            except KeyError:
+                progress_begin = self._progress_info[key] = time.time()
+            progress_seconds = time.time() - progress_begin
 
-        if x >= mx:
-            del self._progress_info[inst]
+            if x >= mx:
+                del self._progress_info[key]
+        else:
+            progress_seconds = None
 
         try: coef = (x - mn) / (mx - mn)
         except ZeroDivisionError:
             coef = 0.0
         pos = coef * float(width)
         cnt = int(pos)
-        if progress_seconds > 10.0 and coef > 0.0 and coef < 1.0:
-            progress_eta = progress_seconds * (1.0 - coef) / coef
-            if coef >= 0.5:
-                lbl = " (%s) %.1f%%" % (
-                    formatRelTime(progress_eta),
-                    100.0 * coef
-                )
+        if progress_seconds is not None:
+            if progress_seconds > 10.0 and coef > 0.0 and coef < 1.0:
+                progress_eta = progress_seconds * (1.0 - coef) / coef
+                if coef >= 0.5:
+                    lbl = " (%s) %.1f%%" % (
+                        formatRelTime(progress_eta),
+                        100.0 * coef
+                    )
+                else:
+                    lbl = " %.1f%% (%s)" % (
+                        100.0 * coef,
+                        formatRelTime(progress_eta)
+                    )
             else:
-                lbl = " %.1f%% (%s)" % (
-                    100.0 * coef,
-                    formatRelTime(progress_eta)
-                )
+                lbl = " %.1f%% (estimating)" % (100.0 * coef)
         else:
             lbl = " %.1f%%" % (100.0 * coef)
 
@@ -614,7 +628,7 @@ class XmlLogFormatter(object):
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ╭─────────┬────────────┬─────────╮\n")
+            self.write(" ╭─────────┬──────────┬────────────┬─────────╮\n")
             # L1
             self.write("┊")
             conn = False
@@ -628,6 +642,7 @@ class XmlLogFormatter(object):
                     self.write(" │")
             self.write("━┥")
             self.write("%9s│" % formatRelTime(float(total_time)))
+            self.write("%10s│" % self._root_ids[src_id])
             self.write(self._ttyBlue())
             self.write(" closing log")
             self.write(self._ttyReset())
@@ -652,7 +667,7 @@ class XmlLogFormatter(object):
                     self.write("╭╯")
                 else:
                     self.write(" │")
-            self.write(" ╰─────────┴────────────┴─────────╯\n")
+            self.write(" ╰─────────┴──────────┴────────────┴─────────╯\n")
             # L3
             self.write("┊")
             conn = False
@@ -749,6 +764,8 @@ class XmlLogFormatter(object):
             return self._ttyBoldWhite()  + "  info   " + self._ttyReset()
         if level == "stat":
             return self._ttyBoldWhite()  + "  stat   " + self._ttyReset()
+        if level == "change":
+            return self._ttyBoldYellow() + " change  " + self._ttyReset()
         if level == "warning":
             return self._ttyYellow()     + " warning " + self._ttyReset()
         if level == "error":
@@ -840,6 +857,7 @@ class XmlLogFormatter(object):
         args = info["args"]
         message = info["format"]
         tag = info.get("tag")
+        source = info.get("source")
 
         curr_time = time.time()
         if self._prev_times[src_id] is None:
@@ -882,7 +900,7 @@ class XmlLogFormatter(object):
             self.write("%9s│" % (formatRelTime(time_diff) if time_diff is not None else "   N/A   "))
             self.write("%s│" % self.translateLevel(info["level"]))
             self.write("%10s│" % self._root_ids[src_id])
-            self.write("%10s│" % info["source"])
+            self.write("%10s│" % source)
             if tag is not None:
                 self.write("%10s│" % tag)
             self.write("%12s│" % self.formatInstance(instance))
@@ -922,12 +940,14 @@ class XmlLogFormatter(object):
                         if value["min"] is not None and value["max"] is not None:
                             self.write(
                                 self._formatProgress(
+                                    source,
                                     instance,
+                                    tag,
                                     float(value["min"]),
                                     float(value["value"]),
                                     float(value["max"]),
                                     cols - len(name) - 2,
-                                    value["type"] in ["Progress"]
+                                    value["type"] in ["Progress", "MainPrgrss"]
                                 )
                             )
                             self.write("\n")
@@ -1228,7 +1248,7 @@ class NetworkLogSocket(socket.socket):
 def open_socket(options):
     if options.network_socket:
         return NetworkLogSocket(options.socket_port)
-    return LocalLogSocket("/tmp/eagine-xmllog")
+    return LocalLogSocket(options.local_socket)
 
 # ------------------------------------------------------------------------------
 def handle_connections(log_sock, formatter):

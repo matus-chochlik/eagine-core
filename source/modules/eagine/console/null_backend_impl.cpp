@@ -89,8 +89,8 @@ public:
     void concluded(const console_entry_id_t id) noexcept final {}
 };
 //------------------------------------------------------------------------------
-auto make_null_console_backend() -> std::unique_ptr<console_backend> {
-    return std::make_unique<null_console_backend>();
+auto make_null_console_backend() -> unique_holder<console_backend> {
+    return {hold<null_console_backend>};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

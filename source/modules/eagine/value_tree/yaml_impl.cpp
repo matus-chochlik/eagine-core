@@ -196,7 +196,7 @@ public:
                     }
                 } else if(result.is_seq()) {
                     if(const auto opt_idx{from_string<span_size_t>(entry)}) {
-                        result = result[extract(opt_idx)];
+                        result = result[*opt_idx];
                     } else {
                         result = ryml::ConstNodeRef{};
                     }
@@ -240,7 +240,7 @@ public:
                         if(offset <= 0) {
                             if(auto opt_val{
                                  from_string<T>(view(child.val()))}) {
-                                dest[pos] = std::move(extract(opt_val));
+                                dest[pos] = std::move(*opt_val);
                                 ++pos;
                             }
                         } else {
@@ -253,7 +253,7 @@ public:
             if(not dest.empty()) {
                 if(_node.has_val()) {
                     if(auto opt_val{from_string<T>(view(_node.val()))}) {
-                        dest.front() = std::move(extract(opt_val));
+                        dest.front() = std::move(*opt_val);
                         return 1;
                     }
                 }

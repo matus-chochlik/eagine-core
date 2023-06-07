@@ -12,7 +12,6 @@ module;
 export module eagine.core.memory:span;
 
 import std;
-import eagine.core.concepts;
 import eagine.core.types;
 import :address;
 
@@ -20,7 +19,12 @@ namespace eagine {
 namespace memory {
 //------------------------------------------------------------------------------
 export template <typename T, typename P = anything, typename S = span_size_t>
-concept span_source = requires(T v) {
+concept span_source = requires(T& v) {
+    { v.data() } -> std::convertible_to<P>;
+    { v.size() } -> std::convertible_to<S>;
+};
+export template <typename T, typename P = anything, typename S = span_size_t>
+concept const_span_source = requires(const T& v) {
     { v.data() } -> std::convertible_to<P>;
     { v.size() } -> std::convertible_to<S>;
 };
@@ -207,6 +211,10 @@ public:
     /// @brief Indicates that the span is terminated with value T(0) if applicable.
     constexpr auto is_zero_terminated() const noexcept -> bool {
         return _size < 0;
+    }
+
+    constexpr auto zero_terminated_size() const noexcept -> size_type {
+        return _size;
     }
 
     /// @brief Returns the number of elements in the span.
@@ -424,27 +432,30 @@ public:
 
     /// @brief Returns the single value if size == 1
     /// @see value
-    /// @pre has_value()
-    auto operator*() const noexcept -> element_type {
-        return value();
+    /// @pre has_single_value()
+    auto operator*() const noexcept -> std::add_const_t<element_type>& {
+        return front();
+    }
+
+    /// @brief Returns pointer to the single value if size == 1
+    /// @see value
+    /// @pre has_single_value()
+    auto operator->() const noexcept -> std::add_const_t<element_type>* {
+        return &front();
     }
 
     /// @brief Array subscript operator.
     /// @see element
-    template <typename Int>
-    auto operator[](const Int index) noexcept -> element_type&
-        requires(std::is_integral_v<Int>)
-    {
+    template <std::integral Int>
+    auto operator[](const Int index) noexcept -> element_type& {
         return element(index);
     }
 
     /// @brief Array subscript operator.
     /// @see element
-    template <typename Int>
+    template <std::integral Int>
     constexpr auto operator[](const Int index) const noexcept
-      -> std::add_const_t<value_type>&
-        requires(std::is_integral_v<Int>)
-    {
+      -> std::add_const_t<value_type>& {
         return element(index);
     }
 
@@ -561,7 +572,7 @@ constexpr auto view(std::initializer_list<T> il) noexcept -> const_span<T> {
 //------------------------------------------------------------------------------
 /// @brief Creates a const view over a compatible contiguous container.
 /// @ingroup memory
-export template <span_source C>
+export template <const_span_source C>
 constexpr auto view(const C& container) noexcept {
     return view(container.data(), container.size());
 }
@@ -620,22 +631,11 @@ constexpr auto accommodate(
       blk.begin_addr(), blk.end_addr()};
 }
 //------------------------------------------------------------------------------
-// extract
-//------------------------------------------------------------------------------
-/// @brief Overload of extract for spans. Returns the first element,
-/// @pre spn.size() >= 1
-/// @ingroup memory
-export template <typename T, typename P, typename S>
-constexpr auto extract(basic_span<T, P, S> spn) noexcept -> T& {
-    assert(spn.has_single_value());
-    return spn.front();
-}
-
 export template <typename T, typename P, typename S, typename Dst>
 constexpr auto assign_if_fits(basic_span<T, P, S> src, Dst& dst) noexcept
   -> bool {
     if(src.has_single_value()) {
-        return eagine::assign_if_fits(extract(src), dst);
+        return eagine::assign_if_fits(src.front(), dst);
     }
     return false;
 }

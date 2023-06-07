@@ -353,8 +353,7 @@ constexpr auto skip_until(
   const basic_span<T, P, S> spn,
   Predicate predicate) noexcept -> basic_span<T, P, S> {
     if(const auto found{find_element_if(spn, predicate)}) {
-        using eagine::extract;
-        return skip(spn, extract(found));
+        return skip(spn, *found);
     }
     return spn;
 }
@@ -367,8 +366,7 @@ constexpr auto take_until(
   const basic_span<T, P, S> spn,
   Predicate predicate) noexcept -> basic_span<T, P, S> {
     if(const auto found{find_element_if(spn, predicate)}) {
-        using eagine::extract;
-        return head(spn, extract(found));
+        return head(spn, *found);
     }
     return spn;
 }
@@ -412,8 +410,7 @@ export template <
 auto find(const basic_span<T1, P1, S1> where, const basic_span<T2, P2, S2> what)
   -> basic_span<T1, P1, S1> {
     if(const auto pos{find_position(where, what)}) {
-        using eagine::extract;
-        return skip(where, extract(pos));
+        return skip(where, *pos);
     }
     return {};
 }
@@ -532,8 +529,7 @@ auto slice_inside_brackets(
   const B right) noexcept -> basic_span<T, P, S> {
 
     if(const auto found{find_element(spn, left)}) {
-        using eagine::extract;
-        spn = skip(spn, extract(found));
+        spn = skip(spn, *found);
         int depth = 1;
         auto pos = S(1);
         while((pos < spn.size()) and (depth > 0)) {
@@ -769,9 +765,8 @@ void for_each_delimited(
   UnaryOperation unary_op) {
     basic_span<T1, P1, S1> tmp = spn;
     while(const auto pos{find_position(tmp, delim)}) {
-        using eagine::extract;
-        unary_op(head(tmp, extract(pos)));
-        tmp = skip(tmp, extract(pos) + delim.size());
+        unary_op(head(tmp, *pos));
+        tmp = skip(tmp, *pos + delim.size());
     }
     unary_op(tmp);
 }
@@ -944,7 +939,7 @@ auto make_span_putter(
     return [&i, spn, transform](auto value) mutable -> bool {
         if(i < spn.size()) {
             if(auto transformed{transform(value)}) {
-                spn[i++] = T(std::move(extract(transformed)));
+                spn[i++] = T(std::move(*transformed));
                 return true;
             }
         }

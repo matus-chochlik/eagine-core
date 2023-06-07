@@ -1,0 +1,14 @@
+version: "3"
+services:
+  eagine-registry:
+    image: registry:2
+    ports:
+      - ${EAGINE_DOCKER_REGISTRY_PORT}:5000
+    restart: unless-stopped
+    environment:
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY:/data
+    volumes:
+      - eagine-registry-data:/data
+
+volumes:
+  eagine-registry-data:

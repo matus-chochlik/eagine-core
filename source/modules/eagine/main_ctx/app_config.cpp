@@ -242,8 +242,7 @@ public:
 private:
     main_ctx_getters& _main_ctx;
     logger _log;
-    std::shared_ptr<application_config_impl> _pimpl;
-    auto _impl() noexcept -> application_config_impl*;
+    shared_holder<application_config_impl> _impl;
 
     void _log_could_not_read_value(
       const string_view key,
@@ -266,6 +265,8 @@ auto application_config_initial(
     config.init(key, initial, tag);
     return initial;
 }
+//------------------------------------------------------------------------------
+// application config value
 //------------------------------------------------------------------------------
 /// @brief Class wrapping values that can be loaded from application_config.
 /// @ingroup main_context
@@ -306,9 +307,29 @@ public:
         return *this;
     }
 
+    [[nodiscard]] auto has_value() const noexcept -> bool {
+        return true;
+    }
+
     /// @brief Returns the stored value converted to the @p As type.
     [[nodiscard]] auto value() const noexcept -> As {
+        return As(_value);
+    }
+
+    [[nodiscard]] auto value_or(const auto&) const noexcept -> As {
+        return value();
+    }
+
+    /// @brief Return a const reference to the stored value.
+    /// @see value
+    [[nodiscard]] auto operator*() const noexcept -> const T& {
         return _value;
+    }
+
+    /// @brief Return a const pointer to the stored value.
+    /// @see value
+    [[nodiscard]] auto operator->() const noexcept -> const T* {
+        return &_value;
     }
 
     /// @brief Implicit conversion of the stored value to the @p As type.
@@ -317,20 +338,80 @@ public:
         return value();
     }
 
-    [[nodiscard]] friend auto extract(
-      const application_config_value& that) noexcept -> As {
-        return that.value();
+    template <typename U>
+    [[nodiscard]] auto operator==(U&& that) const noexcept {
+        return _value == that;
+    }
+
+    template <typename U>
+    [[nodiscard]] auto operator!=(U&& that) const noexcept {
+        return _value != that;
+    }
+
+    template <typename U>
+    [[nodiscard]] auto operator<(U&& that) const noexcept {
+        return _value < that;
+    }
+
+    template <typename U>
+    [[nodiscard]] auto operator>(U&& that) const noexcept {
+        return _value > that;
+    }
+
+    template <typename U>
+    [[nodiscard]] auto operator<=(U&& that) const noexcept {
+        return _value <= that;
+    }
+
+    template <typename U>
+    [[nodiscard]] auto operator>=(U&& that) const noexcept {
+        return _value >= that;
+    }
+
+protected:
+    auto ref() noexcept -> T& {
+        return _value;
     }
 
 private:
     T _value{};
 };
 //------------------------------------------------------------------------------
+class application_config_value_reloader
+  : public application_config_value_loader {
+protected:
+    application_config_value_reloader(
+      application_config& config,
+      std::string key,
+      std::string tag) noexcept
+      : _config{config}
+      , _key{std::move(key)}
+      , _tag{std::move(tag)} {}
+
+    auto config() const noexcept -> application_config& {
+        return _config;
+    }
+
+    auto tag() const noexcept -> string_view {
+        return _tag;
+    }
+
+    auto key() const noexcept -> string_view {
+        return _key;
+    }
+
+private:
+    application_config& _config;
+    const std::string _key;
+    const std::string _tag;
+};
+//------------------------------------------------------------------------------
 /// @brief Class wrapping values that can be reloaded from application_config.
 /// @ingroup main_context
 export template <typename T, typename As>
 class application_config_value<T, As, true> final
-  : private application_config_value_loader {
+  : public application_config_value<T, As, false>
+  , private application_config_value_reloader {
 public:
     /// @brief Initialization from key, tag and optional initial value.
     application_config_value(
@@ -338,11 +419,15 @@ public:
       std::string key,
       std::string tag,
       T initial = {}) noexcept
-      : _config{config}
-      , _key{std::move(key)}
-      , _tag{std::move(tag)}
-      , _value{application_config_initial(_config, _key, initial, _tag)} {
-        _config.link(_key, _tag, *this);
+      : application_config_value<
+          T,
+          As,
+          false>{config, key, tag, std::move(initial)}
+      , application_config_value_reloader{
+          config,
+          std::move(key),
+          std::move(tag)} {
+        this->config().link(this->key(), this->tag(), *this);
     }
 
     /// @brief Initialization from key and optional initial value.
@@ -358,39 +443,13 @@ public:
     auto operator=(const application_config_value&) = delete;
 
     ~application_config_value() noexcept final {
-        _config.unlink(_key, _tag, *this);
-    }
-
-    auto operator=(T new_value) -> auto& {
-        _value = std::move(new_value);
-        return *this;
-    }
-
-    /// @brief Returns the stored value converted to the @p As type.
-    [[nodiscard]] auto value() const noexcept -> As {
-        return _value;
-    }
-
-    /// @brief Implicit conversion of the stored value to the @p As type.
-    /// @see value
-    [[nodiscard]] operator As() const noexcept {
-        return value();
-    }
-
-    [[nodiscard]] friend auto extract(
-      const application_config_value& that) noexcept -> As {
-        return that.value();
+        this->config().unlink(this->key(), this->tag(), *this);
     }
 
 private:
     auto reload() noexcept -> bool final {
-        return _config.fetch(_key, _value, _tag);
+        return this->config().fetch(this->key(), this->ref(), this->tag());
     }
-
-    application_config& _config;
-    const std::string _key;
-    const std::string _tag;
-    T _value{};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

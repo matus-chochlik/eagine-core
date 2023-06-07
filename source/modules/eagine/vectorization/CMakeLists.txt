@@ -4,12 +4,12 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
 	eagine.core.vectorization PARTITION data_array
-	IMPORTS eagine.core.concepts
+	IMPORTS eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.vectorization PARTITION data_simd
-	IMPORTS eagine.core.concepts
+	IMPORTS eagine.core.types
 )
 
 eagine_add_module(
@@ -28,13 +28,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.vectorization
-	INTERFACES
-		vectorization
-	PARTITIONS
-		data_array
-		data_simd
-		data
-		ops
 )
 
 eagine_add_module_tests(

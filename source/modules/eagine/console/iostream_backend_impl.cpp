@@ -201,8 +201,8 @@ private:
 };
 //------------------------------------------------------------------------------
 auto make_iostream_console_backend(std::istream&, std::ostream& out)
-  -> std::unique_ptr<console_backend> {
-    return std::make_unique<iostream_console_backend<std::mutex>>(out);
+  -> unique_holder<console_backend> {
+    return {hold<iostream_console_backend<std::mutex>>, out};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

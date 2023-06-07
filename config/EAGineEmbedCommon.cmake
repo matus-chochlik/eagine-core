@@ -125,14 +125,16 @@ function(eagine_embed_target_resources)
 	endif()
 
 	unset(EAGINE_RESOURCE_ALL_TARGET_SOURCES)
-	get_target_property(
-		TARGET_SOURCES
-		${EAGINE_RESOURCE_TARGET}
-		SOURCES
-	)
-	if(TARGET_SOURCES)
-		list(APPEND EAGINE_RESOURCE_ALL_TARGET_SOURCES ${TARGET_SOURCES})
-	endif()
+	foreach(PROP SOURCES EAGINE_MODULE_INTERFACES)
+		get_target_property(
+			TARGET_SOURCES
+			${EAGINE_RESOURCE_TARGET}
+			${PROP}
+		)
+		if(TARGET_SOURCES)
+			list(APPEND EAGINE_RESOURCE_ALL_TARGET_SOURCES ${TARGET_SOURCES})
+		endif()
+	endforeach()
 
 	foreach(SCAN_TARGET ${EAGINE_RESOURCE_TARGET} ${EAGINE_RESOURCE_SCAN_TARGETS})
 		get_target_property(
@@ -150,5 +152,18 @@ function(eagine_embed_target_resources)
 		INPUT_FILES ${EAGINE_RESOURCE_ALL_TARGET_SOURCES}
 		SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
 	)
+
+	add_dependencies(${EAGINE_RESOURCE_TARGET} eagine.core eagine.core.resource)
+
+	if(${EAGINE_CLANGXX_COMPILER})
+		if(${EAGINE_EMBED_INSTALLED})
+			# TODO
+		else()
+			set_property(
+				TARGET ${EAGINE_RESOURCE_TARGET}
+				APPEND PROPERTY COMPILE_OPTIONS
+				"-fprebuilt-module-path=${EAGINE_CORE_BINARY_ROOT}/source/modules/eagine;-fprebuilt-module-path=${EAGINE_CORE_BINARY_ROOT}/source/modules/eagine/resource")
+		endif()
+	endif()
 endfunction()
 

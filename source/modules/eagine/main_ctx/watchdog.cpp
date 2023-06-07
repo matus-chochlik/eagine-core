@@ -9,6 +9,7 @@ export module eagine.core.main_ctx:watchdog;
 
 import std;
 import eagine.core.types;
+import eagine.core.utility;
 import eagine.core.identifier;
 import :interface;
 import :parent;
@@ -16,14 +17,13 @@ import :object;
 
 namespace eagine {
 
-class process_watchdog_impl;
+struct process_watchdog_backend;
 
 /// @brief Class implementing process watchdog functionality.
 /// @ingroup main_context
 export class process_watchdog : public main_ctx_object {
 public:
-    process_watchdog(main_ctx_parent parent) noexcept
-      : main_ctx_object{"Watchdog", parent} {}
+    process_watchdog(main_ctx_parent parent) noexcept;
 
     /// @brief Tells the system that this process finished initialization.
     void declare_initialized() noexcept;
@@ -35,8 +35,8 @@ public:
     void announce_shutdown() noexcept;
 
 private:
-    std::shared_ptr<process_watchdog_impl> _pimpl{};
-    auto _impl() noexcept -> process_watchdog_impl*;
+    shared_holder<process_watchdog_backend> _backend;
+    timeout _should_log_heartbeat;
 };
 
 } // namespace eagine

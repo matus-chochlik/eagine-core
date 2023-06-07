@@ -11,11 +11,19 @@ import std;
 namespace eagine {
 
 auto main(main_ctx& ctx) -> int {
+    std::default_random_engine random{std::random_device{}()};
+    const auto sleep_interval{[&]() {
+        using U = std::chrono::milliseconds;
+        return U{std::uniform_int_distribution<U::rep>{200, 1800}(random)};
+    }};
 
     span_size_t repeats = 10;
     auto severity = log_event_severity::info;
     ctx.config().fetch("count", repeats);
     ctx.config().fetch("severity", severity);
+
+    ctx.log().declare_state("running", "start", "finish");
+    ctx.log().info("starting").tag("start");
 
     const auto main_act =
       ctx.progress().activity("Counting ${current} / ${total}", repeats);
@@ -25,8 +33,9 @@ auto main(main_ctx& ctx) -> int {
           .arg("i", i)
           .arg("count", repeats);
         main_act.update_progress(i);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(sleep_interval());
     }
+    ctx.log().info("finishing").tag("finish");
 
     return 0;
 }

@@ -59,13 +59,13 @@ export struct basic_config_intf : abstract<basic_config_intf> {
     template <typename T>
     auto fetch(const string_view key, const string_view tag, T& dest) noexcept
       -> bool {
-        return find(key, tag).and_then(assign_if_fits(_1, dest)).value_or(false);
+        return find(key, tag).and_then(assign_if_fits(_1, dest)).or_false();
     }
 
     /// @brief Fetches the configuration value identified by @p key, into @p dest.
     template <typename T>
     auto fetch(const string_view key, T& dest) noexcept -> bool {
-        return find(key).and_then(assign_if_fits(_1, dest)).value_or(false);
+        return find(key).and_then(assign_if_fits(_1, dest)).or_false();
     }
 };
 //------------------------------------------------------------------------------

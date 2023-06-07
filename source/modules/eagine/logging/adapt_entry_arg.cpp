@@ -95,7 +95,7 @@ struct std_system_error_entry_adapter {
     const identifier name;
     const std::system_error& value;
 
-    void operator()(auto& backend) noexcept {
+    void operator()(auto& backend) const noexcept {
         backend.add_string(name, "SystmError", string_view(value.what()));
         backend.add_string(
           "category",

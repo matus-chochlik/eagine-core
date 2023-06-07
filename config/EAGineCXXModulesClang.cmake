@@ -7,462 +7,399 @@ define_property(
 	TARGET
 	PROPERTY EAGINE_MODULE_PCM_PATH
 	BRIEF_DOCS "Module PCM path"
-	FULL_DOCS "Clang C++ modules PCM file path for module target"
-)
-# ------------------------------------------------------------------------------
-function(eagine_append_single_module_pcms)
-	set(ARG_VALUES SOURCE TARGET)
-	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
-
-	get_property(
-		PCM_PATH
-		TARGET ${EAGINE_MODULE_SOURCE}
-		PROPERTY EAGINE_MODULE_PCM_PATH
-	)
-	get_property(
-		MODULE_ID
-		TARGET ${EAGINE_MODULE_SOURCE}
-		PROPERTY EAGINE_MODULE_ID
-	)
-
-	unset(COMPILE_OPTS)
-	get_property(
-		COMPILE_OPTS
-		TARGET ${EAGINE_MODULE_TARGET}
-		PROPERTY COMPILE_OPTIONS
-	)
-	set(OPTION "-fmodule-file=${MODULE_ID}=${PCM_PATH}")
-	if(NOT "${OPTION}" IN_LIST COMPILE_OPTS)
-		set_property(
-			TARGET ${EAGINE_MODULE_TARGET}
-			APPEND PROPERTY COMPILE_OPTIONS
-				"${OPTION}"
-		)
-	endif()
-endfunction()
-# ------------------------------------------------------------------------------
-function(eagine_depend_single_module_pcms)
-	set(ARG_VALUES SOURCE TARGET)
-	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
-
-	add_dependencies(
-		${EAGINE_MODULE_TARGET}-imports
-		${EAGINE_MODULE_SOURCE}-pcm
-	)
-endfunction()
-# ------------------------------------------------------------------------------
-function(eagine_append_module_pcms)
-	set(ARG_VALUES SOURCE TARGET)
-	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
-
-	eagine_append_single_module_pcms(
-		TARGET ${EAGINE_MODULE_TARGET}
-		SOURCE ${EAGINE_MODULE_SOURCE}
-	)
-
-	unset(EAGINE_MODULE_IMPORTS)
-	get_property(
-		EAGINE_MODULE_IMPORTS
-		TARGET ${EAGINE_MODULE_SOURCE}
-		PROPERTY EAGINE_MODULE_IMPORTS)
-	foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
-		eagine_append_module_pcms(
-			TARGET ${EAGINE_MODULE_TARGET}
-			SOURCE ${IMPORT}
-		)
-		eagine_depend_single_module_pcms(
-			TARGET ${EAGINE_MODULE_TARGET}
-			SOURCE ${IMPORT}
-		)
-	endforeach()
-endfunction()
-# ------------------------------------------------------------------------------
-function(eagine_append_own_module_pcms)
-	set(ARG_VALUES SOURCE TARGET)
-	cmake_parse_arguments(EAGINE_MODULE "" "${ARG_VALUES}" "" ${ARGN})
-
-	unset(EAGINE_MODULE_IMPORTS)
-	get_property(
-		EAGINE_MODULE_IMPORTS
-		TARGET ${EAGINE_MODULE_SOURCE}
-		PROPERTY EAGINE_MODULE_IMPORTS)
-	foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
-		eagine_append_module_pcms(
-			TARGET ${EAGINE_MODULE_TARGET}
-			SOURCE ${IMPORT}
-		)
-		eagine_depend_single_module_pcms(
-			TARGET ${EAGINE_MODULE_TARGET}
-			SOURCE ${IMPORT}
-		)
-	endforeach()
-
-	unset(EAGINE_MODULE_PARTITIONS)
-	get_property(
-		EAGINE_MODULE_PARTITIONS
-		TARGET ${EAGINE_MODULE_SOURCE}
-		PROPERTY EAGINE_MODULE_PARTITIONS
-	)
-	foreach(PARTITION ${EAGINE_MODULE_PARTITIONS})
-		eagine_append_module_pcms(
-			TARGET ${EAGINE_MODULE_TARGET}
-			SOURCE ${EAGINE_MODULE_SOURCE}.${PARTITION}
-		)
-		eagine_depend_single_module_pcms(
-			TARGET ${EAGINE_MODULE_TARGET}
-			SOURCE ${EAGINE_MODULE_SOURCE}.${PARTITION}
-		)
-	endforeach()
-endfunction()
-# ------------------------------------------------------------------------------
-function(eagine_add_module_common_properties TARGET_NAME)
-	set_property(
-		TARGET ${TARGET_NAME}
-		APPEND PROPERTY COMPILE_OPTIONS
-		"-fmodules"
-		"-fexperimental-library"
-	)
-	set_property(
-		TARGET ${TARGET_NAME}
-		APPEND PROPERTY PRIVATE_COMPILE_OPTIONS
-		"-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused"
-	)
-	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-		set_property(
-			TARGET ${TARGET_NAME}
-			APPEND PROPERTY COMPILE_OPTIONS
-			"-fstack-protector-all"
-		)
-	endif()
-endfunction()
+	FULL_DOCS "Clang precompiled module path")
+define_property(
+	TARGET
+	PROPERTY EAGINE_MODULE_INTERFACES
+	BRIEF_DOCS "Module interface file"
+	FULL_DOCS "Path to module interface file")
+define_property(
+	TARGET
+	PROPERTY EAGINE_MODULE_PARTITIONS
+	BRIEF_DOCS "Module partition list"
+	FULL_DOCS "List of partition names for a module")
 # ------------------------------------------------------------------------------
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
 	set(ARG_VALUES PARTITION)
 	set(ARG_LISTS
-		INTERFACES
 		SOURCES
-		PARTITIONS
 		IMPORTS
+		SUBMODULES
 		PRIVATE_INCLUDE_DIRECTORIES
 		PRIVATE_LINK_LIBRARIES
-	)
+		INTERFACE_LINK_LIBRARIES)
 	cmake_parse_arguments(
 		EAGINE_MODULE
 		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
-		${ARGN}
-	)
-	if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
-		set(EAGINE_MODULE_TARGET "${EAGINE_MODULE_PROPER}")
-	else()
-		set(EAGINE_MODULE_TARGET "${EAGINE_MODULE_PROPER}.${EAGINE_MODULE_PARTITION}")
+		${ARGN})
+
+	set(EAGINE_MODULE_OBJECTS ${EAGINE_MODULE_PROPER}-objects)
+
+	if(NOT TARGET ${EAGINE_MODULE_OBJECTS})
+		add_library(${EAGINE_MODULE_OBJECTS} OBJECT)
+		set_property(
+			TARGET ${EAGINE_MODULE_OBJECTS}
+			PROPERTY EAGINE_MODULE_PCM_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+		set_property(
+			TARGET ${EAGINE_MODULE_OBJECTS}
+			PROPERTY LINKER_LANGUAGE CXX)
+		target_compile_options(
+			${EAGINE_MODULE_OBJECTS}
+			PUBLIC
+				-fmodules
+				-Wno-read-modules-implicitly
+				"-fprebuilt-module-path=${CMAKE_CURRENT_BINARY_DIR}")
 	endif()
 
-	if(NOT ${EAGINE_MODULE_PARTITION} IN_LIST EAGINE_MODULE_INTERFACES)
-		if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PARTITION}.cpp")
-			list(APPEND EAGINE_MODULE_INTERFACES ${EAGINE_MODULE_PARTITION})
-		elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${EAGINE_MODULE_PARTITION}.cpp")
-			list(APPEND EAGINE_MODULE_INTERFACES ${EAGINE_MODULE_PARTITION})
-		endif()
+	set(EAGINE_MODULE_CMAKE_FILE
+		"${CMAKE_CURRENT_BINARY_DIR}/module-${EAGINE_MODULE_PROPER}.cmake")
+
+	if(NOT TARGET ${EAGINE_MODULE_PROPER})
+		add_library(
+			${EAGINE_MODULE_PROPER} STATIC
+			$<TARGET_OBJECTS:${EAGINE_MODULE_OBJECTS}>)
+		set_property(
+			TARGET ${EAGINE_MODULE_PROPER}
+			PROPERTY EAGINE_MODULE_PCM_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+		set_property(
+			TARGET ${EAGINE_MODULE_PROPER}
+			PROPERTY LINKER_LANGUAGE CXX)
+		target_compile_options(
+			${EAGINE_MODULE_PROPER}
+			PUBLIC
+				-fmodules
+				-Wno-read-modules-implicitly
+				"-fprebuilt-module-path=${CMAKE_CURRENT_BINARY_DIR}")
+		file(
+			WRITE "${EAGINE_MODULE_CMAKE_FILE}"
+			"# Generated file. All manual changes will be lost!\n"
+			"#\n"
+			"file(MAKE_DIRECTORY \"\${PROJECT_BINARY_DIR}/EAGine\")\n")
+		install(
+			FILES "${EAGINE_MODULE_CMAKE_FILE}"
+			DESTINATION "${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}")
+		install(
+			TARGETS ${EAGINE_MODULE_PROPER}
+			DESTINATION lib)
 	endif()
 
-	unset(EAGINE_MODULE_INTERFACE_FILES)
-	foreach(INTERFACE ${EAGINE_MODULE_INTERFACES})
-		if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${INTERFACE}.cpp")
+	foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
+		target_include_directories(
+			${EAGINE_MODULE_OBJECTS}
+			PRIVATE "${DIR}")
+	endforeach()
+
+	foreach(LIB ${EAGINE_MODULE_PRIVATE_LINK_LIBRARIES})
+		target_link_libraries(
+			${EAGINE_MODULE_OBJECTS}
+			PRIVATE "${LIB}")
+		target_link_libraries(
+			${EAGINE_MODULE_PROPER}
+			PRIVATE "${LIB}")
+	endforeach()
+
+	foreach(NAME ${EAGINE_MODULE_SOURCES})
+		add_custom_command(
+			OUTPUT ${EAGINE_MODULE_PROPER}-${NAME}_impl.cpp
+			COMMAND ${CMAKE_COMMAND}
+			ARGS
+				-E copy_if_different
+				"${CMAKE_CURRENT_SOURCE_DIR}/${NAME}_impl.cpp"
+				"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PROPER}-${NAME}_impl.cpp"
+			DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}_impl.cpp"
+			COMMENT "Copying CXX module implementation ${NAME}_impl.cpp")
+		target_sources(
+			${EAGINE_MODULE_OBJECTS} PRIVATE
+			"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PROPER}-${NAME}_impl.cpp")
+	endforeach()
+
+	set(EAGINE_MODULE_DEPENDS)
+	set(EAGINE_MODULE_IMPORT_PCM_DEPENDS)
+	set(EAGINE_MODULE_COMPILE_OPTIONS
+		"-I${EAGINE_CORE_BINARY_ROOT}/include"
+		"-fprebuilt-module-path=.")
+
+	foreach(NAME ${EAGINE_MODULE_IMPORTS})
+		if(TARGET ${NAME})
+			get_property(
+				PCM_PATH TARGET ${NAME}
+				PROPERTY EAGINE_MODULE_PCM_PATH)
+
+			if(NOT "${PCM_PATH}" STREQUAL "")
+				list(
+					APPEND EAGINE_MODULE_COMPILE_OPTIONS
+					"-fprebuilt-module-path=${PCM_PATH}")
+
+				if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
+					target_compile_options(
+						${EAGINE_MODULE_OBJECTS}
+						PUBLIC "-fprebuilt-module-path=${PCM_PATH}")
+					target_link_libraries(
+						${EAGINE_MODULE_OBJECTS}
+						PUBLIC ${NAME})
+
+					target_compile_options(
+						${EAGINE_MODULE_PROPER}
+						PUBLIC "-fprebuilt-module-path=${PCM_PATH}")
+					target_link_libraries(
+						${EAGINE_MODULE_PROPER}
+						PUBLIC ${NAME})
+				endif()
+				list(APPEND EAGINE_MODULE_DEPENDS ${NAME})
+				list(
+					APPEND EAGINE_MODULE_IMPORT_PCM_DEPENDS
+					"\${PROJECT_BINARY_DIR}/EAGine/${NAME}.pcm")
+			endif()
+			file(
+				APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+				"if(NOT TARGET ${NAME})\n"
+				"	include(\"\${_IMPORT_PREFIX}/${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}/module-${NAME}.cmake\")\n"
+				"endif()\n")
+		elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}.cpp")
 			list(
-				APPEND EAGINE_MODULE_INTERFACE_FILES
-				"${CMAKE_CURRENT_BINARY_DIR}/${INTERFACE}.cpp"
-			)
-		elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${INTERFACE}.cpp")
+				APPEND EAGINE_MODULE_DEPENDS
+				${EAGINE_MODULE_PROPER}-${NAME}.pcm)
 			list(
-				APPEND EAGINE_MODULE_INTERFACE_FILES
-				"${CMAKE_CURRENT_SOURCE_DIR}/${INTERFACE}.cpp"
-			)
+				APPEND EAGINE_MODULE_IMPORT_PCM_DEPENDS
+				"\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}-${NAME}.pcm")
 		endif()
 	endforeach()
 
-	unset(EAGINE_MODULE_SOURCE_FILES)
-	foreach(SOURCE ${EAGINE_MODULE_SOURCES})
-		if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
-			if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}_impl.cpp")
-				list(
-					APPEND EAGINE_MODULE_SOURCE_FILES
-					"${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}_impl.cpp"
-				)
-			elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}_impl.cpp")
-				list(
-					APPEND EAGINE_MODULE_SOURCE_FILES
-					"${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}_impl.cpp"
-				)
-			endif()
-		else()
+	foreach(NAME ${EAGINE_MODULE_SUBMODULES})
+		get_property(
+			PCM_PATH TARGET ${NAME}
+			PROPERTY EAGINE_MODULE_PCM_PATH)
+		if("${PCM_PATH}" STREQUAL "")
+			message(FATAL_ERROR "Missing PCM path on ${NAME}")
+		endif()
+
+		list(
+			APPEND EAGINE_MODULE_COMPILE_OPTIONS
+			"-fprebuilt-module-path=${PCM_PATH}")
+
+		if(NOT "${EAGINE_MODULE_PARTITION}" STREQUAL "")
 			message(
 				FATAL_ERROR
-				"SOURCES should not be specified with module PARTITION "
-				"(${EAGINE_MODULE_PROPER}:${EAGINE_MODULE_PARTITION})"
-			)
+				"Partition ${EAGINE_MODULE_PARTITION} cannot have submodules")
 		endif()
+
+		target_compile_options(
+			${EAGINE_MODULE_OBJECTS}
+			PUBLIC "-fprebuilt-module-path=${PCM_PATH}")
+
+		target_compile_options(
+			${EAGINE_MODULE_PROPER}
+			PUBLIC "-fprebuilt-module-path=${PCM_PATH}")
+		target_link_libraries(
+			${EAGINE_MODULE_PROPER}
+			PRIVATE "${NAME}")
+		target_sources(
+			${EAGINE_MODULE_PROPER}
+			PRIVATE $<TARGET_OBJECTS:${NAME}-objects>)
+
+		get_property(
+			COPIED_OBJECTS TARGET ${NAME}-objects
+			PROPERTY SOURCES)
+		list(FILTER COPIED_OBJECTS INCLUDE REGEX "^.*\\.o$")
+		foreach(OBJECT ${COPIED_OBJECTS})
+			set_source_files_properties(
+				"${PCM_PATH}/${OBJECT}"
+				PROPERTIES GENERATED 1)
+			target_sources(
+				${EAGINE_MODULE_PROPER}
+				PRIVATE "${PCM_PATH}/${OBJECT}")
+		endforeach()
+
+		list(APPEND EAGINE_MODULE_DEPENDS ${NAME})
+		list(
+			APPEND EAGINE_MODULE_IMPORT_PCM_DEPENDS
+			"\${PROJECT_BINARY_DIR}/EAGine/${NAME}.pcm")
+		file(
+			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+			"if(NOT TARGET ${NAME})\n"
+			"	include(\"\${_IMPORT_PREFIX}/${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}/module-${NAME}.cmake\")\n"
+			"endif()\n")
 	endforeach()
+
+	string(REPLACE "." "/" EAGINE_MODULE_DIRECTORY ${EAGINE_MODULE_PROPER})
+	string(REGEX REPLACE "^eagine/" "" EAGINE_MODULE_DIRECTORY "${EAGINE_MODULE_DIRECTORY}")
 
 	if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
-		add_library(
-			${EAGINE_MODULE_TARGET} STATIC
-			${EAGINE_MODULE_INTERFACE_FILES}
-		)
-		if(NOT "${EAGINE_MODULE_SOURCE_FILES}" STREQUAL "")
-			add_library(
-				${EAGINE_MODULE_TARGET}-implement OBJECT
-				${EAGINE_MODULE_SOURCE_FILES}
-			)
-			eagine_add_module_common_properties(${EAGINE_MODULE_TARGET}-implement)
-
-			foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
-				target_include_directories(
-					${EAGINE_MODULE_TARGET}-implement
-					PRIVATE ${DIR}
-				)
-			endforeach()
-			target_link_libraries(
-				${EAGINE_MODULE_TARGET}
-				PUBLIC ${EAGINE_MODULE_TARGET}-implement
-			)
-		foreach(INTF ${EAGINE_MODULE_PARTITIONS})
-				set(PCM_PATH
-					"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_PROPER}.${INTF}.pcm"
-				)
-				set_property(
-					TARGET ${EAGINE_MODULE_TARGET}-implement
-					APPEND PROPERTY COMPILE_OPTIONS
-					"-fmodule-file=${EAGINE_MODULE_PROPER}:${INTF}=${PCM_PATH}"
-				)
-			endforeach()
-			foreach(LIBRARY ${EAGINE_MODULE_PRIVATE_LINK_LIBRARIES})
-				target_link_libraries(
-					${EAGINE_MODULE_TARGET}-implement
-					PRIVATE ${LIBRARY}
-				)
-			endforeach()
-		else()
-			foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
-				target_include_directories(
-					${EAGINE_MODULE_TARGET}
-					PRIVATE ${DIR}
-				)
-			endforeach()
-		endif()
-		set_property(
-			TARGET ${EAGINE_MODULE_TARGET}
-			APPEND PROPERTY EAGINE_MODULE_ID
-			"${EAGINE_MODULE_PROPER}"
-		)
+		string(REGEX REPLACE "^([a-z0-9_]+\\.)+([a-z0-9_]+)$" "\\2" SOURCE "${EAGINE_MODULE_PROPER}")
 	else()
-		add_library(
-			${EAGINE_MODULE_TARGET} OBJECT
-			${EAGINE_MODULE_INTERFACE_FILES}
-			${EAGINE_MODULE_SOURCE_FILES}
-		)
-		set_property(
-			TARGET ${EAGINE_MODULE_TARGET}
-			APPEND PROPERTY EAGINE_MODULE_PARTITION
-			"${EAGINE_MODULE_PARTITION}"
-		)
-		set_property(
-			TARGET ${EAGINE_MODULE_TARGET}
-			APPEND PROPERTY EAGINE_MODULE_ID
-			"${EAGINE_MODULE_PROPER}:${EAGINE_MODULE_PARTITION}"
-		)
+		set(SOURCE "${EAGINE_MODULE_PARTITION}")
+	endif()
+
+	if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp")
+		add_custom_command(
+			OUTPUT ${SOURCE}.cppm
+			COMMAND ${CMAKE_COMMAND}
+			ARGS
+				-E copy_if_different
+				"${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp"
+				"${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm"
+			DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp"
+			COMMENT "Copying CXX module interface ${SOURCE}.cpp")
+	elseif(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm")
+		message(FATAL_ERROR "Missing source ${SOURCE}.cppm")
 	endif()
 
 	set_property(
-		TARGET ${EAGINE_MODULE_TARGET}
-		APPEND PROPERTY EAGINE_MODULE_PROPER
-		"${EAGINE_MODULE_PROPER}"
-	)
-	eagine_add_module_common_properties(${EAGINE_MODULE_TARGET})
-	set_property(
-		TARGET ${EAGINE_MODULE_TARGET}
+		TARGET ${EAGINE_MODULE_PROPER}
 		APPEND PROPERTY EAGINE_MODULE_INTERFACES
-		${EAGINE_MODULE_INTERFACES}
-	)
-	set_property(
-		TARGET ${EAGINE_MODULE_TARGET}
-		APPEND PROPERTY EAGINE_MODULE_PARTITIONS
-		${EAGINE_MODULE_PARTITIONS}
-	)
-	foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
-		if(TARGET ${IMPORT})
-			set(EAGINE_MODULE_IMPORT "${IMPORT}")
-		elseif(TARGET ${EAGINE_MODULE_PROPER}.${IMPORT})
-			set(EAGINE_MODULE_IMPORT "${EAGINE_MODULE_PROPER}.${IMPORT}")
-		endif()
-		if(NOT "${EAGINE_MODULE_IMPORT}" STREQUAL "")
-			set_property(
-				TARGET ${EAGINE_MODULE_TARGET}
-				APPEND PROPERTY EAGINE_MODULE_IMPORTS
-				${EAGINE_MODULE_IMPORT}
-			)
-		endif()
-	endforeach()
+			"${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm")
+	install(
+		FILES "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm"
+		DESTINATION share/eagine/source/${CMAKE_BUILD_TYPE}/${EAGINE_MODULE_DIRECTORY})
 
-	set_property(
-		TARGET ${EAGINE_MODULE_TARGET}
-		APPEND PROPERTY EAGINE_MODULE_PCM_PATH
-		"${CMAKE_CURRENT_BINARY_DIR}/${EAGINE_MODULE_TARGET}.pcm"
-	)
-
-	foreach(PARTITION ${EAGINE_MODULE_PARTITIONS})
-		if(NOT TARGET ${EAGINE_MODULE_TARGET}.${PARTITION})
-			if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${PARTITION}.cpp")
-				eagine_add_module(
-					${EAGINE_MODULE_TARGET}
-					PARTITION ${PARTITION}
-					INTERFACES ${PARTITION}
-				)
-			endif()
-		endif()
-		target_link_libraries(
-			${EAGINE_MODULE_TARGET}
-			PUBLIC ${EAGINE_MODULE_TARGET}.${PARTITION}
-		)
-	endforeach()
-
-	foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
-		if(TARGET ${IMPORT})
-			target_link_libraries(
-				${EAGINE_MODULE_TARGET}
-				PUBLIC ${IMPORT}
-			)
-		elseif(TARGET ${EAGINE_MODULE_PROPER}.${IMPORT})
-			target_link_libraries(
-				${EAGINE_MODULE_TARGET}
-				PUBLIC ${EAGINE_MODULE_PROPER}.${IMPORT}
-			)
-		endif()
-	endforeach()
-
-	add_custom_target(${EAGINE_MODULE_TARGET}-imports)
-	eagine_append_own_module_pcms(
-		SOURCE ${EAGINE_MODULE_TARGET}
-		TARGET ${EAGINE_MODULE_TARGET}
-	)
-	if(TARGET ${EAGINE_MODULE_TARGET}-implement)
-		add_custom_target(
-			${EAGINE_MODULE_TARGET}-implement-imports
-			DEPENDS ${EAGINE_MODULE_TARGET}-imports
-		)
-		eagine_append_module_pcms(
-			SOURCE ${EAGINE_MODULE_TARGET}
-			TARGET ${EAGINE_MODULE_TARGET}-implement
-		)
+	if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
+		set(OUTPUT ${EAGINE_MODULE_PROPER})
+		get_property(
+			PARTITIONS TARGET ${EAGINE_MODULE_PROPER}
+			PROPERTY EAGINE_MODULE_PARTITIONS)
+		foreach(PARTITION ${PARTITIONS})
+			list(
+				APPEND EAGINE_MODULE_DEPENDS
+				"${EAGINE_MODULE_PROPER}-${PARTITION}.pcm")
+			list(
+				APPEND EAGINE_MODULE_IMPORT_PCM_DEPENDS
+				"\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}-${PARTITION}.pcm")
+		endforeach()
+	else()
+		set(OUTPUT ${EAGINE_MODULE_PROPER}-${EAGINE_MODULE_PARTITION})
+		set_property(
+			TARGET ${EAGINE_MODULE_PROPER}
+			APPEND PROPERTY EAGINE_MODULE_PARTITIONS "${EAGINE_MODULE_PARTITION}")
 	endif()
 
-	get_property(
-		PCM_COMPILE_OPTIONS
-		TARGET ${EAGINE_MODULE_TARGET}
-		PROPERTY COMPILE_OPTIONS
-	)
-	get_property(
-		TGT_COMPILE_DEFINITIONS
-		TARGET ${EAGINE_MODULE_TARGET}
-		PROPERTY COMPILE_DEFINITIONS
-	)
-	get_property(
-		DIR_COMPILE_DEFINITIONS
-		DIRECTORY
-		PROPERTY COMPILE_DEFINITIONS
-	)
+	list(REMOVE_DUPLICATES EAGINE_MODULE_DEPENDS)
+	list(REMOVE_DUPLICATES EAGINE_MODULE_IMPORT_PCM_DEPENDS)
+	list(REMOVE_DUPLICATES EAGINE_MODULE_COMPILE_OPTIONS)
 
-	unset(PCM_COMPILE_DEFINITIONS)
-	foreach(DEF ${TGT_COMPILE_DEFINITIONS})
-		list(APPEND PCM_COMPILE_DEFINITIONS "-D${DEF}")
-	endforeach()
-	foreach(DEF ${DIR_COMPILE_DEFINITIONS})
-		list(APPEND PCM_COMPILE_DEFINITIONS "-D${DEF}")
-	endforeach()
-	if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-		list(APPEND PCM_COMPILE_OPTIONS "-O3")
-		list(APPEND PCM_COMPILE_DEFINITIONS "-DNDEBUG")
-	elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-		list(APPEND PCM_COMPILE_OPTIONS "-fstack-protector-all")
+	set(EAGINE_MODULE_PCM_DEPENDS "${SOURCE}.cppm")
+	if(NOT "${EAGINE_MODULE_DEPENDS}" STREQUAL "")
+		list(APPEND EAGINE_MODULE_PCM_DEPENDS "${EAGINE_MODULE_DEPENDS}")
 	endif()
-
-	unset(PCM_INCLUDE_DIRECTORIES)
-	foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
-		list(APPEND PCM_COMPILE_DEFINITIONS "-I${DIR}")
-	endforeach()
 
 	add_custom_command(
-		OUTPUT ${EAGINE_MODULE_TARGET}.pcm
+		OUTPUT ${OUTPUT}.pcm
 		COMMAND ${CMAKE_CXX_COMPILER}
 		ARGS
-			-std=c++${EAGINE_CXX_STANDARD}
+			-std=c++${CMAKE_CXX_STANDARD}
+			-fmodules
+			-Wno-read-modules-implicitly
 			${CMAKE_CXX_FLAGS}
-			${PCM_COMPILE_OPTIONS}
-			${PCM_COMPILE_DEFINITIONS}
-			${PCM_INCLUDE_DIRECTORIES}
-			-Xclang -emit-module-interface
-			-c ${EAGINE_MODULE_INTERFACE_FILES}
-			-o ${EAGINE_MODULE_TARGET}.pcm
-		DEPENDS
-			${EAGINE_MODULE_TARGET}-imports
-			${EAGINE_MODULE_INTERFACE_FILES}
-		)
-	add_custom_target(
-		${EAGINE_MODULE_TARGET}-pcm
-		SOURCES ${EAGINE_MODULE_TARGET}.pcm
-	)
-	add_dependencies(
-		${EAGINE_MODULE_TARGET}
-		${EAGINE_MODULE_TARGET}-pcm
-	)
-	if(TARGET ${EAGINE_MODULE_TARGET}-implement)
-		add_dependencies(
-			${EAGINE_MODULE_TARGET}-implement
-			${EAGINE_MODULE_TARGET}-pcm
-		)
+			${EAGINE_MODULE_COMPILE_OPTIONS}
+			${SOURCE}.cppm
+			--precompile
+			--output ${OUTPUT}.pcm
+		DEPENDS ${EAGINE_MODULE_PCM_DEPENDS}
+		COMMENT "Precompiling CXX module ${OUTPUT}")
+
+	file(
+		APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+		"add_custom_command(\n"
+		"	OUTPUT \"\${PROJECT_BINARY_DIR}/EAGine/${OUTPUT}.pcm\"\n"
+		"	COMMAND \${CMAKE_CXX_COMPILER}\n"
+		"	ARGS\n"
+		"		-std=c++\${CMAKE_CXX_STANDARD}\n"
+		"		-fmodules\n"
+		"		-Wno-read-modules-implicitly\n"
+		"		\"-fprebuilt-module-path=\${PROJECT_BINARY_DIR}/EAGine\"\n"
+		"		\${CMAKE_CXX_FLAGS}\n"
+		"		\"\${_IMPORT_PREFIX}/share/eagine/source/${CMAKE_BUILD_TYPE}/${EAGINE_MODULE_DIRECTORY}/${SOURCE}.cppm\"\n"
+		"		--precompile\n"
+		"		--output \"\${PROJECT_BINARY_DIR}/EAGine/${OUTPUT}.pcm\"\n")
+	if(NOT "${EAGINE_MODULE_IMPORT_PCM_DEPENDS}" STREQUAL "")
+		file(
+			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+			"	DEPENDS \"${EAGINE_MODULE_IMPORT_PCM_DEPENDS}\"\n")
 	endif()
+	file(
+		APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+		"	COMMENT \"Precompiling CXX module ${OUTPUT}.pcm\")\n")
+
+	if("${EAGINE_MODULE_PARTITION}" STREQUAL "")
+		if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+			set(CONFIG_POSTFIX "${CMAKE_RELEASE_POSTFIX}")
+		elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+			set(CONFIG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
+		endif()
+		set(EAGINE_MODULE_DEPENDS "${OUTPUT}.pcm")
+		file(
+			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+			"add_custom_target(${EAGINE_MODULE_PROPER}-pcm DEPENDS \"\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}.pcm\")\n"
+			"add_library(${EAGINE_MODULE_PROPER} STATIC IMPORTED GLOBAL)\n"
+			"add_dependencies(${EAGINE_MODULE_PROPER} ${EAGINE_MODULE_PROPER}-pcm)\n"
+			"set_target_properties(\n"
+			"	${EAGINE_MODULE_PROPER} PROPERTIES\n"
+			"	IMPORTED_LOCATION \"\${_IMPORT_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${EAGINE_MODULE_PROPER}${CONFIG_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}\")\n"
+			"set_target_properties(\n"
+			"	${EAGINE_MODULE_PROPER} PROPERTIES\n"
+			"	INTERFACE_COMPILE_OPTIONS\n" 
+			"		\"-fmodules;-Wno-read-modules-implicitly;-fmodule-file=${EAGINE_MODULE_PROPER}=\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}.pcm\"\n"
+			"	INTERFACE_LINK_DIRECTORIES\n" 
+			"		\"\${_IMPORT_PREFIX}/lib\"\n")
+		if(NOT "${EAGINE_MODULE_INTERFACE_LINK_LIBRARIES}" STREQUAL "")
+			unset(INTERFACE_LIBS)
+			foreach(LIB ${EAGINE_MODULE_INTERFACE_LINK_LIBRARIES})
+				if(TARGET ${LIB})
+					list(APPEND INTERFACE_LIBS "${LIB}${CONFIG_POSTFIX}")
+				else()
+					list(APPEND INTERFACE_LIBS ${LIB})
+				endif()
+			endforeach()
+			if(NOT "${INTERFACE_LIBS}" STREQUAL "")
+			file(
+				APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+				"	INTERFACE_LINK_LIBRARIES\n"
+				"		\"${INTERFACE_LIBS}\"\n")
+			endif()
+		endif()
+		file(
+			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
+			")\n")
+	else()
+		list(APPEND EAGINE_MODULE_DEPENDS "${OUTPUT}.pcm")
+	endif()
+
+	add_custom_command(
+		OUTPUT ${OUTPUT}.o
+		COMMAND ${CMAKE_CXX_COMPILER}
+		ARGS
+			-std=c++${CMAKE_CXX_STANDARD}
+			-fmodules
+			-Wno-read-modules-implicitly
+			-Wno-unused-command-line-argument
+			${CMAKE_CXX_FLAGS}
+			${EAGINE_MODULE_COMPILE_OPTIONS}
+			${OUTPUT}.pcm
+			--compile
+			--output ${OUTPUT}.o
+		DEPENDS ${EAGINE_MODULE_DEPENDS}
+		COMMENT "Compiling CXX object ${OUTPUT}")
+
+	target_sources(${EAGINE_MODULE_OBJECTS} PRIVATE "${OUTPUT}.o")
+	target_sources(${EAGINE_MODULE_PROPER} PRIVATE "${OUTPUT}.o")
 endfunction()
 # ------------------------------------------------------------------------------
 function(eagine_target_modules TARGET_NAME)
-	eagine_add_module_common_properties(${TARGET_NAME})
-
-	foreach(EAGINE_MODULE_SOURCE ${ARGN})
-		unset(EAGINE_TARGET_IMPORTS)
-		list(APPEND EAGINE_TARGET_IMPORTS ${EAGINE_MODULE_SOURCE})
-		unset(EAGINE_MODULE_PARTITIONS)
+	target_compile_options(
+		${TARGET_NAME}
+		PUBLIC
+			-fmodules
+			-Wno-read-modules-implicitly
+	)
+	foreach(EAGINE_MODULE ${ARGN})
 		get_property(
-			EAGINE_MODULE_PARTITIONS
-			TARGET ${EAGINE_MODULE_SOURCE}
-			PROPERTY EAGINE_MODULE_PARTITIONS
+			PCM_PATH TARGET ${EAGINE_MODULE}
+			PROPERTY EAGINE_MODULE_PCM_PATH
 		)
-		foreach(PARTITION ${EAGINE_MODULE_PARTITIONS})
-			unset(EAGINE_MODULE_IMPORTS)
-			get_property(
-				EAGINE_MODULE_IMPORTS
-				TARGET ${EAGINE_MODULE_SOURCE}
-				PROPERTY EAGINE_MODULE_IMPORTS)
-			foreach(IMPORT ${EAGINE_MODULE_IMPORTS})
-				list(APPEND EAGINE_TARGET_IMPORTS ${IMPORT})
-			endforeach()
-		endforeach()
-		
-		list(REMOVE_DUPLICATES EAGINE_TARGET_IMPORTS)
-		foreach(IMPORT ${EAGINE_TARGET_IMPORTS})
-			target_link_libraries(
-				${TARGET_NAME}
-				PUBLIC ${IMPORT}
-			)
-		endforeach()
-
-
-		if(NOT TARGET ${TARGET_NAME}-imports)
-			add_custom_target(${TARGET_NAME}-imports)
-		endif()
-
-		eagine_append_module_pcms(
-			TARGET ${TARGET_NAME}
-			SOURCE ${EAGINE_MODULE_SOURCE}
-		)
+		target_compile_options(
+			${TARGET_NAME}
+			PUBLIC "-fprebuilt-module-path=${PCM_PATH}")
+		target_link_libraries(${TARGET_NAME} PUBLIC ${EAGINE_MODULE})
 	endforeach()
 endfunction()
 # ------------------------------------------------------------------------------
@@ -581,6 +518,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 			)
 		endif()
 	endforeach()
+
 	if(LLVM_PROFDATA)
 		add_test(
 			NAME "profdata-${EAGINE_MODULE_PROPER}"

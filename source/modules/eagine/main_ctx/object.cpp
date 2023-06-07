@@ -45,12 +45,15 @@ public:
     main_ctx_log_backend_getter() noexcept;
     main_ctx_log_backend_getter(main_ctx_getters&) noexcept;
 
-    auto get() const noexcept -> auto* {
-        return _backend;
+    auto get() const noexcept -> optional_reference<logger_backend> {
+        return _backend_ref();
     }
 
 private:
-    logger_backend* const _backend{nullptr};
+    static auto _backend_ref() noexcept -> optional_reference<logger_backend>& {
+        static optional_reference<logger_backend> beref{};
+        return beref;
+    }
 };
 
 /// @brief Base class for main context objects.
@@ -139,14 +142,26 @@ public:
 
     /// @brief Locates the specified service object.
     [[nodiscard]] auto locate_service(identifier type_id) const noexcept
-      -> std::shared_ptr<main_ctx_service>;
+      -> optional_reference<main_ctx_service>;
 
     /// @brief Locates the specified Service object.
     /// @see locate
     template <std::derived_from<main_ctx_service> Service>
-    [[nodiscard]] auto locate() const noexcept -> std::shared_ptr<Service> {
-        return std::dynamic_pointer_cast<Service>(
-          locate_service(Service::static_type_id()));
+    [[nodiscard]] auto locate() const noexcept -> optional_reference<Service> {
+        return locate_service(Service::static_type_id())
+          .as(std::type_identity<Service>{});
+    }
+
+    /// @brief Locates the specified service object.
+    [[nodiscard]] auto share_service(identifier type_id) const noexcept
+      -> shared_holder<main_ctx_service>;
+
+    /// @brief Locates the specified Service object.
+    /// @see locate
+    template <std::derived_from<main_ctx_service> Service>
+    [[nodiscard]] auto share() const noexcept -> shared_holder<Service> {
+        return share_service(Service::static_type_id())
+          .as(std::type_identity<Service>{});
     }
 
 private:

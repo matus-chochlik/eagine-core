@@ -8,7 +8,7 @@
 export module eagine.core.utility:memoized;
 
 import std;
-import eagine.core.concepts;
+import eagine.core.types;
 import :callable_ref;
 
 namespace eagine {

@@ -6,16 +6,19 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 module;
-
 #include <cassert>
 
-export module eagine.core.valid_if:decl;
+export module eagine.core.types:optional_like;
 
 import std;
-import eagine.core.types;
-import eagine.core.concepts;
+import :concepts;
+import :basic;
+import :tribool;
+import :limits;
 
 namespace eagine {
+//------------------------------------------------------------------------------
+// optionally-valid
 //------------------------------------------------------------------------------
 /// @brief Policy for optionally valid values, indicated by a boolean flag.
 /// @ingroup valid_if
@@ -46,6 +49,361 @@ export struct valid_flag_policy {
         }
     };
 };
+//------------------------------------------------------------------------------
+/// @brief Basic template for conditionally-valid values.
+/// @ingroup valid_if
+/// @tparam T type of the stored, conditionally valid value.
+/// @tparam Policy indicates under what conditions is the stored value valid.
+export template <typename T, typename Policy, typename DoLog>
+class basic_valid_if;
+
+/// @brief Primary template for conditionally valid values.
+/// @ingroup valid_if
+export template <typename T, typename Policy>
+using valid_if = basic_valid_if<T, Policy, typename Policy::do_log>;
+
+/// @brief Specialization of valid_if with flag indicating validity.
+/// @ingroup valid_if
+/// @see valid_if_indicated
+export template <typename T>
+using optionally_valid = valid_if<T, valid_flag_policy>;
+//------------------------------------------------------------------------------
+// optional reference
+//------------------------------------------------------------------------------
+/// @brief Optional reference to an instance of type @p T.
+/// @ingroup valid_if
+/// @see valid_if
+export template <typename T>
+class optional_reference {
+
+    template <typename V, typename... Args>
+    [[nodiscard]] static constexpr auto
+    _call_member(V* ptr, auto function, Args&&... args) noexcept(
+      noexcept(std::invoke(function, *ptr, std::forward<Args>(args)...)));
+
+public:
+    /// @brief Type of the referenced value.
+    using value_type = T;
+
+    /// @brief Construction from a pointer to reference of type @p T.
+    constexpr optional_reference(T* ptr) noexcept
+      : _ptr{ptr} {}
+
+    /// @brief Construction from a reference to reference of type @p T.
+    constexpr optional_reference(T& ref) noexcept
+      : _ptr{&ref} {}
+
+    template <typename U>
+        requires(std::is_convertible_v<U*, T*> and not std::is_same_v<U, T>)
+    constexpr optional_reference(optional_reference<U> that) noexcept
+      : _ptr{that.get()} {}
+
+    /// @brief Construction from a unique_ptr to reference of type @p T.
+    template <std::derived_from<T> U>
+    constexpr optional_reference(const std::unique_ptr<U>& ptr) noexcept
+      : _ptr{ptr.get()} {}
+
+    /// @brief Construction from a shared_ptr to reference of type @p T.
+    template <std::derived_from<T> U>
+    constexpr optional_reference(const std::shared_ptr<U>& ptr) noexcept
+      : _ptr{ptr.get()} {}
+
+    /// @brief Move constructor.
+    constexpr optional_reference(optional_reference&&) noexcept = default;
+
+    /// @brief Copy constructor.
+    constexpr optional_reference(const optional_reference&) = default;
+
+    /// @brief Move assignment operator.
+    constexpr auto operator=(optional_reference&&) noexcept
+      -> optional_reference& = default;
+
+    /// @brief Copy assignment operator.
+    constexpr auto operator=(const optional_reference&)
+      -> optional_reference& = default;
+
+    ~optional_reference() noexcept = default;
+
+    /// @brief Default construction
+    /// @post not has_value()
+    constexpr optional_reference() noexcept = default;
+
+    /// @brief Construction from nothing.
+    /// @post not has_value()
+    constexpr optional_reference(nothing_t) noexcept {}
+
+    /// @brief Construction from nullptr.
+    /// @post not has_value()
+    constexpr optional_reference(std::nullptr_t) noexcept {}
+
+    /// @brief Indicates if this stores a valid reference.
+    [[nodiscard]] constexpr auto has_value() const noexcept -> bool {
+        return _ptr != nullptr;
+    }
+
+    /// @brief Resets the reference to invalid state.
+    /// @post not has_value()
+    constexpr auto reset() noexcept -> optional_reference& {
+        _ptr = nullptr;
+        return *this;
+    }
+
+    /// @brief Indicates in this reference specified to the specified object.
+    [[nodiscard]] constexpr auto refers_to(const T& object) const noexcept
+      -> tribool {
+        return tribool{_ptr == &object, has_value()};
+    }
+
+    /// @brief Indicates in this reference the same object as @p that.
+    template <std::derived_from<T> U>
+    [[nodiscard]] constexpr auto refers_to(
+      const optional_reference<U>& that) const noexcept -> tribool {
+        if(that.has_value()) {
+            return refers_to(*that);
+        }
+        return indeterminate;
+    }
+
+    /// @brief Indicates if this stores a valid reference.
+    /// @see has_value
+    [[nodiscard]] constexpr explicit operator bool() const noexcept {
+        return has_value();
+    }
+
+    [[nodiscard]] constexpr auto operator*() const noexcept -> T& {
+        assert(has_value());
+        return *_ptr;
+    }
+
+    [[nodiscard]] constexpr auto operator->() const noexcept -> T* {
+        assert(has_value());
+        return _ptr;
+    }
+
+    [[nodiscard]] constexpr auto get() const noexcept -> T* {
+        return _ptr;
+    }
+
+    /// @brief Returns the stored reference.
+    /// @pre has_value()
+    [[nodiscard]] constexpr auto value() const noexcept -> T& {
+        assert(has_value());
+        return *_ptr;
+    }
+
+    /// @brief Returns the stored value if valid or @p fallback otherwise.
+    /// @see has_value
+    template <
+      std::convertible_to<T> U,
+      typename R = std::conditional_t<std::is_function_v<T>, T*, T>>
+    [[nodiscard]] constexpr auto value_or(U&& fallback) const noexcept -> R {
+        if(has_value()) {
+            if constexpr(std::is_function_v<T>) {
+                return _ptr;
+            } else {
+                return *_ptr;
+            }
+        }
+        return R(std::forward<U>(fallback));
+    }
+
+    [[nodiscard]] constexpr auto value_or(T& fallback) const noexcept -> T& {
+        if(has_value()) {
+            return *_ptr;
+        }
+        return fallback;
+    }
+
+    [[nodiscard]] explicit constexpr operator T&() noexcept {
+        return value();
+    }
+
+    /// @brief Constructs value of type C from the stored value or an empty optional.
+    /// @see and_then
+    template <typename C, typename... Args>
+    [[nodiscard]] constexpr auto construct(Args&&... args) noexcept(
+      noexcept(T(std::declval<T&>()))) -> optionally_valid<C>;
+
+    /// @brief Invoke function on the stored value or return empty optional-like.
+    /// @see transform
+    /// @see or_else
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
+    constexpr auto and_then(F&& function) const noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<T&>()))) -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), *_ptr);
+        } else {
+            return R{};
+        }
+    }
+
+    template <
+      typename F,
+      typename R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
+        requires(std::is_void_v<R>)
+    constexpr void and_then(F&& function) const noexcept(
+      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>()))) {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), *_ptr);
+        }
+    }
+
+    template <typename F>
+    constexpr auto and_then_true(F&& function) const noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<T&>()))) -> tribool {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), *_ptr);
+            return true;
+        } else {
+            return indeterminate;
+        }
+    }
+
+    /// @brief Return self if has value or the result of function.
+    /// @see and_then
+    /// @see transform
+    template <typename F, typename R = std::invoke_result_t<F>>
+        requires(
+          std::same_as<R, optional_reference> or
+          std::convertible_to<R, optional_reference>)
+    constexpr auto or_else(F&& function) const
+      noexcept(noexcept(std::invoke(std::forward<F>(function))))
+        -> optional_reference {
+        if(has_value()) {
+            return *this;
+        } else {
+            return std::invoke(std::forward<F>(function));
+        }
+    }
+
+    /// @brief Invoke function on the stored value or return empty optional-like.
+    /// @see and_then
+    /// @see or_else
+    template <typename F, typename R = std::invoke_result_t<F, T&>>
+    [[nodiscard]] constexpr auto transform(F&& function) const noexcept(
+      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>())) and
+      std::is_nothrow_move_constructible_v<std::remove_cvref_t<R>>);
+
+    template <typename M, typename C>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] constexpr auto member(M C::*ptr) const noexcept
+        requires(not std::is_member_function_pointer_v<decltype(ptr)>)
+    {
+        if constexpr(optional_like<M>) {
+            if(has_value()) {
+                return value().*ptr;
+            } else {
+                return M{};
+            }
+        } else {
+            using R =
+              std::conditional_t<std::is_const_v<T>, std::add_const_t<M>, M>;
+            if(has_value()) {
+                return optional_reference<R>{value().*ptr};
+            } else {
+                return optional_reference<R>{nothing};
+            }
+        }
+    }
+
+    template <typename R, std::same_as<T> C, typename... Params, typename... Args>
+    [[nodiscard]] constexpr auto member(
+      R (C::*function)(Params...),
+      Args&&... args) const {
+        return _call_member(_ptr, function, std::forward<Args>(args)...);
+    }
+
+    template <typename R, std::same_as<T> C, typename... Params, typename... Args>
+    [[nodiscard]] constexpr auto member(
+      R (C::*function)(Params...) noexcept,
+      Args&&... args) const noexcept {
+        return _call_member(_ptr, function, std::forward<Args>(args)...);
+    }
+
+    template <typename R, typename C, typename... Params, typename... Args>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] constexpr auto member(
+      R (C::*function)(Params...) const,
+      Args&&... args) const {
+        return _call_member(_ptr, function, std::forward<Args>(args)...);
+    }
+
+    template <typename R, typename C, typename... Params, typename... Args>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] constexpr auto member(
+      R (C::*function)(Params...) const noexcept,
+      Args&&... args) const noexcept {
+        return _call_member(_ptr, function, std::forward<Args>(args)...);
+    }
+
+    template <typename... Args>
+    [[nodiscard]] auto bind_member(auto* ptr, Args&&... args) const noexcept {
+        return [this, ptr, ... args{std::forward<Args>(args)}] {
+            return this->member(ptr, args...);
+        };
+    }
+
+    template <std::derived_from<T> Derived>
+    [[nodiscard]] auto as(std::type_identity<Derived> = {}) const noexcept
+      -> optional_reference<Derived> {
+        if(auto derived{dynamic_cast<Derived*>(_ptr)}) {
+            return {derived};
+        }
+        return {};
+    }
+
+    /// @brief Returns the stored reference.
+    /// @see value
+    [[nodiscard]] explicit constexpr operator const T&() const noexcept {
+        return value();
+    }
+
+    /// @brief Tri-state equality comparison of the referred instance with a value.
+    [[nodiscard]] auto constexpr operator==(const T& r) const noexcept
+      -> tribool {
+        if(has_value()) {
+            return value() == r;
+        }
+        return indeterminate;
+    }
+
+    /// @brief Tri-state nonequality comparison of the referred instance with a value.
+    [[nodiscard]] constexpr auto operator!=(const T& r) const noexcept
+      -> tribool {
+        if(has_value()) {
+            return value() != r;
+        }
+        return indeterminate;
+    }
+
+    /// @brief Conversion to std::optional
+    [[nodiscard]] constexpr operator std::optional<std::reference_wrapper<T>>()
+      const noexcept {
+        if(has_value()) {
+            return {value()};
+        }
+        return {};
+    }
+
+private:
+    T* _ptr{nullptr};
+};
+//------------------------------------------------------------------------------
+export template <typename T>
+optional_reference(T* ptr) -> optional_reference<T>;
+
+export template <typename T>
+optional_reference(T& ptr) -> optional_reference<T>;
+
+export template <typename T>
+optional_reference(const std::unique_ptr<T>& ptr) -> optional_reference<T>;
+
+export template <typename T>
+optional_reference(const std::shared_ptr<T>& ptr) -> optional_reference<T>;
+//------------------------------------------------------------------------------
+// basic valid-if
 //------------------------------------------------------------------------------
 /// @brief Basic template for conditionally-valid values.
 /// @ingroup valid_if
@@ -99,11 +457,23 @@ public:
       : _value{std::move(val)}
       , _policy{std::move(plcy)} {}
 
-    template <std::convertible_to<T> U>
+    template <optional_like O, typename U>
+        requires(not std::same_as<Policy, valid_flag_policy>)
+    constexpr basic_valid_if(O opt, U&& fallback) noexcept(
+      std::is_nothrow_copy_constructible_v<T>)
+      : _value{opt ? *opt : T(std::forward<U>(fallback))} {}
+
+    template <optional_like O>
+        requires(not std::same_as<Policy, valid_flag_policy>)
+    constexpr basic_valid_if(O opt, nothing_t) noexcept(
+      std::is_nothrow_copy_constructible_v<T>)
+      : _value{opt ? *opt : T{}} {}
+
+    template <optional_like O>
         requires(std::same_as<Policy, valid_flag_policy>)
-    constexpr basic_valid_if(std::optional<U> opt) noexcept(
-      std::is_nothrow_move_constructible_v<T>)
-      : _value{opt.has_value() ? *opt : T{}}
+    constexpr basic_valid_if(O opt) noexcept(
+      std::is_nothrow_copy_constructible_v<T>)
+      : _value{opt ? *opt : T{}}
       , _policy{_policy_with_value(opt.has_value())} {}
 
     /// @brief Move constructor.
@@ -161,7 +531,7 @@ public:
     ~basic_valid_if() noexcept = default;
 
     /// @brief Checks if @p val is valid according to this object's policy.
-    [[nodiscard]] constexpr auto has_value(const_reference val) const noexcept
+    [[nodiscard]] constexpr auto has_value(const value_type& val) const noexcept
       -> bool {
         return _policy(val);
     }
@@ -184,13 +554,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() == that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() == v, not has_value()};
+        return {value_anyway() == v, has_value()};
     }
 
     /// @brief Non-equality comparison.
@@ -199,13 +569,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() != that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() != v, not has_value()};
+        return {value_anyway() != v, has_value()};
     }
 
     /// @brief Less-than comparison.
@@ -214,13 +584,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() < that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() < v, not has_value()};
+        return {value_anyway() < v, has_value()};
     }
 
     /// @brief Greater-than comparison.
@@ -229,13 +599,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() > that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() > v, not has_value()};
+        return {value_anyway() > v, has_value()};
     }
 
     /// @brief Less-than or equal comparison.
@@ -244,13 +614,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() <= that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() <= v, not has_value()};
+        return {value_anyway() <= v, has_value()};
     }
 
     /// @brief Greater-than or equal comparison.
@@ -259,13 +629,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() >= that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() >= v, not has_value()};
+        return {value_anyway() >= v, has_value()};
     }
 
     template <typename Log>
@@ -316,7 +686,7 @@ public:
 
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     [[nodiscard]] constexpr auto value_or(
-      const_reference fallback) const noexcept -> const_reference {
+      const value_type& fallback) const noexcept -> const_reference {
         if(has_value(_value)) [[likely]] {
             return _value;
         }
@@ -348,8 +718,7 @@ public:
     /// @see and_then
     template <typename C, typename... Args>
     [[nodiscard]] auto construct(Args&&... args) noexcept(
-      noexcept(T(std::declval<T&>())))
-      -> basic_valid_if<C, valid_flag_policy, typename valid_flag_policy::do_log> {
+      noexcept(T(std::declval<T&>()))) -> optionally_valid<C> {
         if(has_value()) {
             return {C{value_anyway(), std::forward<Args>(args)...}, true};
         }
@@ -393,6 +762,39 @@ public:
             return std::invoke(std::forward<F>(function), value_anyway());
         } else {
             return R{};
+        }
+    }
+
+    template <
+      typename F,
+      typename R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
+        requires(std::is_void_v<R>)
+    void and_then(F&& function) & noexcept(
+      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>()))) {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), value_anyway());
+        }
+    }
+
+    template <
+      typename F,
+      typename R = std::remove_cvref_t<std::invoke_result_t<F, T&&>>>
+        requires(std::is_void_v<R>)
+    void and_then(F&& function) && noexcept(
+      noexcept(std::invoke(std::forward<F>(function), std::declval<T&&>()))) {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), std::move(value_anyway()));
+        }
+    }
+
+    template <
+      typename F,
+      typename R = std::remove_cvref_t<std::invoke_result_t<F, const T&>>>
+        requires(std::is_void_v<R>)
+    auto and_then(F&& function) const& noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<const T&>()))) {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), value_anyway());
         }
     }
 
@@ -451,11 +853,19 @@ public:
             } else {
                 return optional_reference<U>{nothing};
             }
+        } else if constexpr(std::is_same_v<R, bool>) {
+            if(has_value()) {
+                return tribool{
+                  std::invoke(
+                    std::forward<F>(function), std::move(value_anyway())),
+                  true};
+            } else {
+                return tribool{indeterminate};
+            }
         } else {
-            using V = std::remove_cvref_t<R>;
             if(has_value()) {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{
                   std::invoke(
@@ -463,7 +873,7 @@ public:
                   true};
             } else {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{};
             }
@@ -490,17 +900,23 @@ public:
             } else {
                 return optional_reference<U>{nothing};
             }
+        } else if constexpr(std::is_same_v<R, bool>) {
+            if(has_value()) {
+                return tribool{
+                  std::invoke(std::forward<F>(function), value_anyway()), true};
+            } else {
+                return tribool{indeterminate};
+            }
         } else {
-            using V = std::remove_cvref_t<R>;
             if(has_value()) {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{
                   std::invoke(std::forward<F>(function), value_anyway()), true};
             } else {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{};
             }
@@ -657,7 +1073,7 @@ public:
 
     /// @brief Checks if @p val is valid according to this object's policy.
     /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto has_value(const_reference val) const noexcept
+    [[nodiscard]] constexpr auto has_value(const value_type& val) const noexcept
       -> bool {
         return _policy(val);
     }
@@ -679,13 +1095,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() == that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator==(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() == v, not has_value()};
+        return {value_anyway() == v, has_value()};
     }
 
     /// @brief Non-equality comparison.
@@ -694,13 +1110,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() != that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Non-equality comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator!=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() != v, not has_value()};
+        return {value_anyway() != v, has_value()};
     }
 
     /// @brief Less-than comparison.
@@ -709,13 +1125,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() < that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Less-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() < v, not has_value()};
+        return {value_anyway() < v, has_value()};
     }
 
     /// @brief Greater-than comparison.
@@ -724,13 +1140,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() > that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Greater-than comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() > v, not has_value()};
+        return {value_anyway() > v, has_value()};
     }
 
     /// @brief Less-than or equal comparison.
@@ -739,13 +1155,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() <= that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Less-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator<=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() <= v, not has_value()};
+        return {value_anyway() <= v, has_value()};
     }
 
     /// @brief Greater-than or equal comparison.
@@ -754,13 +1170,13 @@ public:
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
         return {
           value_anyway() >= that.value_anyway(),
-          not has_value() or not that.has_value()};
+          has_value() and that.has_value()};
     }
 
     /// @brief Greater-equal comparison of the stored value with @p v.
     [[nodiscard]] constexpr auto operator>=(const value_type& v) const noexcept
       -> tribool {
-        return {value_anyway() >= v, not has_value()};
+        return {value_anyway() >= v, has_value()};
     }
 
     template <typename Log>
@@ -809,7 +1225,7 @@ public:
 
     /// @brief Returns the stored value if valid, otherwise returns fallback.
     [[nodiscard]] constexpr auto value_or(
-      const_reference fallback) const noexcept -> auto& {
+      const value_type& fallback) const noexcept -> auto& {
         if(has_value(_value)) [[likely]] {
             return _value;
         }
@@ -824,9 +1240,8 @@ public:
     /// @brief Constructs value of type C from the stored value or an empty optional.
     /// @see and_then
     template <typename C, typename... Args>
-    [[nodiscard]] auto construct(Args&&... args) const noexcept(
-      noexcept(T(std::declval<const T&>())))
-      -> basic_valid_if<C, valid_flag_policy, typename valid_flag_policy::do_log> {
+    [[nodiscard]] auto construct(Args&&... args) const
+      noexcept(noexcept(T(std::declval<const T&>()))) -> optionally_valid<C> {
         if(has_value()) {
             return {C{value_anyway(), std::forward<Args>(args)...}, true};
         }
@@ -845,6 +1260,16 @@ public:
             return std::invoke(std::forward<F>(function), value_anyway());
         } else {
             return R{};
+        }
+    }
+
+    template <
+      typename F,
+      typename R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
+    void and_then(F&& function) const noexcept(
+      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>()))) {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), value_anyway());
         }
     }
 
@@ -884,17 +1309,23 @@ public:
             } else {
                 return optional_reference<U>{nothing};
             }
+        } else if constexpr(std::is_same_v<R, bool>) {
+            if(has_value()) {
+                return tribool{
+                  std::invoke(std::forward<F>(function), value_anyway()), true};
+            } else {
+                return tribool{indeterminate};
+            }
         } else {
-            using V = std::remove_cvref_t<R>;
             if(has_value()) {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{
                   std::invoke(std::forward<F>(function), value_anyway()), true};
             } else {
                 return basic_valid_if<
-                  V,
+                  R,
                   valid_flag_policy,
                   typename valid_flag_policy::do_log>{};
             }
@@ -942,13 +1373,6 @@ public:
         }
     }
 
-    /// @brief Returns the stored value if valid, returns fallback otherwise.
-    /// @see basic_valid_if::value_or
-    [[nodiscard]] constexpr auto operator/(
-      const_reference fallback) const noexcept -> const_reference {
-        return value_or(fallback);
-    }
-
     /// @brief Returns the stored value, throws if it is invalid.
     /// @see basic_valid_if::value
     [[nodiscard]] constexpr auto operator*() const -> const_reference {
@@ -978,10 +1402,101 @@ private:
     [[no_unique_address]] DoLog _do_log{_policy};
 };
 //------------------------------------------------------------------------------
-/// @brief Primary template for conditionally valid values.
-/// @ingroup valid_if
-export template <typename T, typename Policy>
-using valid_if = basic_valid_if<T, Policy, typename Policy::do_log>;
+// implementation
+//------------------------------------------------------------------------------
+template <typename T>
+template <typename V, typename... Args>
+[[nodiscard]] constexpr auto optional_reference<T>::
+  _call_member(V* ptr, auto function, Args&&... args) noexcept(
+    noexcept(std::invoke(function, *ptr, std::forward<Args>(args)...))) {
+    using R = std::invoke_result_t<
+      decltype(function),
+      std::conditional_t<std::is_const_v<V>, std::add_const_t<T>, T>&,
+      Args...>;
+    if constexpr(std::is_void_v<R>) {
+        if(ptr) {
+            std::invoke(function, *ptr, std::forward<Args>(args)...);
+        }
+    } else if constexpr(std::is_same_v<R, bool>) {
+        if(ptr) {
+            return tribool{
+              std::invoke(function, *ptr, std::forward<Args>(args)...), true};
+        } else {
+            return tribool{indeterminate};
+        }
+    } else if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+        using P = std::conditional_t<
+          std::is_reference_v<R>,
+          std::remove_reference_t<R>,
+          std::remove_pointer_t<R>>;
+        if(ptr) {
+            return optional_reference<P>{
+              std::invoke(function, *ptr, std::forward<Args>(args)...)};
+        } else {
+            return optional_reference<P>{nothing};
+        }
+    } else {
+        if constexpr(optional_like<R>) {
+            if(ptr) {
+                return std::invoke(function, *ptr, std::forward<Args>(args)...);
+            } else {
+                return R{};
+            }
+        } else {
+            if(ptr) {
+                return optionally_valid<R>{
+                  std::invoke(function, *ptr, std::forward<Args>(args)...),
+                  true};
+            } else {
+                return optionally_valid<R>{};
+            }
+        }
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T>
+template <typename C, typename... Args>
+[[nodiscard]] constexpr auto optional_reference<T>::construct(
+  Args&&... args) noexcept(noexcept(T(std::declval<T&>())))
+  -> optionally_valid<C> {
+    if(has_value()) {
+        return {C(value(), std::forward<Args>(args)...), true};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+template <typename T>
+template <typename F, typename R>
+[[nodiscard]] constexpr auto optional_reference<T>::transform(F&& function) const
+  noexcept(
+    noexcept(std::invoke(std::forward<F>(function), std::declval<T&>())) and
+    std::is_nothrow_move_constructible_v<std::remove_cvref_t<R>>) {
+    if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+        using P = std::conditional_t<
+          std::is_reference_v<R>,
+          std::remove_reference_t<R>,
+          std::remove_pointer_t<R>>;
+        if(_ptr) {
+            return optional_reference<P>{
+              std::invoke(std::forward<F>(function), *_ptr)};
+        } else {
+            return optional_reference<P>{nothing};
+        }
+    } else if constexpr(std::is_same_v<R, bool>) {
+        if(_ptr) {
+            return tribool{std::invoke(std::forward<F>(function), *_ptr), true};
+        } else {
+            return tribool{indeterminate};
+        }
+    } else {
+        if(_ptr) {
+            return optionally_valid<R>{
+              std::invoke(std::forward<F>(function), *_ptr), true};
+        } else {
+            return optionally_valid<R>{};
+        }
+    }
+}
 //------------------------------------------------------------------------------
 /// @brief Overload of extract for conditionally valid values.
 /// @pre opt.has_value()
@@ -1048,23 +1563,23 @@ export template <typename F, typename T, typename P, typename L>
     return {std::move(vi), std::move(f)};
 }
 //------------------------------------------------------------------------------
+export template <typename F, typename T, typename P>
+auto operator<<(std::ostream& out, const basic_valid_if<F, T, P>& vif)
+  -> std::ostream& {
+    assert(vif.has_value());
+    return out << vif.value_anyway();
+}
+
 export template <typename F, typename T, typename P, typename L>
-[[nodiscard]] auto operator<<(
-  std::ostream& out,
-  const valid_if_or_fallback<F, T, P, L>& viof) -> std::ostream& {
+auto operator<<(std::ostream& out, const valid_if_or_fallback<F, T, P, L>& viof)
+  -> std::ostream& {
     if(viof.has_value()) {
-        out << viof.value();
+        out << viof.value_anyway();
     } else {
         out << viof.fallback();
     }
     return out;
 }
-//------------------------------------------------------------------------------
-/// @brief Specialization of valid_if with flag indicating validity.
-/// @ingroup valid_if
-/// @see valid_if_indicated
-export template <typename T>
-using optionally_valid = valid_if<T, valid_flag_policy>;
 //------------------------------------------------------------------------------
 export template <typename Dst, typename P, typename L, typename Src>
 struct within_limits<basic_valid_if<Dst, P, L>, Src> {
@@ -1153,9 +1668,9 @@ export template <typename T>
 using valid_if_not_empty =
   valid_if<T, valid_if_not_empty_policy<std::remove_reference_t<T>>>;
 //------------------------------------------------------------------------------
-/// @brief Policy for values valid when non-boolean Indicator has Value.
+/// @brief Policy for values valid when non-boolean Indicator has the specified value.
 /// @ingroup valid_if
-export template <typename Indicator, typename Comparable, Comparable Value>
+export template <typename Indicator, typename Comparable, Comparable value>
 struct valid_if_indicated_policy {
     Indicator _indicator{};
 
@@ -1164,10 +1679,10 @@ struct valid_if_indicated_policy {
     constexpr valid_if_indicated_policy(Indicator indicator) noexcept
       : _indicator{std::move(indicator)} {}
 
-    /// @brief Indicates value validity, true if indicator == Value.
+    /// @brief Indicates value validity, true if indicator == value.
     template <typename T>
     constexpr auto operator()(const T&) const noexcept {
-        return Comparable(_indicator) == Value;
+        return Comparable(_indicator) == value;
     }
 
     struct do_log {
@@ -1176,7 +1691,7 @@ struct valid_if_indicated_policy {
 
         template <typename Log, typename T>
         void operator()(Log& log, const T&) const {
-            log << "indicator is " << Value;
+            log << "indicator is " << value;
         }
     };
 };
@@ -1191,8 +1706,8 @@ export template <
   typename T,
   typename Indicator,
   typename Comparable = bool,
-  Comparable Value = true>
+  Comparable value = true>
 using valid_if_indicated =
-  valid_if<T, valid_if_indicated_policy<Indicator, Comparable, Value>>;
+  valid_if<T, valid_if_indicated_policy<Indicator, Comparable, value>>;
 //------------------------------------------------------------------------------
 } // namespace eagine

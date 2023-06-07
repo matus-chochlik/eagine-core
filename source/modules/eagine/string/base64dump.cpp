@@ -37,7 +37,7 @@ public:
           make_span_getter(i, _mb),
           _1.bind(make_base64_encode_transform())
             .and_then(_1.bind(function).return_true())
-            .value_or(false),
+            .or_false(),
           6);
     }
 
@@ -49,7 +49,7 @@ public:
           make_span_getter(i, src._mb),
           _1.bind(make_base64_encode_transform())
             .and_then((out << _1).return_true())
-            .value_or(false),
+            .or_false(),
           6);
         return out;
     }

@@ -9,7 +9,6 @@
 #include <eagine/testing/unit_begin.hpp>
 import std;
 import eagine.core.types;
-import eagine.core.concepts;
 //------------------------------------------------------------------------------
 struct inner {
     short s{0};
@@ -25,6 +24,7 @@ struct outer {
 //------------------------------------------------------------------------------
 void optional_reference_empty(auto& s) {
     eagitest::case_ test{s, 1, "empty"};
+
     eagine::optional_reference<int> r{eagine::nothing};
 
     test.check(eagine::optional_like<decltype(r)>, "optional-like");
@@ -33,6 +33,11 @@ void optional_reference_empty(auto& s) {
     test.check(not bool(r), "is not true");
     test.check_equal(r.value_or(1234), 1234, "value or 1234");
     test.check_equal(r.value_or(2345), 2345, "value or 2345");
+
+    test.check(
+      not r.and_then_true([](auto&) {}).value_or(false), "not and then true");
+
+    r.and_then([&](auto&) { test.fail("has no value"); });
 
     test.check_equal(
       r.transform([](auto i) { return i + 1; }).value_or(3456),
@@ -67,6 +72,7 @@ void optional_reference_empty(auto& s) {
 //------------------------------------------------------------------------------
 void optional_reference_non_empty(auto& s) {
     eagitest::case_ test{s, 2, "non-empty"};
+    eagitest::track trck{test, 2, 2};
 
     eagine::optional_reference<outer> r{};
 
@@ -141,6 +147,13 @@ void optional_reference_non_empty(auto& s) {
       1234,
       "and then 1234");
 
+    r.and_then([&](outer&) { trck.checkpoint(1); });
+    r.and_then(
+       [](outer& x) -> eagine::optional_reference<inner> { return {x.i}; })
+      .and_then([&](inner&) { trck.checkpoint(2); });
+
+    test.check(r.and_then_true([](outer&) {}).value_or(false), "and then true");
+
     test.check_equal(
       r.transform([](auto& x) -> auto& { return x.i; })
         .transform([](auto& x) -> auto& { return x.b; })
@@ -199,6 +212,7 @@ void optional_reference_non_empty(auto& s) {
 //------------------------------------------------------------------------------
 void optional_reference_non_empty_const(auto& s) {
     eagitest::case_ test{s, 3, "non-empty const"};
+    eagitest::track trck{test, 2, 2};
 
     outer o{};
     eagine::optional_reference<const outer> r{o};
@@ -211,6 +225,14 @@ void optional_reference_non_empty_const(auto& s) {
     test.check_equal(r.value().i.s, o.i.s, "o.i.s 1");
     o.i.s = 1234;
     test.check_equal(r.value().i.s, o.i.s, "o.i.s 2");
+
+    r.and_then([&](const outer&) { trck.checkpoint(1); });
+    r.and_then(
+       [](auto& x) -> eagine::optional_reference<const inner> { return {x.i}; })
+      .and_then([&](auto&) { trck.checkpoint(2); });
+
+    test.check(
+      r.and_then_true([](const outer&) {}).value_or(false), "and then true");
 
     test.check_equal(
       r.transform([](const outer& x) -> const inner& { return x.i; })

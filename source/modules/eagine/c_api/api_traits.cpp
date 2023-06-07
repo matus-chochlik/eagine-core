@@ -8,8 +8,8 @@
 export module eagine.core.c_api:api_traits;
 
 import std;
+import eagine.core.types;
 import eagine.core.memory;
-import eagine.core.valid_if;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------

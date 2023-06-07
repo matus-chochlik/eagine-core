@@ -8,9 +8,7 @@
 export module eagine.core.valid_if:range;
 
 import std;
-import eagine.core.concepts;
 import eagine.core.types;
-import :decl;
 import :compare;
 
 namespace eagine {

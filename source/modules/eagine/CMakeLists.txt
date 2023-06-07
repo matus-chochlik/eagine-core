@@ -3,7 +3,6 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 add_subdirectory(build_config)
-add_subdirectory(concepts)
 add_subdirectory(types)
 add_subdirectory(debug)
 add_subdirectory(memory)
@@ -27,13 +26,10 @@ add_subdirectory(serialization)
 add_subdirectory(main_ctx)
 add_subdirectory(resource)
 
-
 eagine_add_module(
 	eagine.core
-	INTERFACES core
-	IMPORTS
+	SUBMODULES
 		eagine.core.build_config
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.debug
 		eagine.core.memory
@@ -56,5 +52,23 @@ eagine_add_module(
 		eagine.core.serialization
 		eagine.core.main_ctx
 		eagine.core.resource
+	INTERFACE_LINK_LIBRARIES
+		ryml
+		systemd
+		z
 )
 
+eagine_add_module_tests(
+	eagine.core
+	UNITS
+		embed
+	IMPORTS
+		eagine.core
+)
+
+eagine_embed_target_resources(
+	TARGET test.eagine.core.embed
+	RESOURCES
+		CMakeLists "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt"
+	ENABLE_SEARCH
+)

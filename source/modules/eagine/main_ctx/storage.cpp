@@ -16,6 +16,7 @@ import eagine.core.build_info;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.utility;
+import eagine.core.valid_if;
 import eagine.core.identifier;
 import eagine.core.container;
 import eagine.core.runtime;
@@ -38,23 +39,9 @@ public:
     main_ctx_storage(
       int argc,
       const char** argv,
-      main_ctx_options& options) noexcept
-      : _args{argc, argv}
-      , _console{options.app_id, _args, options.console_opts}
-      , _log_root{options.app_id, _args, options.logger_opts}
-      , _app_name{options.app_name} {
-        const auto fs_path = std::filesystem::path(to_string(_args.command()));
-        if(_app_name.empty()) {
-            _app_name = fs_path.stem().string();
-        }
-        _exe_path = fs_path.lexically_normal().string();
+      main_ctx_options& options) noexcept;
 
-        _log_root.info("application ${appName} starting")
-          .arg("appName", "AppName", _app_name)
-          .arg("exePath", "FsPath", _exe_path);
-    }
-
-    auto setters() noexcept -> main_ctx_setters* final {
+    auto setters() noexcept -> optional_reference<main_ctx_setters> final {
         return this;
     }
 
@@ -150,18 +137,42 @@ public:
         return _scratch_space;
     }
 
-    void inject(std::shared_ptr<main_ctx_service> service) final {
+    void inject(shared_holder<main_ctx_service> service) final {
         if(service) {
             _services[service->type_id()] = service;
         }
     }
 
     auto locate_service(identifier type_id) noexcept
-      -> std::shared_ptr<main_ctx_service> final {
+      -> optional_reference<main_ctx_service> final {
         if(const auto pos{_services.find(type_id)}; pos != _services.end()) {
             return std::get<1>(*pos);
         }
         return {};
+    }
+
+    auto share_service(identifier type_id) noexcept
+      -> shared_holder<main_ctx_service> final {
+        if(const auto pos{_services.find(type_id)}; pos != _services.end()) {
+            return std::get<1>(*pos);
+        }
+        return {};
+    }
+
+    void fill_with_random_bytes(memory::block dest) noexcept final {
+        eagine::fill_with_random_bytes(dest, _rand_eng);
+    }
+
+    void random_uniform_01(memory::span<float> dest) noexcept final {
+        generate(dest, [this] { return _dist_uniform_float_01(_rand_eng); });
+    }
+
+    void random_uniform_11(memory::span<float> dest) noexcept final {
+        generate(dest, [this] { return _dist_uniform_float_11(_rand_eng); });
+    }
+
+    void random_normal(memory::span<float> dest) noexcept final {
+        generate(dest, [this] { return _dist_normal_float(_rand_eng); });
     }
 
     auto exe_path() const noexcept -> string_view final {
@@ -194,7 +205,44 @@ private:
     std::string _exe_path{};
     std::string _app_name{};
 
-    flat_map<identifier, std::shared_ptr<main_ctx_service>> _services;
+    flat_map<identifier, shared_holder<main_ctx_service>> _services;
+
+    valid_if_positive<std::default_random_engine::result_type> _rand_seed;
+    std::default_random_engine::result_type _rand_init;
+    std::default_random_engine _rand_eng;
+    std::uniform_real_distribution<float> _dist_uniform_float_01{0.F, 1.F};
+    std::uniform_real_distribution<float> _dist_uniform_float_11{-1.F, 1.F};
+    std::normal_distribution<float> _dist_normal_float{0.F, 1.F};
 };
+//------------------------------------------------------------------------------
+main_ctx_storage::main_ctx_storage(
+  int argc,
+  const char** argv,
+  main_ctx_options& options) noexcept
+  : _args{argc, argv}
+  , _console{options.app_id, _args, options.console_opts}
+  , _log_root{options.app_id, _args, options.logger_opts}
+  , _app_name{options.app_name}
+  , _rand_seed{_app_config
+                 .get<std::default_random_engine::result_type>(
+                   "application.random.seed")
+                 .value_or(0U)}
+  , _rand_init{_rand_seed.value_or(std::random_device{}())}
+  , _rand_eng{_rand_init} {
+    const auto fs_path = std::filesystem::path(to_string(_args.command()));
+    if(_app_name.empty()) {
+        _app_name = fs_path.stem().string();
+    }
+    _exe_path = fs_path.lexically_normal().string();
+
+    _log_root.info("application ${appName} starting")
+      .tag("appStart")
+      .arg("appName", "AppName", _app_name)
+      .arg("exePath", "FsPath", _exe_path);
+
+    _log_root.info("using ${init} to initialize random generator")
+      .tag("rndGenSeed")
+      .arg("init", _rand_init);
+}
 //------------------------------------------------------------------------------
 } // namespace eagine

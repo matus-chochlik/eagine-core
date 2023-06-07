@@ -2,16 +2,20 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
+eagine_add_module(eagine.core.types PARTITION concepts)
+eagine_add_module(eagine.core.types PARTITION function_constant)
+eagine_add_module(eagine.core.types PARTITION interface)
+eagine_add_module(eagine.core.types PARTITION bitfield)
+
 eagine_add_module(
 	eagine.core.types PARTITION basic
 	IMPORTS eagine.core.build_config
 )
+
 eagine_add_module(
 	eagine.core.types PARTITION tribool
-	IMPORTS eagine.core.concepts
+	IMPORTS concepts
 )
-eagine_add_module(eagine.core.types PARTITION interface)
-eagine_add_module(eagine.core.types PARTITION bitfield)
 
 eagine_add_module(
 	eagine.core.types PARTITION structural
@@ -25,38 +29,44 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.types PARTITION extract
-	IMPORTS eagine.core.concepts
+	IMPORTS concepts
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION optional_reference
+	eagine.core.types PARTITION limits
+	IMPORTS basic
+)
+
+eagine_add_module(
+	eagine.core.types PARTITION optional_like
 	IMPORTS
 		basic tribool
-		eagine.core.concepts
+		limits concepts
+)
+
+eagine_add_module(
+	eagine.core.types PARTITION holder
+	IMPORTS
+		basic tribool
+		concepts optional_like
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION placeholder
 	IMPORTS
-		tribool optional_reference
+		tribool optional_like
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION outcome
 	IMPORTS
 		extract basic
-		eagine.core.concepts
-		eagine.core.types
+		limits concepts
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION compare
 	IMPORTS basic
-)
-
-eagine_add_module(
-	eagine.core.types PARTITION limits
-	IMPORTS basic outcome
 )
 
 eagine_add_module(
@@ -71,23 +81,8 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.types
-	INTERFACES types
-	PARTITIONS
-		basic
-		structural
-		interface
-		compare
-		limits
-		integer_range
-		extract
-		tribool
-		optional_reference
-		outcome
-		bitfield
-		placeholder
-		function_constant
-		enum_map
-		metaprogramming
+	IMPORTS
+		eagine.core.build_config
 )
 
 eagine_add_module_tests(
@@ -101,7 +96,7 @@ eagine_add_module_tests(
 		metaprogramming
 		nothing
 		optional_reference
+		valid_if
 		tribool
-	IMPORTS
-		eagine.core.concepts
+		holder
 )

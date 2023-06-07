@@ -238,8 +238,8 @@ protected:
       Function predicate,
       const span_size_t step = 256) noexcept {
         while(const auto pos{_source->scan_until(predicate, step, step)}) {
-            if(extract(pos) > 0) {
-                pop(extract(pos));
+            if(*pos > 0) {
+                pop(*pos);
             } else {
                 break;
             }
@@ -286,16 +286,16 @@ public:
 
     /// @brief Construction from a reference to a Sink.
     [[nodiscard]] common_serializer_backend(Sink& s) noexcept
-      : _sink{&s} {}
+      : _sink{s} {}
 
     /// @brief Sets a reference to a new Sink object.
     auto set_sink(Sink& s) noexcept -> auto& {
-        _sink = &s;
+        _sink = s;
         return derived();
     }
 
-    auto sink() noexcept -> Sink* final {
-        return _sink;
+    auto sink() noexcept -> Sink& final {
+        return *_sink;
     }
 
     auto enum_as_string() noexcept -> bool override {
@@ -441,7 +441,7 @@ protected:
     }
 
 private:
-    Sink* _sink{nullptr};
+    optional_reference<Sink> _sink{};
 
     auto derived() noexcept -> Derived& {
         return *static_cast<Derived*>(this);

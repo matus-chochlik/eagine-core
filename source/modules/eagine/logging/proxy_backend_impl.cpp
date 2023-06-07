@@ -55,6 +55,16 @@ public:
       const string_view name,
       const string_view desc) noexcept final;
 
+    void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) noexcept final;
+
+    void active_state(
+      const identifier source,
+      const identifier state_tag) noexcept final;
+
     auto begin_message(
       const identifier source,
       const identifier tag,
@@ -118,18 +128,20 @@ public:
 
     void finish_message() noexcept final;
 
-    void finish_log() noexcept final;
-
     void log_chart_sample(
       const identifier source,
       const logger_instance_id instance,
       const identifier series,
       const float value) noexcept final;
 
+    void heartbeat() noexcept final;
+
+    void finish_log() noexcept final;
+
 private:
-    std::unique_ptr<logger_backend> _delegate;
-    std::unique_ptr<std::vector<std::function<void()>>> _delayed{
-      std::make_unique<std::vector<std::function<void()>>>()};
+    unique_holder<logger_backend> _delegate;
+    unique_holder<std::vector<std::function<void()>>> _delayed{
+      default_selector};
     log_stream_info _info;
 };
 //------------------------------------------------------------------------------
@@ -195,6 +207,30 @@ void proxy_log_backend::set_description(
                                 name{to_string(name)},
                                 desc{to_string(desc)}]() {
             _delegate->set_description(source, instance, name, desc);
+        });
+    }
+}
+//------------------------------------------------------------------------------
+void proxy_log_backend::declare_state(
+  const identifier source,
+  const identifier state_tag,
+  const identifier begin_tag,
+  const identifier end_tag) noexcept {
+    if(_delayed) [[likely]] {
+        assert(not _delegate);
+        _delayed->emplace_back([this, source, state_tag, begin_tag, end_tag]() {
+            _delegate->declare_state(source, state_tag, begin_tag, end_tag);
+        });
+    }
+}
+//------------------------------------------------------------------------------
+void proxy_log_backend::active_state(
+  const identifier source,
+  const identifier state_tag) noexcept {
+    if(_delayed) [[likely]] {
+        assert(not _delegate);
+        _delayed->emplace_back([this, source, state_tag]() {
+            _delegate->active_state(source, state_tag);
         });
     }
 }
@@ -357,15 +393,6 @@ void proxy_log_backend::finish_message() noexcept {
     }
 }
 //------------------------------------------------------------------------------
-void proxy_log_backend::finish_log() noexcept {
-    if(_delegate) [[likely]] {
-        return _delegate->finish_log();
-    } else if(_delayed) [[likely]] {
-        assert(not _delegate);
-        _delayed->emplace_back([this]() { _delegate->finish_log(); });
-    }
-}
-//------------------------------------------------------------------------------
 void proxy_log_backend::log_chart_sample(
   const identifier source,
   const logger_instance_id instance,
@@ -379,10 +406,28 @@ void proxy_log_backend::log_chart_sample(
     }
 }
 //------------------------------------------------------------------------------
+void proxy_log_backend::heartbeat() noexcept {
+    if(_delegate) [[likely]] {
+        return _delegate->heartbeat();
+    } else if(_delayed) [[likely]] {
+        assert(not _delegate);
+        _delayed->emplace_back([this]() { _delegate->heartbeat(); });
+    }
+}
+//------------------------------------------------------------------------------
+void proxy_log_backend::finish_log() noexcept {
+    if(_delegate) [[likely]] {
+        return _delegate->finish_log();
+    } else if(_delayed) [[likely]] {
+        assert(not _delegate);
+        _delayed->emplace_back([this]() { _delegate->finish_log(); });
+    }
+}
+//------------------------------------------------------------------------------
 auto proxy_log_choose_backend(
   basic_config_intf& config,
   const std::string& name,
-  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
+  const log_stream_info& info) -> unique_holder<logger_backend> {
     const bool use_spinlock{[&]() -> bool {
         std::string temp;
         if(config.fetch_string("log.use_spinlock", temp)) {
@@ -397,19 +442,15 @@ auto proxy_log_choose_backend(
         return make_null_log_backend();
     } else if(name == "cerr") {
         if(use_spinlock) {
-            return std::make_unique<ostream_log_backend<spinlock>>(
-              std::cerr, info);
+            return {hold<ostream_log_backend<spinlock>>, std::cerr, info};
         } else {
-            return std::make_unique<ostream_log_backend<std::mutex>>(
-              std::cerr, info);
+            return {hold<ostream_log_backend<std::mutex>>, std::cerr, info};
         }
     } else if(name == "cout") {
         if(use_spinlock) {
-            return std::make_unique<ostream_log_backend<spinlock>>(
-              std::cout, info);
+            return {hold<ostream_log_backend<spinlock>>, std::cout, info};
         } else {
-            return std::make_unique<ostream_log_backend<std::mutex>>(
-              std::cout, info);
+            return {hold<ostream_log_backend<std::mutex>>, std::cout, info};
         }
     } else if(name == "syslog") {
         if(use_spinlock) {
@@ -427,10 +468,12 @@ auto proxy_log_choose_backend(
             return make_asio_tcpipv4_ostream_log_backend_mutex(nw_addr, info);
         }
     } else if(name == "local") {
+        std::string path;
+        config.fetch_string("log.local.address", path);
         if(use_spinlock) {
-            return make_asio_local_ostream_log_backend_spinlock(info);
+            return make_asio_local_ostream_log_backend_spinlock(path, info);
         } else {
-            return make_asio_local_ostream_log_backend_mutex(info);
+            return make_asio_local_ostream_log_backend_mutex(path, info);
         }
     }
 
@@ -464,9 +507,9 @@ auto proxy_log_choose_backend(
     }
 
     if(use_spinlock) {
-        return std::make_unique<ostream_log_backend<spinlock>>(std::clog, info);
+        return {hold<ostream_log_backend<spinlock>>, std::clog, info};
     }
-    return std::make_unique<ostream_log_backend<std::mutex>>(std::clog, info);
+    return {hold<ostream_log_backend<std::mutex>>, std::clog, info};
 }
 //------------------------------------------------------------------------------
 auto proxy_log_backend::configure(basic_config_intf& config) -> bool {
@@ -492,8 +535,8 @@ auto proxy_log_backend::configure(basic_config_intf& config) -> bool {
 }
 //------------------------------------------------------------------------------
 auto make_proxy_log_backend(log_stream_info info)
-  -> std::unique_ptr<logger_backend> {
-    return std::make_unique<proxy_log_backend>(std::move(info));
+  -> unique_holder<logger_backend> {
+    return {hold<proxy_log_backend>, std::move(info)};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

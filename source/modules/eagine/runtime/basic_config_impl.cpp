@@ -22,7 +22,7 @@ auto basic_config::program_arg_name(string_view key, string_view) const noexcept
     arg_name.reserve(integer(safe_add(3, key.size())));
     arg_name.append("--");
     for(auto c : key) {
-        if(c == '.' or c == '_') {
+        if((c == '.') or (c == '_')) {
             c = '-';
         }
         arg_name.append(&c, 1U);
@@ -36,7 +36,7 @@ auto basic_config::environment_var_name(string_view key, string_view)
     var_name.reserve(integer(safe_add(7, key.size())));
     var_name.append("EAGINE_");
     for(auto c : key) {
-        if(c == '.' or c == '-') {
+        if((c == '.') or (c == '-')) {
             c = '_';
         } else {
             c = static_cast<char>(std::toupper(c));
@@ -59,10 +59,10 @@ auto basic_config::eval_environment_var(string_view key, const string_view tag)
 auto basic_config::is_set(const string_view key, const string_view tag) noexcept
   -> bool {
     if(const auto arg{find_program_arg(key, tag)}) {
-        return arg.next().and_then(from_string<bool>(_1)).value_or(true);
+        return arg.next().and_then(from_string<bool>(_1)).or_true();
     }
     if(const auto var{eval_environment_var(key, tag)}) {
-        return var.and_then(from_string<bool>(_1)).value_or(true);
+        return var.and_then(from_string<bool>(_1)).or_true();
     }
     return false;
 }
@@ -79,7 +79,7 @@ auto basic_config::fetch_string(
       .next()
       .or_else(find_env_var)
       .and_then(assign_if_fits(_1, dest))
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

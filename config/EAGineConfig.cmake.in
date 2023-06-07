@@ -1,0 +1,36 @@
+#  Copyright Matus Chochlik.
+#  Distributed under the Boost Software License, Version 1.0.
+#  See accompanying file LICENSE_1_0.txt or copy at
+#   http://www.boost.org/LICENSE_1_0.txt
+#
+if (NOT EAGine_FIND_COMPONENTS)
+    set(EAGine_NOT_FOUND_MESSAGE "The EAGine package requires at least one component")
+    set(EAGine_FOUND False)
+    return()
+endif()
+
+set(EAGINE_BUILD_MULTIARCH "@EAGINE_BUILD_MULTIARCH@")
+
+get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+if(NOT "${EAGINE_BUILD_MULTIARCH}" STREQUAL "")
+	get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+endif()
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+if(_IMPORT_PREFIX STREQUAL "/")
+  set(_IMPORT_PREFIX "")
+endif()
+
+include(${CMAKE_CURRENT_LIST_DIR}/EAGineEmbed.cmake)
+
+add_library(EAGine UNKNOWN IMPORTED)
+
+foreach(COMPONENT ${EAGine_FIND_COMPONENTS})
+	set(CMP_PATH "${CMAKE_CURRENT_LIST_DIR}/${CMAKE_BUILD_TYPE}/module-eagine.${COMPONENT}.cmake")
+	if(EXISTS "${CMP_PATH}")
+		include("${CMP_PATH}")
+	else()
+		message(FATAL_ERROR "Could not find EAGine component '${COMPONENT}'")
+	endif()
+endforeach()

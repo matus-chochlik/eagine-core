@@ -12,7 +12,7 @@ module;
 export module eagine.core.types:tribool;
 
 import std;
-import eagine.core.concepts;
+import :concepts;
 
 namespace eagine {
 
@@ -83,18 +83,18 @@ public:
       : _value{_value_t::_unknown} {}
 
     /// @brief Construction with separate true/false, known/unknown arguments.
-    constexpr tribool(const bool value, const bool is_unknown) noexcept
-      : _value(
-          is_unknown ? _value_t::_unknown
-          : value    ? _value_t::_true
-                     : _value_t::_false) {}
+    constexpr tribool(const bool value, const bool is_known) noexcept
+      : _value{
+          not is_known ? _value_t::_unknown
+          : value      ? _value_t::_true
+                       : _value_t::_false} {}
 
     /// @brief Construction from optional<bool>.
     constexpr tribool(const std::optional<bool>& opt) noexcept
-      : _value(
+      : _value{
           not opt ? _value_t::_unknown
           : *opt  ? _value_t::_true
-                  : _value_t::_false) {}
+                  : _value_t::_false} {}
 
     /// @brief Returns true, if the stored value is true.
     [[nodiscard]] constexpr explicit operator bool() const noexcept {
@@ -135,10 +135,26 @@ public:
         return fallback;
     }
 
-    /// @brief Returns the boolean value in not indeterminate, false otherwise.
+    /// @brief Returns the boolean value if not indeterminate, true otherwise.
+    /// @see value_or
+    /// @see or_false
+    /// @see or_default
+    [[nodiscard]] constexpr auto or_true() const noexcept -> bool {
+        return value_or(true);
+    }
+
+    /// @brief Returns the boolean value if not indeterminate, false otherwise.
+    /// @see value_or
+    /// @see or_true
+    /// @see or_default
+    [[nodiscard]] constexpr auto or_false() const noexcept -> bool {
+        return value_or(false);
+    }
+
+    /// @brief Returns the boolean value if not indeterminate, false otherwise.
     /// @see value_or
     [[nodiscard]] constexpr auto or_default() const noexcept -> bool {
-        return value_or(false);
+        return or_false();
     }
 
     /// @brief Invoke function on the stored value or return empty optional-like.
@@ -186,11 +202,20 @@ public:
     [[nodiscard]] constexpr auto transform(F&& function) const noexcept(
       noexcept(std::invoke(std::forward<F>(function), true)) and
       std::is_nothrow_move_constructible_v<R>) {
-        if(has_value()) {
-            return std::optional<R>{
-              std::invoke(std::forward<F>(function), bool(*this))};
+        if constexpr(std::is_same_v<R, bool>) {
+            if(has_value()) {
+                return tribool{
+                  std::invoke(std::forward<F>(function), bool(*this)), true};
+            } else {
+                return tribool{indeterminate};
+            }
         } else {
-            return std::optional<R>{};
+            if(has_value()) {
+                return std::optional<R>{
+                  std::invoke(std::forward<F>(function), bool(*this))};
+            } else {
+                return std::optional<R>{};
+            }
         }
     }
 
@@ -219,13 +244,17 @@ public:
     /// @brief Equality comparison.
     [[nodiscard]] constexpr auto operator==(const tribool b) noexcept
       -> tribool {
-        return {_value == b._value, (is(indeterminate) or b.is(indeterminate))};
+        return {
+          _value == b._value,
+          (not is(indeterminate) and not b.is(indeterminate))};
     }
 
     /// @brief Non-equality comparison.
     [[nodiscard]] constexpr auto operator!=(const tribool b) noexcept
       -> tribool {
-        return {_value != b._value, (is(indeterminate) or b.is(indeterminate))};
+        return {
+          _value != b._value,
+          (not is(indeterminate) and not b.is(indeterminate))};
     }
 
 private:

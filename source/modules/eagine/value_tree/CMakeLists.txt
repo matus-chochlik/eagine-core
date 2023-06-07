@@ -20,6 +20,7 @@ eagine_add_module(
 		interface
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.string
 		eagine.core.identifier
 		eagine.core.utility
 		eagine.core.reflection
@@ -30,7 +31,6 @@ eagine_add_module(
 	eagine.core.value_tree PARTITION implementation
 	IMPORTS
 		interface wrappers
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -41,12 +41,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.value_tree
-	INTERFACES
-		value_tree
-	PARTITIONS
-		interface
-		wrappers
-		implementation
 	SOURCES
 		wrappers
 		empty
@@ -60,12 +54,15 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.identifier
+		eagine.core.utility
 		eagine.core.valid_if
 		eagine.core.logging
 		eagine.core.console
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/rapidjson/include"
 	PRIVATE_LINK_LIBRARIES
+		ryml
+	INTERFACE_LINK_LIBRARIES
 		ryml
 )
 
@@ -80,6 +77,8 @@ eagine_add_module_tests(
 		eagine.core.string
 		eagine.core.reflection
 		eagine.core.logging
+		eagine.core.units
+		eagine.core.c_api
 )
 
 set_tests_properties(execute-test.eagine.core.value_tree.visitors PROPERTIES COST 3)

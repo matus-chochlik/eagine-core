@@ -156,7 +156,7 @@ public:
             ++tp;
             ++pp;
         }
-        return tp == end();
+        return pp == pattern.end();
     }
 
     /// @brief Concatenates two paths.

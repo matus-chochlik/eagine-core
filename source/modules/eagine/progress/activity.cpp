@@ -103,7 +103,7 @@ public:
     }
 
 protected:
-    activity_progress(std::shared_ptr<progress_tracker_backend> backend) noexcept
+    activity_progress(shared_holder<progress_tracker_backend> backend) noexcept
       : _backend{std::move(backend)} {}
 
     auto backend() const noexcept
@@ -112,7 +112,7 @@ protected:
     }
 
 private:
-    std::shared_ptr<progress_tracker_backend> _backend;
+    shared_holder<progress_tracker_backend> _backend;
     activity_progress_id_t _activity_id{0U};
 };
 //------------------------------------------------------------------------------

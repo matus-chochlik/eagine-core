@@ -56,7 +56,8 @@ public:
 
     ~main_ctx() noexcept override;
 
-    [[nodiscard]] static auto try_get() noexcept -> main_ctx* {
+    [[nodiscard]] static auto try_get() noexcept
+      -> optional_reference<main_ctx> {
         return _single_ptr();
     }
 
@@ -66,7 +67,8 @@ public:
         return *_single_ptr();
     }
 
-    [[nodiscard]] auto setters() noexcept -> main_ctx_setters* final {
+    [[nodiscard]] auto setters() noexcept
+      -> optional_reference<main_ctx_setters> final {
         return _source.setters();
     }
 
@@ -151,14 +153,87 @@ public:
     }
 
     [[nodiscard]] auto locate_service(identifier type_id) noexcept
-      -> std::shared_ptr<main_ctx_service> final {
+      -> optional_reference<main_ctx_service> final {
         return _source.locate_service(type_id);
     }
 
     template <std::derived_from<main_ctx_service> Service>
-    [[nodiscard]] auto locate() noexcept -> std::shared_ptr<Service> {
-        return std::dynamic_pointer_cast<Service>(
-          locate_service(Service::static_type_id()));
+    [[nodiscard]] auto locate() noexcept -> optional_reference<Service> {
+        return locate_service(Service::static_type_id())
+          .as(std::type_identity<Service>{});
+    }
+
+    [[nodiscard]] auto share_service(identifier type_id) noexcept
+      -> shared_holder<main_ctx_service> final {
+        return _source.share_service(type_id);
+    }
+
+    template <std::derived_from<main_ctx_service> Service>
+    [[nodiscard]] auto share() noexcept -> shared_holder<Service> {
+        return share_service(Service::static_type_id())
+          .as(std::type_identity<Service>{});
+    }
+
+    void fill_with_random_bytes(memory::block dest) noexcept final {
+        _source.fill_with_random_bytes(dest);
+    }
+
+    void random_uniform_01(memory::span<float> dest) noexcept final {
+        _source.random_uniform_01(dest);
+    }
+
+    void random_uniform_11(memory::span<float> dest) noexcept final {
+        _source.random_uniform_11(dest);
+    }
+
+    void random_normal(memory::span<float> dest) noexcept final {
+        _source.random_normal(dest);
+    }
+
+    [[nodiscard]] auto encrypt_shared(
+      memory::const_block nonce,
+      memory::const_block input,
+      memory::buffer& output) noexcept -> bool;
+
+    [[nodiscard]] auto decrypt_shared(
+      memory::const_block nonce,
+      memory::const_block input,
+      memory::buffer& output) noexcept -> bool;
+
+    [[nodiscard]] auto encrypt_shared(
+      memory::const_block nonce,
+      string_view input,
+      memory::buffer& output) noexcept -> bool;
+
+    [[nodiscard]] auto decrypt_shared(
+      memory::const_block nonce,
+      memory::const_block input,
+      std::string& output) noexcept -> bool;
+
+    [[nodiscard]] auto encrypt_shared_password(
+      memory::const_block nonce,
+      const string_view key,
+      const string_view tag,
+      memory::buffer& encrypted) noexcept -> bool;
+
+    [[nodiscard]] auto encrypt_shared_password(
+      memory::const_block nonce,
+      const string_view key,
+      memory::buffer& encrypted) noexcept -> bool {
+        return encrypt_shared_password(nonce, key, {}, encrypted);
+    }
+
+    [[nodiscard]] auto matches_encrypted_shared_password(
+      memory::const_block nonce,
+      const string_view key,
+      const string_view tag,
+      memory::buffer& encrypted) noexcept -> bool;
+
+    [[nodiscard]] auto matches_encrypted_shared_password(
+      memory::const_block nonce,
+      const string_view key,
+      memory::buffer& encrypted) noexcept -> bool {
+        return matches_encrypted_shared_password(nonce, key, {}, encrypted);
     }
 
 private:

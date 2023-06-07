@@ -51,8 +51,7 @@ static constexpr auto default_log_severity() noexcept {
 auto root_logger_choose_backend(
   const program_args& args,
   const root_logger_options& opts,
-  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
-    std::unique_ptr<logger_backend> result{};
+  const log_stream_info& info) -> unique_holder<logger_backend> {
 
     const bool use_spinlock{args.find("--log-use-spinlock")};
 
@@ -61,19 +60,15 @@ auto root_logger_choose_backend(
             return make_null_log_backend();
         } else if(arg.is_long_tag("use-cerr-log")) {
             if(use_spinlock) {
-                return std::make_unique<ostream_log_backend<spinlock>>(
-                  std::cerr, info);
+                return {hold<ostream_log_backend<spinlock>>, std::cerr, info};
             } else {
-                return std::make_unique<ostream_log_backend<std::mutex>>(
-                  std::cerr, info);
+                return {hold<ostream_log_backend<std::mutex>>, std::cerr, info};
             }
         } else if(arg.is_long_tag("use-cout-log")) {
             if(use_spinlock) {
-                return std::make_unique<ostream_log_backend<spinlock>>(
-                  std::cout, info);
+                return {hold<ostream_log_backend<spinlock>>, std::cout, info};
             } else {
-                return std::make_unique<ostream_log_backend<std::mutex>>(
-                  std::cout, info);
+                return {hold<ostream_log_backend<std::mutex>>, std::cout, info};
             }
         } else if(arg.is_long_tag("use-syslog")) {
             if(use_spinlock) {
@@ -87,7 +82,7 @@ auto root_logger_choose_backend(
                 nw_addr = arg.next();
             } else if(const auto env_var{get_environment_variable(
                         "EAGINE_LOG_NETWORK_ADDRESS")}) {
-                nw_addr = extract(env_var);
+                nw_addr = *env_var;
             }
             if(use_spinlock) {
                 return make_asio_tcpipv4_ostream_log_backend_spinlock(
@@ -97,10 +92,17 @@ auto root_logger_choose_backend(
                   nw_addr, info);
             }
         } else if(arg.is_long_tag("use-asio-log")) {
+            string_view path;
+            if(arg.next() and not arg.next().starts_with("-")) {
+                path = arg.next();
+            } else if(const auto env_var{
+                        get_environment_variable("EAGINE_LOG_LOCAL_PATH")}) {
+                path = *env_var;
+            }
             if(use_spinlock) {
-                return make_asio_local_ostream_log_backend_spinlock(info);
+                return make_asio_local_ostream_log_backend_spinlock(path, info);
             } else {
-                return make_asio_local_ostream_log_backend_mutex(info);
+                return make_asio_local_ostream_log_backend_mutex(path, info);
             }
         }
     }
@@ -114,7 +116,7 @@ auto root_logger_choose_backend(
 //------------------------------------------------------------------------------
 auto root_logger_init_backend(
   const program_args& args,
-  root_logger_options& opts) -> std::shared_ptr<logger_backend> {
+  root_logger_options& opts) -> shared_holder<logger_backend> {
     if(opts.forced_backend) {
         return std::move(opts.forced_backend);
     }
@@ -138,7 +140,7 @@ auto root_logger_init_backend(
         }
     }
 
-    auto backend = root_logger_choose_backend(args, opts, info);
+    auto backend{root_logger_choose_backend(args, opts, info)};
 
     return backend;
 }
@@ -213,16 +215,13 @@ auto root_logger::_log_compiler_info() -> void {
         string_view{"not_available"})
       .arg_func([](logger_backend& backend) {
           if(const auto version_major{compiler_version_major()}) {
-              backend.add_integer(
-                "complrMajr", "VrsnMajor", extract(version_major));
+              backend.add_integer("complrMajr", "VrsnMajor", *version_major);
           }
           if(const auto version_minor{compiler_version_minor()}) {
-              backend.add_integer(
-                "complrMinr", "VrsnMinor", extract(version_minor));
+              backend.add_integer("complrMinr", "VrsnMinor", *version_minor);
           }
           if(const auto version_patch{compiler_version_patch()}) {
-              backend.add_integer(
-                "complrPtch", "VrsnPatch", extract(version_patch));
+              backend.add_integer("complrPtch", "VrsnPatch", *version_patch);
           }
       });
 }
@@ -233,6 +232,19 @@ root_logger::root_logger(
   root_logger_options& opts) noexcept
   : logger{logger_id, {root_logger_init_backend(args, opts)}} {
     begin_log();
+
+    for(auto arg = args.first(); arg; arg = arg.next()) {
+        if(arg.is_long_tag("--log-active-state")) {
+            if(
+              identifier::can_be_encoded(arg.next().get()) and
+              identifier::can_be_encoded(arg.next().next().get())) {
+                active_state(
+                  identifier{arg.next().get()},
+                  identifier{arg.next().next().get()});
+            }
+        }
+    }
+
     _log_args(args);
     _log_instance_info();
     _log_build_info();

@@ -7,31 +7,16 @@
 ///
 module;
 
-// #ifdef __clang__
-// EAGINE_DIAG_PUSH()
-// EAGINE_DIAG_OFF(disabled - macro - expansion)
-// EAGINE_DIAG_OFF(covered - switch - default)
-// EAGINE_DIAG_OFF(zero - as - null - pointer - constant)
-// EAGINE_DIAG_OFF(shorten - 64 - to - 32)
-// EAGINE_DIAG_OFF(suggest - destructor - override)
-// EAGINE_DIAG_OFF(suggest - override)
-// EAGINE_DIAG_OFF(deprecated)
-// EAGINE_DIAG_OFF(shadow)
-// #endif
-
 #include <asio/io_context.hpp>
 #include <asio/ip/tcp.hpp>
 #include <asio/local/stream_protocol.hpp>
 #include <asio/streambuf.hpp>
 #include <asio/write.hpp>
 
-// #ifdef __clang__
-// EAGINE_DIAG_POP()
-// #endif
-
 module eagine.core.logging;
 
 import std;
+import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.utility;
@@ -144,7 +129,10 @@ public:
       const string_view addr_str,
       const log_stream_info& info)
       : Connection{addr_str}
-      , ostream_log_backend<Lockable>{Connection::out(), info} {}
+      , ostream_log_backend<Lockable> {
+        Connection::out(), info
+    }
+    {}
 
     asio_ostream_log_backend(const log_stream_info& info)
       : asio_ostream_log_backend{string_view{}, info} {}
@@ -174,41 +162,37 @@ using asio_tcpipv4_ostream_log_backend =
   asio_ostream_log_backend<asio_tcpipv4_ostream_log_connection, Lockable>;
 //------------------------------------------------------------------------------
 auto make_asio_local_ostream_log_backend_mutex(const log_stream_info& info)
-  -> std::unique_ptr<logger_backend> {
-    return std::make_unique<asio_local_ostream_log_backend<std::mutex>>(info);
+  -> unique_holder<logger_backend> {
+    return {hold<asio_local_ostream_log_backend<std::mutex>>, info};
 }
 
 auto make_asio_local_ostream_log_backend_spinlock(const log_stream_info& info)
-  -> std::unique_ptr<logger_backend> {
-    return std::make_unique<asio_local_ostream_log_backend<spinlock>>(info);
+  -> unique_holder<logger_backend> {
+    return {hold<asio_local_ostream_log_backend<spinlock>>, info};
 }
 
 auto make_asio_local_ostream_log_backend_mutex(
   string_view addr,
-  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
-    return std::make_unique<asio_local_ostream_log_backend<std::mutex>>(
-      addr, info);
+  const log_stream_info& info) -> unique_holder<logger_backend> {
+    return {hold<asio_local_ostream_log_backend<std::mutex>>, addr, info};
 }
 
 auto make_asio_local_ostream_log_backend_spinlock(
   string_view addr,
-  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
-    return std::make_unique<asio_local_ostream_log_backend<spinlock>>(
-      addr, info);
+  const log_stream_info& info) -> unique_holder<logger_backend> {
+    return {hold<asio_local_ostream_log_backend<spinlock>>, addr, info};
 }
 
 auto make_asio_tcpipv4_ostream_log_backend_mutex(
   string_view addr,
-  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
-    return std::make_unique<asio_tcpipv4_ostream_log_backend<std::mutex>>(
-      addr, info);
+  const log_stream_info& info) -> unique_holder<logger_backend> {
+    return {hold<asio_tcpipv4_ostream_log_backend<std::mutex>>, addr, info};
 }
 
 auto make_asio_tcpipv4_ostream_log_backend_spinlock(
   string_view addr,
-  const log_stream_info& info) -> std::unique_ptr<logger_backend> {
-    return std::make_unique<asio_tcpipv4_ostream_log_backend<spinlock>>(
-      addr, info);
+  const log_stream_info& info) -> unique_holder<logger_backend> {
+    return {hold<asio_tcpipv4_ostream_log_backend<spinlock>>, addr, info};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

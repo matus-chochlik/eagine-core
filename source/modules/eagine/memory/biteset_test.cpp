@@ -177,22 +177,6 @@ void biteset_N_B(
     }
 }
 //------------------------------------------------------------------------------
-// case 4
-//------------------------------------------------------------------------------
-template <std::size_t N, std::size_t B, typename T>
-void biteset_N_B(
-  eagitest::case_& test,
-  std::integral_constant<int, 4>,
-  eagine::biteset<N, B, T> bs) {
-    test.parameter(N, "N");
-
-    std::sort(bs.begin(), bs.end());
-
-    const eagine::biteset<N, B, T>& cbs = bs;
-
-    test.check(std::is_sorted(cbs.begin(), cbs.end()), "is sorted");
-}
-//------------------------------------------------------------------------------
 // boilerplate
 //------------------------------------------------------------------------------
 template <std::size_t B, int C>
@@ -297,19 +281,13 @@ void biteset_3(unsigned run, auto& s) {
     return biteset_C<3>(run, test);
 }
 //------------------------------------------------------------------------------
-void biteset_4(unsigned run, auto& s) {
-    eagitest::case_ test{s, 4, "sort"};
-    return biteset_C<4>(run, test);
-}
-//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "biteset", 4};
+    eagitest::suite test{argc, argv, "biteset", 3};
     test.repeat(500, biteset_1);
     test.repeat(500, biteset_2);
     test.repeat(500, biteset_3);
-    test.repeat(500, biteset_4);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

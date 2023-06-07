@@ -26,7 +26,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION offset_ptr
 	IMPORTS
 		address
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -34,7 +33,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION span
 	IMPORTS
 		address
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -42,7 +40,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION offset_span
 	IMPORTS
 		span offset_ptr
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -50,7 +47,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION string_span
 	IMPORTS
 		span
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -77,7 +73,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION flatten
 	IMPORTS
 		span
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -105,7 +100,6 @@ eagine_add_module(
 	eagine.core.memory PARTITION byte_allocator
 	IMPORTS
 		span
-		eagine.core.concepts
 		eagine.core.types
 )
 
@@ -144,30 +138,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.memory
-	INTERFACES
-		memory
-	PARTITIONS
-		align
-		address
-		bit_density
-		null_ptr
-		offset_ptr
-		span
-		string_span
-		offset_span
-		span_algorithm
-		split_span
-		aligned_block
-		byteset
-		biteset
-		flatten
-		edit_distance
-		fixed_size_string
-		byte_allocator
-		stack_allocator
-		std_allocator
-		buffer
-		object_storage
 	SOURCES
 		memory
 		stack_allocator
@@ -193,4 +163,6 @@ eagine_add_module_tests(
 		shared_allocator
 		stack_allocator
 		std_allocator
+	IMPORTS
+		eagine.core.types
 )

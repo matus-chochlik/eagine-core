@@ -32,7 +32,6 @@ eagine_add_module(
 	eagine.core.math PARTITION vector
 	IMPORTS
 		traits scalar
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.vectorization
@@ -42,7 +41,6 @@ eagine_add_module(
 	eagine.core.math PARTITION matrix
 	IMPORTS
 		traits vector
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.vectorization
 )
@@ -62,7 +60,6 @@ eagine_add_module(
 	IMPORTS
 		traits vector
 		matrix matrix_construct
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.vectorization
@@ -126,25 +123,9 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.math
-	INTERFACES
-		math
-	PARTITIONS
-		sign
-		traits
-		constants
-		functions
-		scalar
-		vector
-		matrix
-		matrix_construct
-		tmat
-		colors
-		curves
-		primitives
-		intersection
-		coordinates
-		animated_value
-		io
+	IMPORTS
+		eagine.core.types
+		eagine.core.vectorization
 )
 
 eagine_add_module_tests(
@@ -159,7 +140,10 @@ eagine_add_module_tests(
 		matrix_3
 		matrix_construct
 	IMPORTS
+		eagine.core.debug
 		eagine.core.types
+		eagine.core.memory
 		eagine.core.vectorization
+		eagine.core.valid_if
 		eagine.core.units
 )

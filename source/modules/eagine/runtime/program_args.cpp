@@ -13,7 +13,6 @@ export module eagine.core.runtime:program_args;
 
 import std;
 import eagine.core.debug;
-import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -253,10 +252,6 @@ auto assign_if_fits(
 export template <typename T>
 auto assign_if_fits(const program_arg& src, T& dst) noexcept -> bool {
     return assign_if_fits(src, dst, default_selector);
-}
-//------------------------------------------------------------------------------
-export auto extract(const program_arg& arg) noexcept {
-    return arg.get();
 }
 //------------------------------------------------------------------------------
 export auto to_string(const program_arg& arg) {

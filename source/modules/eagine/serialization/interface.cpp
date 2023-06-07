@@ -55,8 +55,8 @@ export struct deserializer_data_source : interface<deserializer_data_source> {
         span_size_t start{0};
         span_size_t total{inc};
         while(const auto blk = top(total)) {
-            if(const auto found = find_element_if(skip(blk, start), predicate)) {
-                return {start + extract(found)};
+            if(const auto found{find_element_if(skip(blk, start), predicate)}) {
+                return {start + *found};
             }
             if(blk.size() < total) {
                 break;
@@ -302,7 +302,7 @@ export struct serializer_backend : interface<serializer_backend> {
     [[nodiscard]] virtual auto type_id() noexcept -> identifier = 0;
 
     /// @brief Returns a pointer to the associated data sink, if any.
-    [[nodiscard]] virtual auto sink() noexcept -> serializer_data_sink* = 0;
+    [[nodiscard]] virtual auto sink() noexcept -> serializer_data_sink& = 0;
 
     /// @brie Indicates if the backed stores enumerators as strings (or numeric values).
     [[nodiscard]] virtual auto enum_as_string() noexcept -> bool = 0;

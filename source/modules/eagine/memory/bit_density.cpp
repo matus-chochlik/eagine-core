@@ -66,7 +66,7 @@ auto do_dissolve_bits(Getter get, Putter put, const span_size_t bits) noexcept
         if(r < bits) {
             if(const auto src{get()}) {
                 w <<= byte_bits(); // NOLINT(hicpp-signed-bitwise)
-                w |= double_byte(extract(src));
+                w |= double_byte(*src);
                 r += byte_bits();
             } else {
                 break;
@@ -103,7 +103,7 @@ auto do_concentrate_bits(Getter get, Putter put, const span_size_t bits) noexcep
             if(const auto src{get()}) {
                 w <<= bits; // NOLINT(hicpp-signed-bitwise)
                 // NOLINTNEXTLINE(hicpp-signed-bitwise)
-                w = (w & ~m) | (double_byte(extract(src)) & m);
+                w = (w & ~m) | (double_byte(*src) & m);
                 r += bits;
             } else {
                 done = true;

@@ -12,7 +12,6 @@ module;
 export module eagine.core.serialization:portable_backend;
 
 import std;
-import eagine.core.concepts;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
@@ -342,7 +341,7 @@ private:
             errors |= _read_one(temp, delimiter);
             const auto conv{convert_if_fits<I>(temp)};
             if(conv) [[likely]] {
-                value = (sign == '-') ? -extract(conv) : extract(conv);
+                value = (sign == '-') ? -*conv : *conv;
             } else {
                 errors |= deserialization_error_code::invalid_format;
             }

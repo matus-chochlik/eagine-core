@@ -7,7 +7,7 @@
 # install the embed generator tool
 install(
 	PROGRAMS embed_generator
-	RENAME eagine-embed_generator
+	RENAME eagine-embed-generator
 	PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE
 	DESTINATION bin
 )

@@ -12,7 +12,7 @@ module;
 export module eagine.core.types:extract;
 
 import std;
-import eagine.core.concepts;
+import :concepts;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -65,26 +65,5 @@ export template <typename T, typename D>
     assert(ptr);
     return *ptr;
 }
+//------------------------------------------------------------------------------
 } // namespace eagine
-//------------------------------------------------------------------------------
-namespace std {
-// this is slightly questionable
-
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(opt)
-export template <typename T>
-[[nodiscard]] constexpr auto extract(optional<T>& opt) noexcept -> auto& {
-    assert(opt);
-    return *opt;
-}
-
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(opt)
-export template <typename T>
-[[nodiscard]] constexpr auto extract(const optional<T>& opt) noexcept -> const
-  auto& {
-    assert(opt);
-    return *opt;
-}
-//------------------------------------------------------------------------------
-} // namespace std

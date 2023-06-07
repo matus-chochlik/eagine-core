@@ -13,6 +13,7 @@ export module eagine.core.types:outcome;
 import std;
 import :basic;
 import :extract;
+import :limits;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -137,6 +138,21 @@ public:
 
 export template <typename Outcome>
 ok(Outcome&& outcome) -> ok<std::remove_cvref_t<Outcome>>;
+//------------------------------------------------------------------------------
+export template <typename Dst, typename E>
+[[nodiscard]] constexpr auto limit_cast(const ok<E>& value) noexcept -> Dst {
+    return limit_cast<Dst>(value.get());
+}
+
+export template <typename T>
+[[nodiscard]] constexpr auto span_size(const ok<T>& v) noexcept {
+    return span_size(v.get());
+}
+
+export template <typename T>
+[[nodiscard]] constexpr auto std_size(const ok<T>& v) noexcept {
+    return std_size(v.get());
+}
 //------------------------------------------------------------------------------
 export template <typename Outcome>
 auto operator<<(std::ostream& out, const ok<Outcome>& x) -> std::ostream& {

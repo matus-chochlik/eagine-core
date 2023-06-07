@@ -208,10 +208,46 @@ public:
             _add(source.name());
             _add("' iid='");
             _add(instance);
-            _add(" dn='");
+            _add("' dn='");
             _add(display_name);
-            _add(" desc='");
+            _add("' desc='");
             _add(description);
+            _add("'/>\n");
+            _flush();
+        } catch(...) {
+        }
+    }
+
+    void declare_state(
+      const identifier source,
+      const identifier state_tag,
+      const identifier begin_tag,
+      const identifier end_tag) noexcept final {
+        try {
+            const std::lock_guard<Lockable> lock{_lockable};
+            _add("<ds src='");
+            _add(source.name());
+            _add("' tag='");
+            _add(state_tag.name());
+            _add("' bgn='");
+            _add(begin_tag.name());
+            _add("' end='");
+            _add(end_tag.name());
+            _add("'/>\n");
+            _flush();
+        } catch(...) {
+        }
+    }
+
+    void active_state(
+      const identifier source,
+      const identifier state_tag) noexcept final {
+        try {
+            const std::lock_guard<Lockable> lock{_lockable};
+            _add("<as src='");
+            _add(source.name());
+            _add("' tag='");
+            _add(state_tag.name());
             _add("'/>\n");
             _flush();
         } catch(...) {
@@ -381,21 +417,30 @@ public:
         }
     }
 
-    void finish_log() noexcept final {
-        try {
-            const std::lock_guard<Lockable> lock{_lockable};
-            _add("</log>\n");
-            _flush(true);
-        } catch(...) {
-        }
-    }
-
     void log_chart_sample(
       const identifier source,
       const logger_instance_id instance,
       const identifier series,
       const float value) noexcept final {
         try {
+        } catch(...) {
+        }
+    }
+
+    void heartbeat() noexcept final {
+        try {
+            const std::lock_guard<Lockable> lock{_lockable};
+            _add("<hb/>\n");
+            _flush();
+        } catch(...) {
+        }
+    }
+
+    void finish_log() noexcept final {
+        try {
+            const std::lock_guard<Lockable> lock{_lockable};
+            _add("</log>\n");
+            _flush(true);
         } catch(...) {
         }
     }

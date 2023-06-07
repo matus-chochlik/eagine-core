@@ -4,6 +4,11 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 
 install(
+	PROGRAMS ensure_main_key.sh
+	RENAME eagine-ensure-main-key
+	DESTINATION bin
+)
+install(
 	PROGRAMS xml_logs-cl.py
 	RENAME eagine-xml_logs-cl
 	DESTINATION bin
@@ -22,6 +27,12 @@ install(
 install(
 	PROGRAMS servicectl.py
 	RENAME eagine-servicectl
+	DESTINATION bin
+)
+
+install(
+	PROGRAMS procman.py
+	RENAME eagine-procman
 	DESTINATION bin
 )
 

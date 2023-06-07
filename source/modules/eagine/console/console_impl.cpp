@@ -8,6 +8,7 @@
 module eagine.core.console;
 
 import std;
+import eagine.core.types;
 import eagine.core.identifier;
 import eagine.core.runtime;
 import :backend;
@@ -15,7 +16,7 @@ import :backend;
 namespace eagine {
 //------------------------------------------------------------------------------
 auto console_init_backend(const program_args&, console_options& opts)
-  -> std::shared_ptr<console_backend> {
+  -> shared_holder<console_backend> {
     if(opts.forced_backend) {
         return std::move(opts.forced_backend);
     }

@@ -1,0 +1,20 @@
+#!/bin/bash -e
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+source ~/.local/bin/parse_args.sh
+set -x
+
+mkdir -p "${HOME}/binary"
+cmake \
+	"-G" "Ninja" \
+	"-DCMAKE_BUILD_TYPE=${build_type}" \
+	"-DCMAKE_INSTALL_PREFIX=${HOME}/install" \
+	"-DCMAKE_TOOLCHAIN_FILE=${HOME}/.config/eagine/toolchain-clang.cmake" \
+	"-S" "${HOME}/source/eagine-${sub_module}" \
+	"-B" "${HOME}/binary/eagine-${sub_module}"
+cmake \
+	"--build" "${HOME}/binary/eagine-${sub_module}" \
+	"--parallel" "${cpu_count}"

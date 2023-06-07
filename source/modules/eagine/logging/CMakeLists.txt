@@ -68,6 +68,8 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
+		eagine.core.utility
+		eagine.core.runtime
 		eagine.core.valid_if
 )
 
@@ -113,19 +115,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.logging
-	INTERFACES
-		logging
-	PARTITIONS
-		config
-		entry_arg
-		backend
-		fast_xml_backend
-		ostream_backend
-		time_interval
-		entry
-		logger
-		root_logger
-		adapt_entry_arg
 	SOURCES
 		null_backend
 		asio_backend
@@ -134,13 +123,16 @@ eagine_add_module(
 		root_logger
 	IMPORTS
 		eagine.core.build_config
+		eagine.core.types
 		eagine.core.build_info
 		eagine.core.debug
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.identifier
+		eagine.core.container
 		eagine.core.reflection
 		eagine.core.utility
+		eagine.core.valid_if
 		eagine.core.runtime
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/asio/asio/include"

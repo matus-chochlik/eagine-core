@@ -134,7 +134,6 @@ eagine_add_module(
 	eagine.core.serialization PARTITION portable_backend
 	IMPORTS
 		float_utils result implementation
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -147,7 +146,6 @@ eagine_add_module(
 	eagine.core.serialization PARTITION valtree_backend
 	IMPORTS
 		result interface
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -186,28 +184,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.serialization
-	INTERFACES
-		serialization
-	PARTITIONS
-		float_utils
-		data_buffer
-		size_and_data
-		result
-		interface
-		read
-		write
-		implementation
-		iostream
-		block
-		packed_block
-		fast_backend
-		string_backend
-		portable_backend
-		valtree_backend
-		type_sudoku
-		type_compiler_info
-		type_version_info
-	SOURCES
 )
 
 eagine_add_module_tests(
@@ -217,5 +193,14 @@ eagine_add_module_tests(
 		size_and_data
 	IMPORTS
 		eagine.core.types
+		eagine.core.debug
 		eagine.core.memory
+		eagine.core.string
+		eagine.core.identifier
+		eagine.core.build_info
+		eagine.core.utility
+		eagine.core.valid_if
+		eagine.core.value_tree
+		eagine.core.c_api
+		eagine.core.units
 )

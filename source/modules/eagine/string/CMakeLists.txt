@@ -17,6 +17,7 @@ eagine_add_module(
 		multi_byte
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.valid_if
 )
 
 eagine_add_module(
@@ -31,7 +32,6 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION c_str
 	IMPORTS
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 )
@@ -115,22 +115,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.string
-	INTERFACES
-		string
-	PARTITIONS
-		multi_byte
-		list
-		path
-		c_str
-		algorithm
-		environment
-		format
-		base64
-		base64dump
-		bindump
-		hexdump
-		from_string
-		keyboard_distance
 	SOURCES
 		bindump
 		hexdump
@@ -157,7 +141,11 @@ eagine_add_module_tests(
 		path
 	IMPORTS
 		eagine.core.types
+		eagine.core.debug
 		eagine.core.memory
+		eagine.core.vectorization
+		eagine.core.valid_if
+		eagine.core.units
 	ENVIRONMENT
 		EAGINE_TEST_VAR1=eagine
 		EAGINE_TEST_VAR2=core

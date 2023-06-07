@@ -119,7 +119,7 @@ auto substitute_variable_into(
   const variable_substitution_options opts) noexcept -> std::string& {
     do {
         if(const auto found{find_position(src, name)}) {
-            const auto npos{extract(found)};
+            const auto npos{*found};
             if(
               (npos >= 2) and (safe_add_lt(npos, name.size(), src.size())) and
               (src[npos - 1] == opts.opening_bracket) and

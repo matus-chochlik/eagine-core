@@ -9,7 +9,7 @@ export module eagine.core.types:placeholder;
 
 import std;
 import :tribool;
-import :optional_reference;
+import :optional_like;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -110,6 +110,20 @@ public:
         return make_placeholder_expression(
           [g{derived()}, fallback{std::move(v)}](auto&&... args) mutable {
               return g(decltype(args)(args)...).value_or(std::move(fallback));
+          });
+    }
+
+    [[nodiscard]] constexpr auto or_true() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable {
+              return g(decltype(args)(args)...).or_true();
+          });
+    }
+
+    [[nodiscard]] constexpr auto or_false() noexcept {
+        return make_placeholder_expression(
+          [g{derived()}](auto&&... args) mutable {
+              return g(decltype(args)(args)...).or_false();
           });
     }
 

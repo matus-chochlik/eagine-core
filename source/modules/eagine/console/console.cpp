@@ -18,7 +18,7 @@ export import :backend;
 namespace eagine {
 //------------------------------------------------------------------------------
 auto console_init_backend(const program_args&, console_options& opts)
-  -> std::shared_ptr<console_backend>;
+  -> shared_holder<console_backend>;
 //------------------------------------------------------------------------------
 export class console {
 public:
@@ -69,7 +69,7 @@ private:
         return {{}, 0};
     }
 
-    std::shared_ptr<console_backend> _backend;
+    shared_holder<console_backend> _backend;
     identifier _app_id;
 };
 //------------------------------------------------------------------------------

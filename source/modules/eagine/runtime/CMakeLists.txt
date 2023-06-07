@@ -2,6 +2,8 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
+eagine_add_module(eagine.core.runtime PARTITION signal_switch)
+
 eagine_add_module(
 	eagine.core.runtime PARTITION process
 	IMPORTS
@@ -21,7 +23,6 @@ eagine_add_module(
 	eagine.core.runtime PARTITION program_args
 	IMPORTS
 		eagine.core.debug
-		eagine.core.concepts
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -36,6 +37,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.utility
+		eagine.core.valid_if
 		eagine.core.reflection
 )
 
@@ -60,15 +62,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION input_data
-	IMPORTS
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.string
-		eagine.core.utility
-)
-
-eagine_add_module(
 	eagine.core.runtime PARTITION executable_module
 	IMPORTS
 		eagine.core.types
@@ -82,6 +75,7 @@ eagine_add_module(
 		input_data
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.string
 		eagine.core.utility
 )
 
@@ -100,25 +94,9 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.runtime
-	INTERFACES
-		runtime
-	PARTITIONS
-		signal_switch
-		traverse	
-		basic_config
-		process
-		program_args
-		url
-		input_data
-		executable_module
-		file_contents
-		compression
-		value_with_history
-		workshop
 	SOURCES
 		url
 		process
-		input_data
 		basic_config
 		executable_module
 		signal_switch
@@ -126,6 +104,7 @@ eagine_add_module(
 		compression
 		workshop
 	IMPORTS
+		eagine.core.types
 		eagine.core.utility
 		eagine.core.memory
 		eagine.core.string
@@ -147,9 +126,13 @@ eagine_add_module_tests(
 		program_args
 		url
 	IMPORTS
+		eagine.core.debug
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
+		eagine.core.identifier
+		eagine.core.reflection
+		eagine.core.units
 	ENVIRONMENT
 		EAGINE_VAR_MODULE_1=eagine
 		EAGINE_VAR_MODULE_2=core
