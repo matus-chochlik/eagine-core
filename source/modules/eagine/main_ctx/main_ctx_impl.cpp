@@ -15,6 +15,7 @@ import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
+import eagine.core.serialization;
 import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.progress;
@@ -69,20 +70,65 @@ auto try_get_main_ctx() noexcept -> optional_reference<main_ctx_getters> {
     return main_ctx::try_get();
 }
 //------------------------------------------------------------------------------
-static auto main_ctx_scramble_encrypted(
-  const memory::const_block input,
-  memory::buffer& output) noexcept -> memory::const_block {
-    (void)output;
-    // TODO pad to % 8 redistribute bits of octets
-    return input;
+static void main_ctx_do_scramble(memory::block unscrambled) noexcept {
+    assert(unscrambled.size() % 8 == 0);
+    std::array<byte, 8U> temp{};
+    while(not unscrambled.empty()) {
+        auto dst{head(unscrambled, 8)};
+        copy(dst, cover(temp));
+        zero(dst);
+        const auto src{view(temp)};
+        for(const auto by : integer_range(span_size(8))) {
+            for(const auto bi : integer_range(span_size(8))) {
+                dst[by] = dst[by] | (((src[bi] >> by) & 0x01U) << bi);
+            }
+        }
+        unscrambled = skip(unscrambled, 8);
+    }
 }
 //------------------------------------------------------------------------------
-static void main_ctx_unscramble_encrypted(
-  const memory::const_block input,
-  memory::buffer& output) noexcept {
-    (void)output;
-    // TODO remove padding to % 8 redistribute bits of octets
-    memory::copy_into(input, output);
+static auto main_ctx_do_unscramble(memory::block scrambled) noexcept -> bool {
+    if(scrambled.size() % 8 != 0) {
+        return false;
+    }
+    std::array<byte, 8U> temp{};
+    while(not scrambled.empty()) {
+        auto dst{head(scrambled, 8)};
+        copy(dst, cover(temp));
+        zero(dst);
+        const auto src{view(temp)};
+        for(const auto by : integer_range(span_size(8))) {
+            for(const auto bi : integer_range(span_size(8))) {
+                dst[by] = dst[by] | (((src[bi] >> by) & 0x01U) << bi);
+            }
+        }
+        scrambled = skip(scrambled, 8);
+    }
+    return true;
+}
+//------------------------------------------------------------------------------
+static auto main_ctx_scramble_encrypted(
+  memory::const_block input,
+  memory::buffer& output) noexcept -> memory::const_block {
+    const span_size_t new_size{
+      ((input.size() / 8) + ((input.size() % 8 != 0) ? 1 : 0)) * 8};
+    output.resize(new_size + 24);
+
+    const auto p{pad_and_store_data_with_size(input, new_size, cover(output))};
+    main_ctx_do_scramble(std::get<1>(p));
+
+    return std::get<0>(p);
+}
+//------------------------------------------------------------------------------
+static auto main_ctx_unscramble_encrypted(
+  memory::block input,
+  memory::buffer& output) noexcept -> bool {
+    auto p{get_padded_data_with_size(input)};
+    if(not main_ctx_do_unscramble(std::get<0>(p))) {
+        return false;
+    }
+    memory::copy_into(std::get<1>(p), output);
+    return true;
 }
 //------------------------------------------------------------------------------
 static auto main_ctx_encrypt_shared_with(
@@ -118,8 +164,7 @@ static auto main_ctx_decrypt_shared_with(
     for(auto i : integer_range(src.size())) {
         dst[i] = (src[i] ^ key[i % m] ^ nonce[i % n]);
     }
-    main_ctx_unscramble_encrypted(dst, output);
-    return true;
+    return main_ctx_unscramble_encrypted(dst, output);
 }
 //------------------------------------------------------------------------------
 auto main_ctx::encrypt_shared(
