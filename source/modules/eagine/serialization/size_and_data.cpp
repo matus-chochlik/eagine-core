@@ -5,14 +5,76 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#include <cassert>
+
 export module eagine.core.serialization:size_and_data;
 
+import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.valid_if;
 
 namespace eagine {
+//------------------------------------------------------------------------------
+// (size+content, content, data, padding)
+export [[nodiscard]] auto pad_and_store_data_with_size(
+  const memory::const_block src,
+  const span_size_t padded_size,
+  memory::block dst) noexcept
+  -> std::tuple<memory::block, memory::block, memory::block, memory::block> {
+    assert(src.size() <= padded_size);
+    using multi_byte::code_point;
+
+    if(const ok size_cp{limit_cast<code_point>(src.size())}) [[likely]] {
+        using multi_byte::required_sequence_length;
+        if(const ok size_len{required_sequence_length(size_cp)}) [[likely]] {
+            if(size_len + padded_size <= dst.size()) {
+                using multi_byte::encode_code_point;
+                if(ok skip_len{encode_code_point(size_cp, dst)}) [[likely]] {
+                    auto data{head(skip(dst, span_size(skip_len)), src.size())};
+                    copy(src, data);
+                    auto padg{head(
+                      skip(dst, span_size(skip_len) + src.size()),
+                      padded_size - src.size())};
+                    auto fill = padg;
+                    while(not fill.empty()) {
+                        scramble(head(src, fill.size()), fill);
+                        fill = skip(fill, src.size());
+                    }
+                    return {
+                      head(dst, span_size(skip_len) + padded_size),
+                      head(skip(dst, span_size(skip_len)), padded_size),
+                      data,
+                      padg};
+                } else {
+                    multi_byte::encode_nil(dst);
+                }
+            } else {
+                multi_byte::encode_nil(dst);
+            }
+        }
+    }
+
+    return {{}, {}, {}, {}};
+}
+//------------------------------------------------------------------------------
+// (content, data, padding)
+export [[nodiscard]] auto get_padded_data_with_size(
+  const memory::block src) noexcept
+  -> std::tuple<memory::block, memory::block, memory::block> {
+    const memory::const_block tmp{src};
+    const ok skip_len{multi_byte::decode_sequence_length(tmp)};
+    if(const ok data_len{multi_byte::do_decode_code_point(tmp, skip_len)}) {
+        return {
+          skip(src, span_size(skip_len)),
+          head(skip(src, span_size(skip_len)), span_size(data_len)),
+          skip(src, span_size(skip_len) + span_size(data_len))};
+    }
+    return {{}, {}, {}};
+}
 //------------------------------------------------------------------------------
 /// @brief Encodes the size of the source block into destination, copies data afterwards.
 /// @ingroup serialization
@@ -40,6 +102,13 @@ export [[nodiscard]] auto store_data_with_size(
     }
 
     return {};
+}
+//------------------------------------------------------------------------------
+export [[nodiscard]] auto store_data_with_size(
+  const memory::const_block src,
+  memory::buffer& dst) noexcept -> memory::block {
+    dst.resize(src.size() + 16);
+    return store_data_with_size(src, cover(dst));
 }
 //------------------------------------------------------------------------------
 /// @brief In a block starting with sub-block with size returns the size of the sub-block.
