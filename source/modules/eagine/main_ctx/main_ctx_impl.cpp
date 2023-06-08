@@ -236,9 +236,9 @@ auto main_ctx::matches_encrypted_shared_password(
   memory::const_block nonce,
   const string_view key,
   const string_view tag,
-  memory::buffer& encrypted) noexcept -> bool {
+  memory::const_block encrypted) noexcept -> bool {
     std::string received;
-    if(decrypt_shared(nonce, view(encrypted), received)) {
+    if(decrypt_shared(nonce, encrypted, received)) {
         std::string passwd;
         if(config().fetch(key, passwd, tag)) {
             return received == passwd;

@@ -227,12 +227,12 @@ public:
       memory::const_block nonce,
       const string_view key,
       const string_view tag,
-      memory::buffer& encrypted) noexcept -> bool;
+      memory::const_block encrypted) noexcept -> bool;
 
     [[nodiscard]] auto matches_encrypted_shared_password(
       memory::const_block nonce,
       const string_view key,
-      memory::buffer& encrypted) noexcept -> bool {
+      memory::const_block encrypted) noexcept -> bool {
         return matches_encrypted_shared_password(nonce, key, {}, encrypted);
     }
 
