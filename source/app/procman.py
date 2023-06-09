@@ -1762,7 +1762,6 @@ class LocalForwardingLogSocket(socket.socket):
         self._socket_path = socket_path
         socket.socket.__init__(self, socket.AF_UNIX, socket.SOCK_STREAM)
         self.connect(self._socket_path)
-        self.setblocking(False)
 
 # ------------------------------------------------------------------------------
 class NetworkForwardingLogSocket(socket.socket):
@@ -1772,7 +1771,6 @@ class NetworkForwardingLogSocket(socket.socket):
         self._socket_port = int(self._socket_port)
         socket.socket.__init__(self, socket.AF_INET, socket.SOCK_STREAM)
         self.connect((self._socket_host, self._socket_port))
-        self.setblocking(False)
 
 # ------------------------------------------------------------------------------
 class XmlLogProcessor(xml.sax.ContentHandler):
@@ -2408,7 +2406,6 @@ def manageProcesses(options, composition, tracker):
             for key, mask in events:
                 if type(key.data) is ProcessLogTracker:
                     connection, addr = log_sock.accept()
-                    connection.setblocking(False)
                     selector.register(
                         connection,
                         selectors.EVENT_READ,

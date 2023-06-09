@@ -1265,7 +1265,6 @@ def handle_connections(log_sock, formatter):
             for key, mask in events:
                 if type(key.data) is XmlLogFormatter:
                     connection, addr = log_sock.accept()
-                    connection.setblocking(False)
                     selector.register(
                         connection,
                         selectors.EVENT_READ,
