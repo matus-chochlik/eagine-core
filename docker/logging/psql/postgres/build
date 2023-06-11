@@ -4,6 +4,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
+source "$(dirname ${BASH_SOURCE[0]})/../../../common.sh"
 this_dir="$(realpath $(dirname ${0}))"
 repo_dir="$(realpath $(dirname ${0})/../../../..)"
 work_dir="$(mktemp -d)"
@@ -14,27 +15,17 @@ function cleanup() {
 
 trap cleanup EXIT
 
-mkdir -p "${work_dir}/_secrets"
-cp "${this_dir}/../_secrets/"*_pg.passwd "${work_dir}/_secrets"
 mkdir -p "${work_dir}/user/eagilog"
 cp "${repo_dir}/source/app/xml_logs-psql.sql" "${work_dir}/user/eagilog/eagilog.sql"
 mkdir -p "${work_dir}/bin"
+cc -no-pie -static -o "${work_dir}/bin/eagine-getpwd" "${this_dir}/bin/getpwd.c"
 cp "${this_dir}/bin/init.sh" "${work_dir}/bin"
-chmod a+x "${work_dir}/bin"
 cp "${this_dir}/Dockerfile" "${work_dir}/"
 
-cat > "${work_dir}/docker-compose.yml" << COMPOSE
-version: "3.6"
-services:
-    log_psql_db:
-        build: .
-        image: ${EAGINE_DOCKER_REGISTRY_HOST:-localhost}:${EAGINE_DOCKER_REGISTRY_PORT:-5000}/eagine:log_psql_db
-COMPOSE
-
-pushd "${work_dir}"
-docker-compose build log_psql_db
+docker build "${work_dir}" \
+	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_db \
 
 docker tag \
-	${EAGINE_DOCKER_REGISTRY_HOST:-localhost}:${EAGINE_DOCKER_REGISTRY_PORT:-5000}/eagine:log_psql_db \
+	${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_db \
 	eagine:log_psql_db
 
