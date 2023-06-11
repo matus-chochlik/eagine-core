@@ -23,9 +23,9 @@ cp "${this_dir}/bin/init.sh" "${work_dir}/bin"
 cp "${this_dir}/Dockerfile" "${work_dir}/"
 
 docker build "${work_dir}" \
-	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_db \
+	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_database \
 
 docker tag \
-	${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_db \
-	eagine:log_psql_db
+	${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_database \
+	eagine:log_psql_database
 

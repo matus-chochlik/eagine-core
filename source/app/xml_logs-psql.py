@@ -650,7 +650,6 @@ def handle_connections(log_sock, db_writer):
             for key, mask in events:
                 if type(key.data) is XmlLogDbWriter:
                     connection, addr = log_sock.accept()
-                    connection.setblocking(False)
                     selector.register(
                         connection,
                         selectors.EVENT_READ,

@@ -1,5 +1,4 @@
 #!/bin/sh
-sleep 10
 echo "Starting..."
 python /usr/src/app/xml_logs-psql.py \
 	--db-host log_psql_database \
