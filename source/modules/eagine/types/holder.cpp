@@ -294,8 +294,9 @@ public:
 
     template <std::derived_from<T> D>
     [[nodiscard]] auto as(std::type_identity<D> = {}) && noexcept
-      -> basic_holder<typename _traits::template rebind<D>, D> {
-        return {std::dynamic_pointer_cast<D>(release())};
+      -> basic_holder<std::shared_ptr<D>, D> {
+        return {std::dynamic_pointer_cast<D>(
+          std::shared_ptr<T>{std::move(*this).release()})};
     }
 };
 //------------------------------------------------------------------------------
@@ -317,7 +318,7 @@ public:
     weak_holder(const shared_holder<T>& that) noexcept
       : _base{that} {}
 
-    auto lock() const noexcept -> shared_holder<T> {
+    [[nodiscard]] auto lock() const noexcept -> shared_holder<T> {
         return {_base::lock()};
     }
 };
