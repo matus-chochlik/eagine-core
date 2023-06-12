@@ -99,9 +99,10 @@ INSERT INTO eagilog.severity (severity_id, name) VALUES(1, 'trace');
 INSERT INTO eagilog.severity (severity_id, name) VALUES(2, 'debug');
 INSERT INTO eagilog.severity (severity_id, name) VALUES(3, 'stat');
 INSERT INTO eagilog.severity (severity_id, name) VALUES(4, 'info');
-INSERT INTO eagilog.severity (severity_id, name) VALUES(5, 'warning');
-INSERT INTO eagilog.severity (severity_id, name) VALUES(6, 'error');
-INSERT INTO eagilog.severity (severity_id, name) VALUES(7, 'fatal');
+INSERT INTO eagilog.severity (severity_id, name) VALUES(5, 'change');
+INSERT INTO eagilog.severity (severity_id, name) VALUES(6, 'warning');
+INSERT INTO eagilog.severity (severity_id, name) VALUES(7, 'error');
+INSERT INTO eagilog.severity (severity_id, name) VALUES(8, 'fatal');
 --------------------------------------------------------------------------------
 -- message_format
 --------------------------------------------------------------------------------
