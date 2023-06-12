@@ -26,6 +26,9 @@ struct hold_t {};
 /// @see basic_holder
 export template <typename T>
 constexpr const hold_t<T> hold = {};
+
+export template <typename T>
+class weak_holder;
 //------------------------------------------------------------------------------
 template <typename Base>
 struct basic_holder_traits;
@@ -65,6 +68,8 @@ class basic_holder : private Base {
     using _traits = basic_holder_traits<Base>;
     using _opt_ref = optional_reference<T>;
 
+    friend class weak_holder<T>;
+
 public:
     using value_type = T;
 
@@ -86,6 +91,13 @@ public:
           not std::is_same_v<Other, Base>)
     constexpr basic_holder(basic_holder<Other, D>&& temp) noexcept
       : Base{std::move(temp).release()} {}
+
+    template <typename Other, typename D>
+        requires(
+          std::is_convertible_v<Other, Base> and
+          not std::is_same_v<Other, Base>)
+    constexpr basic_holder(const basic_holder<Other, D>& that) noexcept
+      : Base{that.base()} {}
 
     /// @brief Construction with held object of type T from the given arguments.
     /// @post has_value()
@@ -272,6 +284,10 @@ public:
 
     using Base::reset;
 
+    [[nodiscard]] auto base() const& noexcept -> const Base& {
+        return static_cast<const Base&>(*this);
+    }
+
     [[nodiscard]] auto release() && noexcept -> Base&& {
         return static_cast<Base&&>(*this);
     }
@@ -292,5 +308,18 @@ using unique_holder = basic_holder<std::unique_ptr<T>, T>;
 /// @see basic_holder
 export template <typename T>
 using shared_holder = basic_holder<std::shared_ptr<T>, T>;
+//------------------------------------------------------------------------------
+export template <typename T>
+class weak_holder : private std::weak_ptr<T> {
+    using _base = std::weak_ptr<T>;
+
+public:
+    weak_holder(const shared_holder<T>& that) noexcept
+      : _base{that} {}
+
+    auto lock() const noexcept -> shared_holder<T> {
+        return {_base::lock()};
+    }
+};
 //------------------------------------------------------------------------------
 } // namespace eagine

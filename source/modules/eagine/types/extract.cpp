@@ -30,40 +30,4 @@ export template <typename T>
     return *ptr;
 }
 //------------------------------------------------------------------------------
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(ptr)
-export template <typename T>
-[[nodiscard]] constexpr auto extract(std::shared_ptr<T>& ptr) noexcept
-  -> auto& {
-    assert(ptr);
-    return *ptr;
-}
-
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(ptr)
-export template <typename T>
-[[nodiscard]] constexpr auto extract(const std::shared_ptr<T>& ptr) noexcept
-  -> auto& {
-    assert(ptr);
-    return *ptr;
-}
-//------------------------------------------------------------------------------
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(ptr)
-export template <typename T, typename D>
-[[nodiscard]] constexpr auto extract(std::unique_ptr<T, D>& ptr) noexcept
-  -> T& {
-    assert(ptr);
-    return *ptr;
-}
-
-/// @brief Checks @p ptr and dereferences it.
-/// @pre has_value(ptr)
-export template <typename T, typename D>
-[[nodiscard]] constexpr auto extract(const std::unique_ptr<T, D>& ptr) noexcept
-  -> const T& {
-    assert(ptr);
-    return *ptr;
-}
-//------------------------------------------------------------------------------
 } // namespace eagine
