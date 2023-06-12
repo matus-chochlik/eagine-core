@@ -162,6 +162,7 @@ public:
     }
 
     using Base::operator bool;
+    using Base::get;
 
     /// @brief Gets optional_reference to the held type.
     [[nodiscard]] auto ref() const noexcept -> optional_reference<T> {
