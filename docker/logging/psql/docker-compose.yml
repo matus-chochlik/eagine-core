@@ -6,7 +6,7 @@ services:
         networks:
           - eagilog
         ports:
-          - 5432:5432
+          - "5432:5432"
         secrets:
           - postgres_pg.passwd
           - eagilog_pg.passwd
@@ -17,7 +17,7 @@ services:
         networks:
           - eagilog
         ports:
-          - 34917:34917
+          - "34917:34917"
         secrets:
           - eagilog_pg.passwd
         depends_on:
@@ -25,7 +25,6 @@ services:
 
 networks:
     eagilog:
-        internal: true
 
 secrets:
     postgres_pg.passwd:
