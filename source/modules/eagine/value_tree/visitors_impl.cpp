@@ -23,8 +23,8 @@ class combined_value_tree_visitor
   : public value_tree_visitor_impl<combined_value_tree_visitor> {
 public:
     [[nodiscard]] combined_value_tree_visitor(
-      std::shared_ptr<value_tree_visitor> left,
-      std::shared_ptr<value_tree_visitor> right) noexcept
+      shared_holder<value_tree_visitor> left,
+      shared_holder<value_tree_visitor> right) noexcept
       : _left{std::move(left)}
       , _right{std::move(right)} {}
 
@@ -95,16 +95,16 @@ public:
     }
 
 private:
-    std::shared_ptr<value_tree_visitor> _left;
-    std::shared_ptr<value_tree_visitor> _right;
+    shared_holder<value_tree_visitor> _left;
+    shared_holder<value_tree_visitor> _right;
 };
 //------------------------------------------------------------------------------
 [[nodiscard]] auto make_combined_value_tree_visitor(
-  std::shared_ptr<value_tree_visitor> left,
-  std::shared_ptr<value_tree_visitor> right)
-  -> std::unique_ptr<value_tree_visitor> {
-    return std::make_unique<combined_value_tree_visitor>(
-      std::move(left), std::move(right));
+  shared_holder<value_tree_visitor> left,
+  shared_holder<value_tree_visitor> right)
+  -> unique_holder<value_tree_visitor> {
+    return {
+      hold<combined_value_tree_visitor>, std::move(left), std::move(right)};
 }
 //------------------------------------------------------------------------------
 class printing_value_tree_visitor
@@ -188,15 +188,15 @@ private:
 };
 //------------------------------------------------------------------------------
 [[nodiscard]] auto make_printing_value_tree_visitor(const console& cio)
-  -> std::unique_ptr<value_tree_visitor> {
-    return std::make_unique<printing_value_tree_visitor>(cio);
+  -> unique_holder<value_tree_visitor> {
+    return {hold<printing_value_tree_visitor>, cio};
 }
 //------------------------------------------------------------------------------
 class building_value_tree_visitor
   : public value_tree_visitor_impl<building_value_tree_visitor> {
 public:
     [[nodiscard]] building_value_tree_visitor(
-      std::shared_ptr<object_builder> builder) noexcept
+      shared_holder<object_builder> builder) noexcept
       : _builder{std::move(builder)} {}
 
     auto should_continue() noexcept -> bool final {
@@ -264,15 +264,14 @@ public:
     }
 
 private:
-    std::shared_ptr<object_builder> _builder;
+    shared_holder<object_builder> _builder;
     basic_string_path _path;
     bool _should_continue{false};
 };
 //------------------------------------------------------------------------------
 [[nodiscard]] auto make_building_value_tree_visitor(
-  std::shared_ptr<object_builder> builder)
-  -> std::unique_ptr<value_tree_visitor> {
-    return std::make_unique<building_value_tree_visitor>(std::move(builder));
+  shared_holder<object_builder> builder) -> unique_holder<value_tree_visitor> {
+    return {hold<building_value_tree_visitor>, std::move(builder)};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree

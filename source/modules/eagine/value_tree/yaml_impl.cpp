@@ -294,14 +294,13 @@ public:
     ~rapidyaml_tree_compound() noexcept final = default;
 
     static auto make_shared(string_view yaml_text, const logger& parent)
-      -> std::shared_ptr<rapidyaml_tree_compound> {
+      -> shared_holder<rapidyaml_tree_compound> {
         try {
             rapidyaml_callbacks cbks{};
             c4::csubstr src{yaml_text.data(), integer(yaml_text.size())};
             auto tree{ryml::parse_in_arena(src)};
             tree.resolve();
-            return std::make_shared<rapidyaml_tree_compound>(
-              std::move(tree), parent);
+            return {default_selector, std::move(tree), parent};
         } catch(const std::runtime_error& err) {
             parent.log_error("YAML parse error: ${message}")
               .arg("message", string_view(err.what()));

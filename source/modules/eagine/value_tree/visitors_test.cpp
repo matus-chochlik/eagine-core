@@ -76,8 +76,8 @@ private:
     valtree::object_builder_data_forwarder _forwarder;
 };
 template <typename O>
-auto make_builder(O& obj) {
-    return std::make_unique<test_builder<O>>(obj);
+auto make_builder(O& obj) -> unique_holder<test_builder<O>> {
+    return {default_selector, obj};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

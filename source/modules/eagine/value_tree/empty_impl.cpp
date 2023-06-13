@@ -23,8 +23,8 @@ public:
       : _log{"EmptyCmpnd", parent} {}
 
     [[nodiscard]] static auto make_shared(const logger& parent)
-      -> std::shared_ptr<empty_compound> {
-        return std::make_shared<empty_compound>(parent);
+      -> shared_holder<empty_compound> {
+        return {default_selector, parent};
     }
 
     auto type_id() const noexcept -> identifier final {

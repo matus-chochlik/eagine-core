@@ -277,13 +277,13 @@ class filesystem_compound
 
     logger _log;
     filesystem_node _root;
-    std::shared_ptr<file_compound_factory> _compound_factory;
+    shared_holder<file_compound_factory> _compound_factory;
 
 public:
     [[nodiscard]] filesystem_compound(
       const logger& parent,
       string_view fs_path,
-      std::shared_ptr<file_compound_factory> factory)
+      shared_holder<file_compound_factory> factory)
       : _log{"FsVtCmpnd", parent}
       , _root{std::string_view{fs_path}}
       , _compound_factory{std::move(factory)} {}
@@ -291,10 +291,9 @@ public:
     [[nodiscard]] static auto make_shared(
       const logger& parent,
       string_view fs_path,
-      std::shared_ptr<file_compound_factory> factory)
-      -> std::shared_ptr<filesystem_compound> {
-        return std::make_shared<filesystem_compound>(
-          parent, fs_path, std::move(factory));
+      shared_holder<file_compound_factory> factory)
+      -> shared_holder<filesystem_compound> {
+        return {default_selector, parent, fs_path, std::move(factory)};
     }
 
     auto log() const noexcept -> const logger& {
@@ -393,7 +392,7 @@ static inline auto filesystem_make_node(
 [[nodiscard]] auto from_filesystem_path(
   string_view fs_path,
   const logger& parent,
-  std::shared_ptr<file_compound_factory> factory) -> compound {
+  shared_holder<file_compound_factory> factory) -> compound {
     return compound::make<filesystem_compound>(
       parent, fs_path, std::move(factory));
 }

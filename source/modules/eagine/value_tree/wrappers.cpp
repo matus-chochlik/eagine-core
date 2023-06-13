@@ -123,12 +123,12 @@ private:
     friend class compound;
 
     attribute(
-      std::shared_ptr<compound_interface> owner,
+      shared_holder<compound_interface> owner,
       optional_reference<attribute_interface> impl) noexcept
       : _owner{std::move(owner)}
       , _pimpl{impl} {}
 
-    std::shared_ptr<compound_interface> _owner;
+    shared_holder<compound_interface> _owner;
     optional_reference<attribute_interface> _pimpl{};
 };
 //------------------------------------------------------------------------------
@@ -811,14 +811,14 @@ public:
 
     template <std::derived_from<compound_interface> Implementation>
     [[nodiscard]] auto as() noexcept -> optional_reference<Implementation> {
-        return dynamic_cast<Implementation*>(_pimpl.get());
+        return _pimpl.ref().as(std::type_identity<Implementation>{});
     }
 
 private:
-    compound(std::shared_ptr<compound_interface> pimpl) noexcept
+    compound(shared_holder<compound_interface> pimpl) noexcept
       : _pimpl{std::move(pimpl)} {}
 
-    std::shared_ptr<compound_interface> _pimpl{};
+    shared_holder<compound_interface> _pimpl{};
 };
 //------------------------------------------------------------------------------
 /// @brief Combination of a reference to a tree compound and a single attribute.

@@ -71,8 +71,8 @@ private:
     valtree::object_builder_data_forwarder _forwarder;
 };
 template <typename O>
-auto make_builder(O& obj) {
-    return std::make_unique<example_builder<O>>(obj);
+auto make_builder(O& obj) -> unique_holder<example_builder<O>> {
+    return {default_selector, obj};
 }
 //------------------------------------------------------------------------------
 void build_and_traverse(main_ctx& ctx, const embedded_resource& res) {

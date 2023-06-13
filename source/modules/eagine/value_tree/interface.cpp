@@ -384,19 +384,17 @@ export struct object_builder : interface<object_builder> {
 /// @brief Make a value tree visitor that combines two other visitors.
 /// @ingroup valtree
 export auto make_combined_value_tree_visitor(
-  std::shared_ptr<value_tree_visitor> left,
-  std::shared_ptr<value_tree_visitor> right)
-  -> std::unique_ptr<value_tree_visitor>;
+  shared_holder<value_tree_visitor> left,
+  shared_holder<value_tree_visitor> right) -> unique_holder<value_tree_visitor>;
 //------------------------------------------------------------------------------
 /// @brief Make a value tree visitor printing the visited items to the console.
 /// @ingroup valtree
 export auto make_printing_value_tree_visitor(const console&)
-  -> std::unique_ptr<value_tree_visitor>;
+  -> unique_holder<value_tree_visitor>;
 //------------------------------------------------------------------------------
 /// @brief Make a value tree visitor driving an object builder.
 /// @ingroup valtree
 export auto make_building_value_tree_visitor(
-  std::shared_ptr<object_builder> builder)
-  -> std::unique_ptr<value_tree_visitor>;
+  shared_holder<object_builder> builder) -> unique_holder<value_tree_visitor>;
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree

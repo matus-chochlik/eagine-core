@@ -224,7 +224,7 @@ export template <auto MemFuncPtr>
 export template <typename RV, typename C, typename... P, bool NE>
 [[nodiscard]] auto make_callable_ref(
   optional_reference<C> obj,
-  RV (*ptr)(C*, P...) noexcept(NE))
+  RV (*ptr)(C*, P...) noexcept(NE)) noexcept
   -> basic_callable_ref<RV(P...) noexcept(NE), NE> {
     return {obj, ptr};
 }
