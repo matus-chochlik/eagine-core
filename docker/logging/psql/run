@@ -4,5 +4,57 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-pushd "$(dirname ${BASH_SOURCE[0]})"
+source "$(dirname ${BASH_SOURCE[0]})/../../common.sh"
+this_dir="$(realpath $(dirname ${0}))"
+work_dir="$(mktemp -d)"
+
+function cleanup() {
+	rm -rf "${work_dir}"
+}
+
+trap cleanup EXIT
+
+mkdir -p "${work_dir}/_secrets/"
+cp "${this_dir}/_secrets/"* "${work_dir}/_secrets/"
+chmod 400 "${work_dir}/_secrets/"*
+
+cat > "${work_dir}/docker-compose.yml" << COMPOSE
+version: "3.6"
+services:
+    log_psql_database:
+        image: ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_database
+        restart: always
+        networks:
+          - eagilog
+        ports:
+          - "5432:5432"
+        secrets:
+          - postgres_pg.passwd
+          - eagilog_pg.passwd
+          - backup_pg.passwd
+    log_psql_forwarder:
+        image: ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_forwarder
+        restart: always
+        networks:
+          - eagilog
+        ports:
+          - "34917:34917"
+        secrets:
+          - eagilog_pg.passwd
+        depends_on:
+          - log_psql_database
+
+networks:
+    eagilog:
+
+secrets:
+    postgres_pg.passwd:
+        file: ./_secrets/postgres_pg.passwd
+    eagilog_pg.passwd:
+        file: ./_secrets/eagilog_pg.passwd
+    backup_pg.passwd:
+        file: ./_secrets/backup_pg.passwd
+COMPOSE
+
+pushd "${work_dir}"
 docker-compose up
