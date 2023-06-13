@@ -2000,7 +2000,7 @@ class EnlightenProgressTracker(object):
     def makeBar(self, total, desc):
         return self._manager.counter(
             total=total,
-            bar_format=u"{desc}{desc_pad}{percentage:3.0f}%|{bar}|{elapsed}<{eta}",
+            bar_format=u"{desc}{desc_pad}{percentage:3.1f}%|{bar}",
             desc=desc,
             leave=False)
 
