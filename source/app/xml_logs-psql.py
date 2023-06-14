@@ -399,6 +399,17 @@ class XmlLogDbWriter(object):
                         end_tag))
 
     # --------------------------------------------------------------------------
+    def activeState(self, pg_conn, src_id, stream_id, source, state_tag):
+        with pg_conn:
+            with pg_conn.cursor() as cursor:
+                cursor.execute(
+                    "SELECT eagilog.make_stream_state_active"
+                    "(%s, %s, %s)",(
+                        stream_id,
+                        source,
+                        state_tag))
+
+    # --------------------------------------------------------------------------
     def makeProcessor(self):
         self._source_id += 1
         return XmlLogProcessor(self._source_id, self, self._options)
@@ -546,7 +557,12 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                 attr.get("bgn"),
                 attr.get("end"))
         elif tag == "as":
-            pass
+            self._db_writer.activeState(
+                self._pg_conn,
+                self._src_id,
+                self._stream_id,
+                attr.get("src"),
+                attr.get("tag"))
 
     # --------------------------------------------------------------------------
     def endElement(self, tag):

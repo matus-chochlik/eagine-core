@@ -277,8 +277,8 @@ CREATE TABLE eagilog.declared_stream_state(
 	stream_id INTEGER NOT NULL,
 	source_id VARCHAR(10) NOT NULL,
 	status_tag VARCHAR(10) NOT NULL,
-	begin_tag VARCHAR(10) NOT NULL,
-	end_tag VARCHAR(10) NOT NULL,
+	begin_tag VARCHAR(10) NULL,
+	end_tag VARCHAR(10) NULL,
 	is_active BOOL NOT NULL DEFAULT FALSE
 );
 
@@ -301,26 +301,55 @@ DECLARE
 	result eagilog.declared_stream_state.status_tag%TYPE;
 BEGIN
 	BEGIN
-		WITH ins AS (
-			INSERT INTO eagilog.declared_stream_state (
-				stream_id,
-				source_id,
-				status_tag,
-				begin_tag,
-				end_tag
-			) VALUES (
-				_stream_id,
-				_source_id,
-				_status_tag,
-				_begin_tag,
-				_end_tag
-			) RETURNING eagilog.declared_stream_state.status_tag
-		)
-		SELECT status_tag INTO result FROM ins;
+		INSERT INTO eagilog.declared_stream_state (
+			stream_id,
+			source_id,
+			status_tag,
+			begin_tag,
+			end_tag
+		) VALUES (
+			_stream_id,
+			_source_id,
+			_status_tag,
+			_begin_tag,
+			_end_tag
+		);
 	EXCEPTION WHEN UNIQUE_VIOLATION THEN
-		result := _status_tag;
+		UPDATE eagilog.declared_stream_state
+		SET begin_tag = _begin_tag, end_tag = _end_tag
+		WHERE stream_id = _stream_id
+		AND source_id = _source_id
+		AND status_tag = _status_tag;
 	END;
-	RETURN result;
+	RETURN _status_tag;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.make_stream_state_active(
+	_stream_id eagilog.declared_stream_state.stream_id%TYPE,
+	_source_id eagilog.declared_stream_state.source_id%TYPE,
+	_status_tag eagilog.declared_stream_state.status_tag%TYPE
+) RETURNS eagilog.declared_stream_state.status_tag%TYPE
+AS $$
+BEGIN
+	BEGIN
+		INSERT INTO eagilog.declared_stream_state (
+			stream_id,
+			source_id,
+			status_tag
+		) VALUES (
+			_stream_id,
+			_source_id,
+			_status_tag
+		);
+	EXCEPTION WHEN UNIQUE_VIOLATION THEN
+		UPDATE eagilog.declared_stream_state
+		SET is_active = TRUE
+		WHERE stream_id = _stream_id
+		AND source_id = _source_id
+		AND status_tag = _status_tag;
+	END;
+	RETURN _status_tag;
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
@@ -329,7 +358,7 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE eagilog.stream_state(
 	stream_id INTEGER NOT NULL,
 	begin_entry_id BIGINT NOT NULL,
-	end_entry_id BIGINT NOT,
+	end_entry_id BIGINT NULL,
 	source_id VARCHAR(10) NOT NULL,
 	instance BIGINT NOT NULL,
 	status_tag VARCHAR(10) NOT NULL,
@@ -344,14 +373,6 @@ ADD PRIMARY KEY(stream_id, source_id, instance, status_tag, begin_time);
 ALTER TABLE eagilog.stream_state
 ADD FOREIGN KEY(stream_id)
 REFERENCES eagilog.stream;
-
-ALTER TABLE eagilog.stream_state
-ADD FOREIGN KEY(begin_entry_id)
-REFERENCES eagilog.entry;
-
-ALTER TABLE eagilog.stream_state
-ADD FOREIGN KEY(end_entry_id)
-REFERENCES eagilog.entry;
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.any_stream_state
 AS
@@ -641,6 +662,14 @@ REFERENCES eagilog.stream;
 ALTER TABLE eagilog.entry
 ADD FOREIGN KEY(message_format_id)
 REFERENCES eagilog.message_format;
+
+ALTER TABLE eagilog.stream_state
+ADD FOREIGN KEY(begin_entry_id)
+REFERENCES eagilog.entry;
+
+ALTER TABLE eagilog.stream_state
+ADD FOREIGN KEY(end_entry_id)
+REFERENCES eagilog.entry;
 
 CREATE FUNCTION eagilog.add_entry(
 	_stream_id eagilog.entry.stream_id%TYPE,
