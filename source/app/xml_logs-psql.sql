@@ -781,7 +781,7 @@ CREATE TABLE eagilog.arg_string(
 	arg_id VARCHAR(10) NOT NULL,
 	arg_order SMALLINT NOT NULL DEFAULT 0,
 	arg_type VARCHAR(10) NULL,
-	value VARCHAR(80) NOT NULL
+	value VARCHAR(160) NOT NULL
 );
 
 ALTER TABLE eagilog.arg_string
@@ -857,7 +857,7 @@ CREATE TABLE eagilog.arg_integer(
 	arg_id VARCHAR(10) NOT NULL,
 	arg_order SMALLINT NOT NULL DEFAULT 0,
 	arg_type VARCHAR(10) NULL,
-	value BIGINT NOT NULL
+	value NUMERIC NOT NULL
 );
 
 ALTER TABLE eagilog.arg_integer
