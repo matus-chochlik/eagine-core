@@ -7,9 +7,8 @@ CREATE SCHEMA eagilog;
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.schema_statistics
 AS
-SELECT relname
-AS
-	table_name,
+SELECT
+	relname AS table_name,
 	pg_total_relation_size(c.oid) AS total_bytes,
 	pg_size_pretty(pg_total_relation_size(c.oid)) AS pretty_size
 FROM pg_class c
@@ -50,7 +49,7 @@ BEGIN
 	INTO result
 	FROM eagilog.benchmark_type
 	WHERE name = $1;
-	return result;
+	RETURN result;
 END
 $$ LANGUAGE plpgsql;
 
@@ -98,7 +97,7 @@ BEGIN
 	INTO result
 	FROM eagilog.severity
 	WHERE name = $1;
-	return result;
+	RETURN result;
 END
 $$ LANGUAGE plpgsql;
 
@@ -571,6 +570,26 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+-- other stream functions
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.contemporary_streams(
+	_when TIMESTAMP WITH TIME ZONE
+) RETURNS INTEGER[]
+AS $$
+DECLARE
+	result INTEGER[];
+BEGIN
+	SELECT array(
+		SELECT stream_id
+		FROM eagilog.stream
+		WHERE start_time <= _when
+		AND  _when <= coalesce(finish_time, _when)
+		ORDER BY stream_id
+	) INTO result;
+	RETURN result;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 -- stream views
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.stream_command_ref_count
@@ -763,6 +782,24 @@ END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 -- format / entry views
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.stream_entry
+AS
+SELECT
+	stream_id,
+	e.entry_id,
+	l.name AS severity,
+	s.application_id,
+	e.source_id,
+	e.instance,
+	e.tag,
+	f.format,
+	s.start_time + e.entry_time AS entry_time
+FROM eagilog.entry e
+JOIN eagilog.stream s USING(stream_id)
+JOIN eagilog.severity l USING(severity_id)
+JOIN eagilog.message_format f USING(message_format_id)
+ORDER BY entry_id;
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.message_format_ref_count
 AS
