@@ -13,7 +13,6 @@ export import :interface;
 export import :compare;
 export import :limits;
 export import :integer_range;
-export import :extract;
 export import :tribool;
 export import :optional_like;
 export import :holder;
