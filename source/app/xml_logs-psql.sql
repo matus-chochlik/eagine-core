@@ -17,8 +17,16 @@ LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE relkind = 'r'
 AND nspname = 'eagilog';
 
-CREATE FUNCTION eagilog.schema_data_size_mebi() RETURNS NUMERIC
+CREATE FUNCTION eagilog.schema_data_size_kiB() RETURNS NUMERIC
+AS 'SELECT round(sum(total_bytes) / 1024, 3)::NUMERIC FROM eagilog.schema_statistics;'
+LANGUAGE sql IMMUTABLE;
+
+CREATE FUNCTION eagilog.schema_data_size_MiB() RETURNS NUMERIC
 AS 'SELECT round(sum(total_bytes) / 1048576, 3)::NUMERIC FROM eagilog.schema_statistics;'
+LANGUAGE sql IMMUTABLE;
+
+CREATE FUNCTION eagilog.schema_data_size_GiB() RETURNS NUMERIC
+AS 'SELECT round(sum(total_bytes) / 1073741824, 3)::NUMERIC FROM eagilog.schema_statistics;'
 LANGUAGE sql IMMUTABLE;
 --------------------------------------------------------------------------------
 -- benchmark type
@@ -262,7 +270,107 @@ CREATE TABLE eagilog.stream (
 	low_profile_build BOOL NULL,
 	debug_build BOOL NULL
 );
+--------------------------------------------------------------------------------
+-- declared stream states
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.declared_stream_state(
+	stream_id INTEGER NOT NULL,
+	source_id VARCHAR(10) NOT NULL,
+	status_tag VARCHAR(10) NOT NULL,
+	begin_tag VARCHAR(10) NOT NULL,
+	end_tag VARCHAR(10) NOT NULL,
+	is_active BOOL NOT NULL DEFAULT FALSE
+);
 
+ALTER TABLE eagilog.declared_stream_state
+ADD PRIMARY KEY(stream_id, source_id, status_tag);
+
+ALTER TABLE eagilog.declared_stream_state
+ADD FOREIGN KEY(stream_id)
+REFERENCES eagilog.stream;
+
+CREATE FUNCTION eagilog.declare_stream_state(
+	_stream_id eagilog.declared_stream_state.stream_id%TYPE,
+	_source_id eagilog.declared_stream_state.source_id%TYPE,
+	_status_tag eagilog.declared_stream_state.status_tag%TYPE,
+	_begin_tag eagilog.declared_stream_state.begin_tag%TYPE,
+	_end_tag eagilog.declared_stream_state.end_tag%TYPE
+) RETURNS eagilog.declared_stream_state.status_tag%TYPE
+AS $$
+DECLARE
+	result eagilog.declared_stream_state.status_tag%TYPE;
+BEGIN
+	BEGIN
+		WITH ins AS (
+			INSERT INTO eagilog.declared_stream_state (
+				stream_id,
+				source_id,
+				status_tag,
+				begin_tag,
+				end_tag
+			) VALUES (
+				_stream_id,
+				_source_id,
+				_status_tag,
+				_begin_tag,
+				_end_tag
+			) RETURNING eagilog.declared_stream_state.status_tag
+		)
+		SELECT status_tag INTO result FROM ins;
+	EXCEPTION WHEN UNIQUE_VIOLATION THEN
+		result := _status_tag;
+	END;
+	RETURN result;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
+-- stream states
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.stream_state(
+	stream_id INTEGER NOT NULL,
+	begin_entry_id BIGINT NOT NULL,
+	end_entry_id BIGINT NOT,
+	source_id VARCHAR(10) NOT NULL,
+	instance BIGINT NOT NULL,
+	status_tag VARCHAR(10) NOT NULL,
+	begin_time TIMESTAMP WITH TIME ZONE NOT NULL,
+	end_time TIMESTAMP WITH TIME ZONE NULL,
+	is_active BOOL NOT NULL
+);
+
+ALTER TABLE eagilog.stream_state
+ADD PRIMARY KEY(stream_id, source_id, instance, status_tag, begin_time);
+
+ALTER TABLE eagilog.stream_state
+ADD FOREIGN KEY(stream_id)
+REFERENCES eagilog.stream;
+
+ALTER TABLE eagilog.stream_state
+ADD FOREIGN KEY(begin_entry_id)
+REFERENCES eagilog.entry;
+
+ALTER TABLE eagilog.stream_state
+ADD FOREIGN KEY(end_entry_id)
+REFERENCES eagilog.entry;
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.any_stream_state
+AS
+SELECT
+	stream_id,
+	begin_entry_id,
+	end_entry_id,
+	source_id,
+	instance,
+	status_tag,
+	begin_time,
+	end_time,
+	coalesce(end_time, current_timestamp) - begin_time AS duration,
+	end_time IS NOT NULL AS has_finished,
+	is_active
+FROM eagilog.stream_state;
+--------------------------------------------------------------------------------
+-- start / end stream
+--------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.start_stream(
 ) RETURNS eagilog.stream.stream_id%TYPE
 AS $$
@@ -278,7 +386,7 @@ BEGIN
 	RETURN result;
 END
 $$ LANGUAGE plpgsql;
-
+--------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.finish_stream(
 	eagilog.stream.stream_id%TYPE
 ) RETURNS eagilog.stream.stream_id%TYPE
@@ -287,6 +395,15 @@ BEGIN
 	UPDATE eagilog.stream
 	SET finish_time = now()
 	WHERE stream_id = $1;
+
+	UPDATE eagilog.stream_state
+	SET end_time = now()
+	WHERE stream_id = $1
+	AND end_time is NULL;
+
+	DELETE FROM eagilog.declared_stream_state
+	WHERE stream_id = $1;
+
 	RETURN $1;
 END
 $$ LANGUAGE plpgsql;
@@ -563,6 +680,43 @@ BEGIN
 		) RETURNING eagilog.entry.entry_id
 	)
 	SELECT entry_id INTO result FROM ins;
+
+	BEGIN
+		INSERT INTO eagilog.stream_state (
+			stream_id,
+			begin_entry_id,
+			source_id,
+			instance,
+			status_tag,
+			is_active,
+			begin_time
+		) SELECT
+			stream_id,
+			result,
+			source_id,
+			_instance AS instance,
+			status_tag,
+			is_active,
+			now() AS begin_time
+		FROM eagilog.declared_stream_state
+		WHERE stream_id = _stream_id
+		AND source_id = _source_id
+		AND begin_tag = _tag;
+	EXCEPTION WHEN UNIQUE_VIOLATION THEN
+	END;
+
+	UPDATE eagilog.stream_state
+	SET end_entry_id = result, end_time = now()
+	WHERE end_time IS NOT NULL
+	AND EXISTS (
+		SELECT 1
+		FROM eagilog.declared_stream_state
+		WHERE eagilog.declared_stream_state.stream_id = eagilog.stream_state.stream_id
+		AND eagilog.declared_stream_state.source_id = eagilog.stream_state.source_id
+		AND eagilog.declared_stream_state.status_tag = eagilog.stream_state.status_tag
+		AND eagilog.declared_stream_state.end_tag = _tag
+	);
+
 	RETURN result;
 END
 $$ LANGUAGE plpgsql;
