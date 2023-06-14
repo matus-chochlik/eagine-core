@@ -6,13 +6,15 @@
 #
 source "$(dirname ${BASH_SOURCE[0]})/../../common.sh"
 this_dir="$(realpath $(dirname ${0}))"
-work_dir="$(mktemp -d)"
+temp_dir="$(mktemp -d)"
 
 function cleanup() {
-	rm -rf "${work_dir}"
+	rm -rf "${temp_dir}"
 }
 
 trap cleanup EXIT
+
+work_dir="${temp_dir}/eagine"
 
 mkdir -p "${work_dir}/_secrets/"
 cp "${this_dir}/_secrets/"* "${work_dir}/_secrets/"
