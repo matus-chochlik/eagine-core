@@ -258,6 +258,8 @@ CREATE TABLE eagilog.stream (
 	application_id VARCHAR(10) NULL,
 	start_time TIMESTAMP WITH TIME ZONE NOT NULL,
 	finish_time TIMESTAMP WITH TIME ZONE NULL,
+	first_entry_id BIGINT NULL,
+	last_entry_id BIGINT NULL,
 	stream_command_id INTEGER NULL,
 	git_hash VARCHAR(64) NULL,
 	git_version VARCHAR(32) NULL,
@@ -408,21 +410,25 @@ END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.finish_stream(
-	eagilog.stream.stream_id%TYPE
+	_stream_id eagilog.stream.stream_id%TYPE
 ) RETURNS eagilog.stream.stream_id%TYPE
 AS $$
 BEGIN
 	UPDATE eagilog.stream
-	SET finish_time = now()
-	WHERE stream_id = $1;
+	SET finish_time = now(), last_entry_id = (
+		SELECT max(entry_id)
+		FROM eagilog.entry
+		WHERE stream_id = _stream_id
+	)
+	WHERE stream_id = _stream_id;
 
 	UPDATE eagilog.stream_state
 	SET end_time = now()
-	WHERE stream_id = $1
+	WHERE stream_id = _stream_id
 	AND end_time is NULL;
 
 	DELETE FROM eagilog.declared_stream_state
-	WHERE stream_id = $1;
+	WHERE stream_id = _stream_id;
 
 	RETURN $1;
 END
@@ -765,6 +771,11 @@ BEGIN
 		AND eagilog.declared_stream_state.end_tag = _tag
 	);
 
+	UPDATE eagilog.stream
+	SET first_entry_id = result
+	WHERE stream_id = _stream_id
+	AND first_entry_id IS NULL;
+
 	RETURN result;
 END
 $$ LANGUAGE plpgsql;
@@ -794,7 +805,9 @@ SELECT
 	e.instance,
 	e.tag,
 	f.format,
-	s.start_time + e.entry_time AS entry_time
+	s.start_time + e.entry_time AS entry_time,
+	s.first_entry_id = e.entry_id AS is_first,
+	coalesce(s.last_entry_id = e.entry_id, FALSE) AS is_last
 FROM eagilog.entry e
 JOIN eagilog.stream s USING(stream_id)
 JOIN eagilog.severity l USING(severity_id)
