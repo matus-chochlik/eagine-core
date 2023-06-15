@@ -57,7 +57,7 @@ auto embedded_resource::visit(
   data_compressor& comp,
   memory::buffer_pool& buffers,
   const logger& log,
-  std::shared_ptr<valtree::value_tree_visitor> visitor,
+  shared_holder<valtree::value_tree_visitor> visitor,
   span_size_t max_token_size) const -> bool {
     if(
       (format() == embedded_resource_format::json) or

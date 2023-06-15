@@ -565,10 +565,45 @@ auto copy(const basic_span<TF, PF, SF> from, basic_span<TT, PT, ST> to)
     return head(to, from.size());
 }
 //------------------------------------------------------------------------------
+/// @brief Uses the elements from one span to fill another compatible span.
+/// @ingroup memory
+/// @see fill
+/// @see zero
+/// @see generate
+export template <
+  typename TF,
+  typename PF,
+  typename SF,
+  typename TT,
+  typename PT,
+  typename ST>
+auto scramble(const basic_span<TF, PF, SF> from, basic_span<TT, PT, ST> to)
+  -> basic_span<TT, PT, ST> {
+    assert(from.size() <= to.size());
+    auto fi{from.begin()};
+    if(fi != from.end()) {
+        auto ti{to.begin()};
+        auto ri{from.rbegin()};
+        byte xr{0xA5U};
+        xr = xr ^ *ri;
+        while(fi != from.end()) {
+            assert(ti != to.end());
+            assert(ri != from.rend());
+            *ti = *fi ^ (*ri ^ xr);
+            xr = *fi;
+            ++ti;
+            ++fi;
+            ++ri;
+        }
+    }
+    return head(to, from.size());
+}
+//------------------------------------------------------------------------------
 /// @brief Fills a span with copies of the specified value.
 /// @ingroup memory
 /// @see copy
 /// @see zero
+/// @see scramble
 /// @see generate
 export template <typename T, typename P, typename S, typename V>
 auto fill(const basic_span<T, P, S> spn, const V& v) -> basic_span<T, P, S> {

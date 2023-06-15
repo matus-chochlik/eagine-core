@@ -46,7 +46,7 @@ export template <identifier_t V>
 [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<bool>,
-  const selector<V>) noexcept -> tribool {
+  const selector<V>) noexcept -> optionally_valid<bool> {
 
     const string_view true_strs[] = {{"true"}, {"True"}, {"1"}, {"t"}, {"T"}};
     if(find_element(view(true_strs), src)) {
@@ -59,7 +59,7 @@ export template <identifier_t V>
         return {false, true};
     }
 
-    return {indeterminate};
+    return {};
 }
 
 export template <identifier_t V>

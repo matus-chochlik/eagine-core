@@ -33,8 +33,13 @@ struct member_function_constant<RV (C::*)(P...), Ptr> {
     /// @brief Alias for the class to which the member function belongs.
     using scope = C;
 
+    using callee = C;
+
     /// @brief Alias for type indicating if the member function is const.
     using is_const = std::false_type;
+
+    /// @brief Alias for type indicating if the member function is noexcept.
+    using is_noexcept = std::false_type;
 
     /// @brief Returns the member function pointer.
     /// @see free_func
@@ -71,8 +76,13 @@ struct member_function_constant<RV (C::*)(P...) const, Ptr> {
     /// @brief Alias for the class to which the member function belongs.
     using scope = C;
 
+    using callee = const C;
+
     /// @brief Alias for type indicating if the member function is const.
     using is_const = std::true_type;
+
+    /// @brief Alias for type indicating if the member function is noexcept.
+    using is_noexcept = std::false_type;
 
     /// @brief Returns the member function pointer.
     /// @see free_func
@@ -109,8 +119,13 @@ struct member_function_constant<RV (C::*)(P...) noexcept, Ptr> {
     /// @brief Alias for the class to which the member function belongs.
     using scope = C;
 
+    using callee = C;
+
     /// @brief Alias for type indicating if the member function is const.
     using is_const = std::false_type;
+
+    /// @brief Alias for type indicating if the member function is noexcept.
+    using is_noexcept = std::true_type;
 
     /// @brief Returns the member function pointer.
     /// @see free_func
@@ -151,8 +166,13 @@ struct member_function_constant<RV (C::*)(P...) const noexcept, Ptr> {
     /// @brief Alias for the class to which the member function belongs.
     using scope = C;
 
+    using callee = const C;
+
     /// @brief Alias for type indicating if the member function is const.
     using is_const = std::true_type;
+
+    /// @brief Alias for type indicating if the member function is noexcept.
+    using is_noexcept = std::true_type;
 
     /// @brief Returns the member function pointer.
     /// @see free_func

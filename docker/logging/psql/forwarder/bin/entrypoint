@@ -1,0 +1,7 @@
+#!/bin/sh
+echo "Starting..."
+python /usr/src/app/xml_logs-psql.py \
+	--db-host log_psql_database \
+	--db-user eagilog \
+	--db-name eagilog \
+	--db-pass-file /run/secrets/eagilog_pg.passwd

@@ -103,25 +103,6 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
                 put_char(' ');
             }
 
-            if(row_none[b]) {
-                put_char(' ');
-                put_char('.');
-                put_char('.');
-            } else {
-                _hexdump_to_hex_b(put_char, row_byte[b]);
-            }
-            ++pos;
-        }
-
-        put_char(' ');
-        put_char('|');
-
-        pos = row;
-        for(const auto b : integer_range(16)) {
-            if(b == 8) {
-                put_char(' ');
-            }
-
             if(row_none[b] or not std::isprint(row_byte[b])) {
                 put_char('.');
             } else {

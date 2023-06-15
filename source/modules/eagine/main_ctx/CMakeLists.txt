@@ -125,6 +125,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.string
 		eagine.core.identifier
+		eagine.core.serialization
 		eagine.core.units
 		eagine.core.utility
 		eagine.core.runtime

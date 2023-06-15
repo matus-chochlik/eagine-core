@@ -28,11 +28,6 @@ eagine_add_module(
 
 
 eagine_add_module(
-	eagine.core.types PARTITION extract
-	IMPORTS concepts
-)
-
-eagine_add_module(
 	eagine.core.types PARTITION limits
 	IMPORTS basic
 )
@@ -60,8 +55,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.types PARTITION outcome
 	IMPORTS
-		extract basic
-		limits concepts
+		basic limits concepts
 )
 
 eagine_add_module(

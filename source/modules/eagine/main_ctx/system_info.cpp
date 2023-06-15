@@ -161,8 +161,8 @@ public:
     }
 
 private:
-    std::shared_ptr<system_info_impl> _pimpl;
-    auto _impl() noexcept -> system_info_impl*;
+    shared_holder<system_info_impl> _pimpl;
+    auto _impl() noexcept -> optional_reference<system_info_impl>;
 };
 
 } // namespace eagine

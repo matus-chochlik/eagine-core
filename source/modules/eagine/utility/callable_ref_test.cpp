@@ -77,7 +77,8 @@ void callable_ref_bar_foo(auto& s) {
 
     bar br{123};
 
-    eagine::callable_ref<float(float, float, float) noexcept> c(&br, &bar::foo);
+    eagine::callable_ref<float(float, float, float) noexcept> c(
+      {br}, &bar::foo);
 
     test.check_equal(bool(c), true, "is true");
     test.check_equal(not(c), false, "is not false");

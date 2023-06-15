@@ -386,6 +386,30 @@ class XmlLogDbWriter(object):
                         interval.maxDuration()))
 
     # --------------------------------------------------------------------------
+    def declareState(self, pg_conn, src_id, stream_id, source, state_tag, begin_tag, end_tag):
+        with pg_conn:
+            with pg_conn.cursor() as cursor:
+                cursor.execute(
+                    "SELECT eagilog.declare_stream_state"
+                    "(%s, %s, %s, %s, %s)",(
+                        stream_id,
+                        source,
+                        state_tag,
+                        begin_tag,
+                        end_tag))
+
+    # --------------------------------------------------------------------------
+    def activeState(self, pg_conn, src_id, stream_id, source, state_tag):
+        with pg_conn:
+            with pg_conn.cursor() as cursor:
+                cursor.execute(
+                    "SELECT eagilog.make_stream_state_active"
+                    "(%s, %s, %s)",(
+                        stream_id,
+                        source,
+                        state_tag))
+
+    # --------------------------------------------------------------------------
     def makeProcessor(self):
         self._source_id += 1
         return XmlLogProcessor(self._source_id, self, self._options)
@@ -523,6 +547,22 @@ class XmlLogProcessor(xml.sax.ContentHandler):
                         interval,
                         iinfo)
                 interval.wasStored()
+        elif tag == "ds":
+            self._db_writer.declareState(
+                self._pg_conn,
+                self._src_id,
+                self._stream_id,
+                attr.get("src"),
+                attr.get("tag"),
+                attr.get("bgn"),
+                attr.get("end"))
+        elif tag == "as":
+            self._db_writer.activeState(
+                self._pg_conn,
+                self._src_id,
+                self._stream_id,
+                attr.get("src"),
+                attr.get("tag"))
 
     # --------------------------------------------------------------------------
     def endElement(self, tag):
@@ -650,7 +690,6 @@ def handle_connections(log_sock, db_writer):
             for key, mask in events:
                 if type(key.data) is XmlLogDbWriter:
                     connection, addr = log_sock.accept()
-                    connection.setblocking(False)
                     selector.register(
                         connection,
                         selectors.EVENT_READ,

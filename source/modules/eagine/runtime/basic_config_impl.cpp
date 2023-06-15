@@ -59,10 +59,10 @@ auto basic_config::eval_environment_var(string_view key, const string_view tag)
 auto basic_config::is_set(const string_view key, const string_view tag) noexcept
   -> bool {
     if(const auto arg{find_program_arg(key, tag)}) {
-        return arg.next().and_then(from_string<bool>(_1)).or_true();
+        return arg.next().and_then(from_string<bool>(_1)).value_or(true);
     }
     if(const auto var{eval_environment_var(key, tag)}) {
-        return var.and_then(from_string<bool>(_1)).or_true();
+        return var.and_then(from_string<bool>(_1)).value_or(true);
     }
     return false;
 }

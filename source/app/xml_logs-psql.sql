@@ -7,9 +7,8 @@ CREATE SCHEMA eagilog;
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.schema_statistics
 AS
-SELECT relname
-AS
-	table_name,
+SELECT
+	relname AS table_name,
 	pg_total_relation_size(c.oid) AS total_bytes,
 	pg_size_pretty(pg_total_relation_size(c.oid)) AS pretty_size
 FROM pg_class c
@@ -17,8 +16,16 @@ LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE relkind = 'r'
 AND nspname = 'eagilog';
 
-CREATE FUNCTION eagilog.schema_data_size_mebi() RETURNS NUMERIC
+CREATE FUNCTION eagilog.schema_data_size_kiB() RETURNS NUMERIC
+AS 'SELECT round(sum(total_bytes) / 1024, 3)::NUMERIC FROM eagilog.schema_statistics;'
+LANGUAGE sql IMMUTABLE;
+
+CREATE FUNCTION eagilog.schema_data_size_MiB() RETURNS NUMERIC
 AS 'SELECT round(sum(total_bytes) / 1048576, 3)::NUMERIC FROM eagilog.schema_statistics;'
+LANGUAGE sql IMMUTABLE;
+
+CREATE FUNCTION eagilog.schema_data_size_GiB() RETURNS NUMERIC
+AS 'SELECT round(sum(total_bytes) / 1073741824, 3)::NUMERIC FROM eagilog.schema_statistics;'
 LANGUAGE sql IMMUTABLE;
 --------------------------------------------------------------------------------
 -- benchmark type
@@ -42,7 +49,7 @@ BEGIN
 	INTO result
 	FROM eagilog.benchmark_type
 	WHERE name = $1;
-	return result;
+	RETURN result;
 END
 $$ LANGUAGE plpgsql;
 
@@ -90,7 +97,7 @@ BEGIN
 	INTO result
 	FROM eagilog.severity
 	WHERE name = $1;
-	return result;
+	RETURN result;
 END
 $$ LANGUAGE plpgsql;
 
@@ -99,9 +106,10 @@ INSERT INTO eagilog.severity (severity_id, name) VALUES(1, 'trace');
 INSERT INTO eagilog.severity (severity_id, name) VALUES(2, 'debug');
 INSERT INTO eagilog.severity (severity_id, name) VALUES(3, 'stat');
 INSERT INTO eagilog.severity (severity_id, name) VALUES(4, 'info');
-INSERT INTO eagilog.severity (severity_id, name) VALUES(5, 'warning');
-INSERT INTO eagilog.severity (severity_id, name) VALUES(6, 'error');
-INSERT INTO eagilog.severity (severity_id, name) VALUES(7, 'fatal');
+INSERT INTO eagilog.severity (severity_id, name) VALUES(5, 'change');
+INSERT INTO eagilog.severity (severity_id, name) VALUES(6, 'warning');
+INSERT INTO eagilog.severity (severity_id, name) VALUES(7, 'error');
+INSERT INTO eagilog.severity (severity_id, name) VALUES(8, 'fatal');
 --------------------------------------------------------------------------------
 -- message_format
 --------------------------------------------------------------------------------
@@ -261,7 +269,128 @@ CREATE TABLE eagilog.stream (
 	low_profile_build BOOL NULL,
 	debug_build BOOL NULL
 );
+--------------------------------------------------------------------------------
+-- declared stream states
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.declared_stream_state(
+	stream_id INTEGER NOT NULL,
+	source_id VARCHAR(10) NOT NULL,
+	status_tag VARCHAR(10) NOT NULL,
+	begin_tag VARCHAR(10) NULL,
+	end_tag VARCHAR(10) NULL,
+	is_active BOOL NOT NULL DEFAULT FALSE
+);
 
+ALTER TABLE eagilog.declared_stream_state
+ADD PRIMARY KEY(stream_id, source_id, status_tag);
+
+ALTER TABLE eagilog.declared_stream_state
+ADD FOREIGN KEY(stream_id)
+REFERENCES eagilog.stream;
+
+CREATE FUNCTION eagilog.declare_stream_state(
+	_stream_id eagilog.declared_stream_state.stream_id%TYPE,
+	_source_id eagilog.declared_stream_state.source_id%TYPE,
+	_status_tag eagilog.declared_stream_state.status_tag%TYPE,
+	_begin_tag eagilog.declared_stream_state.begin_tag%TYPE,
+	_end_tag eagilog.declared_stream_state.end_tag%TYPE
+) RETURNS eagilog.declared_stream_state.status_tag%TYPE
+AS $$
+DECLARE
+	result eagilog.declared_stream_state.status_tag%TYPE;
+BEGIN
+	BEGIN
+		INSERT INTO eagilog.declared_stream_state (
+			stream_id,
+			source_id,
+			status_tag,
+			begin_tag,
+			end_tag
+		) VALUES (
+			_stream_id,
+			_source_id,
+			_status_tag,
+			_begin_tag,
+			_end_tag
+		);
+	EXCEPTION WHEN UNIQUE_VIOLATION THEN
+		UPDATE eagilog.declared_stream_state
+		SET begin_tag = _begin_tag, end_tag = _end_tag
+		WHERE stream_id = _stream_id
+		AND source_id = _source_id
+		AND status_tag = _status_tag;
+	END;
+	RETURN _status_tag;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.make_stream_state_active(
+	_stream_id eagilog.declared_stream_state.stream_id%TYPE,
+	_source_id eagilog.declared_stream_state.source_id%TYPE,
+	_status_tag eagilog.declared_stream_state.status_tag%TYPE
+) RETURNS eagilog.declared_stream_state.status_tag%TYPE
+AS $$
+BEGIN
+	BEGIN
+		INSERT INTO eagilog.declared_stream_state (
+			stream_id,
+			source_id,
+			status_tag
+		) VALUES (
+			_stream_id,
+			_source_id,
+			_status_tag
+		);
+	EXCEPTION WHEN UNIQUE_VIOLATION THEN
+		UPDATE eagilog.declared_stream_state
+		SET is_active = TRUE
+		WHERE stream_id = _stream_id
+		AND source_id = _source_id
+		AND status_tag = _status_tag;
+	END;
+	RETURN _status_tag;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
+-- stream states
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.stream_state(
+	stream_id INTEGER NOT NULL,
+	begin_entry_id BIGINT NOT NULL,
+	end_entry_id BIGINT NULL,
+	source_id VARCHAR(10) NOT NULL,
+	instance BIGINT NOT NULL,
+	status_tag VARCHAR(10) NOT NULL,
+	begin_time TIMESTAMP WITH TIME ZONE NOT NULL,
+	end_time TIMESTAMP WITH TIME ZONE NULL,
+	is_active BOOL NOT NULL
+);
+
+ALTER TABLE eagilog.stream_state
+ADD PRIMARY KEY(stream_id, source_id, instance, status_tag, begin_time);
+
+ALTER TABLE eagilog.stream_state
+ADD FOREIGN KEY(stream_id)
+REFERENCES eagilog.stream;
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.any_stream_state
+AS
+SELECT
+	stream_id,
+	begin_entry_id,
+	end_entry_id,
+	source_id,
+	instance,
+	status_tag,
+	begin_time,
+	end_time,
+	coalesce(end_time, current_timestamp) - begin_time AS duration,
+	end_time IS NOT NULL AS has_finished,
+	is_active
+FROM eagilog.stream_state;
+--------------------------------------------------------------------------------
+-- start / end stream
+--------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.start_stream(
 ) RETURNS eagilog.stream.stream_id%TYPE
 AS $$
@@ -277,7 +406,7 @@ BEGIN
 	RETURN result;
 END
 $$ LANGUAGE plpgsql;
-
+--------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.finish_stream(
 	eagilog.stream.stream_id%TYPE
 ) RETURNS eagilog.stream.stream_id%TYPE
@@ -286,6 +415,15 @@ BEGIN
 	UPDATE eagilog.stream
 	SET finish_time = now()
 	WHERE stream_id = $1;
+
+	UPDATE eagilog.stream_state
+	SET end_time = now()
+	WHERE stream_id = $1
+	AND end_time is NULL;
+
+	DELETE FROM eagilog.declared_stream_state
+	WHERE stream_id = $1;
+
 	RETURN $1;
 END
 $$ LANGUAGE plpgsql;
@@ -432,6 +570,26 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+-- other stream functions
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.contemporary_streams(
+	_when TIMESTAMP WITH TIME ZONE
+) RETURNS INTEGER[]
+AS $$
+DECLARE
+	result INTEGER[];
+BEGIN
+	SELECT array(
+		SELECT stream_id
+		FROM eagilog.stream
+		WHERE start_time <= _when
+		AND  _when <= coalesce(finish_time, _when)
+		ORDER BY stream_id
+	) INTO result;
+	RETURN result;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 -- stream views
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.stream_command_ref_count
@@ -524,6 +682,14 @@ ALTER TABLE eagilog.entry
 ADD FOREIGN KEY(message_format_id)
 REFERENCES eagilog.message_format;
 
+ALTER TABLE eagilog.stream_state
+ADD FOREIGN KEY(begin_entry_id)
+REFERENCES eagilog.entry;
+
+ALTER TABLE eagilog.stream_state
+ADD FOREIGN KEY(end_entry_id)
+REFERENCES eagilog.entry;
+
 CREATE FUNCTION eagilog.add_entry(
 	_stream_id eagilog.entry.stream_id%TYPE,
 	_source_id eagilog.entry.source_id%TYPE,
@@ -562,6 +728,43 @@ BEGIN
 		) RETURNING eagilog.entry.entry_id
 	)
 	SELECT entry_id INTO result FROM ins;
+
+	BEGIN
+		INSERT INTO eagilog.stream_state (
+			stream_id,
+			begin_entry_id,
+			source_id,
+			instance,
+			status_tag,
+			is_active,
+			begin_time
+		) SELECT
+			stream_id,
+			result,
+			source_id,
+			_instance AS instance,
+			status_tag,
+			is_active,
+			now() AS begin_time
+		FROM eagilog.declared_stream_state
+		WHERE stream_id = _stream_id
+		AND source_id = _source_id
+		AND begin_tag = _tag;
+	EXCEPTION WHEN UNIQUE_VIOLATION THEN
+	END;
+
+	UPDATE eagilog.stream_state
+	SET end_entry_id = result, end_time = now()
+	WHERE end_time IS NOT NULL
+	AND EXISTS (
+		SELECT 1
+		FROM eagilog.declared_stream_state
+		WHERE eagilog.declared_stream_state.stream_id = eagilog.stream_state.stream_id
+		AND eagilog.declared_stream_state.source_id = eagilog.stream_state.source_id
+		AND eagilog.declared_stream_state.status_tag = eagilog.stream_state.status_tag
+		AND eagilog.declared_stream_state.end_tag = _tag
+	);
+
 	RETURN result;
 END
 $$ LANGUAGE plpgsql;
@@ -580,6 +783,24 @@ $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 -- format / entry views
 --------------------------------------------------------------------------------
+CREATE VIEW eagilog.stream_entry
+AS
+SELECT
+	stream_id,
+	e.entry_id,
+	l.name AS severity,
+	s.application_id,
+	e.source_id,
+	e.instance,
+	e.tag,
+	f.format,
+	s.start_time + e.entry_time AS entry_time
+FROM eagilog.entry e
+JOIN eagilog.stream s USING(stream_id)
+JOIN eagilog.severity l USING(severity_id)
+JOIN eagilog.message_format f USING(message_format_id)
+ORDER BY entry_id;
+--------------------------------------------------------------------------------
 CREATE VIEW eagilog.message_format_ref_count
 AS
 SELECT
@@ -597,7 +818,7 @@ CREATE TABLE eagilog.arg_string(
 	arg_id VARCHAR(10) NOT NULL,
 	arg_order SMALLINT NOT NULL DEFAULT 0,
 	arg_type VARCHAR(10) NULL,
-	value VARCHAR(80) NOT NULL
+	value VARCHAR(160) NOT NULL
 );
 
 ALTER TABLE eagilog.arg_string
@@ -673,7 +894,7 @@ CREATE TABLE eagilog.arg_integer(
 	arg_id VARCHAR(10) NOT NULL,
 	arg_order SMALLINT NOT NULL DEFAULT 0,
 	arg_type VARCHAR(10) NULL,
-	value BIGINT NOT NULL
+	value NUMERIC NOT NULL
 );
 
 ALTER TABLE eagilog.arg_integer

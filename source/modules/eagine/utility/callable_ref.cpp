@@ -84,22 +84,18 @@ public:
     ~basic_callable_ref() noexcept = default;
 
     /// @brief Construction from a pointer to function.
-    basic_callable_ref(RV (*func)(P...) noexcept(NE)) noexcept
+    constexpr basic_callable_ref(RV (*func)(P...) noexcept(NE)) noexcept
       : _func{reinterpret_cast<_func_t>(func)} {}
 
-    /// @brief Construction from pointers to an object and a function.
-    template <typename T>
-    basic_callable_ref(T* data, RV (*func)(T*, P...) noexcept(NE)) noexcept
-      : _data{static_cast<void*>(data)}
+    /// @brief Construction from a reference to an object and a pointer to function.
+    template <typename C>
+    constexpr basic_callable_ref(
+      optional_reference<C> data,
+      RV (*func)(C*, P...) noexcept(NE)) noexcept
+      : _data{static_cast<void*>(data.get())}
       , _func{reinterpret_cast<_func_t>(func)} {
         assert(_data != nullptr);
     }
-
-    /// @brief Construction from a reference to an object and a pointer to function.
-    template <typename T>
-    basic_callable_ref(T& data, RV (*func)(T*, P...) noexcept(NE)) noexcept
-      : _data{static_cast<void*>(&data)}
-      , _func{reinterpret_cast<_func_t>(func)} {}
 
     /// @brief Construction a reference to object with a call operator.
     template <typename C>
@@ -115,24 +111,15 @@ public:
       : _data{static_cast<void*>(const_cast<C*>(&obj))}
       , _func{reinterpret_cast<_func_t>(&_cls_fn_call_op_c<C>)} {}
 
-    /// @brief Construction a pointer to object and member function constant.
-    template <typename C, RV (C::*Ptr)(P...) noexcept(NE)>
+    /// @brief Construction a reference to object and member function constant.
+    template <typename PtrT, PtrT ptr>
     basic_callable_ref(
-      C* obj,
-      member_function_constant<RV (C::*)(P...) noexcept(NE), Ptr> mfc) noexcept
-      : _data{static_cast<void*>(obj)}
-      , _func{reinterpret_cast<_func_t>(mfc.make_free())} {
-        assert(_data != nullptr);
-        assert(_func != nullptr);
-    }
-
-    /// @brief Construction a pointer to const object and member function constant.
-    template <typename C, RV (C::*Ptr)(P...) const noexcept(NE)>
-    basic_callable_ref(
-      const C* obj,
-      member_function_constant<RV (C::*)(P...) const noexcept(NE), Ptr>
-        mfc) noexcept
-      : _data{static_cast<void*>(const_cast<C*>(obj))}
+      optional_reference<typename member_function_constant<PtrT, ptr>::callee>
+        obj,
+      member_function_constant<PtrT, ptr> mfc) noexcept
+      : _data{static_cast<void*>(
+          const_cast<typename member_function_constant<PtrT, ptr>::scope*>(
+            obj.get()))}
       , _func{reinterpret_cast<_func_t>(mfc.make_free())} {
         assert(_data != nullptr);
         assert(_func != nullptr);
@@ -211,47 +198,14 @@ struct member_function_callable_ref : callable_ref<Sig> {
     {}
 };
 //------------------------------------------------------------------------------
-export template <typename T, T Ptr>
-struct _member_callable_ref;
-
-export template <auto Ptr>
-using member_callable_ref_t =
-  typename _member_callable_ref<decltype(Ptr), Ptr>::type;
-
-export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...)>
-struct _member_callable_ref<RV (C::*)(P...), Ptr> {
-    using type = member_function_callable_ref<RV(P...), Ptr>;
-};
-
-export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...) noexcept>
-struct _member_callable_ref<RV (C::*)(P...) noexcept, Ptr> {
-    using type = member_function_callable_ref<RV(P...) noexcept, Ptr>;
-};
-
-export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...) const>
-struct _member_callable_ref<RV (C::*)(P...) const, Ptr> {
-    using type = member_function_callable_ref<RV(P...), Ptr>;
-};
-
-export template <
-  typename RV,
-  typename C,
-  typename... P,
-  RV (C::*Ptr)(P...) const noexcept>
-struct _member_callable_ref<RV (C::*)(P...) const noexcept, Ptr> {
-    using type = member_function_callable_ref<RV(P...) noexcept, Ptr>;
-};
-//------------------------------------------------------------------------------
-/// @brief Function constructing instances of callable_ref wrapping member functions.
-/// @ingroup functonal
-export template <
+template <
   typename RV,
   typename C,
   typename... P,
   bool NE,
   RV (C::*Ptr)(P...) noexcept(NE)>
-[[nodiscard]] constexpr auto make_callable_ref(
-  C* obj,
+[[nodiscard]] constexpr auto _make_callable_ref(
+  optional_reference<C> obj,
   member_function_constant<RV (C::*)(P...) noexcept(NE), Ptr> mfc) noexcept
   -> callable_ref<RV(P...) noexcept(NE)> {
     return {obj, mfc};
@@ -259,22 +213,20 @@ export template <
 
 /// @brief Function constructing instances of callable_ref wrapping member functions.
 /// @ingroup functonal
-export template <
-  typename RV,
-  typename C,
-  typename... P,
-  bool NE,
-  RV (C::*Ptr)(P...) const noexcept(NE)>
+export template <auto MemFuncPtr>
+    requires(std::is_member_function_pointer_v<decltype(MemFuncPtr)>)
 [[nodiscard]] constexpr auto make_callable_ref(
-  C* obj,
-  member_function_constant<RV (C::*)(P...) noexcept(NE), Ptr> mfc) noexcept
-  -> callable_ref<RV(P...) noexcept(NE)> {
-    return {obj, mfc};
+  optional_reference<typename member_function_constant_t<MemFuncPtr>::callee>
+    obj) noexcept {
+    return _make_callable_ref(obj, member_function_constant_t<MemFuncPtr>{});
 }
 
-export template <auto MemFuncPtr, typename C>
-[[nodiscard]] constexpr auto make_callable_ref(C* obj) noexcept {
-    return make_callable_ref(obj, member_function_constant_t<MemFuncPtr>{});
+export template <typename RV, typename C, typename... P, bool NE>
+[[nodiscard]] auto make_callable_ref(
+  optional_reference<C> obj,
+  RV (*ptr)(C*, P...) noexcept(NE)) noexcept
+  -> basic_callable_ref<RV(P...) noexcept(NE), NE> {
+    return {obj, ptr};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

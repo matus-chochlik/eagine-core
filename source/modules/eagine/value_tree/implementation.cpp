@@ -28,8 +28,9 @@ namespace eagine::valtree {
 export class value_tree_stream_input {
 public:
     value_tree_stream_input(
-      std::unique_ptr<value_tree_stream_parser> impl) noexcept
+      unique_holder<value_tree_stream_parser> impl) noexcept
       : _pimpl{std::move(impl)} {
+        assert(_pimpl);
         _pimpl->begin();
     }
 
@@ -92,12 +93,11 @@ public:
     /// @see consume_data
     auto get_handler() noexcept -> data_handler {
         assert(_pimpl);
-        return make_callable_ref<&value_tree_stream_parser::parse_data>(
-          _pimpl.get());
+        return make_callable_ref<&value_tree_stream_parser::parse_data>(_pimpl);
     }
 
 private:
-    std::unique_ptr<value_tree_stream_parser> _pimpl;
+    unique_holder<value_tree_stream_parser> _pimpl;
 };
 //------------------------------------------------------------------------------
 export template <typename Derived>
@@ -206,13 +206,13 @@ private:
 };
 //------------------------------------------------------------------------------
 export auto traverse_json_stream(
-  std::shared_ptr<value_tree_visitor>,
+  shared_holder<value_tree_visitor>,
   span_size_t max_token_size,
   memory::buffer_pool&,
   const logger& parent) -> value_tree_stream_input;
 
 export auto traverse_json_stream(
-  std::shared_ptr<object_builder>,
+  shared_holder<object_builder>,
   memory::buffer_pool&,
   const logger& parent) -> value_tree_stream_input;
 //------------------------------------------------------------------------------
@@ -319,7 +319,7 @@ public:
 template <typename Derived, typename Node>
 class compound_with_refcounted_node : public compound_implementation<Derived> {
 private:
-    std::vector<std::tuple<span_size_t, std::unique_ptr<Node>>> _nodes{};
+    std::vector<std::tuple<span_size_t, unique_holder<Node>>> _nodes{};
 
     auto _do_make_new(Node&& temp) -> optional_reference<Node> {
         for(auto& [ref_count, node_ptr] : _nodes) {
@@ -328,7 +328,8 @@ private:
                 return node_ptr;
             }
         }
-        _nodes.emplace_back(1, std::make_unique<Node>(std::move(temp)));
+        _nodes.emplace_back(
+          1, unique_holder<Node>{default_selector, std::move(temp)});
         return std::get<1>(_nodes.back());
     }
 
@@ -388,12 +389,12 @@ export struct file_compound_factory : interface<file_compound_factory> {
 export auto from_filesystem_path(
   string_view root_path,
   const logger&,
-  std::shared_ptr<file_compound_factory> = {}) -> compound;
+  shared_holder<file_compound_factory> = {}) -> compound;
 
 export auto from_filesystem_path(
   string_view root_path,
   does_not_hide<logger> auto& parent,
-  std::shared_ptr<file_compound_factory> factory = {}) -> compound {
+  shared_holder<file_compound_factory> factory = {}) -> compound {
     return from_filesystem_path(root_path, parent.log(), std::move(factory));
 }
 //------------------------------------------------------------------------------

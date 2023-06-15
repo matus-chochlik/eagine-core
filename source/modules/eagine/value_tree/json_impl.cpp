@@ -662,10 +662,9 @@ public:
     static auto do_make_shared(
       _doc_t& rj_doc,
       const rapidjson::ParseResult parse_ok,
-      const logger& parent) -> std::shared_ptr<rapidjson_document_compound> {
+      const logger& parent) -> shared_holder<rapidjson_document_compound> {
         if(parse_ok) {
-            return std::make_shared<rapidjson_document_compound>(
-              rj_doc, parent);
+            return {default_selector, rj_doc, parent};
         }
         const auto msg{rapidjson::GetParseError_En(parse_ok.Code())};
         parent.error("JSON parse error")
@@ -676,7 +675,7 @@ public:
 
     [[nodiscard]] static auto make_shared(
       string_view json_str,
-      const logger& parent) -> std::shared_ptr<rapidjson_document_compound> {
+      const logger& parent) -> shared_holder<rapidjson_document_compound> {
         _doc_t rj_doc;
         return do_make_shared(
           rj_doc,
@@ -686,7 +685,7 @@ public:
 
     [[nodiscard]] static auto make_shared(
       span<const memory::const_block> json_data,
-      const logger& parent) -> std::shared_ptr<rapidjson_document_compound> {
+      const logger& parent) -> shared_holder<rapidjson_document_compound> {
         rapidjson_chunk_stream json_stream{json_data};
         _doc_t rj_doc;
 
@@ -909,7 +908,7 @@ class json_value_tree_stream_parser
       BaseReaderHandler<rapidjson::UTF8<>, json_value_tree_stream_parser> {
 public:
     [[nodiscard]] json_value_tree_stream_parser(
-      std::shared_ptr<value_tree_visitor> visitor,
+      shared_holder<value_tree_visitor> visitor,
       span_size_t max_token_size,
       memory::buffer_pool& buffers,
       const logger& parent) noexcept
@@ -1138,7 +1137,7 @@ private:
     const span_size_t _max_token_size;
     rapidjson_progressive_stream _json_stream;
     rapidjson::Reader _json_reader;
-    std::shared_ptr<value_tree_visitor> _visitor;
+    shared_holder<value_tree_visitor> _visitor;
     memory::buffer _json_block;
     std::stack<std::string> _attr_stack;
     std::stack<bool> _list_stack;
@@ -1151,16 +1150,20 @@ private:
 };
 //------------------------------------------------------------------------------
 [[nodiscard]] auto traverse_json_stream(
-  std::shared_ptr<value_tree_visitor> visitor,
+  shared_holder<value_tree_visitor> visitor,
   span_size_t max_token_size,
   memory::buffer_pool& buffers,
   const logger& parent) -> value_tree_stream_input {
-    return {std::make_unique<json_value_tree_stream_parser>(
-      std::move(visitor), max_token_size, buffers, parent)};
+    return {
+      {hold<json_value_tree_stream_parser>,
+       std::move(visitor),
+       max_token_size,
+       buffers,
+       parent}};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] auto traverse_json_stream(
-  std::shared_ptr<object_builder> builder,
+  shared_holder<object_builder> builder,
   memory::buffer_pool& buffers,
   const logger& parent) -> value_tree_stream_input {
     const auto max_token_size{builder->max_token_size()};

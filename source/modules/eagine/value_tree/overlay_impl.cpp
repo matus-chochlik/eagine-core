@@ -201,8 +201,8 @@ public:
     static auto make_shared(
       const logger& parent,
       std::vector<compound_attribute> overlays)
-      -> std::shared_ptr<overlay_compound> {
-        return std::make_shared<overlay_compound>(parent, std::move(overlays));
+      -> shared_holder<overlay_compound> {
+        return {default_selector, parent, std::move(overlays)};
     }
 
     auto type_id() const noexcept -> identifier final {

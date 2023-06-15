@@ -278,17 +278,14 @@ private:
 system_info::system_info(main_ctx_parent parent)
   : main_ctx_object{"SystemInfo", parent} {}
 //------------------------------------------------------------------------------
-auto system_info::_impl() noexcept -> system_info_impl* {
+auto system_info::_impl() noexcept -> optional_reference<system_info_impl> {
 #if EAGINE_LINUX
     if(not _pimpl) [[unlikely]] {
-        try {
-            _pimpl = std::make_shared<system_info_impl>(main_context().log());
-        } catch(...) {
-        }
+        _pimpl.emplace(main_context().log());
     }
-    return _pimpl.get();
+    return _pimpl;
 #endif
-    return nullptr;
+    return {};
 }
 //------------------------------------------------------------------------------
 auto system_info::preinitialize() noexcept -> system_info& {
@@ -298,8 +295,8 @@ auto system_info::preinitialize() noexcept -> system_info& {
 //------------------------------------------------------------------------------
 auto system_info::host_id() noexcept -> valid_if_positive<host_id_type> {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return {extract(impl).host_id()};
+    if(const auto impl{_impl()}) [[likely]] {
+        return {impl->host_id()};
     }
 #endif
 #if EAGINE_POSIX
@@ -409,8 +406,8 @@ auto system_info::total_swap_size() noexcept
 //------------------------------------------------------------------------------
 auto system_info::thermal_sensor_count() noexcept -> span_size_t {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return extract(impl).tz_count();
+    if(const auto impl{_impl()}) [[likely]] {
+        return impl->tz_count();
     }
 #endif
     return 0;
@@ -420,8 +417,8 @@ auto system_info::sensor_temperature(
   [[maybe_unused]] const span_size_t index) noexcept
   -> valid_if_positive<kelvins_t<float>> {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return extract(impl).tz_temperature(index);
+    if(const auto impl{_impl()}) [[likely]] {
+        return impl->tz_temperature(index);
     }
 #endif
     return {kelvins_(0.F)};
@@ -431,8 +428,8 @@ auto system_info::temperature_min_max() noexcept -> std::tuple<
   valid_if_positive<kelvins_t<float>>,
   valid_if_positive<kelvins_t<float>>> {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return extract(impl).tz_min_max();
+    if(const auto impl{_impl()}) [[likely]] {
+        return impl->tz_min_max();
     }
 #endif
     return {{kelvins_(0.F)}, {kelvins_(0.F)}};
@@ -441,8 +438,8 @@ auto system_info::temperature_min_max() noexcept -> std::tuple<
 auto system_info::cpu_temperature() noexcept
   -> valid_if_positive<kelvins_t<float>> {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return extract(impl).cpu_temperature();
+    if(const auto impl{_impl()}) [[likely]] {
+        return impl->cpu_temperature();
     }
 #endif
     return {kelvins_(0.F)};
@@ -451,8 +448,8 @@ auto system_info::cpu_temperature() noexcept
 auto system_info::gpu_temperature() noexcept
   -> valid_if_positive<kelvins_t<float>> {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return extract(impl).gpu_temperature();
+    if(const auto impl{_impl()}) [[likely]] {
+        return impl->gpu_temperature();
     }
 #endif
     return {kelvins_(0.F)};
@@ -460,8 +457,8 @@ auto system_info::gpu_temperature() noexcept
 //------------------------------------------------------------------------------
 auto system_info::cooling_device_count() noexcept -> span_size_t {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return extract(impl).cd_count();
+    if(const auto impl{_impl()}) [[likely]] {
+        return impl->cd_count();
     }
 #endif
     return 0;
@@ -470,8 +467,8 @@ auto system_info::cooling_device_count() noexcept -> span_size_t {
 auto system_info::cooling_device_state(const span_size_t index) noexcept
   -> valid_if_between_0_1<float> {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return extract(impl).cd_state(index);
+    if(const auto impl{_impl()}) [[likely]] {
+        return impl->cd_state(index);
     }
 #endif
     return {-1.F};
@@ -479,8 +476,8 @@ auto system_info::cooling_device_state(const span_size_t index) noexcept
 //------------------------------------------------------------------------------
 auto system_info::battery_count() noexcept -> span_size_t {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return extract(impl).bat_count();
+    if(const auto impl{_impl()}) [[likely]] {
+        return impl->bat_count();
     }
 #endif
     return 0;
@@ -490,8 +487,8 @@ auto system_info::battery_capacity(
   [[maybe_unused]] const span_size_t index) noexcept
   -> valid_if_between_0_1<float> {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return extract(impl).bat_capacity(index);
+    if(const auto impl{_impl()}) [[likely]] {
+        return impl->bat_capacity(index);
     }
 #endif
     return {-1.F};
@@ -499,8 +496,8 @@ auto system_info::battery_capacity(
 //------------------------------------------------------------------------------
 auto system_info::ac_supply_count() noexcept -> span_size_t {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return extract(impl).acps_count();
+    if(const auto impl{_impl()}) [[likely]] {
+        return impl->acps_count();
     }
 #endif
     return 0;
@@ -509,8 +506,8 @@ auto system_info::ac_supply_count() noexcept -> span_size_t {
 auto system_info::ac_supply_online(
   [[maybe_unused]] const span_size_t index) noexcept -> tribool {
 #if EAGINE_LINUX
-    if(const auto impl{_impl()}) {
-        return extract(impl).acps_online(index);
+    if(const auto impl{_impl()}) [[likely]] {
+        return impl->acps_online(index);
     }
 #endif
     return indeterminate;

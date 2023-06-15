@@ -369,7 +369,7 @@ public:
     }
 
 private:
-    const std::size_t _max{1024};
+    std::size_t _max{1024};
     std::vector<memory::buffer> _pool;
     [[no_unique_address]] not_in_low_profile<buffer_pool_stats> _stats{};
 };
