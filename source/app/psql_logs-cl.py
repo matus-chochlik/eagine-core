@@ -6,10 +6,12 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 #
 import os
+import re
 import sys
 import base64
 import argparse
 import datetime
+import decimal
 import textwrap
 import psycopg2
 
@@ -268,14 +270,45 @@ class LogFormatter(object):
     # -------------------------------------------------------------------------
     def __init__(self, options):
         self._utils = LogFormattingUtils(options)
+        self._re_var = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
 
     # -------------------------------------------------------------------------
     def write(self, s):
         self._utils.write(s)
 
     # -------------------------------------------------------------------------
+    def alwaysTranslateAsList(self, values):
+        return False
+
+    # -------------------------------------------------------------------------
+    def formatArg(self, name, value, ctx):
+        # TODO
+        return str(value)
+
+    # -------------------------------------------------------------------------
+    def translateArg(self, name, arg_info, ctx):
+        arg_info["info"] = True
+        values = arg_info.get("values", [])
+        if len(values) == 1 and not self.alwaysTranslateAsList(values):
+            return self.formatArg(name, values[0], ctx)
+        values = [self.doTranslateArg(arg, v, ctx) for v in values]
+        return '[' + ", ".join(values) + ']'
+
+    # -------------------------------------------------------------------------
     def formatMessage(self, data):
-        return data["format"]
+        message = data["format"]
+        args = data["args"]
+        found = re.match(self._re_var, message)
+        while found:
+            prev = message[:found.start(1)]
+            repl = self.translateArg(
+                found.group(2),
+                args.get(found.group(2), {}),
+                data)
+            folw = message[found.end(1):]
+            message = prev + repl + folw
+            found = re.match(self._re_var, message)
+        return message
 
     # -------------------------------------------------------------------------
     def renderEntryConnectorsHead(self, data):
@@ -322,10 +355,6 @@ class LogFormatter(object):
             else:
                 self.write(" │")
             i += 1
-
-    # -------------------------------------------------------------------------
-    def renderEntryConnectorsSwitch(self, data):
-        pass
 
     # -------------------------------------------------------------------------
     def renderEntry(self, data):
@@ -402,8 +431,6 @@ class LogFormatter(object):
 
     # -------------------------------------------------------------------------
     def processEntry(self, data):
-        self.renderEntryConnectorsSwitch(data)
-
         if data["is_first"]:
             self.renderStreamHead(data)
 
@@ -434,11 +461,46 @@ class DbReader(object):
             port=options.db_port)
 
     # -------------------------------------------------------------------------
+    def castArgValue(self, v):
+        if isinstance(v, decimal.Decimal):
+            return int(v)
+        return v
+
+    # -------------------------------------------------------------------------
     def processEntry(self, processor, data):
+        args = {}
+        with self._pg_conn.cursor() as entry_args:
+            entry_args.execute("""
+                SELECT
+                    arg_id,
+                    arg_order,
+                    arg_type,
+                    value_integer,
+                    value_string,
+                    value_float,
+                    value_duration,
+                    value_boolean
+                FROM eagilog.args_of_entry(%s)
+            """, (data["entry_id"],))
+            while True:
+                arg_data = entry_args.fetchone()
+                if arg_data is None:
+                    break
+                try:
+                    arg = args[arg_data[0]]
+                except KeyError:
+                    arg = args[arg_data[0]] = {
+                        "used": False,
+                        "order": arg_data[1],
+                        "type": arg_data[2],
+                        "values": []}
+                arg["values"] +=\
+                    [self.castArgValue(v) for v in arg_data[3:] if v is not None]
+        data["args"] = args
         return processor.processEntry(data)
 
     # -------------------------------------------------------------------------
-    def processEntries(self, processor, cursor):
+    def processEntries(self, processor, entries):
         columns = [
             "streams",
             "stream_id",
@@ -458,7 +520,7 @@ class DbReader(object):
         processor.processBegin()
         stream_prev_times = {}
         while True:
-            data = cursor.fetchone()
+            data = entries.fetchone()
             if data is None:
                 break
             data = {k:v for k,v in zip(columns, data)}
@@ -475,13 +537,13 @@ class DbReader(object):
     def read(self, processor):
         pg_conn = self._pg_conn
         with pg_conn:
-            with pg_conn.cursor() as cursor:
-                cursor.execute("""
+            with pg_conn.cursor() as entries:
+                entries.execute("""
                     SELECT eagilog.contemporary_streams(entry_time), *
                     FROM eagilog.stream_entry
                     ORDER BY entry_time
                 """)
-                self.processEntries(processor, cursor)
+                self.processEntries(processor, entries)
 # ------------------------------------------------------------------------------
 def bla(options):
     reader = DbReader(options)
