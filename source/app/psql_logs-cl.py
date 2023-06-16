@@ -534,20 +534,32 @@ class DbReader(object):
         processor.processEnd()
 
     # -------------------------------------------------------------------------
-    def read(self, processor):
+    def processQuery(self, processor, query, args = None):
         pg_conn = self._pg_conn
         with pg_conn:
             with pg_conn.cursor() as entries:
-                entries.execute("""
-                    SELECT eagilog.contemporary_streams(entry_time), *
-                    FROM eagilog.stream_entry
-                    ORDER BY entry_time
-                """)
+                entries.execute(query, args)
                 self.processEntries(processor, entries)
+
+    # -------------------------------------------------------------------------
+    def tail(self, processor, count):
+        self.processQuery(
+            processor,
+            "SELECT * FROM eagilog.latest_stream_entries(%s)",
+            (count,))
+
+    # -------------------------------------------------------------------------
+    def read(self, processor):
+        self.processQuery(
+            processor, """
+                SELECT eagilog.contemporary_streams(entry_time), *
+                FROM eagilog.stream_entry
+                ORDER BY entry_time
+            """)
 # ------------------------------------------------------------------------------
 def bla(options):
     reader = DbReader(options)
-    reader.read(LogFormatter(options))
+    reader.tail(LogFormatter(options), 15)
 # ------------------------------------------------------------------------------
 def main():
     try:
