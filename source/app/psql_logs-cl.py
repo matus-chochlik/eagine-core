@@ -108,7 +108,7 @@ def getArgumentParser():
 class LogFormattingUtils(object):
     # --------------------------------------------------------------------------
     def _ttyEsc(self, escseq):
-        if self._out.isatty():
+        if self._istty:
             return escseq
         return ""
 
@@ -116,6 +116,7 @@ class LogFormattingUtils(object):
     def __init__(self, options):
         self._options = options
         self._out = sys.stdout
+        self._istty = self._out.isatty()
 
     # -------------------------------------------------------------------------
     def columns(self):
@@ -196,8 +197,12 @@ class LogFormattingUtils(object):
         return " "*pl + t + " "*pr
 
     # -------------------------------------------------------------------------
+    def getCenterText(self, w):
+        return lambda t: self.centerText(t, w) if w > 0 else lambda t: t
+
+    # -------------------------------------------------------------------------
     def formatDuration(self, s, w = 0):
-        c = lambda t: self.centerText(t, w) if w > 0 else lambda t: t
+        c = self.getCenterText(w)
         if s is None:
             return c("N/A")
         if isinstance(s, datetime.timedelta):
@@ -220,27 +225,33 @@ class LogFormattingUtils(object):
             return c("0")
         return c("%dμs" % int(s*10**6))
 
+    # -------------------------------------------------------------------------
+    def formatIdentifier(self, i, w = 0):
+        c = self.getCenterText(w)
+        return self.ttyBoldCyan() + c(i) + self.ttyReset()
+
     # --------------------------------------------------------------------------
-    def formatLogSeverity(self, level):
+    def formatLogSeverity(self, level, w = 0):
+        c = self.getCenterText(w)
         if level == "debug":
-            return self.ttyBoldCyan()   + "  debug  " + self.ttyReset()
+            return self.ttyBoldCyan() + c(level) + self.ttyReset()
         if level == "info":
-            return self.ttyBoldWhite()  + "  info   " + self.ttyReset()
+            return self.ttyBoldWhite() + c(level) + self.ttyReset()
         if level == "stat":
-            return self.ttyBoldWhite()  + "statistic" + self.ttyReset()
+            return self.ttyBoldWhite() + c("statistic") + self.ttyReset()
         if level == "change":
-            return self.ttyBoldYellow() + " change  " + self.ttyReset()
+            return self.ttyBoldYellow() + c(level) + self.ttyReset()
         if level == "warning":
-            return self.ttyYellow()     + " warning " + self.ttyReset()
+            return self.ttyYellow() + c(level) + self.ttyReset()
         if level == "error":
-            return self.ttyBoldRed()    + "  error  " + self.ttyReset()
+            return self.ttyBoldRed() + c(level) + self.ttyReset()
         if level == "trace":
-            return self.ttyCyan()       + "  trace  " + self.ttyReset()
+            return self.ttyCyan() + c(level) + self.ttyReset()
         if level == "critical":
-            return self.ttyRed()        + " critical" + self.ttyReset()
+            return self.ttyRed() + c(level) + self.ttyReset()
         if level == "backtrace":
-            return self.ttyCyan()       + "backtrace" + self.ttyReset()
-        return "%7s" % level
+            return self.ttyCyan() + c(level) + self.ttyReset()
+        return c(level)
 
     # --------------------------------------------------------------------------
     def formatInstance(self, instance):
@@ -320,16 +331,15 @@ class LogFormatter(object):
     def renderEntry(self, data):
         ls = len(data["streams"])
         tag = data["tag"]
-        time_diff = None
 
         self.renderEntryConnectorsHead(data)
         self.write("%s│" % self._utils.formatDuration(data["time_since_start"], 9))
-        self.write("%s│" % self._utils.formatDuration(time_diff, 9))
-        self.write("%s│" % self._utils.formatLogSeverity(data["severity"]))
-        self.write("%10s│" % data["application_id"])
-        self.write("%10s│" % data["source_id"])
+        self.write("%s│" % self._utils.formatDuration(data["time_since_prev"], 9))
+        self.write("%s│" % self._utils.formatLogSeverity(data["severity"], 9))
+        self.write("%s│" % self._utils.formatIdentifier(data["application_id"], 10))
+        self.write("%s│" % self._utils.formatIdentifier(data["source_id"], 10))
         if tag is not None:
-            self.write("%10s│" % tag)
+            self.write("%s│" % self._utils.formatIdentifier(tag, 10))
         self.write("%12s│" % self._utils.formatInstance(data["instance"]))
         self.write("\n")
         self.renderEntryConnectorsPass(ls)
@@ -363,7 +373,7 @@ class LogFormatter(object):
             self.write("━━")
             i += 1
         self.write("━┯━┥")
-        self.write("  starting  ")
+        self.write(self._utils.ttyYellow()+"  starting  "+self._utils.ttyReset())
         self.write("│")
         self.write("% 10s" % data["application_id"])
         self.write("│\n")
@@ -379,7 +389,7 @@ class LogFormatter(object):
         self.write(" ╭────────────┬──────────╮\n")
         self.renderEntryConnectorsTail(data)
         self.write("━┥")
-        self.write("  finished  ")
+        self.write(self._utils.ttyBlue()+"  finished  "+self._utils.ttyReset())
         self.write("│")
         self.write("% 10s" % data["application_id"])
         self.write("│\n")
@@ -446,12 +456,19 @@ class DbReader(object):
             "failed"
         ]
         processor.processBegin()
+        stream_prev_times = {}
         while True:
             data = cursor.fetchone()
             if data is None:
                 break
             data = {k:v for k,v in zip(columns, data)}
+            stream_id = data["stream_id"]
+            time_since_start = data["time_since_start"]
+            data["time_since_prev"] =\
+                time_since_start -\
+                stream_prev_times.get(stream_id, datetime.timedelta(0))
             self.processEntry(processor, data)
+            stream_prev_times[stream_id] = time_since_start
         processor.processEnd()
 
     # -------------------------------------------------------------------------
