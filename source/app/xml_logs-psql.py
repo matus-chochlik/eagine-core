@@ -242,7 +242,9 @@ class XmlLogDbWriter(object):
     def finishStream(self, pg_conn, src_id, stream_id, clean_shutdown):
         with pg_conn:
             with pg_conn.cursor() as cursor:
-                cursor.execute("SELECT eagilog.finish_stream(%s)", (stream_id,))
+                cursor.execute(
+                    "SELECT eagilog.finish_stream(%s,%s)", (
+                        stream_id, clean_shutdown))
         del self._root_ids[src_id]
 
     # --------------------------------------------------------------------------

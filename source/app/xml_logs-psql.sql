@@ -269,7 +269,8 @@ CREATE TABLE eagilog.stream (
 	compiler VARCHAR(32) NULL,
 	running_on_valgrind BOOL NULL,
 	low_profile_build BOOL NULL,
-	debug_build BOOL NULL
+	debug_build BOOL NULL,
+	failed BOOL NOT NULL DEFAULT FALSE
 );
 --------------------------------------------------------------------------------
 -- declared stream states
@@ -410,7 +411,8 @@ END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.finish_stream(
-	_stream_id eagilog.stream.stream_id%TYPE
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_clean_shutdown BOOL
 ) RETURNS eagilog.stream.stream_id%TYPE
 AS $$
 BEGIN
@@ -419,7 +421,7 @@ BEGIN
 		SELECT max(entry_id)
 		FROM eagilog.entry
 		WHERE stream_id = _stream_id
-	)
+	), failed = NOT _clean_shutdown
 	WHERE stream_id = _stream_id;
 
 	UPDATE eagilog.stream_state
@@ -807,7 +809,8 @@ SELECT
 	f.format,
 	s.start_time + e.entry_time AS entry_time,
 	s.first_entry_id = e.entry_id AS is_first,
-	coalesce(s.last_entry_id = e.entry_id, FALSE) AS is_last
+	coalesce(s.last_entry_id = e.entry_id, FALSE) AS is_last,
+	s.failed
 FROM eagilog.entry e
 JOIN eagilog.stream s USING(stream_id)
 JOIN eagilog.severity l USING(severity_id)
@@ -1110,6 +1113,17 @@ GROUP BY
 	s.debug_build;
 --------------------------------------------------------------------------------
 -- other views
+--------------------------------------------------------------------------------
+-- count of entries by severity
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.severity_entry_counts
+AS
+SELECT
+	s.name AS severity,
+	count(entry_id) severity_entry_count
+FROM eagilog.entry e
+JOIN eagilog.severity s USING(severity_id)
+GROUP BY severity_id, s.name;
 --------------------------------------------------------------------------------
 -- count of entries by source
 --------------------------------------------------------------------------------
