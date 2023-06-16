@@ -1018,6 +1018,81 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+-- entry / argument views and functions
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.entry_and_args
+AS
+SELECT
+	entry_id,
+	arg_id,
+	arg_type,
+	arg_order,
+	value AS value_integer,
+	NULL::VARCHAR AS value_string,
+	NULL::DOUBLE PRECISION AS value_float,
+	NULL::INTERVAL AS value_duration,
+	NULL::BOOL AS value_boolean
+FROM arg_integer
+UNION
+SELECT
+	entry_id,
+	arg_id,
+	arg_type,
+	arg_order,
+	NULL::NUMERIC,
+	value,
+	NULL::DOUBLE PRECISION,
+	NULL::INTERVAL,
+	NULL::BOOL
+FROM arg_string
+UNION
+SELECT
+	entry_id,
+	arg_id,
+	arg_type,
+	arg_order,
+	NULL::NUMERIC,
+	NULL::VARCHAR,
+	value,
+	NULL::INTERVAL,
+	NULL::BOOL
+FROM arg_float
+UNION
+SELECT
+	entry_id,
+	arg_id,
+	arg_type,
+	arg_order,
+	NULL::NUMERIC,
+	NULL::VARCHAR,
+	NULL::DOUBLE PRECISION,
+	value,
+	NULL::BOOL
+FROM arg_duration
+UNION
+SELECT
+	entry_id,
+	arg_id,
+	arg_type,
+	arg_order,
+	NULL::NUMERIC,
+	NULL::VARCHAR,
+	NULL::DOUBLE PRECISION,
+	NULL::INTERVAL,
+	value
+FROM arg_boolean;--------------------------------------------------------------------------------
+-- argument of an entry
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.args_of_entry(
+	_entry_id eagilog.entry.entry_id%TYPE
+) RETURNS SETOF eagilog.entry_and_args AS
+$$
+	SELECT *
+	FROM eagilog.entry_and_args
+	WHERE entry_id = _entry_id
+	AND arg_id IS NOT NULL;
+$$ LANGUAGE sql;
+--------------------------------------------------------------------------------
 -- profiling intervals
 --------------------------------------------------------------------------------
 CREATE TABLE eagilog.profile_interval(
