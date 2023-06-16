@@ -808,6 +808,7 @@ SELECT
 	e.tag,
 	f.format,
 	s.start_time + e.entry_time AS entry_time,
+	entry_time AS time_since_start,
 	s.first_entry_id = e.entry_id AS is_first,
 	coalesce(s.last_entry_id = e.entry_id, FALSE) AS is_last,
 	s.failed
