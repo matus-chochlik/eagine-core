@@ -299,6 +299,16 @@ class LogCursesOut(object):
         self._window = window
         self._line = None
         self._lines = None
+        self._re_color = re.compile("[^{]*(([+-]){{([A-Za-z]+)}}).*")
+        self._color_ids = {
+            "White": 0,
+            "Red": 1,
+            "Yellow": 2,
+            "Green": 3,
+            "Cyan": 4,
+            "Blue": 5,
+            "Gray": 0
+        }
 
     # --------------------------------------------------------------------------
     def lines(self):
@@ -322,13 +332,27 @@ class LogCursesOut(object):
 
     # --------------------------------------------------------------------------
     def writeColor(self, what, color):
-        # TODO
-        return self.write(what)
+        return self.write("+{{" + color + "}}" + what + "-{{" + color + "}}")
+
+    # --------------------------------------------------------------------------
+    def changeAttrib(self, attrib, on):
+        f = self._window.attron if on else self._window.attroff
+        if attrib.startswith("Bold"):
+            f(curses.A_BOLD)
+            attrib = attrib[4:]
+        f(curses.color_pair(self._color_ids.get(attrib, 0)))
 
     # --------------------------------------------------------------------------
     def finish(self):
         self._window.clear()
         for line in self._lines[-curses.LINES+1:]:
+            found = re.match(self._re_color, line)
+            while found:
+                self._window.addstr(line[:found.start(1)])
+                self.changeAttrib(found.group(3), found.group(2) == '+')
+                line = line[found.end(1):]
+                found = re.match(self._re_color, line)
+
             self._window.addstr(line+'\n')
         self._window.refresh()
         self._line = None
@@ -472,13 +496,19 @@ class LogRenderer(object):
         self.write("│")
         self.renderLogSeverity(data["severity"], 9)
         self.write("│")
-        self.write(self._utils.formatIdentifier(data["application_id"], 10))
+        self.writeColor(
+            self._utils.formatIdentifier(data["application_id"], 10),
+            "Blue")
         self.write("│")
-        self.write(self._utils.formatIdentifier(data["source_id"], 10))
+        self.writeColor(
+            self._utils.formatIdentifier(data["source_id"], 10),
+            "BoldBlue")
         self.write("│")
 
         if tag is not None:
-            self.write(self._utils.formatIdentifier(tag, 10))
+            self.writeColor(
+                self._utils.formatIdentifier(tag, 10),
+                "Cyan")
             self.write("│")
 
         self.write("%12s│" % self._utils.formatInstance(data["instance"]))
@@ -702,6 +732,14 @@ def tail(options):
 # ------------------------------------------------------------------------------
 def screenCommand(screen, options):
     curses.initscr()
+    curses.start_color()
+    curses.use_default_colors()
+    curses.init_pair(0, curses.COLOR_WHITE, -1)
+    curses.init_pair(1, curses.COLOR_RED, -1)
+    curses.init_pair(2, curses.COLOR_YELLOW, -1)
+    curses.init_pair(3, curses.COLOR_GREEN, -1)
+    curses.init_pair(4, curses.COLOR_CYAN, -1)
+    curses.init_pair(5, curses.COLOR_BLUE, -1)
     try:
        watch(options, screen)
     except KeyboardInterrupt:
