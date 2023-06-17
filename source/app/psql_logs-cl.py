@@ -8,8 +8,10 @@
 import os
 import re
 import sys
+import time
 import base64
 import argparse
+import curses
 import datetime
 import decimal
 import textwrap
@@ -72,6 +74,14 @@ class ArgumentParser(argparse.ArgumentParser):
             default=None
         )
 
+        self.add_argument(
+            "--watch",
+            dest='watch_interval',
+            type=self._positive_int,
+            action="store",
+            default=None
+        )
+
     # -------------------------------------------------------------------------
     def processParsedOptions(self, options):
 
@@ -108,6 +118,13 @@ def getArgumentParser():
 # Formatting utilities
 # ------------------------------------------------------------------------------
 class LogFormattingUtils(object):
+    # -------------------------------------------------------------------------
+    def __init__(self, window, options):
+        self._window = window
+        self._options = options
+        self._out = sys.stdout
+        self._istty = window is None and self._out.isatty()
+
     # --------------------------------------------------------------------------
     def _ttyEsc(self, escseq):
         if self._istty:
@@ -115,18 +132,8 @@ class LogFormattingUtils(object):
         return ""
 
     # -------------------------------------------------------------------------
-    def __init__(self, options):
-        self._options = options
-        self._out = sys.stdout
-        self._istty = self._out.isatty()
-
-    # -------------------------------------------------------------------------
     def columns(self):
         return 80
-
-    # -------------------------------------------------------------------------
-    def write(self, s):
-        self._out.write(s)
 
     # --------------------------------------------------------------------------
     def ttyReset(self):
@@ -264,20 +271,41 @@ class LogFormattingUtils(object):
         return instance
 
 # ------------------------------------------------------------------------------
-# Log entry formatter
+# Log entry renderer
 # ------------------------------------------------------------------------------
-class LogFormatter(object):
+class LogRenderer(object):
     # -------------------------------------------------------------------------
-    def __init__(self, options):
-        self._utils = LogFormattingUtils(options)
+    def __init__(self, window, options):
+        self._window = window
+        self._utils = LogFormattingUtils(window, options)
         self._re_var = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
 
     # -------------------------------------------------------------------------
+    def windowLines(self):
+        return curses.LINES
+
+    # -------------------------------------------------------------------------
+    def linesPerEntry(self):
+        return 3
+
+    # -------------------------------------------------------------------------
+    def minEntriesPerScreen(self):
+        return 1 + self.windowLines() // self.linesPerEntry()
+
+    # -------------------------------------------------------------------------
     def write(self, s):
-        self._utils.write(s)
+        temp = s.split('\n')
+        if len(temp) > 1:
+            self._lines.append(self._line + temp[0])
+            for line in temp[1:-1]:
+                self._lines.append(line)
+            self._line = temp[-1]
+        else:
+            self._line += s
 
     # -------------------------------------------------------------------------
     def alwaysTranslateAsList(self, values):
+        # TODO
         return False
 
     # -------------------------------------------------------------------------
@@ -427,6 +455,8 @@ class LogFormatter(object):
 
     # -------------------------------------------------------------------------
     def processBegin(self):
+        self._line = ""
+        self._lines = []
         self._prev_streams = []
 
     # -------------------------------------------------------------------------
@@ -443,6 +473,10 @@ class LogFormatter(object):
 
     # -------------------------------------------------------------------------
     def processEnd(self):
+        self._window.clear()
+        for line in self._lines[-curses.LINES+1:]:
+            self._window.addstr(line+'\n')
+        self._window.refresh()
         self._prev_streams = None
 
 # ------------------------------------------------------------------------------
@@ -557,18 +591,29 @@ class DbReader(object):
                 ORDER BY entry_time
             """)
 # ------------------------------------------------------------------------------
-def bla(options):
+def watch(window, options):
     reader = DbReader(options)
-    reader.tail(LogFormatter(options), 15)
+    renderer = LogRenderer(window, options)
+    while True:
+        reader.tail(renderer, renderer.minEntriesPerScreen())
+        i = options.watch_interval
+        time.sleep(float(i) if i is not None else 1.0)
+# ------------------------------------------------------------------------------
+def screen_command(screen, options):
+    curses.initscr()
+    try:
+       watch(screen, options)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        return [screen.instr(l+2, 0).decode("utf-8") for l in range(curses.LINES-2)]
 # ------------------------------------------------------------------------------
 def main():
-    try:
-        options = getArgumentParser().parse_args()
-        bla(options)
-    except KeyboardInterrupt:
-        return 0
+    options = getArgumentParser().parse_args()
+    print(str("\n").join(curses.wrapper(screen_command, options)))
+    return 0
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
-        sys.exit(main())
+    sys.exit(main())
 
 
