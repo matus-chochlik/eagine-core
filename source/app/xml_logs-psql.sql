@@ -818,6 +818,21 @@ JOIN eagilog.severity l USING(severity_id)
 JOIN eagilog.message_format f USING(message_format_id)
 ORDER BY entry_id;
 --------------------------------------------------------------------------------
+CREATE VIEW eagilog.streams_and_entries
+AS
+SELECT eagilog.contemporary_streams(entry_time), *
+FROM eagilog.stream_entry
+ORDER BY entry_time DESC;
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION eagilog.latest_stream_entries(_count INTEGER)
+RETURNS SETOF eagilog.streams_and_entries
+AS
+$$
+SELECT *
+FROM (SELECT * FROM eagilog.streams_and_entries LIMIT _count) AS tail
+ORDER BY entry_time ASC;
+$$ LANGUAGE sql;
+--------------------------------------------------------------------------------
 CREATE VIEW eagilog.message_format_ref_count
 AS
 SELECT
