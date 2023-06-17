@@ -590,7 +590,6 @@ class LogRenderer(object):
     # --------------------------------------------------------------------------
     def processBegin(self):
         self._output.begin()
-        self._prev_streams = []
 
     # --------------------------------------------------------------------------
     def processEntry(self, data):
@@ -602,12 +601,9 @@ class LogRenderer(object):
         if data["is_last"]:
             self.renderStreamTail(data)
 
-        self._prev_streams = data["streams"]
-
     # --------------------------------------------------------------------------
     def processEnd(self):
         self._output.finish()
-        self._prev_streams = None
 
 # ------------------------------------------------------------------------------
 # Database reader

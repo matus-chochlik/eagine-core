@@ -417,7 +417,11 @@ CREATE FUNCTION eagilog.finish_stream(
 AS $$
 BEGIN
 	UPDATE eagilog.stream
-	SET finish_time = now(), last_entry_id = (
+	SET finish_time = start_time + (
+		SELECT max(entry_time)
+		FROM eagilog.entry
+		WHERE stream_id = _stream_id
+	), last_entry_id = (
 		SELECT max(entry_id)
 		FROM eagilog.entry
 		WHERE stream_id = _stream_id
@@ -822,7 +826,7 @@ CREATE VIEW eagilog.streams_and_entries
 AS
 SELECT eagilog.contemporary_streams(entry_time), *
 FROM eagilog.stream_entry
-ORDER BY entry_time DESC;
+ORDER BY entry_id DESC;
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION eagilog.latest_stream_entries(_count INTEGER)
 RETURNS SETOF eagilog.streams_and_entries
@@ -830,7 +834,7 @@ AS
 $$
 SELECT *
 FROM (SELECT * FROM eagilog.streams_and_entries LIMIT _count) AS tail
-ORDER BY entry_time ASC;
+ORDER BY entry_id ASC;
 $$ LANGUAGE sql;
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.message_format_ref_count
