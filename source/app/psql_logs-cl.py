@@ -483,12 +483,31 @@ class LogRenderer(object):
             i += 1
 
     # --------------------------------------------------------------------------
+    def entryAgeColor(self, age):
+        if isinstance(age, datetime.timedelta):
+            age = age.total_seconds()
+        if age < 10:
+            return "BoldGreen"
+        if age < 60:
+            return "Green"
+        if age < 120:
+            return "BoldYellow"
+        if age < 300:
+            return "Yellow"
+        if age < 900:
+            return "BoldRed"
+        return "Red"
+
+    # --------------------------------------------------------------------------
     def renderEntry(self, data):
         ls = len(data["streams"])
+        age = data["age"]
         tag = data["tag"]
 
         self.renderEntryConnectorsHead(data)
-        self.write(self._utils.formatDuration(data["age"], 9))
+        self.writeColor(
+            self._utils.formatDuration(age, 9),
+            self.entryAgeColor(age))
         self.write("│")
         self.write(self._utils.formatDuration(data["time_since_start"], 9))
         self.write("│")
