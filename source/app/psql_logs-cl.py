@@ -19,14 +19,14 @@ import psycopg2
 
 # ------------------------------------------------------------------------------
 class ArgumentParser(argparse.ArgumentParser):
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def _positive_int(self, x):
         try:
             assert(int(x) > 0)
             return int(x)
         except:
             self.error("`%s' is not a positive integer value" % str(x))
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def __init__(self, **kw):
 
         argparse.ArgumentParser.__init__(self, **kw)
@@ -74,7 +74,23 @@ class ArgumentParser(argparse.ArgumentParser):
             default=None
         )
 
-        self.add_argument(
+        commands = self.add_mutually_exclusive_group()
+
+        commands.add_argument(
+            "--dump",
+            dest='dump',
+            action="store_true",
+            default=False
+        )
+
+        commands.add_argument(
+            "--tail",
+            dest='tail',
+            action="store_true",
+            default=False
+        )
+
+        commands.add_argument(
             "--watch",
             dest='watch_interval',
             type=self._positive_int,
@@ -82,7 +98,7 @@ class ArgumentParser(argparse.ArgumentParser):
             default=None
         )
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def processParsedOptions(self, options):
 
         if options.db_password is None:
@@ -101,10 +117,26 @@ class ArgumentParser(argparse.ArgumentParser):
 
         return options
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def parse_args(self):
-        return self.processParsedOptions(
-            argparse.ArgumentParser.parse_args(self))
+        class _Options(object):
+            # ------------------------------------------------------------------
+            def __init__(self, options):
+                self.__dict__.update(options.__dict__)
+
+            # ------------------------------------------------------------------
+            def isScreenCommand(self):
+                return self.watch_interval is not None
+            # ------------------------------------------------------------------
+            def command(self):
+                if self.watch_interval is not None:
+                    return "watch"
+                if self.dump:
+                    return "dump"
+                return "tail"
+
+        return _Options(self.processParsedOptions(
+            argparse.ArgumentParser.parse_args(self)))
 
 # ------------------------------------------------------------------------------
 def getArgumentParser():
@@ -118,12 +150,9 @@ def getArgumentParser():
 # Formatting utilities
 # ------------------------------------------------------------------------------
 class LogFormattingUtils(object):
-    # -------------------------------------------------------------------------
-    def __init__(self, window, options):
-        self._window = window
+    # --------------------------------------------------------------------------
+    def __init__(self, options):
         self._options = options
-        self._out = sys.stdout
-        self._istty = window is None and self._out.isatty()
 
     # --------------------------------------------------------------------------
     def _ttyEsc(self, escseq):
@@ -131,85 +160,23 @@ class LogFormattingUtils(object):
             return escseq
         return ""
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def columns(self):
         return 80
 
     # --------------------------------------------------------------------------
-    def ttyReset(self):
-        return self._ttyEsc("\x1b[0m")
-
-    # --------------------------------------------------------------------------
-    def ttyInvert(self):
-        return self._ttyEsc("\x1b[7m")
-
-    # --------------------------------------------------------------------------
-    def ttyGray(self):
-        return self._ttyEsc("\x1b[0;30m")
-
-    # --------------------------------------------------------------------------
-    def ttyRed(self):
-        return self._ttyEsc("\x1b[0;31m")
-
-    # --------------------------------------------------------------------------
-    def ttyGreen(self):
-        return self._ttyEsc("\x1b[0;32m")
-
-    # --------------------------------------------------------------------------
-    def ttyYellow(self):
-        return self._ttyEsc("\x1b[0;33m")
-
-    # --------------------------------------------------------------------------
-    def ttyBlue(self):
-        return self._ttyEsc("\x1b[0;34m")
-
-    # --------------------------------------------------------------------------
-    def ttyCyan(self):
-        return self._ttyEsc("\x1b[0;36m")
-
-    # --------------------------------------------------------------------------
-    def ttyWhite(self):
-        return self._ttyEsc("\x1b[0;37m")
-
-    # --------------------------------------------------------------------------
-    def ttyBoldGray(self):
-        return self._ttyEsc("\x1b[0;37m")
-
-    # --------------------------------------------------------------------------
-    def ttyBoldRed(self):
-        return self._ttyEsc("\x1b[1;31m")
-
-    # --------------------------------------------------------------------------
-    def ttyBoldGreen(self):
-        return self._ttyEsc("\x1b[1;32m")
-
-    # --------------------------------------------------------------------------
-    def ttyBoldYellow(self):
-        return self._ttyEsc("\x1b[1;33m")
-
-    # --------------------------------------------------------------------------
-    def ttyBoldBlue(self):
-        return self._ttyEsc("\x1b[1;34m")
-
-    # --------------------------------------------------------------------------
-    def ttyBoldCyan(self):
-        return self._ttyEsc("\x1b[1;36m")
-
-    # --------------------------------------------------------------------------
-    def ttyBoldWhite(self):
-        return self._ttyEsc("\x1b[1;37m")
-
-    # -------------------------------------------------------------------------
     def centerText(self, t, w):
         pr = (w - len(t)) // 2
         pl = w - pr - len(t)
         return " "*pl + t + " "*pr
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def getCenterText(self, w):
-        return lambda t: self.centerText(t, w) if w > 0 else lambda t: t
+        if w > 0:
+            return lambda t: self.centerText(t, w)
+        return lambda t: t
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def formatDuration(self, s, w = 0):
         c = self.getCenterText(w)
         if s is None:
@@ -234,32 +201,16 @@ class LogFormattingUtils(object):
             return c("0")
         return c("%dμs" % int(s*10**6))
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def formatIdentifier(self, i, w = 0):
         c = self.getCenterText(w)
-        return self.ttyBoldCyan() + c(i) + self.ttyReset()
+        return c(i)
 
     # --------------------------------------------------------------------------
     def formatLogSeverity(self, level, w = 0):
         c = self.getCenterText(w)
-        if level == "debug":
-            return self.ttyBoldCyan() + c(level) + self.ttyReset()
-        if level == "info":
-            return self.ttyBoldWhite() + c(level) + self.ttyReset()
         if level == "stat":
-            return self.ttyBoldWhite() + c("statistic") + self.ttyReset()
-        if level == "change":
-            return self.ttyBoldYellow() + c(level) + self.ttyReset()
-        if level == "warning":
-            return self.ttyYellow() + c(level) + self.ttyReset()
-        if level == "error":
-            return self.ttyBoldRed() + c(level) + self.ttyReset()
-        if level == "trace":
-            return self.ttyCyan() + c(level) + self.ttyReset()
-        if level == "critical":
-            return self.ttyRed() + c(level) + self.ttyReset()
-        if level == "backtrace":
-            return self.ttyCyan() + c(level) + self.ttyReset()
+            return c("statistic")
         return c(level)
 
     # --------------------------------------------------------------------------
@@ -271,49 +222,166 @@ class LogFormattingUtils(object):
         return instance
 
 # ------------------------------------------------------------------------------
-# Log entry renderer
+# StdOut log output
 # ------------------------------------------------------------------------------
-class LogRenderer(object):
-    # -------------------------------------------------------------------------
-    def __init__(self, window, options):
-        self._window = window
-        self._utils = LogFormattingUtils(window, options)
-        self._re_var = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
+class LogStdOut(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options):
+        self._out = sys.stdout
+        self._istty = self._out.isatty()
+        self. _color_esc = {
+            "Red": "\x1b[0;31m",
+            "Green": "\x1b[0;32m",
+            "Yellow": "\x1b[0;33m",
+            "Blue": "\x1b[0;34m",
+            "Cyan": "\x1b[0;36m",
+            "White": "\x1b[0;37m",
+            "Gray": "\x1b[0;30m",
+            "BoldRed": "\x1b[1;31m",
+            "BoldGreen": "\x1b[1;32m",
+            "BoldYellow": "\x1b[1;33m",
+            "BoldBlue": "\x1b[1;34m",
+            "BoldCyan": "\x1b[1;36m",
+            "BoldWhite": "\x1b[1;37m",
+            "BoldGray": "\x1b[0;37m"
+        }
 
-    # -------------------------------------------------------------------------
-    def windowLines(self):
+    # --------------------------------------------------------------------------
+    def _ttyEsc(self, escseq):
+        if self._istty:
+            return escseq
+        return ""
+
+    # --------------------------------------------------------------------------
+    def _ttyReset(self):
+        return self._ttyEsc("\x1b[0m")
+
+    # --------------------------------------------------------------------------
+    def _ttyInvert(self):
+        return self._ttyEsc("\x1b[7m")
+
+    # --------------------------------------------------------------------------
+    def _ttyColor(self, color):
+        return self._ttyEsc(self._color_esc[color])
+
+    # --------------------------------------------------------------------------
+    def lines(self):
+        try:
+            return os.get_terminal_size().lines
+        except:
+            try:
+                return int(os.getenv("LINES", 50))
+            except:
+                return 50
+
+    # --------------------------------------------------------------------------
+    def begin(self):
+        pass
+
+    # --------------------------------------------------------------------------
+    def write(self, what):
+        self._out.write(what)
+        
+    # --------------------------------------------------------------------------
+    def writeColor(self, what, color):
+        self._out.write(self._ttyColor(color) + what + self._ttyReset())
+
+    # --------------------------------------------------------------------------
+    def finish(self):
+        pass
+
+# ------------------------------------------------------------------------------
+# Curses window log output
+# ------------------------------------------------------------------------------
+class LogCursesOut(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options, window):
+        self._window = window
+        self._line = None
+        self._lines = None
+
+    # --------------------------------------------------------------------------
+    def lines(self):
         return curses.LINES
 
-    # -------------------------------------------------------------------------
-    def linesPerEntry(self):
-        return 3
+    # --------------------------------------------------------------------------
+    def begin(self):
+        self._line = ""
+        self._lines = []
 
-    # -------------------------------------------------------------------------
-    def minEntriesPerScreen(self):
-        return 1 + self.windowLines() // self.linesPerEntry()
-
-    # -------------------------------------------------------------------------
-    def write(self, s):
-        temp = s.split('\n')
+    # --------------------------------------------------------------------------
+    def write(self, what):
+        temp = what.split('\n')
         if len(temp) > 1:
             self._lines.append(self._line + temp[0])
             for line in temp[1:-1]:
                 self._lines.append(line)
             self._line = temp[-1]
         else:
-            self._line += s
+            self._line += what
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    def writeColor(self, what, color):
+        # TODO
+        return self.write(what)
+
+    # --------------------------------------------------------------------------
+    def finish(self):
+        self._window.clear()
+        for line in self._lines[-curses.LINES+1:]:
+            self._window.addstr(line+'\n')
+        self._window.refresh()
+        self._line = None
+        self._lines = None
+
+# ------------------------------------------------------------------------------
+# Log entry renderer
+# ------------------------------------------------------------------------------
+class LogRenderer(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options, output):
+        self._output = output
+        self._utils = LogFormattingUtils(options)
+        self._re_var = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
+        self._severity_colors = {
+            "backtrace": "Cyan",
+            "trace": "Cyan",
+            "debug": "BoldCyan",
+            "change": "BoldYellow",
+            "info": "White",
+            "stat": "BoldWhite",
+            "warning": "Yellow",
+            "error": "BoldRed",
+            "critical": "Red"
+        }
+
+    # --------------------------------------------------------------------------
+    def linesPerEntry(self):
+        return 3
+
+    # --------------------------------------------------------------------------
+    def minEntriesPerScreen(self):
+        return 1 + self._output.lines() // self.linesPerEntry()
+
+    # --------------------------------------------------------------------------
+    def write(self, what):
+        self._output.write(what)
+
+    # --------------------------------------------------------------------------
+    def writeColor(self, what, color):
+        self._output.writeColor(what, color)
+
+    # --------------------------------------------------------------------------
     def alwaysTranslateAsList(self, values):
         # TODO
         return False
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def formatArg(self, name, value, ctx):
         # TODO
         return str(value)
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def translateArg(self, name, arg_info, ctx):
         arg_info["info"] = True
         values = arg_info.get("values", [])
@@ -322,7 +390,7 @@ class LogRenderer(object):
         values = [self.doTranslateArg(arg, v, ctx) for v in values]
         return '[' + ", ".join(values) + ']'
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def formatMessage(self, data):
         message = data["format"]
         args = data["args"]
@@ -338,7 +406,13 @@ class LogRenderer(object):
             found = re.match(self._re_var, message)
         return message
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    def renderLogSeverity(self, level, w = 0):
+        return self.writeColor(
+            self._utils.formatLogSeverity(level, w),
+            self._severity_colors[level])
+
+    # --------------------------------------------------------------------------
     def renderEntryConnectorsHead(self, data):
         curr_streams = data["streams"]
         stream_id = data["stream_id"]
@@ -357,7 +431,7 @@ class LogRenderer(object):
             i += 1
         self.write("━┑")
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def renderEntryConnectorsPass(self, l):
         i = 0
         self.write("┊")
@@ -365,7 +439,7 @@ class LogRenderer(object):
             self.write(" │")
             i += 1
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def renderEntryConnectorsTail(self, data):
         curr_streams = data["streams"]
         stream_id = data["stream_id"]
@@ -384,19 +458,27 @@ class LogRenderer(object):
                 self.write(" │")
             i += 1
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def renderEntry(self, data):
         ls = len(data["streams"])
         tag = data["tag"]
 
         self.renderEntryConnectorsHead(data)
-        self.write("%s│" % self._utils.formatDuration(data["time_since_start"], 9))
-        self.write("%s│" % self._utils.formatDuration(data["time_since_prev"], 9))
-        self.write("%s│" % self._utils.formatLogSeverity(data["severity"], 9))
-        self.write("%s│" % self._utils.formatIdentifier(data["application_id"], 10))
-        self.write("%s│" % self._utils.formatIdentifier(data["source_id"], 10))
+        self.write(self._utils.formatDuration(data["time_since_start"], 9))
+        self.write("│")
+        self.write(self._utils.formatDuration(data["time_since_prev"], 9))
+        self.write("│")
+        self.renderLogSeverity(data["severity"], 9)
+        self.write("│")
+        self.write(self._utils.formatIdentifier(data["application_id"], 10))
+        self.write("│")
+        self.write(self._utils.formatIdentifier(data["source_id"], 10))
+        self.write("│")
+
         if tag is not None:
-            self.write("%s│" % self._utils.formatIdentifier(tag, 10))
+            self.write(self._utils.formatIdentifier(tag, 10))
+            self.write("│")
+
         self.write("%12s│" % self._utils.formatInstance(data["instance"]))
         self.write("\n")
         self.renderEntryConnectorsPass(ls)
@@ -417,7 +499,7 @@ class LogRenderer(object):
             self.write(line)
             self.write("\n")
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def renderStreamHead(self, data):
         ls = len(data["streams"])
 
@@ -430,7 +512,7 @@ class LogRenderer(object):
             self.write("━━")
             i += 1
         self.write("━┯━┥")
-        self.write(self._utils.ttyYellow()+"  starting  "+self._utils.ttyReset())
+        self._output.writeColor("  starting  ", "Yellow")
         self.write("│")
         self.write("% 10s" % data["application_id"])
         self.write("│\n")
@@ -438,7 +520,7 @@ class LogRenderer(object):
         self.renderEntryConnectorsPass(ls-1)
         self.write(" │ ╰────────────┴──────────╯\n")
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def renderStreamTail(self, data):
         ls = len(data["streams"])
 
@@ -446,20 +528,19 @@ class LogRenderer(object):
         self.write(" ╭────────────┬──────────╮\n")
         self.renderEntryConnectorsTail(data)
         self.write("━┥")
-        self.write(self._utils.ttyBlue()+"  finished  "+self._utils.ttyReset())
+        self._output.writeColor("  finished  ", "Blue")
         self.write("│")
         self.write("% 10s" % data["application_id"])
         self.write("│\n")
         self.renderEntryConnectorsPass(ls-1)
         self.write("   ╰────────────┴──────────╯\n")
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def processBegin(self):
-        self._line = ""
-        self._lines = []
+        self._output.begin()
         self._prev_streams = []
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def processEntry(self, data):
         if data["is_first"]:
             self.renderStreamHead(data)
@@ -471,19 +552,16 @@ class LogRenderer(object):
 
         self._prev_streams = data["streams"]
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def processEnd(self):
-        self._window.clear()
-        for line in self._lines[-curses.LINES+1:]:
-            self._window.addstr(line+'\n')
-        self._window.refresh()
+        self._output.finish()
         self._prev_streams = None
 
 # ------------------------------------------------------------------------------
 # Database reader
 # ------------------------------------------------------------------------------
 class DbReader(object):
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def __init__(self, options):
         self._options = options
         self._pg_conn = None
@@ -494,13 +572,13 @@ class DbReader(object):
             host=options.db_host,
             port=options.db_port)
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def castArgValue(self, v):
         if isinstance(v, decimal.Decimal):
             return int(v)
         return v
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def processEntry(self, processor, data):
         args = {}
         with self._pg_conn.cursor() as entry_args:
@@ -533,7 +611,7 @@ class DbReader(object):
         data["args"] = args
         return processor.processEntry(data)
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def processEntries(self, processor, entries):
         columns = [
             "streams",
@@ -567,7 +645,7 @@ class DbReader(object):
             stream_prev_times[stream_id] = time_since_start
         processor.processEnd()
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def processQuery(self, processor, query, args = None):
         pg_conn = self._pg_conn
         with pg_conn:
@@ -575,14 +653,7 @@ class DbReader(object):
                 entries.execute(query, args)
                 self.processEntries(processor, entries)
 
-    # -------------------------------------------------------------------------
-    def tail(self, processor, count):
-        self.processQuery(
-            processor,
-            "SELECT * FROM eagilog.latest_stream_entries(%s)",
-            (count,))
-
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def read(self, processor):
         self.processQuery(
             processor, """
@@ -591,26 +662,65 @@ class DbReader(object):
                 ORDER BY entry_time
             """)
 # ------------------------------------------------------------------------------
-def watch(window, options):
-    reader = DbReader(options)
-    renderer = LogRenderer(window, options)
-    while True:
-        reader.tail(renderer, renderer.minEntriesPerScreen())
-        i = options.watch_interval
-        time.sleep(float(i) if i is not None else 1.0)
+# screen commands
 # ------------------------------------------------------------------------------
-def screen_command(screen, options):
+def watch(options, window):
+    reader = DbReader(options)
+    renderer = LogRenderer(options, LogCursesOut(options, window))
+    while True:
+        reader.processQuery(
+            renderer,
+            "SELECT * FROM eagilog.latest_stream_entries(%s)",
+            (renderer.minEntriesPerScreen(),))
+        time.sleep(float(options.watch_interval))
+# ------------------------------------------------------------------------------
+# stdout commands
+# ------------------------------------------------------------------------------
+def dump(options):
+    reader = DbReader(options)
+    renderer = LogRenderer(options, LogStdOut(options))
+    reader.processQuery(
+        renderer, """
+                SELECT eagilog.contemporary_streams(entry_time), *
+                FROM eagilog.stream_entry
+                ORDER BY entry_time
+        """, (renderer.minEntriesPerScreen(),))
+# ------------------------------------------------------------------------------
+def tail(options):
+    reader = DbReader(options)
+    renderer = LogRenderer(options, LogStdOut(options))
+    reader.processQuery(
+        renderer,
+        "SELECT * FROM eagilog.latest_stream_entries(%s)",
+        (renderer.minEntriesPerScreen(),))
+# ------------------------------------------------------------------------------
+# command dispatch
+# ------------------------------------------------------------------------------
+def screenCommand(screen, options):
     curses.initscr()
     try:
-       watch(screen, options)
+       watch(options, screen)
     except KeyboardInterrupt:
         pass
     finally:
         return [screen.instr(l+2, 0).decode("utf-8") for l in range(curses.LINES-2)]
 # ------------------------------------------------------------------------------
+def normalCommand(options):
+    cmd = options.command()
+    if cmd == "dump":
+        return dump(options)
+    if cmd == "tail":
+        pass
+    return tail(options)
+# ------------------------------------------------------------------------------
+# main
+# ------------------------------------------------------------------------------
 def main():
     options = getArgumentParser().parse_args()
-    print(str("\n").join(curses.wrapper(screen_command, options)))
+    if options.isScreenCommand():
+        print(str("\n").join(curses.wrapper(screenCommand, options)))
+    else:
+        normalCommand(options)
     return 0
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
