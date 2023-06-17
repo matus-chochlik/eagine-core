@@ -464,6 +464,8 @@ class LogRenderer(object):
         tag = data["tag"]
 
         self.renderEntryConnectorsHead(data)
+        self.write(self._utils.formatDuration(data["age"], 9))
+        self.write("│")
         self.write(self._utils.formatDuration(data["time_since_start"], 9))
         self.write("│")
         self.write(self._utils.formatDuration(data["time_since_prev"], 9))
@@ -481,11 +483,12 @@ class LogRenderer(object):
 
         self.write("%12s│" % self._utils.formatInstance(data["instance"]))
         self.write("\n")
+
         self.renderEntryConnectorsPass(ls)
+        self.write(" ├─────────┴─────────┴─────────┴─────────┴")
         if tag is not None:
-            self.write(" ├─────────┴─────────┴─────────┴──────────┴──────────┴──────────┴────────────╯\n")
-        else:
-            self.write(" ├─────────┴─────────┴─────────┴──────────┴──────────┴────────────╯\n")
+            self.write("──────────┴")
+        self.write("──────────┴──────────┴────────────╯\n")
 
         cols = self._utils.columns() - (ls * 2)
         lno = 0
@@ -641,6 +644,7 @@ class DbReader(object):
             data["time_since_prev"] =\
                 time_since_start -\
                 stream_prev_times.get(stream_id, datetime.timedelta(0))
+            data["age"] = datetime.datetime.now(datetime.timezone.utc) - data["entry_time"]
             self.processEntry(processor, data)
             stream_prev_times[stream_id] = time_since_start
         processor.processEnd()
