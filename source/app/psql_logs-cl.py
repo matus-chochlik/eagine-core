@@ -26,13 +26,33 @@ class ArgumentParser(argparse.ArgumentParser):
             return int(x)
         except:
             self.error("`%s' is not a positive integer value" % str(x))
+    # -------------------------------------------------------------------------
+    def _valid_msg_id(self, x):
+        try:
+            found = self._msg_re1.match(x)
+            if found:
+                return (None, found.group(1))
+            found = self._msg_re2.match(x)
+            if found:
+                return (found.group(1), found.group(2))
+            found = self._msg_re3.match(x)
+            if found:
+                return (found.group(1), None)
+            assert False
+        except:
+            self.error("`%s' is not a valid message identifier" % str(x))
+
     # --------------------------------------------------------------------------
     def __init__(self, **kw):
+        self._msg_re1 = re.compile("^([A-Za-z0-9_]{1,10})$")
+        self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
+        self._msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
 
         argparse.ArgumentParser.__init__(self, **kw)
 
         self.add_argument(
             "--db-host", "-H",
+            metavar='HOSTNAME',
             dest='db_host',
             action="store",
             default="localhost"
@@ -40,6 +60,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
         self.add_argument(
             "--db-port", "-P",
+            metavar='PORT-NUMBER',
             dest='db_port',
             type=self._positive_int,
             action="store",
@@ -48,6 +69,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
         self.add_argument(
             "--db-name", "-D",
+            metavar='DATABASE',
             dest='db_name',
             action="store",
             default="eagilog"
@@ -55,6 +77,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
         self.add_argument(
             "--db-user", "-u",
+            metavar='USERNAME',
             dest='db_user',
             action="store",
             default="eagilog"
@@ -62,6 +85,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
         self.add_argument(
             "--db-password", "-w",
+            metavar='PASSWORD',
             dest='db_password',
             action="store",
             default=None
@@ -69,9 +93,20 @@ class ArgumentParser(argparse.ArgumentParser):
 
         self.add_argument(
             "--db-pass-file",
+            metavar='FILE-PATH',
             dest='db_password_file',
             action="store",
             default=None
+        )
+
+        self.add_argument(
+            "--block", "-B",
+            metavar='IDENTIFIER',
+            dest='block_list',
+            nargs='+',
+            action="append",
+            type=self._valid_msg_id,
+            default=[]
         )
 
         commands = self.add_mutually_exclusive_group()
@@ -92,6 +127,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
         commands.add_argument(
             "--watch",
+            metavar='SECONDS',
             dest='watch_interval',
             type=self._positive_int,
             action="store",
@@ -99,7 +135,22 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
     # --------------------------------------------------------------------------
+    def processMessageLists(self, options):
+        for cfg_path in ["/etc/eagine/xml_logs.json","~/.config/eagine/xml_logs.json"]:
+            try:
+                with open(os.path.expanduser(cfg_path), "r") as cfgfd:
+                    cfg = json.load(cfgfd)
+                    l = cfg.get("block_list")
+                    if l is not None:
+                        options.block_list.append([self._valid_msg_id(e) for e in l])
+            except:
+                pass
+
+        options.block_list = [i for sl in options.block_list for i in sl]
+
+    # --------------------------------------------------------------------------
     def processParsedOptions(self, options):
+        self.processMessageLists(options)
 
         if options.db_password is None:
             def _getpwd(passfd):
@@ -162,7 +213,7 @@ class LogFormattingUtils(object):
 
     # --------------------------------------------------------------------------
     def columns(self):
-        return 80
+        return 90
 
     # --------------------------------------------------------------------------
     def centerText(self, t, w):
@@ -610,15 +661,32 @@ class LogRenderer(object):
 # ------------------------------------------------------------------------------
 class DbReader(object):
     # --------------------------------------------------------------------------
-    def __init__(self, options):
+    def __init__(self, options, db_conn):
         self._options = options
-        self._pg_conn = None
-        self._pg_conn = psycopg2.connect(
-            user=options.db_user,
-            password=options.db_password,
-            database=options.db_name,
-            host=options.db_host,
-            port=options.db_port)
+        self._db_conn = db_conn
+        self._pg_curr = db_conn.cursor()
+        self._pg_curr.__enter__()
+
+        self.applyBlockList()
+
+    # --------------------------------------------------------------------------
+    def __del__(self):
+        self.finishSession()
+        self._pg_curr.__exit__()
+
+    # --------------------------------------------------------------------------
+    def applyBlockList(self):
+        for source, tag in self._options.block_list:
+            # TODO the other combinations
+            if tag:
+                if not source:
+                    self._pg_curr.execute(
+                        "SELECT eagilog.client_session_block_entry_tag(%s)",
+                        (tag,))
+
+    # --------------------------------------------------------------------------
+    def finishSession(self):
+        self._pg_curr.execute("SELECT eagilog.finish_client_session()")
 
     # --------------------------------------------------------------------------
     def castArgValue(self, v):
@@ -629,7 +697,7 @@ class DbReader(object):
     # --------------------------------------------------------------------------
     def processEntry(self, processor, data):
         args = {}
-        with self._pg_conn.cursor() as entry_args:
+        with self._db_conn.cursor() as entry_args:
             entry_args.execute("""
                 SELECT
                     arg_id,
@@ -696,11 +764,8 @@ class DbReader(object):
 
     # --------------------------------------------------------------------------
     def processQuery(self, processor, query, args = None):
-        pg_conn = self._pg_conn
-        with pg_conn:
-            with pg_conn.cursor() as entries:
-                entries.execute(query, args)
-                self.processEntries(processor, entries)
+            self._pg_curr.execute(query, args)
+            self.processEntries(processor, self._pg_curr)
 
     # --------------------------------------------------------------------------
     def read(self, processor):
@@ -711,22 +776,40 @@ class DbReader(object):
                 ORDER BY entry_time
             """)
 # ------------------------------------------------------------------------------
+# Database connection
+# ------------------------------------------------------------------------------
+class DbConnection(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options):
+        self._pg_conn = psycopg2.connect(
+            user=options.db_user,
+            password=options.db_password,
+            database=options.db_name,
+            host=options.db_host,
+            port=options.db_port)
+        self._pg_conn.__enter__()
+    # --------------------------------------------------------------------------
+    def __del__(self):
+        self._pg_conn.close()
+    # --------------------------------------------------------------------------
+    def cursor(self):
+        return self._pg_conn.cursor()
+
+# ------------------------------------------------------------------------------
 # screen commands
 # ------------------------------------------------------------------------------
-def watch(options, window):
-    reader = DbReader(options)
+def watch(options, reader, window):
     renderer = LogRenderer(options, LogCursesOut(options, window))
     while True:
         reader.processQuery(
             renderer,
-            "SELECT * FROM eagilog.latest_stream_entries(%s)",
+            "SELECT * FROM eagilog.latest_client_stream_entries(%s)",
             (renderer.minEntriesPerScreen(),))
         time.sleep(float(options.watch_interval))
 # ------------------------------------------------------------------------------
 # stdout commands
 # ------------------------------------------------------------------------------
-def dump(options):
-    reader = DbReader(options)
+def dump(options, reader):
     renderer = LogRenderer(options, LogStdOut(options))
     reader.processQuery(
         renderer, """
@@ -735,17 +818,16 @@ def dump(options):
                 ORDER BY entry_time
         """, (renderer.minEntriesPerScreen(),))
 # ------------------------------------------------------------------------------
-def tail(options):
-    reader = DbReader(options)
+def tail(options, reader):
     renderer = LogRenderer(options, LogStdOut(options))
     reader.processQuery(
         renderer,
-        "SELECT * FROM eagilog.latest_stream_entries(%s)",
+        "SELECT * FROM eagilog.latest_client_stream_entries(%s)",
         (renderer.minEntriesPerScreen(),))
 # ------------------------------------------------------------------------------
 # command dispatch
 # ------------------------------------------------------------------------------
-def screenCommand(screen, options):
+def screenCommand(screen, options, db_conn):
     curses.initscr()
     curses.start_color()
     curses.use_default_colors()
@@ -756,28 +838,34 @@ def screenCommand(screen, options):
     curses.init_pair(4, curses.COLOR_CYAN, -1)
     curses.init_pair(5, curses.COLOR_BLUE, -1)
     try:
-       watch(options, screen)
+        reader = DbReader(options, db_conn)
+        watch(options, reader, screen)
     except KeyboardInterrupt:
         pass
     finally:
         return [screen.instr(l+2, 0).decode("utf-8") for l in range(curses.LINES-2)]
 # ------------------------------------------------------------------------------
-def normalCommand(options):
+def normalCommand(options, db_conn):
     cmd = options.command()
-    if cmd == "dump":
-        return dump(options)
-    if cmd == "tail":
+    try:
+        reader = DbReader(options, db_conn)
+        if cmd == "dump":
+            return dump(options, reader)
+        if cmd == "tail":
+            pass
+        return tail(options, reader)
+    finally:
         pass
-    return tail(options)
 # ------------------------------------------------------------------------------
 # main
 # ------------------------------------------------------------------------------
 def main():
     options = getArgumentParser().parse_args()
+    db_conn = DbConnection(options)
     if options.isScreenCommand():
-        print(str("\n").join(curses.wrapper(screenCommand, options)))
+        print(str("\n").join(curses.wrapper(screenCommand, options, db_conn)))
     else:
-        normalCommand(options)
+        normalCommand(options, db_conn)
     return 0
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
