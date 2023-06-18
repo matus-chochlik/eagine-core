@@ -152,20 +152,6 @@ class ArgumentParser(argparse.ArgumentParser):
     def processParsedOptions(self, options):
         self.processMessageLists(options)
 
-        if options.db_password is None:
-            def _getpwd(passfd):
-                return passfd.readline().rstrip().split(":")[-1]
-
-            try:
-                with open(options.db_password_file, "r") as passfd:
-                    options.db_password = _getpwd(passfd)
-            except:
-                try:
-                    with open(os.path.expanduser("~/.pgpass"), "r") as passfd:
-                        options.db_password = _getpwd(passfd)
-                except:
-                    options.db_password = getpass.getpass("psql password: ")
-
         return options
 
     # --------------------------------------------------------------------------
@@ -174,6 +160,23 @@ class ArgumentParser(argparse.ArgumentParser):
             # ------------------------------------------------------------------
             def __init__(self, options):
                 self.__dict__.update(options.__dict__)
+
+            # ------------------------------------------------------------------
+            def dbPassword(self):
+                if self.db_password is None:
+                    def _getpwd(passfd):
+                        return passfd.readline().rstrip().split(":")[-1]
+
+                    try:
+                        with open(self.db_password_file, "r") as passfd:
+                            self.db_password = _getpwd(passfd)
+                    except:
+                        try:
+                            with open(os.path.expanduser("~/.pgpass"), "r") as passfd:
+                                self.db_password = _getpwd(passfd)
+                        except:
+                            self.db_password = getpass.getpass("psql password: ")
+                return self.db_password
 
             # ------------------------------------------------------------------
             def isScreenCommand(self):
@@ -783,7 +786,7 @@ class DbConnection(object):
     def __init__(self, options):
         self._pg_conn = psycopg2.connect(
             user=options.db_user,
-            password=options.db_password,
+            password=options.dbPassword(),
             database=options.db_name,
             host=options.db_host,
             port=options.db_port)
