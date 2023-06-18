@@ -119,6 +119,13 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
         commands.add_argument(
+            "--recent",
+            dest='recent',
+            action="store_true",
+            default=False
+        )
+
+        commands.add_argument(
             "--tail",
             dest='tail',
             action="store_true",
@@ -187,6 +194,8 @@ class ArgumentParser(argparse.ArgumentParser):
                     return "watch"
                 if self.dump:
                     return "dump"
+                if self.recent:
+                    return "recent"
                 return "tail"
 
         return _Options(self.processParsedOptions(
@@ -821,6 +830,14 @@ def dump(options, reader):
                 ORDER BY entry_time
         """, (renderer.minEntriesPerScreen(),))
 # ------------------------------------------------------------------------------
+def recent(options, reader):
+    renderer = LogRenderer(options, LogStdOut(options))
+    reader.processQuery(
+        renderer, """
+                SELECT *
+                FROM eagilog.recent_stream_entries()
+        """, (renderer.minEntriesPerScreen(),))
+# ------------------------------------------------------------------------------
 def tail(options, reader):
     renderer = LogRenderer(options, LogStdOut(options))
     reader.processQuery(
@@ -852,6 +869,8 @@ def normalCommand(options, db_conn):
     cmd = options.command()
     try:
         reader = DbReader(options, db_conn)
+        if cmd == "recent":
+            return recent(options, reader)
         if cmd == "dump":
             return dump(options, reader)
         if cmd == "tail":

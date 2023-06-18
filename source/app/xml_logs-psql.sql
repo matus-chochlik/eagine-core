@@ -891,6 +891,35 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+-- returns the latest overlapping set of streams
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.recent_streams()
+RETURNS SETOF eagilog.stream
+AS
+$$
+DECLARE
+	_start_time TIMESTAMP WITH TIME ZONE;
+	_finish_time TIMESTAMP WITH TIME ZONE;
+	_row eagilog.stream;
+BEGIN
+	SELECT start_time, coalesce(finish_time, current_timestamp)
+	INTO _start_time, _finish_time
+	FROM eagilog.entry
+	JOIN eagilog.stream USING(stream_id)
+	ORDER BY entry_id DESC
+	LIMIT 1;
+
+	FOR _row IN
+		SELECT *
+		FROM eagilog.stream
+		WHERE _start_time BETWEEN start_time AND coalesce(finish_time, current_timestamp)
+		OR   _finish_time BETWEEN start_time AND coalesce(finish_time, current_timestamp)
+	LOOP
+		RETURN NEXT _row;
+	END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 -- format / entry views
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.stream_entry
@@ -915,6 +944,28 @@ JOIN eagilog.severity l USING(severity_id)
 JOIN eagilog.message_format f USING(message_format_id)
 ORDER BY entry_id;
 --------------------------------------------------------------------------------
+CREATE VIEW eagilog.recent_stream_entry
+AS
+SELECT
+	stream_id,
+	e.entry_id,
+	l.name AS severity,
+	s.application_id,
+	e.source_id,
+	e.instance,
+	e.tag,
+	f.format,
+	s.start_time + e.entry_time AS entry_time,
+	entry_time AS time_since_start,
+	s.first_entry_id = e.entry_id AS is_first,
+	coalesce(s.last_entry_id = e.entry_id, FALSE) AS is_last,
+	s.failed
+FROM eagilog.entry e
+JOIN eagilog.recent_streams() s USING(stream_id)
+JOIN eagilog.severity l USING(severity_id)
+JOIN eagilog.message_format f USING(message_format_id)
+ORDER BY entry_id;
+--------------------------------------------------------------------------------
 -- all streams and entries
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.streams_and_entries
@@ -930,6 +981,15 @@ $$
 SELECT *
 FROM (SELECT * FROM eagilog.streams_and_entries LIMIT _count) AS tail
 ORDER BY entry_id ASC;
+$$ LANGUAGE sql;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.recent_stream_entries()
+RETURNS SETOF eagilog.streams_and_entries
+AS
+$$
+SELECT eagilog.contemporary_streams(entry_time), *
+FROM eagilog.recent_stream_entry
+ORDER BY entry_id;
 $$ LANGUAGE sql;
 --------------------------------------------------------------------------------
 -- client streams and entries
