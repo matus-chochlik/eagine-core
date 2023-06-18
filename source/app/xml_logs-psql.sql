@@ -28,6 +28,99 @@ CREATE FUNCTION eagilog.schema_data_size_GiB() RETURNS NUMERIC
 AS 'SELECT round(sum(total_bytes) / 1073741824, 3)::NUMERIC FROM eagilog.schema_statistics;'
 LANGUAGE sql IMMUTABLE;
 --------------------------------------------------------------------------------
+-- client session handling
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.client_session (
+	client_session_id BIGSERIAL PRIMARY KEY,
+	backend_pid INTEGER NOT NULL,
+	heartbeat_time TIMESTAMP WITH TIME ZONE NOT NULL
+);
+--------------------------------------------------------------------------------
+-- starts a new session or gets the current session for current connection
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.get_client_session()
+RETURNS eagilog.client_session.client_session_id%TYPE
+AS $$
+DECLARE
+	result eagilog.client_session.client_session_id%TYPE;
+BEGIN
+	LOOP
+		BEGIN
+			WITH sel AS (
+				SELECT cs.client_session_id
+				FROM eagilog.client_session cs
+				WHERE cs.backend_pid = pg_backend_pid()
+				FOR SHARE
+			)  , ins AS (
+				INSERT INTO eagilog.client_session (backend_pid, heartbeat_time)
+				SELECT pg_backend_pid(), now()
+				WHERE NOT EXISTS (SELECT 1 FROM sel)
+				RETURNING eagilog.client_session.client_session_id
+			)
+			SELECT sel.client_session_id FROM sel
+			UNION ALL
+			SELECT ins.client_session_id FROM ins
+			INTO result;
+		EXCEPTION WHEN UNIQUE_VIOLATION THEN
+			result := NULL;
+		END;
+
+		EXIT WHEN result IS NOT NULL;
+	END LOOP;
+	RETURN result;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.client_session_heartbeat()
+RETURNS VOID
+AS
+$$
+UPDATE eagilog.client_session
+SET heartbeat_time = now()
+WHERE backend_pid = pg_backend_pid()
+$$
+LANGUAGE sql;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.finish_client_session()
+RETURNS VOID
+AS
+$$
+DELETE FROM eagilog.client_session
+WHERE backend_pid = pg_backend_pid();
+$$
+LANGUAGE sql;
+--------------------------------------------------------------------------------
+-- entry tags blocked by client
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.client_session_blocked_entry_tag (
+	client_session_id BIGINT NOT NULL,
+	tag VARCHAR(10) NOT NULL
+);
+
+ALTER TABLE eagilog.client_session_blocked_entry_tag
+ADD PRIMARY KEY(client_session_id, tag);
+
+ALTER TABLE eagilog.client_session_blocked_entry_tag
+ADD FOREIGN KEY(client_session_id)
+REFERENCES eagilog.client_session
+ON DELETE CASCADE;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.client_session_block_entry_tag(
+	_tag VARCHAR(10)
+) RETURNS VOID
+AS
+$$
+	INSERT INTO eagilog.client_session_blocked_entry_tag(client_session_id, tag)
+	VALUES(eagilog.get_client_session(), _tag);
+$$ LANGUAGE sql;
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.client_blocked_entry_tags
+AS
+SELECT tag
+FROM eagilog.client_session
+JOIN eagilog.client_session_blocked_entry_tag USING(client_session_id)
+WHERE backend_pid = pg_backend_pid();
+--------------------------------------------------------------------------------
 -- benchmark type
 --------------------------------------------------------------------------------
 CREATE TABLE eagilog.benchmark_type (
@@ -822,13 +915,15 @@ JOIN eagilog.severity l USING(severity_id)
 JOIN eagilog.message_format f USING(message_format_id)
 ORDER BY entry_id;
 --------------------------------------------------------------------------------
+-- all streams and entries
+--------------------------------------------------------------------------------
 CREATE VIEW eagilog.streams_and_entries
 AS
 SELECT eagilog.contemporary_streams(entry_time), *
 FROM eagilog.stream_entry
 ORDER BY entry_id DESC;
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION eagilog.latest_stream_entries(_count INTEGER)
+CREATE FUNCTION eagilog.latest_stream_entries(_count INTEGER)
 RETURNS SETOF eagilog.streams_and_entries
 AS
 $$
@@ -836,6 +931,26 @@ SELECT *
 FROM (SELECT * FROM eagilog.streams_and_entries LIMIT _count) AS tail
 ORDER BY entry_id ASC;
 $$ LANGUAGE sql;
+--------------------------------------------------------------------------------
+-- client streams and entries
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.client_streams_and_entries
+AS
+SELECT eagilog.contemporary_streams(entry_time), *
+FROM eagilog.stream_entry
+WHERE tag NOT IN (SELECT tag FROM eagilog.client_blocked_entry_tags)
+ORDER BY entry_id DESC;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.latest_client_stream_entries(_count INTEGER)
+RETURNS SETOF eagilog.client_streams_and_entries
+AS
+$$
+SELECT *
+FROM (SELECT * FROM eagilog.client_streams_and_entries LIMIT _count) AS tail
+ORDER BY entry_id ASC;
+$$ LANGUAGE sql;
+--------------------------------------------------------------------------------
+-- other format / entry views
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.message_format_ref_count
 AS
