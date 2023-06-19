@@ -128,23 +128,21 @@ FROM eagilog.client_session
 JOIN eagilog.client_session_blocked_entry_message USING(client_session_id)
 WHERE backend_pid = pg_backend_pid();
 --------------------------------------------------------------------------------
-CREATE FUNCTION eagilog.is_blocked_client_message(
+CREATE OR REPLACE FUNCTION eagilog.is_blocked_client_message(
 	_application_id VARCHAR(10),
 	_source_id VARCHAR(10),
 	_tag VARCHAR(10)
 ) RETURNS BOOLEAN
 AS
 $$
-BEGIN
-	RETURN EXISTS(
-		SELECT *
-		FROM eagilog.client_blocked_entry_messages
-		WHERE (application_id = _application_id OR application_id = '')
-		AND (source_id = _source_id OR source_id = '')
-		AND (tag = _tag OR tag = '')
-	);
-END
-$$ LANGUAGE plpgsql;
+SELECT EXISTS(
+	SELECT *
+	FROM eagilog.client_blocked_entry_messages
+	WHERE (application_id = _application_id OR application_id = '')
+	AND (source_id = _source_id OR source_id = '')
+	AND (tag = _tag OR tag = '')
+);
+$$ LANGUAGE sql IMMUTABLE;
 --------------------------------------------------------------------------------
 -- benchmark type
 --------------------------------------------------------------------------------
