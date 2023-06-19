@@ -31,13 +31,16 @@ class ArgumentParser(argparse.ArgumentParser):
         try:
             found = self._msg_re1.match(x)
             if found:
-                return (None, found.group(1))
+                return (None, None, found.group(1))
             found = self._msg_re2.match(x)
             if found:
-                return (found.group(1), found.group(2))
+                return (None, found.group(1), None)
             found = self._msg_re3.match(x)
             if found:
-                return (found.group(1), None)
+                return (None, found.group(1), found.group(2))
+            found = self._msg_re4.match(x)
+            if found:
+                return (found.group(1), found.group(2), found.group(3))
             assert False
         except:
             self.error("`%s' is not a valid message identifier" % str(x))
@@ -45,8 +48,9 @@ class ArgumentParser(argparse.ArgumentParser):
     # --------------------------------------------------------------------------
     def __init__(self, **kw):
         self._msg_re1 = re.compile("^([A-Za-z0-9_]{1,10})$")
-        self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
-        self._msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
+        self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
+        self._msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
+        self._msg_re4 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
 
         argparse.ArgumentParser.__init__(self, **kw)
 
@@ -688,13 +692,11 @@ class DbReader(object):
 
     # --------------------------------------------------------------------------
     def applyBlockList(self):
-        for source, tag in self._options.block_list:
-            # TODO the other combinations
-            if tag:
-                if not source:
-                    self._pg_curr.execute(
-                        "SELECT eagilog.client_session_block_entry_tag(%s)",
-                        (tag,))
+        for application_id, source_id, tag in self._options.block_list:
+            assert application_id or source_id or tag
+            self._pg_curr.execute(
+                "SELECT eagilog.client_session_block_entry_message(%s, %s, %s)",
+                (application_id, source_id, tag))
 
     # --------------------------------------------------------------------------
     def finishSession(self):
