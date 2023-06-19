@@ -92,34 +92,59 @@ LANGUAGE sql;
 --------------------------------------------------------------------------------
 -- entry tags blocked by client
 --------------------------------------------------------------------------------
-CREATE TABLE eagilog.client_session_blocked_entry_tag (
+CREATE TABLE eagilog.client_session_blocked_entry_message (
 	client_session_id BIGINT NOT NULL,
+	application_id VARCHAR(10) NOT NULL,
+	source_id VARCHAR(10) NOT NULL,
 	tag VARCHAR(10) NOT NULL
 );
 
-ALTER TABLE eagilog.client_session_blocked_entry_tag
-ADD PRIMARY KEY(client_session_id, tag);
+ALTER TABLE eagilog.client_session_blocked_entry_message
+ADD PRIMARY KEY(client_session_id, application_id, source_id, tag);
 
-ALTER TABLE eagilog.client_session_blocked_entry_tag
+ALTER TABLE eagilog.client_session_blocked_entry_message
 ADD FOREIGN KEY(client_session_id)
 REFERENCES eagilog.client_session
 ON DELETE CASCADE;
 --------------------------------------------------------------------------------
-CREATE FUNCTION eagilog.client_session_block_entry_tag(
+CREATE FUNCTION eagilog.client_session_block_entry_message(
+	_application_id VARCHAR(10),
+	_source_id VARCHAR(10),
 	_tag VARCHAR(10)
 ) RETURNS VOID
 AS
 $$
-	INSERT INTO eagilog.client_session_blocked_entry_tag(client_session_id, tag)
-	VALUES(eagilog.get_client_session(), _tag);
+	INSERT INTO eagilog.client_session_blocked_entry_message VALUES(
+		eagilog.get_client_session(),
+		coalesce(_application_id, ''),
+		coalesce(_source_id, ''),
+		coalesce(_tag, ''));
 $$ LANGUAGE sql;
 --------------------------------------------------------------------------------
-CREATE VIEW eagilog.client_blocked_entry_tags
+CREATE VIEW eagilog.client_blocked_entry_messages
 AS
-SELECT tag
+SELECT application_id, source_id, tag
 FROM eagilog.client_session
-JOIN eagilog.client_session_blocked_entry_tag USING(client_session_id)
+JOIN eagilog.client_session_blocked_entry_message USING(client_session_id)
 WHERE backend_pid = pg_backend_pid();
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.is_blocked_client_message(
+	_application_id VARCHAR(10),
+	_source_id VARCHAR(10),
+	_tag VARCHAR(10)
+) RETURNS BOOLEAN
+AS
+$$
+BEGIN
+	RETURN EXISTS(
+		SELECT *
+		FROM eagilog.client_blocked_entry_messages
+		WHERE (application_id = _application_id OR application_id = '')
+		AND (source_id = _source_id OR source_id = '')
+		AND (tag = _tag OR tag = '')
+	);
+END
+$$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 -- benchmark type
 --------------------------------------------------------------------------------
@@ -998,7 +1023,8 @@ CREATE VIEW eagilog.client_streams_and_entries
 AS
 SELECT eagilog.contemporary_streams(entry_time), *
 FROM eagilog.stream_entry
-WHERE tag NOT IN (SELECT tag FROM eagilog.client_blocked_entry_tags)
+WHERE NOT eagilog.is_blocked_client_message(application_id, source_id, tag)
+NOT IN (SELECT application_id, source_id, tag FROM eagilog.client_blocked_entry_messages)
 ORDER BY entry_id DESC;
 --------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.latest_client_stream_entries(_count INTEGER)
