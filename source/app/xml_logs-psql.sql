@@ -1219,9 +1219,17 @@ CREATE FUNCTION eagilog.add_entry_arg_min_max(
 ) RETURNS VOID
 AS $$
 BEGIN
-	INSERT INTO eagilog.arg_min_max
-	(entry_id, arg_id, min_value, max_value)
-	VALUES(_entry_id, _arg_id, _min_value, _max_value);
+	BEGIN
+		INSERT INTO eagilog.arg_min_max
+		(entry_id, arg_id, min_value, max_value)
+		VALUES(_entry_id, _arg_id, _min_value, _max_value);
+	EXCEPTION WHEN UNIQUE_VIOLATION THEN
+		UPDATE eagilog.arg_min_max
+		SET min_value = least(min_value, _min_value),
+			max_value = greatest(max_value, _max_value)
+		WHERE entry_id = _entry_id
+		AND arg_id = _arg_id;
+	END;
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
