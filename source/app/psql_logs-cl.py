@@ -220,6 +220,7 @@ class LogFormattingUtils(object):
     # --------------------------------------------------------------------------
     def __init__(self, options):
         self._options = options
+        self._initFormatters()
 
     # --------------------------------------------------------------------------
     def _ttyEsc(self, escseq):
@@ -287,6 +288,29 @@ class LogFormattingUtils(object):
         instance = base64.b64encode(instance, altchars=b"'-")
         instance = instance.decode("utf-8")
         return instance
+
+    # --------------------------------------------------------------------------
+    def formatProgressValue(self, name, value, ctx):
+        try:
+            vmin = ctx["args"][name]["min"]
+            vmax = ctx["args"][name]["max"]
+            return "%3.1f%%" % (100.0 * (value - vmin) / (vmax - vmin), )
+        except Exception as err:
+            return str(err)
+
+    # --------------------------------------------------------------------------
+    def _initFormatters(self):
+        self._formatters = {
+            "MainPrgrss": lambda n,v,c: self.formatProgressValue(n, v, c),
+            "Progress": lambda n,v,c: self.formatProgressValue(n, v, c)
+        }
+
+    # --------------------------------------------------------------------------
+    def formatMessageArg(self, name, typ, value, ctx):
+        try:
+            return self._formatters[typ](name, value, ctx)
+        except KeyError:
+            return str(value)
 
 # ------------------------------------------------------------------------------
 # StdOut log output
@@ -402,6 +426,10 @@ class LogCursesOut(object):
         return self.write("+{{" + color + "}}" + what + "-{{" + color + "}}")
 
     # --------------------------------------------------------------------------
+    def showMainProgress(application_id, source_id, instance, value):
+        pass
+
+    # --------------------------------------------------------------------------
     def changeAttrib(self, attrib, on):
         f = self._window.attron if on else self._window.attroff
         if attrib.startswith("Bold"):
@@ -463,22 +491,26 @@ class LogRenderer(object):
         self._output.writeColor(what, color)
 
     # --------------------------------------------------------------------------
+    def showMainProgress(application_id, source_id, instance, value):
+        pass
+
+    # --------------------------------------------------------------------------
     def alwaysTranslateAsList(self, values):
         # TODO
         return False
 
     # --------------------------------------------------------------------------
-    def formatArg(self, name, value, ctx):
-        # TODO
-        return str(value)
+    def doFormatMsgArg(self, name, typ, value, ctx):
+        return self._utils.formatMessageArg(name, typ, value, ctx)
 
     # --------------------------------------------------------------------------
-    def translateArg(self, name, arg_info, ctx):
+    def formatMessageArg(self, name, arg_info, ctx):
         arg_info["info"] = True
+        arg_type = arg_info.get("type")
         values = arg_info.get("values", [])
         if len(values) == 1 and not self.alwaysTranslateAsList(values):
-            return self.formatArg(name, values[0], ctx)
-        values = [self.doTranslateArg(arg, v, ctx) for v in values]
+            return self.doFormatMsgArg(name, arg_type, values[0], ctx)
+        values = [self.doFormatMsgArg(arg, arg_type, v, ctx) for v in values]
         return '[' + ", ".join(values) + ']'
 
     # --------------------------------------------------------------------------
@@ -488,7 +520,7 @@ class LogRenderer(object):
         found = re.match(self._re_var, message)
         while found:
             prev = message[:found.start(1)]
-            repl = self.translateArg(
+            repl = self.formatMessageArg(
                 found.group(2),
                 args.get(found.group(2), {}),
                 data)
@@ -655,7 +687,19 @@ class LogRenderer(object):
         self.write("   ╰────────────┴──────────╯\n")
 
     # --------------------------------------------------------------------------
+    def trackProgress(self, data):
+        for arg_data in data.get("args", {}).values():
+            if arg_data.get("type") == "MainPrgrss":
+                key = (data["application_id"], data["source_id"], data["instance"])
+                try:
+                    item = self._progress[key]
+                except KeyError:
+                    item = self._progress[key] = {"order": len(self._progress)}
+                item["value"] = arg_data["values"]
+
+    # --------------------------------------------------------------------------
     def processBegin(self):
+        self._progress = {}
         self._output.begin()
 
     # --------------------------------------------------------------------------
@@ -663,6 +707,7 @@ class LogRenderer(object):
         if data["is_first"]:
             self.renderStreamHead(data)
 
+        self.trackProgress(data)
         self.renderEntry(data)
 
         if data["is_last"]:
@@ -671,6 +716,7 @@ class LogRenderer(object):
     # --------------------------------------------------------------------------
     def processEnd(self):
         self._output.finish()
+        self._progress = None
 
 # ------------------------------------------------------------------------------
 # Database reader
@@ -717,6 +763,8 @@ class DbReader(object):
                     arg_id,
                     arg_order,
                     arg_type,
+                    min_value,
+                    max_value,
                     value_integer,
                     value_string,
                     value_float,
@@ -737,7 +785,18 @@ class DbReader(object):
                         "type": arg_data[2],
                         "values": []}
                 arg["values"] +=\
-                    [self.castArgValue(v) for v in arg_data[3:] if v is not None]
+                    [self.castArgValue(v) for v in arg_data[5:] if v is not None]
+                if arg_data[3] is not None:
+                    if "min" in arg:
+                        arg["min"] = min(arg["min"], arg_data[3])
+                    else:
+                        arg["min"] = arg_data[3]
+                if arg_data[4] is not None:
+                    if "max" in arg:
+                        arg["max"] = max(arg["max"], arg_data[4])
+                    else:
+                        arg["max"] = arg_data[4]
+
         data["args"] = args
         return processor.processEntry(data)
 
