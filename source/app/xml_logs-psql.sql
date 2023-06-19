@@ -1022,7 +1022,6 @@ AS
 SELECT eagilog.contemporary_streams(entry_time), *
 FROM eagilog.stream_entry
 WHERE NOT eagilog.is_blocked_client_message(application_id, source_id, tag)
-NOT IN (SELECT application_id, source_id, tag FROM eagilog.client_blocked_entry_messages)
 ORDER BY entry_id DESC;
 --------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.latest_client_stream_entries(_count INTEGER)
@@ -1198,6 +1197,34 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+CREATE TABLE eagilog.arg_min_max(
+	entry_id BIGINT NOT NULL,
+	arg_id VARCHAR(10) NOT NULL,
+	min_value DOUBLE PRECISION NOT NULL,
+	max_value DOUBLE PRECISION NOT NULL
+);
+
+ALTER TABLE eagilog.arg_min_max
+ADD PRIMARY KEY(entry_id, arg_id);
+
+ALTER TABLE eagilog.arg_min_max
+ADD FOREIGN KEY(entry_id)
+REFERENCES eagilog.entry;
+
+CREATE FUNCTION eagilog.add_entry_arg_min_max(
+	_entry_id eagilog.arg_float.entry_id%TYPE,
+	_arg_id eagilog.arg_float.arg_id%TYPE,
+	_min_value eagilog.arg_min_max.min_value%TYPE,
+	_max_value eagilog.arg_min_max.max_value%TYPE
+) RETURNS VOID
+AS $$
+BEGIN
+	INSERT INTO eagilog.arg_min_max
+	(entry_id, arg_id, min_value, max_value)
+	VALUES(_entry_id, _arg_id, _min_value, _max_value);
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 -- arg_duration
 --------------------------------------------------------------------------------
 CREATE TABLE eagilog.arg_duration(
@@ -1245,18 +1272,23 @@ SELECT
 	arg_id,
 	arg_type,
 	arg_order,
+	min_value,
+	max_value,
 	value AS value_integer,
 	NULL::VARCHAR AS value_string,
 	NULL::DOUBLE PRECISION AS value_float,
 	NULL::INTERVAL AS value_duration,
 	NULL::BOOL AS value_boolean
 FROM arg_integer
+LEFT JOIN arg_min_max USING(entry_id, arg_id)
 UNION
 SELECT
 	entry_id,
 	arg_id,
 	arg_type,
 	arg_order,
+	NULL::DOUBLE PRECISION,
+	NULL::DOUBLE PRECISION,
 	NULL::NUMERIC,
 	value,
 	NULL::DOUBLE PRECISION,
@@ -1269,18 +1301,23 @@ SELECT
 	arg_id,
 	arg_type,
 	arg_order,
+	min_value,
+	max_value,
 	NULL::NUMERIC,
 	NULL::VARCHAR,
 	value,
 	NULL::INTERVAL,
 	NULL::BOOL
 FROM arg_float
+LEFT JOIN arg_min_max USING(entry_id, arg_id)
 UNION
 SELECT
 	entry_id,
 	arg_id,
 	arg_type,
 	arg_order,
+	NULL::DOUBLE PRECISION,
+	NULL::DOUBLE PRECISION,
 	NULL::NUMERIC,
 	NULL::VARCHAR,
 	NULL::DOUBLE PRECISION,
@@ -1293,12 +1330,15 @@ SELECT
 	arg_id,
 	arg_type,
 	arg_order,
+	NULL::DOUBLE PRECISION,
+	NULL::DOUBLE PRECISION,
 	NULL::NUMERIC,
 	NULL::VARCHAR,
 	NULL::DOUBLE PRECISION,
 	NULL::INTERVAL,
 	value
-FROM arg_boolean;--------------------------------------------------------------------------------
+FROM arg_boolean;
+--------------------------------------------------------------------------------
 -- argument of an entry
 --------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.args_of_entry(
