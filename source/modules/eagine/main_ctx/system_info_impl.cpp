@@ -143,7 +143,7 @@ public:
                        std::type_identity<host_id_t>(),
                        default_selector,
                        16)}) {
-                      _host_id ^= extract(mi);
+                      _host_id ^= *mi;
                   }
               });
         }
@@ -192,14 +192,14 @@ public:
 
     auto cpu_temperature() noexcept -> valid_if_positive<kelvins_t<float>> {
         if(_cpu_temp_i) {
-            return tz_temperature(extract(_cpu_temp_i));
+            return tz_temperature(*_cpu_temp_i);
         }
         return {kelvins_(0.F)};
     }
 
     auto gpu_temperature() noexcept -> valid_if_positive<kelvins_t<float>> {
         if(_gpu_temp_i) {
-            return tz_temperature(extract(_gpu_temp_i));
+            return tz_temperature(*_gpu_temp_i);
         }
         return {kelvins_(0.F)};
     }
