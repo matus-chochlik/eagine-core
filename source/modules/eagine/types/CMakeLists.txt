@@ -90,6 +90,7 @@ eagine_add_module_tests(
 		metaprogramming
 		nothing
 		optional_reference
+		optional_like_tuple
 		valid_if
 		tribool
 		holder
