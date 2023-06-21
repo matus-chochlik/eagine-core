@@ -170,10 +170,30 @@ export struct logger_backend : interface<logger_backend> {
       const identifier tag,
       const identifier value) noexcept = 0;
 
+    template <typename X>
+    constexpr auto add_identifier(
+      const identifier arg,
+      const identifier tag,
+      placeholder_expression<X> e) noexcept {
+        return placeholder_expression{[=, this](auto&&... args) {
+            this->add_identifier(arg, tag, e(decltype(args)(args)...));
+        }};
+    }
+
     virtual void add_message_id(
       const identifier arg,
       const identifier tag,
       const message_id) noexcept = 0;
+
+    template <typename X>
+    constexpr auto add_message_id(
+      const identifier arg,
+      const identifier tag,
+      placeholder_expression<X> e) noexcept {
+        return placeholder_expression{[=, this](auto&&... args) {
+            this->add_message_id(arg, tag, e(decltype(args)(args)...));
+        }};
+    }
 
     /// @brief Add argument with boolean value.
     /// @param arg the argument name identifier.
@@ -184,6 +204,16 @@ export struct logger_backend : interface<logger_backend> {
       const identifier tag,
       const bool value) noexcept = 0;
 
+    template <typename X>
+    constexpr auto add_bool(
+      const identifier arg,
+      const identifier tag,
+      placeholder_expression<X> e) noexcept {
+        return placeholder_expression{[=, this](auto&&... args) {
+            this->add_bool(arg, tag, e(decltype(args)(args)...));
+        }};
+    }
+
     /// @brief Add argument with signed integer value.
     /// @param arg the argument name identifier.
     /// @param tag the argument type identifier.
@@ -192,6 +222,16 @@ export struct logger_backend : interface<logger_backend> {
       const identifier arg,
       const identifier tag,
       const std::intmax_t value) noexcept = 0;
+
+    template <typename X>
+    constexpr auto add_integer(
+      const identifier arg,
+      const identifier tag,
+      placeholder_expression<X> e) noexcept {
+        return placeholder_expression{[=, this](auto&&... args) {
+            this->add_integer(arg, tag, e(decltype(args)(args)...));
+        }};
+    }
 
     /// @brief Add argument with unsigned integer value.
     /// @param arg the argument name identifier.
@@ -202,6 +242,16 @@ export struct logger_backend : interface<logger_backend> {
       const identifier tag,
       const std::uintmax_t value) noexcept = 0;
 
+    template <typename X>
+    constexpr auto add_unsigned(
+      const identifier arg,
+      const identifier tag,
+      placeholder_expression<X> e) noexcept {
+        return placeholder_expression{[=, this](auto&&... args) {
+            this->add_unsigned(arg, tag, e(decltype(args)(args)...));
+        }};
+    }
+
     /// @brief Add argument with floating-point value.
     /// @param arg the argument name identifier.
     /// @param tag the argument type identifier.
@@ -210,6 +260,16 @@ export struct logger_backend : interface<logger_backend> {
       const identifier arg,
       const identifier tag,
       const float value) noexcept = 0;
+
+    template <typename X>
+    constexpr auto add_float(
+      const identifier arg,
+      const identifier tag,
+      placeholder_expression<X> e) noexcept {
+        return placeholder_expression{[=, this](auto&&... args) {
+            this->add_float(arg, tag, e(decltype(args)(args)...));
+        }};
+    }
 
     /// @brief Add argument with floating-point value with minimum and maximum.
     /// @param arg the argument name identifier.
@@ -233,6 +293,16 @@ export struct logger_backend : interface<logger_backend> {
       const identifier tag,
       const std::chrono::duration<float> value) noexcept = 0;
 
+    template <typename X>
+    constexpr auto add_duration(
+      const identifier arg,
+      const identifier tag,
+      placeholder_expression<X> e) noexcept {
+        return placeholder_expression{[=, this](auto&&... args) {
+            this->add_duration(arg, tag, e(decltype(args)(args)...));
+        }};
+    }
+
     /// @brief Add argument with string value.
     /// @param arg the argument name identifier.
     /// @param tag the argument type identifier.
@@ -241,6 +311,16 @@ export struct logger_backend : interface<logger_backend> {
       const identifier arg,
       const identifier tag,
       const string_view value) noexcept = 0;
+
+    template <typename X>
+    constexpr auto add_string(
+      const identifier arg,
+      const identifier tag,
+      placeholder_expression<X> e) noexcept {
+        return placeholder_expression{[=, this](auto&&... args) {
+            this->add_string(arg, tag, e(decltype(args)(args)...));
+        }};
+    }
 
     /// @brief Add argument with BLOB value.
     /// @param arg the argument name identifier.
@@ -258,6 +338,15 @@ export struct logger_backend : interface<logger_backend> {
     template <adapted_for_log_entry T>
     void add_adapted(const identifier arg, const T& value) {
         adapt_entry_arg(arg, value)(*this);
+    }
+
+    template <typename X>
+    constexpr auto add_adapted(
+      const identifier arg,
+      placeholder_expression<X> e) noexcept {
+        return placeholder_expression{[=, this](auto&&... args) {
+            this->add_adapted(arg, e(decltype(args)(args)...));
+        }};
     }
 
     /// @brief Finishes the current logging message.
