@@ -194,6 +194,14 @@ public:
               return static_cast<T>(g(decltype(args)(args)...));
           });
     }
+
+    template <typename T>
+    [[nodiscard]] constexpr auto assign_to(T& dst) noexcept {
+        return make_placeholder_expression(
+          [&dst, g{derived()}](auto&&... args) mutable {
+              dst = g(decltype(args)(args)...);
+          });
+    }
 };
 
 export template <typename F>
