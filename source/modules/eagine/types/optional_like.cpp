@@ -1498,33 +1498,6 @@ template <typename F, typename R>
     }
 }
 //------------------------------------------------------------------------------
-/// @brief Overload of extract for conditionally valid values.
-/// @pre opt.has_value()
-export template <typename T, typename P, typename L>
-[[nodiscard]] constexpr auto extract(const basic_valid_if<T, P, L>& opt) noexcept
-  -> const T& {
-    assert(opt);
-    return opt.value_anyway();
-}
-
-/// @brief Overload of extract for conditionally valid values.
-/// @pre opt.has_value()
-export template <typename T, typename P, typename L>
-[[nodiscard]] constexpr auto extract(basic_valid_if<T, P, L>& opt) noexcept
-  -> T& {
-    assert(opt);
-    return opt.value_anyway();
-}
-
-/// @brief Overload of extract for conditionally valid values.
-/// @pre opt.has_value()
-export template <typename T, typename P, typename L>
-[[nodiscard]] constexpr auto extract(basic_valid_if<T, P, L>&& opt) noexcept
-  -> T&& {
-    assert(opt);
-    return std::move(opt.value_anyway());
-}
-//------------------------------------------------------------------------------
 /// @brief Helper class storing both conditionally valid value and fallback value.
 /// @ingroup valid_if
 export template <typename F, typename T, typename P, typename L>
