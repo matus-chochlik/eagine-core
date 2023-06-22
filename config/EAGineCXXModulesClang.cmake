@@ -18,6 +18,11 @@ define_property(
 	PROPERTY EAGINE_MODULE_PARTITIONS
 	BRIEF_DOCS "Module partition list"
 	FULL_DOCS "List of partition names for a module")
+define_property(
+	TARGET
+	PROPERTY EAGINE_MODULE_SUBMODULES
+	BRIEF_DOCS "Module sub-module list"
+	FULL_DOCS "List of submodule names for a module")
 # ------------------------------------------------------------------------------
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
@@ -168,10 +173,10 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 
 	foreach(NAME ${EAGINE_MODULE_SUBMODULES})
 		get_property(
-			PCM_PATH TARGET ${NAME}
+			PCM_PATH TARGET ${EAGINE_MODULE_PROPER}.${NAME}
 			PROPERTY EAGINE_MODULE_PCM_PATH)
 		if("${PCM_PATH}" STREQUAL "")
-			message(FATAL_ERROR "Missing PCM path on ${NAME}")
+			message(FATAL_ERROR "Missing PCM path on ${EAGINE_MODULE_PROPER}.${NAME}")
 		endif()
 
 		list(
@@ -193,13 +198,13 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			PUBLIC "-fprebuilt-module-path=${PCM_PATH}")
 		target_link_libraries(
 			${EAGINE_MODULE_PROPER}
-			PRIVATE "${NAME}")
+			PRIVATE "${EAGINE_MODULE_PROPER}.${NAME}")
 		target_sources(
 			${EAGINE_MODULE_PROPER}
-			PRIVATE $<TARGET_OBJECTS:${NAME}-objects>)
+			PRIVATE $<TARGET_OBJECTS:${EAGINE_MODULE_PROPER}.${NAME}-objects>)
 
 		get_property(
-			COPIED_OBJECTS TARGET ${NAME}-objects
+			COPIED_OBJECTS TARGET ${EAGINE_MODULE_PROPER}.${NAME}-objects
 			PROPERTY SOURCES)
 		list(FILTER COPIED_OBJECTS INCLUDE REGEX "^.*\\.o$")
 		foreach(OBJECT ${COPIED_OBJECTS})
@@ -211,14 +216,14 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				PRIVATE "${PCM_PATH}/${OBJECT}")
 		endforeach()
 
-		list(APPEND EAGINE_MODULE_DEPENDS ${NAME})
+		list(APPEND EAGINE_MODULE_DEPENDS ${EAGINE_MODULE_PROPER}.${NAME})
 		list(
 			APPEND EAGINE_MODULE_IMPORT_PCM_DEPENDS
-			"\${PROJECT_BINARY_DIR}/EAGine/${NAME}.pcm")
+			"\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}.${NAME}.pcm")
 		file(
 			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
-			"if(NOT TARGET ${NAME})\n"
-			"	include(\"\${_IMPORT_PREFIX}/${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}/module-${NAME}.cmake\")\n"
+			"if(NOT TARGET ${EAGINE_MODULE_PROPER}.${NAME})\n"
+			"	include(\"\${_IMPORT_PREFIX}/${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}/module-${EAGINE_MODULE_PROPER}.${NAME}.cmake\")\n"
 			"endif()\n")
 	endforeach()
 
