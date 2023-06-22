@@ -17,10 +17,10 @@ execute_process(
 set(PKG_VERSION ${EAGINE_VERSION}-${EAGINE_GIT_COMMITS_SINCE_VERSION})
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/../..")
-set(PKG_PREFIX "${PKG_DIR}/usr")
 
 add_custom_target(eagine-core-deb)
 
+add_subdirectory(llvm_snapshot)
 add_subdirectory(tools)
 
 if(TARGET eagine.core)

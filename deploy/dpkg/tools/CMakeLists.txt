@@ -5,6 +5,7 @@
 #
 set(PKG_NAME "eagine-core-tools_${EAGINE_VERSION}-${EAGINE_GIT_COMMITS_SINCE_VERSION}_${PKG_ARCH}")
 set(PKG_DIR "${CMAKE_CURRENT_BINARY_DIR}/${PKG_NAME}")
+set(PKG_PREFIX "${PKG_DIR}/usr")
 
 configure_file(build-pkg.sh.in build-pkg.sh @ONLY)
 

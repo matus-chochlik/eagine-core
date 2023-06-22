@@ -40,7 +40,7 @@ cat << CONTROL > "${pkg_dir}/DEBIAN/control"
 Package: eagine-core-tools
 Version: @PKG_VERSION@
 Architecture: @PKG_ARCH@
-Installed-Size: $(du -k -s ${pkg_dir} | cut -f1)
+Installed-Size: $(eagine_deb_installed_size ${pkg_dir})
 Depends: coreutils,python3,python3-pip
 Suggests: postgresql-client
 Maintainer: Matus Chochlik <chochlik@gmail.com>
