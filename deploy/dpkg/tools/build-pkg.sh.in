@@ -1,0 +1,49 @@
+#!/bin/bash
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+src_dir=$(realpath "@SRC_DIR@")
+bin_dir=$(realpath "@BIN_DIR@")
+pkg_dir=$(realpath "@PKG_DIR@")
+
+mkdir -p "${pkg_dir}/usr"
+pkg_prefix=$(realpath "@PKG_DIR@/usr")
+lib_prefix="${pkg_prefix}/lib/@PKG_MULTIARCH@"
+bin_prefix="${pkg_prefix}/bin"
+cmk_prefix="${lib_prefix}/cmake/EAGine"
+
+# ------------------------------------------------------------------------------
+mkdir -p "${bin_prefix}"
+
+cp "${src_dir}/source/app/procman.py" \
+   "${bin_prefix}/eagine-procman"
+
+cp "${src_dir}/source/app/servicectl.py" \
+   "${bin_prefix}/eagine-servicectl"
+
+cp "${src_dir}/source/app/xml_logs-cl.py" \
+   "${bin_prefix}/eagine-xml-logs-cl"
+
+cp "${src_dir}/source/app/xml_logs-psql.py" \
+   "${bin_prefix}/eagine-xml-logs-psql"
+
+cp "${src_dir}/source/app/psql_logs-cl.py" \
+   "${bin_prefix}/eagine-psql-logs-cl"
+
+cp "${src_dir}/source/app/ensure_main_key.sh" \
+   "${bin_prefix}/eagine-ensure-main-key"
+# ------------------------------------------------------------------------------
+mkdir -p "${pkg_dir}/DEBIAN"
+cat << CONTROL > "${pkg_dir}/DEBIAN/control"
+Package: eagine-core-tools
+Version: @PKG_VERSION@
+Architecture: @PKG_ARCH@
+Installed-Size: $(du -k -s ${pkg_dir} | cut -f1)
+Depends: coreutils,python3,python3-pip
+Suggests: postgresql-client
+Maintainer: Matus Chochlik <chochlik@gmail.com>
+Description: Collection of core command-line utilities for EAGine
+CONTROL
+# ------------------------------------------------------------------------------
