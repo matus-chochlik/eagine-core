@@ -1,0 +1,21 @@
+#!/bin/bash
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+pkg_dir=$(realpath "@PKG_DIR@")
+# ------------------------------------------------------------------------------
+mkdir -p "${pkg_dir}/DEBIAN"
+cat << CONTROL > "${pkg_dir}/DEBIAN/control"
+Package: eagine-recommended-compiler-@PKG_DEB_CODENAME@
+Version: @PKG_VERSION@
+Architecture: All
+Installed-Size: $(eagine_deb_installed_size ${pkg_dir})
+Depends: eagine-llvm-snapshot-@PKG_DEB_CODENAME@,llvm-17,llvm-17-tools,lld-17,llvm-17-linker-tools,clang-17,clang-tidy-17,clang-format-17,libc++-17-dev,libc++abi-17-dev
+Suggests: cmake,ninja-build
+Maintainer: Matus Chochlik <chochlik@gmail.com>
+Description: Metapackage installing recommended C++ compiler for building of EAGine.
+CONTROL
+# ------------------------------------------------------------------------------
+
