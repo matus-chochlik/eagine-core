@@ -113,6 +113,13 @@ class ArgumentParser(argparse.ArgumentParser):
             default=[]
         )
 
+        self.add_argument(
+            "--hide-progress",
+            dest='show_progress',
+            action="store_false",
+            default=True
+        )
+
         commands = self.add_mutually_exclusive_group()
 
         commands.add_argument(
@@ -306,7 +313,7 @@ class LogFormattingUtils(object):
             except ZeroDivisionError:
                 coef = 0.0
 
-            result = "% 3.1f%%├" % (100.0 * coef,)
+            result = "% 5.1f%%├" % (100.0 * coef,)
             width = max(width - 7, 0)
 
             pos = coef * float(width)
@@ -411,7 +418,7 @@ class LogStdOut(object):
     # --------------------------------------------------------------------------
     def write(self, what):
         self._out.write(what)
-        
+
     # --------------------------------------------------------------------------
     def writeColor(self, what, color):
         self._out.write(self._ttyColor(color) + what + self._ttyReset())
@@ -511,6 +518,7 @@ class LogCursesOut(object):
 class LogRenderer(object):
     # --------------------------------------------------------------------------
     def __init__(self, options, output):
+        self._options = options
         self._output = output
         self._utils = LogFormattingUtils(options)
         self._re_var = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
@@ -751,11 +759,11 @@ class LogRenderer(object):
                     item = self._progress[key] = {}
                 if "min" in item:
                     item["min"] = min(item["min"], arg_data["min"])
-                else: 
+                else:
                     item["min"] = arg_data["min"]
                 if "max" in item:
                     item["max"] = max(item["max"], arg_data["max"])
-                else: 
+                else:
                     item["max"] = arg_data["max"]
                 item["value"] = arg_data["values"][0]
                 item["stream_id"] = data["stream_id"]
@@ -765,8 +773,13 @@ class LogRenderer(object):
     def renderProgress(self):
         idx = 0
         curr_streams = [x for x in sorted(self._all_streams)]
+        self._progress = {
+            k: v for k, v in self._progress.items()\
+            if v["stream_id"] in self._all_streams}
+
         def _writeProgress(what):
             self.writeProgress(what, idx)
+
         for key, data in sorted(self._progress.items(), key=lambda x: x[1]["stream_id"]):
             stream_id = data["stream_id"]
             l = len(curr_streams)
@@ -814,11 +827,13 @@ class LogRenderer(object):
         self.renderEntry(data)
 
         if data["is_last"]:
+            self._all_streams.remove(data["stream_id"])
             self.renderStreamTail(data)
 
     # --------------------------------------------------------------------------
     def processEnd(self):
-        self.renderProgress()
+        if self._options.show_progress:
+            self.renderProgress()
         self._output.finish()
 
 # ------------------------------------------------------------------------------
