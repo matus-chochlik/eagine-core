@@ -578,6 +578,12 @@ function(eagine_do_generate_module_json PREFIX OUTPUT MODULE_NAME)
 	endif()
 	file(APPEND "${OUTPUT}" "\$<TARGET_FILE_NAME:eagine.${FULL_MODULE_NAME}>\"]")
 
+	file(APPEND "${OUTPUT}" ",\"cmakefiles\":[\"")
+	if(MODULE_BUILD_DIR)
+		file(APPEND "${OUTPUT}" "${MODULE_BUILD_DIR}/")
+	endif()
+	file(APPEND "${OUTPUT}" "module-eagine.${FULL_MODULE_NAME}.cmake\"]")
+
 	file(APPEND "${OUTPUT}" ",\"interfaces\":[")
 	get_property(
 		MODULE_CPPMS TARGET eagine.${FULL_MODULE_NAME}
