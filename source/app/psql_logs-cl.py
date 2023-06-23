@@ -295,8 +295,37 @@ class LogFormattingUtils(object):
             vmin = ctx["args"][name]["min"]
             vmax = ctx["args"][name]["max"]
             return "%3.1f%%" % (100.0 * (value - vmin) / (vmax - vmin), )
+        except:
+            return "N/A"
+
+    # --------------------------------------------------------------------------
+    def formatProgressBar(self, width, vmin, vmax, value):
+        try:
+            try:
+                coef = (value - vmin) / (vmax - vmin)
+            except ZeroDivisionError:
+                coef = 0.0
+
+            result = "% 3.1f%%├" % (100.0 * coef,)
+            width = max(width - 7, 0)
+
+            pos = coef * float(width)
+            cnt = int(pos)
+
+            i = cnt
+            result += "█" * cnt
+
+            if i < width:
+                parts = [" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█"]
+                result += parts[int(9 * (pos - float(cnt)))]
+                i += 1
+
+            result += "┈" * max(width - i, 0)
+
+            return result
         except Exception as err:
             return str(err)
+            return "░" * width
 
     # --------------------------------------------------------------------------
     def _initFormatters(self):
@@ -366,6 +395,16 @@ class LogStdOut(object):
                 return 50
 
     # --------------------------------------------------------------------------
+    def columns(self):
+        try:
+            return os.get_terminal_size().columns
+        except:
+            try:
+                return int(os.getenv("COLUMNS", 80))
+            except:
+                return 80
+
+    # --------------------------------------------------------------------------
     def begin(self):
         pass
 
@@ -376,6 +415,10 @@ class LogStdOut(object):
     # --------------------------------------------------------------------------
     def writeColor(self, what, color):
         self._out.write(self._ttyColor(color) + what + self._ttyReset())
+
+    # --------------------------------------------------------------------------
+    def writeProgress(self, what, index):
+        pass
 
     # --------------------------------------------------------------------------
     def finish(self):
@@ -406,9 +449,14 @@ class LogCursesOut(object):
         return curses.LINES
 
     # --------------------------------------------------------------------------
+    def columns(self):
+        return curses.COLS
+
+    # --------------------------------------------------------------------------
     def begin(self):
         self._line = ""
         self._lines = []
+        self._progress = {}
 
     # --------------------------------------------------------------------------
     def write(self, what):
@@ -426,8 +474,11 @@ class LogCursesOut(object):
         return self.write("+{{" + color + "}}" + what + "-{{" + color + "}}")
 
     # --------------------------------------------------------------------------
-    def showMainProgress(application_id, source_id, instance, value):
-        pass
+    def writeProgress(self, what, index):
+        try:
+            self._progress[index] += what
+        except KeyError:
+            self._progress[index] = what
 
     # --------------------------------------------------------------------------
     def changeAttrib(self, attrib, on):
@@ -449,9 +500,10 @@ class LogCursesOut(object):
                 found = re.match(self._re_color, line)
 
             self._window.addstr(line+'\n')
+        for prog_index, line in sorted(self._progress.items(), key = lambda kv: kv[0]):
+            self._window.addstr(prog_index, 0, line)
         self._window.refresh()
         self._line = None
-        self._lines = None
 
 # ------------------------------------------------------------------------------
 # Log entry renderer
@@ -462,6 +514,8 @@ class LogRenderer(object):
         self._output = output
         self._utils = LogFormattingUtils(options)
         self._re_var = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
+        self._progress = {}
+        self._all_streams = set()
         self._severity_colors = {
             "backtrace": "Cyan",
             "trace": "Cyan",
@@ -491,8 +545,8 @@ class LogRenderer(object):
         self._output.writeColor(what, color)
 
     # --------------------------------------------------------------------------
-    def showMainProgress(application_id, source_id, instance, value):
-        pass
+    def writeProgress(self, what, index):
+        self._output.writeProgress(what, index)
 
     # --------------------------------------------------------------------------
     def alwaysTranslateAsList(self, values):
@@ -694,19 +748,68 @@ class LogRenderer(object):
                 try:
                     item = self._progress[key]
                 except KeyError:
-                    item = self._progress[key] = {"order": len(self._progress)}
-                item["value"] = arg_data["values"]
+                    item = self._progress[key] = {}
+                if "min" in item:
+                    item["min"] = min(item["min"], arg_data["min"])
+                else: 
+                    item["min"] = arg_data["min"]
+                if "max" in item:
+                    item["max"] = max(item["max"], arg_data["max"])
+                else: 
+                    item["max"] = arg_data["max"]
+                item["value"] = arg_data["values"][0]
+                item["stream_id"] = data["stream_id"]
+                item["streams"] = data["streams"]
+
+    # --------------------------------------------------------------------------
+    def renderProgress(self):
+        idx = 0
+        curr_streams = [x for x in sorted(self._all_streams)]
+        def _writeProgress(what):
+            self.writeProgress(what, idx)
+        for key, data in sorted(self._progress.items(), key=lambda x: x[1]["stream_id"]):
+            stream_id = data["stream_id"]
+            l = len(curr_streams)
+            i = 0
+            _writeProgress("┊")
+            width = 1
+            while i < l:
+                if curr_streams[i] == stream_id:
+                    break
+                _writeProgress(" │")
+                width += 2
+                i += 1
+            _writeProgress(" ┝")
+            width += 2
+            while i < l - 1:
+                _writeProgress("━━")
+                width += 2
+                i += 1
+            _writeProgress("━┥")
+            width += 2
+            width = self._output.columns() - width - 1
+            _writeProgress(
+                self._utils.formatProgressBar(
+                    width, data.get("min"), data.get("max"), data.get("value")))
+            _writeProgress("┤\n")
+            idx += 1
+        _writeProgress("┊")
+        for unused  in curr_streams:
+            _writeProgress(" ╎")
+        _writeProgress("\n")
 
     # --------------------------------------------------------------------------
     def processBegin(self):
-        self._progress = {}
         self._output.begin()
+        self._all_streams.clear()
 
     # --------------------------------------------------------------------------
     def processEntry(self, data):
         if data["is_first"]:
             self.renderStreamHead(data)
 
+        for stream_id in data["streams"]:
+            self._all_streams.add(stream_id)
         self.trackProgress(data)
         self.renderEntry(data)
 
@@ -715,8 +818,8 @@ class LogRenderer(object):
 
     # --------------------------------------------------------------------------
     def processEnd(self):
+        self.renderProgress()
         self._output.finish()
-        self._progress = None
 
 # ------------------------------------------------------------------------------
 # Database reader
@@ -918,6 +1021,7 @@ def screenCommand(screen, options, db_conn):
     curses.init_pair(3, curses.COLOR_GREEN, -1)
     curses.init_pair(4, curses.COLOR_CYAN, -1)
     curses.init_pair(5, curses.COLOR_BLUE, -1)
+    curses.curs_set(False)
     try:
         reader = DbReader(options, db_conn)
         watch(options, reader, screen)
