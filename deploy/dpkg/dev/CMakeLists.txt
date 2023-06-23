@@ -3,61 +3,33 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-set(PKG_NAME "eagine-core-dev_${EAGINE_VERSION}-1_${PKG_ARCH}")
+set(PKG_NAME "eagine-core-dev_${EAGINE_VERSION}-${EAGINE_GIT_COMMITS_SINCE_VERSION}_${PKG_ARCH}")
 set(PKG_DIR "${CMAKE_CURRENT_BINARY_DIR}/${PKG_NAME}")
-set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
-set(BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/../..")
 set(PKG_PREFIX "${PKG_DIR}/usr")
-
-get_target_property(PKG_HEADERS eagine-core-headers PUBLIC_HEADER)
-get_target_property(PKG_GEN_HEADERS eagine-core-generated-headers PUBLIC_HEADER)
-
-file(GENERATE OUTPUT build-pkg-cfg INPUT build-pkg-cfg.in)
-configure_file(pkg-headers.txt.in pkg-headers.txt @ONLY)
-configure_file(pkg-gen-headers.txt.in pkg-gen-headers.txt @ONLY)
-configure_file(build-pkg.sh.in build-pkg.sh @ONLY)
-
+# ------------------------------------------------------------------------------
+eagine_generate_module_json(core)
+# ------------------------------------------------------------------------------
+file(GENERATE OUTPUT build-pkg.json INPUT build-pkg.json.in)
+configure_file(build-pkg.py.in build-pkg.py @ONLY)
+# ------------------------------------------------------------------------------
 add_custom_command(
 	OUTPUT "${PKG_DIR}/DEBIAN/control"
-	COMMAND ${BASH_COMMAND}
-	ARGS "${CMAKE_CURRENT_BINARY_DIR}/build-pkg.sh"
-	DEPENDS eagine.core
+	COMMAND ${PYTHON_COMMAND}
+	ARGS "${CMAKE_CURRENT_BINARY_DIR}/build-pkg.py"
 	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-	COMMENT "Copying files for ${PKG_NAME}.deb package"
-)
+	COMMENT "Preparing files for ${PKG_NAME}.deb package")
 
 add_custom_command(
 	OUTPUT ${PKG_NAME}.deb
 	COMMAND ${DPKG_DEB_COMMAND}
 	ARGS --build --root-owner-group ${PKG_NAME}
 	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-	DEPENDS "${PKG_DIR}/DEBIAN/control"
-	COMMENT "Building ${PKG_NAME}.deb package"
-)
-
+	DEPENDS ryml eagine.core "${PKG_DIR}/DEBIAN/control"
+	COMMENT "Building ${PKG_NAME}.deb package")
+# ------------------------------------------------------------------------------
 add_custom_target(
-	eagine-core-deb
-	DEPENDS ${PKG_NAME}.deb
-)
-install(
-	FILES "${CMAKE_CURRENT_BINARY_DIR}/${PKG_NAME}.deb"
-	DESTINATION opt/eagine/debian/
-	COMPONENT deb-packages
-	EXCLUDE_FROM_ALL
-	OPTIONAL
-)
+	eagine-core-dev-deb
+	DEPENDS ${PKG_NAME}.deb)
 
-add_custom_command(
-	OUTPUT "${CMAKE_INSTALL_PREFIX}/opt/eagine/debian/${PKG_NAME}.deb"
-	COMMAND ${CMAKE_COMMAND}
-	ARGS -DCOMPONENT=deb-packages -P cmake_install.cmake
-	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-	MAIN_DEPENDENCY "${CMAKE_CURRENT_BINARY_DIR}/${PKG_NAME}.deb"
-	DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${PKG_NAME}.deb"
-)
-
-add_custom_target(
-	install-eagine-core-deb
-	DEPENDS "${CMAKE_INSTALL_PREFIX}/opt/eagine/debian/${PKG_NAME}.deb"
-)
+add_dependencies(eagine-core-deb eagine-core-dev-deb)
 

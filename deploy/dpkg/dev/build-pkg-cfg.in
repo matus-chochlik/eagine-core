@@ -1,4 +1,0 @@
-eagine_core_name="$<TARGET_FILE_NAME:eagine-core>"
-eagine_core_path="$<TARGET_FILE:eagine-core>"
-ryml_name="$<TARGET_FILE_NAME:ryml>"
-ryml_path="$<TARGET_FILE:ryml>"

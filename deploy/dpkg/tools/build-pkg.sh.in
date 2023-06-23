@@ -4,6 +4,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
+source ../../deb_common.sh
 src_dir=$(realpath "@SRC_DIR@")
 bin_dir=$(realpath "@BIN_DIR@")
 pkg_dir=$(realpath "@PKG_DIR@")

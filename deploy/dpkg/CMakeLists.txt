@@ -25,7 +25,7 @@ add_subdirectory(compiler)
 add_subdirectory(tools)
 
 if(TARGET eagine.core)
-	#add_subdirectory(dev)
+	add_subdirectory(dev)
 endif()
 
 if(NOT TARGET eagine-deb)
