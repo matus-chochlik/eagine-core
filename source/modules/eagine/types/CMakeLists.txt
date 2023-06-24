@@ -65,7 +65,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.types PARTITION integer_range
-	IMPORTS limits
+	IMPORTS concepts limits
 )
 
 eagine_add_module(
