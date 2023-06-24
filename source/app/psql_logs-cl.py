@@ -8,6 +8,7 @@
 import os
 import re
 import sys
+import math
 import time
 import base64
 import argparse
@@ -252,10 +253,10 @@ class LogFormattingUtils(object):
         return lambda t: t
 
     # --------------------------------------------------------------------------
-    def formatDuration(self, s, w = 0):
+    def formatDuration(self, s, w = 0, n_a = "N/A"):
         c = self.getCenterText(w)
         if s is None:
-            return c("N/A")
+            return c(n_a)
         if isinstance(s, datetime.timedelta):
             s = s.total_seconds()
         if s >= 60480000:
@@ -753,10 +754,15 @@ class LogRenderer(object):
         for arg_data in data.get("args", {}).values():
             if arg_data.get("type") == "MainPrgrss":
                 key = (data["application_id"], data["source_id"], data["instance"])
+                entry_time = data["entry_time"]
+                value = arg_data["values"][0]
                 try:
                     item = self._progress[key]
                 except KeyError:
-                    item = self._progress[key] = {}
+                    item = self._progress[key] = {
+                        "start_time": entry_time,
+                        "start_value": value
+                    }
                 if "min" in item:
                     item["min"] = min(item["min"], arg_data["min"])
                 else:
@@ -765,9 +771,70 @@ class LogRenderer(object):
                     item["max"] = max(item["max"], arg_data["max"])
                 else:
                     item["max"] = arg_data["max"]
-                item["value"] = arg_data["values"][0]
                 item["stream_id"] = data["stream_id"]
                 item["streams"] = data["streams"]
+                item["time_since_stream_start"] = data["time_since_start"]
+                item["update_time"] = entry_time
+                item["value"] = value
+
+    # --------------------------------------------------------------------------
+    def progressStalled(self, data):
+        try:
+            now = datetime.datetime.now(datetime.timezone.utc)
+            return now - data["update_time"]
+        except:
+            return None
+
+    # --------------------------------------------------------------------------
+    def progressElapsed(self, data):
+        time_since_start = data.get("time_since_stream_start")
+        try:
+            now = datetime.datetime.now(datetime.timezone.utc)
+            duration1 = time_since_start
+            duration1 = duration1.total_seconds()
+            div1 = data["value"] - data["min"]
+
+            duration2 = now - data["start_time"]
+            duration2 = duration.total_seconds()
+            div2 = data["value"] - data["start_value"]
+
+            coef = data["value"] - data["min"]
+
+            def _blend(l, r, f):
+                return l * (1.0 - f) + r * f
+
+            return _blend(
+                duration1 * coef / div1,
+                duration2 * coef / div2,
+                math.exp(-coef / div2))
+
+            return duration * (1.0 + coef)
+        except:
+            return time_since_start
+
+    # --------------------------------------------------------------------------
+    def progressEstimated(self, data):
+        try:
+            now = datetime.datetime.now(datetime.timezone.utc)
+            duration1 = data.get("time_since_stream_start")
+            duration1 = duration1.total_seconds()
+            div1 = data["value"] - data["min"]
+
+            duration2 = now - data["start_time"]
+            duration2 = duration2.total_seconds()
+            div2 = data["value"] - data["start_value"]
+
+            coef = data["max"] - data["value"]
+
+            def _blend(l, r, f):
+                return l * (1.0 - f) + r * f
+
+            return _blend(
+                duration1 * coef / div1,
+                duration2 * coef / div2,
+                math.exp(-coef / div2))
+        except:
+            return None
 
     # --------------------------------------------------------------------------
     def renderProgress(self):
@@ -800,6 +867,18 @@ class LogRenderer(object):
                 i += 1
             _writeProgress("━┥")
             width += 2
+            stalled = self.progressStalled(data)
+            _writeProgress(self._utils.formatDuration(stalled, 9))
+            _writeProgress("│")
+            width += 10
+            elapsed = self.progressElapsed(data)
+            _writeProgress(self._utils.formatDuration(elapsed, 9))
+            _writeProgress("│")
+            width += 10
+            estimated = self.progressEstimated(data)
+            _writeProgress(self._utils.formatDuration(estimated, 9))
+            _writeProgress("│")
+            width += 10
             width = self._output.columns() - width - 1
             _writeProgress(
                 self._utils.formatProgressBar(
