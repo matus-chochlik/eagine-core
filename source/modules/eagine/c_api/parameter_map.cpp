@@ -186,7 +186,7 @@ export struct c_string_view_map {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P&&... p) const noexcept {
         return trivial_map{}(i, std::forward<P>(p)...)
-          .transform([=](const char* cstr, bool is_valid) -> string_view {
+          .transform_if([=](const char* cstr, bool is_valid) -> string_view {
               if(is_valid and cstr) {
                   return string_view{cstr};
               }
@@ -200,7 +200,7 @@ struct head_transform_map {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
-        return map(i, p...).transform([=, this](auto, bool is_valid) {
+        return map(i, p...).transform_if([=, this](auto, bool is_valid) {
             auto res{map(size_constant<CppSpanI>{}, p...)};
             if(is_valid) {
                 return memory::head(res, _len);
@@ -224,7 +224,7 @@ struct head_transform_map<S, 0, CppSpanI> {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
-        return map(i, p...).transform([=](auto len, bool is_valid) {
+        return map(i, p...).transform_if([=](auto len, bool is_valid) {
             auto res{map(size_constant<CppSpanI>{}, p...)};
             if(is_valid) {
                 return memory::head(res, len);
@@ -239,7 +239,7 @@ struct skip_transform_map {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
-        return map(i, p...).transform([=, this](auto, bool is_valid) {
+        return map(i, p...).transform_if([=, this](auto, bool is_valid) {
             auto res{map(size_constant<CppSpanI>{}, p...)};
             if(is_valid) {
                 return memory::skip(res, _len);
@@ -263,7 +263,7 @@ struct skip_transform_map<S, 0, CppSpanI> {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
-        return map(i, p...).transform([=](auto len, bool is_valid) {
+        return map(i, p...).transform_if([=](auto len, bool is_valid) {
             auto res{map(size_constant<CppSpanI>{}, p...)};
             if(is_valid) {
                 return memory::skip(res, len);
@@ -299,7 +299,7 @@ struct split_transform_map<S, 0, CppSpanI> {
     template <typename... P>
     constexpr auto operator()(size_constant<0> i, P... p) const noexcept {
         const trivial_map map;
-        return map(i, p...).transform([=](auto len, bool is_valid) {
+        return map(i, p...).transform_if([=](auto len, bool is_valid) {
             auto res{map(size_constant<CppSpanI>{}, p...)};
             if(is_valid) {
                 return res.advance(span_size(len));
