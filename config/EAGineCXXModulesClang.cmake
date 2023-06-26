@@ -133,6 +133,10 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		"-I${EAGINE_CORE_BINARY_ROOT}/include"
 		"-fprebuilt-module-path=.")
 
+	foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
+		list(APPEND EAGINE_MODULE_COMPILE_OPTIONS "-I${DIR}")
+	endforeach()
+
 	foreach(NAME ${EAGINE_MODULE_IMPORTS})
 		if(TARGET ${NAME})
 			get_property(
