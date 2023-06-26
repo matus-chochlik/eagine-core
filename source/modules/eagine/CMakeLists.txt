@@ -29,29 +29,29 @@ add_subdirectory(resource)
 eagine_add_module(
 	eagine.core
 	SUBMODULES
-		eagine.core.build_config
-		eagine.core.types
-		eagine.core.debug
-		eagine.core.memory
-		eagine.core.identifier
-		eagine.core.container
-		eagine.core.utility
-		eagine.core.valid_if
-		eagine.core.vectorization
-		eagine.core.reflection
-		eagine.core.build_info
-		eagine.core.units
-		eagine.core.math
-		eagine.core.string
-		eagine.core.c_api
-		eagine.core.runtime
-		eagine.core.logging
-		eagine.core.console
-		eagine.core.progress
-		eagine.core.value_tree
-		eagine.core.serialization
-		eagine.core.main_ctx
-		eagine.core.resource
+		build_config
+		types
+		debug
+		memory
+		identifier
+		container
+		utility
+		valid_if
+		vectorization
+		reflection
+		build_info
+		units
+		math
+		string
+		c_api
+		runtime
+		logging
+		console
+		progress
+		value_tree
+		serialization
+		main_ctx
+		resource
 	INTERFACE_LINK_LIBRARIES
 		ryml
 		systemd

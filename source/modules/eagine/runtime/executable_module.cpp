@@ -51,7 +51,7 @@ export struct executable_module : interface<executable_module> {
     /// @see find_function
     /// @see error_message
     virtual auto find_object(const string_view name)
-      -> std::optional<void*> = 0;
+      -> optionally_valid<void*> = 0;
 
     /// @brief Returns a pointer to the exported function with the specifed name.
     /// @see is_open
@@ -124,11 +124,21 @@ public:
     /// @see is_open
     /// @see find_function
     /// @see error_message
-    auto find_object(const string_view name) -> std::optional<void*> {
-        if(_module) {
-            return _module->find_object(name);
-        }
-        return {};
+    auto find_object(const string_view name) -> optionally_valid<void*> {
+        return _module.and_then(
+          [=, this](auto& mod) { return mod.find_object(name); });
+    }
+
+    /// @brief Returns a pointer to the exported object with the specifed name.
+    /// @see is_open
+    /// @see find_object
+    /// @see find_function
+    /// @see error_message
+    template <typename T>
+    auto find(const string_view name, std::type_identity<T>)
+      -> optional_reference<T> {
+        return find_object(name).transform(
+          [](void* ptr) { return static_cast<T*>(ptr); });
     }
 
     /// @brief Returns a pointer to the exported function with the specifed name.
@@ -155,7 +165,7 @@ public:
     }
 
 private:
-    std::shared_ptr<executable_module> _module;
+    shared_holder<executable_module> _module;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

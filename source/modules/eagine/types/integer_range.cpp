@@ -12,6 +12,7 @@ module;
 export module eagine.core.types:integer_range;
 
 import std;
+import :concepts;
 import :limits;
 
 namespace eagine {
@@ -47,6 +48,15 @@ export template <std::integral B, std::integral E>
 [[nodiscard]] constexpr auto integer_range(B b, E e) noexcept {
     using I = std::common_type_t<B, E>;
     return std::ranges::iota_view(I(b), I(e));
+}
+
+export template <optional_like O>
+[[nodiscard]] constexpr auto opt_integer_range(O c) noexcept {
+    using I = extracted_type_t<O>;
+    if(c) {
+        return std::ranges::iota_view(I(0), *c);
+    }
+    return std::ranges::iota_view<I, I>();
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

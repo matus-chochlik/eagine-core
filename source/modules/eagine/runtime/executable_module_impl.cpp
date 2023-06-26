@@ -67,14 +67,14 @@ public:
         return true;
     }
 
-    auto find_object(const string_view name) -> std::optional<void*> final {
+    auto find_object(const string_view name) -> optionally_valid<void*> final {
         ::dlerror();
         void* result = ::dlsym(_handle, c_str(name));
         if(const auto error{::dlerror()}) {
             _message.assign(error);
             return {};
         }
-        return {result};
+        return {result, true};
     }
 
     auto find_function(const string_view name)
@@ -114,12 +114,12 @@ private:
 shared_executable_module::shared_executable_module(
   nothing_t,
   module_load_options opts) noexcept
-  : _module{std::make_shared<posix_executable_module>(opts)} {}
+  : _module{hold<posix_executable_module>, opts} {}
 //------------------------------------------------------------------------------
 shared_executable_module::shared_executable_module(
   const string_view filename,
   module_load_options opts) noexcept
-  : _module{std::make_shared<posix_executable_module>(filename, opts)} {}
+  : _module{hold<posix_executable_module>, filename, opts} {}
 //------------------------------------------------------------------------------
 #else
 //------------------------------------------------------------------------------

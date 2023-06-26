@@ -242,7 +242,9 @@ class XmlLogDbWriter(object):
     def finishStream(self, pg_conn, src_id, stream_id, clean_shutdown):
         with pg_conn:
             with pg_conn.cursor() as cursor:
-                cursor.execute("SELECT eagilog.finish_stream(%s)", (stream_id,))
+                cursor.execute(
+                    "SELECT eagilog.finish_stream(%s,%s)", (
+                        stream_id, clean_shutdown))
         del self._root_ids[src_id]
 
     # --------------------------------------------------------------------------
@@ -326,6 +328,17 @@ class XmlLogDbWriter(object):
                                 arg_id,
                                 vinfo.get("type"),
                                 value))
+
+            try:
+                min_value, max_value = float(vinfo["min"]), float(vinfo["max"])
+                cursor.execute(
+                    "SELECT eagilog.add_entry_arg_min_max(%s, %s, %s, %s)", (
+                        entry_id,
+                        arg_id,
+                        min_value,
+                        max_value))
+            except:
+                pass
 
             for spec_arg_id, param in self._special_args.get(msg_tag, {}).items():
                 attrib_name, max_length = param

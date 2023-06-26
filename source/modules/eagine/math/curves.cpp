@@ -255,21 +255,21 @@ public:
     }
 
     /// @brief Makes a sequence of points on the curve (n points per segment).
-    void approximate(
-      std::vector<Type>& dest,
-      const valid_if_positive<span_size_t>& n) const noexcept {
+    void approximate(std::vector<Type>& dest, const span_size_t n)
+      const noexcept {
+        assert(n > 0);
         const auto sstep = segment_step();
         const auto s = segment_count();
 
-        dest.resize(integer(s * extract(n) + 1));
+        dest.resize(integer(s * n + 1));
 
         auto p = dest.begin();
-        const Parameter t_step = Parameter(1) / Parameter(extract(n));
+        const Parameter t_step = Parameter(1) / Parameter(n);
 
         for(const auto i : integer_range(s)) {
             const auto poffs = i * sstep;
             auto t_sub = Parameter(0);
-            for([[maybe_unused]] const auto j : integer_range(extract(n))) {
+            for([[maybe_unused]] const auto j : integer_range(n)) {
                 assert(p != dest.end());
                 *p = Type(_bezier(t_sub, skip(view(_points), poffs)));
                 ++p;

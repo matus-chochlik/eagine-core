@@ -66,6 +66,11 @@ public:
         return has_value();
     }
 
+    /// @brief Dereference
+    constexpr auto operator*() const noexcept -> Handle {
+        return _name;
+    }
+
     /// @brief Explicit conversion to the underlying handle type.
     explicit constexpr operator Handle() const noexcept {
         return _name;
@@ -95,15 +100,6 @@ export template <typename Tag, typename Handle, Handle invalid>
 constexpr auto to_underlying(basic_handle<Tag, Handle, invalid> h) noexcept
   -> Handle {
     return static_cast<Handle>(h);
-}
-//------------------------------------------------------------------------------
-/// @brief Overload of extract for basic handle values.
-/// @pre h.has_value()
-export template <typename Tag, typename Handle, Handle invalid>
-constexpr auto extract(const basic_handle<Tag, Handle, invalid>& h) noexcept
-  -> const Handle& {
-    assert(h.has_value());
-    return *h;
 }
 //------------------------------------------------------------------------------
 /// @brief Owning wrapper for C-API opaque handle types.

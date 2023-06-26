@@ -18,6 +18,16 @@ define_property(
 	PROPERTY EAGINE_MODULE_PARTITIONS
 	BRIEF_DOCS "Module partition list"
 	FULL_DOCS "List of partition names for a module")
+define_property(
+	TARGET
+	PROPERTY EAGINE_MODULE_SUBMODULES
+	BRIEF_DOCS "Module sub-module list"
+	FULL_DOCS "List of submodule names for a module")
+define_property(
+	TARGET
+	PROPERTY EAGINE_MODULE_BUILD_DIR
+	BRIEF_DOCS "Module build directory"
+	FULL_DOCS "Path to the build directory for a module")
 # ------------------------------------------------------------------------------
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
@@ -59,6 +69,9 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		add_library(
 			${EAGINE_MODULE_PROPER} STATIC
 			$<TARGET_OBJECTS:${EAGINE_MODULE_OBJECTS}>)
+		set_property(
+			TARGET ${EAGINE_MODULE_PROPER}
+			PROPERTY EAGINE_MODULE_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 		set_property(
 			TARGET ${EAGINE_MODULE_PROPER}
 			PROPERTY EAGINE_MODULE_PCM_PATH "${CMAKE_CURRENT_BINARY_DIR}")
@@ -120,6 +133,10 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		"-I${EAGINE_CORE_BINARY_ROOT}/include"
 		"-fprebuilt-module-path=.")
 
+	foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
+		list(APPEND EAGINE_MODULE_COMPILE_OPTIONS "-I${DIR}")
+	endforeach()
+
 	foreach(NAME ${EAGINE_MODULE_IMPORTS})
 		if(TARGET ${NAME})
 			get_property(
@@ -167,11 +184,16 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	endforeach()
 
 	foreach(NAME ${EAGINE_MODULE_SUBMODULES})
+		set_property(
+			TARGET ${EAGINE_MODULE_PROPER}
+			APPEND PROPERTY EAGINE_MODULE_SUBMODULES
+				${NAME}
+		)
 		get_property(
-			PCM_PATH TARGET ${NAME}
+			PCM_PATH TARGET ${EAGINE_MODULE_PROPER}.${NAME}
 			PROPERTY EAGINE_MODULE_PCM_PATH)
 		if("${PCM_PATH}" STREQUAL "")
-			message(FATAL_ERROR "Missing PCM path on ${NAME}")
+			message(FATAL_ERROR "Missing PCM path on ${EAGINE_MODULE_PROPER}.${NAME}")
 		endif()
 
 		list(
@@ -193,13 +215,13 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			PUBLIC "-fprebuilt-module-path=${PCM_PATH}")
 		target_link_libraries(
 			${EAGINE_MODULE_PROPER}
-			PRIVATE "${NAME}")
+			PRIVATE "${EAGINE_MODULE_PROPER}.${NAME}")
 		target_sources(
 			${EAGINE_MODULE_PROPER}
-			PRIVATE $<TARGET_OBJECTS:${NAME}-objects>)
+			PRIVATE $<TARGET_OBJECTS:${EAGINE_MODULE_PROPER}.${NAME}-objects>)
 
 		get_property(
-			COPIED_OBJECTS TARGET ${NAME}-objects
+			COPIED_OBJECTS TARGET ${EAGINE_MODULE_PROPER}.${NAME}-objects
 			PROPERTY SOURCES)
 		list(FILTER COPIED_OBJECTS INCLUDE REGEX "^.*\\.o$")
 		foreach(OBJECT ${COPIED_OBJECTS})
@@ -211,14 +233,14 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				PRIVATE "${PCM_PATH}/${OBJECT}")
 		endforeach()
 
-		list(APPEND EAGINE_MODULE_DEPENDS ${NAME})
+		list(APPEND EAGINE_MODULE_DEPENDS ${EAGINE_MODULE_PROPER}.${NAME})
 		list(
 			APPEND EAGINE_MODULE_IMPORT_PCM_DEPENDS
-			"\${PROJECT_BINARY_DIR}/EAGine/${NAME}.pcm")
+			"\${PROJECT_BINARY_DIR}/EAGine/${EAGINE_MODULE_PROPER}.${NAME}.pcm")
 		file(
 			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
-			"if(NOT TARGET ${NAME})\n"
-			"	include(\"\${_IMPORT_PREFIX}/${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}/module-${NAME}.cmake\")\n"
+			"if(NOT TARGET ${EAGINE_MODULE_PROPER}.${NAME})\n"
+			"	include(\"\${_IMPORT_PREFIX}/${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}/module-${EAGINE_MODULE_PROPER}.${NAME}.cmake\")\n"
 			"endif()\n")
 	endforeach()
 
@@ -534,3 +556,98 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 		)
 	endif()
 endfunction()
+# ------------------------------------------------------------------------------
+function(eagine_do_generate_module_json PREFIX OUTPUT MODULE_NAME)
+	unset(FULL_MODULE_NAME)
+	unset(FULL_MODULE_PATH)
+	foreach(ENTRY ${ARGN})
+		set(FULL_MODULE_NAME "${FULL_MODULE_NAME}${ENTRY}.")
+		set(FULL_MODULE_PATH "${FULL_MODULE_PATH}${ENTRY}/")
+	endforeach()
+	set(FULL_MODULE_NAME "${FULL_MODULE_NAME}${MODULE_NAME}")
+	set(FULL_MODULE_PATH "${FULL_MODULE_PATH}${MODULE_PATH}")
+
+	file(APPEND "${OUTPUT}" "{\"name\":\"${MODULE_NAME}\"")
+	file(APPEND "${OUTPUT}" ",\"full_name\":\"${FULL_MODULE_NAME}\"")
+
+	get_property(
+		MODULE_BUILD_DIR TARGET eagine.${FULL_MODULE_NAME}
+		PROPERTY EAGINE_MODULE_BUILD_DIR)
+
+	file(RELATIVE_PATH MODULE_BUILD_DIR "${PREFIX}" "${MODULE_BUILD_DIR}")
+
+	file(APPEND "${OUTPUT}" ",\"libraries\":[\"")
+	if(MODULE_BUILD_DIR)
+		file(APPEND "${OUTPUT}" "${MODULE_BUILD_DIR}/")
+	endif()
+	file(APPEND "${OUTPUT}" "\$<TARGET_FILE_NAME:eagine.${FULL_MODULE_NAME}>\"]")
+
+	file(APPEND "${OUTPUT}" ",\"cmakefiles\":[\"")
+	if(MODULE_BUILD_DIR)
+		file(APPEND "${OUTPUT}" "${MODULE_BUILD_DIR}/")
+	endif()
+	file(APPEND "${OUTPUT}" "module-eagine.${FULL_MODULE_NAME}.cmake\"]")
+
+	file(APPEND "${OUTPUT}" ",\"interfaces\":[")
+	get_property(
+		MODULE_CPPMS TARGET eagine.${FULL_MODULE_NAME}
+		PROPERTY EAGINE_MODULE_INTERFACES)
+	set(FIRST_CPPM TRUE)
+	foreach(CPPM_PATH ${MODULE_CPPMS})
+		if(FIRST_CPPM)
+			set(FIRST_CPPM FALSE)
+		else()
+			file(APPEND "${OUTPUT}" ",")
+		endif()
+		file(RELATIVE_PATH CPPM_PATH "${PREFIX}" "${CPPM_PATH}")
+		file(APPEND "${OUTPUT}" "\"${CPPM_PATH}\"")
+	endforeach()
+	file(APPEND "${OUTPUT}" "]")
+
+	file(APPEND "${OUTPUT}" ",\"submodules\":[")
+	get_property(
+		MODULE_SUBMODULES TARGET eagine.${FULL_MODULE_NAME}
+		PROPERTY EAGINE_MODULE_SUBMODULES)
+	set(FIRST_SUBMOD TRUE)
+	foreach(SUBMODULE ${MODULE_SUBMODULES})
+		if(FIRST_SUBMOD)
+			set(FIRST_SUBMOD FALSE)
+		else()
+			file(APPEND "${OUTPUT}" ",")
+		endif()
+		eagine_do_generate_module_json(
+			"${PREFIX}" "${OUTPUT}"
+			${SUBMODULE} ${ARGN} ${MODULE_NAME})
+	endforeach()
+	file(APPEND "${OUTPUT}" "]")
+
+	file(APPEND "${OUTPUT}" "}")
+endfunction()
+# ------------------------------------------------------------------------------
+function(eagine_generate_module_json MODULE_NAME)
+	get_property(
+		MODULE_BUILD_DIR TARGET eagine.${MODULE_NAME}
+		PROPERTY EAGINE_MODULE_BUILD_DIR)
+
+	file(
+		WRITE "${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}.json.in"
+		"{\"build_directory\":\"${MODULE_BUILD_DIR}\"")
+	file(
+		APPEND "${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}.json.in"
+		",\"module\":")
+
+	eagine_do_generate_module_json(
+		"${MODULE_BUILD_DIR}"
+		"${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}.json.in"
+		${MODULE_NAME} ${ARGS})
+
+	file(
+		APPEND "${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}.json.in"
+		"}")
+
+	file(
+		GENERATE
+		OUTPUT "${MODULE_NAME}.json"
+		INPUT "${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}.json.in")
+endfunction()
+# ------------------------------------------------------------------------------

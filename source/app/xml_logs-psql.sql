@@ -28,6 +28,122 @@ CREATE FUNCTION eagilog.schema_data_size_GiB() RETURNS NUMERIC
 AS 'SELECT round(sum(total_bytes) / 1073741824, 3)::NUMERIC FROM eagilog.schema_statistics;'
 LANGUAGE sql IMMUTABLE;
 --------------------------------------------------------------------------------
+-- client session handling
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.client_session (
+	client_session_id BIGSERIAL PRIMARY KEY,
+	backend_pid INTEGER NOT NULL,
+	heartbeat_time TIMESTAMP WITH TIME ZONE NOT NULL
+);
+--------------------------------------------------------------------------------
+-- starts a new session or gets the current session for current connection
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.get_client_session()
+RETURNS eagilog.client_session.client_session_id%TYPE
+AS $$
+DECLARE
+	result eagilog.client_session.client_session_id%TYPE;
+BEGIN
+	LOOP
+		BEGIN
+			WITH sel AS (
+				SELECT cs.client_session_id
+				FROM eagilog.client_session cs
+				WHERE cs.backend_pid = pg_backend_pid()
+				FOR SHARE
+			)  , ins AS (
+				INSERT INTO eagilog.client_session (backend_pid, heartbeat_time)
+				SELECT pg_backend_pid(), now()
+				WHERE NOT EXISTS (SELECT 1 FROM sel)
+				RETURNING eagilog.client_session.client_session_id
+			)
+			SELECT sel.client_session_id FROM sel
+			UNION ALL
+			SELECT ins.client_session_id FROM ins
+			INTO result;
+		EXCEPTION WHEN UNIQUE_VIOLATION THEN
+			result := NULL;
+		END;
+
+		EXIT WHEN result IS NOT NULL;
+	END LOOP;
+	RETURN result;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.client_session_heartbeat()
+RETURNS VOID
+AS
+$$
+UPDATE eagilog.client_session
+SET heartbeat_time = now()
+WHERE backend_pid = pg_backend_pid()
+$$
+LANGUAGE sql;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.finish_client_session()
+RETURNS VOID
+AS
+$$
+DELETE FROM eagilog.client_session
+WHERE backend_pid = pg_backend_pid();
+$$
+LANGUAGE sql;
+--------------------------------------------------------------------------------
+-- entry tags blocked by client
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.client_session_blocked_entry_message (
+	client_session_id BIGINT NOT NULL,
+	application_id VARCHAR(10) NOT NULL,
+	source_id VARCHAR(10) NOT NULL,
+	tag VARCHAR(10) NOT NULL
+);
+
+ALTER TABLE eagilog.client_session_blocked_entry_message
+ADD PRIMARY KEY(client_session_id, application_id, source_id, tag);
+
+ALTER TABLE eagilog.client_session_blocked_entry_message
+ADD FOREIGN KEY(client_session_id)
+REFERENCES eagilog.client_session
+ON DELETE CASCADE;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.client_session_block_entry_message(
+	_application_id VARCHAR(10),
+	_source_id VARCHAR(10),
+	_tag VARCHAR(10)
+) RETURNS VOID
+AS
+$$
+	INSERT INTO eagilog.client_session_blocked_entry_message VALUES(
+		eagilog.get_client_session(),
+		coalesce(_application_id, ''),
+		coalesce(_source_id, ''),
+		coalesce(_tag, ''));
+$$ LANGUAGE sql;
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.client_blocked_entry_messages
+AS
+SELECT application_id, source_id, tag
+FROM eagilog.client_session
+JOIN eagilog.client_session_blocked_entry_message USING(client_session_id)
+WHERE backend_pid = pg_backend_pid();
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION eagilog.is_blocked_client_message(
+	_application_id VARCHAR(10),
+	_source_id VARCHAR(10),
+	_tag VARCHAR(10)
+) RETURNS BOOLEAN
+AS
+$$
+SELECT EXISTS(
+	SELECT *
+	FROM eagilog.client_blocked_entry_messages
+	WHERE (application_id = _application_id OR application_id = '')
+	AND (source_id = _source_id OR source_id = '')
+	AND (tag = _tag OR tag = '')
+);
+$$ LANGUAGE sql IMMUTABLE;
+--------------------------------------------------------------------------------
 -- benchmark type
 --------------------------------------------------------------------------------
 CREATE TABLE eagilog.benchmark_type (
@@ -258,6 +374,8 @@ CREATE TABLE eagilog.stream (
 	application_id VARCHAR(10) NULL,
 	start_time TIMESTAMP WITH TIME ZONE NOT NULL,
 	finish_time TIMESTAMP WITH TIME ZONE NULL,
+	first_entry_id BIGINT NULL,
+	last_entry_id BIGINT NULL,
 	stream_command_id INTEGER NULL,
 	git_hash VARCHAR(64) NULL,
 	git_version VARCHAR(32) NULL,
@@ -267,7 +385,8 @@ CREATE TABLE eagilog.stream (
 	compiler VARCHAR(32) NULL,
 	running_on_valgrind BOOL NULL,
 	low_profile_build BOOL NULL,
-	debug_build BOOL NULL
+	debug_build BOOL NULL,
+	failed BOOL NOT NULL DEFAULT FALSE
 );
 --------------------------------------------------------------------------------
 -- declared stream states
@@ -408,21 +527,30 @@ END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.finish_stream(
-	eagilog.stream.stream_id%TYPE
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_clean_shutdown BOOL
 ) RETURNS eagilog.stream.stream_id%TYPE
 AS $$
 BEGIN
 	UPDATE eagilog.stream
-	SET finish_time = now()
-	WHERE stream_id = $1;
+	SET finish_time = start_time + (
+		SELECT max(entry_time)
+		FROM eagilog.entry
+		WHERE stream_id = _stream_id
+	), last_entry_id = (
+		SELECT max(entry_id)
+		FROM eagilog.entry
+		WHERE stream_id = _stream_id
+	), failed = NOT _clean_shutdown
+	WHERE stream_id = _stream_id;
 
 	UPDATE eagilog.stream_state
 	SET end_time = now()
-	WHERE stream_id = $1
+	WHERE stream_id = _stream_id
 	AND end_time is NULL;
 
 	DELETE FROM eagilog.declared_stream_state
-	WHERE stream_id = $1;
+	WHERE stream_id = _stream_id;
 
 	RETURN $1;
 END
@@ -765,6 +893,11 @@ BEGIN
 		AND eagilog.declared_stream_state.end_tag = _tag
 	);
 
+	UPDATE eagilog.stream
+	SET first_entry_id = result
+	WHERE stream_id = _stream_id
+	AND first_entry_id IS NULL;
+
 	RETURN result;
 END
 $$ LANGUAGE plpgsql;
@@ -781,6 +914,35 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+-- returns the latest overlapping set of streams
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.recent_streams()
+RETURNS SETOF eagilog.stream
+AS
+$$
+DECLARE
+	_start_time TIMESTAMP WITH TIME ZONE;
+	_finish_time TIMESTAMP WITH TIME ZONE;
+	_row eagilog.stream;
+BEGIN
+	SELECT start_time, coalesce(finish_time, current_timestamp)
+	INTO _start_time, _finish_time
+	FROM eagilog.entry
+	JOIN eagilog.stream USING(stream_id)
+	ORDER BY entry_id DESC
+	LIMIT 1;
+
+	FOR _row IN
+		SELECT *
+		FROM eagilog.stream
+		WHERE _start_time BETWEEN start_time AND coalesce(finish_time, current_timestamp)
+		OR   _finish_time BETWEEN start_time AND coalesce(finish_time, current_timestamp)
+	LOOP
+		RETURN NEXT _row;
+	END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 -- format / entry views
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.stream_entry
@@ -794,12 +956,84 @@ SELECT
 	e.instance,
 	e.tag,
 	f.format,
-	s.start_time + e.entry_time AS entry_time
+	s.start_time + e.entry_time AS entry_time,
+	entry_time AS time_since_start,
+	s.first_entry_id = e.entry_id AS is_first,
+	coalesce(s.last_entry_id = e.entry_id, FALSE) AS is_last,
+	s.failed
 FROM eagilog.entry e
 JOIN eagilog.stream s USING(stream_id)
 JOIN eagilog.severity l USING(severity_id)
 JOIN eagilog.message_format f USING(message_format_id)
 ORDER BY entry_id;
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.recent_stream_entry
+AS
+SELECT
+	stream_id,
+	e.entry_id,
+	l.name AS severity,
+	s.application_id,
+	e.source_id,
+	e.instance,
+	e.tag,
+	f.format,
+	s.start_time + e.entry_time AS entry_time,
+	entry_time AS time_since_start,
+	s.first_entry_id = e.entry_id AS is_first,
+	coalesce(s.last_entry_id = e.entry_id, FALSE) AS is_last,
+	s.failed
+FROM eagilog.entry e
+JOIN eagilog.recent_streams() s USING(stream_id)
+JOIN eagilog.severity l USING(severity_id)
+JOIN eagilog.message_format f USING(message_format_id)
+ORDER BY entry_id;
+--------------------------------------------------------------------------------
+-- all streams and entries
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.streams_and_entries
+AS
+SELECT eagilog.contemporary_streams(entry_time), *
+FROM eagilog.stream_entry
+ORDER BY entry_id DESC;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.latest_stream_entries(_count INTEGER)
+RETURNS SETOF eagilog.streams_and_entries
+AS
+$$
+SELECT *
+FROM (SELECT * FROM eagilog.streams_and_entries LIMIT _count) AS tail
+ORDER BY entry_id ASC;
+$$ LANGUAGE sql;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.recent_stream_entries()
+RETURNS SETOF eagilog.streams_and_entries
+AS
+$$
+SELECT eagilog.contemporary_streams(entry_time), *
+FROM eagilog.recent_stream_entry
+ORDER BY entry_id;
+$$ LANGUAGE sql;
+--------------------------------------------------------------------------------
+-- client streams and entries
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.client_streams_and_entries
+AS
+SELECT eagilog.contemporary_streams(entry_time), *
+FROM eagilog.stream_entry
+WHERE NOT eagilog.is_blocked_client_message(application_id, source_id, tag)
+ORDER BY entry_id DESC;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.latest_client_stream_entries(_count INTEGER)
+RETURNS SETOF eagilog.client_streams_and_entries
+AS
+$$
+SELECT *
+FROM (SELECT * FROM eagilog.client_streams_and_entries LIMIT _count) AS tail
+ORDER BY entry_id ASC;
+$$ LANGUAGE sql;
+--------------------------------------------------------------------------------
+-- other format / entry views
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.message_format_ref_count
 AS
@@ -963,6 +1197,42 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+CREATE TABLE eagilog.arg_min_max(
+	entry_id BIGINT NOT NULL,
+	arg_id VARCHAR(10) NOT NULL,
+	min_value DOUBLE PRECISION NOT NULL,
+	max_value DOUBLE PRECISION NOT NULL
+);
+
+ALTER TABLE eagilog.arg_min_max
+ADD PRIMARY KEY(entry_id, arg_id);
+
+ALTER TABLE eagilog.arg_min_max
+ADD FOREIGN KEY(entry_id)
+REFERENCES eagilog.entry;
+
+CREATE FUNCTION eagilog.add_entry_arg_min_max(
+	_entry_id eagilog.arg_float.entry_id%TYPE,
+	_arg_id eagilog.arg_float.arg_id%TYPE,
+	_min_value eagilog.arg_min_max.min_value%TYPE,
+	_max_value eagilog.arg_min_max.max_value%TYPE
+) RETURNS VOID
+AS $$
+BEGIN
+	BEGIN
+		INSERT INTO eagilog.arg_min_max
+		(entry_id, arg_id, min_value, max_value)
+		VALUES(_entry_id, _arg_id, _min_value, _max_value);
+	EXCEPTION WHEN UNIQUE_VIOLATION THEN
+		UPDATE eagilog.arg_min_max
+		SET min_value = least(min_value, _min_value),
+			max_value = greatest(max_value, _max_value)
+		WHERE entry_id = _entry_id
+		AND arg_id = _arg_id;
+	END;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 -- arg_duration
 --------------------------------------------------------------------------------
 CREATE TABLE eagilog.arg_duration(
@@ -1000,6 +1270,94 @@ BEGIN
 	VALUES(_entry_id, _arg_id, _arg_order, _type, _value);
 END
 $$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
+-- entry / argument views and functions
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.entry_and_args
+AS
+SELECT
+	entry_id,
+	arg_id,
+	arg_type,
+	arg_order,
+	min_value,
+	max_value,
+	value AS value_integer,
+	NULL::VARCHAR AS value_string,
+	NULL::DOUBLE PRECISION AS value_float,
+	NULL::INTERVAL AS value_duration,
+	NULL::BOOL AS value_boolean
+FROM arg_integer
+LEFT JOIN arg_min_max USING(entry_id, arg_id)
+UNION
+SELECT
+	entry_id,
+	arg_id,
+	arg_type,
+	arg_order,
+	NULL::DOUBLE PRECISION,
+	NULL::DOUBLE PRECISION,
+	NULL::NUMERIC,
+	value,
+	NULL::DOUBLE PRECISION,
+	NULL::INTERVAL,
+	NULL::BOOL
+FROM arg_string
+UNION
+SELECT
+	entry_id,
+	arg_id,
+	arg_type,
+	arg_order,
+	min_value,
+	max_value,
+	NULL::NUMERIC,
+	NULL::VARCHAR,
+	value,
+	NULL::INTERVAL,
+	NULL::BOOL
+FROM arg_float
+LEFT JOIN arg_min_max USING(entry_id, arg_id)
+UNION
+SELECT
+	entry_id,
+	arg_id,
+	arg_type,
+	arg_order,
+	NULL::DOUBLE PRECISION,
+	NULL::DOUBLE PRECISION,
+	NULL::NUMERIC,
+	NULL::VARCHAR,
+	NULL::DOUBLE PRECISION,
+	value,
+	NULL::BOOL
+FROM arg_duration
+UNION
+SELECT
+	entry_id,
+	arg_id,
+	arg_type,
+	arg_order,
+	NULL::DOUBLE PRECISION,
+	NULL::DOUBLE PRECISION,
+	NULL::NUMERIC,
+	NULL::VARCHAR,
+	NULL::DOUBLE PRECISION,
+	NULL::INTERVAL,
+	value
+FROM arg_boolean;
+--------------------------------------------------------------------------------
+-- argument of an entry
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.args_of_entry(
+	_entry_id eagilog.entry.entry_id%TYPE
+) RETURNS SETOF eagilog.entry_and_args AS
+$$
+	SELECT *
+	FROM eagilog.entry_and_args
+	WHERE entry_id = _entry_id
+	AND arg_id IS NOT NULL;
+$$ LANGUAGE sql;
 --------------------------------------------------------------------------------
 -- profiling intervals
 --------------------------------------------------------------------------------
@@ -1097,6 +1455,17 @@ GROUP BY
 	s.debug_build;
 --------------------------------------------------------------------------------
 -- other views
+--------------------------------------------------------------------------------
+-- count of entries by severity
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.severity_entry_counts
+AS
+SELECT
+	s.name AS severity,
+	count(entry_id) severity_entry_count
+FROM eagilog.entry e
+JOIN eagilog.severity s USING(severity_id)
+GROUP BY severity_id, s.name;
 --------------------------------------------------------------------------------
 -- count of entries by source
 --------------------------------------------------------------------------------

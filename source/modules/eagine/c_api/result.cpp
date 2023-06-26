@@ -141,6 +141,14 @@ public:
 
     template <typename F>
     auto transform(const F&) const -> result<
+      std::invoke_result_t<F, const Result&>,
+      Info,
+      result_validity::never> {
+        return {*this};
+    }
+
+    template <typename F>
+    auto transform_if(const F&) const -> result<
       std::invoke_result_t<F, const Result&, bool>,
       Info,
       result_validity::never> {
@@ -198,7 +206,13 @@ public:
     }
 
     template <typename F>
-    auto transform(const F&) const -> result<
+    auto transform(const F&) const
+      -> result<std::invoke_result_t<F, nothing_t>, Info, result_validity::never> {
+        return {*this};
+    }
+
+    template <typename F>
+    auto transform_if(const F&) const -> result<
       std::invoke_result_t<F, nothing_t, bool>,
       Info,
       result_validity::never> {
@@ -321,6 +335,15 @@ public:
     /// @brief Returns an result with the value transformed by the specified function.
     template <typename F>
     auto transform(F&& function) const -> result<
+      std::invoke_result_t<F, const Result&>,
+      Info,
+      result_validity::always> {
+        return {std::invoke(std::forward<F>(function), _value), *this};
+    }
+
+    /// @brief Returns an result with the value transformed by the specified function.
+    template <typename F>
+    auto transform_if(F&& function) const -> result<
       std::invoke_result_t<F, const Result&, bool>,
       Info,
       result_validity::always> {
@@ -384,7 +407,13 @@ public:
     }
 
     template <typename F>
-    auto transform(F&& function) const -> result<
+    auto transform(F&& function) const
+      -> result<std::invoke_result_t<F, nothing_t>, Info, result_validity::always> {
+        return {std::invoke(std::forward<F>(function), nothing), *this};
+    }
+
+    template <typename F>
+    auto transform_if(F&& function) const -> result<
       std::invoke_result_t<F, nothing_t, bool>,
       Info,
       result_validity::always> {
@@ -500,6 +529,18 @@ public:
 
     template <typename F>
     auto transform(F&& function) const -> result<
+      std::invoke_result_t<F, const Result&>,
+      Info,
+      result_validity::maybe> {
+        if(has_value()) {
+            return {
+              std::invoke(std::forward<F>(function), _value), true, *this};
+        }
+        return {};
+    }
+
+    template <typename F>
+    auto transform_if(F&& function) const -> result<
       std::invoke_result_t<F, const Result&, bool>,
       Info,
       result_validity::maybe> {
@@ -570,7 +611,17 @@ public:
     }
 
     template <typename F>
-    auto transform(F&& function) const -> result<
+    auto transform(F&& function) const
+      -> result<std::invoke_result_t<F, nothing_t>, Info, result_validity::maybe> {
+        if(has_value()) {
+            return {
+              std::invoke(std::forward<F>(function), nothing), true, *this};
+        }
+        return {};
+    }
+
+    template <typename F>
+    auto transform_if(F&& function) const -> result<
       std::invoke_result_t<F, nothing_t, bool>,
       Info,
       result_validity::maybe> {
@@ -589,27 +640,6 @@ private:
     bool _valid{false};
 };
 //------------------------------------------------------------------------------
-/// @brief Overload of extract for result.
-/// @ingroup c_api_wrap
-export template <typename Result, typename Info>
-constexpr auto extract(result<Result, Info, result_validity::never>&) noexcept
-  -> Result& {
-    return unreachable_reference(std::type_identity<Result>{});
-}
-
-export template <typename Result, typename Info>
-constexpr auto extract(
-  const result<Result, Info, result_validity::never>&) noexcept
-  -> const Result& {
-    return unreachable_reference(std::type_identity<Result>{});
-}
-
-export template <typename Info>
-constexpr auto extract(
-  const result<void, Info, result_validity::never>&) noexcept -> nothing_t {
-    return {};
-}
-//------------------------------------------------------------------------------
 // combined_result
 //------------------------------------------------------------------------------
 export template <typename Result, typename Info>
@@ -625,65 +655,6 @@ public:
     combined_result(result<Result, SrcInfo, validity> src)
       : base{std::move(src)} {}
 };
-//------------------------------------------------------------------------------
-export template <typename Result, typename Info>
-constexpr auto extract(
-  result<Result, Info, result_validity::always>&& res) noexcept -> Result {
-    return std::move(res._value);
-}
-
-export template <typename Result, typename Info>
-constexpr auto extract(
-  result<Result, Info, result_validity::always>& res) noexcept -> Result& {
-    return res._value;
-}
-
-export template <typename Result, typename Info>
-constexpr auto extract(
-  const result<Result, Info, result_validity::always>& res) noexcept
-  -> const Result& {
-    return res._value;
-}
-
-export template <typename Info>
-constexpr auto extract(
-  const result<void, Info, result_validity::always>&) noexcept -> nothing_t {
-    return {};
-}
-
-/// @brief Specialization of extract for result.
-/// @ingroup c_api_wrap
-export template <typename Result, typename Info>
-constexpr auto extract(
-  result<Result, Info, result_validity::maybe>&& res) noexcept -> Result {
-    assert(res._valid);
-    return std::move(res._value);
-}
-
-/// @brief Specialization of extract for result.
-/// @ingroup c_api_wrap
-export template <typename Result, typename Info>
-constexpr auto extract(
-  result<Result, Info, result_validity::maybe>& res) noexcept -> Result& {
-    assert(res._valid);
-    return res._value;
-}
-
-/// @brief Specialization of extract for result.
-/// @ingroup c_api_wrap
-export template <typename Result, typename Info>
-constexpr auto extract(
-  const result<Result, Info, result_validity::maybe>& res) noexcept
-  -> const Result& {
-    assert(res._valid);
-    return res._value;
-}
-
-export template <typename Info>
-constexpr auto extract(
-  const result<void, Info, result_validity::maybe>&) noexcept -> nothing_t {
-    return {};
-}
 //------------------------------------------------------------------------------
 } // namespace c_api
 

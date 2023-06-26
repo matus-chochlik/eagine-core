@@ -1,0 +1,28 @@
+#!/bin/bash
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+source ../../deb_common.sh
+this_dir=$(realpath $(dirname ${BASH_SOURCE[0]}))
+pkg_dir=$(realpath "@PKG_DIR@")
+pkg_prefix=$(realpath "@PKG_DIR@/usr")
+
+# ------------------------------------------------------------------------------
+mkdir -p "${pkg_dir}/etc/apt/trusted.gpg.d/"
+cp	"${this_dir}/llvm-snapshot.gpg" "${pkg_dir}/etc/apt/trusted.gpg.d/"
+mkdir -p "${pkg_dir}/etc/apt/sources.list.d/"
+cp	"${this_dir}/81_llvm_@PKG_DEB_CODENAME@.list" "${pkg_dir}/etc/apt/sources.list.d/81_llvm.list"
+# ------------------------------------------------------------------------------
+mkdir -p "${pkg_dir}/DEBIAN"
+cat << CONTROL > "${pkg_dir}/DEBIAN/control"
+Package: eagine-llvm-snapshot-@PKG_DEB_CODENAME@
+Version: @PKG_VERSION@
+Architecture: all
+Installed-Size: $(eagine_deb_installed_size ${pkg_dir})
+Depends:
+Maintainer: Matus Chochlik <chochlik@gmail.com>
+Description: Setup of llvm snapshot APT package source and key for building of EAGine
+CONTROL
+

@@ -157,7 +157,7 @@ public:
     template <does_not_hide<basic_shared_byte_alloc> X>
         requires(std::is_convertible_v<std::decay_t<X>*, byte_allocator*>)
     basic_shared_byte_alloc(X&& x) noexcept
-      : _pballoc{std::make_shared<X>(std::forward<X>(x))} {}
+      : _pballoc{hold<X>, std::forward<X>(x)} {}
 
     auto operator=(basic_shared_byte_alloc&& that) noexcept
       -> basic_shared_byte_alloc& = default;
@@ -264,7 +264,7 @@ public:
     }
 
 private:
-    std::shared_ptr<byte_allocator> _pballoc{};
+    shared_holder<byte_allocator> _pballoc{};
 };
 
 export using shared_byte_allocator = basic_shared_byte_alloc<nothing_t>;
