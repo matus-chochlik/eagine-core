@@ -386,6 +386,22 @@ struct make_arg_map<CI, CppI, P, P> : reorder_arg_map<CI, CppI> {};
 export template <std::size_t I, typename P>
 struct make_arg_map<I, I, P, P> : trivial_arg_map<I> {};
 
+export template <std::size_t I, typename V>
+struct make_arg_map<I, I, V*, optional_reference<V>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...).get();
+    }
+};
+
+export template <std::size_t CI, std::size_t CppI, typename V>
+struct make_arg_map<CI, CppI, V*, optional_reference<V>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).get();
+    }
+};
+
 export template <std::size_t I>
 struct make_arg_map<I, I, const char*, string_view> {
     template <typename... P>
