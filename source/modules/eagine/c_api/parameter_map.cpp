@@ -631,7 +631,8 @@ struct make_args_map<CI, CppI, mp_list<CH, CT...>, mp_list<defaulted, CppT...>>
     operator();
 
     template <typename... P>
-    constexpr auto operator()(size_constant<CI>, P&&...) const noexcept -> CH {
+    constexpr auto operator()(size_constant<CI>, P&&...) const noexcept
+      -> std::remove_cvref_t<CH> {
         if constexpr(std::is_pointer_v<CH>) {
             return nullptr;
         } else if constexpr(std::is_integral_v<CH>) {
