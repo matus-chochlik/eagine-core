@@ -1,0 +1,100 @@
+#!/bin/bash -e
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+source "$(dirname ${BASH_SOURCE[0]})/../../common.sh"
+this_dir="$(realpath $(dirname ${0}))"
+# ------------------------------------------------------------------------------
+# docker compose
+# ------------------------------------------------------------------------------
+cfg_dir="${HOME}/.config/eagine/eagilog/psql"
+mkdir -p "${cfg_dir}/secrets"
+rm -f "${cfg_dir}/secrets/"*
+
+cp "${this_dir}/_secrets/"* "${cfg_dir}/secrets/"
+chmod 400 "${cfg_dir}/secrets/"*
+
+cat > "${cfg_dir}/docker-compose.yml" << COMPOSE
+version: "3.6"
+services:
+    log_psql_database:
+        image: ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_database
+        restart: always
+        networks:
+          - eagilog
+        ports:
+          - "5432:5432"
+        secrets:
+          - postgres_pg.passwd
+          - eagilog_pg.passwd
+          - backup_pg.passwd
+    log_psql_forwarder:
+        image: ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_forwarder
+        restart: always
+        networks:
+          - eagilog
+        ports:
+          - "34917:34917"
+        secrets:
+          - eagilog_pg.passwd
+        depends_on:
+          - log_psql_database
+
+networks:
+    eagilog:
+
+secrets:
+    postgres_pg.passwd:
+        file: ${cfg_dir}/secrets/postgres_pg.passwd
+    eagilog_pg.passwd:
+        file: ${cfg_dir}/secrets/eagilog_pg.passwd
+    backup_pg.passwd:
+        file: ${cfg_dir}/secrets/backup_pg.passwd
+COMPOSE
+# ------------------------------------------------------------------------------
+# executables
+# ------------------------------------------------------------------------------
+bin_dir="${HOME}/.local/bin"
+mkdir -p "${bin_dir}"
+
+rm -f "${bin_dir}/eaglog-psql-server-start"
+cat > "${bin_dir}/eaglog-psql-server-start" << START
+#!/bin/bash -e
+pushd "${cfg_dir}"
+docker-compose up --detach
+START
+chmod 555 "${bin_dir}/eaglog-psql-server-start"
+
+rm -f "${bin_dir}/eaglog-psql-server-stop"
+cat > "${bin_dir}/eaglog-psql-server-stop" << STOP
+#!/bin/bash -e
+pushd "${cfg_dir}"
+docker-compose down
+STOP
+chmod 555 "${bin_dir}/eaglog-psql-server-stop"
+# ------------------------------------------------------------------------------
+# systemd service
+# ------------------------------------------------------------------------------
+sdc_dir="${HOME}/.config/systemd/user"
+mkdir -p "${sdc_dir}"
+rm -f "${sdc_dir}/eagilog-psql.service"
+cat > "${sdc_dir}/eagilog-psql.service" << SERVICE
+[Unit]
+Description=eagine psql logging database service.
+
+[Service]
+Type=oneshot
+WorkingDirectory=${cfg_dir}
+RemainAfterExit=yes
+ExecStart=/bin/bash ${bin_dir}/eaglog-psql-server-start
+ExecStop=/bin/bash  ${bin_dir}/eaglog-psql-server-stop
+
+[Install]
+WantedBy=default.target
+SERVICE
+
+systemctl --user daemon-reload
+systemctl --user enable eagilog-psql
+# ------------------------------------------------------------------------------
