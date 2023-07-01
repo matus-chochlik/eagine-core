@@ -257,6 +257,8 @@ class LogFormattingUtils(object):
         c = self.getCenterText(w)
         if s is None:
             return c(n_a)
+        if isinstance(s, str):
+            s = float(s)
         if isinstance(s, datetime.timedelta):
             s = s.total_seconds()
         if s >= 60480000:
@@ -338,6 +340,7 @@ class LogFormattingUtils(object):
     # --------------------------------------------------------------------------
     def _initFormatters(self):
         self._formatters = {
+            "duration": lambda n,v,c: self.formatDuration(v),
             "MainPrgrss": lambda n,v,c: self.formatProgressValue(n, v, c),
             "Progress": lambda n,v,c: self.formatProgressValue(n, v, c)
         }
