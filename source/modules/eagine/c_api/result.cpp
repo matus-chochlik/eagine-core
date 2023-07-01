@@ -111,6 +111,18 @@ public:
         return Result{};
     }
 
+    [[nodiscard]] auto or_true() const noexcept -> bool
+        requires(std::convertible_to<Result, bool>)
+    {
+        return true;
+    }
+
+    [[nodiscard]] auto or_false() const noexcept -> bool
+        requires(std::convertible_to<Result, bool>)
+    {
+        return false;
+    }
+
     template <
       typename F,
       optional_like R =
@@ -297,6 +309,18 @@ public:
 
     [[nodiscard]] auto or_default() const noexcept -> Result {
         return _value;
+    }
+
+    [[nodiscard]] auto or_true() const noexcept -> bool
+        requires(std::convertible_to<Result, bool>)
+    {
+        return bool(_value);
+    }
+
+    [[nodiscard]] auto or_false() const noexcept -> bool
+        requires(std::convertible_to<Result, bool>)
+    {
+        return bool(_value);
     }
 
     template <
@@ -494,6 +518,24 @@ public:
             return _value;
         }
         return Result{};
+    }
+
+    [[nodiscard]] auto or_true() const noexcept -> bool
+        requires(std::convertible_to<Result, bool>)
+    {
+        if(has_value()) {
+            return bool(_value);
+        }
+        return true;
+    }
+
+    [[nodiscard]] auto or_false() const noexcept -> bool
+        requires(std::convertible_to<Result, bool>)
+    {
+        if(has_value()) {
+            return bool(_value);
+        }
+        return false;
     }
 
     template <
