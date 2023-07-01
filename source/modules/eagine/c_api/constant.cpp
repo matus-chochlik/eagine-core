@@ -35,10 +35,14 @@ private:
 //------------------------------------------------------------------------------
 /// @brief Class wrapping a constant with missing or unknown value.
 /// @ingroup c_api_wrap
-export template <typename T, typename Tag = nothing_t, bool isIndexed = false>
+export template <
+  typename ClassList,
+  typename T,
+  typename Tag = nothing_t,
+  bool isIndexed = false>
 struct no_constant
   : constant_base
-  , no_enum_value<T, Tag> {
+  , no_enum_value<T, ClassList, Tag> {
 public:
     template <typename ApiTraits, typename Api>
     constexpr no_constant(const string_view name, ApiTraits&, Api&) noexcept
@@ -46,7 +50,8 @@ public:
 
     /// @brief Adds the specified value to the constant (if it isIndexed).
     template <std::integral I>
-    constexpr auto operator+(const I) const noexcept -> no_enum_value<T, Tag>
+    constexpr auto operator+(const I) const noexcept
+      -> no_enum_value<T, ClassList, Tag>
         requires(isIndexed)
     {
         return {};
@@ -68,7 +73,10 @@ public:
     template <typename ApiTraits, typename Api>
     constexpr static_constant(string_view name, ApiTraits&, Api&) noexcept
       : constant_base{name}
-      , enum_value<T, ClassList, Tag>{value} {}
+      , enum_value<T, ClassList, Tag> {
+        value
+    }
+    {}
 
     /// @brief Adds the specified value to the constant (if it isIndexed).
     template <typename I>
@@ -104,8 +112,10 @@ public:
       ApiTraits& traits,
       Api& api) noexcept
       : constant_base{name}
-      , opt_enum_value<T, ClassList, Tag>{
-          traits.load_constant(api, name, std::type_identity<T>())} {}
+      , opt_enum_value<T, ClassList, Tag> {
+        traits.load_constant(api, name, std::type_identity<T>())
+    }
+    {}
 
     /// @brief Adds the specified value to the constant (it it isIndexed).
     template <typename I>
