@@ -14,7 +14,7 @@ bin_dir = os.path.realpath("@BIN_DIR@")
 pkg_dir = os.path.realpath("@PKG_DIR@")
 deb_dir  = os.path.join(pkg_dir, "DEBIAN")
 pkg_prefix = os.path.join(pkg_dir, "usr")
-cpp_prefix = os.path.join(pkg_prefix, "share", "eagine", "source", "@CMAKE_BUILD_TYPE@")
+cpp_prefix = os.path.join(pkg_prefix, "share", "eagine", "source", "@CMAKE_BUILD_TYPE@", "core")
 bin_prefix = os.path.join(pkg_prefix, "bin")
 lib_prefix = os.path.join(pkg_prefix, "lib")
 cmk_prefix = os.path.join(lib_prefix, "@PKG_MULTIARCH@", "cmake", "EAGine")
@@ -81,7 +81,8 @@ Package: eagine-core-dev
 Version: %s
 Architecture: %s
 Installed-Size: %d
-Depends: libsystemd-dev,zlib1g-dev
+Depends: cmake,libsystemd-dev,zlib1g-dev
+Suggests: ninja-build
 Maintainer: Matus Chochlik <chochlik@gmail.com>
 Description: Collection of various modern C++ utilities.
 """ % (
