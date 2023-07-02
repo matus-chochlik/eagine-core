@@ -6,7 +6,7 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 #
 function eagine_has_main_key() {
-	[[ -f "${1}" ]] && grep -qxF "main_key: " "${defaults}"
+	[[ -f "${1}" ]] && grep -qx 'main_key: .\{512,\}' "${1}"
 }
 
 size=${1:-512}
