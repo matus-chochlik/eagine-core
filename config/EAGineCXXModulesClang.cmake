@@ -381,7 +381,11 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 		endif()
 		file(
 			APPEND "${EAGINE_MODULE_CMAKE_FILE}"
-			")\n")
+			")\n"
+			"file(GLOB _ADDITIONAL_INCLUDES \"\${_IMPORT_PREFIX}/${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}/module-${EAGINE_MODULE_PROPER}-*.cmake\")\n"
+			"foreach(INCL \${_ADDITIONAL_INCLUDES})\n"
+			"	include(\"\${INCL}\")\n"
+			"endforeach()\n")
 	else()
 		list(APPEND EAGINE_MODULE_DEPENDS "${OUTPUT}.pcm")
 	endif()
