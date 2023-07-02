@@ -3,7 +3,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-set(PKG_VERSION 0.1.0)
+set(PKG_VERSION 0.2.0)
 foreach(PKG_DEB_CODENAME jammy)
 	set(PKG_NAME "eagine-llvm-snapshot-source-${PKG_DEB_CODENAME}_${PKG_VERSION}")
 	set(PKG_NAME "eagine-recommended-compiler-${PKG_DEB_CODENAME}_${PKG_VERSION}")
