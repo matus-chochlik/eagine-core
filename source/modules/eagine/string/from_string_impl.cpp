@@ -20,14 +20,121 @@ module;
 #endif
 
 module eagine.core.string;
+import <cerrno>;
+import std;
+import eagine.core.types;
 import eagine.core.memory;
 
 #if EAGINE_USE_BOOST_SPIRIT
-import std;
 import eagine.core.math;
 #endif
 
 namespace eagine {
+//------------------------------------------------------------------------------
+template <typename T, typename N>
+auto convert_from_string_with(
+  N (*converter)(const char*, char**),
+  const string_view src,
+  const std::type_identity<T> tid) noexcept -> optionally_valid<T> {
+    char* end = nullptr; // NOLINT(hicpp-vararg)
+    const auto cstr{c_str(src)};
+    errno = 0;
+    const N result{converter(cstr, &end)};
+    if((errno != ERANGE) and (end != cstr) and (end != nullptr)) {
+        if(auto converted{multiply_and_convert_if_fits<T>(
+             result, skip_to(cstr.view(), cstr.position_of(end)))}) {
+            return converted;
+        }
+    }
+
+    return parse_from_string(src, tid);
+}
+//------------------------------------------------------------------------------
+template <typename T, typename N>
+auto convert_from_string_with(
+  N (*converter)(const char*, char**, int),
+  const int base,
+  const string_view src,
+  const std::type_identity<T> tid) noexcept -> optionally_valid<T> {
+    char* end = nullptr; // NOLINT(hicpp-vararg)
+    const auto cstr{c_str(src)};
+    errno = 0;
+    const N result = converter(cstr, &end, base);
+    if((errno != ERANGE) and (end != cstr) and (end != nullptr)) {
+        if(auto converted{multiply_and_convert_if_fits<T>(
+             result, skip_to(cstr.view(), cstr.position_of(end)))}) {
+            return converted;
+        }
+    }
+    return parse_from_string(src, tid);
+}
+//------------------------------------------------------------------------------
+auto convert_integer_from_string(
+  const string_view src,
+  const std::type_identity<short> id,
+  const int base) noexcept -> optionally_valid<short> {
+    return convert_from_string_with(&std::strtol, base, src, id);
+}
+auto convert_integer_from_string(
+  const string_view src,
+  const std::type_identity<int> id,
+  const int base) noexcept -> optionally_valid<int> {
+    return convert_from_string_with(&std::strtol, base, src, id);
+}
+auto convert_integer_from_string(
+  const string_view src,
+  const std::type_identity<long> id,
+  const int base) noexcept -> optionally_valid<long> {
+    return convert_from_string_with(&std::strtol, base, src, id);
+}
+auto convert_integer_from_string(
+  const string_view src,
+  const std::type_identity<long long> id,
+  const int base) noexcept -> optionally_valid<long long> {
+    return convert_from_string_with(&std::strtoll, base, src, id);
+}
+auto convert_integer_from_string(
+  const string_view src,
+  const std::type_identity<unsigned short> id,
+  const int base) noexcept -> optionally_valid<unsigned short> {
+    return convert_from_string_with(&std::strtol, base, src, id);
+}
+auto convert_integer_from_string(
+  const string_view src,
+  const std::type_identity<unsigned int> id,
+  const int base) noexcept -> optionally_valid<unsigned int> {
+    return convert_from_string_with(&std::strtol, base, src, id);
+}
+auto convert_integer_from_string(
+  const string_view src,
+  const std::type_identity<unsigned long> id,
+  const int base) noexcept -> optionally_valid<unsigned long> {
+    return convert_from_string_with(&std::strtol, base, src, id);
+}
+auto convert_integer_from_string(
+  const string_view src,
+  const std::type_identity<unsigned long long> id,
+  const int base) noexcept -> optionally_valid<unsigned long long> {
+    return convert_from_string_with(&std::strtoll, base, src, id);
+}
+//------------------------------------------------------------------------------
+auto convert_float_from_string(
+  const string_view src,
+  const std::type_identity<float> id) noexcept -> optionally_valid<float> {
+    return convert_from_string_with(&std::strtof, src, id);
+}
+auto convert_float_from_string(
+  const string_view src,
+  const std::type_identity<double> id) noexcept -> optionally_valid<double> {
+    return convert_from_string_with(&std::strtod, src, id);
+}
+auto convert_float_from_string(
+  const string_view src,
+  const std::type_identity<long double> id) noexcept
+  -> optionally_valid<long double> {
+    return convert_from_string_with(&std::strtold, src, id);
+}
+//------------------------------------------------------------------------------
 #if EAGINE_USE_BOOST_SPIRIT
 namespace numexpr {
 //------------------------------------------------------------------------------
