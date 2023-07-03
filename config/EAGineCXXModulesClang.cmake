@@ -256,13 +256,18 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp")
 		add_custom_command(
 			OUTPUT ${SOURCE}.cppm
-			COMMAND ${CMAKE_COMMAND}
+			COMMAND ${CMAKE_CXX_COMPILER}
 			ARGS
-				-E copy_if_different
+				-std=c++${CMAKE_CXX_STANDARD}
+				-fmodules
+				-Wno-read-modules-implicitly
+				${CMAKE_CXX_FLAGS}
+				${EAGINE_MODULE_COMPILE_OPTIONS}
 				"${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp"
-				"${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm"
+				--preprocess
+				--output ${SOURCE}.cppm
 			DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}.cpp"
-			COMMENT "Copying CXX module interface ${SOURCE}.cpp")
+			COMMENT "Preprocessing CXX module interface ${SOURCE}.cpp")
 	elseif(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm")
 		message(FATAL_ERROR "Missing source ${SOURCE}.cppm")
 	endif()
