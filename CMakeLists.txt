@@ -31,7 +31,6 @@ find_package(EAGineStacktrace)
 
 include(EAGineCoreCommonFinish)
 include(EAGineOSInfo)
-include(EAGineGitInfo)
 
 add_subdirectory(submodules)
 enable_testing()
