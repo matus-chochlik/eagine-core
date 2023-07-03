@@ -121,6 +121,14 @@ class ArgumentParser(argparse.ArgumentParser):
             default=True
         )
 
+        self.add_argument(
+            "--sort-progress",
+            dest='sort_progress',
+            action="store",
+            choices=["source", "value", "remaining", "update"],
+            default="source"
+        )
+
         commands = self.add_mutually_exclusive_group()
 
         commands.add_argument(
@@ -840,6 +848,40 @@ class LogRenderer(object):
             return None
 
     # --------------------------------------------------------------------------
+    def keyProgressByStreamId(self, entry):
+        return entry[1]["stream_id"]
+
+    # --------------------------------------------------------------------------
+    def keyProgressByValue(self, entry):
+        data = entry[1]
+        try:
+            return (data["value"] - data["min"]) / (data["max"] - data["min"])
+        except:
+            return data["value"]
+
+    # --------------------------------------------------------------------------
+    def keyProgressByRemaining(self, entry):
+        data = entry[1]
+        try:
+            return (data["max"] - data["value"]) / (data["max"] - data["min"])
+        except:
+            return data["value"]
+
+    # --------------------------------------------------------------------------
+    def keyProgressByUpdate(self, entry):
+        return entry[1]["update_time"]
+
+    # --------------------------------------------------------------------------
+    def progressSorter(self):
+        if self._options.sort_progress == "value":
+            return self.keyProgressByValue
+        if self._options.sort_progress == "remaining":
+            return self.keyProgressByRemaining
+        if self._options.sort_progress == "update":
+            return self.keyProgressByUpdate
+        return self.keyProgressByStreamId
+
+    # --------------------------------------------------------------------------
     def renderProgress(self):
         idx = 0
         curr_streams = [x for x in sorted(self._all_streams)]
@@ -850,7 +892,7 @@ class LogRenderer(object):
         def _writeProgress(what):
             self.writeProgress(what, idx)
 
-        for key, data in sorted(self._progress.items(), key=lambda x: x[1]["stream_id"]):
+        for key, data in sorted(self._progress.items(), key=self.progressSorter()):
             stream_id = data["stream_id"]
             l = len(curr_streams)
             i = 0
