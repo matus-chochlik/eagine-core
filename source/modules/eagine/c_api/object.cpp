@@ -66,7 +66,13 @@ public:
         return has_value();
     }
 
+    /// @brief Returns the raw handle value.
+    constexpr auto value() const noexcept -> Handle {
+        return _name;
+    }
+
     /// @brief Dereference
+    /// @see value
     constexpr auto operator*() const noexcept -> Handle {
         return _name;
     }

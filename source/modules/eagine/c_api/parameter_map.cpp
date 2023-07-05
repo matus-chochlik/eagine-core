@@ -73,6 +73,16 @@ struct defaulted_arg_map {
         }
     }
 };
+
+export template <auto value, std::size_t... J>
+struct substituted_arg_map {
+    template <std::size_t I, typename... P>
+    constexpr auto operator()(size_constant<I>, P&&...) const noexcept
+        requires(... or (I == J))
+    {
+        return value;
+    }
+};
 //------------------------------------------------------------------------------
 export template <std::size_t... J>
 struct nullptr_arg_map {
@@ -664,14 +674,12 @@ struct make_args_map<
   CppI,
   mp_list<CH, CT...>,
   mp_list<substituted<value>, CppT...>>
-  : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>> {
+  : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>
+  , substituted_arg_map<value, CI> {
     using make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>::
     operator();
 
-    template <typename... P>
-    constexpr auto operator()(size_constant<CI>, P&&...) const noexcept {
-        return value;
-    }
+    using substituted_arg_map<value, CI>::operator();
 };
 
 export template <
