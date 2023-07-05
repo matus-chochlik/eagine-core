@@ -814,8 +814,15 @@ public:
     constexpr enum_bitfield(const EnumClass e) noexcept
       : _value{e} {}
 
-    template <typename Classes>
-    constexpr enum_bitfield(const enum_value<value_type, Classes> ev) noexcept
+    template <typename Classes, typename Tag>
+    constexpr enum_bitfield(
+      const enum_value<value_type, Classes, Tag> ev) noexcept
+        requires(mp_contains_v<Classes, EnumClass>)
+      : _value{ev} {}
+
+    template <typename Classes, typename Tag>
+    constexpr enum_bitfield(
+      const opt_enum_value<value_type, Classes> ev) noexcept
         requires(mp_contains_v<Classes, EnumClass>)
       : _value{ev} {}
 
