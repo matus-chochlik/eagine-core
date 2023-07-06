@@ -15,11 +15,12 @@ namespace eagine {
 /// @ingroup functional
 export template <typename T, T Ptr>
 struct member_function_constant;
-
+//------------------------------------------------------------------------------
 /// @brief Implementation of compile-time member function pointer wrappers.
 /// @ingroup functional
 export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...)>
 struct member_function_constant<RV (C::*)(P...), Ptr> {
+    using type = member_function_constant;
 
     /// @brief Alias for the member function pointer type.
     using pointer = RV (C::*)(P...);
@@ -43,26 +44,36 @@ struct member_function_constant<RV (C::*)(P...), Ptr> {
 
     /// @brief Returns the member function pointer.
     /// @see free_func
+    /// @see invoke
     [[nodiscard]] static constexpr auto get() noexcept -> pointer {
         return Ptr;
     }
 
     /// @brief A function that calls the member function on an instance of @p C.
     /// @see make_free
-    [[nodiscard]] static auto free_func(C* c, P... a) -> RV {
+    /// @see invoke
+    static auto free_func(C* c, P... a) -> RV {
         return (c->*Ptr)(std::forward<P>(a)...);
     }
 
     /// @brief Returns pointer to a free function corresponding to the member function.
     /// @see get
     /// @see free_func
+    /// @see invoke
     [[nodiscard]] static auto make_free() noexcept -> free_pointer {
         return &free_func;
     }
-};
 
+    /// @brief Invokes the referenced member function on the given object with args.
+    template <typename... Args>
+    static constexpr auto invoke(C& c, Args&&... args) -> RV {
+        return (c.*Ptr)(std::forward<Args>(args)...);
+    }
+};
+//------------------------------------------------------------------------------
 export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...) const>
 struct member_function_constant<RV (C::*)(P...) const, Ptr> {
+    using type = member_function_constant;
 
     /// @brief Alias for the member function pointer type.
     using pointer = RV (C::*)(P...) const;
@@ -102,10 +113,17 @@ struct member_function_constant<RV (C::*)(P...) const, Ptr> {
     [[nodiscard]] static auto make_free() noexcept -> free_pointer {
         return &free_func;
     }
-};
 
+    /// @brief Invokes the referenced member function on the given object with args.
+    template <typename... Args>
+    static constexpr auto invoke(const C& c, Args&&... args) -> RV {
+        return (c.*Ptr)(std::forward<Args>(args)...);
+    }
+};
+//------------------------------------------------------------------------------
 export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...) noexcept>
 struct member_function_constant<RV (C::*)(P...) noexcept, Ptr> {
+    using type = member_function_constant;
 
     /// @brief Alias for the member function pointer type.
     using pointer = RV (C::*)(P...) noexcept;
@@ -145,14 +163,21 @@ struct member_function_constant<RV (C::*)(P...) noexcept, Ptr> {
     [[nodiscard]] static auto make_free() noexcept -> free_pointer {
         return &free_func;
     }
-};
 
+    /// @brief Invokes the referenced member function on the given object with args.
+    template <typename... Args>
+    static constexpr auto invoke(C& c, Args&&... args) noexcept -> RV {
+        return (c.*Ptr)(std::forward<Args>(args)...);
+    }
+};
+//------------------------------------------------------------------------------
 export template <
   typename RV,
   typename C,
   typename... P,
   RV (C::*Ptr)(P...) const noexcept>
 struct member_function_constant<RV (C::*)(P...) const noexcept, Ptr> {
+    using type = member_function_constant;
 
     /// @brief Alias for the member function pointer type.
     using pointer = RV (C::*)(P...) const noexcept;
@@ -192,12 +217,34 @@ struct member_function_constant<RV (C::*)(P...) const noexcept, Ptr> {
     [[nodiscard]] static auto make_free() noexcept -> free_pointer {
         return &free_func;
     }
-};
 
+    /// @brief Invokes the referenced member function on the given object with args.
+    template <typename... Args>
+    static constexpr auto invoke(const C& c, Args&&... args) noexcept -> RV {
+        return (c.*Ptr)(std::forward<Args>(args)...);
+    }
+};
+//------------------------------------------------------------------------------
 /// @brief Helper for instantiating the member_function_constant template.
 /// @ingroup functional
+/// @see is_member_function_constant_v
 export template <auto C>
 using member_function_constant_t = member_function_constant<decltype(C), C>;
 
+export template <typename X>
+struct is_member_function_constant : std::false_type {};
+
+export template <auto C>
+struct is_member_function_constant<member_function_constant<decltype(C), C>>
+  : std::true_type {};
+
+/// @brief Trait indicating if a X is an member_function_constant
+/// @ingroup functional
+/// @see is_member_function_constant_v
+/// @see member_function_constant
+export template <typename X>
+constexpr const bool is_member_function_constant_v =
+  is_member_function_constant<X>::value;
+//------------------------------------------------------------------------------
 } // namespace eagine
 
