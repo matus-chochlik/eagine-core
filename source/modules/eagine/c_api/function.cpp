@@ -109,7 +109,7 @@ public:
 
     /// @brief Calls the wrapped function.
     template <typename... Args>
-    constexpr auto operator()(Args&&... args) const noexcept -> RV
+    constexpr auto operator()(Args&&... args) const noexcept
         requires(sizeof...(Params) == sizeof...(Args))
     {
         return ApiTraits::call_static(
@@ -148,7 +148,7 @@ public:
 
     /// @brief Calls the wrapped function.
     template <typename... Args>
-    constexpr auto operator()(Args&&... args) const noexcept -> RV
+    constexpr auto operator()(Args&&... args) const noexcept
         requires(sizeof...(Params) == sizeof...(Args))
     {
         return ApiTraits::call_dynamic(
