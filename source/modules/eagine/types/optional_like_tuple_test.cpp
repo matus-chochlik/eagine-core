@@ -10,6 +10,12 @@
 import std;
 import eagine.core.types;
 //------------------------------------------------------------------------------
+static_assert(
+  eagine::optional_like<eagine::optional_like_tuple<
+    std::optional<std::string>,
+    eagine::optionally_valid<std::string>,
+    eagine::optional_reference<std::string>>>,
+  "optional-like");
 void optional_like_tuple_empty(auto& s) {
     eagitest::case_ test{s, 1, "empty"};
 
