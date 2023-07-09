@@ -10,6 +10,12 @@
 import std;
 import eagine.core.types;
 //------------------------------------------------------------------------------
+static_assert(
+  eagine::optional_like<eagine::optional_like_tuple<
+    std::optional<std::string>,
+    eagine::optionally_valid<std::string>,
+    eagine::optional_reference<std::string>>>,
+  "optional-like");
 void optional_like_tuple_empty(auto& s) {
     eagitest::case_ test{s, 1, "empty"};
 
@@ -29,9 +35,9 @@ void optional_like_tuple_empty(auto& s) {
     test.check_equal(v2, "bar", "v2 ok");
     test.check_equal(v3, "baz", "v3 ok");
 
-    std::string foo;
-    std::string bar;
-    std::string baz;
+    std::string foo{"foo"};
+    std::string bar{"bar"};
+    std::string baz{"baz"};
 
     const auto& [r1, r2, r3] = opts.value_or(foo, bar, baz);
 
@@ -39,7 +45,7 @@ void optional_like_tuple_empty(auto& s) {
     bar = "barz";
     baz = "buzz";
 
-    test.check_equal(r1, "fooz", "r1 ok");
+    test.check_equal(r1, "foo", "r1 ok");
     test.check_equal(r2, "barz", "r2 ok");
     test.check_equal(r3, "buzz", "r3 ok");
 

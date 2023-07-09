@@ -118,6 +118,7 @@ eagine_add_module(
 	SOURCES
 		bindump
 		hexdump
+		format
 		from_string
 		keyboard_distance
 	IMPORTS

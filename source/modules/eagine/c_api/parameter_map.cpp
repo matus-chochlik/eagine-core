@@ -56,6 +56,33 @@ struct trivial_arg_map {
         return trivial_map{}(i, std::forward<P>(p)...);
     }
 };
+
+export template <typename CH, std::size_t... J>
+struct defaulted_arg_map {
+    template <std::size_t I, typename... P>
+    constexpr auto operator()(size_constant<I>, P&&...) const noexcept
+      -> std::remove_cvref_t<CH>
+        requires(... or (I == J))
+    {
+        if constexpr(std::is_pointer_v<CH>) {
+            return nullptr;
+        } else if constexpr(std::is_integral_v<CH>) {
+            return static_cast<CH>(0);
+        } else {
+            return {};
+        }
+    }
+};
+
+export template <auto value, std::size_t... J>
+struct substituted_arg_map {
+    template <std::size_t I, typename... P>
+    constexpr auto operator()(size_constant<I>, P&&...) const noexcept
+        requires(... or (I == J))
+    {
+        return value;
+    }
+};
 //------------------------------------------------------------------------------
 export template <std::size_t... J>
 struct nullptr_arg_map {
@@ -386,6 +413,22 @@ struct make_arg_map<CI, CppI, P, P> : reorder_arg_map<CI, CppI> {};
 export template <std::size_t I, typename P>
 struct make_arg_map<I, I, P, P> : trivial_arg_map<I> {};
 
+export template <std::size_t I, typename V>
+struct make_arg_map<I, I, V*, optional_reference<V>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept {
+        return trivial_map{}(i, std::forward<P>(p)...).get();
+    }
+};
+
+export template <std::size_t CI, std::size_t CppI, typename V>
+struct make_arg_map<CI, CppI, V*, optional_reference<V>> {
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI> i, P&&... p) const noexcept {
+        return reorder_arg_map<CI, CppI>{}(i, std::forward<P>(p)...).get();
+    }
+};
+
 export template <std::size_t I>
 struct make_arg_map<I, I, const char*, string_view> {
     template <typename... P>
@@ -610,20 +653,12 @@ export template <
   typename... CT,
   typename... CppT>
 struct make_args_map<CI, CppI, mp_list<CH, CT...>, mp_list<defaulted, CppT...>>
-  : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>> {
+  : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>
+  , defaulted_arg_map<CH, CI> {
     using make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>::
     operator();
 
-    template <typename... P>
-    constexpr auto operator()(size_constant<CI>, P&&...) const noexcept -> CH {
-        if constexpr(std::is_pointer_v<CH>) {
-            return nullptr;
-        } else if constexpr(std::is_integral_v<CH>) {
-            return static_cast<CH>(0);
-        } else {
-            return {};
-        }
-    }
+    using defaulted_arg_map<CH, CI>::operator();
 };
 
 export template <
@@ -639,14 +674,12 @@ struct make_args_map<
   CppI,
   mp_list<CH, CT...>,
   mp_list<substituted<value>, CppT...>>
-  : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>> {
+  : make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>
+  , substituted_arg_map<value, CI> {
     using make_args_map<CI + 1, CppI, mp_list<CT...>, mp_list<CppT...>>::
     operator();
 
-    template <typename... P>
-    constexpr auto operator()(size_constant<CI>, P&&...) const noexcept {
-        return value;
-    }
+    using substituted_arg_map<value, CI>::operator();
 };
 
 export template <

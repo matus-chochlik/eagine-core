@@ -116,6 +116,12 @@ function(eagine_add_target_resource_file)
 		${EAGINE_RESOURCE_TARGET}
 		PRIVATE ${RESOURCE_FILE}
 	)
+	if(TARGET ${EAGINE_RESOURCE_TARGET}-objects)
+		target_sources(
+			${EAGINE_RESOURCE_TARGET}-objects
+			PRIVATE ${RESOURCE_FILE}
+		)
+	endif()
 endfunction()
 
 function(eagine_embed_target_resources)
@@ -153,7 +159,16 @@ function(eagine_embed_target_resources)
 		SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
 	)
 
-	add_dependencies(${EAGINE_RESOURCE_TARGET} eagine.core eagine.core.resource)
+	add_dependencies(
+		${EAGINE_RESOURCE_TARGET}
+		eagine.core eagine.core.resource
+	)
+	if(TARGET ${EAGINE_RESOURCE_TARGET}-objects)
+		add_dependencies(
+			${EAGINE_RESOURCE_TARGET}-objects
+			eagine.core eagine.core.resource
+		)
+	endif()
 
 	if(${EAGINE_CLANGXX_COMPILER})
 		if(${EAGINE_EMBED_INSTALLED})

@@ -18,5 +18,9 @@ auto main() -> int {
     cout << s(format("${2}${1}${4}${3}${1}") % "foo" % "bar" % "baz" % "qux")
          << endl;
 
+    s dst;
+    (format("${2}${1}${4}${3}${1}") % "foo" % "bar" % "baz" % "qux").into(dst);
+    std::cout << dst << std::endl;
+
     return 0;
 }

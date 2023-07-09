@@ -83,6 +83,12 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.c_api PARTITION reference
+	IMPORTS
+		eagine.core.types
+)
+
+eagine_add_module(
 	eagine.core.c_api
 )
 

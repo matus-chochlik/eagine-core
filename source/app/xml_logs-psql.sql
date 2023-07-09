@@ -9,6 +9,7 @@ CREATE VIEW eagilog.schema_statistics
 AS
 SELECT
 	relname AS table_name,
+	reltuples AS row_count,
 	pg_total_relation_size(c.oid) AS total_bytes,
 	pg_size_pretty(pg_total_relation_size(c.oid)) AS pretty_size
 FROM pg_class c

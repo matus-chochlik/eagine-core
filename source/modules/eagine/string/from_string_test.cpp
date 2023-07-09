@@ -12,7 +12,6 @@ import eagine.core.string;
 //------------------------------------------------------------------------------
 void from_string_int(auto& s) {
     using eagine::_1;
-    using eagine::extract;
     using eagine::from_string;
     eagitest::case_ test{s, 1, "int"};
     eagitest::track trck{test, 7, 7};
@@ -57,7 +56,6 @@ void from_string_int(auto& s) {
 //------------------------------------------------------------------------------
 void from_string_unsigned(auto& s) {
     using eagine::_2;
-    using eagine::extract;
     using eagine::from_string;
     eagitest::case_ test{s, 2, "unsigned"};
     eagitest::track trck{test, 7, 7};
@@ -103,7 +101,6 @@ void from_string_unsigned(auto& s) {
 //------------------------------------------------------------------------------
 void from_string_float(auto& s) {
     using eagine::_3;
-    using eagine::extract;
     using eagine::from_string;
     eagitest::case_ test{s, 3, "float"};
     eagitest::track trck{test, 8, 8};

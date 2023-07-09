@@ -17,3 +17,4 @@ export import :key_value_list;
 export import :buffer_data;
 export import :parameter_map;
 export import :adapted_function;
+export import :reference;

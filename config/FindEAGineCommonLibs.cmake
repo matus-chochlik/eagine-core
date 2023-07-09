@@ -6,12 +6,6 @@
 add_library(EAGine::Deps::System INTERFACE IMPORTED)
 
 if(UNIX AND NOT APPLE)
-	add_library(EAGreq::StdCxxFs INTERFACE IMPORTED)
-	set_target_properties(
-		EAGreq::StdCxxFs PROPERTIES
-		INTERFACE_LINK_LIBRARIES stdc++fs
-	)
-
 	add_library(EAGreq::RunTime INTERFACE IMPORTED)
 	set_target_properties(
 		EAGreq::RunTime PROPERTIES
@@ -27,7 +21,7 @@ if(UNIX AND NOT APPLE)
 	set_target_properties(
 		EAGine::Deps::System PROPERTIES
 		INTERFACE_LINK_LIBRARIES
-		"EAGreq::StdCxxFs;EAGreq::RunTime;EAGreq::DynLib"
+		"EAGreq::RunTime;EAGreq::DynLib"
 	)
 
 endif()

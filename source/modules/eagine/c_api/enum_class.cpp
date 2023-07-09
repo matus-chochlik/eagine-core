@@ -19,6 +19,17 @@ import eagine.core.identifier;
 
 namespace eagine::c_api {
 //------------------------------------------------------------------------------
+/// @brief Class representing undefined value of a (typically C-API) symbolic constant.
+/// @tparam T the constant or enumerator value type.
+/// @tparam Tag a tag type that can be used to customize some operations.
+/// @ingroup c_api_wrap
+/// @see enum_class
+/// @see enum_value
+/// @see any_enum_value
+/// @see opt_enum_value
+export template <typename T, typename ClassList, typename Tag = nothing_t>
+class no_enum_value;
+
 /// @brief Class holding the value of a (typically C-API) symbolic constant.
 /// @tparam T the constant or enumerator value type.
 /// @tparam ClassList a list of enum_class specializations to which the value
@@ -32,6 +43,43 @@ namespace eagine::c_api {
 export template <typename T, typename ClassList, typename Tag = nothing_t>
 class enum_value;
 
+/// @brief Class holding optional value of a (typically C-API) symbolic constant.
+/// @tparam T the constant or enumerator value type.
+/// @tparam ClassList a list of enum_class specializations to which the value
+///         "belongs" and can be converted to.
+/// @tparam Tag a tag type that can be used to customize some operations.
+/// @ingroup c_api_wrap
+/// @see enum_class
+/// @see enum_value
+/// @see any_enum_value
+/// @see no_enum_value
+export template <typename T, typename ClassList, typename Tag = nothing_t>
+class opt_enum_value;
+//------------------------------------------------------------------------------
+export template <typename T, typename ClassList>
+class enum_bits;
+
+export template <typename T, typename... Classes>
+class enum_bits<T, mp_list<Classes...>> {
+public:
+    explicit constexpr enum_bits(const T bits) noexcept
+      : _bits{bits} {}
+
+    explicit constexpr enum_bits(const T l, const T r) noexcept
+      : _bits{l | r} {}
+
+    constexpr auto value() const noexcept {
+        return _bits;
+    }
+
+    explicit constexpr operator T() const noexcept {
+        return value();
+    }
+
+private:
+    T _bits{0};
+};
+//------------------------------------------------------------------------------
 /// @brief Class holding the value of a symbolic constant or enumerator.
 /// @ingroup c_api_wrap
 /// @see enum_class
@@ -40,6 +88,8 @@ class enum_value;
 /// @see no_enum_value
 export template <typename T, typename... Classes, typename Tag>
 class enum_value<T, mp_list<Classes...>, Tag> {
+    using classes = mp_list<Classes...>;
+
 public:
     using type = enum_value;
 
@@ -65,6 +115,28 @@ public:
     /// @brief Indicates whether the value is valid or not (always true here).
     explicit constexpr operator bool() const noexcept {
         return true;
+    }
+
+    template <typename TL>
+        requires(not mp_is_empty_v<mp_intersection_t<classes, TL>>)
+    constexpr auto operator|(const no_enum_value<T, TL, Tag>& e) const noexcept {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
+        return enum_bits<T, mp_intersection_t<classes, TL>>{_value};
+    }
+
+    template <typename TL>
+        requires(not mp_is_empty_v<mp_intersection_t<classes, TL>>)
+    constexpr auto operator|(const enum_value<T, TL, Tag>& e) const noexcept {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
+        return enum_bits<T, mp_intersection_t<classes, TL>>{_value, e.value()};
+    }
+
+    template <typename TL>
+        requires(not mp_is_empty_v<mp_intersection_t<classes, TL>>)
+    constexpr auto operator|(
+      const opt_enum_value<T, TL, Tag>& e) const noexcept {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
+        return enum_bits<T, mp_intersection_t<classes, TL>>{_value, e.value()};
     }
 
 private:
@@ -95,19 +167,6 @@ private:
     const bool _value{false};
 };
 //------------------------------------------------------------------------------
-/// @brief Class holding optional value of a (typically C-API) symbolic constant.
-/// @tparam T the constant or enumerator value type.
-/// @tparam ClassList a list of enum_class specializations to which the value
-///         "belongs" and can be converted to.
-/// @tparam Tag a tag type that can be used to customize some operations.
-/// @ingroup c_api_wrap
-/// @see enum_class
-/// @see enum_value
-/// @see any_enum_value
-/// @see no_enum_value
-export template <typename T, typename ClassList, typename Tag = nothing_t>
-class opt_enum_value;
-
 /// @brief Class holding optional value of a symbolic constant or enumerator.
 /// @ingroup c_api_wrap
 /// @see enum_class
@@ -116,6 +175,8 @@ class opt_enum_value;
 /// @see no_enum_value
 export template <typename T, typename... Classes, typename Tag>
 class opt_enum_value<T, mp_list<Classes...>, Tag> {
+    using classes = mp_list<Classes...>;
+
 public:
     using type = opt_enum_value;
 
@@ -153,6 +214,28 @@ public:
     /// @see has_value
     explicit constexpr operator bool() const noexcept {
         return has_value();
+    }
+
+    template <typename TL>
+        requires(not mp_is_empty_v<mp_intersection_t<classes, TL>>)
+    constexpr auto operator|(const no_enum_value<T, TL, Tag>& e) const noexcept {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
+        return enum_bits<T, mp_intersection_t<classes, TL>>{_value};
+    }
+
+    template <typename TL>
+        requires(not mp_is_empty_v<mp_intersection_t<classes, TL>>)
+    constexpr auto operator|(const enum_value<T, TL, Tag>& e) const noexcept {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
+        return enum_bits<T, mp_intersection_t<classes, TL>>{_value, e.value()};
+    }
+
+    template <typename TL>
+        requires(not mp_is_empty_v<mp_intersection_t<classes, TL>>)
+    constexpr auto operator|(
+      const opt_enum_value<T, TL, Tag>& e) const noexcept {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
+        return enum_bits<T, mp_intersection_t<classes, TL>>{_value, e.value()};
     }
 
 private:
@@ -201,8 +284,10 @@ private:
 /// @see enum_value
 /// @see any_enum_value
 /// @see opt_enum_value
-export template <typename T, typename Tag = nothing_t>
+export template <typename T, typename ClassList, typename Tag>
 class no_enum_value {
+    using classes = ClassList;
+
 public:
     using type = no_enum_value;
 
@@ -230,12 +315,34 @@ public:
         return false;
     }
 
+    template <typename TL>
+        requires(not mp_is_empty_v<mp_intersection_t<classes, TL>>)
+    constexpr auto operator|(const no_enum_value<T, TL, Tag>& e) noexcept {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
+        return enum_bits<T, mp_intersection_t<classes, TL>>{_value};
+    }
+
+    template <typename TL>
+        requires(not mp_is_empty_v<mp_intersection_t<classes, TL>>)
+    constexpr auto operator|(const enum_value<T, TL, Tag> e) const noexcept {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
+        return enum_bits<T, mp_intersection_t<classes, TL>>{e.value()};
+    }
+
+    template <typename TL>
+        requires(not mp_is_empty_v<mp_intersection_t<classes, TL>>)
+    constexpr auto operator|(
+      const opt_enum_value<T, TL, Tag>& e) const noexcept {
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
+        return enum_bits<T, mp_intersection_t<classes, TL>>{e.value()};
+    }
+
 private:
     const T _value{};
 };
 
-export template <typename Tag>
-class no_enum_value<bool, Tag> {
+export template <typename ClassList, typename Tag>
+class no_enum_value<bool, ClassList, Tag> {
 public:
     using type = no_enum_value;
 
@@ -250,6 +357,33 @@ public:
         return false;
     }
 };
+//------------------------------------------------------------------------------
+export template <typename T, typename TL1, typename TL2, typename Tag>
+    requires(not mp_is_empty_v<mp_intersection_t<TL1, TL2>>)
+constexpr auto operator|(
+  const enum_bits<T, TL1>& l,
+  const no_enum_value<T, TL2, Tag>& r) noexcept {
+    // NOLINTNEXTLINE(hicpp-signed-bitwise)
+    return l;
+}
+
+export template <typename T, typename TL1, typename TL2, typename Tag>
+    requires(not mp_is_empty_v<mp_intersection_t<TL1, TL2>>)
+constexpr auto operator|(
+  const enum_bits<T, TL1>& l,
+  const enum_value<T, TL2, Tag>& r) noexcept {
+    // NOLINTNEXTLINE(hicpp-signed-bitwise)
+    return enum_bits<T, mp_intersection_t<TL1, TL2>>{l.value(), r.value()};
+}
+
+export template <typename T, typename TL1, typename TL2, typename Tag>
+    requires(not mp_is_empty_v<mp_intersection_t<TL1, TL2>>)
+constexpr auto operator|(
+  const enum_bits<T, TL1>& l,
+  const opt_enum_value<T, TL2, Tag>& r) noexcept {
+    // NOLINTNEXTLINE(hicpp-signed-bitwise)
+    return enum_bits<T, mp_intersection_t<TL1, TL2>>{l.value(), r.value()};
+}
 //------------------------------------------------------------------------------
 export template <identifier_value LibId>
 class any_enum_value;
@@ -300,11 +434,13 @@ constexpr const auto is_enum_class_value_v =
 export template <
   typename Self,
   typename T,
+  typename Classes,
   typename Tag,
   identifier_value LibId,
   identifier_value Id>
-struct is_enum_class_value<enum_class<Self, T, LibId, Id>, no_enum_value<T, Tag>>
-  : std::true_type {
+struct is_enum_class_value<
+  enum_class<Self, T, LibId, Id>,
+  no_enum_value<T, Classes, Tag>> : std::true_type {
     static_assert(std::is_base_of_v<enum_class<Self, T, LibId, Id>, Self>);
 };
 
@@ -439,7 +575,8 @@ public:
     }
 
     /// @brief Construction from a no_enum_value.
-    constexpr enum_class(const no_enum_value<T>) noexcept {}
+    template <typename Classes, typename Tag>
+    constexpr enum_class(const no_enum_value<T, Classes, Tag>) noexcept {}
 
     /// @brief Construction from an any_enum_value.
     constexpr enum_class(const any_enum_value<LibId>& aev) noexcept
@@ -655,61 +792,13 @@ constexpr auto limit_cast(
     return limit_cast<Dst>(val.value);
 }
 
-export template <typename Dst, typename Src, typename Tag>
-constexpr auto limit_cast(c_api::no_enum_value<Src, Tag> val) noexcept -> Dst
+export template <typename Dst, typename Src, typename CL, typename Tag>
+constexpr auto limit_cast(c_api::no_enum_value<Src, CL, Tag> val) noexcept
+  -> Dst
     requires(std::is_convertible_v<Src, Dst>)
 {
     assert(bool(val));
     return limit_cast<Dst>(val.value);
-}
-//------------------------------------------------------------------------------
-export template <typename T, typename ClassList>
-class enum_bits;
-
-export template <typename T, typename... Classes>
-class enum_bits<T, mp_list<Classes...>> {
-public:
-    explicit constexpr enum_bits(const T bits) noexcept
-      : _bits{bits} {}
-
-    explicit constexpr enum_bits(const T l, const T r) noexcept
-      : _bits{l | r} {}
-
-    constexpr auto value() const noexcept {
-        return _bits;
-    }
-
-    explicit constexpr operator T() const noexcept {
-        return value();
-    }
-
-private:
-    T _bits{0};
-};
-
-export template <typename T, typename TL1, typename TL2>
-    requires(not mp_is_empty_v<mp_intersection_t<TL1, TL2>>)
-constexpr auto operator|(
-  const enum_value<T, TL1> a,
-  const enum_value<T, TL2> b) noexcept {
-    // NOLINTNEXTLINE(hicpp-signed-bitwise)
-    return enum_bits<T, mp_intersection_t<TL1, TL2>>{T(a), T(b)};
-}
-
-export template <typename T, typename TL1, typename TL2>
-    requires(not mp_is_empty_v<mp_intersection_t<TL1, TL2>>)
-constexpr auto operator|(
-  const enum_bits<T, TL1> eb,
-  const enum_value<T, TL2> ev) noexcept {
-    return enum_bits<T, mp_intersection_t<TL1, TL2>>{T(eb), T(ev)};
-}
-
-export template <typename T, typename TL1, typename TL2>
-    requires(not mp_is_empty_v<mp_intersection_t<TL1, TL2>>)
-constexpr auto operator|(
-  const enum_value<T, TL1> ev,
-  const enum_bits<T, TL2> eb) noexcept {
-    return enum_bits<T, mp_intersection_t<TL1, TL2>>{T(ev), T(eb)};
 }
 //------------------------------------------------------------------------------
 export template <typename EnumClass>
@@ -725,8 +814,15 @@ public:
     constexpr enum_bitfield(const EnumClass e) noexcept
       : _value{e} {}
 
-    template <typename Classes>
-    constexpr enum_bitfield(const enum_value<value_type, Classes> ev) noexcept
+    template <typename Classes, typename Tag>
+    constexpr enum_bitfield(
+      const enum_value<value_type, Classes, Tag> ev) noexcept
+        requires(mp_contains_v<Classes, EnumClass>)
+      : _value{ev} {}
+
+    template <typename Classes, typename Tag>
+    constexpr enum_bitfield(
+      const opt_enum_value<value_type, Classes> ev) noexcept
         requires(mp_contains_v<Classes, EnumClass>)
       : _value{ev} {}
 

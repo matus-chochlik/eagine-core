@@ -1695,73 +1695,6 @@ class optional_like_tuple {
     template <std::size_t I>
     using _ce_t = decltype(*std::declval<_co_t<I>>());
 
-public:
-    constexpr optional_like_tuple() noexcept = default;
-
-    constexpr optional_like_tuple(O&&... opts) noexcept
-      : _opts{std::move(opts)...} {}
-
-    constexpr auto has_value() const noexcept -> bool {
-        return std::apply(
-          [](auto&... e) { return (... and e.has_value()); }, _opts);
-    }
-
-    constexpr explicit operator bool() const noexcept {
-        return has_value();
-    }
-
-    constexpr auto value() const noexcept {
-        return _value(_i_s{});
-    }
-
-    template <typename... V>
-        requires(sizeof...(O) == sizeof...(V))
-    constexpr auto value_or(V&&... fallback) const noexcept {
-        return _value_or(std::tie(fallback...), _i_s{});
-    }
-
-    template <typename Func>
-    constexpr auto and_then(Func&& func) const {
-        return _and_then(std::forward<Func>(func), _i_s{});
-    }
-
-    template <typename Func, std::size_t... I>
-    constexpr auto _transform(Func&& func, std::index_sequence<I...>) const {
-        using T = std::invoke_result_t<Func, _ce_t<I>...>;
-        if constexpr(std::is_pointer_v<T> or std::is_reference_v<T>) {
-            using R = optional_reference<T>;
-            if(has_value()) {
-                return R{std::apply(
-                  [&func](auto&... o) { return func(*o...); }, _opts)};
-            }
-            return R{};
-        } else if constexpr(std::is_same_v<T, bool>) {
-            using R = tribool;
-            if(has_value()) {
-                return R{
-                  std::apply(
-                    [&func](auto&... o) { return func(*o...); }, _opts),
-                  true};
-            }
-            return R{};
-        } else {
-            using R = optionally_valid<T>;
-            if(has_value()) {
-                return R{
-                  std::apply(
-                    [&func](auto&... o) { return func(*o...); }, _opts),
-                  true};
-            }
-            return R{};
-        }
-    }
-
-    template <typename Func>
-    constexpr auto transform(Func&& func) const {
-        return _transform(std::forward<Func>(func), _i_s{});
-    }
-
-private:
     template <std::size_t... I>
     constexpr auto _value(std::index_sequence<I...>) const noexcept
       -> std::tuple<decltype(std::declval<_co_t<I>>().value())...> {
@@ -1798,6 +1731,92 @@ private:
     }
 
     std::tuple<O...> _opts{};
+
+    template <typename X>
+    struct _get_value_type;
+
+    template <std::size_t... I>
+    struct _get_value_type<std::index_sequence<I...>>
+      : std::type_identity<
+          std::tuple<decltype(std::declval<_co_t<I>>().value())...>> {};
+
+public:
+    using value_type = typename _get_value_type<_i_s>::type;
+
+    constexpr optional_like_tuple() noexcept = default;
+
+    constexpr optional_like_tuple(O&&... opts) noexcept
+      : _opts{std::move(opts)...} {}
+
+    constexpr auto has_value() const noexcept -> bool {
+        return std::apply(
+          [](auto&... e) { return (... and e.has_value()); }, _opts);
+    }
+
+    constexpr explicit operator bool() const noexcept {
+        return has_value();
+    }
+
+    constexpr auto operator*() const noexcept {
+        return _value(_i_s{});
+    }
+
+    constexpr auto value() const noexcept {
+        return _value(_i_s{});
+    }
+
+    template <typename... V>
+        requires(sizeof...(O) == sizeof...(V))
+    constexpr auto value_or(const std::tuple<V...>& fallback) const noexcept {
+        return _value_or(fallback, _i_s{});
+    }
+
+    template <typename... V>
+        requires(sizeof...(O) == sizeof...(V))
+    constexpr auto value_or(V&&... fallback) const noexcept {
+        return _value_or(std::tie(fallback...), _i_s{});
+    }
+
+    template <typename Func>
+    constexpr auto and_then(Func&& func) const {
+        return _and_then(std::forward<Func>(func), _i_s{});
+    }
+
+    template <typename Func, std::size_t... I>
+    constexpr auto _transform(Func&& func, std::index_sequence<I...>) const {
+        using T = std::invoke_result_t<Func, _ce_t<I>...>;
+        if constexpr(std::is_pointer_v<T> or std::is_reference_v<T>) {
+            using R = optional_reference<T>;
+            if(has_value()) {
+                return R{std::apply(
+                  [&func](auto&... o) { return func(*o...); }, _opts)};
+            }
+            return R{};
+        } else if constexpr(std::is_same_v<T, bool>) {
+            using R = tribool;
+            if(has_value()) {
+                return R{
+                  std::apply(
+                    [&func](auto&... o) { return func(*o...); }, _opts),
+                  true};
+            }
+            return R{indeterminate};
+        } else {
+            using R = optionally_valid<T>;
+            if(has_value()) {
+                return R{
+                  std::apply(
+                    [&func](auto&... o) { return func(*o...); }, _opts),
+                  true};
+            }
+            return R{};
+        }
+    }
+
+    template <typename Func>
+    constexpr auto transform(Func&& func) const {
+        return _transform(std::forward<Func>(func), _i_s{});
+    }
 };
 //------------------------------------------------------------------------------
 export template <optional_like... O>

@@ -7,7 +7,6 @@
 ///
 export module eagine.core.string:from_string;
 
-import <cerrno>;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
@@ -122,114 +121,53 @@ constexpr auto multiply_and_convert_if_fits(const N n, string_view t) noexcept
     return {};
 }
 //------------------------------------------------------------------------------
-template <typename T, typename N>
-auto convert_from_string_with(
-  N (*converter)(const char*, char**),
-  const string_view src,
-  const std::type_identity<T> tid) noexcept -> optionally_valid<T> {
-    char* end = nullptr; // NOLINT(hicpp-vararg)
-    const auto cstr{c_str(src)};
-    errno = 0;
-    const N result{converter(cstr, &end)};
-    if((errno != ERANGE) and (end != cstr) and (end != nullptr)) {
-        if(auto converted{multiply_and_convert_if_fits<T>(
-             result, skip_to(cstr.view(), cstr.position_of(end)))}) {
-            return converted;
-        }
-    }
-
-    return parse_from_string(src, tid);
-}
-//------------------------------------------------------------------------------
-template <typename T, typename N>
-auto convert_from_string_with(
-  N (*converter)(const char*, char**, int),
-  const int base,
-  const string_view src,
-  const std::type_identity<T> tid) noexcept -> optionally_valid<T> {
-    char* end = nullptr; // NOLINT(hicpp-vararg)
-    const auto cstr{c_str(src)};
-    errno = 0;
-    const N result = converter(cstr, &end, base);
-    if((errno != ERANGE) and (end != cstr) and (end != nullptr)) {
-        if(auto converted{multiply_and_convert_if_fits<T>(
-             result, skip_to(cstr.view(), cstr.position_of(end)))}) {
-            return converted;
-        }
-    }
-    return parse_from_string(src, tid);
-}
-//------------------------------------------------------------------------------
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
+auto convert_integer_from_string(
   const string_view src,
   const std::type_identity<short> id,
-  const selector<V>,
-  const int base = 10) noexcept -> optionally_valid<short> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
+  const int base) noexcept -> optionally_valid<short>;
 
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
+auto convert_integer_from_string(
   const string_view src,
   const std::type_identity<int> id,
-  const selector<V>,
-  const int base = 10) noexcept -> optionally_valid<int> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
+  const int base) noexcept -> optionally_valid<int>;
 
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
+auto convert_integer_from_string(
   const string_view src,
   const std::type_identity<long> id,
-  const selector<V>,
-  const int base = 10) noexcept -> optionally_valid<long> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
+  const int base) noexcept -> optionally_valid<long>;
 
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
+auto convert_integer_from_string(
   const string_view src,
   const std::type_identity<long long> id,
-  const selector<V>,
-  const int base = 10) noexcept -> optionally_valid<long long> {
-    return convert_from_string_with(&std::strtoll, base, src, id);
-}
+  const int base) noexcept -> optionally_valid<long long>;
 
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
+auto convert_integer_from_string(
   const string_view src,
   const std::type_identity<unsigned short> id,
-  const selector<V>,
-  const int base = 10) noexcept -> optionally_valid<unsigned short> {
-    return convert_from_string_with(&std::strtoul, base, src, id);
-}
+  const int base) noexcept -> optionally_valid<unsigned short>;
 
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
+auto convert_integer_from_string(
   const string_view src,
   const std::type_identity<unsigned int> id,
-  const selector<V>,
-  const int base = 10) noexcept -> optionally_valid<unsigned int> {
-    return convert_from_string_with(&std::strtoul, base, src, id);
-}
+  const int base) noexcept -> optionally_valid<unsigned int>;
 
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
+auto convert_integer_from_string(
   const string_view src,
   const std::type_identity<unsigned long> id,
-  const selector<V>,
-  const int base = 10) noexcept -> optionally_valid<unsigned long> {
-    return convert_from_string_with(&std::strtoul, base, src, id);
-}
+  const int base) noexcept -> optionally_valid<unsigned long>;
 
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
+auto convert_integer_from_string(
   const string_view src,
   const std::type_identity<unsigned long long> id,
+  const int base) noexcept -> optionally_valid<unsigned long long>;
+//------------------------------------------------------------------------------
+export template <std::integral T, identifier_t V>
+[[nodiscard]] auto from_string(
+  const string_view src,
+  const std::type_identity<T> id,
   const selector<V>,
-  const int base = 10) noexcept -> optionally_valid<unsigned long long> {
-    return convert_from_string_with(&std::strtoull, base, src, id);
+  const int base = 10) noexcept -> optionally_valid<T> {
+    return convert_integer_from_string(src, id, base);
 }
 //------------------------------------------------------------------------------
 export template <identifier_t V>
@@ -256,30 +194,27 @@ export template <identifier_t V>
     return {};
 }
 //------------------------------------------------------------------------------
-export template <identifier_t V>
+auto convert_float_from_string(
+  const string_view src,
+  const std::type_identity<float> id) noexcept -> optionally_valid<float>;
+
+auto convert_float_from_string(
+  const string_view src,
+  const std::type_identity<double> id) noexcept -> optionally_valid<double>;
+
+auto convert_float_from_string(
+  const string_view src,
+  const std::type_identity<long double> id) noexcept
+  -> optionally_valid<long double>;
+//------------------------------------------------------------------------------
+export template <std::floating_point T, identifier_t V>
 [[nodiscard]] auto from_string(
   const string_view src,
-  const std::type_identity<float> id,
-  const selector<V>) noexcept -> optionally_valid<float> {
-    return convert_from_string_with(&std::strtof, src, id);
+  const std::type_identity<T> id,
+  const selector<V>) noexcept -> optionally_valid<T> {
+    return convert_float_from_string(src, id);
 }
-
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
-  const string_view src,
-  const std::type_identity<double> id,
-  const selector<V>) noexcept -> optionally_valid<double> {
-    return convert_from_string_with(&std::strtod, src, id);
-}
-
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
-  const string_view src,
-  const std::type_identity<long double> id,
-  const selector<V>) noexcept -> optionally_valid<long double> {
-    return convert_from_string_with(&std::strtold, src, id);
-}
-
+//------------------------------------------------------------------------------
 export template <identifier_t V>
 [[nodiscard]] auto from_string(
   const string_view src,

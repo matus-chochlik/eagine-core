@@ -34,9 +34,15 @@ export struct default_traits {
         return nullptr;
     }
 
+    template <typename RV>
+    using adapt_rv = std::conditional_t<
+      std::is_reference_v<RV>,
+      optional_reference<std::remove_reference_t<RV>>,
+      RV>;
+
     template <typename Tag, typename RV>
     static constexpr auto fallback(const Tag, const std::type_identity<RV>)
-      -> RV {
+      -> adapt_rv<RV> {
         return {};
     }
 
@@ -47,7 +53,7 @@ export struct default_traits {
     static constexpr auto call_static(
       const Tag tag,
       RV (*function)(Params...),
-      Args&&... args) -> RV {
+      Args&&... args) -> adapt_rv<RV> {
         if(function) {
             return function(
               std::forward<Args>(args)...); // NOLINT(hicpp-no-array-decay)
@@ -59,7 +65,7 @@ export struct default_traits {
     static constexpr auto call_dynamic(
       const Tag tag,
       RV (*function)(Params...),
-      Args&&... args) -> RV {
+      Args&&... args) -> adapt_rv<RV> {
         if(function) {
             return function(
               std::forward<Args>(args)...); // NOLINT(hicpp-no-array-decay)
