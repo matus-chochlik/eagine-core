@@ -14,6 +14,11 @@ install(
 	DESTINATION bin
 )
 install(
+	PROGRAMS fmd_get.py
+	RENAME eagine-fmd-get
+	DESTINATION bin
+)
+install(
 	PROGRAMS xml_logs-cl.py
 	RENAME eagine-xml_logs-cl
 	DESTINATION bin

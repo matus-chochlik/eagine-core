@@ -36,6 +36,9 @@ cp "${src_dir}/source/app/psql_logs-cl.py" \
 cp "${src_dir}/source/app/fmd_modify.py" \
    "${bin_prefix}/eagine-fmd-modify"
 
+cp "${src_dir}/source/app/fmd_get.py" \
+   "${bin_prefix}/eagine-fmd-get"
+
 cp "${src_dir}/source/app/ensure_main_key.sh" \
    "${bin_prefix}/eagine-ensure-main-key"
 # ------------------------------------------------------------------------------
