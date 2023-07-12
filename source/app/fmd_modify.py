@@ -68,7 +68,7 @@ class ArgumentParser(argparse.ArgumentParser):
             "--delete", "-d",
             metavar='ATTRIBUTE',
             dest='deletions',
-            nargs=1,
+            nargs='?',
             type=_valid_deletion,
             action="append",
             default=[]
@@ -98,14 +98,15 @@ class ArgumentParser(argparse.ArgumentParser):
         del options._input_paths
         options.input_paths = list(options.input_paths)
 
-        def _processKeyVal(k, v):
+        def _processKey(k):
             try:
                 assert isinstance(k, str)
-                return k.split("."), v
+                return k.split(".")
             except:
                 self.error("invalid attribute specifier '%s'" % k)
 
-        options.additions = [_processKeyVal(k, v) for k, v in options.additions]
+        options.additions = [(_processKey(k), v) for k, v in options.additions]
+        options.deletions = [_processKey(k) for k in options.deletions]
         return options
     # -------------------------------------------------------------------------
     def parseArgs(self):
