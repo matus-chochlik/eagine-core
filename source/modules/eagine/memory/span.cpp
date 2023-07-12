@@ -849,7 +849,7 @@ struct equal_cmp<memory::basic_span<Tl, Pl, Sl>, memory::basic_span<Tr, Pr, Sr>>
                 return 0 == std::memcmp(
                               l.data(), r.data(), sizeof(Tl) * l.std_size());
             } else {
-                for(const auto i : integer_range(span_size(l.size()))) {
+                for(const auto i : index_range(l)) {
                     if(not are_equal(l[i], r[i])) {
                         return false;
                     }

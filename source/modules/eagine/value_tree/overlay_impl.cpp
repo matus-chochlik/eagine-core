@@ -45,7 +45,7 @@ class overlay_attribute : public attribute_interface {
         if(_needs_scan) {
             bool all_immutable = true;
             const auto& overlays = get_context(owner).overlays;
-            for(const auto index : integer_range(overlays.size())) {
+            for(const auto index : index_range(overlays)) {
                 const auto& overlay = overlays[index];
                 all_immutable &= overlay.is_immutable();
                 if(const auto found{overlay.find(_path)}) {

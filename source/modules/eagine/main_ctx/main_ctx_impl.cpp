@@ -143,7 +143,7 @@ static auto main_ctx_encrypt_shared_with(
     const auto n{nonce.size()};
     const auto m{key.size()};
     assert(src.size() == dst.size());
-    for(auto i : integer_range(src.size())) {
+    for(auto i : index_range(src)) {
         dst[i] = (src[i] ^ key[i % m] ^ nonce[i % n]);
     }
     return true;
@@ -161,7 +161,7 @@ static auto main_ctx_decrypt_shared_with(
     const auto n{nonce.size()};
     const auto m{key.size()};
     assert(src.size() == dst.size());
-    for(auto i : integer_range(src.size())) {
+    for(auto i : index_range(src)) {
         dst[i] = (src[i] ^ key[i % m] ^ nonce[i % n]);
     }
     return main_ctx_unscramble_encrypted(dst, output);
