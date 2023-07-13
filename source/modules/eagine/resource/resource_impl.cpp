@@ -53,6 +53,28 @@ auto embedded_resource::is_utf8_text() const noexcept -> tribool {
     }
 }
 //------------------------------------------------------------------------------
+auto embedded_resource::is_ttf() const noexcept -> tribool {
+    switch(format()) {
+        case embedded_resource_format::unknown:
+            return indeterminate;
+        case embedded_resource_format::ttf:
+            return true;
+        default:
+            return false;
+    }
+}
+//------------------------------------------------------------------------------
+auto embedded_resource::is_otf() const noexcept -> tribool {
+    switch(format()) {
+        case embedded_resource_format::unknown:
+            return indeterminate;
+        case embedded_resource_format::otf:
+            return true;
+        default:
+            return false;
+    }
+}
+//------------------------------------------------------------------------------
 auto embedded_resource::visit(
   data_compressor& comp,
   memory::buffer_pool& buffers,
