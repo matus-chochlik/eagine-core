@@ -183,6 +183,25 @@ constexpr auto append_to(
     return str;
 }
 //------------------------------------------------------------------------------
+export template <typename C, typename PF, typename PT, typename SF, typename ST>
+/// @brief Copies as much from source span to destination, ensures zero termination.
+/// @ingroup string_utils
+constexpr auto copy_what_fits(
+  const basic_string_span<const C, PF, SF> from,
+  basic_span<C, PT, ST> to) noexcept -> basic_span<C, PT, ST> {
+    if(not to.empty()) [[likely]] {
+        const auto size{std::min(from.size(), to.size() - 1)};
+        auto end = from.begin();
+        std::advance(end, size);
+        auto dst = to.begin();
+        std::copy(from.begin(), end, dst);
+        std::advance(dst, size);
+        *dst = '\0';
+        return head(to, size);
+    }
+    return to;
+}
+//------------------------------------------------------------------------------
 /// @brief Structural type wrapper for string literals.
 /// @ingroup string_utils
 /// @see string_view
