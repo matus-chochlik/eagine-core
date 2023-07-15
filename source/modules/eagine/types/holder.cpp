@@ -314,6 +314,8 @@ class weak_holder : private std::weak_ptr<T> {
     using _base = std::weak_ptr<T>;
 
 public:
+    constexpr weak_holder() noexcept = default;
+
     weak_holder(const shared_holder<T>& that) noexcept
       : _base{that} {}
 
