@@ -18,38 +18,43 @@ bco_prefix="${pkg_dir}/etc/bash_completion.d"
 
 # ------------------------------------------------------------------------------
 mkdir -p "${bin_prefix}"
-
-cp "${src_dir}/source/app/procman.py" \
-   "${bin_prefix}/eagine-procman"
+mkdir -p "${bco_prefix}"
 
 cp "${src_dir}/source/app/servicectl.py" \
    "${bin_prefix}/eagine-servicectl"
 
+cp "${src_dir}/source/app/procman.py" \
+   "${bin_prefix}/eagine-procman"
+"${src_dir}/source/app/procman.py" \
+	--print-bash-completion "${bco_prefix}/eagine-procman"
+
 cp "${src_dir}/source/app/xml_logs-cl.py" \
    "${bin_prefix}/eagine-xml-logs-cl"
-
-cp "${src_dir}/source/app/xml_logs-psql.py" \
-   "${bin_prefix}/eagine-xml-logs-psql"
-
-cp "${src_dir}/source/app/psql_logs-cl.py" \
-   "${bin_prefix}/eagine-psql-logs-cl"
-
-cp "${src_dir}/source/app/fmd_modify.py" \
-   "${bin_prefix}/eagine-fmd-modify"
-
-cp "${src_dir}/source/app/fmd_get.py" \
-   "${bin_prefix}/eagine-fmd-get"
-
-cp "${src_dir}/source/app/ensure_main_key.sh" \
-   "${bin_prefix}/eagine-ensure-main-key"
-# ------------------------------------------------------------------------------
-mkdir -p "${bco_prefix}"
-
 "${src_dir}/source/app/xml_logs-cl.py" \
 	--print-bash-completion "${bco_prefix}/eagine-xml-logs-cl"
 
+cp "${src_dir}/source/app/xml_logs-psql.py" \
+   "${bin_prefix}/eagine-xml-logs-psql"
 "${src_dir}/source/app/xml_logs-psql.py" \
 	--print-bash-completion "${bco_prefix}/eagine-xml-logs-psql"
+
+cp "${src_dir}/source/app/psql_logs-cl.py" \
+   "${bin_prefix}/eagine-psql-logs-cl"
+"${src_dir}/source/app/psql_logs-cl.py" \
+	--print-bash-completion "${bco_prefix}/eagine-psql-logs-cl"
+
+cp "${src_dir}/source/app/fmd_modify.py" \
+   "${bin_prefix}/eagine-fmd-modify"
+"${src_dir}/source/app/fmd_modify.py" \
+	--print-bash-completion "${bco_prefix}/eagine-fmd-modify"
+
+cp "${src_dir}/source/app/fmd_get.py" \
+   "${bin_prefix}/eagine-fmd-get"
+"${src_dir}/source/app/fmd_get.py" \
+	--print-bash-completion "${bco_prefix}/eagine-fmd-get"
+
+cp "${src_dir}/source/app/ensure_main_key.sh" \
+   "${bin_prefix}/eagine-ensure-main-key"
 # ------------------------------------------------------------------------------
 mkdir -p "${pkg_dir}/DEBIAN"
 cat << CONTROL > "${pkg_dir}/DEBIAN/control"

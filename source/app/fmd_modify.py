@@ -55,6 +55,13 @@ class ArgumentParser(argparse.ArgumentParser):
         argparse.ArgumentParser.__init__(self, **kw)
 
         self.add_argument(
+            "--print-bash-completion",
+            metavar='FILE|-',
+            dest='print_bash_completion',
+            default='-'
+        )
+
+        self.add_argument(
             "--add", "-a",
             metavar=('ATTRIBUTE','VALUE'),
             dest='additions',
@@ -193,12 +200,32 @@ def processFiles(options):
     for path in options.input_paths:
         processFile(options, path)
 # ------------------------------------------------------------------------------
+def printBashCompletion(argparser, options):
+    from eagine.argparseUtil import printBashComplete
+    def _printIt(fd):
+        printBashComplete(
+            argparser,
+            "_eagine_fmd_modify",
+            "eagine-fmd-modify",
+            ["--print-bash-completion"],
+            fd)
+    if options.print_bash_completion == "-":
+        _printIt(sys.stdout)
+    else:
+        with open(options.print_bash_completion, "wt") as fd:
+            _printIt(fd)
+
+# ------------------------------------------------------------------------------
 #  Main function
 # ------------------------------------------------------------------------------
 def main():
     try:
-        options = getArgumentParser().parseArgs()
-        processFiles(options)
+        argparser = getArgumentParser()
+        options = argparser.parseArgs()
+        if options.print_bash_completion:
+            printBashCompletion(argparser, options)
+        else:
+            processFiles(options)
         return 0
     except Exception as error:
         print(type(error), error)

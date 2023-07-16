@@ -56,6 +56,13 @@ class ArgumentParser(argparse.ArgumentParser):
         argparse.ArgumentParser.__init__(self, **kw)
 
         self.add_argument(
+            "--print-bash-completion",
+            metavar='FILE|-',
+            dest='print_bash_completion',
+            default='-'
+        )
+
+        self.add_argument(
             "--db-host", "-H",
             metavar='HOSTNAME',
             dest='db_host',
@@ -182,7 +189,7 @@ class ArgumentParser(argparse.ArgumentParser):
         return options
 
     # --------------------------------------------------------------------------
-    def parse_args(self):
+    def parseArgs(self):
         class _Options(object):
             # ------------------------------------------------------------------
             def __init__(self, options):
@@ -1183,15 +1190,35 @@ def normalCommand(options, db_conn):
     finally:
         pass
 # ------------------------------------------------------------------------------
+def printBashCompletion(argparser, options):
+    from eagine.argparseUtil import printBashComplete
+    def _printIt(fd):
+        printBashComplete(
+            argparser,
+            "_eagine_psql_logs_cl",
+            "eagine-psql-logs-cl",
+            ["--print-bash-completion"],
+            fd)
+    if options.print_bash_completion == "-":
+        _printIt(sys.stdout)
+    else:
+        with open(options.print_bash_completion, "wt") as fd:
+            _printIt(fd)
+
+# ------------------------------------------------------------------------------
 # main
 # ------------------------------------------------------------------------------
 def main():
-    options = getArgumentParser().parse_args()
-    db_conn = DbConnection(options)
-    if options.isScreenCommand():
-        print(str("\n").join(curses.wrapper(screenCommand, options, db_conn)))
+    argparser = getArgumentParser()
+    options = argparser.parseArgs()
+    if options.print_bash_completion:
+        printBashCompletion(argparser, options)
     else:
-        normalCommand(options, db_conn)
+        db_conn = DbConnection(options)
+        if options.isScreenCommand():
+            print(str("\n").join(curses.wrapper(screenCommand, options, db_conn)))
+        else:
+            normalCommand(options, db_conn)
     return 0
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":

@@ -134,10 +134,9 @@ class ArgumentParser(argparse.ArgumentParser):
 
         self.add_argument(
             "--print-bash-completion",
+            metavar='FILE|-',
             dest='print_bash_completion',
-            nargs='?',
-            metavar='FILE',
-            default=None
+            default='-'
         )
 
         self.add_argument(
