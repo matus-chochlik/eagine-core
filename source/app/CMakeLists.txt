@@ -20,12 +20,12 @@ install(
 )
 install(
 	PROGRAMS xml_logs-cl.py
-	RENAME eagine-xml_logs-cl
+	RENAME eagine-xml-logs-cl
 	DESTINATION bin
 )
 install(
 	PROGRAMS xml_logs-psql.py
-	RENAME eagine-xml_logs-psql
+	RENAME eagine-xml-logs-psql
 	DESTINATION bin
 )
 install(

@@ -14,6 +14,7 @@ pkg_prefix=$(realpath "@PKG_DIR@/usr")
 lib_prefix="${pkg_prefix}/lib/@PKG_MULTIARCH@"
 bin_prefix="${pkg_prefix}/bin"
 cmk_prefix="${lib_prefix}/cmake/EAGine"
+bco_prefix="${pkg_dir}/etc/bash_completion.d"
 
 # ------------------------------------------------------------------------------
 mkdir -p "${bin_prefix}"
@@ -41,6 +42,14 @@ cp "${src_dir}/source/app/fmd_get.py" \
 
 cp "${src_dir}/source/app/ensure_main_key.sh" \
    "${bin_prefix}/eagine-ensure-main-key"
+# ------------------------------------------------------------------------------
+mkdir -p "${bco_prefix}"
+
+"${src_dir}/source/app/xml_logs-cl.py" \
+	--print-bash-completion "${bco_prefix}/eagine-xml-logs-cl"
+
+"${src_dir}/source/app/xml_logs-psql.py" \
+	--print-bash-completion "${bco_prefix}/eagine-xml-logs-psql"
 # ------------------------------------------------------------------------------
 mkdir -p "${pkg_dir}/DEBIAN"
 cat << CONTROL > "${pkg_dir}/DEBIAN/control"

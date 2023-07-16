@@ -130,9 +130,15 @@ class ArgumentParser(argparse.ArgumentParser):
         self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
         self._msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
 
-
-
         argparse.ArgumentParser.__init__(self, **kw)
+
+        self.add_argument(
+            "--print-bash-completion",
+            dest='print_bash_completion',
+            nargs='?',
+            metavar='FILE',
+            default=None
+        )
 
         self.add_argument(
             "--local-socket", "-L",
@@ -1283,13 +1289,33 @@ def handleInterrupt(sig, frame):
     global keepRunning
     keepRunning = False
 # ------------------------------------------------------------------------------
+def printBashCompletion(argparser, options):
+    from eagine.argparseUtil import printBashComplete
+    def _printIt(fd):
+        printBashComplete(
+            argparser,
+            "_eagine_xml_logs_cl",
+            "eagine-xml-logs-cl",
+            ["--print-bash-completion"],
+            fd)
+    if options.print_bash_completion == "-":
+        _printIt(sys.stdout)
+    else:
+        with open(options.print_bash_completion, "wt") as fd:
+            _printIt(fd)
+
+# ------------------------------------------------------------------------------
 def main():
     try:
-        options = getArgumentParser().parseArgs()
-        signal.signal(signal.SIGINT, handleInterrupt)
-        signal.signal(signal.SIGTERM, handleInterrupt)
-        formatter = XmlLogFormatter(options)
-        handle_connections(open_socket(options), formatter)
+        argparser = getArgumentParser()
+        options = argparser.parseArgs()
+        if options.print_bash_completion:
+            printBashCompletion(argparser, options)
+        else:
+            signal.signal(signal.SIGINT, handleInterrupt)
+            signal.signal(signal.SIGTERM, handleInterrupt)
+            formatter = XmlLogFormatter(options)
+            handle_connections(open_socket(options), formatter)
     except KeyboardInterrupt:
         return 0
 # ------------------------------------------------------------------------------
