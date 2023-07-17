@@ -140,6 +140,13 @@ export struct nothing_t {
     }
 };
 
+/// @brief Trait indicating if T is nothing_t type.
+/// @ingroup type_utils
+/// @see nothing_t
+export template <typename T>
+constexpr const bool is_nothing_v =
+  std::is_same_v<std::remove_cvref_t<T>, nothing_t>;
+
 export using noopt = std::optional<nothing_t>;
 
 /// @brief Constant of nothing_t type.

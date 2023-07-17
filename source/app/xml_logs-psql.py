@@ -62,6 +62,13 @@ class ArgumentParser(argparse.ArgumentParser):
         argparse.ArgumentParser.__init__(self, **kw)
 
         self.add_argument(
+            "--print-bash-completion",
+            metavar='FILE|-',
+            dest='print_bash_completion',
+            default=None
+        )
+
+        self.add_argument(
             "--port", "-p",
             dest='socket_port',
             type=self._positive_int,
@@ -182,7 +189,7 @@ class ArgumentParser(argparse.ArgumentParser):
         return options
 
     # -------------------------------------------------------------------------
-    def parse_args(self):
+    def parseArgs(self):
         return self.processParsedOptions(
             argparse.ArgumentParser.parse_args(self))
 
@@ -720,13 +727,34 @@ def handleInterrupt(sig, frame):
     global keepRunning
     keepRunning = False
 # ------------------------------------------------------------------------------
+def printBashCompletion(argparser, options):
+    from eagine.argparseUtil import printBashComplete
+    def _printIt(fd):
+        printBashComplete(
+            argparser,
+            "_eagine_xml_logs_psql",
+            "eagine-xml-logs-psql",
+            ["--print-bash-completion"],
+            fd)
+    if options.print_bash_completion == "-":
+        _printIt(sys.stdout)
+    else:
+        with open(options.print_bash_completion, "wt") as fd:
+            _printIt(fd)
+
+# ------------------------------------------------------------------------------
 def main():
     try:
-        options = getArgumentParser().parse_args()
-        signal.signal(signal.SIGINT, handleInterrupt)
-        signal.signal(signal.SIGTERM, handleInterrupt)
-        db_writer = XmlLogDbWriter(options)
-        handle_connections(open_socket(options), db_writer)
+        argparser = getArgumentParser()
+        options = argparser.parseArgs()
+        if options.print_bash_completion:
+            printBashCompletion(argparser, options)
+        else:
+            options = getArgumentParser().parse_args()
+            signal.signal(signal.SIGINT, handleInterrupt)
+            signal.signal(signal.SIGTERM, handleInterrupt)
+            db_writer = XmlLogDbWriter(options)
+            handle_connections(open_socket(options), db_writer)
     except KeyboardInterrupt:
         return 0
 # ------------------------------------------------------------------------------

@@ -99,6 +99,13 @@ class ArgumentParser(argparse.ArgumentParser):
         argparse.ArgumentParser.__init__(self, **kw)
 
         self.add_argument(
+            "--print-bash-completion",
+            metavar='FILE|-',
+            dest='print_bash_completion',
+            default=None
+        )
+
+        self.add_argument(
             "--debug", "-D",
             action="store_true",
             default=False,
@@ -2440,15 +2447,37 @@ def handleChildExit(signum, frame):
         pass
 
 # ------------------------------------------------------------------------------
+#  Argparse utilities
+# ------------------------------------------------------------------------------
+def printBashCompletion(argparser, options):
+    from eagine.argparseUtil import printBashComplete
+    def _printIt(fd):
+        printBashComplete(
+            argparser,
+            "_eagine_procman",
+            "eagine-procman",
+            ["--print-bash-completion"],
+            fd)
+    if options.print_bash_completion == "-":
+        _printIt(sys.stdout)
+    else:
+        with open(options.print_bash_completion, "wt") as fd:
+            _printIt(fd)
+
+# ------------------------------------------------------------------------------
 #  Initialization and startup
 # ------------------------------------------------------------------------------
 def main():
+    argparser = getArgumentParser()
+    options = argparser.parseArgs()
+    if options.print_bash_completion:
+        printBashCompletion(argparser, options)
+        return 0
+
     global composition
     signal.signal(signal.SIGINT, handleInterrupt)
     signal.signal(signal.SIGTERM, handleInterrupt)
     signal.signal(signal.SIGCHLD, handleChildExit)
-    argparser = getArgumentParser()
-    options = argparser.parseArgs()
     logging.basicConfig(
         encoding="utf-8",
         format='[%(asctime)s] %(levelname)s: %(message)s',

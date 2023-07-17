@@ -58,6 +58,11 @@ export template <optional_like O>
     }
     return std::ranges::iota_view<I, I>();
 }
+
+export template <typename T>
+[[nodiscard]] constexpr auto index_range(const T& c) noexcept {
+    return integer_range(c.size());
+}
 //------------------------------------------------------------------------------
 } // namespace eagine
 

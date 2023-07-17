@@ -52,6 +52,8 @@ class EmberArgumentParser(argparse.ArgumentParser):
             "yaml",
             "glsl",
             "cpp",
+            "ttf",
+            "otf",
             "text_utf8"
         ]
         self._ext_formats = {
@@ -64,6 +66,8 @@ class EmberArgumentParser(argparse.ArgumentParser):
             ".glsl": "glsl",
             ".cppm": "cpp",
             ".cpp": "cpp",
+            ".ttf": "ttf",
+            ".otf": "otf",
             ".txt": "text_utf8"
         }
 

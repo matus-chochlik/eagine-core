@@ -149,6 +149,15 @@ public:
         }
     }
 
+    auto operator[](P... p) const -> RV {
+        assert(is_valid());
+        if(_data == nullptr) {
+            return (reinterpret_cast<_func_pt>(_func))(std::move(p)...);
+        } else {
+            return (reinterpret_cast<_func_vpt>(_func))(_data, std::move(p)...);
+        }
+    }
+
 private:
     void* _data{nullptr};
     void (*_func)() noexcept(NE){nullptr};
@@ -162,7 +171,6 @@ private:
         assert(that);
         C& obj = *(static_cast<C*>(that));
 
-        // NOLINTNEXTLINE(hicpp-braces-around-statements,readability-braces-around-statements)
         if constexpr(std::is_void_v<RV>) {
             obj(std::forward<P>(p)...);
         } else {
@@ -175,7 +183,6 @@ private:
         assert(that);
         const C& obj = *(static_cast<const C*>(that));
 
-        // NOLINTNEXTLINE(hicpp-braces-around-statements,readability-braces-around-statements)
         if constexpr(std::is_void_v<RV>) {
             obj(std::forward<P>(p)...);
         } else {

@@ -9,13 +9,23 @@ install(
 	DESTINATION bin
 )
 install(
+	PROGRAMS fmd_modify.py
+	RENAME eagine-fmd-modify
+	DESTINATION bin
+)
+install(
+	PROGRAMS fmd_get.py
+	RENAME eagine-fmd-get
+	DESTINATION bin
+)
+install(
 	PROGRAMS xml_logs-cl.py
-	RENAME eagine-xml_logs-cl
+	RENAME eagine-xml-logs-cl
 	DESTINATION bin
 )
 install(
 	PROGRAMS xml_logs-psql.py
-	RENAME eagine-xml_logs-psql
+	RENAME eagine-xml-logs-psql
 	DESTINATION bin
 )
 install(

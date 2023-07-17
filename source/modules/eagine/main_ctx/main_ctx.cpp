@@ -182,12 +182,30 @@ public:
         _source.random_uniform_01(dest);
     }
 
+    auto random_uniform_01() noexcept -> float {
+        float result{0.F};
+        _source.random_uniform_01(cover_one(result));
+        return result;
+    }
+
     void random_uniform_11(memory::span<float> dest) noexcept final {
         _source.random_uniform_11(dest);
     }
 
+    auto random_uniform_11() noexcept -> float {
+        float result{0.F};
+        _source.random_uniform_11(cover_one(result));
+        return result;
+    }
+
     void random_normal(memory::span<float> dest) noexcept final {
         _source.random_normal(dest);
+    }
+
+    auto random_normal() noexcept -> float {
+        float result{0.F};
+        _source.random_normal(cover_one(result));
+        return result;
     }
 
     [[nodiscard]] auto encrypt_shared(

@@ -70,6 +70,9 @@ using optionally_valid = valid_if<T, valid_flag_policy>;
 //------------------------------------------------------------------------------
 // optional reference
 //------------------------------------------------------------------------------
+export template <typename Base, typename T>
+class basic_holder;
+
 /// @brief Optional reference to an instance of type @p T.
 /// @ingroup valid_if
 /// @see valid_if
@@ -107,6 +110,11 @@ public:
     template <std::derived_from<T> U>
     constexpr optional_reference(const std::shared_ptr<U>& ptr) noexcept
       : _ptr{ptr.get()} {}
+
+    /// @brief Construction from a basic_holder to reference of type @p T.
+    template <typename Base, std::derived_from<T> U>
+    constexpr optional_reference(const basic_holder<Base, U>& holder) noexcept
+      : _ptr{holder.get()} {}
 
     /// @brief Move constructor.
     constexpr optional_reference(optional_reference&&) noexcept = default;

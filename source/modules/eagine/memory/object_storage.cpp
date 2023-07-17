@@ -90,11 +90,11 @@ public:
 
         const auto n{_blks.size()};
 
-        for(const auto i : integer_range(_blks.size())) {
+        for(const auto i : index_range(_blks)) {
             _dtrs[n - i - 1](_blks[n - i - 1]);
         }
 
-        for(const auto i : integer_range(_blks.size())) {
+        for(const auto i : index_range(_blks)) {
             _alloc.deallocate(std::move(_blks[i]), _alns[i]);
         }
 
@@ -120,7 +120,7 @@ protected:
 
     template <typename Func>
     void for_each_block(Func& func) noexcept {
-        for(const auto i : integer_range(_blks.size())) {
+        for(const auto i : index_range(_blks)) {
             func(i, block(_blks[i]));
         }
     }
