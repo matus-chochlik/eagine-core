@@ -17,6 +17,14 @@ class WorkflowArgParser(argparse.ArgumentParser):
         argparse.ArgumentParser.__init__(self, **kw)
 
         self.add_argument(
+            '--release-version',
+            dest="release_version",
+            metavar="VERSION",
+            action="store",
+            default=None
+        )
+
+        self.add_argument(
             '--debug',
             action="store_true",
             default=False
@@ -216,7 +224,7 @@ class WorkflowWhiptailUI(WorkflowUIBase):
     def should_write(self, file_path, contents):
         text = "write: '%s'" % contents
         text += "\ninto file:\n"
-        text += " '%s'\n" % file_path 
+        text += " '%s'\n" % file_path
         proc = subprocess.Popen([
             "whiptail",
             "--yes-button", "write",
@@ -279,8 +287,10 @@ class Workflow(object):
             return int(m.group(1)), int(m.group(2)), int(m.group(3))
 
     # --------------------------------------------------------------------------
-    def version_string(self, version_numbers):
-        return "%d.%d.%d" % version_numbers
+    def version_string(self, version):
+        if isinstance(version, str):
+            return version
+        return "%d.%d.%d" % version
 
     # --------------------------------------------------------------------------
     def release_branch(self, version_tag):
@@ -296,6 +306,8 @@ class Workflow(object):
 
     # --------------------------------------------------------------------------
     def next_repo_release(self):
+        if self._options.release_version is not None:
+            return self._options.release_version
         if self.is_in_core():
             return self.bumped_version_number(self.read_version(), 1)
         else:
@@ -303,6 +315,8 @@ class Workflow(object):
 
     # --------------------------------------------------------------------------
     def next_repo_hotfix(self):
+        if self._options.release_version is not None:
+            return self._options.release_version
         if self.is_in_core():
             return self.bumped_version_number(self.read_version(), 2)
         else:
