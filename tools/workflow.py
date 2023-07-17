@@ -76,6 +76,24 @@ class WorkflowArgParser(argparse.ArgumentParser):
         action_group = self.add_mutually_exclusive_group()
 
         action_group.add_argument(
+            "--get-release-tag",
+            dest="action",
+            action="store_const",
+            const="get_release_tag",
+            help="""
+                Prints the next release version number or tag.
+            """
+        )
+        action_group.add_argument(
+            "--get-hotfix-tag",
+            dest="action",
+            action="store_const",
+            const="get_hotfix_tag",
+            help="""
+                Prints the next hotfix version number or tag.
+            """
+        )
+        action_group.add_argument(
             "--update-submodules",
             dest="action",
             action="store_const",
@@ -451,6 +469,14 @@ class Workflow(object):
             ).strip())
 
     # --------------------------------------------------------------------------
+    def get_release_tag(self):
+        print(self.version_string(self.next_repo_release()))
+
+    # --------------------------------------------------------------------------
+    def get_hotfix_tag(self):
+        print(self.version_string(self.next_repo_hotfix()))
+
+    # --------------------------------------------------------------------------
     def update_submodules(self):
         remote = self._options.git_submodule_remote
         branch = self._options.git_branch
@@ -572,7 +598,11 @@ class Workflow(object):
         if self._options.debug:
             print(self._options)
 
-        if self._options.action == "update_submodules":
+        if self._options.action == "get_release_tag":
+            self.get_release_tag()
+        elif self._options.action == "get_hotfix_tag":
+            self.get_hotfix_tag()
+        elif self._options.action == "update_submodules":
             self.update_submodules()
         elif self._options.action == "do_release":
             self.begin_release()
