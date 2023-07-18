@@ -608,10 +608,18 @@ export template <typename T, int M, int N, int K, bool RM1, bool RM2, bool V>
 export template <typename T, int C, int R, bool RM, bool V>
 struct are_multiplicable<matrix<T, C, R, RM, V>, vector<T, C, V>>
   : std::true_type {};
+
+export template <typename T, int C, int R, bool RM, bool V>
+struct are_multiplicable<matrix<T, C, R, RM, V>, tvec<T, C, V>>
+  : std::true_type {};
 //------------------------------------------------------------------------------
 // multiplication_result MxV
 export template <typename T, int C, int R, bool RM, bool V>
 struct multiplication_result<matrix<T, C, R, RM, V>, vector<T, C, V>>
+  : vector<T, R, V> {};
+
+export template <typename T, int C, int R, bool RM, bool V>
+struct multiplication_result<matrix<T, C, R, RM, V>, tvec<T, C, V>>
   : vector<T, R, V> {};
 //------------------------------------------------------------------------------
 /// @brief Matrix-vector multiplication function.
