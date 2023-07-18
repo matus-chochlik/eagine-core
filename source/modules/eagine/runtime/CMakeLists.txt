@@ -83,6 +83,7 @@ eagine_add_module(
 	eagine.core.runtime PARTITION value_with_history
 	IMPORTS
 		eagine.core.types
+		eagine.core.memory
 		eagine.core.valid_if
 )
 
