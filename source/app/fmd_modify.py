@@ -72,6 +72,16 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
         self.add_argument(
+            "--set", "-s",
+            metavar=('ATTRIBUTE','VALUE'),
+            dest='updates',
+            nargs=2,
+            type=_valid_addition,
+            action="append",
+            default=[]
+        )
+
+        self.add_argument(
             "--delete", "-d",
             metavar='ATTRIBUTE',
             dest='deletions',
@@ -113,6 +123,7 @@ class ArgumentParser(argparse.ArgumentParser):
                 self.error("invalid attribute specifier '%s'" % k)
 
         options.additions = [(_processKey(k), v) for k, v in options.additions]
+        options.updates = [(_processKey(k), v) for k, v in options.updates]
         options.deletions = [_processKey(k) for k in options.deletions]
         return options
     # -------------------------------------------------------------------------
@@ -136,12 +147,26 @@ def updateHeader(options, header):
             del node[attrib[-1]]
         except KeyError:
             pass
-                
-    for attrib, value in options.additions:
+
+    for attrib, value in options.updates:
         node = header
         for key in attrib[:-1]:
             node = node.setdefault(key, {})
         node[attrib[-1]] = value
+
+    for attrib, value in options.additions:
+        node = header
+        for key in attrib[:-1]:
+            node = node.setdefault(key, {})
+
+        key = attrib[-1]
+        try:
+            node[key].append(value)
+        except KeyError:
+            node[key] = [value]
+        except AttributeError:
+            node[key] = [node[key], value]
+
     return header
 # ------------------------------------------------------------------------------
 def formatHeader(options, header, ofd):
