@@ -22,3 +22,4 @@ export import :primitives;
 export import :intersection;
 export import :coordinates;
 export import :animated_value;
+export import :io;
