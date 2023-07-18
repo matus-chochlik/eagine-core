@@ -14,10 +14,12 @@ import argparse
 # Argument parsing
 # ------------------------------------------------------------------------------
 class ArgumentParser(argparse.ArgumentParser):
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def __init__(self, **kw):
         self._path_re = re.compile("^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
+        self._qry_re = re.compile("^([A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*)(==|!=|<=|>=|<|>|\))(.*)$")
 
+        # ----------------------------------------------------------------------
         def _valid_input_path(x):
             try:
                 p = os.path.realpath(x)
@@ -26,14 +28,57 @@ class ArgumentParser(argparse.ArgumentParser):
                 return p
             except:
                 self.error("`%s' is not an existing readable file" % str(x))
-
+        # ----------------------------------------------------------------------
         def _valid_attribute(x):
             try:
                 assert self._path_re.match(x)
                 return x
             except:
-                self.error("invalid attribute specifier '%s'" % s)
+                self.error("invalid attribute specifier '%s'" % x)
+        # ----------------------------------------------------------------------
+        def _valid_query(x):
+            def _value(v):
+                try:
+                    return int(v)
+                except ValueError:
+                    try:
+                        return float(v)
+                    except ValueError:
+                        if v in ["null", "Null", "NULL"]:
+                            return None
+                        if v in ["true", "True", "TRUE"]:
+                            return True
+                        if v in ["false", "False", "FALSE"]:
+                            return True
+                return v
 
+            def _operation(o):
+                if o == "==":
+                    return lambda x,y: x == y
+                if o == "!=":
+                    return lambda x,y: x != y
+                if o == "<=":
+                    return lambda x,y: x <= y
+                if o == ">=":
+                    return lambda x,y: x >= y
+                if o == "<":
+                    return lambda x,y: x < y
+                if o == ">":
+                    return lambda x,y: x > y
+                if o == ")":
+                    return lambda x,y: y in x
+
+            try:
+                found = self._qry_re.match(x)
+                assert found
+                attrib = found.group(1)
+                operation = _operation(found.group(3))
+                value = _value(found.group(4))
+                return (attrib, operation, value)
+            except Exception as e:
+                print(e)
+                self.error("invalid query specifier '%s'" % x)
+        # ----------------------------------------------------------------------
         argparse.ArgumentParser.__init__(self, **kw)
 
         self.add_argument(
@@ -49,6 +94,16 @@ class ArgumentParser(argparse.ArgumentParser):
             dest='queried_values',
             nargs='?',
             type=_valid_attribute,
+            action="append",
+            default=[]
+        )
+
+        self.add_argument(
+            "--query", "-q",
+            metavar='ATTRIBUTE',
+            dest='queries',
+            nargs='?',
+            type=_valid_query,
             action="append",
             default=[]
         )
@@ -84,6 +139,7 @@ class ArgumentParser(argparse.ArgumentParser):
             except:
                 self.error("invalid attribute specifier '%s'" % k)
 
+        options.queries = [(_processKey(k), o, v) for k,o,v in options.queries]
         options.queried_values = [_processKey(k) for k in options.queried_values]
 
         return options
@@ -131,17 +187,25 @@ def getAttribValue(header, attrib):
 def processFile(options, path):
     header = extractHeader(options, path)
     first = True
-    for attrib in options.queried_values:
-        if first:
-            first = False
-        else:
-            sys.stdout.write('\t')
-        sys.stdout.write(getAttribValue(header, attrib))
-    sys.stdout.write('\n')
+    if len(options.queried_values) > 0:
+        for attrib in options.queried_values:
+            if first:
+                first = False
+            else:
+                sys.stdout.write('\t')
+            sys.stdout.write(getAttribValue(header, attrib))
+        sys.stdout.write('\n')
+
+    for attrib, operation, value in options.queries:
+        if not operation(getAttribValue(header, attrib), value):
+            return False
+    return True
 # ------------------------------------------------------------------------------
 def processFiles(options):
     for path in options.input_paths:
-        processFile(options, path)
+        if not processFile(options, path):
+            return 1
+    return 0
 # ------------------------------------------------------------------------------
 def printBashCompletion(argparser, options):
     from eagine.argparseUtil import printBashComplete
@@ -167,13 +231,13 @@ def main():
         options = argparser.parseArgs()
         if options.print_bash_completion:
             printBashCompletion(argparser, options)
+            return 0
         else:
-            processFiles(options)
-        return 0
+            return processFiles(options)
     except Exception as error:
         print(type(error), error)
         raise
-        return 1
+    return 2
 
 # ------------------------------------------------------------------------------
 if __name__ == '__main__':
