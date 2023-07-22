@@ -17,7 +17,7 @@ namespace eagine::c_api {
 //------------------------------------------------------------------------------
 export template <typename ApiTraits, typename Tag, typename Signature>
 using function_ptr =
-  typename ApiTraits::template function_pointer<Tag, Signature>::type;
+  typename ApiTraits::template function_pointer<Tag, Signature>;
 
 export template <typename ApiTraits, typename Tag, typename Signature>
 class unimplemented_function;
@@ -116,8 +116,34 @@ public:
           Tag(), function, std::forward<Args>(args)...);
     }
 };
+
+export template <
+  typename ApiTraits,
+  typename Tag,
+  typename RV,
+  typename... Params,
+  function_ptr<ApiTraits, Tag, RV(Params..., ...)> function>
+class static_function<ApiTraits, Tag, RV(Params..., ...), function>
+  : public function_base<true> {
+    using base = function_base<true>;
+
+public:
+    using signature = RV(Params..., ...);
+
+    template <typename Api>
+    constexpr static_function(const string_view name, Api&)
+      : base(name) {}
+
+    template <typename... Args>
+    constexpr auto operator()(Args&&... args) const noexcept
+        requires(sizeof...(Params) <= sizeof...(Args))
+    {
+        return ApiTraits::call_static(
+          Tag(), function, std::forward<Args>(args)...);
+    }
+};
 //------------------------------------------------------------------------------
-/// @brief Wrapper for dynamically -linked C-API functions.
+/// @brief Wrapper for dynamically-linked C-API functions.
 /// @ingroup c_api_wrap
 /// @see static_function
 /// @see opt_function
@@ -150,6 +176,41 @@ public:
     template <typename... Args>
     constexpr auto operator()(Args&&... args) const noexcept
         requires(sizeof...(Params) == sizeof...(Args))
+    {
+        return ApiTraits::call_dynamic(
+          Tag(), _function, std::forward<Args>(args)...);
+    }
+
+private:
+    function_pointer _function{nullptr};
+};
+//------------------------------------------------------------------------------
+export template <typename ApiTraits, typename Tag, typename RV, typename... Params>
+class dynamic_function<ApiTraits, Tag, RV(Params..., ...)>
+  : public function_base<true> {
+
+    using base = function_base<true>;
+    using function_pointer = function_ptr<ApiTraits, Tag, RV(Params..., ...)>;
+
+public:
+    using signature = RV(Params..., ...);
+
+    template <typename Api>
+    constexpr dynamic_function(const string_view name, Api& api)
+      : base(name)
+      , _function{api.traits().link_function(
+          api,
+          Tag(),
+          name,
+          std::type_identity<RV(Params...)>())} {}
+
+    constexpr explicit operator bool() const noexcept {
+        return bool(_function);
+    }
+
+    template <typename... Args>
+    constexpr auto operator()(Args&&... args) const noexcept
+        requires(sizeof...(Params) <= sizeof...(Args))
     {
         return ApiTraits::call_dynamic(
           Tag(), _function, std::forward<Args>(args)...);

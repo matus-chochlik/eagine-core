@@ -17,7 +17,7 @@ namespace eagine::c_api {
 /// @ingroup c_api_wrap
 export struct default_traits {
     template <typename Tag, typename Signature>
-    using function_pointer = std::add_pointer<Signature>;
+    using function_pointer = std::add_pointer_t<Signature>;
 
     template <typename Api, typename Type>
     auto load_constant(Api&, const string_view, const std::type_identity<Type>)
