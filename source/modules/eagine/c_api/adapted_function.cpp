@@ -66,20 +66,24 @@ export template <
   typename Ftw>
 struct adapted_function_utils<CppRv(CppParam...), RvArgMap, Ftw> {
 
-    template <typename Api, typename Wrapped, std::size_t... I>
+    template <typename Api, typename Wrapped, std::size_t... I, typename... Args>
     static constexpr auto call(
       Api& api,
       Wrapped& func,
       std::index_sequence<I...>,
-      CppParam... param) noexcept {
+      CppParam... param,
+      Args... args) noexcept {
         RvArgMap map{};
         return api.check_result(
           map(
             size_constant<0>{},
             api,
-            Ftw::call(func, map(size_constant<I + 1>{}, api, 0, param...)...),
-            param...),
-          param...);
+            Ftw::call(
+              func, map(size_constant<I + 1>{}, api, 0, param..., args...)...),
+            param...,
+            args...),
+          param...,
+          args...);
     }
 
     template <typename Api, typename Wrapped, std::size_t... CI, std::size_t... CppI>
@@ -240,6 +244,38 @@ public:
     }
 };
 
+export template <
+  typename Api,
+  auto method,
+  typename CRV,
+  typename... CParam,
+  typename CppRV,
+  typename... CppParam,
+  typename RvArgMap>
+class basic_adapted_function<
+  Api,
+  method,
+  CRV(CParam..., ...),
+  CppRV(CppParam...),
+  RvArgMap>
+  : public adapted_function_base<Api, method, CppRV(CppParam...), RvArgMap> {
+    using base =
+      adapted_function_base<Api, method, CppRV(CppParam...), RvArgMap>;
+
+public:
+    basic_adapted_function(Api& a) noexcept
+      : base{a} {}
+
+    using base::api;
+    using base::underlying;
+    using base::utils;
+
+    constexpr auto operator()(CppParam... param, auto... args) const noexcept {
+        using S = std::make_index_sequence<sizeof...(param) + sizeof...(args)>;
+        return utils().call(api(), underlying(), S{}, param..., args...);
+    }
+};
+
 export template <typename Result, typename Remain>
 struct get_transformed_signature;
 
@@ -266,6 +302,10 @@ export template <typename Rv, typename... P, typename... T>
 struct get_transformed_signature<Rv(P...), mp_list<defaulted, T...>>
   : get_transformed_signature<Rv(P...), mp_list<T...>> {};
 
+export template <typename Rv, typename... P, typename... T>
+struct get_transformed_signature<Rv(P...), mp_list<ellipsis, T...>>
+  : get_transformed_signature<Rv(P...), mp_list<T...>> {};
+
 export template <typename Rv, typename... P, auto value, typename... T>
 struct get_transformed_signature<Rv(P...), mp_list<substituted<value>, T...>>
   : get_transformed_signature<Rv(P...), mp_list<T...>> {};
@@ -276,6 +316,10 @@ struct get_transformed_signature<returned<Rv>(P...), mp_list<returned<Rv>, T...>
 
 export template <typename Rv, typename... P, typename H, typename... T>
 struct get_transformed_signature<Rv(P...), mp_list<H, T...>>
+  : get_transformed_signature<Rv(P..., H), mp_list<T...>> {};
+
+export template <typename Rv, typename... P, typename H, typename... T>
+struct get_transformed_signature<Rv(P..., ...), mp_list<H, T...>>
   : get_transformed_signature<Rv(P..., H), mp_list<T...>> {};
 
 export template <typename CppSignature>

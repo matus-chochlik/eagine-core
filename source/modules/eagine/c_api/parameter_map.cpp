@@ -45,25 +45,23 @@ public:
         return _get(i, std::forward<P>(p)...);
     }
 };
-
+//------------------------------------------------------------------------------
 export template <std::size_t... J>
 struct trivial_arg_map {
     template <std::size_t I, typename... P>
-    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
-      -> decltype(auto)
         requires(... or (I == J))
-    {
+    constexpr auto operator()(size_constant<I> i, P&&... p) const noexcept
+      -> decltype(auto) {
         return trivial_map{}(i, std::forward<P>(p)...);
     }
 };
-
+//------------------------------------------------------------------------------
 export template <typename CH, std::size_t... J>
 struct defaulted_arg_map {
     template <std::size_t I, typename... P>
-    constexpr auto operator()(size_constant<I>, P&&...) const noexcept
-      -> std::remove_cvref_t<CH>
         requires(... or (I == J))
-    {
+    constexpr auto operator()(size_constant<I>, P&&...) const noexcept
+      -> std::remove_cvref_t<CH> {
         if constexpr(std::is_pointer_v<CH>) {
             return nullptr;
         } else if constexpr(std::is_integral_v<CH>) {
@@ -73,13 +71,12 @@ struct defaulted_arg_map {
         }
     }
 };
-
+//------------------------------------------------------------------------------
 export template <auto value, std::size_t... J>
 struct substituted_arg_map {
     template <std::size_t I, typename... P>
-    constexpr auto operator()(size_constant<I>, P&&...) const noexcept
         requires(... or (I == J))
-    {
+    constexpr auto operator()(size_constant<I>, P&&...) const noexcept {
         return value;
     }
 };
@@ -87,10 +84,9 @@ struct substituted_arg_map {
 export template <std::size_t... J>
 struct nullptr_arg_map {
     template <std::size_t I, typename... P>
-    constexpr auto operator()(size_constant<I>, P&&...) const noexcept
-      -> decltype(auto)
         requires(... or (I == J))
-    {
+    constexpr auto operator()(size_constant<I>, P&&...) const noexcept
+      -> decltype(auto) {
         return nullptr;
     }
 };
@@ -101,6 +97,15 @@ struct reorder_arg_map {
     constexpr auto operator()(size_constant<CI>, P&&... p) const noexcept
       -> decltype(auto) {
         return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...);
+    }
+};
+//------------------------------------------------------------------------------
+export template <std::size_t CI, std::size_t CppI>
+struct ellipsis_arg_map {
+    template <std::size_t I>
+        requires(I >= CI)
+    constexpr auto operator()(size_constant<I> i, auto... p) const noexcept {
+        return reorder_arg_map<I, CppI + I - CI>{}(i, p...);
     }
 };
 //------------------------------------------------------------------------------
@@ -583,6 +588,7 @@ struct make_arg_map<CI, CppI, Handle, basic_owned_handle<Tag, Handle, invalid>> 
 //------------------------------------------------------------------------------
 export struct defaulted;
 export struct skipped;
+export struct ellipsis;
 
 export template <auto>
 struct substituted;
@@ -681,6 +687,10 @@ struct make_args_map<
 
     using substituted_arg_map<value, CI>::operator();
 };
+
+export template <std::size_t CI, std::size_t CppI>
+struct make_args_map<CI, CppI, mp_list<>, mp_list<ellipsis>>
+  : ellipsis_arg_map<CI, CppI> {};
 
 export template <
   std::size_t CI,
@@ -1055,6 +1065,11 @@ auto make_map(CRV (*)(), CppRV (*)()) -> cast_to_map<CRV, CppRV>
 
 export template <typename RV, typename... CParam, typename... CppParam>
 auto make_map(RV (*)(CParam...), RV (*)(CppParam...))
+  -> make_args_map<0, 0, mp_list<RV, CParam...>, mp_list<RV, CppParam...>>
+    requires((sizeof...(CParam) > 0));
+
+export template <typename RV, typename... CParam, typename... CppParam>
+auto make_map(RV (*)(CParam..., ...), RV (*)(CppParam...))
   -> make_args_map<0, 0, mp_list<RV, CParam...>, mp_list<RV, CppParam...>>
     requires((sizeof...(CParam) > 0));
 
