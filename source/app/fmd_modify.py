@@ -28,21 +28,18 @@ class OpenSSLDataSigner(object):
         arg_parser.add_argument(
             "--sign-certificate",
             metavar="FILE",
-            nargs='?',
             type=os.path.realpath,
             default=None
         )
         arg_parser.add_argument(
             "--sign-key",
             metavar="FILE",
-            nargs='?',
             type=os.path.realpath,
             default=None
         )
         arg_parser.add_argument(
             "--sign-hash",
             metavar="HASH-ID",
-            nargs='?',
             choices=["sha256", "sha384", "sha512"],
             default="sha256"
         )
@@ -88,6 +85,7 @@ class OpenSSLDataSigner(object):
         sig = {}
         signature = self.signData(options)
         if self.verifySignature(options, signature):
+            sig["algorithm"] = options.sign_hash
             with open(options.sign_certificate, "rt") as certfd:
                 sig["certificate"] = certfd.read();
             sig["signature"] = signature

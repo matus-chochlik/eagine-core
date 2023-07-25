@@ -8,8 +8,108 @@ import os
 import re
 import sys
 import json
+import base64
 import argparse
+import tempfile
 
+# ------------------------------------------------------------------------------
+# Digital signatures
+# ------------------------------------------------------------------------------
+def getSignedAttributes(verified, header):
+    signed = {}
+    for attrib in verified.get("attributes", []):
+        attrib = attrib.split(".")
+        src = header
+        dst = signed
+        for key in attrib[:-1]:
+            src = src.setdefault(key, {})
+            dst = dst.setdefault(key, {})
+        dst[attrib[-1]] = src[attrib[-1]]
+    return json.dumps(
+        signed,
+        sort_keys=True,
+        ensure_ascii=True,
+        separators=(',',':'))
+# ------------------------------------------------------------------------------
+#  OpenSSL.crypto
+# ------------------------------------------------------------------------------
+class OpenSSLDataVerifier(object):
+    # -------------------------------------------------------------------------
+    def __init__(self, arg_parser, crypto):
+        self._crypto = crypto
+        self._cacert = None
+
+        arg_parser.add_argument(
+            "--ca-certificate",
+            metavar="FILE",
+            type=os.path.realpath,
+            default=None
+        )
+
+    # -------------------------------------------------------------------------
+    def processParsedOptions(self, arg_parser, options):
+        try:
+            with open(options.ca_certificate, "r") as certfd:
+                self._cacert = self._crypto.load_certificate(
+                    self._crypto.FILETYPE_PEM,
+                    certfd.read());
+        except:
+            arg_parser.error("failed to load CA certificate from `%s'" % options.ca_certificate)
+
+    # -------------------------------------------------------------------------
+    def beginVerify(self, options, header):
+        self._data = bytes()
+
+    # -------------------------------------------------------------------------
+    def addData(self, options, data):
+        if isinstance(data, str):
+            data = data.encode("utf-8")
+        assert isinstance(data, bytes)
+        self._data += data
+
+    # -------------------------------------------------------------------------
+    def verifySignature(self, options, header, verified):
+        algorithm = verified.get("algorithm", "sha256")
+        signature = verified.get("signature")
+        sign_cert = verified.get("certificate")
+
+        if sign_cert is not None:
+            # TODO verify certificate against CA
+            if signature is not None:
+                sign_cert = self._crypto.load_certificate(
+                    self._crypto.FILETYPE_PEM,
+                    sign_cert)
+                try:
+                    attribs = getSignedAttributes(verified, header)
+                    self._crypto.verify(
+                        sign_cert,
+                        base64.b64decode(signature),
+                        attribs.encode("utf-8") + self._data,
+                        algorithm)
+                except self._crypto.Error as ce:
+                    print(ce)
+                    return False
+        return True
+
+    # -------------------------------------------------------------------------
+    def finishVerify(self, options, header):
+        try:
+            for verified in header.get("signed", []):
+                if not self.verifySignature(options, header, verified):
+                    return False
+        finally:
+            self._data = None
+        return True
+
+# ------------------------------------------------------------------------------
+def makeVerifier(arg_parser):
+    # TODO pyca/cryptography
+    try:
+        from OpenSSL import crypto
+        return OpenSSLDataVerifier(arg_parser, crypto)
+    except ImportError:
+        pass
+    return None
 # ------------------------------------------------------------------------------
 # Argument parsing
 # ------------------------------------------------------------------------------
@@ -125,6 +225,15 @@ class ArgumentParser(argparse.ArgumentParser):
             type=_valid_input_path
         )
 
+        self._verifier = makeVerifier(self)
+        if self._verifier is not None:
+            self.add_argument(
+                "--verify-signatures",
+                dest='verify_signatures',
+                action='store_true',
+                default=False
+            )
+
     # -------------------------------------------------------------------------
     def processParsedOptions(self, options):
         options.input_paths = set(options.input_paths)
@@ -142,6 +251,10 @@ class ArgumentParser(argparse.ArgumentParser):
         options.queries = [(_processKey(k), o, v) for k,o,v in options.queries]
         options.queried_values = [_processKey(k) for k in options.queried_values]
 
+        options.verifier = self._verifier
+        if options.verifier is not None:
+            options.verifier.processParsedOptions(self, options)
+
         return options
     # -------------------------------------------------------------------------
     def parseArgs(self):
@@ -155,37 +268,69 @@ def getArgumentParser():
         """
     )
 # ------------------------------------------------------------------------------
-def extractHeader(options, path):
-    with open(path, "rb") as ifd:
+def extractHeaderAndData(options, path):
+    with open(path, "rb") as inputfd:
         decoder = json.JSONDecoder()
         head_bytes = bytes()
         while True:
-            chunk = ifd.read(1024)
+            chunk = inputfd.read(1024)
             if not chunk:
                 break
             head_bytes += chunk
             try:
+                data = bytes()
                 head_str = head_bytes.decode("utf-8")
             except UnicodeDecodeError as ude:
+                data = head_bytes[ude.start:]
                 head_bytes = head_bytes[:ude.start]
                 head_str = head_bytes.decode("utf-8")
             try:
                 header, pos = decoder.raw_decode(head_str)
-                return header
+                data = head_str[pos:].encode("utf-8") + data
+                yield header
+                break
             except json.JSONDecodeError as jde:
                 pass
-    return {}
+        yield data
+        while True:
+            chunk = inputfd.read(4096)
+            if not chunk:
+                break
+            yield chunk
+        return
+    yield {}
 
 # ------------------------------------------------------------------------------
-def getAttribValue(header, attrib):
+def getAttribValue(options, header, attrib):
     node = header
-    for key in attrib[:-1]:
-        node = node.setdefault(key, {})
-    return node[attrib[-1]]
+    try:
+        for key in attrib[:-1]:
+            node = node[key]
+        return node[attrib[-1]]
+    except KeyError:
+        return None
 
 # ------------------------------------------------------------------------------
 def processFile(options, path):
-    header = extractHeader(options, path)
+    first = True
+    verify_first = True
+    for item in extractHeaderAndData(options, path):
+        if first:
+            first = False
+            header = item
+        elif options.verify_signatures:
+                if verify_first:
+                    verify_first = False
+                    options.verifier.beginVerify(options, header)
+                options.verifier.addData(options, item)
+        else:
+            break
+
+    if options.verify_signatures:
+        if not options.verifier.finishVerify(options, header):
+            # TODO print info
+            return False
+
     first = True
     if len(options.queried_values) > 0:
         for attrib in options.queried_values:
@@ -193,11 +338,11 @@ def processFile(options, path):
                 first = False
             else:
                 sys.stdout.write('\t')
-            sys.stdout.write(getAttribValue(header, attrib))
+            sys.stdout.write(getAttribValue(options, header, attrib))
         sys.stdout.write('\n')
 
     for attrib, operation, value in options.queries:
-        if not operation(getAttribValue(header, attrib), value):
+        if not operation(getAttribValue(options, header, attrib), value):
             return False
     return True
 # ------------------------------------------------------------------------------
