@@ -104,17 +104,31 @@ class OpenSSLDataVerifier(object):
         self._data += data
 
     # -------------------------------------------------------------------------
+    def verifyCertificate(self, sign_cert):
+        store = self._crypto.X509Store()
+        store.add_cert(self._cacert)
+
+        ctx = self._crypto.X509StoreContext(store, sign_cert)
+        try:
+            ctx.verify_certificate()
+            return True
+        except self._crypto.Error as ce:
+            print(ce)
+            return False
+
+    # -------------------------------------------------------------------------
     def verifySignature(self, options, header, verified):
         algorithm = verified.get("algorithm", "sha256")
         signature = verified.get("signature")
         sign_cert = verified.get("certificate")
 
         if sign_cert is not None:
-            # TODO verify certificate against CA
+            sign_cert = self._crypto.load_certificate(
+                self._crypto.FILETYPE_PEM,
+                sign_cert)
+            if not self.verifyCertificate(sign_cert):
+                return False
             if signature is not None:
-                sign_cert = self._crypto.load_certificate(
-                    self._crypto.FILETYPE_PEM,
-                    sign_cert)
                 try:
                     date = verified.get("date", "")
                     attribs = getSignedAttributes(verified, header)
