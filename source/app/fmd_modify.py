@@ -10,6 +10,7 @@ import sys
 import json
 import base64
 import shutil
+import datetime
 import argparse
 import tempfile
 
@@ -311,6 +312,8 @@ def getSignedAttributes(options, header):
 # ------------------------------------------------------------------------------
 def addSignature(signer, options, header, datafd):
     signer.beginSign(options)
+    date_str = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    signer.addData(options, date_str)
     signer.addData(options, getSignedAttributes(options, header))
     while True:
         chunk = datafd.read(4096)
@@ -319,6 +322,7 @@ def addSignature(signer, options, header, datafd):
         signer.addData(options, chunk)
     sig = signer.finishSign(options)
     if sig is not None:
+        sig["date"] = date_str
         sig["attributes"] = ['.'.join(a) for a in options.sign_attributes]
         header.setdefault("signed", []).append(sig)
 # ------------------------------------------------------------------------------

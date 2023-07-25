@@ -57,6 +57,42 @@ class OpenSSLDataVerifier(object):
             arg_parser.error("failed to load CA certificate from `%s'" % options.ca_certificate)
 
     # -------------------------------------------------------------------------
+    def getX509NameValue(self, name, attrib):
+        if len(attrib) == 1:
+            for key, value in name.get_components():
+                if key.decode("utf-8") == attrib[0]:
+                    return value.decode("utf-8")
+        return None
+
+    # -------------------------------------------------------------------------
+    def getCertAttribValue(self, cert, attrib):
+        if attrib == ["serial_number"]:
+            return cert.get_serial_number()
+        if attrib == ["version"]:
+            return cert.get_version()
+        if attrib[0] == "subject":
+            return self.getX509NameValue(cert.get_subject(), attrib[1:])
+        if attrib[0] == "issuer":
+            return self.getX509NameValue(cert.get_issuer(), attrib[1:])
+        return None;
+
+    # -------------------------------------------------------------------------
+    def doGetCertificateAttribute(self, signatures, attrib):
+        for signed in signatures:
+            sign_cert = signed.get("certificate")
+            if sign_cert is not None:
+                sign_cert = self._crypto.load_certificate(
+                    self._crypto.FILETYPE_PEM,
+                    sign_cert)
+                yield self.getCertAttribValue(sign_cert, attrib)
+            else:
+                yield None
+
+    # -------------------------------------------------------------------------
+    def getCertificateAttribute(self, signatures, attrib):
+        return [v for v in self.doGetCertificateAttribute(signatures, attrib)]
+
+    # -------------------------------------------------------------------------
     def beginVerify(self, options, header):
         self._data = bytes()
 
@@ -80,11 +116,12 @@ class OpenSSLDataVerifier(object):
                     self._crypto.FILETYPE_PEM,
                     sign_cert)
                 try:
+                    date = verified.get("date", "")
                     attribs = getSignedAttributes(verified, header)
                     self._crypto.verify(
                         sign_cert,
                         base64.b64decode(signature),
-                        attribs.encode("utf-8") + self._data,
+                        date.encode("utf-8") + attribs.encode("utf-8") + self._data,
                         algorithm)
                 except self._crypto.Error as ce:
                     print(ce)
@@ -307,9 +344,34 @@ def getAttribValue(options, header, attrib):
         for key in attrib[:-1]:
             node = node[key]
         return node[attrib[-1]]
+    except TypeError:
+        pass
     except KeyError:
-        return None
+        pass
 
+    if attrib[0] == "signed" and attrib[1] == "certificate":
+        if "signed" in header:
+            if options.verifier is not None:
+                return options.verifier.getCertificateAttribute(
+                    header["signed"],
+                    attrib[2:])
+
+    return None
+
+# ------------------------------------------------------------------------------
+def writeAttributeValue(options, value):
+    if isinstance(value, list):
+        sys.stdout.write('[')
+        first = True
+        for e in value:
+            if first:
+                first = False
+            else:
+                sys.stdout.write(',')
+            writeAttributeValue(options, e)
+        sys.stdout.write(']')
+    else:
+        sys.stdout.write(str(value))
 # ------------------------------------------------------------------------------
 def processFile(options, path):
     first = True
@@ -338,7 +400,7 @@ def processFile(options, path):
                 first = False
             else:
                 sys.stdout.write('\t')
-            sys.stdout.write(getAttribValue(options, header, attrib))
+            writeAttributeValue(options, getAttribValue(options, header, attrib))
         sys.stdout.write('\n')
 
     for attrib, operation, value in options.queries:
