@@ -16,7 +16,139 @@ import argparse
 import tempfile
 
 # ------------------------------------------------------------------------------
+#  Helpers
+# ------------------------------------------------------------------------------
+def exceptionMessage(e):
+    return repr(e)
+# ------------------------------------------------------------------------------
 # Digital signatures
+# ------------------------------------------------------------------------------
+def getSignedAttributes(options, header):
+    signed = {}
+    for attrib in options.sign_attributes:
+        src = header
+        dst = signed
+        for key in attrib[:-1]:
+            src = src.setdefault(key, {})
+            dst = dst.setdefault(key, {})
+        dst[attrib[-1]] = src[attrib[-1]]
+    return json.dumps(
+        signed,
+        sort_keys=True,
+        ensure_ascii=True,
+        separators=(',',':'))
+# ------------------------------------------------------------------------------
+#  PyCaCrypto
+# ------------------------------------------------------------------------------
+class PyCaCryptoDataSigner(object):
+    # -------------------------------------------------------------------------
+    def __init__(self, arg_parser, hashes, padding, serialization, x509):
+        self._hashes = hashes 
+        self._padding = padding 
+        self._serialization = serialization
+        self._x509 = x509 
+
+        arg_parser.add_argument(
+            "--sign-certificate",
+            metavar="FILE",
+            type=os.path.realpath,
+            default=None
+        )
+        arg_parser.add_argument(
+            "--sign-key",
+            metavar="FILE",
+            type=os.path.realpath,
+            default=None
+        )
+        arg_parser.add_argument(
+            "--sign-hash",
+            metavar="HASH-ID",
+            choices=["sha256", "sha384", "sha512"],
+            default="sha256"
+        )
+    # -------------------------------------------------------------------------
+    def processParsedOptions(self, arg_parser, options):
+        self._options = options
+
+    # -------------------------------------------------------------------------
+    def beginSign(self, header):
+        with open(self._options.sign_certificate, "rb") as certfd:
+            self._cert = self._x509.load_pem_x509_certificate(certfd.read());
+        with open(self._options.sign_key, "rb") as pkeyfd:
+            self._pkey = self._serialization.load_pem_private_key(
+                pkeyfd.read(),
+                None);
+        self._data = bytes()
+
+    # -------------------------------------------------------------------------
+    def addData(self, header, data):
+        if isinstance(data, str):
+            data = data.encode("utf-8")
+        assert isinstance(data, bytes)
+        self._data += data
+
+    # -------------------------------------------------------------------------
+    def getMDType(self, name):
+        if name == "sha384":
+            return self._hashes.SHA384()
+        if name == "sha512":
+            return self._hashes.SHA512()
+        return self._hashes.SHA256()
+
+    # -------------------------------------------------------------------------
+    def signData(self, options):
+        md_type = self.getMDType(self._options.sign_hash)
+        signature = self._pkey.sign(
+            self._data,
+            self._padding.PSS(
+                mgf=self._padding.MGF1(md_type),
+                salt_length=self._padding.PSS.MAX_LENGTH),
+            md_type)
+
+        signature = base64.b64encode(signature)
+        signature = signature.decode("ascii")
+        return signature
+
+    # -------------------------------------------------------------------------
+    def verifySignature(self, options, signature):
+        sig = signature.encode("ascii")
+        sig = base64.b64decode(sig)
+
+        pubkey = self._cert.public_key()
+        if signature is not None:
+            if not pubkey:
+                self._options.error("failed to get key from certificate")
+                return False
+            try:
+                md_type = self.getMDType(self._options.sign_hash)
+                pubkey.verify(
+                    base64.b64decode(signature),
+                    self._data,
+                    self._padding.PSS(
+                        mgf=self._padding.MGF1(md_type),
+                        salt_length=self._padding.PSS.MAX_LENGTH),
+                    md_type)
+            except Exception as err:
+                self._options.error(
+                    "failed to verify signature: %s",
+                    exceptionMessage(err))
+                return False
+        return True
+
+    # -------------------------------------------------------------------------
+    def finishSign(self, options):
+        sig = {}
+        signature = self.signData(options)
+        if self.verifySignature(options, signature):
+            sig["algorithm"] = options.sign_hash
+            with open(options.sign_certificate, "rt") as certfd:
+                sig["certificate"] = certfd.read();
+            sig["signature"] = signature
+        self._data = None
+        self._cert = None
+        self._pkey = None
+        return sig
+
 # ------------------------------------------------------------------------------
 #  OpenSSL.crypto
 # ------------------------------------------------------------------------------
@@ -50,8 +182,8 @@ class OpenSSLDataSigner(object):
         pass
 
     # -------------------------------------------------------------------------
-    def beginSign(self, options):
-        with open(options.sign_certificate, "r") as certfd:
+    def beginSign(self, header):
+        with open(self._options.sign_certificate, "r") as certfd:
             self._cert = self._crypto.load_certificate(
                 self._crypto.FILETYPE_PEM,
                 certfd.read());
@@ -62,7 +194,7 @@ class OpenSSLDataSigner(object):
         self._data = bytes()
 
     # -------------------------------------------------------------------------
-    def addData(self, options, data):
+    def addData(self, header, data):
         if isinstance(data, str):
             data = data.encode("utf-8")
         assert isinstance(data, bytes)
@@ -85,7 +217,7 @@ class OpenSSLDataSigner(object):
         except self._crypto.Error as ce:
             self._options.error(
                 "failed to verify the issued signature: %s",
-                str(ce))
+                exceptionMessage(ce))
             return False
 
     # -------------------------------------------------------------------------
@@ -104,7 +236,17 @@ class OpenSSLDataSigner(object):
 
 # ------------------------------------------------------------------------------
 def makeSigner(arg_parser):
-    # TODO pyca/cryptography
+    try:
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import padding
+        from cryptography.hazmat.primitives import serialization
+        from cryptography import x509
+        return PyCaCryptoDataSigner(
+            arg_parser,
+            hashes, padding, serialization, x509)
+    except ImportError:
+        pass
+
     try:
         from OpenSSL import crypto
         return OpenSSLDataSigner(arg_parser, crypto)
@@ -247,7 +389,6 @@ class ArgumentParser(argparse.ArgumentParser):
         options.signer = self._signer
         if options.signer is not None:
             options.sign_attributes = [_processKey(k) for k in options.sign_attributes]
-            options.signer.processParsedOptions(self, options)
 
         logging.basicConfig(
             encoding="utf-8",
@@ -273,9 +414,14 @@ class ArgumentParser(argparse.ArgumentParser):
                 self._log.error(*args, **kwargs)
 
         # ----------------------------------------------------------------------
-        return _Options(self.processParsedOptions(
+        options = _Options(self.processParsedOptions(
             argparse.ArgumentParser.parse_args(self)
         ))
+
+        if options.signer is not None:
+            options.signer.processParsedOptions(self, options)
+
+        return options
 # ------------------------------------------------------------------------------
 def getArgumentParser():
     return ArgumentParser(
@@ -348,15 +494,15 @@ def getSignedAttributes(options, header):
         separators=(',',':'))
 # ------------------------------------------------------------------------------
 def addSignature(signer, options, header, datafd):
-    signer.beginSign(options)
-    date_str = datetime.datetime.now(datetime.timezone.utc).isoformat()
-    signer.addData(options, date_str)
-    signer.addData(options, getSignedAttributes(options, header))
+    signer.beginSign(header)
     while True:
         chunk = datafd.read(4096)
         if not chunk:
             break
-        signer.addData(options, chunk)
+        signer.addData(header, chunk)
+    signer.addData(header, getSignedAttributes(options, header))
+    date_str = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    signer.addData(header, date_str)
     sig = signer.finishSign(options)
     if sig is not None:
         sig["date"] = date_str
@@ -442,7 +588,7 @@ def main():
             processFiles(options)
         return 0
     except Exception as error:
-        print(type(error), error)
+        print(exceptionMessage(error))
         raise
         return 1
 
