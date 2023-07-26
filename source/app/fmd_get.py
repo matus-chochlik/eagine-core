@@ -66,6 +66,7 @@ class PyCaCryptoDataVerifier(object):
             "givenName": oids.GIVEN_NAME,
             "E": oids.EMAIL_ADDRESS,
             "emailAddress": oids.EMAIL_ADDRESS,
+            "keyUsage": x509.KeyUsage.oid
         }
 
         arg_parser.add_argument(

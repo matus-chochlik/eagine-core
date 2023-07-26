@@ -141,6 +141,7 @@ class PyCaCryptoDataSigner(object):
         signature = self.signData(options)
         if self.verifySignature(options, signature):
             sig["algorithm"] = options.sign_hash
+            sig["padding"] = "PSS"
             with open(options.sign_certificate, "rt") as certfd:
                 sig["certificate"] = certfd.read();
             sig["signature"] = signature
