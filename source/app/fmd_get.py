@@ -194,133 +194,6 @@ class PyCaCryptoDataVerifier(object):
         return True
 
 # ------------------------------------------------------------------------------
-#  OpenSSL.crypto
-# ------------------------------------------------------------------------------
-class OpenSSLDataVerifier(object):
-    # -------------------------------------------------------------------------
-    def __init__(self, arg_parser, crypto):
-        self._crypto = crypto
-        self._cacert = None
-
-        arg_parser.add_argument(
-            "--ca-certificate",
-            metavar="FILE",
-            type=os.path.realpath,
-            default=None
-        )
-
-    # -------------------------------------------------------------------------
-    def processParsedOptions(self, arg_parser, options):
-        self._options = options
-        try:
-            with open(options.ca_certificate, "r") as certfd:
-                self._cacert = self._crypto.load_certificate(
-                    self._crypto.FILETYPE_PEM,
-                    certfd.read());
-        except:
-            arg_parser.error("failed to load CA certificate from `%s'" % options.ca_certificate)
-
-    # -------------------------------------------------------------------------
-    def getX509NameValue(self, name, attrib):
-        if len(attrib) == 1:
-            for key, value in name.get_components():
-                if key.decode("utf-8") == attrib[0]:
-                    return value.decode("utf-8")
-        return None
-
-    # -------------------------------------------------------------------------
-    def getCertAttribValue(self, cert, attrib):
-        if attrib == ["serial_number"]:
-            return cert.get_serial_number()
-        if attrib == ["version"]:
-            return cert.get_version()
-        if attrib[0] == "subject":
-            return self.getX509NameValue(cert.get_subject(), attrib[1:])
-        if attrib[0] == "issuer":
-            return self.getX509NameValue(cert.get_issuer(), attrib[1:])
-        return None;
-
-    # -------------------------------------------------------------------------
-    def doGetCertificateAttribute(self, signatures, attrib):
-        for signed in signatures:
-            sign_cert = signed.get("certificate")
-            if sign_cert is not None:
-                sign_cert = self._crypto.load_certificate(
-                    self._crypto.FILETYPE_PEM,
-                    sign_cert)
-                yield self.getCertAttribValue(sign_cert, attrib)
-            else:
-                yield None
-
-    # -------------------------------------------------------------------------
-    def getCertificateAttribute(self, signatures, attrib):
-        return [v for v in self.doGetCertificateAttribute(signatures, attrib)]
-
-    # -------------------------------------------------------------------------
-    def beginVerify(self, header):
-        self._data = bytes()
-
-    # -------------------------------------------------------------------------
-    def addData(self, data):
-        if isinstance(data, str):
-            data = data.encode("utf-8")
-        assert isinstance(data, bytes)
-        self._data += data
-
-    # -------------------------------------------------------------------------
-    def verifyCertificate(self, sign_cert):
-        store = self._crypto.X509Store()
-        store.add_cert(self._cacert)
-
-        ctx = self._crypto.X509StoreContext(store, sign_cert)
-        try:
-            ctx.verify_certificate()
-            return True
-        except self._crypto.Error as ce:
-            self._options.error(
-                "failed to verify certificate: %s",
-                exceptionMessage(ce))
-            return False
-
-    # -------------------------------------------------------------------------
-    def verifySignature(self, header, verified):
-        algorithm = verified.get("algorithm", "sha256")
-        signature = verified.get("signature")
-        sign_cert = verified.get("certificate")
-
-        if sign_cert is not None:
-            sign_cert = self._crypto.load_certificate(
-                self._crypto.FILETYPE_PEM,
-                sign_cert)
-            if not self.verifyCertificate(sign_cert):
-                return False
-            if signature is not None:
-                try:
-                    date = verified.get("date", "")
-                    attribs = getSignedAttributes(verified, header)
-                    self._crypto.verify(
-                        sign_cert,
-                        base64.b64decode(signature),
-                        self._data + attribs.encode("utf-8") + date.encode("utf-8"),
-                        algorithm)
-                except self._crypto.Error as ce:
-                    self._options.error(
-                        "failed to verify signature: %s",
-                        exceptionMessage(ce))
-                    return False
-        return True
-
-    # -------------------------------------------------------------------------
-    def finishVerify(self, header):
-        try:
-            for verified in header.get("signed", []):
-                if not self.verifySignature(header, verified):
-                    return False
-        finally:
-            self._data = None
-        return True
-
-# ------------------------------------------------------------------------------
 def makeVerifier(arg_parser):
     try:
         from cryptography.hazmat.primitives import hashes
@@ -329,11 +202,7 @@ def makeVerifier(arg_parser):
         return PyCaCryptoDataVerifier(arg_parser, hashes, padding, x509)
     except ImportError:
         pass
-    try:
-        from OpenSSL import crypto
-        return OpenSSLDataVerifier(arg_parser, crypto)
-    except ImportError:
-        pass
+
     return None
 # ------------------------------------------------------------------------------
 # Argument parsing

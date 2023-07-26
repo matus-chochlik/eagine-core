@@ -150,91 +150,6 @@ class PyCaCryptoDataSigner(object):
         return sig
 
 # ------------------------------------------------------------------------------
-#  OpenSSL.crypto
-# ------------------------------------------------------------------------------
-class OpenSSLDataSigner(object):
-    # -------------------------------------------------------------------------
-    def __init__(self, arg_parser, crypto):
-        self._crypto = crypto
-        self._cert = None
-        self._pkey = None
-
-        arg_parser.add_argument(
-            "--sign-certificate",
-            metavar="FILE",
-            type=os.path.realpath,
-            default=None
-        )
-        arg_parser.add_argument(
-            "--sign-key",
-            metavar="FILE",
-            type=os.path.realpath,
-            default=None
-        )
-        arg_parser.add_argument(
-            "--sign-hash",
-            metavar="HASH-ID",
-            choices=["sha256", "sha384", "sha512"],
-            default="sha256"
-        )
-    # -------------------------------------------------------------------------
-    def processParsedOptions(self, arg_parser, options):
-        pass
-
-    # -------------------------------------------------------------------------
-    def beginSign(self, header):
-        with open(self._options.sign_certificate, "r") as certfd:
-            self._cert = self._crypto.load_certificate(
-                self._crypto.FILETYPE_PEM,
-                certfd.read());
-        with open(options.sign_key, "r") as pkeyfd:
-            self._pkey = self._crypto.load_privatekey(
-                self._crypto.FILETYPE_PEM,
-                pkeyfd.read());
-        self._data = bytes()
-
-    # -------------------------------------------------------------------------
-    def addData(self, header, data):
-        if isinstance(data, str):
-            data = data.encode("utf-8")
-        assert isinstance(data, bytes)
-        self._data += data
-
-    # -------------------------------------------------------------------------
-    def signData(self, options):
-        signature = base64.b64encode(
-            self._crypto.sign(self._pkey, self._data, options.sign_hash))
-        signature = signature.decode("ascii")
-        return signature
-
-    # -------------------------------------------------------------------------
-    def verifySignature(self, options, signature):
-        sig = signature.encode("ascii")
-        sig = base64.b64decode(sig)
-        try:
-            self._crypto.verify(self._cert, sig, self._data, options.sign_hash)
-            return True
-        except self._crypto.Error as ce:
-            self._options.error(
-                "failed to verify the issued signature: %s",
-                exceptionMessage(ce))
-            return False
-
-    # -------------------------------------------------------------------------
-    def finishSign(self, options):
-        sig = {}
-        signature = self.signData(options)
-        if self.verifySignature(options, signature):
-            sig["algorithm"] = options.sign_hash
-            with open(options.sign_certificate, "rt") as certfd:
-                sig["certificate"] = certfd.read();
-            sig["signature"] = signature
-        self._data = None
-        self._cert = None
-        self._pkey = None
-        return sig
-
-# ------------------------------------------------------------------------------
 def makeSigner(arg_parser):
     try:
         from cryptography.hazmat.primitives import hashes
@@ -247,11 +162,6 @@ def makeSigner(arg_parser):
     except ImportError:
         pass
 
-    try:
-        from OpenSSL import crypto
-        return OpenSSLDataSigner(arg_parser, crypto)
-    except ImportError:
-        pass
     return None
 # ------------------------------------------------------------------------------
 # Argument parsing
