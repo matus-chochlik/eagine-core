@@ -9,6 +9,7 @@ import re
 import sys
 import json
 import base64
+import logging
 import argparse
 import tempfile
 
@@ -48,6 +49,7 @@ class OpenSSLDataVerifier(object):
 
     # -------------------------------------------------------------------------
     def processParsedOptions(self, arg_parser, options):
+        self._options = options
         try:
             with open(options.ca_certificate, "r") as certfd:
                 self._cacert = self._crypto.load_certificate(
@@ -93,11 +95,11 @@ class OpenSSLDataVerifier(object):
         return [v for v in self.doGetCertificateAttribute(signatures, attrib)]
 
     # -------------------------------------------------------------------------
-    def beginVerify(self, options, header):
+    def beginVerify(self, header):
         self._data = bytes()
 
     # -------------------------------------------------------------------------
-    def addData(self, options, data):
+    def addData(self, data):
         if isinstance(data, str):
             data = data.encode("utf-8")
         assert isinstance(data, bytes)
@@ -113,11 +115,13 @@ class OpenSSLDataVerifier(object):
             ctx.verify_certificate()
             return True
         except self._crypto.Error as ce:
-            print(ce)
+            self._options.error(
+                "failed to verify certificate: %s",
+                str(ce))
             return False
 
     # -------------------------------------------------------------------------
-    def verifySignature(self, options, header, verified):
+    def verifySignature(self, header, verified):
         algorithm = verified.get("algorithm", "sha256")
         signature = verified.get("signature")
         sign_cert = verified.get("certificate")
@@ -138,15 +142,17 @@ class OpenSSLDataVerifier(object):
                         date.encode("utf-8") + attribs.encode("utf-8") + self._data,
                         algorithm)
                 except self._crypto.Error as ce:
-                    print(ce)
+                    self._options.error(
+                        "failed to verify signature: %s",
+                        str(ce))
                     return False
         return True
 
     # -------------------------------------------------------------------------
-    def finishVerify(self, options, header):
+    def finishVerify(self, header):
         try:
             for verified in header.get("signed", []):
-                if not self.verifySignature(options, header, verified):
+                if not self.verifySignature(header, verified):
                     return False
         finally:
             self._data = None
@@ -227,7 +233,6 @@ class ArgumentParser(argparse.ArgumentParser):
                 value = _value(found.group(4))
                 return (attrib, operation, value)
             except Exception as e:
-                print(e)
                 self.error("invalid query specifier '%s'" % x)
         # ----------------------------------------------------------------------
         argparse.ArgumentParser.__init__(self, **kw)
@@ -237,6 +242,13 @@ class ArgumentParser(argparse.ArgumentParser):
             metavar='FILE|-',
             dest='print_bash_completion',
             default=None
+        )
+
+        self.add_argument(
+            "--debug",
+            action="store_true",
+            default=False,
+            help="""Starts in debug mode."""
         )
 
         self.add_argument(
@@ -306,10 +318,33 @@ class ArgumentParser(argparse.ArgumentParser):
         if options.verifier is not None:
             options.verifier.processParsedOptions(self, options)
 
+        logging.basicConfig(
+            encoding="utf-8",
+            format='[%(levelname)s: %(message)s',
+            level=logging.DEBUG if options.debug else logging.INFO)
+        options._log = logging.getLogger("fmd-get")
+
         return options
     # -------------------------------------------------------------------------
     def parseArgs(self):
-        return self.processParsedOptions(argparse.ArgumentParser.parse_args(self))
+        # ----------------------------------------------------------------------
+        class _Options(object):
+            # ------------------------------------------------------------------
+            def __init__(self, base):
+                self.__dict__.update(base.__dict__)
+
+            # ------------------------------------------------------------------
+            def output(self, what):
+                sys.stdout.write(what)
+
+            # ------------------------------------------------------------------
+            def error(self, *args, **kwargs):
+                self._log.error(*args, **kwargs)
+
+        # ----------------------------------------------------------------------
+        return _Options(self.processParsedOptions(
+            argparse.ArgumentParser.parse_args(self)
+        ))
 # ------------------------------------------------------------------------------
 def getArgumentParser():
     return ArgumentParser(
@@ -375,17 +410,17 @@ def getAttribValue(options, header, attrib):
 # ------------------------------------------------------------------------------
 def writeAttributeValue(options, value):
     if isinstance(value, list):
-        sys.stdout.write('[')
+        options.output('[')
         first = True
         for e in value:
             if first:
                 first = False
             else:
-                sys.stdout.write(',')
+                options.output(',')
             writeAttributeValue(options, e)
-        sys.stdout.write(']')
+        options.output(']')
     else:
-        sys.stdout.write(str(value))
+        options.output(str(value))
 # ------------------------------------------------------------------------------
 def processFile(options, path):
     first = True
@@ -397,13 +432,13 @@ def processFile(options, path):
         elif options.verify_signatures:
                 if verify_first:
                     verify_first = False
-                    options.verifier.beginVerify(options, header)
-                options.verifier.addData(options, item)
+                    options.verifier.beginVerify(header)
+                options.verifier.addData(item)
         else:
             break
 
     if options.verify_signatures:
-        if not options.verifier.finishVerify(options, header):
+        if not options.verifier.finishVerify(header):
             # TODO print info
             return False
 
@@ -413,9 +448,9 @@ def processFile(options, path):
             if first:
                 first = False
             else:
-                sys.stdout.write('\t')
+                options.output('\t')
             writeAttributeValue(options, getAttribValue(options, header, attrib))
-        sys.stdout.write('\n')
+        options.output('\n')
 
     for attrib, operation, value in options.queries:
         if not operation(getAttribValue(options, header, attrib), value):
@@ -427,6 +462,8 @@ def processFiles(options):
         if not processFile(options, path):
             return 1
     return 0
+# ------------------------------------------------------------------------------
+#  bash completion
 # ------------------------------------------------------------------------------
 def printBashCompletion(argparser, options):
     from eagine.argparseUtil import printBashComplete
