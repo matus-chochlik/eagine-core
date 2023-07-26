@@ -14,6 +14,11 @@ import argparse
 import tempfile
 
 # ------------------------------------------------------------------------------
+#  Helpers
+# ------------------------------------------------------------------------------
+def exceptionMessage(e):
+    return repr(e)
+# ------------------------------------------------------------------------------
 # Digital signatures
 # ------------------------------------------------------------------------------
 def getSignedAttributes(verified, header):
@@ -31,6 +36,163 @@ def getSignedAttributes(verified, header):
         sort_keys=True,
         ensure_ascii=True,
         separators=(',',':'))
+# ------------------------------------------------------------------------------
+#  PyCaCrypto
+# ------------------------------------------------------------------------------
+class PyCaCryptoDataVerifier(object):
+    # -------------------------------------------------------------------------
+    def __init__(self, arg_parser, hashes, padding, x509):
+        self._hashes = hashes 
+        self._padding = padding 
+        self._x509 = x509 
+        self._cacert = None
+
+        oids = self._x509.oid.NameOID
+        self._oids = {
+            "CN": oids.COMMON_NAME,
+            "commonName": oids.COMMON_NAME,
+            "O": oids.ORGANIZATION_NAME,
+            "organizationName": oids.ORGANIZATION_NAME,
+            "OU": oids.ORGANIZATIONAL_UNIT_NAME,
+            "organizationalUnitName": oids.ORGANIZATIONAL_UNIT_NAME,
+            "ST": oids.STATE_OR_PROVINCE_NAME,
+            "stateOrProvinceName": oids.STATE_OR_PROVINCE_NAME,
+            "C": oids.COUNTRY_NAME,
+            "countryName": oids.COUNTRY_NAME,
+            "L": oids.LOCALITY_NAME,
+            "localityName": oids.LOCALITY_NAME,
+            "surname": oids.SURNAME,
+            "givenName": oids.GIVEN_NAME,
+            "E": oids.EMAIL_ADDRESS,
+            "emailAddress": oids.EMAIL_ADDRESS,
+        }
+
+        arg_parser.add_argument(
+            "--ca-certificate",
+            metavar="FILE",
+            type=os.path.realpath,
+            default=None
+        )
+
+    # -------------------------------------------------------------------------
+    def processParsedOptions(self, arg_parser, options):
+        self._options = options
+        try:
+            with open(options.ca_certificate, "rb") as certfd:
+                self._cacert = self._x509.load_pem_x509_certificate(certfd.read());
+        except Exception as err:
+            arg_parser.error(
+                "failed to load CA certificate from `%s': %s" % (
+                options.ca_certificate,
+                exceptionMessage(err)))
+
+    # -------------------------------------------------------------------------
+    def getX509NameValue(self, name, attrib):
+        if len(attrib) == 1:
+            for element in name.get_attributes_for_oid(self._oids[attrib[0]]):
+                return element.value
+        return None
+
+    # -------------------------------------------------------------------------
+    def getCertAttribValue(self, cert, attrib):
+        if attrib == ["serial_number"]:
+            return cert.serial_number
+        if attrib == ["version"]:
+            return cert.version
+        if attrib[0] == "subject":
+            return self.getX509NameValue(cert.subject, attrib[1:])
+        if attrib[0] == "issuer":
+            return self.getX509NameValue(cert.issuer, attrib[1:])
+        return None;
+
+    # -------------------------------------------------------------------------
+    def doGetCertificateAttribute(self, signatures, attrib):
+        for signed in signatures:
+            sign_cert = signed.get("certificate")
+            if sign_cert is not None:
+                sign_cert = self._x509.load_pem_x509_certificate(sign_cert.encode("utf-8"))
+                yield self.getCertAttribValue(sign_cert, attrib)
+            else:
+                yield None
+
+    # -------------------------------------------------------------------------
+    def getCertificateAttribute(self, signatures, attrib):
+        return [v for v in self.doGetCertificateAttribute(signatures, attrib)]
+
+    # -------------------------------------------------------------------------
+    def beginVerify(self, header):
+        self._data = bytes()
+
+    # -------------------------------------------------------------------------
+    def addData(self, data):
+        if isinstance(data, str):
+            data = data.encode("utf-8")
+        assert isinstance(data, bytes)
+        self._data += data
+
+    # -------------------------------------------------------------------------
+    def verifyCertificate(self, sign_cert):
+        try:
+            sign_cert.verify_directly_issued_by(self._cacert)
+        except Exception as err:
+            self._options.error(
+                "failed to verify certificate issuer: %s",
+                exceptionMessage(err))
+            return False
+        # TODO: expiration, CRL
+        return True
+
+    # -------------------------------------------------------------------------
+    def getMDType(self, name):
+        if name == "sha384":
+            return self._hashes.SHA384()
+        if name == "sha512":
+            return self._hashes.SHA512()
+        return self._hashes.SHA256()
+
+    # -------------------------------------------------------------------------
+    def verifySignature(self, header, verified):
+        algorithm = verified.get("algorithm", "sha256")
+        signature = verified.get("signature")
+        sign_cert = verified.get("certificate")
+
+        if sign_cert is not None:
+            sign_cert = self._x509.load_pem_x509_certificate(sign_cert.encode("utf-8"))
+            if not self.verifyCertificate(sign_cert):
+                return False
+            pubkey = sign_cert.public_key()
+            if signature is not None:
+                if not pubkey:
+                    self._options.error("failed to get key from certificate")
+                    return False
+                try:
+                    date = verified.get("date", "")
+                    attribs = getSignedAttributes(verified, header)
+                    md_type = self.getMDType(algorithm)
+                    pubkey.verify(
+                        base64.b64decode(signature),
+                        self._data + attribs.encode("utf-8") + date.encode("utf-8"),
+                        self._padding.PSS(
+                            mgf=self._padding.MGF1(md_type),
+                            salt_length=self._padding.PSS.MAX_LENGTH),
+                        md_type)
+                except Exception as err:
+                    self._options.error(
+                        "failed to verify signature: %s",
+                        exceptionMessage(err))
+                    return False
+        return True
+
+    # -------------------------------------------------------------------------
+    def finishVerify(self, header):
+        try:
+            for verified in header.get("signed", []):
+                if not self.verifySignature(header, verified):
+                    return False
+        finally:
+            self._data = None
+        return True
+
 # ------------------------------------------------------------------------------
 #  OpenSSL.crypto
 # ------------------------------------------------------------------------------
@@ -117,7 +279,7 @@ class OpenSSLDataVerifier(object):
         except self._crypto.Error as ce:
             self._options.error(
                 "failed to verify certificate: %s",
-                str(ce))
+                exceptionMessage(ce))
             return False
 
     # -------------------------------------------------------------------------
@@ -139,12 +301,12 @@ class OpenSSLDataVerifier(object):
                     self._crypto.verify(
                         sign_cert,
                         base64.b64decode(signature),
-                        date.encode("utf-8") + attribs.encode("utf-8") + self._data,
+                        self._data + attribs.encode("utf-8") + date.encode("utf-8"),
                         algorithm)
                 except self._crypto.Error as ce:
                     self._options.error(
                         "failed to verify signature: %s",
-                        str(ce))
+                        exceptionMessage(ce))
                     return False
         return True
 
@@ -160,7 +322,13 @@ class OpenSSLDataVerifier(object):
 
 # ------------------------------------------------------------------------------
 def makeVerifier(arg_parser):
-    # TODO pyca/cryptography
+    try:
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import padding
+        from cryptography import x509
+        return PyCaCryptoDataVerifier(arg_parser, hashes, padding, x509)
+    except ImportError:
+        pass
     try:
         from OpenSSL import crypto
         return OpenSSLDataVerifier(arg_parser, crypto)
@@ -314,13 +482,9 @@ class ArgumentParser(argparse.ArgumentParser):
         options.queries = [(_processKey(k), o, v) for k,o,v in options.queries]
         options.queried_values = [_processKey(k) for k in options.queried_values]
 
-        options.verifier = self._verifier
-        if options.verifier is not None:
-            options.verifier.processParsedOptions(self, options)
-
         logging.basicConfig(
             encoding="utf-8",
-            format='[%(levelname)s: %(message)s',
+            format='%(levelname)s: %(message)s',
             level=logging.DEBUG if options.debug else logging.INFO)
         options._log = logging.getLogger("fmd-get")
 
@@ -342,9 +506,15 @@ class ArgumentParser(argparse.ArgumentParser):
                 self._log.error(*args, **kwargs)
 
         # ----------------------------------------------------------------------
-        return _Options(self.processParsedOptions(
+        options = _Options(self.processParsedOptions(
             argparse.ArgumentParser.parse_args(self)
         ))
+
+        options.verifier = self._verifier
+        if options.verifier is not None:
+            options.verifier.processParsedOptions(self, options)
+
+        return options
 # ------------------------------------------------------------------------------
 def getArgumentParser():
     return ArgumentParser(
@@ -493,7 +663,7 @@ def main():
         else:
             return processFiles(options)
     except Exception as error:
-        print(type(error), error)
+        print(exceptionMessage(error))
         raise
     return 2
 
