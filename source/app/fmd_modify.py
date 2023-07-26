@@ -10,6 +10,7 @@ import sys
 import json
 import base64
 import shutil
+import logging
 import datetime
 import argparse
 import tempfile
@@ -78,8 +79,14 @@ class OpenSSLDataSigner(object):
     def verifySignature(self, options, signature):
         sig = signature.encode("ascii")
         sig = base64.b64decode(sig)
-        self._crypto.verify(self._cert, sig, self._data, options.sign_hash)
-        return True
+        try:
+            self._crypto.verify(self._cert, sig, self._data, options.sign_hash)
+            return True
+        except self._crypto.Error as ce:
+            self._options.error(
+                "failed to verify the issued signature: %s",
+                str(ce))
+            return False
 
     # -------------------------------------------------------------------------
     def finishSign(self, options):
@@ -151,6 +158,13 @@ class ArgumentParser(argparse.ArgumentParser):
             metavar='FILE|-',
             dest='print_bash_completion',
             default=None
+        )
+
+        self.add_argument(
+            "--debug",
+            action="store_true",
+            default=False,
+            help="""Starts in debug mode."""
         )
 
         self.add_argument(
@@ -235,10 +249,33 @@ class ArgumentParser(argparse.ArgumentParser):
             options.sign_attributes = [_processKey(k) for k in options.sign_attributes]
             options.signer.processParsedOptions(self, options)
 
+        logging.basicConfig(
+            encoding="utf-8",
+            format='[%(levelname)s: %(message)s',
+            level=logging.DEBUG if options.debug else logging.INFO)
+        options._log = logging.getLogger("fmd-modify")
+
         return options
     # -------------------------------------------------------------------------
     def parseArgs(self):
-        return self.processParsedOptions(argparse.ArgumentParser.parse_args(self))
+        # ----------------------------------------------------------------------
+        class _Options(object):
+            # ------------------------------------------------------------------
+            def __init__(self, base):
+                self.__dict__.update(base.__dict__)
+
+            # ------------------------------------------------------------------
+            def output(self, what):
+                sys.stdout.write(what)
+
+            # ------------------------------------------------------------------
+            def error(self, *args, **kwargs):
+                self._log.error(*args, **kwargs)
+
+        # ----------------------------------------------------------------------
+        return _Options(self.processParsedOptions(
+            argparse.ArgumentParser.parse_args(self)
+        ))
 # ------------------------------------------------------------------------------
 def getArgumentParser():
     return ArgumentParser(
