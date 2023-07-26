@@ -11,6 +11,7 @@ import json
 import base64
 import logging
 import argparse
+import datetime
 import tempfile
 
 # ------------------------------------------------------------------------------
@@ -139,7 +140,14 @@ class PyCaCryptoDataVerifier(object):
                 "failed to verify certificate issuer: %s",
                 exceptionMessage(err))
             return False
-        # TODO: expiration, CRL
+        now = datetime.datetime.now()
+        if sign_cert.not_valid_after < now:
+            self._options.error("signed certificate is not valid anymore")
+            return False
+        if now < sign_cert.not_valid_before:
+            self._options.error("signed certificate is not valid yet")
+            return False
+        # TODO: CRL
         return True
 
     # -------------------------------------------------------------------------
