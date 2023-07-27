@@ -23,15 +23,30 @@ def exceptionMessage(e):
 # ------------------------------------------------------------------------------
 # Digital signatures
 # ------------------------------------------------------------------------------
+def listSignedAttributes(options, header):
+    if options.sign_attributes == [["*"]]:
+        def _get(header):
+            for key in header:
+                if key != "signed":
+                    yield key
+        return [[key] for key in _get(header)]
+    else:
+        return options.sign_attributes
+# ------------------------------------------------------------------------------
 def getSignedAttributes(options, header):
     signed = {}
-    for attrib in options.sign_attributes:
-        src = header
-        dst = signed
-        for key in attrib[:-1]:
-            src = src.setdefault(key, {})
-            dst = dst.setdefault(key, {})
-        dst[attrib[-1]] = src[attrib[-1]]
+    if options.sign_attributes == [["*"]]:
+        signed = header.copy()
+        try: del signed["signed"]
+        except KeyError: pass
+    else:
+        for attrib in options.sign_attributes:
+            src = header
+            dst = signed
+            for key in attrib[:-1]:
+                src = src.setdefault(key, {})
+                dst = dst.setdefault(key, {})
+            dst[attrib[-1]] = src[attrib[-1]]
     return json.dumps(
         signed,
         sort_keys=True,
@@ -199,7 +214,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
         def _valid_attribute(x):
             try:
-                assert self._path_re.match(x)
+                assert x == "*" or self._path_re.match(x)
                 return x
             except:
                 self.error("invalid attribute specifier '%s'" % s)
@@ -389,21 +404,6 @@ def formatHeader(options, header, ofd):
         _write('\n')
     _write("}")
 # ------------------------------------------------------------------------------
-def getSignedAttributes(options, header):
-    signed = {}
-    for attrib in options.sign_attributes:
-        src = header
-        dst = signed
-        for key in attrib[:-1]:
-            src = src.setdefault(key, {})
-            dst = dst.setdefault(key, {})
-        dst[attrib[-1]] = src[attrib[-1]]
-    return json.dumps(
-        signed,
-        sort_keys=True,
-        ensure_ascii=True,
-        separators=(',',':'))
-# ------------------------------------------------------------------------------
 def addSignature(signer, options, header, datafd):
     signer.beginSign(header)
     while True:
@@ -417,7 +417,7 @@ def addSignature(signer, options, header, datafd):
     sig = signer.finishSign(options)
     if sig is not None:
         sig["date"] = date_str
-        sig["attributes"] = ['.'.join(a) for a in options.sign_attributes]
+        sig["attributes"] = ['.'.join(a) for a in listSignedAttributes(options, header)]
         header.setdefault("signed", []).append(sig)
 # ------------------------------------------------------------------------------
 def processFile(options, path):
