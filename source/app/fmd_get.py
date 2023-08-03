@@ -79,14 +79,15 @@ class PyCaCryptoDataVerifier(object):
     # -------------------------------------------------------------------------
     def processParsedOptions(self, arg_parser, options):
         self._options = options
-        try:
-            with open(options.ca_certificate, "rb") as certfd:
-                self._cacert = self._x509.load_pem_x509_certificate(certfd.read());
-        except Exception as err:
-            arg_parser.error(
-                "failed to load CA certificate from `%s': %s" % (
-                options.ca_certificate,
-                exceptionMessage(err)))
+        if options.ca_certificate is not None:
+            try:
+                with open(options.ca_certificate, "rb") as certfd:
+                    self._cacert = self._x509.load_pem_x509_certificate(certfd.read());
+            except Exception as err:
+                arg_parser.error(
+                    "failed to load CA certificate from `%s': %s" % (
+                    options.ca_certificate,
+                    exceptionMessage(err)))
 
     # -------------------------------------------------------------------------
     def getX509NameValue(self, name, attrib):
@@ -532,6 +533,7 @@ def printBashCompletion(argparser, options):
 #  Main function
 # ------------------------------------------------------------------------------
 def main():
+    options = None
     try:
         argparser = getArgumentParser()
         options = argparser.parseArgs()
@@ -542,7 +544,8 @@ def main():
             return processFiles(options)
     except Exception as error:
         print(exceptionMessage(error))
-        raise
+        if options is None or options.debug:
+            raise
     return 2
 
 # ------------------------------------------------------------------------------

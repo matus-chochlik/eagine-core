@@ -490,6 +490,7 @@ def printBashCompletion(argparser, options):
 #  Main function
 # ------------------------------------------------------------------------------
 def main():
+    options = None
     try:
         argparser = getArgumentParser()
         options = argparser.parseArgs()
@@ -500,7 +501,8 @@ def main():
         return 0
     except Exception as error:
         print(exceptionMessage(error))
-        raise
+        if options is None or options.debug:
+            raise
         return 1
 
 # ------------------------------------------------------------------------------
