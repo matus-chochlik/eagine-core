@@ -20,7 +20,7 @@ namespace eagine {
 /// @see application_config
 export [[nodiscard]] auto get_environment_variable(
   const string_view variable_name) noexcept -> optionally_valid<string_view> {
-    if(const auto value{::getenv(c_str(variable_name))}) {
+    if(const auto value{std::getenv(c_str(variable_name))}) {
         return {string_view(value), true};
     }
     return {};

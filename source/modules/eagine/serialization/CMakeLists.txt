@@ -5,12 +5,14 @@
 eagine_add_module(
 	eagine.core.serialization PARTITION float_utils
 	IMPORTS
+		std
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.serialization PARTITION data_buffer
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -20,6 +22,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION size_and_data
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -29,6 +32,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION result
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.reflection
 		eagine.core.valid_if
@@ -37,7 +41,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION interface
 	IMPORTS
-		result
+		std result
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -48,7 +52,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION implementation
 	IMPORTS
-		result interface
+		std result interface
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -59,7 +63,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION read
 	IMPORTS
-		result interface
+		std result interface
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -72,7 +76,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION write
 	IMPORTS
-		result interface
+		std result interface
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -85,7 +89,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION iostream
 	IMPORTS
-		result interface
+		std result interface
 		eagine.core.types
 		eagine.core.memory
 )
@@ -93,7 +97,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION block
 	IMPORTS
-		result interface
+		std result interface
 		eagine.core.types
 		eagine.core.memory
 )
@@ -101,7 +105,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION packed_block
 	IMPORTS
-		result block
+		std result block
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.runtime
@@ -110,7 +114,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION fast_backend
 	IMPORTS
-		result implementation
+		std result implementation
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -121,7 +125,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION string_backend
 	IMPORTS
-		result implementation
+		std result implementation
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -133,7 +137,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION portable_backend
 	IMPORTS
-		float_utils result implementation
+		std float_utils result implementation
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -145,7 +149,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.serialization PARTITION valtree_backend
 	IMPORTS
-		result interface
+		std result interface
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
