@@ -4,116 +4,116 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
 	eagine.core.memory PARTITION align
-	IMPORTS eagine.core.types
+	IMPORTS std eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION address
-	IMPORTS align eagine.core.types
+	IMPORTS std align eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION bit_density
-	IMPORTS eagine.core.types
+	IMPORTS std eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION null_ptr
-	IMPORTS eagine.core.types
+	IMPORTS std eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION offset_ptr
 	IMPORTS
-		address
+		std address
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION span
 	IMPORTS
-		address
+		std address
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION offset_span
 	IMPORTS
-		span offset_ptr
+		std span offset_ptr
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION string_span
 	IMPORTS
-		span
+		std span
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION span_algorithm
-	IMPORTS span eagine.core.types
+	IMPORTS std span eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION split_span
 	IMPORTS
-		span span_algorithm
+		std span span_algorithm
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION aligned_block
 	IMPORTS
-		span span_algorithm
+		std span span_algorithm
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION flatten
 	IMPORTS
-		span
+		std span
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION edit_distance
-	IMPORTS span eagine.core.types
+	IMPORTS std span eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION fixed_size_string
-	IMPORTS string_span eagine.core.types
+	IMPORTS std string_span eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION byteset
-	IMPORTS span eagine.core.types
+	IMPORTS std span eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION biteset
-	IMPORTS byteset eagine.core.types
+	IMPORTS std byteset eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION byte_allocator
 	IMPORTS
-		span
+		std span
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION stack_allocator
 	IMPORTS
-		span byte_allocator
+		std span byte_allocator
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.memory PARTITION std_allocator
 	IMPORTS
-		span
+		std span
 		byte_allocator
 		eagine.core.types
 )
@@ -121,7 +121,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.memory PARTITION buffer
 	IMPORTS
-		address span
+		std address span
 		span_algorithm
 		byte_allocator
 		eagine.core.build_config
@@ -131,7 +131,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.memory PARTITION object_storage
 	IMPORTS
-		byte_allocator
+		std byte_allocator
 		std_allocator
 		eagine.core.types
 )
@@ -142,6 +142,7 @@ eagine_add_module(
 		memory
 		stack_allocator
 	IMPORTS
+		std
 		eagine.core.types
 )
 

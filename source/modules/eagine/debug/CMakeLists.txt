@@ -7,6 +7,6 @@ eagine_add_module(
 	SOURCES
 		debug
 	IMPORTS
-		eagine.core.types
+		std eagine.core.types
 )
 
