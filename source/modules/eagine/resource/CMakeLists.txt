@@ -7,6 +7,7 @@ eagine_add_module(
 	SOURCES
 		resource
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier

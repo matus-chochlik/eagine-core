@@ -4,4 +4,5 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 
 include(EAGineCXXModules)
+add_subdirectory(std)
 add_subdirectory(eagine)

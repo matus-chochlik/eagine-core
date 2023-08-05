@@ -5,6 +5,7 @@
 eagine_add_module(
 	eagine.core.main_ctx PARTITION interface
 	IMPORTS
+		std
 		eagine.core.build_info
 		eagine.core.types
 		eagine.core.memory
@@ -19,14 +20,14 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.main_ctx PARTITION parent
 	IMPORTS
-		interface
+		std interface
 		eagine.core.runtime
 )
 
 eagine_add_module(
 	eagine.core.main_ctx PARTITION object
 	IMPORTS
-		parent
+		std parent
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -40,7 +41,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.main_ctx PARTITION system_info
 	IMPORTS
-		parent object
+		std parent object
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -52,7 +53,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.main_ctx PARTITION user_info
 	IMPORTS
-		parent object
+		std parent object
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -62,7 +63,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.main_ctx PARTITION watchdog
 	IMPORTS
-		interface parent object
+		std interface parent object
 		eagine.core.types
 		eagine.core.utility
 		eagine.core.identifier
@@ -71,7 +72,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.main_ctx PARTITION app_config
 	IMPORTS
-		interface
+		std interface
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -87,7 +88,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.main_ctx PARTITION storage
 	IMPORTS
-		interface parent object app_config
+		std interface parent object app_config
 		system_info user_info watchdog
 		eagine.core.build_info
 		eagine.core.types
@@ -105,7 +106,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.main_ctx PARTITION main
 	IMPORTS
-		interface
+		std interface
 )
 
 eagine_add_module(
@@ -118,6 +119,7 @@ eagine_add_module(
 		main_ctx
 		main
 	IMPORTS
+		std
 		eagine.core.build_config
 		eagine.core.build_info
 		eagine.core.types
