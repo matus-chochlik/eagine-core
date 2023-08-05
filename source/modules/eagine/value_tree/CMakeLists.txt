@@ -5,6 +5,7 @@
 eagine_add_module(
 	eagine.core.value_tree PARTITION interface
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -17,7 +18,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.value_tree PARTITION wrappers
 	IMPORTS
-		interface
+		std interface
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -30,7 +31,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.value_tree PARTITION implementation
 	IMPORTS
-		interface wrappers
+		std interface wrappers
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -50,6 +51,7 @@ eagine_add_module(
 		overlay
 		visitors
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string

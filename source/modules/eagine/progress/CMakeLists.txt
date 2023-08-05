@@ -5,6 +5,7 @@
 eagine_add_module(
 	eagine.core.progress PARTITION backend
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
@@ -15,7 +16,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.progress PARTITION activity
 	IMPORTS
-		backend
+		std backend
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
@@ -25,7 +26,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.progress PARTITION root_activity
 	IMPORTS
-		backend activity
+		std backend activity
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
@@ -38,6 +39,7 @@ eagine_add_module(
 		default_backend
 		root_activity
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier

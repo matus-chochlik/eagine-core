@@ -8,10 +8,10 @@
 module;
 
 #include <cassert>
+#include <cerrno>
 
 module eagine.core.logging;
 
-import <cerrno>;
 import std;
 import eagine.core.build_config;
 import eagine.core.types;

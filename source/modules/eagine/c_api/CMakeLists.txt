@@ -5,6 +5,7 @@
 eagine_add_module(
 	eagine.core.c_api PARTITION result
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.utility
 )
@@ -12,6 +13,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION api_traits
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )
@@ -19,6 +21,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION key_value_list
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )
@@ -26,6 +29,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION enum_class
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
@@ -35,7 +39,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION constant
 	IMPORTS
-		enum_class
+		std enum_class
 		eagine.core.types
 		eagine.core.memory
 )
@@ -43,6 +47,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION object
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
@@ -51,8 +56,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION function
 	IMPORTS
-		api_traits
-		result
+		std api_traits result
 		eagine.core.types
 		eagine.core.memory
 )
@@ -60,6 +64,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION buffer_data
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )
@@ -67,7 +72,8 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION parameter_map
 	IMPORTS
-		object buffer_data enum_class key_value_list
+		std object buffer_data
+		enum_class key_value_list
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -76,7 +82,8 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION adapted_function
 	IMPORTS
-		object result function parameter_map
+		std object result
+		function parameter_map
 		eagine.core.types
 		eagine.core.memory;
 		eagine.core.utility;
@@ -85,6 +92,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.c_api PARTITION reference
 	IMPORTS
+		std
 		eagine.core.types
 )
 
