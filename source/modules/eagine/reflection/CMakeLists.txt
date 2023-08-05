@@ -5,6 +5,7 @@
 eagine_add_module(
 	eagine.core.reflection PARTITION decl_name
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )
@@ -12,7 +13,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.reflection PARTITION enumerators
 	IMPORTS
-		decl_name
+		std decl_name
 		eagine.core.types
 		eagine.core.memory
 )
@@ -20,7 +21,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.reflection PARTITION data_members
 	IMPORTS
-		decl_name
+		std decl_name
 		eagine.core.types
 		eagine.core.memory
 )

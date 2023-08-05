@@ -22,41 +22,41 @@ struct _has_simd_data : std::false_type {};
 
 // int8_t
 export template <>
-struct data_simd<int8_t, 8> {
-    using type __attribute__((vector_size(8))) = int8_t;
+struct data_simd<std::int8_t, 8> {
+    using type __attribute__((vector_size(8))) = std::int8_t;
 };
 
 // int16_t
 export template <>
-struct data_simd<int16_t, 4> {
-    using type __attribute__((vector_size(8))) = int16_t;
+struct data_simd<std::int16_t, 4> {
+    using type __attribute__((vector_size(8))) = std::int16_t;
 };
 
 // int32_t
 export template <>
-struct data_simd<int32_t, 2> {
-    using type __attribute__((vector_size(8))) = int32_t;
+struct data_simd<std::int32_t, 2> {
+    using type __attribute__((vector_size(8))) = std::int32_t;
 };
 
 export template <>
-struct data_simd<int32_t, 4> {
-    using type __attribute__((vector_size(16))) = int32_t;
+struct data_simd<std::int32_t, 4> {
+    using type __attribute__((vector_size(16))) = std::int32_t;
 };
 
 // int64_t
 export template <>
-struct data_simd<int64_t, 2> {
-    using type __attribute__((vector_size(16))) = int64_t;
+struct data_simd<std::int64_t, 2> {
+    using type __attribute__((vector_size(16))) = std::int64_t;
 };
 
 export template <>
-struct data_simd<uint64_t, 2> {
-    using type __attribute__((vector_size(16))) = uint64_t;
+struct data_simd<std::uint64_t, 2> {
+    using type __attribute__((vector_size(16))) = std::uint64_t;
 };
 
 export template <>
-struct data_simd<int64_t, 4> {
-    using type __attribute__((vector_size(32))) = int64_t;
+struct data_simd<std::int64_t, 4> {
+    using type __attribute__((vector_size(32))) = std::int64_t;
 };
 
 // float
@@ -114,7 +114,7 @@ struct data_simd<T, 8> : _gnuc_vec_data<T, 8> {};
 
 // has_vec_data<int8_t>
 export template <int N>
-struct _has_simd_data<int8_t, N>
+struct _has_simd_data<std::int8_t, N>
   : std::bool_constant<
 #if defined(__SSE2__) && __SSE2__
       ((N == 2) or (N == 4) or (N == 8) or (N == 16)) or
@@ -127,7 +127,7 @@ struct _has_simd_data<int8_t, N>
 
 // has_vec_data<int16_t>
 export template <int N>
-struct _has_simd_data<int16_t, N>
+struct _has_simd_data<std::int16_t, N>
   : std::bool_constant<
 #if defined(__SSE2__) && __SSE2__
       ((N == 2) or (N == 4) or (N == 8)) or
@@ -140,7 +140,7 @@ struct _has_simd_data<int16_t, N>
 
 // has_vec_data<int32_t>
 export template <int N>
-struct _has_simd_data<int32_t, N>
+struct _has_simd_data<std::int32_t, N>
   : std::bool_constant<
 #if defined(__SSE2__) && __SSE2__
       ((N == 2) or (N == 4)) or
@@ -153,7 +153,7 @@ struct _has_simd_data<int32_t, N>
 
 // has_vec_data<int64_t>
 export template <int N>
-struct _has_simd_data<int64_t, N>
+struct _has_simd_data<std::int64_t, N>
   : std::bool_constant<
 #if defined(__SSE2__) && __SSE2__
       (N == 2) or
@@ -163,7 +163,7 @@ struct _has_simd_data<int64_t, N>
 
 // has_vec_data<int64_t>
 export template <int N>
-struct _has_simd_data<uint64_t, N>
+struct _has_simd_data<std::uint64_t, N>
   : std::bool_constant<
 #if defined(__SSE2__) && __SSE2__
       (N == 2) or

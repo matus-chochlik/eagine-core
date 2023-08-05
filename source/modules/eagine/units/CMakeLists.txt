@@ -5,7 +5,7 @@
 #eagine_add_module(eagine.core.types PARTITION basic)
 eagine_add_module(
 	eagine.core.units PARTITION base
-	IMPORTS eagine.core.types
+	IMPORTS std eagine.core.types
 )
 
 eagine_add_module(
@@ -20,25 +20,25 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.units PARTITION unit
-	IMPORTS base eagine.core.types
+	IMPORTS std base eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.units PARTITION si
 	IMPORTS
-		base unit dimension dimensions
+		std base unit dimension dimensions
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.units PARTITION quantity
-	IMPORTS base eagine.core.types
+	IMPORTS std base eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.units PARTITION strings
 	IMPORTS
-		base unit dimension
+		std base unit dimension
 		eagine.core.types
 		eagine.core.memory
 )
@@ -46,6 +46,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.units
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.units.framework
 )
