@@ -145,11 +145,7 @@ public:
 
     /// @brief Returns the port.
     auto port() const noexcept -> valid_if_not_zero<int> {
-        int result{0};
-        const auto p{_sw(_port)};
-        [[maybe_unused]] const auto unused{
-          std::from_chars(p.data(), p.data() + p.size(), result)};
-        return {result};
+        return {from_string<int>(_sw(_port)).value_or(0)};
     }
 
     /// @brief Returns the path string.

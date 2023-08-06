@@ -123,6 +123,7 @@ eagine_add_module(
 		proxy_backend
 		root_logger
 	IMPORTS
+		std
 		eagine.core.build_config
 		eagine.core.types
 		eagine.core.build_info
