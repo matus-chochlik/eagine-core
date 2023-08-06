@@ -10,6 +10,7 @@ module;
 
 export module std:type_traits;
 export import std_private_type_traits_aligned_storage;
+export import std_private_type_traits_extent;
 export import std_private_type_traits_integral_constant;
 export import std_private_type_traits_is_abstract;
 export import std_private_type_traits_is_member_pointer;

@@ -10,6 +10,7 @@ module;
 
 export module std:ranges;
 export import std_private_ranges_iota_view;
+export import std_private_ranges_view_interface;
 
 export namespace std {
 namespace ranges {

@@ -10,6 +10,7 @@ module;
 
 export module std:coroutine;
 export import std_private_coroutine_coroutine_handle;
+export import std_private_coroutine_coroutine_traits;
 export import std_private_coroutine_trivial_awaitables;
 
 export namespace std {
