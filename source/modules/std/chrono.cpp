@@ -9,6 +9,7 @@ module;
 #include <chrono>
 
 export module std:chrono;
+export import std_chrono;
 
 export namespace std::chrono {
 //------------------------------------------------------------------------------
@@ -48,5 +49,6 @@ using std::chrono::operator>;
 using std::chrono::operator<=;
 using std::chrono::operator>=;
 using std::chrono::operator<=>;
+using std::chrono::operator<<;
 //------------------------------------------------------------------------------
 } // namespace std::chrono
