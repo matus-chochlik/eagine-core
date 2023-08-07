@@ -60,6 +60,7 @@ eagine_add_module_tests(
 		quantity
 		si
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )

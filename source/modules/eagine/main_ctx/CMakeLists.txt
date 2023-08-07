@@ -146,6 +146,7 @@ eagine_add_module_tests(
 		system_info
 		user_info
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.c_api

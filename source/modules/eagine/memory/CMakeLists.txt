@@ -165,5 +165,6 @@ eagine_add_module_tests(
 		stack_allocator
 		std_allocator
 	IMPORTS
+		std
 		eagine.core.types
 )

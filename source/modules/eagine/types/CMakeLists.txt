@@ -104,4 +104,6 @@ eagine_add_module_tests(
 		valid_if
 		tribool
 		holder
+	IMPORTS
+		std
 )

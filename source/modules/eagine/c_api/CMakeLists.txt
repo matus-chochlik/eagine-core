@@ -107,6 +107,7 @@ eagine_add_module_tests(
 		key_value_list
 		result
 	IMPORTS
+		std
 		eagine.core.debug
 		eagine.core.types
 		eagine.core.memory

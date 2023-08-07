@@ -149,6 +149,7 @@ eagine_add_module_tests(
 		list
 		path
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.debug
 		eagine.core.memory

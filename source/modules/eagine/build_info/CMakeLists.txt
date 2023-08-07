@@ -19,4 +19,6 @@ eagine_add_module_tests(
 	eagine.core.build_info
 	UNITS
 		build_info
+	IMPORTS
+		std
 )

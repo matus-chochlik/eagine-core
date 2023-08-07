@@ -36,6 +36,7 @@ eagine_add_module_tests(
 		range
 		filesystem
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.reflection

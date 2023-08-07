@@ -35,6 +35,7 @@ eagine_add_module_tests(
 	UNITS
 		enumerators
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )

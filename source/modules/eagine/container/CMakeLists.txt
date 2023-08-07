@@ -56,6 +56,7 @@ eagine_add_module_tests(
 		flat_set
 		trie
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.valid_if

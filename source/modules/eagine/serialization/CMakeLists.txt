@@ -196,6 +196,7 @@ eagine_add_module_tests(
 		float_utils
 		size_and_data
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.debug
 		eagine.core.memory

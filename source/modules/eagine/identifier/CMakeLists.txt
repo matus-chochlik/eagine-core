@@ -18,5 +18,6 @@ eagine_add_module_tests(
 	UNITS
 		identifier
 	IMPORTS
+		std
 		eagine.core.types
 )

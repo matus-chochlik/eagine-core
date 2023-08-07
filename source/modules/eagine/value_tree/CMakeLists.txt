@@ -74,6 +74,7 @@ eagine_add_module_tests(
 		wrappers
 		visitors
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string

@@ -140,6 +140,7 @@ eagine_add_module_tests(
 		program_args
 		url
 	IMPORTS
+		std
 		eagine.core.debug
 		eagine.core.types
 		eagine.core.memory

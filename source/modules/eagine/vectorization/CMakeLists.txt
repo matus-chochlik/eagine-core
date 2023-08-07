@@ -44,6 +44,7 @@ eagine_add_module_tests(
 		shuffle
 		view
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )
