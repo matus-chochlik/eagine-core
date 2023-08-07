@@ -15,6 +15,7 @@ export import std_private_type_traits_integral_constant;
 export import std_private_type_traits_is_abstract;
 export import std_private_type_traits_is_member_pointer;
 export import std_private_type_traits_is_member_function_pointer;
+export import std_private_type_traits_is_member_object_pointer;
 
 export namespace std {
 //------------------------------------------------------------------------------
