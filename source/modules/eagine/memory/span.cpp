@@ -867,4 +867,22 @@ export using memory::span;
 export using memory::view;
 export using memory::view_one;
 //------------------------------------------------------------------------------
+export template <typename X>
+[[nodiscard]] constexpr auto view(placeholder_expression<X> e) noexcept {
+    return placeholder_expression{[e](auto&&... args) mutable {
+        using eagine::memory::view;
+        using R = decltype(view(e(decltype(args)(args)...)));
+        return optionally_valid<R>{view(e(decltype(args)(args)...)), true};
+    }};
+}
+
+export template <typename X>
+[[nodiscard]] constexpr auto cover(placeholder_expression<X> e) noexcept {
+    return placeholder_expression{[e](auto&&... args) mutable {
+        using eagine::memory::cover;
+        using R = decltype(cover(e(decltype(args)(args)...)));
+        return optionally_valid<R>{cover(e(decltype(args)(args)...)), true};
+    }};
+}
+//------------------------------------------------------------------------------
 } // namespace eagine
