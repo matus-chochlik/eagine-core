@@ -1832,4 +1832,17 @@ constexpr auto meld(O&&... o) noexcept -> optional_like_tuple<O...> {
     return {std::move(o)...};
 }
 //------------------------------------------------------------------------------
+// utility functions
+//------------------------------------------------------------------------------
+export template <typename T, typename... A>
+constexpr auto get_if(std::variant<A...>& v) noexcept -> optional_reference<T> {
+    return {std::get_if<T>(&v)};
+}
+
+export template <typename T, typename... A>
+constexpr auto get_if(const std::variant<A...>& v) noexcept
+  -> optional_reference<const T> {
+    return {std::get_if<T>(&v)};
+}
+//------------------------------------------------------------------------------
 } // namespace eagine
