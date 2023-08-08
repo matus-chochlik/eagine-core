@@ -115,6 +115,7 @@ eagine_add_module(
 	eagine.core.string PARTITION keyboard_distance
 	IMPORTS
 		std
+		eagine.core.types
 		eagine.core.math
 		eagine.core.memory
 		eagine.core.container

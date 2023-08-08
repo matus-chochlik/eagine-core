@@ -8,6 +8,7 @@
 export module eagine.core.string:keyboard_distance;
 
 import std;
+import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.math;
 import eagine.core.container;
@@ -21,11 +22,7 @@ public:
     default_keyboard_layout(const float shift = 1.F);
 
     [[nodiscard]] auto get_coord(const char c) noexcept -> coord_type {
-        const auto pos = _key_coord.find(c);
-        if(pos != _key_coord.end()) {
-            return pos->second;
-        }
-        return {6.F, 3.F, 0.5F};
+        return find(_key_coord, c).value_or(coord_type{6.F, 3.F, 0.5F});
     }
 
     template <typename Function>

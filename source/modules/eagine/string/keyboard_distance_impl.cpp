@@ -121,11 +121,7 @@ auto keyboard_distance::operator()(const string_view ls, const string_view rs)
         if(lc == rc) {
             return 0.F;
         }
-        const auto pos = _key_dist.find(std::pair<char, char>{lc, rc});
-        if(pos != _key_dist.end()) {
-            return pos->second;
-        }
-        return 5.F;
+        return find(_key_dist, std::make_pair(lc, rc)).value_or(5.F);
     });
 }
 //------------------------------------------------------------------------------

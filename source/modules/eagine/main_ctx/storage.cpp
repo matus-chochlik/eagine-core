@@ -145,18 +145,12 @@ public:
 
     auto locate_service(identifier type_id) noexcept
       -> optional_reference<main_ctx_service> final {
-        if(const auto pos{_services.find(type_id)}; pos != _services.end()) {
-            return std::get<1>(*pos);
-        }
-        return {};
+        return find(_services, type_id).or_default();
     }
 
     auto share_service(identifier type_id) noexcept
       -> shared_holder<main_ctx_service> final {
-        if(const auto pos{_services.find(type_id)}; pos != _services.end()) {
-            return std::get<1>(*pos);
-        }
-        return {};
+        return find(_services, type_id).or_default();
     }
 
     void fill_with_random_bytes(memory::block dest) noexcept final {

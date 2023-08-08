@@ -1855,4 +1855,22 @@ constexpr auto get_if(const std::variant<A...>& v) noexcept
     return {std::get_if<T>(&v)};
 }
 //------------------------------------------------------------------------------
+export template <typename W, typename K, typename T, typename C, typename A>
+constexpr auto find(std::map<K, T, C, A>& m, W&& what) noexcept
+  -> optional_reference<T> {
+    if(const auto pos{m.find(std::forward<W>(what))}; pos != m.end()) {
+        return {std::get<1>(*pos)};
+    }
+    return {};
+}
+
+export template <typename W, typename K, typename T, typename C, typename A>
+constexpr auto find(const std::map<K, T, C, A>& m, W&& what) noexcept
+  -> optional_reference<const T> {
+    if(const auto pos{m.find(std::forward<W>(what))}; pos != m.end()) {
+        return {std::get<1>(*pos)};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
 } // namespace eagine
