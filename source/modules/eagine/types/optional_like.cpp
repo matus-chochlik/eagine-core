@@ -222,6 +222,16 @@ public:
         return fallback;
     }
 
+    [[nodiscard]] constexpr auto or_default() const noexcept
+      -> std::conditional_t<std::is_function_v<T>, void, T> {
+        if constexpr(not std::is_function_v<T>) {
+            if(has_value()) {
+                return *_ptr;
+            }
+            return {};
+        }
+    }
+
     [[nodiscard]] explicit constexpr operator T&() noexcept {
         return value();
     }
