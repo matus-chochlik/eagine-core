@@ -74,9 +74,18 @@ class basic_holder : public optional_like_crtp<basic_holder<Base, T>, T> {
 public:
     using value_type = T;
 
+    template <typename U>
+    using rebind = basic_holder<typename _traits::template rebind<U>, U>;
+
     /// @brief Default constructor.
     /// @post not has_value()
     constexpr basic_holder() noexcept = default;
+    constexpr basic_holder(basic_holder&&) noexcept = default;
+    constexpr basic_holder(const basic_holder&) noexcept = default;
+    constexpr auto operator=(basic_holder&&) noexcept
+      -> basic_holder& = default;
+    constexpr auto operator=(const basic_holder&) noexcept
+      -> basic_holder& = default;
 
     constexpr basic_holder(Base base) noexcept
       : _base{std::move(base)} {}
@@ -205,6 +214,13 @@ public:
 
     [[nodiscard]] auto release() && noexcept -> Base&& {
         return {std::move(_base)};
+    }
+
+    template <std::derived_from<T> D>
+    [[nodiscard]] auto as(std::type_identity<D> = {}) && noexcept
+      -> basic_holder<std::shared_ptr<D>, D> {
+        return {std::dynamic_pointer_cast<D>(
+          std::shared_ptr<T>{std::move(*this).release()})};
     }
 };
 //------------------------------------------------------------------------------

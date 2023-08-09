@@ -34,7 +34,7 @@ void test_holder_empty(auto& test, auto& h) {
       "transform KLMN");
 
     test.check_equal(
-      h.or_else([&]() -> std::string& {
+      h.or_else([&]() -> eagine::optional_reference<std::string> {
            static std::string s{"MNOP"};
            return s;
        })
@@ -97,7 +97,7 @@ void test_holder_string(auto& test, auto& h) {
       "transform CDEF");
 
     test.check_equal(
-      h.or_else([&]() -> std::string& {
+      h.or_else([&]() -> eagine::optional_reference<std::string> {
            static std::string s{"MNOP"};
            return s;
        })

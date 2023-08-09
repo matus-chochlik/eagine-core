@@ -58,7 +58,7 @@ void optional_reference_empty(auto& s) {
       "and then 5678");
 
     test.check_equal(
-      r.or_else([&]() -> int& {
+      r.or_else([&]() -> eagine::optional_reference<int> {
            static int i{678};
            return i;
        })
@@ -89,7 +89,7 @@ void optional_reference_non_empty(auto& s) {
       "member 2345");
 
     test.check_equal(
-      r.or_else([]() -> auto& {
+      r.or_else([]() -> eagine::optional_reference<outer> {
            static outer so;
            return so;
        })
@@ -100,7 +100,7 @@ void optional_reference_non_empty(auto& s) {
       "member call 42");
 
     test.check_equal(
-      r.or_else([]() -> auto& {
+      r.or_else([]() -> eagine::optional_reference<outer> {
            static outer so{{5678, false}};
            return so;
        })
@@ -122,7 +122,7 @@ void optional_reference_non_empty(auto& s) {
     test.check_equal(r.value().i.s, o.i.s, "o.i.s 2");
 
     test.check_equal(
-      r.or_else([]() -> auto& {
+      r.or_else([]() -> eagine::optional_reference<outer> {
            static outer so{{6789, false}};
            return so;
        })

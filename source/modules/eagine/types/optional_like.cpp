@@ -188,16 +188,6 @@ public:
         return {derived().get()};
     }
 
-    /// @brief Returns an optional reference to a derived type That.
-    template <std::derived_from<T> That>
-    [[nodiscard]] auto as(std::type_identity<That> = {}) const noexcept
-      -> optional_reference<That> {
-        if(auto that{dynamic_cast<That*>(derived().get())}) {
-            return {that};
-        }
-        return {};
-    }
-
     /// @brief Indicates if this refers to the specified object.
     /// @returns tribool
     [[nodiscard]] constexpr auto refers_to(const T& object) const noexcept {
@@ -229,7 +219,7 @@ public:
             using R =
               std::conditional_t<std::is_const_v<T>, std::add_const_t<M>, M>;
             if(derived().has_value()) {
-                return optional_reference<R>{(derived().get()).*ptr};
+                return optional_reference<R>{(*(*this)).*ptr};
             } else {
                 return optional_reference<R>{nothing};
             }
@@ -306,11 +296,11 @@ public:
     /// @see and_then
     /// @see transform
     template <typename F, typename R = std::invoke_result_t<F>>
-        requires(std::same_as<R, Derived> or std::convertible_to<R, Derived>)
+        requires(std::same_as<Derived, R> or std::convertible_to<Derived, R>)
     constexpr auto or_else(F&& function) const
-      noexcept(noexcept(std::invoke(std::forward<F>(function)))) -> Derived {
+      noexcept(noexcept(std::invoke(std::forward<F>(function)))) -> R {
         if(derived().has_value()) {
-            return *this;
+            return derived();
         } else {
             return std::invoke(std::forward<F>(function));
         }
@@ -455,6 +445,16 @@ public:
     [[nodiscard]] constexpr auto value() const noexcept -> T& {
         assert(has_value());
         return *_ptr;
+    }
+
+    /// @brief Returns an optional reference to a derived type That.
+    template <std::derived_from<T> That>
+    [[nodiscard]] auto as(std::type_identity<That> = {}) const noexcept
+      -> optional_reference<That> {
+        if(auto that{dynamic_cast<That*>(_ptr)}) {
+            return {that};
+        }
+        return {};
     }
 
     [[nodiscard]] explicit constexpr operator T&() noexcept {
