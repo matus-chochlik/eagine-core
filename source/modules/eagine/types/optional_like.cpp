@@ -62,22 +62,28 @@ class basic_valid_if;
 export template <typename T, typename Policy>
 using valid_if = basic_valid_if<T, Policy, typename Policy::do_log>;
 
+export template <typename T>
+class optional_reference;
+
 /// @brief Specialization of valid_if with flag indicating validity.
 /// @ingroup valid_if
 /// @see valid_if_indicated
 export template <typename T>
 using optionally_valid = valid_if<T, valid_flag_policy>;
 //------------------------------------------------------------------------------
-// optional reference
+// optional-like API
 //------------------------------------------------------------------------------
-export template <typename Base, typename T>
-class basic_holder;
+/// @brief Implements the common interface for optional-like types.
+/// @ingroup optional_like
+template <typename Derived, typename T>
+class optional_like_crtp {
+    constexpr auto derived() noexcept -> Derived& {
+        return *static_cast<Derived*>(this);
+    }
 
-/// @brief Optional reference to an instance of type @p T.
-/// @ingroup valid_if
-/// @see valid_if
-export template <typename T>
-class optional_reference {
+    constexpr auto derived() const noexcept -> const Derived& {
+        return *static_cast<const Derived*>(this);
+    }
 
     template <typename V, typename... Args>
     [[nodiscard]] static constexpr auto
@@ -88,6 +94,262 @@ public:
     /// @brief Type of the referenced value.
     using value_type = T;
 
+    /// @brief Indicates if this has a valid value.
+    /// @see has_value
+    [[nodiscard]] constexpr explicit operator bool() const noexcept {
+        return derived().has_value();
+    }
+
+    [[nodiscard]] constexpr auto operator*() const noexcept -> decltype(auto) {
+        assert(derived().has_value());
+        return *(derived().get());
+    }
+
+    [[nodiscard]] constexpr auto operator->() const noexcept -> decltype(auto) {
+        assert(derived().has_value());
+        return derived().get();
+    }
+
+    /// @brief Tri-state equality comparison of the stored object with a value.
+    [[nodiscard]] auto constexpr operator==(const T& that) const noexcept
+      -> tribool {
+        if(derived().has_value()) {
+            return *(*this) == that;
+        }
+        return indeterminate;
+    }
+
+    /// @brief Tri-state non-equality comparison of the stored object with a value.
+    [[nodiscard]] constexpr auto operator!=(const T& that) const noexcept
+      -> tribool {
+        if(derived().has_value()) {
+            return *(*this) != that;
+        }
+        return indeterminate;
+    }
+
+    /// @brief Tri-state less-equal comparison of the stored object with a value.
+    [[nodiscard]] constexpr auto operator<=(const T& that) const noexcept
+      -> tribool {
+        if(derived().has_value()) {
+            return *(*this) <= that;
+        }
+        return indeterminate;
+    }
+
+    /// @brief Tri-state greater-equal comparison of the stored object with a value.
+    [[nodiscard]] constexpr auto operator>=(const T& that) const noexcept
+      -> tribool {
+        if(derived().has_value()) {
+            return *(*this) >= that;
+        }
+        return indeterminate;
+    }
+
+    /// @brief Tri-state less-than comparison of the stored object with a value.
+    [[nodiscard]] constexpr auto operator<(const T& that) const noexcept
+      -> tribool {
+        if(derived().has_value()) {
+            return *(*this) < that;
+        }
+        return indeterminate;
+    }
+
+    /// @brief Tri-state greater-than comparison of the stored object with a value.
+    [[nodiscard]] constexpr auto operator>(const T& that) const noexcept
+      -> tribool {
+        if(derived().has_value()) {
+            return *(*this) > that;
+        }
+        return indeterminate;
+    }
+
+    /// @brief Implicit conversion to std::optional<std::reference_wrapper>
+    [[nodiscard]] constexpr operator std::optional<std::reference_wrapper<T>>()
+      const noexcept {
+        if(derived().has_value()) {
+            return {*(*this)};
+        }
+        return {};
+    }
+
+    [[nodiscard]] constexpr auto or_default() const noexcept
+      -> std::conditional_t<std::is_function_v<T>, void, T> {
+        if constexpr(not std::is_function_v<T>) {
+            if(derived().has_value()) {
+                return *(*this);
+            }
+            return {};
+        }
+    }
+
+    /// @brief Returns an optional reference to a derived type That.
+    template <std::derived_from<T> That>
+    [[nodiscard]] auto as(std::type_identity<That> = {}) const noexcept
+      -> optional_reference<That> {
+        if(auto that{dynamic_cast<That*>(derived().get())}) {
+            return {that};
+        }
+        return {};
+    }
+
+    /// @brief Indicates if this refers to the specified object.
+    /// @returns tribool
+    [[nodiscard]] constexpr auto refers_to(const T& object) const noexcept {
+        return tribool{derived().get() == &object, derived().has_value()};
+    }
+
+    /// @brief Indicates if this refers to the same object as that.
+    template <typename B>
+    [[nodiscard]] constexpr auto refers_to(
+      const optional_like_crtp<B, T>& that) const noexcept -> tribool {
+        if(that) {
+            return that.refers_to(*(*this));
+        }
+        return indeterminate;
+    }
+
+    template <typename M, typename C>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] constexpr auto member(M C::*ptr) const noexcept
+        requires(not std::is_member_function_pointer_v<decltype(ptr)>)
+    {
+        if constexpr(optional_like<M>) {
+            if(derived().has_value()) {
+                return (derived().get()).*ptr;
+            } else {
+                return M{};
+            }
+        } else {
+            using R =
+              std::conditional_t<std::is_const_v<T>, std::add_const_t<M>, M>;
+            if(derived().has_value()) {
+                return optional_reference<R>{(derived().get()).*ptr};
+            } else {
+                return optional_reference<R>{nothing};
+            }
+        }
+    }
+
+    /// @brief Constructs value of type C from the stored value or an empty optional-like.
+    /// @see and_then
+    template <typename C, typename... Args>
+    [[nodiscard]] constexpr auto construct(Args&&... args) noexcept(
+      noexcept(T(std::declval<T&>()))) -> optionally_valid<C>;
+
+    /// @brief Invoke function on the stored value or return empty optional-like.
+    /// @see transform
+    /// @see or_else
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
+    constexpr auto and_then(F&& function) const noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<T&>()))) -> R {
+        if(derived().has_value()) {
+            return std::invoke(std::forward<F>(function), *(*this));
+        } else {
+            return R{};
+        }
+    }
+
+    template <
+      typename F,
+      typename R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
+        requires(std::is_void_v<R>)
+    constexpr void and_then(F&& function) const noexcept(
+      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>()))) {
+        if(derived().has_value()) {
+            std::invoke(std::forward<F>(function), *(*this));
+        }
+    }
+
+    template <typename F>
+    constexpr auto and_then_true(F&& function) const noexcept(noexcept(
+      std::invoke(std::forward<F>(function), std::declval<T&>()))) -> tribool {
+        if(derived().has_value()) {
+            std::invoke(std::forward<F>(function), *(*this));
+            return true;
+        } else {
+            return indeterminate;
+        }
+    }
+
+    /// @brief Return self if has value or the result of function.
+    /// @see and_then
+    /// @see transform
+    template <typename F, typename R = std::invoke_result_t<F>>
+        requires(std::same_as<R, Derived> or std::convertible_to<R, Derived>)
+    constexpr auto or_else(F&& function) const
+      noexcept(noexcept(std::invoke(std::forward<F>(function)))) -> Derived {
+        if(derived().has_value()) {
+            return *this;
+        } else {
+            return std::invoke(std::forward<F>(function));
+        }
+    }
+
+    /// @brief Invoke function on the stored value or return empty optional-like.
+    /// @see and_then
+    /// @see or_else
+    template <typename F, typename R = std::invoke_result_t<F, T&>>
+    [[nodiscard]] constexpr auto transform(F&& function) const noexcept(
+      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>())) and
+      std::is_nothrow_move_constructible_v<std::remove_cvref_t<R>>);
+
+    template <typename R, std::same_as<T> C, typename... Params, typename... Args>
+    [[nodiscard]] constexpr auto member(
+      R (C::*function)(Params...),
+      Args&&... args) const {
+        return _call_member(
+          derived().get(), function, std::forward<Args>(args)...);
+    }
+
+    template <typename R, std::same_as<T> C, typename... Params, typename... Args>
+    [[nodiscard]] constexpr auto member(
+      R (C::*function)(Params...) noexcept,
+      Args&&... args) const noexcept {
+        return _call_member(
+          derived().get(), function, std::forward<Args>(args)...);
+    }
+
+    template <typename R, typename C, typename... Params, typename... Args>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] constexpr auto member(
+      R (C::*function)(Params...) const,
+      Args&&... args) const {
+        return _call_member(
+          derived().get(), function, std::forward<Args>(args)...);
+    }
+
+    template <typename R, typename C, typename... Params, typename... Args>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] constexpr auto member(
+      R (C::*function)(Params...) const noexcept,
+      Args&&... args) const noexcept {
+        return _call_member(
+          derived().get(), function, std::forward<Args>(args)...);
+    }
+
+    template <typename... Args>
+    [[nodiscard]] auto bind_member(auto* ptr, Args&&... args) const noexcept {
+        return [this, ptr, ... args{std::forward<Args>(args)}] {
+            return this->member(ptr, args...);
+        };
+    }
+};
+//------------------------------------------------------------------------------
+// optional reference
+//------------------------------------------------------------------------------
+export template <typename Base, typename T>
+class basic_holder;
+
+/// @brief Optional reference to an instance of type @p T.
+/// @ingroup valid_if
+/// @see valid_if
+export template <typename T>
+class optional_reference : public optional_like_crtp<optional_reference<T>, T> {
+
+public:
     /// @brief Construction from a pointer to reference of type @p T.
     constexpr optional_reference(T* ptr) noexcept
       : _ptr{ptr} {}
@@ -156,38 +418,6 @@ public:
         return *this;
     }
 
-    /// @brief Indicates in this reference specified to the specified object.
-    [[nodiscard]] constexpr auto refers_to(const T& object) const noexcept
-      -> tribool {
-        return tribool{_ptr == &object, has_value()};
-    }
-
-    /// @brief Indicates in this reference the same object as @p that.
-    template <std::derived_from<T> U>
-    [[nodiscard]] constexpr auto refers_to(
-      const optional_reference<U>& that) const noexcept -> tribool {
-        if(that.has_value()) {
-            return refers_to(*that);
-        }
-        return indeterminate;
-    }
-
-    /// @brief Indicates if this stores a valid reference.
-    /// @see has_value
-    [[nodiscard]] constexpr explicit operator bool() const noexcept {
-        return has_value();
-    }
-
-    [[nodiscard]] constexpr auto operator*() const noexcept -> T& {
-        assert(has_value());
-        return *_ptr;
-    }
-
-    [[nodiscard]] constexpr auto operator->() const noexcept -> T* {
-        assert(has_value());
-        return _ptr;
-    }
-
     [[nodiscard]] constexpr auto get() const noexcept -> T* {
         return _ptr;
     }
@@ -222,187 +452,14 @@ public:
         return fallback;
     }
 
-    [[nodiscard]] constexpr auto or_default() const noexcept
-      -> std::conditional_t<std::is_function_v<T>, void, T> {
-        if constexpr(not std::is_function_v<T>) {
-            if(has_value()) {
-                return *_ptr;
-            }
-            return {};
-        }
-    }
-
     [[nodiscard]] explicit constexpr operator T&() noexcept {
         return value();
-    }
-
-    /// @brief Constructs value of type C from the stored value or an empty optional.
-    /// @see and_then
-    template <typename C, typename... Args>
-    [[nodiscard]] constexpr auto construct(Args&&... args) noexcept(
-      noexcept(T(std::declval<T&>()))) -> optionally_valid<C>;
-
-    /// @brief Invoke function on the stored value or return empty optional-like.
-    /// @see transform
-    /// @see or_else
-    template <
-      typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
-    constexpr auto and_then(F&& function) const noexcept(noexcept(
-      std::invoke(std::forward<F>(function), std::declval<T&>()))) -> R {
-        if(has_value()) {
-            return std::invoke(std::forward<F>(function), *_ptr);
-        } else {
-            return R{};
-        }
-    }
-
-    template <
-      typename F,
-      typename R = std::remove_cvref_t<std::invoke_result_t<F, T&>>>
-        requires(std::is_void_v<R>)
-    constexpr void and_then(F&& function) const noexcept(
-      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>()))) {
-        if(has_value()) {
-            std::invoke(std::forward<F>(function), *_ptr);
-        }
-    }
-
-    template <typename F>
-    constexpr auto and_then_true(F&& function) const noexcept(noexcept(
-      std::invoke(std::forward<F>(function), std::declval<T&>()))) -> tribool {
-        if(has_value()) {
-            std::invoke(std::forward<F>(function), *_ptr);
-            return true;
-        } else {
-            return indeterminate;
-        }
-    }
-
-    /// @brief Return self if has value or the result of function.
-    /// @see and_then
-    /// @see transform
-    template <typename F, typename R = std::invoke_result_t<F>>
-        requires(
-          std::same_as<R, optional_reference> or
-          std::convertible_to<R, optional_reference>)
-    constexpr auto or_else(F&& function) const
-      noexcept(noexcept(std::invoke(std::forward<F>(function))))
-        -> optional_reference {
-        if(has_value()) {
-            return *this;
-        } else {
-            return std::invoke(std::forward<F>(function));
-        }
-    }
-
-    /// @brief Invoke function on the stored value or return empty optional-like.
-    /// @see and_then
-    /// @see or_else
-    template <typename F, typename R = std::invoke_result_t<F, T&>>
-    [[nodiscard]] constexpr auto transform(F&& function) const noexcept(
-      noexcept(std::invoke(std::forward<F>(function), std::declval<T&>())) and
-      std::is_nothrow_move_constructible_v<std::remove_cvref_t<R>>);
-
-    template <typename M, typename C>
-        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
-    [[nodiscard]] constexpr auto member(M C::*ptr) const noexcept
-        requires(not std::is_member_function_pointer_v<decltype(ptr)>)
-    {
-        if constexpr(optional_like<M>) {
-            if(has_value()) {
-                return value().*ptr;
-            } else {
-                return M{};
-            }
-        } else {
-            using R =
-              std::conditional_t<std::is_const_v<T>, std::add_const_t<M>, M>;
-            if(has_value()) {
-                return optional_reference<R>{value().*ptr};
-            } else {
-                return optional_reference<R>{nothing};
-            }
-        }
-    }
-
-    template <typename R, std::same_as<T> C, typename... Params, typename... Args>
-    [[nodiscard]] constexpr auto member(
-      R (C::*function)(Params...),
-      Args&&... args) const {
-        return _call_member(_ptr, function, std::forward<Args>(args)...);
-    }
-
-    template <typename R, std::same_as<T> C, typename... Params, typename... Args>
-    [[nodiscard]] constexpr auto member(
-      R (C::*function)(Params...) noexcept,
-      Args&&... args) const noexcept {
-        return _call_member(_ptr, function, std::forward<Args>(args)...);
-    }
-
-    template <typename R, typename C, typename... Params, typename... Args>
-        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
-    [[nodiscard]] constexpr auto member(
-      R (C::*function)(Params...) const,
-      Args&&... args) const {
-        return _call_member(_ptr, function, std::forward<Args>(args)...);
-    }
-
-    template <typename R, typename C, typename... Params, typename... Args>
-        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
-    [[nodiscard]] constexpr auto member(
-      R (C::*function)(Params...) const noexcept,
-      Args&&... args) const noexcept {
-        return _call_member(_ptr, function, std::forward<Args>(args)...);
-    }
-
-    template <typename... Args>
-    [[nodiscard]] auto bind_member(auto* ptr, Args&&... args) const noexcept {
-        return [this, ptr, ... args{std::forward<Args>(args)}] {
-            return this->member(ptr, args...);
-        };
-    }
-
-    template <std::derived_from<T> Derived>
-    [[nodiscard]] auto as(std::type_identity<Derived> = {}) const noexcept
-      -> optional_reference<Derived> {
-        if(auto derived{dynamic_cast<Derived*>(_ptr)}) {
-            return {derived};
-        }
-        return {};
     }
 
     /// @brief Returns the stored reference.
     /// @see value
     [[nodiscard]] explicit constexpr operator const T&() const noexcept {
         return value();
-    }
-
-    /// @brief Tri-state equality comparison of the referred instance with a value.
-    [[nodiscard]] auto constexpr operator==(const T& r) const noexcept
-      -> tribool {
-        if(has_value()) {
-            return value() == r;
-        }
-        return indeterminate;
-    }
-
-    /// @brief Tri-state nonequality comparison of the referred instance with a value.
-    [[nodiscard]] constexpr auto operator!=(const T& r) const noexcept
-      -> tribool {
-        if(has_value()) {
-            return value() != r;
-        }
-        return indeterminate;
-    }
-
-    /// @brief Conversion to std::optional
-    [[nodiscard]] constexpr operator std::optional<std::reference_wrapper<T>>()
-      const noexcept {
-        if(has_value()) {
-            return {value()};
-        }
-        return {};
     }
 
 private:
@@ -566,7 +623,6 @@ public:
         return _policy(_value);
     }
 
-    /// @brief Equality comparison.
     template <typename U, typename Po2, typename Lo2>
     [[nodiscard]] constexpr auto operator==(
       const basic_valid_if<U, Po2, Lo2>& that) const noexcept -> tribool {
@@ -1422,9 +1478,9 @@ private:
 //------------------------------------------------------------------------------
 // implementation
 //------------------------------------------------------------------------------
-template <typename T>
+template <typename Derived, typename T>
 template <typename V, typename... Args>
-[[nodiscard]] constexpr auto optional_reference<T>::
+[[nodiscard]] constexpr auto optional_like_crtp<Derived, T>::
   _call_member(V* ptr, auto function, Args&&... args) noexcept(
     noexcept(std::invoke(function, *ptr, std::forward<Args>(args)...))) {
     using R = std::invoke_result_t<
@@ -1472,20 +1528,21 @@ template <typename V, typename... Args>
     }
 }
 //------------------------------------------------------------------------------
-template <typename T>
+template <typename Derived, typename T>
 template <typename C, typename... Args>
-[[nodiscard]] constexpr auto optional_reference<T>::construct(
+[[nodiscard]] constexpr auto optional_like_crtp<Derived, T>::construct(
   Args&&... args) noexcept(noexcept(T(std::declval<T&>())))
   -> optionally_valid<C> {
-    if(has_value()) {
-        return {C(value(), std::forward<Args>(args)...), true};
+    if(derived().has_value()) {
+        return {C(*(*this), std::forward<Args>(args)...), true};
     }
     return {};
 }
 //------------------------------------------------------------------------------
-template <typename T>
+template <typename Derived, typename T>
 template <typename F, typename R>
-[[nodiscard]] constexpr auto optional_reference<T>::transform(F&& function) const
+[[nodiscard]] constexpr auto optional_like_crtp<Derived, T>::transform(
+  F&& function) const
   noexcept(
     noexcept(std::invoke(std::forward<F>(function), std::declval<T&>())) and
     std::is_nothrow_move_constructible_v<std::remove_cvref_t<R>>) {
@@ -1494,27 +1551,30 @@ template <typename F, typename R>
           std::is_reference_v<R>,
           std::remove_reference_t<R>,
           std::remove_pointer_t<R>>;
-        if(_ptr) {
+        if(derived().has_value()) {
             return optional_reference<P>{
-              std::invoke(std::forward<F>(function), *_ptr)};
+              std::invoke(std::forward<F>(function), *(*this))};
         } else {
             return optional_reference<P>{nothing};
         }
     } else if constexpr(std::is_same_v<R, bool>) {
-        if(_ptr) {
-            return tribool{std::invoke(std::forward<F>(function), *_ptr), true};
+        if(derived().has_value()) {
+            return tribool{
+              std::invoke(std::forward<F>(function), *(*this)), true};
         } else {
             return tribool{indeterminate};
         }
     } else {
-        if(_ptr) {
+        if(derived().has_value()) {
             return optionally_valid<R>{
-              std::invoke(std::forward<F>(function), *_ptr), true};
+              std::invoke(std::forward<F>(function), *(*this)), true};
         } else {
             return optionally_valid<R>{};
         }
     }
 }
+//------------------------------------------------------------------------------
+// Wrappers for valid_if
 //------------------------------------------------------------------------------
 /// @brief Helper class storing both conditionally valid value and fallback value.
 /// @ingroup valid_if
