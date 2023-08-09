@@ -183,6 +183,11 @@ public:
         }
     }
 
+    /// @brief Returns optional_reference to the held type.
+    [[nodiscard]] auto ref() const noexcept -> optional_reference<T> {
+        return {derived().get()};
+    }
+
     /// @brief Returns an optional reference to a derived type That.
     template <std::derived_from<T> That>
     [[nodiscard]] auto as(std::type_identity<That> = {}) const noexcept
@@ -229,6 +234,29 @@ public:
                 return optional_reference<R>{nothing};
             }
         }
+    }
+
+    /// @brief Returns the stored value if valid or @p fallback otherwise.
+    /// @see has_value
+    template <
+      std::convertible_to<T> U,
+      typename R = std::conditional_t<std::is_function_v<T>, T*, T>>
+    [[nodiscard]] constexpr auto value_or(U&& fallback) const noexcept -> R {
+        if(derived().has_value()) {
+            if constexpr(std::is_function_v<T>) {
+                return derived().get();
+            } else {
+                return *(*this);
+            }
+        }
+        return R(std::forward<U>(fallback));
+    }
+
+    [[nodiscard]] constexpr auto value_or(T& fallback) const noexcept -> T& {
+        if(derived().has_value()) {
+            return *(*this);
+        }
+        return fallback;
     }
 
     /// @brief Constructs value of type C from the stored value or an empty optional-like.
@@ -427,29 +455,6 @@ public:
     [[nodiscard]] constexpr auto value() const noexcept -> T& {
         assert(has_value());
         return *_ptr;
-    }
-
-    /// @brief Returns the stored value if valid or @p fallback otherwise.
-    /// @see has_value
-    template <
-      std::convertible_to<T> U,
-      typename R = std::conditional_t<std::is_function_v<T>, T*, T>>
-    [[nodiscard]] constexpr auto value_or(U&& fallback) const noexcept -> R {
-        if(has_value()) {
-            if constexpr(std::is_function_v<T>) {
-                return _ptr;
-            } else {
-                return *_ptr;
-            }
-        }
-        return R(std::forward<U>(fallback));
-    }
-
-    [[nodiscard]] constexpr auto value_or(T& fallback) const noexcept -> T& {
-        if(has_value()) {
-            return *_ptr;
-        }
-        return fallback;
     }
 
     [[nodiscard]] explicit constexpr operator T&() noexcept {
