@@ -114,7 +114,17 @@ public:
     [[nodiscard]] auto constexpr operator==(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return *(*this) == that;
+            return {*(*this) == that, true};
+        }
+        return indeterminate;
+    }
+
+    /// @brief Tri-state equality comparison of the stored object with an optional-like.
+    template <typename D>
+    [[nodiscard]] auto constexpr operator==(
+      const optional_like_crtp<D, T>& that) const noexcept -> tribool {
+        if(derived().has_value() and that.has_value()) {
+            return {*(*this) == *that, true};
         }
         return indeterminate;
     }
@@ -123,7 +133,17 @@ public:
     [[nodiscard]] constexpr auto operator!=(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return *(*this) != that;
+            return {*(*this) != that, true};
+        }
+        return indeterminate;
+    }
+
+    /// @brief Tri-state non-equality comparison of the stored object with an optional-like.
+    template <typename D>
+    [[nodiscard]] auto constexpr operator!=(
+      const optional_like_crtp<D, T>& that) const noexcept -> tribool {
+        if(derived().has_value() and that.has_value()) {
+            return {*(*this) != *that, true};
         }
         return indeterminate;
     }
@@ -132,7 +152,7 @@ public:
     [[nodiscard]] constexpr auto operator<=(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return *(*this) <= that;
+            return {*(*this) <= that, true};
         }
         return indeterminate;
     }
@@ -141,7 +161,7 @@ public:
     [[nodiscard]] constexpr auto operator>=(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return *(*this) >= that;
+            return {*(*this) >= that, true};
         }
         return indeterminate;
     }
@@ -150,7 +170,7 @@ public:
     [[nodiscard]] constexpr auto operator<(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return *(*this) < that;
+            return {*(*this) < that, true};
         }
         return indeterminate;
     }
@@ -159,7 +179,7 @@ public:
     [[nodiscard]] constexpr auto operator>(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return *(*this) > that;
+            return {*(*this) > that, true};
         }
         return indeterminate;
     }
