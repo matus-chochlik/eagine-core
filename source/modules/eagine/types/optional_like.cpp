@@ -77,6 +77,28 @@ using optionally_valid = valid_if<T, valid_flag_policy>;
 /// @ingroup optional_like
 template <typename Derived, typename T>
 class optional_like_crtp {
+    template <typename Self, typename M, typename C>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] constexpr auto _member(Self&& self, M C::*ptr) const noexcept
+        requires(not std::is_member_function_pointer_v<decltype(ptr)>)
+    {
+        if constexpr(optional_like<M>) {
+            if(self.has_value()) {
+                return (self.get()).*ptr;
+            } else {
+                return M{};
+            }
+        } else {
+            using R =
+              std::conditional_t<std::is_const_v<T>, std::add_const_t<M>, M>;
+            if(self.has_value()) {
+                return optional_reference<R>{(*self).*ptr};
+            } else {
+                return optional_reference<R>{nothing};
+            }
+        }
+    }
+
     template <typename V, typename... Args>
     [[nodiscard]] static constexpr auto
     _call_member(V* ptr, auto function, Args&&... args) noexcept(
@@ -86,12 +108,16 @@ public:
     /// @brief Type of the referenced value.
     using value_type = T;
 
-    constexpr auto derived() noexcept -> Derived& {
-        return *static_cast<Derived*>(this);
+    constexpr auto derived() && noexcept -> Derived&& {
+        return static_cast<Derived&&>(*this);
     }
 
-    constexpr auto derived() const noexcept -> const Derived& {
-        return *static_cast<const Derived*>(this);
+    constexpr auto derived() & noexcept -> Derived& {
+        return static_cast<Derived&>(*this);
+    }
+
+    constexpr auto derived() const& noexcept -> const Derived& {
+        return static_cast<const Derived&>(*this);
     }
 
     /// @brief Indicates if this has a valid value.
@@ -198,6 +224,16 @@ public:
         return {};
     }
 
+    /// @brief Conversion to std::optional
+    template <std::constructible_from<T> U>
+    [[nodiscard]] constexpr operator std::optional<U>() const
+      noexcept(std::is_nothrow_copy_constructible_v<T>) {
+        if(derived().has_value()) {
+            return {*derived()};
+        }
+        return {};
+    }
+
     [[nodiscard]] constexpr auto or_default() const noexcept
       -> std::conditional_t<std::is_function_v<T>, void, T> {
         if constexpr(not std::is_function_v<T>) {
@@ -231,24 +267,18 @@ public:
 
     template <typename M, typename C>
         requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
+    [[nodiscard]] constexpr auto member(M C::*ptr) noexcept
+        requires(not std::is_member_function_pointer_v<decltype(ptr)>)
+    {
+        return _member(derived(), ptr);
+    }
+
+    template <typename M, typename C>
+        requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)
     [[nodiscard]] constexpr auto member(M C::*ptr) const noexcept
         requires(not std::is_member_function_pointer_v<decltype(ptr)>)
     {
-        if constexpr(optional_like<M>) {
-            if(derived().has_value()) {
-                return (derived().get()).*ptr;
-            } else {
-                return M{};
-            }
-        } else {
-            using R =
-              std::conditional_t<std::is_const_v<T>, std::add_const_t<M>, M>;
-            if(derived().has_value()) {
-                return optional_reference<R>{(*derived()).*ptr};
-            } else {
-                return optional_reference<R>{nothing};
-            }
-        }
+        return _member(derived(), ptr);
     }
 
     /// @brief Returns the stored value if valid or @p fallback otherwise.
@@ -723,15 +753,6 @@ public:
         return transform(function);
     }
 
-    /// @brief Conversion to std::optional
-    [[nodiscard]] constexpr operator std::optional<T>() const
-      noexcept(std::is_nothrow_copy_constructible_v<T>) {
-        if(has_value()) {
-            return {value_anyway()};
-        }
-        return {};
-    }
-
 private:
     constexpr auto get() const noexcept -> const T* {
         return &_value;
@@ -875,7 +896,7 @@ public:
         return _value;
     }
 
-    /// @brief Calls the specified function if the stored valus is valid.
+    /// @brief Calls the specified function if the stored value is valid.
     /// @param function the function to call.
     /// @see transform
     template <typename F>
@@ -885,18 +906,9 @@ public:
 
     /// @brief Returns the stored value, throws if it is invalid.
     /// @see basic_valid_if::value
-    [[nodiscard]] constexpr auto operator*() const -> const_reference {
+    [[nodiscard]] constexpr auto operator*() const noexcept -> T& {
         assert(has_value());
         return value_anyway();
-    }
-
-    /// @brief Conversion to std::optional
-    [[nodiscard]] constexpr operator std::optional<std::reference_wrapper<T>>()
-      const noexcept {
-        if(has_value()) {
-            return {value_anyway()};
-        }
-        return {};
     }
 
 private:
