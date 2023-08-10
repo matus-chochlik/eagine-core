@@ -723,20 +723,6 @@ public:
         return transform(function);
     }
 
-    /// @brief Calls a binary transforming function on {value, has_value()} pair.
-    /// @param function the function to be called.
-    template <typename F, typename R = std::invoke_result_t<F, const T&, bool>>
-    [[nodiscard]] constexpr auto transformed(F function) const noexcept
-      -> basic_valid_if<R, valid_flag_policy, typename valid_flag_policy::do_log> {
-        const auto has_val{has_value(_value)};
-        auto r{function(_value, has_val)};
-        if constexpr(optional_like<R>) {
-            return r;
-        } else {
-            return {std::move(r), has_val};
-        }
-    }
-
     /// @brief Conversion to std::optional
     [[nodiscard]] constexpr operator std::optional<T>() const
       noexcept(std::is_nothrow_copy_constructible_v<T>) {
@@ -895,20 +881,6 @@ public:
     template <typename F>
     [[nodiscard]] constexpr auto operator|(const F& function) const {
         return transform(function);
-    }
-
-    /// @brief Calls a binary transforming function on {value, has_value()} pair.
-    /// @param function the function to be called.
-    template <typename F, typename R = std::invoke_result_t<F, const T&, bool>>
-    [[nodiscard]] constexpr auto transformed(F function) const noexcept
-      -> basic_valid_if<R, valid_flag_policy, typename valid_flag_policy::do_log> {
-        const auto has_val{has_value(_value)};
-        auto r{function(_value, has_val)};
-        if constexpr(optional_like<decltype(r)>) {
-            return r;
-        } else {
-            return {std::move(r), has_val};
-        }
     }
 
     /// @brief Returns the stored value, throws if it is invalid.
