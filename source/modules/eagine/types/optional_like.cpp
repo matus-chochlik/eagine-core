@@ -77,14 +77,6 @@ using optionally_valid = valid_if<T, valid_flag_policy>;
 /// @ingroup optional_like
 template <typename Derived, typename T>
 class optional_like_crtp {
-    constexpr auto derived() noexcept -> Derived& {
-        return *static_cast<Derived*>(this);
-    }
-
-    constexpr auto derived() const noexcept -> const Derived& {
-        return *static_cast<const Derived*>(this);
-    }
-
     template <typename V, typename... Args>
     [[nodiscard]] static constexpr auto
     _call_member(V* ptr, auto function, Args&&... args) noexcept(
@@ -94,15 +86,18 @@ public:
     /// @brief Type of the referenced value.
     using value_type = T;
 
+    constexpr auto derived() noexcept -> Derived& {
+        return *static_cast<Derived*>(this);
+    }
+
+    constexpr auto derived() const noexcept -> const Derived& {
+        return *static_cast<const Derived*>(this);
+    }
+
     /// @brief Indicates if this has a valid value.
     /// @see has_value
     [[nodiscard]] constexpr explicit operator bool() const noexcept {
         return derived().has_value();
-    }
-
-    [[nodiscard]] constexpr auto operator*() const noexcept -> auto& {
-        assert(derived().has_value());
-        return *(derived().get());
     }
 
     [[nodiscard]] constexpr auto operator->() const noexcept -> auto* {
@@ -114,7 +109,7 @@ public:
     [[nodiscard]] auto constexpr operator==(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return {*(*this) == that, true};
+            return {*derived() == that, true};
         }
         return indeterminate;
     }
@@ -123,8 +118,8 @@ public:
     template <typename D>
     [[nodiscard]] auto constexpr operator==(
       const optional_like_crtp<D, T>& that) const noexcept -> tribool {
-        if(derived().has_value() and that) {
-            return {*(*this) == *that, true};
+        if(derived().has_value() and that.derived()) {
+            return {*derived() == *(that.derived()), true};
         }
         return indeterminate;
     }
@@ -133,7 +128,7 @@ public:
     [[nodiscard]] constexpr auto operator!=(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return {*(*this) != that, true};
+            return {*derived() != that, true};
         }
         return indeterminate;
     }
@@ -143,7 +138,7 @@ public:
     [[nodiscard]] auto constexpr operator!=(
       const optional_like_crtp<D, T>& that) const noexcept -> tribool {
         if(derived().has_value() and that) {
-            return {*(*this) != *that, true};
+            return {*derived() != *(that.derived()), true};
         }
         return indeterminate;
     }
@@ -152,7 +147,7 @@ public:
     [[nodiscard]] constexpr auto operator<=(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return {*(*this) <= that, true};
+            return {*derived() <= that, true};
         }
         return indeterminate;
     }
@@ -161,7 +156,7 @@ public:
     [[nodiscard]] constexpr auto operator>=(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return {*(*this) >= that, true};
+            return {*derived() >= that, true};
         }
         return indeterminate;
     }
@@ -170,7 +165,7 @@ public:
     [[nodiscard]] constexpr auto operator<(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return {*(*this) < that, true};
+            return {*derived() < that, true};
         }
         return indeterminate;
     }
@@ -180,7 +175,7 @@ public:
     [[nodiscard]] auto constexpr operator<(
       const optional_like_crtp<D, T>& that) const noexcept -> tribool {
         if(derived().has_value() and that) {
-            return {*(*this) < *that, true};
+            return {*derived() < *(that.derived()), true};
         }
         return indeterminate;
     }
@@ -189,7 +184,7 @@ public:
     [[nodiscard]] constexpr auto operator>(const T& that) const noexcept
       -> tribool {
         if(derived().has_value()) {
-            return {*(*this) > that, true};
+            return {*derived() > that, true};
         }
         return indeterminate;
     }
@@ -198,7 +193,7 @@ public:
     [[nodiscard]] constexpr operator std::optional<std::reference_wrapper<T>>()
       const noexcept {
         if(derived().has_value()) {
-            return {*(*this)};
+            return {*derived()};
         }
         return {};
     }
@@ -207,7 +202,7 @@ public:
       -> std::conditional_t<std::is_function_v<T>, void, T> {
         if constexpr(not std::is_function_v<T>) {
             if(derived().has_value()) {
-                return *(*this);
+                return *derived();
             }
             return {};
         }
@@ -229,7 +224,7 @@ public:
     [[nodiscard]] constexpr auto refers_to(
       const optional_like_crtp<B, T>& that) const noexcept -> tribool {
         if(that) {
-            return that.refers_to(*(*this));
+            return that.refers_to(*derived());
         }
         return indeterminate;
     }
@@ -249,7 +244,7 @@ public:
             using R =
               std::conditional_t<std::is_const_v<T>, std::add_const_t<M>, M>;
             if(derived().has_value()) {
-                return optional_reference<R>{(*(*this)).*ptr};
+                return optional_reference<R>{(*derived()).*ptr};
             } else {
                 return optional_reference<R>{nothing};
             }
@@ -266,14 +261,14 @@ public:
             if constexpr(std::is_function_v<T>) {
                 return derived().get();
             } else {
-                return *(*this);
+                return *derived();
             }
         }
         return R(std::forward<U>(fallback));
     }
 
     [[nodiscard]] constexpr auto value_or(T& fallback) const noexcept -> auto& {
-        return derived().has_value() ? *(*this) : fallback;
+        return derived().has_value() ? *derived() : fallback;
     }
 
     /// @brief Constructs value of type C from the stored value or an empty optional-like.
@@ -291,7 +286,7 @@ public:
     constexpr auto and_then(F&& function) const noexcept(noexcept(
       std::invoke(std::forward<F>(function), std::declval<T&>()))) -> R {
         if(derived().has_value()) {
-            return std::invoke(std::forward<F>(function), *(*this));
+            return std::invoke(std::forward<F>(function), *derived());
         } else {
             return R{};
         }
@@ -304,7 +299,7 @@ public:
     constexpr void and_then(F&& function) const noexcept(
       noexcept(std::invoke(std::forward<F>(function), std::declval<T&>()))) {
         if(derived().has_value()) {
-            std::invoke(std::forward<F>(function), *(*this));
+            std::invoke(std::forward<F>(function), *derived());
         }
     }
 
@@ -312,7 +307,7 @@ public:
     constexpr auto and_then_true(F&& function) const noexcept(noexcept(
       std::invoke(std::forward<F>(function), std::declval<T&>()))) -> tribool {
         if(derived().has_value()) {
-            std::invoke(std::forward<F>(function), *(*this));
+            std::invoke(std::forward<F>(function), *derived());
             return true;
         } else {
             return indeterminate;
@@ -461,6 +456,10 @@ public:
     constexpr auto reset() noexcept -> optional_reference& {
         _ptr = nullptr;
         return *this;
+    }
+
+    [[nodiscard]] constexpr auto operator*() const noexcept -> T& {
+        return *_ptr;
     }
 
     [[nodiscard]] constexpr auto get() const noexcept -> T* {
@@ -649,8 +648,20 @@ public:
 
     /// @brief Checks if the stored value is valid according to policy.
     /// @param p additional parameters for the policy validity check function.
-    [[nodiscard]] constexpr auto has_value() const noexcept {
+    [[nodiscard]] constexpr auto has_value() const noexcept -> bool {
         return _policy(_value);
+    }
+
+    [[nodiscard]] constexpr auto operator*() && noexcept -> T&& {
+        return std::move(_value);
+    }
+
+    [[nodiscard]] constexpr auto operator*() & noexcept -> T& {
+        return _value;
+    }
+
+    [[nodiscard]] constexpr auto operator*() const& noexcept -> const T& {
+        return _value;
     }
 
     template <typename Log>
@@ -741,8 +752,8 @@ private:
     }
 
     T _value{};
-    [[no_unique_address]] Policy _policy;
-    [[no_unique_address]] DoLog _do_log{_policy};
+    Policy _policy;
+    DoLog _do_log{_policy};
 };
 //------------------------------------------------------------------------------
 export template <typename T, typename Policy, typename DoLog>
@@ -1212,7 +1223,7 @@ template <typename C, typename... Args>
   Args&&... args) noexcept(noexcept(T(std::declval<T&>())))
   -> optionally_valid<C> {
     if(derived().has_value()) {
-        return {C(*(*this), std::forward<Args>(args)...), true};
+        return {C(*derived(), std::forward<Args>(args)...), true};
     }
     return {};
 }
@@ -1231,21 +1242,21 @@ template <typename F, typename R>
           std::remove_pointer_t<R>>;
         if(derived().has_value()) {
             return optional_reference<P>{
-              std::invoke(std::forward<F>(function), *(*this))};
+              std::invoke(std::forward<F>(function), *derived())};
         } else {
             return optional_reference<P>{nothing};
         }
     } else if constexpr(std::is_same_v<R, bool>) {
         if(derived().has_value()) {
             return tribool{
-              std::invoke(std::forward<F>(function), *(*this)), true};
+              std::invoke(std::forward<F>(function), *derived()), true};
         } else {
             return tribool{indeterminate};
         }
     } else {
         if(derived().has_value()) {
             return optionally_valid<R>{
-              std::invoke(std::forward<F>(function), *(*this)), true};
+              std::invoke(std::forward<F>(function), *derived()), true};
         } else {
             return optionally_valid<R>{};
         }

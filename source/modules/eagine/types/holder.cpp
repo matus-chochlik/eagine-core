@@ -191,7 +191,12 @@ public:
         return bool(_base);
     }
 
-    /// @brief Indicates if this holder holds an object.
+    /// @brief Returns a reference to the held object.
+    [[nodiscard]] auto operator*() const noexcept -> T& {
+        return *_base;
+    }
+
+    /// @brief Returns a pointer to the held object.
     [[nodiscard]] auto get() const noexcept -> T* {
         return _base.get();
     }
