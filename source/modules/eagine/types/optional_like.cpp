@@ -745,14 +745,6 @@ public:
         return _value;
     }
 
-    /// @brief Calls the specified function if the stored valus is valid.
-    /// @param function the function to call.
-    /// @see transform
-    template <typename F>
-    [[nodiscard]] constexpr auto operator|(const F& function) const {
-        return transform(function);
-    }
-
 private:
     constexpr auto get() const noexcept -> const T* {
         return &_value;
@@ -894,14 +886,6 @@ public:
     /// @brief Returns the stored value regardless of its validity.
     [[nodiscard]] constexpr auto value_anyway() const noexcept -> T& {
         return _value;
-    }
-
-    /// @brief Calls the specified function if the stored value is valid.
-    /// @param function the function to call.
-    /// @see transform
-    template <typename F>
-    [[nodiscard]] constexpr auto operator|(const F& function) const {
-        return transform(function);
     }
 
     /// @brief Returns the stored value, throws if it is invalid.
