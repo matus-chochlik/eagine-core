@@ -378,6 +378,7 @@ CREATE TABLE eagilog.stream (
 	first_entry_id BIGINT NULL,
 	last_entry_id BIGINT NULL,
 	stream_command_id INTEGER NULL,
+	os_pid INTEGER NULL,
 	git_hash VARCHAR(64) NULL,
 	git_version VARCHAR(32) NULL,
 	os_name VARCHAR(64) NULL,
@@ -583,6 +584,18 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.set_stream_os_pid(
+	_stream_id eagilog.stream.os_pid%TYPE,
+	_value INTEGER
+) RETURNS VOID
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET os_pid = _value
+	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+
 CREATE FUNCTION eagilog.set_stream_git_hash(
 	_stream_id eagilog.stream.stream_id%TYPE,
 	_value VARCHAR
