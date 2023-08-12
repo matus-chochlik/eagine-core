@@ -300,6 +300,17 @@ class LogFormattingUtils(object):
         return c(i)
 
     # --------------------------------------------------------------------------
+    def formatYesNoMaybe(self, v, w = 0):
+        s = "maybe"
+        if isinstance(v, bool):
+            if v == True:
+                s = "yes"
+            elif v == False:
+                s = "no"
+        c = self.getCenterText(w)
+        return c(s)
+
+    # --------------------------------------------------------------------------
     def formatLogSeverity(self, level, w = 0):
         c = self.getCenterText(w)
         if level == "stat":
@@ -355,12 +366,15 @@ class LogFormattingUtils(object):
     def _initFormatters(self):
         self._formatters = {
             "duration": lambda n,v,c: self.formatDuration(v),
+            "identifier": lambda n,v,c: self.formatIdentifier(v),
+            "YesNo": lambda n,v,c: self.formatYesNoMaybe(v),
+            "YesNoMaybe": lambda n,v,c: self.formatYesNoMaybe(v),
             "MainPrgrss": lambda n,v,c: self.formatProgressValue(n, v, c),
             "Progress": lambda n,v,c: self.formatProgressValue(n, v, c)
         }
 
     # --------------------------------------------------------------------------
-    def formatMessageArg(self, name, typ, value, ctx):
+    def formatMessageArg(self, name, typ, value, ctx = None):
         try:
             return self._formatters[typ](name, value, ctx)
         except KeyError:
@@ -542,6 +556,7 @@ class LogRenderer(object):
         self._re_var = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
         self._progress = {}
         self._all_streams = set()
+        self._current_stream_attrib = 'os_pid'
         self._severity_colors = {
             "backtrace": "Cyan",
             "trace": "Cyan",
@@ -893,6 +908,16 @@ class LogRenderer(object):
         return self.keyProgressByStreamId
 
     # --------------------------------------------------------------------------
+    def formatCurrentStreamAttrib(self, metadata, stream_id):
+        stream_attrib = 'os_pid'
+        attr_name, attr_type, attr_value = metadata.getStreamInfo(
+            stream_id,
+            stream_attrib)
+        return "%s: %s" % (
+            attr_name,
+            self._utils.formatMessageArg(attr_name, attr_type, attr_value))
+
+    # --------------------------------------------------------------------------
     def renderProgress(self, metadata):
         idx = 0
         curr_streams = [x for x in sorted(self._all_streams)]
@@ -902,6 +927,8 @@ class LogRenderer(object):
 
         def _writeProgress(what):
             self.writeProgress(what, idx)
+
+        stream_attrib = 'os_pid'
 
         for key, data in sorted(self._progress.items(), key=self.progressSorter()):
             stream_id = data["stream_id"]
@@ -941,7 +968,7 @@ class LogRenderer(object):
                     55, data.get("min"), data.get("max"), data.get("value")))
             _writeProgress("┤")
             width += 55
-            attribute = metadata.getStreamInfo(stream_id, 'os_pid')
+            attribute = self.formatCurrentStreamAttrib(metadata, stream_id)
             _writeProgress(attribute)
             width += len(attribute)
             _writeProgress("\n")
@@ -983,21 +1010,27 @@ class DbMetadata(object):
     # --------------------------------------------------------------------------
     def __init__(self, options, db_conn):
         self._db_conn = db_conn
-        self._attributes = {
-            "hostname": "host",
-            "os_pid": "PID"
+        self._attrib_map = {
+            "os_pid": ("PID", "int64"),
+            "hostname": ("Host", "Hostname"),
+            "os_name": ("OS", "string"),
+            "architecture": ("Arch.", "string"),
+            "git_version": ("Version", "string"),
+            "debug_build": ("Debug", "YesNoMaybe"),
+            "low_profile_build": ("Low-profile", "YesNoMaybe"),
+            "running_on_valgrind": ("Valgrind", "YesNoMaybe")
         }
+        self._attrib_columns = list(self._attrib_map.keys())
         self._stream_metadata = {}
 
     # --------------------------------------------------------------------------
     def queryStreamMetadata(self, stream_id):
         with self._db_conn.cursor() as stream_attr:
-            attrib_columns = self._attributes.keys()
             query = "SELECT %s FROM eagilog.stream WHERE stream_id = %%s" % (
-                ", ".join(attrib_columns))
+                ", ".join(self._attrib_columns))
             stream_attr.execute(query, (stream_id,))
             attrib_values = stream_attr.fetchone()
-            return {a: v for a, v in zip(attrib_columns, attrib_values)}
+            return {a: v for a, v in zip(self._attrib_columns, attrib_values)}
 
     # --------------------------------------------------------------------------
     def getStreamMetadata(self, stream_id):
@@ -1017,9 +1050,8 @@ class DbMetadata(object):
 
     # --------------------------------------------------------------------------
     def getStreamInfo(self, stream_id, attrib):
-        return "%s: %s" % (
-            self._attributes[attrib],
-            self.getStreamAttribute(stream_id, attrib))
+        name, typ = self._attrib_map.get(attrib, ("unknown", "string"))
+        return name, typ, self.getStreamAttribute(stream_id, attrib)
 
 # ------------------------------------------------------------------------------
 # Database reader
@@ -1130,7 +1162,6 @@ class DbReader(object):
                 break
             data = {k:v for k,v in zip(columns, data)}
             stream_id = data["stream_id"]
-            self._db_metadata.getStreamInfo(stream_id, 'os_pid')
 
             time_since_start = data["time_since_start"]
             data["time_since_prev"] =\
