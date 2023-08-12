@@ -219,6 +219,7 @@ class XmlLogDbWriter(object):
                 "osCodeName": ("os_name", 64)
             },
             "Instance": {
+                "osPID": ("os_pid", None),
                 "hostname": ("hostname", 64)
             },
             "GitInfo": {
@@ -750,7 +751,6 @@ def main():
         if options.print_bash_completion:
             printBashCompletion(argparser, options)
         else:
-            options = getArgumentParser().parse_args()
             signal.signal(signal.SIGINT, handleInterrupt)
             signal.signal(signal.SIGTERM, handleInterrupt)
             db_writer = XmlLogDbWriter(options)
