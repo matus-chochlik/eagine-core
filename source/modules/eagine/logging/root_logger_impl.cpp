@@ -9,7 +9,8 @@
 module;
 
 #include <cassert>
-#if __has_include(<unistd.h>)
+#if __has_include(<sys/types.h>) && __has_include(<unistd.h>)
+#include <sys/types.h>
 #include <unistd.h>
 #ifndef EAGINE_POSIX
 #define EAGINE_POSIX 1
@@ -200,6 +201,9 @@ auto root_logger::_log_instance_info() -> void {
     info("instance information")
       .tag("Instance")
       .arg("hostname", "Hostname", std::string{hname.data()})
+#if EAGINE_POSIX
+      .arg("osPID", "PID", ::getpid())
+#endif
       .arg("instanceId", process_instance_id());
 }
 //------------------------------------------------------------------------------
