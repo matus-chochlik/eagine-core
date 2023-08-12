@@ -191,7 +191,8 @@ CREATE TABLE eagilog.benchmark (
 
 ALTER TABLE eagilog.benchmark
 ADD FOREIGN KEY(benchmark_type_id)
-REFERENCES eagilog.benchmark_type;
+REFERENCES eagilog.benchmark_type
+ON DELETE CASCADE;
 --------------------------------------------------------------------------------
 -- severity
 --------------------------------------------------------------------------------
@@ -407,7 +408,8 @@ ADD PRIMARY KEY(stream_id, source_id, status_tag);
 
 ALTER TABLE eagilog.declared_stream_state
 ADD FOREIGN KEY(stream_id)
-REFERENCES eagilog.stream;
+REFERENCES eagilog.stream
+ON DELETE CASCADE;
 
 CREATE FUNCTION eagilog.declare_stream_state(
 	_stream_id eagilog.declared_stream_state.stream_id%TYPE,
@@ -492,7 +494,8 @@ ADD PRIMARY KEY(stream_id, source_id, instance, status_tag, begin_time);
 
 ALTER TABLE eagilog.stream_state
 ADD FOREIGN KEY(stream_id)
-REFERENCES eagilog.stream;
+REFERENCES eagilog.stream
+ON DELETE CASCADE;
 --------------------------------------------------------------------------------
 CREATE VIEW eagilog.any_stream_state
 AS
@@ -818,19 +821,23 @@ CREATE TABLE eagilog.entry(
 
 ALTER TABLE eagilog.entry
 ADD FOREIGN KEY(stream_id)
-REFERENCES eagilog.stream;
+REFERENCES eagilog.stream
+ON DELETE CASCADE;
 
 ALTER TABLE eagilog.entry
 ADD FOREIGN KEY(message_format_id)
-REFERENCES eagilog.message_format;
+REFERENCES eagilog.message_format
+ON DELETE CASCADE;
 
 ALTER TABLE eagilog.stream_state
 ADD FOREIGN KEY(begin_entry_id)
-REFERENCES eagilog.entry;
+REFERENCES eagilog.entry
+ON DELETE CASCADE;
 
 ALTER TABLE eagilog.stream_state
 ADD FOREIGN KEY(end_entry_id)
-REFERENCES eagilog.entry;
+REFERENCES eagilog.entry
+ON DELETE CASCADE;
 
 CREATE FUNCTION eagilog.add_entry(
 	_stream_id eagilog.entry.stream_id%TYPE,
@@ -1074,7 +1081,8 @@ ADD PRIMARY KEY(entry_id, arg_id, arg_order);
 
 ALTER TABLE eagilog.arg_string
 ADD FOREIGN KEY(entry_id)
-REFERENCES eagilog.entry;
+REFERENCES eagilog.entry
+ON DELETE CASCADE;
 
 CREATE FUNCTION eagilog.add_entry_arg_string(
 	_entry_id eagilog.arg_string.entry_id%TYPE,
@@ -1112,7 +1120,8 @@ ADD PRIMARY KEY(entry_id, arg_id, arg_order);
 
 ALTER TABLE eagilog.arg_boolean
 ADD FOREIGN KEY(entry_id)
-REFERENCES eagilog.entry;
+REFERENCES eagilog.entry
+ON DELETE CASCADE;
 
 CREATE FUNCTION eagilog.add_entry_arg_boolean(
 	_entry_id eagilog.arg_boolean.entry_id%TYPE,
@@ -1150,7 +1159,8 @@ ADD PRIMARY KEY(entry_id, arg_id, arg_order);
 
 ALTER TABLE eagilog.arg_integer
 ADD FOREIGN KEY(entry_id)
-REFERENCES eagilog.entry;
+REFERENCES eagilog.entry
+ON DELETE CASCADE;
 
 CREATE FUNCTION eagilog.add_entry_arg_integer(
 	_entry_id eagilog.arg_integer.entry_id%TYPE,
@@ -1188,7 +1198,8 @@ ADD PRIMARY KEY(entry_id, arg_id, arg_order);
 
 ALTER TABLE eagilog.arg_float
 ADD FOREIGN KEY(entry_id)
-REFERENCES eagilog.entry;
+REFERENCES eagilog.entry
+ON DELETE CASCADE;
 
 CREATE FUNCTION eagilog.add_entry_arg_float(
 	_entry_id eagilog.arg_float.entry_id%TYPE,
@@ -1223,7 +1234,8 @@ ADD PRIMARY KEY(entry_id, arg_id);
 
 ALTER TABLE eagilog.arg_min_max
 ADD FOREIGN KEY(entry_id)
-REFERENCES eagilog.entry;
+REFERENCES eagilog.entry
+ON DELETE CASCADE;
 
 CREATE FUNCTION eagilog.add_entry_arg_min_max(
 	_entry_id eagilog.arg_float.entry_id%TYPE,
@@ -1262,7 +1274,8 @@ ADD PRIMARY KEY(entry_id, arg_id, arg_order);
 
 ALTER TABLE eagilog.arg_duration
 ADD FOREIGN KEY(entry_id)
-REFERENCES eagilog.entry;
+REFERENCES eagilog.entry
+ON DELETE CASCADE;
 
 CREATE FUNCTION eagilog.add_entry_arg_duration(
 	_entry_id eagilog.arg_duration.entry_id%TYPE,
@@ -1390,7 +1403,8 @@ CREATE TABLE eagilog.profile_interval(
 
 ALTER TABLE eagilog.profile_interval
 ADD FOREIGN KEY(stream_id)
-REFERENCES eagilog.stream;
+REFERENCES eagilog.stream
+ON DELETE CASCADE;
 
 CREATE FUNCTION eagilog.add_profile_interval(
 	_stream_id eagilog.profile_interval.stream_id%TYPE,
