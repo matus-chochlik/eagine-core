@@ -349,7 +349,6 @@ class LogFormattingUtils(object):
 
             return result
         except Exception as err:
-            return str(err)
             return "░" * width
 
     # --------------------------------------------------------------------------
@@ -770,17 +769,26 @@ class LogRenderer(object):
     # --------------------------------------------------------------------------
     def trackProgress(self, data):
         for arg_data in data.get("args", {}).values():
-            if arg_data.get("type") == "MainPrgrss":
-                key = (data["application_id"], data["source_id"], data["instance"])
-                entry_time = data["entry_time"]
+            key = (data["application_id"], data["source_id"], data["instance"])
+            entry_time = data["entry_time"]
+            is_progress = arg_data.get("type") == "MainPrgrss"
+            try:
+                item = self._progress[key]
+            except KeyError:
+                if not is_progress:
+                    key = data["application_id"]
+                item = self._progress[key] = {
+                    "start_time": entry_time,
+                    "update_time": entry_time
+                }
+            item["stream_id"] = data["stream_id"]
+            item["streams"] = data["streams"]
+            item["time_since_stream_start"] = data["time_since_start"]
+            item["update_time"] = entry_time
+            if is_progress:
+                try: del self._progress[data["application_id"]]
+                except: pass
                 value = arg_data["values"][0]
-                try:
-                    item = self._progress[key]
-                except KeyError:
-                    item = self._progress[key] = {
-                        "start_time": entry_time,
-                        "start_value": value
-                    }
                 if "min" in item:
                     item["min"] = min(item["min"], arg_data["min"])
                 else:
@@ -789,10 +797,6 @@ class LogRenderer(object):
                     item["max"] = max(item["max"], arg_data["max"])
                 else:
                     item["max"] = arg_data["max"]
-                item["stream_id"] = data["stream_id"]
-                item["streams"] = data["streams"]
-                item["time_since_stream_start"] = data["time_since_start"]
-                item["update_time"] = entry_time
                 item["value"] = value
 
     # --------------------------------------------------------------------------
@@ -889,7 +893,7 @@ class LogRenderer(object):
         return self.keyProgressByStreamId
 
     # --------------------------------------------------------------------------
-    def renderProgress(self):
+    def renderProgress(self, metadata):
         idx = 0
         curr_streams = [x for x in sorted(self._all_streams)]
         self._progress = {
@@ -934,8 +938,13 @@ class LogRenderer(object):
             width = self._output.columns() - width - 1
             _writeProgress(
                 self._utils.formatProgressBar(
-                    width, data.get("min"), data.get("max"), data.get("value")))
-            _writeProgress("┤\n")
+                    55, data.get("min"), data.get("max"), data.get("value")))
+            _writeProgress("┤")
+            width += 55
+            attribute = metadata.getStreamInfo(stream_id, 'os_pid')
+            _writeProgress(attribute)
+            width += len(attribute)
+            _writeProgress("\n")
             idx += 1
         _writeProgress("┊")
         for unused  in curr_streams:
@@ -948,7 +957,7 @@ class LogRenderer(object):
         self._all_streams.clear()
 
     # --------------------------------------------------------------------------
-    def processEntry(self, data):
+    def processEntry(self, data, metadata):
         if data["is_first"]:
             self.renderStreamHead(data)
 
@@ -962,10 +971,55 @@ class LogRenderer(object):
             self.renderStreamTail(data)
 
     # --------------------------------------------------------------------------
-    def processEnd(self):
+    def processEnd(self, metadata):
         if self._options.show_progress:
-            self.renderProgress()
+            self.renderProgress(metadata)
         self._output.finish()
+
+# ------------------------------------------------------------------------------
+#  Metadata
+# ------------------------------------------------------------------------------
+class DbMetadata(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options, db_conn):
+        self._db_conn = db_conn
+        self._attributes = {
+            "hostname": "host",
+            "os_pid": "PID"
+        }
+        self._stream_metadata = {}
+
+    # --------------------------------------------------------------------------
+    def queryStreamMetadata(self, stream_id):
+        with self._db_conn.cursor() as stream_attr:
+            attrib_columns = self._attributes.keys()
+            query = "SELECT %s FROM eagilog.stream WHERE stream_id = %%s" % (
+                ", ".join(attrib_columns))
+            stream_attr.execute(query, (stream_id,))
+            attrib_values = stream_attr.fetchone()
+            return {a: v for a, v in zip(attrib_columns, attrib_values)}
+
+    # --------------------------------------------------------------------------
+    def getStreamMetadata(self, stream_id):
+        try:
+            return self._stream_metadata[stream_id]
+        except KeyError:
+            self._stream_metadata[stream_id] = self.queryStreamMetadata(stream_id)
+            return self._stream_metadata[stream_id]
+
+    # --------------------------------------------------------------------------
+    def getStreamAttribute(self, stream_id, attrib):
+        return self.getStreamMetadata(stream_id).get(attrib)
+
+    # --------------------------------------------------------------------------
+    def getStreamPID(self, stream_id):
+        return self.getStreamAttribute(stream_id, 'os_pid')
+
+    # --------------------------------------------------------------------------
+    def getStreamInfo(self, stream_id, attrib):
+        return "%s: %s" % (
+            self._attributes[attrib],
+            self.getStreamAttribute(stream_id, attrib))
 
 # ------------------------------------------------------------------------------
 # Database reader
@@ -977,6 +1031,7 @@ class DbReader(object):
         self._db_conn = db_conn
         self._pg_curr = db_conn.cursor()
         self._pg_curr.__enter__()
+        self._db_metadata = DbMetadata(options, db_conn)
 
         self.applyBlockList()
 
@@ -1047,7 +1102,7 @@ class DbReader(object):
                         arg["max"] = arg_data[4]
 
         data["args"] = args
-        return processor.processEntry(data)
+        return processor.processEntry(data, self._db_metadata)
 
     # --------------------------------------------------------------------------
     def processEntries(self, processor, entries):
@@ -1075,6 +1130,8 @@ class DbReader(object):
                 break
             data = {k:v for k,v in zip(columns, data)}
             stream_id = data["stream_id"]
+            self._db_metadata.getStreamInfo(stream_id, 'os_pid')
+
             time_since_start = data["time_since_start"]
             data["time_since_prev"] =\
                 time_since_start -\
@@ -1082,7 +1139,7 @@ class DbReader(object):
             data["age"] = datetime.datetime.now(datetime.timezone.utc) - data["entry_time"]
             self.processEntry(processor, data)
             stream_prev_times[stream_id] = time_since_start
-        processor.processEnd()
+        processor.processEnd(self._db_metadata)
 
     # --------------------------------------------------------------------------
     def processQuery(self, processor, query, args = None):
