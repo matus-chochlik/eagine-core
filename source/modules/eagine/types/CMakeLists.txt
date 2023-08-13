@@ -99,6 +99,7 @@ eagine_add_module_tests(
 		integer_range
 		metaprogramming
 		nothing
+		optional_iterator
 		optional_reference
 		optional_like_tuple
 		valid_if
