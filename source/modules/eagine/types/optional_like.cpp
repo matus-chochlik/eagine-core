@@ -1190,6 +1190,129 @@ export template <
 using valid_if_indicated =
   valid_if<T, valid_if_indicated_policy<Indicator, Comparable, value>>;
 //------------------------------------------------------------------------------
+// iterator, sentinel pair
+//------------------------------------------------------------------------------
+template <typename Iterator, typename Sentinel>
+class optional_iterator_base {
+public:
+    constexpr optional_iterator_base() noexcept = default;
+
+    constexpr optional_iterator_base(Iterator pos, Sentinel end) noexcept
+      : _pos{pos}
+      , _end{end} {}
+
+    constexpr auto operator=(Iterator pos) noexcept -> optional_iterator_base& {
+        _pos = pos;
+        return *this;
+    }
+
+    constexpr auto has_value() const noexcept -> bool {
+        return _pos != _end;
+    }
+
+    constexpr operator Iterator() const noexcept {
+        return _pos;
+    }
+
+protected:
+    constexpr auto _get() const noexcept -> Iterator {
+        return _pos;
+    }
+
+private:
+    Iterator _pos{};
+    Sentinel _end{};
+};
+//------------------------------------------------------------------------------
+export template <
+  typename Iterator,
+  typename Sentinel = Iterator,
+  typename T = typename std::iterator_traits<Iterator>::value_type>
+class optional_iterator
+  : public optional_iterator_base<Iterator, Sentinel>
+  , public optional_like_crtp<optional_iterator<Iterator, Sentinel, T>, T> {
+    using base = optional_iterator_base<Iterator, Sentinel>;
+
+public:
+    using base::base;
+
+    constexpr auto operator*() const noexcept -> auto& {
+        assert(this->has_value());
+        return *(this->_get());
+    }
+
+    constexpr auto get() const noexcept -> auto* {
+        assert(this->has_value());
+        return &(*(this->_get()));
+    }
+
+protected:
+    Iterator _pos{};
+    Sentinel _end{};
+};
+//------------------------------------------------------------------------------
+export template <typename Iterator, typename Sentinel, typename K, typename V>
+class optional_iterator<Iterator, Sentinel, std::pair<K, V>>
+  : public optional_iterator_base<Iterator, Sentinel>
+  , public optional_like_crtp<
+      optional_iterator<Iterator, Sentinel, std::pair<K, V>>,
+      V> {
+    using base = optional_iterator_base<Iterator, Sentinel>;
+
+public:
+    using base::base;
+
+    constexpr auto operator*() const noexcept -> auto& {
+        assert(this->has_value());
+        return this->_get()->second;
+    }
+
+    constexpr auto get() const noexcept -> auto* {
+        assert(this->has_value());
+        return &(this->_get()->second);
+    }
+};
+//------------------------------------------------------------------------------
+export template <typename Iterator, typename Sentinel, typename K, typename V>
+class optional_iterator<Iterator, Sentinel, const std::pair<K, V>>
+  : public optional_iterator_base<Iterator, Sentinel>
+  , public optional_like_crtp<
+      optional_iterator<Iterator, Sentinel, const std::pair<K, V>>,
+      std::add_const_t<V>> {
+    using base = optional_iterator_base<Iterator, Sentinel>;
+
+public:
+    using base::base;
+
+    constexpr auto operator*() const noexcept -> auto& {
+        assert(this->has_value());
+        return this->_get()->second;
+    }
+
+    constexpr auto get() const noexcept -> auto* {
+        assert(this->has_value());
+        return &(this->_get()->second);
+    }
+};
+//------------------------------------------------------------------------------
+export template <typename W, typename K, typename T, typename C, typename A>
+constexpr auto find(std::map<K, T, C, A>& m, W&& what) noexcept
+  -> optional_iterator<
+    typename std::map<K, T, C, A>::iterator,
+    typename std::map<K, T, C, A>::iterator,
+    typename std::map<K, T, C, A>::value_type> {
+    return {m.find(std::forward<W>(what)), m.end()};
+}
+
+export template <typename W, typename K, typename T, typename C, typename A>
+constexpr auto find(const std::map<K, T, C, A>& m, W&& what) noexcept
+  -> optional_iterator<
+    typename std::map<K, T, C, A>::const_iterator,
+    typename std::map<K, T, C, A>::const_iterator,
+    const typename std::map<K, T, C, A>::value_type> {
+    return {m.find(std::forward<W>(what)), m.end()};
+}
+//------------------------------------------------------------------------------
 // optional_like_tuple
 //------------------------------------------------------------------------------
 export template <optional_like... O>
@@ -1343,23 +1466,4 @@ constexpr auto get_if(const std::variant<A...>& v) noexcept
   -> optional_reference<const T> {
     return {std::get_if<T>(&v)};
 }
-//------------------------------------------------------------------------------
-export template <typename W, typename K, typename T, typename C, typename A>
-constexpr auto find(std::map<K, T, C, A>& m, W&& what) noexcept
-  -> optional_reference<T> {
-    if(const auto pos{m.find(std::forward<W>(what))}; pos != m.end()) {
-        return {std::get<1>(*pos)};
-    }
-    return {};
-}
-
-export template <typename W, typename K, typename T, typename C, typename A>
-constexpr auto find(const std::map<K, T, C, A>& m, W&& what) noexcept
-  -> optional_reference<const T> {
-    if(const auto pos{m.find(std::forward<W>(what))}; pos != m.end()) {
-        return {std::get<1>(*pos)};
-    }
-    return {};
-}
-//------------------------------------------------------------------------------
 } // namespace eagine
