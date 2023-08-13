@@ -556,7 +556,7 @@ class LogRenderer(object):
         self._re_var = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
         self._progress = {}
         self._all_streams = set()
-        self._current_stream_attrib = 'os_pid'
+        self._current_stream_attrib = DbMetadata.getDefaultAttrib()
         self._severity_colors = {
             "backtrace": "Cyan",
             "trace": "Cyan",
@@ -909,10 +909,9 @@ class LogRenderer(object):
 
     # --------------------------------------------------------------------------
     def formatCurrentStreamAttrib(self, metadata, stream_id):
-        stream_attrib = 'os_pid'
         attr_name, attr_type, attr_value = metadata.getStreamInfo(
             stream_id,
-            stream_attrib)
+            self._current_stream_attrib)
         return "%s: %s" % (
             attr_name,
             self._utils.formatMessageArg(attr_name, attr_type, attr_value))
@@ -977,6 +976,7 @@ class LogRenderer(object):
         for unused  in curr_streams:
             _writeProgress(" ╎")
         _writeProgress("\n")
+        self._current_stream_attrib = metadata.getNextAttrib(self._current_stream_attrib)
 
     # --------------------------------------------------------------------------
     def processBegin(self):
@@ -1014,6 +1014,7 @@ class DbMetadata(object):
             "os_pid": ("PID", "int64"),
             "hostname": ("Host", "Hostname"),
             "os_name": ("OS", "string"),
+            "application_id": ("App.", "identifier"),
             "architecture": ("Arch.", "string"),
             "git_version": ("Version", "string"),
             "debug_build": ("Debug", "YesNoMaybe"),
@@ -1022,6 +1023,17 @@ class DbMetadata(object):
         }
         self._attrib_columns = list(self._attrib_map.keys())
         self._stream_metadata = {}
+
+    # --------------------------------------------------------------------------
+    @staticmethod
+    def getDefaultAttrib():
+        return 'os_pid'
+
+    # --------------------------------------------------------------------------
+    def getNextAttrib(self, current):
+        newidx = self._attrib_columns.index(current) + 1
+        newidx = newidx % len(self._attrib_columns)
+        return self._attrib_columns[newidx]
 
     # --------------------------------------------------------------------------
     def queryStreamMetadata(self, stream_id):
