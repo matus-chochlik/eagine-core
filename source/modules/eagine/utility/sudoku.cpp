@@ -832,8 +832,8 @@ public:
 
 private:
     auto _get(const int x, const int y) -> const board_type& {
-        auto pos = _boards.find(std::tuple<int, int>{x, y});
-        if(pos == _boards.end()) {
+        auto found{find(_boards, std::make_tuple(x, y))};
+        if(not found) {
             board_type added{_traits};
             if(y > 0) {
                 if(x > 0) {
@@ -845,7 +845,7 @@ private:
                     for(const auto bx : integer_range(1U, S)) {
                         added.set_block(bx, S - 1U, down.get_block(bx, 0U));
                     }
-                    pos = _emplace(x, y, added);
+                    found = _emplace(x, y, added);
                 } else if(x < 0) {
                     auto& right = _get(x + 1, y);
                     for(const auto by : integer_range(S - 1U)) {
@@ -855,13 +855,13 @@ private:
                     for(const auto bx : integer_range(S - 1U)) {
                         added.set_block(bx, S - 1U, down.get_block(bx, 0U));
                     }
-                    pos = _emplace(x, y, added);
+                    found = _emplace(x, y, added);
                 } else {
                     auto& down = _get(x, y - 1);
                     for(const auto bx : integer_range(S)) {
                         added.set_block(bx, S - 1U, down.get_block(bx, 0U));
                     }
-                    pos = _emplace(x, y, added);
+                    found = _emplace(x, y, added);
                 }
             } else if(y < 0) {
                 if(x > 0) {
@@ -873,7 +873,7 @@ private:
                     for(const auto bx : integer_range(1U, S)) {
                         added.set_block(bx, 0U, up.get_block(bx, S - 1U));
                     }
-                    pos = _emplace(x, y, added);
+                    found = _emplace(x, y, added);
                 } else if(x < 0) {
                     auto& right = _get(x + 1, y);
                     for(const auto by : integer_range(1U, S)) {
@@ -883,13 +883,13 @@ private:
                     for(const auto bx : integer_range(S - 1U)) {
                         added.set_block(bx, 0U, up.get_block(bx, S - 1U));
                     }
-                    pos = _emplace(x, y, added);
+                    found = _emplace(x, y, added);
                 } else {
                     auto& up = _get(x, y + 1);
                     for(const auto bx : integer_range(S)) {
                         added.set_block(bx, 0U, up.get_block(bx, S - 1U));
                     }
-                    pos = _emplace(x, y, added);
+                    found = _emplace(x, y, added);
                 }
             } else {
                 if(x > 0) {
@@ -897,17 +897,17 @@ private:
                     for(const auto by : integer_range(S)) {
                         added.set_block(0U, by, left.get_block(S - 1U, by));
                     }
-                    pos = _emplace(x, y, added);
+                    found = _emplace(x, y, added);
                 } else if(x < 0) {
                     auto& right = _get(x + 1, y);
                     for(const auto by : integer_range(S)) {
                         added.set_block(S - 1U, by, right.get_block(0U, by));
                     }
-                    pos = _emplace(x, y, added);
+                    found = _emplace(x, y, added);
                 }
             }
         }
-        return pos->second;
+        return *found;
     }
 
     auto _emplace(const int x, const int y, board_type board) {

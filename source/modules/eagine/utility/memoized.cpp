@@ -26,11 +26,11 @@ public:
     template <typename F>
     [[nodiscard]] auto operator()(P... p, const F& f) -> R {
         T t(p...);
-        auto i = _memo.find(t);
-        if(i == _memo.end()) {
-            i = _memo.insert(E(t, f(p..., *this))).first;
+        auto found{find(_memo, t)};
+        if(not found) {
+            found = _memo.insert(E(t, f(p..., *this))).first;
         }
-        return i->second;
+        return *found;
     }
 
     [[nodiscard]] auto operator()(P... p) -> R {
