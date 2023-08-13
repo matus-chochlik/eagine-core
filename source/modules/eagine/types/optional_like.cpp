@@ -1206,16 +1206,21 @@ public:
         return *this;
     }
 
+    constexpr auto operator=(std::pair<Iterator, bool> inserted) noexcept
+      -> optional_iterator_base& {
+        _pos = inserted.first;
+        return *this;
+    }
+
     constexpr auto has_value() const noexcept -> bool {
         return _pos != _end;
     }
 
-    constexpr operator Iterator() const noexcept {
+    constexpr auto position() const noexcept -> Iterator {
         return _pos;
     }
 
-protected:
-    constexpr auto _get() const noexcept -> Iterator {
+    constexpr operator Iterator() const noexcept {
         return _pos;
     }
 
@@ -1239,12 +1244,12 @@ public:
 
     constexpr auto operator*() const noexcept -> auto& {
         assert(this->has_value());
-        return *(this->_get());
+        return *(this->position());
     }
 
     constexpr auto get() const noexcept -> auto* {
         assert(this->has_value());
-        return &(*(this->_get()));
+        return &(*(this->position()));
     }
 };
 //------------------------------------------------------------------------------
@@ -1262,12 +1267,12 @@ public:
 
     constexpr auto operator*() const noexcept -> auto& {
         assert(this->has_value());
-        return this->_get()->second;
+        return this->position()->second;
     }
 
     constexpr auto get() const noexcept -> auto* {
         assert(this->has_value());
-        return &(this->_get()->second);
+        return &(this->position()->second);
     }
 };
 //------------------------------------------------------------------------------
@@ -1285,12 +1290,12 @@ public:
 
     constexpr auto operator*() const noexcept -> auto& {
         assert(this->has_value());
-        return this->_get()->second;
+        return this->position()->second;
     }
 
     constexpr auto get() const noexcept -> auto* {
         assert(this->has_value());
-        return &(this->_get()->second);
+        return &(this->position()->second);
     }
 };
 //------------------------------------------------------------------------------
