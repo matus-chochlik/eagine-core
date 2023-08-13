@@ -530,20 +530,20 @@ auto cover(flat_map<Key, Val, Cmp, Container>& c) noexcept {
 //------------------------------------------------------------------------------
 export template <typename W, typename K, typename T, typename C, typename A>
 constexpr auto find(flat_map<K, T, C, A>& m, W&& what) noexcept
-  -> optional_reference<T> {
-    if(const auto pos{m.find(std::forward<W>(what))}; pos != m.end()) {
-        return {std::get<1>(*pos)};
-    }
-    return {};
+  -> optional_iterator<
+    typename flat_map<K, T, C, A>::iterator,
+    typename flat_map<K, T, C, A>::iterator,
+    typename flat_map<K, T, C, A>::value_type> {
+    return {m.find(std::forward<W>(what)), m.end()};
 }
 
 export template <typename W, typename K, typename T, typename C, typename A>
 constexpr auto find(const flat_map<K, T, C, A>& m, W&& what) noexcept
-  -> optional_reference<const T> {
-    if(const auto pos{m.find(std::forward<W>(what))}; pos != m.end()) {
-        return {std::get<1>(*pos)};
-    }
-    return {};
+  -> optional_iterator<
+    typename flat_map<K, T, C, A>::const_iterator,
+    typename flat_map<K, T, C, A>::const_iterator,
+    const typename flat_map<K, T, C, A>::value_type> {
+    return {m.find(std::forward<W>(what)), m.end()};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

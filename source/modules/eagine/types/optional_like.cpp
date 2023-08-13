@@ -1235,6 +1235,7 @@ class optional_iterator
 
 public:
     using base::base;
+    using base::operator=;
 
     constexpr auto operator*() const noexcept -> auto& {
         assert(this->has_value());
@@ -1245,10 +1246,6 @@ public:
         assert(this->has_value());
         return &(*(this->_get()));
     }
-
-protected:
-    Iterator _pos{};
-    Sentinel _end{};
 };
 //------------------------------------------------------------------------------
 export template <typename Iterator, typename Sentinel, typename K, typename V>
@@ -1261,6 +1258,7 @@ class optional_iterator<Iterator, Sentinel, std::pair<K, V>>
 
 public:
     using base::base;
+    using base::operator=;
 
     constexpr auto operator*() const noexcept -> auto& {
         assert(this->has_value());
@@ -1283,6 +1281,7 @@ class optional_iterator<Iterator, Sentinel, const std::pair<K, V>>
 
 public:
     using base::base;
+    using base::operator=;
 
     constexpr auto operator*() const noexcept -> auto& {
         assert(this->has_value());
