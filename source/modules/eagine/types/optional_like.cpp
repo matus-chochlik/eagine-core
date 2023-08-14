@@ -1247,6 +1247,11 @@ public:
         return *(this->position());
     }
 
+    constexpr auto value() const noexcept -> const auto& {
+        assert(this->has_value());
+        return *(this->position());
+    }
+
     constexpr auto get() const noexcept -> auto* {
         assert(this->has_value());
         return &(*(this->position()));
@@ -1266,6 +1271,11 @@ public:
     using base::operator=;
 
     constexpr auto operator*() const noexcept -> auto& {
+        assert(this->has_value());
+        return this->position()->second;
+    }
+
+    constexpr auto value() const noexcept -> const auto& {
         assert(this->has_value());
         return this->position()->second;
     }
