@@ -1201,15 +1201,15 @@ public:
       : _pos{pos}
       , _end{end} {}
 
-    constexpr auto operator=(Iterator pos) noexcept -> optional_iterator_base& {
+    constexpr auto reset(const Iterator pos) noexcept
+      -> optional_iterator_base& {
         _pos = pos;
         return *this;
     }
 
-    constexpr auto operator=(std::pair<Iterator, bool> inserted) noexcept
+    constexpr auto reset(const std::pair<Iterator, bool> inserted) noexcept
       -> optional_iterator_base& {
-        _pos = inserted.first;
-        return *this;
+        return reset(inserted.first);
     }
 
     constexpr auto has_value() const noexcept -> bool {
@@ -1220,13 +1220,9 @@ public:
         return _pos;
     }
 
-    constexpr operator Iterator() const noexcept {
-        return _pos;
-    }
-
 private:
     Iterator _pos{};
-    Sentinel _end{};
+    const Sentinel _end{};
 };
 //------------------------------------------------------------------------------
 export template <
@@ -1240,21 +1236,20 @@ class optional_iterator
 
 public:
     using base::base;
-    using base::operator=;
 
     constexpr auto operator*() const noexcept -> auto& {
-        assert(this->has_value());
-        return *(this->position());
+        assert(base::has_value());
+        return *(base::position());
     }
 
     constexpr auto value() const noexcept -> const auto& {
-        assert(this->has_value());
-        return *(this->position());
+        assert(base::has_value());
+        return *(base::position());
     }
 
     constexpr auto get() const noexcept -> auto* {
-        assert(this->has_value());
-        return &(*(this->position()));
+        assert(base::has_value());
+        return &(*(base::position()));
     }
 };
 //------------------------------------------------------------------------------
@@ -1268,21 +1263,20 @@ class optional_iterator<Iterator, Sentinel, std::pair<K, V>>
 
 public:
     using base::base;
-    using base::operator=;
 
     constexpr auto operator*() const noexcept -> auto& {
-        assert(this->has_value());
-        return this->position()->second;
+        assert(base::has_value());
+        return base::position()->second;
     }
 
     constexpr auto value() const noexcept -> const auto& {
-        assert(this->has_value());
-        return this->position()->second;
+        assert(base::has_value());
+        return base::position()->second;
     }
 
     constexpr auto get() const noexcept -> auto* {
-        assert(this->has_value());
-        return &(this->position()->second);
+        assert(base::has_value());
+        return &(base::position()->second);
     }
 };
 //------------------------------------------------------------------------------
@@ -1296,16 +1290,20 @@ class optional_iterator<Iterator, Sentinel, const std::pair<K, V>>
 
 public:
     using base::base;
-    using base::operator=;
 
-    constexpr auto operator*() const noexcept -> auto& {
-        assert(this->has_value());
-        return this->position()->second;
+    constexpr auto operator*() const noexcept -> const auto& {
+        assert(base::has_value());
+        return base::position()->second;
     }
 
-    constexpr auto get() const noexcept -> auto* {
-        assert(this->has_value());
-        return &(this->position()->second);
+    constexpr auto value() const noexcept -> const auto& {
+        assert(base::has_value());
+        return base::position()->second;
+    }
+
+    constexpr auto get() const noexcept -> const auto* {
+        assert(base::has_value());
+        return &(base::position()->second);
     }
 };
 //------------------------------------------------------------------------------

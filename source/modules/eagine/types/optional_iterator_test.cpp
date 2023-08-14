@@ -83,7 +83,7 @@ void optional_iterator_insert(auto& s) {
     test.check(not found.has_value(), "has not value");
     test.check(not found, "is false");
 
-    found = m.insert({rk, rv}).first;
+    found.reset(m.insert({rk, rv}).first);
 
     test.check(found.has_value(), "has value");
     test.check(bool(found), "is true");
@@ -119,7 +119,7 @@ void optional_iterator_emplace(auto& s) {
     test.check(not found.has_value(), "has not value");
     test.check(not found, "is false");
 
-    found = m.emplace(rk, rv);
+    found.reset(m.emplace(rk, rv));
 
     test.check(found.has_value(), "has value");
     test.check(bool(found), "is true");

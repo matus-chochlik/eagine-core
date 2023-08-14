@@ -845,7 +845,7 @@ private:
                     for(const auto bx : integer_range(1U, S)) {
                         added.set_block(bx, S - 1U, down.get_block(bx, 0U));
                     }
-                    found = _emplace(x, y, added);
+                    found.reset(_emplace(x, y, added));
                 } else if(x < 0) {
                     auto& right = _get(x + 1, y);
                     for(const auto by : integer_range(S - 1U)) {
@@ -855,13 +855,13 @@ private:
                     for(const auto bx : integer_range(S - 1U)) {
                         added.set_block(bx, S - 1U, down.get_block(bx, 0U));
                     }
-                    found = _emplace(x, y, added);
+                    found.reset(_emplace(x, y, added));
                 } else {
                     auto& down = _get(x, y - 1);
                     for(const auto bx : integer_range(S)) {
                         added.set_block(bx, S - 1U, down.get_block(bx, 0U));
                     }
-                    found = _emplace(x, y, added);
+                    found.reset(_emplace(x, y, added));
                 }
             } else if(y < 0) {
                 if(x > 0) {
@@ -873,7 +873,7 @@ private:
                     for(const auto bx : integer_range(1U, S)) {
                         added.set_block(bx, 0U, up.get_block(bx, S - 1U));
                     }
-                    found = _emplace(x, y, added);
+                    found.reset(_emplace(x, y, added));
                 } else if(x < 0) {
                     auto& right = _get(x + 1, y);
                     for(const auto by : integer_range(1U, S)) {
@@ -883,13 +883,13 @@ private:
                     for(const auto bx : integer_range(S - 1U)) {
                         added.set_block(bx, 0U, up.get_block(bx, S - 1U));
                     }
-                    found = _emplace(x, y, added);
+                    found.reset(_emplace(x, y, added));
                 } else {
                     auto& up = _get(x, y + 1);
                     for(const auto bx : integer_range(S)) {
                         added.set_block(bx, 0U, up.get_block(bx, S - 1U));
                     }
-                    found = _emplace(x, y, added);
+                    found.reset(_emplace(x, y, added));
                 }
             } else {
                 if(x > 0) {
@@ -897,13 +897,13 @@ private:
                     for(const auto by : integer_range(S)) {
                         added.set_block(0U, by, left.get_block(S - 1U, by));
                     }
-                    found = _emplace(x, y, added);
+                    found.reset(_emplace(x, y, added));
                 } else if(x < 0) {
                     auto& right = _get(x + 1, y);
                     for(const auto by : integer_range(S)) {
                         added.set_block(S - 1U, by, right.get_block(0U, by));
                     }
-                    found = _emplace(x, y, added);
+                    found.reset(_emplace(x, y, added));
                 }
             }
         }

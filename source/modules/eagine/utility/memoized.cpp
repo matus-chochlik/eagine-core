@@ -28,7 +28,7 @@ public:
         T t(p...);
         auto found{find(_memo, t)};
         if(not found) {
-            found = _memo.insert(E(t, f(p..., *this))).first;
+            found.reset(_memo.insert(E(t, f(p..., *this))));
         }
         return *found;
     }
