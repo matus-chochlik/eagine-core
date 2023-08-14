@@ -11,7 +11,7 @@ import std;
 import eagine.core.types;
 //------------------------------------------------------------------------------
 static_assert(
-  eagine::optional_like<eagine::optional_iterator<std::map<int, int>::iterator>>,
+  eagine::optional_like<eagine::optional_iterator<std::map<int, int>>>,
   "optional-like");
 //------------------------------------------------------------------------------
 void optional_iterator_empty(auto& s) {

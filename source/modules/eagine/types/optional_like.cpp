@@ -1192,14 +1192,15 @@ using valid_if_indicated =
 //------------------------------------------------------------------------------
 // iterator, sentinel pair
 //------------------------------------------------------------------------------
-template <typename Iterator, typename Sentinel>
+template <typename Range, typename Iterator>
 class optional_iterator_base {
 public:
-    constexpr optional_iterator_base() noexcept = default;
+    constexpr optional_iterator_base(const Range& rng) noexcept
+      : _rng{rng} {}
 
-    constexpr optional_iterator_base(Iterator pos, Sentinel end) noexcept
-      : _pos{pos}
-      , _end{end} {}
+    constexpr optional_iterator_base(const Range& rng, Iterator pos) noexcept
+      : _rng{rng}
+      , _pos{pos} {}
 
     constexpr auto reset(const Iterator pos) noexcept
       -> optional_iterator_base& {
@@ -1213,7 +1214,7 @@ public:
     }
 
     constexpr auto has_value() const noexcept -> bool {
-        return _pos != _end;
+        return _pos != _rng.end();
     }
 
     constexpr auto position() const noexcept -> Iterator {
@@ -1221,18 +1222,18 @@ public:
     }
 
 private:
+    const Range& _rng;
     Iterator _pos{};
-    const Sentinel _end{};
 };
 //------------------------------------------------------------------------------
 export template <
-  typename Iterator,
-  typename Sentinel = Iterator,
+  typename Range,
+  typename Iterator = typename Range::iterator,
   typename T = typename std::iterator_traits<Iterator>::value_type>
 class optional_iterator
-  : public optional_iterator_base<Iterator, Sentinel>
-  , public optional_like_crtp<optional_iterator<Iterator, Sentinel, T>, T> {
-    using base = optional_iterator_base<Iterator, Sentinel>;
+  : public optional_iterator_base<Range, Iterator>
+  , public optional_like_crtp<optional_iterator<Range, Iterator, T>, T> {
+    using base = optional_iterator_base<Range, Iterator>;
 
 public:
     using base::base;
@@ -1253,13 +1254,13 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-export template <typename Iterator, typename Sentinel, typename K, typename V>
-class optional_iterator<Iterator, Sentinel, std::pair<K, V>>
-  : public optional_iterator_base<Iterator, Sentinel>
+export template <typename Range, typename Iterator, typename K, typename V>
+class optional_iterator<Range, Iterator, std::pair<K, V>>
+  : public optional_iterator_base<Range, Iterator>
   , public optional_like_crtp<
-      optional_iterator<Iterator, Sentinel, std::pair<K, V>>,
+      optional_iterator<Range, Iterator, std::pair<K, V>>,
       V> {
-    using base = optional_iterator_base<Iterator, Sentinel>;
+    using base = optional_iterator_base<Range, Iterator>;
 
 public:
     using base::base;
@@ -1280,13 +1281,13 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-export template <typename Iterator, typename Sentinel, typename K, typename V>
-class optional_iterator<Iterator, Sentinel, const std::pair<K, V>>
-  : public optional_iterator_base<Iterator, Sentinel>
+export template <typename Range, typename Iterator, typename K, typename V>
+class optional_iterator<Range, Iterator, const std::pair<K, V>>
+  : public optional_iterator_base<Range, Iterator>
   , public optional_like_crtp<
-      optional_iterator<Iterator, Sentinel, const std::pair<K, V>>,
+      optional_iterator<Range, Iterator, const std::pair<K, V>>,
       std::add_const_t<V>> {
-    using base = optional_iterator_base<Iterator, Sentinel>;
+    using base = optional_iterator_base<Range, Iterator>;
 
 public:
     using base::base;
@@ -1310,19 +1311,19 @@ public:
 export template <typename W, typename K, typename T, typename C, typename A>
 constexpr auto find(std::map<K, T, C, A>& m, W&& what) noexcept
   -> optional_iterator<
-    typename std::map<K, T, C, A>::iterator,
+    std::map<K, T, C, A>,
     typename std::map<K, T, C, A>::iterator,
     typename std::map<K, T, C, A>::value_type> {
-    return {m.find(std::forward<W>(what)), m.end()};
+    return {m, m.find(std::forward<W>(what))};
 }
 
 export template <typename W, typename K, typename T, typename C, typename A>
 constexpr auto find(const std::map<K, T, C, A>& m, W&& what) noexcept
   -> optional_iterator<
-    typename std::map<K, T, C, A>::const_iterator,
+    std::map<K, T, C, A>,
     typename std::map<K, T, C, A>::const_iterator,
     const typename std::map<K, T, C, A>::value_type> {
-    return {m.find(std::forward<W>(what)), m.end()};
+    return {m, m.find(std::forward<W>(what))};
 }
 //------------------------------------------------------------------------------
 // optional_like_tuple
