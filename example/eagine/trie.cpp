@@ -8,7 +8,7 @@
 import eagine.core;
 import std;
 
-auto main() -> int {
+void basic_usage() {
     using namespace eagine;
 
     auto print = [](const auto& opt) {
@@ -39,6 +39,35 @@ auto main() -> int {
     print(t.find("bar"));
     print(t.find("baz"));
     print(t.find("qux"));
+    t.insert("ufo", 4);
+    print(t.find("foo"));
+    print(t.find("bar"));
+    print(t.find("baz"));
+    print(t.find("qux"));
+    print(t.find("ufo"));
+}
+
+void stats() {
+    using namespace eagine;
+
+    int count = 1'000'000;
+    while(count > 0) {
+        basic_identifier_trie<int> t;
+        t.reserve(10 * count);
+        for(const auto i : integer_range(count)) {
+            t.insert(random_identifier().name(), i);
+        }
+        std::cout << count << ": " << t.internal_node_count() << " + "
+                  << t.value_node_count() << " = " << t.node_count() << " ("
+                  << t.overhead() << ")" << std::endl;
+        count /= 10;
+    }
+}
+
+auto main() -> int {
+    basic_usage();
+    std::cout << "---" << std::endl;
+    stats();
 
     return 0;
 }

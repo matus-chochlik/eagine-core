@@ -108,18 +108,31 @@ public:
 export template <memory::string_literal Chars, std::size_t N, typename Value>
 class basic_trie_impl : private basic_trie_utils {
     static_assert(std::is_sorted(Chars.begin(), Chars.begin() + N - 1));
+
     using key_type = std::array<std::uint32_t, N>;
-    using node_type = std::tuple<key_type, Value, bool>;
+    struct node_type {
+        key_type key{};
+        std::optional<Value> object{};
+    };
+
+    static constexpr auto _whole_key_done(
+      const string_view key,
+      span_size_t offs) noexcept -> bool {
+        return offs == key.size();
+    }
+
+    constexpr auto _get_char_index(const char c) const noexcept {
+        return basic_trie_utils::get_char_index<Chars>(c);
+    }
 
     auto _find_insert_pos(const string_view key) const noexcept
       -> std::tuple<std::size_t, span_size_t, bool> {
         std::size_t iidx{0U};
         span_size_t offs{0};
         bool can_insert{true};
-        while(offs < key.size()) {
-            if(const auto cidx{this->get_char_index<Chars>(key[offs])})
-              [[likely]] {
-                const auto next{std_size(std::get<0>(_nodes[iidx])[*cidx])};
+        while(not _whole_key_done(key, offs)) {
+            if(const auto cidx{_get_char_index(key[offs])}) [[likely]] {
+                const auto next{std_size(_nodes[iidx].key[*cidx])};
                 if(next == 0) {
                     break;
                 } else {
@@ -132,7 +145,6 @@ class basic_trie_impl : private basic_trie_utils {
                 break;
             }
         }
-
         return {iidx, offs, can_insert};
     }
 
@@ -147,6 +159,13 @@ public:
         return Chars;
     }
 
+    /// @brief Reserves space for the specified count of nodes.
+    /// @see add
+    auto reserve(span_size_t count) -> auto& {
+        _nodes.reserve(std_size(count));
+        return *this;
+    }
+
     /// @brief Inserts a new value under the specified key string.
     /// @see add
     /// @see valid_chars
@@ -154,12 +173,11 @@ public:
     auto insert(const string_view key, Value value = {}) noexcept -> bool {
         auto [iidx, offs, can_insert] = _find_insert_pos(key);
         if(can_insert) {
-            while(offs < key.size()) {
+            while(not _whole_key_done(key, offs)) {
                 const auto next{_nodes.size()};
                 _nodes.emplace_back(node_type{});
-                if(const auto cidx{this->get_char_index<Chars>(key[offs])}) {
-                    std::get<0>(_nodes[iidx])[*cidx] =
-                      limit_cast<std::uint32_t>(next);
+                if(const auto cidx{_get_char_index(key[offs])}) {
+                    _nodes[iidx].key[*cidx] = limit_cast<std::uint32_t>(next);
                     iidx = next;
                     ++offs;
                 } else {
@@ -167,10 +185,8 @@ public:
                     break;
                 }
             }
-            if(offs == key.size()) {
-                auto& node{_nodes[iidx]};
-                std::get<1>(node) = std::move(value);
-                std::get<2>(node) = true;
+            if(_whole_key_done(key, offs)) {
+                _nodes[iidx].object = std::move(value);
             }
         }
         return can_insert;
@@ -187,9 +203,9 @@ public:
 
     /// @brief Checks if the specified key is contained in this trie.
     [[nodiscard]] auto contains(const string_view key) const noexcept -> bool {
-        auto [iidx, offs, can_insert] = _find_insert_pos(key);
-        if(can_insert and (offs == key.size())) {
-            return std::get<2>(_nodes[iidx]);
+        auto [iidx, offs, is_valid] = _find_insert_pos(key);
+        if(is_valid and _whole_key_done(key, offs)) {
+            return _nodes[iidx].object.has_value();
         }
         return false;
     }
@@ -197,18 +213,40 @@ public:
     /// @brief Tries to find the value stored under the specified key.
     [[nodiscard]] auto find(const string_view key) const noexcept
       -> optional_reference<const Value> {
-        auto [fidx, offs, can_insert] = _find_insert_pos(key);
-        if(can_insert and (offs == key.size())) {
-            auto& node{_nodes[fidx]};
-            if(std::get<2>(node)) {
-                return {std::get<1>(node)};
-            }
+        auto [fidx, offs, is_valid] = _find_insert_pos(key);
+        if(is_valid and _whole_key_done(key, offs)) {
+            return {_nodes[fidx].object};
         }
         return {nothing};
     }
 
     [[nodiscard]] auto underlying() const noexcept -> span<const node_type> {
         return view(_nodes);
+    }
+
+    [[nodiscard]] auto node_count() const noexcept -> span_size_t {
+        return span_size(_nodes.size());
+    }
+
+    [[nodiscard]] auto value_node_count() const noexcept -> span_size_t {
+        return span_size(
+          std::count_if(_nodes.begin(), _nodes.end(), [](const auto& n) {
+              return n.object.has_value();
+          }));
+    }
+
+    [[nodiscard]] auto internal_node_count() const noexcept -> span_size_t {
+        return span_size(
+          std::count_if(_nodes.begin(), _nodes.end(), [](const auto& n) {
+              return not n.object.has_value();
+          }));
+    }
+
+    [[nodiscard]] auto overhead() const noexcept -> float {
+        if(const auto c{value_node_count()}; c > 0) {
+            return float(internal_node_count()) / float(c);
+        }
+        return 1.F;
     }
 
 private:
