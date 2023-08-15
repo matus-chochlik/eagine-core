@@ -357,10 +357,11 @@ class LogFormattingUtils(object):
                 i += 1
 
             result += "┈" * max(width - i, 0)
+            result += "┤"
 
             return result
         except Exception as err:
-            return "░" * width
+            return ("░" * width) + "│"
 
     # --------------------------------------------------------------------------
     def _initFormatters(self):
@@ -812,6 +813,8 @@ class LogRenderer(object):
                     item["max"] = max(item["max"], arg_data["max"])
                 else:
                     item["max"] = arg_data["max"]
+                if "start_value" not in item:
+                    item["start_value"] = value
                 item["value"] = value
 
     # --------------------------------------------------------------------------
@@ -965,7 +968,6 @@ class LogRenderer(object):
             _writeProgress(
                 self._utils.formatProgressBar(
                     55, data.get("min"), data.get("max"), data.get("value")))
-            _writeProgress("┤")
             width += 55
             attribute = self.formatCurrentStreamAttrib(metadata, stream_id)
             _writeProgress(attribute)
