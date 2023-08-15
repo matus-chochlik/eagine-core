@@ -574,12 +574,22 @@ export [[nodiscard]] auto byte_to_identifier(const byte b) noexcept
 /// @see random_identifier
 export [[nodiscard]] auto dec_to_identifier(const int i) noexcept -> identifier;
 //------------------------------------------------------------------------------
+export [[nodiscard]] auto random_identifier(std::default_random_engine&)
+  -> identifier;
+
+export [[nodiscard]] auto random_identifier(
+  const string_view charset,
+  std::default_random_engine&) -> identifier;
+//------------------------------------------------------------------------------
 /// @brief Creates an random identifier using a default random engine.
 /// @ingroup identifiers
 /// @see identifier
 /// @see byte_to_identifier
 /// @see dec_to_identifier
 export [[nodiscard]] auto random_identifier() -> identifier;
+
+export [[nodiscard]] auto random_identifier(const string_view charset)
+  -> identifier;
 //------------------------------------------------------------------------------
 } // namespace eagine
 
