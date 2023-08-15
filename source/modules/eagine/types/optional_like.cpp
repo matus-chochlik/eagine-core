@@ -1195,12 +1195,20 @@ using valid_if_indicated =
 template <typename Range, typename Iterator>
 class optional_iterator_base {
 public:
-    constexpr optional_iterator_base(const Range& rng) noexcept
+    constexpr optional_iterator_base(Range& rng) noexcept
       : _rng{rng} {}
 
-    constexpr optional_iterator_base(const Range& rng, Iterator pos) noexcept
+    constexpr optional_iterator_base(Range& rng, Iterator pos) noexcept
       : _rng{rng}
       , _pos{pos} {}
+
+    constexpr auto has_value() const noexcept -> bool {
+        return _pos != _rng.end();
+    }
+
+    constexpr auto position() const noexcept -> Iterator {
+        return _pos;
+    }
 
     constexpr auto reset(const Iterator pos) noexcept
       -> optional_iterator_base& {
@@ -1213,16 +1221,23 @@ public:
         return reset(inserted.first);
     }
 
-    constexpr auto has_value() const noexcept -> bool {
-        return _pos != _rng.end();
+    template <typename T>
+    constexpr auto insert(T&& value) -> auto& {
+        return reset(_rng.insert(std::forward<T>(value)));
     }
 
-    constexpr auto position() const noexcept -> Iterator {
-        return _pos;
+    template <typename... Args>
+    constexpr auto emplace(Args&&... args) -> auto& {
+        return reset(_rng.emplace(std::forward<Args>(args)...));
+    }
+
+    template <typename... Args>
+    constexpr auto try_emplace(Args&&... args) -> auto& {
+        return reset(_rng.try_emplace(std::forward<Args>(args)...));
     }
 
 private:
-    const Range& _rng;
+    Range& _rng;
     Iterator _pos{};
 };
 //------------------------------------------------------------------------------
@@ -1321,10 +1336,15 @@ export template <typename Range>
              typename Range::const_iterator>)
 optional_iterator(const Range& rgn, typename Range::const_iterator pos)
   -> optional_iterator<
-    Range,
+    const Range,
     typename Range::const_iterator,
     const typename Range::value_type>;
 //------------------------------------------------------------------------------
+export template <typename W, typename T, typename C, typename A>
+constexpr auto find(std::set<T, C, A>& m, W&& what) noexcept {
+    return optional_iterator{m, m.find(std::forward<W>(what))};
+}
+
 export template <typename W, typename K, typename T, typename C, typename A>
 constexpr auto find(std::map<K, T, C, A>& m, W&& what) noexcept {
     return optional_iterator{m, m.find(std::forward<W>(what))};
