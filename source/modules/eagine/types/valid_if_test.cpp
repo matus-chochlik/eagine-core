@@ -66,7 +66,9 @@ void valid_if_initialized(auto& s) {
         .has_value(),
       "and then always");
     test.check(
-      v.or_else([] -> std::optional<test_person> { return {test_person{}}; })
+      v.or_else([] -> eagine::optionally_valid<test_person> {
+           return {test_person{}};
+       })
         .has_value(),
       "or else always");
 
@@ -80,7 +82,9 @@ void valid_if_initialized(auto& s) {
             .has_value(),
       "and then never");
     test.check(
-      v.or_else([] -> std::optional<test_person> { return {test_person{}}; })
+      v.or_else([] -> eagine::optionally_valid<test_person> {
+           return {test_person{}};
+       })
         .has_value(),
       "or else never");
     test.check(
@@ -118,7 +122,7 @@ void valid_if_non_ref(auto& s) {
     test.check_equal(v.and_then(g).value(), 369, "and then value ok");
 
     test.check_equal(
-      v.or_else([] -> std::optional<int> { return 468; }).value(),
+      v.or_else([] -> eagine::optionally_valid<int> { return 468; }).value(),
       123,
       "or else value ok");
 
@@ -169,7 +173,7 @@ void valid_if_ref(auto& s) {
     test.check_equal(v.and_then(g).value(), 456 * 3, "and then value ok");
 
     test.check_equal(
-      v.or_else([] -> std::optional<int> { return 789; }).value(),
+      v.or_else([] -> eagine::optionally_valid<int> { return 789; }).value(),
       456,
       "or else value ok");
 
