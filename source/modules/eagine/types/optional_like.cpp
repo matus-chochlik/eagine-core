@@ -423,6 +423,12 @@ public:
     constexpr optional_reference(optional_reference<U> that) noexcept
       : _ptr{that.get()} {}
 
+    /// @brief Construction from an optional of type @p T.
+    template <typename U>
+        requires(std::is_convertible_v<std::add_cv_t<U>*, std::add_cv_t<T>*>)
+    constexpr optional_reference(const std::optional<U>& opt) noexcept
+      : _ptr{opt ? &*opt : nullptr} {}
+
     /// @brief Construction from a unique_ptr to reference of type @p T.
     template <std::derived_from<T> U>
     constexpr optional_reference(const std::unique_ptr<U>& ptr) noexcept
