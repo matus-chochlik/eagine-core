@@ -215,19 +215,9 @@ public:
         return indeterminate;
     }
 
-    /// @brief Implicit conversion to std::optional<std::reference_wrapper>
-    [[nodiscard]] constexpr operator std::optional<std::reference_wrapper<T>>()
-      const noexcept {
-        if(derived().has_value()) {
-            return {*derived()};
-        }
-        return {};
-    }
-
     /// @brief Conversion to std::optional
-    template <std::constructible_from<T> U>
-    [[nodiscard]] constexpr operator std::optional<U>() const
-      noexcept(std::is_nothrow_copy_constructible_v<T>) {
+    [[nodiscard]] constexpr auto to_optional() const
+      noexcept(std::is_nothrow_copy_constructible_v<T>) -> std::optional<T> {
         if(derived().has_value()) {
             return {*derived()};
         }
