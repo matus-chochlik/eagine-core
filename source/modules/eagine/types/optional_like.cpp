@@ -1308,22 +1308,31 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-export template <typename W, typename K, typename T, typename C, typename A>
-constexpr auto find(std::map<K, T, C, A>& m, W&& what) noexcept
+export template <typename Range>
+optional_iterator(Range& rgn, typename Range::iterator pos)
   -> optional_iterator<
-    std::map<K, T, C, A>,
-    typename std::map<K, T, C, A>::iterator,
-    typename std::map<K, T, C, A>::value_type> {
-    return {m, m.find(std::forward<W>(what))};
+    Range,
+    typename Range::iterator,
+    typename Range::value_type>;
+
+export template <typename Range>
+    requires(not std::is_same_v<
+             typename Range::iterator,
+             typename Range::const_iterator>)
+optional_iterator(const Range& rgn, typename Range::const_iterator pos)
+  -> optional_iterator<
+    Range,
+    typename Range::const_iterator,
+    const typename Range::value_type>;
+//------------------------------------------------------------------------------
+export template <typename W, typename K, typename T, typename C, typename A>
+constexpr auto find(std::map<K, T, C, A>& m, W&& what) noexcept {
+    return optional_iterator{m, m.find(std::forward<W>(what))};
 }
 
 export template <typename W, typename K, typename T, typename C, typename A>
-constexpr auto find(const std::map<K, T, C, A>& m, W&& what) noexcept
-  -> optional_iterator<
-    std::map<K, T, C, A>,
-    typename std::map<K, T, C, A>::const_iterator,
-    const typename std::map<K, T, C, A>::value_type> {
-    return {m, m.find(std::forward<W>(what))};
+constexpr auto find(const std::map<K, T, C, A>& m, W&& what) noexcept {
+    return optional_iterator{m, m.find(std::forward<W>(what))};
 }
 //------------------------------------------------------------------------------
 // optional_like_tuple
