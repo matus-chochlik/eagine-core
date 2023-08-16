@@ -237,4 +237,14 @@ private:
     }
 };
 //------------------------------------------------------------------------------
+export template <typename W, typename T, typename C, typename S>
+constexpr auto find(flat_set<T, C, S>& s, W&& what) noexcept {
+    return optional_iterator{s, s.find(std::forward<W>(what))};
+}
+
+export template <typename W, typename T, typename C, typename S>
+constexpr auto find(const flat_set<T, C, S>& s, W&& what) noexcept {
+    return optional_iterator{s, s.find(std::forward<W>(what))};
+}
+//------------------------------------------------------------------------------
 } // namespace eagine

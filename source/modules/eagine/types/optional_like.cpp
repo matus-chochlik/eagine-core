@@ -1341,6 +1341,11 @@ constexpr auto find(std::set<T, C, A>& m, W&& what) noexcept {
     return optional_iterator{m, m.find(std::forward<W>(what))};
 }
 
+export template <typename W, typename T, typename C, typename A>
+constexpr auto find(const std::set<T, C, A>& m, W&& what) noexcept {
+    return optional_iterator{m, m.find(std::forward<W>(what))};
+}
+
 export template <typename W, typename K, typename T, typename C, typename A>
 constexpr auto find(std::map<K, T, C, A>& m, W&& what) noexcept {
     return optional_iterator{m, m.find(std::forward<W>(what))};
