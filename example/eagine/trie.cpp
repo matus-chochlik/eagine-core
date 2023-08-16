@@ -45,6 +45,10 @@ void basic_usage() {
     print(t.find("baz"));
     print(t.find("qux"));
     print(t.find("ufo"));
+
+    t.traverse([](auto key, const auto& val) {
+        std::cout << key << ": " << val << std::endl;
+    });
 }
 
 void stats_incr_dec() {

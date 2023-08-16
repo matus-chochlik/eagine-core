@@ -188,6 +188,37 @@ class basic_trie_impl {
         return nidx;
     }
 
+    template <typename Function, typename Nodes>
+    static void _do_traverse(Function&& function, Nodes& nodes) noexcept {
+        std::string str;
+        str.reserve(16U);
+        std::vector<std::array<std::size_t, 2U>> idx;
+        idx.reserve(16U);
+        idx.push_back({0U, 0U});
+        while(not idx.empty()) {
+            auto& [cidx, nidx] = idx.back();
+            while(cidx < chars.size()) {
+                if(not _is_no_index(nodes[nidx].next[cidx])) {
+                    break;
+                }
+                ++cidx;
+            }
+            if(nodes[nidx].object.has_value()) {
+                function(string_view{str}, *nodes[nidx].object);
+            }
+            if(cidx == chars.size()) {
+                str.pop_back();
+                idx.pop_back();
+                if(not idx.empty()) {
+                    ++idx.back()[0];
+                }
+            } else {
+                idx.push_back({0U, nodes[nidx].next[cidx]});
+                str.push_back(chars[cidx]);
+            }
+        }
+    }
+
 public:
     /// @brief Default constructor.
     basic_trie_impl() noexcept {
@@ -257,6 +288,16 @@ public:
             return {_nodes[fidx].object};
         }
         return {nothing};
+    }
+
+    template <typename Function>
+    void traverse(Function&& function) noexcept {
+        _do_traverse(std::forward<Function>(function), _nodes);
+    }
+
+    template <typename Function>
+    void traverse(Function&& function) const noexcept {
+        _do_traverse(std::forward<Function>(function), _nodes);
     }
 
     [[nodiscard]] auto underlying() const noexcept -> span<const node_type> {

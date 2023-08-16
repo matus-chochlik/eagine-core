@@ -121,13 +121,31 @@ void trie_add_2(auto& s) {
     }
 }
 //------------------------------------------------------------------------------
+void trie_traverse(auto& s) {
+    eagitest::case_ test{s, 6, "traverse"};
+    eagitest::track trck{test, 0, 1};
+    auto& rg{test.random()};
+    eagine::basic_identifier_trie<std::string> t;
+
+    for(unsigned i = 0; i < test.repeats(10000); ++i) {
+        auto key{rg.get_string_made_of(1, 50, t.valid_chars())};
+        t.add(key, key);
+    }
+
+    t.traverse([&](const auto key, const auto& value) {
+        test.check_equal(key, value, "key == value");
+        trck.checkpoint(1);
+    });
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "trie", 5};
+    eagitest::suite test{argc, argv, "trie", 6};
     test.once(trie_empty);
     test.once(trie_insert_1);
     test.once(trie_insert_2);
     test.once(trie_add_1);
     test.once(trie_add_2);
+    test.once(trie_traverse);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
