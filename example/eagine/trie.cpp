@@ -47,15 +47,40 @@ void basic_usage() {
     print(t.find("ufo"));
 }
 
-void stats() {
+void stats_incr_dec() {
     using namespace eagine;
 
     int count = 1'000'000;
     while(count > 0) {
-        basic_identifier_trie<int> t;
-        t.reserve(10 * count);
-        for(const auto i : integer_range(count)) {
-            t.insert(random_identifier().name(), i);
+        basic_dec_identifier_trie<int> t;
+        t.reserve(count + 1);
+        int i = 0;
+        while(i < count) {
+            const auto id{dec_to_identifier(i)};
+            t.insert(id.name(), i++);
+        }
+        std::cout << count << ": " << t.internal_node_count() << " + "
+                  << t.value_node_count() << " = " << t.node_count() << " ("
+                  << t.overhead() << ")" << std::endl;
+        count /= 10;
+    }
+}
+
+void stats_random_id() {
+    using namespace eagine;
+    std::random_device rd;
+    std::default_random_engine re{rd()};
+
+    int count = 1'000'000;
+    while(count > 0) {
+        basic_lc_identifier_trie<int> t;
+        t.reserve(5 * count);
+        int i = 0;
+        while(i < count) {
+            const auto id{random_identifier(t.valid_chars(), re)};
+            if(not t.contains(id.name())) {
+                t.insert(id.name(), i++);
+            }
         }
         std::cout << count << ": " << t.internal_node_count() << " + "
                   << t.value_node_count() << " = " << t.node_count() << " ("
@@ -67,7 +92,9 @@ void stats() {
 auto main() -> int {
     basic_usage();
     std::cout << "---" << std::endl;
-    stats();
+    stats_incr_dec();
+    std::cout << "---" << std::endl;
+    stats_random_id();
 
     return 0;
 }

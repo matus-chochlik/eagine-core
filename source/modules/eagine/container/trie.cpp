@@ -35,7 +35,7 @@ export class basic_trie_utils {
     }
 
     template <memory::string_literal Chars, std::size_t Ofs, std::size_t Len>
-    static constexpr auto do_get_char_index(
+    static constexpr auto do_find_char_index(
       char,
       index_constant<Ofs>,
       index_constant<Len>,
@@ -44,7 +44,7 @@ export class basic_trie_utils {
     }
 
     template <memory::string_literal Chars, std::size_t Ofs>
-    static constexpr auto do_get_char_index(
+    static constexpr auto do_find_char_index(
       char c,
       index_constant<Ofs>,
       index_constant<0>,
@@ -60,14 +60,14 @@ export class basic_trie_utils {
       std::size_t Ofs,
       std::size_t Piv,
       std::size_t Len>
-    static constexpr auto do_get_char_index(
+    static constexpr auto do_find_char_index(
       char c,
       index_constant<Ofs>,
       index_constant<Piv>,
       index_constant<Len>) noexcept -> std::optional<std::size_t> {
         if(c < chars[Ofs + Piv]) {
             if constexpr(Piv > 0) {
-                return do_get_char_index<chars>(
+                return do_find_char_index<chars>(
                   c,
                   index_constant<Ofs>{},
                   index_constant<_pivot<Piv>()>{},
@@ -77,7 +77,7 @@ export class basic_trie_utils {
             }
         } else if(c > chars[Ofs + Piv]) {
             if constexpr(Piv + 1 < Len) {
-                return do_get_char_index<chars>(
+                return do_find_char_index<chars>(
                   c,
                   index_constant<Ofs + Piv + 1>{},
                   index_constant<_pivot<Len - Piv - 1>()>{},
@@ -94,7 +94,7 @@ public:
     template <memory::string_literal chars>
     [[nodiscard]] static constexpr auto get_char_index(char c) noexcept
       -> std::optional<std::size_t> {
-        return do_get_char_index<chars>(
+        return do_find_char_index<chars>(
           c,
           index_constant<0>{},
           index_constant<_pivot<chars.size() - 1U>()>{},
@@ -105,13 +105,17 @@ public:
 /// @brief Implementation template for basic_trie.
 /// @ingroup container
 /// @note Do not use directly, use basic_trie instead.
-export template <memory::string_literal Chars, std::size_t N, typename Value>
+export template <
+  memory::string_literal Chars,
+  std::size_t N,
+  typename Value,
+  typename Index = std::uint32_t>
 class basic_trie_impl : private basic_trie_utils {
     static_assert(std::is_sorted(Chars.begin(), Chars.begin() + N - 1));
 
-    using key_type = std::array<std::uint32_t, N>;
+    using key_type = std::array<Index, N>;
     struct node_type {
-        key_type key{};
+        key_type next{};
         std::optional<Value> object{};
     };
 
@@ -125,6 +129,10 @@ class basic_trie_impl : private basic_trie_utils {
         return basic_trie_utils::get_char_index<Chars>(c);
     }
 
+    static constexpr auto _is_no_index(const Index idx) noexcept {
+        return idx == 0;
+    }
+
     auto _find_insert_pos(const string_view key) const noexcept
       -> std::tuple<std::size_t, span_size_t, bool> {
         std::size_t iidx{0U};
@@ -132,8 +140,8 @@ class basic_trie_impl : private basic_trie_utils {
         bool can_insert{true};
         while(not _whole_key_done(key, offs)) {
             if(const auto cidx{_get_char_index(key[offs])}) [[likely]] {
-                const auto next{std_size(_nodes[iidx].key[*cidx])};
-                if(next == 0) {
+                const auto next{std_size(_nodes[iidx].next[*cidx])};
+                if(_is_no_index(next)) {
                     break;
                 } else {
                     assert(next < _nodes.size());
@@ -146,6 +154,12 @@ class basic_trie_impl : private basic_trie_utils {
             }
         }
         return {iidx, offs, can_insert};
+    }
+
+    auto _get_next_idx(const std::size_t cidx) noexcept -> std::size_t {
+        const std::size_t nidx{_nodes.size()};
+        _nodes.emplace_back(node_type{});
+        return nidx;
     }
 
 public:
@@ -174,18 +188,17 @@ public:
         auto [iidx, offs, can_insert] = _find_insert_pos(key);
         if(can_insert) {
             while(not _whole_key_done(key, offs)) {
-                const auto next{_nodes.size()};
-                _nodes.emplace_back(node_type{});
-                if(const auto cidx{_get_char_index(key[offs])}) {
-                    _nodes[iidx].key[*cidx] = limit_cast<std::uint32_t>(next);
-                    iidx = next;
-                    ++offs;
-                } else {
+                const auto cidx{_get_char_index(key[offs])};
+                if(not cidx) [[unlikely]] {
                     can_insert = false;
                     break;
                 }
+                const auto next{_get_next_idx(*cidx)};
+                _nodes[iidx].next[*cidx] = limit_cast<Index>(next);
+                iidx = next;
+                ++offs;
             }
-            if(_whole_key_done(key, offs)) {
+            if(_whole_key_done(key, offs)) [[likely]] {
                 _nodes[iidx].object = std::move(value);
             }
         }
@@ -249,6 +262,10 @@ public:
         return 1.F;
     }
 
+    [[nodiscard]] auto storage_bytes() const noexcept -> std::size_t {
+        return sizeof(_nodes) + sizeof(node_type) * _nodes.size();
+    }
+
 private:
     std::vector<node_type> _nodes;
 };
@@ -259,8 +276,12 @@ export template <memory::string_literal chars, typename Value = nothing_t>
 using basic_trie = basic_trie_impl<chars, chars.size(), Value>;
 //------------------------------------------------------------------------------
 export template <typename Value = nothing_t>
+using basic_dec_identifier_trie = basic_trie<"0123456789", Value>;
+
+export template <typename Value = nothing_t>
 using basic_lc_identifier_trie =
   basic_trie<"0123456789_abcdefghijklmnopqrstuvwxyz", Value>;
+
 export template <typename Value = nothing_t>
 using basic_identifier_trie = basic_trie<
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",
