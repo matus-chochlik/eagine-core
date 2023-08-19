@@ -326,7 +326,12 @@ public:
         if(std::holds_alternative<T0>(_storage)) {
             auto& v0{std::get<T0>(_storage)};
             if(v0.full()) {
-                _storage = T1(v0.begin(), v0.end());
+                T1 temp{};
+                temp.reserve(v0.size());
+                for(auto& e : v0) {
+                    temp.emplace_back(std::move(e));
+                }
+                _storage = std::move(temp);
                 auto& v1{std::get<T1>(_storage)};
                 v1.emplace(v1.begin() + offs, std::forward<Args>(args)...);
             } else {

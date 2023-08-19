@@ -81,8 +81,8 @@ public:
     /// @see size
     /// @see capacity
     constexpr void resize(size_type n) noexcept(
-      std::is_nothrow_default_constructible_v<T>&&
-        std::is_nothrow_destructible_v<T>) {
+      std::is_nothrow_default_constructible_v<T> &&
+      std::is_nothrow_destructible_v<T>) {
         assert(n <= max_size());
         if(n < _size) {
             std::fill(_array.begin() + n, _array.begin() + _size, T{});
@@ -271,7 +271,7 @@ public:
         const auto count{std::distance(iter, iend)};
         const auto epos{begin() + std::distance(cbegin(), iter)};
         const auto eend{begin() + std::distance(cbegin(), iend)};
-        std::fill(epos, eend, T{});
+        std::generate(epos, eend, [] { return T{}; });
         std::move(epos + count, end(), epos);
         _size -= count;
         return epos;
