@@ -305,7 +305,7 @@ public:
         const auto _inc_bites{[](_bites_t v) {
             using T = std::uint8_t;
             using D = std::uintmax_t;
-            const D dmax{(1U << B) - 1U};
+            const D dmax{1U << B};
             span_size_t p{v.size()};
             while(p > 0) {
                 --p;
