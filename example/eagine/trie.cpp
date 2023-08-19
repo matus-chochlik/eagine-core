@@ -54,13 +54,33 @@ void basic_usage() {
 void stats_incr_dec() {
     using namespace eagine;
 
-    int count = 1'000'000;
+    int count = 10'000'000;
     while(count > 0) {
         basic_dec_identifier_trie<int> t;
         t.reserve(count + 1);
         int i = 0;
         while(i < count) {
             const auto id{dec_to_identifier(i)};
+            t.insert(id.name(), i++);
+        }
+        std::cout << count << ": " << t.internal_node_count() << " + "
+                  << t.value_node_count() << " = " << t.node_count() << " ("
+                  << t.overhead() << ")" << std::endl;
+        count /= 10;
+    }
+}
+
+void stats_incr_ident() {
+    using namespace eagine;
+
+    int count = 10'000'000;
+    identifier id = increment(identifier{});
+    while(count > 0) {
+        basic_identifier_trie<int> t;
+        t.reserve(count * 2);
+        int i = 0;
+        while(i < count) {
+            id = increment(id);
             t.insert(id.name(), i++);
         }
         std::cout << count << ": " << t.internal_node_count() << " + "
@@ -78,7 +98,7 @@ void stats_random_id() {
     int count = 1'000'000;
     while(count > 0) {
         basic_lc_identifier_trie<int> t;
-        t.reserve(5 * count);
+        t.reserve(count * 5);
         int i = 0;
         while(i < count) {
             const auto id{random_identifier(t.valid_chars(), re)};
@@ -97,6 +117,8 @@ auto main() -> int {
     basic_usage();
     std::cout << "---" << std::endl;
     stats_incr_dec();
+    std::cout << "---" << std::endl;
+    stats_incr_ident();
     std::cout << "---" << std::endl;
     stats_random_id();
 
