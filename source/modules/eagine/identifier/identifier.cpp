@@ -281,7 +281,6 @@ public:
 
     [[nodiscard]] constexpr auto matches(
       memory::string_view what) const noexcept {
-        // TODO: this could be optimized: compare char-by-char and bail early
         return name() == what;
     }
 
@@ -295,6 +294,31 @@ public:
     /// @see identifier_name
     [[nodiscard]] auto str() const -> std::string {
         return name().str();
+    }
+
+    [[nodiscard]] auto bites() const noexcept -> _bites_t {
+        return _bites;
+    }
+
+    /// @brief Returns a new identifier by incrementing the argument by one.
+    friend auto increment(basic_identifier i) noexcept -> basic_identifier {
+        const auto _inc_bites{[](_bites_t v) {
+            using T = std::uint8_t;
+            using D = std::uintmax_t;
+            const D dmax{(1U << B) - 1U};
+            span_size_t p{v.size()};
+            while(p > 0) {
+                --p;
+                const D next{D(v.get(p)) + 1U};
+                if(next < dmax) {
+                    v.set(p, T(next));
+                    return v;
+                }
+                v.set(p, T(0));
+            }
+            return _bites_t{};
+        }};
+        return basic_identifier{_inc_bites(i._bites)};
     }
 
     /// @brief Comparison.
