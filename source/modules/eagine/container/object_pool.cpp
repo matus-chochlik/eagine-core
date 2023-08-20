@@ -68,6 +68,22 @@ public:
         return true;
     }
 
+    auto eat(const Object* obj) noexcept -> bool {
+        if(obj) [[likely]] {
+            return eat(*obj);
+        }
+        return false;
+    }
+
+    template <typename Base>
+        requires(std::derived_from<Object, Base>)
+    auto eat(const Base* base) noexcept -> bool {
+        if(const auto obj{dynamic_cast<const Object*>(base)}) [[likely]] {
+            return eat(*obj);
+        }
+        return false;
+    }
+
     auto empty() const noexcept -> bool {
         return _count == 0U;
     }
