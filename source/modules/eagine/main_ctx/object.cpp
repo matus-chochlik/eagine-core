@@ -70,6 +70,13 @@ public:
     main_ctx_object(const identifier obj_id, main_ctx_parent parent) noexcept
       : base{_make_base(obj_id, parent)} {}
 
+    main_ctx_object(main_ctx_object&&) noexcept = default;
+    main_ctx_object(const main_ctx_object&) noexcept = default;
+    auto operator=(main_ctx_object&&) noexcept -> main_ctx_object& = default;
+    auto operator=(const main_ctx_object&) noexcept
+      -> main_ctx_object& = default;
+    ~main_ctx_object() noexcept = default;
+
     /// @brief Returns this as main_ctx_object_parent_info.
     auto as_parent() const noexcept -> main_ctx_object_parent_info {
         return {*this};
