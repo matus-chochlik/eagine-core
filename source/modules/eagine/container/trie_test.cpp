@@ -121,8 +121,29 @@ void trie_add_2(auto& s) {
     }
 }
 //------------------------------------------------------------------------------
+void trie_remove(auto& s) {
+    eagitest::case_ test{s, 6, "remove"};
+    eagitest::track trck{test, 0, 1};
+    auto& rg{test.random()};
+    eagine::basic_identifier_trie<std::string> t;
+    std::set<std::string> b;
+
+    for(unsigned i = 0; i < test.repeats(10000); ++i) {
+        auto key{rg.get_string_made_of(1, 50, t.valid_chars())};
+        b.insert(key);
+        t.add(key, key);
+    }
+
+    for(const auto& key : b) {
+        test.check(t.contains(key), "contains key");
+        test.check(t.remove(key), "remove ok");
+        test.check(not t.contains(key), "does not contain key");
+        trck.checkpoint(1);
+    }
+}
+//------------------------------------------------------------------------------
 void trie_traverse(auto& s) {
-    eagitest::case_ test{s, 6, "traverse"};
+    eagitest::case_ test{s, 7, "traverse"};
     eagitest::track trck{test, 0, 1};
     auto& rg{test.random()};
     eagine::basic_identifier_trie<std::string> t;
@@ -139,12 +160,13 @@ void trie_traverse(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "trie", 6};
+    eagitest::suite test{argc, argv, "trie", 7};
     test.once(trie_empty);
     test.once(trie_insert_1);
     test.once(trie_insert_2);
     test.once(trie_add_1);
     test.once(trie_add_2);
+    test.once(trie_remove);
     test.once(trie_traverse);
     return test.exit_code();
 }

@@ -290,6 +290,18 @@ public:
         return {nothing};
     }
 
+    /// @brief Marks the value stored under the specified key as removed.
+    [[nodiscard]] auto remove(const string_view key) noexcept -> bool {
+        auto [fidx, offs, is_valid] = _find_insert_pos(key);
+        if(is_valid and _whole_key_done(key, offs)) {
+            if(auto& object{_nodes[fidx].object}) {
+                object.reset();
+                return true;
+            }
+        }
+        return false;
+    }
+
     template <typename Function>
     void traverse(Function&& function) noexcept {
         _do_traverse(std::forward<Function>(function), _nodes);
