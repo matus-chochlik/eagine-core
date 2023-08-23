@@ -97,9 +97,40 @@ void enum_class_1(auto& s) {
     test.check(d == test_ev_6, "d != ev_6");
 }
 //------------------------------------------------------------------------------
+void enum_class_2(auto& s) {
+    eagitest::case_ test{s, 2, "2"};
+
+    test_ec_A a = test_ev_1;
+    test.check(unsigned(a) == unsigned(test_ev_1), "a == ev_1");
+    test.check(unsigned(a) != unsigned(test_ev_2), "a != ev_2");
+    test.check(unsigned(a) != unsigned(test_ev_3), "a != ev_3");
+
+    a = test_ev_2;
+    test.check(unsigned(a) != unsigned(test_ev_1), "a != ev_1");
+    test.check(unsigned(a) == unsigned(test_ev_2), "a == ev_2");
+    test.check(unsigned(a) != unsigned(test_ev_3), "a != ev_3");
+
+    a = test_ev_3;
+    test.check(unsigned(a) != unsigned(test_ev_1), "a != ev_1");
+    test.check(unsigned(a) != unsigned(test_ev_2), "a != ev_2");
+    test.check(unsigned(a) == unsigned(test_ev_3), "a == ev_3");
+}
+//------------------------------------------------------------------------------
+void enum_class_3(auto& s) {
+    eagitest::case_ test{s, 3, "3"};
+
+    test_ec_A a = test_ev_1;
+    test_ec_B b = test_ev_2;
+
+    eagine::c_api::any_enum_value<0U> aev = a;
+    aev = b;
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "C-API enum_class", 1};
+    eagitest::suite test{argc, argv, "C-API enum_class", 3};
     test.once(enum_class_1);
+    test.once(enum_class_2);
+    test.once(enum_class_3);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
