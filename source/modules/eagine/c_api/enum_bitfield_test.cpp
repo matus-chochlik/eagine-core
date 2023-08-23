@@ -41,6 +41,9 @@ static constexpr const eagine::c_api::
 static constexpr const eagine::c_api::
   enum_value<unsigned, eagine::mp_list<test_ec_B, test_ec_D>>
     test_ev_5 = {1U << 4U};
+static constexpr const eagine::c_api::
+  enum_value<unsigned, eagine::mp_list<test_ec_D>>
+    test_ev_6 = {1U << 5U};
 //------------------------------------------------------------------------------
 void enum_bitfield_1(auto& s) {
     eagitest::case_ test{s, 1, "1"};
@@ -90,10 +93,50 @@ void enum_bitfield_2(auto& s) {
     test.check(!b234.has(test_ev_5), "not b234.has(ev_5)");
 }
 //------------------------------------------------------------------------------
+void enum_bitfield_3(auto& s) {
+    eagitest::case_ test{s, 3, "3"};
+
+    eagine::c_api::enum_bitfield<test_ec_C> c3 = test_ev_3;
+    test.check((c3 & test_ev_3) == test_ev_3, "c3 & ev_3 == ev_3");
+    test.check((c3 & test_ev_4) != test_ev_4, "c3 & ev_4 != ev_4");
+
+    eagine::c_api::enum_bitfield<test_ec_C> c4 = test_ev_4;
+    test.check((c4 & test_ev_3) != test_ev_3, "c4 & ev_3 != ev_3");
+    test.check((c4 & test_ev_4) == test_ev_4, "c4 & ev_4 == ev_4");
+
+    eagine::c_api::enum_bitfield<test_ec_C> c34 = c3 | c4;
+    test.check((c34 & test_ev_3) == test_ev_3, "c34 & ev_3 == ev_3");
+    test.check((c34 & test_ev_4) == test_ev_4, "c34 & ev_4 == ev_4");
+}
+//------------------------------------------------------------------------------
+void enum_bitfield_4(auto& s) {
+    eagitest::case_ test{s, 4, "4"};
+
+    eagine::c_api::enum_bitfield<test_ec_D> d;
+
+    test.check(!d.has(test_ev_5), "not d.has(ev_5)");
+    test.check(!d.has(test_ev_6), "not d.has(ev_6)");
+
+    test.check(d != test_ev_5, "d != ev_5");
+    test.check(d != test_ev_6, "d != ev_6");
+
+    test.check((d | test_ev_5).has(test_ev_5), "has(ev_5)");
+    test.check((d | test_ev_6).has(test_ev_6), "has(ev_6)");
+
+    test.check((d | test_ev_5) == test_ev_5, "d|ev_5 == ev_5");
+    test.check((d | test_ev_6) == test_ev_6, "d|ev_6 == ev_6");
+
+    test.check(unsigned(d) == 0, "d == 0");
+    test.check(unsigned(d | test_ev_5) == unsigned(test_ev_5), "d|ev_5==ev_5");
+    test.check(unsigned(d | test_ev_6) == unsigned(test_ev_6), "d|ev_6==ev_6");
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "C-API enum_bitfield", 2};
+    eagitest::suite test{argc, argv, "C-API enum_bitfield", 4};
     test.once(enum_bitfield_1);
     test.once(enum_bitfield_2);
+    test.once(enum_bitfield_3);
+    test.once(enum_bitfield_4);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
