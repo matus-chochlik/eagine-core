@@ -105,6 +105,7 @@ eagine_add_module_tests(
 	UNITS
 		buffer_data
 		enum_class
+		enum_bitfield
 		key_value_list
 		result
 	IMPORTS
