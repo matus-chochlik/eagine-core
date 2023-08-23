@@ -104,6 +104,7 @@ eagine_add_module_tests(
 	eagine.core.c_api
 	UNITS
 		buffer_data
+		enum_class
 		key_value_list
 		result
 	IMPORTS
