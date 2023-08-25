@@ -145,6 +145,7 @@ eagine_add_module_tests(
 		bindump
 		environment
 		from_string
+		format
 		hexdump
 		multi_byte
 		list
