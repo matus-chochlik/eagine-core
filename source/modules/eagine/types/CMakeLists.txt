@@ -98,6 +98,7 @@ eagine_add_module_tests(
 		placeholder
 		integer_range
 		metaprogramming
+		function_constant
 		nothing
 		optional_iterator
 		optional_reference
