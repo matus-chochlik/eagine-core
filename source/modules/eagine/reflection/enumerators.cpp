@@ -128,8 +128,6 @@ export template <typename T, identifier_t V>
           enum_map.begin(), enum_map.end(), enumerator, [](auto e, auto v) {
               return e.enumerator < v;
           })};
-        assert(pos != enum_map.end());
-        assert(pos->enumerator == enumerator);
         return span_size(std::distance(enum_map.begin(), pos));
     } else {
         span_size_t index = 0;
