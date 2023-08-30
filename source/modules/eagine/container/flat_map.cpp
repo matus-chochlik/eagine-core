@@ -457,12 +457,14 @@ public:
         return std::erase_if(_vec, predicate);
     }
 
-    auto _vec_ref() const noexcept -> const auto& {
-        return _vec;
+    [[nodiscard]] auto underlying() const noexcept {
+        using memory::view;
+        return view(_vec);
     }
 
-    auto _vec_ref() noexcept -> auto& {
-        return _vec;
+    [[nodiscard]] auto underlying() noexcept {
+        using memory::cover;
+        return cover(_vec);
     }
 
 private:
@@ -518,14 +520,12 @@ private:
 //------------------------------------------------------------------------------
 export template <typename Key, typename Val, typename Cmp, typename Container>
 auto view(const flat_map<Key, Val, Cmp, Container>& c) noexcept {
-    using memory::view;
-    return view(c._vec_ref());
+    return c.underlying();
 }
-
+//------------------------------------------------------------------------------
 export template <typename Key, typename Val, typename Cmp, typename Container>
 auto cover(flat_map<Key, Val, Cmp, Container>& c) noexcept {
-    using memory::cover;
-    return cover(c._vec_ref());
+    return c.underlying();
 }
 //------------------------------------------------------------------------------
 export template <typename W, typename K, typename T, typename C, typename A>

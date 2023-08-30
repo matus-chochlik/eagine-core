@@ -24,6 +24,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
+		eagine.core.memory
 )
 eagine_add_module(
 	eagine.core.container PARTITION flat_map

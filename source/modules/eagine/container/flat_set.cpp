@@ -13,6 +13,7 @@ export module eagine.core.container:flat_set;
 
 import std;
 import eagine.core.types;
+import eagine.core.memory;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -196,6 +197,11 @@ public:
         return res;
     }
 
+    [[nodiscard]] auto underlying() const noexcept {
+        using memory::view;
+        return view(_vec);
+    }
+
 private:
     auto _find_insert_pos(const Key& k) const noexcept {
         const auto b = _vec.begin();
@@ -236,6 +242,11 @@ private:
         return ip;
     }
 };
+//------------------------------------------------------------------------------
+export template <typename W, typename T, typename C, typename S>
+auto view(const flat_set<T, C, S>& c) noexcept {
+    return c.underlying();
+}
 //------------------------------------------------------------------------------
 export template <typename W, typename T, typename C, typename S>
 constexpr auto find(flat_set<T, C, S>& s, W&& what) noexcept {
