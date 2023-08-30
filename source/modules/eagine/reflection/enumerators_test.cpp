@@ -73,11 +73,25 @@ void enum_is_consecutive(auto& s) {
       is_consecutive(std::type_identity<eagine::test_enum_3>()), false, "3");
 }
 //------------------------------------------------------------------------------
+// is bitset
+//------------------------------------------------------------------------------
+void enum_is_bitset(auto& s) {
+    using eagine::is_bitset;
+    eagitest::case_ test{s, 2, "is bitset"};
+
+    test.check_equal(
+      is_bitset(std::type_identity<eagine::test_enum_1>()), false, "1");
+    test.check_equal(
+      is_bitset(std::type_identity<eagine::test_enum_2>()), false, "2");
+    test.check_equal(
+      is_bitset(std::type_identity<eagine::test_enum_3>()), true, "3");
+}
+//------------------------------------------------------------------------------
 // enumerator count
 //------------------------------------------------------------------------------
 void enum_enumerator_count(auto& s) {
     using eagine::enumerator_count;
-    eagitest::case_ test{s, 2, "enumerator count"};
+    eagitest::case_ test{s, 3, "enumerator count"};
 
     test.check_equal(
       enumerator_count(std::type_identity<eagine::test_enum_1>()), 10, "1");
@@ -87,11 +101,39 @@ void enum_enumerator_count(auto& s) {
       enumerator_count(std::type_identity<eagine::test_enum_3>()), 4, "3");
 }
 //------------------------------------------------------------------------------
+// enumerator index
+//------------------------------------------------------------------------------
+void enum_enumerator_index(auto& s) {
+    using eagine::enumerator_index;
+    eagitest::case_ test{s, 4, "enumerator index"};
+
+    test.check_equal(enumerator_index(eagine::test_enum_1::a), 0U, "1::a");
+    test.check_equal(enumerator_index(eagine::test_enum_1::b), 1U, "1::b");
+    test.check_equal(enumerator_index(eagine::test_enum_1::c), 2U, "1::c");
+    test.check_equal(enumerator_index(eagine::test_enum_1::d), 3U, "1::d");
+    test.check_equal(enumerator_index(eagine::test_enum_1::e), 4U, "1::e");
+    test.check_equal(enumerator_index(eagine::test_enum_1::f), 5U, "1::f");
+    test.check_equal(enumerator_index(eagine::test_enum_1::g), 6U, "1::g");
+    test.check_equal(enumerator_index(eagine::test_enum_1::h), 7U, "1::h");
+    test.check_equal(enumerator_index(eagine::test_enum_1::i), 8U, "1::i");
+    test.check_equal(enumerator_index(eagine::test_enum_1::j), 9U, "1::j");
+
+    test.check_equal(enumerator_index(eagine::test_enum_2::one), 0U, "2::1");
+    test.check_equal(enumerator_index(eagine::test_enum_2::two), 1U, "2::2");
+    test.check_equal(enumerator_index(eagine::test_enum_2::three), 2U, "2::3");
+    test.check_equal(enumerator_index(eagine::test_enum_2::four), 3U, "2::4");
+
+    test.check_equal(enumerator_index(eagine::test_enum_3::one), 0U, "3::1");
+    test.check_equal(enumerator_index(eagine::test_enum_3::two), 1U, "3::2");
+    test.check_equal(enumerator_index(eagine::test_enum_3::four), 2U, "3::4");
+    test.check_equal(enumerator_index(eagine::test_enum_3::eight), 3U, "3::8");
+}
+//------------------------------------------------------------------------------
 // enumerator name
 //------------------------------------------------------------------------------
 void enum_enumerator_name(auto& s) {
     using eagine::enumerator_name;
-    eagitest::case_ test{s, 3, "enumerator name"};
+    eagitest::case_ test{s, 5, "enumerator name"};
 
     const auto sw = [](const eagine::string_view& v) -> auto& {
         return v;
@@ -132,7 +174,7 @@ void enum_enumerator_name(auto& s) {
 void enum_from_string(auto& s) {
     using eagine::default_selector;
     using eagine::from_string;
-    eagitest::case_ test{s, 4, "from string"};
+    eagitest::case_ test{s, 6, "from string"};
 
     test.check(
       eagine::test_enum_1::a ==
@@ -212,7 +254,7 @@ void enum_from_string(auto& s) {
 void enum_for_each_1(auto& s) {
     using eagine::default_selector;
     using eagine::from_string;
-    eagitest::case_ test{s, 5, "for each 1"};
+    eagitest::case_ test{s, 7, "for each 1"};
     eagitest::track trck{test, 10, 1};
 
     eagine::for_each_enumerator(
@@ -228,7 +270,7 @@ void enum_for_each_1(auto& s) {
 void enum_for_each_2(auto& s) {
     using eagine::default_selector;
     using eagine::from_string;
-    eagitest::case_ test{s, 6, "for each 2"};
+    eagitest::case_ test{s, 8, "for each 2"};
     eagitest::track trck{test, 4, 1};
 
     eagine::for_each_enumerator(
@@ -244,7 +286,7 @@ void enum_for_each_2(auto& s) {
 void enum_for_each_3(auto& s) {
     using eagine::default_selector;
     using eagine::from_string;
-    eagitest::case_ test{s, 7, "for each 3"};
+    eagitest::case_ test{s, 9, "for each 3"};
     eagitest::track trck{test, 4, 1};
 
     eagine::for_each_enumerator(
@@ -260,7 +302,7 @@ void enum_for_each_3(auto& s) {
 void enum_roundtrip_1(auto& s) {
     using eagine::default_selector;
     using eagine::from_string;
-    eagitest::case_ test{s, 8, "roundtrip 1"};
+    eagitest::case_ test{s, 10, "roundtrip 1"};
     eagitest::track trck{test, 10, 1};
 
     const std::type_identity<eagine::test_enum_1> tid;
@@ -280,7 +322,7 @@ void enum_roundtrip_1(auto& s) {
 void enum_roundtrip_2(auto& s) {
     using eagine::default_selector;
     using eagine::from_string;
-    eagitest::case_ test{s, 9, "roundtrip 2"};
+    eagitest::case_ test{s, 11, "roundtrip 2"};
     eagitest::track trck{test, 4, 1};
 
     const std::type_identity<eagine::test_enum_2> tid;
@@ -300,7 +342,7 @@ void enum_roundtrip_2(auto& s) {
 void enum_roundtrip_3(auto& s) {
     using eagine::default_selector;
     using eagine::from_string;
-    eagitest::case_ test{s, 10, "roundtrip 3"};
+    eagitest::case_ test{s, 12, "roundtrip 3"};
     eagitest::track trck{test, 4, 1};
 
     const std::type_identity<eagine::test_enum_3> tid;
@@ -318,9 +360,11 @@ void enum_roundtrip_3(auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "enumerators", 10};
+    eagitest::suite test{argc, argv, "enumerators", 12};
     test.once(enum_is_consecutive);
+    test.once(enum_is_bitset);
     test.once(enum_enumerator_count);
+    test.once(enum_enumerator_index);
     test.once(enum_enumerator_name);
     test.once(enum_from_string);
     test.once(enum_for_each_1);
