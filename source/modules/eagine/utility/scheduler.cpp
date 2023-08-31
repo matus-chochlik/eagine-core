@@ -27,13 +27,7 @@ public:
     auto schedule_repeated(
       const identifier id,
       const duration_type interval,
-      std::function<void()> action) -> auto& {
-        _repeated[id] = {
-          .next = _clock.now() + interval,
-          .interval = interval,
-          .action = std::move(action)};
-        return *this;
-    }
+      std::function<void()> action) -> scheduler&;
 
     /// @brief Indicates if action with the specified unique id is scheduled.
     /// @see schedule_repeated
@@ -45,27 +39,11 @@ public:
     /// @brief Removed the action with the specified unique id.
     /// @see schedule_repeated
     /// @see has_scheduled
-    auto remove(const identifier id) -> auto& {
-        _repeated.erase(id);
-        return *this;
-    }
+    auto remove(const identifier id) -> scheduler&;
 
     /// @brief Calls all the scheduled actions that are due.
     /// @see schedule_repeated
-    auto update() noexcept -> auto& {
-        const duration_type zero{0};
-        for(auto& entry : _repeated.underlying()) {
-            const auto now{_clock.now()};
-            auto& scheduled{std::get<1>(entry)};
-            auto overdue{now - scheduled.next};
-            while(overdue >= zero) {
-                scheduled.action();
-                scheduled.next = now + scheduled.interval - overdue;
-                overdue -= scheduled.interval;
-            }
-        }
-        return *this;
-    }
+    auto update() noexcept -> scheduler&;
 
 private:
     std::chrono::steady_clock _clock;

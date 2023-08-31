@@ -144,9 +144,11 @@ eagine_add_module(
 	eagine.core.utility
 	SOURCES
 		progress_bar
+		scheduler
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.identifier
 )
 
 eagine_add_module_tests(
@@ -162,12 +164,14 @@ eagine_add_module_tests(
 		random_bytes
 		scope_exit
 		sudoku
+		scheduler
 		timeout
 	IMPORTS
 		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.debug
+		eagine.core.identifier
 		eagine.core.container
 		eagine.core.valid_if
 )
