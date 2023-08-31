@@ -26,6 +26,7 @@ export import :cleanup_group;
 export import :overloaded;
 export import :timeline;
 export import :timeout;
+export import :scheduler;
 export import :random_bytes;
 export import :progress_bar;
 export import :unreachable;

@@ -116,6 +116,15 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.utility PARTITION scheduler
+	IMPORTS
+		std
+		eagine.core.types
+		eagine.core.identifier
+		eagine.core.container
+)
+
+eagine_add_module(
 	eagine.core.utility PARTITION random_bytes
 	IMPORTS
 		std
