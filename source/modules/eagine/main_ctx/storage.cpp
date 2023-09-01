@@ -125,6 +125,10 @@ public:
         return _compressor;
     }
 
+    auto scheduler() noexcept -> action_scheduler& final {
+        return _scheduler;
+    }
+
     auto workers() noexcept -> workshop& final {
         return _workers;
     }
@@ -195,6 +199,7 @@ private:
     memory::buffer_pool _buffers;
     memory::buffer _scratch_space{_default_alloc};
     data_compressor _compressor{_buffers};
+    action_scheduler _scheduler{};
     workshop _workers{};
     std::string _exe_path{};
     std::string _app_name{};

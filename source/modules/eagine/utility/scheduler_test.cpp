@@ -16,7 +16,7 @@ void scheduler_remove(auto& s) {
     eagitest::case_ test{s, 1, "empty"};
     eagitest::track trck{test, 0, 1};
 
-    eagine::scheduler sched;
+    eagine::action_scheduler sched;
     test.check(not sched.has_scheduled("test"), "has not test");
 
     sched.schedule_repeated("test", std::chrono::seconds{1}, [&] {
@@ -40,7 +40,7 @@ void scheduler_repeated(auto& s) {
     eagitest::case_ test{s, 2, "repeated"};
     eagitest::track trck{test, 0, 2};
 
-    eagine::scheduler sched;
+    eagine::action_scheduler sched;
     test.check(not sched.has_scheduled("test"), "has not test");
 
     int counter{1};

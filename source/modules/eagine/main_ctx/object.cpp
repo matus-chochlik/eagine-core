@@ -15,6 +15,7 @@ import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
+import eagine.core.utility;
 import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.console;
@@ -144,7 +145,10 @@ public:
     /// @brief Returns a reference to the root activity object.
     [[nodiscard]] auto progress() const noexcept -> const activity_progress&;
 
-    /// @brief Returns a reference to the workshop object.
+    /// @brief Returns a reference to the shared scheduler object.
+    [[nodiscard]] auto scheduler() const noexcept -> action_scheduler&;
+
+    /// @brief Returns a reference to the shared workshop object.
     [[nodiscard]] auto workers() const noexcept -> workshop&;
 
     /// @brief Locates the specified service object.

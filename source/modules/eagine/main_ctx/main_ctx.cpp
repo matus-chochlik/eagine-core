@@ -16,6 +16,7 @@ import eagine.core.build_info;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
+import eagine.core.utility;
 import eagine.core.runtime;
 import eagine.core.logging;
 import eagine.core.progress;
@@ -139,6 +140,10 @@ public:
     [[nodiscard]] auto compressor() noexcept -> data_compressor& final {
         return _compressor;
     }
+
+    [[nodiscard]] auto scheduler() noexcept -> action_scheduler& final {
+        return _scheduler;
+    };
 
     [[nodiscard]] auto workers() noexcept -> workshop& final {
         return _workers;
@@ -272,6 +277,7 @@ private:
     memory::buffer_pool& _buffers;
     memory::buffer& _scratch_space;
     data_compressor& _compressor;
+    action_scheduler& _scheduler;
     workshop& _workers;
     string_view _exe_path;
     string_view _app_name;

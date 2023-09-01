@@ -13,10 +13,10 @@ import eagine.core.identifier;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-auto scheduler::schedule_repeated(
+auto action_scheduler::schedule_repeated(
   const identifier id,
   const duration_type interval,
-  std::function<void()> action) -> scheduler& {
+  std::function<void()> action) -> action_scheduler& {
     _repeated[id] = {
       .next = _clock.now() + interval,
       .interval = interval,
@@ -24,12 +24,12 @@ auto scheduler::schedule_repeated(
     return *this;
 }
 //------------------------------------------------------------------------------
-auto scheduler::remove(const identifier id) -> scheduler& {
+auto action_scheduler::remove(const identifier id) -> action_scheduler& {
     _repeated.erase(id);
     return *this;
 }
 //------------------------------------------------------------------------------
-auto scheduler::update() noexcept -> scheduler& {
+auto action_scheduler::update() noexcept -> action_scheduler& {
     const duration_type zero{0};
     for(auto& entry : _repeated.underlying()) {
         const auto now{_clock.now()};

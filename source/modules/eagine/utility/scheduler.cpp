@@ -16,7 +16,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 /// @brief Class that allows to schedule invocation of actions in periodic intervals.
 /// @ingroup time_utils
-export class scheduler {
+export class action_scheduler {
 public:
     /// @brief The smallest time granularity distinguished by the scheduler.
     using duration_type = std::chrono::microseconds;
@@ -27,7 +27,7 @@ public:
     auto schedule_repeated(
       const identifier id,
       const duration_type interval,
-      std::function<void()> action) -> scheduler&;
+      std::function<void()> action) -> action_scheduler&;
 
     /// @brief Indicates if action with the specified unique id is scheduled.
     /// @see schedule_repeated
@@ -39,11 +39,11 @@ public:
     /// @brief Removed the action with the specified unique id.
     /// @see schedule_repeated
     /// @see has_scheduled
-    auto remove(const identifier id) -> scheduler&;
+    auto remove(const identifier id) -> action_scheduler&;
 
     /// @brief Calls all the scheduled actions that are due.
     /// @see schedule_repeated
-    auto update() noexcept -> scheduler&;
+    auto update() noexcept -> action_scheduler&;
 
 private:
     std::chrono::steady_clock _clock;
