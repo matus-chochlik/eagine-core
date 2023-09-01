@@ -50,6 +50,11 @@ public:
         return *this;
     }
 
+    auto update() noexcept -> main_ctx_storage& final {
+        _scheduler.update();
+        return *this;
+    }
+
     auto instance_id() const noexcept -> process_instance_id_t final {
         return _instance_id;
     }

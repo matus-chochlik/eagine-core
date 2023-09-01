@@ -79,6 +79,9 @@ export struct main_ctx_getters : interface<main_ctx_getters> {
     /// @brief Does potentially expensive initialization and caching.
     virtual auto preinitialize() noexcept -> main_ctx_getters& = 0;
 
+    /// @brief Does one iteration of repeated update of internal components.
+    virtual auto update() noexcept -> main_ctx_getters& = 0;
+
     /// @brief Returns this process instance id. Not equal to system PID.
     virtual auto instance_id() const noexcept -> process_instance_id_t = 0;
 

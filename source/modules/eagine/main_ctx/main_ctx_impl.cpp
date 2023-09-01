@@ -67,6 +67,11 @@ auto main_ctx::preinitialize() noexcept -> main_ctx& {
     return *this;
 }
 //------------------------------------------------------------------------------
+auto main_ctx::update() noexcept -> main_ctx& {
+    _source.update();
+    return *this;
+}
+//------------------------------------------------------------------------------
 auto try_get_main_ctx() noexcept -> optional_reference<main_ctx_getters> {
     return main_ctx::try_get();
 }

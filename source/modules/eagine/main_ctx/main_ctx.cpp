@@ -74,6 +74,7 @@ public:
     }
 
     auto preinitialize() noexcept -> main_ctx& final;
+    auto update() noexcept -> main_ctx& final;
 
     [[nodiscard]] auto instance_id() const noexcept
       -> process_instance_id_t final {
