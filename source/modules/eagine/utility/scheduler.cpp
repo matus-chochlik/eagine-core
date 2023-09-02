@@ -27,7 +27,7 @@ public:
     auto schedule_repeated(
       const identifier id,
       const duration_type interval,
-      std::function<void()> action) -> action_scheduler&;
+      std::function<bool()> action) -> action_scheduler&;
 
     /// @brief Indicates if action with the specified unique id is scheduled.
     /// @see schedule_repeated
@@ -49,7 +49,12 @@ private:
     struct _scheduled {
         std::chrono::steady_clock::time_point next;
         duration_type interval;
-        std::function<void()> action;
+        std::function<bool()> action;
+        std::uint32_t fail_counter{0U};
+
+        auto should_invoke() noexcept -> bool;
+        void invoke() noexcept;
+        void update(const std::chrono::steady_clock::time_point) noexcept;
     };
     flat_map<identifier, _scheduled> _repeated;
 };

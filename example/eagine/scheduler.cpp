@@ -22,6 +22,7 @@ auto main(main_ctx& ctx) -> int {
     const auto schedule{[&](identifier id, seconds interval) {
         ctx.scheduler().schedule_repeated(id, interval, [&, id] {
             std::cout << id.name() << ": " << elapsed() << std::endl;
+            return true;
         });
     }};
 

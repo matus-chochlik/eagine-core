@@ -16,7 +16,7 @@ namespace eagine {
 auto action_scheduler::schedule_repeated(
   const identifier id,
   const duration_type interval,
-  std::function<void()> action) -> action_scheduler& {
+  std::function<bool()> action) -> action_scheduler& {
     _repeated[id] = {
       .next = now() + interval,
       .interval = interval,
@@ -29,17 +29,38 @@ auto action_scheduler::remove(const identifier id) -> action_scheduler& {
     return *this;
 }
 //------------------------------------------------------------------------------
-auto action_scheduler::update() noexcept -> action_scheduler& {
-    const duration_type zero{0};
-    for(auto& entry : _repeated.underlying()) {
-        const auto now{this->now()};
-        auto& scheduled{std::get<1>(entry)};
-        auto overdue{now - scheduled.next};
-        while(overdue >= zero) {
-            scheduled.action();
-            scheduled.next = now + scheduled.interval - overdue;
-            overdue -= scheduled.interval;
+auto action_scheduler::_scheduled::should_invoke() noexcept -> bool {
+    if(fail_counter != 0U) [[unlikely]] {
+        --fail_counter;
+        return false;
+    }
+    return true;
+}
+//------------------------------------------------------------------------------
+void action_scheduler::_scheduled::invoke() noexcept {
+    if(action()) [[likely]] {
+        fail_counter = 0U;
+    } else {
+        ++fail_counter;
+    }
+}
+//------------------------------------------------------------------------------
+void action_scheduler::_scheduled::update(
+  const std::chrono::steady_clock::time_point now) noexcept {
+    const action_scheduler::duration_type zero{0};
+    auto overdue{now - next};
+    while(overdue >= zero) {
+        if(should_invoke()) {
+            invoke();
         }
+        next = now + interval - overdue;
+        overdue -= interval;
+    }
+}
+//------------------------------------------------------------------------------
+auto action_scheduler::update() noexcept -> action_scheduler& {
+    for(auto& entry : _repeated.underlying()) {
+        std::get<1>(entry).update(now());
     }
     return *this;
 }
