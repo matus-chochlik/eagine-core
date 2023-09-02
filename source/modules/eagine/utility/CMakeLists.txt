@@ -148,6 +148,7 @@ eagine_add_module(
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.container
 		eagine.core.identifier
 )
 

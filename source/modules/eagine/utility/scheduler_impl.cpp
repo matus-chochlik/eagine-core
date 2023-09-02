@@ -9,6 +9,7 @@ module eagine.core.utility;
 
 import std;
 import eagine.core.types;
+import eagine.core.container;
 import eagine.core.identifier;
 
 namespace eagine {
@@ -24,6 +25,35 @@ auto action_scheduler::schedule_repeated(
     return *this;
 }
 //------------------------------------------------------------------------------
+auto action_scheduler::has_scheduled(const identifier id) const noexcept
+  -> bool {
+    return _repeated.contains(id);
+}
+//------------------------------------------------------------------------------
+auto action_scheduler::suspend(const identifier id) noexcept -> bool {
+    if(auto found{find(_repeated, id)}) {
+        if(not found->is_suspended) {
+            found->is_suspended = true;
+            return true;
+        }
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto action_scheduler::is_suspend(const identifier id) noexcept -> bool {
+    return find(_repeated, id).member(&_scheduled::is_suspended).value_or(false);
+}
+//------------------------------------------------------------------------------
+auto action_scheduler::resume(const identifier id) noexcept -> bool {
+    if(auto found{find(_repeated, id)}) {
+        if(found->is_suspended) {
+            found->is_suspended = false;
+            return true;
+        }
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
 auto action_scheduler::remove(const identifier id) -> action_scheduler& {
     _repeated.erase(id);
     return *this;
@@ -34,7 +64,7 @@ auto action_scheduler::_scheduled::should_invoke() noexcept -> bool {
         --fail_counter;
         return false;
     }
-    return true;
+    return not is_suspended;
 }
 //------------------------------------------------------------------------------
 void action_scheduler::_scheduled::invoke() noexcept {

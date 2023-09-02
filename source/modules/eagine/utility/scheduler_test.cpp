@@ -21,6 +21,7 @@ void scheduler_remove(auto& s) {
 
     sched.schedule_repeated("test", std::chrono::seconds{1}, [&] {
         test.fail("should not be called");
+        return true;
     });
 
     test.check(sched.has_scheduled("test"), "test scheduled");
@@ -47,6 +48,7 @@ void scheduler_repeated(auto& s) {
     sched.schedule_repeated("test", std::chrono::milliseconds{100}, [&] {
         trck.checkpoint(1);
         ++counter;
+        return true;
     });
 
     test.check(sched.has_scheduled("test"), "test scheduled");
