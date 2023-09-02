@@ -16,7 +16,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 /// @brief Class that allows to schedule invocation of actions in periodic intervals.
 /// @ingroup time_utils
-export class action_scheduler {
+export class action_scheduler : std::chrono::steady_clock {
 public:
     /// @brief The smallest time granularity distinguished by the scheduler.
     using duration_type = std::chrono::microseconds;
@@ -46,8 +46,6 @@ public:
     auto update() noexcept -> action_scheduler&;
 
 private:
-    std::chrono::steady_clock _clock;
-
     struct _scheduled {
         std::chrono::steady_clock::time_point next;
         duration_type interval;

@@ -18,7 +18,7 @@ auto action_scheduler::schedule_repeated(
   const duration_type interval,
   std::function<void()> action) -> action_scheduler& {
     _repeated[id] = {
-      .next = _clock.now() + interval,
+      .next = now() + interval,
       .interval = interval,
       .action = std::move(action)};
     return *this;
@@ -32,7 +32,7 @@ auto action_scheduler::remove(const identifier id) -> action_scheduler& {
 auto action_scheduler::update() noexcept -> action_scheduler& {
     const duration_type zero{0};
     for(auto& entry : _repeated.underlying()) {
-        const auto now{_clock.now()};
+        const auto now{this->now()};
         auto& scheduled{std::get<1>(entry)};
         auto overdue{now - scheduled.next};
         while(overdue >= zero) {
