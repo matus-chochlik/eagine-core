@@ -11,6 +11,7 @@ import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
+import eagine.core.math;
 import :buffer_data;
 import :enum_class;
 import :object;
@@ -1054,6 +1055,102 @@ struct make_args_map<
     using get_data_map<CI + 1, CppI>::operator();
     using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();
+};
+
+export template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename... CT,
+  typename T,
+  bool V,
+  typename... CppT>
+struct make_args_map<
+  CI,
+  CppI,
+  mp_list<T, T, CT...>,
+  mp_list<math::tvec<T, 2, V>, CppT...>>
+  : make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 0>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...).x();
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 1>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...).y();
+    }
+};
+
+export template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename... CT,
+  typename T,
+  bool V,
+  typename... CppT>
+struct make_args_map<
+  CI,
+  CppI,
+  mp_list<T, T, T, CT...>,
+  mp_list<math::tvec<T, 3, V>, CppT...>>
+  : make_args_map<CI + 3, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 3, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 0>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...).x();
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 1>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...).y();
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 2>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...).z();
+    }
+};
+
+export template <
+  std::size_t CI,
+  std::size_t CppI,
+  typename... CT,
+  typename T,
+  bool V,
+  typename... CppT>
+struct make_args_map<
+  CI,
+  CppI,
+  mp_list<T, T, T, T, CT...>,
+  mp_list<math::tvec<T, 4, V>, CppT...>>
+  : make_args_map<CI + 4, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
+    using make_args_map<CI + 4, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
+    operator();
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 0>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...).x();
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 1>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...).y();
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 2>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...).z();
+    }
+
+    template <typename... P>
+    constexpr auto operator()(size_constant<CI + 3>, P&&... p) const noexcept {
+        return trivial_map{}(size_constant<CppI>{}, std::forward<P>(p)...).w();
+    }
 };
 //------------------------------------------------------------------------------
 export template <typename CSignature, typename CppSignature>
