@@ -9,6 +9,7 @@ export module eagine.core.math:colors;
 
 import std;
 import eagine.core.types;
+import eagine.core.memory;
 import :constants;
 import :functions;
 import :vector;
@@ -151,6 +152,20 @@ export template <std::floating_point T = float, bool V = true>
       chars2byte(hex[3], hex[4]),
       chars2byte(hex[5], hex[6]),
       chars2byte(hex[7], hex[8]));
+}
+//------------------------------------------------------------------------------
+export [[nodiscard]] auto name_to_rgb(const string_view) noexcept
+  -> optionally_valid<vector<float, 3, true>>;
+//------------------------------------------------------------------------------
+export template <std::size_t L>
+[[nodiscard]] auto string_to_rgb(const char (&str)[L]) noexcept
+  -> optionally_valid<vector<float, 3, true>> {
+    if constexpr(L == 8) {
+        if(str[0] == '#') {
+            return {hex_to_rgb<float>(str)};
+        }
+    }
+    return name_to_rgb(str);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::math

@@ -77,6 +77,7 @@ eagine_add_module(
 	IMPORTS
 		std constants functions vector
 		eagine.core.types
+		eagine.core.memory
 )
 
 eagine_add_module(
@@ -130,8 +131,12 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.math
+	SOURCES
+		colors
 	IMPORTS
 		eagine.core.types
+		eagine.core.memory
+		eagine.core.container
 		eagine.core.vectorization
 )
 
