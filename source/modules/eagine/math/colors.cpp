@@ -168,4 +168,18 @@ export template <std::size_t L>
     return name_to_rgb(str);
 }
 //------------------------------------------------------------------------------
+export template <std::size_t L>
+[[nodiscard]] auto string_to_rgba(const char (&str)[L], float a) noexcept
+  -> optionally_valid<vector<float, 4, true>> {
+    if constexpr(L == 10) {
+        if(str[0] == '#') {
+            return {hex_to_rgba<float>(str)};
+        }
+    }
+    if(const auto rgb{string_to_rgb(str)}) {
+        return {{rgb->x(), rgb->y(), rgb->z(), a}};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
 } // namespace eagine::math
