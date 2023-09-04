@@ -400,6 +400,16 @@ public:
     /// @brief Constructs a new element with the specified arguments under specified key.
     /// @see insert
     template <typename... Args>
+    auto emplace_hint(iterator pos, const Key& key, Args&&... args)
+      -> iterator {
+        auto ip = _find_insert_pos(pos, key);
+        ip = _do_emplace(ip, key, std::forward<Args>(args)...);
+        return ip.first;
+    }
+
+    /// @brief Constructs a new element with the specified arguments under specified key.
+    /// @see insert
+    template <typename... Args>
     auto try_emplace(const Key& key, Args&&... args)
       -> std::pair<iterator, bool> {
         auto ip = _find_insert_pos(key);
