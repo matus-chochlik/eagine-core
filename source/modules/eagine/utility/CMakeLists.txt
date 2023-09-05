@@ -68,6 +68,7 @@ eagine_add_module(
 	IMPORTS
 		std callable_ref
 		eagine.core.types
+		eagine.core.container
 )
 
 eagine_add_module(

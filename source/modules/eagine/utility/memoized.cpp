@@ -9,6 +9,7 @@ export module eagine.core.utility:memoized;
 
 import std;
 import eagine.core.types;
+import eagine.core.container;
 import :callable_ref;
 
 namespace eagine {
@@ -48,7 +49,7 @@ public:
 private:
     using T = std::tuple<P...>;
     using E = std::pair<T, R>;
-    std::map<T, R> _memo;
+    flat_map<T, R> _memo;
     callable_ref<R(P..., memoized&)> _func;
 };
 
