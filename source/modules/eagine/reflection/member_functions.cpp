@@ -41,5 +41,11 @@ constexpr auto make_member_function_mapping(
     return std::make_tuple(m...);
 }
 //------------------------------------------------------------------------------
+export template <auto... M>
+constexpr auto member_function_count(
+  const std::tuple<member_function_wrapper<M>...>&) noexcept -> span_size_t {
+    return span_size(sizeof...(M));
+}
+//------------------------------------------------------------------------------
 } // namespace eagine
 
