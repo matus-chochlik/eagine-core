@@ -27,6 +27,14 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.core.reflection PARTITION member_functions
+	IMPORTS
+		std decl_name
+		eagine.core.types
+		eagine.core.memory
+)
+
+eagine_add_module(
 	eagine.core.reflection
 )
 
