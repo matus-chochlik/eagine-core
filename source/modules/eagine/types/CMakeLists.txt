@@ -8,10 +8,6 @@ eagine_add_module(
 	IMPORTS std
 )
 eagine_add_module(
-	eagine.core.types PARTITION function_constant
-	IMPORTS std
-)
-eagine_add_module(
 	eagine.core.types PARTITION bitfield
 	IMPORTS std
 )
@@ -35,7 +31,11 @@ eagine_add_module(
 	eagine.core.types PARTITION metaprogramming
 	IMPORTS std basic
 )
-
+eagine_add_module(
+	eagine.core.types PARTITION function_constant
+	IMPORTS
+		std basic
+)
 
 eagine_add_module(
 	eagine.core.types PARTITION limits
