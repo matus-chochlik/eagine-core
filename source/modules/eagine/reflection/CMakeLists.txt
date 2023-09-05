@@ -34,6 +34,7 @@ eagine_add_module_tests(
 	eagine.core.reflection
 	UNITS
 		enumerators
+		data_members
 	IMPORTS
 		std
 		eagine.core.types
