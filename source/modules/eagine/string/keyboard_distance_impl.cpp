@@ -40,8 +40,8 @@ default_keyboard_layout::default_keyboard_layout(const float shift) {
     add_key_coord(')', {10.F, 0.F, shift});
     add_key_coord('-', {11.F, 0.F, 0.F});
     add_key_coord('_', {11.F, 0.F, shift});
-    add_key_coord('=', {11.F, 0.F, 0.F});
-    add_key_coord('+', {11.F, 0.F, shift});
+    add_key_coord('=', {12.F, 0.F, 0.F});
+    add_key_coord('+', {12.F, 0.F, shift});
     // second row
     add_key_coord('q', {1.5F, 1.F, 0.F});
     add_key_coord('Q', {1.5F, 1.F, shift});

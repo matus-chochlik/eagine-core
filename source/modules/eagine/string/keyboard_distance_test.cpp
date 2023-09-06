@@ -8,6 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
+import eagine.core.memory;
 import eagine.core.string;
 //------------------------------------------------------------------------------
 void default_keyboard_distance(auto& s) {
@@ -22,9 +23,14 @@ void default_keyboard_distance(auto& s) {
     const eagine::keyboard_distance kbd{l};
 
     for(const auto k1 : keys) {
+        const auto v1{eagine::memory::view_one(k1)};
         for(const auto k2 : keys) {
-            test.check_equal(kbd(k1, k2) > 0.F, k1 != k2, "!=");
-            test.check_equal(kbd(k1, k2) <= 0.F, k1 == k2, "==");
+            const auto v2{eagine::memory::view_one(k2)};
+            if(kbd(v1, v2) > 0.F != (k1 != k2)) {
+                std::cout << k1 << "|" << k2 << std::endl;
+            }
+            test.check_equal(kbd(v1, v2) > 0.F, k1 != k2, "!=");
+            test.check_equal(kbd(v1, v2) <= 0.F, k1 == k2, "==");
             trck.checkpoint(1);
         }
     }
