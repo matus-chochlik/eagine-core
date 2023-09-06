@@ -148,6 +148,7 @@ eagine_add_module_tests(
 		format
 		hexdump
 		multi_byte
+		keyboard_distance
 		list
 		path
 	IMPORTS
