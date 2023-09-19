@@ -41,6 +41,12 @@ constexpr auto make_member_function_mapping(
     return std::make_tuple(m...);
 }
 //------------------------------------------------------------------------------
+export template <typename T>
+constexpr auto member_function_mapping(
+  const std::type_identity<T> tid = {}) noexcept {
+    return member_function_mapping(tid, default_selector);
+}
+//------------------------------------------------------------------------------
 export template <auto... M>
 constexpr auto member_function_count(
   const std::tuple<member_function_wrapper<M>...>&) noexcept -> span_size_t {

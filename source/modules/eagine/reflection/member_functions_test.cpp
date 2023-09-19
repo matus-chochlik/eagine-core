@@ -61,6 +61,11 @@ void member_function_count(auto& s) {
 
     using eagine::member_function_count;
     using eagine::member_function_mapping;
+
+    test.check_equal(
+      member_function_count(member_function_mapping<eagine::foobar>()),
+      5,
+      "count 5");
 }
 //------------------------------------------------------------------------------
 // main
