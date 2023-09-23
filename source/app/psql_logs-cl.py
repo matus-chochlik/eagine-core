@@ -311,6 +311,38 @@ class LogFormattingUtils(object):
         return c(s)
 
     # --------------------------------------------------------------------------
+    def formatByteSize(self, n, w = 0):
+        result = None
+        if n > 0:
+            umult = ["GiB", "MiB", "kiB"]
+            l = len(umult)
+            for i in range(l):
+                m = 1024**(l-i)
+                if (n / m > 1024) or (n % m == 0):
+                    result = str(int(n / m)) + " " + umult[i]
+                    break
+        if not result:
+            result = str(n) + " B"
+
+        c = self.getCenterText(w)
+        return c(result)
+
+    # --------------------------------------------------------------------------
+    def formatInteger(self, s, w = 0):
+        c = self.getCenterText(w)
+        return c(f"{int(s):,}".replace(",", "'"))
+
+    # --------------------------------------------------------------------------
+    def formatReal(self, s, w = 0):
+        c = self.getCenterText(w)
+        return c(f"{float(s):,}".replace(",", "'"))
+
+    # --------------------------------------------------------------------------
+    def formatRatio(self, x, w = 0):
+        c = self.getCenterText(w)
+        return c("%3.1f%%" % float(x * 100))
+
+    # --------------------------------------------------------------------------
     def formatLogSeverity(self, level, w = 0):
         c = self.getCenterText(w)
         if level == "stat":
@@ -368,8 +400,18 @@ class LogFormattingUtils(object):
         self._formatters = {
             "duration": lambda n,v,c: self.formatDuration(v),
             "identifier": lambda n,v,c: self.formatIdentifier(v),
+            "integer": lambda n,v,c: self.formatInteger(v),
+            "int64": lambda n,v,c: self.formatInteger(v),
+            "int32": lambda n,v,c: self.formatInteger(v),
+            "int16": lambda n,v,c: self.formatInteger(v),
+            "uint64": lambda n,v,c: self.formatInteger(v),
+            "uint32": lambda n,v,c: self.formatInteger(v),
+            "uint16": lambda n,v,c: self.formatInteger(v),
+            "real": lambda n,v,c: self.formatReal(v),
+            "ByteSize": lambda n,v,c: self.formatByteSize(v),
             "YesNo": lambda n,v,c: self.formatYesNoMaybe(v),
             "YesNoMaybe": lambda n,v,c: self.formatYesNoMaybe(v),
+            "Ratio": lambda n,v,c, src_id: self.formatRatio(v),
             "MainPrgrss": lambda n,v,c: self.formatProgressValue(n, v, c),
             "Progress": lambda n,v,c: self.formatProgressValue(n, v, c)
         }
