@@ -52,6 +52,13 @@ class ArgumentParser(argparse.ArgumentParser):
         argparse.ArgumentParser.__init__(self, **kw)
 
         self.add_argument(
+            "--print-bash-completion",
+            metavar='FILE|-',
+            dest='print_bash_completion',
+            default=None
+        )
+
+        self.add_argument(
             "--db-host", "-H",
             dest='db_host',
             action="store",
@@ -317,12 +324,35 @@ def plot(options):
     if options.plot_name == "stream_profile":
         plot_stream_profile(options)
 # ------------------------------------------------------------------------------
+#  bash completion
+# ------------------------------------------------------------------------------
+def printBashCompletion(argparser, options):
+    from eagine.argparseUtil import printBashComplete
+    def _printIt(fd):
+        printBashComplete(
+            argparser,
+            "_eagilog_plot",
+            "eagilog-plot",
+            ["--print-bash-completion"],
+            fd)
+    if options.print_bash_completion == "-":
+        _printIt(sys.stdout)
+    else:
+        with open(options.print_bash_completion, "wt") as fd:
+            _printIt(fd)
+
+# ------------------------------------------------------------------------------
 # main
 # ------------------------------------------------------------------------------
 def main():
     try:
-        options = getArgumentParser().parseArgs()
-        plot(options)
+        argparser = getArgumentParser()
+        options = argparser.parseArgs()
+        if options.print_bash_completion:
+            printBashCompletion(argparser, options)
+            return 0
+        else:
+            plot(options)
     except KeyboardInterrupt:
         pass
     return 0

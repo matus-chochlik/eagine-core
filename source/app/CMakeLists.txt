@@ -34,8 +34,13 @@ install(
 	DESTINATION bin
 )
 install(
-	PROGRAMS log_psql.sh
+	PROGRAMS log-psql.sh
 	RENAME eagilog-psql
+	DESTINATION bin
+)
+install(
+	PROGRAMS log-plot.sh
+	RENAME eagilog-plot
 	DESTINATION bin
 )
 
