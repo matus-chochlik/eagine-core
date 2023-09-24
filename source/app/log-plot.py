@@ -24,13 +24,16 @@ class ArgumentParser(argparse.ArgumentParser):
         try:
             found = self._msg_re1.match(x)
             if found:
-                return (None, found.group(1))
+                return (None, None, found.group(1), x)
             found = self._msg_re2.match(x)
             if found:
-                return (found.group(1), found.group(2))
+                return (None, found.group(1), None, x)
             found = self._msg_re3.match(x)
             if found:
-                return (found.group(1), None)
+                return (None, found.group(1), found.group(2), x)
+            found = self._msg_re4.match(x)
+            if found:
+                return (found.group(1), found.group(2), found.group(3), x)
             assert False
         except:
             self.error("`%s' is not a valid message identifier" % str(x))
@@ -46,8 +49,9 @@ class ArgumentParser(argparse.ArgumentParser):
     # -------------------------------------------------------------------------
     def __init__(self, **kw):
         self._msg_re1 = re.compile("^([A-Za-z0-9_]{1,10})$")
-        self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
-        self._msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
+        self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
+        self._msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
+        self._msg_re4 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
 
         argparse.ArgumentParser.__init__(self, **kw)
 
@@ -84,7 +88,7 @@ class ArgumentParser(argparse.ArgumentParser):
             "--db-user", "-u",
             dest='db_user',
             action="store",
-            default=None
+            default='eagilog'
         )
 
         self.add_argument(
@@ -102,12 +106,23 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
         self.add_argument(
+            "--list", "-l",
+            dest='list_name',
+            action="store",
+            choices=[
+                "numeric_streams",
+                "stream_profiles"],
+            default=None
+        )
+
+        self.add_argument(
             "--plot", "-p",
             dest='plot_name',
             action="store",
             choices=[
-                "stream_profile"],
-            default="stream_profile"
+                "numeric_streams",
+                "stream_profiles"],
+            default="numeric_stream"
         )
 
         self.add_argument(
@@ -121,9 +136,9 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
         self.add_argument(
-            "--profile-interval", "-I",
-            metavar='IDENTIFIER.IDENTIFIER',
-            dest='profile_intervals',
+            "--identifier", "-I",
+            metavar='ID.ID.ID',
+            dest='identifiers',
             nargs='+',
             action="append",
             type=self._valid_msg_id,
@@ -150,7 +165,7 @@ class ArgumentParser(argparse.ArgumentParser):
                     options.db_password = getpass.getpass("psql password: ")
 
         options.stream_ids = [i for sl in options.stream_ids for i in sl]
-        options.profile_intervals = [i for sl in options.profile_intervals for i in sl]
+        options.identifiers = [i for sl in options.identifiers for i in sl]
 
         return options
 
@@ -224,7 +239,84 @@ def getArgumentParser():
         """
     )
 # ------------------------------------------------------------------------------
+# numeric stream
+# ------------------------------------------------------------------------------
+def list_numeric_streams(options):
+    query = """
+        SELECT DISTINCT value_id
+        FROM eagilog.numeric_streams
+        ORDER BY value_id
+    """
+    for row in options.query_data(query, ()):
+        print(row[0])
+# ------------------------------------------------------------------------------
+def numeric_stream_data(options, value_id, stream_id):
+    query = """
+        SELECT
+            stream_id,
+            value_id,
+            value_time
+        FROM eagilog.numeric_stream
+        WHERE stream_id = %s
+        AND value_id = %s
+        ORDER BY value_time
+    """
+
+    return numpy.fromiter((
+        [row[2].total_seconds(), row[3]]
+            for row in options.query_data(query, (stream_id, value_id))),
+                numpy.dtype((float, 2))).transpose()
+
+# ------------------------------------------------------------------------------
+def plot_numeric_streams(options):
+    fig, spl = options.init_plot(1, 1)
+
+    spl.set_xlabel("time")
+    spl.set_ylabel("value")
+    spl.grid(axis="y", alpha=0.25)
+
+    stream_ids = {}
+    plotnum = 0
+
+    spl.legend()
+    fig.tight_layout()
+    options.finish_plot(fig)
+
+# ------------------------------------------------------------------------------
 # stream profile
+# ------------------------------------------------------------------------------
+def list_stream_profiles(options):
+    query = """
+        SELECT DISTINCT source_id || '.' || tag
+        FROM eagilog.profile_interval
+        ORDER BY source_id || '.' || tag
+    """
+    for row in options.query_data(query, ()):
+        print(row[0])
+# ------------------------------------------------------------------------------
+def stream_profile_streams(options):
+    stream_ids = {}
+    plotnum = 0
+
+    for app_id, source_id, tag, full_id in options.identifiers:
+        if len(options.stream_ids) == 0:
+            stream_id_query = """
+                SELECT DISTINCT stream_id
+                FROM eagilog.profile_interval
+                WHERE source_id = coalesce(%s, source_id)
+                AND tag = %s
+                ORDER BY stream_id
+            """
+            interval_id = (source_id, tag)
+            stream_ids[interval_id] =\
+                [row[0] for row in options.query_data(stream_id_query, interval_id)]
+            plotnum += len(stream_ids[interval_id])
+        else:
+            stream_ids[(source_id, tag)] = options.stream_ids
+            plotnum += len(options.stream_ids)
+
+    return stream_ids, plotnum
+
 # ------------------------------------------------------------------------------
 def stream_profile_data(options, source_id, tag, stream_id):
     query = """
@@ -249,7 +341,7 @@ def stream_profile_data(options, source_id, tag, stream_id):
                 numpy.dtype((float, 4))).transpose()
 
 # ------------------------------------------------------------------------------
-def plot_stream_profile(options):
+def plot_stream_profiles(options):
     fig, spl = options.init_plot(2, 1)
 
     spl[0].set_xlabel("execution time [s]")
@@ -259,30 +351,12 @@ def plot_stream_profile(options):
     spl[1].set_ylabel("min/avg/max\nintervals [ms]")
     spl[1].grid(axis="y", alpha=0.25)
 
-    interval_count = len(options.profile_intervals)
+    interval_count = len(options.identifiers)
 
-    stream_ids = {}
-    plotnum = 0
-
-    for source_id, tag in options.profile_intervals:
-        if len(options.stream_ids) == 0:
-            stream_id_query = """
-                SELECT DISTINCT stream_id
-                FROM eagilog.profile_interval
-                WHERE source_id = coalesce(%s, source_id)
-                AND tag = %s
-            """
-            interval_id = (source_id, tag)
-            stream_ids[interval_id] =\
-                [row[0] for row in options.query_data(stream_id_query, interval_id)]
-            plotnum += len(stream_ids[interval_id])
-        else:
-            stream_ids[(source_id, tag)] = options.stream_ids
-            plotnum += len(options.stream_ids)
-
+    stream_ids, plotnum = stream_profile_streams(options)
     plotidx = 0
 
-    for source_id, tag in options.profile_intervals:
+    for app_id, source_id, tag, full_id in options.identifiers:
         interval_id = (source_id, tag)
         stream_count = len(stream_ids[interval_id])
         if stream_count == 0:
@@ -305,7 +379,7 @@ def plot_stream_profile(options):
             rgb = options.plot_color(plotidx, plotnum)
             plotidx += 1
 
-            avg_lbl = "stream %d" % stream_id
+            avg_lbl = "%s/%d" % (full_id, stream_id)
 
             spl[0].plot(t, avg_ms, label=avg_lbl, color=rgb)
 
@@ -318,11 +392,21 @@ def plot_stream_profile(options):
     options.finish_plot(fig)
 
 # ------------------------------------------------------------------------------
+# list dispatch
+# ------------------------------------------------------------------------------
+def print_list(options):
+    if options.list_name == "numeric_streams":
+        list_numeric_streams(options)
+    elif options.list_name == "stream_profiles":
+        list_stream_profiles(options)
+# ------------------------------------------------------------------------------
 # plot dispatch
 # ------------------------------------------------------------------------------
-def plot(options):
-    if options.plot_name == "stream_profile":
-        plot_stream_profile(options)
+def draw_plot(options):
+    if options.plot_name == "numeric_streams":
+        plot_numeric_streams(options)
+    elif options.plot_name == "stream_profiles":
+        plot_stream_profiles(options)
 # ------------------------------------------------------------------------------
 #  bash completion
 # ------------------------------------------------------------------------------
@@ -352,7 +436,10 @@ def main():
             printBashCompletion(argparser, options)
             return 0
         else:
-            plot(options)
+            if options.list_name is not None:
+                print_list(options)
+            else:
+                draw_plot(options)
     except KeyboardInterrupt:
         pass
     return 0
