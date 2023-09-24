@@ -250,20 +250,41 @@ def list_numeric_streams(options):
     for row in options.query_data(query, ()):
         print(row[0])
 # ------------------------------------------------------------------------------
+def numeric_stream_streams(options):
+    stream_ids = {}
+    plotnum = 0
+
+    for app_id, source_id, tag, full_id in options.identifiers:
+        if len(options.stream_ids) == 0:
+            stream_id_query = """
+                SELECT DISTINCT stream_id
+                FROM eagilog.numeric_streams
+                WHERE value_id = %s
+                ORDER BY stream_id
+            """
+            stream_ids[full_id] =\
+                [row[0] for row in options.query_data(stream_id_query, full_id)]
+            plotnum += len(stream_ids[full_id])
+        else:
+            stream_ids[full_id] = options.stream_ids
+            plotnum += len(options.stream_ids)
+
+    return stream_ids, plotnum
+# ------------------------------------------------------------------------------
 def numeric_stream_data(options, value_id, stream_id):
     query = """
         SELECT
             stream_id,
-            value_id,
-            value_time
-        FROM eagilog.numeric_stream
+            value_time,
+            value
+        FROM eagilog.numeric_streams
         WHERE stream_id = %s
         AND value_id = %s
         ORDER BY value_time
     """
 
     return numpy.fromiter((
-        [row[2].total_seconds(), row[3]]
+        [row[1].timestamp(), row[2]]
             for row in options.query_data(query, (stream_id, value_id))),
                 numpy.dtype((float, 2))).transpose()
 
@@ -275,8 +296,18 @@ def plot_numeric_streams(options):
     spl.set_ylabel("value")
     spl.grid(axis="y", alpha=0.25)
 
-    stream_ids = {}
-    plotnum = 0
+    stream_ids, plotnum = numeric_stream_streams(options)
+    plotidx = 0
+
+    for app_id, source_id, tag, full_id in options.identifiers:
+        for stream_id in stream_ids[full_id]:
+            t, val = \
+                numeric_stream_data(options, full_id, stream_id)
+            rgb = options.plot_color(plotidx, plotnum)
+            plotidx += 1
+
+            val_lbl = "%s/%d" % (full_id, stream_id)
+            spl.plot(t, val, label=val_lbl, color=rgb)
 
     spl.legend()
     fig.tight_layout()
@@ -299,6 +330,7 @@ def stream_profile_streams(options):
     plotnum = 0
 
     for app_id, source_id, tag, full_id in options.identifiers:
+        interval_id = (source_id, tag)
         if len(options.stream_ids) == 0:
             stream_id_query = """
                 SELECT DISTINCT stream_id
@@ -307,12 +339,11 @@ def stream_profile_streams(options):
                 AND tag = %s
                 ORDER BY stream_id
             """
-            interval_id = (source_id, tag)
             stream_ids[interval_id] =\
                 [row[0] for row in options.query_data(stream_id_query, interval_id)]
             plotnum += len(stream_ids[interval_id])
         else:
-            stream_ids[(source_id, tag)] = options.stream_ids
+            stream_ids[interval_id] = options.stream_ids
             plotnum += len(options.stream_ids)
 
     return stream_ids, plotnum
@@ -358,24 +389,9 @@ def plot_stream_profiles(options):
 
     for app_id, source_id, tag, full_id in options.identifiers:
         interval_id = (source_id, tag)
-        stream_count = len(stream_ids[interval_id])
-        if stream_count == 0:
-            stream_id_query = """
-                SELECT DISTINCT stream_id
-                FROM eagilog.profile_interval
-                WHERE source_id = coalesce(%s, source_id)
-                AND tag = %s
-            """
-            stream_ids = [row[0] for row in options.query_data(stream_id_query, interval_id)]
-            stream_count = len(stream_ids)
         for stream_id in stream_ids[interval_id]:
             t, min_ms, avg_ms, max_ms = \
-                stream_profile_data(
-                    options,
-                    source_id,
-                    tag,
-                    stream_id
-                )
+                stream_profile_data(options, source_id, tag, stream_id)
             rgb = options.plot_color(plotidx, plotnum)
             plotidx += 1
 
