@@ -1020,11 +1020,14 @@ class LogRenderer(object):
             _writeProgress(self._utils.formatDuration(estimated, 9))
             _writeProgress("│")
             width += 10
+            _writeProgress(self._utils.formatInteger(stream_id, 9))
+            _writeProgress("│")
+            width += 10
             width = self._output.columns() - width - 1
             _writeProgress(
                 self._utils.formatProgressBar(
-                    55, data.get("min"), data.get("max"), data.get("value")))
-            width += 55
+                    45, data.get("min"), data.get("max"), data.get("value")))
+            width += 45
             attribute = self.formatCurrentStreamAttrib(metadata, stream_id)
             _writeProgress(attribute)
             width += len(attribute)
@@ -1069,7 +1072,6 @@ class DbMetadata(object):
     def __init__(self, options, db_conn):
         self._db_conn = db_conn
         self._attrib_map = {
-            "stream_id": ("Stream", "int64"),
             "os_pid": ("PID", "int64"),
             "hostname": ("Host", "Hostname"),
             "os_name": ("OS", "string"),
@@ -1109,7 +1111,6 @@ class DbMetadata(object):
             return self._stream_metadata[stream_id]
         except KeyError:
             self._stream_metadata[stream_id] = self.queryStreamMetadata(stream_id)
-            self._stream_metadata[stream_id]["stream_id"] = stream_id
             return self._stream_metadata[stream_id]
 
     # --------------------------------------------------------------------------
