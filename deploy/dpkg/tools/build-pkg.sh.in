@@ -43,6 +43,9 @@ cp "${src_dir}/source/app/psql_logs-cl.py" \
 "${src_dir}/source/app/psql_logs-cl.py" \
 	--print-bash-completion "${bco_prefix}/eagine-psql-logs-cl"
 
+cp "${src_dir}/source/app/log-psql.sh" \
+   "${bin_prefix}/eagilog-psql"
+
 cp "${src_dir}/source/app/fmd_modify.py" \
    "${bin_prefix}/eagine-fmd-modify"
 "${src_dir}/source/app/fmd_modify.py" \
