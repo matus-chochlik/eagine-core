@@ -295,6 +295,19 @@ class LogFormattingUtils(object):
         return c("%dμs" % int(s*10**6))
 
     # --------------------------------------------------------------------------
+    def formatRatePerSec(self, r, w = 0):
+        c = self.getCenterText(w)
+        if r < 0.1:
+            return c("%3.1f per hour" % (float(r * 3600),))
+        if r < 10.0:
+            return c("%3.1f per min" % (float(r * 60),))
+        if r > 10000000.0:
+            return c("%3.1fM per sec" % (float(r) / 1000000,))
+        if r > 10000.0:
+            return c("%3.1fk per sec" % (float(r) / 1000,))
+        return c("%3.1f per sec" % (float(r),))
+
+    # --------------------------------------------------------------------------
     def formatIdentifier(self, i, w = 0):
         c = self.getCenterText(w)
         return c(i)
@@ -411,7 +424,8 @@ class LogFormattingUtils(object):
             "ByteSize": lambda n,v,c: self.formatByteSize(v),
             "YesNo": lambda n,v,c: self.formatYesNoMaybe(v),
             "YesNoMaybe": lambda n,v,c: self.formatYesNoMaybe(v),
-            "Ratio": lambda n,v,c, src_id: self.formatRatio(v),
+            "Ratio": lambda n,v,c: self.formatRatio(v),
+            "RatePerSec": lambda n,v,c: self.formatRatio(v),
             "MainPrgrss": lambda n,v,c: self.formatProgressValue(n, v, c),
             "Progress": lambda n,v,c: self.formatProgressValue(n, v, c)
         }
@@ -1055,6 +1069,7 @@ class DbMetadata(object):
     def __init__(self, options, db_conn):
         self._db_conn = db_conn
         self._attrib_map = {
+            "stream_id": ("Stream", "int64"),
             "os_pid": ("PID", "int64"),
             "hostname": ("Host", "Hostname"),
             "os_name": ("OS", "string"),
@@ -1094,6 +1109,7 @@ class DbMetadata(object):
             return self._stream_metadata[stream_id]
         except KeyError:
             self._stream_metadata[stream_id] = self.queryStreamMetadata(stream_id)
+            self._stream_metadata[stream_id]["stream_id"] = stream_id
             return self._stream_metadata[stream_id]
 
     # --------------------------------------------------------------------------
