@@ -425,7 +425,7 @@ class LogFormattingUtils(object):
             "YesNo": lambda n,v,c: self.formatYesNoMaybe(v),
             "YesNoMaybe": lambda n,v,c: self.formatYesNoMaybe(v),
             "Ratio": lambda n,v,c: self.formatRatio(v),
-            "RatePerSec": lambda n,v,c: self.formatRatio(v),
+            "RatePerSec": lambda n,v,c: self.formatRatePerSec(v),
             "MainPrgrss": lambda n,v,c: self.formatProgressValue(n, v, c),
             "Progress": lambda n,v,c: self.formatProgressValue(n, v, c)
         }
