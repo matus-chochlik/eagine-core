@@ -288,12 +288,19 @@ def plotLocatorReltime(interval):
     if min_t is None: min_t = 0.0
     if max_t is None: max_t = 1.0
     interval = max_t - min_t
-    tick_opts = [1,5,10,15,30,60,300,900,1800,3600]
+    tick_opts = [1,5,10,15,30,60,300,900,1800,3600,7200,10800,21600,43200,86400,7*86400]
     tick_maj = tick_opts[0]
+
+    def _found():
+        return interval / tick_maj < 12
+
     for t in tick_opts:
         tick_maj = t*60
-        if interval / tick_maj < 12:
+        if _found():
             break
+    while not _found():
+        tick_maj *= 2
+
     return tick_maj
 # ------------------------------------------------------------------------------
 # numeric stream
