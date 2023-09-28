@@ -1525,6 +1525,7 @@ SELECT
 	source_id || '.' || tag || '.' || arg_id AS value_id,
 	s.start_time,
 	s.finish_time,
+	e.entry_time,
 	s.start_time + e.entry_time AS value_time,
 	a.arg_type AS value_type,
 	a.value
@@ -1539,6 +1540,7 @@ SELECT
 	source_id || '.' || tag || '.' || arg_id AS value_id,
 	s.start_time,
 	s.finish_time,
+	e.entry_time,
 	s.start_time + e.entry_time AS value_time,
 	a.arg_type AS value_type,
 	a.value::DOUBLE PRECISION
