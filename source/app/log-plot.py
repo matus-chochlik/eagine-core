@@ -8,12 +8,14 @@
 import os
 import re
 import sys
+import math
 import numpy
 import getpass
 import argparse
 import colorsys
 import psycopg2
 import matplotlib.pyplot as plt
+import matplotlib.ticker as pltckr
 
 # ------------------------------------------------------------------------------
 # arguments
@@ -239,6 +241,61 @@ def getArgumentParser():
         """
     )
 # ------------------------------------------------------------------------------
+# plot functions
+# ------------------------------------------------------------------------------
+def formatRelTime(s, pos=None):
+    if s >= 60480000:
+        return "%dw" % (int(s) / 604800)
+    if s >= 604800:
+        m = int(s) % 604800
+        if m == 0:
+            return "%2dw" % (int(s) / 604800)
+        else:
+            return "%2dw %2dd" % (int(s) / 604800, m / 86400)
+    if s >= 86400:
+        m = int(s) % 86400
+        if m == 0:
+            return "%2dd" % (int(s) / 86400)
+        else:
+            return "%2dd %2dh" % (int(s) / 86400, m / 3600)
+    if s >= 3600:
+        m = int(s) % 3600
+        if m == 0:
+            return "%2dh" % (int(s) / 3600)
+        else:
+            return "%2dh %02dm" % (int(s) / 3600, m / 60)
+    if s >= 60:
+        return "%2dm %02ds" % (int(s) / 60, int(s) % 60)
+    if s >= 10:
+        return "%3ds" % int(s)
+    if s >= 0.01:
+        return "%4dms" % int(s*10**3)
+    if s <= 0.0:
+        return "0"
+    return "%dμs" % int(s*10**6)
+# ------------------------------------------------------------------------------
+def plotInitInterval():
+    return (None, None)
+# ------------------------------------------------------------------------------
+def plotUpdateInterval(interval, ts):
+    min_t, max_t = interval
+    min_t = min(ts) if min_t is None else min(min_t, min(ts))
+    max_t = max(ts) if max_t is None else max(max_t, max(ts))
+    return (min_t, max_t)
+# ------------------------------------------------------------------------------
+def plotLocatorReltime(interval):
+    min_t, max_t = interval
+    if min_t is None: min_t = 0.0
+    if max_t is None: max_t = 1.0
+    interval = max_t - min_t
+    tick_opts = [1,5,10,15,30,60,300,900,1800,3600]
+    tick_maj = tick_opts[0]
+    for t in tick_opts:
+        tick_maj = t*60
+        if interval / tick_maj < 12:
+            break
+    return tick_maj
+# ------------------------------------------------------------------------------
 # numeric stream
 # ------------------------------------------------------------------------------
 def list_numeric_streams(options):
@@ -275,7 +332,7 @@ def numeric_stream_data(options, value_id, stream_id):
     query = """
         SELECT
             stream_id,
-            value_time,
+            entry_time,
             value
         FROM eagilog.numeric_streams
         WHERE stream_id = %s
@@ -284,7 +341,7 @@ def numeric_stream_data(options, value_id, stream_id):
     """
 
     return numpy.fromiter((
-        [row[1].timestamp(), row[2]]
+        [row[1].total_seconds(), row[2]]
             for row in options.query_data(query, (stream_id, value_id))),
                 numpy.dtype((float, 2))).transpose()
 
@@ -298,17 +355,20 @@ def plot_numeric_streams(options):
 
     stream_ids, plotnum = numeric_stream_streams(options)
     plotidx = 0
+    interval = plotInitInterval()
 
     for app_id, source_id, tag, full_id in options.identifiers:
         for stream_id in stream_ids[full_id]:
-            t, val = \
-                numeric_stream_data(options, full_id, stream_id)
+            t, val = numeric_stream_data(options, full_id, stream_id)
+            interval = plotUpdateInterval(interval, t)
             rgb = options.plot_color(plotidx, plotnum)
             plotidx += 1
 
             val_lbl = "%s/%d" % (full_id, stream_id)
             spl.plot(t, val, label=val_lbl, color=rgb)
 
+    spl.xaxis.set_major_locator(pltckr.MultipleLocator(plotLocatorReltime(interval)))
+    spl.xaxis.set_major_formatter(pltckr.FuncFormatter(formatRelTime))
     spl.legend()
     fig.tight_layout()
     options.finish_plot(fig)
@@ -387,11 +447,14 @@ def plot_stream_profiles(options):
     stream_ids, plotnum = stream_profile_streams(options)
     plotidx = 0
 
+    interval = plotInitInterval()
+
     for app_id, source_id, tag, full_id in options.identifiers:
         interval_id = (source_id, tag)
         for stream_id in stream_ids[interval_id]:
             t, min_ms, avg_ms, max_ms = \
                 stream_profile_data(options, source_id, tag, stream_id)
+            interval = plotUpdateInterval(interval, t)
             rgb = options.plot_color(plotidx, plotnum)
             plotidx += 1
 
@@ -403,7 +466,11 @@ def plot_stream_profiles(options):
             spl[1].plot(t, max_ms, color=rgb)
             spl[1].plot(t, avg_ms, color=options.brighter_color(rgb))
 
+    spl[0].xaxis.set_major_locator(pltckr.MultipleLocator(plotLocatorReltime(interval)))
+    spl[0].xaxis.set_major_formatter(pltckr.FuncFormatter(formatRelTime))
     spl[0].legend()
+    spl[1].xaxis.set_major_locator(pltckr.MultipleLocator(plotLocatorReltime(interval)))
+    spl[1].xaxis.set_major_formatter(pltckr.FuncFormatter(formatRelTime))
     fig.tight_layout()
     options.finish_plot(fig)
 
