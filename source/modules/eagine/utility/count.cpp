@@ -5,42 +5,53 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#include <cassert>
+
 export module eagine.core.utility:count;
+import std;
+import eagine.core.types;
 
 namespace eagine {
 
-/// @brief Class counting invocation of its call operator.
+/// @brief Class counting down from the specified number.
 /// @ingroup functional
-export template <typename Int = int>
-class count_t {
+export template <typename Count = unsigned>
+class countdown {
 public:
-    /// @brief The value type alias.
-    using value_type = Int;
+    /// @brief Specifies the number of ticks before this countdown completes.
+    constexpr countdown(std::integral auto c) noexcept
+      : _c{limit_cast<Count>(c)} {}
 
-    /// @brief Default construction, initializes counter to zero.
-    constexpr count_t() noexcept = default;
-
-    /// @brief Returns the current value on the counter.
-    [[nodiscard]] constexpr value_type value() const noexcept {
-        return _c;
+    /// @brief Indicates if the countdown is completed.
+    /// @see tick
+    constexpr auto completed() const noexcept -> bool {
+        return _c == Count(0);
     }
 
-    /// @brief Implicit conversion to value type, returns counter value.
-    /// @see value
-    [[nodiscard]] constexpr operator value_type() const noexcept {
-        return _c;
+    /// @brief Indicates if the countdown is not completed.
+    /// @see completed
+    /// @returns not completed()
+    explicit constexpr operator bool() const noexcept {
+        return not completed();
     }
 
-    /// @brief Call operator incrementing the counter state.
-    /// @see value
-    template <typename... P>
-    constexpr void operator()(const P&...) noexcept {
-        ++_c;
+    /// @brief Decreases the count on this countdown.
+    /// @see completed
+    /// @see pre not completed()
+    constexpr auto tick() noexcept -> countdown& {
+        assert(not completed());
+        _c--;
+        return *this;
     }
 
 private:
-    Int _c{Int(0)};
+    Count _c;
 };
+
+template <std::integral Int>
+countdown(Int) -> countdown<std::make_unsigned_t<Int>>;
 
 } // namespace eagine
 
