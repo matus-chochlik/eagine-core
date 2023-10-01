@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <vector>
-
 export module std:vector;
-export import std_vector;
+export import <vector>;
 
 export namespace std {
 //------------------------------------------------------------------------------

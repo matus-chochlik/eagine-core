@@ -5,12 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <ranges>
-
 export module std:ranges;
-export import std_private_ranges_iota_view;
-export import std_private_ranges_view_interface;
+export import <ranges>;
 
 export namespace std {
 namespace ranges {

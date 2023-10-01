@@ -5,12 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <algorithm>
-
 export module std:algorithm;
-export import std_algorithm;
-export import std_private_algorithm_find_if;
+export import <algorithm>;
 
 export namespace std {
 //------------------------------------------------------------------------------

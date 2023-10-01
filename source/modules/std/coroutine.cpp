@@ -5,13 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <coroutine>
-
 export module std:coroutine;
-export import std_private_coroutine_coroutine_handle;
-export import std_private_coroutine_coroutine_traits;
-export import std_private_coroutine_trivial_awaitables;
+export import <coroutine>;
 
 export namespace std {
 //------------------------------------------------------------------------------

@@ -5,13 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <filesystem>
-
 export module std:filesystem;
-export import std_private_filesystem_path;
-export import std_private_filesystem_perms;
-export import std_private_filesystem_file_status;
+export import <filesystem>;
 
 export namespace std {
 namespace filesystem {

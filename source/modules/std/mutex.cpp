@@ -5,13 +5,9 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <mutex>
-#include <shared_mutex>
-
 export module std:mutex;
-export import std_mutex;
-export import std_shared_mutex;
+export import <mutex>;
+export import <shared_mutex>;
 
 export namespace std {
 //------------------------------------------------------------------------------

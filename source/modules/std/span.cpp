@@ -5,12 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <span>
-
 export module std:span;
-export import std_span;
-export import std_private_span_span_fwd;
+export import <span>;
 
 export namespace std {
 //------------------------------------------------------------------------------

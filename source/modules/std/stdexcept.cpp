@@ -5,11 +5,9 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <exception>
-#include <stdexcept>
-
 export module std:stdexcept;
+export import <exception>;
+export import <stdexcept>;
 
 export namespace std {
 //------------------------------------------------------------------------------

@@ -5,10 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <cstdint>
-
 export module std:cstdint;
+export import <cstdint>;
 
 export namespace std {
 //------------------------------------------------------------------------------

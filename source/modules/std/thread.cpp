@@ -5,14 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <thread>
-
 export module std:thread;
-export import std_thread;
-export import std_private_threading_support;
-export import std_private_thread_thread;
-export import std_private_thread_this_thread;
+export import <thread>;
 
 export namespace std {
 //------------------------------------------------------------------------------

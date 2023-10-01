@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <numeric>
-
 export module std:numeric;
-export import std_numeric;
+export import <numeric>;
 
 export namespace std {
 //------------------------------------------------------------------------------

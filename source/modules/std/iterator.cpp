@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <iterator>
-
 export module std:iterator;
-export import std_private_iterator_default_sentinel;
+export import <iterator>;
 
 export namespace std {
 //------------------------------------------------------------------------------

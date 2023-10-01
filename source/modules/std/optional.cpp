@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <optional>
-
 export module std:optional;
-export import std_optional;
+export import <optional>;
 
 export namespace std {
 //------------------------------------------------------------------------------

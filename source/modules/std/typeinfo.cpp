@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <typeinfo>
-
 export module std:typeinfo;
-export import std_typeinfo;
+export import <typeinfo>;
 
 export namespace std {
 //------------------------------------------------------------------------------

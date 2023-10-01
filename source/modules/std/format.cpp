@@ -5,12 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <format>
-
 export module std:format;
-export import std_format;
-export import std_private_format_format_functions;
+export import <format>;
 
 export namespace std {
 //------------------------------------------------------------------------------

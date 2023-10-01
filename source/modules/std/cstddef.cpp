@@ -5,12 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <cstddef>
-
 export module std:cstddef;
-
-export import _Builtin_stddef_max_align_t;
+export import <cstddef>;
 
 export namespace std {
 //------------------------------------------------------------------------------

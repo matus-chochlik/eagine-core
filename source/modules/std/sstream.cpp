@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <sstream>
-
 export module std:sstream;
-export import std_sstream;
+export import <sstream>;
 
 export namespace std {
 //------------------------------------------------------------------------------

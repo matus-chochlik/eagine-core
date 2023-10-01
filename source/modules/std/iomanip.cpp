@@ -5,10 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <iomanip>
-
 export module std:iomanip;
+export import <iomanip>;
 
 export namespace std {
 //------------------------------------------------------------------------------

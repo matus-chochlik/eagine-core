@@ -5,17 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <random>
-
 export module std:random;
-export import std_private_random_random_device;
-export import std_private_random_linear_congruential_engine;
-export import std_private_random_independent_bits_engine;
-export import std_private_random_mersenne_twister_engine;
-export import std_private_random_normal_distribution;
-export import std_private_random_uniform_int_distribution;
-export import std_private_random_uniform_real_distribution;
+export import <random>;
 
 export namespace std {
 //------------------------------------------------------------------------------

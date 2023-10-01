@@ -5,12 +5,9 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <memory>
-
 export module std:memory;
-export import std_new;
-export import std_private_memory_unique_ptr;
+export import <memory>;
+export import <new>;
 
 export namespace std {
 //------------------------------------------------------------------------------

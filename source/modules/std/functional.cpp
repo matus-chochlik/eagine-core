@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <functional>
-
 export module std:functional;
-export import std_private_functional_function;
+export import <functional>;
 
 export namespace std {
 //------------------------------------------------------------------------------

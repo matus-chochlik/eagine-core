@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <atomic>
-
 export module std:atomic;
-export import std_private_atomic_atomic_flag;
+export import <atomic>;
 
 export namespace std {
 //------------------------------------------------------------------------------

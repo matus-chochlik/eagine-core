@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <array>
-
 export module std:array;
-export import std_array;
+export import <array>;
 
 export namespace std {
 //------------------------------------------------------------------------------

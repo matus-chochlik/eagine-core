@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <regex>
-
 export module std:regex;
-export import std_regex;
+export import <regex>;
 
 export namespace std {
 //------------------------------------------------------------------------------

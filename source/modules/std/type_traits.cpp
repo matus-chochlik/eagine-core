@@ -5,17 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <type_traits>
-
 export module std:type_traits;
-export import std_private_type_traits_aligned_storage;
-export import std_private_type_traits_extent;
-export import std_private_type_traits_integral_constant;
-export import std_private_type_traits_is_abstract;
-export import std_private_type_traits_is_member_pointer;
-export import std_private_type_traits_is_member_function_pointer;
-export import std_private_type_traits_is_member_object_pointer;
+export import <type_traits>;
 
 export namespace std {
 //------------------------------------------------------------------------------

@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <variant>
-
 export module std:variant;
-export import std_variant;
+export import <variant>;
 
 export namespace std {
 //------------------------------------------------------------------------------

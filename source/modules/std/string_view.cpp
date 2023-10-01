@@ -5,11 +5,8 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-#include <string_view>
-
 export module std:string_view;
-export import std_string_view;
+export import <string_view>;
 
 export namespace std {
 //------------------------------------------------------------------------------
