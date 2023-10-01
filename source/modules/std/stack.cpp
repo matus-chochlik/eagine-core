@@ -8,18 +8,3 @@
 export module std:stack;
 export import <stack>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::stack;
-using std::swap;
-using std::uses_allocator;
-
-using std::operator==;
-using std::operator!=;
-using std::operator<;
-using std::operator>;
-using std::operator<=;
-using std::operator>=;
-using std::operator<=>;
-//------------------------------------------------------------------------------
-} // namespace std

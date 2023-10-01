@@ -8,14 +8,3 @@
 export module std:functional;
 export import <functional>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::cref;
-using std::greater;
-using std::invoke;
-using std::invoke_r;
-using std::less;
-using std::ref;
-using std::reference_wrapper;
-//------------------------------------------------------------------------------
-} // namespace std

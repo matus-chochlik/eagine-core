@@ -8,18 +8,3 @@
 export module std:queue;
 export import <queue>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::queue;
-using std::swap;
-using std::uses_allocator;
-
-using std::operator==;
-using std::operator!=;
-using std::operator<;
-using std::operator>;
-using std::operator<=;
-using std::operator>=;
-using std::operator<=>;
-//------------------------------------------------------------------------------
-} // namespace std

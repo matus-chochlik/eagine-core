@@ -8,16 +8,3 @@
 export module std:fstream;
 export import <fstream>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::basic_filebuf;
-using std::basic_fstream;
-using std::basic_ifstream;
-using std::basic_ofstream;
-using std::filebuf;
-using std::fstream;
-using std::ifstream;
-using std::ofstream;
-using std::swap;
-//------------------------------------------------------------------------------
-} // namespace std

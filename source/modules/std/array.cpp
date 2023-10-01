@@ -8,11 +8,3 @@
 export module std:array;
 export import <array>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::array;
-using std::to_array;
-
-using std::operator==;
-//------------------------------------------------------------------------------
-} // namespace std

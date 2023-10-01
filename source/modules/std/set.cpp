@@ -8,19 +8,3 @@
 export module std:set;
 export import <set>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::erase_if;
-using std::less;
-using std::multiset;
-using std::set;
-using std::swap;
-
-using std::operator==;
-using std::operator<=>;
-namespace pmr {
-using std::pmr::multiset;
-using std::pmr::set;
-} // namespace pmr
-//------------------------------------------------------------------------------
-} // namespace std

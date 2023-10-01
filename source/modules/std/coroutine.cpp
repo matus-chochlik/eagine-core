@@ -8,17 +8,3 @@
 export module std:coroutine;
 export import <coroutine>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::coroutine_handle;
-using std::coroutine_traits;
-using std::noop_coroutine;
-using std::noop_coroutine_handle;
-using std::noop_coroutine_promise;
-using std::suspend_always;
-using std::suspend_never;
-
-using std::operator==;
-using std::operator<=>;
-//------------------------------------------------------------------------------
-} // namespace std

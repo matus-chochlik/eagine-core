@@ -8,15 +8,3 @@
 export module std:sstream;
 export import <sstream>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::basic_istringstream;
-using std::basic_ostringstream;
-using std::basic_stringbuf;
-using std::basic_stringstream;
-using std::istringstream;
-using std::ostringstream;
-using std::stringbuf;
-using std::stringstream;
-//------------------------------------------------------------------------------
-} // namespace std

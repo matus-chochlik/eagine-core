@@ -8,8 +8,3 @@
 export module std:initializer_list;
 export import <initializer_list>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::initializer_list;
-//------------------------------------------------------------------------------
-} // namespace std

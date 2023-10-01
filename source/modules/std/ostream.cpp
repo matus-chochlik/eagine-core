@@ -8,14 +8,3 @@
 export module std:ostream;
 export import <ostream>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::basic_ostream;
-using std::endl;
-using std::ends;
-using std::flush;
-using std::ostream;
-
-using std::operator<<;
-//------------------------------------------------------------------------------
-} // namespace std

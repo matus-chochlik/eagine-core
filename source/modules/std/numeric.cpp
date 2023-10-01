@@ -8,9 +8,3 @@
 export module std:numeric;
 export import <numeric>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::accumulate;
-using std::iota;
-//------------------------------------------------------------------------------
-} // namespace std

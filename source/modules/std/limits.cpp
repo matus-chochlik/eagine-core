@@ -8,10 +8,3 @@
 export module std:limits;
 export import <limits>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::float_denorm_style;
-using std::float_round_style;
-using std::numeric_limits;
-//------------------------------------------------------------------------------
-} // namespace std

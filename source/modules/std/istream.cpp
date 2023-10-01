@@ -8,11 +8,3 @@
 export module std:istream;
 export import <istream>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::basic_istream;
-using std::istream;
-
-using std::operator>>;
-//------------------------------------------------------------------------------
-} // namespace std

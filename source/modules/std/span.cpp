@@ -8,11 +8,3 @@
 export module std:span;
 export import <span>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::as_bytes;
-using std::as_writable_bytes;
-using std::dynamic_extent;
-using std::span;
-//------------------------------------------------------------------------------
-} // namespace std

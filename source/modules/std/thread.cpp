@@ -8,22 +8,3 @@
 export module std:thread;
 export import <thread>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::hash;
-using std::swap;
-using std::thread;
-
-using std::operator==;
-using std::operator<=>;
-using std::operator<<;
-
-namespace this_thread {
-using std::this_thread::get_id;
-
-using std::this_thread::sleep_for;
-using std::this_thread::sleep_until;
-using std::this_thread::yield;
-} // namespace this_thread
-//------------------------------------------------------------------------------
-} // namespace std

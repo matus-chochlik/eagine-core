@@ -8,10 +8,3 @@
 export module std:csignal;
 export import <csignal>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::raise;
-using std::sig_atomic_t;
-using std::signal;
-//------------------------------------------------------------------------------
-} // namespace std

@@ -8,14 +8,3 @@
 export module std:cstring;
 export import <cstring>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::memcmp;
-using std::memcpy;
-using std::memmove;
-using std::memset;
-using std::strcmp;
-using std::strlen;
-using std::strncmp;
-//------------------------------------------------------------------------------
-} // namespace std

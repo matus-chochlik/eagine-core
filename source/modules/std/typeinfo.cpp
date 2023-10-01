@@ -8,10 +8,3 @@
 export module std:typeinfo;
 export import <typeinfo>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::bad_cast;
-using std::bad_typeid;
-using std::type_info;
-//------------------------------------------------------------------------------
-} // namespace std

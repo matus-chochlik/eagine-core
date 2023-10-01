@@ -8,11 +8,3 @@
 export module std:iostream;
 export import <iostream>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::cerr;
-using std::cin;
-using std::clog;
-using std::cout;
-//------------------------------------------------------------------------------
-} // namespace std

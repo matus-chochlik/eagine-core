@@ -8,16 +8,3 @@
 export module std:vector;
 export import <vector>;
 
-export namespace std {
-//------------------------------------------------------------------------------
-using std::erase;
-using std::erase_if;
-using std::swap;
-using std::vector;
-using std::operator==;
-using std::operator<=>;
-namespace pmr {
-using std::pmr::vector;
-}
-//------------------------------------------------------------------------------
-} // namespace std
