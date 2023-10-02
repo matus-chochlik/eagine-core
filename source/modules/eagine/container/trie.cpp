@@ -19,7 +19,14 @@ namespace eagine {
 /// @brief Common base class for trie implementation
 /// @ingroup container
 /// @note Do not use this class directly, use basic_trie instead.
-export class basic_trie_utils {
+class basic_trie_utils {
+public:
+    using char_index_t = std::uint8_t;
+    static consteval auto invalid_char_index() noexcept -> char_index_t {
+        return std::numeric_limits<char_index_t>::max();
+    }
+
+private:
     template <std::size_t I>
     using index_constant = std::integral_constant<std::size_t, I>;
 
@@ -34,25 +41,25 @@ export class basic_trie_utils {
         }
     }
 
-    template <memory::string_literal Chars, std::size_t Ofs, std::size_t Len>
-    static constexpr auto do_get_char_index(
-      char,
+    template <memory::string_literal chars, std::size_t Ofs, std::size_t Len>
+    static consteval auto _do_find_char_index(
+      const char,
       index_constant<Ofs>,
       index_constant<Len>,
-      index_constant<Len>) noexcept -> std::optional<std::size_t> {
-        return {};
+      index_constant<Len>) noexcept -> char_index_t {
+        return invalid_char_index();
     }
 
-    template <memory::string_literal Chars, std::size_t Ofs>
-    static constexpr auto do_get_char_index(
-      char c,
+    template <memory::string_literal chars, std::size_t Ofs>
+    static consteval auto _do_find_char_index(
+      const char c,
       index_constant<Ofs>,
       index_constant<0>,
-      index_constant<1>) noexcept -> std::optional<std::size_t> {
-        if(c == Chars[Ofs]) {
-            return Ofs;
+      index_constant<1>) noexcept -> char_index_t {
+        if(c == chars[Ofs]) {
+            return static_cast<char_index_t>(Ofs);
         }
-        return {};
+        return invalid_char_index();
     }
 
     template <
@@ -60,70 +67,110 @@ export class basic_trie_utils {
       std::size_t Ofs,
       std::size_t Piv,
       std::size_t Len>
-    static constexpr auto do_get_char_index(
-      char c,
+    static consteval auto _do_find_char_index(
+      const char c,
       index_constant<Ofs>,
       index_constant<Piv>,
-      index_constant<Len>) noexcept -> std::optional<std::size_t> {
+      index_constant<Len>) noexcept -> char_index_t {
         if(c < chars[Ofs + Piv]) {
             if constexpr(Piv > 0) {
-                return do_get_char_index<chars>(
+                return _do_find_char_index<chars>(
                   c,
                   index_constant<Ofs>{},
                   index_constant<_pivot<Piv>()>{},
                   index_constant<Piv>{});
             } else {
-                return {};
+                return invalid_char_index();
             }
         } else if(c > chars[Ofs + Piv]) {
             if constexpr(Piv + 1 < Len) {
-                return do_get_char_index<chars>(
+                return _do_find_char_index<chars>(
                   c,
                   index_constant<Ofs + Piv + 1>{},
                   index_constant<_pivot<Len - Piv - 1>()>{},
                   index_constant<Len - Piv - 1>{});
             } else {
-                return {};
+                return invalid_char_index();
             }
         } else {
-            return {Ofs + Piv};
+            return static_cast<char_index_t>(Ofs + Piv);
         }
     }
-
-public:
     template <memory::string_literal chars>
-    [[nodiscard]] static constexpr auto get_char_index(char c) noexcept
-      -> std::optional<std::size_t> {
-        return do_get_char_index<chars>(
+    [[nodiscard]] static consteval auto _find_char_index(const char c) noexcept
+      -> char_index_t {
+        return _do_find_char_index<chars>(
           c,
           index_constant<0>{},
           index_constant<_pivot<chars.size() - 1U>()>{},
           index_constant<chars.size() - 1U>{});
+    }
+
+    template <memory::string_literal chars, std::size_t... I>
+    static consteval auto _get_char_map(std::index_sequence<I...>) noexcept
+      -> std::array<char_index_t, sizeof...(I)> {
+        return {{_find_char_index<chars>(char(I))...}};
+    }
+
+public:
+    template <memory::string_literal chars, std::size_t N>
+    static constexpr auto get_char_map() noexcept {
+        return _get_char_map<chars>(std::make_index_sequence<N>{});
     }
 };
 //------------------------------------------------------------------------------
 /// @brief Implementation template for basic_trie.
 /// @ingroup container
 /// @note Do not use directly, use basic_trie instead.
-export template <memory::string_literal Chars, std::size_t N, typename Value>
-class basic_trie_impl : private basic_trie_utils {
-    static_assert(std::is_sorted(Chars.begin(), Chars.begin() + N - 1));
-    using key_type = std::array<std::uint32_t, N>;
-    using node_type = std::tuple<key_type, Value, bool>;
+export template <
+  memory::string_literal chars,
+  std::size_t N,
+  typename Value,
+  typename Index = std::uint32_t>
+class basic_trie_impl {
+    static_assert(std::is_sorted(chars.begin(), chars.begin() + N - 1));
+
+    using key_type = std::array<Index, N>;
+    struct node_type {
+        key_type next{};
+        std::optional<Value> object{};
+    };
+
+    static constexpr auto _whole_key_done(
+      const string_view key,
+      span_size_t offs) noexcept -> bool {
+        return offs == key.size();
+    }
+
+    constexpr auto _get_char_index(const char c) const noexcept
+      -> std::optional<std::size_t> {
+        const auto idx{_char_map[static_cast<std::size_t>(c)]};
+        if(idx != basic_trie_utils::invalid_char_index()) [[likely]] {
+            return {static_cast<std::size_t>(idx)};
+        }
+        return {};
+    }
+
+    static constexpr auto _is_no_index(const std::size_t idx) noexcept {
+        return idx == 0;
+    }
+
+    constexpr auto _is_valid_index(const std::size_t idx) const noexcept {
+        return idx < _nodes.size();
+    }
 
     auto _find_insert_pos(const string_view key) const noexcept
       -> std::tuple<std::size_t, span_size_t, bool> {
         std::size_t iidx{0U};
         span_size_t offs{0};
         bool can_insert{true};
-        while(offs < key.size()) {
-            if(const auto cidx{this->get_char_index<Chars>(key[offs])})
-              [[likely]] {
-                const auto next{std_size(std::get<0>(_nodes[iidx])[*cidx])};
-                if(next == 0) {
+        while(not _whole_key_done(key, offs)) {
+            if(const auto cidx{_get_char_index(key[offs])}) [[likely]] {
+                const auto next{std_size(_nodes[iidx].next[*cidx])};
+                if(_is_no_index(next)) {
                     break;
                 } else {
-                    assert(next < _nodes.size());
+                    assert(_is_valid_index(next));
                     iidx = next;
                     ++offs;
                 }
@@ -132,8 +179,44 @@ class basic_trie_impl : private basic_trie_utils {
                 break;
             }
         }
-
         return {iidx, offs, can_insert};
+    }
+
+    auto _get_next_idx(const std::size_t cidx) noexcept -> std::size_t {
+        const std::size_t nidx{_nodes.size()};
+        _nodes.emplace_back(node_type{});
+        return nidx;
+    }
+
+    template <typename Function, typename Nodes>
+    static void _do_traverse(Function&& function, Nodes& nodes) noexcept {
+        std::string str;
+        str.reserve(16U);
+        std::vector<std::array<std::size_t, 2U>> idx;
+        idx.reserve(16U);
+        idx.push_back({0U, 0U});
+        while(not idx.empty()) {
+            auto& [cidx, nidx] = idx.back();
+            while(cidx < chars.size()) {
+                if(not _is_no_index(nodes[nidx].next[cidx])) {
+                    break;
+                }
+                ++cidx;
+            }
+            if(nodes[nidx].object.has_value()) {
+                function(string_view{str}, *nodes[nidx].object);
+            }
+            if(cidx == chars.size()) {
+                str.pop_back();
+                idx.pop_back();
+                if(not idx.empty()) {
+                    ++idx.back()[0];
+                }
+            } else {
+                idx.push_back({0U, nodes[nidx].next[cidx]});
+                str.push_back(chars[cidx]);
+            }
+        }
     }
 
 public:
@@ -144,7 +227,14 @@ public:
 
     /// @brief Returns a range of chars that valid keys for this trie can use.
     [[nodiscard]] constexpr auto valid_chars() const noexcept -> string_view {
-        return Chars;
+        return chars;
+    }
+
+    /// @brief Reserves space for the specified count of nodes.
+    /// @see add
+    auto reserve(span_size_t count) -> auto& {
+        _nodes.reserve(std_size(count));
+        return *this;
     }
 
     /// @brief Inserts a new value under the specified key string.
@@ -154,23 +244,19 @@ public:
     auto insert(const string_view key, Value value = {}) noexcept -> bool {
         auto [iidx, offs, can_insert] = _find_insert_pos(key);
         if(can_insert) {
-            while(offs < key.size()) {
-                const auto next{_nodes.size()};
-                _nodes.emplace_back(node_type{});
-                if(const auto cidx{this->get_char_index<Chars>(key[offs])}) {
-                    std::get<0>(_nodes[iidx])[*cidx] =
-                      limit_cast<std::uint32_t>(next);
-                    iidx = next;
-                    ++offs;
-                } else {
+            while(not _whole_key_done(key, offs)) {
+                const auto cidx{_get_char_index(key[offs])};
+                if(not cidx) [[unlikely]] {
                     can_insert = false;
                     break;
                 }
+                const auto next{_get_next_idx(*cidx)};
+                _nodes[iidx].next[*cidx] = limit_cast<Index>(next);
+                iidx = next;
+                ++offs;
             }
-            if(offs == key.size()) {
-                auto& node{_nodes[iidx]};
-                std::get<1>(node) = std::move(value);
-                std::get<2>(node) = true;
+            if(_whole_key_done(key, offs)) [[likely]] {
+                _nodes[iidx].object = std::move(value);
             }
         }
         return can_insert;
@@ -187,9 +273,9 @@ public:
 
     /// @brief Checks if the specified key is contained in this trie.
     [[nodiscard]] auto contains(const string_view key) const noexcept -> bool {
-        auto [iidx, offs, can_insert] = _find_insert_pos(key);
-        if(can_insert and (offs == key.size())) {
-            return std::get<2>(_nodes[iidx]);
+        auto [iidx, offs, is_valid] = _find_insert_pos(key);
+        if(is_valid and _whole_key_done(key, offs)) {
+            return _nodes[iidx].object.has_value();
         }
         return false;
     }
@@ -197,21 +283,71 @@ public:
     /// @brief Tries to find the value stored under the specified key.
     [[nodiscard]] auto find(const string_view key) const noexcept
       -> optional_reference<const Value> {
-        auto [fidx, offs, can_insert] = _find_insert_pos(key);
-        if(can_insert and (offs == key.size())) {
-            auto& node{_nodes[fidx]};
-            if(std::get<2>(node)) {
-                return {std::get<1>(node)};
-            }
+        auto [fidx, offs, is_valid] = _find_insert_pos(key);
+        if(is_valid and _whole_key_done(key, offs)) {
+            return {_nodes[fidx].object};
         }
         return {nothing};
+    }
+
+    /// @brief Marks the value stored under the specified key as removed.
+    [[nodiscard]] auto remove(const string_view key) noexcept -> bool {
+        auto [fidx, offs, is_valid] = _find_insert_pos(key);
+        if(is_valid and _whole_key_done(key, offs)) {
+            if(auto& object{_nodes[fidx].object}) {
+                object.reset();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template <typename Function>
+    void traverse(Function&& function) noexcept {
+        _do_traverse(std::forward<Function>(function), _nodes);
+    }
+
+    template <typename Function>
+    void traverse(Function&& function) const noexcept {
+        _do_traverse(std::forward<Function>(function), _nodes);
     }
 
     [[nodiscard]] auto underlying() const noexcept -> span<const node_type> {
         return view(_nodes);
     }
 
+    [[nodiscard]] auto node_count() const noexcept -> span_size_t {
+        return span_size(_nodes.size());
+    }
+
+    [[nodiscard]] auto value_node_count() const noexcept -> span_size_t {
+        return span_size(
+          std::count_if(_nodes.begin(), _nodes.end(), [](const auto& n) {
+              return n.object.has_value();
+          }));
+    }
+
+    [[nodiscard]] auto internal_node_count() const noexcept -> span_size_t {
+        return span_size(
+          std::count_if(_nodes.begin(), _nodes.end(), [](const auto& n) {
+              return not n.object.has_value();
+          }));
+    }
+
+    [[nodiscard]] auto overhead() const noexcept -> float {
+        if(const auto c{value_node_count()}; c > 0) {
+            return float(internal_node_count()) / float(c);
+        }
+        return 1.F;
+    }
+
+    [[nodiscard]] auto storage_bytes() const noexcept -> std::size_t {
+        return sizeof(_nodes) + sizeof(node_type) * _nodes.size();
+    }
+
 private:
+    std::array<std::uint8_t, 128U> _char_map{
+      basic_trie_utils::get_char_map<chars, 128U>()};
     std::vector<node_type> _nodes;
 };
 //------------------------------------------------------------------------------
@@ -221,8 +357,12 @@ export template <memory::string_literal chars, typename Value = nothing_t>
 using basic_trie = basic_trie_impl<chars, chars.size(), Value>;
 //------------------------------------------------------------------------------
 export template <typename Value = nothing_t>
+using basic_dec_identifier_trie = basic_trie<"0123456789", Value>;
+
+export template <typename Value = nothing_t>
 using basic_lc_identifier_trie =
   basic_trie<"0123456789_abcdefghijklmnopqrstuvwxyz", Value>;
+
 export template <typename Value = nothing_t>
 using basic_identifier_trie = basic_trie<
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",

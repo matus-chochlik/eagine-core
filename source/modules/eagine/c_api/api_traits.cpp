@@ -17,7 +17,7 @@ namespace eagine::c_api {
 /// @ingroup c_api_wrap
 export struct default_traits {
     template <typename Tag, typename Signature>
-    using function_pointer = std::add_pointer<Signature>;
+    using function_pointer = std::add_pointer_t<Signature>;
 
     template <typename Api, typename Type>
     auto load_constant(Api&, const string_view, const std::type_identity<Type>)
@@ -49,26 +49,52 @@ export struct default_traits {
     template <typename Tag>
     static constexpr void fallback(const Tag, const std::type_identity<void>) {}
 
-    template <typename RV, typename Tag, typename... Params, typename... Args>
+    template <typename RV, typename Tag, typename... Params>
     static constexpr auto call_static(
       const Tag tag,
       RV (*function)(Params...),
-      Args&&... args) -> adapt_rv<RV> {
-        if(function) {
-            return function(
-              std::forward<Args>(args)...); // NOLINT(hicpp-no-array-decay)
+      Params... params) -> adapt_rv<RV> {
+        if(function) [[likely]] {
+            // NOLINTNEXTLINE(hicpp-no-array-decay)
+            return function(params...);
         }
         return fallback(tag, std::type_identity<RV>());
     }
 
-    template <typename RV, typename Tag, typename... Params, typename... Args>
+    template <typename RV, typename Tag, typename... Params>
+    static constexpr auto call_static(
+      const Tag tag,
+      RV (*function)(Params..., ...),
+      Params... params,
+      auto... args) -> adapt_rv<RV> {
+        if(function) [[likely]] {
+            // NOLINTNEXTLINE(hicpp-vararg, hicpp-no-array-decay)
+            return function(params..., args...);
+        }
+        return fallback(tag, std::type_identity<RV>());
+    }
+
+    template <typename RV, typename Tag, typename... Params>
     static constexpr auto call_dynamic(
       const Tag tag,
       RV (*function)(Params...),
-      Args&&... args) -> adapt_rv<RV> {
+      Params... params) -> adapt_rv<RV> {
         if(function) {
-            return function(
-              std::forward<Args>(args)...); // NOLINT(hicpp-no-array-decay)
+            // NOLINTNEXTLINE(hicpp-no-array-decay)
+            return function(params...);
+        }
+        return fallback(tag, std::type_identity<RV>());
+    }
+
+    template <typename RV, typename Tag, typename... Params>
+    static constexpr auto call_dynamic(
+      const Tag tag,
+      RV (*function)(Params..., ...),
+      Params... params,
+      auto... args) -> adapt_rv<RV> {
+        if(function) {
+            // NOLINTNEXTLINE(hicpp-vararg, hicpp-no-array-decay)
+            return function(params..., args...);
         }
         return fallback(tag, std::type_identity<RV>());
     }

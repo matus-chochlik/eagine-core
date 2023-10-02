@@ -33,6 +33,16 @@ install(
 	RENAME eagine-log-schema-stats
 	DESTINATION bin
 )
+install(
+	PROGRAMS log-psql.sh
+	RENAME eagilog-psql
+	DESTINATION bin
+)
+install(
+	PROGRAMS log-plot.sh
+	RENAME eagilog-plot
+	DESTINATION bin
+)
 
 install(
 	PROGRAMS servicectl.py

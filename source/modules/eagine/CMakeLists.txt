@@ -63,6 +63,7 @@ eagine_add_module_tests(
 	UNITS
 		embed
 	IMPORTS
+		std
 		eagine.core
 )
 

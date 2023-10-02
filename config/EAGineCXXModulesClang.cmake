@@ -60,6 +60,12 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				-fmodules
 				-Wno-read-modules-implicitly
 				"-fprebuilt-module-path=${CMAKE_CURRENT_BINARY_DIR}")
+		if("${EAGINE_MODULE_PROPER}" STREQUAL "std")
+			target_compile_options(
+				${EAGINE_MODULE_OBJECTS}
+				PRIVATE
+					-Wno-reserved-module-identifier)
+		endif()
 	endif()
 
 	set(EAGINE_MODULE_CMAKE_FILE
@@ -132,6 +138,9 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(EAGINE_MODULE_COMPILE_OPTIONS
 		"-I${EAGINE_CORE_BINARY_ROOT}/include"
 		"-fprebuilt-module-path=.")
+	if("${EAGINE_MODULE_PROPER}" STREQUAL "std")
+		list(APPEND EAGINE_MODULE_COMPILE_OPTIONS -Wno-reserved-module-identifier)
+	endif()
 
 	foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
 		list(APPEND EAGINE_MODULE_COMPILE_OPTIONS "-I${DIR}")
@@ -580,7 +589,7 @@ function(eagine_do_generate_module_json PREFIX OUTPUT MODULE_NAME)
 	file(APPEND "${OUTPUT}" ",\"full_name\":\"${FULL_MODULE_NAME}\"")
 
 	get_property(
-		MODULE_BUILD_DIR TARGET eagine.${FULL_MODULE_NAME}
+		MODULE_BUILD_DIR TARGET ${FULL_MODULE_NAME}
 		PROPERTY EAGINE_MODULE_BUILD_DIR)
 
 	file(RELATIVE_PATH MODULE_BUILD_DIR "${PREFIX}" "${MODULE_BUILD_DIR}")
@@ -589,17 +598,17 @@ function(eagine_do_generate_module_json PREFIX OUTPUT MODULE_NAME)
 	if(MODULE_BUILD_DIR)
 		file(APPEND "${OUTPUT}" "${MODULE_BUILD_DIR}/")
 	endif()
-	file(APPEND "${OUTPUT}" "\$<TARGET_FILE_NAME:eagine.${FULL_MODULE_NAME}>\"]")
+	file(APPEND "${OUTPUT}" "\$<TARGET_FILE_NAME:${FULL_MODULE_NAME}>\"]")
 
 	file(APPEND "${OUTPUT}" ",\"cmakefiles\":[\"")
 	if(MODULE_BUILD_DIR)
 		file(APPEND "${OUTPUT}" "${MODULE_BUILD_DIR}/")
 	endif()
-	file(APPEND "${OUTPUT}" "module-eagine.${FULL_MODULE_NAME}.cmake\"]")
+	file(APPEND "${OUTPUT}" "module-${FULL_MODULE_NAME}.cmake\"]")
 
 	file(APPEND "${OUTPUT}" ",\"interfaces\":[")
 	get_property(
-		MODULE_CPPMS TARGET eagine.${FULL_MODULE_NAME}
+		MODULE_CPPMS TARGET ${FULL_MODULE_NAME}
 		PROPERTY EAGINE_MODULE_INTERFACES)
 	set(FIRST_CPPM TRUE)
 	foreach(CPPM_PATH ${MODULE_CPPMS})
@@ -615,7 +624,7 @@ function(eagine_do_generate_module_json PREFIX OUTPUT MODULE_NAME)
 
 	file(APPEND "${OUTPUT}" ",\"submodules\":[")
 	get_property(
-		MODULE_SUBMODULES TARGET eagine.${FULL_MODULE_NAME}
+		MODULE_SUBMODULES TARGET ${FULL_MODULE_NAME}
 		PROPERTY EAGINE_MODULE_SUBMODULES)
 	set(FIRST_SUBMOD TRUE)
 	foreach(SUBMODULE ${MODULE_SUBMODULES})
@@ -635,7 +644,7 @@ endfunction()
 # ------------------------------------------------------------------------------
 function(eagine_generate_module_json MODULE_NAME)
 	get_property(
-		MODULE_BUILD_DIR TARGET eagine.${MODULE_NAME}
+		MODULE_BUILD_DIR TARGET ${MODULE_NAME}
 		PROPERTY EAGINE_MODULE_BUILD_DIR)
 
 	file(

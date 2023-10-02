@@ -25,7 +25,7 @@ function(eagine_example_common EXAMPLE_NAME)
 	)
 	add_dependencies(eagine-core-examples eagine-${EXAMPLE_NAME})
 	eagine_add_exe_analysis(eagine-${EXAMPLE_NAME})
-	eagine_target_modules(eagine-${EXAMPLE_NAME} eagine.core)
+	eagine_target_modules(eagine-${EXAMPLE_NAME} std eagine.core)
 
 	set_target_properties(
 		eagine-${EXAMPLE_NAME}
@@ -65,6 +65,7 @@ eagine_example_common(hexdump)
 eagine_example_common(bindump)
 eagine_example_common(base64)
 eagine_example_common(url)
+eagine_example_common(scheduler)
 eagine_example_common(slow_log)
 eagine_example_common(log_histogram)
 eagine_example_common(random_bytes)

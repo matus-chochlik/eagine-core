@@ -9,6 +9,7 @@ export module eagine.core.utility:memoized;
 
 import std;
 import eagine.core.types;
+import eagine.core.container;
 import :callable_ref;
 
 namespace eagine {
@@ -26,11 +27,11 @@ public:
     template <typename F>
     [[nodiscard]] auto operator()(P... p, const F& f) -> R {
         T t(p...);
-        auto i = _memo.find(t);
-        if(i == _memo.end()) {
-            i = _memo.insert(E(t, f(p..., *this))).first;
+        auto found{find(_memo, t)};
+        if(not found) {
+            found.reset(_memo.insert(E(t, f(p..., *this))));
         }
-        return i->second;
+        return *found;
     }
 
     [[nodiscard]] auto operator()(P... p) -> R {
@@ -48,7 +49,7 @@ public:
 private:
     using T = std::tuple<P...>;
     using E = std::pair<T, R>;
-    std::map<T, R> _memo;
+    flat_map<T, R> _memo;
     callable_ref<R(P..., memoized&)> _func;
 };
 

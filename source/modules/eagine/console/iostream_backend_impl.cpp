@@ -54,9 +54,8 @@ public:
         _source = source;
         _kind = kind;
         _separate = false;
-        if(const auto pos{_hierarchy.find(parent_id)};
-           pos != _hierarchy.end()) {
-            _depth = std::get<1>(*pos);
+        if(const auto depth{find(_hierarchy, parent_id)}) {
+            _depth = *depth;
         } else {
             _depth = 0;
         }
@@ -146,12 +145,7 @@ public:
     void to_be_continued(
       const console_entry_id_t parent_id,
       const console_entry_id_t id) noexcept final {
-        std::size_t depth{0};
-        if(const auto pos{_hierarchy.find(parent_id)};
-           pos != _hierarchy.end()) {
-            depth = std::get<1>(*pos);
-        }
-        _hierarchy.emplace(id, depth + 1);
+        _hierarchy.emplace(id, find(_hierarchy, parent_id).value_or(0) + 1);
     }
 
     void concluded(const console_entry_id_t id) noexcept final {

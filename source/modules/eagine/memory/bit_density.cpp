@@ -17,7 +17,7 @@ import eagine.core.types;
 namespace eagine {
 //------------------------------------------------------------------------------
 // type at least twice the size of byte
-using double_byte = uint_fast16_t;
+using double_byte = std::uint_fast16_t;
 //------------------------------------------------------------------------------
 export constexpr auto byte_bits() noexcept {
     return span_size_t(8);

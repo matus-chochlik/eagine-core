@@ -61,7 +61,7 @@ public:
             const std::lock_guard<std::mutex> lock{_mutex};
             while(true) {
                 if(++_id_sequence != 0) {
-                    if(_activities.find(_id_sequence) == _activities.end()) {
+                    if(not _activities.contains(_id_sequence)) {
                         break;
                     }
                 }

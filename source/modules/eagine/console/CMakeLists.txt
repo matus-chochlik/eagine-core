@@ -5,6 +5,7 @@
 eagine_add_module(
 	eagine.core.console PARTITION backend
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -16,7 +17,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.console PARTITION entry
 	IMPORTS
-		backend
+		std backend
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -33,6 +34,7 @@ eagine_add_module(
 		null_backend
 		iostream_backend
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.identifier
 		eagine.core.container

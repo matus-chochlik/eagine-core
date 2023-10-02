@@ -173,4 +173,11 @@ export template <typename T>
     return map_data_members(instance, default_selector);
 }
 //------------------------------------------------------------------------------
+export template <typename... M>
+constexpr auto data_member_count(
+  const std::tuple<std::pair<const string_view, M>...>&) noexcept
+  -> span_size_t {
+    return span_size(sizeof...(M));
+}
+//------------------------------------------------------------------------------
 } // namespace eagine

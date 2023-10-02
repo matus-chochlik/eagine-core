@@ -8,7 +8,7 @@
 import eagine.core;
 import std;
 
-auto main() -> int {
+void basic_usage() {
     using namespace eagine;
 
     auto print = [](const auto& opt) {
@@ -39,6 +39,88 @@ auto main() -> int {
     print(t.find("bar"));
     print(t.find("baz"));
     print(t.find("qux"));
+    t.insert("ufo", 4);
+    print(t.find("foo"));
+    print(t.find("bar"));
+    print(t.find("baz"));
+    print(t.find("qux"));
+    print(t.find("ufo"));
+
+    t.traverse([](auto key, const auto& val) {
+        std::cout << key << ": " << val << std::endl;
+    });
+}
+
+void stats_incr_dec() {
+    using namespace eagine;
+
+    int count = 10'000'000;
+    while(count > 0) {
+        basic_dec_identifier_trie<int> t;
+        t.reserve(count + 1);
+        int i = 0;
+        while(i < count) {
+            const auto id{dec_to_identifier(i)};
+            t.insert(id.name(), i++);
+        }
+        std::cout << count << ": " << t.internal_node_count() << " + "
+                  << t.value_node_count() << " = " << t.node_count() << " ("
+                  << t.overhead() << ")" << std::endl;
+        count /= 10;
+    }
+}
+
+void stats_incr_ident() {
+    using namespace eagine;
+
+    int count = 10'000'000;
+    identifier id = increment(identifier{});
+    while(count > 0) {
+        basic_identifier_trie<int> t;
+        t.reserve(count * 2);
+        int i = 0;
+        while(i < count) {
+            id = increment(id);
+            t.insert(id.name(), i++);
+        }
+        std::cout << count << ": " << t.internal_node_count() << " + "
+                  << t.value_node_count() << " = " << t.node_count() << " ("
+                  << t.overhead() << ")" << std::endl;
+        count /= 10;
+    }
+}
+
+void stats_random_id() {
+    using namespace eagine;
+    std::random_device rd;
+    std::default_random_engine re{rd()};
+
+    int count = 1'000'000;
+    while(count > 0) {
+        basic_lc_identifier_trie<int> t;
+        t.reserve(count * 5);
+        int i = 0;
+        while(i < count) {
+            const auto id{random_identifier(t.valid_chars(), re)};
+            if(not t.contains(id.name())) {
+                t.insert(id.name(), i++);
+            }
+        }
+        std::cout << count << ": " << t.internal_node_count() << " + "
+                  << t.value_node_count() << " = " << t.node_count() << " ("
+                  << t.overhead() << ")" << std::endl;
+        count /= 10;
+    }
+}
+
+auto main() -> int {
+    basic_usage();
+    std::cout << "---" << std::endl;
+    stats_incr_dec();
+    std::cout << "---" << std::endl;
+    stats_incr_ident();
+    std::cout << "---" << std::endl;
+    stats_random_id();
 
     return 0;
 }

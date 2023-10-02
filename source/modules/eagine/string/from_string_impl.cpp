@@ -7,6 +7,7 @@
 ///
 module;
 
+#include <cerrno>
 #if __has_include(<boost/spirit/home/x3.hpp>)
 #include <boost/spirit/home/x3.hpp>
 #include <cassert>
@@ -20,7 +21,6 @@ module;
 #endif
 
 module eagine.core.string;
-import <cerrno>;
 import std;
 import eagine.core.types;
 import eagine.core.memory;

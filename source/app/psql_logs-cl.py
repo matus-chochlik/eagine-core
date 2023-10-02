@@ -295,9 +295,65 @@ class LogFormattingUtils(object):
         return c("%dμs" % int(s*10**6))
 
     # --------------------------------------------------------------------------
+    def formatRatePerSec(self, r, w = 0):
+        c = self.getCenterText(w)
+        if r < 0.1:
+            return c("%3.1f per hour" % (float(r * 3600),))
+        if r < 10.0:
+            return c("%3.1f per min" % (float(r * 60),))
+        if r > 10000000.0:
+            return c("%3.1fM per sec" % (float(r) / 1000000,))
+        if r > 10000.0:
+            return c("%3.1fk per sec" % (float(r) / 1000,))
+        return c("%3.1f per sec" % (float(r),))
+
+    # --------------------------------------------------------------------------
     def formatIdentifier(self, i, w = 0):
         c = self.getCenterText(w)
         return c(i)
+
+    # --------------------------------------------------------------------------
+    def formatYesNoMaybe(self, v, w = 0):
+        s = "maybe"
+        if isinstance(v, bool):
+            if v == True:
+                s = "yes"
+            elif v == False:
+                s = "no"
+        c = self.getCenterText(w)
+        return c(s)
+
+    # --------------------------------------------------------------------------
+    def formatByteSize(self, n, w = 0):
+        result = None
+        if n > 0:
+            umult = ["GiB", "MiB", "kiB"]
+            l = len(umult)
+            for i in range(l):
+                m = 1024**(l-i)
+                if (n / m > 1024) or (n % m == 0):
+                    result = str(int(n / m)) + " " + umult[i]
+                    break
+        if not result:
+            result = str(n) + " B"
+
+        c = self.getCenterText(w)
+        return c(result)
+
+    # --------------------------------------------------------------------------
+    def formatInteger(self, s, w = 0):
+        c = self.getCenterText(w)
+        return c(f"{int(s):,}".replace(",", "'"))
+
+    # --------------------------------------------------------------------------
+    def formatReal(self, s, w = 0):
+        c = self.getCenterText(w)
+        return c(f"{float(s):,}".replace(",", "'"))
+
+    # --------------------------------------------------------------------------
+    def formatRatio(self, x, w = 0):
+        c = self.getCenterText(w)
+        return c("%3.1f%%" % float(x * 100))
 
     # --------------------------------------------------------------------------
     def formatLogSeverity(self, level, w = 0):
@@ -346,22 +402,36 @@ class LogFormattingUtils(object):
                 i += 1
 
             result += "┈" * max(width - i, 0)
+            result += "┤"
 
             return result
         except Exception as err:
-            return str(err)
-            return "░" * width
+            return ("░" * width) + "│"
 
     # --------------------------------------------------------------------------
     def _initFormatters(self):
         self._formatters = {
             "duration": lambda n,v,c: self.formatDuration(v),
+            "identifier": lambda n,v,c: self.formatIdentifier(v),
+            "integer": lambda n,v,c: self.formatInteger(v),
+            "int64": lambda n,v,c: self.formatInteger(v),
+            "int32": lambda n,v,c: self.formatInteger(v),
+            "int16": lambda n,v,c: self.formatInteger(v),
+            "uint64": lambda n,v,c: self.formatInteger(v),
+            "uint32": lambda n,v,c: self.formatInteger(v),
+            "uint16": lambda n,v,c: self.formatInteger(v),
+            "real": lambda n,v,c: self.formatReal(v),
+            "ByteSize": lambda n,v,c: self.formatByteSize(v),
+            "YesNo": lambda n,v,c: self.formatYesNoMaybe(v),
+            "YesNoMaybe": lambda n,v,c: self.formatYesNoMaybe(v),
+            "Ratio": lambda n,v,c: self.formatRatio(v),
+            "RatePerSec": lambda n,v,c: self.formatRatePerSec(v),
             "MainPrgrss": lambda n,v,c: self.formatProgressValue(n, v, c),
             "Progress": lambda n,v,c: self.formatProgressValue(n, v, c)
         }
 
     # --------------------------------------------------------------------------
-    def formatMessageArg(self, name, typ, value, ctx):
+    def formatMessageArg(self, name, typ, value, ctx = None):
         try:
             return self._formatters[typ](name, value, ctx)
         except KeyError:
@@ -543,6 +613,7 @@ class LogRenderer(object):
         self._re_var = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
         self._progress = {}
         self._all_streams = set()
+        self._current_stream_attrib = DbMetadata.getDefaultAttrib()
         self._severity_colors = {
             "backtrace": "Cyan",
             "trace": "Cyan",
@@ -770,17 +841,26 @@ class LogRenderer(object):
     # --------------------------------------------------------------------------
     def trackProgress(self, data):
         for arg_data in data.get("args", {}).values():
-            if arg_data.get("type") == "MainPrgrss":
-                key = (data["application_id"], data["source_id"], data["instance"])
-                entry_time = data["entry_time"]
+            key = (data["application_id"], data["source_id"], data["instance"])
+            entry_time = data["entry_time"]
+            is_progress = arg_data.get("type") == "MainPrgrss"
+            try:
+                item = self._progress[key]
+            except KeyError:
+                if not is_progress:
+                    key = data["application_id"]
+                item = self._progress[key] = {
+                    "start_time": entry_time,
+                    "update_time": entry_time
+                }
+            item["stream_id"] = data["stream_id"]
+            item["streams"] = data["streams"]
+            item["time_since_stream_start"] = data["time_since_start"]
+            item["update_time"] = entry_time
+            if is_progress:
+                try: del self._progress[data["application_id"]]
+                except: pass
                 value = arg_data["values"][0]
-                try:
-                    item = self._progress[key]
-                except KeyError:
-                    item = self._progress[key] = {
-                        "start_time": entry_time,
-                        "start_value": value
-                    }
                 if "min" in item:
                     item["min"] = min(item["min"], arg_data["min"])
                 else:
@@ -789,10 +869,8 @@ class LogRenderer(object):
                     item["max"] = max(item["max"], arg_data["max"])
                 else:
                     item["max"] = arg_data["max"]
-                item["stream_id"] = data["stream_id"]
-                item["streams"] = data["streams"]
-                item["time_since_stream_start"] = data["time_since_start"]
-                item["update_time"] = entry_time
+                if "start_value" not in item:
+                    item["start_value"] = value
                 item["value"] = value
 
     # --------------------------------------------------------------------------
@@ -889,7 +967,16 @@ class LogRenderer(object):
         return self.keyProgressByStreamId
 
     # --------------------------------------------------------------------------
-    def renderProgress(self):
+    def formatCurrentStreamAttrib(self, metadata, stream_id):
+        attr_name, attr_type, attr_value = metadata.getStreamInfo(
+            stream_id,
+            self._current_stream_attrib)
+        return "%s: %s" % (
+            attr_name,
+            self._utils.formatMessageArg(attr_name, attr_type, attr_value))
+
+    # --------------------------------------------------------------------------
+    def renderProgress(self, metadata):
         idx = 0
         curr_streams = [x for x in sorted(self._all_streams)]
         self._progress = {
@@ -898,6 +985,8 @@ class LogRenderer(object):
 
         def _writeProgress(what):
             self.writeProgress(what, idx)
+
+        stream_attrib = 'os_pid'
 
         for key, data in sorted(self._progress.items(), key=self.progressSorter()):
             stream_id = data["stream_id"]
@@ -931,16 +1020,24 @@ class LogRenderer(object):
             _writeProgress(self._utils.formatDuration(estimated, 9))
             _writeProgress("│")
             width += 10
+            _writeProgress(self._utils.formatInteger(stream_id, 9))
+            _writeProgress("│")
+            width += 10
             width = self._output.columns() - width - 1
             _writeProgress(
                 self._utils.formatProgressBar(
-                    width, data.get("min"), data.get("max"), data.get("value")))
-            _writeProgress("┤\n")
+                    45, data.get("min"), data.get("max"), data.get("value")))
+            width += 45
+            attribute = self.formatCurrentStreamAttrib(metadata, stream_id)
+            _writeProgress(attribute)
+            width += len(attribute)
+            _writeProgress("\n")
             idx += 1
         _writeProgress("┊")
         for unused  in curr_streams:
             _writeProgress(" ╎")
         _writeProgress("\n")
+        self._current_stream_attrib = metadata.getNextAttrib(self._current_stream_attrib)
 
     # --------------------------------------------------------------------------
     def processBegin(self):
@@ -948,7 +1045,7 @@ class LogRenderer(object):
         self._all_streams.clear()
 
     # --------------------------------------------------------------------------
-    def processEntry(self, data):
+    def processEntry(self, data, metadata):
         if data["is_first"]:
             self.renderStreamHead(data)
 
@@ -962,10 +1059,72 @@ class LogRenderer(object):
             self.renderStreamTail(data)
 
     # --------------------------------------------------------------------------
-    def processEnd(self):
+    def processEnd(self, metadata):
         if self._options.show_progress:
-            self.renderProgress()
+            self.renderProgress(metadata)
         self._output.finish()
+
+# ------------------------------------------------------------------------------
+#  Metadata
+# ------------------------------------------------------------------------------
+class DbMetadata(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options, db_conn):
+        self._db_conn = db_conn
+        self._attrib_map = {
+            "os_pid": ("PID", "int64"),
+            "hostname": ("Host", "Hostname"),
+            "os_name": ("OS", "string"),
+            "application_id": ("App.", "identifier"),
+            "architecture": ("Arch.", "string"),
+            "git_version": ("Version", "string"),
+            "debug_build": ("Debug", "YesNoMaybe"),
+            "low_profile_build": ("Low-profile", "YesNoMaybe"),
+            "running_on_valgrind": ("Valgrind", "YesNoMaybe")
+        }
+        self._attrib_columns = list(self._attrib_map.keys())
+        self._stream_metadata = {}
+
+    # --------------------------------------------------------------------------
+    @staticmethod
+    def getDefaultAttrib():
+        return 'os_pid'
+
+    # --------------------------------------------------------------------------
+    def getNextAttrib(self, current):
+        newidx = self._attrib_columns.index(current) + 1
+        newidx = newidx % len(self._attrib_columns)
+        return self._attrib_columns[newidx]
+
+    # --------------------------------------------------------------------------
+    def queryStreamMetadata(self, stream_id):
+        with self._db_conn.cursor() as stream_attr:
+            query = "SELECT %s FROM eagilog.stream WHERE stream_id = %%s" % (
+                ", ".join(self._attrib_columns))
+            stream_attr.execute(query, (stream_id,))
+            attrib_values = stream_attr.fetchone()
+            return {a: v for a, v in zip(self._attrib_columns, attrib_values)}
+
+    # --------------------------------------------------------------------------
+    def getStreamMetadata(self, stream_id):
+        try:
+            return self._stream_metadata[stream_id]
+        except KeyError:
+            self._stream_metadata[stream_id] = self.queryStreamMetadata(stream_id)
+            return self._stream_metadata[stream_id]
+
+    # --------------------------------------------------------------------------
+    def getStreamAttribute(self, stream_id, attrib):
+        return self.getStreamMetadata(stream_id).get(attrib)
+
+    # --------------------------------------------------------------------------
+    def getStreamPID(self, stream_id):
+        return self.getStreamAttribute(stream_id, 'os_pid')
+
+    # --------------------------------------------------------------------------
+    def getStreamInfo(self, stream_id, attrib):
+        name, typ = self._attrib_map.get(attrib, ("unknown", "string"))
+        return name, typ, self.getStreamAttribute(stream_id, attrib)
 
 # ------------------------------------------------------------------------------
 # Database reader
@@ -977,6 +1136,7 @@ class DbReader(object):
         self._db_conn = db_conn
         self._pg_curr = db_conn.cursor()
         self._pg_curr.__enter__()
+        self._db_metadata = DbMetadata(options, db_conn)
 
         self.applyBlockList()
 
@@ -1047,7 +1207,7 @@ class DbReader(object):
                         arg["max"] = arg_data[4]
 
         data["args"] = args
-        return processor.processEntry(data)
+        return processor.processEntry(data, self._db_metadata)
 
     # --------------------------------------------------------------------------
     def processEntries(self, processor, entries):
@@ -1075,6 +1235,7 @@ class DbReader(object):
                 break
             data = {k:v for k,v in zip(columns, data)}
             stream_id = data["stream_id"]
+
             time_since_start = data["time_since_start"]
             data["time_since_prev"] =\
                 time_since_start -\
@@ -1082,7 +1243,7 @@ class DbReader(object):
             data["age"] = datetime.datetime.now(datetime.timezone.utc) - data["entry_time"]
             self.processEntry(processor, data)
             stream_prev_times[stream_id] = time_since_start
-        processor.processEnd()
+        processor.processEnd(self._db_metadata)
 
     # --------------------------------------------------------------------------
     def processQuery(self, processor, query, args = None):

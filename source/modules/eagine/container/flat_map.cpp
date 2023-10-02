@@ -400,6 +400,16 @@ public:
     /// @brief Constructs a new element with the specified arguments under specified key.
     /// @see insert
     template <typename... Args>
+    auto emplace_hint(iterator pos, const Key& key, Args&&... args)
+      -> iterator {
+        auto ip = _find_insert_pos(pos, key);
+        ip = _do_emplace(ip, key, std::forward<Args>(args)...);
+        return ip.first;
+    }
+
+    /// @brief Constructs a new element with the specified arguments under specified key.
+    /// @see insert
+    template <typename... Args>
     auto try_emplace(const Key& key, Args&&... args)
       -> std::pair<iterator, bool> {
         auto ip = _find_insert_pos(key);
@@ -457,12 +467,14 @@ public:
         return std::erase_if(_vec, predicate);
     }
 
-    auto _vec_ref() const noexcept -> const auto& {
-        return _vec;
+    [[nodiscard]] auto underlying() const noexcept {
+        using memory::view;
+        return view(_vec);
     }
 
-    auto _vec_ref() noexcept -> auto& {
-        return _vec;
+    [[nodiscard]] auto underlying() noexcept {
+        using memory::cover;
+        return cover(_vec);
     }
 
 private:
@@ -518,14 +530,22 @@ private:
 //------------------------------------------------------------------------------
 export template <typename Key, typename Val, typename Cmp, typename Container>
 auto view(const flat_map<Key, Val, Cmp, Container>& c) noexcept {
-    using memory::view;
-    return view(c._vec_ref());
+    return c.underlying();
 }
-
+//------------------------------------------------------------------------------
 export template <typename Key, typename Val, typename Cmp, typename Container>
 auto cover(flat_map<Key, Val, Cmp, Container>& c) noexcept {
-    using memory::cover;
-    return cover(c._vec_ref());
+    return c.underlying();
+}
+//------------------------------------------------------------------------------
+export template <typename W, typename K, typename T, typename C, typename A>
+constexpr auto find(flat_map<K, T, C, A>& m, W&& what) noexcept {
+    return optional_iterator{m, m.find(std::forward<W>(what))};
+}
+
+export template <typename W, typename K, typename T, typename C, typename A>
+constexpr auto find(const flat_map<K, T, C, A>& m, W&& what) noexcept {
+    return optional_iterator{m, m.find(std::forward<W>(what))};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

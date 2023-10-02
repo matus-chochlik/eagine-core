@@ -28,5 +28,11 @@ auto main() -> int {
     print_info("FooBarBaz");
     print_info("1234567890");
 
+    identifier id;
+    for(int i = 0; i < 1000; ++i) {
+        id = increment(id);
+        std::cout << id.name() << std::endl;
+    }
+
     return 0;
 }

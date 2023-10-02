@@ -13,6 +13,7 @@ export module eagine.core.runtime:value_with_history;
 
 import std;
 import eagine.core.types;
+import eagine.core.memory;
 import eagine.core.valid_if;
 
 namespace eagine {
@@ -68,17 +69,17 @@ public:
         std::fill(_values.begin(), _values.end(), initial);
     }
 
-    /// @brief Returns the number of elements.
-    constexpr auto size() const noexcept {
-        return _values.size();
+    /// @brief Returns a view of the elements (from the oldest to the newest).
+    constexpr auto view() const noexcept {
+        return memory::view(_values);
     }
 
-    /// @brief Returns an iterator to the first (newest) value.
+    /// @brief Returns an iterator to the first (oldest) value.
     auto begin() const noexcept {
         return _values.begin();
     }
 
-    /// @brief Returns an iterator past the last (oldest) value.
+    /// @brief Returns an iterator past the last (newest) value.
     auto end() const noexcept {
         return _values.end();
     }
@@ -86,27 +87,35 @@ public:
     /// @brief Returns the i-th revision of the stored value (0 = current value).
     constexpr auto get(std::size_t i) const noexcept -> const T& {
         assert(i < N);
-        return _values[i];
+        return _values[N - 1 - i];
     }
 
-    /// @brief Sets the i-th revision of the stored value (0 = current value).
-    void set(std::size_t i, const T& value) noexcept {
+    /// @brief Returns the newest revision of the stored value.
+    constexpr auto get() const noexcept -> const T& {
+        return _values.back();
+    }
+
+    /// @brief Sets the current revision of the stored value.
+    constexpr void set(std::size_t i, T value) noexcept {
         assert(i < N);
-        _values[i] = value;
+        _values[N - 1 - i] = std::move(value);
+    }
+
+    /// @brief Sets the current revision of the stored value.
+    constexpr void set(T value) noexcept {
+        _values.back() = std::move(value);
     }
 
     /// @brief Move the stored revisions by one, to make place for new value.
     /// @see sync
-    void make_history() noexcept {
-        for(const auto i : integer_range(1U, N)) {
-            _values[N - i] = std::move(_values[N - i - 1]);
-        }
+    constexpr void shift() noexcept {
+        std::rotate(_values.begin(), _values.begin() + 1U, _values.end());
     }
 
     /// @brief Synchronize the historic revisions to the current value.
-    /// @see make_history
-    void sync() noexcept {
-        std::fill(_values.begin() + 1, _values.end(), _values.front());
+    /// @see shift
+    constexpr void sync() noexcept {
+        std::fill(_values.begin(), _values.end() - 1U, get());
     }
 
 private:
@@ -129,13 +138,10 @@ auto transform_stored_values(
 }
 //------------------------------------------------------------------------------
 export template <typename Delta, typename T, std::size_t N>
-auto differentiate_stored_values(
+constexpr auto differentiate_stored_values(
   Delta delta_op,
   const value_with_history_storage<T, N>& v) {
-    value_with_history_storage<
-      decltype(std::declval<Delta>()(std::declval<T>(), std::declval<T>())),
-      N - 1>
-      result;
+    value_with_history_storage<std::invoke_result_t<Delta, T, T>, N - 1> result;
 
     for(const auto i : integer_range(1U, N)) {
         result.set(i - 1, delta_op(v.get(i - 1), v.get(i)));
@@ -164,80 +170,86 @@ public:
       : _values{std::forward<I>(initial)...} {}
 
     /// @brief Returns a reference to the value storage.
-    auto values() const noexcept -> const value_with_history_storage<T, N>& {
+    constexpr auto values() const noexcept
+      -> const value_with_history_storage<T, N>& {
         return _values;
+    }
+
+    /// @brief Returns a view of the elements (from the oldest to the newest).
+    constexpr auto view_history() const noexcept {
+        return values().view();
     }
 
     /// @brief Returns the number of elements.
     constexpr auto size() const noexcept {
-        return values().size();
+        return span_size(N);
     }
 
-    /// @brief Returns an iterator to the newest value.
-    auto begin() const noexcept {
+    /// @brief Returns an iterator to the oldest value.
+    constexpr auto begin() const noexcept {
         return values().begin();
     }
 
-    /// @brief Returns an iterator past the oldest value.
-    auto end() const noexcept {
+    /// @brief Returns an iterator past the newest value.
+    constexpr auto end() const noexcept {
         return values().end();
     }
 
-    /// @brief Returns a reverse iterator to the oldestvalue.
-    auto rbegin() const noexcept {
-        return std::reverse_iterator{values().end()};
+    /// @brief Returns a reverse iterator to the newest value.
+    constexpr auto rbegin() const noexcept {
+        return std::reverse_iterator{end()};
     }
 
-    /// @brief Returns a reverse iterator past newest value.
-    auto rend() const noexcept {
-        return std::reverse_iterator{values().begin()};
+    /// @brief Returns a reverse iterator past value.
+    constexpr auto rend() const noexcept {
+        return std::reverse_iterator{begin()};
     }
 
     /// @brief Returns the current revision of the value.
     /// @see value
-    auto get() const noexcept {
-        return values().get(0);
+    constexpr auto get() const noexcept {
+        return values().get();
     }
 
     /// @brief Returns the current revision of the value.
     /// @see get
     /// @see old_value
-    auto value() const noexcept {
-        return values().get(0);
+    constexpr auto value() const noexcept {
+        return values().get();
     }
 
     /// @brief Returns the previous revision of the value.
     /// @see get
     /// @see value
-    auto old_value() const noexcept {
+    constexpr auto old_value() const noexcept {
         return values().get(1);
     }
 
     /// @brief Returns the current or previous revision of the value.
     /// @see value
     /// @see old_value
-    auto value(bool old) const noexcept {
+    constexpr auto value(bool old) const noexcept {
         return old ? old_value() : value();
     }
 
     /// @brief Returns the current revision of the value.
     /// @see value
-    operator T() const noexcept {
+    constexpr operator T() const noexcept {
         return value();
     }
 
     template <typename U, typename Po, typename L>
-    operator basic_valid_if<U, Po, L>() const noexcept {
+    constexpr operator basic_valid_if<U, Po, L>() const noexcept {
         return {U(value())};
     }
 
     /// @brief Returns the difference between the current and the previous revision.
-    auto delta() const noexcept {
+    constexpr auto delta() const noexcept {
         return value_with_history_delta(value(), old_value());
     }
 
     /// @brief Returns the differences between the adjacent revisions.
-    auto deltas() const noexcept {
+    constexpr auto deltas() const noexcept {
         return value_with_history<decltype(delta()), N - 1>(
           differentiate_stored_values(
             [](const T& n, const T& o) {
@@ -246,13 +258,13 @@ public:
             values()));
     }
 
-    /// @brief Returns the distance between the current and the previous revisions.
-    auto distance() const noexcept {
+    /// @brief Returns the distance between the current and the previous revision.
+    constexpr auto distance() const noexcept {
         return value_with_history_distance(value(), old_value());
     }
 
     /// @brief Indicates if the current and previous revisions differ.
-    auto changed() const noexcept -> bool {
+    constexpr auto changed() const noexcept -> bool {
         return value_with_history_changed(old_value(), value());
     }
 
@@ -263,9 +275,10 @@ public:
     }
 
     /// @brief Synchronize the historic revisions to the current value.
-    /// @see make_history
-    void sync() {
-        this->values().sync();
+    /// @see shift
+    auto sync() noexcept -> auto& {
+        values().sync();
+        return *this;
     }
 
 protected:
@@ -273,19 +286,22 @@ protected:
         return _values;
     }
 
-    auto _update_value(const T& new_value) noexcept -> bool {
+    void _set_value(const T& new_value) noexcept {
+        values().shift();
+        values().set(new_value);
+    }
 
-        if(value_with_history_changed(values().get(0), new_value)) {
-            values().make_history();
-            values().set(0, new_value);
+    auto _update_value(const T& new_value) noexcept -> bool {
+        if(value_with_history_changed(values().get(), new_value)) {
+            _set_value(new_value);
             return true;
         }
         return false;
     }
 
     auto _advance_value(const T& delta_value) noexcept -> bool {
-        values().make_history();
-        values().set(0, values().get(0) + delta_value);
+        values().shift();
+        values().set(values().get() + delta_value);
         return true;
     }
 
@@ -326,7 +342,7 @@ auto operator/(
 /// @tparam T the type of the value
 /// @tparam N the number of latest historical revisions of the stored value.
 /// @ingroup value_history
-export template <typename T, std::size_t N>
+export template <typename T, std::size_t N = 2>
 class variable_with_history : public value_with_history<T, N> {
 public:
     /// @brief Default constructor.
@@ -337,23 +353,32 @@ public:
       : value_with_history<T, N>(initial) {}
 
     /// @brief Returns this as a const reference to the base value with history.
-    auto as_value() const noexcept -> const value_with_history<T, N>& {
+    constexpr auto as_value() const noexcept
+      -> const value_with_history<T, N>& {
         return *this;
     }
 
-    /// @brief Shifts the revisions and assigns a new value.
-    auto assign(const T& new_value) -> bool {
+    /// @brief If new_value is different than current value shifts and assigns it.
+    constexpr auto assign(const T& new_value) -> bool {
         return this->_update_value(new_value);
     }
 
-    /// @brief Shifts the revisions and assigns a new value.
-    auto operator=(const T& new_value) -> auto& {
+    /// @brief If new_value is different than current value shifts and assigns it.
+    /// @see operator<<
+    constexpr auto operator=(const T& new_value) -> auto& {
         assign(new_value);
         return *this;
     }
 
+    /// @brief Shifts the revisions and assigns a new value.
+    /// @see operator=
+    constexpr auto operator<<(const T& new_value) -> auto& {
+        this->_set_value(new_value);
+        return *this;
+    }
+
     /// @brief Shifts the revisions and advanced the current value by given delta.
-    auto advance(const T& delta_value) -> bool {
+    constexpr auto advance(const T& delta_value) -> bool {
         return this->_advance_value(delta_value);
     }
 };
@@ -366,16 +391,17 @@ public:
       const basic_valid_if<T, Po, L>& initial) noexcept
       : value_with_history<T, N>(initial.value()) {}
 
-    auto assign(const basic_valid_if<T, Po, L>& new_value) -> bool {
+    constexpr auto assign(const basic_valid_if<T, Po, L>& new_value) -> bool {
         return this->_update_value(new_value.value());
     }
 
-    auto operator=(const T& new_value) -> auto& {
+    constexpr auto operator=(const T& new_value) -> auto& {
         assign(new_value);
         return *this;
     }
 
-    auto advance(const basic_valid_if<T, Po, L>& delta_value) -> bool {
+    constexpr auto advance(const basic_valid_if<T, Po, L>& delta_value)
+      -> bool {
         return this->_advance_value(delta_value.value());
     }
 };

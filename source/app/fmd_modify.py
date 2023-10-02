@@ -8,10 +8,177 @@ import os
 import re
 import sys
 import json
+import base64
 import shutil
+import logging
+import datetime
 import argparse
 import tempfile
 
+# ------------------------------------------------------------------------------
+#  Helpers
+# ------------------------------------------------------------------------------
+def exceptionMessage(e):
+    return repr(e)
+# ------------------------------------------------------------------------------
+# Digital signatures
+# ------------------------------------------------------------------------------
+def listSignedAttributes(options, header):
+    if options.sign_attributes == [["*"]]:
+        def _get(header):
+            for key in header:
+                if key != "signed":
+                    yield key
+        return [[key] for key in _get(header)]
+    else:
+        return options.sign_attributes
+# ------------------------------------------------------------------------------
+def getSignedAttributes(options, header):
+    signed = {}
+    if options.sign_attributes == [["*"]]:
+        signed = header.copy()
+        try: del signed["signed"]
+        except KeyError: pass
+    else:
+        for attrib in options.sign_attributes:
+            src = header
+            dst = signed
+            for key in attrib[:-1]:
+                src = src.setdefault(key, {})
+                dst = dst.setdefault(key, {})
+            dst[attrib[-1]] = src[attrib[-1]]
+    return json.dumps(
+        signed,
+        sort_keys=True,
+        ensure_ascii=True,
+        separators=(',',':'))
+# ------------------------------------------------------------------------------
+#  PyCaCrypto
+# ------------------------------------------------------------------------------
+class PyCaCryptoDataSigner(object):
+    # -------------------------------------------------------------------------
+    def __init__(self, arg_parser, hashes, padding, serialization, x509):
+        self._hashes = hashes 
+        self._padding = padding 
+        self._serialization = serialization
+        self._x509 = x509 
+
+        arg_parser.add_argument(
+            "--sign-certificate",
+            metavar="FILE",
+            type=os.path.realpath,
+            default=None
+        )
+        arg_parser.add_argument(
+            "--sign-key",
+            metavar="FILE",
+            type=os.path.realpath,
+            default=None
+        )
+        arg_parser.add_argument(
+            "--sign-hash",
+            metavar="HASH-ID",
+            choices=["sha256", "sha384", "sha512"],
+            default="sha256"
+        )
+    # -------------------------------------------------------------------------
+    def processParsedOptions(self, arg_parser, options):
+        self._options = options
+
+    # -------------------------------------------------------------------------
+    def beginSign(self, header):
+        with open(self._options.sign_certificate, "rb") as certfd:
+            self._cert = self._x509.load_pem_x509_certificate(certfd.read());
+        with open(self._options.sign_key, "rb") as pkeyfd:
+            self._pkey = self._serialization.load_pem_private_key(
+                pkeyfd.read(),
+                None);
+        self._data = bytes()
+
+    # -------------------------------------------------------------------------
+    def addData(self, header, data):
+        if isinstance(data, str):
+            data = data.encode("utf-8")
+        assert isinstance(data, bytes)
+        self._data += data
+
+    # -------------------------------------------------------------------------
+    def getMDType(self, name):
+        if name == "sha384":
+            return self._hashes.SHA384()
+        if name == "sha512":
+            return self._hashes.SHA512()
+        return self._hashes.SHA256()
+
+    # -------------------------------------------------------------------------
+    def signData(self, options):
+        md_type = self.getMDType(self._options.sign_hash)
+        signature = self._pkey.sign(
+            self._data,
+            self._padding.PSS(
+                mgf=self._padding.MGF1(md_type),
+                salt_length=self._padding.PSS.MAX_LENGTH),
+            md_type)
+
+        signature = base64.b64encode(signature)
+        signature = signature.decode("ascii")
+        return signature
+
+    # -------------------------------------------------------------------------
+    def verifySignature(self, options, signature):
+        sig = signature.encode("ascii")
+        sig = base64.b64decode(sig)
+
+        pubkey = self._cert.public_key()
+        if signature is not None:
+            if not pubkey:
+                self._options.error("failed to get key from certificate")
+                return False
+            try:
+                md_type = self.getMDType(self._options.sign_hash)
+                pubkey.verify(
+                    base64.b64decode(signature),
+                    self._data,
+                    self._padding.PSS(
+                        mgf=self._padding.MGF1(md_type),
+                        salt_length=self._padding.PSS.MAX_LENGTH),
+                    md_type)
+            except Exception as err:
+                self._options.error(
+                    "failed to verify signature: %s",
+                    exceptionMessage(err))
+                return False
+        return True
+
+    # -------------------------------------------------------------------------
+    def finishSign(self, options):
+        sig = {}
+        signature = self.signData(options)
+        if self.verifySignature(options, signature):
+            sig["algorithm"] = options.sign_hash
+            sig["padding"] = "PSS"
+            with open(options.sign_certificate, "rt") as certfd:
+                sig["certificate"] = certfd.read();
+            sig["signature"] = signature
+        self._data = None
+        self._cert = None
+        self._pkey = None
+        return sig
+
+# ------------------------------------------------------------------------------
+def makeSigner(arg_parser):
+    try:
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import padding
+        from cryptography.hazmat.primitives import serialization
+        from cryptography import x509
+        return PyCaCryptoDataSigner(
+            arg_parser,
+            hashes, padding, serialization, x509)
+    except ImportError:
+        pass
+
+    return None
 # ------------------------------------------------------------------------------
 # Argument parsing
 # ------------------------------------------------------------------------------
@@ -45,9 +212,9 @@ class ArgumentParser(argparse.ArgumentParser):
                             return True
             return x
 
-        def _valid_deletion(x):
+        def _valid_attribute(x):
             try:
-                assert self._path_re.match(x)
+                assert x == "*" or self._path_re.match(x)
                 return x
             except:
                 self.error("invalid attribute specifier '%s'" % s)
@@ -62,9 +229,26 @@ class ArgumentParser(argparse.ArgumentParser):
         )
 
         self.add_argument(
+            "--debug",
+            action="store_true",
+            default=False,
+            help="""Starts in debug mode."""
+        )
+
+        self.add_argument(
             "--add", "-a",
             metavar=('ATTRIBUTE','VALUE'),
             dest='additions',
+            nargs=2,
+            type=_valid_addition,
+            action="append",
+            default=[]
+        )
+
+        self.add_argument(
+            "--set", "-s",
+            metavar=('ATTRIBUTE','VALUE'),
+            dest='updates',
             nargs=2,
             type=_valid_addition,
             action="append",
@@ -76,7 +260,7 @@ class ArgumentParser(argparse.ArgumentParser):
             metavar='ATTRIBUTE',
             dest='deletions',
             nargs='?',
-            type=_valid_deletion,
+            type=_valid_attribute,
             action="append",
             default=[]
         )
@@ -98,6 +282,18 @@ class ArgumentParser(argparse.ArgumentParser):
             type=_valid_input_path
         )
 
+        self._signer = makeSigner(self)
+        if self._signer is not None:
+            self.add_argument(
+                "--sign-attribute",
+                metavar='ATTRIBUTE',
+                dest='sign_attributes',
+                nargs='?',
+                type=_valid_attribute,
+                action="append",
+                default=[]
+            )
+
     # -------------------------------------------------------------------------
     def processParsedOptions(self, options):
         options.input_paths = set(options.input_paths)
@@ -113,11 +309,45 @@ class ArgumentParser(argparse.ArgumentParser):
                 self.error("invalid attribute specifier '%s'" % k)
 
         options.additions = [(_processKey(k), v) for k, v in options.additions]
+        options.updates = [(_processKey(k), v) for k, v in options.updates]
         options.deletions = [_processKey(k) for k in options.deletions]
+
+        options.signer = self._signer
+        if options.signer is not None:
+            options.sign_attributes = [_processKey(k) for k in options.sign_attributes]
+
+        logging.basicConfig(
+            encoding="utf-8",
+            format='[%(levelname)s: %(message)s',
+            level=logging.DEBUG if options.debug else logging.INFO)
+        options._log = logging.getLogger("fmd-modify")
+
         return options
     # -------------------------------------------------------------------------
     def parseArgs(self):
-        return self.processParsedOptions(argparse.ArgumentParser.parse_args(self))
+        # ----------------------------------------------------------------------
+        class _Options(object):
+            # ------------------------------------------------------------------
+            def __init__(self, base):
+                self.__dict__.update(base.__dict__)
+
+            # ------------------------------------------------------------------
+            def output(self, what):
+                sys.stdout.write(what)
+
+            # ------------------------------------------------------------------
+            def error(self, *args, **kwargs):
+                self._log.error(*args, **kwargs)
+
+        # ----------------------------------------------------------------------
+        options = _Options(self.processParsedOptions(
+            argparse.ArgumentParser.parse_args(self)
+        ))
+
+        if options.signer is not None:
+            options.signer.processParsedOptions(self, options)
+
+        return options
 # ------------------------------------------------------------------------------
 def getArgumentParser():
     return ArgumentParser(
@@ -136,12 +366,26 @@ def updateHeader(options, header):
             del node[attrib[-1]]
         except KeyError:
             pass
-                
-    for attrib, value in options.additions:
+
+    for attrib, value in options.updates:
         node = header
         for key in attrib[:-1]:
             node = node.setdefault(key, {})
         node[attrib[-1]] = value
+
+    for attrib, value in options.additions:
+        node = header
+        for key in attrib[:-1]:
+            node = node.setdefault(key, {})
+
+        key = attrib[-1]
+        try:
+            node[key].append(value)
+        except KeyError:
+            node[key] = [value]
+        except AttributeError:
+            node[key] = [node[key], value]
+
     return header
 # ------------------------------------------------------------------------------
 def formatHeader(options, header, ofd):
@@ -156,44 +400,71 @@ def formatHeader(options, header, ofd):
             _write(",")
         _write(json.dumps(key))
         _write(':')
-        if isinstance(value, dict):
-            _write(json.dumps(value))
-        else:
-            _write(json.dumps(value))
+        _write(json.dumps(value, separators=(',',':')))
         _write('\n')
     _write("}")
 # ------------------------------------------------------------------------------
+def addSignature(signer, options, header, datafd):
+    signer.beginSign(header)
+    while True:
+        chunk = datafd.read(4096)
+        if not chunk:
+            break
+        signer.addData(header, chunk)
+    signer.addData(header, getSignedAttributes(options, header))
+    date_str = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    signer.addData(header, date_str)
+    sig = signer.finishSign(options)
+    if sig is not None:
+        sig["date"] = date_str
+        sig["attributes"] = ['.'.join(a) for a in listSignedAttributes(options, header)]
+        header.setdefault("signed", []).append(sig)
+# ------------------------------------------------------------------------------
 def processFile(options, path):
-    with open(path, "rb") as ifd:
+    with open(path, "rb") as inputfd:
         decoder = json.JSONDecoder()
         head_bytes = bytes()
-        while True:
-            chunk = ifd.read(1024)
-            if not chunk:
-                break
-            head_bytes += chunk
-            try:
-                data = bytes()
-                head_str = head_bytes.decode("utf-8")
-            except UnicodeDecodeError as ude:
-                data = head_bytes[ude.start:]
-                head_bytes = head_bytes[:ude.start]
-                head_str = head_bytes.decode("utf-8")
-            try:
-                header, pos = decoder.raw_decode(head_str)
-                data = head_str[pos:].encode("utf-8") + data
-                break
-            except json.JSONDecodeError as jde:
-                pass
-        with tempfile.NamedTemporaryFile(mode='wb', delete=False) as ofd:
-            formatHeader(options, updateHeader(options, header), ofd)
-            ofd.write(data)
+        with tempfile.NamedTemporaryFile(mode='wb', delete=False) as datafd:
             while True:
-                chunk = ifd.read(4096)
+                chunk = inputfd.read(1024)
                 if not chunk:
                     break
-                ofd.write(chunk)
-        shutil.move(ofd.name, path)
+                head_bytes += chunk
+                try:
+                    data = bytes()
+                    head_str = head_bytes.decode("utf-8")
+                except UnicodeDecodeError as ude:
+                    data = head_bytes[ude.start:]
+                    head_bytes = head_bytes[:ude.start]
+                    head_str = head_bytes.decode("utf-8")
+                try:
+                    header, pos = decoder.raw_decode(head_str)
+                    data = head_str[pos:].encode("utf-8") + data
+                    break
+                except json.JSONDecodeError as jde:
+                    pass
+            datafd.write(data)
+            while True:
+                chunk = inputfd.read(4096)
+                if not chunk:
+                    break
+                datafd.write(chunk)
+
+        header = updateHeader(options, header)
+        if options.signer is not None:
+            with open(datafd.name, "rb") as datafd:
+                addSignature(options.signer, options, header, datafd)
+
+        with open(datafd.name, "rb") as datafb:
+            with tempfile.NamedTemporaryFile(mode='wb', delete=False) as outputfd:
+                formatHeader(options, header, outputfd)
+                while True:
+                    chunk = datafb.read(4096)
+                    if not chunk:
+                        break
+                    outputfd.write(chunk)
+            shutil.move(outputfd.name, path)
+        os.unlink(datafd.name)
 
 # ------------------------------------------------------------------------------
 def processFiles(options):
@@ -219,6 +490,7 @@ def printBashCompletion(argparser, options):
 #  Main function
 # ------------------------------------------------------------------------------
 def main():
+    options = None
     try:
         argparser = getArgumentParser()
         options = argparser.parseArgs()
@@ -228,8 +500,9 @@ def main():
             processFiles(options)
         return 0
     except Exception as error:
-        print(type(error), error)
-        raise
+        print(exceptionMessage(error))
+        if options is None or options.debug:
+            raise
         return 1
 
 # ------------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 eagine_add_module(
 	eagine.core.logging PARTITION entry_arg
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.reflection
 		eagine.core.identifier
@@ -13,7 +14,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION backend
 	IMPORTS
-		entry_arg
+		std entry_arg
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.runtime
@@ -24,7 +25,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION config
 	IMPORTS
-		backend
+		std backend
 		eagine.core.build_config
 		eagine.core.types
 )
@@ -32,7 +33,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION fast_xml_backend
 	IMPORTS
-		backend
+		std backend
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -44,7 +45,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION ostream_backend
 	IMPORTS
-		backend fast_xml_backend
+		std backend fast_xml_backend
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -56,7 +57,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION time_interval
 	IMPORTS
-		backend
+		std backend
 		eagine.core.types
 		eagine.core.identifier
 )
@@ -64,7 +65,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION entry
 	IMPORTS
-		entry_arg backend
+		std entry_arg backend
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -76,7 +77,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION logger
 	IMPORTS
-		config backend
+		std config backend
 		entry time_interval
 		eagine.core.types
 		eagine.core.memory
@@ -89,7 +90,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION root_logger
 	IMPORTS
-		entry backend logger
+		std entry backend logger
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
@@ -102,7 +103,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION adapt_entry_arg
 	IMPORTS
-		entry_arg
+		std entry_arg
 		eagine.core.build_info
 		eagine.core.types
 		eagine.core.memory
@@ -122,6 +123,7 @@ eagine_add_module(
 		proxy_backend
 		root_logger
 	IMPORTS
+		std
 		eagine.core.build_config
 		eagine.core.types
 		eagine.core.build_info

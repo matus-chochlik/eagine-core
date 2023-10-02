@@ -122,9 +122,7 @@ struct valid_if_nonneg_policy {
 
         template <typename Log>
         void operator()(Log& log, const T& v) const {
-            log << "Value " << v << ", "
-                << "less then zero "
-                << "is invalid";
+            log << "Value, less then zero is invalid";
         }
     };
 };

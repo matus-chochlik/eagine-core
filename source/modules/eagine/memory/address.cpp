@@ -185,9 +185,9 @@ export using address = basic_address<false>;
 /// @ingroup memory
 export template <typename P>
 constexpr auto as_address(P addr) noexcept {
-    using Pt = std::pointer_traits<P>;
     using std::to_address;
-    return basic_address<std::is_const_v<typename Pt::element_type>>(
+    return basic_address<
+      std::is_const_v<std::remove_pointer_t<decltype(to_address(addr))>>>(
       to_address(addr));
 }
 //------------------------------------------------------------------------------

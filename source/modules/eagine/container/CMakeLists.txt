@@ -2,35 +2,48 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
-eagine_add_module(eagine.core.container PARTITION iterator)
+eagine_add_module(
+	eagine.core.container PARTITION iterator
+	IMPORTS std
+)
 
 eagine_add_module(
 	eagine.core.container PARTITION static_vector
+	IMPORTS std
 )
 eagine_add_module(
 	eagine.core.container PARTITION small_vector
-	IMPORTS static_vector
+	IMPORTS std static_vector
+)
+eagine_add_module(
+	eagine.core.container PARTITION object_pool
+	IMPORTS std small_vector
 )
 eagine_add_module(
 	eagine.core.container PARTITION flat_set
-	IMPORTS eagine.core.types
+	IMPORTS
+		std
+		eagine.core.types
+		eagine.core.memory
 )
 eagine_add_module(
 	eagine.core.container PARTITION flat_map
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )
 eagine_add_module(
 	eagine.core.container PARTITION trie
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )
 eagine_add_module(
 	eagine.core.container PARTITION wrapping
 	IMPORTS
-		iterator
+		std iterator
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.valid_if
@@ -46,8 +59,10 @@ eagine_add_module_tests(
 		iterator
 		flat_map
 		flat_set
+		object_pool
 		trie
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.valid_if

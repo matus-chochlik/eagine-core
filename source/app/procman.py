@@ -5,6 +5,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
+import io
 import os
 import re
 import sys
@@ -825,6 +826,19 @@ class ExpectXPathAggregate(object):
 # ------------------------------------------------------------------------------
 #  Configuration
 # ------------------------------------------------------------------------------
+class CommentRemover(io.StringIO):
+    # --------------------------------------------------------------------------
+    def _readWithoutComments(self, fd):
+        for line in fd:
+            line = line.split('#')[0].strip()
+            if line:
+                yield line
+
+    # --------------------------------------------------------------------------
+    def __init__(self, fd):
+        super(CommentRemover, self).__init__('\n'.join(self._readWithoutComments(fd)))
+
+# ------------------------------------------------------------------------------
 class PipelineConfig(object):
     # --------------------------------------------------------------------------
     def __init__(self, options):
@@ -841,7 +855,7 @@ class PipelineConfig(object):
                 }
                 try:
                     with open(config_path) as config_file:
-                        partial_config = json.load(config_file)
+                        partial_config = json.load(CommentRemover(config_file))
                         for proc in partial_config.get("pipelines", []):
                             try:
                                 proc["variables"].update(implicit)
@@ -854,7 +868,7 @@ class PipelineConfig(object):
                 except IOError as io_error:
                     self._log.error("reading '%s': %s" % (config_path, io_error))
                 except ValueError as value_error:
-                    self._log.error("parsing '%s': %s" % (config_path, io_error))
+                    self._log.error("parsing '%s': %s" % (config_path, value_error))
 
         for pipeline in self.full_config.get("pipelines", []):
             variables = self.full_config.get("variables", {}).copy()

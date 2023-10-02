@@ -43,6 +43,14 @@ cp "${src_dir}/source/app/psql_logs-cl.py" \
 "${src_dir}/source/app/psql_logs-cl.py" \
 	--print-bash-completion "${bco_prefix}/eagine-psql-logs-cl"
 
+cp "${src_dir}/source/app/log-psql.sh" \
+   "${bin_prefix}/eagilog-psql"
+
+cp "${src_dir}/source/app/log-plot.py" \
+   "${bin_prefix}/eagilog-plot"
+"${src_dir}/source/app/log-plot.py" \
+	--print-bash-completion "${bco_prefix}/eagilog-plot"
+
 cp "${src_dir}/source/app/fmd_modify.py" \
    "${bin_prefix}/eagine-fmd-modify"
 "${src_dir}/source/app/fmd_modify.py" \
@@ -63,7 +71,7 @@ Version: @PKG_VERSION@
 Architecture: @PKG_ARCH@
 Installed-Size: $(eagine_deb_installed_size ${pkg_dir})
 Depends: coreutils,python3,python3-pip
-Suggests: postgresql-client
+Suggests: postgresql-client,python3-psycopg2,python3-matplotlib
 Maintainer: Matus Chochlik <chochlik@gmail.com>
 Description: Collection of core command-line utilities for EAGine
 CONTROL

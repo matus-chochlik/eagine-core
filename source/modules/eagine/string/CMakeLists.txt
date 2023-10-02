@@ -5,6 +5,7 @@
 eagine_add_module(
 	eagine.core.string PARTITION multi_byte
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.valid_if
@@ -14,7 +15,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION list
 	IMPORTS
-		multi_byte
+		std multi_byte
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.valid_if
@@ -23,7 +24,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION path
 	IMPORTS
-		list
+		std list
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.valid_if
@@ -32,6 +33,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION c_str
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )
@@ -39,13 +41,14 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION algorithm
 	IMPORTS
+		std
 		eagine.core.memory
 )
 
 eagine_add_module(
 	eagine.core.string PARTITION environment
 	IMPORTS
-		c_str
+		std c_str
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.valid_if
@@ -54,7 +57,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION format
 	IMPORTS
-		c_str
+		std c_str
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
@@ -63,6 +66,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION base64
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
@@ -72,7 +76,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION base64dump
 	IMPORTS
-		base64
+		std base64
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
@@ -82,6 +86,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION bindump
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
@@ -90,6 +95,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION hexdump
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
@@ -98,7 +104,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION from_string
 	IMPORTS
-		c_str
+		std c_str
 		eagine.core.types
 		eagine.core.math
 		eagine.core.memory
@@ -108,6 +114,8 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.string PARTITION keyboard_distance
 	IMPORTS
+		std
+		eagine.core.types
 		eagine.core.math
 		eagine.core.memory
 		eagine.core.container
@@ -122,6 +130,7 @@ eagine_add_module(
 		from_string
 		keyboard_distance
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.math
@@ -136,11 +145,14 @@ eagine_add_module_tests(
 		bindump
 		environment
 		from_string
+		format
 		hexdump
 		multi_byte
+		keyboard_distance
 		list
 		path
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.debug
 		eagine.core.memory

@@ -2,17 +2,23 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
-eagine_add_module(eagine.core.runtime PARTITION signal_switch)
+eagine_add_module(
+	eagine.core.runtime PARTITION signal_switch
+	IMPORTS
+		std
+)
 
 eagine_add_module(
 	eagine.core.runtime PARTITION process
 	IMPORTS
+		std
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.runtime PARTITION traverse
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -22,6 +28,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.runtime PARTITION program_args
 	IMPORTS
+		std
 		eagine.core.debug
 		eagine.core.types
 		eagine.core.memory
@@ -32,7 +39,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.runtime PARTITION basic_config
 	IMPORTS
-		program_args
+		std program_args
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -44,6 +51,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.runtime PARTITION url
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -55,6 +63,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.runtime PARTITION compression
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
@@ -64,6 +73,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.runtime PARTITION executable_module
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -72,7 +82,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.runtime PARTITION file_contents
 	IMPORTS
-		input_data
+		std input_data
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
@@ -82,13 +92,16 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.runtime PARTITION value_with_history
 	IMPORTS
+		std
 		eagine.core.types
+		eagine.core.memory
 		eagine.core.valid_if
 )
 
 eagine_add_module(
 	eagine.core.runtime PARTITION workshop
 	IMPORTS
+		std
 		eagine.core.types
 )
 
@@ -104,6 +117,7 @@ eagine_add_module(
 		compression
 		workshop
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.utility
 		eagine.core.memory
@@ -126,6 +140,7 @@ eagine_add_module_tests(
 		program_args
 		url
 	IMPORTS
+		std
 		eagine.core.debug
 		eagine.core.types
 		eagine.core.memory

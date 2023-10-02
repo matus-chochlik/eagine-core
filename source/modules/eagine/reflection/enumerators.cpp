@@ -92,6 +92,64 @@ export template <typename T>
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t V>
     requires(mapped_enum<T, selector<V>>)
+[[nodiscard]] constexpr auto is_bitset(
+  const std::type_identity<T> id,
+  const selector<V> sel) noexcept -> bool {
+    using UT = std::underlying_type_t<T>;
+    if constexpr(std::is_unsigned_v<UT>) {
+        UT bit{1U};
+        for(const auto& info : enumerator_mapping(id, sel)) {
+            if(bit != static_cast<UT>(info.enumerator)) {
+                return false;
+            }
+            bit <<= 1U;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+//------------------------------------------------------------------------------
+export template <typename T>
+[[nodiscard]] constexpr auto is_bitset(const std::type_identity<T> id) noexcept
+  -> bool {
+    return is_bitset(id, default_selector);
+}
+//------------------------------------------------------------------------------
+export template <typename T, identifier_t V>
+    requires(mapped_enum<T, selector<V>>)
+[[nodiscard]] constexpr auto enumerator_index(
+  const T enumerator,
+  const std::type_identity<T> id,
+  const selector<V> sel) noexcept -> span_size_t {
+    const auto enum_map{enumerator_mapping(id, sel)};
+    if constexpr(is_bitset(id, sel)) {
+        const auto pos{std::lower_bound(
+          enum_map.begin(), enum_map.end(), enumerator, [](auto e, auto v) {
+              return e.enumerator < v;
+          })};
+        return span_size(std::distance(enum_map.begin(), pos));
+    } else {
+        span_size_t index = 0;
+        for(const auto& info : enum_map) {
+            if(info.enumerator == enumerator) {
+                break;
+            }
+            ++index;
+        }
+        return index;
+    }
+}
+//------------------------------------------------------------------------------
+export template <typename T>
+[[nodiscard]] constexpr auto enumerator_index(
+  const T value,
+  const std::type_identity<T> id = {}) noexcept {
+    return enumerator_index(value, id, default_selector);
+}
+//------------------------------------------------------------------------------
+export template <typename T, identifier_t V>
+    requires(mapped_enum<T, selector<V>>)
 [[nodiscard]] auto enumerator_name(
   const T enumerator,
   const std::type_identity<T> id,

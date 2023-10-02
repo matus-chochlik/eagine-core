@@ -125,16 +125,12 @@ auto substitute_variables(
   const std::string& str,
   const std::map<std::string, std::string, str_view_less>& dictionary,
   const variable_substitution_options opts) noexcept -> std::string {
-    const auto translate_func =
-      [&dictionary](string_view key) -> std::optional<string_view> {
-        if(not dictionary.empty()) {
-            auto i = dictionary.find(key);
-            if(i != dictionary.end()) {
-                return {i->second};
-            }
-        }
-        return {};
-    };
+    const auto translate_func{[&dictionary](string_view key) {
+        return find(dictionary, key)
+          .and_then([](const auto& found) -> std::optional<std::string_view> {
+              return {found};
+          });
+    }};
     return substitute_variables(str, {construct_from, translate_func}, opts);
 }
 //------------------------------------------------------------------------------

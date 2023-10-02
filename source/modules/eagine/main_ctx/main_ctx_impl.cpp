@@ -47,6 +47,7 @@ main_ctx::main_ctx(main_ctx_getters& src)
   , _buffers{src.buffers()}
   , _scratch_space{src.scratch_space()}
   , _compressor{src.compressor()}
+  , _scheduler{src.scheduler()}
   , _workers{src.workers()}
   , _exe_path{src.exe_path()}
   , _app_name{src.app_name()} {
@@ -63,6 +64,11 @@ main_ctx::~main_ctx() noexcept {
 //------------------------------------------------------------------------------
 auto main_ctx::preinitialize() noexcept -> main_ctx& {
     _source.preinitialize();
+    return *this;
+}
+//------------------------------------------------------------------------------
+auto main_ctx::update() noexcept -> main_ctx& {
+    _source.update();
     return *this;
 }
 //------------------------------------------------------------------------------
@@ -308,6 +314,10 @@ auto main_ctx_object::cio_error(const string_view format) const noexcept
 //------------------------------------------------------------------------------
 auto main_ctx_object::progress() const noexcept -> const activity_progress& {
     return main_context().progress();
+}
+//------------------------------------------------------------------------------
+auto main_ctx_object::scheduler() const noexcept -> action_scheduler& {
+    return main_context().scheduler();
 }
 //------------------------------------------------------------------------------
 auto main_ctx_object::workers() const noexcept -> workshop& {

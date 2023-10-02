@@ -2,31 +2,58 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
-eagine_add_module(eagine.core.utility PARTITION count)
-eagine_add_module(eagine.core.utility PARTITION coroutine)
-eagine_add_module(eagine.core.utility PARTITION overloaded)
-eagine_add_module(eagine.core.utility PARTITION double_buffer)
-eagine_add_module(eagine.core.utility PARTITION integer_hash)
-eagine_add_module(eagine.core.utility PARTITION bool_aggregate)
-eagine_add_module(eagine.core.utility PARTITION interleaved_call)
-eagine_add_module(eagine.core.utility PARTITION protected_member)
-eagine_add_module(eagine.core.utility PARTITION unreachable)
+eagine_add_module(
+	eagine.core.utility PARTITION count
+	IMPORTS std eagine.core.types
+)
+eagine_add_module(
+	eagine.core.utility PARTITION coroutine
+	IMPORTS std
+)
+eagine_add_module(
+	eagine.core.utility PARTITION overloaded
+	IMPORTS std
+)
+eagine_add_module(
+	eagine.core.utility PARTITION double_buffer
+	IMPORTS std
+)
+eagine_add_module(
+	eagine.core.utility PARTITION interleaved_call
+	IMPORTS std
+)
+eagine_add_module(
+	eagine.core.utility PARTITION integer_hash
+	IMPORTS std
+)
+eagine_add_module(
+	eagine.core.utility PARTITION bool_aggregate
+	IMPORTS std
+)
+eagine_add_module(
+	eagine.core.utility PARTITION protected_member
+	IMPORTS std
+)
+eagine_add_module(
+	eagine.core.utility PARTITION unreachable
+	IMPORTS std
+)
 
 eagine_add_module(
 	eagine.core.utility PARTITION sliding_average
-	IMPORTS eagine.core.types
+	IMPORTS std eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.utility PARTITION callable_ref
 	IMPORTS
-		eagine.core.types
+		std eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.utility PARTITION signal
 	IMPORTS
-		callable_ref
+		std callable_ref
 		eagine.core.types
 		eagine.core.container
 )
@@ -34,6 +61,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.utility PARTITION spinlock
 	IMPORTS
+		std
 		eagine.core.build_config
 		eagine.core.types
 )
@@ -41,25 +69,28 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.utility PARTITION memoized
 	IMPORTS
-		callable_ref
+		std callable_ref
 		eagine.core.types
+		eagine.core.container
 )
 
 eagine_add_module(
 	eagine.core.utility PARTITION network_sort
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )
 
 eagine_add_module(
 	eagine.core.utility PARTITION scope_exit
-	IMPORTS callable_ref eagine.core.types
+	IMPORTS std callable_ref eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.utility PARTITION sudoku
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
@@ -68,7 +99,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.utility PARTITION cleanup_group
 	IMPORTS
-		scope_exit
+		std scope_exit
 		eagine.core.types
 		eagine.core.memory
 )
@@ -76,19 +107,31 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.utility PARTITION timeline
 	IMPORTS
+		std
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.core.utility PARTITION timeout
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.debug
 )
 
 eagine_add_module(
+	eagine.core.utility PARTITION scheduler
+	IMPORTS
+		std
+		eagine.core.types
+		eagine.core.identifier
+		eagine.core.container
+)
+
+eagine_add_module(
 	eagine.core.utility PARTITION random_bytes
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )
@@ -96,6 +139,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.utility PARTITION progress_bar
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 )
@@ -104,9 +148,12 @@ eagine_add_module(
 	eagine.core.utility
 	SOURCES
 		progress_bar
+		scheduler
 	IMPORTS
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.container
+		eagine.core.identifier
 )
 
 eagine_add_module_tests(
@@ -122,11 +169,14 @@ eagine_add_module_tests(
 		random_bytes
 		scope_exit
 		sudoku
+		scheduler
 		timeout
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.debug
+		eagine.core.identifier
 		eagine.core.container
 		eagine.core.valid_if
 )

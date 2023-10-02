@@ -9,6 +9,7 @@ export module eagine.core.container;
 
 export import :static_vector;
 export import :small_vector;
+export import :object_pool;
 export import :flat_set;
 export import :flat_map;
 export import :trie;

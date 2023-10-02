@@ -7,6 +7,7 @@ eagine_add_module(
 	SOURCES
 		build_info
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.valid_if
@@ -18,4 +19,6 @@ eagine_add_module_tests(
 	eagine.core.build_info
 	UNITS
 		build_info
+	IMPORTS
+		std
 )

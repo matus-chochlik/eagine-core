@@ -50,6 +50,11 @@ public:
         return *this;
     }
 
+    auto update() noexcept -> main_ctx_storage& final {
+        _scheduler.update();
+        return *this;
+    }
+
     auto instance_id() const noexcept -> process_instance_id_t final {
         return _instance_id;
     }
@@ -125,6 +130,10 @@ public:
         return _compressor;
     }
 
+    auto scheduler() noexcept -> action_scheduler& final {
+        return _scheduler;
+    }
+
     auto workers() noexcept -> workshop& final {
         return _workers;
     }
@@ -145,18 +154,12 @@ public:
 
     auto locate_service(identifier type_id) noexcept
       -> optional_reference<main_ctx_service> final {
-        if(const auto pos{_services.find(type_id)}; pos != _services.end()) {
-            return std::get<1>(*pos);
-        }
-        return {};
+        return find(_services, type_id).or_default();
     }
 
     auto share_service(identifier type_id) noexcept
       -> shared_holder<main_ctx_service> final {
-        if(const auto pos{_services.find(type_id)}; pos != _services.end()) {
-            return std::get<1>(*pos);
-        }
-        return {};
+        return find(_services, type_id).or_default();
     }
 
     void fill_with_random_bytes(memory::block dest) noexcept final {
@@ -201,6 +204,7 @@ private:
     memory::buffer_pool _buffers;
     memory::buffer _scratch_space{_default_alloc};
     data_compressor _compressor{_buffers};
+    action_scheduler _scheduler{};
     workshop _workers{};
     std::string _exe_path{};
     std::string _app_name{};

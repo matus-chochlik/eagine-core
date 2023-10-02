@@ -7,6 +7,7 @@ eagine_add_module(
 	SOURCES
 		identifier
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.vectorization
@@ -17,5 +18,6 @@ eagine_add_module_tests(
 	UNITS
 		identifier
 	IMPORTS
+		std
 		eagine.core.types
 )

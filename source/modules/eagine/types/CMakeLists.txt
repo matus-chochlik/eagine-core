@@ -2,75 +2,85 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
-eagine_add_module(eagine.core.types PARTITION concepts)
-eagine_add_module(eagine.core.types PARTITION function_constant)
 eagine_add_module(eagine.core.types PARTITION interface)
-eagine_add_module(eagine.core.types PARTITION bitfield)
+eagine_add_module(
+	eagine.core.types PARTITION concepts
+	IMPORTS std
+)
+eagine_add_module(
+	eagine.core.types PARTITION bitfield
+	IMPORTS std
+)
 
 eagine_add_module(
 	eagine.core.types PARTITION basic
-	IMPORTS eagine.core.build_config
+	IMPORTS std eagine.core.build_config
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION tribool
-	IMPORTS concepts
+	IMPORTS std concepts
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION structural
+	IMPORTS std
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION metaprogramming
-	IMPORTS basic
+	IMPORTS std basic
 )
-
+eagine_add_module(
+	eagine.core.types PARTITION function_constant
+	IMPORTS
+		std basic
+)
 
 eagine_add_module(
 	eagine.core.types PARTITION limits
-	IMPORTS basic
+	IMPORTS std basic
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION optional_like
 	IMPORTS
-		basic tribool
+		std basic tribool
 		limits concepts
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION holder
 	IMPORTS
-		basic tribool
+		std basic tribool
 		concepts optional_like
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION placeholder
 	IMPORTS
-		tribool optional_like
+		std tribool optional_like
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION outcome
 	IMPORTS
-		basic limits concepts
+		std basic limits concepts
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION compare
-	IMPORTS basic
+	IMPORTS std basic
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION integer_range
-	IMPORTS concepts limits
+	IMPORTS std concepts limits
 )
 
 eagine_add_module(
 	eagine.core.types PARTITION enum_map
-	IMPORTS basic bitfield
+	IMPORTS std basic bitfield
 )
 
 eagine_add_module(
@@ -88,10 +98,14 @@ eagine_add_module_tests(
 		placeholder
 		integer_range
 		metaprogramming
+		function_constant
 		nothing
+		optional_iterator
 		optional_reference
 		optional_like_tuple
 		valid_if
 		tribool
 		holder
+	IMPORTS
+		std
 )

@@ -8,6 +8,7 @@
 export module eagine.core.types:function_constant;
 
 import std;
+import :basic;
 
 namespace eagine {
 
@@ -30,6 +31,9 @@ struct member_function_constant<RV (C::*)(P...), Ptr> {
 
     /// @brief Alias for the function result type.
     using result_type = RV;
+
+    /// @brief Function parameter count.
+    using arity = size_constant<sizeof...(P)>;
 
     /// @brief Alias for the class to which the member function belongs.
     using scope = C;
@@ -84,6 +88,9 @@ struct member_function_constant<RV (C::*)(P...) const, Ptr> {
     /// @brief Alias for the function result type.
     using result_type = RV;
 
+    /// @brief Function parameter count.
+    using arity = size_constant<sizeof...(P)>;
+
     /// @brief Alias for the class to which the member function belongs.
     using scope = C;
 
@@ -133,6 +140,9 @@ struct member_function_constant<RV (C::*)(P...) noexcept, Ptr> {
 
     /// @brief Alias for the function result type.
     using result_type = RV;
+
+    /// @brief Function parameter count.
+    using arity = size_constant<sizeof...(P)>;
 
     /// @brief Alias for the class to which the member function belongs.
     using scope = C;
@@ -187,6 +197,9 @@ struct member_function_constant<RV (C::*)(P...) const noexcept, Ptr> {
 
     /// @brief Alias for the function result type.
     using result_type = RV;
+
+    /// @brief Function parameter count.
+    using arity = size_constant<sizeof...(P)>;
 
     /// @brief Alias for the class to which the member function belongs.
     using scope = C;

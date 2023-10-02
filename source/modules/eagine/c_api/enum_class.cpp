@@ -686,7 +686,7 @@ private:
 /// @see any_enum_class
 export template <identifier_value LibId>
 class any_enum_value {
-
+public:
     /// @brief Default constructor.
     constexpr any_enum_value() noexcept = default;
 
