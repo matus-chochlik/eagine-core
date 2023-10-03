@@ -15,7 +15,7 @@ bin_dir = os.path.realpath("@BIN_DIR@")
 pkg_dir = os.path.realpath("@PKG_DIR@")
 deb_dir  = os.path.join(pkg_dir, "DEBIAN")
 pkg_prefix = os.path.join(pkg_dir, "usr")
-cpp_prefix = os.path.join(pkg_prefix, "share", "eagine", "source", "@CMAKE_BUILD_TYPE@", "core")
+cpp_prefix = os.path.join(pkg_prefix, "share", "eagine", "source", "@CMAKE_BUILD_TYPE@")
 bin_prefix = os.path.join(pkg_prefix, "bin")
 lib_prefix = os.path.join(pkg_prefix, "lib")
 cmk_prefix = os.path.join(lib_prefix, "@PKG_MULTIARCH@", "cmake", "EAGine")
@@ -47,9 +47,9 @@ with open(os.path.join("@CMAKE_CURRENT_BINARY_DIR@", "build-pkg.json"), "rb") as
     info = json.load(build_pkg_json)
     shutil.copy2(info["ryml_lib"], lib_prefix)
 # ------------------------------------------------------------------------------
-def copy_module_files(build_dir, info):
+def copy_module_files(name, build_dir, info):
     for cppm in info["interfaces"]:
-        dest = os.path.join(cpp_prefix, cppm)
+        dest = os.path.join(cpp_prefix, name, cppm)
         if not os.path.exists(os.path.dirname(dest)):
             os.makedirs(os.path.dirname(dest))
         shutil.copy2(os.path.join(build_dir, cppm), dest)
@@ -61,11 +61,14 @@ def copy_module_files(build_dir, info):
             os.makedirs(os.path.dirname(dest))
         shutil.copy2(os.path.join(build_dir, cmake), dest)
     for subinfo in info["submodules"]:
-        copy_module_files(build_dir, subinfo)
+        copy_module_files(name, build_dir, subinfo)
 
+with open(os.path.join("@CMAKE_CURRENT_BINARY_DIR@", "std.json"), "rb") as module_json:
+    info = json.load(module_json)
+    copy_module_files("std", info["build_directory"], info["module"])
 with open(os.path.join("@CMAKE_CURRENT_BINARY_DIR@", "eagine.core.json"), "rb") as module_json:
     info = json.load(module_json)
-    copy_module_files(info["build_directory"], info["module"])
+    copy_module_files("core", info["build_directory"], info["module"])
 # ------------------------------------------------------------------------------
 def dir_file_size(path):
     total_size = 0
