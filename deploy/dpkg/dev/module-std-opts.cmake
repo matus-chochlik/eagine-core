@@ -5,5 +5,4 @@
 #
 target_compile_options(
 	std
-	PRIVATE -Wno-reserved-module-identifier
-)
+	INTERFACE -Wno-reserved-module-identifier)
