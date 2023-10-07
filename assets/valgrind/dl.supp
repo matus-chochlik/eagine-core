@@ -1,5 +1,5 @@
 {
-   oglplus/dl_Leak_dl_error_run
+   eagine/dl_Leak_dl_error_run
    Memcheck:Leak
    fun:*
    ...
@@ -7,7 +7,7 @@
    ...
 }
 {
-   oglplus/dl_Leak_dlopen_doit
+   eagine/dl_Leak_dlopen_doit
    Memcheck:Leak
    fun:*
    ...
@@ -15,7 +15,7 @@
    ...
 }
 {
-   oglplus/dl_Leak_dl_init
+   eagine/dl_Leak_dl_init
    Memcheck:Leak
    fun:*
    ...
