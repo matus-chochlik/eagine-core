@@ -1,5 +1,5 @@
 FROM postgres
-LABEL maintainer="chochlik@gmail.com"
+LABEL maintainer="matus.chochlik@proton.me"
 
 COPY bin/eagine-getpwd /bin/
 RUN chmod 444 /bin/eagine-getpwd \

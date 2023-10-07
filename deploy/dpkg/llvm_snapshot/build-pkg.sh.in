@@ -22,7 +22,7 @@ Version: @PKG_VERSION@
 Architecture: all
 Installed-Size: $(eagine_deb_installed_size ${pkg_dir})
 Depends:
-Maintainer: Matus Chochlik <chochlik@gmail.com>
+Maintainer: Matus Chochlik <matus.chochlik@proton.me>
 Description: Setup of llvm snapshot APT package source and key for building of EAGine
 CONTROL
 

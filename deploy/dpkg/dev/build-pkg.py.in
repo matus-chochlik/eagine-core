@@ -92,7 +92,7 @@ Architecture: %s
 Installed-Size: %d
 Depends: cmake,libsystemd-dev,zlib1g-dev
 Suggests: ninja-build
-Maintainer: Matus Chochlik <chochlik@gmail.com>
+Maintainer: Matus Chochlik <matus.chochlik@proton.me>
 Description: Collection of various modern C++ utilities.
 """ % (
     "@PKG_VERSION@",

@@ -15,7 +15,7 @@ Architecture: all
 Installed-Size: $(eagine_deb_installed_size ${pkg_dir})
 Depends: eagine-llvm-snapshot-@PKG_DEB_CODENAME@,llvm-17,llvm-17-tools,lld-17,llvm-17-linker-tools,clang-17,clang-tidy-17,clang-format-17,libc++-17-dev,libc++abi-17-dev
 Suggests: cmake,ninja-build
-Maintainer: Matus Chochlik <chochlik@gmail.com>
+Maintainer: Matus Chochlik <matus.chochlik@proton.me>
 Description: Metapackage installing recommended C++ compiler for building of EAGine.
 CONTROL
 # ------------------------------------------------------------------------------
