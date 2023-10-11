@@ -234,6 +234,12 @@ class XmlLogDbWriter(object):
             "Compiler": {
                 "complrName": ("compiler", 32),
                 "archtcture": ("architecture", 32)
+            },
+            "asignEptId": {
+                "eptId": ("endpoint_id", None)
+            },
+            "cnfrmEptId": {
+                "eptId": ("endpoint_id", None)
             }
         }
 
