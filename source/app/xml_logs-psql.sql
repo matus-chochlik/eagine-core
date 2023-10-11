@@ -380,6 +380,7 @@ CREATE TABLE eagilog.stream (
 	last_entry_id BIGINT NULL,
 	stream_command_id INTEGER NULL,
 	os_pid INTEGER NULL,
+	endpoint_id INTEGER NULL,
 	git_hash VARCHAR(64) NULL,
 	git_version VARCHAR(32) NULL,
 	os_name VARCHAR(64) NULL,
@@ -596,6 +597,25 @@ BEGIN
 	UPDATE eagilog.stream
 	SET os_pid = _value
 	WHERE stream_id = _stream_id;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION eagilog.set_stream_endpoint_id(
+	_stream_id eagilog.stream.os_pid%TYPE,
+	_value INTEGER
+) RETURNS VOID
+AS $$
+BEGIN
+	IF _value IS NOT NULL
+	THEN
+		UPDATE eagilog.stream
+		SET endpoint_id = CASE
+			WHEN endpoint_id IS NULL THEN _value
+			WHEN endpoint_id = _value THEN _value
+			ELSE NULL
+		END
+		WHERE stream_id = _stream_id;
+	END IF;
 END
 $$ LANGUAGE plpgsql;
 
