@@ -59,7 +59,7 @@ def adjustAttributes(command_name, attribs):
         attribs["author_name"] = "Matus Chochlik"
 
     if not "author_email" in attribs:
-        attribs["author_email"] = "chochlik@gmail.com"
+        attribs["author_email"] = "matus.chochlik@proton.me"
 
     return attribs
 # ------------------------------------------------------------------------------

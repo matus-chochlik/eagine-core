@@ -1,5 +1,5 @@
 {
-   oglplus/radeonsi_dri_Leak
+   eagine/radeonsi_dri_Leak
    Memcheck:Leak
    fun:*
    ...
@@ -7,7 +7,7 @@
    ...
 }
 {
-   oglplus/radeonsi_dri_Cond
+   eagine/radeonsi_dri_Cond
    Memcheck:Cond
    ...
    obj:/usr/*lib*/radeonsi_dri.so

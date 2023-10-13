@@ -450,6 +450,7 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 		UNITS
 		IMPORTS
 		ENVIRONMENT
+		PRIVATE_LINK_LIBRARIES
 	)
 	cmake_parse_arguments(
 		EAGINE_MODULE_TEST
@@ -491,10 +492,11 @@ function(eagine_add_module_tests EAGINE_MODULE_PROPER)
 					-fprofile-instr-generate
 					-fcoverage-mapping
 			)
+			list(APPEND EAGINE_MODULE_TEST_PRIVATE_LINK_LIBRARIES
+				eagine-core-testing-headers)
 			target_link_libraries(
 				${TEST_NAME}
-				PRIVATE
-					eagine-core-testing-headers
+				PRIVATE ${EAGINE_MODULE_TEST_PRIVATE_LINK_LIBRARIES}
 			)
 			eagine_add_exe_analysis(${TEST_NAME})
 			eagine_target_modules(${TEST_NAME} ${EAGINE_MODULE_PROPER})

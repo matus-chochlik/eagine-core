@@ -1,5 +1,5 @@
 {
-   oglplus/llvm_Leak
+   eagine/llvm_Leak
    Memcheck:Leak
    fun:*
    ...
@@ -7,7 +7,7 @@
    ...
 }
 {
-   oglplus/llvm_Cond
+   eagine/llvm_Cond
    Memcheck:Cond
    obj:/usr/*lib*/libLLVM*
    ...

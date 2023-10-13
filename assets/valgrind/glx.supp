@@ -1,5 +1,5 @@
 {
-   oglplus/glx_Leak_glapi_get_proc_address
+   eagine/glx_Leak_glapi_get_proc_address
    Memcheck:Leak
    fun:malloc
    ...
@@ -7,7 +7,7 @@
    ...
 }
 {
-   oglplus/glx_Leak_choose_fb_config
+   eagine/glx_Leak_choose_fb_config
    Memcheck:Leak
    fun:malloc
    ...
@@ -15,7 +15,7 @@
    ...
 }
 {
-   oglplus/glx_Leak_get_client_config
+   eagine/glx_Leak_get_client_config
    Memcheck:Leak
    fun:malloc
    ...

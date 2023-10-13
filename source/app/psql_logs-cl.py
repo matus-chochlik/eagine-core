@@ -434,6 +434,8 @@ class LogFormattingUtils(object):
     def formatMessageArg(self, name, typ, value, ctx = None):
         try:
             return self._formatters[typ](name, value, ctx)
+        except TypeError:
+            return str(value)
         except KeyError:
             return str(value)
 
