@@ -114,6 +114,10 @@ public:
         return _sys_info;
     }
 
+    [[nodiscard]] auto default_chunk_size() noexcept -> span_size_t {
+        return system().memory_page_size().value_or(4 * 1024);
+    }
+
     [[nodiscard]] auto user() noexcept -> user_info& final {
         return _usr_info;
     }
