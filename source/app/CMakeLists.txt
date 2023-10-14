@@ -39,7 +39,7 @@ install(
 	DESTINATION bin
 )
 install(
-	PROGRAMS log-plot.sh
+	PROGRAMS log-plot.py
 	RENAME eagilog-plot
 	DESTINATION bin
 )
