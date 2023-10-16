@@ -43,10 +43,15 @@ template <typename Getter, typename Putter>
 void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
 
     bool done = false;
+    bool first = true;
+    bool prev_same = false;
     span_size_t row = bgn - (bgn % 16);
 
-    bool row_none[16]{};
-    byte row_byte[16]{};
+    std::array<bool, 16> row_none{};
+    std::array<byte, 16> row_byte{};
+    std::array<byte, 16> row_prev{};
+
+    std::stringstream temp;
 
     while(not done) {
         span_size_t pos = row;
@@ -70,50 +75,69 @@ void _hexdump_do_hex_dump(span_size_t bgn, Getter get_byte, Putter put_char) {
             break;
         }
 
-        std::stringstream temp;
-        temp << std::setw(20) << std::setfill('.');
-        temp << std::hex << row;
-        for(char c : temp.str()) {
-            put_char(c);
-        }
-        put_char('|');
+        temp.str({});
+        if(first or done or row_prev != row_byte) {
+            first = false;
+            temp << std::setw(20) << std::setfill('.');
+            temp << std::hex << row;
+            for(char c : temp.str()) {
+                put_char(c);
+            }
+            put_char('|');
 
-        pos = row;
-        for(const auto b : integer_range(16)) {
-            if(b == 8) {
-                put_char(' ');
+            pos = row;
+            for(const auto b : integer_range(16)) {
+                if(b == 8) {
+                    put_char(' ');
+                }
+
+                if(row_none[b]) {
+                    put_char(' ');
+                    put_char('.');
+                    put_char('.');
+                } else {
+                    _hexdump_to_hex_b(put_char, row_byte[b]);
+                }
+                ++pos;
             }
 
-            if(row_none[b]) {
-                put_char(' ');
-                put_char('.');
-                put_char('.');
-            } else {
-                _hexdump_to_hex_b(put_char, row_byte[b]);
-            }
-            ++pos;
-        }
+            put_char(' ');
+            put_char('|');
 
-        put_char(' ');
-        put_char('|');
+            pos = row;
+            for(const auto b : integer_range(16)) {
+                if(b == 8) {
+                    put_char(' ');
+                }
 
-        pos = row;
-        for(const auto b : integer_range(16)) {
-            if(b == 8) {
-                put_char(' ');
+                if(row_none[b] or not std::isprint(row_byte[b])) {
+                    put_char('.');
+                } else {
+                    put_char(char(row_byte[b]));
+                }
+                ++pos;
             }
-
-            if(row_none[b] or not std::isprint(row_byte[b])) {
-                put_char('.');
-            } else {
-                put_char(char(row_byte[b]));
-            }
-            ++pos;
+            put_char('|');
+            put_char('\n');
+            row_prev = row_byte;
+            prev_same = false;
+        } else if(not prev_same) {
+            const auto put_str{[&](const string_view s) {
+                for(const char c : s) {
+                    put_char(c);
+                }
+            }};
+            const string_view l1{"                   *|"};
+            const string_view l2{" .. .. .. .. .. .. .. .. "};
+            const string_view l3{"|........ ........|\n"};
+            put_str(l1);
+            put_str(l2);
+            put_str(l2);
+            put_str(l3);
+            prev_same = true;
         }
 
         row += 16;
-        put_char('|');
-        put_char('\n');
     }
 }
 //------------------------------------------------------------------------------
