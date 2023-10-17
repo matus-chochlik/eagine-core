@@ -239,7 +239,7 @@ public:
     /// @brief Alias for data handler callable type.
     using data_handler = callable_ref<bool(memory::const_block) noexcept>;
 
-    /// @brief Construction from compressor instance, data handler and compresion method.
+    /// @brief Construction from compressor instance, data handler and compression method.
     stream_compression_decompression_base(
       data_compressor compressor,
       data_handler handler,
@@ -256,7 +256,7 @@ public:
       , _handler{handler}
       , _method{_compressor.default_method()} {}
 
-    /// @brief Construction from buffer pool, data handler and compresion method.
+    /// @brief Construction from buffer pool, data handler and compression method.
     stream_compression_decompression_base(
       memory::buffer_pool& buffers,
       data_handler handler,
