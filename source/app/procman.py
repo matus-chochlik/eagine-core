@@ -1175,6 +1175,11 @@ class ProcessInstance(object):
             self.tracker().log().error(
                 "failed to find executable in pipeline '%s'",
                 parent.identity())
+        else:
+            self.tracker().log().info(
+                "starting executable '%s'",
+                self._args[0])
+
         self._handle = subprocess.Popen(self._args)
         self._start_time = time.time()
         if self._handle:
@@ -2121,8 +2126,6 @@ def getProgressTracker(tracker, options):
 #  Tracker
 # ------------------------------------------------------------------------------
 class ProcessLogTracker(object):
-    # --------------------------------------------------------------------------
-
     # --------------------------------------------------------------------------
     def __init__(self, options, composition):
         self._log = logging.getLogger("eagiproc.tracker")
