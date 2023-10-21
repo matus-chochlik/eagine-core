@@ -10,8 +10,22 @@
 import eagine.core.memory;
 import eagine.core.runtime;
 //------------------------------------------------------------------------------
-void url_default_construct(auto& s) {
+void url_encoding_roundtrip(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};
+
+    const auto roundtrip{[&](eagine::string_view source) {
+        test.check(
+          eagine::url::decode_component(eagine::url::encode_component(source))
+              .or_default() == source,
+          source);
+    }};
+
+    roundtrip("éägìreś:///ĺôrëm_ïpşùm");
+    // TODO more
+}
+//------------------------------------------------------------------------------
+void url_default_construct(auto& s) {
+    eagitest::case_ test{s, 2, "default construct"};
 
     eagine::url loc;
     test.check(not loc.has_value(), "is not valid");
@@ -30,7 +44,7 @@ void url_default_construct(auto& s) {
 }
 //------------------------------------------------------------------------------
 void url_scheme(auto& s) {
-    eagitest::case_ test{s, 2, "scheme"};
+    eagitest::case_ test{s, 3, "scheme"};
 
     const eagine::url l1{"//"};
     test.check(l1.has_value(), "1 valid");
@@ -59,7 +73,7 @@ void url_scheme(auto& s) {
 }
 //------------------------------------------------------------------------------
 void url_domain(auto& s) {
-    eagitest::case_ test{s, 3, "domain"};
+    eagitest::case_ test{s, 4, "domain"};
 
     const eagine::url l1{"//"};
     test.check(l1.has_value(), "1 valid");
@@ -90,7 +104,7 @@ void url_domain(auto& s) {
 }
 //------------------------------------------------------------------------------
 void url_login(auto& s) {
-    eagitest::case_ test{s, 4, "login"};
+    eagitest::case_ test{s, 5, "login"};
 
     const eagine::url l1{"//"};
     test.check(l1.has_value(), "1 valid");
@@ -126,7 +140,7 @@ void url_login(auto& s) {
 }
 //------------------------------------------------------------------------------
 void url_password(auto& s) {
-    eagitest::case_ test{s, 5, "password"};
+    eagitest::case_ test{s, 6, "password"};
 
     const eagine::url l1{"//"};
     test.check(l1.has_value(), "1 valid");
@@ -163,7 +177,7 @@ void url_password(auto& s) {
 }
 //------------------------------------------------------------------------------
 void url_path_str(auto& s) {
-    eagitest::case_ test{s, 6, "path string"};
+    eagitest::case_ test{s, 7, "path string"};
 
     const eagine::url l1{"//"};
     test.check(l1.has_value(), "1 valid");
@@ -200,7 +214,7 @@ void url_path_str(auto& s) {
 }
 //------------------------------------------------------------------------------
 void url_port_str(auto& s) {
-    eagitest::case_ test{s, 7, "port string"};
+    eagitest::case_ test{s, 8, "port string"};
 
     const eagine::url l1{"//"};
     test.check(l1.has_value(), "1 valid");
@@ -235,7 +249,7 @@ void url_port_str(auto& s) {
 }
 //------------------------------------------------------------------------------
 void url_port(auto& s) {
-    eagitest::case_ test{s, 8, "port number"};
+    eagitest::case_ test{s, 9, "port number"};
 
     const eagine::url l1{"//"};
     test.check(l1.has_value(), "1 valid");
@@ -270,7 +284,7 @@ void url_port(auto& s) {
 }
 //------------------------------------------------------------------------------
 void url_query_str(auto& s) {
-    eagitest::case_ test{s, 9, "query string"};
+    eagitest::case_ test{s, 10, "query string"};
 
     const eagine::url l1{"//"};
     test.check(l1.has_value(), "1 valid");
@@ -309,7 +323,7 @@ void url_query_str(auto& s) {
 }
 //------------------------------------------------------------------------------
 void url_fragment(auto& s) {
-    eagitest::case_ test{s, 10, "fragment"};
+    eagitest::case_ test{s, 11, "fragment"};
 
     const eagine::url l1{"//"};
     test.check(l1.has_value(), "1 valid");
@@ -344,7 +358,8 @@ void url_fragment(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "url", 10};
+    eagitest::suite test{argc, argv, "url", 11};
+    test.once(url_encoding_roundtrip);
     test.once(url_default_construct);
     test.once(url_scheme);
     test.once(url_domain);
