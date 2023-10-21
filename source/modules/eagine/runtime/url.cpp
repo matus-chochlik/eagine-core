@@ -65,6 +65,13 @@ public:
     url(std::string url_str) noexcept
       : url{std::move(url_str), std::match_results<std::string::iterator>{}} {}
 
+    /// @brief Encodes the given string using the URI/URL encoding.
+    static auto encode_component(const string_view) noexcept -> std::string;
+
+    /// @brief Decode the given string using the URI/URL encoding.
+    static auto decode_component(const string_view) noexcept
+      -> optionally_valid<std::string>;
+
     /// @brief Comparison.
     auto operator<=>(const url& that) const noexcept {
         return _url_str.compare(that._url_str);

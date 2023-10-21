@@ -8,9 +8,77 @@
 module eagine.core.runtime;
 
 import std;
+import eagine.core.types;
 import eagine.core.memory;
 
 namespace eagine {
+//------------------------------------------------------------------------------
+auto url::encode_component(const string_view src) noexcept -> std::string {
+    const auto is_valid{[](char c) {
+        return ((c >= 'a') and (c <= 'z')) or ((c >= 'A') and (c <= 'Z')) or
+               ((c >= '0') and (c <= '0')) or (c == '-') or (c == '_') or
+               (c == '.') or (c == '~');
+    }};
+    std::string result;
+    result.reserve(std_size(src.size() * 2));
+    for(const char c : src) {
+        if(is_valid(c)) {
+            result.push_back(c);
+        } else {
+            const std::string_view hd{"0123456789ABCDEF"};
+            result.push_back('%');
+            result.push_back(hd[(byte(c) >> 4U) & 0x0FU]);
+            result.push_back(hd[byte(c) & 0x0FU]);
+        }
+    }
+    return result;
+}
+//------------------------------------------------------------------------------
+auto url::decode_component(const string_view src) noexcept
+  -> optionally_valid<std::string> {
+    std::string result;
+    result.reserve(std_size(src.size()));
+    const auto from_hex{[](const char c) -> byte {
+        if((c >= '0') and (c <= '9')) {
+            return byte(c - '0');
+        }
+        if((c >= 'A') and (c <= 'F')) {
+            return byte(c - 'A' + 10);
+        }
+        if((c >= 'a') and (c <= 'f')) {
+            return byte(c - 'a' + 10);
+        }
+        return 0xFFU;
+    }};
+    const auto decode{[&](const char hi, const char lo) {
+        const auto bhi{from_hex(hi)};
+        const auto blo{from_hex(lo)};
+        if(bhi != 0x0FFU and blo != 0xFFU) {
+            return char(bhi << 4U | blo);
+        }
+        return '\0';
+    }};
+    int decoding{0};
+    char hi{'\0'};
+    for(const char c : src) {
+        if(decoding == 2) {
+            if(const char d{decode(hi, c)}) {
+                result.push_back(d);
+                decoding = 0;
+            } else {
+                return {};
+            }
+        } else if(decoding == 1) {
+            hi = c;
+            decoding = 2;
+        } else if(c == '%') {
+            decoding = 1;
+        } else {
+            result.push_back(c);
+        }
+    }
+    return {result};
+}
 //------------------------------------------------------------------------------
 auto url::_get_regex() noexcept -> const std::regex& {
     static const std::regex re{
