@@ -13,6 +13,23 @@ import eagine.core.memory;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+// query args
+//------------------------------------------------------------------------------
+auto url_query_args::arg_value(const string_view name) const noexcept
+  -> optionally_valid<string_view> {
+    if(const auto pos{find(name)}; pos != end()) {
+        return {std::get<1>(*pos), true};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto url_query_args::decoded_arg_value(const string_view name) const noexcept
+  -> optionally_valid<std::string> {
+    return arg_value(name).and_then(url::decode_component);
+}
+//------------------------------------------------------------------------------
+// url
+//------------------------------------------------------------------------------
 auto url::encode_component(const string_view src) noexcept -> std::string {
     const auto is_valid{[](char c) {
         return ((c >= 'a') and (c <= 'z')) or ((c >= 'A') and (c <= 'Z')) or

@@ -306,20 +306,27 @@ void url_query_str(auto& s) {
     test.check(l4.query_str().has_value(), "4");
     test.check_equal(l4.query_str().value_or("N/A"), "arg=val", "4 matches");
 
-    const eagine::url l5{"sftp://user1@server2/path/to/file.txt"};
+    const eagine::url l5{"ftp://server2/?A=v%C3%A1%C4%BA%C5%AF%C3%A9+B=X"};
     test.check(l5.has_value(), "5 valid");
-    test.check(not l5.query_str().has_value(), "5");
-    test.check_equal(l5.query_str().value_or("N/A"), "N/A", "5 fallback");
+    test.check_equal(
+      l5.query().decoded_arg_value("A").value_or("N/A"), "váĺůé", "5A matches");
+    test.check_equal(
+      l5.query().decoded_arg_value("B").value_or("N/A"), "X", "5B matches");
 
-    const eagine::url l6{"smb://user2:passw0rd1@server3:69/path/to/dir#part"};
+    const eagine::url l6{"sftp://user1@server2/path/to/file.txt"};
     test.check(l6.has_value(), "6 valid");
     test.check(not l6.query_str().has_value(), "6");
     test.check_equal(l6.query_str().value_or("N/A"), "N/A", "6 fallback");
 
-    const eagine::url l7{"ldap://user3:pwd@server4:1234?a=1+b=2+c=3#frag"};
-    test.check(l7.query_str().has_value(), "7");
+    const eagine::url l7{"smb://user2:passw0rd1@server3:69/path/to/dir#part"};
+    test.check(l7.has_value(), "7 valid");
+    test.check(not l7.query_str().has_value(), "7");
+    test.check_equal(l7.query_str().value_or("N/A"), "N/A", "7 fallback");
+
+    const eagine::url l8{"ldap://user3:pwd@server4:1234?a=1+b=2+c=3#frag"};
+    test.check(l8.query_str().has_value(), "8");
     test.check_equal(
-      l7.query_str().value_or("N/A"), "a=1+b=2+c=3", "7 matches");
+      l8.query_str().value_or("N/A"), "a=1+b=2+c=3", "8 matches");
 }
 //------------------------------------------------------------------------------
 void url_fragment(auto& s) {

@@ -25,13 +25,16 @@ export struct url_query_args
     /// @brief Returns the value of the argument with the specified name.
     /// @see arg_has_value
     /// @see arg_value_as
+    /// @see decoded_arg_value
     auto arg_value(const string_view name) const noexcept
-      -> optionally_valid<string_view> {
-        if(const auto pos{find(name)}; pos != end()) {
-            return {std::get<1>(*pos), true};
-        }
-        return {};
-    }
+      -> optionally_valid<string_view>;
+
+    /// @brief Returns the value of the URL-encoded argument with the specified name.
+    /// @see arg_value
+    /// @see arg_has_value
+    /// @see arg_value_as
+    auto decoded_arg_value(const string_view name) const noexcept
+      -> optionally_valid<std::string>;
 
     /// @brief Converts the value of the argument with the specified name to type T.
     /// @see arg_has_value
