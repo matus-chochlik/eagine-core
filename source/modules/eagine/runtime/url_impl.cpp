@@ -10,6 +10,8 @@ module eagine.core.runtime;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.string;
+import eagine.core.identifier;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -106,6 +108,24 @@ auto url::_get_regex() noexcept -> const std::regex& {
     return re;
 }
 //------------------------------------------------------------------------------
+auto url::_sw(_range r) const noexcept -> string_view {
+    return string_view{
+      head(skip(view(_url_str), std::get<0>(r)), std::get<1>(r))};
+}
+//------------------------------------------------------------------------------
+auto url::_swov(_range r) const noexcept -> valid_if_not_empty<string_view> {
+    return {_sw(r)};
+}
+//------------------------------------------------------------------------------
+auto url::_parse_args() const noexcept -> url_query_args {
+    url_query_args result;
+    for_each_delimited(_sw(_query), string_view{"+"}, [&result](auto part) {
+        auto [name, value] = split_by_first(part, string_view{"="});
+        result[name] = value;
+    });
+    return result;
+}
+//------------------------------------------------------------------------------
 void url::_cover(
   url::_range& part,
   const std::match_results<std::string::iterator>& match,
@@ -134,6 +154,68 @@ url::url(
         _cover(_fragment, match, 37);
         _query_args = _parse_args();
     }
+}
+//------------------------------------------------------------------------------
+auto url::login() const noexcept -> optionally_valid<std::string> {
+    return _swov(_login).and_then(&url::decode_component);
+}
+//------------------------------------------------------------------------------
+auto url::password() const noexcept -> optionally_valid<std::string> {
+    return _swov(_passwd).and_then(&url::decode_component);
+}
+//------------------------------------------------------------------------------
+auto url::domain_identifier() const noexcept -> identifier {
+    if(const auto str{_sw(_host)}) {
+        if(identifier::can_be_encoded(str)) {
+            return identifier{str};
+        }
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto url::path_dirname() const noexcept -> valid_if_not_empty<string_view> {
+    return {slice_before_last(_sw(_path), string_view{"/"})};
+}
+//------------------------------------------------------------------------------
+auto url::path_basename() const noexcept -> valid_if_not_empty<string_view> {
+    return {slice_after_last(_sw(_path), string_view{"/"})};
+}
+//------------------------------------------------------------------------------
+auto url::has_path_prefix(const string_view prefix) const noexcept -> bool {
+    return starts_with(_sw(_path), prefix);
+}
+//------------------------------------------------------------------------------
+auto url::has_path_suffix(const string_view suffix) const noexcept -> bool {
+    return ends_with(_sw(_path), suffix);
+}
+//------------------------------------------------------------------------------
+auto url::path() const noexcept -> basic_string_path {
+    return {basic_string_path{_sw(_path), split_by, "/"}};
+}
+//------------------------------------------------------------------------------
+auto url::has_path(const string_view str) const noexcept -> bool {
+    return are_equal(str, _sw(_path));
+}
+//------------------------------------------------------------------------------
+auto url::path_identifier() const noexcept -> identifier {
+    if(const string_view str{skip(_sw(_path), 1)}) {
+        if(identifier::can_be_encoded(str)) {
+            return identifier{str};
+        }
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto url::argument(const string_view arg_name) const noexcept
+  -> valid_if_not_empty<string_view> {
+    string_view result;
+    for_each_delimited(_sw(_query), string_view{"+"}, [&](auto part) {
+        auto [name, value] = split_by_first(part, string_view{"="});
+        if(not result and are_equal(name, arg_name)) {
+            result = value;
+        }
+    });
+    return {result};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
