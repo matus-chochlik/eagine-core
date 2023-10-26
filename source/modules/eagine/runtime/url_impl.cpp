@@ -53,35 +53,37 @@ auto url::encode_component(const string_view src) noexcept -> std::string {
     return result;
 }
 //------------------------------------------------------------------------------
+static inline auto _url_from_hex(const char c) -> byte {
+    if((c >= '0') and (c <= '9')) {
+        return byte(c - '0');
+    }
+    if((c >= 'A') and (c <= 'F')) {
+        return byte(c - 'A' + 10);
+    }
+    if((c >= 'a') and (c <= 'f')) {
+        return byte(c - 'a' + 10);
+    }
+    return 0xFFU;
+}
+//------------------------------------------------------------------------------
+static inline auto _url_decode_char(const char hi, const char lo) {
+    const auto bhi{_url_from_hex(hi)};
+    const auto blo{_url_from_hex(lo)};
+    if(bhi != 0x0FFU and blo != 0xFFU) {
+        return char(bhi << 4U | blo);
+    }
+    return '\0';
+}
+//------------------------------------------------------------------------------
 auto url::decode_component(const string_view src) noexcept
   -> optionally_valid<std::string> {
     std::string result;
     result.reserve(std_size(src.size()));
-    const auto from_hex{[](const char c) -> byte {
-        if((c >= '0') and (c <= '9')) {
-            return byte(c - '0');
-        }
-        if((c >= 'A') and (c <= 'F')) {
-            return byte(c - 'A' + 10);
-        }
-        if((c >= 'a') and (c <= 'f')) {
-            return byte(c - 'a' + 10);
-        }
-        return 0xFFU;
-    }};
-    const auto decode{[&](const char hi, const char lo) {
-        const auto bhi{from_hex(hi)};
-        const auto blo{from_hex(lo)};
-        if(bhi != 0x0FFU and blo != 0xFFU) {
-            return char(bhi << 4U | blo);
-        }
-        return '\0';
-    }};
     int decoding{0};
     char hi{'\0'};
     for(const char c : src) {
         if(decoding == 2) {
-            if(const char d{decode(hi, c)}) {
+            if(const char d{_url_decode_char(hi, c)}) {
                 result.push_back(d);
                 decoding = 0;
             } else {
@@ -97,6 +99,48 @@ auto url::decode_component(const string_view src) noexcept
         }
     }
     return {result};
+}
+//------------------------------------------------------------------------------
+auto url::components_are_equal(const string_view l, const string_view r) noexcept
+  -> bool {
+    const auto make_getter{[](const string_view s) {
+        return [pos{s.begin()}, end{s.end()}] mutable {
+            if(pos != end) {
+                const char c{*pos};
+                ++pos;
+                if(c != '%') {
+                    return c;
+                }
+                if(pos == end) {
+                    return c;
+                }
+                const char hi{*pos};
+                ++pos;
+                if(pos == end) {
+                    return hi;
+                }
+                const char lo{*pos};
+                ++pos;
+                return _url_decode_char(hi, lo);
+            }
+            return '\0';
+        };
+    }};
+    auto getl{make_getter(l)};
+    auto getr{make_getter(r)};
+
+    while(true) {
+        const auto cl{getl()};
+        const auto cr{getr()};
+
+        if(cl != cr) {
+            return false;
+        }
+        if(cl == '\0') {
+            break;
+        }
+    }
+    return true;
 }
 //------------------------------------------------------------------------------
 auto url::_get_regex() noexcept -> const std::regex& {
@@ -194,7 +238,7 @@ auto url::path() const noexcept -> basic_string_path {
 }
 //------------------------------------------------------------------------------
 auto url::has_path(const string_view str) const noexcept -> bool {
-    return are_equal(str, _sw(_path));
+    return components_are_equal(str, _sw(_path));
 }
 //------------------------------------------------------------------------------
 auto url::path_identifier() const noexcept -> identifier {

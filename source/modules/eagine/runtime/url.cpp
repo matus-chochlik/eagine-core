@@ -75,6 +75,11 @@ public:
     static auto decode_component(const string_view) noexcept
       -> optionally_valid<std::string>;
 
+    /// @brief Compares two (possible URI/URL encoded) strings for equality.
+    static auto components_are_equal(
+      const string_view,
+      const string_view) noexcept -> bool;
+
     /// @brief Comparison.
     auto operator<=>(const url& that) const noexcept {
         return _url_str.compare(that._url_str);
