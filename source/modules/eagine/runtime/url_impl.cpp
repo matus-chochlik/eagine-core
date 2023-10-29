@@ -208,6 +208,10 @@ auto url::password() const noexcept -> optionally_valid<std::string> {
     return _swov(_passwd).and_then(&url::decode_component);
 }
 //------------------------------------------------------------------------------
+auto url::has_domain(const string_view str) const noexcept -> bool {
+    return components_are_equal(str, _sw(_host));
+}
+//------------------------------------------------------------------------------
 auto url::domain_identifier() const noexcept -> identifier {
     if(const auto str{_sw(_host)}) {
         if(identifier::can_be_encoded(str)) {

@@ -134,12 +134,19 @@ public:
 
     /// @brief Returns the host name or IP address.
     /// @see host
+    /// @see has_domain
     auto domain() const noexcept -> valid_if_not_empty<string_view> {
         return host();
     }
 
+    /// @brief Checks if the domain matches the given string.
+    /// @see domain
+    /// @see host
+    auto has_domain(const string_view str) const noexcept -> bool;
+
     /// @brief Returns the host name or IP address.
     /// @see host
+    /// @see has_domain
     auto domain_identifier() const noexcept -> identifier;
 
     /// @brief Returns the port string.
