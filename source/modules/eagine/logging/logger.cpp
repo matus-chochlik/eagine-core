@@ -17,7 +17,6 @@ import eagine.core.units;
 import :config;
 import :backend;
 import :entry;
-import :time_interval;
 
 namespace eagine {
 //------------------------------------------------------------------------------

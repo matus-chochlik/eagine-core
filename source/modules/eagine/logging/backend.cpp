@@ -407,4 +407,38 @@ export auto make_syslog_log_backend_mutex(const log_stream_info&)
 export auto make_syslog_log_backend_spinlock(const log_stream_info&)
   -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
+/// @brief Class representing a single log time interval measurement.
+/// @ingroup logging
+/// @note Do not use directly, use logger instead.
+class log_time_interval {
+
+public:
+    auto interval_id() const noexcept {
+        return reinterpret_cast<time_interval_id>(this);
+    }
+
+    log_time_interval(
+      const identifier label,
+      const logger_instance_id inst,
+      logger_backend* backend) noexcept
+      : _label{label}
+      , _instance_id{inst}
+      , _backend{backend} {
+        if(_backend) {
+            _backend->time_interval_begin(_label, _instance_id, interval_id());
+        }
+    }
+
+    ~log_time_interval() noexcept {
+        if(_backend) {
+            _backend->time_interval_end(_label, _instance_id, interval_id());
+        }
+    }
+
+private:
+    const identifier _label;
+    const logger_instance_id _instance_id;
+    logger_backend* const _backend;
+};
+//------------------------------------------------------------------------------
 } // namespace eagine
