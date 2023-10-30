@@ -49,6 +49,8 @@ export enum class embedded_resource_format : std::uint8_t {
     ttf,
     /// @brief OTF font.
     otf,
+    /// @brief OGG audio clip.
+    ogg,
     /// @brief UTF8 formatted text.
     text_utf8
 };
@@ -57,7 +59,7 @@ export template <typename Selector>
 constexpr auto enumerator_mapping(
   const std::type_identity<embedded_resource_format>,
   const Selector) noexcept {
-    return enumerator_map_type<embedded_resource_format, 10>{
+    return enumerator_map_type<embedded_resource_format, 11>{
       {{"unknown", embedded_resource_format::unknown},
        {"xml", embedded_resource_format::xml},
        {"json", embedded_resource_format::json},
@@ -67,6 +69,7 @@ constexpr auto enumerator_mapping(
        {"cpp", embedded_resource_format::cpp},
        {"ttf", embedded_resource_format::ttf},
        {"otf", embedded_resource_format::otf},
+       {"ogg", embedded_resource_format::ogg},
        {"text_utf8", embedded_resource_format::text_utf8}}};
 }
 //------------------------------------------------------------------------------
@@ -115,6 +118,10 @@ public:
     /// @see format
     /// @see is_ttf
     [[nodiscard]] auto is_otf() const noexcept -> tribool;
+
+    /// @brief Indicates if the resource is a OTF font.
+    /// @see format
+    [[nodiscard]] auto is_ogg() const noexcept -> tribool;
 
     /// @brief Indicates if the resource is packed and needs to be decompressed.
     /// @see format
