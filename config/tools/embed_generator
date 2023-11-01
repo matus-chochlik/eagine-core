@@ -55,6 +55,7 @@ class EmberArgumentParser(argparse.ArgumentParser):
             "ttf",
             "otf",
             "ogg",
+            "chai",
             "text_utf8"
         ]
         self._ext_formats = {
@@ -70,6 +71,7 @@ class EmberArgumentParser(argparse.ArgumentParser):
             ".ttf": "ttf",
             ".otf": "otf",
             ".ogg": "ogg",
+            ".chai": "chai",
             ".txt": "text_utf8"
         }
 

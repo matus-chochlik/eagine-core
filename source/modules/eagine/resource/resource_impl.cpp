@@ -86,6 +86,17 @@ auto embedded_resource::is_ogg() const noexcept -> tribool {
     }
 }
 //------------------------------------------------------------------------------
+auto embedded_resource::is_chai() const noexcept -> tribool {
+    switch(format()) {
+        case embedded_resource_format::unknown:
+            return indeterminate;
+        case embedded_resource_format::chai:
+            return true;
+        default:
+            return false;
+    }
+}
+//------------------------------------------------------------------------------
 auto embedded_resource::visit(
   data_compressor& comp,
   memory::buffer_pool& buffers,
