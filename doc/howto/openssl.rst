@@ -183,3 +183,87 @@ issued it by the following command:
 ::
 
   openssl verify -CAfile ca.crt user.crt 
+
+Usage with the ZymKey HSM module
+================================
+
+Installing the required driver
+------------------------------
+
+The driver for the ZymKey module can be installed with the following command:
+
+::
+
+  curl -G https://s3.amazonaws.com/zk-sw-repo/install_zk_sw.sh | sudo bash
+
+This command be used to confirm if the ZymKey engine works properly:
+
+::
+
+  openssl engine -t -tt -vvvv zymkey_ssl
+
+The hardware security token with the label `ZymKey` in slot zero can be
+initialized with:
+
+::
+
+  sudo -g zk_pkcs11 zk_pkcs11-util --init-token --slot 0 --label Zymkey
+
+Creating a certificate authority
+--------------------------------
+
+A new private key stored in the ZymKey HSM for the CA can be generated with:
+
+::
+
+  sudo -g zk_pkcs11 zk_pkcs11-util  --use-zkslot 0 --slot 1595944162 --label cakey --id 0001
+
+The objects (like keys) stored in the ZymKey HSM can be listed with:
+
+::
+
+  pkcs11-tool --module /usr/lib/libzk_pkcs11.so -l --token Zymkey --list-objects
+
+A self-signed certificate for the CA, using the key stored in the ZymKey security
+module can be done with the following command:
+
+::
+
+  openssl req -new -x509 -days 365 -subj '/CN=EAGine CA key' -sha256 -engine zymkey_ssl -keyform engine -key cakey -out ca.crt
+
+Generating a user private key with signed certificate
+-----------------------------------------------------
+
+As before, a new user private key can be created with:
+
+::
+
+  openssl genrsa -out user.key 2048
+
+The certificate signing request for the user private key is created with this
+command:
+
+::
+
+  openssl req -new -key user.key -out user.csr
+
+The user certificate can be issued by the CA, the private key of which is
+stored in the ZymKey security module by doing:
+
+::
+
+  openssl x509 -req -CAkeyform engine -engine zymkey_ssl -in user.csr -CA ca.crt -CAkey cakey -set_serial 1 -sha256 -out user.crt
+
+The information on the issued certificate can be printed with the following
+command:
+
+::
+
+  openssl x509 -in user.crt -text
+
+The user certificate can be verified against the certificate of the CA
+that issued the user certificate by doing this:
+
+::
+
+  openssl verify -CAfile ca.crt user.crt 
