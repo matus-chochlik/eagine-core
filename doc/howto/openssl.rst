@@ -67,3 +67,119 @@ issued it by the following command:
 ::
 
   openssl verify -CAfile ca.crt user.crt 
+
+
+Usage with the Soft HSM module
+==============================
+
+Installing the required packages
+--------------------------------
+
+The required packages can be installed with the following command:
+
+::
+
+  sudo apt install opensc libengine-pkcs11-openssl1.1 softhsm
+
+Configuration of Soft HSM
+-------------------------
+
+The Soft HSM (version 2) OpenSSL module can be configured by doing the following:
+
+::
+
+  dd if=/dev/urandom of=~/.rnd bs=256 count=1
+  mkdir ~/.config/softhsm2
+  echo "directories.tokendir = /path/to/token/dir" > ~/.config/softhsm2/softhsm2.conf
+
+
+Working with the security tokens
+--------------------------------
+
+A new software security token called `eagine` in slot number zero
+can be initialized by:
+
+::
+
+  softhsm2-util --init-token --label eagine --slot 0
+
+Another software security token called `user` in slot number one can be created
+by this command:
+
+::
+
+  softhsm2-util --init-token --label user --slot 1
+
+The available tokens can be listed with the following command:
+
+::
+
+  softhsm2-util --show-slots
+
+
+The available PKCS11 modules can be listed with:
+
+::
+
+  pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so -L
+
+
+Creating a certificate authority
+--------------------------------
+
+A new key pair for a certificate authority (CA) stored in the software security
+token `eagine` with the label `ca` can be done with the following command:
+
+::
+
+    pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --token eagine --login --keypairgen --key-type rsa:8192 --label ca --usage-sign
+
+Objects in the security token `eagine` can be listed with:
+
+::
+
+  pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --token eagine --login --list-objects
+
+A self-signed certificate for the CA, using the key stored in the security module
+`eagine` can be done with the following command:
+
+::
+
+  openssl req -new -x509 -days 365 -subj '/CN=EAGine certificate authority' -sha512 -engine pkcs11 -keyform engine -key "pkcs11:token=eagine;object=ca" -out ca.crt
+
+The information on the certificate can be printed by doing:
+
+::
+
+  openssl x509 -in oglplus-ca.crt -text
+
+Generating a user private key with signed certificate
+-----------------------------------------------------
+
+Key pair for the user stored in the token `user` with the label `user` can
+be done with:
+
+::
+
+  pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --token user --login --keypairgen --key-type rsa:2048 --label user --usage-sign
+
+The certificate signing request (CSR) for the user certificate for the private
+key in the token `user` can be created with:
+
+::
+
+  openssl req -new -engine pkcs11 -keyform engine -key "pkcs11:token=user;object=user" -out user.csr
+
+The certificate with the serial number 1, can be issued by the certificate
+authority from the CSR by doing:
+
+::
+
+  openssl x509 -req -CAkeyform engine -engine pkcs11 -in user.csr -CA ca.crt -CAkey "pkcs11:token=eagine;object=ca" -set_serial 1 -sha256 -out user.crt
+
+The user certificate can be verified against the certificate of the CA that
+issued it by the following command:
+
+::
+
+  openssl verify -CAfile ca.crt user.crt 
