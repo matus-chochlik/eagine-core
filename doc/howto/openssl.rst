@@ -16,21 +16,21 @@ the following:
 
 ::
 
-  openssl genrsa -out ca.key 4096
+  openssl genrsa -out ca.pkey 4096
 
 Generating a certificate signing request (CSR) for the CA certificate
 to be signed by some other CA:
 
 ::
 
-  openssl req -new -key ca.key -sha256 -out ca.csr
+  openssl req -new -key ca.pkey -sha256 -out ca.csr
 
 Generating the self-signed CA certificate with
 validity of 3650 days (~10 years):
 
 ::
 
-  openssl req -new -x509 -days 3650 -key ca.key -sha256 -out ca.crt
+  openssl req -new -x509 -days 3650 -key ca.pkey -sha256 -out ca.crt
 
 
 Generating a user private key with signed certificate
@@ -40,20 +40,20 @@ In order to generate the private key for a user do the following:
 
 ::
 
-  openssl genrsa -out user.key 4096
+  openssl genrsa -out user.pkey 4096
 
 The information about the generated user key can be printed with:
 
 ::
 
-  openssl pkey -in user.key -text
+  openssl pkey -in user.pkey -text
 
 Generating a certificate signing request (CSR) for the certificate (including
 the public key) for the user's private key:
 
 ::
 
-  openssl req -new -key user.key -out user.csr
+  openssl req -new -key user.pkey -out user.csr
 
 The information in the CSR can be printed with the following command:
 
@@ -66,7 +66,7 @@ signing request do:
 
 ::
 
- openssl x509 -req -in user.csr -CA ca.crt -CAkey ca.key -set_serial 1 -sha256 -out user.crt
+  openssl x509 -req -in user.csr -CA ca.crt -CAkey ca.pkey -set_serial 1 -sha256 -out user.crt
 
 The information on the issued certificate can be printed with:
 
@@ -240,8 +240,30 @@ stored in the TPM can be installed with the following command:
 
   apt install tpm2-tools tpm2-openssl
 
-Listing objects in TPM
-----------------------
+Manipulating objects in TPM
+---------------------------
+
+An endorsement key (EK) can be created and context information stored in a file
+by doing:
+
+::
+
+  tpm2_createek -G rsa -c ek_rsa.ctx
+
+An attestation key (AK) within the endorsement hierarchy specified by the data
+in the `ek_rsa.ctx` file can be created and the AK context data can be stored
+in a new file with:
+
+::
+
+  tpm2_createak -C ek_rsa.ctx -G rsa -g sha512 -s rsassa -c ak_rsa.ctx
+
+The attestation key can be loaded into the TPM under a persistent handle
+(note the handle value printed by this command):
+
+::
+
+  tpm_evictcontrol -c ak_rsa.ctx
 
 The handles to various transient, persistent and permanent objects can be listed
 by the following commands:
@@ -254,24 +276,6 @@ by the following commands:
 
 Creating a certificate authority
 --------------------------------
-
-A new key pair for a certificate authority (CA) stored in the TPM can be created
-with (note the new object handle, that appears after generating the private key,
-which will be used to refer to it in subsequent commands):
-
-::
-
-  tpm2_getcap handles-persistent
-  openssl genrsa -provider tpm2
-  tpm2_getcap handles-persistent
-
-More generally a private key with a specified algorithm can be generated with:
-
-::
-
-  openssl genpkey -provider tpm2 -algorithm RSA -out ca.pkey
-
-You can keep the file `ca.pkey` as a backup if necessary.
 
 If the new object handle is for example `0x81800001` then the corresponding
 public key can be obtained by doing:
@@ -291,13 +295,13 @@ can be generated with:
 
 ::
 
-  openssl req -provider tpm2 -new -key handle:0x81800001 -sha512 -out ca.csr
+  openssl req -provider tpm2 -provider default -new -key handle:0x81800001 -sha512 -out ca.csr
 
 Generating a self-signed CA certificate can be done with:
 
 ::
 
-  openssl req -provider tpm2 -new -x509 -days 3650 -key handle:0x81800001 -sha512 -out ca.crt
+  openssl req -provider tpm2 -provider default -new -x509 -days 3650 -key handle:0x81800001 -sha512 -out ca.crt
   
 Generating a user private key with signed certificate
 -----------------------------------------------------
@@ -306,21 +310,21 @@ In order to generate the private key for a user do the following:
 
 ::
 
-  openssl genrsa -out user.key 4096
+  openssl genrsa -out user.pkey 4096
 
 Generating a certificate signing request (CSR) for the certificate (including
 the public key) for the user's private key:
 
 ::
 
-  openssl req -new -key user.key -out user.csr
+  openssl req -new -key user.pkey -out user.csr
 
 In order to issue a user certificate signed by the CA, from the certificate
 signing request do:
 
 ::
 
- openssl x509 -provider tmp2 -req -in user.csr -CA ca.crt -CAkey handle:0x81800001 -set_serial 1 -sha512 -out user.crt
+  openssl x509 -provider tmp2 -provider default -req -in user.csr -CA ca.crt -CAkey handle:0x81800001 -set_serial 1 -sha512 -out user.crt
 
 The information on the issued certificate can be printed with:
 
@@ -390,14 +394,14 @@ As before, a new user private key can be created with:
 
 ::
 
-  openssl genrsa -out user.key 2048
+  openssl genrsa -out user.pkey 2048
 
 The certificate signing request for the user private key is created with this
 command:
 
 ::
 
-  openssl req -new -key user.key -out user.csr
+  openssl req -new -key user.pkey -out user.csr
 
 The user certificate can be issued by the CA, the private key of which is
 stored in the ZymKey security module by doing:
