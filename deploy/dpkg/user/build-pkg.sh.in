@@ -1,0 +1,76 @@
+#!/bin/bash
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+source ../../deb_common.sh
+src_dir=$(realpath "@SRC_DIR@")
+this_dir="${src_dir}/deploy/dpkg/user"
+pkg_dir=$(realpath "@PKG_DIR@")
+
+mkdir -p "${pkg_dir}/var/lib/eagine"
+mkdir -p "${pkg_dir}/DEBIAN"
+# ------------------------------------------------------------------------------
+for f in _config
+do
+	mkdir -p "${pkg_dir}/var/lib/eagine/$(dirname ${f})" && \
+	if [[ -d "${this_dir}/${f}" ]]
+	then cp -r "${this_dir}/${f}" "${pkg_dir}/var/lib/eagine/.${f#_}"
+	else cp    "${this_dir}/${f}" "${pkg_dir}/var/lib/eagine/.${f#_}"
+	fi
+done
+# ------------------------------------------------------------------------------
+# preinst
+cat << EOD > "${pkg_dir}/DEBIAN/preinst"
+#!/bin/sh
+if ! getent group eagine > /dev/null
+then
+	addgroup --gid 34917 eagine
+fi
+if ! getent passwd eagine > /dev/null
+then
+	adduser \\
+		--uid 34917 \\
+		--disabled-login \\
+		--disabled-password \\
+		--home "/var/lib/eagine" \\
+		--gecos "EAGine service account" \\
+		--ingroup eagine \\
+		eagine
+fi
+EOD
+chmod a+x "${pkg_dir}/DEBIAN/preinst"
+# ------------------------------------------------------------------------------
+# postinst
+cat << EOD > "${pkg_dir}/DEBIAN/postinst"
+#!/bin/sh
+chown -R eagine:eagine "/var/lib/eagine"
+EOD
+chmod a+x "${pkg_dir}/DEBIAN/postinst"
+# ------------------------------------------------------------------------------
+# postrm
+cat << EOD > "${pkg_dir}/DEBIAN/postrm"
+#!/bin/sh
+if getent passwd eagine > /dev/null
+then
+	if [ "x\${1}x" = "xremovex" ]
+	then
+		deluser --quiet --remove-home --remove-all-files eagine 2> /dev/null
+		if getent group eagine > /dev/null
+		then delgroup eagine
+		fi
+	fi
+fi
+EOD
+chmod a+x "${pkg_dir}/DEBIAN/postrm"
+# ------------------------------------------------------------------------------
+cat << CONTROL > "${pkg_dir}/DEBIAN/control"
+Package: eagine-core-user
+Version: @PKG_VERSION@
+Architecture: all
+Installed-Size: $(eagine_deb_installed_size ${pkg_dir})
+Maintainer: Matus Chochlik <matus.chochlik@proton.me>
+Description: Setup of EAGine service account
+CONTROL
+# ------------------------------------------------------------------------------
