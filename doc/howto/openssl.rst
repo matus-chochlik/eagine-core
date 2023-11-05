@@ -240,6 +240,113 @@ stored in the TPM can be installed with the following command:
 
   apt install tpm2-tools tpm2-openssl
 
+
+Listing the TPM capabilities
+----------------------------
+
+The following command can be used to print information about the supported
+cryptographic algorithms:
+
+::
+
+  tpm2_getcap algorithms
+
+The following command can be used to list the active PCRs alongside with the
+supported hash algorithms:
+
+::
+
+  tpm2_getcap pcrs
+
+Various fixed and variable property settings of the TPM can be listed with:
+
+::
+
+  tpm2_getcap properties-fixed
+  tpm2_getcap properties-variable
+
+Listing the contents of the PCRs
+--------------------------------
+
+The following command can be used to list the hash values in the platform
+configuration registers:
+
+::
+
+  tpm2_pcrread
+
+The following command can be used to list the SHA256 hash values only
+in the specified PCRs:
+
+::
+
+  tpm2_pcrread sha256:0,2,4,7
+
+Other hash algorithms might be supported and can be combined in a single command:
+
+::
+
+  tpm2_pcrread sha384:0+sha256:2,4
+
+Sealing and unsealing of a key in the TPM
+-----------------------------------------
+
+The PCR values to be used in key sealing can be selected and stored by
+the following commands into a file (`pcr_values`).
+For example we can tie the key to the values of BIOS and other
+option ROM structure, the content of the MBR and to the vendor-specific
+system HW measurement (these are unlikely to change without tampering
+with the hardware or OS installation)
+
+::
+
+  echo -n "sha256:0,2,4,7" > pcrs
+  tpm2_pcrread -o "pcr_values" "$(<pcrs)"
+
+An authorization policy digest file (`policy_digest`) that will be needed
+in the subsequent commands can be created with:
+
+::
+
+  tpm2_createpolicy --policy-pcr -l "$(<pcrs)" -f "pcr_values" -L "policy_digest"
+
+The private key file can be created by doing:
+
+::
+
+  dd if=/dev/random of=user.pkey bs=256 count=1
+
+A new NV RAM space for storing of the key can be defined and the index of that
+space which is used to access it can be stored into a file with this command:
+
+::
+
+  tpm2_nvdefine -L "policy_digest" -s "$(stat -c %s private.keyfile)" -a "policyread|policywrite" | sed -n 's/nv-index: \(0x[0-9A-Za-z]\+\).*$/\1/p' | tr -d '\r\n' > nvram_index
+
+The private key generated in previous step can be stored into the created
+NV RAM slot by doing:
+
+::
+
+  tpm2_nvwrite -P "pcr:$(<pcrs)" -i "private.keyfile" "$(<nvram_index)"
+
+The key data can be read back from the NV RAM examined and compared with the
+original key file by running the following commands:
+
+::
+
+  tpm2_nvread -P "pcr:$(<pcrs)" "$(<nvram_index)" | hexdump -C
+  hexdump -C private.keyfile
+
+
+The unneeded files can now be removed. Keep the content of the `pcrs` file
+(it should be something like "sha256:0,2,4,7") and `nvram_index` (the index of
+the TPM NV RAM slot where the key is sealed)
+
+::
+
+  rm pcr_values policy_digest private.keyfile
+
 Manipulating objects in TPM
 ---------------------------
 
@@ -273,6 +380,8 @@ by the following commands:
   tpm2_getcap handles-transient
   tpm2_getcap handles-persistent
   tpm2_getcap handles-permanent
+
+
 
 Creating a certificate authority
 --------------------------------
