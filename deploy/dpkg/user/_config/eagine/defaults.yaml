@@ -1,3 +1,7 @@
-log:
-    backend: null
+log@service:
+  backend: syslog
+  local:
+    address: /var/run/eagine/xmllog.socket
 
+log:
+  backend: null

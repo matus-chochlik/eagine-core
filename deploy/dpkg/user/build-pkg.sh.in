@@ -9,6 +9,7 @@ src_dir=$(realpath "@SRC_DIR@")
 this_dir="${src_dir}/deploy/dpkg/user"
 pkg_dir=$(realpath "@PKG_DIR@")
 
+mkdir -p "${pkg_dir}/var/run/eagine"
 mkdir -p "${pkg_dir}/var/lib/eagine"
 mkdir -p "${pkg_dir}/DEBIAN"
 # ------------------------------------------------------------------------------
@@ -46,6 +47,7 @@ chmod a+x "${pkg_dir}/DEBIAN/preinst"
 cat << EOD > "${pkg_dir}/DEBIAN/postinst"
 #!/bin/sh
 chown -R eagine:eagine "/var/lib/eagine"
+chown -R eagine:eagine "/var/run/eagine"
 EOD
 chmod a+x "${pkg_dir}/DEBIAN/postinst"
 # ------------------------------------------------------------------------------
