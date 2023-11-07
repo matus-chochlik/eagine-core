@@ -84,7 +84,7 @@ export [[nodiscard]] constexpr auto max_code_point(
             return 0xFCU;
         case 6:
             return 0xFEU;
-        default:
+        [[unlikely]] default:
             return 0x00U;
     }
 }
@@ -131,20 +131,28 @@ template <typename P1, typename P2>
   const byte b,
   const valid_if<byte, P1> mask,
   const valid_if<byte, P2> code) noexcept -> bool {
-    return (mask and code) ? (b & *mask) == *code : false;
+    return (mask and code) and (b & *mask) == *code;
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] constexpr auto is_valid_head_byte(
   const byte b,
   const valid_sequence_length& l) noexcept -> bool {
-    return is_valid_masked_code(b, head_code_mask(l), head_code(l));
+    const auto mask{head_code_mask(l)};
+    return is_valid_masked_code(b, mask, head_code_from_mask(mask));
+}
+//------------------------------------------------------------------------------
+template <span_size_t L>
+[[nodiscard]] constexpr auto is_valid_head_byte_c(const byte b) noexcept
+  -> bool {
+    static const auto mask{head_code_mask(L)};
+    return is_valid_masked_code(b, mask, head_code_from_mask(mask));
 }
 //------------------------------------------------------------------------------
 export [[nodiscard]] constexpr auto is_valid_head_byte(const byte b) noexcept
   -> bool {
-    return is_valid_head_byte(b, 1) or is_valid_head_byte(b, 2) or
-           is_valid_head_byte(b, 3) or is_valid_head_byte(b, 4) or
-           is_valid_head_byte(b, 5) or is_valid_head_byte(b, 6);
+    return is_valid_head_byte_c<1>(b) or is_valid_head_byte_c<2>(b) or
+           is_valid_head_byte_c<3>(b) or is_valid_head_byte_c<4>(b) or
+           is_valid_head_byte_c<5>(b) or is_valid_head_byte_c<6>(b);
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto is_valid_tail_byte(
@@ -167,12 +175,13 @@ export [[nodiscard]] constexpr auto required_sequence_length(
 //------------------------------------------------------------------------------
 [[nodiscard]] auto do_decode_sequence_length(const byte b) noexcept
   -> valid_sequence_length {
-    for(const auto l : integer_range(1, 7)) {
-        if(is_valid_head_byte(b, l)) {
-            return l;
-        }
-    }
-    return 0;
+    return is_valid_head_byte_c<1>(b)   ? 1
+           : is_valid_head_byte_c<2>(b) ? 2
+           : is_valid_head_byte_c<3>(b) ? 3
+           : is_valid_head_byte_c<4>(b) ? 4
+           : is_valid_head_byte_c<5>(b) ? 5
+           : is_valid_head_byte_c<6>(b) ? 6
+                                        : 0;
 }
 //------------------------------------------------------------------------------
 export [[nodiscard]] auto decode_sequence_length(
@@ -244,14 +253,15 @@ template <typename P1, typename P2>
 export [[nodiscard]] auto do_decode_code_point(
   const span<const byte>& src,
   const valid_sequence_length& vl) noexcept -> code_point {
-    if(vl.has_value()) {
+    if(vl.has_value()) [[likely]] {
         const span_size_t l = vl.value_anyway();
-        if(l - 1 < src.size()) {
-            if(const auto h = decode_code_point_head(src[0], vl)) {
-                code_point_t cp = h.value_anyway();
+        if(l - 1 < src.size()) [[likely]] {
+            if(const auto h{decode_code_point_head(src[0], vl)}) [[likely]] {
+                code_point_t cp{h.value_anyway()};
 
                 for(const auto i : integer_range(1, l)) {
-                    if(const auto t{decode_code_point_tail(src[i], i, vl)}) {
+                    if(const auto t{decode_code_point_tail(src[i], i, vl)})
+                      [[likely]] {
                         cp |= t.value_anyway();
                     } else {
                         return {invalid_code_point};
