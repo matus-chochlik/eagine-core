@@ -23,7 +23,7 @@ export template <typename T, typename P, typename S, std::integral I>
 constexpr auto clamp_span_position(
   const basic_span<T, P, S> s,
   const I p) noexcept -> auto {
-    return (p < 0) ? s.begin() : (p > s.size()) ? s.end() : s.begin() + p;
+    return s.begin() + std::clamp(p, I(0), I(s.size()));
 }
 //------------------------------------------------------------------------------
 export template <
