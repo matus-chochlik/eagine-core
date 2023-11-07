@@ -19,13 +19,6 @@ namespace eagine::memory {
 //------------------------------------------------------------------------------
 // Algorithms
 //------------------------------------------------------------------------------
-export template <typename T, typename P, typename S, std::integral I>
-constexpr auto clamp_span_position(
-  const basic_span<T, P, S> s,
-  const I p) noexcept -> auto {
-    return s.begin() + std::clamp(p, I(0), I(s.size()));
-}
-//------------------------------------------------------------------------------
 export template <
   typename T,
   typename P,
@@ -34,7 +27,11 @@ export template <
   std::integral E>
 constexpr auto subspan(const basic_span<T, P, S> s, const B b, const E e) noexcept
   -> basic_span<T, P, S> {
-    return {clamp_span_position(s, b), clamp_span_position(s, e)};
+    const auto p{s.begin()};
+    const auto sz{s.size()};
+    return {
+      p + std::clamp(span_size_t(b), span_size_t(0), sz),
+      p + std::clamp(span_size_t(e), span_size_t(0), sz)};
 }
 //------------------------------------------------------------------------------
 /// @brief Returns a slice of span starting at specified index with specified length.
@@ -46,7 +43,11 @@ constexpr auto subspan(const basic_span<T, P, S> s, const B b, const E e) noexce
 export template <typename T, typename P, typename S, typename I, typename L>
 constexpr auto slice(const basic_span<T, P, S> s, const I i, const L l) noexcept
   -> basic_span<T, P, S> {
-    return {clamp_span_position(s, i), clamp_span_position(s, i + l)};
+    const auto p{s.begin()};
+    const auto sz{s.size()};
+    return {
+      p + std::clamp(span_size_t(i), span_size_t(0), sz),
+      p + std::clamp(span_size_t(i + l), span_size_t(0), sz)};
 }
 //------------------------------------------------------------------------------
 /// @brief Skips a specified count of elements from the front of a span.
@@ -59,7 +60,23 @@ constexpr auto slice(const basic_span<T, P, S> s, const I i, const L l) noexcept
 export template <typename T, typename P, typename S, typename L>
 constexpr auto skip(const basic_span<T, P, S> s, const L l) noexcept
   -> basic_span<T, P, S> {
-    return slice(s, l, s.size() - l);
+    return {
+      s.begin() + std::clamp(span_size_t(l), span_size_t(0), s.size()),
+      s.end()};
+}
+//------------------------------------------------------------------------------
+/// @brief Returns the first @p l elements from the front of a span.
+/// @ingroup memory
+/// @see tail
+/// @see slice
+/// @see skip
+/// @see snip
+/// @see shrink
+export template <typename T, typename P, typename S, typename L>
+constexpr auto head(const basic_span<T, P, S> s, const L l) noexcept
+  -> basic_span<T, P, S> {
+    const auto p{s.begin()};
+    return {p, p + std::clamp(span_size_t(l), span_size_t(0), s.size())};
 }
 //------------------------------------------------------------------------------
 /// @brief Snips a specified count of elements from the back of a span.
@@ -86,19 +103,6 @@ export template <typename T, typename P, typename S, typename L>
 constexpr auto shrink(const basic_span<T, P, S> s, const L l) noexcept
   -> basic_span<T, P, S> {
     return snip(skip(s, l), l);
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the first @p l elements from the front of a span.
-/// @ingroup memory
-/// @see tail
-/// @see slice
-/// @see skip
-/// @see snip
-/// @see shrink
-export template <typename T, typename P, typename S, typename L>
-constexpr auto head(const basic_span<T, P, S> s, const L l) noexcept
-  -> basic_span<T, P, S> {
-    return slice(s, S(0), l);
 }
 //------------------------------------------------------------------------------
 /// @brief Returns the head of @p s l.size() elements long.
