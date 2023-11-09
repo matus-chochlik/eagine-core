@@ -142,7 +142,7 @@ template <typename P1, typename P2>
 template <span_size_t L>
 [[nodiscard]] constexpr auto is_valid_head_byte_c(const byte b) noexcept
   -> bool {
-    static const auto mask{head_code_mask(L)};
+    const auto mask{head_code_mask(L)};
     return is_valid_masked_code(b, mask, head_code_from_mask(mask));
 }
 //------------------------------------------------------------------------------

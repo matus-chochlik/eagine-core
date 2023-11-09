@@ -60,9 +60,9 @@ constexpr auto slice(const basic_span<T, P, S> s, const I i, const L l) noexcept
 export template <typename T, typename P, typename S, typename L>
 constexpr auto skip(const basic_span<T, P, S> s, const L l) noexcept
   -> basic_span<T, P, S> {
-    return {
-      s.begin() + std::clamp(span_size_t(l), span_size_t(0), s.size()),
-      s.end()};
+    const auto p{s.begin()};
+    const auto sz{s.size()};
+    return {p + std::clamp(span_size_t(l), span_size_t(0), sz), p + sz};
 }
 //------------------------------------------------------------------------------
 /// @brief Returns the first @p l elements from the front of a span.
