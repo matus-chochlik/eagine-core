@@ -56,10 +56,10 @@ export [[nodiscard]] constexpr auto max_code_point(
     }
 }
 //------------------------------------------------------------------------------
-[[nodiscard]] consteval auto head_data_bitshift(
-  const valid_sequence_length& len) noexcept
-  -> valid_if_nonnegative<span_size_t> {
-    return {len ? (*len - 1) * 6 : -1};
+template <span_size_t L>
+[[nodiscard]] consteval auto head_data_bitshift() noexcept
+  -> always_valid<span_size_t> {
+    return {(L - 1) * 6};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto tail_data_bitshift(
@@ -110,15 +110,14 @@ template <span_size_t L>
     }
 }
 //------------------------------------------------------------------------------
-template <typename P>
-[[nodiscard]] consteval auto inverted_byte(const valid_if<byte, P> b) noexcept
-  -> optionally_valid<byte> {
-    return {byte(~b.value_anyway()), b.has_value()};
+[[nodiscard]] consteval auto inverted_byte(const always_valid<byte> b) noexcept
+  -> always_valid<byte> {
+    return {byte(~b.value_anyway())};
 }
 //------------------------------------------------------------------------------
-[[nodiscard]] consteval auto head_data_mask(
-  const valid_sequence_length& len) noexcept -> optionally_valid<byte> {
-    return inverted_byte(head_code_mask(len));
+template <span_size_t L>
+[[nodiscard]] consteval auto head_data_mask() noexcept {
+    return inverted_byte(head_code_mask<L>());
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] consteval auto tail_code_mask() noexcept -> always_valid<byte> {
@@ -141,9 +140,9 @@ template <typename P>
     return {byte((mask.value_anyway() << 1U) & 0xFFU)};
 }
 //------------------------------------------------------------------------------
-[[nodiscard]] constexpr auto head_code(const valid_sequence_length& len) noexcept
-  -> optionally_valid<byte> {
-    return head_code_from_mask(head_code_mask(len));
+template <span_size_t L>
+[[nodiscard]] consteval auto head_code() noexcept -> always_valid<byte> {
+    return head_code_from_mask(head_code_mask<L>());
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] consteval auto tail_code() noexcept -> always_valid<byte> {
@@ -257,7 +256,7 @@ template <span_size_t L>
 constexpr auto decode_code_point_head(const byte b) noexcept
   -> optionally_valid<code_point_t> {
     return do_decode_code_point_head(
-      b, head_data_mask(L), head_data_bitshift(L));
+      b, head_data_mask<L>(), head_data_bitshift<L>());
 }
 //------------------------------------------------------------------------------
 template <typename P1, typename P2>
@@ -361,7 +360,7 @@ template <span_size_t L>
 constexpr auto encode_code_point_head(const code_point_t cp) noexcept
   -> optionally_valid<byte> {
     return do_encode_code_point_byte(
-      cp, head_code(L), head_data_mask(L), head_data_bitshift(L));
+      cp, head_code<L>(), head_data_mask<L>(), head_data_bitshift<L>());
 }
 //------------------------------------------------------------------------------
 template <span_size_t L>

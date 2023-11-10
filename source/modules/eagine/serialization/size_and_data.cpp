@@ -34,21 +34,22 @@ export [[nodiscard]] auto pad_and_store_data_with_size(
             if(size_len + padded_size <= dst.size()) {
                 using multi_byte::encode_code_point;
                 if(ok skip_len{encode_code_point(size_cp, dst)}) [[likely]] {
-                    auto data{head(skip(dst, span_size(skip_len)), src.size())};
+                    const auto skipped{skip(dst, span_size(skip_len))};
+                    const auto data{head(skipped, src.size())};
                     copy(src, data);
-                    auto padg{head(
+                    auto padding{head(
                       skip(dst, span_size(skip_len) + src.size()),
                       padded_size - src.size())};
-                    auto fill = padg;
+                    auto fill = padding;
                     while(not fill.empty()) {
                         scramble(head(src, fill.size()), fill);
                         fill = skip(fill, src.size());
                     }
                     return {
                       head(dst, span_size(skip_len) + padded_size),
-                      head(skip(dst, span_size(skip_len)), padded_size),
+                      head(skipped, padded_size),
                       data,
-                      padg};
+                      padding};
                 } else {
                     multi_byte::encode_nil(dst);
                 }
@@ -161,11 +162,19 @@ export template <typename Function>
 void for_each_data_with_size(
   memory::const_block src,
   Function function) noexcept {
+    const auto f{[&](const span_size_t skip_len, const span_size_t data_len) {
+        const auto po{src.begin()};
+        const auto sz{src.size()};
+        const auto sk{std::min(sz, skip_len + data_len)};
+
+        function(memory::const_block{po + std::min(sz, skip_len), po + sk});
+        src = memory::const_block{po + sk, po + sz};
+    }};
     while(src) {
         const auto [skip_len, data_len]{get_skip_and_data_length(src)};
-        if(skip_len and data_len) {
-            function(head(skip(src, span_size(skip_len)), span_size(data_len)));
-            src = skip(src, span_size(skip_len) + span_size(data_len));
+        if(data_len) {
+            assert(skip_len);
+            f(skip_len, data_len);
         } else {
             break;
         }
