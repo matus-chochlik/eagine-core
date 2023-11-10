@@ -69,6 +69,27 @@ export [[nodiscard]] constexpr auto max_code_point(
     return {(idx and len) ? (*len - *idx - 1) * 6 : -1};
 }
 //------------------------------------------------------------------------------
+template <span_size_t L>
+[[nodiscard]] static consteval auto head_code_mask() noexcept
+  -> always_valid<byte> {
+    switch(L) {
+        case 1:
+            return 0x80U;
+        case 2:
+            return 0xE0U;
+        case 3:
+            return 0xF0U;
+        case 4:
+            return 0xF8U;
+        case 5:
+            return 0xFCU;
+        case 6:
+            return 0xFEU;
+        default:
+            return 0x00U;
+    }
+}
+//------------------------------------------------------------------------------
 [[nodiscard]] static constexpr auto head_code_mask(
   const valid_sequence_length& len) noexcept -> valid_if_not_zero<byte> {
     switch(len.value_or(0)) {
@@ -108,11 +129,16 @@ template <typename P>
     return 0x3FU;
 }
 //------------------------------------------------------------------------------
-template <typename P>
 [[nodiscard]] constexpr auto head_code_from_mask(
-  const valid_if<byte, P> mask) noexcept -> optionally_valid<byte> {
+  const optionally_valid<byte> mask) noexcept -> optionally_valid<byte> {
     // NOLINTNEXTLINE(hicpp-signed-bitwise)
     return {byte((mask.value_anyway() << 1U) & 0xFFU), mask.has_value()};
+}
+//------------------------------------------------------------------------------
+[[nodiscard]] constexpr auto head_code_from_mask(
+  const always_valid<byte> mask) noexcept -> always_valid<byte> {
+    // NOLINTNEXTLINE(hicpp-signed-bitwise)
+    return {byte((mask.value_anyway() << 1U) & 0xFFU)};
 }
 //------------------------------------------------------------------------------
 [[nodiscard]] constexpr auto head_code(const valid_sequence_length& len) noexcept
@@ -140,10 +166,16 @@ template <typename P1, typename P2>
 }
 //------------------------------------------------------------------------------
 template <span_size_t L>
+[[nodiscard]] consteval auto head_mask_and_code() noexcept {
+    return std::make_tuple(
+      head_code_mask<L>(), head_code_from_mask(head_code_mask<L>()));
+}
+//------------------------------------------------------------------------------
+template <span_size_t L>
 [[nodiscard]] constexpr auto is_valid_head_byte_c(const byte b) noexcept
   -> bool {
-    const auto mask{head_code_mask(L)};
-    return is_valid_masked_code(b, mask, head_code_from_mask(mask));
+    const auto [mask, code]{head_mask_and_code<L>()};
+    return is_valid_masked_code(b, mask, code);
 }
 //------------------------------------------------------------------------------
 export [[nodiscard]] constexpr auto is_valid_head_byte(const byte b) noexcept
@@ -266,7 +298,32 @@ auto do_decode_code_point_from(span<const byte> src) noexcept -> code_point {
     return {invalid_code_point};
 }
 //------------------------------------------------------------------------------
-static constexpr std::array<code_point (*)(span<const byte>) noexcept, 6>
+template <span_size_t L>
+auto do_decode_code_point_c(const span<const byte>& src) noexcept
+  -> code_point {
+    if(L < src.size()) [[likely]] {
+        return do_decode_code_point_from<L>(src);
+    }
+    return invalid_code_point;
+}
+//------------------------------------------------------------------------------
+export [[nodiscard]] auto do_decode_length_and_code_point(
+  const span<const byte>& s) noexcept {
+    using R = std::tuple<valid_sequence_length, code_point>;
+    if(s.empty()) [[unlikely]] {
+        return R{{0}, {invalid_code_point}};
+    }
+    const byte b{s.front()};
+    return is_valid_head_byte_c<1>(b)   ? R{{1}, do_decode_code_point_c<1>(s)}
+           : is_valid_head_byte_c<2>(b) ? R{{2}, do_decode_code_point_c<2>(s)}
+           : is_valid_head_byte_c<3>(b) ? R{{3}, do_decode_code_point_c<3>(s)}
+           : is_valid_head_byte_c<4>(b) ? R{{4}, do_decode_code_point_c<4>(s)}
+           : is_valid_head_byte_c<5>(b) ? R{{5}, do_decode_code_point_c<5>(s)}
+           : is_valid_head_byte_c<6>(b) ? R{{6}, do_decode_code_point_c<6>(s)}
+                                        : R{{0}, {invalid_code_point}};
+}
+//------------------------------------------------------------------------------
+static constexpr std::array<code_point (*)(span<const byte>) noexcept, 7>
   do_decode_code_point_func{
     {do_decode_code_point_from<1>,
      do_decode_code_point_from<2>,
