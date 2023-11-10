@@ -57,7 +57,8 @@ private:
 
 public:
     /// @brief Construction from a function call @p outcome object.
-    constexpr ok(Outcome&& outcome) noexcept(noexcept(std::declval<Outcome&&>()))
+    constexpr ok(Outcome outcome) noexcept(
+      std::is_nothrow_move_constructible_v<Outcome>)
       : _outcome{std::move(outcome)} {}
 
     /// @brief Indicates if the stored outcome contains valid result value.
