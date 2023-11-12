@@ -52,7 +52,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.runtime PARTITION url
 	IMPORTS
-		std
+		std program_args
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
