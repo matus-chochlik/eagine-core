@@ -99,4 +99,27 @@ void process_watchdog::announce_shutdown() noexcept {
     _backend->announce_shutdown();
 }
 //------------------------------------------------------------------------------
+[[nodiscard]] auto process_watchdog::start_watch() noexcept
+  -> watched_process_lifetime {
+    return {*this};
+}
+//------------------------------------------------------------------------------
+// watched_process_lifetime
+//------------------------------------------------------------------------------
+watched_process_lifetime::watched_process_lifetime(process_watchdog& wd) noexcept
+  : _wd{&wd} {
+    _wd->declare_initialized();
+}
+//------------------------------------------------------------------------------
+watched_process_lifetime::~watched_process_lifetime() noexcept {
+    if(_wd) {
+        _wd->announce_shutdown();
+    }
+}
+//------------------------------------------------------------------------------
+void watched_process_lifetime::notify() noexcept {
+    assert(_wd);
+    _wd->notify_alive();
+}
+//------------------------------------------------------------------------------
 } // namespace eagine

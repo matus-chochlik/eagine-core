@@ -34,21 +34,22 @@ export [[nodiscard]] auto pad_and_store_data_with_size(
             if(size_len + padded_size <= dst.size()) {
                 using multi_byte::encode_code_point;
                 if(ok skip_len{encode_code_point(size_cp, dst)}) [[likely]] {
-                    auto data{head(skip(dst, span_size(skip_len)), src.size())};
+                    const auto skipped{skip(dst, span_size(skip_len))};
+                    const auto data{head(skipped, src.size())};
                     copy(src, data);
-                    auto padg{head(
+                    auto padding{head(
                       skip(dst, span_size(skip_len) + src.size()),
                       padded_size - src.size())};
-                    auto fill = padg;
+                    auto fill = padding;
                     while(not fill.empty()) {
                         scramble(head(src, fill.size()), fill);
                         fill = skip(fill, src.size());
                     }
                     return {
                       head(dst, span_size(skip_len) + padded_size),
-                      head(skip(dst, span_size(skip_len)), padded_size),
+                      head(skipped, padded_size),
                       data,
-                      padg};
+                      padding};
                 } else {
                     multi_byte::encode_nil(dst);
                 }
@@ -61,13 +62,17 @@ export [[nodiscard]] auto pad_and_store_data_with_size(
     return {{}, {}, {}, {}};
 }
 //------------------------------------------------------------------------------
+auto get_skip_and_data_length(const memory::const_block src) noexcept {
+    auto [skip_len, data_len]{multi_byte::do_decode_length_and_code_point(src)};
+    return std::make_tuple(ok{skip_len}, ok{data_len});
+}
+//------------------------------------------------------------------------------
 // (content, data, padding)
 export [[nodiscard]] auto get_padded_data_with_size(
   const memory::block src) noexcept
   -> std::tuple<memory::block, memory::block, memory::block> {
-    const memory::const_block tmp{src};
-    const ok skip_len{multi_byte::decode_sequence_length(tmp)};
-    if(const ok data_len{multi_byte::do_decode_code_point(tmp, skip_len)}) {
+    const auto [skip_len, data_len]{get_skip_and_data_length(src)};
+    if(skip_len and data_len) {
         return {
           skip(src, span_size(skip_len)),
           head(skip(src, span_size(skip_len)), span_size(data_len)),
@@ -117,8 +122,8 @@ export [[nodiscard]] auto store_data_with_size(
 /// @see get_data_with_size
 export [[nodiscard]] auto skip_data_with_size(
   const memory::const_block src) noexcept -> span_size_t {
-    const ok skip_len{multi_byte::decode_sequence_length(src)};
-    if(const ok data_len{multi_byte::do_decode_code_point(src, skip_len)}) {
+    const auto [skip_len, data_len]{get_skip_and_data_length(src)};
+    if(skip_len and data_len) {
         return skip_len + data_len;
     }
     return 0;
@@ -130,8 +135,8 @@ export [[nodiscard]] auto skip_data_with_size(
 export [[nodiscard]] auto get_data_with_size(const memory::block src) noexcept
   -> memory::block {
     const memory::const_block tmp{src};
-    const ok skip_len{multi_byte::decode_sequence_length(tmp)};
-    if(const ok data_len{multi_byte::do_decode_code_point(tmp, skip_len)}) {
+    const auto [skip_len, data_len]{get_skip_and_data_length(src)};
+    if(skip_len and data_len) {
         return head(skip(src, span_size(skip_len)), span_size(data_len));
     }
     return {};
@@ -142,8 +147,8 @@ export [[nodiscard]] auto get_data_with_size(const memory::block src) noexcept
 /// @see store_data_with_size
 export [[nodiscard]] auto get_data_with_size(
   const memory::const_block src) noexcept -> memory::const_block {
-    const ok skip_len{multi_byte::decode_sequence_length(src)};
-    if(const ok data_len{multi_byte::do_decode_code_point(src, skip_len)}) {
+    const auto [skip_len, data_len]{get_skip_and_data_length(src)};
+    if(skip_len and data_len) {
         return head(skip(src, span_size(skip_len)), span_size(data_len));
     }
     return {};
@@ -157,16 +162,19 @@ export template <typename Function>
 void for_each_data_with_size(
   memory::const_block src,
   Function function) noexcept {
+    const auto f{[&](const span_size_t skip_len, const span_size_t data_len) {
+        const auto po{src.begin()};
+        const auto sz{src.size()};
+        const auto sk{std::min(sz, skip_len + data_len)};
+
+        function(memory::const_block{po + std::min(sz, skip_len), po + sk});
+        src = memory::const_block{po + sk, po + sz};
+    }};
     while(src) {
-        if(const ok skip_len{multi_byte::decode_sequence_length(src)}) {
-            using multi_byte::do_decode_code_point;
-            if(const ok data_len{do_decode_code_point(src, skip_len)}) {
-                function(
-                  head(skip(src, span_size(skip_len)), span_size(data_len)));
-                src = skip(src, span_size(skip_len) + span_size(data_len));
-            } else {
-                break;
-            }
+        const auto [skip_len, data_len]{get_skip_and_data_length(src)};
+        if(data_len) {
+            assert(skip_len);
+            f(skip_len, data_len);
         } else {
             break;
         }

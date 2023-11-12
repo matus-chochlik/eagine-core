@@ -18,7 +18,8 @@ import :object;
 namespace eagine {
 
 struct process_watchdog_backend;
-
+export class watched_process_lifetime;
+//------------------------------------------------------------------------------
 /// @brief Class implementing process watchdog functionality.
 /// @ingroup main_context
 export class process_watchdog : public main_ctx_object {
@@ -34,10 +35,34 @@ public:
     /// @brief Announce to the system that this process is shutting down.
     void announce_shutdown() noexcept;
 
+    [[nodiscard]] auto start_watch() noexcept -> watched_process_lifetime;
+
 private:
     shared_holder<process_watchdog_backend> _backend;
     timeout _should_log_heartbeat;
 };
+//------------------------------------------------------------------------------
+export class watched_process_lifetime {
+public:
+    watched_process_lifetime(process_watchdog& wd) noexcept;
 
+    watched_process_lifetime(watched_process_lifetime&& that) noexcept
+      : _wd{std::exchange(that._wd, nullptr)} {}
+
+    watched_process_lifetime(const watched_process_lifetime&) = delete;
+
+    auto operator=(watched_process_lifetime&&)
+      -> watched_process_lifetime& = delete;
+    auto operator=(const watched_process_lifetime&)
+      -> watched_process_lifetime& = delete;
+
+    ~watched_process_lifetime() noexcept;
+
+    void notify() noexcept;
+
+private:
+    process_watchdog* _wd{nullptr};
+};
+//------------------------------------------------------------------------------
 } // namespace eagine
 

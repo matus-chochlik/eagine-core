@@ -8,9 +8,140 @@
 module eagine.core.runtime;
 
 import std;
+import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.string;
+import eagine.core.identifier;
 
 namespace eagine {
+//------------------------------------------------------------------------------
+// query args
+//------------------------------------------------------------------------------
+auto url_query_args::arg_value(const string_view name) const noexcept
+  -> optionally_valid<string_view> {
+    if(const auto pos{find(name)}; pos != end()) {
+        return {std::get<1>(*pos), true};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto url_query_args::decoded_arg_value(const string_view name) const noexcept
+  -> optionally_valid<std::string> {
+    return arg_value(name).and_then(url::decode_component);
+}
+//------------------------------------------------------------------------------
+// url
+//------------------------------------------------------------------------------
+auto url::encode_component(const string_view src) noexcept -> std::string {
+    const auto is_valid{[](char c) {
+        return ((c >= 'a') and (c <= 'z')) or ((c >= 'A') and (c <= 'Z')) or
+               ((c >= '0') and (c <= '0')) or (c == '-') or (c == '_') or
+               (c == '.') or (c == '~');
+    }};
+    std::string result;
+    result.reserve(std_size(src.size() * 2));
+    for(const char c : src) {
+        if(is_valid(c)) {
+            result.push_back(c);
+        } else {
+            const std::string_view hd{"0123456789ABCDEF"};
+            result.push_back('%');
+            result.push_back(hd[(byte(c) >> 4U) & 0x0FU]);
+            result.push_back(hd[byte(c) & 0x0FU]);
+        }
+    }
+    return result;
+}
+//------------------------------------------------------------------------------
+static inline auto _url_from_hex(const char c) -> byte {
+    if((c >= '0') and (c <= '9')) {
+        return byte(c - '0');
+    }
+    if((c >= 'A') and (c <= 'F')) {
+        return byte(c - 'A' + 10);
+    }
+    if((c >= 'a') and (c <= 'f')) {
+        return byte(c - 'a' + 10);
+    }
+    return 0xFFU;
+}
+//------------------------------------------------------------------------------
+static inline auto _url_decode_char(const char hi, const char lo) {
+    const auto bhi{_url_from_hex(hi)};
+    const auto blo{_url_from_hex(lo)};
+    if(bhi != 0x0FFU and blo != 0xFFU) {
+        return char(bhi << 4U | blo);
+    }
+    return '\0';
+}
+//------------------------------------------------------------------------------
+auto url::decode_component(const string_view src) noexcept
+  -> optionally_valid<std::string> {
+    std::string result;
+    result.reserve(std_size(src.size()));
+    int decoding{0};
+    char hi{'\0'};
+    for(const char c : src) {
+        if(decoding == 2) {
+            if(const char d{_url_decode_char(hi, c)}) {
+                result.push_back(d);
+                decoding = 0;
+            } else {
+                return {};
+            }
+        } else if(decoding == 1) {
+            hi = c;
+            decoding = 2;
+        } else if(c == '%') {
+            decoding = 1;
+        } else {
+            result.push_back(c);
+        }
+    }
+    return {result};
+}
+//------------------------------------------------------------------------------
+auto url::components_are_equal(const string_view l, const string_view r) noexcept
+  -> bool {
+    const auto make_getter{[](const string_view s) {
+        return [pos{s.begin()}, end{s.end()}] mutable {
+            if(pos != end) {
+                const char c{*pos};
+                ++pos;
+                if(c != '%') {
+                    return c;
+                }
+                if(pos == end) {
+                    return c;
+                }
+                const char hi{*pos};
+                ++pos;
+                if(pos == end) {
+                    return hi;
+                }
+                const char lo{*pos};
+                ++pos;
+                return _url_decode_char(hi, lo);
+            }
+            return '\0';
+        };
+    }};
+    auto getl{make_getter(l)};
+    auto getr{make_getter(r)};
+
+    while(true) {
+        const auto cl{getl()};
+        const auto cr{getr()};
+
+        if(cl != cr) {
+            return false;
+        }
+        if(cl == '\0') {
+            break;
+        }
+    }
+    return true;
+}
 //------------------------------------------------------------------------------
 auto url::_get_regex() noexcept -> const std::regex& {
     static const std::regex re{
@@ -19,6 +150,24 @@ auto url::_get_regex() noexcept -> const std::regex& {
       // clang-format on
       std::regex::ECMAScript};
     return re;
+}
+//------------------------------------------------------------------------------
+auto url::_sw(_range r) const noexcept -> string_view {
+    return string_view{
+      head(skip(view(_url_str), std::get<0>(r)), std::get<1>(r))};
+}
+//------------------------------------------------------------------------------
+auto url::_swov(_range r) const noexcept -> valid_if_not_empty<string_view> {
+    return {_sw(r)};
+}
+//------------------------------------------------------------------------------
+auto url::_parse_args() const noexcept -> url_query_args {
+    url_query_args result;
+    for_each_delimited(_sw(_query), string_view{"+"}, [&result](auto part) {
+        auto [name, value] = split_by_first(part, string_view{"="});
+        result[name] = value;
+    });
+    return result;
 }
 //------------------------------------------------------------------------------
 void url::_cover(
@@ -49,6 +198,72 @@ url::url(
         _cover(_fragment, match, 37);
         _query_args = _parse_args();
     }
+}
+//------------------------------------------------------------------------------
+auto url::login() const noexcept -> optionally_valid<std::string> {
+    return _swov(_login).and_then(&url::decode_component);
+}
+//------------------------------------------------------------------------------
+auto url::password() const noexcept -> optionally_valid<std::string> {
+    return _swov(_passwd).and_then(&url::decode_component);
+}
+//------------------------------------------------------------------------------
+auto url::has_domain(const string_view str) const noexcept -> bool {
+    return components_are_equal(str, _sw(_host));
+}
+//------------------------------------------------------------------------------
+auto url::domain_identifier() const noexcept -> identifier {
+    if(const auto str{_sw(_host)}) {
+        if(identifier::can_be_encoded(str)) {
+            return identifier{str};
+        }
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto url::path_dirname() const noexcept -> valid_if_not_empty<string_view> {
+    return {slice_before_last(_sw(_path), string_view{"/"})};
+}
+//------------------------------------------------------------------------------
+auto url::path_basename() const noexcept -> valid_if_not_empty<string_view> {
+    return {slice_after_last(_sw(_path), string_view{"/"})};
+}
+//------------------------------------------------------------------------------
+auto url::has_path_prefix(const string_view prefix) const noexcept -> bool {
+    return starts_with(_sw(_path), prefix);
+}
+//------------------------------------------------------------------------------
+auto url::has_path_suffix(const string_view suffix) const noexcept -> bool {
+    return ends_with(_sw(_path), suffix);
+}
+//------------------------------------------------------------------------------
+auto url::path() const noexcept -> basic_string_path {
+    return {basic_string_path{_sw(_path), split_by, "/"}};
+}
+//------------------------------------------------------------------------------
+auto url::has_path(const string_view str) const noexcept -> bool {
+    return components_are_equal(str, _sw(_path));
+}
+//------------------------------------------------------------------------------
+auto url::path_identifier() const noexcept -> identifier {
+    if(const string_view str{skip(_sw(_path), 1)}) {
+        if(identifier::can_be_encoded(str)) {
+            return identifier{str};
+        }
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto url::argument(const string_view arg_name) const noexcept
+  -> valid_if_not_empty<string_view> {
+    string_view result;
+    for_each_delimited(_sw(_query), string_view{"+"}, [&](auto part) {
+        auto [name, value] = split_by_first(part, string_view{"="});
+        if(not result and are_equal(name, arg_name)) {
+            result = value;
+        }
+    });
+    return {result};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

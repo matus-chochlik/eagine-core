@@ -281,6 +281,7 @@ class application_config_value;
 export template <typename T>
 using application_reconfig_value =
   application_config_value<T, std::add_const_t<T>&, true>;
+export class main_ctx_object;
 //------------------------------------------------------------------------------
 /// @brief Class wrapping values that can be loaded from application_config.
 /// @ingroup main_context
@@ -300,7 +301,20 @@ public:
       application_config& config,
       const string_view key,
       T initial = {}) noexcept
-      : application_config_value{config, key, {}, initial} {}
+      : application_config_value{config, key, {}, std::move(initial)} {}
+
+    application_config_value(
+      std::derived_from<main_ctx_object> auto& o,
+      const string_view key,
+      const string_view tag,
+      T init = {}) noexcept
+      : application_config_value{o.app_config(), key, tag, std::move(init)} {}
+
+    application_config_value(
+      std::derived_from<main_ctx_object> auto& o,
+      const string_view key,
+      T init = {}) noexcept
+      : application_config_value{o.app_config(), key, std::move(init)} {}
 
     auto operator=(T new_value) -> auto& {
         _value = std::move(new_value);
@@ -436,6 +450,19 @@ public:
       std::string key,
       T initial = {}) noexcept
       : application_config_value{config, std::move(key), {}, initial} {}
+
+    application_config_value(
+      std::derived_from<main_ctx_object> auto& o,
+      const string_view key,
+      const string_view tag,
+      T init = {}) noexcept
+      : application_config_value{o.app_config(), key, tag, std::move(init)} {}
+
+    application_config_value(
+      std::derived_from<main_ctx_object> auto& o,
+      const string_view key,
+      T init = {}) noexcept
+      : application_config_value{o.app_config(), key, std::move(init)} {}
 
     application_config_value(application_config_value&&) = delete;
     application_config_value(const application_config_value&) = delete;

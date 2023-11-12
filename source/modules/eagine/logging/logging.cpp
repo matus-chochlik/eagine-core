@@ -11,7 +11,6 @@ export import :config;
 export import :backend;
 export import :entry_arg;
 export import :ostream_backend;
-export import :time_interval;
 export import :entry;
 export import :logger;
 export import :root_logger;

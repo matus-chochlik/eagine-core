@@ -202,13 +202,16 @@ private:
     owned_block _storage{};
     span_size_t _size{0};
     span_size_t _align{alignof(long double)};
-    shared_byte_allocator _alloc{default_shared_allocator()};
+    shared_byte_allocator _alloc{};
 
     auto _is_ok() const noexcept -> bool {
-        return bool(_alloc) and size() <= capacity();
+        return size() <= capacity();
     }
 
     void _reallocate(const span_size_t new_size) noexcept {
+        if(not _alloc) {
+            _alloc = default_shared_allocator();
+        }
         _alloc.reallocate_inplace(_storage, new_size, _align);
     }
 };

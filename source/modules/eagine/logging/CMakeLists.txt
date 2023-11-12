@@ -55,14 +55,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION time_interval
-	IMPORTS
-		std backend
-		eagine.core.types
-		eagine.core.identifier
-)
-
-eagine_add_module(
 	eagine.core.logging PARTITION entry
 	IMPORTS
 		std entry_arg backend
@@ -77,8 +69,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging PARTITION logger
 	IMPORTS
-		std config backend
-		entry time_interval
+		std config backend entry
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier

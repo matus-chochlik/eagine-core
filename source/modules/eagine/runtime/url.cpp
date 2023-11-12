@@ -25,13 +25,16 @@ export struct url_query_args
     /// @brief Returns the value of the argument with the specified name.
     /// @see arg_has_value
     /// @see arg_value_as
+    /// @see decoded_arg_value
     auto arg_value(const string_view name) const noexcept
-      -> optionally_valid<string_view> {
-        if(const auto pos{find(name)}; pos != end()) {
-            return {std::get<1>(*pos), true};
-        }
-        return {};
-    }
+      -> optionally_valid<string_view>;
+
+    /// @brief Returns the value of the URL-encoded argument with the specified name.
+    /// @see arg_value
+    /// @see arg_has_value
+    /// @see arg_value_as
+    auto decoded_arg_value(const string_view name) const noexcept
+      -> optionally_valid<std::string>;
 
     /// @brief Converts the value of the argument with the specified name to type T.
     /// @see arg_has_value
@@ -65,6 +68,18 @@ public:
     url(std::string url_str) noexcept
       : url{std::move(url_str), std::match_results<std::string::iterator>{}} {}
 
+    /// @brief Encodes the given string using the URI/URL encoding.
+    static auto encode_component(const string_view) noexcept -> std::string;
+
+    /// @brief Decode the given string using the URI/URL encoding.
+    static auto decode_component(const string_view) noexcept
+      -> optionally_valid<std::string>;
+
+    /// @brief Compares two (possible URI/URL encoded) strings for equality.
+    static auto components_are_equal(
+      const string_view,
+      const string_view) noexcept -> bool;
+
     /// @brief Comparison.
     auto operator<=>(const url& that) const noexcept {
         return _url_str.compare(that._url_str);
@@ -96,7 +111,7 @@ public:
     /// @brief Returns the scheme.
     /// @see has_scheme
     auto scheme() const noexcept -> valid_if_not_empty<string_view> {
-        return {_sw(_scheme)};
+        return _swov(_scheme);
     }
 
     /// @brief Checks if the url scheme matches the given string.
@@ -106,14 +121,10 @@ public:
     }
 
     /// @brief Returns the login name.
-    auto login() const noexcept -> valid_if_not_empty<string_view> {
-        return {_sw(_login)};
-    }
+    auto login() const noexcept -> optionally_valid<std::string>;
 
     /// @brief Returns the login password.
-    auto password() const noexcept -> valid_if_not_empty<string_view> {
-        return {_sw(_passwd)};
-    }
+    auto password() const noexcept -> optionally_valid<std::string>;
 
     /// @brief Returns the host name or IP address.
     /// @see domain
@@ -123,20 +134,20 @@ public:
 
     /// @brief Returns the host name or IP address.
     /// @see host
+    /// @see has_domain
     auto domain() const noexcept -> valid_if_not_empty<string_view> {
         return host();
     }
 
+    /// @brief Checks if the domain matches the given string.
+    /// @see domain
+    /// @see host
+    auto has_domain(const string_view str) const noexcept -> bool;
+
     /// @brief Returns the host name or IP address.
     /// @see host
-    auto domain_identifier() const noexcept -> identifier {
-        if(const auto str{_sw(_host)}) {
-            if(identifier::can_be_encoded(str)) {
-                return identifier{str};
-            }
-        }
-        return {};
-    }
+    /// @see has_domain
+    auto domain_identifier() const noexcept -> identifier;
 
     /// @brief Returns the port string.
     auto port_str() const noexcept -> valid_if_not_empty<string_view> {
@@ -155,59 +166,40 @@ public:
 
     /// @brief Returns the path dirname.
     /// @see path_basename
-    auto path_dirname() const noexcept -> valid_if_not_empty<string_view> {
-        return {slice_before_last(_sw(_path), string_view{"/"})};
-    }
+    auto path_dirname() const noexcept -> valid_if_not_empty<string_view>;
 
     /// @brief Returns the path basename.
     /// @see path_dirname
     /// @see has_path_prefix
     /// @see has_path_suffix
-    auto path_basename() const noexcept -> valid_if_not_empty<string_view> {
-        return {slice_after_last(_sw(_path), string_view{"/"})};
-    }
+    auto path_basename() const noexcept -> valid_if_not_empty<string_view>;
 
     /// @brief Indicates if path ends with the specified prefix
     /// @see path_basename
     /// @see has_path_suffix
     /// @see path_str
-    auto has_path_prefix(const string_view prefix) const noexcept -> bool {
-        return starts_with(_sw(_path), prefix);
-    }
+    auto has_path_prefix(const string_view prefix) const noexcept -> bool;
 
     /// @brief Indicates if path ends with the specified suffix
     /// @see path_basename
     /// @see has_path_prefix
     /// @see path_str
-    auto has_path_suffix(const string_view suffix) const noexcept -> bool {
-        return ends_with(_sw(_path), suffix);
-    }
+    auto has_path_suffix(const string_view suffix) const noexcept -> bool;
 
     /// @brief Returns the path.
     /// @see has_path
     /// @see path_identifier
-    auto path() const noexcept -> basic_string_path {
-        return {basic_string_path{_sw(_path), split_by, "/"}};
-    }
+    auto path() const noexcept -> basic_string_path;
 
     /// @brief Checks if the path matches the given string.
     /// @see path_str
     /// @see path
-    auto has_path(const string_view str) const noexcept -> bool {
-        return are_equal(str, _sw(_path));
-    }
+    auto has_path(const string_view str) const noexcept -> bool;
 
     /// @brief Returns the path as identifier if possible.
     /// @see path_str
     /// @see path_identifier
-    auto path_identifier() const noexcept -> identifier {
-        if(const string_view str{skip(_sw(_path), 1)}) {
-            if(identifier::can_be_encoded(str)) {
-                return identifier{str};
-            }
-        }
-        return {};
-    }
+    auto path_identifier() const noexcept -> identifier;
 
     /// @brief Returns the query string.
     auto query_str() const noexcept -> valid_if_not_empty<string_view> {
@@ -223,16 +215,7 @@ public:
     /// @brief Returns the value of the specified query argument.
     /// @see query
     auto argument(const string_view arg_name) const noexcept
-      -> valid_if_not_empty<string_view> {
-        string_view result;
-        for_each_delimited(_sw(_query), string_view{"+"}, [&](auto part) {
-            auto [name, value] = split_by_first(part, string_view{"="});
-            if(not result and are_equal(name, arg_name)) {
-                result = value;
-            }
-        });
-        return {result};
-    }
+      -> valid_if_not_empty<string_view>;
 
     /// @brief Returns the fragment.
     auto fragment() const noexcept -> valid_if_not_empty<string_view> {
@@ -251,19 +234,10 @@ private:
 
     using _range = std::pair<span_size_t, span_size_t>;
 
-    auto _sw(_range r) const noexcept -> string_view {
-        return string_view{
-          head(skip(view(_url_str), std::get<0>(r)), std::get<1>(r))};
-    }
+    auto _sw(_range r) const noexcept -> string_view;
+    auto _swov(_range r) const noexcept -> valid_if_not_empty<string_view>;
 
-    auto _parse_args() const noexcept -> url_query_args {
-        url_query_args result;
-        for_each_delimited(_sw(_query), string_view{"+"}, [&result](auto part) {
-            auto [name, value] = split_by_first(part, string_view{"="});
-            result[name] = value;
-        });
-        return result;
-    }
+    auto _parse_args() const noexcept -> url_query_args;
 
     void _cover(
       _range& part,
