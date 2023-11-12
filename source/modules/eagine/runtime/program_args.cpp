@@ -16,6 +16,7 @@ import eagine.core.debug;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
+import eagine.core.utility;
 import eagine.core.valid_if;
 
 namespace eagine {
@@ -268,6 +269,8 @@ export class program_arg_iterator {
     using this_class = program_arg_iterator;
 
 public:
+    constexpr program_arg_iterator() noexcept = default;
+
     constexpr program_arg_iterator(const program_arg arg) noexcept
       : _a{arg} {}
 
@@ -278,13 +281,13 @@ public:
     using difference_type = int;
 
     /// @brief Alias for reference type.
-    using reference = program_arg&;
+    using reference = const program_arg&;
 
     /// @brief Alias for const reference type.
     using const_reference = const program_arg&;
 
     /// @brief Alias for pointer type.
-    using pointer = program_arg*;
+    using pointer = const program_arg*;
 
     /// @brief Alias for const pointer type.
     using const_pointer = const program_arg*;
@@ -498,28 +501,52 @@ public:
         return get(1);
     }
 
+    /// @brief Returns the first argument past the last.
+    auto past_last() const noexcept -> program_arg {
+        return get(_argc == 0 ? 1 : _argc);
+    }
+
     /// @brief Returns an iterator to the first argument (not the command name).
     auto begin() const noexcept -> iterator {
-        return {get(1)};
+        return {first()};
     }
 
     /// @brief Returns an iterator past the last argument.
     auto end() const noexcept -> iterator {
-        return {get(_argc == 0 ? 1 : _argc)};
+        return {past_last()};
     }
 
     /// @brief Finds and returns the argument with the specified value.
     auto find(const value_type what) const noexcept -> program_arg {
-        int i = 1;
-        while(i < _argc) {
-            if((_argv != nullptr) and (_argv[i] != nullptr)) {
-                if(are_equal(value_type(_argv[i]), what)) {
-                    break;
+        if(_argv != nullptr) {
+            int i = 1;
+            while(i < _argc) {
+                if(_argv[i] != nullptr) {
+                    if(are_equal(value_type(_argv[i]), what)) {
+                        break;
+                    }
                 }
+                ++i;
             }
-            ++i;
+            return get(i);
         }
-        return get(i);
+        return past_last();
+    }
+
+    /// @brief Lists all arguments with the specified value.
+    auto all_like(const value_type what) const noexcept
+      -> pointee_generator<program_arg_iterator> {
+        if(_argv != nullptr) {
+            int i = 1;
+            while(i < _argc) {
+                if(_argv[i] != nullptr) {
+                    if(are_equal(value_type(_argv[i]), what)) {
+                        co_yield get(i);
+                    }
+                }
+                ++i;
+            }
+        }
     }
 
 private:
