@@ -592,6 +592,10 @@ public:
         return *this;
     }
 
+    auto arg(const identifier name, const char* value) noexcept -> auto& {
+        return arg(name, "str", value);
+    }
+
     /// @brief Adds a new message argument with string value.
     /// @param name the argument name identifier. Used in message substitution.
     /// @param value the value of the argument.
