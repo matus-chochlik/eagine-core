@@ -75,7 +75,7 @@ using optionally_valid = valid_if<T, valid_flag_policy>;
 //------------------------------------------------------------------------------
 /// @brief Implements the common interface for optional-like types.
 /// @ingroup optional_like
-template <typename Derived, typename T>
+export template <typename Derived, typename T>
 class optional_like_crtp {
     template <typename Self, typename M, typename C>
         requires(std::is_same_v<std::remove_cv_t<C>, std::remove_cv_t<T>>)

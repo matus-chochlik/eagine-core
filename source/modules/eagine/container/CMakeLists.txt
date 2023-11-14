@@ -17,7 +17,9 @@ eagine_add_module(
 )
 eagine_add_module(
 	eagine.core.container PARTITION object_pool
-	IMPORTS std small_vector
+	IMPORTS
+		std small_vector
+		eagine.core.types
 )
 eagine_add_module(
 	eagine.core.container PARTITION flat_set
