@@ -323,7 +323,7 @@ class XmlLogFormatter(object):
         return self._ttyEsc("\x1b[1;37m")
 
     # --------------------------------------------------------------------------
-    def _formatAppName(self, n, src_id):
+    def _formatAppName(self, n, c, src_id):
         try:
             parts = n.split("-")
             assert len(parts) > 1
@@ -334,7 +334,7 @@ class XmlLogFormatter(object):
             return self._ttyBoldCyan() + n + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatFsPath(self, p, src_id):
+    def _formatFsPath(self, p, c, src_id):
         try:
             if not os.path.isabs(p):
                 p = os.path.normpath(os.path.join(self._work_dirs[src_id], p))
@@ -350,15 +350,15 @@ class XmlLogFormatter(object):
         return self._ttyBoldRed() + p + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatHostname(self, p, src_id):
+    def _formatHostname(self, p, c, src_id):
         return self._ttyBoldBlue() + p + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatURL(self, p, src_id):
+    def _formatURL(self, p, c, src_id):
         return self._ttyBoldBlue() + p + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatGitBranch(self, b, src_id):
+    def _formatGitBranch(self, b, c, src_id):
         if b == "develop":
             return self._ttyBoldYellow() + b + self._ttyReset()
         if b == "main":
@@ -367,23 +367,24 @@ class XmlLogFormatter(object):
         return self._ttyBoldRed() + b + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatHash(self, p, src_id):
+    def _formatHash(self, p, c, src_id):
         return self._ttyBoldCyan() + p + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatIdentifier(self, p, src_id):
+    def _formatIdentifier(self, p, c, src_id):
         return "\"" + self._ttyBoldBlue() + p + self._ttyReset() + "\""
 
     # --------------------------------------------------------------------------
-    def _formatProgArg(self, p, src_id):
+    def _formatProgArg(self, p, c, src_id):
         return "«" + self._ttyBoldWhite() + p + self._ttyReset() + "»"
 
     # --------------------------------------------------------------------------
-    def _formatRatio(self, x, src_id):
+    def _formatRatio(self, x, c, src_id):
+        x = float(x)
         return self._ttyBoldWhite() + ("%3.1f%%" % float(x * 100)) + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatRFC2822(self, dt, src_id):
+    def _formatRFC2822(self, dt, c, src_id):
         try:
             import email.utils
             dt = email.utils.format_datetime(email.utils.parsedate_to_datetime(dt))
@@ -392,18 +393,20 @@ class XmlLogFormatter(object):
         return self._ttyBoldWhite() + dt + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatDuration(self, sec, src_id):
+    def _formatDuration(self, x, c, src_id):
+        sec = float(x)
         return self._ttyBoldWhite() + formatRelTime(float(sec)) + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatYesNoMaybe(self, v, src_id):
+    def _formatYesNoMaybe(self, v, c, src_id):
         if v == "yes":
             return self._ttyBoldGreen() + v + self._ttyReset()
         if v == "no":
             return self._ttyBoldRed() + v + self._ttyReset()
         return self._ttyYellow() + "maybe" + self._ttyReset()
     # --------------------------------------------------------------------------
-    def _formatByteSize(self, n, src_id):
+    def _formatByteSize(self, n, c, src_id):
+        n = int(float(n))
         result = None
         if n > 0:
             umult = ["GiB", "MiB", "kiB"]
@@ -419,13 +422,22 @@ class XmlLogFormatter(object):
         return self._ttyBoldWhite() + result + self._ttyReset()
 
     # --------------------------------------------------------------------------
-    def _formatInteger(self, s, src_id):
+    def _formatInteger(self, s, c, src_id):
         return f"{int(s):,}".replace(",", "'")
 
     # --------------------------------------------------------------------------
-    def _formatReal(self, s, src_id):
+    def _formatReal(self, s, c, src_id):
         return f"{float(s):,}".replace(",", "'")
 
+    # --------------------------------------------------------------------------
+    def _formatProgress(self, v, c, src_id):
+        try:
+            v = float(v)
+            vmin = float(c["min"])
+            vmax = float(c["max"])
+            return "%3.1f%%" % (100.0 * (v - vmin) / (vmax - vmin), )
+        except:
+            return "N/A"
     # --------------------------------------------------------------------------
     def _formatValueBar(self, mn, x, mx, width):
         try: coef = (x - mn) / (mx - mn)
@@ -454,7 +466,7 @@ class XmlLogFormatter(object):
         return result
 
     # --------------------------------------------------------------------------
-    def _formatProgress(self, src, inst, tag, mn, x, mx, width, progress):
+    def _formatProgressBar(self, src, inst, tag, mn, x, mx, width, progress):
         if src is not None and tag is not None:
             key = (src, inst, tag)
             try: progress_begin = self._progress_info[key]
@@ -571,9 +583,11 @@ class XmlLogFormatter(object):
             "real": self._formatReal,
             "YesNo": self._formatYesNoMaybe,
             "YesNoMaybe": self._formatYesNoMaybe,
-            "Ratio": lambda x, src_id: self._formatRatio(float(x), src_id),
-            "duration": lambda x, src_id: self._formatDuration(float(x), src_id),
-            "ByteSize": lambda x, src_id: self._formatByteSize(int(float(x)), src_id)
+            "MainPrgrss": self._formatProgress,
+            "Progress": self._formatProgress,
+            "Ratio": self._formatRatio,
+            "duration": self._formatDuration,
+            "ByteSize":  self._formatByteSize
         }
         self._source_id = 0
         self._sources = []
@@ -758,7 +772,7 @@ class XmlLogFormatter(object):
             self.write("┊")
             for sid in self._sources:
                 self.write(" │")
-            self.write(" ╰╴hit count: %s\n" % self._formatInteger(hc, src_id))
+            self.write(" ╰╴hit count: %s\n" % self._formatInteger(hc, None, src_id))
             self._out.flush()
 
     # --------------------------------------------------------------------------
@@ -795,8 +809,8 @@ class XmlLogFormatter(object):
                 trans = self._translations[typ]
                 value = trans["opts"][trans["type"](value)]
             except: pass
-            decorate = self._decorators.get(typ, lambda x, i: x)
-            value = decorate(value, src_id)
+            decorate = self._decorators.get(typ, lambda x, c, i: x)
+            value = decorate(value, info, src_id)
         except KeyError:
             value = arg
         return value
@@ -944,7 +958,7 @@ class XmlLogFormatter(object):
                         self.write(": ")
                         if value["min"] is not None and value["max"] is not None:
                             self.write(
-                                self._formatProgress(
+                                self._formatProgressBar(
                                     source,
                                     instance,
                                     tag,
