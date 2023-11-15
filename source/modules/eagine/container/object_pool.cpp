@@ -33,7 +33,7 @@ public:
     pool_object(const pool_object&) = delete;
 
     auto operator=(pool_object&& temp) noexcept -> pool_object& {
-        if(this != &temp) {
+        if(this != &temp) [[likely]] {
             std::swap(_pool, temp._pool);
             std::swap(_object, temp._object);
         }
@@ -43,6 +43,13 @@ public:
     auto operator=(const pool_object&) noexcept = delete;
 
     ~pool_object() noexcept;
+
+    friend void swap(pool_object& l, pool_object& r) noexcept {
+        if(&l != &r) [[likely]] {
+            std::swap(l._pool, r._pool);
+            std::swap(l._object, r._object);
+        }
+    }
 
     auto has_value() const noexcept -> bool {
         return bool(_object);
