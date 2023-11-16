@@ -88,6 +88,7 @@ public:
               true);
         } else {
             *(std::get<0>(*pos)) = Object(std::forward<Args>(args)...);
+            std::get<1>(*pos) = true;
         }
         ++_count;
         return *(std::get<0>(*pos));
@@ -98,6 +99,8 @@ public:
         if(pos == _storage.end()) {
             pos = _storage.emplace(
               _storage.end(), std::make_unique<Object>(), true);
+        } else {
+            std::get<1>(*pos) = true;
         }
         ++_count;
         return *(std::get<0>(*pos));
