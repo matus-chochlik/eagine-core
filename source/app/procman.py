@@ -448,12 +448,27 @@ class ExpansionRegExprs(object):
     def _resolveCmdEAGiApp(self, name):
         file_dir = os.path.dirname(__file__)
         def _get_path_from(filename):
-            bdf_path = os.path.join(file_dir, os.pardir, os.pardir, filename)
-            try:
-                with open(bdf_path, "r") as bdf:
-                    return os.path.realpath(os.path.join(
-                            bdf.readline().strip(), os.pardir, os.pardir))
-            except: pass
+            srch_dirs = [os.path.dirname(p) for p in self._options.config_paths]
+            srch_dirs+= [file_dir]
+
+            for srch_dir in srch_dirs:
+                bdf_dir = os.path.realpath(srch_dir)
+                while True:
+                    par_dir = os.path.realpath(os.path.dirname(bdf_dir))
+                    if par_dir == bdf_dir:
+                        break
+                    bdf_path = os.path.join(bdf_dir, filename)
+                    if os.path.exists(bdf_path):
+                        try:
+                            with open(bdf_path, "r") as bdf:
+                                result = os.path.realpath(os.path.join(
+                                        bdf.readline().strip(),
+                                        os.pardir,
+                                        os.pardir))
+                                if os.path.exists(result):
+                                    return result
+                        except: pass
+                    bdf_dir = os.path.dirname(bdf_dir)
 
         def _get_build_dir():
             return _get_path_from("BINARY_DIR")
@@ -461,29 +476,37 @@ class ExpansionRegExprs(object):
         def _get_install_prefix():
             return _get_path_from("INSTALL_PREFIX")
 
-        def _scantree(what, path):
+        def _exclude_path(path, exclude):
+            for excl in exclude:
+                if path.endswith(excl):
+                    return True
+            return False
+
+        def _scantree(what, path, exclude):
             try:
+                if _exclude_path(path, exclude):
+                    return None
                 for entry in os.scandir(path):
                     if os.path.basename(entry.path) == what:
                         if stat.S_IXUSR & os.stat(entry.path)[stat.ST_MODE]:
                             return entry.path
                     elif entry.is_dir(follow_symlinks=False):
-                        found = _scantree(what, entry.path)
+                        found = _scantree(what, entry.path, exclude)
                         if found:
                             return found
             except: pass
 
-        def _scanopts(path):
+        def _scanopts(path, exclude = []):
             prefixes = ["eagine", "app", "oglplus", "oalplus", "eglplus"]
             for option in [name] + [p+"-"+name for p in prefixes]:
-                found = _scantree(option, path)
+                found = _scantree(option, path, exclude)
                 if found:
                     return found
 
         def _search():
+            yield _scanopts(_get_build_dir(), ["deploy"])
             yield _scanopts(file_dir)
             yield _scanopts(os.path.join(file_dir, os.pardir, "share", "eagine"))
-            yield _scanopts(_get_build_dir())
             yield _scanopts(_get_install_prefix())
             yield self._resolveCmdWildcard(name)
 

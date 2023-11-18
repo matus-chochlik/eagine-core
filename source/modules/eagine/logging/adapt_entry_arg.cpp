@@ -41,6 +41,30 @@ export auto adapt_entry_arg(const identifier name, yes_no_maybe value) noexcept 
     return yes_no_maybe_entry_adapter{.name = name, .value = value};
 }
 //------------------------------------------------------------------------------
+constexpr auto adapt_entry_arg(
+  const identifier name,
+  const char* value) noexcept {
+    return [=](auto& backend) {
+        backend.add_string(name, "str", value);
+    };
+}
+//------------------------------------------------------------------------------
+constexpr auto adapt_entry_arg(
+  const identifier name,
+  const string_view value) noexcept {
+    return [=](auto& backend) {
+        backend.add_string(name, "str", value);
+    };
+}
+//------------------------------------------------------------------------------
+constexpr auto adapt_entry_arg(
+  const identifier name,
+  const std::string& value) noexcept {
+    return [=](auto& backend) {
+        backend.add_string(name, "str", value);
+    };
+}
+//------------------------------------------------------------------------------
 export template <typename Self, typename T, identifier_t LibId, identifier_t Id>
 constexpr auto adapt_entry_arg(
   const identifier name,

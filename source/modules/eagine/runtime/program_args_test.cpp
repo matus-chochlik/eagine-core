@@ -198,14 +198,44 @@ void program_args_parse(auto& s) {
     test.check(assign_if_fits(args.find("--float").next(), f), "parse float");
 }
 //------------------------------------------------------------------------------
+void program_args_all_like(auto& s) {
+    eagitest::case_ test{s, 7, "all_like"};
+
+    std::array<const char*, 25> argv{
+      {"eagitest", "--bool",  "true",  "--negative", "-5",     "--int",
+       "6789",     "--ints",  "0",     "--ints",     "1",      "--ints",
+       "2",        "--ints",  "3",     "--ints",     "4",      "--ints",
+       "5",        "--float", "1.234", "--string",   "eagine", nullptr}};
+
+    eagine::program_args args{int(argv.size()) - 1, argv.data()};
+
+    eagitest::track ints{test, "ints", 5, 1};
+    for(const auto arg : args.all_like("--ints")) {
+        test.check(arg.has_value(), "--ints");
+        ints.checkpoint(1);
+    }
+
+    eagitest::track floats{test, "floats", 1, 1};
+    for(const auto arg : args.all_like("--float")) {
+        test.check(arg.has_value(), "--float");
+        floats.checkpoint(1);
+    }
+
+    for(const auto arg : args.all_like("--nonexistent")) {
+        test.check(arg.has_value(), "--nonexistent");
+        test.fail("should not get here");
+    }
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "program_args", 6};
+    eagitest::suite test{argc, argv, "program_args", 7};
     test.once(program_args_empty);
     test.once(program_args_none);
     test.once(program_args_some);
     test.once(program_args_iterator);
     test.once(program_args_range_for);
     test.once(program_args_parse);
+    test.once(program_args_all_like);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

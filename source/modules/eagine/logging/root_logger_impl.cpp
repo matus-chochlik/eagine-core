@@ -208,15 +208,11 @@ auto root_logger::_log_instance_info() -> void {
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_compiler_info() -> void {
+    const string_view not_available{"N/A"};
     info("built with ${complrName} compiler for ${archtcture} architecture")
       .tag("Compiler")
-      .arg(
-        "complrName", "string", compiler_name(), string_view{"not_available"})
-      .arg(
-        "archtcture",
-        "string",
-        architecture_name(),
-        string_view{"not_available"})
+      .arg("complrName", "str", compiler_name(), not_available)
+      .arg("archtcture", "str", architecture_name(), not_available)
       .arg_func([](logger_backend& backend) {
           if(const auto version_major{compiler_version_major()}) {
               backend.add_integer("complrMajr", "VrsnMajor", *version_major);

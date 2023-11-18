@@ -14,6 +14,7 @@ import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.container;
+import :program_args;
 
 namespace eagine {
 
@@ -67,6 +68,10 @@ public:
     /// @brief Construction from a string.
     url(std::string url_str) noexcept
       : url{std::move(url_str), std::match_results<std::string::iterator>{}} {}
+
+    /// @brief Construction from an command-line argument.
+    url(const program_arg& arg) noexcept
+      : url{arg.get_string()} {}
 
     /// @brief Encodes the given string using the URI/URL encoding.
     static auto encode_component(const string_view) noexcept -> std::string;

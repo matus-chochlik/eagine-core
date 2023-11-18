@@ -82,6 +82,11 @@ public:
         _slots.erase(key);
     }
 
+    /// @brief Indicates if there are observers connected to this signal.
+    explicit operator bool() const noexcept {
+        return not _slots.empty();
+    }
+
     /// @brief The call operator.
     auto operator()(Params... args) const noexcept -> auto& {
         _call(args...);

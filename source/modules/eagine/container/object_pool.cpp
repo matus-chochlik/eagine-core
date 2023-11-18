@@ -12,9 +12,62 @@ module;
 export module eagine.core.container:object_pool;
 
 import std;
+import eagine.core.types;
 import :small_vector;
 
 namespace eagine {
+//------------------------------------------------------------------------------
+export template <typename Object, std::size_t N>
+class object_pool;
+export template <typename Object, std::size_t N>
+class pool_object : public optional_like_crtp<pool_object<Object, N>, Object> {
+public:
+    pool_object() noexcept = default;
+
+    pool_object(object_pool<Object, N>& pool);
+
+    pool_object(pool_object&& temp) noexcept
+      : _pool{std::exchange(temp._pool, nullptr)}
+      , _object{std::exchange(temp._object, nullptr)} {}
+
+    pool_object(const pool_object&) = delete;
+
+    auto operator=(pool_object&& temp) noexcept -> pool_object& {
+        if(this != &temp) [[likely]] {
+            std::swap(_pool, temp._pool);
+            std::swap(_object, temp._object);
+        }
+        return *this;
+    }
+
+    auto operator=(const pool_object&) noexcept = delete;
+
+    ~pool_object() noexcept;
+
+    friend void swap(pool_object& l, pool_object& r) noexcept {
+        if(&l != &r) [[likely]] {
+            std::swap(l._pool, r._pool);
+            std::swap(l._object, r._object);
+        }
+    }
+
+    auto has_value() const noexcept -> bool {
+        return bool(_object);
+    }
+
+    auto get() const noexcept -> Object* {
+        return _object;
+    }
+
+    auto operator*() const noexcept -> Object& {
+        assert(has_value());
+        return *_object;
+    }
+
+private:
+    object_pool<Object, N>* _pool{nullptr};
+    Object* _object{nullptr};
+};
 //------------------------------------------------------------------------------
 export template <typename Object, std::size_t N>
 class object_pool {
@@ -35,6 +88,7 @@ public:
               true);
         } else {
             *(std::get<0>(*pos)) = Object(std::forward<Args>(args)...);
+            std::get<1>(*pos) = true;
         }
         ++_count;
         return *(std::get<0>(*pos));
@@ -45,9 +99,15 @@ public:
         if(pos == _storage.end()) {
             pos = _storage.emplace(
               _storage.end(), std::make_unique<Object>(), true);
+        } else {
+            std::get<1>(*pos) = true;
         }
         ++_count;
         return *(std::get<0>(*pos));
+    }
+
+    [[nodiscard]] auto get_object() -> pool_object<Object, N> {
+        return {*this};
     }
 
     auto eat(const Object& obj) noexcept -> bool {
@@ -100,5 +160,17 @@ private:
     small_vector<std::tuple<std::unique_ptr<Object>, bool>, N> _storage;
     std::size_t _count{0U};
 };
+//------------------------------------------------------------------------------
+template <typename Object, std::size_t N>
+pool_object<Object, N>::pool_object(object_pool<Object, N>& pool)
+  : _pool{&pool}
+  , _object{&_pool->get()} {}
+//------------------------------------------------------------------------------
+template <typename Object, std::size_t N>
+pool_object<Object, N>::~pool_object() noexcept {
+    if(_pool) {
+        _pool->eat(_object);
+    }
+}
 //------------------------------------------------------------------------------
 } // namespace eagine

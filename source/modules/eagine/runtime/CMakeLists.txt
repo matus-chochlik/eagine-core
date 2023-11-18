@@ -33,6 +33,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
+		eagine.core.utility
 		eagine.core.valid_if
 )
 
@@ -51,7 +52,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.runtime PARTITION url
 	IMPORTS
-		std
+		std program_args
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string

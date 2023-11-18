@@ -664,7 +664,7 @@ class LogRenderer(object):
         values = arg_info.get("values", [])
         if len(values) == 1 and not self.alwaysTranslateAsList(values):
             return self.doFormatMsgArg(name, arg_type, values[0], ctx)
-        values = [self.doFormatMsgArg(arg, arg_type, v, ctx) for v in values]
+        values = [self.doFormatMsgArg(name, arg_type, v, ctx) for v in values]
         return '[' + ", ".join(values) + ']'
 
     # --------------------------------------------------------------------------
