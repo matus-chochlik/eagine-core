@@ -5,3 +5,9 @@ log:
   backend: local
   local:
     address: /var/run/eagine/xmllog.socket
+  network:
+    address: localhost:34917
+
+workflow:
+  remote: origin
+  sub_remote: origin
