@@ -385,7 +385,7 @@ public:
     template <typename Func>
     void for_each(const Func& func) {
         for(const auto res_id : resource_ids()) {
-            func(search(res_id));
+            func(res_id, search(res_id));
         }
     }
 
