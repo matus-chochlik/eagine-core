@@ -3,7 +3,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 
-# xml_logs
+# xml-logs
 set(XML_LOGS_RESOURCES
 	xml_logs.qrc
 )
@@ -47,33 +47,34 @@ set(XML_LOGS_HEADERS
 	include/Backend.hpp
 )
 add_executable(
-	eagine-xml_logs-gui
+	eagine-xml-logs-gui
 	EXCLUDE_FROM_ALL
 		${XML_LOGS_RESOURCES}
 		${XML_LOGS_SOURCES}
 		${XML_LOGS_HEADERS}
 )
 
-eagine_add_exe_analysis(eagine-xml_logs-gui)
+eagine_target_modules(eagine-xml-logs-gui std eagine.core)
+eagine_add_exe_analysis(eagine-xml-logs-gui)
 
 target_compile_options(
-	eagine-xml_logs-gui
+	eagine-xml-logs-gui
 	PRIVATE
 		$<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unsafe-buffer-usage>
 )
 target_compile_options(
-	eagine-xml_logs-gui
+	eagine-xml-logs-gui
 	PRIVATE
 		$<$<BOOL:${EAGINE_GNUCXX_COMPILER}>:-Wno-extra-semi-stmt;-Wno-redundant-parens;-Wno-auto-import>
 )
 target_include_directories(
-	eagine-xml_logs-gui
+	eagine-xml-logs-gui
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/include
 )
-eagine_target_modules(eagine-xml_logs-gui eagine.core)
+eagine_target_modules(eagine-xml-logs-gui eagine.core)
 target_link_libraries(
-	eagine-xml_logs-gui
+	eagine-xml-logs-gui
 	PUBLIC
 		Qt5::Core
 		Qt5::Widgets
