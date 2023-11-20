@@ -1,5 +1,6 @@
 log@service:
   backend: syslog
+  severity: info
 
 log:
   backend: local
@@ -7,6 +8,7 @@ log:
     address: /var/run/eagine/xmllog.socket
   network:
     address: localhost:34917
+  severity: debug
 
 workflow:
   remote: origin
