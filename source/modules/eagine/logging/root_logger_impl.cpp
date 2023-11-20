@@ -49,28 +49,54 @@ static constexpr auto default_log_severity() noexcept {
       1);
 }
 //------------------------------------------------------------------------------
+template <typename Lockable>
+auto root_logger_make_ostream_log_backend(
+  const log_stream_info& info,
+  const log_data_format format) -> unique_holder<logger_backend> {
+    switch(format) {
+        case log_data_format::xml:
+            return {
+              hold<ostream_log_backend<spinlock, log_data_format::xml>>,
+              std::cerr,
+              info};
+        case log_data_format::json:
+            return {
+              hold<ostream_log_backend<spinlock, log_data_format::json>>,
+              std::cerr,
+              info};
+    }
+}
+//------------------------------------------------------------------------------
+auto root_logger_make_ostream_log_backend(
+  const log_stream_info& info,
+  const log_data_format format,
+  const bool use_spinlock) -> unique_holder<logger_backend> {
+    if(use_spinlock) {
+        return root_logger_make_ostream_log_backend<spinlock>(info, format);
+    } else {
+        return root_logger_make_ostream_log_backend<std::mutex>(info, format);
+    }
+}
+//------------------------------------------------------------------------------
 auto root_logger_choose_backend(
   const program_args& args,
   const root_logger_options& opts,
   const log_stream_info& info) -> unique_holder<logger_backend> {
 
     const bool use_spinlock{args.find("--log-use-spinlock")};
+    auto format{log_data_format::xml};
+    if(args.find("--log-format-json")) {
+        format = log_data_format::json;
+    } else if(args.find("--log-format-xml")) {
+        format = log_data_format::xml;
+    }
 
     for(auto& arg : args) {
         if(arg.is_long_tag("use-null-log")) {
             return make_null_log_backend();
         } else if(arg.is_long_tag("use-cerr-log")) {
-            if(use_spinlock) {
-                return {
-                  hold<ostream_log_backend<spinlock, log_data_format::xml>>,
-                  std::cerr,
-                  info};
-            } else {
-                return {
-                  hold<ostream_log_backend<std::mutex, log_data_format::xml>>,
-                  std::cerr,
-                  info};
-            }
+            return root_logger_make_ostream_log_backend(
+              info, format, use_spinlock);
         } else if(arg.is_long_tag("use-syslog")) {
             if(use_spinlock) {
                 return make_syslog_log_backend_spinlock(info);

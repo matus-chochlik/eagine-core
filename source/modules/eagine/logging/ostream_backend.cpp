@@ -19,6 +19,7 @@ import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.utility;
 import :backend;
+import :fast_json_backend;
 import :fast_xml_backend;
 
 namespace eagine {
