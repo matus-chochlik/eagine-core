@@ -117,22 +117,19 @@ private:
     std::ostream _out;
 };
 //------------------------------------------------------------------------------
-template <typename Connection, typename Lockable>
+template <typename Connection, typename Lockable, log_data_format format>
 class asio_ostream_log_backend final
   : private Connection
-  , public ostream_log_backend<Lockable> {
+  , public ostream_log_backend<Lockable, format> {
 
-    using base = ostream_log_backend<Lockable>;
+    using base = ostream_log_backend<Lockable, format>;
 
 public:
     asio_ostream_log_backend(
       const string_view addr_str,
       const log_stream_info& info)
       : Connection{addr_str}
-      , ostream_log_backend<Lockable> {
-        Connection::out(), info
-    }
-    {}
+      , base{Connection::out(), info} {}
 
     asio_ostream_log_backend(const log_stream_info& info)
       : asio_ostream_log_backend{string_view{}, info} {}
@@ -153,46 +150,62 @@ private:
     Lockable _flush_lockable;
 };
 //------------------------------------------------------------------------------
-template <typename Lockable>
+template <typename Lockable, log_data_format format>
 using asio_local_ostream_log_backend =
-  asio_ostream_log_backend<asio_local_ostream_log_connection, Lockable>;
+  asio_ostream_log_backend<asio_local_ostream_log_connection, Lockable, format>;
 
-template <typename Lockable = std::mutex>
+template <typename Lockable, log_data_format format>
 using asio_tcpipv4_ostream_log_backend =
-  asio_ostream_log_backend<asio_tcpipv4_ostream_log_connection, Lockable>;
+  asio_ostream_log_backend<asio_tcpipv4_ostream_log_connection, Lockable, format>;
 //------------------------------------------------------------------------------
-auto make_asio_local_ostream_log_backend_mutex(const log_stream_info& info)
+auto make_asio_local_ostream_xml_log_backend_mutex(const log_stream_info& info)
   -> unique_holder<logger_backend> {
-    return {hold<asio_local_ostream_log_backend<std::mutex>>, info};
+    return {
+      hold<asio_local_ostream_log_backend<std::mutex, log_data_format::xml>>,
+      info};
 }
 
-auto make_asio_local_ostream_log_backend_spinlock(const log_stream_info& info)
-  -> unique_holder<logger_backend> {
-    return {hold<asio_local_ostream_log_backend<spinlock>>, info};
+auto make_asio_local_ostream_xml_log_backend_spinlock(
+  const log_stream_info& info) -> unique_holder<logger_backend> {
+    return {
+      hold<asio_local_ostream_log_backend<spinlock, log_data_format::xml>>,
+      info};
 }
 
-auto make_asio_local_ostream_log_backend_mutex(
+auto make_asio_local_ostream_xml_log_backend_mutex(
   string_view addr,
   const log_stream_info& info) -> unique_holder<logger_backend> {
-    return {hold<asio_local_ostream_log_backend<std::mutex>>, addr, info};
+    return {
+      hold<asio_local_ostream_log_backend<std::mutex, log_data_format::xml>>,
+      addr,
+      info};
 }
 
-auto make_asio_local_ostream_log_backend_spinlock(
+auto make_asio_local_ostream_xml_log_backend_spinlock(
   string_view addr,
   const log_stream_info& info) -> unique_holder<logger_backend> {
-    return {hold<asio_local_ostream_log_backend<spinlock>>, addr, info};
+    return {
+      hold<asio_local_ostream_log_backend<spinlock, log_data_format::xml>>,
+      addr,
+      info};
 }
 
-auto make_asio_tcpipv4_ostream_log_backend_mutex(
+auto make_asio_tcpipv4_ostream_xml_log_backend_mutex(
   string_view addr,
   const log_stream_info& info) -> unique_holder<logger_backend> {
-    return {hold<asio_tcpipv4_ostream_log_backend<std::mutex>>, addr, info};
+    return {
+      hold<asio_tcpipv4_ostream_log_backend<std::mutex, log_data_format::xml>>,
+      addr,
+      info};
 }
 
-auto make_asio_tcpipv4_ostream_log_backend_spinlock(
+auto make_asio_tcpipv4_ostream_xml_log_backend_spinlock(
   string_view addr,
   const log_stream_info& info) -> unique_holder<logger_backend> {
-    return {hold<asio_tcpipv4_ostream_log_backend<spinlock>>, addr, info};
+    return {
+      hold<asio_tcpipv4_ostream_log_backend<spinlock, log_data_format::xml>>,
+      addr,
+      info};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

@@ -23,7 +23,8 @@ import :backend;
 namespace eagine {
 //------------------------------------------------------------------------------
 template <typename Lockable, typename Derived>
-class fast_xml_log_backend : public logger_backend {
+class formatted_log_backend<Lockable, Derived, log_data_format::xml>
+  : public logger_backend {
     auto self() noexcept -> Derived& {
         return *static_cast<Derived*>(this);
     }
@@ -103,7 +104,7 @@ class fast_xml_log_backend : public logger_backend {
     }
 
 public:
-    fast_xml_log_backend(const log_stream_info& info) noexcept
+    formatted_log_backend(const log_stream_info& info) noexcept
       : _session_identity{info.session_identity}
       , _log_identity{info.log_identity}
       , _min_severity{info.min_severity}
@@ -111,10 +112,10 @@ public:
         _buffer.reserve(1024);
     }
 
-    fast_xml_log_backend(fast_xml_log_backend&&) = delete;
-    fast_xml_log_backend(const fast_xml_log_backend&) = delete;
-    auto operator=(fast_xml_log_backend&&) = delete;
-    auto operator=(const fast_xml_log_backend&) = delete;
+    formatted_log_backend(formatted_log_backend&&) = delete;
+    formatted_log_backend(const formatted_log_backend&) = delete;
+    auto operator=(formatted_log_backend&&) = delete;
+    auto operator=(const formatted_log_backend&) = delete;
 
     auto allocator() noexcept -> memory::shared_byte_allocator final {
         return _alloc;

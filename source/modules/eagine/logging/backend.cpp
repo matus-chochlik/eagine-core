@@ -65,6 +65,15 @@ constexpr auto enumerator_mapping(
        {"fatal", log_event_severity::fatal}}};
 }
 //------------------------------------------------------------------------------
+/// @brief Log data format.
+/// @ingroup logging
+export enum class log_data_format : std::uint8_t {
+    /// @brief XML format.
+    xml,
+    /// @brief JSON format.
+    json
+};
+//------------------------------------------------------------------------------
 /// @brief Structure used to supply initial log stream information to a logger.
 /// @ingroup logging
 export struct log_stream_info {
@@ -370,26 +379,29 @@ export struct logger_backend : interface<logger_backend> {
     virtual void finish_log() noexcept = 0;
 };
 //------------------------------------------------------------------------------
+template <typename Lockable, typename Derived, log_data_format>
+class formatted_log_backend;
+//------------------------------------------------------------------------------
 // backend getters
 //------------------------------------------------------------------------------
 export auto make_null_log_backend() -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
-export auto make_asio_local_ostream_log_backend_mutex(const log_stream_info&)
+export auto make_asio_local_ostream_xml_log_backend_mutex(const log_stream_info&)
   -> unique_holder<logger_backend>;
-export auto make_asio_local_ostream_log_backend_spinlock(const log_stream_info&)
-  -> unique_holder<logger_backend>;
-
-export auto make_asio_local_ostream_log_backend_mutex(
-  string_view addr,
-  const log_stream_info&) -> unique_holder<logger_backend>;
-export auto make_asio_local_ostream_log_backend_spinlock(
-  string_view addr,
+export auto make_asio_local_ostream_xml_log_backend_spinlock(
   const log_stream_info&) -> unique_holder<logger_backend>;
 
-export auto make_asio_tcpipv4_ostream_log_backend_mutex(
+export auto make_asio_local_ostream_xml_log_backend_mutex(
   string_view addr,
   const log_stream_info&) -> unique_holder<logger_backend>;
-export auto make_asio_tcpipv4_ostream_log_backend_spinlock(
+export auto make_asio_local_ostream_xml_log_backend_spinlock(
+  string_view addr,
+  const log_stream_info&) -> unique_holder<logger_backend>;
+
+export auto make_asio_tcpipv4_ostream_xml_log_backend_mutex(
+  string_view addr,
+  const log_stream_info&) -> unique_holder<logger_backend>;
+export auto make_asio_tcpipv4_ostream_xml_log_backend_spinlock(
   string_view addr,
   const log_stream_info&) -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------

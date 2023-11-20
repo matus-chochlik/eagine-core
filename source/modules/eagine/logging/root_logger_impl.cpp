@@ -61,15 +61,15 @@ auto root_logger_choose_backend(
             return make_null_log_backend();
         } else if(arg.is_long_tag("use-cerr-log")) {
             if(use_spinlock) {
-                return {hold<ostream_log_backend<spinlock>>, std::cerr, info};
+                return {
+                  hold<ostream_log_backend<spinlock, log_data_format::xml>>,
+                  std::cerr,
+                  info};
             } else {
-                return {hold<ostream_log_backend<std::mutex>>, std::cerr, info};
-            }
-        } else if(arg.is_long_tag("use-cout-log")) {
-            if(use_spinlock) {
-                return {hold<ostream_log_backend<spinlock>>, std::cout, info};
-            } else {
-                return {hold<ostream_log_backend<std::mutex>>, std::cout, info};
+                return {
+                  hold<ostream_log_backend<std::mutex, log_data_format::xml>>,
+                  std::cerr,
+                  info};
             }
         } else if(arg.is_long_tag("use-syslog")) {
             if(use_spinlock) {
@@ -86,10 +86,10 @@ auto root_logger_choose_backend(
                 nw_addr = *env_var;
             }
             if(use_spinlock) {
-                return make_asio_tcpipv4_ostream_log_backend_spinlock(
+                return make_asio_tcpipv4_ostream_xml_log_backend_spinlock(
                   nw_addr, info);
             } else {
-                return make_asio_tcpipv4_ostream_log_backend_mutex(
+                return make_asio_tcpipv4_ostream_xml_log_backend_mutex(
                   nw_addr, info);
             }
         } else if(arg.is_long_tag("use-asio-log")) {
@@ -101,9 +101,11 @@ auto root_logger_choose_backend(
                 path = *env_var;
             }
             if(use_spinlock) {
-                return make_asio_local_ostream_log_backend_spinlock(path, info);
+                return make_asio_local_ostream_xml_log_backend_spinlock(
+                  path, info);
             } else {
-                return make_asio_local_ostream_log_backend_mutex(path, info);
+                return make_asio_local_ostream_xml_log_backend_mutex(
+                  path, info);
             }
         }
     }
