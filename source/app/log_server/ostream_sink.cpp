@@ -21,6 +21,12 @@ public:
     ostream_sink(stream_id_t id, shared_holder<ostream_output> parent) noexcept;
 
     auto id() const noexcept -> stream_id_t;
+    auto root() const noexcept -> string_view;
+    auto time_since_start(const auto&) const noexcept
+      -> std::chrono::microseconds;
+    auto time_since_prev(const auto&) const noexcept
+      -> std::chrono::microseconds;
+
     void begin(const begin_info&) noexcept final;
     void consume(const message_info&) noexcept final;
     void finish(const finish_info&) noexcept final;
@@ -28,11 +34,28 @@ public:
 private:
     const stream_id_t _id;
     shared_holder<ostream_output> _parent;
+    std::chrono::duration<float> _prev_offs{};
     begin_info _begin{};
 };
 //------------------------------------------------------------------------------
 auto ostream_sink::id() const noexcept -> stream_id_t {
     return _id;
+}
+//------------------------------------------------------------------------------
+auto ostream_sink::root() const noexcept -> string_view {
+    // TODO: fetch and return the actual root logger name
+    return "RootLogger";
+}
+//------------------------------------------------------------------------------
+auto ostream_sink::time_since_start(const auto& info) const noexcept
+  -> std::chrono::microseconds {
+    return std::chrono::duration_cast<std::chrono::microseconds>(info.offset);
+}
+//------------------------------------------------------------------------------
+auto ostream_sink::time_since_prev(const auto& info) const noexcept
+  -> std::chrono::microseconds {
+    return std::chrono::duration_cast<std::chrono::microseconds>(
+      info.offset - _prev_offs);
 }
 //------------------------------------------------------------------------------
 // factory / output
@@ -184,17 +207,16 @@ void ostream_sink::begin(const begin_info& info) noexcept {
 void ostream_output::consume(
   const ostream_sink& s,
   const message_info& info) noexcept {
-    _conn_I(s) << '\n';
     _conn_Z(s) << "━┑";
-    _output << padded_to(9, {});
+    _output << padded_to(10, format_reltime(s.time_since_start(info)));
     _output << "│";
-    _output << padded_to(9, {});
+    _output << padded_to(10, format_reltime(s.time_since_prev(info)));
     _output << "│";
-    _output << padded_to(9, {});
+    _output << padded_to(9, info.severity);
     _output << "│";
-    _output << padded_to(10, {});
+    _output << padded_to(10, s.root());
     _output << "│";
-    _output << padded_to(10, {info.source});
+    _output << padded_to(10, info.source);
     _output << "│";
     if(not info.tag.empty()) {
         _output << padded_to(10, info.tag);
@@ -204,30 +226,37 @@ void ostream_output::consume(
     _output << "│";
     _output << '\n';
     if(info.tag.empty()) {
-        _conn_I(s) << " ├─────────┴─────────┴─────────┴"
+        _conn_I(s) << " ├──────────┴──────────┴─────────┴"
                       "──────────┴──────────┴────────────╯\n";
     } else {
-        _conn_I(s) << " ├─────────┴─────────┴─────────┴"
+        _conn_I(s) << " ├──────────┴──────────┴─────────┴"
                       "──────────┴──────────┴──────────┴────────────╯\n";
     }
+    _conn_I(s) << " ╰─┤";
+    _output << format_message(info);
+    _output << '\n';
 }
 //------------------------------------------------------------------------------
 void ostream_sink::consume(const message_info& info) noexcept {
     _parent->consume(*this, info);
+    _prev_offs = info.offset;
 }
 //------------------------------------------------------------------------------
 void ostream_output::finish(
   const ostream_sink& s,
   const finish_info& info) noexcept {
-    _conn_I(s) << " ╭─────────┬──────────┬────────────┬─────────╮\n";
-    _conn_L(s) << "         │          │closing log │";
+    _conn_I(s) << " ╭──────────┬──────────┬────────────┬─────────╮\n";
+    _conn_L(s) << padded_to(10, format_reltime(s.time_since_start(info)));
+    _output << "│";
+    _output << padded_to(10, format_reltime(s.time_since_prev(info)));
+    _output << "│ closing log│";
     if(info.clean) {
         _output << " success ";
     } else {
         _output << " failed  ";
     }
     _output << "│\n";
-    _conn_S(s) << " ╰─────────┴──────────┴────────────┴─────────╯\n";
+    _conn_S(s) << " ╰──────────┴──────────┴────────────┴─────────╯\n";
     _conn_s(s) << '\n';
     _streams.erase(s.id());
 }

@@ -9,6 +9,13 @@
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
+auto format_message(const message_info& info) noexcept -> std::string {
+    // TODO: actually format the message from format and args
+    return info.format;
+}
+//------------------------------------------------------------------------------
+// factory functions
+//------------------------------------------------------------------------------
 auto make_sink_factory(main_ctx& ctx) noexcept
   -> shared_holder<stream_sink_factory> {
     return make_ostream_sink_factory(ctx);

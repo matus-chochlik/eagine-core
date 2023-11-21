@@ -263,8 +263,8 @@ public:
       const log_event_severity severity,
       const string_view format) noexcept -> bool final {
         try {
-            const auto now = std::chrono::steady_clock::now();
-            const auto sec = std::chrono::duration<float>(now - _start);
+            const auto now{std::chrono::steady_clock::now()};
+            const auto sec{std::chrono::duration<float>(now - _start)};
             const auto severity_name{enumerator_name(severity)};
             const auto source_name{source.name()};
             const auto tag_name{tag.name()};
@@ -440,8 +440,13 @@ public:
 
     void finish_log() noexcept final {
         try {
+            const auto now{std::chrono::steady_clock::now()};
+            const auto sec{std::chrono::duration<float>(now - _start)};
             const std::lock_guard<Lockable> lock{_lockable};
-            _add(R"(,{"t":"end"}])");
+            _add(R"(,{"t":"end")");
+            _add(R"(,"ts":)");
+            _add(sec.count());
+            _add(R"(}])");
             _flush(true);
         } catch(...) {
         }

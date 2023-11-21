@@ -24,11 +24,15 @@ struct begin_info {
 struct message_info {
     std::chrono::duration<float> offset;
     std::string format;
+    std::string severity;
     std::string source;
     std::string tag;
 };
 //------------------------------------------------------------------------------
+auto format_message(const message_info&) noexcept -> std::string;
+//------------------------------------------------------------------------------
 struct finish_info {
+    std::chrono::duration<float> offset;
     bool clean{false};
 };
 //------------------------------------------------------------------------------

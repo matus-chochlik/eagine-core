@@ -16,7 +16,7 @@ auto format_reltime(std::chrono::microseconds t) noexcept -> std::string {
         return "0";
     }
     if(t < milliseconds{10}) {
-        return to_string(t.count()) + "μs";
+        return to_string(t.count()) + "us";
     }
     if(t < seconds{10}) {
         return to_string(duration_cast<milliseconds>(t).count()) + "ms";
@@ -40,16 +40,27 @@ auto format_reltime(std::chrono::microseconds t) noexcept -> std::string {
            to_string(duration_cast<days>(t).count() % 7) + "d";
 }
 //------------------------------------------------------------------------------
-auto padded_to(std::size_t l, const std::string& s) noexcept -> std::string {
-    if(l < s.size()) {
-        return s.substr(l);
+auto operator<<(std::ostream& output, const string_padded_to& s) noexcept
+  -> std::ostream& {
+    output << std::string(std_size(s.before), ' ');
+    output << s.str;
+    output << std::string(std_size(s.after), ' ');
+    return output;
+}
+//------------------------------------------------------------------------------
+auto padded_to(std::size_t l, const string_view s) noexcept
+  -> string_padded_to {
+    const auto sl{span_size(l)};
+    const auto ss{s.size()}; // TODO: count "glyphs" not chars here
+    if(sl < ss) {
+        return {.str = head(s, sl)};
     }
-    if(l > s.size()) {
-        const auto a{(l - s.size()) / 2};
-        const auto b{l - a - s.size()};
-        return std::string(b, ' ') + s + std::string(a, ' ');
+    if(sl > s.size()) {
+        const auto a{(sl - ss) / 2};
+        const auto b{sl - ss - a};
+        return {.str = s, .before = b, .after = a};
     }
-    return s;
+    return {.str = s};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::logs

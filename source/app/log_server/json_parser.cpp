@@ -59,7 +59,9 @@ public:
 private:
     void _handle_begin_attr(const string_view, const string_view) noexcept;
     void _handle_message_attr(const string_view, const string_view) noexcept;
+    void _handle_finish_attr(const string_view, const string_view) noexcept;
     void _handle_entry_attr(const string_view, const string_view) noexcept;
+    void _handle_entry_attr(const string_view, const float) noexcept;
 
     begin_info _begin{};
     message_info _message{};
@@ -98,7 +100,16 @@ void json_data_parser::_handle_message_attr(
         assign_to(value, _message.source);
     } else if(attr == "tag") {
         assign_to(value, _message.tag);
+    } else if(attr == "lvl") {
+        assign_to(value, _message.severity);
     }
+}
+//------------------------------------------------------------------------------
+void json_data_parser::_handle_finish_attr(
+  const string_view attr,
+  const string_view value) noexcept {
+    (void)attr;
+    (void)value;
 }
 //------------------------------------------------------------------------------
 void json_data_parser::_handle_entry_attr(
@@ -111,8 +122,28 @@ void json_data_parser::_handle_entry_attr(
         case json_data_kind::message:
             _handle_message_attr(attr, value);
             break;
+        case json_data_kind::finish:
+            _handle_finish_attr(attr, value);
+            break;
         default:
             break;
+    }
+}
+//------------------------------------------------------------------------------
+void json_data_parser::_handle_entry_attr(
+  const string_view attr,
+  const float value) noexcept {
+    if(attr == "ts") {
+        switch(_current) {
+            case json_data_kind::message:
+                _message.offset = std::chrono::duration<float>(value);
+                break;
+            case json_data_kind::finish:
+                _finish.offset = std::chrono::duration<float>(value);
+                break;
+            default:
+                break;
+        }
     }
 }
 //------------------------------------------------------------------------------
@@ -147,15 +178,17 @@ void json_data_parser::add(
 void json_data_parser::add(
   const basic_string_path& path,
   span<const float> data) noexcept {
-    (void)path;
-    (void)data;
+    if(data and path.size() == 2) {
+        _handle_entry_attr(path.back(), *data);
+    }
 }
 //------------------------------------------------------------------------------
 void json_data_parser::add(
   const basic_string_path& path,
   span<const double> data) noexcept {
-    (void)path;
-    (void)data;
+    if(data and path.size() == 2) {
+        _handle_entry_attr(path.back(), float(*data));
+    }
 }
 //------------------------------------------------------------------------------
 void json_data_parser::add(
