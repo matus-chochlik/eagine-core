@@ -14,6 +14,7 @@ import std;
 namespace eagine::logs {
 //------------------------------------------------------------------------------
 auto format_reltime(std::chrono::microseconds) noexcept -> std::string;
+auto format_instance(std::uint64_t, std::string&) noexcept -> std::string&;
 //------------------------------------------------------------------------------
 struct string_padded_to {
     string_view str;

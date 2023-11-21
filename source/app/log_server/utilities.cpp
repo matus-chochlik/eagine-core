@@ -40,6 +40,11 @@ auto format_reltime(std::chrono::microseconds t) noexcept -> std::string {
            to_string(duration_cast<days>(t).count() % 7) + "d";
 }
 //------------------------------------------------------------------------------
+auto format_instance(std::uint64_t i, std::string& s) noexcept -> std::string& {
+    i = integer_hash<std::uint64_t, std::uint64_t>(i);
+    return base64_encode(as_bytes(view_one(i)), s).value_or(s);
+}
+//------------------------------------------------------------------------------
 auto operator<<(std::ostream& output, const string_padded_to& s) noexcept
   -> std::ostream& {
     output << std::string(std_size(s.before), ' ');

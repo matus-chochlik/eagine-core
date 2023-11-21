@@ -35,6 +35,7 @@ private:
     const stream_id_t _id;
     shared_holder<ostream_output> _parent;
     std::chrono::duration<float> _prev_offs{};
+    std::string _root;
     begin_info _begin{};
 };
 //------------------------------------------------------------------------------
@@ -43,8 +44,7 @@ auto ostream_sink::id() const noexcept -> stream_id_t {
 }
 //------------------------------------------------------------------------------
 auto ostream_sink::root() const noexcept -> string_view {
-    // TODO: fetch and return the actual root logger name
-    return "RootLogger";
+    return {_root};
 }
 //------------------------------------------------------------------------------
 auto ostream_sink::time_since_start(const auto& info) const noexcept
@@ -88,7 +88,9 @@ private:
     auto _get_stream_id() noexcept -> std::uintmax_t;
 
     std::ostream& _output;
+    stream_id_t _id_seq{0};
     flat_map<stream_id_t, ostream_context> _streams;
+    std::string _temp;
 };
 //------------------------------------------------------------------------------
 ostream_sink::ostream_sink(
@@ -125,7 +127,7 @@ auto ostream_output::_conn_L(const ostream_sink& si) noexcept -> std::ostream& {
         } else if(conn) {
             _output << " │";
         } else {
-            _output << "  ";
+            _output << "━━";
         }
     }
     _output << "━┥";
@@ -140,9 +142,9 @@ auto ostream_output::_conn_S(const ostream_sink& si) noexcept -> std::ostream& {
             _output << "  ";
             conn = false;
         } else if(conn) {
-            _output << "╭╯";
-        } else {
             _output << " │";
+        } else {
+            _output << "╭╯";
         }
     }
     return _output;
@@ -156,9 +158,9 @@ auto ostream_output::_conn_s(const ostream_sink& si) noexcept -> std::ostream& {
             _output << " ";
             conn = false;
         } else if(conn) {
-            _output << "╭╯";
-        } else {
             _output << " │";
+        } else {
+            _output << "╭╯";
         }
     }
     return _output;
@@ -174,7 +176,7 @@ auto ostream_output::_conn_Z(const ostream_sink& si) noexcept -> std::ostream& {
         } else if(conn) {
             _output << " │";
         } else {
-            _output << "  ";
+            _output << "━━";
         }
     }
     return _output;
@@ -222,7 +224,7 @@ void ostream_output::consume(
         _output << padded_to(10, info.tag);
         _output << "│";
     }
-    _output << padded_to(12, {});
+    _output << padded_to(12, format_instance(info.instance, _temp));
     _output << "│";
     _output << '\n';
     if(info.tag.empty()) {
@@ -238,6 +240,9 @@ void ostream_output::consume(
 }
 //------------------------------------------------------------------------------
 void ostream_sink::consume(const message_info& info) noexcept {
+    if(_root.empty()) {
+        _root = info.source;
+    }
     _parent->consume(*this, info);
     _prev_offs = info.offset;
 }
@@ -266,10 +271,7 @@ void ostream_sink::finish(const finish_info& info) noexcept {
 }
 //------------------------------------------------------------------------------
 auto ostream_output::_get_stream_id() noexcept -> stream_id_t {
-    if(not _streams.empty()) {
-        return std::get<0>(_streams.back()) + 1U;
-    }
-    return 1U;
+    return ++_id_seq;
 }
 //------------------------------------------------------------------------------
 auto ostream_output::make_stream() noexcept -> unique_holder<stream_sink> {

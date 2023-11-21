@@ -60,8 +60,10 @@ private:
     void _handle_begin_attr(const string_view, const string_view) noexcept;
     void _handle_message_attr(const string_view, const string_view) noexcept;
     void _handle_finish_attr(const string_view, const string_view) noexcept;
-    void _handle_entry_attr(const string_view, const string_view) noexcept;
-    void _handle_entry_attr(const string_view, const float) noexcept;
+    void _handle_entry_attr_s(const string_view, const string_view) noexcept;
+    void _handle_entry_attr_f(const string_view, const float) noexcept;
+    void _handle_entry_attr_i(const string_view, const std::int64_t) noexcept;
+    void _handle_entry_attr_u(const string_view, const std::uint64_t) noexcept;
 
     begin_info _begin{};
     message_info _message{};
@@ -112,7 +114,7 @@ void json_data_parser::_handle_finish_attr(
     (void)value;
 }
 //------------------------------------------------------------------------------
-void json_data_parser::_handle_entry_attr(
+void json_data_parser::_handle_entry_attr_s(
   const string_view attr,
   const string_view value) noexcept {
     switch(_current) {
@@ -130,7 +132,7 @@ void json_data_parser::_handle_entry_attr(
     }
 }
 //------------------------------------------------------------------------------
-void json_data_parser::_handle_entry_attr(
+void json_data_parser::_handle_entry_attr_f(
   const string_view attr,
   const float value) noexcept {
     if(attr == "ts") {
@@ -140,6 +142,34 @@ void json_data_parser::_handle_entry_attr(
                 break;
             case json_data_kind::finish:
                 _finish.offset = std::chrono::duration<float>(value);
+                break;
+            default:
+                break;
+        }
+    }
+}
+//------------------------------------------------------------------------------
+void json_data_parser::_handle_entry_attr_i(
+  const string_view attr,
+  const std::int64_t value) noexcept {
+    if(attr == "iid") {
+        switch(_current) {
+            case json_data_kind::message:
+                _message.instance = limit_cast<std::int64_t>(value);
+                break;
+            default:
+                break;
+        }
+    }
+}
+//------------------------------------------------------------------------------
+void json_data_parser::_handle_entry_attr_u(
+  const string_view attr,
+  const std::uint64_t value) noexcept {
+    if(attr == "iid") {
+        switch(_current) {
+            case json_data_kind::message:
+                _message.instance = value;
                 break;
             default:
                 break;
@@ -164,22 +194,24 @@ void json_data_parser::add(
 void json_data_parser::add(
   const basic_string_path& path,
   span<const std::int64_t> data) noexcept {
-    (void)path;
-    (void)data;
+    if(data and path.size() == 2) {
+        _handle_entry_attr_i(path.back(), *data);
+    }
 }
 //------------------------------------------------------------------------------
 void json_data_parser::add(
   const basic_string_path& path,
   span<const std::uint64_t> data) noexcept {
-    (void)path;
-    (void)data;
+    if(data and path.size() == 2) {
+        _handle_entry_attr_u(path.back(), *data);
+    }
 }
 //------------------------------------------------------------------------------
 void json_data_parser::add(
   const basic_string_path& path,
   span<const float> data) noexcept {
     if(data and path.size() == 2) {
-        _handle_entry_attr(path.back(), *data);
+        _handle_entry_attr_f(path.back(), *data);
     }
 }
 //------------------------------------------------------------------------------
@@ -187,7 +219,7 @@ void json_data_parser::add(
   const basic_string_path& path,
   span<const double> data) noexcept {
     if(data and path.size() == 2) {
-        _handle_entry_attr(path.back(), float(*data));
+        _handle_entry_attr_f(path.back(), float(*data));
     }
 }
 //------------------------------------------------------------------------------
@@ -205,7 +237,7 @@ void json_data_parser::add(
                 _current = json_data_kind::finish;
             }
         } else {
-            _handle_entry_attr(path.back(), *data);
+            _handle_entry_attr_s(path.back(), *data);
         }
     }
 }
@@ -226,6 +258,7 @@ void json_data_parser::finish_object(const basic_string_path& path) noexcept {
                 _stream->consume(_message);
                 break;
             case json_data_kind::finish:
+                _finish.clean = true;
                 _stream->finish(_finish);
                 break;
             default:

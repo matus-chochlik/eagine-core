@@ -27,6 +27,7 @@ struct message_info {
     std::string severity;
     std::string source;
     std::string tag;
+    std::uint64_t instance{0};
 };
 //------------------------------------------------------------------------------
 auto format_message(const message_info&) noexcept -> std::string;
