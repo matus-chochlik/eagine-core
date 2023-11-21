@@ -16,7 +16,7 @@ namespace eagine::logs {
 // sink
 //------------------------------------------------------------------------------
 struct begin_info {
-    std::chrono::system_clock::time_point start;
+    std::chrono::system_clock::time_point start{};
     std::string session;
     std::string identity;
 };
@@ -32,15 +32,20 @@ struct message_info {
 //------------------------------------------------------------------------------
 auto format_message(const message_info&) noexcept -> std::string;
 //------------------------------------------------------------------------------
+struct heartbeat_info {
+    std::chrono::duration<float> offset;
+};
+//------------------------------------------------------------------------------
 struct finish_info {
     std::chrono::duration<float> offset;
     bool clean{false};
 };
 //------------------------------------------------------------------------------
 struct stream_sink : interface<stream_sink> {
-    virtual void begin(const begin_info&) noexcept = 0;
+    virtual void consume(const begin_info&) noexcept = 0;
     virtual void consume(const message_info&) noexcept = 0;
-    virtual void finish(const finish_info&) noexcept = 0;
+    virtual void consume(const heartbeat_info&) noexcept = 0;
+    virtual void consume(const finish_info&) noexcept = 0;
 };
 //------------------------------------------------------------------------------
 // sink factory

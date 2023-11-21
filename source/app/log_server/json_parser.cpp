@@ -252,14 +252,14 @@ void json_data_parser::finish_object(const basic_string_path& path) noexcept {
     if(path.size() == 1) {
         switch(_current) {
             case json_data_kind::begin:
-                _stream->begin(_begin);
+                _stream->consume(_begin);
                 break;
             case json_data_kind::message:
                 _stream->consume(_message);
                 break;
             case json_data_kind::finish:
                 _finish.clean = true;
-                _stream->finish(_finish);
+                _stream->consume(_finish);
                 break;
             default:
                 break;

@@ -5,14 +5,23 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+
 #include "interfaces.hpp"
 #include "internal_backend.hpp"
+#include <cassert>
 
 namespace eagine {
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
-    auto reader{logs::make_reader(ctx, logs::make_sink_factory(ctx))};
-    return reader->run() ? 0 : 1;
+    if(auto sinks{logs::make_sink_factory(ctx)}) {
+        logs::internal_backend::set_sink(sinks->make_stream());
+        if(auto reader{logs::make_reader(ctx, sinks)}) {
+            if(reader->run()) {
+                return 0;
+            }
+        }
+    }
+    return 1;
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

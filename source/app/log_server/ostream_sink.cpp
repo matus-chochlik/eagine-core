@@ -27,9 +27,10 @@ public:
     auto time_since_prev(const auto&) const noexcept
       -> std::chrono::microseconds;
 
-    void begin(const begin_info&) noexcept final;
+    void consume(const begin_info&) noexcept final;
     void consume(const message_info&) noexcept final;
-    void finish(const finish_info&) noexcept final;
+    void consume(const heartbeat_info&) noexcept final;
+    void consume(const finish_info&) noexcept final;
 
 private:
     const stream_id_t _id;
@@ -72,9 +73,10 @@ public:
     ostream_output(std::ostream& output) noexcept;
     ~ostream_output() noexcept final;
 
-    void begin(const ostream_sink&, const begin_info&) noexcept;
+    void consume(const ostream_sink&, const begin_info&) noexcept;
     void consume(const ostream_sink&, const message_info&) noexcept;
-    void finish(const ostream_sink&, const finish_info&) noexcept;
+    void consume(const ostream_sink&, const heartbeat_info&) noexcept;
+    void consume(const ostream_sink&, const finish_info&) noexcept;
 
     auto make_stream() noexcept -> unique_holder<stream_sink> final;
 
@@ -192,7 +194,7 @@ auto ostream_output::_conn_T(const ostream_sink&) noexcept -> std::ostream& {
     return _output;
 }
 //------------------------------------------------------------------------------
-void ostream_output::begin(
+void ostream_output::consume(
   const ostream_sink& s,
   const begin_info& info) noexcept {
     _conn_I(s) << "   ╭────────────╮\n";
@@ -201,9 +203,9 @@ void ostream_output::begin(
     _streams[s.id()].begin = info;
 }
 //------------------------------------------------------------------------------
-void ostream_sink::begin(const begin_info& info) noexcept {
+void ostream_sink::consume(const begin_info& info) noexcept {
     _begin = info;
-    _parent->begin(*this, info);
+    _parent->consume(*this, info);
 }
 //------------------------------------------------------------------------------
 void ostream_output::consume(
@@ -247,7 +249,15 @@ void ostream_sink::consume(const message_info& info) noexcept {
     _prev_offs = info.offset;
 }
 //------------------------------------------------------------------------------
-void ostream_output::finish(
+void ostream_output::consume(
+  const ostream_sink&,
+  const heartbeat_info&) noexcept {}
+//------------------------------------------------------------------------------
+void ostream_sink::consume(const heartbeat_info& info) noexcept {
+    _parent->consume(*this, info);
+}
+//------------------------------------------------------------------------------
+void ostream_output::consume(
   const ostream_sink& s,
   const finish_info& info) noexcept {
     _conn_I(s) << " ╭──────────┬──────────┬────────────┬─────────╮\n";
@@ -266,8 +276,8 @@ void ostream_output::finish(
     _streams.erase(s.id());
 }
 //------------------------------------------------------------------------------
-void ostream_sink::finish(const finish_info& info) noexcept {
-    _parent->finish(*this, info);
+void ostream_sink::consume(const finish_info& info) noexcept {
+    _parent->consume(*this, info);
 }
 //------------------------------------------------------------------------------
 auto ostream_output::_get_stream_id() noexcept -> stream_id_t {

@@ -21,8 +21,16 @@ public:
     auto operator=(const internal_backend&) = delete;
     ~internal_backend() noexcept final;
 
+    static void set_sink(unique_holder<stream_sink>) noexcept;
+
 private:
     static auto _single_instance_ptr() -> internal_backend*&;
+
+    void _set_sink(unique_holder<stream_sink>) noexcept;
+
+    void _dispatch(auto&& entry) noexcept;
+
+    auto _offset() const noexcept -> std::chrono::duration<float>;
 
     auto entry_backend(log_event_severity) noexcept -> logger_backend* final;
 
@@ -119,6 +127,13 @@ private:
       logger_instance_id,
       identifier,
       float) noexcept final;
+
+    const std::chrono::steady_clock::time_point _start{
+      std::chrono::steady_clock::now()};
+    unique_holder<stream_sink> _sink;
+    std::vector<
+      std::variant<begin_info, message_info, heartbeat_info, finish_info>>
+      _backlog;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine::logs

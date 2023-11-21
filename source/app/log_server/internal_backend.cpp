@@ -25,6 +25,33 @@ internal_backend::~internal_backend() noexcept {
     _single_instance_ptr() = nullptr;
 }
 //------------------------------------------------------------------------------
+void internal_backend::_set_sink(unique_holder<stream_sink> sink) noexcept {
+    for(const auto& entry : _backlog) {
+        std::visit([&](const auto& info) { sink->consume(info); }, entry);
+    }
+    _backlog.clear();
+    _sink = std::move(sink);
+}
+//------------------------------------------------------------------------------
+void internal_backend::set_sink(unique_holder<stream_sink> stream) noexcept {
+    assert(_single_instance_ptr());
+    _single_instance_ptr()->_set_sink(std::move(stream));
+}
+//------------------------------------------------------------------------------
+void internal_backend::_dispatch(auto&& entry) noexcept {
+    if(_sink) {
+        _sink->consume(entry);
+    } else {
+        _backlog.emplace_back(decltype(entry)(entry));
+    }
+}
+//------------------------------------------------------------------------------
+auto internal_backend::_offset() const noexcept
+  -> std::chrono::duration<float> {
+    return std::chrono::duration_cast<std::chrono::duration<float>>(
+      std::chrono::steady_clock::now() - _start);
+}
+//------------------------------------------------------------------------------
 auto internal_backend::entry_backend(log_event_severity) noexcept
   -> logger_backend* {
     return this;
@@ -38,7 +65,9 @@ auto internal_backend::type_id() noexcept -> identifier {
     return "LogServer";
 }
 //------------------------------------------------------------------------------
-void internal_backend::begin_log() noexcept {}
+void internal_backend::begin_log() noexcept {
+    _dispatch(begin_info{});
+}
 //------------------------------------------------------------------------------
 void internal_backend::time_interval_begin(
   identifier,
@@ -51,33 +80,20 @@ void internal_backend::time_interval_end(
   time_interval_id) noexcept {}
 //------------------------------------------------------------------------------
 void internal_backend::set_description(
-  identifier source,
-  logger_instance_id instance,
-  string_view display_name,
-  string_view description) noexcept {
-    (void)source;
-    (void)instance;
-    (void)display_name;
-    (void)description;
-}
+  [[maybe_unused]] identifier source,
+  [[maybe_unused]] logger_instance_id instance,
+  [[maybe_unused]] string_view display_name,
+  [[maybe_unused]] string_view description) noexcept {}
 //------------------------------------------------------------------------------
 void internal_backend::declare_state(
-  const identifier source,
-  const identifier state_tag,
-  const identifier begin_tag,
-  const identifier end_tag) noexcept {
-    (void)source;
-    (void)state_tag;
-    (void)begin_tag;
-    (void)end_tag;
-}
+  [[maybe_unused]] const identifier source,
+  [[maybe_unused]] const identifier state_tag,
+  [[maybe_unused]] const identifier begin_tag,
+  [[maybe_unused]] const identifier end_tag) noexcept {}
 //------------------------------------------------------------------------------
 void internal_backend::active_state(
-  const identifier source,
-  const identifier state_tag) noexcept {
-    (void)source;
-    (void)state_tag;
-}
+  [[maybe_unused]] const identifier source,
+  [[maybe_unused]] const identifier state_tag) noexcept {}
 //------------------------------------------------------------------------------
 auto internal_backend::begin_message(
   identifier source,
@@ -85,11 +101,13 @@ auto internal_backend::begin_message(
   logger_instance_id instance,
   log_event_severity severity,
   string_view format) noexcept -> bool {
-    (void)source;
-    (void)tag;
-    (void)instance;
-    (void)severity;
-    (void)format;
+    _dispatch(message_info{
+      .offset = _offset(),
+      .format = to_string(format),
+      .severity = to_string(enumerator_name(severity)),
+      .source = source.name().str(),
+      .tag = tag.name().str(),
+      .instance = instance});
     return true;
 }
 //------------------------------------------------------------------------------
@@ -190,9 +208,13 @@ void internal_backend::add_blob(
 //------------------------------------------------------------------------------
 void internal_backend::finish_message() noexcept {}
 //------------------------------------------------------------------------------
-void internal_backend::heartbeat() noexcept {}
+void internal_backend::heartbeat() noexcept {
+    _dispatch(heartbeat_info{.offset = _offset()});
+}
 //------------------------------------------------------------------------------
-void internal_backend::finish_log() noexcept {}
+void internal_backend::finish_log() noexcept {
+    _dispatch(finish_info{.offset = _offset()});
+}
 //------------------------------------------------------------------------------
 void internal_backend::log_chart_sample(
   identifier,
