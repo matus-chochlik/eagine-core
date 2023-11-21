@@ -56,6 +56,8 @@ install(
 	DESTINATION bin
 )
 
+add_subdirectory(log_server)
+
 find_package(Qt5 COMPONENTS Core Widgets Xml Qml Quick)
 if(Qt5_FOUND)
 	set(CMAKE_AUTOMOC ON)

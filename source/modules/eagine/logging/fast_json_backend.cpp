@@ -144,7 +144,7 @@ public:
                 _start.time_since_epoch())
                 .count()};
 
-            _add(R"({"t":"log_start","start_ts_ud":")");
+            _add(R"({"t":"begin","time":")");
             _add(start_tse);
             if(not _session_identity.empty()) {
                 _add(R"(,"session":")");
@@ -441,7 +441,7 @@ public:
     void finish_log() noexcept final {
         try {
             const std::lock_guard<Lockable> lock{_lockable};
-            _add(R"(,{"t":"log_end"}])");
+            _add(R"(,{"t":"end"}])");
             _flush(true);
         } catch(...) {
         }
