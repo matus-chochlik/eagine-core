@@ -369,13 +369,13 @@ public:
             _add(arg.name());
             _add(R"(","t":")");
             _add(tag.name());
-            _add(R"(","min":")");
-            _add(min);
-            _add(R"(","max":")");
-            _add(max);
-            _add(R"(","v":")");
+            _add(R"(","v":)");
             _add(value);
-            _add(R"("})");
+            _add(R"(,"min":)");
+            _add(min);
+            _add(R"(,"max":)");
+            _add(max);
+            _add(R"(})");
         } catch(...) {
         }
     }
@@ -389,9 +389,9 @@ public:
             _add(arg.name());
             _add(R"(","tg":")");
             _add(tag.name());
-            _add(R"(","u":"s","v":")");
+            _add(R"(","u":"s","v":)");
             _add(value.count());
-            _add(R"("})");
+            _add(R"(})");
         } catch(...) {
         }
     }

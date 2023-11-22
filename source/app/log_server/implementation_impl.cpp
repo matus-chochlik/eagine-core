@@ -12,18 +12,41 @@ import eagine.core;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
+// standalone format functions
+//------------------------------------------------------------------------------
+inline auto unformatted(const message_info::arg_info& info) -> std::string {
+    return get_if<std::string>(info.value).value_or("-");
+}
+//------------------------------------------------------------------------------
+auto format_progress(const message_info::arg_info& i, bool) -> std::string {
+    if(const auto val{get_if<float>(i.value)}; val and i.min and i.max) {
+        if(*(i.min) < *(i.max)) {
+            return std::format(
+              "{:.1f}%", 100.F * (*val - *(i.min)) / (*(i.max) - *(i.min)));
+        }
+    }
+    return unformatted(i);
+}
+//------------------------------------------------------------------------------
 // message formatter
 //------------------------------------------------------------------------------
 auto message_formatter::format(
   const message_info::arg_info& info,
-  [[maybe_unused]] bool short_value) noexcept -> std::string {
-    return get_if<std::string>(info.value).value_or("-");
+  bool short_value) noexcept -> std::string {
+    switch(info.tag.value()) {
+        case id_v("MainPrgrss"):
+        case id_v("Progress"):
+            return format_progress(info, short_value);
+        default:
+            break;
+    }
+    return unformatted(info);
 }
 //------------------------------------------------------------------------------
 auto message_formatter::format(const message_info& info) noexcept
   -> std::string {
     const auto translate{[&](string_view name) -> std::optional<std::string> {
-        for(const auto& arg : info.args) {
+        for(auto& arg : info.args) {
             if(arg.name.matches(name)) {
                 return {format(arg, true)};
             }

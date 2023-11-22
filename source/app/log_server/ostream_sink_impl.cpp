@@ -83,7 +83,7 @@ public:
     void consume(
       const ostream_sink&,
       const message_info&,
-      const std::string&) noexcept;
+      message_formatter& formatter) noexcept;
     void consume(const ostream_sink&, const heartbeat_info&) noexcept;
     void consume(const ostream_sink&, const finish_info&) noexcept;
 
@@ -220,7 +220,7 @@ void ostream_sink::consume(const begin_info& info) noexcept {
 void ostream_output::consume(
   const ostream_sink& s,
   const message_info& info,
-  const std::string& message) noexcept {
+  message_formatter& formatter) noexcept {
     _conn_Z(s) << "━┑";
     _output << padded_to(10, format_reltime(s.time_since_start(info)));
     _output << "│";
@@ -247,15 +247,29 @@ void ostream_output::consume(
                       "──────────┴──────────┴──────────┴────────────╯\n";
     }
     _conn_I(s) << " ╰─┤";
-    _output << message;
+    _output << formatter.format(info);
     _output << '\n';
+
+    const auto arg_count{info.args.size()};
+    for(const int ai : integer_range(arg_count)) {
+        _conn_I(s) << "   ";
+        if(ai + 1 == arg_count) {
+            _output << "╰";
+        } else {
+            _output << "├";
+        }
+        const auto& arg{info.args[ai]};
+        _output << "─╼ " << arg.name.name() << ": ";
+        _output << formatter.format(arg, false);
+        _output << '\n';
+    }
 }
 //------------------------------------------------------------------------------
 void ostream_sink::consume(const message_info& info) noexcept {
     if(_root.empty()) {
         _root = info.source;
     }
-    _parent->consume(*this, info, _formatter.format(info));
+    _parent->consume(*this, info, _formatter);
     _prev_offs = info.offset;
 }
 //------------------------------------------------------------------------------

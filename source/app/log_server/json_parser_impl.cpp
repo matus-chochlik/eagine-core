@@ -75,6 +75,11 @@ private:
     void _handle_entry_attr_i(const string_view, const std::int64_t) noexcept;
     void _handle_entry_attr_u(const string_view, const std::uint64_t) noexcept;
 
+    template <typename T>
+    void _handle_val_min_max(
+      const basic_string_path& path,
+      span<const T> data) noexcept;
+
     begin_info _begin{};
     message_info _message{};
     finish_info _finish{};
@@ -209,35 +214,66 @@ void json_data_parser::add(
     (void)data;
 }
 //------------------------------------------------------------------------------
+template <typename T>
+void json_data_parser::_handle_val_min_max(
+  const basic_string_path& path,
+  span<const T> data) noexcept {
+    if(path.like(_atr_pattern) and not _message.args.empty()) {
+        if(path.ends_with("v")) {
+            _message.args.back().value = float(*data);
+        } else if(path.ends_with("min")) {
+            _message.args.back().min = float(*data);
+        } else if(path.ends_with("max")) {
+            _message.args.back().max = float(*data);
+        }
+    }
+}
+//------------------------------------------------------------------------------
 void json_data_parser::add(
   const basic_string_path& path,
   span<const std::int64_t> data) noexcept {
-    if(data and path.size() == 2) {
-        _handle_entry_attr_i(path.back(), *data);
+    if(data) {
+        if(path.size() == 2) {
+            _handle_entry_attr_i(path.back(), *data);
+        } else if(_parsing_message() and path.size() == 4) {
+            _handle_val_min_max(path, data);
+        }
     }
 }
 //------------------------------------------------------------------------------
 void json_data_parser::add(
   const basic_string_path& path,
   span<const std::uint64_t> data) noexcept {
-    if(data and path.size() == 2) {
-        _handle_entry_attr_u(path.back(), *data);
+    if(data) {
+        if(path.size() == 2) {
+            _handle_entry_attr_u(path.back(), *data);
+        } else if(_parsing_message() and path.size() == 4) {
+            _handle_val_min_max(path, data);
+        }
     }
 }
 //------------------------------------------------------------------------------
 void json_data_parser::add(
   const basic_string_path& path,
   span<const float> data) noexcept {
-    if(data and path.size() == 2) {
-        _handle_entry_attr_f(path.back(), *data);
+    if(data) {
+        if(path.size() == 2) {
+            _handle_entry_attr_f(path.back(), *data);
+        } else if(_parsing_message() and path.size() == 4) {
+            _handle_val_min_max(path, data);
+        }
     }
 }
 //------------------------------------------------------------------------------
 void json_data_parser::add(
   const basic_string_path& path,
   span<const double> data) noexcept {
-    if(data and path.size() == 2) {
-        _handle_entry_attr_f(path.back(), float(*data));
+    if(data) {
+        if(path.size() == 2) {
+            _handle_entry_attr_f(path.back(), float(*data));
+        } else if(_parsing_message() and path.size() == 4) {
+            _handle_val_min_max(path, data);
+        }
     }
 }
 //------------------------------------------------------------------------------
