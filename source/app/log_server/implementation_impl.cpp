@@ -52,6 +52,13 @@ auto make_reader(
   main_ctx& ctx,
   shared_holder<stream_sink_factory> factory) noexcept
   -> unique_holder<reader> {
+    if(const auto arg{ctx.args().find("--local")}) {
+        if(arg.next().starts_with("-")) {
+            return make_asio_local_reader(ctx, factory, {});
+        }
+        return make_asio_local_reader(ctx, factory, arg.next().get());
+    }
+
     if(const auto arg{ctx.args().find("--network")}) {
         if(arg.next().starts_with("-")) {
             return make_asio_tcp_ipv4_reader(ctx, factory, {});

@@ -9,6 +9,7 @@ module;
 
 #include <asio/io_context.hpp>
 #include <asio/ip/tcp.hpp>
+#include <asio/local/stream_protocol.hpp>
 #include <asio/signal_set.hpp>
 
 module eagine.core.log_server;
@@ -122,6 +123,36 @@ auto asio_reader_base<Acceptor, Socket>::run() noexcept -> bool {
     }
 }
 //------------------------------------------------------------------------------
+// Unix local reader
+//------------------------------------------------------------------------------
+class asio_local_reader final
+  : public asio_reader_base<
+      asio::local::stream_protocol::acceptor,
+      asio::local::stream_protocol::socket> {
+public:
+    asio_local_reader(
+      main_ctx& ctx,
+      shared_holder<stream_sink_factory> factory,
+      const string_view address) noexcept;
+
+private:
+    auto _get_path(const string_view) noexcept;
+};
+//------------------------------------------------------------------------------
+auto asio_local_reader::_get_path(const string_view path) noexcept {
+    return path ? path : string_view{"/tmp/eagine-xmllog"};
+}
+//------------------------------------------------------------------------------
+asio_local_reader::asio_local_reader(
+  main_ctx& ctx,
+  shared_holder<stream_sink_factory> factory,
+  string_view address) noexcept
+  : asio_reader_base{
+      "ANw4Reader",
+      ctx,
+      std::move(factory),
+      asio::local::stream_protocol::endpoint{_get_path(address)}} {}
+//------------------------------------------------------------------------------
 // TCP/IPv4 reader
 //------------------------------------------------------------------------------
 class asio_tcp_ipv4_reader final
@@ -157,6 +188,13 @@ asio_tcp_ipv4_reader::asio_tcp_ipv4_reader(
       asio::ip::tcp::endpoint{_get_addr(address), _get_port(address)}} {}
 //------------------------------------------------------------------------------
 // make readers
+//------------------------------------------------------------------------------
+auto make_asio_local_reader(
+  main_ctx& ctx,
+  shared_holder<stream_sink_factory> factory,
+  string_view address) noexcept -> unique_holder<reader> {
+    return {hold<asio_local_reader>, ctx, std::move(factory), address};
+}
 //------------------------------------------------------------------------------
 auto make_asio_tcp_ipv4_reader(
   main_ctx& ctx,
