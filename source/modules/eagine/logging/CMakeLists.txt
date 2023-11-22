@@ -123,6 +123,7 @@ eagine_add_module(
 	eagine.core.logging
 	SOURCES
 		null_backend
+		ostream_backend
 		asio_backend
 		syslog_backend
 		proxy_backend

@@ -158,20 +158,6 @@ template <typename Lockable, log_data_format format>
 using asio_tcpipv4_ostream_log_backend =
   asio_ostream_log_backend<asio_tcpipv4_ostream_log_connection, Lockable, format>;
 //------------------------------------------------------------------------------
-auto make_asio_local_ostream_xml_log_backend_mutex(const log_stream_info& info)
-  -> unique_holder<logger_backend> {
-    return {
-      hold<asio_local_ostream_log_backend<std::mutex, log_data_format::xml>>,
-      info};
-}
-
-auto make_asio_local_ostream_xml_log_backend_spinlock(
-  const log_stream_info& info) -> unique_holder<logger_backend> {
-    return {
-      hold<asio_local_ostream_log_backend<spinlock, log_data_format::xml>>,
-      info};
-}
-
 auto make_asio_local_ostream_xml_log_backend_mutex(
   string_view addr,
   const log_stream_info& info) -> unique_holder<logger_backend> {
@@ -206,6 +192,94 @@ auto make_asio_tcpipv4_ostream_xml_log_backend_spinlock(
       hold<asio_tcpipv4_ostream_log_backend<spinlock, log_data_format::xml>>,
       addr,
       info};
+}
+//------------------------------------------------------------------------------
+auto make_asio_local_ostream_json_log_backend_mutex(
+  string_view addr,
+  const log_stream_info& info) -> unique_holder<logger_backend> {
+    return {
+      hold<asio_local_ostream_log_backend<std::mutex, log_data_format::json>>,
+      addr,
+      info};
+}
+
+auto make_asio_local_ostream_json_log_backend_spinlock(
+  string_view addr,
+  const log_stream_info& info) -> unique_holder<logger_backend> {
+    return {
+      hold<asio_local_ostream_log_backend<spinlock, log_data_format::json>>,
+      addr,
+      info};
+}
+
+auto make_asio_tcpipv4_ostream_json_log_backend_mutex(
+  string_view addr,
+  const log_stream_info& info) -> unique_holder<logger_backend> {
+    return {
+      hold<asio_tcpipv4_ostream_log_backend<std::mutex, log_data_format::json>>,
+      addr,
+      info};
+}
+
+auto make_asio_tcpipv4_ostream_json_log_backend_spinlock(
+  string_view addr,
+  const log_stream_info& info) -> unique_holder<logger_backend> {
+    return {
+      hold<asio_tcpipv4_ostream_log_backend<spinlock, log_data_format::json>>,
+      addr,
+      info};
+}
+//------------------------------------------------------------------------------
+auto make_asio_local_ostream_log_backend(
+  string_view addr,
+  const log_stream_info& info,
+  const log_data_format format,
+  bool use_spinlock) -> unique_holder<logger_backend> {
+    if(use_spinlock) {
+        switch(format) {
+            case log_data_format::json:
+                return make_asio_local_ostream_json_log_backend_spinlock(
+                  addr, info);
+            case log_data_format::xml:
+                return make_asio_local_ostream_xml_log_backend_spinlock(
+                  addr, info);
+        }
+    } else {
+        switch(format) {
+            case log_data_format::json:
+                return make_asio_local_ostream_json_log_backend_mutex(
+                  addr, info);
+            case log_data_format::xml:
+                return make_asio_local_ostream_xml_log_backend_mutex(
+                  addr, info);
+        }
+    }
+}
+//------------------------------------------------------------------------------
+auto make_asio_tcpipv4_ostream_log_backend(
+  string_view addr,
+  const log_stream_info& info,
+  const log_data_format format,
+  bool use_spinlock) -> unique_holder<logger_backend> {
+    if(use_spinlock) {
+        switch(format) {
+            case log_data_format::json:
+                return make_asio_tcpipv4_ostream_json_log_backend_spinlock(
+                  addr, info);
+            case log_data_format::xml:
+                return make_asio_tcpipv4_ostream_xml_log_backend_spinlock(
+                  addr, info);
+        }
+    } else {
+        switch(format) {
+            case log_data_format::json:
+                return make_asio_tcpipv4_ostream_json_log_backend_mutex(
+                  addr, info);
+            case log_data_format::xml:
+                return make_asio_tcpipv4_ostream_xml_log_backend_mutex(
+                  addr, info);
+        }
+    }
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

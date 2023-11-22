@@ -49,35 +49,6 @@ static constexpr auto default_log_severity() noexcept {
       1);
 }
 //------------------------------------------------------------------------------
-template <typename Lockable>
-auto root_logger_make_ostream_log_backend(
-  const log_stream_info& info,
-  const log_data_format format) -> unique_holder<logger_backend> {
-    switch(format) {
-        case log_data_format::xml:
-            return {
-              hold<ostream_log_backend<spinlock, log_data_format::xml>>,
-              std::cerr,
-              info};
-        case log_data_format::json:
-            return {
-              hold<ostream_log_backend<spinlock, log_data_format::json>>,
-              std::cerr,
-              info};
-    }
-}
-//------------------------------------------------------------------------------
-auto root_logger_make_ostream_log_backend(
-  const log_stream_info& info,
-  const log_data_format format,
-  const bool use_spinlock) -> unique_holder<logger_backend> {
-    if(use_spinlock) {
-        return root_logger_make_ostream_log_backend<spinlock>(info, format);
-    } else {
-        return root_logger_make_ostream_log_backend<std::mutex>(info, format);
-    }
-}
-//------------------------------------------------------------------------------
 auto root_logger_choose_backend(
   const program_args& args,
   const root_logger_options& opts,
@@ -95,14 +66,9 @@ auto root_logger_choose_backend(
         if(arg.is_long_tag("use-null-log")) {
             return make_null_log_backend();
         } else if(arg.is_long_tag("use-cerr-log")) {
-            return root_logger_make_ostream_log_backend(
-              info, format, use_spinlock);
+            return make_ostream_log_backend(info, format, use_spinlock);
         } else if(arg.is_long_tag("use-syslog")) {
-            if(use_spinlock) {
-                return make_syslog_log_backend_spinlock(info);
-            } else {
-                return make_syslog_log_backend_mutex(info);
-            }
+            return make_syslog_log_backend(info, use_spinlock);
         } else if(arg.is_long_tag("use-asio-nw-log")) {
             string_view nw_addr;
             if(arg.next() and not arg.next().starts_with("-")) {
@@ -111,13 +77,8 @@ auto root_logger_choose_backend(
                         "EAGINE_LOG_NETWORK_ADDRESS")}) {
                 nw_addr = *env_var;
             }
-            if(use_spinlock) {
-                return make_asio_tcpipv4_ostream_xml_log_backend_spinlock(
-                  nw_addr, info);
-            } else {
-                return make_asio_tcpipv4_ostream_xml_log_backend_mutex(
-                  nw_addr, info);
-            }
+            return make_asio_tcpipv4_ostream_log_backend(
+              nw_addr, info, format, use_spinlock);
         } else if(arg.is_long_tag("use-asio-log")) {
             string_view path;
             if(arg.next() and not arg.next().starts_with("-")) {
@@ -126,13 +87,8 @@ auto root_logger_choose_backend(
                         get_environment_variable("EAGINE_LOG_LOCAL_PATH")}) {
                 path = *env_var;
             }
-            if(use_spinlock) {
-                return make_asio_local_ostream_xml_log_backend_spinlock(
-                  path, info);
-            } else {
-                return make_asio_local_ostream_xml_log_backend_mutex(
-                  path, info);
-            }
+            return make_asio_local_ostream_log_backend(
+              path, info, format, use_spinlock);
         }
     }
 

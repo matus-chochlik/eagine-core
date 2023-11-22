@@ -428,7 +428,7 @@ auto proxy_log_choose_backend(
   basic_config_intf& config,
   const std::string& name,
   const log_stream_info& info) -> unique_holder<logger_backend> {
-    const bool use_spinlock{[&]() -> bool {
+    const bool use_spinlock{[&] -> bool {
         std::string temp;
         if(config.fetch_string("log.use_spinlock", temp)) {
             if(const auto val{from_string<bool>(temp)}) {
@@ -437,54 +437,33 @@ auto proxy_log_choose_backend(
         }
         return false;
     }()};
+    const auto log_format{[&] {
+        // TODO
+        return log_data_format::xml;
+    }()};
 
     if((name == "null") or (name == "none")) {
         return make_null_log_backend();
     } else if(name == "cerr") {
-        if(use_spinlock) {
-            return {
-              hold<ostream_log_backend<spinlock, log_data_format::xml>>,
-              std::cerr,
-              info};
-        } else {
-            return {
-              hold<ostream_log_backend<std::mutex, log_data_format::xml>>,
-              std::cerr,
-              info};
-        }
+        return make_ostream_log_backend(info, log_format, use_spinlock);
     } else if(name == "syslog") {
-        if(use_spinlock) {
-            return make_syslog_log_backend_spinlock(info);
-        } else {
-            return make_syslog_log_backend_mutex(info);
-        }
+        return make_syslog_log_backend(info, use_spinlock);
     } else if(name == "network") {
         std::string nw_addr;
         config.fetch_string("log.network.address", nw_addr);
-        if(use_spinlock) {
-            return make_asio_tcpipv4_ostream_xml_log_backend_spinlock(
-              nw_addr, info);
-        } else {
-            return make_asio_tcpipv4_ostream_xml_log_backend_mutex(
-              nw_addr, info);
-        }
+        return make_asio_tcpipv4_ostream_log_backend(
+          nw_addr, info, log_format, use_spinlock);
     } else if(name == "local") {
         std::string path;
         config.fetch_string("log.local.address", path);
-        if(use_spinlock) {
-            return make_asio_local_ostream_xml_log_backend_spinlock(path, info);
-        } else {
-            return make_asio_local_ostream_xml_log_backend_mutex(path, info);
-        }
+        return make_asio_local_ostream_log_backend(
+          path, info, log_format, use_spinlock);
     }
 
     if constexpr(debug_build) {
         try {
-            if(use_spinlock) {
-                return make_asio_local_ostream_xml_log_backend_spinlock(info);
-            } else {
-                return make_asio_local_ostream_xml_log_backend_mutex(info);
-            }
+            return make_asio_local_ostream_log_backend(
+              {}, info, log_format, use_spinlock);
         } catch(const std::system_error& err) {
             if(err.code().value() != ENOENT) {
                 throw;
@@ -493,13 +472,8 @@ auto proxy_log_choose_backend(
         try {
             std::string nw_addr;
             config.fetch_string("log.network.address", nw_addr);
-            if(use_spinlock) {
-                return make_asio_tcpipv4_ostream_xml_log_backend_spinlock(
-                  nw_addr, info);
-            } else {
-                return make_asio_tcpipv4_ostream_xml_log_backend_mutex(
-                  nw_addr, info);
-            }
+            return make_asio_tcpipv4_ostream_log_backend(
+              nw_addr, info, log_format, use_spinlock);
         } catch(const std::system_error& err) {
             if(err.code().value() != ENOENT) {
                 throw;

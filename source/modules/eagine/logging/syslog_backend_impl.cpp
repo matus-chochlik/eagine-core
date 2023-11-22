@@ -363,5 +363,14 @@ auto make_syslog_log_backend_spinlock(const log_stream_info& info)
     return {hold<syslog_log_backend<spinlock>>, info};
 }
 //------------------------------------------------------------------------------
+auto make_syslog_log_backend(const log_stream_info& info, bool use_spinlock)
+  -> unique_holder<logger_backend> {
+    if(use_spinlock) {
+        return make_syslog_log_backend_spinlock(info);
+    } else {
+        return make_syslog_log_backend_mutex(info);
+    }
+}
+//------------------------------------------------------------------------------
 } // namespace eagine
 
