@@ -5,7 +5,12 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#include "interfaces.hpp"
+module eagine.core.log_server;
+
+import std;
+import eagine.core;
+
+import :interfaces;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
@@ -22,7 +27,7 @@ public:
 
 private:
     std::istream& _input;
-    valtree::value_tree_stream_input _sink;
+    parser_input _sink;
 };
 //------------------------------------------------------------------------------
 istream_reader::istream_reader(
@@ -33,7 +38,7 @@ istream_reader::istream_reader(
   , _sink{make_data_parser(ctx, factory->make_stream())} {}
 //------------------------------------------------------------------------------
 auto istream_reader::run() noexcept -> bool {
-    std::array<char, 4096> chunk{};
+    std::array<char, 1024> chunk{};
     while(not _input.eof()) {
         _input.read(
           static_cast<char*>(chunk.data()),

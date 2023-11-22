@@ -5,21 +5,26 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+import std;
+import eagine.core;
+import eagine.core.log_server;
 
-#include "interfaces.hpp"
-#include "internal_backend.hpp"
 #include <cassert>
 
 namespace eagine {
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
-    if(auto sinks{logs::make_sink_factory(ctx)}) {
-        logs::internal_backend::set_sink(sinks->make_stream());
-        if(auto reader{logs::make_reader(ctx, sinks)}) {
-            if(reader->run()) {
-                return 0;
+    try {
+        if(auto sinks{logs::make_sink_factory(ctx)}) {
+            logs::internal_backend::set_sink(sinks->make_stream());
+            if(auto reader{logs::make_reader(ctx, sinks)}) {
+                if(reader->run()) {
+                    return 0;
+                }
             }
         }
+    } catch(std::exception& error) {
+        ctx.log().error("log server error: ${what}").arg("what", error.what());
     }
     return 1;
 }

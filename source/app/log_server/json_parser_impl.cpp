@@ -5,8 +5,16 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#include "interfaces.hpp"
+module;
+
 #include <cassert>
+
+module eagine.core.log_server;
+
+import std;
+import eagine.core;
+
+import :interfaces;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
@@ -277,7 +285,7 @@ void json_data_parser::failed() noexcept {}
 // make parser
 //------------------------------------------------------------------------------
 auto make_json_parser(main_ctx& ctx, shared_holder<stream_sink> stream) noexcept
-  -> valtree::value_tree_stream_input {
+  -> parser_input {
     return valtree::traverse_json_stream(
       {hold<json_data_parser>, std::move(stream)}, ctx.buffers(), ctx.log());
 }

@@ -5,8 +5,13 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#include "interfaces.hpp"
-#include "utilities.hpp"
+module eagine.core.log_server;
+
+import std;
+import eagine.core;
+
+import :interfaces;
+import :utilities;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
