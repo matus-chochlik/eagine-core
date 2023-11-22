@@ -65,6 +65,8 @@ public:
     void failed() noexcept final;
 
 private:
+    auto _parsing_message() const noexcept -> bool;
+
     void _handle_begin_attr(const string_view, const string_view) noexcept;
     void _handle_message_attr(const string_view, const string_view) noexcept;
     void _handle_finish_attr(const string_view, const string_view) noexcept;
@@ -76,9 +78,13 @@ private:
     begin_info _begin{};
     message_info _message{};
     finish_info _finish{};
-
+    //
     shared_holder<stream_sink> _stream;
+    //
+    basic_string_path _arg_pattern{"_/a/_"};
+    basic_string_path _atr_pattern{"_/a/_/*"};
     json_data_kind _current{json_data_kind::none};
+    bool _parsing_arg{false};
 };
 //------------------------------------------------------------------------------
 auto json_data_parser::should_continue() noexcept -> bool {
@@ -87,6 +93,10 @@ auto json_data_parser::should_continue() noexcept -> bool {
 //------------------------------------------------------------------------------
 auto json_data_parser::max_token_size() noexcept -> span_size_t {
     return 256;
+}
+//------------------------------------------------------------------------------
+auto json_data_parser::_parsing_message() const noexcept -> bool {
+    return _current == json_data_kind::message;
 }
 //------------------------------------------------------------------------------
 void json_data_parser::begin() noexcept {}
@@ -234,18 +244,32 @@ void json_data_parser::add(
 void json_data_parser::add(
   const basic_string_path& path,
   span<const string_view> data) noexcept {
-    if(data and path.size() == 2) {
-        if(path.ends_with("t")) {
-            const auto kind{*data};
-            if(kind == "m") {
-                _current = json_data_kind::message;
-            } else if(kind == "begin") {
-                _current = json_data_kind::begin;
-            } else if(kind == "end") {
-                _current = json_data_kind::finish;
+    if(data) {
+        if(path.size() == 2) {
+            if(path.ends_with("t")) {
+                const auto kind{*data};
+                if(kind == "m") {
+                    _current = json_data_kind::message;
+                    _message.args.clear();
+                } else if(kind == "begin") {
+                    _current = json_data_kind::begin;
+                } else if(kind == "end") {
+                    _current = json_data_kind::finish;
+                }
+            } else {
+                _handle_entry_attr_s(path.back(), *data);
             }
-        } else {
-            _handle_entry_attr_s(path.back(), *data);
+        }
+        if(_parsing_message() and path.size() == 4) {
+            if(path.like(_atr_pattern) and not _message.args.empty()) {
+                if(path.ends_with("n")) {
+                    _message.args.back().name = identifier{*data};
+                } else if(path.ends_with("t")) {
+                    _message.args.back().tag = identifier{*data};
+                } else if(path.ends_with("v")) {
+                    _message.args.back().value = to_string(*data);
+                }
+            }
         }
     }
 }
@@ -253,6 +277,8 @@ void json_data_parser::add(
 void json_data_parser::add_object(const basic_string_path& path) noexcept {
     if(path.size() == 1) {
         assert(_current == json_data_kind::none);
+    } else if(path.size() == 3 and path.like(_arg_pattern)) {
+        _message.args.emplace_back();
     }
 }
 //------------------------------------------------------------------------------

@@ -12,7 +12,7 @@ import std;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
-// sink
+// parsed items
 //------------------------------------------------------------------------------
 struct begin_info {
     std::chrono::system_clock::time_point start{};
@@ -27,9 +27,17 @@ struct message_info {
     std::string source;
     std::string tag;
     std::uint64_t instance{0};
+
+    struct arg_info {
+        identifier name;
+        identifier tag;
+        std::variant<std::string, float> value;
+        std::optional<float> min;
+        std::optional<float> max;
+    };
+
+    std::vector<arg_info> args;
 };
-//------------------------------------------------------------------------------
-auto format_message(const message_info&) noexcept -> std::string;
 //------------------------------------------------------------------------------
 struct heartbeat_info {
     std::chrono::duration<float> offset;
@@ -39,6 +47,19 @@ struct finish_info {
     std::chrono::duration<float> offset;
     bool clean{false};
 };
+//------------------------------------------------------------------------------
+// message formatter
+//------------------------------------------------------------------------------
+class message_formatter {
+public:
+    auto format(const message_info::arg_info&, bool short_value) noexcept
+      -> std::string;
+    auto format(const message_info&) noexcept -> std::string;
+
+private:
+};
+//------------------------------------------------------------------------------
+// sink
 //------------------------------------------------------------------------------
 struct stream_sink : interface<stream_sink> {
     virtual void consume(const begin_info&) noexcept = 0;

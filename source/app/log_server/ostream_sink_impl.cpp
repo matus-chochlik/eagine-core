@@ -40,6 +40,7 @@ public:
 private:
     const stream_id_t _id;
     shared_holder<ostream_output> _parent;
+    message_formatter _formatter;
     std::chrono::duration<float> _prev_offs{};
     std::string _root;
     begin_info _begin{};
@@ -79,7 +80,10 @@ public:
     ~ostream_output() noexcept final;
 
     void consume(const ostream_sink&, const begin_info&) noexcept;
-    void consume(const ostream_sink&, const message_info&) noexcept;
+    void consume(
+      const ostream_sink&,
+      const message_info&,
+      const std::string&) noexcept;
     void consume(const ostream_sink&, const heartbeat_info&) noexcept;
     void consume(const ostream_sink&, const finish_info&) noexcept;
 
@@ -215,7 +219,8 @@ void ostream_sink::consume(const begin_info& info) noexcept {
 //------------------------------------------------------------------------------
 void ostream_output::consume(
   const ostream_sink& s,
-  const message_info& info) noexcept {
+  const message_info& info,
+  const std::string& message) noexcept {
     _conn_Z(s) << "━┑";
     _output << padded_to(10, format_reltime(s.time_since_start(info)));
     _output << "│";
@@ -242,7 +247,7 @@ void ostream_output::consume(
                       "──────────┴──────────┴──────────┴────────────╯\n";
     }
     _conn_I(s) << " ╰─┤";
-    _output << format_message(info);
+    _output << message;
     _output << '\n';
 }
 //------------------------------------------------------------------------------
@@ -250,7 +255,7 @@ void ostream_sink::consume(const message_info& info) noexcept {
     if(_root.empty()) {
         _root = info.source;
     }
-    _parent->consume(*this, info);
+    _parent->consume(*this, info, _formatter.format(info));
     _prev_offs = info.offset;
 }
 //------------------------------------------------------------------------------

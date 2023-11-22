@@ -58,6 +58,13 @@ export auto substitute_variables_into(
   const callable_ref<std::optional<string_view>(const string_view) noexcept>&
     translate,
   const variable_substitution_options = {}) noexcept -> std::string&;
+
+export auto substitute_str_variables_into(
+  std::string& dst,
+  string_view src,
+  const callable_ref<std::optional<std::string>(const string_view) noexcept>&
+    translate,
+  const variable_substitution_options = {}) noexcept -> std::string&;
 //------------------------------------------------------------------------------
 /// @brief Substitutes variable values by using translate, from src.
 /// @ingroup string_utils

@@ -12,9 +12,28 @@ import eagine.core;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
-auto format_message(const message_info& info) noexcept -> std::string {
-    // TODO: actually format the message from format and args
-    return info.format;
+// message formatter
+//------------------------------------------------------------------------------
+auto message_formatter::format(
+  const message_info::arg_info& info,
+  [[maybe_unused]] bool short_value) noexcept -> std::string {
+    return get_if<std::string>(info.value).value_or("-");
+}
+//------------------------------------------------------------------------------
+auto message_formatter::format(const message_info& info) noexcept
+  -> std::string {
+    const auto translate{[&](string_view name) -> std::optional<std::string> {
+        for(const auto& arg : info.args) {
+            if(arg.name.matches(name)) {
+                return {format(arg, true)};
+            }
+        }
+        return {};
+    }};
+
+    std::string result;
+    return substitute_str_variables_into(
+      result, info.format, {construct_from, translate});
 }
 //------------------------------------------------------------------------------
 // factory functions
