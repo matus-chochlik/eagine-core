@@ -400,7 +400,7 @@ public:
         try {
             _add(R"(,{"n":")");
             _add(arg.name());
-            _add(R"(","tg":")");
+            _add(R"(","t":")");
             _add(tag.name());
             _add(R"(","u":"s","v":)");
             _add(value.count());

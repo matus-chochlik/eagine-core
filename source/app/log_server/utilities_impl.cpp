@@ -61,11 +61,13 @@ auto format_instance(std::uint64_t i, std::string& s) noexcept -> std::string& {
 //------------------------------------------------------------------------------
 // standalone format functions
 //------------------------------------------------------------------------------
-inline auto unformatted(const message_info::arg_info& info) -> std::string {
-    return get_if<std::string>(info.value).value_or("-");
-}
-//------------------------------------------------------------------------------
-auto format_bool(const message_info::arg_info& i) noexcept -> std::string {
+inline auto format_default(const message_info::arg_info& i) -> std::string {
+    if(const auto seconds{get_if<float_seconds>(i.value)}) {
+        return format_reltime_s(*seconds);
+    }
+    if(const auto val{get_if<float>(i.value)}) {
+        return std::format("{:.3}", *val);
+    }
     if(const auto val{get_if<bool>(i.value)}; val.has_value()) {
         if(*val) {
             return "True";
@@ -73,7 +75,7 @@ auto format_bool(const message_info::arg_info& i) noexcept -> std::string {
             return "False";
         }
     }
-    return unformatted(i);
+    return get_if<std::string>(i.value).value_or("-");
 }
 //------------------------------------------------------------------------------
 auto format_duration(const message_info::arg_info& i, bool) noexcept
@@ -84,37 +86,53 @@ auto format_duration(const message_info::arg_info& i, bool) noexcept
     if(const auto seconds{get_if<float_seconds>(i.value)}) {
         return format_reltime_s(*seconds);
     }
-    return unformatted(i);
+    return format_default(i);
 }
 //------------------------------------------------------------------------------
-auto format_progress(const message_info::arg_info& i, bool) -> std::string {
+auto format_progress(const message_info::arg_info& i, bool short_value)
+  -> std::string {
     if(const auto val{get_if<float>(i.value)}; val and i.min and i.max) {
         if(*(i.min) < *(i.max)) {
             const auto done{(*val - *(i.min)) / (*(i.max) - *(i.min))};
-            return std::format("{:.1f}%", 100.F * done);
+            if(short_value) {
+                return std::format("{:.1f}%", 100.F * done);
+            } else {
+                // TODO: progress bar
+                return std::format("{:.1f}%", 100.F * done);
+            }
         }
     }
-    return unformatted(i);
+    return format_default(i);
 }
 //------------------------------------------------------------------------------
 auto format_main_progress(
   const message_info::arg_info& i,
   float_seconds done_dur,
-  bool) -> std::string {
+  bool short_value) -> std::string {
     if(const auto val{get_if<float>(i.value)}; val and i.min and i.max) {
         if(*(i.min) < *(i.max)) {
             const auto done{(*val - *(i.min)) / (*(i.max) - *(i.min))};
             const auto estimate{[&] -> std::string {
-                if(done > 0.01F and done < 1.F) {
-                    return format_reltime_s(done_dur * (1.F - done) / done) +
-                           " remaining";
+                if(done > 0.0005F) {
+                    if(done < 1.F) {
+                        return std::format(
+                          " ({} remaining)",
+                          format_reltime_s(done_dur * (1.F - done) / done));
+                    } else {
+                        return {};
+                    }
                 }
-                return "estimating";
+                return " [estimating...]";
             }};
-            return std::format("{:.1f}% ({})", 100.F * done, estimate());
+            if(short_value) {
+                return std::format("{:.1f}%{}", 100.F * done, estimate());
+            } else {
+                // TODO: progress bar
+                return std::format("{:.1f}%", 100.F * done);
+            }
         }
     }
-    return unformatted(i);
+    return format_default(i);
 }
 //------------------------------------------------------------------------------
 // message formatter
@@ -122,9 +140,6 @@ auto format_main_progress(
 auto message_formatter::format(
   const message_info::arg_info& info,
   bool short_value) noexcept -> std::string {
-    if(const auto seconds{get_if<float_seconds>(info.value)}) {
-        return format_reltime_s(*seconds);
-    }
     switch(info.tag.value()) {
         case id_v("duration"):
             return format_duration(info, short_value);
@@ -137,12 +152,10 @@ auto message_formatter::format(
               info, _curr_msg_time - _main_prgrs_start, short_value);
         case id_v("Progress"):
             return format_progress(info, short_value);
-        case id_v("bool"):
-            return format_bool(info);
         default:
             break;
     }
-    return unformatted(info);
+    return format_default(info);
 }
 //------------------------------------------------------------------------------
 auto message_formatter::format(const message_info& info) noexcept
