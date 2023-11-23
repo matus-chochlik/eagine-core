@@ -223,7 +223,11 @@ void json_data_parser::_handle_val_min_max(
   span<const T> data) noexcept {
     if(path.like(_atr_pattern) and not _message.args.empty()) {
         if(path.ends_with("v")) {
-            _message.args.back().value = float(*data);
+            if constexpr(std::is_floating_point_v<T>) {
+                _message.args.back().value = float(*data);
+            } else {
+                _message.args.back().value = *data;
+            }
         } else if(path.ends_with("min")) {
             _message.args.back().min = float(*data);
         } else if(path.ends_with("max")) {

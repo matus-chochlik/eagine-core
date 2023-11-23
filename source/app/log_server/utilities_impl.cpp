@@ -68,6 +68,12 @@ inline auto format_default(const message_info::arg_info& i) -> std::string {
     if(const auto val{get_if<float>(i.value)}) {
         return std::format("{:.3}", *val);
     }
+    if(const auto val{get_if<std::int64_t>(i.value)}) {
+        return std::format("{}", *val);
+    }
+    if(const auto val{get_if<std::uint64_t>(i.value)}) {
+        return std::format("{}", *val);
+    }
     if(const auto val{get_if<bool>(i.value)}; val.has_value()) {
         if(*val) {
             return "True";
@@ -78,23 +84,37 @@ inline auto format_default(const message_info::arg_info& i) -> std::string {
     return get_if<std::string>(i.value).value_or("-");
 }
 //------------------------------------------------------------------------------
+auto get_float_value(const message_info::arg_info& i) noexcept
+  -> optionally_valid<float> {
+    if(const auto val{get_if<float>(i.value)}) {
+        return *val;
+    }
+    if(const auto val{get_if<std::int64_t>(i.value)}) {
+        return float(*val);
+    }
+    if(const auto val{get_if<std::uint64_t>(i.value)}) {
+        return float(*val);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
 auto format_duration(const message_info::arg_info& i, bool) noexcept
   -> std::string {
-    if(const auto seconds{get_if<float>(i.value)}) {
-        return format_reltime_s(float_seconds(*seconds));
-    }
     if(const auto seconds{get_if<float_seconds>(i.value)}) {
         return format_reltime_s(*seconds);
+    }
+    if(const auto val{get_float_value(i)}) {
+        return format_reltime_s(float_seconds(*val));
     }
     return format_default(i);
 }
 //------------------------------------------------------------------------------
-auto format_progress(const message_info::arg_info& i, bool short_value)
+auto format_progress(const message_info::arg_info& i, bool header_value)
   -> std::string {
-    if(const auto val{get_if<float>(i.value)}; val and i.min and i.max) {
+    if(const auto val{get_float_value(i)}; val and i.min and i.max) {
         if(*(i.min) < *(i.max)) {
             const auto done{(*val - *(i.min)) / (*(i.max) - *(i.min))};
-            if(short_value) {
+            if(header_value) {
                 return std::format("{:.1f}%", 100.F * done);
             } else {
                 // TODO: progress bar
@@ -108,24 +128,24 @@ auto format_progress(const message_info::arg_info& i, bool short_value)
 auto format_main_progress(
   const message_info::arg_info& i,
   float_seconds done_dur,
-  bool short_value) -> std::string {
-    if(const auto val{get_if<float>(i.value)}; val and i.min and i.max) {
+  bool header_value) -> std::string {
+    if(const auto val{get_float_value(i)}; val and i.min and i.max) {
         if(*(i.min) < *(i.max)) {
             const auto done{(*val - *(i.min)) / (*(i.max) - *(i.min))};
             const auto estimate{[&] -> std::string {
                 if(done > 0.0005F) {
                     if(done < 1.F) {
                         return std::format(
-                          " ({} remaining)",
+                          " ({} remaining) ",
                           format_reltime_s(done_dur * (1.F - done) / done));
                     } else {
                         return {};
                     }
                 }
-                return " [estimating...]";
+                return "[estimating...] ";
             }};
-            if(short_value) {
-                return std::format("{:.1f}%{}", 100.F * done, estimate());
+            if(header_value) {
+                return std::format("{}{:.1f}%", estimate(), 100.F * done);
             } else {
                 // TODO: progress bar
                 return std::format("{:.1f}%", 100.F * done);
@@ -139,19 +159,19 @@ auto format_main_progress(
 //------------------------------------------------------------------------------
 auto message_formatter::format(
   const message_info::arg_info& info,
-  bool short_value) noexcept -> std::string {
+  bool header_value) noexcept -> std::string {
     switch(info.tag.value()) {
         case id_v("duration"):
-            return format_duration(info, short_value);
+            return format_duration(info, header_value);
         case id_v("MainPrgrss"):
             if(not _main_prgrs_started) {
                 _main_prgrs_start = _curr_msg_time;
                 _main_prgrs_started = true;
             }
             return format_main_progress(
-              info, _curr_msg_time - _main_prgrs_start, short_value);
+              info, _curr_msg_time - _main_prgrs_start, header_value);
         case id_v("Progress"):
-            return format_progress(info, short_value);
+            return format_progress(info, header_value);
         default:
             break;
     }

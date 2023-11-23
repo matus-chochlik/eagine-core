@@ -34,7 +34,14 @@ struct message_info {
     struct arg_info {
         identifier name;
         identifier tag;
-        std::variant<std::string, float_seconds, float, bool> value;
+        std::variant<
+          std::string,
+          float_seconds,
+          float,
+          std::int64_t,
+          std::uint64_t,
+          bool>
+          value;
         std::optional<float> min;
         std::optional<float> max;
     };

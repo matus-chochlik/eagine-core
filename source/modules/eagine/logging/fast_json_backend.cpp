@@ -300,6 +300,22 @@ public:
         }
     }
 
+    void do_add_arg_u(
+      const identifier arg,
+      const identifier tag,
+      const auto value) noexcept {
+        try {
+            _add(R"(,{"n":")");
+            _add(arg.name());
+            _add(R"(","t":")");
+            _add(tag.name());
+            _add(R"(","v":)");
+            _add(value);
+            _add(R"(})");
+        } catch(...) {
+        }
+    }
+
     void do_add_arg_q(
       const identifier arg,
       const identifier tag,
@@ -354,21 +370,21 @@ public:
       const identifier arg,
       const identifier tag,
       const std::intmax_t value) noexcept final {
-        do_add_arg_q(arg, tag, value);
+        do_add_arg_u(arg, tag, value);
     }
 
     void add_unsigned(
       const identifier arg,
       const identifier tag,
       const std::uintmax_t value) noexcept final {
-        do_add_arg_q(arg, tag, value);
+        do_add_arg_u(arg, tag, value);
     }
 
     void add_float(
       const identifier arg,
       const identifier tag,
       const float value) noexcept final {
-        do_add_arg_q(arg, tag, value);
+        do_add_arg_u(arg, tag, value);
     }
 
     void add_float(
