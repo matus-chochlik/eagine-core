@@ -8,7 +8,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.log_server PARTITION utilities
-	IMPORTS std eagine.core)
+	IMPORTS std eagine.core interfaces)
 
 eagine_add_module(
 	eagine.core.log_server

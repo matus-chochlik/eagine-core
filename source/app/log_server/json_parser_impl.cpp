@@ -161,10 +161,10 @@ void json_data_parser::_handle_entry_attr_f(
     if(attr == "ts") {
         switch(_current) {
             case json_data_kind::message:
-                _message.offset = std::chrono::duration<float>(value);
+                _message.offset = float_seconds(value);
                 break;
             case json_data_kind::finish:
-                _finish.offset = std::chrono::duration<float>(value);
+                _finish.offset = float_seconds(value);
                 break;
             default:
                 break;
@@ -210,8 +210,11 @@ void json_data_parser::add(
 void json_data_parser::add(
   const basic_string_path& path,
   span<const bool> data) noexcept {
-    (void)path;
-    (void)data;
+    if(path.like(_atr_pattern) and not _message.args.empty()) {
+        if(path.ends_with("v")) {
+            _message.args.back().value = *data;
+        }
+    }
 }
 //------------------------------------------------------------------------------
 template <typename T>

@@ -51,9 +51,8 @@ void internal_backend::_dispatch(auto&& entry) noexcept {
     }
 }
 //------------------------------------------------------------------------------
-auto internal_backend::_offset() const noexcept
-  -> std::chrono::duration<float> {
-    return std::chrono::duration_cast<std::chrono::duration<float>>(
+auto internal_backend::_offset() const noexcept -> float_seconds {
+    return std::chrono::duration_cast<float_seconds>(
       std::chrono::steady_clock::now() - _start);
 }
 //------------------------------------------------------------------------------
@@ -106,20 +105,19 @@ auto internal_backend::begin_message(
   logger_instance_id instance,
   log_event_severity severity,
   string_view format) noexcept -> bool {
-    _dispatch(message_info{
-      .offset = _offset(),
-      .format = to_string(format),
-      .severity = to_string(enumerator_name(severity)),
-      .source = source.name().str(),
-      .tag = tag.name().str(),
-      .instance = instance});
+    _message.offset = _offset();
+    _message.format = to_string(format);
+    _message.severity = to_string(enumerator_name(severity));
+    _message.source = source.name().str();
+    _message.tag = tag.name().str();
+    _message.instance = instance;
+    _message.args.clear();
     return true;
 }
 //------------------------------------------------------------------------------
-void internal_backend::add_nothing(identifier name, identifier tag) noexcept {
-    (void)name;
-    (void)tag;
-}
+void internal_backend::add_nothing(
+  [[maybe_unused]] identifier name,
+  [[maybe_unused]] identifier tag) noexcept {}
 //------------------------------------------------------------------------------
 void internal_backend::add_identifier(
   identifier name,
@@ -143,9 +141,8 @@ void internal_backend::add_bool(
   identifier name,
   identifier tag,
   bool value) noexcept {
-    (void)name;
-    (void)tag;
-    (void)value;
+    _message.args.emplace_back(
+      message_info::arg_info{.name = name, .tag = tag, .value = value});
 }
 //------------------------------------------------------------------------------
 void internal_backend::add_integer(
@@ -170,9 +167,8 @@ void internal_backend::add_float(
   identifier name,
   identifier tag,
   float value) noexcept {
-    (void)name;
-    (void)tag;
-    (void)value;
+    _message.args.emplace_back(
+      message_info::arg_info{.name = name, .tag = tag, .value = value});
 }
 //------------------------------------------------------------------------------
 void internal_backend::add_float(
@@ -181,29 +177,24 @@ void internal_backend::add_float(
   float min,
   float value,
   float max) noexcept {
-    (void)name;
-    (void)tag;
-    (void)min;
-    (void)max;
-    (void)value;
+    _message.args.emplace_back(message_info::arg_info{
+      .name = name, .tag = tag, .value = value, .min = min, .max = max});
 }
 //------------------------------------------------------------------------------
 void internal_backend::add_duration(
   identifier name,
   identifier tag,
-  std::chrono::duration<float> value) noexcept {
-    (void)name;
-    (void)tag;
-    (void)value;
+  float_seconds value) noexcept {
+    _message.args.emplace_back(
+      message_info::arg_info{.name = name, .tag = tag, .value = value});
 }
 //------------------------------------------------------------------------------
 void internal_backend::add_string(
   identifier name,
   identifier tag,
   string_view value) noexcept {
-    (void)name;
-    (void)tag;
-    (void)value;
+    _message.args.emplace_back(message_info::arg_info{
+      .name = name, .tag = tag, .value = to_string(value)});
 }
 //------------------------------------------------------------------------------
 void internal_backend::add_blob(
@@ -211,7 +202,9 @@ void internal_backend::add_blob(
   identifier,
   memory::const_block) noexcept {}
 //------------------------------------------------------------------------------
-void internal_backend::finish_message() noexcept {}
+void internal_backend::finish_message() noexcept {
+    _dispatch(_message);
+}
 //------------------------------------------------------------------------------
 void internal_backend::heartbeat() noexcept {
     _dispatch(heartbeat_info{.offset = _offset()});

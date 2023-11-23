@@ -12,6 +12,9 @@ import std;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
+using parser_input = valtree::value_tree_stream_input;
+using float_seconds = std::chrono::duration<float>;
+//------------------------------------------------------------------------------
 // parsed items
 //------------------------------------------------------------------------------
 struct begin_info {
@@ -21,7 +24,7 @@ struct begin_info {
 };
 //------------------------------------------------------------------------------
 struct message_info {
-    std::chrono::duration<float> offset;
+    float_seconds offset;
     std::string format;
     std::string severity;
     std::string source;
@@ -31,7 +34,7 @@ struct message_info {
     struct arg_info {
         identifier name;
         identifier tag;
-        std::variant<std::string, float> value;
+        std::variant<std::string, float_seconds, float, bool> value;
         std::optional<float> min;
         std::optional<float> max;
     };
@@ -40,23 +43,12 @@ struct message_info {
 };
 //------------------------------------------------------------------------------
 struct heartbeat_info {
-    std::chrono::duration<float> offset;
+    float_seconds offset;
 };
 //------------------------------------------------------------------------------
 struct finish_info {
-    std::chrono::duration<float> offset;
+    float_seconds offset;
     bool clean{false};
-};
-//------------------------------------------------------------------------------
-// message formatter
-//------------------------------------------------------------------------------
-class message_formatter {
-public:
-    auto format(const message_info::arg_info&, bool short_value) noexcept
-      -> std::string;
-    auto format(const message_info&) noexcept -> std::string;
-
-private:
 };
 //------------------------------------------------------------------------------
 // sink
@@ -81,8 +73,6 @@ export auto make_sink_factory(main_ctx&) noexcept
   -> shared_holder<stream_sink_factory>;
 //------------------------------------------------------------------------------
 // parser
-//------------------------------------------------------------------------------
-using parser_input = valtree::value_tree_stream_input;
 //------------------------------------------------------------------------------
 auto make_json_parser(main_ctx&, shared_holder<stream_sink>) noexcept
   -> parser_input;
@@ -134,7 +124,7 @@ private:
 
     void _dispatch(auto&& entry) noexcept;
 
-    auto _offset() const noexcept -> std::chrono::duration<float>;
+    auto _offset() const noexcept -> float_seconds;
 
     auto entry_backend(log_event_severity) noexcept -> logger_backend* final;
 
@@ -213,7 +203,7 @@ private:
     void add_duration(
       identifier name,
       identifier tag,
-      std::chrono::duration<float> value) noexcept final;
+      float_seconds value) noexcept final;
 
     void add_string(identifier name, identifier tag, string_view value) noexcept
       final;
@@ -238,6 +228,7 @@ private:
     std::vector<
       std::variant<begin_info, message_info, heartbeat_info, finish_info>>
       _backlog;
+    message_info _message{};
 };
 //------------------------------------------------------------------------------
 } // namespace eagine::logs

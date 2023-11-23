@@ -300,7 +300,7 @@ public:
         }
     }
 
-    void do_add_arg(
+    void do_add_arg_q(
       const identifier arg,
       const identifier tag,
       const auto value) noexcept {
@@ -320,42 +320,55 @@ public:
       const identifier arg,
       const identifier tag,
       const identifier value) noexcept final {
-        do_add_arg(arg, tag, value);
+        do_add_arg_q(arg, tag, value);
     }
 
     void add_message_id(
       const identifier arg,
       const identifier tag,
       const message_id value) noexcept final {
-        do_add_arg(arg, tag, value);
+        do_add_arg_q(arg, tag, value);
     }
 
     void add_bool(
       const identifier arg,
       const identifier tag,
       const bool value) noexcept final {
-        do_add_arg(arg, tag, value);
+        try {
+            _add(R"(,{"n":")");
+            _add(arg.name());
+            _add(R"(","t":")");
+            _add(tag.name());
+            _add(R"(","v":)");
+            if(value) {
+                _add("true");
+            } else {
+                _add("false");
+            }
+            _add(R"(})");
+        } catch(...) {
+        }
     }
 
     void add_integer(
       const identifier arg,
       const identifier tag,
       const std::intmax_t value) noexcept final {
-        do_add_arg(arg, tag, value);
+        do_add_arg_q(arg, tag, value);
     }
 
     void add_unsigned(
       const identifier arg,
       const identifier tag,
       const std::uintmax_t value) noexcept final {
-        do_add_arg(arg, tag, value);
+        do_add_arg_q(arg, tag, value);
     }
 
     void add_float(
       const identifier arg,
       const identifier tag,
       const float value) noexcept final {
-        do_add_arg(arg, tag, value);
+        do_add_arg_q(arg, tag, value);
     }
 
     void add_float(
@@ -400,14 +413,14 @@ public:
       const identifier arg,
       const identifier tag,
       const string_view value) noexcept final {
-        do_add_arg(arg, tag, value);
+        do_add_arg_q(arg, tag, value);
     }
 
     void add_blob(
       const identifier arg,
       const identifier tag,
       const memory::const_block value) noexcept final {
-        do_add_arg(arg, tag, value);
+        do_add_arg_q(arg, tag, value);
     }
 
     void finish_message() noexcept final {

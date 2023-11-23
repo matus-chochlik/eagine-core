@@ -41,7 +41,7 @@ private:
     const stream_id_t _id;
     shared_holder<ostream_output> _parent;
     message_formatter _formatter;
-    std::chrono::duration<float> _prev_offs{};
+    float_seconds _prev_offs{};
     std::string _root;
     begin_info _begin{};
 };
@@ -284,18 +284,20 @@ void ostream_sink::consume(const heartbeat_info& info) noexcept {
 void ostream_output::consume(
   const ostream_sink& s,
   const finish_info& info) noexcept {
-    _conn_I(s) << " ╭──────────┬──────────┬────────────┬─────────╮\n";
+    _conn_I(s) << " ╭──────────┬──────────┬──────────┬───────────┬─────────╮\n";
     _conn_L(s) << padded_to(10, format_reltime(s.time_since_start(info)));
     _output << "│";
     _output << padded_to(10, format_reltime(s.time_since_prev(info)));
-    _output << "│ closing log│";
+    _output << "│";
+    _output << padded_to(10, s.root());
+    _output << "│closing log│";
     if(info.clean) {
         _output << " success ";
     } else {
         _output << " failed  ";
     }
     _output << "│\n";
-    _conn_S(s) << " ╰──────────┴──────────┴────────────┴─────────╯\n";
+    _conn_S(s) << " ╰──────────┴──────────┴──────────┴───────────┴─────────╯\n";
     _conn_s(s) << '\n';
     _streams.erase(s.id());
 }

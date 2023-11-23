@@ -135,23 +135,36 @@ public:
       shared_holder<stream_sink_factory> factory,
       const string_view address) noexcept;
 
+    ~asio_local_reader() noexcept;
+
 private:
     auto _get_path(const string_view) noexcept;
+    auto _get_ept(const string_view) noexcept;
+
+    std::string _path;
 };
 //------------------------------------------------------------------------------
 auto asio_local_reader::_get_path(const string_view path) noexcept {
     return path ? path : string_view{"/tmp/eagine-xmllog"};
 }
 //------------------------------------------------------------------------------
+auto asio_local_reader::_get_ept(const string_view address) noexcept {
+    return asio::local::stream_protocol::endpoint{_get_path(address)};
+}
+//------------------------------------------------------------------------------
 asio_local_reader::asio_local_reader(
   main_ctx& ctx,
   shared_holder<stream_sink_factory> factory,
   string_view address) noexcept
-  : asio_reader_base{
-      "ANw4Reader",
-      ctx,
-      std::move(factory),
-      asio::local::stream_protocol::endpoint{_get_path(address)}} {}
+  : asio_reader_base{"ALclReader", ctx, std::move(factory), _get_ept(address)}
+  , _path{_get_path(address)} {}
+//------------------------------------------------------------------------------
+asio_local_reader::~asio_local_reader() noexcept {
+    try {
+        std::remove(_path.c_str());
+    } catch(...) {
+    }
+}
 //------------------------------------------------------------------------------
 // TCP/IPv4 reader
 //------------------------------------------------------------------------------
