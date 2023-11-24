@@ -115,6 +115,14 @@ struct get_serialize_buffer_size<Sid, identifier, Selector>
   : serialize_size_constant<12> {};
 
 export template <identifier_t Sid, typename Selector>
+struct get_serialize_buffer_size<Sid, message_id, Selector>
+  : serialize_size_constant<48> {};
+
+export template <identifier_t Sid, identifier_t Tag, typename Selector>
+struct get_serialize_buffer_size<Sid, tagged_id<Tag>, Selector>
+  : serialize_size_constant<24> {};
+
+export template <identifier_t Sid, typename Selector>
 struct get_serialize_buffer_size<Sid, string_view, Selector>
   : serialize_size_constant<0, false> {
 
