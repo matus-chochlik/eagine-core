@@ -34,16 +34,15 @@ private:
 // padded streamable string
 //------------------------------------------------------------------------------
 struct string_padded_to {
-    string_view str;
-    span_size_t before{0};
-    span_size_t after{0};
+    const std::string_view str;
+    const std::size_t length{0};
 
     friend auto operator<<(
       std::ostream& output,
       const string_padded_to& s) noexcept -> std::ostream&;
 };
 //------------------------------------------------------------------------------
-auto padded_to(std::size_t, const string_view) noexcept -> string_padded_to;
+auto padded_to(std::size_t, std::string_view) noexcept -> string_padded_to;
 //------------------------------------------------------------------------------
 } // namespace eagine::logs
 

@@ -102,6 +102,7 @@ private:
     stream_id_t _id_seq{0};
     flat_map<stream_id_t, ostream_context> _streams;
     std::string _temp;
+    bool _condensed{false};
 };
 //------------------------------------------------------------------------------
 ostream_sink::ostream_sink(
@@ -221,7 +222,18 @@ void ostream_output::consume(
   const ostream_sink& s,
   const message_info& info,
   message_formatter& formatter) noexcept {
-    _conn_Z(s) << "━┑";
+    if(_condensed) {
+        _conn_Z(s) << "━┑";
+    } else {
+        if(info.tag.empty()) {
+            _conn_I(s) << " ╭──────────┬──────────┬─────────┬"
+                          "──────────┬──────────┬────────────╮\n";
+        } else {
+            _conn_I(s) << " ╭──────────┬──────────┬─────────┬"
+                          "──────────┬──────────┬──────────┬────────────╮\n";
+        }
+        _conn_Z(s) << "━┥";
+    }
     _output << padded_to(10, format_reltime(s.time_since_start(info)));
     _output << "│";
     _output << padded_to(10, format_reltime(s.time_since_prev(info)));
@@ -240,19 +252,25 @@ void ostream_output::consume(
     _output << "│";
     _output << '\n';
     if(info.tag.empty()) {
-        _conn_I(s) << " ├──────────┴──────────┴─────────┴"
+        _conn_I(s) << " ╰┬─────────┴──────────┴─────────┴"
                       "──────────┴──────────┴────────────╯\n";
     } else {
-        _conn_I(s) << " ├──────────┴──────────┴─────────┴"
+        _conn_I(s) << " ╰┬─────────┴──────────┴─────────┴"
                       "──────────┴──────────┴──────────┴────────────╯\n";
     }
-    _conn_I(s) << " ╰─┤";
+    const auto arg_count{info.args.size()};
+
+    _conn_I(s) << "  ╰";
+    if(arg_count > 0) {
+        _output << "─┐";
+    } else {
+        _output << "╼ ";
+    }
     _output << formatter.format(info);
     _output << '\n';
 
-    const auto arg_count{info.args.size()};
     for(const int ai : integer_range(arg_count)) {
-        _conn_I(s) << "   ";
+        _conn_I(s) << "    ";
         if(ai + 1 == arg_count) {
             _output << "╰";
         } else {

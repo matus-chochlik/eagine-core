@@ -23,7 +23,7 @@ auto format_reltime(std::chrono::microseconds t) noexcept -> std::string {
         return "0";
     }
     if(t < milliseconds{10}) {
-        return to_string(t.count()) + "us";
+        return to_string(t.count()) + "μs";
     }
     if(t < seconds{10}) {
         return to_string(duration_cast<milliseconds>(t).count()) + "ms";
@@ -258,25 +258,17 @@ auto message_formatter::format(const message_info& info) noexcept
       result, info.format, {construct_from, translate});
 }
 //------------------------------------------------------------------------------
+// string padded to length
+//------------------------------------------------------------------------------
 auto operator<<(std::ostream& output, const string_padded_to& s) noexcept
   -> std::ostream& {
-    output << std::string(std_size(s.before), ' ');
-    output << s.str;
-    output << std::string(std_size(s.after), ' ');
+    output << std::format("{1: ^{0}}", s.length, s.str);
     return output;
 }
 //------------------------------------------------------------------------------
-auto padded_to(std::size_t l, const string_view s) noexcept
-  -> string_padded_to {
-    const auto sl{span_size(l)};
-    const auto ss{s.size()}; // TODO: count "glyphs" not chars here
-    if(sl < ss) {
-        return {.str = head(s, sl)};
-    }
-    if(sl > s.size()) {
-        const auto a{(sl - ss) / 2};
-        const auto b{sl - ss - a};
-        return {.str = s, .before = b, .after = a};
+auto padded_to(std::size_t l, std::string_view s) noexcept -> string_padded_to {
+    if(span_size(l) > s.size()) {
+        return {.str = s, .length = l};
     }
     return {.str = s};
 }
