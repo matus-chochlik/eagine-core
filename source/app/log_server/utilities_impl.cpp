@@ -61,7 +61,7 @@ auto format_instance(std::uint64_t i, std::string& s) noexcept -> std::string& {
 //------------------------------------------------------------------------------
 // standalone format functions
 //------------------------------------------------------------------------------
-inline auto format_default(const message_info::arg_info& i) -> std::string {
+auto format_default(const message_info::arg_info& i) -> std::string {
     if(const auto seconds{get_if<float_seconds>(i.value)}) {
         return format_reltime_s(*seconds);
     }
@@ -105,6 +105,61 @@ auto format_duration(const message_info::arg_info& i, bool) noexcept
     }
     if(const auto val{get_float_value(i)}) {
         return format_reltime_s(float_seconds(*val));
+    }
+    return format_default(i);
+}
+//------------------------------------------------------------------------------
+auto format_endpoint_id(const message_info::arg_info& i, bool) noexcept
+  -> std::string {
+    if(const auto val{get_if<std::uint64_t>(i.value)}) {
+        std::string s;
+        return format_instance(*val, s);
+    }
+    return format_default(i);
+}
+//------------------------------------------------------------------------------
+auto format_bytesize(const message_info::arg_info& i, bool) noexcept
+  -> std::string {
+    if(const auto opt{get_float_value(i)}) {
+        const auto val{*opt};
+        if(val > 8192.F * 1024.F * 1024.F) {
+            return std::format("{:.1f}GiB", val / (1024.F * 1024.F * 1024.F));
+        }
+        if(val > 8192.F * 1024.F) {
+            return std::format("{:.1f}MiB", val / (1024.F * 1024.F));
+        }
+        if(val > 8192.F) {
+            return std::format("{:.1f}kiB", val / 1024.F);
+        }
+        return std::format("{:.0f}B", val);
+    }
+    return format_default(i);
+}
+//------------------------------------------------------------------------------
+auto format_rate_per_sec(const message_info::arg_info& i, bool) noexcept
+  -> std::string {
+    if(const auto opt{get_float_value(i)}) {
+        const auto val{*opt};
+        if(val < 0.1F) {
+            return std::format("{:.1f} per hour", val * 3600.F);
+        }
+        if(val < 10.F) {
+            return std::format("{:.1f} per min", val * 60.F);
+        }
+        if(val > 10'000'000.F) {
+            return std::format("{:.1f}M per sec", val / 1000000.F);
+        }
+        if(val > 10'000.F) {
+            return std::format("{:.1f}k per sec", val / 1000.F);
+        }
+        return std::format("{:.1f} per sec", val);
+    }
+    return format_default(i);
+}
+//------------------------------------------------------------------------------
+auto format_ratio(const message_info::arg_info& i, bool) -> std::string {
+    if(const auto val{get_float_value(i)}) {
+        return std::format("{:.1f}%", 100.F * *val);
     }
     return format_default(i);
 }
@@ -163,6 +218,16 @@ auto message_formatter::format(
     switch(info.tag.value()) {
         case id_v("duration"):
             return format_duration(info, header_value);
+        case id_v("MsgBusEpId"):
+            return format_endpoint_id(info, header_value);
+        case id_v("ByteSize"):
+            return format_bytesize(info, header_value);
+        case id_v("RatePerSec"):
+            return format_rate_per_sec(info, header_value);
+        case id_v("Ratio"):
+            return format_ratio(info, header_value);
+        case id_v("Progress"):
+            return format_progress(info, header_value);
         case id_v("MainPrgrss"):
             if(not _main_prgrs_started) {
                 _main_prgrs_start = _curr_msg_time;
@@ -170,8 +235,6 @@ auto message_formatter::format(
             }
             return format_main_progress(
               info, _curr_msg_time - _main_prgrs_start, header_value);
-        case id_v("Progress"):
-            return format_progress(info, header_value);
         default:
             break;
     }
