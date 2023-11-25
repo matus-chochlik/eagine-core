@@ -104,6 +104,7 @@ void internal_backend::declare_state(
     _dispatch(declare_state_info{
       .offset = _offset(),
       .source = source,
+      .state_tag = state_tag,
       .begin_tag = begin_tag,
       .end_tag = end_tag});
 }
@@ -112,7 +113,7 @@ void internal_backend::active_state(
   const identifier source,
   const identifier state_tag) noexcept {
     _dispatch(active_state_info{
-      .offset = _offset(), .source = source, .state_tag = state_tag});
+      .offset = _offset(), .source = source, .tag = state_tag});
 }
 //------------------------------------------------------------------------------
 auto internal_backend::begin_message(

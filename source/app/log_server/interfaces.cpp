@@ -34,6 +34,7 @@ struct description_info {
 struct declare_state_info {
     float_seconds offset;
     identifier source;
+    identifier state_tag;
     identifier begin_tag;
     identifier end_tag;
     std::uint64_t instance{0};
@@ -42,7 +43,7 @@ struct declare_state_info {
 struct active_state_info {
     float_seconds offset;
     identifier source;
-    identifier state_tag;
+    identifier tag;
     std::uint64_t instance{0};
 };
 //------------------------------------------------------------------------------
@@ -74,12 +75,10 @@ struct message_info {
 };
 //------------------------------------------------------------------------------
 struct interval_info {
-    identifier source;
+    float_seconds offset;
+    identifier tag;
     std::uint64_t instance{0};
-
-    auto key() const noexcept -> std::tuple<identifier_t, std::uint64_t> {
-        return {source.value(), instance};
-    }
+    std::chrono::nanoseconds duration{0};
 };
 //------------------------------------------------------------------------------
 struct heartbeat_info {

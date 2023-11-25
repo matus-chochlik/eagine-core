@@ -161,13 +161,13 @@ public:
     }
 
     void time_interval_begin(
-      const identifier label,
+      const identifier tag,
       const logger_instance_id log_id,
       const time_interval_id int_id) noexcept final {
         try {
             const std::lock_guard<Lockable> lock{_lockable};
             _intervals.emplace_back(
-              int_id, log_id, label, std::chrono::steady_clock::now());
+              int_id, log_id, tag, std::chrono::steady_clock::now());
         } catch(...) {
         }
     }
@@ -177,7 +177,7 @@ public:
       const logger_instance_id log_id,
       const time_interval_id int_id) noexcept final {
         try {
-            const auto end{std::chrono::steady_clock::now()};
+            const auto now{std::chrono::steady_clock::now()};
             const std::lock_guard<Lockable> lock{_lockable};
             const auto pos{std::find_if(
               _intervals.rbegin(),
@@ -188,11 +188,11 @@ public:
             assert(pos != _intervals.rend());
             _add(R"(,{"t":"i","iid":)");
             _add(std::get<1>(*pos));
-            _add(R"(,"lbl":")");
+            _add(R"(,"tag":")");
             _add(std::get<2>(*pos).name());
-            _add(R"(","tns":")");
-            _add(std::chrono::nanoseconds(end - std::get<3>(*pos)).count());
-            _add(R"("})");
+            _add(R"(,"tns":)");
+            _add(std::chrono::nanoseconds(now - std::get<3>(*pos)).count());
+            _add(R"(})");
             _flush();
             _intervals.erase(std::next(pos).base());
         } catch(...) {

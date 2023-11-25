@@ -346,8 +346,14 @@ void ostream_sink::consume(const interval_info& info) noexcept {
 }
 //------------------------------------------------------------------------------
 void ostream_output::consume(
-  const ostream_sink&,
-  const heartbeat_info&) noexcept {}
+  const ostream_sink& s,
+  const heartbeat_info& info) noexcept {
+    _conn_I(s) << " ╭──────────┬──────────╮\n";
+    _conn_L(s) << "│";
+    _output << "│heart-beat│\n";
+    _conn_L(s) << padded_to(10, format_reltime(s.time_since_start(info)));
+    _conn_I(s) << " ╰──────────┴──────────╯\n";
+}
 //------------------------------------------------------------------------------
 void ostream_sink::consume(const heartbeat_info& info) noexcept {
     _parent->consume(*this, info);
