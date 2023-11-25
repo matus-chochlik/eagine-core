@@ -23,12 +23,35 @@ struct begin_info {
     std::string identity;
 };
 //------------------------------------------------------------------------------
+struct description_info {
+    float_seconds offset;
+    identifier source;
+    std::string display_name;
+    std::string description;
+    std::uint64_t instance{0};
+};
+//------------------------------------------------------------------------------
+struct declare_state_info {
+    float_seconds offset;
+    identifier source;
+    identifier begin_tag;
+    identifier end_tag;
+    std::uint64_t instance{0};
+};
+//------------------------------------------------------------------------------
+struct active_state_info {
+    float_seconds offset;
+    identifier source;
+    identifier state_tag;
+    std::uint64_t instance{0};
+};
+//------------------------------------------------------------------------------
 struct message_info {
     float_seconds offset;
     std::string format;
-    std::string severity;
-    std::string source;
-    std::string tag;
+    log_event_severity severity;
+    identifier source;
+    identifier tag;
     std::uint64_t instance{0};
 
     struct arg_info {
@@ -36,6 +59,7 @@ struct message_info {
         identifier tag;
         std::variant<
           std::string,
+          identifier,
           float_seconds,
           float,
           std::int64_t,
@@ -47,6 +71,15 @@ struct message_info {
     };
 
     std::vector<arg_info> args;
+};
+//------------------------------------------------------------------------------
+struct interval_info {
+    identifier source;
+    std::uint64_t instance{0};
+
+    auto key() const noexcept -> std::tuple<identifier_t, std::uint64_t> {
+        return {source.value(), instance};
+    }
 };
 //------------------------------------------------------------------------------
 struct heartbeat_info {
@@ -62,7 +95,11 @@ struct finish_info {
 //------------------------------------------------------------------------------
 struct stream_sink : interface<stream_sink> {
     virtual void consume(const begin_info&) noexcept = 0;
+    virtual void consume(const description_info&) noexcept = 0;
+    virtual void consume(const declare_state_info&) noexcept = 0;
+    virtual void consume(const active_state_info&) noexcept = 0;
     virtual void consume(const message_info&) noexcept = 0;
+    virtual void consume(const interval_info&) noexcept = 0;
     virtual void consume(const heartbeat_info&) noexcept = 0;
     virtual void consume(const finish_info&) noexcept = 0;
 };
@@ -232,8 +269,15 @@ private:
     const std::chrono::steady_clock::time_point _start{
       std::chrono::steady_clock::now()};
     unique_holder<stream_sink> _sink;
-    std::vector<
-      std::variant<begin_info, message_info, heartbeat_info, finish_info>>
+    std::vector<std::variant<
+      begin_info,
+      description_info,
+      declare_state_info,
+      active_state_info,
+      message_info,
+      interval_info,
+      heartbeat_info,
+      finish_info>>
       _backlog;
     message_info _message{};
 };

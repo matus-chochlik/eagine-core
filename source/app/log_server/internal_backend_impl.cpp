@@ -84,20 +84,36 @@ void internal_backend::time_interval_end(
   time_interval_id) noexcept {}
 //------------------------------------------------------------------------------
 void internal_backend::set_description(
-  [[maybe_unused]] identifier source,
-  [[maybe_unused]] logger_instance_id instance,
-  [[maybe_unused]] string_view display_name,
-  [[maybe_unused]] string_view description) noexcept {}
+  identifier source,
+  logger_instance_id instance,
+  string_view display_name,
+  string_view description) noexcept {
+    _dispatch(description_info{
+      .offset = _offset(),
+      .source = source,
+      .display_name = to_string(display_name),
+      .description = to_string(description),
+      .instance = instance});
+}
 //------------------------------------------------------------------------------
 void internal_backend::declare_state(
-  [[maybe_unused]] const identifier source,
-  [[maybe_unused]] const identifier state_tag,
-  [[maybe_unused]] const identifier begin_tag,
-  [[maybe_unused]] const identifier end_tag) noexcept {}
+  const identifier source,
+  const identifier state_tag,
+  const identifier begin_tag,
+  const identifier end_tag) noexcept {
+    _dispatch(declare_state_info{
+      .offset = _offset(),
+      .source = source,
+      .begin_tag = begin_tag,
+      .end_tag = end_tag});
+}
 //------------------------------------------------------------------------------
 void internal_backend::active_state(
-  [[maybe_unused]] const identifier source,
-  [[maybe_unused]] const identifier state_tag) noexcept {}
+  const identifier source,
+  const identifier state_tag) noexcept {
+    _dispatch(active_state_info{
+      .offset = _offset(), .source = source, .state_tag = state_tag});
+}
 //------------------------------------------------------------------------------
 auto internal_backend::begin_message(
   identifier source,
@@ -107,9 +123,9 @@ auto internal_backend::begin_message(
   string_view format) noexcept -> bool {
     _message.offset = _offset();
     _message.format = to_string(format);
-    _message.severity = to_string(enumerator_name(severity));
-    _message.source = source.name().str();
-    _message.tag = tag.name().str();
+    _message.severity = severity;
+    _message.source = source;
+    _message.tag = tag;
     _message.instance = instance;
     _message.args.clear();
     return true;
@@ -123,9 +139,8 @@ void internal_backend::add_identifier(
   identifier name,
   identifier tag,
   identifier value) noexcept {
-    (void)name;
-    (void)tag;
-    (void)value;
+    _message.args.emplace_back(
+      message_info::arg_info{.name = name, .tag = tag, .value = value});
 }
 //------------------------------------------------------------------------------
 void internal_backend::add_message_id(

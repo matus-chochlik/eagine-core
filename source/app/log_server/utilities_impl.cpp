@@ -81,6 +81,9 @@ auto format_default(const message_info::arg_info& i) -> std::string {
             return "False";
         }
     }
+    if(const auto val{get_if<identifier>(i.value)}; val.has_value()) {
+        return val->name().str();
+    }
     return get_if<std::string>(i.value).value_or("-");
 }
 //------------------------------------------------------------------------------
@@ -262,8 +265,7 @@ auto message_formatter::format(const message_info& info) noexcept
 //------------------------------------------------------------------------------
 auto operator<<(std::ostream& output, const string_padded_to& s) noexcept
   -> std::ostream& {
-    output << std::format("{1: ^{0}}", s.length, s.str);
-    return output;
+    return output << std::format("{1: ^{0}}", s.length, s.str);
 }
 //------------------------------------------------------------------------------
 auto padded_to(std::size_t l, std::string_view s) noexcept -> string_padded_to {
@@ -271,6 +273,16 @@ auto padded_to(std::size_t l, std::string_view s) noexcept -> string_padded_to {
         return {.str = s, .length = l};
     }
     return {.str = s};
+}
+//------------------------------------------------------------------------------
+auto operator<<(std::ostream& output, const identifier_padded_to& s) noexcept
+  -> std::ostream& {
+    output << std::format("{1: ^{0}}", s.length, std::string_view{s.id.name()});
+    return output;
+}
+//------------------------------------------------------------------------------
+auto padded_to(std::size_t l, identifier id) noexcept -> identifier_padded_to {
+    return {.id = id, .length = l};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::logs

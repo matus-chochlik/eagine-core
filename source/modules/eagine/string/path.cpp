@@ -183,8 +183,15 @@ public:
 
     /// @brief Returns the number of elements in this path.
     /// @see empty
+    /// @see has_size
     [[nodiscard]] auto size() const noexcept -> size_type {
         return _size;
+    }
+
+    /// @brief Indicates if this path has the specified length.
+    /// @see size
+    [[nodiscard]] auto has_size(size_type s) const noexcept -> bool {
+        return _size == s;
     }
 
     [[nodiscard]] static auto required_bytes(const size_type l) noexcept

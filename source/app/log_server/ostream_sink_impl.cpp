@@ -26,14 +26,18 @@ public:
     ostream_sink(stream_id_t id, shared_holder<ostream_output> parent) noexcept;
 
     auto id() const noexcept -> stream_id_t;
-    auto root() const noexcept -> string_view;
+    auto root() const noexcept -> identifier;
     auto time_since_start(const auto&) const noexcept
       -> std::chrono::microseconds;
     auto time_since_prev(const auto&) const noexcept
       -> std::chrono::microseconds;
 
     void consume(const begin_info&) noexcept final;
+    void consume(const description_info&) noexcept final;
+    void consume(const declare_state_info&) noexcept final;
+    void consume(const active_state_info&) noexcept final;
     void consume(const message_info&) noexcept final;
+    void consume(const interval_info&) noexcept final;
     void consume(const heartbeat_info&) noexcept final;
     void consume(const finish_info&) noexcept final;
 
@@ -42,16 +46,18 @@ private:
     shared_holder<ostream_output> _parent;
     message_formatter _formatter;
     float_seconds _prev_offs{};
-    std::string _root;
+    identifier _root;
     begin_info _begin{};
+
+    flat_map<std::tuple<identifier_t, std::uint64_t>, interval_info> _intervals;
 };
 //------------------------------------------------------------------------------
 auto ostream_sink::id() const noexcept -> stream_id_t {
     return _id;
 }
 //------------------------------------------------------------------------------
-auto ostream_sink::root() const noexcept -> string_view {
-    return {_root};
+auto ostream_sink::root() const noexcept -> identifier {
+    return _root;
 }
 //------------------------------------------------------------------------------
 auto ostream_sink::time_since_start(const auto& info) const noexcept
@@ -80,10 +86,14 @@ public:
     ~ostream_output() noexcept final;
 
     void consume(const ostream_sink&, const begin_info&) noexcept;
+    void consume(const ostream_sink&, const description_info&) noexcept;
+    void consume(const ostream_sink&, const declare_state_info&) noexcept;
+    void consume(const ostream_sink&, const active_state_info&) noexcept;
     void consume(
       const ostream_sink&,
       const message_info&,
       message_formatter& formatter) noexcept;
+    void consume(const ostream_sink&, const interval_info&) noexcept;
     void consume(const ostream_sink&, const heartbeat_info&) noexcept;
     void consume(const ostream_sink&, const finish_info&) noexcept;
 
@@ -220,17 +230,50 @@ void ostream_sink::consume(const begin_info& info) noexcept {
 //------------------------------------------------------------------------------
 void ostream_output::consume(
   const ostream_sink& s,
+  const description_info& info) noexcept {
+    (void)s;
+    (void)info;
+}
+//------------------------------------------------------------------------------
+void ostream_sink::consume(const description_info& info) noexcept {
+    _parent->consume(*this, info);
+}
+//------------------------------------------------------------------------------
+void ostream_output::consume(
+  const ostream_sink& s,
+  const declare_state_info& info) noexcept {
+    (void)s;
+    (void)info;
+}
+//------------------------------------------------------------------------------
+void ostream_sink::consume(const declare_state_info& info) noexcept {
+    _parent->consume(*this, info);
+}
+//------------------------------------------------------------------------------
+void ostream_output::consume(
+  const ostream_sink& s,
+  const active_state_info& info) noexcept {
+    (void)s;
+    (void)info;
+}
+//------------------------------------------------------------------------------
+void ostream_sink::consume(const active_state_info& info) noexcept {
+    _parent->consume(*this, info);
+}
+//------------------------------------------------------------------------------
+void ostream_output::consume(
+  const ostream_sink& s,
   const message_info& info,
   message_formatter& formatter) noexcept {
     if(_condensed) {
         _conn_Z(s) << "━┑";
     } else {
-        if(info.tag.empty()) {
-            _conn_I(s) << " ╭──────────┬──────────┬─────────┬"
-                          "──────────┬──────────┬────────────╮\n";
-        } else {
+        if(info.tag) {
             _conn_I(s) << " ╭──────────┬──────────┬─────────┬"
                           "──────────┬──────────┬──────────┬────────────╮\n";
+        } else {
+            _conn_I(s) << " ╭──────────┬──────────┬─────────┬"
+                          "──────────┬──────────┬────────────╮\n";
         }
         _conn_Z(s) << "━┥";
     }
@@ -238,25 +281,25 @@ void ostream_output::consume(
     _output << "│";
     _output << padded_to(10, format_reltime(s.time_since_prev(info)));
     _output << "│";
-    _output << padded_to(9, info.severity);
+    _output << padded_to(9, enumerator_name(info.severity));
     _output << "│";
     _output << padded_to(10, s.root());
     _output << "│";
     _output << padded_to(10, info.source);
     _output << "│";
-    if(not info.tag.empty()) {
+    if(info.tag) {
         _output << padded_to(10, info.tag);
         _output << "│";
     }
     _output << padded_to(12, format_instance(info.instance, _temp));
     _output << "│";
     _output << '\n';
-    if(info.tag.empty()) {
-        _conn_I(s) << " ╰┬─────────┴──────────┴─────────┴"
-                      "──────────┴──────────┴────────────╯\n";
-    } else {
+    if(info.tag) {
         _conn_I(s) << " ╰┬─────────┴──────────┴─────────┴"
                       "──────────┴──────────┴──────────┴────────────╯\n";
+    } else {
+        _conn_I(s) << " ╰┬─────────┴──────────┴─────────┴"
+                      "──────────┴──────────┴────────────╯\n";
     }
     const auto arg_count{info.args.size()};
 
@@ -284,11 +327,22 @@ void ostream_output::consume(
 }
 //------------------------------------------------------------------------------
 void ostream_sink::consume(const message_info& info) noexcept {
-    if(_root.empty()) {
+    if(not _root) {
         _root = info.source;
     }
     _parent->consume(*this, info, _formatter);
     _prev_offs = info.offset;
+}
+//------------------------------------------------------------------------------
+void ostream_output::consume(
+  const ostream_sink& s,
+  const interval_info& info) noexcept {
+    (void)s;
+    (void)info;
+}
+//------------------------------------------------------------------------------
+void ostream_sink::consume(const interval_info& info) noexcept {
+    _parent->consume(*this, info);
 }
 //------------------------------------------------------------------------------
 void ostream_output::consume(

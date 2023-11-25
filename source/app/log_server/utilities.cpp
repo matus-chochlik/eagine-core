@@ -41,8 +41,17 @@ struct string_padded_to {
       std::ostream& output,
       const string_padded_to& s) noexcept -> std::ostream&;
 };
-//------------------------------------------------------------------------------
 auto padded_to(std::size_t, std::string_view) noexcept -> string_padded_to;
+//------------------------------------------------------------------------------
+struct identifier_padded_to {
+    const identifier id;
+    const std::size_t length{0};
+
+    friend auto operator<<(
+      std::ostream& output,
+      const identifier_padded_to& s) noexcept -> std::ostream&;
+};
+auto padded_to(std::size_t, identifier) noexcept -> identifier_padded_to;
 //------------------------------------------------------------------------------
 } // namespace eagine::logs
 

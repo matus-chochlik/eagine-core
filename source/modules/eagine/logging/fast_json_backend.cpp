@@ -147,7 +147,7 @@ public:
             _add(R"({"t":"begin","time":")");
             _add(start_tse);
             if(not _session_identity.empty()) {
-                _add(R"(,"session":")");
+                _add(R"(","session":")");
                 _add(_session_identity);
             }
             if(not _log_identity.empty()) {
@@ -186,9 +186,9 @@ public:
                   return std::get<0>(entry) == int_id;
               })};
             assert(pos != _intervals.rend());
-            _add(R"(,{"t":"i","iid":")");
+            _add(R"(,{"t":"i","iid":)");
             _add(std::get<1>(*pos));
-            _add(R"(","lbl":")");
+            _add(R"(,"lbl":")");
             _add(std::get<2>(*pos).name());
             _add(R"(","tns":")");
             _add(std::chrono::nanoseconds(end - std::get<3>(*pos)).count());
@@ -205,12 +205,16 @@ public:
       const string_view display_name,
       const string_view description) noexcept final {
         try {
+            const auto now{std::chrono::steady_clock::now()};
+            const auto sec{std::chrono::duration<float>(now - _start)};
             const std::lock_guard<Lockable> lock{_lockable};
             _add(R"(,{"t":"d","src":")");
             _add(source.name());
-            _add(R"(","iid":")");
+            _add(R"(","iid":)");
             _add(instance);
-            _add(R"(","dn":")");
+            _add(R"(,"ts":)");
+            _add(sec.count());
+            _add(R"(,"dn":")");
             _add(display_name);
             _add(R"(","desc":")");
             _add(description);
@@ -226,12 +230,16 @@ public:
       const identifier begin_tag,
       const identifier end_tag) noexcept final {
         try {
+            const auto now{std::chrono::steady_clock::now()};
+            const auto sec{std::chrono::duration<float>(now - _start)};
             const std::lock_guard<Lockable> lock{_lockable};
             _add(R"(,{"t":"ds","src":")");
             _add(source.name());
             _add(R"(","tag":")");
             _add(state_tag.name());
-            _add(R"(","bgn":")");
+            _add(R"(","ts":)");
+            _add(sec.count());
+            _add(R"(,"bgn":")");
             _add(begin_tag.name());
             _add(R"(","end":")");
             _add(end_tag.name());
@@ -245,12 +253,16 @@ public:
       const identifier source,
       const identifier state_tag) noexcept final {
         try {
+            const auto now{std::chrono::steady_clock::now()};
+            const auto sec{std::chrono::duration<float>(now - _start)};
             const std::lock_guard<Lockable> lock{_lockable};
             _add(R"(,{"t":"as","src":")");
             _add(source.name());
             _add(R"(","tag":")");
             _add(state_tag.name());
-            _add(R"("})");
+            _add(R"(","ts":)");
+            _add(sec.count());
+            _add(R"(})");
             _flush();
         } catch(...) {
         }
