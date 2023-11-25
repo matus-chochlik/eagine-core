@@ -177,15 +177,13 @@ private:
 
     void begin_log() noexcept final;
 
-    void time_interval_begin(
-      identifier,
-      logger_instance_id,
-      time_interval_id) noexcept final;
+    auto register_time_interval(
+      const identifier tag,
+      const logger_instance_id) noexcept -> time_interval_id final;
 
-    void time_interval_end(
-      identifier,
-      logger_instance_id,
-      time_interval_id) noexcept final;
+    void time_interval_begin(time_interval_id) noexcept final;
+
+    void time_interval_end(time_interval_id) noexcept final;
 
     void set_description(
       identifier source,

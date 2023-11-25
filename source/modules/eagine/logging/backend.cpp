@@ -107,19 +107,17 @@ export struct logger_backend : interface<logger_backend> {
     /// @brief Starts the current log.
     virtual void begin_log() noexcept = 0;
 
+    virtual auto register_time_interval(
+      const identifier tag,
+      const logger_instance_id) noexcept -> time_interval_id = 0;
+
     /// @brief Start of time interval measurement.
     /// @see time_interval_end
-    virtual void time_interval_begin(
-      const identifier,
-      const logger_instance_id,
-      const time_interval_id) noexcept = 0;
+    virtual void time_interval_begin(const time_interval_id) noexcept = 0;
 
     /// @brief End of time interval measurement.
     /// @see time_interval_begin
-    virtual void time_interval_end(
-      const identifier,
-      const logger_instance_id,
-      const time_interval_id) noexcept = 0;
+    virtual void time_interval_end(const time_interval_id) noexcept = 0;
 
     /// @brief Sets the user-readable description for the logger object.
     virtual void set_description(
@@ -421,31 +419,24 @@ export auto make_syslog_log_backend(const log_stream_info&, bool use_spinlock)
 class log_time_interval {
 
 public:
-    auto interval_id() const noexcept {
-        return reinterpret_cast<time_interval_id>(this);
-    }
-
     log_time_interval(
-      const identifier label,
-      const logger_instance_id inst,
+      const time_interval_id id,
       logger_backend* backend) noexcept
-      : _label{label}
-      , _instance_id{inst}
+      : _id{id}
       , _backend{backend} {
         if(_backend) {
-            _backend->time_interval_begin(_label, _instance_id, interval_id());
+            _backend->time_interval_begin(_id);
         }
     }
 
     ~log_time_interval() noexcept {
         if(_backend) {
-            _backend->time_interval_end(_label, _instance_id, interval_id());
+            _backend->time_interval_end(_id);
         }
     }
 
 private:
-    const identifier _label;
-    const logger_instance_id _instance_id;
+    const time_interval_id _id;
     logger_backend* const _backend;
 };
 //------------------------------------------------------------------------------

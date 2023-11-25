@@ -65,15 +65,15 @@ public:
 #endif
     }
 
-    void time_interval_begin(
-      identifier,
-      logger_instance_id,
-      time_interval_id) noexcept final {}
+    auto register_time_interval(
+      const identifier tag,
+      const logger_instance_id) noexcept -> time_interval_id final {
+        return 0U;
+    }
 
-    void time_interval_end(
-      identifier,
-      logger_instance_id,
-      time_interval_id) noexcept final {}
+    void time_interval_begin(time_interval_id) noexcept final {}
+
+    void time_interval_end(time_interval_id) noexcept final {}
 
     void set_description(
       [[maybe_unused]] const identifier src,

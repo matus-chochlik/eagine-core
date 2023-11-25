@@ -39,15 +39,13 @@ public:
 
     void begin_log() noexcept final;
 
-    void time_interval_begin(
-      const identifier,
-      const logger_instance_id,
-      const time_interval_id) noexcept final;
+    auto register_time_interval(
+      const identifier tag,
+      const logger_instance_id) noexcept -> time_interval_id final;
 
-    void time_interval_end(
-      const identifier,
-      const logger_instance_id,
-      const time_interval_id) noexcept final;
+    void time_interval_begin(const time_interval_id) noexcept final;
+
+    void time_interval_end(const time_interval_id) noexcept final;
 
     void set_description(
       const identifier source,
@@ -176,21 +174,26 @@ void proxy_log_backend::begin_log() noexcept {
     }
 }
 //------------------------------------------------------------------------------
+auto proxy_log_backend::register_time_interval(
+  const identifier tag,
+  const logger_instance_id log_id) noexcept -> time_interval_id {
+    if(_delegate) [[likely]] {
+        return _delegate->register_time_interval(tag, log_id);
+    }
+    return 0U;
+}
+//------------------------------------------------------------------------------
 void proxy_log_backend::time_interval_begin(
-  const identifier label,
-  const logger_instance_id log_id,
   const time_interval_id int_id) noexcept {
     if(_delegate) [[likely]] {
-        _delegate->time_interval_begin(label, log_id, int_id);
+        _delegate->time_interval_begin(int_id);
     }
 }
 //------------------------------------------------------------------------------
 void proxy_log_backend::time_interval_end(
-  const identifier label,
-  const logger_instance_id log_id,
   const time_interval_id int_id) noexcept {
     if(_delegate) [[likely]] {
-        _delegate->time_interval_end(label, log_id, int_id);
+        _delegate->time_interval_end(int_id);
     }
 }
 //------------------------------------------------------------------------------

@@ -73,15 +73,15 @@ void internal_backend::begin_log() noexcept {
     _dispatch(begin_info{});
 }
 //------------------------------------------------------------------------------
-void internal_backend::time_interval_begin(
-  identifier,
-  logger_instance_id,
-  time_interval_id) noexcept {}
+auto internal_backend::register_time_interval(
+  const identifier,
+  const logger_instance_id) noexcept -> time_interval_id {
+    return 0U;
+}
 //------------------------------------------------------------------------------
-void internal_backend::time_interval_end(
-  identifier,
-  logger_instance_id,
-  time_interval_id) noexcept {}
+void internal_backend::time_interval_begin(time_interval_id) noexcept {}
+//------------------------------------------------------------------------------
+void internal_backend::time_interval_end(time_interval_id) noexcept {}
 //------------------------------------------------------------------------------
 void internal_backend::set_description(
   identifier source,

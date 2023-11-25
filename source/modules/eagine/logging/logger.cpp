@@ -56,6 +56,10 @@ private:
     shared_holder<logger_backend> _backend{};
 };
 //------------------------------------------------------------------------------
+export struct time_interval_handle {
+    const time_interval_id _id;
+};
+//------------------------------------------------------------------------------
 /// @brief Basic template for logger objects.
 /// @ingroup logging
 export template <typename BackendGetter>
@@ -85,17 +89,26 @@ public:
         return reinterpret_cast<logger_instance_id>(this);
     }
 
-    /// @brief Creates object the lifetime of this is measured and logged.
-    auto measure_time_interval(
-      const identifier label,
-      log_event_severity severity) const noexcept -> log_time_interval {
-        return {label, instance_id(), _entry_backend(severity)};
+    /// @brief Returns an identifier for an interval time measurement.
+    auto register_time_interval(const identifier label) const noexcept
+      -> time_interval_handle {
+        if(auto lbe{backend()}) {
+            return {._id = lbe->register_time_interval(label, instance_id())};
+        }
+        return {._id = 0U};
     }
 
     /// @brief Creates object the lifetime of this is measured and logged.
-    auto measure_time_interval(const identifier label) const noexcept
+    auto measure_time_interval(
+      const time_interval_handle handle,
+      log_event_severity severity) const noexcept -> log_time_interval {
+        return {handle._id, _entry_backend(severity)};
+    }
+
+    /// @brief Creates object the lifetime of this is measured and logged.
+    auto measure_time_interval(const time_interval_handle handle) const noexcept
       -> log_time_interval {
-        return measure_time_interval(label, log_event_severity::stat);
+        return measure_time_interval(handle, log_event_severity::stat);
     }
 
     auto configure(basic_config_intf& config) const -> bool {

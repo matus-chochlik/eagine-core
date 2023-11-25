@@ -160,41 +160,61 @@ public:
         }
     }
 
-    void time_interval_begin(
+    auto register_time_interval(
       const identifier tag,
-      const logger_instance_id log_id,
-      const time_interval_id int_id) noexcept final {
+      const logger_instance_id log_id) noexcept -> time_interval_id final {
         try {
+            const auto key{std::make_tuple(tag.value(), log_id)};
             const std::lock_guard<Lockable> lock{_lockable};
-            _intervals.emplace_back(
-              int_id, log_id, tag, std::chrono::steady_clock::now());
+            auto pos{_intervals.find(key)};
+            if(pos == _intervals.end()) {
+                pos =
+                  _intervals
+                    .emplace(key, _interval_info{.tag = tag, .log_id = log_id})
+                    .first;
+            }
+            return reinterpret_cast<time_interval_id>(&(pos->second));
+        } catch(...) {
+            return 0U;
+        }
+    }
+
+    auto _get_interval(const time_interval_id int_id) noexcept -> auto* {
+        return static_cast<_interval_info*>(reinterpret_cast<void*>(int_id));
+    }
+
+    void time_interval_begin(const time_interval_id int_id) noexcept final {
+        try {
+            if(const auto info{_get_interval(int_id)}) {
+                info->start = std::chrono::steady_clock::now();
+            }
         } catch(...) {
         }
     }
 
-    void time_interval_end(
-      const identifier label,
-      const logger_instance_id log_id,
-      const time_interval_id int_id) noexcept final {
+    void time_interval_end(const time_interval_id int_id) noexcept final {
         try {
-            const auto now{std::chrono::steady_clock::now()};
-            const std::lock_guard<Lockable> lock{_lockable};
-            const auto pos{std::find_if(
-              _intervals.rbegin(),
-              _intervals.rend(),
-              [int_id](const auto& entry) {
-                  return std::get<0>(entry) == int_id;
-              })};
-            assert(pos != _intervals.rend());
-            _add(R"(,{"t":"i","iid":)");
-            _add(std::get<1>(*pos));
-            _add(R"(,"tag":")");
-            _add(std::get<2>(*pos).name());
-            _add(R"(,"tns":)");
-            _add(std::chrono::nanoseconds(now - std::get<3>(*pos)).count());
-            _add(R"(})");
-            _flush();
-            _intervals.erase(std::next(pos).base());
+            if(const auto info{_get_interval(int_id)}) {
+                const auto now{std::chrono::steady_clock::now()};
+                info->count++;
+                info->duration += (now - info->start);
+
+                const auto batch{1'000U};
+                if(info->count >= batch) {
+                    std::chrono::nanoseconds avg{(info->duration / batch)};
+                    const std::lock_guard<Lockable> lock{_lockable};
+                    _add(R"(,{"t":"i","iid":)");
+                    _add(info->log_id);
+                    _add(R"(,"tag":")");
+                    _add(info->tag);
+                    _add(R"(","tns":)");
+                    _add(avg.count());
+                    _add(R"(})");
+                    _flush();
+                    info->count = 0U;
+                    info->duration = {};
+                }
+            }
         } catch(...) {
         }
     }
@@ -472,8 +492,13 @@ public:
 
     void heartbeat() noexcept final {
         try {
+            const auto now{std::chrono::steady_clock::now()};
+            const auto sec{std::chrono::duration<float>(now - _start)};
             const std::lock_guard<Lockable> lock{_lockable};
-            _add(R"(,{"t":"hb"})");
+            _add(R"(,{"t":"hb")");
+            _add(R"(,"ts":)");
+            _add(sec.count());
+            _add(R"(})");
             _flush();
         } catch(...) {
         }
@@ -502,11 +527,16 @@ private:
     std::string _buffer;
     std::string _b64lob;
     memory::shared_byte_allocator _alloc{memory::default_byte_allocator()};
-    std::vector<std::tuple<
-      time_interval_id,
-      logger_instance_id,
-      identifier,
-      std::chrono::steady_clock::time_point>>
+
+    struct _interval_info {
+        identifier tag;
+        logger_instance_id log_id;
+        std::chrono::steady_clock::time_point start{};
+        std::chrono::steady_clock::duration duration{};
+        std::size_t count{0};
+    };
+
+    std::map<std::tuple<identifier_t, logger_instance_id>, _interval_info>
       _intervals;
 };
 //------------------------------------------------------------------------------
