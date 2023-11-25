@@ -149,18 +149,16 @@ void internal_backend::add_integer(
   identifier name,
   identifier tag,
   std::intmax_t value) noexcept {
-    (void)name;
-    (void)tag;
-    (void)value;
+    _message.args.emplace_back(
+      message_info::arg_info{.name = name, .tag = tag, .value = value});
 }
 //------------------------------------------------------------------------------
 void internal_backend::add_unsigned(
   identifier name,
   identifier tag,
   std::uintmax_t value) noexcept {
-    (void)name;
-    (void)tag;
-    (void)value;
+    _message.args.emplace_back(
+      message_info::arg_info{.name = name, .tag = tag, .value = value});
 }
 //------------------------------------------------------------------------------
 void internal_backend::add_float(

@@ -19,46 +19,30 @@ import eagine.core;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
-template <typename Socket>
+// Stream reader
+//------------------------------------------------------------------------------
+template <typename Acceptor, typename Socket>
+class asio_reader_base;
+
+template <typename Acceptor, typename Socket>
 class asio_reader_stream
-  : public std::enable_shared_from_this<asio_reader_stream<Socket>> {
+  : public std::enable_shared_from_this<asio_reader_stream<Acceptor, Socket>> {
 public:
-    asio_reader_stream(Socket socket, parser_input sink) noexcept;
+    asio_reader_stream(
+      asio_reader_base<Acceptor, Socket>&,
+      Socket socket,
+      parser_input sink) noexcept;
 
     void start();
 
 private:
     void _read();
 
+    asio_reader_base<Acceptor, Socket>& _parent;
     Socket _socket;
     parser_input _sink;
     std::array<char, 1024> _chunk{};
 };
-//------------------------------------------------------------------------------
-template <typename Socket>
-void asio_reader_stream<Socket>::start() {
-    _read();
-}
-//------------------------------------------------------------------------------
-template <typename Socket>
-void asio_reader_stream<Socket>::_read() {
-    auto self{this->shared_from_this()};
-    _socket.async_read_some(
-      asio::buffer(_chunk.data(), _chunk.size()),
-      [this, self](std::error_code error, std::size_t size) {
-          if(not error) {
-              _sink.consume_text(head(view(_chunk), span_size(size)));
-              _read();
-          }
-      });
-}
-//------------------------------------------------------------------------------
-template <typename Socket>
-asio_reader_stream<Socket>::asio_reader_stream(
-  Socket socket,
-  parser_input sink) noexcept
-  : _socket{std::move(socket)}
-  , _sink{std::move(sink)} {}
 //------------------------------------------------------------------------------
 // Acceptor base
 //------------------------------------------------------------------------------
@@ -75,6 +59,8 @@ public:
 
     auto run() noexcept -> bool final;
 
+    void on_read(std::size_t) noexcept;
+
 protected:
     void _accept();
 
@@ -83,13 +69,44 @@ protected:
     asio::signal_set _signals{_io, SIGINT, SIGTERM};
     Acceptor _acceptor;
     Socket _socket{_io};
+    std::size_t _batch_count{0U};
+    std::size_t _batch_read{0U};
 };
+//------------------------------------------------------------------------------
+template <typename Acceptor, typename Socket>
+void asio_reader_stream<Acceptor, Socket>::start() {
+    _read();
+}
+//------------------------------------------------------------------------------
+template <typename Acceptor, typename Socket>
+void asio_reader_stream<Acceptor, Socket>::_read() {
+    auto self{this->shared_from_this()};
+    _socket.async_read_some(
+      asio::buffer(_chunk.data(), _chunk.size()),
+      [this, self](std::error_code error, std::size_t size) {
+          if(not error) {
+              _sink.consume_text(head(view(_chunk), span_size(size)));
+              _parent.on_read(size);
+              _read();
+          }
+      });
+}
+//------------------------------------------------------------------------------
+template <typename Acceptor, typename Socket>
+asio_reader_stream<Acceptor, Socket>::asio_reader_stream(
+  asio_reader_base<Acceptor, Socket>& parent,
+  Socket socket,
+  parser_input sink) noexcept
+  : _parent{parent}
+  , _socket{std::move(socket)}
+  , _sink{std::move(sink)} {}
 //------------------------------------------------------------------------------
 template <typename Acceptor, typename Socket>
 void asio_reader_base<Acceptor, Socket>::_accept() {
     _acceptor.async_accept(_socket, [this](std::error_code error) {
         if(not error) {
-            std::make_shared<asio_reader_stream<Socket>>(
+            std::make_shared<asio_reader_stream<Acceptor, Socket>>(
+              *this,
               std::move(_socket),
               make_data_parser(main_context(), _factory->make_stream()))
               ->start();
@@ -110,6 +127,21 @@ asio_reader_base<Acceptor, Socket>::asio_reader_base(
 
     _signals.async_wait([&](auto, auto) { _io.stop(); });
     _accept();
+}
+//------------------------------------------------------------------------------
+template <typename Acceptor, typename Socket>
+void asio_reader_base<Acceptor, Socket>::on_read(std::size_t size) noexcept {
+    const std::size_t batch{1024U * 1024U * 1024U};
+
+    _batch_read += size;
+    if(_batch_read > batch) {
+        _batch_read -= batch;
+        ++_batch_count;
+        log_stat("read ${count} * ${batch} of log data")
+          .tag("readBytes")
+          .arg("count", _batch_count)
+          .arg("batch", "ByteSize", batch);
+    }
 }
 //------------------------------------------------------------------------------
 template <typename Acceptor, typename Socket>
@@ -217,4 +249,3 @@ auto make_asio_tcp_ipv4_reader(
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::logs
-

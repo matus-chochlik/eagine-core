@@ -26,16 +26,37 @@ public:
     auto run() noexcept -> bool final;
 
 private:
+    void _on_read(std::size_t size) noexcept;
+
+    main_ctx& _ctx;
     std::istream& _input;
     parser_input _sink;
+    std::size_t _batch_count{0U};
+    std::size_t _batch_read{0U};
 };
 //------------------------------------------------------------------------------
 istream_reader::istream_reader(
   main_ctx& ctx,
   std::istream& input,
   shared_holder<stream_sink_factory> factory) noexcept
-  : _input{input}
+  : _ctx{ctx}
+  , _input{input}
   , _sink{make_data_parser(ctx, factory->make_stream())} {}
+//------------------------------------------------------------------------------
+void istream_reader::_on_read(std::size_t size) noexcept {
+    const std::size_t batch{1024U * 1024U * 1024U};
+
+    _batch_read += size;
+    if(_batch_read > batch) {
+        _batch_read -= batch;
+        ++_batch_count;
+        _ctx.log()
+          .stat("read ${count} * ${batch} of log data")
+          .tag("readBytes")
+          .arg("count", _batch_count)
+          .arg("batch", "ByteSize", batch);
+    }
+}
 //------------------------------------------------------------------------------
 auto istream_reader::run() noexcept -> bool {
     std::array<char, 1024> chunk{};
@@ -46,7 +67,9 @@ auto istream_reader::run() noexcept -> bool {
         if(_input.bad()) {
             return false;
         }
-        _sink.consume_text(head(view(chunk), span_size(_input.gcount())));
+        const auto size{_input.gcount()};
+        _sink.consume_text(head(view(chunk), span_size(size)));
+        _on_read(std_size(size));
     }
     _sink.finish();
     return true;
