@@ -16,6 +16,13 @@ namespace eagine::logs {
 //------------------------------------------------------------------------------
 auto make_sink_factory(main_ctx& ctx) noexcept
   -> shared_holder<stream_sink_factory> {
+    if(const auto arg{ctx.args().find("--netcat")}) {
+        if(arg.next().starts_with("-")) {
+            return make_asio_tcp_ipv4_sink_factory(ctx, {});
+        }
+        return make_asio_tcp_ipv4_sink_factory(ctx, arg.next().get());
+    }
+
     return make_ostream_sink_factory(ctx);
 }
 //------------------------------------------------------------------------------

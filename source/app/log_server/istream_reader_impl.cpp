@@ -30,6 +30,7 @@ private:
 
     main_ctx& _ctx;
     std::istream& _input;
+    shared_holder<stream_sink_factory> _factory;
     parser_input _sink;
     std::size_t _batch_count{0U};
     std::size_t _batch_read{0U};
@@ -41,7 +42,10 @@ istream_reader::istream_reader(
   shared_holder<stream_sink_factory> factory) noexcept
   : _ctx{ctx}
   , _input{input}
-  , _sink{make_data_parser(ctx, factory->make_stream())} {}
+  , _factory{std::move(factory)}
+  , _sink{make_data_parser(ctx, _factory->make_stream())} {
+    _factory->update();
+}
 //------------------------------------------------------------------------------
 void istream_reader::_on_read(std::size_t size) noexcept {
     const std::size_t batch{1024U * 1024U * 1024U};
@@ -59,20 +63,28 @@ void istream_reader::_on_read(std::size_t size) noexcept {
 }
 //------------------------------------------------------------------------------
 auto istream_reader::run() noexcept -> bool {
-    std::array<char, 1024> chunk{};
-    while(not _input.eof()) {
-        _input.read(
-          static_cast<char*>(chunk.data()),
-          static_cast<std::streamsize>(chunk.size()));
-        if(_input.bad()) {
-            return false;
+    if(_input.good()) {
+        std::array<char, 1024> chunk{};
+        if(auto alive{_ctx.watchdog().start_watch()}) {
+            while(not _input.eof()) {
+                _input.read(
+                  static_cast<char*>(chunk.data()),
+                  static_cast<std::streamsize>(chunk.size()));
+                if(_input.bad()) {
+                    return false;
+                }
+                const auto size{_input.gcount()};
+                _sink.consume_text(head(view(chunk), span_size(size)));
+                _on_read(std_size(size));
+                _factory->update();
+                alive.notify();
+            }
         }
-        const auto size{_input.gcount()};
-        _sink.consume_text(head(view(chunk), span_size(size)));
-        _on_read(std_size(size));
+        _sink.finish();
+        _factory->update();
+        return true;
     }
-    _sink.finish();
-    return true;
+    return false;
 }
 //------------------------------------------------------------------------------
 // make reader

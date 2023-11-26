@@ -107,9 +107,16 @@ struct stream_sink : interface<stream_sink> {
 //------------------------------------------------------------------------------
 export struct stream_sink_factory : interface<stream_sink_factory> {
     virtual auto make_stream() noexcept -> unique_holder<stream_sink> = 0;
+    virtual void update() noexcept = 0;
 };
 //------------------------------------------------------------------------------
 auto make_ostream_sink_factory(main_ctx&) noexcept
+  -> shared_holder<stream_sink_factory>;
+//------------------------------------------------------------------------------
+auto make_asio_local_sink_factory(main_ctx&, string_view) noexcept
+  -> shared_holder<stream_sink_factory>;
+//------------------------------------------------------------------------------
+auto make_asio_tcp_ipv4_sink_factory(main_ctx&, string_view) noexcept
   -> shared_holder<stream_sink_factory>;
 //------------------------------------------------------------------------------
 export auto make_sink_factory(main_ctx&) noexcept

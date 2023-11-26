@@ -33,6 +33,8 @@ public:
       Socket socket,
       parser_input sink) noexcept;
 
+    ~asio_reader_stream() noexcept;
+
     void start();
 
 private:
@@ -63,10 +65,13 @@ public:
 
 protected:
     void _accept();
+    void _notify_later();
 
+    watched_process_lifetime _alive;
     shared_holder<stream_sink_factory> _factory;
     asio::io_context _io{1};
     asio::signal_set _signals{_io, SIGINT, SIGTERM};
+    asio::steady_timer _alive_timer{_io};
     Acceptor _acceptor;
     Socket _socket{_io};
     std::size_t _batch_count{0U};
@@ -102,16 +107,34 @@ asio_reader_stream<Acceptor, Socket>::asio_reader_stream(
   , _sink{std::move(sink)} {}
 //------------------------------------------------------------------------------
 template <typename Acceptor, typename Socket>
+asio_reader_stream<Acceptor, Socket>::~asio_reader_stream() noexcept {
+    _sink.finish();
+}
+//------------------------------------------------------------------------------
+template <typename Acceptor, typename Socket>
 void asio_reader_base<Acceptor, Socket>::_accept() {
     _acceptor.async_accept(_socket, [this](std::error_code error) {
         if(not error) {
+            log_info("starting new log stream");
             std::make_shared<asio_reader_stream<Acceptor, Socket>>(
               *this,
               std::move(_socket),
               make_data_parser(main_context(), _factory->make_stream()))
               ->start();
+            _factory->update();
         }
         _accept();
+    });
+}
+//------------------------------------------------------------------------------
+template <typename Acceptor, typename Socket>
+void asio_reader_base<Acceptor, Socket>::_notify_later() {
+    _alive_timer.expires_after(std::chrono::seconds{10});
+    _alive_timer.async_wait([this](std::error_code error) {
+        if(not error) {
+            _alive.notify();
+        }
+        _notify_later();
     });
 }
 //------------------------------------------------------------------------------
@@ -122,11 +145,13 @@ asio_reader_base<Acceptor, Socket>::asio_reader_base(
   shared_holder<stream_sink_factory> factory,
   auto endpoint) noexcept
   : main_ctx_object{id, ctx}
+  , _alive{ctx.watchdog().start_watch()}
   , _factory{std::move(factory)}
   , _acceptor{_io, std::move(endpoint)} {
 
     _signals.async_wait([&](auto, auto) { _io.stop(); });
     _accept();
+    _notify_later();
 }
 //------------------------------------------------------------------------------
 template <typename Acceptor, typename Socket>
@@ -142,6 +167,7 @@ void asio_reader_base<Acceptor, Socket>::on_read(std::size_t size) noexcept {
           .arg("count", _batch_count)
           .arg("batch", "ByteSize", batch);
     }
+    _factory->update();
 }
 //------------------------------------------------------------------------------
 template <typename Acceptor, typename Socket>

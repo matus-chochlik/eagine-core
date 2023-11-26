@@ -9,4 +9,5 @@ export module eagine.core.log_server;
 
 export import :interfaces;
 export import :utilities;
+export import :formatted_output;
 

@@ -23,6 +23,11 @@ public:
     double_buffer(const T& initial)
       : _values{{initial, initial}} {}
 
+    /// @brief Constructor setting the initial value for both buffers.
+    double_buffer(T first, T second) noexcept(
+      std::is_nothrow_move_constructible_v<T>)
+      : _values{{std::move(first), std::move(second)}} {}
+
     double_buffer(double_buffer&&) noexcept = default;
     double_buffer(const double_buffer&) = default;
     auto operator=(double_buffer&&) noexcept -> double_buffer& = default;

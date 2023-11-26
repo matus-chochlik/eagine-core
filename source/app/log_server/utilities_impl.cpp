@@ -263,26 +263,12 @@ auto message_formatter::format(const message_info& info) noexcept
 //------------------------------------------------------------------------------
 // string padded to length
 //------------------------------------------------------------------------------
-auto operator<<(std::ostream& output, const string_padded_to& s) noexcept
-  -> std::ostream& {
-    return output << std::format("{1: ^{0}}", s.length, s.str);
+auto padded_to(std::size_t l, std::string_view s) noexcept -> std::string {
+    return std::format("{1: ^{0}}", l, s);
 }
 //------------------------------------------------------------------------------
-auto padded_to(std::size_t l, std::string_view s) noexcept -> string_padded_to {
-    if(span_size(l) > s.size()) {
-        return {.str = s, .length = l};
-    }
-    return {.str = s};
-}
-//------------------------------------------------------------------------------
-auto operator<<(std::ostream& output, const identifier_padded_to& s) noexcept
-  -> std::ostream& {
-    output << std::format("{1: ^{0}}", s.length, std::string_view{s.id.name()});
-    return output;
-}
-//------------------------------------------------------------------------------
-auto padded_to(std::size_t l, identifier id) noexcept -> identifier_padded_to {
-    return {.id = id, .length = l};
+auto padded_to(std::size_t l, identifier id) noexcept -> std::string {
+    return std::format("{1: ^{0}}", l, std::string_view{id.name()});
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::logs
