@@ -106,7 +106,6 @@ private:
     auto _conn_s(const ostream_sink&) noexcept -> std::ostream&;
     auto _conn_Z(const ostream_sink&) noexcept -> std::ostream&;
     auto _conn_T(const ostream_sink&) noexcept -> std::ostream&;
-    auto _conn_t(const ostream_sink&) noexcept -> std::ostream&;
     auto _get_stream_id() noexcept -> std::uintmax_t;
 
     std::ostream& _output;
@@ -212,16 +211,6 @@ auto ostream_output::_conn_T(const ostream_sink&) noexcept -> std::ostream& {
         _output << "━━";
     }
     _output << "━┯━┥";
-    return _output;
-}
-//------------------------------------------------------------------------------
-auto ostream_output::_conn_t(const ostream_sink&) noexcept -> std::ostream& {
-    _output << "┝";
-    for(auto& s : _streams) {
-        (void)s;
-        _output << "━━";
-    }
-    _output << "━┥";
     return _output;
 }
 //------------------------------------------------------------------------------
@@ -359,14 +348,18 @@ void ostream_sink::consume(const interval_info& info) noexcept {
 void ostream_output::consume(
   const ostream_sink& s,
   const heartbeat_info& info) noexcept {
-    _conn_I(s) << " ╭──────────┬──────────╮\n";
-    _conn_t(s) << padded_to(10, format_reltime(s.time_since_start(info)));
+    _conn_I(s) << " ╭──────────┬──────────┬──────────╮\n";
+    _conn_Z(s) << "━┥";
+    _output << padded_to(10, format_reltime(s.time_since_start(info)));
+    _output << "│";
+    _output << padded_to(10, format_reltime(s.time_since_prev(info)));
     _output << "│heart-beat│\n";
-    _conn_I(s) << " ╰──────────┴──────────╯\n";
+    _conn_I(s) << " ╰──────────┴──────────┴──────────╯\n";
 }
 //------------------------------------------------------------------------------
 void ostream_sink::consume(const heartbeat_info& info) noexcept {
     _parent->consume(*this, info);
+    _prev_offs = info.offset;
 }
 //------------------------------------------------------------------------------
 void ostream_output::consume(
