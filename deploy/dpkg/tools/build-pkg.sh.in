@@ -15,6 +15,7 @@ lib_prefix="${pkg_prefix}/lib/@PKG_MULTIARCH@"
 bin_prefix="${pkg_prefix}/bin"
 cmk_prefix="${lib_prefix}/cmake/EAGine"
 bco_prefix="${pkg_dir}/etc/bash_completion.d"
+this_dir="${src_dir}/deploy/dpkg/tools"
 
 # ------------------------------------------------------------------------------
 mkdir -p "${bin_prefix}"
@@ -63,6 +64,8 @@ cp "${src_dir}/source/app/fmd_get.py" \
 
 cp "${src_dir}/source/app/ensure_main_key.sh" \
    "${bin_prefix}/eagine-ensure-main-key"
+
+cp -r "${this_dir}/etc" "${pkg_dir}/"
 # ------------------------------------------------------------------------------
 while read path
 do cp "${path}" "${bin_prefix}"
