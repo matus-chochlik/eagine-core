@@ -69,9 +69,16 @@ struct message_info {
           value;
         std::optional<float> min;
         std::optional<float> max;
+
+        auto value_bool() const noexcept -> tribool;
+        auto value_float() const noexcept -> optionally_valid<float>;
+        auto value_int() const noexcept -> optionally_valid<int>;
     };
 
     std::vector<arg_info> args;
+
+    auto find_arg(identifier) const noexcept
+      -> optional_reference<const arg_info>;
 };
 //------------------------------------------------------------------------------
 struct interval_info {

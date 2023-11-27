@@ -36,5 +36,20 @@ private:
 auto padded_to(std::size_t, std::string_view) noexcept -> std::string;
 auto padded_to(std::size_t, identifier) noexcept -> std::string;
 //------------------------------------------------------------------------------
+// tiling
+//------------------------------------------------------------------------------
+export class tiling_state {
+public:
+    void mark_cell_done(int x, int y, int w, int h) noexcept;
+
+    auto pixel_coef(int j, int i, int w, int h) const noexcept -> float;
+    auto pixel_glyph(int j, int i, int w, int h) const noexcept -> string_view;
+
+private:
+    std::vector<bool> _bits;
+    int _w{0};
+    int _h{0};
+};
+//------------------------------------------------------------------------------
 } // namespace eagine::logs
 

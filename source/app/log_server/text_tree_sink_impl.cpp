@@ -36,7 +36,7 @@ public:
     void consume(const text_tree_sink&, const declare_state_info&) noexcept;
     void consume(const text_tree_sink&, const active_state_info&) noexcept;
     void consume(
-      const text_tree_sink&,
+      text_tree_sink&,
       const message_info&,
       message_formatter& formatter) noexcept;
     void consume(const text_tree_sink&, const interval_info&) noexcept;
@@ -55,6 +55,37 @@ private:
     void _conn_Z(const text_tree_sink&) noexcept;
     void _conn_T(const text_tree_sink&) noexcept;
     auto _get_stream_id() noexcept -> std::uintmax_t;
+
+    auto _is_a(
+      identifier root,
+      identifier source,
+      identifier tag,
+      const text_tree_sink&,
+      const message_info&) const noexcept -> bool;
+
+    // specialized format functions
+    void _format_default_heading(
+      const text_tree_sink&,
+      const message_info&,
+      message_formatter& formatter) noexcept;
+    void _format_default_message(
+      const text_tree_sink&,
+      const message_info&,
+      message_formatter& formatter,
+      bool) noexcept;
+    void _format_default_arg(
+      const text_tree_sink&,
+      const message_info::arg_info&,
+      message_formatter& formatter,
+      bool) noexcept;
+    void _format_default(
+      const text_tree_sink&,
+      const message_info&,
+      message_formatter& formatter) noexcept;
+    void _format_solved_board(
+      text_tree_sink&,
+      const message_info&,
+      message_formatter& formatter) noexcept;
 
     stream_id_t _id_seq{0};
     unique_holder<text_output> _output;
@@ -96,6 +127,10 @@ public:
     void consume(const heartbeat_info&) noexcept final;
     void consume(const finish_info&) noexcept final;
 
+    auto tiling() noexcept -> auto& {
+        return _tiling;
+    }
+
 private:
     const stream_id_t _id;
     shared_holder<text_tree_sink_factory> _parent;
@@ -105,6 +140,8 @@ private:
     begin_info _begin{};
 
     flat_map<std::tuple<identifier_t, std::uint64_t>, interval_info> _intervals;
+
+    tiling_state _tiling;
 };
 //------------------------------------------------------------------------------
 auto text_tree_sink::id() const noexcept -> stream_id_t {
@@ -262,7 +299,25 @@ void text_tree_sink::consume(const active_state_info& info) noexcept {
     _parent->consume(*this, info);
 }
 //------------------------------------------------------------------------------
-void text_tree_sink_factory::consume(
+auto text_tree_sink_factory::_is_a(
+  identifier root,
+  identifier source,
+  identifier tag,
+  const text_tree_sink& s,
+  const message_info& info) const noexcept -> bool {
+    if(root and root != s.root()) {
+        return false;
+    }
+    if(source and source != info.source) {
+        return false;
+    }
+    if(tag and tag != info.tag) {
+        return false;
+    }
+    return true;
+}
+//------------------------------------------------------------------------------
+void text_tree_sink_factory::_format_default_heading(
   const text_tree_sink& s,
   const message_info& info,
   message_formatter& formatter) noexcept {
@@ -308,32 +363,109 @@ void text_tree_sink_factory::consume(
         _write(" ╰┬─────────┴──────────┴─────────┴");
         _write("──────────┴──────────┴────────────╯\n");
     }
-    const auto arg_count{info.args.size()};
-
+}
+//------------------------------------------------------------------------------
+void text_tree_sink_factory::_format_default_message(
+  const text_tree_sink& s,
+  const message_info& info,
+  message_formatter& formatter,
+  bool continues) noexcept {
     _conn_I(s);
     _write("  ╰");
-    if(arg_count > 0) {
+    if(continues) {
         _write("─┐");
     } else {
         _write("╼ ");
     }
     _write(formatter.format(info));
     _write("\n");
+}
+//------------------------------------------------------------------------------
+void text_tree_sink_factory::_format_default_arg(
+  const text_tree_sink& s,
+  const message_info::arg_info& arg,
+  message_formatter& formatter,
+  bool last) noexcept {
+    _conn_I(s);
+    _write("    ");
+    if(last) {
+        _write("╰");
+    } else {
+        _write("├");
+    }
+    _write("─╼ ");
+    _write(arg.name.name());
+    _write(": ");
+    _write(formatter.format(arg, false));
+    _write("\n");
+}
+//------------------------------------------------------------------------------
+void text_tree_sink_factory::_format_default(
+  const text_tree_sink& s,
+  const message_info& info,
+  message_formatter& formatter) noexcept {
+    const auto arg_count{info.args.size()};
+
+    _format_default_heading(s, info, formatter);
+    _format_default_message(s, info, formatter, arg_count > 0);
 
     for(const int ai : integer_range(arg_count)) {
-        _conn_I(s);
-        _write("    ");
-        if(ai + 1 == arg_count) {
-            _write("╰");
-        } else {
-            _write("├");
+        _format_default_arg(s, info.args[ai], formatter, ai + 1 == arg_count);
+    }
+}
+//------------------------------------------------------------------------------
+void text_tree_sink_factory::_format_solved_board(
+  text_tree_sink& si,
+  const message_info& info,
+  message_formatter& formatter) noexcept {
+    using ai = message_info::arg_info;
+    const auto x{info.find_arg("x").member(&ai::value_int)};
+    const auto y{info.find_arg("y").member(&ai::value_int)};
+    const auto w{info.find_arg("width").member(&ai::value_int)};
+    const auto h{info.find_arg("height").member(&ai::value_int)};
+    const auto s{info.find_arg("celPerSide").member(&ai::value_int)};
+
+    const auto rank{info.find_arg("rank")};
+
+    bool has_args{false};
+
+    if(x and y and w and h and s and rank) {
+        using math::minimum;
+        has_args = true;
+        const auto adj{[&](int v) -> int {
+            return *s * v;
+        }};
+        for(int cy = adj(*y); cy < minimum(adj(*y + 1), *h); ++cy) {
+            for(int cx = adj(*x); cx < minimum(adj(*x + 1), *w); ++cx) {
+                si.tiling().mark_cell_done(cx, cy, *w, *h);
+            }
         }
-        const auto& arg{info.args[ai]};
-        _write("─╼ ");
-        _write(arg.name.name());
-        _write(": ");
-        _write(formatter.format(arg, false));
-        _write("\n");
+    }
+
+    _format_default_heading(si, info, formatter);
+    _format_default_message(si, info, formatter, has_args);
+
+    if(has_args) {
+        for(const auto i : integer_range(18)) {
+            _conn_I(si);
+            _write("    ├");
+            for(const auto j : integer_range(36)) {
+                _write(si.tiling().pixel_glyph(j, i, 36, 18));
+            }
+            _write("┤\n");
+        }
+        _format_default_arg(si, *rank, formatter, true);
+    }
+}
+//------------------------------------------------------------------------------
+void text_tree_sink_factory::consume(
+  text_tree_sink& s,
+  const message_info& info,
+  message_formatter& formatter) noexcept {
+    if(_is_a("SudokuTlng", "TilingNode", "solvdBoard", s, info)) {
+        _format_solved_board(s, info, formatter);
+    } else {
+        _format_default(s, info, formatter);
     }
 }
 //------------------------------------------------------------------------------

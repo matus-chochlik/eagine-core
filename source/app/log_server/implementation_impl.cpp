@@ -12,6 +12,58 @@ import eagine.core;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
+// arg info
+//------------------------------------------------------------------------------
+auto message_info::arg_info::value_bool() const noexcept -> tribool {
+    if(const auto val{get_if<bool>(value)}; val.has_value()) {
+        return {*val};
+    }
+    if(const auto val{get_if<std::int64_t>(value)}) {
+        return {*val == true};
+    }
+    if(const auto val{get_if<std::uint64_t>(value)}) {
+        return {*val == true};
+    }
+    return indeterminate;
+}
+//------------------------------------------------------------------------------
+auto message_info::arg_info::value_float() const noexcept
+  -> optionally_valid<float> {
+    if(const auto val{get_if<float>(value)}) {
+        return *val;
+    }
+    if(const auto val{get_if<std::int64_t>(value)}) {
+        return float(*val);
+    }
+    if(const auto val{get_if<std::uint64_t>(value)}) {
+        return float(*val);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto message_info::arg_info::value_int() const noexcept
+  -> optionally_valid<int> {
+    if(const auto val{get_if<std::int64_t>(value)}) {
+        return convert_if_fits<int>(*val);
+    }
+    if(const auto val{get_if<std::uint64_t>(value)}) {
+        return convert_if_fits<int>(*val);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+// message info
+//------------------------------------------------------------------------------
+auto message_info::find_arg(identifier name) const noexcept
+  -> optional_reference<const arg_info> {
+    for(auto& arg : args) {
+        if(arg.name == name) {
+            return {arg};
+        }
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
 // factory functions
 //------------------------------------------------------------------------------
 auto make_text_output(main_ctx& ctx) -> unique_holder<text_output> {

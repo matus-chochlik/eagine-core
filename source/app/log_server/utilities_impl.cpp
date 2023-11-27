@@ -74,7 +74,7 @@ auto format_default(const message_info::arg_info& i) -> std::string {
     if(const auto val{get_if<std::uint64_t>(i.value)}) {
         return std::format("{}", *val);
     }
-    if(const auto val{get_if<bool>(i.value)}; val.has_value()) {
+    if(const auto val{i.value_bool()}) {
         if(*val) {
             return "True";
         } else {
@@ -87,26 +87,12 @@ auto format_default(const message_info::arg_info& i) -> std::string {
     return get_if<std::string>(i.value).value_or("-");
 }
 //------------------------------------------------------------------------------
-auto get_float_value(const message_info::arg_info& i) noexcept
-  -> optionally_valid<float> {
-    if(const auto val{get_if<float>(i.value)}) {
-        return *val;
-    }
-    if(const auto val{get_if<std::int64_t>(i.value)}) {
-        return float(*val);
-    }
-    if(const auto val{get_if<std::uint64_t>(i.value)}) {
-        return float(*val);
-    }
-    return {};
-}
-//------------------------------------------------------------------------------
 auto format_duration(const message_info::arg_info& i, bool) noexcept
   -> std::string {
     if(const auto seconds{get_if<float_seconds>(i.value)}) {
         return format_reltime_s(*seconds);
     }
-    if(const auto val{get_float_value(i)}) {
+    if(const auto val{i.value_float()}) {
         return format_reltime_s(float_seconds(*val));
     }
     return format_default(i);
@@ -123,7 +109,7 @@ auto format_endpoint_id(const message_info::arg_info& i, bool) noexcept
 //------------------------------------------------------------------------------
 auto format_bytesize(const message_info::arg_info& i, bool) noexcept
   -> std::string {
-    if(const auto opt{get_float_value(i)}) {
+    if(const auto opt{i.value_float()}) {
         const auto val{*opt};
         if(val > 8192.F * 1024.F * 1024.F) {
             return std::format("{:.1f}GiB", val / (1024.F * 1024.F * 1024.F));
@@ -141,7 +127,7 @@ auto format_bytesize(const message_info::arg_info& i, bool) noexcept
 //------------------------------------------------------------------------------
 auto format_rate_per_sec(const message_info::arg_info& i, bool) noexcept
   -> std::string {
-    if(const auto opt{get_float_value(i)}) {
+    if(const auto opt{i.value_float()}) {
         const auto val{*opt};
         if(val < 0.1F) {
             return std::format("{:.1f} per hour", val * 3600.F);
@@ -161,7 +147,7 @@ auto format_rate_per_sec(const message_info::arg_info& i, bool) noexcept
 }
 //------------------------------------------------------------------------------
 auto format_ratio(const message_info::arg_info& i, bool) -> std::string {
-    if(const auto val{get_float_value(i)}) {
+    if(const auto val{i.value_float()}) {
         return std::format("{:.1f}%", 100.F * *val);
     }
     return format_default(i);
@@ -169,7 +155,7 @@ auto format_ratio(const message_info::arg_info& i, bool) -> std::string {
 //------------------------------------------------------------------------------
 auto format_progress(const message_info::arg_info& i, bool header_value)
   -> std::string {
-    if(const auto val{get_float_value(i)}; val and i.min and i.max) {
+    if(const auto val{i.value_float()}; val and i.min and i.max) {
         if(*(i.min) < *(i.max)) {
             const auto done{(*val - *(i.min)) / (*(i.max) - *(i.min))};
             if(header_value) {
@@ -187,7 +173,7 @@ auto format_main_progress(
   const message_info::arg_info& i,
   float_seconds done_dur,
   bool header_value) -> std::string {
-    if(const auto val{get_float_value(i)}; val and i.min and i.max) {
+    if(const auto val{i.value_float()}; val and i.min and i.max) {
         if(*(i.min) < *(i.max)) {
             const auto done{(*val - *(i.min)) / (*(i.max) - *(i.min))};
             const auto estimate{[&] -> std::string {
@@ -269,6 +255,76 @@ auto padded_to(std::size_t l, std::string_view s) noexcept -> std::string {
 //------------------------------------------------------------------------------
 auto padded_to(std::size_t l, identifier id) noexcept -> std::string {
     return std::format("{1: ^{0}}", l, std::string_view{id.name()});
+}
+//------------------------------------------------------------------------------
+// tiling state
+//------------------------------------------------------------------------------
+void tiling_state::mark_cell_done(int x, int y, int w, int h) noexcept {
+    const auto sz{std_size(w * h)};
+    if(_w != w or _h != h or _bits.size() != sz) {
+        _bits.clear();
+        _bits.resize(sz);
+        _w = w;
+        _h = h;
+    }
+    const auto idx{std_size(y * w + x)};
+    _bits[idx] = true;
+}
+//------------------------------------------------------------------------------
+auto tiling_state::pixel_coef(int j, int i, int w, int h) const noexcept
+  -> float {
+    if(_w > 0 and _h > 0) {
+        const auto ws{float(_w) / float(w)};
+        const auto hs{float(_h) / float(h)};
+        float sum{0.F};
+        float num{0.F};
+
+        const auto for_each_sample{[](int p, int n, float s, auto func) {
+            float minp{float(p) * s};
+            const int pb{int(minp)};
+            func(pb, n, 1.F - minp + std::floor(minp));
+            float maxp{float(p + 1) * s};
+            const int pe{int(maxp)};
+            for(int pi = pb + 1; pi < pe; ++pi) {
+                func(pi, n, 1.F);
+            }
+            if(pe < n) {
+                func(pe, n, 1.F - maxp + std::floor(maxp));
+            }
+        }};
+
+        for_each_sample(i, _h, hs, [&, this](int si, int mi, float wi) {
+            for_each_sample(j, _w, ws, [&, this](int sj, int mj, float wj) {
+                const auto k{std_size((si * mj) + sj)};
+                const auto wk{wi * wj};
+                sum += _bits[k] ? wk : 0.F;
+                num += wk;
+            });
+        });
+
+        if(sum > 0.F and num > 0.F) {
+            return sum / num;
+        }
+    }
+    return 0.F;
+}
+//------------------------------------------------------------------------------
+auto tiling_state::pixel_glyph(int j, int i, int w, int h) const noexcept
+  -> string_view {
+    const float coef{pixel_coef(j, i, w, h)};
+    if(coef < 0.05F) {
+        return " ";
+    }
+    if(coef < 0.35F) {
+        return "░";
+    }
+    if(coef < 0.65F) {
+        return "▒";
+    }
+    if(coef < 0.95F) {
+        return "▓";
+    }
+    return "█";
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::logs
