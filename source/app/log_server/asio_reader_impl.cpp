@@ -65,12 +65,14 @@ public:
 
 protected:
     void _accept();
+    void _update_later();
     void _notify_later();
 
     watched_process_lifetime _alive;
     shared_holder<stream_sink_factory> _factory;
     asio::io_context _io{1};
     asio::signal_set _signals{_io, SIGINT, SIGTERM};
+    asio::steady_timer _update_timer{_io};
     asio::steady_timer _alive_timer{_io};
     Acceptor _acceptor;
     Socket _socket{_io};
@@ -128,6 +130,17 @@ void asio_reader_base<Acceptor, Socket>::_accept() {
 }
 //------------------------------------------------------------------------------
 template <typename Acceptor, typename Socket>
+void asio_reader_base<Acceptor, Socket>::_update_later() {
+    _update_timer.expires_after(std::chrono::seconds{1});
+    _update_timer.async_wait([this](std::error_code error) {
+        if(not error) {
+            _factory->update();
+        }
+        _notify_later();
+    });
+}
+//------------------------------------------------------------------------------
+template <typename Acceptor, typename Socket>
 void asio_reader_base<Acceptor, Socket>::_notify_later() {
     _alive_timer.expires_after(std::chrono::seconds{10});
     _alive_timer.async_wait([this](std::error_code error) {
@@ -151,6 +164,7 @@ asio_reader_base<Acceptor, Socket>::asio_reader_base(
 
     _signals.async_wait([&](auto, auto) { _io.stop(); });
     _accept();
+    _update_later();
     _notify_later();
 }
 //------------------------------------------------------------------------------
