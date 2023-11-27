@@ -23,6 +23,14 @@ auto make_text_output(main_ctx& ctx) -> unique_holder<text_output> {
         return make_asio_tcp_ipv4_text_output(ctx, address);
     }
 
+    if(const auto arg{ctx.args().find("--socat")}) {
+        string_view address;
+        if(not arg.next().starts_with("-")) {
+            address = arg.next().get();
+        }
+        return make_asio_local_text_output(ctx, address);
+    }
+
     return make_ostream_text_output(ctx);
 }
 //------------------------------------------------------------------------------

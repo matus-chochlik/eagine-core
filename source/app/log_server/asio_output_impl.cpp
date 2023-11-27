@@ -145,6 +145,42 @@ void asio_output_base<Acceptor, Socket>::flush() noexcept {
     _io.poll();
 }
 //------------------------------------------------------------------------------
+// Unix Local output
+//------------------------------------------------------------------------------
+class asio_local_output final
+  : public asio_output_base<
+      asio::local::stream_protocol::acceptor,
+      asio::local::stream_protocol::socket> {
+public:
+    asio_local_output(main_ctx& ctx, const string_view address) noexcept;
+    ~asio_local_output() noexcept;
+
+private:
+    auto _get_path(const string_view) noexcept;
+    auto _get_ept(const string_view) noexcept;
+
+    std::string _path;
+};
+//------------------------------------------------------------------------------
+auto asio_local_output::_get_path(const string_view path) noexcept {
+    return path ? path : string_view{"/tmp/eagine-text-log"};
+}
+//------------------------------------------------------------------------------
+auto asio_local_output::_get_ept(const string_view address) noexcept {
+    return asio::local::stream_protocol::endpoint{_get_path(address)};
+}
+//------------------------------------------------------------------------------
+asio_local_output::asio_local_output(main_ctx& ctx, string_view path) noexcept
+  : asio_output_base{ctx, _get_ept(_get_path(path))}
+  , _path{_get_path(path)} {}
+//------------------------------------------------------------------------------
+asio_local_output::~asio_local_output() noexcept {
+    try {
+        std::remove(_path.c_str());
+    } catch(...) {
+    }
+}
+//------------------------------------------------------------------------------
 // TCP/IPv4 output
 //------------------------------------------------------------------------------
 class asio_tcp_ipv4_output final
@@ -174,6 +210,11 @@ asio_tcp_ipv4_output::asio_tcp_ipv4_output(
       asio::ip::tcp::endpoint{_get_addr(address), _get_port(address)}} {}
 //------------------------------------------------------------------------------
 // factory functions
+//------------------------------------------------------------------------------
+auto make_asio_local_text_output(main_ctx& ctx, string_view address)
+  -> unique_holder<text_output> {
+    return {hold<asio_local_output>, ctx, address};
+}
 //------------------------------------------------------------------------------
 auto make_asio_tcp_ipv4_text_output(main_ctx& ctx, string_view address)
   -> unique_holder<text_output> {
