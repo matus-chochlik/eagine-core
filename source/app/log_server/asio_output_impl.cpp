@@ -94,14 +94,14 @@ void asio_output_stream<Socket>::_write() {
 // Acceptor base
 //------------------------------------------------------------------------------
 template <typename Acceptor, typename Socket>
-class asio_output_base : public formatted_output {
+class asio_output_base : public text_output {
 public:
     asio_output_base(main_ctx& ctx, auto endpoint) noexcept;
-    ~asio_output_base() noexcept;
+
+    void write(const string_view) noexcept final;
+    void flush() noexcept final;
 
 protected:
-    void update() noexcept final;
-    void write(string_view) noexcept final;
     void _accept();
 
     asio::io_context _io{1};
@@ -129,26 +129,20 @@ asio_output_base<Acceptor, Socket>::asio_output_base(
   auto endpoint) noexcept
   : _acceptor{_io, std::move(endpoint)} {
     _pool.ensure();
-    this->_start();
     _accept();
 }
 //------------------------------------------------------------------------------
 template <typename Acceptor, typename Socket>
-asio_output_base<Acceptor, Socket>::~asio_output_base() noexcept {
-    this->_finish();
-}
-//------------------------------------------------------------------------------
-template <typename Acceptor, typename Socket>
-void asio_output_base<Acceptor, Socket>::update() noexcept {
-    _io.poll();
-}
-//------------------------------------------------------------------------------
-template <typename Acceptor, typename Socket>
-void asio_output_base<Acceptor, Socket>::write(string_view text) noexcept {
+void asio_output_base<Acceptor, Socket>::write(const string_view text) noexcept {
     _clients.erase_if([](auto& client) { return not client->is_connected(); });
     for(auto& client : _clients) {
         client->write(as_bytes(text));
     }
+}
+//------------------------------------------------------------------------------
+template <typename Acceptor, typename Socket>
+void asio_output_base<Acceptor, Socket>::flush() noexcept {
+    _io.poll();
 }
 //------------------------------------------------------------------------------
 // TCP/IPv4 output
@@ -181,8 +175,8 @@ asio_tcp_ipv4_output::asio_tcp_ipv4_output(
 //------------------------------------------------------------------------------
 // factory functions
 //------------------------------------------------------------------------------
-auto make_asio_tcp_ipv4_sink_factory(main_ctx& ctx, string_view address) noexcept
-  -> shared_holder<stream_sink_factory> {
+auto make_asio_tcp_ipv4_text_output(main_ctx& ctx, string_view address)
+  -> unique_holder<text_output> {
     return {hold<asio_tcp_ipv4_output>, ctx, address};
 }
 //------------------------------------------------------------------------------

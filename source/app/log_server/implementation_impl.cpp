@@ -14,16 +14,21 @@ namespace eagine::logs {
 //------------------------------------------------------------------------------
 // factory functions
 //------------------------------------------------------------------------------
-auto make_sink_factory(main_ctx& ctx) noexcept
-  -> shared_holder<stream_sink_factory> {
+auto make_text_output(main_ctx& ctx) -> unique_holder<text_output> {
     if(const auto arg{ctx.args().find("--netcat")}) {
-        if(arg.next().starts_with("-")) {
-            return make_asio_tcp_ipv4_sink_factory(ctx, {});
+        string_view address;
+        if(not arg.next().starts_with("-")) {
+            address = arg.next().get();
         }
-        return make_asio_tcp_ipv4_sink_factory(ctx, arg.next().get());
+        return make_asio_tcp_ipv4_text_output(ctx, address);
     }
 
-    return make_ostream_sink_factory(ctx);
+    return make_ostream_text_output(ctx);
+}
+//------------------------------------------------------------------------------
+auto make_sink_factory(main_ctx& ctx) noexcept
+  -> shared_holder<stream_sink_factory> {
+    return make_text_tree_sink_factory(ctx, make_text_output(ctx));
 }
 //------------------------------------------------------------------------------
 auto make_data_parser(main_ctx& ctx, shared_holder<stream_sink> sink) noexcept

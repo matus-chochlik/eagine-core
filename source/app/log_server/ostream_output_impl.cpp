@@ -14,36 +14,32 @@ namespace eagine::logs {
 //------------------------------------------------------------------------------
 // ostream output
 //------------------------------------------------------------------------------
-class ostream_output final : public formatted_output {
+class ostream_output final : public text_output {
 public:
     ostream_output(std::ostream&) noexcept;
-    ~ostream_output() noexcept;
 
 protected:
     void write(string_view) noexcept final;
-    void update() noexcept final {}
+    void flush() noexcept final;
 
 private:
     std::ostream& _output;
 };
 //------------------------------------------------------------------------------
 ostream_output::ostream_output(std::ostream& output) noexcept
-  : _output{output} {
-    _start();
-}
-//------------------------------------------------------------------------------
-ostream_output::~ostream_output() noexcept {
-    _finish();
-}
+  : _output{output} {}
 //------------------------------------------------------------------------------
 void ostream_output::write(string_view s) noexcept {
     write_to_stream(_output, s);
 }
 //------------------------------------------------------------------------------
+void ostream_output::flush() noexcept {
+    _output.flush();
+}
+//------------------------------------------------------------------------------
 // make factory
 //------------------------------------------------------------------------------
-auto make_ostream_sink_factory(main_ctx&) noexcept
-  -> shared_holder<stream_sink_factory> {
+auto make_ostream_text_output(main_ctx&) -> unique_holder<text_output> {
     return {hold<ostream_output>, std::cout};
 }
 //------------------------------------------------------------------------------

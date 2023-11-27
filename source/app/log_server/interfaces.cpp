@@ -90,7 +90,22 @@ struct finish_info {
     bool clean{false};
 };
 //------------------------------------------------------------------------------
-// sink
+// text output
+//------------------------------------------------------------------------------
+struct text_output : interface<text_output> {
+    virtual void write(const string_view) noexcept = 0;
+    virtual void flush() noexcept = 0;
+};
+//------------------------------------------------------------------------------
+auto make_ostream_text_output(main_ctx&) -> unique_holder<text_output>;
+auto make_asio_local_text_output(main_ctx&, string_view address)
+  -> unique_holder<text_output>;
+auto make_asio_tcp_ipv4_text_output(main_ctx&, string_view address)
+  -> unique_holder<text_output>;
+//------------------------------------------------------------------------------
+export auto make_text_output(main_ctx&) -> unique_holder<text_output>;
+//------------------------------------------------------------------------------
+// object stream sink
 //------------------------------------------------------------------------------
 struct stream_sink : interface<stream_sink> {
     virtual void consume(const begin_info&) noexcept = 0;
@@ -110,13 +125,7 @@ export struct stream_sink_factory : interface<stream_sink_factory> {
     virtual void update() noexcept = 0;
 };
 //------------------------------------------------------------------------------
-auto make_ostream_sink_factory(main_ctx&) noexcept
-  -> shared_holder<stream_sink_factory>;
-//------------------------------------------------------------------------------
-auto make_asio_local_sink_factory(main_ctx&, string_view) noexcept
-  -> shared_holder<stream_sink_factory>;
-//------------------------------------------------------------------------------
-auto make_asio_tcp_ipv4_sink_factory(main_ctx&, string_view) noexcept
+auto make_text_tree_sink_factory(main_ctx&, unique_holder<text_output>)
   -> shared_holder<stream_sink_factory>;
 //------------------------------------------------------------------------------
 export auto make_sink_factory(main_ctx&) noexcept

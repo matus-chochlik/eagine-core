@@ -15,9 +15,9 @@ namespace eagine {
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     try {
-        if(auto sinks{logs::make_sink_factory(ctx)}) {
+        if(const auto sinks{logs::make_sink_factory(ctx)}) {
             logs::internal_backend::set_sink(sinks->make_stream());
-            if(auto reader{logs::make_reader(ctx, sinks)}) {
+            if(const auto reader{logs::make_reader(ctx, sinks)}) {
                 if(reader->run()) {
                     return 0;
                 }

@@ -11,10 +11,6 @@ eagine_add_module(
 	IMPORTS std eagine.core interfaces)
 
 eagine_add_module(
-	eagine.core.log_server PARTITION formatted_output
-	IMPORTS std eagine.core interfaces utilities)
-
-eagine_add_module(
 	eagine.core.log_server
 	SOURCES
 		implementation
@@ -23,7 +19,7 @@ eagine_add_module(
 		istream_reader
 		asio_reader
 		json_parser
-		formatted_output
+		text_tree_sink
 		ostream_output
 		asio_output
 	IMPORTS std eagine.core
