@@ -56,7 +56,7 @@ protected:
 
 private:
     static auto _fix_addr(const string_view addr_str) noexcept -> string_view {
-        return addr_str ? addr_str : string_view{"/tmp/eagine-xmllog"};
+        return addr_str ? addr_str : string_view{"/tmp/eagine-log"};
     }
 
     asio::io_context _context{};

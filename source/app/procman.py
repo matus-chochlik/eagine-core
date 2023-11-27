@@ -259,7 +259,7 @@ class ArgumentParser(argparse.ArgumentParser):
     # --------------------------------------------------------------------------
     def processParsedOptions(self, options):
         if options.local_socket == "-":
-            options.local_socket = "/tmp/eagine-xmllog"
+            options.local_socket = "/tmp/eagine-log"
         if options.network_socket == "-":
             options.network_socket = "localhost:34917"
         return options

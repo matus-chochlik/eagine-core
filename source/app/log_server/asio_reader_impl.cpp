@@ -203,7 +203,7 @@ private:
 };
 //------------------------------------------------------------------------------
 auto asio_local_reader::_get_path(const string_view path) noexcept {
-    return path ? path : string_view{"/tmp/eagine-xmllog"};
+    return path ? path : string_view{"/tmp/eagine-log"};
 }
 //------------------------------------------------------------------------------
 auto asio_local_reader::_get_ept(const string_view address) noexcept {

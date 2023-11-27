@@ -143,7 +143,7 @@ class ArgumentParser(argparse.ArgumentParser):
             "--local-socket", "-L",
             dest='local_socket',
             action="store",
-            default="/tmp/eagine-xmllog"
+            default="/tmp/eagine-log"
         )
 
         self.add_argument(
