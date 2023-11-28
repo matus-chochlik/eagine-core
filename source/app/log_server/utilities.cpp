@@ -13,6 +13,7 @@ import :interfaces;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
+auto format_reltime_ns(std::chrono::nanoseconds) noexcept -> std::string;
 auto format_reltime(std::chrono::microseconds) noexcept -> std::string;
 auto format_reltime_s(float_seconds) noexcept -> std::string;
 auto format_instance(std::uint64_t, std::string&) noexcept -> std::string&;

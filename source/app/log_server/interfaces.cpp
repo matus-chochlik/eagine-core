@@ -82,7 +82,6 @@ struct message_info {
 };
 //------------------------------------------------------------------------------
 struct interval_info {
-    float_seconds offset;
     identifier tag;
     std::uint64_t instance{0};
     std::chrono::nanoseconds duration{0};

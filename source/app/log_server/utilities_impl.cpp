@@ -16,6 +16,28 @@ namespace eagine::logs {
 //------------------------------------------------------------------------------
 // format reltime
 //------------------------------------------------------------------------------
+auto format_reltime_ns(std::chrono::nanoseconds t) noexcept -> std::string {
+    using namespace std::chrono;
+    using std::to_string;
+    if(t == nanoseconds{0}) {
+        return "0";
+    }
+    if(t < microseconds{10}) {
+        return to_string(t.count()) + "ns";
+    }
+    if(t < milliseconds{10}) {
+        return to_string(duration_cast<microseconds>(t).count()) + "μs";
+    }
+    if(t < seconds{10}) {
+        return to_string(duration_cast<milliseconds>(t).count()) + "ms";
+    }
+    if(t < minutes{2}) {
+        return to_string(duration_cast<seconds>(t).count()) + "s";
+    }
+    return to_string(duration_cast<minutes>(t).count()) + "m " +
+           to_string(duration_cast<seconds>(t).count() % 60) + "s";
+}
+//------------------------------------------------------------------------------
 auto format_reltime(std::chrono::microseconds t) noexcept -> std::string {
     using namespace std::chrono;
     using std::to_string;
