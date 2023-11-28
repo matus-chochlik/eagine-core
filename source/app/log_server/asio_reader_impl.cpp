@@ -131,7 +131,7 @@ void asio_reader_base<Acceptor, Socket>::_accept() {
 //------------------------------------------------------------------------------
 template <typename Acceptor, typename Socket>
 void asio_reader_base<Acceptor, Socket>::_update_later() {
-    _update_timer.expires_after(std::chrono::seconds{1});
+    _update_timer.expires_after(std::chrono::seconds{5});
     _update_timer.async_wait([this](std::error_code error) {
         if(not error) {
             _factory->update();

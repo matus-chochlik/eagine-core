@@ -47,13 +47,14 @@ public:
     void update() noexcept final;
 
 private:
-    void _write(const string_view) noexcept;
-    void _conn_I(const text_tree_sink&) noexcept;
-    void _conn_L(const text_tree_sink&) noexcept;
-    void _conn_S(const text_tree_sink&) noexcept;
-    void _conn_s(const text_tree_sink&) noexcept;
-    void _conn_Z(const text_tree_sink&) noexcept;
-    void _conn_T(const text_tree_sink&) noexcept;
+    void _flush() noexcept;
+    auto _write(const string_view) noexcept -> text_tree_sink_factory&;
+    auto _conn_I(const text_tree_sink&) noexcept -> text_tree_sink_factory&;
+    auto _conn_L(const text_tree_sink&) noexcept -> text_tree_sink_factory&;
+    auto _conn_S(const text_tree_sink&) noexcept -> text_tree_sink_factory&;
+    auto _conn_s(const text_tree_sink&) noexcept -> text_tree_sink_factory&;
+    auto _conn_Z(const text_tree_sink&) noexcept -> text_tree_sink_factory&;
+    auto _conn_T(const text_tree_sink&) noexcept -> text_tree_sink_factory&;
     auto _get_stream_id() noexcept -> std::uintmax_t;
 
     auto _is_a(
@@ -94,8 +95,14 @@ private:
     bool _condensed{false};
 };
 //------------------------------------------------------------------------------
-void text_tree_sink_factory::_write(const string_view text) noexcept {
+void text_tree_sink_factory::_flush() noexcept {
+    _output->flush();
+}
+//------------------------------------------------------------------------------
+auto text_tree_sink_factory::_write(const string_view text) noexcept
+  -> text_tree_sink_factory& {
     _output->write(text);
+    return *this;
 }
 //------------------------------------------------------------------------------
 text_tree_sink_factory::text_tree_sink_factory(unique_holder<text_output> output)
@@ -163,15 +170,18 @@ auto text_tree_sink::time_since_prev(const auto& info) const noexcept
       info.offset - _prev_offs);
 }
 //------------------------------------------------------------------------------
-void text_tree_sink_factory::_conn_I(const text_tree_sink&) noexcept {
+auto text_tree_sink_factory::_conn_I(const text_tree_sink&) noexcept
+  -> text_tree_sink_factory& {
     _write("┊");
     for(auto& s : _streams) {
         (void)s;
         _write(" │");
     }
+    return *this;
 }
 //------------------------------------------------------------------------------
-void text_tree_sink_factory::_conn_L(const text_tree_sink& si) noexcept {
+auto text_tree_sink_factory::_conn_L(const text_tree_sink& si) noexcept
+  -> text_tree_sink_factory& {
     _write("┊");
     bool conn{true};
     for(auto& st : _streams) {
@@ -185,9 +195,11 @@ void text_tree_sink_factory::_conn_L(const text_tree_sink& si) noexcept {
         }
     }
     _write("━┥");
+    return *this;
 }
 //------------------------------------------------------------------------------
-void text_tree_sink_factory::_conn_S(const text_tree_sink& si) noexcept {
+auto text_tree_sink_factory::_conn_S(const text_tree_sink& si) noexcept
+  -> text_tree_sink_factory& {
     _write("┊");
     bool conn{true};
     for(auto& st : _streams) {
@@ -200,9 +212,11 @@ void text_tree_sink_factory::_conn_S(const text_tree_sink& si) noexcept {
             _write("╭╯");
         }
     }
+    return *this;
 }
 //------------------------------------------------------------------------------
-void text_tree_sink_factory::_conn_s(const text_tree_sink& si) noexcept {
+auto text_tree_sink_factory::_conn_s(const text_tree_sink& si) noexcept
+  -> text_tree_sink_factory& {
     _write("┊");
     bool conn{true};
     for(auto& st : _streams) {
@@ -215,9 +229,11 @@ void text_tree_sink_factory::_conn_s(const text_tree_sink& si) noexcept {
             _write("╭╯");
         }
     }
+    return *this;
 }
 //------------------------------------------------------------------------------
-void text_tree_sink_factory::_conn_Z(const text_tree_sink& si) noexcept {
+auto text_tree_sink_factory::_conn_Z(const text_tree_sink& si) noexcept
+  -> text_tree_sink_factory& {
     _write("┊");
     bool conn{true};
     for(auto& st : _streams) {
@@ -230,15 +246,18 @@ void text_tree_sink_factory::_conn_Z(const text_tree_sink& si) noexcept {
             _write("━━");
         }
     }
+    return *this;
 }
 //------------------------------------------------------------------------------
-void text_tree_sink_factory::_conn_T(const text_tree_sink&) noexcept {
+auto text_tree_sink_factory::_conn_T(const text_tree_sink&) noexcept
+  -> text_tree_sink_factory& {
     _write("┝");
     for(auto& s : _streams) {
         (void)s;
         _write("━━");
     }
     _write("━┯━┥");
+    return *this;
 }
 //------------------------------------------------------------------------------
 // factory / output
@@ -322,45 +341,31 @@ void text_tree_sink_factory::_format_default_heading(
   const message_info& info,
   message_formatter& formatter) noexcept {
     if(_condensed) {
-        _conn_Z(s);
-        _write("━┑");
+        _conn_Z(s)._write("━┑");
     } else {
         if(info.tag) {
-            _conn_I(s);
-            _write(" ╭──────────┬──────────┬─────────┬");
+            _conn_I(s)._write(" ╭──────────┬──────────┬─────────┬");
             _write("──────────┬──────────┬──────────┬────────────╮\n");
         } else {
-            _conn_I(s);
-            _write(" ╭──────────┬──────────┬─────────┬");
+            _conn_I(s)._write(" ╭──────────┬──────────┬─────────┬");
             _write("──────────┬──────────┬────────────╮\n");
         }
-        _conn_Z(s);
-        _write("━┥");
+        _conn_Z(s)._write("━┥");
     }
-    _write(padded_to(10, format_reltime(s.time_since_start(info))));
-    _write("│");
-    _write(padded_to(10, format_reltime(s.time_since_prev(info))));
-    _write("│");
-    _write(padded_to(9, enumerator_name(info.severity)));
-    _write("│");
-    _write(padded_to(10, s.root()));
-    _write("│");
-    _write(padded_to(10, info.source));
-    _write("│");
+    _write(padded_to(10, format_reltime(s.time_since_start(info))))._write("│");
+    _write(padded_to(10, format_reltime(s.time_since_prev(info))))._write("│");
+    _write(padded_to(9, enumerator_name(info.severity)))._write("│");
+    _write(padded_to(10, s.root()))._write("│");
+    _write(padded_to(10, info.source))._write("│");
     if(info.tag) {
-        _write(padded_to(10, info.tag));
-        _write("│");
+        _write(padded_to(10, info.tag))._write("│");
     }
-    _write(padded_to(12, format_instance(info.instance, _temp)));
-    _write("│");
-    _write("\n");
+    _write(padded_to(12, format_instance(info.instance, _temp)))._write("│\n");
     if(info.tag) {
-        _conn_I(s);
-        _write(" ╰┬─────────┴──────────┴─────────┴");
+        _conn_I(s)._write(" ╰┬─────────┴──────────┴─────────┴");
         _write("──────────┴──────────┴──────────┴────────────╯\n");
     } else {
-        _conn_I(s);
-        _write(" ╰┬─────────┴──────────┴─────────┴");
+        _conn_I(s)._write(" ╰┬─────────┴──────────┴─────────┴");
         _write("──────────┴──────────┴────────────╯\n");
     }
 }
@@ -370,8 +375,7 @@ void text_tree_sink_factory::_format_default_message(
   const message_info& info,
   message_formatter& formatter,
   bool continues) noexcept {
-    _conn_I(s);
-    _write("  ╰");
+    _conn_I(s)._write("  ╰");
     if(continues) {
         _write("─┐");
     } else {
@@ -386,18 +390,14 @@ void text_tree_sink_factory::_format_default_arg(
   const message_info::arg_info& arg,
   message_formatter& formatter,
   bool last) noexcept {
-    _conn_I(s);
-    _write("    ");
+    _conn_I(s)._write("    ");
     if(last) {
         _write("╰");
     } else {
         _write("├");
     }
-    _write("─╼ ");
-    _write(arg.name.name());
-    _write(": ");
-    _write(formatter.format(arg, false));
-    _write("\n");
+    _write("─╼ ")._write(arg.name.name())._write(": ");
+    _write(formatter.format(arg, false))._write("\n");
 }
 //------------------------------------------------------------------------------
 void text_tree_sink_factory::_format_default(
@@ -447,12 +447,18 @@ void text_tree_sink_factory::_format_solved_board(
 
     if(has_args) {
         for(const auto i : integer_range(18)) {
-            _conn_I(si);
-            _write("    ├");
+            _conn_I(si)._write("    ├");
             for(const auto j : integer_range(36)) {
                 _write(si.tiling().pixel_glyph(j, i, 36, 18));
             }
             _write("┤\n");
+        }
+
+        if(const auto time{info.find_arg("time")}) {
+            _format_default_arg(si, *time, formatter, false);
+        }
+        if(const auto helper{info.find_arg("helper")}) {
+            _format_default_arg(si, *helper, formatter, false);
         }
         _format_default_arg(si, *rank, formatter, true);
     }
@@ -491,16 +497,12 @@ void text_tree_sink::consume(const interval_info& info) noexcept {
 void text_tree_sink_factory::consume(
   const text_tree_sink& s,
   const heartbeat_info& info) noexcept {
-    _conn_I(s);
-    _write(" ╭──────────┬──────────┬──────────╮\n");
-    _conn_Z(s);
-    _write("━┥");
-    _write(padded_to(10, format_reltime(s.time_since_start(info))));
-    _write("│");
+    _conn_I(s)._write(" ╭──────────┬──────────┬──────────╮\n");
+    _conn_Z(s)._write("━┥");
+    _write(padded_to(10, format_reltime(s.time_since_start(info))))._write("│");
     _write(padded_to(10, format_reltime(s.time_since_prev(info))));
     _write("│heart-beat│\n");
-    _conn_I(s);
-    _write(" ╰──────────┴──────────┴──────────╯\n");
+    _conn_I(s)._write(" ╰──────────┴──────────┴──────────╯\n");
 }
 //------------------------------------------------------------------------------
 void text_tree_sink::consume(const heartbeat_info& info) noexcept {
@@ -513,12 +515,9 @@ void text_tree_sink_factory::consume(
   const finish_info& info) noexcept {
     _conn_I(s);
     _write(" ╭──────────┬──────────┬──────────┬───────────┬─────────╮\n");
-    _conn_L(s);
-    _write(padded_to(10, format_reltime(s.time_since_start(info))));
-    _write("│");
-    _write(padded_to(10, format_reltime(s.time_since_prev(info))));
-    _write("│");
-    _write(padded_to(10, s.root()));
+    _conn_L(s)._write(padded_to(10, format_reltime(s.time_since_start(info))));
+    _write("│")._write(padded_to(10, format_reltime(s.time_since_prev(info))));
+    _write("│")._write(padded_to(10, s.root()));
     _write("│closing log│");
     if(info.clean) {
         _write(" success ");
@@ -528,8 +527,7 @@ void text_tree_sink_factory::consume(
     _write("│\n");
     _conn_S(s);
     _write(" ╰──────────┴──────────┴──────────┴───────────┴─────────╯\n");
-    _conn_s(s);
-    _write("\n");
+    _conn_s(s)._write("\n")._flush();
     _streams.erase(s.id());
 }
 //------------------------------------------------------------------------------
@@ -547,7 +545,7 @@ auto text_tree_sink_factory::make_stream() noexcept
 }
 //------------------------------------------------------------------------------
 void text_tree_sink_factory::update() noexcept {
-    _output->flush();
+    _flush();
 }
 //------------------------------------------------------------------------------
 // factory functions
