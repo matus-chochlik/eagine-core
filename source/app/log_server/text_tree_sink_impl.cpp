@@ -25,6 +25,8 @@ class text_tree_sink;
 //------------------------------------------------------------------------------
 class text_tree_interval_info {
 public:
+    text_tree_interval_info(std::chrono::seconds period) noexcept
+      : _should_consume{period} {}
     void update(const interval_info& i) noexcept;
     auto should_consume() noexcept -> bool;
     void reset() noexcept;
@@ -34,6 +36,7 @@ public:
     auto avg_duration() const noexcept -> std::chrono::nanoseconds;
 
 private:
+    timeout _should_consume;
     std::chrono::nanoseconds _duration_min{};
     std::chrono::nanoseconds _duration_max{};
     std::chrono::nanoseconds _duration_sum{};
@@ -53,22 +56,29 @@ void text_tree_interval_info::update(const interval_info& i) noexcept {
 }
 //------------------------------------------------------------------------------
 auto text_tree_interval_info::should_consume() noexcept -> bool {
-    return _count >= 10;
+    return _should_consume.is_expired();
 }
 //------------------------------------------------------------------------------
 void text_tree_interval_info::reset() noexcept {
+    _should_consume.reset();
     _duration_sum = {};
     _count = 0;
 }
 //------------------------------------------------------------------------------
 auto text_tree_interval_info::min_duration() const noexcept
   -> std::chrono::nanoseconds {
-    return _duration_min;
+    if(_count > 0) {
+        return _duration_min;
+    }
+    return {};
 }
 //------------------------------------------------------------------------------
 auto text_tree_interval_info::max_duration() const noexcept
   -> std::chrono::nanoseconds {
-    return _duration_max;
+    if(_count > 0) {
+        return _duration_max;
+    }
+    return {};
 }
 //------------------------------------------------------------------------------
 auto text_tree_interval_info::avg_duration() const noexcept
@@ -208,7 +218,7 @@ auto text_tree_sink_factory::_symbol_message() const noexcept -> string_view {
 }
 //------------------------------------------------------------------------------
 auto text_tree_sink_factory::_symbol_board() const noexcept -> string_view {
-    return {" \U0001F5BC  "};
+    return {" ▦  "};
 }
 //------------------------------------------------------------------------------
 auto text_tree_sink_factory::_symbol(const message_info& info) const noexcept
@@ -309,6 +319,7 @@ private:
     identifier _root;
     begin_info _begin{};
 
+    std::chrono::seconds _interval_period{60};
     flat_map<std::tuple<identifier_t, std::uint64_t>, text_tree_interval_info>
       _intervals;
 
@@ -672,7 +683,8 @@ void text_tree_sink::consume(const interval_info& info) noexcept {
     const auto key{std::make_tuple(info.tag.value(), info.instance)};
     auto pos{_intervals.find(key)};
     if(pos == _intervals.end()) {
-        pos = _intervals.emplace(key, text_tree_interval_info{}).first;
+        pos = _intervals.emplace(key, text_tree_interval_info{_interval_period})
+                .first;
     }
     auto& state{std::get<1>(*pos)};
     state.update(info);
