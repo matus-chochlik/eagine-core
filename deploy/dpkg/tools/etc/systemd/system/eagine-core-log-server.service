@@ -19,6 +19,7 @@ User=eagine
 Group=eagine
 ExecStartPre=+/usr/bin/mkdir -p /var/run/eagine
 ExecStartPre=+/usr/bin/chown eagine:eagine /var/run/eagine/
+ExecStartPre=+/usr/bin/rm -f /var/run/eagine/log.socket /var/run/eagine/text-log.socket
 WorkingDirectory=/var/lib/eagine
 ExecStart=/usr/bin/eagine-core-log-server $EAGINE_LOG_SERVER_ARGS
 Restart=always
