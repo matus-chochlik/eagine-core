@@ -29,7 +29,6 @@ export class process_watchdog;
 
 export class user_info;
 export class system_info;
-export class main_ctx_log_backend_getter;
 export class main_ctx_object;
 //------------------------------------------------------------------------------
 /// @brief Interface for classes that can be located through the main context.

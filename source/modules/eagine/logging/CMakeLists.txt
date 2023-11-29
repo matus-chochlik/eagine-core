@@ -88,6 +88,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.identifier
 		eagine.core.valid_if
+		eagine.core.utility
 		eagine.core.runtime
 		eagine.core.units
 )
@@ -127,6 +128,7 @@ eagine_add_module(
 		asio_backend
 		syslog_backend
 		proxy_backend
+		logger
 		root_logger
 	IMPORTS
 		std

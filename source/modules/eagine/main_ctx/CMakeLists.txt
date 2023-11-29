@@ -117,6 +117,7 @@ eagine_add_module(
 		watchdog
 		app_config
 		main_ctx
+		object
 		main
 	IMPORTS
 		std
