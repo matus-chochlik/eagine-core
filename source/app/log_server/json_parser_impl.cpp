@@ -51,7 +51,7 @@ struct attrib_extractor : interface<attrib_extractor> {
 //------------------------------------------------------------------------------
 template <typename Info>
 struct info_extractor : attrib_extractor {
-    void consume_by(stream_sink& sink) noexcept final {
+    void consume_by(stream_sink& sink) noexcept override {
         sink.consume(info);
     }
 
@@ -344,7 +344,13 @@ using heartbeat_extractor = offset_extractor<info_extractor<heartbeat_info>>;
 //------------------------------------------------------------------------------
 // finish extractor
 //------------------------------------------------------------------------------
-using finish_extractor = offset_extractor<info_extractor<finish_info>>;
+using finish_extractor_base = offset_extractor<info_extractor<finish_info>>;
+struct finish_extractor : finish_extractor_base {
+    void consume_by(stream_sink& sink) noexcept final {
+        info.clean = true;
+        finish_extractor_base::consume_by(sink);
+    }
+};
 //------------------------------------------------------------------------------
 // extractor
 //------------------------------------------------------------------------------

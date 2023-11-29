@@ -225,7 +225,7 @@ void internal_backend::heartbeat() noexcept {
 }
 //------------------------------------------------------------------------------
 void internal_backend::finish_log() noexcept {
-    _dispatch(finish_info{.offset = _offset()});
+    _dispatch(finish_info{.offset = _offset(), .clean = true});
 }
 //------------------------------------------------------------------------------
 void internal_backend::log_chart_sample(

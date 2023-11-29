@@ -122,10 +122,13 @@ private:
     auto _symbol_fatal() const noexcept -> string_view;
     auto _symbol_error() const noexcept -> string_view;
     auto _symbol_warning() const noexcept -> string_view;
+    auto _symbol_change() const noexcept -> string_view;
+    auto _symbol_stat() const noexcept -> string_view;
     auto _symbol_debug() const noexcept -> string_view;
     auto _symbol_trace() const noexcept -> string_view;
     auto _symbol_create() const noexcept -> string_view;
     auto _symbol_destroy() const noexcept -> string_view;
+    auto _symbol_interrupt() const noexcept -> string_view;
     auto _symbol_message() const noexcept -> string_view;
     auto _symbol_board() const noexcept -> string_view;
     auto _symbol(const message_info&) const noexcept -> string_view;
@@ -197,6 +200,14 @@ auto text_tree_sink_factory::_symbol_warning() const noexcept -> string_view {
     return {" \U0001F6A9 "};
 }
 //------------------------------------------------------------------------------
+auto text_tree_sink_factory::_symbol_change() const noexcept -> string_view {
+    return {" \U0001F503 "};
+}
+//------------------------------------------------------------------------------
+auto text_tree_sink_factory::_symbol_stat() const noexcept -> string_view {
+    return {" \U0001F4CA "};
+}
+//------------------------------------------------------------------------------
 auto text_tree_sink_factory::_symbol_debug() const noexcept -> string_view {
     return {" \U0001F41E "};
 }
@@ -213,6 +224,10 @@ auto text_tree_sink_factory::_symbol_destroy() const noexcept -> string_view {
     return {" \U0001F635 "};
 }
 //------------------------------------------------------------------------------
+auto text_tree_sink_factory::_symbol_interrupt() const noexcept -> string_view {
+    return {" \U0001F6D1 "};
+}
+//------------------------------------------------------------------------------
 auto text_tree_sink_factory::_symbol_message() const noexcept -> string_view {
     return {" \U0001F4E8 "};
 }
@@ -223,8 +238,14 @@ auto text_tree_sink_factory::_symbol_board() const noexcept -> string_view {
 //------------------------------------------------------------------------------
 auto text_tree_sink_factory::_symbol(const message_info& info) const noexcept
   -> string_view {
+    if(info.tag.matches("objCreate")) {
+        return _symbol_create();
+    }
     if(info.tag.matches("objDestroy")) {
         return _symbol_destroy();
+    }
+    if(info.tag.matches("interrupt")) {
+        return _symbol_interrupt();
     }
     switch(info.severity) {
         case log_event_severity::fatal:
@@ -233,6 +254,10 @@ auto text_tree_sink_factory::_symbol(const message_info& info) const noexcept
             return _symbol_error();
         case log_event_severity::warning:
             return _symbol_warning();
+        case log_event_severity::change:
+            return _symbol_change();
+        case log_event_severity::stat:
+            return _symbol_stat();
         case log_event_severity::debug:
             return _symbol_debug();
         case log_event_severity::trace:
@@ -421,6 +446,11 @@ auto text_tree_sink_factory::_conn_Z(const text_tree_sink& si) noexcept
             _write("━━");
         }
     }
+    if(_condensed) {
+        _write("━┑");
+    } else {
+        _write("━┥");
+    }
     return *this;
 }
 //------------------------------------------------------------------------------
@@ -514,9 +544,7 @@ void text_tree_sink_factory::_format_default_heading(
   const string_view symbol,
   const message_info& info,
   message_formatter& formatter) noexcept {
-    if(_condensed) {
-        _conn_Z(s)._write("━┑");
-    } else {
+    if(not _condensed) {
         if(info.tag) {
             _conn_I(s)._write(" ╭────┬──────────┬──────────┬─────────┬");
             _write("──────────┬──────────┬──────────┬────────────╮\n");
@@ -524,9 +552,8 @@ void text_tree_sink_factory::_format_default_heading(
             _conn_I(s)._write(" ╭────┬──────────┬──────────┬─────────┬");
             _write("──────────┬──────────┬────────────╮\n");
         }
-        _conn_Z(s)._write("━┥");
     }
-    _write(symbol);
+    _conn_Z(s), _write(symbol);
     _write("│")._write(padded_to(10, format_reltime(s.time_since_start(info))));
     _write("│")._write(padded_to(10, format_reltime(s.time_since_prev(info))));
     _write("│")._write(padded_to(9, enumerator_name(info.severity)));
@@ -664,8 +691,10 @@ void text_tree_sink_factory::consume(
   identifier tag,
   std::uint64_t instance,
   const text_tree_interval_info& info) noexcept {
-    _conn_I(s)._write(" ╭────┬──────────┬──────────┬────────────╮\n");
-    _conn_Z(s)._write("━┥")._write(_symbol_interval());
+    if(not _condensed) {
+        _conn_I(s)._write(" ╭────┬──────────┬──────────┬────────────╮\n");
+    }
+    _conn_Z(s)._write(_symbol_interval());
     _write("│")._write(padded_to(10, s.root()));
     _write("│")._write(padded_to(10, tag));
     _write("│")._write(padded_to(12, format_instance(instance, _temp)));
@@ -697,12 +726,18 @@ void text_tree_sink::consume(const interval_info& info) noexcept {
 void text_tree_sink_factory::consume(
   const text_tree_sink& s,
   const heartbeat_info& info) noexcept {
-    _conn_I(s)._write(" ╭────┬──────────┬──────────┬──────────╮\n");
-    _conn_Z(s)._write("━┥")._write(_symbol_heart_beat());
+    if(not _condensed) {
+        _conn_I(s)._write(
+          " ╭────┬──────────┬──────────┬──────────┬──────────╮\n");
+    }
+    _conn_Z(s)._write(_symbol_heart_beat());
     _write("│")._write(padded_to(10, format_reltime(s.time_since_start(info))));
     _write("│")._write(padded_to(10, format_reltime(s.time_since_prev(info))));
+    _write("│")._write(padded_to(10, s.root()));
     _write("│heart-beat│\n");
-    _conn_I(s)._write(" ╰────┴──────────┴──────────┴──────────╯\n")._flush();
+    _conn_I(s)
+      ._write(" ╰────┴──────────┴──────────┴──────────┴──────────╯\n")
+      ._flush();
 }
 //------------------------------------------------------------------------------
 void text_tree_sink::consume(const heartbeat_info& info) noexcept {
