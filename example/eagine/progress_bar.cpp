@@ -10,7 +10,7 @@ import std;
 
 auto main() -> int {
     using namespace eagine;
-    const signal_switch interrupted;
+    signal_switch interrupted;
 
     float x = 0.F;
 

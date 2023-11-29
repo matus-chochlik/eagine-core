@@ -6,6 +6,7 @@ eagine_add_module(
 	eagine.core.runtime PARTITION signal_switch
 	IMPORTS
 		std
+		eagine.core.utility
 )
 
 eagine_add_module(
@@ -120,10 +121,11 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.utility
 		eagine.core.memory
 		eagine.core.string
+		eagine.core.utility
 		eagine.core.valid_if
+		eagine.core.container
 )
 target_link_libraries(
 	eagine.core.runtime

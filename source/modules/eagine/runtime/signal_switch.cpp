@@ -8,6 +8,7 @@
 export module eagine.core.runtime:signal_switch;
 
 import std;
+import eagine.core.utility;
 
 namespace eagine {
 
@@ -48,6 +49,9 @@ public:
 
     /// @brief Indicates if one of the tracked signals was received.
     explicit operator bool() const noexcept;
+
+    /// @brief Invoked when the state of this switch changes.
+    signal<void(bool) noexcept> switched;
 
 private:
     static auto _state() noexcept -> volatile std::sig_atomic_t&;
