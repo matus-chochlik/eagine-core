@@ -97,6 +97,13 @@ auto make_text_output(main_ctx& ctx) -> unique_holder<text_output> {
 //------------------------------------------------------------------------------
 auto make_sink_factory(main_ctx& ctx) noexcept
   -> shared_holder<stream_sink_factory> {
+    if(const auto arg{ctx.args().find("--libpq")}) {
+        string_view address;
+        if(not arg.next().starts_with("-")) {
+            address = arg.next().get();
+        }
+        return make_libpq_sink_factory(ctx, address);
+    }
     return make_text_tree_sink_factory(ctx, make_text_output(ctx));
 }
 //------------------------------------------------------------------------------
