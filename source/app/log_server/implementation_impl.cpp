@@ -73,7 +73,7 @@ auto make_text_output(main_ctx& ctx) -> unique_holder<text_output> {
         if(not arg.next().starts_with("-")) {
             address = arg.next().get();
         }
-        return make_asio_tcp_ipv4_text_output(ctx, address);
+        outputs.emplace_back(make_asio_tcp_ipv4_text_output(ctx, address));
     }
 
     if(const auto arg{ctx.args().find("--socat")}) {
@@ -81,11 +81,11 @@ auto make_text_output(main_ctx& ctx) -> unique_holder<text_output> {
         if(not arg.next().starts_with("-")) {
             address = arg.next().get();
         }
-        return make_asio_local_text_output(ctx, address);
+        outputs.emplace_back(make_asio_local_text_output(ctx, address));
     }
 
-    if(ctx.args().find("--output") or outputs.empty()) {
-        return make_ostream_text_output(ctx);
+    if(ctx.args().find("--ostream") or outputs.empty()) {
+        outputs.emplace_back(make_ostream_text_output(ctx));
     }
 
     if(outputs.size() == 1) {
