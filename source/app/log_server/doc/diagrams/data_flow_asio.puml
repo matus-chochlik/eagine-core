@@ -1,0 +1,110 @@
+@startuml
+
+namespace network {
+class isocket as "Socket" {}
+class osocket as "Socket" {}
+}
+
+interface reader {
+  +run()
+}
+
+
+annotation main {
+  main()
+}
+
+main --> reader : execute
+
+class asio_reader {
+  -acceptor: Acceptor
+  -accept()
+  +run()
+}
+
+reader <|-- asio_reader
+
+class asio_reader_stream {
+  -sink: parser_input
+  -socket: Socket
+  +start
+}
+
+asio_reader *-- asio_reader_stream
+
+interface parser_input {
+  +consume_text()
+}
+
+class json_data_extractor {
+  -sink: stream_sink
+  +consume_text()
+}
+
+parser_input <|-- json_data_extractor
+asio_reader_stream o--> parser_input
+
+
+interface stream_sink {
+  +void consume(Info)
+}
+
+interface stream_sink_factory {
+  +make_stream(): stream_sink
+  +update()
+}
+
+stream_sink_factory ..> stream_sink
+
+asio_reader o--> stream_sink_factory
+
+stream_sink <--o json_data_extractor : use
+
+class text_tree_sink {
+  -parent: text_tree_sink_factory
+  +consume(Info)
+}
+
+stream_sink --|> text_tree_sink
+
+class text_tree_sink_factory {
+  -output: text_output
+  +make_stream(): stream_sink
+  +update()
+}
+
+stream_sink_factory --|> text_tree_sink_factory
+text_tree_sink_factory ..> text_tree_sink
+
+interface text_output {
+  +write(string)
+  +flush()
+}
+
+text_output <--o text_tree_sink_factory : use
+
+class asio_output {
+  -acceptor: Acceptor
+  -accept()
+  +write(string)
+  +flush()
+}
+
+asio_output --|> text_output
+
+class asio_output_stream {
+  -socket: Socket
+  +write(block)
+}
+
+asio_output_stream --* asio_output
+
+isocket -[#red,thickness=8]-> asio_reader_stream : read
+asio_reader_stream -[#red,thickness=8]-> json_data_extractor : consume_text
+json_data_extractor -[#red,thickness=8]-> text_tree_sink : consume
+text_tree_sink_factory <-[#red,thickness=8]- text_tree_sink : write
+asio_output <-[#red,thickness=8]- text_tree_sink_factory : write
+asio_output_stream <-[#red,thickness=8]- asio_output : write
+osocket <-[#red,thickness=8]- asio_output_stream : write
+
+@enduml
