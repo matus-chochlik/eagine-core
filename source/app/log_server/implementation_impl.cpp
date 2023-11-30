@@ -67,6 +67,7 @@ auto message_info::find_arg(identifier name) const noexcept
 // factory functions
 //------------------------------------------------------------------------------
 auto make_text_output(main_ctx& ctx) -> unique_holder<text_output> {
+    std::vector<unique_holder<text_output>> outputs;
     if(const auto arg{ctx.args().find("--netcat")}) {
         string_view address;
         if(not arg.next().starts_with("-")) {
@@ -83,7 +84,15 @@ auto make_text_output(main_ctx& ctx) -> unique_holder<text_output> {
         return make_asio_local_text_output(ctx, address);
     }
 
-    return make_ostream_text_output(ctx);
+    if(ctx.args().find("--output") or outputs.empty()) {
+        return make_ostream_text_output(ctx);
+    }
+
+    if(outputs.size() == 1) {
+        return std::move(outputs.front());
+    }
+
+    return make_combined_text_output(std::move(outputs));
 }
 //------------------------------------------------------------------------------
 auto make_sink_factory(main_ctx& ctx) noexcept

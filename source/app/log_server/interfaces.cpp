@@ -108,6 +108,8 @@ auto make_asio_local_text_output(main_ctx&, string_view address)
   -> unique_holder<text_output>;
 auto make_asio_tcp_ipv4_text_output(main_ctx&, string_view address)
   -> unique_holder<text_output>;
+auto make_combined_text_output(std::vector<unique_holder<text_output>>)
+  -> unique_holder<text_output>;
 //------------------------------------------------------------------------------
 export auto make_text_output(main_ctx&) -> unique_holder<text_output>;
 //------------------------------------------------------------------------------

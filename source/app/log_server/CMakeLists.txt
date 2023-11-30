@@ -22,6 +22,7 @@ eagine_add_module(
 		text_tree_sink
 		ostream_output
 		asio_output
+		combined_output
 	IMPORTS std eagine.core
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/asio/asio/include")
