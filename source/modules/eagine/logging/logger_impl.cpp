@@ -26,7 +26,8 @@ void basic_logger::begin_log() noexcept {
 //------------------------------------------------------------------------------
 void basic_logger::finish_log() noexcept {
     if(auto lbe{backend()}) {
-        lbe->begin_log();
+        lbe->finish_log();
+        _backend.reset();
     }
 }
 //------------------------------------------------------------------------------

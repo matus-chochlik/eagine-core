@@ -16,6 +16,8 @@ namespace eagine {
 export class progress_bar {
 public:
     progress_bar() noexcept = default;
+    progress_bar(const int w) noexcept
+      : _width{w < 0 ? 0 : w} {}
 
     auto set_width(const int w) noexcept -> auto& {
         _width = w < 0 ? 0 : w;

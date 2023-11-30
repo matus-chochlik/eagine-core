@@ -22,13 +22,18 @@ auto format_instance(std::uint64_t, std::string&) noexcept -> std::string&;
 //------------------------------------------------------------------------------
 class message_formatter {
 public:
-    auto format(const message_info::arg_info&, bool short_value) noexcept
+    auto format(const message_info::arg_info&, bool header_value) noexcept
       -> std::string;
     auto format(const message_info&) noexcept -> std::string;
 
 private:
+    auto _fmt_main_progress(
+      const message_info::arg_info&,
+      bool header_value) noexcept -> std::string;
+
     float_seconds _curr_msg_time{};
     float_seconds _main_prgrs_start{};
+    std::array<progress_bar, 2> _main_bar{{{60}, {10}}};
     bool _main_prgrs_started{false};
 };
 //------------------------------------------------------------------------------

@@ -129,8 +129,10 @@ private:
     auto _symbol_create() const noexcept -> string_view;
     auto _symbol_destroy() const noexcept -> string_view;
     auto _symbol_interrupt() const noexcept -> string_view;
-    auto _symbol_message() const noexcept -> string_view;
+    auto _symbol_locked() const noexcept -> string_view;
+    auto _symbol_unlocked() const noexcept -> string_view;
     auto _symbol_board() const noexcept -> string_view;
+    auto _symbol_message() const noexcept -> string_view;
     auto _symbol(const message_info&) const noexcept -> string_view;
     auto _symbol_interval() const noexcept -> string_view;
     auto _symbol_heart_beat() const noexcept -> string_view;
@@ -228,6 +230,14 @@ auto text_tree_sink_factory::_symbol_interrupt() const noexcept -> string_view {
     return {" \U0001F6D1 "};
 }
 //------------------------------------------------------------------------------
+auto text_tree_sink_factory::_symbol_locked() const noexcept -> string_view {
+    return {" \U0001F512 "};
+}
+//------------------------------------------------------------------------------
+auto text_tree_sink_factory::_symbol_unlocked() const noexcept -> string_view {
+    return {" \U0001F513 "};
+}
+//------------------------------------------------------------------------------
 auto text_tree_sink_factory::_symbol_message() const noexcept -> string_view {
     return {" \U0001F4E8 "};
 }
@@ -243,6 +253,12 @@ auto text_tree_sink_factory::_symbol(const message_info& info) const noexcept
     }
     if(info.tag.matches("objDestroy")) {
         return _symbol_destroy();
+    }
+    if(info.tag.matches("reqRutrPwd")) {
+        return _symbol_locked();
+    }
+    if(info.tag.matches("vfyRutrPwd")) {
+        return _symbol_unlocked();
     }
     if(info.tag.matches("interrupt")) {
         return _symbol_interrupt();
@@ -344,7 +360,7 @@ private:
     identifier _root;
     begin_info _begin{};
 
-    std::chrono::seconds _interval_period{60};
+    std::chrono::seconds _interval_period{120};
     flat_map<std::tuple<identifier_t, std::uint64_t>, text_tree_interval_info>
       _intervals;
 

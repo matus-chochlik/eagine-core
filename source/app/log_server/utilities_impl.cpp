@@ -193,6 +193,7 @@ auto format_progress(const message_info::arg_info& i, bool header_value)
 //------------------------------------------------------------------------------
 auto format_main_progress(
   const message_info::arg_info& i,
+  progress_bar& bar,
   float_seconds done_dur,
   bool header_value) -> std::string {
     if(const auto val{i.value_float()}; val and i.min and i.max) {
@@ -210,11 +211,18 @@ auto format_main_progress(
                 }
                 return "[estimating...] ";
             }};
+            const auto make_bar{[&] -> std::string_view {
+                return bar.set_min(*i.min)
+                  .set_max(*i.max)
+                  .update(*val)
+                  .reformat()
+                  .get();
+            }};
             if(header_value) {
-                return std::format("{}{:.1f}%", estimate(), 100.F * done);
+                return std::format(
+                  "|{}|{}{:.0f}%", make_bar(), estimate(), 100.F * done);
             } else {
-                // TODO: progress bar
-                return std::format("{:.1f}%", 100.F * done);
+                return std::format("|{}|{:.1f}%", make_bar(), 100.F * done);
             }
         }
     }
@@ -222,6 +230,20 @@ auto format_main_progress(
 }
 //------------------------------------------------------------------------------
 // message formatter
+//------------------------------------------------------------------------------
+auto message_formatter::_fmt_main_progress(
+  const message_info::arg_info& info,
+  bool header_value) noexcept -> std::string {
+    if(not _main_prgrs_started) {
+        _main_prgrs_start = _curr_msg_time;
+        _main_prgrs_started = true;
+    }
+    return format_main_progress(
+      info,
+      _main_bar[header_value],
+      _curr_msg_time - _main_prgrs_start,
+      header_value);
+}
 //------------------------------------------------------------------------------
 auto message_formatter::format(
   const message_info::arg_info& info,
@@ -240,12 +262,7 @@ auto message_formatter::format(
         case id_v("Progress"):
             return format_progress(info, header_value);
         case id_v("MainPrgrss"):
-            if(not _main_prgrs_started) {
-                _main_prgrs_start = _curr_msg_time;
-                _main_prgrs_started = true;
-            }
-            return format_main_progress(
-              info, _curr_msg_time - _main_prgrs_start, header_value);
+            return _fmt_main_progress(info, header_value);
         default:
             break;
     }

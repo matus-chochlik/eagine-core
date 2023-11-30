@@ -29,11 +29,11 @@ void format_progress_bar(
         const auto pn = int(ppos);
         const auto cn = int(cpos);
 
-        const auto do_put = [&put](const char* str) {
+        const auto do_put{[&put](const char* str) {
             while(char c = *str++) {
                 put(c);
             }
-        };
+        }};
 
         while(i < cn) {
             do_put("█");
@@ -67,12 +67,12 @@ void format_progress_bar(
 //------------------------------------------------------------------------------
 auto progress_bar::reformat() noexcept -> progress_bar& {
     _idx = 0;
-    auto put = [this](char c) {
+    const auto put{[this](char c) {
         if(_idx >= _buffer.size()) {
             _buffer.resize(_idx + 1);
         }
         _buffer[_idx++] = c;
-    };
+    }};
     format_progress_bar(put, _width, _min, _max, _prev, _curr);
     put('\0');
     return *this;
