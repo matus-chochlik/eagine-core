@@ -36,12 +36,13 @@ public:
     result(PGresult* res) noexcept
       : result_handle{res, ::PQclear} {}
 
-    auto tuples_ok() const noexcept -> bool {
-        return ::PQresultStatus(get()) == PGRES_TUPLES_OK;
+    auto is_ok() const noexcept -> bool {
+        return result_handle::operator bool() and
+               (::PQresultStatus(get()) == PGRES_TUPLES_OK);
     }
 
     explicit operator bool() const noexcept {
-        return result_handle::operator bool() and tuples_ok();
+        return is_ok();
     }
 
     auto get_value(int row, int col) const noexcept -> string_view {
@@ -66,11 +67,12 @@ public:
     }
 
     auto is_ok() const noexcept -> bool {
-        return ::PQstatus(get()) == CONNECTION_OK;
+        return connection_handle::operator bool() and
+               (::PQstatus(get()) == CONNECTION_OK);
     }
 
     explicit operator bool() const noexcept {
-        return connection_handle::operator bool() and is_ok();
+        return is_ok();
     }
 
     auto error_message() const noexcept -> string_view {
@@ -82,7 +84,7 @@ public:
         return is_ok();
     }
 
-    auto exec(string_view sql) const noexcept -> result {
+    auto execute(string_view sql) const noexcept -> result {
         if(is_ok()) {
             return {::PQexec(get(), c_str(sql))};
         }
@@ -90,13 +92,13 @@ public:
     }
 
     template <typename... Args>
-    auto exec(string_view sql, Args&&... args) const noexcept
+    auto execute(string_view sql, Args&&... args) const noexcept
       -> std::enable_if_t<(sizeof...(Args) > 0), result> {
         if(is_ok()) {
             return _exec_p(
               sql,
               std::array<string_view, sizeof...(Args)>{
-                {std::forward<Args>(args)...}},
+                {_conv(std::forward<Args>(args))...}},
               std::make_index_sequence<sizeof...(Args)>{});
         }
         return {nullptr};
@@ -121,6 +123,22 @@ private:
           argfmt.data(),
           0)};
     }
+
+    static auto _conv(const string_view arg) noexcept -> string_view {
+        return arg;
+    }
+
+    static auto _conv(const identifier arg) noexcept {
+        return arg.name().str();
+    }
+
+    static auto _conv(const std::integral auto arg) noexcept {
+        return std::to_string(arg);
+    }
+
+    static auto _conv(const bool arg) noexcept -> string_view {
+        return arg ? string_view{"TRUE"} : string_view{"FALSE"};
+    }
 };
 //------------------------------------------------------------------------------
 } // namespace pq
@@ -139,6 +157,8 @@ public:
 
     auto is_conn_ok() const noexcept -> bool;
     auto get_stream_id() noexcept -> optionally_valid<stream_id_t>;
+    auto get_entry_id(libpq_stream_sink&, const message_info&) noexcept
+      -> optionally_valid<span_size_t>;
 
     auto consume(libpq_stream_sink&, const begin_info&) noexcept -> bool;
     auto consume(libpq_stream_sink&, const description_info&) noexcept -> bool;
@@ -146,6 +166,10 @@ public:
       -> bool;
     auto consume(libpq_stream_sink&, const active_state_info&) noexcept -> bool;
     auto consume(libpq_stream_sink&, const message_info&) noexcept -> bool;
+    auto consume(
+      libpq_stream_sink&,
+      const span_size_t entry_id,
+      const message_info::arg_info&) noexcept -> bool;
     auto consume(libpq_stream_sink&, const interval_info&) noexcept -> bool;
     auto consume(libpq_stream_sink&, const heartbeat_info&) noexcept -> bool;
     auto consume(const libpq_stream_sink&, const finish_info&) noexcept -> bool;
@@ -290,17 +314,17 @@ auto libpq_stream_sink_factory::is_conn_ok() const noexcept -> bool {
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::get_stream_id() noexcept
   -> optionally_valid<stream_id_t> {
-    if(const auto res{_conn.exec("SELECT eagilog.start_stream()")}) {
+    if(const auto res{_conn.execute("SELECT eagilog.start_stream()")}) {
         return res.get_value_as<stream_id_t>(0, 0);
     }
     return {};
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
-  libpq_stream_sink& si,
+  libpq_stream_sink& stream,
   const begin_info&) noexcept -> bool {
     if(const auto id{get_stream_id()}) {
-        si.set_id(*id);
+        stream.set_id(*id);
         return true;
     }
     return false;
@@ -313,21 +337,79 @@ auto libpq_stream_sink_factory::consume(
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
-  libpq_stream_sink&,
-  const declare_state_info&) noexcept -> bool {
+  libpq_stream_sink& stream,
+  const declare_state_info& info) noexcept -> bool {
+    return _conn
+      .execute(
+        "SELECT eagilog.declare_stream_state($1::INTEGER, $2, $3, $4, $5)",
+        stream.id(),
+        info.source,
+        info.state_tag,
+        info.begin_tag,
+        info.end_tag)
+      .is_ok();
+}
+//------------------------------------------------------------------------------
+auto libpq_stream_sink_factory::consume(
+  libpq_stream_sink& stream,
+  const active_state_info& info) noexcept -> bool {
+    return _conn
+      .execute(
+        "SELECT eagilog.make_stream_state_active($1::INTEGER, $2, $3)",
+        stream.id(),
+        info.source,
+        info.tag)
+      .is_ok();
+}
+//------------------------------------------------------------------------------
+auto libpq_stream_sink_factory::get_entry_id(
+  libpq_stream_sink& stream,
+  const message_info& info) noexcept -> optionally_valid<span_size_t> {
+    if(info.tag) {
+        return _conn
+          .execute(
+            "SELECT eagilog.add_entry($1::INTEGER, $2, $3::BIGINT, $4, $5, $6)",
+            stream.id(),
+            info.source,
+            info.instance,
+            enumerator_name(info.severity),
+            info.tag,
+            info.format)
+          .get_value_as<span_size_t>(0, 0);
+    } else {
+        return _conn
+          .execute(
+            "SELECT "
+            "eagilog.add_entry($1::INTEGER, $2, $3::BIGINT, $4, NULL, $5)",
+            stream.id(),
+            info.source,
+            info.instance,
+            enumerator_name(info.severity),
+            info.format)
+          .get_value_as<span_size_t>(0, 0);
+    }
+}
+//------------------------------------------------------------------------------
+auto libpq_stream_sink_factory::consume(
+  libpq_stream_sink& stream,
+  const span_size_t entry_id,
+  const message_info::arg_info& info) noexcept -> bool {
+    (void)stream;
+    (void)entry_id;
+    (void)info;
     return true;
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
-  libpq_stream_sink&,
-  const active_state_info&) noexcept -> bool {
-    return true;
-}
-//------------------------------------------------------------------------------
-auto libpq_stream_sink_factory::consume(
-  libpq_stream_sink&,
-  const message_info&) noexcept -> bool {
-    return true;
+  libpq_stream_sink& stream,
+  const message_info& info) noexcept -> bool {
+    if(const auto entry_id{get_entry_id(stream, info)}) {
+        for(const auto& arg : info.args) {
+            consume(stream, *entry_id, arg);
+        }
+        return true;
+    }
+    return false;
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
@@ -343,15 +425,14 @@ auto libpq_stream_sink_factory::consume(
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
-  const libpq_stream_sink& si,
+  const libpq_stream_sink& stream,
   const finish_info& info) noexcept -> bool {
-    if(const auto res{_conn.exec(
-         "SELECT eagilog.finish_stream($1::INTEGER, $2::BOOLEAN)",
-         std::to_string(si.id()),
-         info.clean ? string_view{"TRUE"} : string_view{"FALSE"})}) {
-        return res.tuples_ok();
-    }
-    return false;
+    return _conn
+      .execute(
+        "SELECT eagilog.finish_stream($1::INTEGER, $2::BOOLEAN)",
+        stream.id(),
+        info.clean)
+      .is_ok();
 }
 //------------------------------------------------------------------------------
 void libpq_stream_sink_factory::update() noexcept {
