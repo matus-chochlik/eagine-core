@@ -442,7 +442,7 @@ auto proxy_log_choose_backend(
     }()};
     const auto log_format{[&] {
         // TODO
-        return log_data_format::xml;
+        return log_data_format::json;
     }()};
 
     if((name == "null") or (name == "none")) {
@@ -486,12 +486,12 @@ auto proxy_log_choose_backend(
 
     if(use_spinlock) {
         return {
-          hold<ostream_log_backend<spinlock, log_data_format::xml>>,
+          hold<ostream_log_backend<spinlock, log_data_format::json>>,
           std::clog,
           info};
     }
     return {
-      hold<ostream_log_backend<std::mutex, log_data_format::xml>>,
+      hold<ostream_log_backend<std::mutex, log_data_format::json>>,
       std::clog,
       info};
 }

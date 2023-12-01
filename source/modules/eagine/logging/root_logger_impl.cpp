@@ -55,7 +55,7 @@ auto root_logger_choose_backend(
   const log_stream_info& info) -> unique_holder<logger_backend> {
 
     const bool use_spinlock{args.find("--log-use-spinlock")};
-    auto format{log_data_format::xml};
+    auto format{log_data_format::json};
     if(args.find("--log-format-json")) {
         format = log_data_format::json;
     } else if(args.find("--log-format-xml")) {
