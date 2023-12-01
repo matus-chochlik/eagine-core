@@ -26,6 +26,104 @@ namespace eagine::logs {
 #if EAGINE_USE_LIBPQ
 //------------------------------------------------------------------------------
 using stream_id_t = std::size_t;
+namespace pq {
+//------------------------------------------------------------------------------
+using connection_handle = std::unique_ptr<PGconn, void (*)(PGconn*)>;
+using result_handle = std::unique_ptr<PGresult, void (*)(PGresult*)>;
+//------------------------------------------------------------------------------
+class result : result_handle {
+public:
+    result(PGresult* res) noexcept
+      : result_handle{res, ::PQclear} {}
+
+    auto tuples_ok() const noexcept -> bool {
+        return ::PQresultStatus(get()) == PGRES_TUPLES_OK;
+    }
+
+    explicit operator bool() const noexcept {
+        return result_handle::operator bool() and tuples_ok();
+    }
+
+    auto get_value(int row, int col) const noexcept -> string_view {
+        return {
+          static_cast<const char*>(::PQgetvalue(get(), row, col)),
+          static_cast<span_size_t>(::PQgetlength(get(), row, col))};
+    }
+
+    template <typename T>
+    auto get_value_as(int row, int col) const noexcept {
+        return from_string<T>(get_value(row, col));
+    }
+};
+//------------------------------------------------------------------------------
+class connection : connection_handle {
+public:
+    connection(PGconn* conn) noexcept
+      : connection_handle{conn, ::PQfinish} {}
+
+    static auto connect(string_view conn_params) noexcept {
+        return connection{::PQconnectdb(c_str(conn_params))};
+    }
+
+    auto is_ok() const noexcept -> bool {
+        return ::PQstatus(get()) == CONNECTION_OK;
+    }
+
+    explicit operator bool() const noexcept {
+        return connection_handle::operator bool() and is_ok();
+    }
+
+    auto error_message() const noexcept -> string_view {
+        return string_view{::PQerrorMessage(get())};
+    }
+
+    auto reconnect() noexcept -> bool {
+        ::PQreset(get());
+        return is_ok();
+    }
+
+    auto exec(string_view sql) const noexcept -> result {
+        if(is_ok()) {
+            return {::PQexec(get(), c_str(sql))};
+        }
+        return {nullptr};
+    }
+
+    template <typename... Args>
+    auto exec(string_view sql, Args&&... args) const noexcept
+      -> std::enable_if_t<(sizeof...(Args) > 0), result> {
+        if(is_ok()) {
+            return _exec_p(
+              sql,
+              std::array<string_view, sizeof...(Args)>{
+                {std::forward<Args>(args)...}},
+              std::make_index_sequence<sizeof...(Args)>{});
+        }
+        return {nullptr};
+    }
+
+private:
+    template <std::size_t N, std::size_t... I>
+    auto _exec_p(
+      string_view sql,
+      std::array<string_view, N> args,
+      std::index_sequence<I...>) const noexcept -> result {
+        const std::array<const char*, N> argstr{{args[I].data()...}};
+        const std::array<int, N> arglen{{int(args[I].size())...}};
+        const std::array<int, N> argfmt{{int(I - I)...}};
+        return {::PQexecParams(
+          get(),
+          c_str(sql),
+          int(N),
+          nullptr,
+          argstr.data(),
+          arglen.data(),
+          argfmt.data(),
+          0)};
+    }
+};
+//------------------------------------------------------------------------------
+} // namespace pq
 //------------------------------------------------------------------------------
 // sink factory
 //------------------------------------------------------------------------------
@@ -40,6 +138,7 @@ public:
     void update() noexcept final;
 
     auto is_conn_ok() const noexcept -> bool;
+    auto get_stream_id() noexcept -> optionally_valid<stream_id_t>;
 
     auto consume(libpq_stream_sink&, const begin_info&) noexcept -> bool;
     auto consume(libpq_stream_sink&, const description_info&) noexcept -> bool;
@@ -49,12 +148,11 @@ public:
     auto consume(libpq_stream_sink&, const message_info&) noexcept -> bool;
     auto consume(libpq_stream_sink&, const interval_info&) noexcept -> bool;
     auto consume(libpq_stream_sink&, const heartbeat_info&) noexcept -> bool;
-    auto consume(libpq_stream_sink&, const finish_info&) noexcept -> bool;
+    auto consume(const libpq_stream_sink&, const finish_info&) noexcept -> bool;
 
 private:
-    auto _get_stream_id() noexcept -> optionally_valid<stream_id_t>;
+    pq::connection _conn;
 
-    std::unique_ptr<PGconn, void (*)(PGconn*)> _conn;
     backing_off_timeout _should_reconnect{
       std::chrono::seconds{1},
       std::chrono::minutes{1}};
@@ -66,6 +164,7 @@ class libpq_stream_sink final : public stream_sink {
 public:
     libpq_stream_sink(shared_holder<libpq_stream_sink_factory> parent) noexcept;
 
+    void set_id(stream_id_t) noexcept;
     auto id() const noexcept -> stream_id_t;
     auto root() const noexcept -> identifier;
 
@@ -102,6 +201,10 @@ private:
 libpq_stream_sink::libpq_stream_sink(
   shared_holder<libpq_stream_sink_factory> parent) noexcept
   : _parent{std::move(parent)} {}
+//------------------------------------------------------------------------------
+void libpq_stream_sink::set_id(stream_id_t id) noexcept {
+    _id = id;
+}
 //------------------------------------------------------------------------------
 auto libpq_stream_sink::id() const noexcept -> stream_id_t {
     return _id;
@@ -174,7 +277,7 @@ void libpq_stream_sink::consume(const finish_info& info) noexcept {
 libpq_stream_sink_factory::libpq_stream_sink_factory(
   main_ctx&,
   string_view conn_params) noexcept
-  : _conn{::PQconnectdb(c_str(conn_params)), &::PQfinish} {}
+  : _conn{pq::connection::connect(conn_params)} {}
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::make_stream() noexcept
   -> unique_holder<stream_sink> {
@@ -182,13 +285,25 @@ auto libpq_stream_sink_factory::make_stream() noexcept
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::is_conn_ok() const noexcept -> bool {
-    return ::PQstatus(_conn.get()) == CONNECTION_OK;
+    return _conn.is_ok();
+}
+//------------------------------------------------------------------------------
+auto libpq_stream_sink_factory::get_stream_id() noexcept
+  -> optionally_valid<stream_id_t> {
+    if(const auto res{_conn.exec("SELECT eagilog.start_stream()")}) {
+        return res.get_value_as<stream_id_t>(0, 0);
+    }
+    return {};
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
-  libpq_stream_sink&,
+  libpq_stream_sink& si,
   const begin_info&) noexcept -> bool {
-    return true;
+    if(const auto id{get_stream_id()}) {
+        si.set_id(*id);
+        return true;
+    }
+    return false;
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
@@ -228,16 +343,21 @@ auto libpq_stream_sink_factory::consume(
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
-  libpq_stream_sink&,
-  const finish_info&) noexcept -> bool {
-    return true;
+  const libpq_stream_sink& si,
+  const finish_info& info) noexcept -> bool {
+    if(const auto res{_conn.exec(
+         "SELECT eagilog.finish_stream($1::INTEGER, $2::BOOLEAN)",
+         std::to_string(si.id()),
+         info.clean ? string_view{"TRUE"} : string_view{"FALSE"})}) {
+        return res.tuples_ok();
+    }
+    return false;
 }
 //------------------------------------------------------------------------------
 void libpq_stream_sink_factory::update() noexcept {
     if(not is_conn_ok()) {
         if(_should_reconnect.is_expired()) {
-            ::PQreset(_conn.get());
-            if(is_conn_ok()) {
+            if(_conn.reconnect()) {
                 _should_reconnect.rewind();
             } else {
                 _should_reconnect.extend();
