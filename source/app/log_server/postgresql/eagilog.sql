@@ -865,17 +865,21 @@ CREATE FUNCTION eagilog.add_entry(
 	_instance eagilog.entry.instance%TYPE,
 	_severity_name eagilog.severity.name%TYPE,
 	_tag eagilog.entry.tag%TYPE,
-	_format eagilog.message_format.format%TYPE
+	_format eagilog.message_format.format%TYPE,
+	_entry_time eagilog.entry.entry_time%TYPE
 ) RETURNS eagilog.entry.entry_id%TYPE
 AS $$
 DECLARE
-	_entry_time INTERVAL;
 	result eagilog.entry.entry_id%TYPE;
 BEGIN
-	SELECT now() - start_time
-	INTO _entry_time
-	FROM eagilog.stream
-	WHERE stream_id = _stream_id;
+
+	IF _entry_time IS NULL
+	THEN
+		SELECT now() - start_time
+		INTO _entry_time
+		FROM eagilog.stream
+		WHERE stream_id = _stream_id;
+	END IF;
 
 	WITH ins AS (
 		INSERT INTO eagilog.entry (
