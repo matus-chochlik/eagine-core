@@ -144,14 +144,22 @@ auto make_text_output(main_ctx& ctx) -> unique_holder<text_output> {
 //------------------------------------------------------------------------------
 auto make_sink_factory(main_ctx& ctx) noexcept
   -> shared_holder<stream_sink_factory> {
+    std::vector<shared_holder<stream_sink_factory>> factories;
     if(const auto arg{ctx.args().find("--libpq")}) {
         string_view address;
         if(not arg.next().starts_with("-")) {
             address = arg.next().get();
         }
-        return make_libpq_sink_factory(ctx, address);
+        factories.emplace_back(make_libpq_sink_factory(ctx, address));
     }
-    return make_text_tree_sink_factory(ctx, make_text_output(ctx));
+    if(ctx.args().find("--ostream") or factories.empty()) {
+        factories.emplace_back(
+          make_text_tree_sink_factory(ctx, make_text_output(ctx)));
+    }
+    if(factories.size() == 1) {
+        return std::move(factories.front());
+    }
+    return make_combined_sink_factory(ctx, std::move(factories));
 }
 //------------------------------------------------------------------------------
 auto make_data_parser(main_ctx& ctx, shared_holder<stream_sink> sink) noexcept

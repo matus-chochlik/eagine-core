@@ -143,6 +143,11 @@ auto make_text_tree_sink_factory(main_ctx&, unique_holder<text_output>)
 auto make_libpq_sink_factory(main_ctx&, string_view params) noexcept
   -> shared_holder<stream_sink_factory>;
 //------------------------------------------------------------------------------
+auto make_combined_sink_factory(
+  main_ctx&,
+  std::vector<shared_holder<stream_sink_factory>>) noexcept
+  -> shared_holder<stream_sink_factory>;
+//------------------------------------------------------------------------------
 export auto make_sink_factory(main_ctx&) noexcept
   -> shared_holder<stream_sink_factory>;
 //------------------------------------------------------------------------------

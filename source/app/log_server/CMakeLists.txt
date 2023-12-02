@@ -29,6 +29,7 @@ eagine_add_module(
 		libpq_sink
 		ostream_output
 		asio_output
+		combined_sink
 		combined_output
 	IMPORTS std eagine.core
 	PRIVATE_INCLUDE_DIRECTORIES
