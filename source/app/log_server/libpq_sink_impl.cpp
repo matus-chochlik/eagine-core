@@ -182,6 +182,8 @@ public:
     auto consume(libpq_stream_sink&, const heartbeat_info&) noexcept -> bool;
     auto consume(const libpq_stream_sink&, const finish_info&) noexcept -> bool;
 
+    void set_stream_application_id(stream_id_t, identifier app_id) noexcept;
+
 private:
     auto add_entry_arg_boolean(
       libpq_stream_sink& stream,
@@ -213,6 +215,18 @@ private:
     backing_off_timeout _should_reconnect{
       std::chrono::seconds{1},
       std::chrono::minutes{1}};
+
+    void _setup_special_args() noexcept;
+    void _handle_special_arg(
+      const span_size_t entry_id,
+      const message_info& msg,
+      const message_info::arg_info& arg) noexcept;
+
+    struct _special_arg {
+        std::string_view attribute_name;
+        span_size_t max_length{0};
+    };
+    flat_map<identifier_t, flat_map<identifier_t, _special_arg>> _special_args;
 };
 //------------------------------------------------------------------------------
 // stream sink
@@ -314,6 +328,9 @@ void libpq_stream_sink::consume(const active_state_info& info) noexcept {
 }
 //------------------------------------------------------------------------------
 void libpq_stream_sink::consume(const message_info& info) noexcept {
+    if(not _root) {
+        _root = info.source;
+    }
     _dispatch(info);
 }
 //------------------------------------------------------------------------------
@@ -331,10 +348,41 @@ void libpq_stream_sink::consume(const finish_info& info) noexcept {
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
+void libpq_stream_sink_factory::_setup_special_args() noexcept {
+    _special_args[id_v("ProgArgs")][id_v("cmd")] = {
+      .attribute_name = "command", .max_length = 128};
+    _special_args[id_v("OSInfo")][id_v("osCodeName")] = {
+      .attribute_name = "os_name", .max_length = 64};
+    _special_args[id_v("Instance")][id_v("osPID")] = {
+      .attribute_name = "os_pid"};
+    _special_args[id_v("Instance")][id_v("hostname")] = {
+      .attribute_name = "hostname", .max_length = 64};
+    _special_args[id_v("GitInfo")][id_v("gitHashId")] = {
+      .attribute_name = "git_hash", .max_length = 64};
+    _special_args[id_v("GitInfo")][id_v("gitVersion")] = {
+      .attribute_name = "git_version", .max_length = 32};
+    _special_args[id_v("BuildInfo")][id_v("onValgrind")] = {
+      .attribute_name = "running_on_valgrind"};
+    _special_args[id_v("BuildInfo")][id_v("lowProfile")] = {
+      .attribute_name = "low_profile_build"};
+    _special_args[id_v("BuildInfo")][id_v("debug")] = {
+      .attribute_name = "debug_build"};
+    _special_args[id_v("Compiler")][id_v("complrName")] = {
+      .attribute_name = "compiler", .max_length = 32};
+    _special_args[id_v("Compiler")][id_v("archtcture")] = {
+      .attribute_name = "architecture", .max_length = 32};
+    _special_args[id_v("asignEptId")][id_v("eptId")] = {
+      .attribute_name = "endpoint_id"};
+    _special_args[id_v("cnfrmEptId")][id_v("eptId")] = {
+      .attribute_name = "endpoint_id"};
+}
+//------------------------------------------------------------------------------
 libpq_stream_sink_factory::libpq_stream_sink_factory(
   main_ctx&,
   string_view conn_params) noexcept
-  : _conn{pq::connection::connect(conn_params)} {}
+  : _conn{pq::connection::connect(conn_params)} {
+    _setup_special_args();
+}
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::make_stream() noexcept
   -> unique_holder<stream_sink> {
@@ -567,12 +615,48 @@ auto libpq_stream_sink_factory::consume(
     return add_entry_arg_string(stream, entry_id, info);
 }
 //------------------------------------------------------------------------------
+void libpq_stream_sink_factory::set_stream_application_id(
+  stream_id_t stream_id,
+  identifier app_id) noexcept {
+    _conn.execute(
+      "SELECT eagilog.set_stream_application_id($1::INTEGER, $2)",
+      stream_id,
+      app_id);
+}
+//------------------------------------------------------------------------------
+void libpq_stream_sink_factory::_handle_special_arg(
+  const span_size_t stream_id,
+  const message_info& msg,
+  const message_info::arg_info& arg) noexcept {
+    if(const auto found_msg{find(_special_args, msg.tag.value())}) {
+        if(const auto found_arg{find(*found_msg, arg.name.value())}) {
+            const auto query{std::format(
+              "SELECT eagilog.set_stream_{}($1::INTEGER, $2)",
+              found_arg->attribute_name)};
+
+            if(const auto int_val{arg.value_int64()}) {
+                _conn.execute(query, stream_id, *int_val);
+            } else if(const auto bool_val{arg.value_bool()}) {
+                _conn.execute(query, stream_id, *bool_val);
+            } else if(const auto str_val{arg.value_string()}) {
+                if(found_arg->max_length > 0) {
+                    _conn.execute(
+                      query, stream_id, head(*str_val, found_arg->max_length));
+                } else {
+                    _conn.execute(query, stream_id, *str_val);
+                }
+            }
+        }
+    }
+}
+//------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
   libpq_stream_sink& stream,
   const message_info& info) noexcept -> bool {
     if(const auto entry_id{get_entry_id(stream, info)}) {
         for(const auto& arg : info.args) {
             consume(stream, *entry_id, arg);
+            _handle_special_arg(stream.id(), info, arg);
         }
         return true;
     }
@@ -594,6 +678,7 @@ auto libpq_stream_sink_factory::consume(
 auto libpq_stream_sink_factory::consume(
   const libpq_stream_sink& stream,
   const finish_info& info) noexcept -> bool {
+    set_stream_application_id(stream.id(), stream.root());
     return _conn
       .execute(
         "SELECT eagilog.finish_stream($1::INTEGER, $2::BOOLEAN)",
