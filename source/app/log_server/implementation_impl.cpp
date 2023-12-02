@@ -27,6 +27,39 @@ auto message_info::arg_info::value_bool() const noexcept -> tribool {
     return indeterminate;
 }
 //------------------------------------------------------------------------------
+auto message_info::arg_info::value_int() const noexcept
+  -> optionally_valid<int> {
+    if(const auto val{get_if<std::int64_t>(value)}) {
+        return convert_if_fits<int>(*val);
+    }
+    if(const auto val{get_if<std::uint64_t>(value)}) {
+        return convert_if_fits<int>(*val);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto message_info::arg_info::value_int64() const noexcept
+  -> optionally_valid<std::int64_t> {
+    if(const auto val{get_if<std::int64_t>(value)}) {
+        return *val;
+    }
+    if(const auto val{get_if<std::uint64_t>(value)}) {
+        return convert_if_fits<std::int64_t>(*val);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto message_info::arg_info::value_uint64() const noexcept
+  -> optionally_valid<std::uint64_t> {
+    if(const auto val{get_if<std::uint64_t>(value)}) {
+        return *val;
+    }
+    if(const auto val{get_if<std::int64_t>(value)}) {
+        return convert_if_fits<std::uint64_t>(*val);
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
 auto message_info::arg_info::value_float() const noexcept
   -> optionally_valid<float> {
     if(const auto val{get_if<float>(value)}) {
@@ -41,13 +74,27 @@ auto message_info::arg_info::value_float() const noexcept
     return {};
 }
 //------------------------------------------------------------------------------
-auto message_info::arg_info::value_int() const noexcept
-  -> optionally_valid<int> {
+auto message_info::arg_info::value_duration() const noexcept
+  -> optionally_valid<float_seconds> {
+    if(const auto val{get_if<float_seconds>(value)}) {
+        return *val;
+    }
+    if(const auto val{get_if<float>(value)}) {
+        return float_seconds{*val};
+    }
     if(const auto val{get_if<std::int64_t>(value)}) {
-        return convert_if_fits<int>(*val);
+        return float_seconds{float(*val)};
     }
     if(const auto val{get_if<std::uint64_t>(value)}) {
-        return convert_if_fits<int>(*val);
+        return float_seconds{float(*val)};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto message_info::arg_info::value_string() const noexcept
+  -> optionally_valid<string_view> {
+    if(const auto val{get_if<std::string>(value)}) {
+        return string_view{*val};
     }
     return {};
 }

@@ -71,8 +71,12 @@ struct message_info {
         std::optional<float> max;
 
         auto value_bool() const noexcept -> tribool;
-        auto value_float() const noexcept -> optionally_valid<float>;
         auto value_int() const noexcept -> optionally_valid<int>;
+        auto value_int64() const noexcept -> optionally_valid<std::int64_t>;
+        auto value_uint64() const noexcept -> optionally_valid<std::uint64_t>;
+        auto value_float() const noexcept -> optionally_valid<float>;
+        auto value_duration() const noexcept -> optionally_valid<float_seconds>;
+        auto value_string() const noexcept -> optionally_valid<string_view>;
     };
 
     std::vector<arg_info> args;

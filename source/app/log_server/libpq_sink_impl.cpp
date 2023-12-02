@@ -136,6 +136,14 @@ private:
         return std::to_string(arg);
     }
 
+    static auto _conv(const std::floating_point auto arg) noexcept {
+        return std::to_string(arg);
+    }
+
+    static auto _conv(const std::chrono::duration<float> arg) noexcept {
+        return std::to_string(arg.count());
+    }
+
     static auto _conv(const bool arg) noexcept -> string_view {
         return arg ? string_view{"TRUE"} : string_view{"FALSE"};
     }
@@ -175,6 +183,31 @@ public:
     auto consume(const libpq_stream_sink&, const finish_info&) noexcept -> bool;
 
 private:
+    auto add_entry_arg_boolean(
+      libpq_stream_sink& stream,
+      const span_size_t entry_id,
+      const message_info::arg_info& info) noexcept -> bool;
+    auto add_entry_arg_integer(
+      libpq_stream_sink& stream,
+      const span_size_t entry_id,
+      const message_info::arg_info& info) noexcept -> bool;
+    auto add_entry_arg_unsigned(
+      libpq_stream_sink& stream,
+      const span_size_t entry_id,
+      const message_info::arg_info& info) noexcept -> bool;
+    auto add_entry_arg_float(
+      libpq_stream_sink& stream,
+      const span_size_t entry_id,
+      const message_info::arg_info& info) noexcept -> bool;
+    auto add_entry_arg_duration(
+      libpq_stream_sink& stream,
+      const span_size_t entry_id,
+      const message_info::arg_info& info) noexcept -> bool;
+    auto add_entry_arg_string(
+      libpq_stream_sink& stream,
+      const span_size_t entry_id,
+      const message_info::arg_info& info) noexcept -> bool;
+
     pq::connection _conn;
 
     backing_off_timeout _should_reconnect{
@@ -368,36 +401,170 @@ auto libpq_stream_sink_factory::get_entry_id(
     if(info.tag) {
         return _conn
           .execute(
-            "SELECT eagilog.add_entry($1::INTEGER, $2, $3::BIGINT, $4, $5, $6)",
+            "SELECT eagilog.add_entry("
+            "	$1::INTEGER,"
+            "	$2,"
+            "	$3::BIGINT,"
+            "	$4,"
+            "	$5,"
+            "	$6,"
+            "	$7::INTERVAL)",
             stream.id(),
             info.source,
             info.instance,
             enumerator_name(info.severity),
             info.tag,
-            info.format)
+            info.format,
+            info.offset)
           .get_value_as<span_size_t>(0, 0);
     } else {
         return _conn
           .execute(
-            "SELECT "
-            "eagilog.add_entry($1::INTEGER, $2, $3::BIGINT, $4, NULL, $5)",
+            "SELECT eagilog.add_entry("
+            "	$1::INTEGER,"
+            "	$2,"
+            "	$3::BIGINT,"
+            "	$4,"
+            "	NULL,"
+            "	$5,"
+            "	$6::INTERVAL)",
             stream.id(),
             info.source,
             info.instance,
             enumerator_name(info.severity),
-            info.format)
+            info.format,
+            info.offset)
           .get_value_as<span_size_t>(0, 0);
     }
+}
+//------------------------------------------------------------------------------
+auto libpq_stream_sink_factory::add_entry_arg_boolean(
+  libpq_stream_sink& stream,
+  const span_size_t entry_id,
+  const message_info::arg_info& info) noexcept -> bool {
+    return _conn
+      .execute(
+        "SELECT eagilog.add_entry_arg_boolean("
+        "	$1::INTEGER, $2, $3, $4::BOOLEAN)",
+        entry_id,
+        info.name,
+        info.tag,
+        info.value_bool().or_false())
+      .is_ok();
+}
+//------------------------------------------------------------------------------
+auto libpq_stream_sink_factory::add_entry_arg_integer(
+  libpq_stream_sink& stream,
+  const span_size_t entry_id,
+  const message_info::arg_info& info) noexcept -> bool {
+    return _conn
+      .execute(
+        "SELECT eagilog.add_entry_arg_integer("
+        "	$1::INTEGER, $2, $3, $4::NUMERIC)",
+        entry_id,
+        info.name,
+        info.tag,
+        info.value_int64().or_default())
+      .is_ok();
+}
+//------------------------------------------------------------------------------
+auto libpq_stream_sink_factory::add_entry_arg_unsigned(
+  libpq_stream_sink& stream,
+  const span_size_t entry_id,
+  const message_info::arg_info& info) noexcept -> bool {
+    return _conn
+      .execute(
+        "SELECT eagilog.add_entry_arg_integer("
+        "	$1::INTEGER, $2, $3, $4::NUMERIC)",
+        entry_id,
+        info.name,
+        info.tag,
+        info.value_uint64().or_default())
+      .is_ok();
+}
+//------------------------------------------------------------------------------
+auto libpq_stream_sink_factory::add_entry_arg_float(
+  libpq_stream_sink& stream,
+  const span_size_t entry_id,
+  const message_info::arg_info& info) noexcept -> bool {
+    return _conn
+      .execute(
+        "SELECT eagilog.add_entry_arg_float("
+        "	$1::INTEGER, $2, $3, $4::DOUBLE PRECISION)",
+        entry_id,
+        info.name,
+        info.tag,
+        info.value_float().or_default())
+      .is_ok();
+}
+//------------------------------------------------------------------------------
+auto libpq_stream_sink_factory::add_entry_arg_duration(
+  libpq_stream_sink& stream,
+  const span_size_t entry_id,
+  const message_info::arg_info& info) noexcept -> bool {
+    return _conn
+      .execute(
+        "SELECT eagilog.add_entry_arg_duration("
+        "	$1::INTEGER, $2, $3, $4::INTERVAL)",
+        entry_id,
+        info.name,
+        info.tag,
+        info.value_duration().or_default())
+      .is_ok();
+}
+//------------------------------------------------------------------------------
+auto libpq_stream_sink_factory::add_entry_arg_string(
+  libpq_stream_sink& stream,
+  const span_size_t entry_id,
+  const message_info::arg_info& info) noexcept -> bool {
+    return _conn
+      .execute(
+        "SELECT eagilog.add_entry_arg_string("
+        "	$1::INTEGER, $2, $3, $4)",
+        entry_id,
+        info.name,
+        info.tag,
+        info.value_string().or_default())
+      .is_ok();
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
   libpq_stream_sink& stream,
   const span_size_t entry_id,
   const message_info::arg_info& info) noexcept -> bool {
-    (void)stream;
-    (void)entry_id;
-    (void)info;
-    return true;
+    if(info.min and info.max) {
+        _conn
+          .execute(
+            "SELECT eagilog.add_entry_arg_min_max("
+            "	$1::INTEGER, $2, $3::DOUBLE PRECISION, $4::DOUBLE PRECISION)",
+            entry_id,
+            info.name,
+            *info.min,
+            *info.max)
+          .is_ok();
+    }
+    switch(info.tag.value()) {
+        case id_v("duration"):
+            return add_entry_arg_duration(stream, entry_id, info);
+        default:
+            break;
+    }
+    if(std::holds_alternative<float_seconds>(info.value)) {
+        return add_entry_arg_duration(stream, entry_id, info);
+    }
+    if(std::holds_alternative<float>(info.value)) {
+        return add_entry_arg_float(stream, entry_id, info);
+    }
+    if(std::holds_alternative<std::uint64_t>(info.value)) {
+        return add_entry_arg_unsigned(stream, entry_id, info);
+    }
+    if(std::holds_alternative<std::int64_t>(info.value)) {
+        return add_entry_arg_integer(stream, entry_id, info);
+    }
+    if(std::holds_alternative<bool>(info.value)) {
+        return add_entry_arg_boolean(stream, entry_id, info);
+    }
+    return add_entry_arg_string(stream, entry_id, info);
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
