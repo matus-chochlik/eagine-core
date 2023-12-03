@@ -34,11 +34,6 @@ cp "${src_dir}/source/app/xml_logs-cl.py" \
 "${src_dir}/source/app/xml_logs-cl.py" \
 	--print-bash-completion "${bco_prefix}/eagine-xml-logs-cl"
 
-cp "${src_dir}/source/app/xml_logs-psql.py" \
-   "${bin_prefix}/eagine-xml-logs-psql"
-"${src_dir}/source/app/xml_logs-psql.py" \
-	--print-bash-completion "${bco_prefix}/eagine-xml-logs-psql"
-
 cp "${src_dir}/source/app/psql_logs-cl.py" \
    "${bin_prefix}/eagine-psql-logs-cl"
 "${src_dir}/source/app/psql_logs-cl.py" \
