@@ -5,6 +5,10 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#include <cassert>
+
 module eagine.core.log_server;
 
 import std;
@@ -109,6 +113,91 @@ auto message_info::find_arg(identifier name) const noexcept
         }
     }
     return {};
+}
+//------------------------------------------------------------------------------
+// aggregate interval info
+//------------------------------------------------------------------------------
+void aggregate_interval_info::update(const interval_info& i) noexcept {
+    _duration_sum += i.duration;
+    if(_count == 0) {
+        _duration_min = i.duration;
+    } else {
+        _duration_min = math::minimum(_duration_min, i.duration);
+    }
+    _duration_max = math::maximum(_duration_max, i.duration);
+
+    _count++;
+}
+//------------------------------------------------------------------------------
+auto aggregate_interval_info::should_consume() noexcept -> bool {
+    return _should_consume.is_expired();
+}
+//------------------------------------------------------------------------------
+void aggregate_interval_info::reset() noexcept {
+    _should_consume.reset();
+    _duration_sum = {};
+    _count = 0;
+}
+//------------------------------------------------------------------------------
+auto aggregate_interval_info::hit_interval() const noexcept
+  -> timeout::duration_type {
+    return _should_consume.period();
+}
+//------------------------------------------------------------------------------
+auto aggregate_interval_info::hit_count() const noexcept -> span_size_t {
+    return _count;
+}
+//------------------------------------------------------------------------------
+auto aggregate_interval_info::min_duration() const noexcept
+  -> std::chrono::nanoseconds {
+    if(_count > 0) {
+        return _duration_min;
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto aggregate_interval_info::max_duration() const noexcept
+  -> std::chrono::nanoseconds {
+    if(_count > 0) {
+        return _duration_max;
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto aggregate_interval_info::avg_duration() const noexcept
+  -> std::chrono::nanoseconds {
+    if(_count > 0) {
+        return _duration_sum / _count;
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+// aggregate intervals
+//------------------------------------------------------------------------------
+aggregate_intervals::aggregate_intervals(std::chrono::seconds period) noexcept
+  : _interval_period{period} {}
+//------------------------------------------------------------------------------
+auto aggregate_intervals::update(const interval_info& info) noexcept
+  -> optional_reference<aggregate_interval_info> {
+    const auto key{std::make_tuple(info.tag.value(), info.instance)};
+    auto pos{_intervals.find(key)};
+    if(pos == _intervals.end()) {
+        pos = std::get<0>(_intervals.emplace(
+          key,
+          aggregate_interval_info{info.tag, info.instance, _interval_period}));
+    }
+    auto& aggregate{std::get<1>(*pos)};
+    aggregate.update(info);
+    if(aggregate.should_consume()) {
+        return {aggregate};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+void aggregate_intervals::reset(
+  optional_reference<aggregate_interval_info> i) noexcept {
+    assert(i.has_value());
+    i->reset();
 }
 //------------------------------------------------------------------------------
 // factory functions

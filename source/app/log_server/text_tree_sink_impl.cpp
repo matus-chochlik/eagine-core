@@ -23,72 +23,6 @@ struct text_tree_stream_context {
 };
 class text_tree_sink;
 //------------------------------------------------------------------------------
-class text_tree_interval_info {
-public:
-    text_tree_interval_info(std::chrono::seconds period) noexcept
-      : _should_consume{period} {}
-    void update(const interval_info& i) noexcept;
-    auto should_consume() noexcept -> bool;
-    void reset() noexcept;
-
-    auto min_duration() const noexcept -> std::chrono::nanoseconds;
-    auto max_duration() const noexcept -> std::chrono::nanoseconds;
-    auto avg_duration() const noexcept -> std::chrono::nanoseconds;
-
-private:
-    timeout _should_consume;
-    std::chrono::nanoseconds _duration_min{};
-    std::chrono::nanoseconds _duration_max{};
-    std::chrono::nanoseconds _duration_sum{};
-    span_size_t _count{0};
-};
-//------------------------------------------------------------------------------
-void text_tree_interval_info::update(const interval_info& i) noexcept {
-    _duration_sum += i.duration;
-    if(_count == 0) {
-        _duration_min = i.duration;
-    } else {
-        _duration_min = math::minimum(_duration_min, i.duration);
-    }
-    _duration_max = math::maximum(_duration_max, i.duration);
-
-    _count++;
-}
-//------------------------------------------------------------------------------
-auto text_tree_interval_info::should_consume() noexcept -> bool {
-    return _should_consume.is_expired();
-}
-//------------------------------------------------------------------------------
-void text_tree_interval_info::reset() noexcept {
-    _should_consume.reset();
-    _duration_sum = {};
-    _count = 0;
-}
-//------------------------------------------------------------------------------
-auto text_tree_interval_info::min_duration() const noexcept
-  -> std::chrono::nanoseconds {
-    if(_count > 0) {
-        return _duration_min;
-    }
-    return {};
-}
-//------------------------------------------------------------------------------
-auto text_tree_interval_info::max_duration() const noexcept
-  -> std::chrono::nanoseconds {
-    if(_count > 0) {
-        return _duration_max;
-    }
-    return {};
-}
-//------------------------------------------------------------------------------
-auto text_tree_interval_info::avg_duration() const noexcept
-  -> std::chrono::nanoseconds {
-    if(_count > 0) {
-        return _duration_sum / _count;
-    }
-    return {};
-}
-//------------------------------------------------------------------------------
 // sink factory
 //------------------------------------------------------------------------------
 class text_tree_sink_factory final
@@ -105,11 +39,7 @@ public:
       text_tree_sink&,
       const message_info&,
       message_formatter& formatter) noexcept;
-    void consume(
-      const text_tree_sink&,
-      identifier tag,
-      std::uint64_t instance,
-      const text_tree_interval_info&) noexcept;
+    void consume(const text_tree_sink&, const aggregate_interval_info&) noexcept;
     void consume(const text_tree_sink&, const heartbeat_info&) noexcept;
     void consume(const text_tree_sink&, const finish_info&) noexcept;
 
@@ -360,9 +290,7 @@ private:
     identifier _root;
     begin_info _begin{};
 
-    std::chrono::seconds _interval_period{120};
-    flat_map<std::tuple<identifier_t, std::uint64_t>, text_tree_interval_info>
-      _intervals;
+    aggregate_intervals _intervals{std::chrono::seconds{120}};
 
     tiling_state _tiling;
 };
@@ -704,16 +632,14 @@ void text_tree_sink::consume(const message_info& info) noexcept {
 //------------------------------------------------------------------------------
 void text_tree_sink_factory::consume(
   const text_tree_sink& s,
-  identifier tag,
-  std::uint64_t instance,
-  const text_tree_interval_info& info) noexcept {
+  const aggregate_interval_info& info) noexcept {
     if(not _condensed) {
         _conn_I(s)._write(" ╭────┬──────────┬──────────┬────────────╮\n");
     }
     _conn_Z(s)._write(_symbol_interval());
     _write("│")._write(padded_to(10, s.root()));
-    _write("│")._write(padded_to(10, tag));
-    _write("│")._write(padded_to(12, format_instance(instance, _temp)));
+    _write("│")._write(padded_to(10, info.tag));
+    _write("│")._write(padded_to(12, format_instance(info.instance, _temp)));
     _write("│\n");
     _conn_I(s)._write(" ╰┬───┴──────────┴──────────┴────────────╯\n");
     _conn_I(s)._write("  ├─╼ min: ");
@@ -725,17 +651,9 @@ void text_tree_sink_factory::consume(
 }
 //------------------------------------------------------------------------------
 void text_tree_sink::consume(const interval_info& info) noexcept {
-    const auto key{std::make_tuple(info.tag.value(), info.instance)};
-    auto pos{_intervals.find(key)};
-    if(pos == _intervals.end()) {
-        pos = _intervals.emplace(key, text_tree_interval_info{_interval_period})
-                .first;
-    }
-    auto& state{std::get<1>(*pos)};
-    state.update(info);
-    if(state.should_consume()) {
-        _parent->consume(*this, info.tag, info.instance, state);
-        state.reset();
+    if(const auto aggregate{_intervals.update(info)}) {
+        _parent->consume(*this, *aggregate);
+        _intervals.reset(aggregate);
     }
 }
 //------------------------------------------------------------------------------

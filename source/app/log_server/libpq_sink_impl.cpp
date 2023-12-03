@@ -178,7 +178,8 @@ public:
       libpq_stream_sink&,
       const span_size_t entry_id,
       const message_info::arg_info&) noexcept -> bool;
-    auto consume(libpq_stream_sink&, const interval_info&) noexcept -> bool;
+    auto consume(libpq_stream_sink&, const aggregate_interval_info&) noexcept
+      -> bool;
     auto consume(libpq_stream_sink&, const heartbeat_info&) noexcept -> bool;
     auto consume(const libpq_stream_sink&, const finish_info&) noexcept -> bool;
 
@@ -261,10 +262,12 @@ private:
       declare_state_info,
       active_state_info,
       message_info,
-      interval_info,
+      aggregate_interval_info,
       heartbeat_info,
       finish_info>>
       _backlog;
+
+    aggregate_intervals _intervals{std::chrono::seconds{120}};
 };
 //------------------------------------------------------------------------------
 //
@@ -335,7 +338,10 @@ void libpq_stream_sink::consume(const message_info& info) noexcept {
 }
 //------------------------------------------------------------------------------
 void libpq_stream_sink::consume(const interval_info& info) noexcept {
-    _dispatch(info);
+    if(const auto aggregate{_intervals.update(info)}) {
+        _dispatch(*aggregate);
+        _intervals.reset(aggregate);
+    }
 }
 //------------------------------------------------------------------------------
 void libpq_stream_sink::consume(const heartbeat_info& info) noexcept {
@@ -664,13 +670,37 @@ auto libpq_stream_sink_factory::consume(
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
-  libpq_stream_sink&,
-  const interval_info&) noexcept -> bool {
-    return true;
+  libpq_stream_sink& stream,
+  const aggregate_interval_info& info) noexcept -> bool {
+    const auto to_ms{[](auto d) {
+        return std::chrono::duration_cast<
+                 std::chrono::duration<float, std::milli>>(d)
+          .count();
+    }};
+    return _conn
+      .execute(
+        "SELECT eagilog.add_profile_interval("
+        "	$1,"
+        "	$2,"
+        "	$3,"
+        "	$4,"
+        "	$5::INTERVAL,"
+        "	$6,"
+        "	$7,"
+        "	$8)",
+        stream.id(),
+        info.tag,
+        info.instance,
+        info.hit_count(),
+        info.hit_interval(),
+        to_ms(info.min_duration()),
+        to_ms(info.avg_duration()),
+        to_ms(info.max_duration()))
+      .is_ok();
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
-  libpq_stream_sink&,
+  libpq_stream_sink& stream,
   const heartbeat_info&) noexcept -> bool {
     return true;
 }

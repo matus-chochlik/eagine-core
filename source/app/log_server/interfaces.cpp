@@ -100,6 +100,56 @@ struct finish_info {
     bool clean{false};
 };
 //------------------------------------------------------------------------------
+// aggregate interval info
+//------------------------------------------------------------------------------
+class aggregate_interval_info {
+public:
+    aggregate_interval_info(
+      identifier tg,
+      std::uint64_t inst,
+      std::chrono::seconds period) noexcept
+      : tag{tg}
+      , instance{inst}
+      , _should_consume{period} {}
+
+    void update(const interval_info& i) noexcept;
+    auto should_consume() noexcept -> bool;
+    void reset() noexcept;
+
+    auto hit_interval() const noexcept -> timeout::duration_type;
+    auto hit_count() const noexcept -> span_size_t;
+
+    auto min_duration() const noexcept -> std::chrono::nanoseconds;
+    auto max_duration() const noexcept -> std::chrono::nanoseconds;
+    auto avg_duration() const noexcept -> std::chrono::nanoseconds;
+
+    identifier tag;
+    std::uint64_t instance;
+
+private:
+    timeout _should_consume;
+    std::chrono::nanoseconds _duration_min{};
+    std::chrono::nanoseconds _duration_max{};
+    std::chrono::nanoseconds _duration_sum{};
+    span_size_t _count{0};
+};
+//------------------------------------------------------------------------------
+// aggregate intervals
+//------------------------------------------------------------------------------
+class aggregate_intervals {
+public:
+    aggregate_intervals(std::chrono::seconds period) noexcept;
+
+    auto update(const interval_info&) noexcept
+      -> optional_reference<aggregate_interval_info>;
+    void reset(optional_reference<aggregate_interval_info>) noexcept;
+
+private:
+    std::chrono::seconds _interval_period{120};
+    flat_map<std::tuple<identifier_t, std::uint64_t>, aggregate_interval_info>
+      _intervals;
+};
+//------------------------------------------------------------------------------
 // text output
 //------------------------------------------------------------------------------
 struct text_output : interface<text_output> {
