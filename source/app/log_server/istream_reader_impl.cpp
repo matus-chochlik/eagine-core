@@ -65,6 +65,7 @@ void istream_reader::_on_read(std::size_t size) noexcept {
 auto istream_reader::run() noexcept -> bool {
     if(_input.good()) {
         std::array<char, 1024> chunk{};
+        resetting_timeout should_heartbeat{std::chrono::minutes{1}};
         if(auto alive{_ctx.watchdog().start_watch()}) {
             while(not _input.eof()) {
                 _input.read(
@@ -78,6 +79,10 @@ auto istream_reader::run() noexcept -> bool {
                 _on_read(std_size(size));
                 _factory->update();
                 alive.notify();
+
+                if(should_heartbeat) {
+                    _ctx.log().heartbeat();
+                }
             }
         }
         _sink.finish();

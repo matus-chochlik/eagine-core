@@ -76,6 +76,7 @@ protected:
     asio::steady_timer _alive_timer{_io};
     Acceptor _acceptor;
     Socket _socket{_io};
+    resetting_timeout _should_heartbeat{std::chrono::minutes{1}};
     std::size_t _batch_count{0U};
     std::size_t _batch_read{0U};
 };
@@ -149,6 +150,9 @@ void asio_reader_base<Acceptor, Socket>::_notify_later() {
         }
         _notify_later();
     });
+    if(_should_heartbeat) {
+        this->heartbeat();
+    }
 }
 //------------------------------------------------------------------------------
 template <typename Acceptor, typename Socket>
