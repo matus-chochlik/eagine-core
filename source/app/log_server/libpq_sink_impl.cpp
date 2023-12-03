@@ -701,8 +701,13 @@ auto libpq_stream_sink_factory::consume(
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
   libpq_stream_sink& stream,
-  const heartbeat_info&) noexcept -> bool {
-    return true;
+  const heartbeat_info& info) noexcept -> bool {
+    return _conn
+      .execute(
+        "SELECT eagilog.stream_heartbeat($1::INTEGER, $2::INTERVAL)",
+        stream.id(),
+        info.offset)
+      .is_ok();
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(

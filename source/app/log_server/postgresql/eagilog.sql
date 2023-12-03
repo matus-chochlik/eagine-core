@@ -375,6 +375,7 @@ CREATE TABLE eagilog.stream (
 	stream_id SERIAL PRIMARY KEY,
 	application_id VARCHAR(10) NULL,
 	start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+	heartbeat_time TIMESTAMP WITH TIME ZONE NULL,
 	finish_time TIMESTAMP WITH TIME ZONE NULL,
 	first_entry_id BIGINT NULL,
 	last_entry_id BIGINT NULL,
@@ -532,6 +533,20 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.stream_heartbeat(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_entry_time INTERVAL
+) RETURNS eagilog.stream.stream_id%TYPE
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET heartbeat_time = start_time + _entry_time
+	WHERE stream_id = _stream_id;
+
+	RETURN _stream_id;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.finish_stream(
 	_stream_id eagilog.stream.stream_id%TYPE,
 	_clean_shutdown BOOL
@@ -558,7 +573,7 @@ BEGIN
 	DELETE FROM eagilog.declared_stream_state
 	WHERE stream_id = _stream_id;
 
-	RETURN $1;
+	RETURN _stream_id;
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
