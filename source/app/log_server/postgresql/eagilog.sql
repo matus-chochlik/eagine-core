@@ -1415,13 +1415,13 @@ $$ LANGUAGE sql;
 CREATE TABLE eagilog.profile_interval(
 	interval_id BIGSERIAL PRIMARY KEY,
 	stream_id INTEGER NOT NULL,
-	source_id VARCHAR(10) NOT NULL,
 	tag VARCHAR(10) NOT NULL,
-	hit_count BIGINT NOT NULL,
+	instance BIGINT NOT NULL,
+	hit_count INTEGER NOT NULL,
 	hit_interval INTERVAL NOT NULL,
-	min_duration_ms REAL NOT NULL,
-	avg_duration_ms REAL NOT NULL,
-	max_duration_ms REAL NOT NULL,
+	min_duration_ms FLOAT NOT NULL,
+	avg_duration_ms FLOAT NOT NULL,
+	max_duration_ms FLOAT NOT NULL,
 	entry_time INTERVAL NOT NULL
 );
 
@@ -1432,8 +1432,8 @@ ON DELETE CASCADE;
 
 CREATE FUNCTION eagilog.add_profile_interval(
 	_stream_id eagilog.profile_interval.stream_id%TYPE,
-	_source_id eagilog.profile_interval.source_id%TYPE,
 	_tag eagilog.profile_interval.tag%TYPE,
+	_instance eagilog.profile_interval.instance%TYPE,
 	_hit_count eagilog.profile_interval.hit_count%TYPE,
 	_hit_interval eagilog.profile_interval.hit_interval%TYPE,
 	_min_duration_ms eagilog.profile_interval.min_duration_ms%TYPE,
@@ -1453,8 +1453,8 @@ BEGIN
 	WITH ins AS (
 		INSERT INTO eagilog.profile_interval (
 			stream_id,
-			source_id,
 			tag,
+			instance,
 			hit_count,
 			hit_interval,
 			min_duration_ms,
@@ -1463,8 +1463,8 @@ BEGIN
 			entry_time
 		) VALUES (
 			_stream_id,
-			_source_id,
 			_tag,
+			_instance,
 			_hit_count,
 			_hit_interval,
 			_min_duration_ms,
@@ -1483,8 +1483,8 @@ AS
 SELECT
 	i.stream_id,
 	s.application_id,
-	i.source_id,
 	i.tag,
+	i.instance,
 	sum(i.hit_count) AS hit_count,
 	sum(i.hit_interval) AS hit_interval,
 	min(i.min_duration_ms) AS min_duration_ms,
@@ -1499,8 +1499,8 @@ JOIN eagilog.stream s USING(stream_id)
 GROUP BY
 	i.stream_id,
 	s.application_id,
-	i.source_id,
 	i.tag,
+	i.instance,
 	s.start_time,
 	s.finish_time,
 	s.low_profile_build,
