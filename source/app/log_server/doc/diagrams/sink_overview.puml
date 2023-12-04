@@ -1,0 +1,107 @@
+@startuml
+
+annotation main {
+  +main()
+}
+
+interface reader {
+  +run()
+}
+
+reader <--* main : execute
+
+class concrete_reader {
+  -sink: parser_input
+  +run()
+}
+
+reader <|-- concrete_reader : implements
+
+interface parser_input {
+  +consume_text(string)
+}
+
+parser_input <--* concrete_reader : consume_text
+
+class concrete_parser {
+  -sink: stream_sink
+  +consume_text(string)
+}
+
+parser_input <|-- concrete_parser : implements
+
+interface stream_sink {
+  +consume(begin_info)
+  +consume(description_info)
+  +consume(declare_state_info)
+  +consume(active_state_info)
+  +consume(message_info)
+  +consume(interval_info)
+  +consume(heartbeat_info)
+  +consume(finish_info)
+}
+
+class concrete_sink {
+  +consume(Info)
+}
+
+stream_sink <--* concrete_parser : consume
+stream_sink <|-- concrete_sink : implements
+
+cloud input as "Input" {
+}
+cloud output as "Output" {
+}
+
+struct begin_info {
+}
+struct description_info {
+  +display_name: string
+  +description: string
+}
+begin_info <-- stream_sink
+description_info <-- stream_sink
+
+struct declare_state_info {
+  +begin_tag: identifier
+  +end_tag: identifier
+}
+struct active_state_info {
+  +tag: identifier
+}
+declare_state_info <-- stream_sink
+active_state_info <-- stream_sink
+
+begin_info -[hidden]- declare_state_info
+description_info -[hidden]- active_state_info
+
+struct message_info {
+  +tag: identifier
+  +args: argument_info[]
+}
+struct interval_info {
+}
+stream_sink --> message_info
+stream_sink --> interval_info
+
+declare_state_info -[hidden]- message_info
+active_state_info -[hidden]- interval_info
+
+struct heartbeat_info {
+}
+struct finish_info {
+  +clean: bool
+}
+stream_sink --> heartbeat_info
+stream_sink --> finish_info
+
+message_info -[hidden]- heartbeat_info
+message_info -[hidden]- interval_info
+interval_info -[hidden]- finish_info
+
+concrete_reader <-[#red,thickness=8]- input : read
+concrete_parser <-[#red,thickness=8]- concrete_reader : consume_text 
+concrete_parser -[#red,thickness=8]-> concrete_sink : consume
+concrete_sink -[#red,thickness=8]-> output : write
+
+@enduml

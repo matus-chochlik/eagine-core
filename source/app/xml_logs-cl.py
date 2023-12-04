@@ -143,7 +143,7 @@ class ArgumentParser(argparse.ArgumentParser):
             "--local-socket", "-L",
             dest='local_socket',
             action="store",
-            default="/tmp/eagine-xmllog"
+            default="/tmp/eagine-log"
         )
 
         self.add_argument(
@@ -467,7 +467,7 @@ class XmlLogFormatter(object):
 
     # --------------------------------------------------------------------------
     def _formatProgressBar(self, src, inst, tag, mn, x, mx, width, progress):
-        if src is not None and tag is not None:
+        if progress and src is not None and tag is not None:
             key = (src, inst, tag)
             try: progress_begin = self._progress_info[key]
             except KeyError:

@@ -42,11 +42,11 @@ auto substitute_variable_into(
     return dst;
 }
 //------------------------------------------------------------------------------
-auto substitute_variables_into(
+template <typename Arg>
+auto do_substitute_variables_into(
   std::string& dst,
   string_view src,
-  const callable_ref<std::optional<string_view>(const string_view) noexcept>&
-    translate,
+  const callable_ref<std::optional<Arg>(const string_view) noexcept>& translate,
   const variable_substitution_options opts) noexcept -> std::string& {
     do {
         if(const auto lpos{find_element(src, opts.leading_sign)}) {
@@ -61,8 +61,9 @@ auto substitute_variables_into(
                 } else {
                     if(find_element(inner, opts.leading_sign)) {
                         std::string temp;
-                        substitute_variables_into(temp, inner, translate, opts);
-                        if(const auto translation2 = translate(temp)) {
+                        do_substitute_variables_into<Arg>(
+                          temp, inner, translate, opts);
+                        if(const auto translation2{translate(temp)}) {
                             append_to(translation2.value(), dst);
                         } else if(opts.keep_untranslated) {
                             append_to(
@@ -85,6 +86,24 @@ auto substitute_variables_into(
     } while(not src.empty());
 
     return dst;
+}
+//------------------------------------------------------------------------------
+auto substitute_variables_into(
+  std::string& dst,
+  string_view src,
+  const callable_ref<std::optional<string_view>(const string_view) noexcept>&
+    translate,
+  const variable_substitution_options opts) noexcept -> std::string& {
+    return do_substitute_variables_into<string_view>(dst, src, translate, opts);
+}
+//------------------------------------------------------------------------------
+auto substitute_str_variables_into(
+  std::string& dst,
+  string_view src,
+  const callable_ref<std::optional<std::string>(const string_view) noexcept>&
+    translate,
+  const variable_substitution_options opts) noexcept -> std::string& {
+    return do_substitute_variables_into<std::string>(dst, src, translate, opts);
 }
 //------------------------------------------------------------------------------
 auto substitute_variables(

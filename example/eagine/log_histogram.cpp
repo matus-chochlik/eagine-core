@@ -11,7 +11,8 @@ import std;
 namespace eagine {
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
-    const auto exec_time{ctx.log().measure_time_interval("main")};
+    static const auto exec_time_id{ctx.log().register_time_interval("main")};
+    const auto exec_time{ctx.log().measure_time_interval(exec_time_id)};
 
     file_contents content_of_self{ctx.exe_path()};
     memory::const_block data{content_of_self};

@@ -1,0 +1,115 @@
+@startuml
+
+interface reader {
+  +run()
+}
+
+
+annotation main {
+  main()
+}
+
+main --> reader : execute
+
+
+class istream_reader {
+  -input: istream
+  -sink: parser_input
+  +run()
+}
+
+reader <|-- istream_reader : implements
+
+class asio_reader {
+  -acceptor: Acceptor
+  -accept()
+  +run()
+}
+
+reader <|-- asio_reader : implements
+
+class asio_reader_stream {
+  -sink: parser_input
+  +start
+}
+
+asio_reader *-- asio_reader_stream
+
+interface parser_input {
+  +consume_text()
+}
+
+class json_data_extractor {
+  -sink: stream_sink
+  +consume_text()
+}
+
+parser_input <|-- json_data_extractor : implements
+
+istream_reader o--> parser_input
+asio_reader_stream o--> parser_input
+
+
+interface stream_sink {
+  +void consume(Info)
+}
+
+interface stream_sink_factory {
+  +make_stream(): stream_sink
+  +update()
+}
+
+stream_sink_factory ..> stream_sink : instantiate
+
+istream_reader o--> stream_sink_factory
+asio_reader o--> stream_sink_factory
+
+stream_sink <--o json_data_extractor : use
+
+class text_tree_sink {
+  +consume(Info)
+}
+
+stream_sink --|> text_tree_sink
+
+class text_tree_sink_factory {
+  -output: text_output
+  +make_stream(): stream_sink
+  +update()
+}
+
+stream_sink_factory --|> text_tree_sink_factory
+text_tree_sink_factory ..> text_tree_sink : instantiate
+text_tree_sink_factory <-- text_tree_sink : parent
+
+interface text_output {
+  +write(string)
+  +flush()
+}
+
+text_output <--o text_tree_sink_factory : use
+
+class ostream_output {
+  -output: ostream
+  +write(string)
+  +flush()
+}
+
+class asio_output {
+  -acceptor: Acceptor
+  -accept()
+  +write(string)
+  +flush()
+}
+
+ostream_output --|> text_output : implements
+asio_output --|> text_output : implements
+
+class asio_output_stream {
+  -socket: Socket
+  +write(block)
+}
+
+asio_output_stream --* asio_output
+
+@enduml

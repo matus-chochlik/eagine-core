@@ -1,0 +1,31 @@
+[Unit]
+Description=EAGine log server
+ConditionPathExists=/var/lib/eagine/.config/eagine/systemd/log_environment
+
+[Service]
+KeyringMode=private
+NoNewPrivileges=true
+PrivateDevices=false
+PrivateNetwork=false
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectKernelTunables=true
+ProtectSystem=full
+RemoveIPC=true
+UMask=007
+EnvironmentFile=/var/lib/eagine/.config/eagine/systemd/log_environment
+Type=notify
+User=eagine
+Group=eagine
+ExecStartPre=+/usr/bin/mkdir -p /var/run/eagine
+ExecStartPre=+/usr/bin/chown eagine:eagine /var/run/eagine/
+ExecStartPre=+/usr/bin/rm -f /var/run/eagine/log.socket /var/run/eagine/text-log.socket
+WorkingDirectory=/var/lib/eagine
+ExecStart=/usr/bin/eagine-core-log-server $EAGINE_LOG_SERVER_ARGS
+Restart=always
+RestartSec=5
+WatchdogSec=15
+NotifyAccess=main
+
+[Install]
+WantedBy=default.target

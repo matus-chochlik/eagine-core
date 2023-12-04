@@ -12,6 +12,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.identifier;
 import eagine.core.valid_if;
+import eagine.core.utility;
 import eagine.core.runtime;
 import eagine.core.units;
 import :config;
@@ -20,46 +21,13 @@ import :entry;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export class logger_shared_backend_getter {
-    using This = logger_shared_backend_getter;
-
-public:
-    logger_shared_backend_getter() noexcept = default;
-    logger_shared_backend_getter(This&&) noexcept = default;
-    logger_shared_backend_getter(const This&) noexcept = default;
-    auto operator=(This&&) = delete;
-    auto operator=(const This&) = delete;
-
-    ~logger_shared_backend_getter() noexcept = default;
-
-    logger_shared_backend_getter(shared_holder<logger_backend> backend) noexcept
-      : _backend{std::move(backend)} {}
-
-    void begin_log() noexcept {
-        if(_backend) {
-            _backend->begin_log();
-        }
-    }
-
-    void finish_log() noexcept {
-        if(_backend) {
-            _backend->finish_log();
-            _backend.reset();
-        }
-    }
-
-    auto get() const noexcept -> optional_reference<logger_backend> {
-        return _backend;
-    }
-
-private:
-    shared_holder<logger_backend> _backend{};
+export struct time_interval_handle {
+    const time_interval_id _id;
 };
 //------------------------------------------------------------------------------
 /// @brief Basic template for logger objects.
 /// @ingroup logging
-export template <typename BackendGetter>
-class basic_logger : protected BackendGetter {
+export class basic_logger {
 public:
     /// @brief The entry type for the specified log_event_severity.
     /// @see log_entry
@@ -68,84 +36,64 @@ public:
     using entry_type = std::
       conditional_t<is_log_level_enabled_v<severity>, log_entry, no_log_entry>;
 
-    /// @brief Returns a pointer to the backend of this logger object.
-    auto backend() const noexcept {
-        return _backend_getter().get();
+    auto share_backend() const noexcept {
+        return _backend;
+    }
+
+    /// @brief Returns a pointer to the back-end of this logger object.
+    auto backend() const noexcept -> optional_reference<logger_backend> {
+        return _backend;
     }
 
     /// @brief Indicates that this process is alive.
-    void heartbeat() const noexcept {
-        if(auto lbe{backend()}) {
-            lbe->heartbeat();
-        }
-    }
+    void heartbeat() const noexcept;
 
     /// @brief Returns the unique id of this logger instance.
     auto instance_id() const noexcept -> logger_instance_id {
         return reinterpret_cast<logger_instance_id>(this);
     }
 
+    /// @brief Returns an identifier for an interval time measurement.
+    auto register_time_interval(const identifier label) const noexcept
+      -> time_interval_handle;
+
     /// @brief Creates object the lifetime of this is measured and logged.
     auto measure_time_interval(
-      const identifier label,
+      const time_interval_handle handle,
       log_event_severity severity) const noexcept -> log_time_interval {
-        return {label, instance_id(), _entry_backend(severity)};
+        return {handle._id, _entry_backend(severity)};
     }
 
     /// @brief Creates object the lifetime of this is measured and logged.
-    auto measure_time_interval(const identifier label) const noexcept
+    auto measure_time_interval(const time_interval_handle handle) const noexcept
       -> log_time_interval {
-        return measure_time_interval(label, log_event_severity::stat);
+        return measure_time_interval(handle, log_event_severity::stat);
     }
 
-    auto configure(basic_config_intf& config) const -> bool {
-        if(auto lbe{backend()}) {
-            lbe->configure(config);
-        }
-        return false;
-    }
+    auto configure(basic_config_intf& config) const -> bool;
 
 protected:
     constexpr basic_logger() noexcept = default;
 
-    basic_logger(BackendGetter backend_getter) noexcept(
-      std::is_nothrow_move_constructible_v<BackendGetter>)
-      : BackendGetter(std::move(backend_getter)) {}
+    basic_logger(shared_holder<logger_backend> backend) noexcept
+      : _backend{std::move(backend)} {}
 
-    void begin_log() noexcept {
-        _backend_getter().begin_log();
-    }
-
-    void finish_log() noexcept {
-        _backend_getter().finish_log();
-    }
+    void begin_log() noexcept;
+    void finish_log() noexcept;
 
     void set_description(
       const identifier source,
       const string_view display_name,
-      const string_view description) const noexcept {
-        if(auto lbe{backend()}) {
-            lbe->set_description(
-              source, instance_id(), display_name, description);
-        }
-    }
+      const string_view description) const noexcept;
 
     void declare_state(
       const identifier source,
       const identifier state_tag,
       const identifier begin_tag,
-      const identifier end_tag) const noexcept {
-        if(auto lbe{backend()}) {
-            lbe->declare_state(source, state_tag, begin_tag, end_tag);
-        }
-    }
+      const identifier end_tag) const noexcept;
 
     void active_state(const identifier source, const identifier state_tag)
-      const noexcept {
-        if(auto lbe{backend()}) {
-            lbe->active_state(source, state_tag);
-        }
-    }
+      const noexcept;
 
     auto make_log_entry(
       const identifier source,
@@ -165,7 +113,7 @@ protected:
     }
 
     template <log_event_severity severity>
-    constexpr auto make_log_entry(
+    auto make_log_entry(
       const identifier source,
       const log_event_severity_constant<severity>,
       const string_view format) const noexcept -> entry_type<severity> {
@@ -194,7 +142,7 @@ protected:
         return {source, instance_id(), severity, format, entry_backend};
     }
 
-    constexpr auto log_fatal(const identifier source, const string_view format)
+    auto log_fatal(const identifier source, const string_view format)
       const noexcept {
         return make_log_entry(
           source,
@@ -202,7 +150,7 @@ protected:
           format);
     }
 
-    constexpr auto log_fatal(
+    auto log_fatal(
       repeating_log_entry_control& control,
       const identifier source,
       const string_view format) const noexcept {
@@ -210,7 +158,7 @@ protected:
           control, source, log_event_severity::fatal, format);
     }
 
-    constexpr auto log_error(const identifier source, const string_view format)
+    auto log_error(const identifier source, const string_view format)
       const noexcept {
         return make_log_entry(
           source,
@@ -218,7 +166,7 @@ protected:
           format);
     }
 
-    constexpr auto log_error(
+    auto log_error(
       repeating_log_entry_control& control,
       const identifier source,
       const string_view format) const noexcept {
@@ -226,16 +174,15 @@ protected:
           control, source, log_event_severity::error, format);
     }
 
-    constexpr auto log_warning(
-      const identifier source,
-      const string_view format) const noexcept {
+    auto log_warning(const identifier source, const string_view format)
+      const noexcept {
         return make_log_entry(
           source,
           log_event_severity_constant<log_event_severity::warning>{},
           format);
     }
 
-    constexpr auto log_warning(
+    auto log_warning(
       repeating_log_entry_control& control,
       const identifier source,
       const string_view format) const noexcept {
@@ -243,7 +190,7 @@ protected:
           control, source, log_event_severity::warning, format);
     }
 
-    constexpr auto log_change(const identifier source, const string_view format)
+    auto log_change(const identifier source, const string_view format)
       const noexcept {
         return make_log_entry(
           source,
@@ -251,7 +198,7 @@ protected:
           format);
     }
 
-    constexpr auto log_info(const identifier source, const string_view format)
+    auto log_info(const identifier source, const string_view format)
       const noexcept {
         return make_log_entry(
           source,
@@ -259,7 +206,7 @@ protected:
           format);
     }
 
-    constexpr auto log_stat(const identifier source, const string_view format)
+    auto log_stat(const identifier source, const string_view format)
       const noexcept {
         return make_log_entry(
           source,
@@ -298,15 +245,9 @@ protected:
     }
 
     void log_chart_sample(
-      [[maybe_unused]] const identifier source,
-      [[maybe_unused]] const identifier series,
-      [[maybe_unused]] const float value) const noexcept {
-        if constexpr(is_log_level_enabled_v<log_event_severity::stat>) {
-            if(auto lbe{_entry_backend(log_event_severity::stat)}) {
-                lbe->log_chart_sample(source, instance_id(), series, value);
-            }
-        }
-    }
+      const identifier source,
+      const identifier series,
+      const float value) const noexcept;
 
     auto _entry_backend(const log_event_severity severity) const noexcept
       -> logger_backend* {
@@ -319,12 +260,7 @@ protected:
     }
 
 private:
-    auto _backend_getter() noexcept -> BackendGetter& {
-        return *this;
-    }
-    auto _backend_getter() const noexcept -> const BackendGetter& {
-        return *this;
-    }
+    shared_holder<logger_backend> _backend;
 };
 //------------------------------------------------------------------------------
 /// @brief Basic template for logging objects.
@@ -333,9 +269,8 @@ private:
 ///
 /// This class is used as the base class for other classes that need to do
 /// logging. Prefer using this class instead of logger in such cases.
-export template <typename BackendGetter>
-class named_logging_object : public basic_logger<BackendGetter> {
-    using base = basic_logger<BackendGetter>;
+export class named_logging_object : public basic_logger {
+    using base = basic_logger;
 
 public:
     /// @brief The entry type for the specified log_event_severity.
@@ -347,67 +282,38 @@ public:
 
     using base::log_lifetime;
 
-    /// @brief Constructor from identifier and backend_getter object.
+    named_logging_object(const identifier id) noexcept
+      : _object_id{id} {}
+
+    /// @brief Constructor from identifier and back-end object.
     /// @note For internal use-only.
     named_logging_object(
       const identifier id,
-      BackendGetter backend_getter) noexcept
-      : base{BackendGetter(std::move(backend_getter))}
+      shared_holder<logger_backend> backend) noexcept
+      : base{std::move(backend)}
       , _object_id{id} {}
 
     /// @brief Constructor from logger id and parent logging object.
     named_logging_object(
       const identifier id,
-      const named_logging_object& parent) noexcept
-      : base{static_cast<const base&>(parent)}
-      , _object_id{id} {
-        log_lifetime(_object_id, "created as a child of ${parent}")
-          .tag("objCreate")
-          .arg("parent", "LogId", parent._object_id);
-    }
+      const named_logging_object& parent) noexcept;
 
-    /// @brief Construct logging object without backend.
+    /// @brief Construct logging object without back-end.
     constexpr named_logging_object() noexcept = default;
 
     /// @brief Move constructor.
-    constexpr named_logging_object(named_logging_object&& temp) noexcept
-      : base{static_cast<base&&>(temp)}
-      , _object_id{std::exchange(temp._object_id, identifier{})} {
-        log_lifetime(_object_id, "being moved").tag("objMove");
-    }
+    named_logging_object(named_logging_object&& temp) noexcept;
 
     /// @brief Copy constructor.
-    constexpr named_logging_object(const named_logging_object& that) noexcept
-      : base{static_cast<const base&>(that)}
-      , _object_id{that._object_id} {
-        log_lifetime(_object_id, "being copied").tag("objCopy");
-    }
+    named_logging_object(const named_logging_object& that) noexcept;
 
     /// @brief Move assignment operator.
-    constexpr auto operator=(named_logging_object&& temp) noexcept
-      -> named_logging_object& {
-        if(this != &temp) {
-            using std::swap;
-            swap(static_cast<base&>(*this), static_cast<base&>(temp));
-            swap(_object_id, temp._object_id);
-        }
-        return *this;
-    }
+    auto operator=(named_logging_object&&) noexcept -> named_logging_object&;
 
     /// @brief Copy assignment operator.
-    auto operator=(const named_logging_object& that) -> named_logging_object& {
-        if(this != &that) {
-            static_cast<base&>(*this) = static_cast<const base&>(that);
-            _object_id = that._object_id;
-        }
-        return *this;
-    }
+    auto operator=(const named_logging_object&) -> named_logging_object&;
 
-    ~named_logging_object() noexcept {
-        if(_object_id) {
-            log_lifetime(_object_id, "being destroyed").tag("objDestroy");
-        }
-    }
+    ~named_logging_object() noexcept;
 
     /// @brief Returns the identifier of this logging object.
     constexpr auto object_id() const noexcept {
@@ -564,10 +470,6 @@ protected:
         return base::make_log_entry(_object_id, severity, format);
     }
 
-    auto make_log_stream(const log_event_severity severity) const noexcept {
-        return base::make_log_stream(_object_id, severity);
-    }
-
 private:
     identifier _object_id{};
 };
@@ -577,17 +479,16 @@ private:
 /// @see named_logging_object
 ///
 /// Consider using named_logging_object instead of logger where appropriate.
-export class logger
-  : public named_logging_object<logger_shared_backend_getter> {
-    using base = named_logging_object<logger_shared_backend_getter>;
+export class logger : public named_logging_object {
+    using base = named_logging_object;
 
 public:
     /// @brief Default constructor.
     constexpr logger() noexcept = default;
 
     /// @brief Construction from identifier and backed getter
-    logger(const identifier id, logger_shared_backend_getter getter) noexcept
-      : base{id, std::move(getter)} {}
+    logger(const identifier id, shared_holder<logger_backend> backend) noexcept
+      : base{id, std::move(backend)} {}
 
     /// @brief Construction from identifier and reference to parent object.
     logger(const identifier id, const base& parent) noexcept
@@ -719,6 +620,13 @@ public:
     auto backtrace(const string_view format) const noexcept {
         return log_backtrace(format);
     }
+
+    /// @brief Connects a logging handler when signal_switch is flipped.
+    [[nodiscard]] auto log_when_switched(signal_switch& s) const noexcept
+      -> signal_binding;
+
+private:
+    void _handle_interrupt_signal(bool is_signaled) const noexcept;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

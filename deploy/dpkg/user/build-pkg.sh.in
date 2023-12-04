@@ -9,9 +9,18 @@ src_dir=$(realpath "@SRC_DIR@")
 this_dir="${src_dir}/deploy/dpkg/user"
 pkg_dir=$(realpath "@PKG_DIR@")
 
+mkdir -p "${pkg_dir}/etc/eagine"
 mkdir -p "${pkg_dir}/var/run/eagine"
 mkdir -p "${pkg_dir}/var/lib/eagine"
 mkdir -p "${pkg_dir}/DEBIAN"
+# ------------------------------------------------------------------------------
+for f in etc
+do
+	if [[ -d "${this_dir}/${f}" ]]
+	then cp -r "${this_dir}/${f}" "${pkg_dir}/"
+	else cp    "${this_dir}/${f}" "${pkg_dir}/"
+	fi
+done
 # ------------------------------------------------------------------------------
 for f in _config
 do
@@ -46,6 +55,7 @@ chmod a+x "${pkg_dir}/DEBIAN/preinst"
 # postinst
 cat << EOD > "${pkg_dir}/DEBIAN/postinst"
 #!/bin/sh
+chown -R eagine:eagine "/etc/eagine"
 chown -R eagine:eagine "/var/lib/eagine"
 chown -R eagine:eagine "/var/run/eagine"
 EOD

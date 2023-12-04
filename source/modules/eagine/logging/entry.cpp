@@ -123,6 +123,20 @@ public:
         return arg(name, "Identifier", value);
     }
 
+    /// @brief Adds a new message argument with tagged_id type value.
+    /// @param name the argument name identifier. Used in message substitution.
+    /// @param tag the argument type identifier. Used in value formatting.
+    /// @param id the value of the argument.
+    template <identifier_t Tag>
+    auto arg(const identifier name, const tagged_id<Tag> id) noexcept -> auto& {
+        if(_backend) {
+            _args.add([=](logger_backend& backend) {
+                backend.add_unsigned(name, identifier{Tag}, id.value());
+            });
+        }
+        return *this;
+    }
+
     /// @brief Adds a new message argument with message_id type value.
     /// @param name the argument name identifier. Used in message substitution.
     /// @param tag the argument type identifier. Used in value formatting.

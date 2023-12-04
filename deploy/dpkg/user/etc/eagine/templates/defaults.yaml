@@ -1,0 +1,15 @@
+log@service:
+  backend: syslog
+  severity: info
+
+log:
+  backend: local
+  local:
+    address: /var/run/eagine/log.socket
+  network:
+    address: localhost:34917
+  severity: debug
+
+workflow:
+  remote: origin
+  sub_remote: origin

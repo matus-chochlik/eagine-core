@@ -31,10 +31,10 @@ macro(eagine_common_import_lib)
 					INTERFACE "${PC_${EAGINE_DEPS_PREFIX}_CFLAGS_OTHER}"
 				)
 			endif()
-			if(PC_${EAGINE_DEPS_PREFIX}_INCLUDE_DIRECTORIES)
+			if(PC_${EAGINE_DEPS_PREFIX}_INCLUDE_DIRS)
 				target_include_directories(
 					EAGine::Deps::${EAGINE_DEPS_PREFIX}
-					INTERFACE "${PC_${EAGINE_DEPS_PREFIX}_INCLUDE_DIRECTORIES}"
+					INTERFACE "${PC_${EAGINE_DEPS_PREFIX}_INCLUDE_DIRS}"
 				)
 			endif()
 			if(PC_${EAGINE_DEPS_PREFIX}_LDFLAGS_OTHER)

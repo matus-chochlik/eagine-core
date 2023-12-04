@@ -182,6 +182,14 @@ constexpr auto append_to(
     str.append(spn.data(), spn.std_size());
     return str;
 }
+
+export template <typename C, typename T, typename A>
+constexpr auto append_to(
+  const std::basic_string<C, T, A> src,
+  std::basic_string<C, T, A>& dst) -> auto& {
+    dst.append(src.data(), src.size());
+    return dst;
+}
 //------------------------------------------------------------------------------
 export template <typename C, typename PF, typename PT, typename SF, typename ST>
 /// @brief Copies as much from source span to destination, ensures zero termination.

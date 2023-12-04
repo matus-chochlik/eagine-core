@@ -123,6 +123,18 @@ struct deserializer<decl_name_storage>
 export template <>
 struct deserializer<std::string> : plain_deserializer<std::string> {};
 //------------------------------------------------------------------------------
+export template <identifier_t Tag>
+struct deserializer<tagged_id<Tag>> {
+    static auto read(tagged_id<Tag>& value, auto& backend) noexcept
+      -> deserialization_errors {
+        span_size_t done{0};
+        identifier_t temp{0};
+        auto result{backend.read(cover_one(temp), done)};
+        value = {temp};
+        return result;
+    }
+};
+//------------------------------------------------------------------------------
 export template <typename T>
 struct structural_deserializer {
     auto read(T& value, auto& backend) {

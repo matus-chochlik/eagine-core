@@ -58,6 +58,10 @@ public:
 
     ~watched_process_lifetime() noexcept;
 
+    constexpr explicit operator bool() noexcept {
+        return true;
+    }
+
     void notify() noexcept;
 
 private:

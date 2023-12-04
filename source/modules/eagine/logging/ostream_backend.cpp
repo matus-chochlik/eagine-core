@@ -17,16 +17,22 @@ import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.reflection;
-import eagine.core.utility;
 import :backend;
+import :fast_json_backend;
 import :fast_xml_backend;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export template <typename Lockable>
+export template <typename Lockable, log_data_format format>
 class ostream_log_backend
-  : public fast_xml_log_backend<Lockable, ostream_log_backend<Lockable>> {
-    using base = fast_xml_log_backend<Lockable, ostream_log_backend<Lockable>>;
+  : public formatted_log_backend<
+      Lockable,
+      ostream_log_backend<Lockable, format>,
+      format> {
+    using base = formatted_log_backend<
+      Lockable,
+      ostream_log_backend<Lockable, format>,
+      format>;
 
 public:
     ostream_log_backend(std::ostream& out, const log_stream_info& info) noexcept

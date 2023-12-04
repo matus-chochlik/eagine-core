@@ -7,9 +7,14 @@
 ///
 module eagine.core.runtime;
 
+import std;
+import eagine.core.utility;
+import eagine.core.container;
 import <csignal>;
 
 namespace eagine {
+//------------------------------------------------------------------------------
+static bool signal_switch_signalled{false};
 //------------------------------------------------------------------------------
 static auto signal_switch_state() noexcept -> volatile std::sig_atomic_t& {
     static volatile std::sig_atomic_t state{0};
@@ -27,6 +32,8 @@ signal_switch::~signal_switch() noexcept {
 //------------------------------------------------------------------------------
 auto signal_switch::reset() noexcept -> signal_switch& {
     signal_switch_state() = 0;
+    switched(false);
+    signal_switch_signalled = false;
     return *this;
 }
 //------------------------------------------------------------------------------
@@ -39,7 +46,14 @@ auto signal_switch::terminated() const noexcept -> bool {
 }
 //------------------------------------------------------------------------------
 signal_switch::operator bool() const noexcept {
-    return bool(signal_switch_state());
+    if(signal_switch_state()) {
+        if(not signal_switch_signalled) {
+            switched(true);
+            signal_switch_signalled = true;
+        }
+        return true;
+    }
+    return false;
 }
 //------------------------------------------------------------------------------
 void signal_switch::_flip(const int sig_num) noexcept {

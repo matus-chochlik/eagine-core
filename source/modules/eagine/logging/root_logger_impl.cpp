@@ -55,28 +55,20 @@ auto root_logger_choose_backend(
   const log_stream_info& info) -> unique_holder<logger_backend> {
 
     const bool use_spinlock{args.find("--log-use-spinlock")};
+    auto format{log_data_format::json};
+    if(args.find("--log-format-json")) {
+        format = log_data_format::json;
+    } else if(args.find("--log-format-xml")) {
+        format = log_data_format::xml;
+    }
 
     for(auto& arg : args) {
         if(arg.is_long_tag("use-null-log")) {
             return make_null_log_backend();
         } else if(arg.is_long_tag("use-cerr-log")) {
-            if(use_spinlock) {
-                return {hold<ostream_log_backend<spinlock>>, std::cerr, info};
-            } else {
-                return {hold<ostream_log_backend<std::mutex>>, std::cerr, info};
-            }
-        } else if(arg.is_long_tag("use-cout-log")) {
-            if(use_spinlock) {
-                return {hold<ostream_log_backend<spinlock>>, std::cout, info};
-            } else {
-                return {hold<ostream_log_backend<std::mutex>>, std::cout, info};
-            }
+            return make_ostream_log_backend(info, format, use_spinlock);
         } else if(arg.is_long_tag("use-syslog")) {
-            if(use_spinlock) {
-                return make_syslog_log_backend_spinlock(info);
-            } else {
-                return make_syslog_log_backend_mutex(info);
-            }
+            return make_syslog_log_backend(info, use_spinlock);
         } else if(arg.is_long_tag("use-asio-nw-log")) {
             string_view nw_addr;
             if(arg.next() and not arg.next().starts_with("-")) {
@@ -85,13 +77,8 @@ auto root_logger_choose_backend(
                         "EAGINE_LOG_NETWORK_ADDRESS")}) {
                 nw_addr = *env_var;
             }
-            if(use_spinlock) {
-                return make_asio_tcpipv4_ostream_log_backend_spinlock(
-                  nw_addr, info);
-            } else {
-                return make_asio_tcpipv4_ostream_log_backend_mutex(
-                  nw_addr, info);
-            }
+            return make_asio_tcpipv4_ostream_log_backend(
+              nw_addr, info, format, use_spinlock);
         } else if(arg.is_long_tag("use-asio-log")) {
             string_view path;
             if(arg.next() and not arg.next().starts_with("-")) {
@@ -100,11 +87,8 @@ auto root_logger_choose_backend(
                         get_environment_variable("EAGINE_LOG_LOCAL_PATH")}) {
                 path = *env_var;
             }
-            if(use_spinlock) {
-                return make_asio_local_ostream_log_backend_spinlock(path, info);
-            } else {
-                return make_asio_local_ostream_log_backend_mutex(path, info);
-            }
+            return make_asio_local_ostream_log_backend(
+              path, info, format, use_spinlock);
         }
     }
 

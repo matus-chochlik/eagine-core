@@ -255,25 +255,6 @@ auto main_ctx::matches_encrypted_shared_password(
 //------------------------------------------------------------------------------
 // main_ctx_object-related
 //------------------------------------------------------------------------------
-main_ctx_log_backend_getter::main_ctx_log_backend_getter(
-  main_ctx_getters& c) noexcept {
-    const auto new_ref{c.log().backend()};
-    if(_backend_ref()) [[likely]] {
-        assert(not new_ref or _backend_ref().refers_to(new_ref));
-    } else if(new_ref) {
-        _backend_ref() = new_ref;
-    }
-}
-//------------------------------------------------------------------------------
-main_ctx_log_backend_getter::main_ctx_log_backend_getter() noexcept {
-    const auto new_ref{main_ctx::get().log().backend()};
-    if(_backend_ref()) [[likely]] {
-        assert(not new_ref or _backend_ref().refers_to(new_ref));
-    } else if(new_ref) {
-        _backend_ref() = new_ref;
-    }
-}
-//------------------------------------------------------------------------------
 auto main_ctx_object::main_context() const noexcept -> main_ctx& {
     return main_ctx::get();
 }

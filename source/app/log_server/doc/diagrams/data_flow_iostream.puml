@@ -1,0 +1,94 @@
+@startuml
+
+namespace io {
+class istream {}
+class ostream {}
+}
+
+interface reader {
+  +run()
+}
+
+annotation main {
+  main()
+}
+
+main --> reader : execute
+
+class istream_reader {
+  -input: istream
+  -sink: parser_input
+  +run()
+}
+
+reader <|-- istream_reader
+
+interface parser_input {
+  +consume_text()
+}
+
+class json_data_extractor {
+  -sink: stream_sink
+  +consume_text()
+}
+
+parser_input <|-- json_data_extractor
+
+istream_reader o--> parser_input
+
+
+interface stream_sink {
+  +void consume(Info)
+}
+
+interface stream_sink_factory {
+  +make_stream(): stream_sink
+  +update()
+}
+
+stream_sink_factory ..> stream_sink : instantiate
+
+istream_reader o--> stream_sink_factory
+
+stream_sink <--o json_data_extractor : use
+
+class text_tree_sink {
+  -parent: text_tree_sink_factory
+  +consume(Info)
+}
+
+stream_sink --|> text_tree_sink
+
+class text_tree_sink_factory {
+  -output: text_output
+  -write()
+  +make_stream(): stream_sink
+  +update()
+}
+
+stream_sink_factory --|> text_tree_sink_factory
+text_tree_sink_factory ..> text_tree_sink : instantiate
+
+interface text_output {
+  +write(string)
+  +flush()
+}
+
+text_output <--o text_tree_sink_factory : use
+
+class ostream_output {
+  -output: ostream
+  +write(string)
+  +flush()
+}
+
+ostream_output --|> text_output
+
+istream -[#red,thickness=8]-> istream_reader : read
+istream_reader -[#red,thickness=8]-> json_data_extractor : consume_text
+json_data_extractor -[#red,thickness=8]-> text_tree_sink : consume
+text_tree_sink_factory <-[#red,thickness=8] text_tree_sink : write
+ostream_output <-[#red,thickness=8]- text_tree_sink_factory : write
+ostream <-[#red,thickness=8]- ostream_output : write
+
+@enduml

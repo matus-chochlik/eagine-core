@@ -24,11 +24,6 @@ install(
 	DESTINATION bin
 )
 install(
-	PROGRAMS xml_logs-psql.py
-	RENAME eagine-xml-logs-psql
-	DESTINATION bin
-)
-install(
 	PROGRAMS log-schema-stats.sh
 	RENAME eagine-log-schema-stats
 	DESTINATION bin
@@ -55,6 +50,8 @@ install(
 	RENAME eagine-procman
 	DESTINATION bin
 )
+
+add_subdirectory(log_server)
 
 find_package(Qt5 COMPONENTS Core Widgets Xml Qml Quick)
 if(Qt5_FOUND)

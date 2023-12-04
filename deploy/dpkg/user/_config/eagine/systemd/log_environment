@@ -1,0 +1,1 @@
+EAGINE_LOG_SERVER_ARGS="--local /var/run/eagine/log.socket --socat /var/run/eagine/text-log.socket"

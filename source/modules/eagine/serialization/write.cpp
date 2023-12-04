@@ -129,6 +129,18 @@ struct serializer<decl_name> : plain_serializer<decl_name> {};
 export template <>
 struct serializer<string_view> : plain_serializer<string_view> {};
 //------------------------------------------------------------------------------
+export template <identifier_t Tag>
+struct serializer<tagged_id<Tag>> {
+    auto write(const tagged_id<Tag> value, auto& backend) const noexcept {
+        span_size_t written{0};
+        const auto errors{backend.write(view_one(value.value()), written)};
+        if(written < 1) [[unlikely]] {
+            assert(errors.has(serialization_error_code::too_much_data));
+        }
+        return errors;
+    }
+};
+//------------------------------------------------------------------------------
 export template <typename T>
 struct structural_serializer {
     auto write(const T& value, auto& backend) const noexcept {

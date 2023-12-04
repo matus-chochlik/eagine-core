@@ -36,35 +36,13 @@ auto application_config_initial(
   T& initial,
   const string_view tag) noexcept -> T&;
 
-/// @brief Helper class used in the implementation of logging in main context
-/// object.
-/// @ingroup type_utils
-/// @see main_ctx_object
-/// @note Do not use directly.
-export class main_ctx_log_backend_getter {
-public:
-    main_ctx_log_backend_getter() noexcept;
-    main_ctx_log_backend_getter(main_ctx_getters&) noexcept;
-
-    auto get() const noexcept -> optional_reference<logger_backend> {
-        return _backend_ref();
-    }
-
-private:
-    static auto _backend_ref() noexcept -> optional_reference<logger_backend>& {
-        static optional_reference<logger_backend> beref{};
-        return beref;
-    }
-};
-
 /// @brief Base class for main context objects.
 /// @ingroup main_context
 ///
 /// Objects that want to get access to the main context object and the services
 /// it provides (like logging), should inherit from this class.
-export class main_ctx_object
-  : public named_logging_object<main_ctx_log_backend_getter> {
-    using base = named_logging_object<main_ctx_log_backend_getter>;
+export class main_ctx_object : public named_logging_object {
+    using base = named_logging_object;
 
 public:
     /// @brief Initialization from object id and parent.
@@ -176,17 +154,7 @@ public:
     }
 
 private:
-    static auto _make_base(
-      const identifier obj_id,
-      main_ctx_parent parent) noexcept -> base {
-        if(parent.has_object()) {
-            return base{obj_id, static_cast<const base&>(parent.object())};
-        }
-        if(parent.has_context()) {
-            return base{obj_id, main_ctx_log_backend_getter{parent.context()}};
-        }
-        return base{obj_id, main_ctx_log_backend_getter{}};
-    }
+    static auto _make_base(const identifier, main_ctx_parent) noexcept -> base;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

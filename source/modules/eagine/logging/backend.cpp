@@ -65,6 +65,15 @@ constexpr auto enumerator_mapping(
        {"fatal", log_event_severity::fatal}}};
 }
 //------------------------------------------------------------------------------
+/// @brief Log data format.
+/// @ingroup logging
+export enum class log_data_format : std::uint8_t {
+    /// @brief XML format.
+    xml,
+    /// @brief JSON format.
+    json
+};
+//------------------------------------------------------------------------------
 /// @brief Structure used to supply initial log stream information to a logger.
 /// @ingroup logging
 export struct log_stream_info {
@@ -98,19 +107,17 @@ export struct logger_backend : interface<logger_backend> {
     /// @brief Starts the current log.
     virtual void begin_log() noexcept = 0;
 
+    virtual auto register_time_interval(
+      const identifier tag,
+      const logger_instance_id) noexcept -> time_interval_id = 0;
+
     /// @brief Start of time interval measurement.
     /// @see time_interval_end
-    virtual void time_interval_begin(
-      const identifier,
-      const logger_instance_id,
-      const time_interval_id) noexcept = 0;
+    virtual void time_interval_begin(const time_interval_id) noexcept = 0;
 
     /// @brief End of time interval measurement.
     /// @see time_interval_begin
-    virtual void time_interval_end(
-      const identifier,
-      const logger_instance_id,
-      const time_interval_id) noexcept = 0;
+    virtual void time_interval_end(const time_interval_id) noexcept = 0;
 
     /// @brief Sets the user-readable description for the logger object.
     virtual void set_description(
@@ -370,28 +377,24 @@ export struct logger_backend : interface<logger_backend> {
     virtual void finish_log() noexcept = 0;
 };
 //------------------------------------------------------------------------------
+template <typename Lockable, typename Derived, log_data_format>
+class formatted_log_backend;
+//------------------------------------------------------------------------------
 // backend getters
 //------------------------------------------------------------------------------
 export auto make_null_log_backend() -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
-export auto make_asio_local_ostream_log_backend_mutex(const log_stream_info&)
-  -> unique_holder<logger_backend>;
-export auto make_asio_local_ostream_log_backend_spinlock(const log_stream_info&)
-  -> unique_holder<logger_backend>;
+export auto make_asio_local_ostream_log_backend(
+  string_view addr,
+  const log_stream_info&,
+  const log_data_format format,
+  bool use_spinlock) -> unique_holder<logger_backend>;
 
-export auto make_asio_local_ostream_log_backend_mutex(
+export auto make_asio_tcpipv4_ostream_log_backend(
   string_view addr,
-  const log_stream_info&) -> unique_holder<logger_backend>;
-export auto make_asio_local_ostream_log_backend_spinlock(
-  string_view addr,
-  const log_stream_info&) -> unique_holder<logger_backend>;
-
-export auto make_asio_tcpipv4_ostream_log_backend_mutex(
-  string_view addr,
-  const log_stream_info&) -> unique_holder<logger_backend>;
-export auto make_asio_tcpipv4_ostream_log_backend_spinlock(
-  string_view addr,
-  const log_stream_info&) -> unique_holder<logger_backend>;
+  const log_stream_info&,
+  const log_data_format format,
+  bool use_spinlock) -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
 export class log_backend_error : public std::system_error {
 public:
@@ -402,9 +405,12 @@ public:
 export auto make_proxy_log_backend(log_stream_info info)
   -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
-export auto make_syslog_log_backend_mutex(const log_stream_info&)
-  -> unique_holder<logger_backend>;
-export auto make_syslog_log_backend_spinlock(const log_stream_info&)
+auto make_ostream_log_backend(
+  const log_stream_info& info,
+  const log_data_format format,
+  const bool use_spinlock) -> unique_holder<logger_backend>;
+//------------------------------------------------------------------------------
+export auto make_syslog_log_backend(const log_stream_info&, bool use_spinlock)
   -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
 /// @brief Class representing a single log time interval measurement.
@@ -413,31 +419,24 @@ export auto make_syslog_log_backend_spinlock(const log_stream_info&)
 class log_time_interval {
 
 public:
-    auto interval_id() const noexcept {
-        return reinterpret_cast<time_interval_id>(this);
-    }
-
     log_time_interval(
-      const identifier label,
-      const logger_instance_id inst,
+      const time_interval_id id,
       logger_backend* backend) noexcept
-      : _label{label}
-      , _instance_id{inst}
+      : _id{id}
       , _backend{backend} {
         if(_backend) {
-            _backend->time_interval_begin(_label, _instance_id, interval_id());
+            _backend->time_interval_begin(_id);
         }
     }
 
     ~log_time_interval() noexcept {
         if(_backend) {
-            _backend->time_interval_end(_label, _instance_id, interval_id());
+            _backend->time_interval_end(_id);
         }
     }
 
 private:
-    const identifier _label;
-    const logger_instance_id _instance_id;
+    const time_interval_id _id;
     logger_backend* const _backend;
 };
 //------------------------------------------------------------------------------

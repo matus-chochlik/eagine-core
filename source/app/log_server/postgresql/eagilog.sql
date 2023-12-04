@@ -375,6 +375,7 @@ CREATE TABLE eagilog.stream (
 	stream_id SERIAL PRIMARY KEY,
 	application_id VARCHAR(10) NULL,
 	start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+	heartbeat_time TIMESTAMP WITH TIME ZONE NULL,
 	finish_time TIMESTAMP WITH TIME ZONE NULL,
 	first_entry_id BIGINT NULL,
 	last_entry_id BIGINT NULL,
@@ -532,6 +533,20 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.stream_heartbeat(
+	_stream_id eagilog.stream.stream_id%TYPE,
+	_entry_time INTERVAL
+) RETURNS eagilog.stream.stream_id%TYPE
+AS $$
+BEGIN
+	UPDATE eagilog.stream
+	SET heartbeat_time = start_time + _entry_time
+	WHERE stream_id = _stream_id;
+
+	RETURN _stream_id;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.finish_stream(
 	_stream_id eagilog.stream.stream_id%TYPE,
 	_clean_shutdown BOOL
@@ -558,7 +573,7 @@ BEGIN
 	DELETE FROM eagilog.declared_stream_state
 	WHERE stream_id = _stream_id;
 
-	RETURN $1;
+	RETURN _stream_id;
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
@@ -865,17 +880,21 @@ CREATE FUNCTION eagilog.add_entry(
 	_instance eagilog.entry.instance%TYPE,
 	_severity_name eagilog.severity.name%TYPE,
 	_tag eagilog.entry.tag%TYPE,
-	_format eagilog.message_format.format%TYPE
+	_format eagilog.message_format.format%TYPE,
+	_entry_time eagilog.entry.entry_time%TYPE
 ) RETURNS eagilog.entry.entry_id%TYPE
 AS $$
 DECLARE
-	_entry_time INTERVAL;
 	result eagilog.entry.entry_id%TYPE;
 BEGIN
-	SELECT now() - start_time
-	INTO _entry_time
-	FROM eagilog.stream
-	WHERE stream_id = _stream_id;
+
+	IF _entry_time IS NULL
+	THEN
+		SELECT now() - start_time
+		INTO _entry_time
+		FROM eagilog.stream
+		WHERE stream_id = _stream_id;
+	END IF;
 
 	WITH ins AS (
 		INSERT INTO eagilog.entry (
@@ -1411,13 +1430,13 @@ $$ LANGUAGE sql;
 CREATE TABLE eagilog.profile_interval(
 	interval_id BIGSERIAL PRIMARY KEY,
 	stream_id INTEGER NOT NULL,
-	source_id VARCHAR(10) NOT NULL,
 	tag VARCHAR(10) NOT NULL,
-	hit_count BIGINT NOT NULL,
+	instance BIGINT NOT NULL,
+	hit_count INTEGER NOT NULL,
 	hit_interval INTERVAL NOT NULL,
-	min_duration_ms REAL NOT NULL,
-	avg_duration_ms REAL NOT NULL,
-	max_duration_ms REAL NOT NULL,
+	min_duration_ms FLOAT NOT NULL,
+	avg_duration_ms FLOAT NOT NULL,
+	max_duration_ms FLOAT NOT NULL,
 	entry_time INTERVAL NOT NULL
 );
 
@@ -1428,8 +1447,8 @@ ON DELETE CASCADE;
 
 CREATE FUNCTION eagilog.add_profile_interval(
 	_stream_id eagilog.profile_interval.stream_id%TYPE,
-	_source_id eagilog.profile_interval.source_id%TYPE,
 	_tag eagilog.profile_interval.tag%TYPE,
+	_instance eagilog.profile_interval.instance%TYPE,
 	_hit_count eagilog.profile_interval.hit_count%TYPE,
 	_hit_interval eagilog.profile_interval.hit_interval%TYPE,
 	_min_duration_ms eagilog.profile_interval.min_duration_ms%TYPE,
@@ -1449,8 +1468,8 @@ BEGIN
 	WITH ins AS (
 		INSERT INTO eagilog.profile_interval (
 			stream_id,
-			source_id,
 			tag,
+			instance,
 			hit_count,
 			hit_interval,
 			min_duration_ms,
@@ -1459,8 +1478,8 @@ BEGIN
 			entry_time
 		) VALUES (
 			_stream_id,
-			_source_id,
 			_tag,
+			_instance,
 			_hit_count,
 			_hit_interval,
 			_min_duration_ms,
@@ -1479,8 +1498,8 @@ AS
 SELECT
 	i.stream_id,
 	s.application_id,
-	i.source_id,
 	i.tag,
+	i.instance,
 	sum(i.hit_count) AS hit_count,
 	sum(i.hit_interval) AS hit_interval,
 	min(i.min_duration_ms) AS min_duration_ms,
@@ -1495,8 +1514,8 @@ JOIN eagilog.stream s USING(stream_id)
 GROUP BY
 	i.stream_id,
 	s.application_id,
-	i.source_id,
 	i.tag,
+	i.instance,
 	s.start_time,
 	s.finish_time,
 	s.low_profile_build,

@@ -260,4 +260,51 @@ export using from_value_tree_t = selector<0xF7U>;
 /// @see from_config_t
 export constexpr const from_value_tree_t from_value_tree{};
 //------------------------------------------------------------------------------
+/// @brief Template for types that serve as identifiers for specific purpose.
+export template <identifier_t Tag>
+class tagged_id {
+public:
+    /// @brief Constructs an invalid identifier.
+    /// @post not has_value()
+    constexpr tagged_id() noexcept = default;
+
+    /// @brief Constructs an identifier with the specified value.
+    constexpr tagged_id(identifier_t id) noexcept
+      : _id{id} {}
+
+    /// @brief Indicates if this id has a valid value.
+    constexpr auto has_value() const noexcept -> bool {
+        return _id != 0;
+    }
+
+    /// @brief Indicates if this id has a valid value.
+    /// @see has_value
+    explicit constexpr operator bool() const noexcept {
+        return has_value();
+    }
+
+    /// @brief Indicates if the specified id has a valid value.
+    /// @see has_value
+    friend constexpr auto is_valid_id(const tagged_id id) noexcept -> bool {
+        return id.has_value();
+    }
+
+    /// @brief Returns the underlying value.
+    constexpr auto value() const noexcept -> identifier_t {
+        return _id;
+    }
+
+    /// @brief Comparison.
+    constexpr auto operator<=>(const tagged_id&) const noexcept = default;
+
+private:
+    identifier_t _id{0};
+};
+//------------------------------------------------------------------------------
+export template <identifier_t Tag>
+constexpr auto operator<<(std::ostream& out, const tagged_id<Tag> id)
+  -> std::ostream& {
+    return out << id.value();
+}
+//------------------------------------------------------------------------------
 } // namespace eagine
