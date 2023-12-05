@@ -12,6 +12,7 @@ import std;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
+using stream_id_t = std::size_t;
 using parser_input = valtree::value_tree_stream_input;
 using float_seconds = std::chrono::duration<float>;
 //------------------------------------------------------------------------------
@@ -188,6 +189,9 @@ export struct stream_sink_factory : interface<stream_sink_factory> {
 };
 //------------------------------------------------------------------------------
 auto make_text_tree_sink_factory(main_ctx&, unique_holder<text_output>)
+  -> shared_holder<stream_sink_factory>;
+//------------------------------------------------------------------------------
+auto make_influxdb_sink_factory(main_ctx&, string_view params) noexcept
   -> shared_holder<stream_sink_factory>;
 //------------------------------------------------------------------------------
 auto make_libpq_sink_factory(main_ctx&, string_view params) noexcept

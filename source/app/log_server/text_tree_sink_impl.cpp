@@ -15,8 +15,6 @@ import :utilities;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
-using stream_id_t = std::size_t;
-//------------------------------------------------------------------------------
 struct text_tree_stream_context {
     begin_info begin{};
     bool clean_shutdown{false};

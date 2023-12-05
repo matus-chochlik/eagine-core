@@ -25,7 +25,6 @@ import :utilities;
 namespace eagine::logs {
 #if EAGINE_USE_LIBPQ
 //------------------------------------------------------------------------------
-using stream_id_t = std::size_t;
 namespace pq {
 //------------------------------------------------------------------------------
 using connection_handle = std::unique_ptr<PGconn, void (*)(PGconn*)>;
