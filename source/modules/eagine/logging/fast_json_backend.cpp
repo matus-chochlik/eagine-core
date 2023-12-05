@@ -136,14 +136,12 @@ public:
 
     void begin_log() noexcept final {
         try {
+            const auto now_sys{std::chrono::system_clock::now()};
+            const auto now_sdy{std::chrono::steady_clock::now()};
+            const auto now{now_sys - (now_sdy - _start)};
+            const std::string start_tse{std::format("{:%Y-%m-%d %T}", now)};
             const std::lock_guard<Lockable> lock{_lockable};
             _add("[");
-            const auto start_tse{
-              std::chrono::duration_cast<
-                std::chrono::duration<std::int64_t, std::micro>>(
-                _start.time_since_epoch())
-                .count()};
-
             _add(R"({"t":"begin","time":")");
             _add(start_tse);
             if(not _session_identity.empty()) {
