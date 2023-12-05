@@ -31,12 +31,12 @@ using connection_handle = std::unique_ptr<::CURL, void (*)(::CURL*)>;
 //------------------------------------------------------------------------------
 class connection : connection_handle {
 public:
-    connection(::CURL* conn, std::string conn_params) noexcept
+    connection(::CURL* conn, string_view conn_params) noexcept
       : connection_handle{conn, ::curl_easy_cleanup}
-      , _conn_params{std::move(conn_params)} {}
+      , _conn_params{to_string(conn_params)} {}
 
-    static auto connect(std::string conn_params) noexcept {
-        return connection{::curl_easy_init(), std::move(conn_params)};
+    static auto connect(string_view conn_params) noexcept {
+        return connection{::curl_easy_init(), conn_params};
     }
 
     auto is_ok() const noexcept -> bool {
@@ -60,7 +60,9 @@ class influxdb_stream_sink_factory final
   : public std::enable_shared_from_this<influxdb_stream_sink_factory>
   , public stream_sink_factory {
 public:
-    influxdb_stream_sink_factory(main_ctx&, std::string conn_params) noexcept;
+    influxdb_stream_sink_factory(
+      main_ctx&,
+      const string_view conn_params) noexcept;
 
     auto make_stream() noexcept -> unique_holder<stream_sink> final;
     void update() noexcept final;
@@ -75,10 +77,6 @@ public:
     auto consume(influxdb_stream_sink&, const active_state_info&) noexcept
       -> bool;
     auto consume(influxdb_stream_sink&, const message_info&) noexcept -> bool;
-    auto consume(
-      influxdb_stream_sink&,
-      const span_size_t entry_id,
-      const message_info::arg_info&) noexcept -> bool;
     auto consume(influxdb_stream_sink&, const aggregate_interval_info&) noexcept
       -> bool;
     auto consume(influxdb_stream_sink&, const heartbeat_info&) noexcept -> bool;
@@ -86,7 +84,14 @@ public:
       -> bool;
 
 private:
+    auto _make_entry(
+      influxdb_stream_sink&,
+      const message_info&,
+      const message_info::arg_info&) noexcept
+      -> valid_if_not_empty<std::string>;
+
     curl::connection _conn;
+    std::string _entry_buffer;
 };
 //------------------------------------------------------------------------------
 // stream sink
@@ -99,6 +104,9 @@ public:
     void set_id(stream_id_t) noexcept;
     auto id() const noexcept -> stream_id_t;
     auto root() const noexcept -> identifier;
+
+    auto time_since_start(const message_info&) noexcept
+      -> std::chrono::nanoseconds;
 
     void consume(const begin_info&) noexcept final;
     void consume(const description_info&) noexcept final;
@@ -116,6 +124,7 @@ private:
     shared_holder<influxdb_stream_sink_factory> _parent;
     stream_id_t _id{0};
     identifier _root{};
+    begin_info _begin{};
     std::vector<std::variant<
       begin_info,
       description_info,
@@ -174,7 +183,16 @@ auto influxdb_stream_sink::root() const noexcept -> identifier {
     return _root;
 }
 //------------------------------------------------------------------------------
+auto influxdb_stream_sink::time_since_start(const message_info& info) noexcept
+  -> std::chrono::nanoseconds {
+    using std::chrono::duration_cast;
+    using std::chrono::nanoseconds;
+    return duration_cast<nanoseconds>(_begin.start.time_since_epoch()) +
+           duration_cast<nanoseconds>(info.offset);
+}
+//------------------------------------------------------------------------------
 void influxdb_stream_sink::consume(const begin_info& info) noexcept {
+    _begin = info;
     _dispatch(info);
 }
 //------------------------------------------------------------------------------
@@ -191,6 +209,9 @@ void influxdb_stream_sink::consume(const active_state_info& info) noexcept {
 }
 //------------------------------------------------------------------------------
 void influxdb_stream_sink::consume(const message_info& info) noexcept {
+    if(not _root) {
+        _root = info.source;
+    }
     _dispatch(info);
 }
 //------------------------------------------------------------------------------
@@ -210,6 +231,40 @@ void influxdb_stream_sink::consume(const finish_info& info) noexcept {
 }
 //------------------------------------------------------------------------------
 //
+//------------------------------------------------------------------------------
+influxdb_stream_sink_factory::influxdb_stream_sink_factory(
+  main_ctx&,
+  const string_view conn_params) noexcept
+  : _conn{curl::connection::connect(conn_params)} {}
+//------------------------------------------------------------------------------
+auto influxdb_stream_sink_factory::_make_entry(
+  influxdb_stream_sink& stream,
+  const message_info& msg,
+  const message_info::arg_info& arg) noexcept
+  -> valid_if_not_empty<std::string> {
+    if(const auto val{arg.value_float()}) {
+        return {std::format(
+          "arg,stream={},app={},source={},msg_tag={},name={},arg_tag={},"
+          "instance={} value={} {}\n",
+          stream.id(),
+          std::string_view{stream.root().name()},
+          std::string_view{msg.source.name()},
+          std::string_view{msg.tag.name()},
+          std::string_view{arg.name.name()},
+          std::string_view{arg.tag.name()},
+          msg.instance,
+          *val,
+          stream.time_since_start(msg).count())};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto influxdb_stream_sink_factory::make_stream() noexcept
+  -> unique_holder<stream_sink> {
+    return {hold<influxdb_stream_sink>, shared_from_this()};
+}
+//------------------------------------------------------------------------------
+void influxdb_stream_sink_factory::update() noexcept {}
 //------------------------------------------------------------------------------
 auto influxdb_stream_sink_factory::consume(
   influxdb_stream_sink&,
@@ -236,15 +291,14 @@ auto influxdb_stream_sink_factory::consume(
 }
 //------------------------------------------------------------------------------
 auto influxdb_stream_sink_factory::consume(
-  influxdb_stream_sink&,
-  const message_info&) noexcept -> bool {
-    return true;
-}
-//------------------------------------------------------------------------------
-auto influxdb_stream_sink_factory::consume(
-  influxdb_stream_sink&,
-  const span_size_t entry_id,
-  const message_info::arg_info&) noexcept -> bool {
+  influxdb_stream_sink& stream,
+  const message_info& info) noexcept -> bool {
+    _entry_buffer.clear();
+    for(const auto& arg : info.args) {
+        if(const auto entry{_make_entry(stream, info, arg)}) {
+            append_to(*entry, _entry_buffer);
+        }
+    }
     return true;
 }
 //------------------------------------------------------------------------------
@@ -274,11 +328,11 @@ auto make_influxdb_sink_factory(
   [[maybe_unused]] main_ctx& ctx,
   [[maybe_unused]] string_view conn_params) noexcept
   -> shared_holder<stream_sink_factory> {
-#if EAGINE_USE_LIBPQ
+#if EAGINE_USE_LIBCURL
     if(conn_params.empty()) {
         conn_params = "http://admin:admin@localhost:8086/api/v2";
     }
-    return {hold<influxdb_stream_sink_factory>, ctx, to_string(conn_params)};
+    return {hold<influxdb_stream_sink_factory>, ctx, conn_params};
 #else
     return {};
 #endif

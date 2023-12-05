@@ -19,7 +19,8 @@ using float_seconds = std::chrono::duration<float>;
 // parsed items
 //------------------------------------------------------------------------------
 struct begin_info {
-    std::chrono::system_clock::time_point start{};
+    std::chrono::system_clock::time_point start{
+      std::chrono::system_clock::now()};
     std::string session;
     std::string identity;
 };
