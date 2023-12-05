@@ -27,17 +27,42 @@ namespace eagine::logs {
 //------------------------------------------------------------------------------
 namespace curl {
 //------------------------------------------------------------------------------
+class lib_init {
+public:
+    lib_init() noexcept {
+        ::curl_global_init(CURL_GLOBAL_ALL);
+    }
+
+    ~lib_init() noexcept {
+        ::curl_global_cleanup();
+    }
+};
+//------------------------------------------------------------------------------
+using slist_handle = std::unique_ptr<::curl_slist, void (*)(::curl_slist*)>;
+//------------------------------------------------------------------------------
+class string_list : public slist_handle {
+public:
+    string_list() noexcept
+      : slist_handle{nullptr, ::curl_slist_free_all} {}
+
+    auto reset() noexcept -> string_list& {
+        slist_handle::reset();
+        return *this;
+    }
+
+    auto append(string_view str) noexcept -> string_list& {
+        slist_handle::reset(::curl_slist_append(get(), c_str(str).c_str()));
+        return *this;
+    }
+};
+//------------------------------------------------------------------------------
 using connection_handle = std::unique_ptr<::CURL, void (*)(::CURL*)>;
 //------------------------------------------------------------------------------
 class connection : connection_handle {
 public:
-    connection(::CURL* conn, string_view conn_params) noexcept
+    connection(::CURL* conn, shared_holder<lib_init> lib) noexcept
       : connection_handle{conn, ::curl_easy_cleanup}
-      , _conn_params{to_string(conn_params)} {}
-
-    static auto connect(string_view conn_params) noexcept {
-        return connection{::curl_easy_init(), conn_params};
-    }
+      , _lib{std::move(lib)} {}
 
     auto is_ok() const noexcept -> bool {
         return connection_handle::operator bool();
@@ -47,8 +72,51 @@ public:
         return is_ok();
     }
 
+    auto reinit() noexcept -> connection& {
+        ::curl_easy_reset(get());
+        _headers.reset();
+        return *this;
+    }
+
+    auto post_data(const memory::const_block data) noexcept -> connection& {
+        ::curl_easy_setopt(get(), CURLOPT_POST, 1L);
+        ::curl_easy_setopt(get(), CURLOPT_POSTFIELDSIZE, data.size());
+        ::curl_easy_setopt(get(), CURLOPT_POSTFIELDS, data.data());
+        return *this;
+    }
+
+    auto post_data(const string_view str) noexcept -> connection& {
+        return post_data(as_bytes(str));
+    }
+
+    auto set_url(const string_view locator) noexcept -> connection& {
+        ::curl_easy_setopt(get(), CURLOPT_URL, c_str(locator).c_str());
+        return *this;
+    }
+
+    auto add_header(string_view header) noexcept -> connection& {
+        _headers.append(header);
+        return *this;
+    }
+
+    auto perform() noexcept -> bool {
+        ::curl_easy_setopt(get(), CURLOPT_HTTPHEADER, _headers.get());
+        return ::curl_easy_perform(get()) == CURLE_OK;
+    }
+
 private:
-    url _conn_params;
+    shared_holder<lib_init> _lib;
+    string_list _headers;
+};
+//------------------------------------------------------------------------------
+class library {
+public:
+    auto connect() const noexcept {
+        return connection{::curl_easy_init(), _lib};
+    }
+
+private:
+    shared_holder<lib_init> _lib{default_selector};
 };
 //------------------------------------------------------------------------------
 } // namespace curl
@@ -90,6 +158,14 @@ private:
       const message_info::arg_info&) noexcept
       -> valid_if_not_empty<std::string>;
 
+    auto _make_write_url() noexcept -> std::string;
+    auto _make_auth_hdr() noexcept -> std::string;
+
+    const url _conn_params;
+    const std::string _write_url{_make_write_url()};
+    const std::string _auth_hdr{_make_auth_hdr()};
+
+    curl::library _lib_curl;
     curl::connection _conn;
     std::string _entry_buffer;
 };
@@ -235,7 +311,34 @@ void influxdb_stream_sink::consume(const finish_info& info) noexcept {
 influxdb_stream_sink_factory::influxdb_stream_sink_factory(
   main_ctx&,
   const string_view conn_params) noexcept
-  : _conn{curl::connection::connect(conn_params)} {}
+  : _conn_params{to_string(conn_params)}
+  , _conn{_lib_curl.connect()} {}
+//------------------------------------------------------------------------------
+auto influxdb_stream_sink_factory::_make_write_url() noexcept -> std::string {
+    const auto& q{_conn_params.query()};
+    std::string result;
+    append_to(_conn_params.scheme().value_or("http"), result);
+    result.append("://");
+    append_to(_conn_params.domain().value_or("localhost"), result);
+    result.append(":");
+    append_to(_conn_params.port_str().value_or("8086"), result);
+    append_to(_conn_params.path().as_string("/", false), result);
+    result.append("/write?org=");
+    append_to(q.arg_value("org").value_or("EAGine"), result);
+    result.append("&bucket=");
+    append_to(q.arg_value("bucket").value_or("eagilog"), result);
+    return result;
+}
+//------------------------------------------------------------------------------
+auto influxdb_stream_sink_factory::_make_auth_hdr() noexcept -> std::string {
+    std::string result{"Authorization: Token "};
+    append_to(
+      _conn_params.query().arg_value("token").value_or(
+        "WPLRP3RrqzHqxWiB0I18qptCCUEvdC8c2xiX4RQlHXz314Prz4lviP9VckgG_"
+        "FKw5QKe31GocTrjnhz-eG_R2g=="),
+      result);
+    return result;
+}
 //------------------------------------------------------------------------------
 auto influxdb_stream_sink_factory::_make_entry(
   influxdb_stream_sink& stream,
@@ -298,6 +401,13 @@ auto influxdb_stream_sink_factory::consume(
         if(const auto entry{_make_entry(stream, info, arg)}) {
             append_to(*entry, _entry_buffer);
         }
+    }
+    if(not _entry_buffer.empty()) {
+        _conn.reinit()
+          .set_url(_write_url)
+          .add_header(_auth_hdr)
+          .post_data(_entry_buffer)
+          .perform();
     }
     return true;
 }
