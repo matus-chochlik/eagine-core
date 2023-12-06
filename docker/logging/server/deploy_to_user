@@ -46,7 +46,7 @@ mkdir -p "${sdc_dir}"
 rm -f "${sdc_dir}/eagilog-server.service"
 cat > "${sdc_dir}/eagilog-server.service" << SERVICE
 [Unit]
-Description=eagine logging server server.
+Description=eagine logging server service.
 
 [Service]
 Type=oneshot

@@ -10,4 +10,4 @@ influxdb_url="http://eagilog_influxdb:8086/api/v2?token=$(</usr/src/app/influxdb
 	--network \
 	--libpq "${libpq_url}" \
 	--influxdb "${influxdb_url}" \
-	--netcat
+	--text-tree --netcat
