@@ -152,6 +152,8 @@ public:
       -> bool;
 
 private:
+    auto _get_stream_id() noexcept -> stream_id_t;
+
     void _append_data(
       influxdb_stream_sink&,
       const message_info&,
@@ -170,6 +172,7 @@ private:
     curl::connection _conn;
     std::string _entry_batch;
     std::string _entry_buffer;
+    stream_id_t _id_seq{0};
 };
 //------------------------------------------------------------------------------
 // stream sink
@@ -177,6 +180,7 @@ private:
 class influxdb_stream_sink final : public stream_sink {
 public:
     influxdb_stream_sink(
+      stream_id_t id,
       shared_holder<influxdb_stream_sink_factory> parent) noexcept;
 
     void set_id(stream_id_t) noexcept;
@@ -217,15 +221,13 @@ private:
     aggregate_intervals _intervals{std::chrono::seconds{120}};
 };
 //------------------------------------------------------------------------------
-//
+// stream sink implementation
 //------------------------------------------------------------------------------
 influxdb_stream_sink::influxdb_stream_sink(
+  stream_id_t id,
   shared_holder<influxdb_stream_sink_factory> parent) noexcept
-  : _parent{std::move(parent)} {}
-//------------------------------------------------------------------------------
-void influxdb_stream_sink::set_id(stream_id_t id) noexcept {
-    _id = id;
-}
+  : _parent{std::move(parent)}
+  , _id{id} {}
 //------------------------------------------------------------------------------
 auto influxdb_stream_sink::id() const noexcept -> stream_id_t {
     return _id;
@@ -338,9 +340,13 @@ auto influxdb_stream_sink_factory::_make_auth_hdr() noexcept -> std::string {
     return result;
 }
 //------------------------------------------------------------------------------
+auto influxdb_stream_sink_factory::_get_stream_id() noexcept -> stream_id_t {
+    return ++_id_seq;
+}
+//------------------------------------------------------------------------------
 auto influxdb_stream_sink_factory::make_stream() noexcept
   -> unique_holder<stream_sink> {
-    return {hold<influxdb_stream_sink>, shared_from_this()};
+    return {hold<influxdb_stream_sink>, _get_stream_id(), shared_from_this()};
 }
 //------------------------------------------------------------------------------
 void influxdb_stream_sink_factory::update() noexcept {}
