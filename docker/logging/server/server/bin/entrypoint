@@ -4,9 +4,10 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-echo "Starting..."
+libpq_url="postgresql://eagilog:$(</run/secrets/eagilog_pg.passwd)@eagilog_postgres/eagilog"
+influxdb_url="http://eagilog_influxdb:8086/api/v2?token=$(</usr/src/app/influxdb.token)"
 /usr/src/app/eagine-core-log-server \
 	--network \
-	--libpq "postgresql://eagilog:$(</run/secrets/eagilog_pg.passwd)@eagilog_postgres/eagilog" \
-	--influxdb "http://eagilog_influxdb:8086/api/v2?token=$(</usr/src/app/influxdb.token)" \
+	--libpq "${libpq_url}" \
+	--influxdb "${influxdb_url}" \
 	--netcat

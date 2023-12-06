@@ -17,12 +17,11 @@ trap cleanup EXIT
 
 mkdir -p "${work_dir}"
 cp "${this_dir}/Dockerfile" "${work_dir}/"
-cp "${this_dir}/_bash_history" "${work_dir}/"
 
 docker build "${work_dir}" \
-	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_influxdb \
+	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_grafana \
 
 docker tag \
-	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_influxdb \
-	eagine:eagilog_influxdb
+	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_grafana \
+	eagine:eagilog_grafana
 

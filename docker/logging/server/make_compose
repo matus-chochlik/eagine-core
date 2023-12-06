@@ -39,6 +39,18 @@ services:
           - postgres_pg.passwd
           - eagilog_pg.passwd
           - backup_pg.passwd
+    eagilog_grafana:
+        image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_grafana
+        restart: always
+        networks:
+          - eagilog
+        ports:
+          - "3000:3000"
+        depends_on:
+          - eagilog_influxdb
+        environment:
+          - GF_SECURITY_ADMIN_USER=eagine
+          - GF_SECURITY_ADMIN_PASSWORD=$(<${pwd_dir}/admin_grafana.passwd)
     eagilog_server:
         image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_server
         restart: always

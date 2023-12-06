@@ -6,4 +6,5 @@
 #
 "$(dirname ${0})/influxdb/pull"
 "$(dirname ${0})/postgres/pull"
+"$(dirname ${0})/grafana/pull"
 "$(dirname ${0})/server/pull"

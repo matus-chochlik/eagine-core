@@ -14,4 +14,4 @@ WORKDIR /usr/src/app
 
 COPY bin/eagine-core-log-server bin/entrypoint ./
 
-ENTRYPOINT /bin/sh /usr/src/app/entrypoint
+ENTRYPOINT /bin/bash /usr/src/app/entrypoint
