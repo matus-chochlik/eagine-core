@@ -334,11 +334,7 @@ auto influxdb_stream_sink_factory::_make_write_url() noexcept -> std::string {
 //------------------------------------------------------------------------------
 auto influxdb_stream_sink_factory::_make_auth_hdr() noexcept -> std::string {
     std::string result{"Authorization: Token "};
-    append_to(
-      _conn_params.query().arg_value("token").value_or(
-        "WPLRP3RrqzHqxWiB0I18qptCCUEvdC8c2xiX4RQlHXz314Prz4lviP9VckgG_"
-        "FKw5QKe31GocTrjnhz-eG_R2g=="),
-      result);
+    append_to(_conn_params.query().arg_value("token").or_default(), result);
     return result;
 }
 //------------------------------------------------------------------------------

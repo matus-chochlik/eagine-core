@@ -570,15 +570,20 @@ auto libpq_stream_sink_factory::add_entry_arg_string(
   libpq_stream_sink& stream,
   const span_size_t entry_id,
   const message_info::arg_info& info) noexcept -> bool {
-    return _conn
-      .execute(
-        "SELECT eagilog.add_entry_arg_string("
-        "	$1::INTEGER, $2, $3, $4)",
-        entry_id,
-        info.name,
-        info.tag,
-        info.value_string().or_default())
-      .is_ok();
+    if(const auto val{info.value_string()}) {
+        if(not val->empty()) {
+            return _conn
+              .execute(
+                "SELECT eagilog.add_entry_arg_string("
+                "	$1::INTEGER, $2, $3, $4)",
+                entry_id,
+                info.name,
+                info.tag,
+                *val)
+              .is_ok();
+        }
+    }
+    return true;
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
