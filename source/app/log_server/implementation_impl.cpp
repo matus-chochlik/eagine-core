@@ -248,7 +248,7 @@ auto make_sink_factory(main_ctx& ctx) noexcept
         }
         factories.emplace_back(make_libpq_sink_factory(ctx, address));
     }
-    if(ctx.args().find("--ostream") or factories.empty()) {
+    if(ctx.args().find("--text-tree") or factories.empty()) {
         factories.emplace_back(
           make_text_tree_sink_factory(ctx, make_text_output(ctx)));
     }
