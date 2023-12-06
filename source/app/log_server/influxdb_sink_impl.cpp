@@ -152,11 +152,12 @@ public:
       -> bool;
 
 private:
-    auto _make_entry(
+    void _append_data(
       influxdb_stream_sink&,
       const message_info&,
-      const message_info::arg_info&) noexcept
-      -> valid_if_not_empty<std::string>;
+      const message_info::arg_info&) noexcept;
+
+    auto _write_data() noexcept -> bool;
 
     auto _make_write_url() noexcept -> std::string;
     auto _make_auth_hdr() noexcept -> std::string;
@@ -167,6 +168,7 @@ private:
 
     curl::library _lib_curl;
     curl::connection _conn;
+    std::string _entry_batch;
     std::string _entry_buffer;
 };
 //------------------------------------------------------------------------------
@@ -340,28 +342,6 @@ auto influxdb_stream_sink_factory::_make_auth_hdr() noexcept -> std::string {
     return result;
 }
 //------------------------------------------------------------------------------
-auto influxdb_stream_sink_factory::_make_entry(
-  influxdb_stream_sink& stream,
-  const message_info& msg,
-  const message_info::arg_info& arg) noexcept
-  -> valid_if_not_empty<std::string> {
-    if(const auto val{arg.value_float()}) {
-        return {std::format(
-          "arg,stream={},app={},source={},msg_tag={},name={},arg_tag={},"
-          "instance={} value={} {}\n",
-          stream.id(),
-          std::string_view{stream.root().name()},
-          std::string_view{msg.source.name()},
-          std::string_view{msg.tag.name()},
-          std::string_view{arg.name.name()},
-          std::string_view{arg.tag.name()},
-          msg.instance,
-          *val,
-          stream.time_since_start(msg).count())};
-    }
-    return {};
-}
-//------------------------------------------------------------------------------
 auto influxdb_stream_sink_factory::make_stream() noexcept
   -> unique_holder<stream_sink> {
     return {hold<influxdb_stream_sink>, shared_from_this()};
@@ -393,22 +373,70 @@ auto influxdb_stream_sink_factory::consume(
     return true;
 }
 //------------------------------------------------------------------------------
+void influxdb_stream_sink_factory::_append_data(
+  influxdb_stream_sink& stream,
+  const message_info& msg,
+  const message_info::arg_info& arg) noexcept {
+    if(const auto val{arg.value_float()}) {
+        if(arg.min and arg.max) {
+            append_to(
+              std::format(
+                "arg,stream={},app={},source={},msg_tag={},name={},arg_tag={},"
+                "instance={} value={} {}\n",
+                stream.id(),
+                std::string_view{stream.root().name()},
+                std::string_view{msg.source.name()},
+                std::string_view{msg.tag.name()},
+                std::string_view{arg.name.name()},
+                std::string_view{arg.tag.name()},
+                msg.instance,
+                *val,
+                stream.time_since_start(msg).count()),
+              _entry_batch);
+        } else {
+            append_to(
+              std::format(
+                "arg,stream={},app={},source={},msg_tag={},name={},arg_tag={},"
+                "instance={} value={},min={},max={} {}\n",
+                stream.id(),
+                std::string_view{stream.root().name()},
+                std::string_view{msg.source.name()},
+                std::string_view{msg.tag.name()},
+                std::string_view{arg.name.name()},
+                std::string_view{arg.tag.name()},
+                msg.instance,
+                *val,
+                *(arg.min),
+                *(arg.max),
+                stream.time_since_start(msg).count()),
+              _entry_batch);
+        }
+    }
+}
+//------------------------------------------------------------------------------
+auto influxdb_stream_sink_factory::_write_data() noexcept -> bool {
+    if(not _entry_buffer.empty()) {
+        if(not _conn.reinit()
+                 .set_url(_write_url)
+                 .add_header(_auth_hdr)
+                 .post_data(_entry_buffer)
+                 .perform()) {
+            return false;
+        }
+        _entry_buffer.clear();
+    }
+    append_to(_entry_batch, _entry_buffer);
+    _entry_batch.clear();
+    return true;
+}
+//------------------------------------------------------------------------------
 auto influxdb_stream_sink_factory::consume(
   influxdb_stream_sink& stream,
   const message_info& info) noexcept -> bool {
-    _entry_buffer.clear();
     for(const auto& arg : info.args) {
-        if(const auto entry{_make_entry(stream, info, arg)}) {
-            append_to(*entry, _entry_buffer);
-        }
+        _append_data(stream, info, arg);
     }
-    if(not _entry_buffer.empty()) {
-        _conn.reinit()
-          .set_url(_write_url)
-          .add_header(_auth_hdr)
-          .post_data(_entry_buffer)
-          .perform();
-    }
+    _write_data();
     return true;
 }
 //------------------------------------------------------------------------------
