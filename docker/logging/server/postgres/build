@@ -16,16 +16,17 @@ function cleanup() {
 trap cleanup EXIT
 
 mkdir -p "${work_dir}/user/eagilog"
-cp "${repo_dir}/source/app/xml_logs-psql.sql" "${work_dir}/user/eagilog/eagilog.sql"
+cp  "${repo_dir}/source/app/log_server/postgresql/eagilog.sql"\
+    "${work_dir}/user/eagilog/eagilog.sql"
 mkdir -p "${work_dir}/bin"
 cc -no-pie -static -o "${work_dir}/bin/eagine-getpwd" "${this_dir}/bin/getpwd.c"
 cp "${this_dir}/bin/init.sh" "${work_dir}/bin"
 cp "${this_dir}/Dockerfile" "${work_dir}/"
 
 docker build "${work_dir}" \
-	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_database \
+	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_postgres \
 
 docker tag \
-	${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_database \
-	eagine:log_psql_database
+	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_postgres \
+	eagine:eagilog_postgres
 

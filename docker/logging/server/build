@@ -20,5 +20,5 @@ ensure_passwd "${this_dir}/_secrets/postgres_pg.passwd"
 ensure_passwd "${this_dir}/_secrets/eagilog_pg.passwd"
 ensure_passwd "${this_dir}/_secrets/backup_pg.passwd"
 
-"$(dirname ${0})/database/build"
-"$(dirname ${0})/forwarder/build"
+"$(dirname ${0})/postgres/build"
+"$(dirname ${0})/server/build"

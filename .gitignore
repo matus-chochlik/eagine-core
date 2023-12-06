@@ -2,6 +2,6 @@
 /BINARY_DIR
 /toolchain.cmake
 /compile_commands.json
-/docker/logging/psql/_secrets
+/docker/logging/server/_secrets
 .*.swp
 *.deb

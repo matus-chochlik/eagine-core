@@ -16,80 +16,44 @@ rm -f "${cfg_dir}/secrets/"*
 cp "${this_dir}/_secrets/"* "${cfg_dir}/secrets/"
 chmod 400 "${cfg_dir}/secrets/"*
 
-cat > "${cfg_dir}/docker-compose.yml" << COMPOSE
-version: "3.6"
-services:
-    log_psql_database:
-        image: ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_database
-        restart: always
-        networks:
-          - eagilog
-        ports:
-          - "5432:5432"
-        secrets:
-          - postgres_pg.passwd
-          - eagilog_pg.passwd
-          - backup_pg.passwd
-    log_psql_forwarder:
-        image: ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_forwarder
-        restart: always
-        networks:
-          - eagilog
-        ports:
-          - "34917:34917"
-        secrets:
-          - eagilog_pg.passwd
-        depends_on:
-          - log_psql_database
-
-networks:
-    eagilog:
-
-secrets:
-    postgres_pg.passwd:
-        file: ${cfg_dir}/secrets/postgres_pg.passwd
-    eagilog_pg.passwd:
-        file: ${cfg_dir}/secrets/eagilog_pg.passwd
-    backup_pg.passwd:
-        file: ${cfg_dir}/secrets/backup_pg.passwd
-COMPOSE
+"${this_dir}/make_compose" > "${cfg_dir}/docker-compose.yml"
 # ------------------------------------------------------------------------------
 # executables
 # ------------------------------------------------------------------------------
 bin_dir="${HOME}/.local/bin"
 mkdir -p "${bin_dir}"
 
-rm -f "${bin_dir}/eaglog-psql-server-start"
-cat > "${bin_dir}/eaglog-psql-server-start" << START
+rm -f "${bin_dir}/eaglog-server-start"
+cat > "${bin_dir}/eaglog-server-start" << START
 #!/bin/bash -e
 pushd "${cfg_dir}"
 docker-compose up --detach
 START
-chmod 555 "${bin_dir}/eaglog-psql-server-start"
+chmod 555 "${bin_dir}/eaglog-server-start"
 
-rm -f "${bin_dir}/eaglog-psql-server-stop"
-cat > "${bin_dir}/eaglog-psql-server-stop" << STOP
+rm -f "${bin_dir}/eaglog-server-stop"
+cat > "${bin_dir}/eaglog-server-stop" << STOP
 #!/bin/bash -e
 pushd "${cfg_dir}"
 docker-compose down
 STOP
-chmod 555 "${bin_dir}/eaglog-psql-server-stop"
+chmod 555 "${bin_dir}/eaglog-server-stop"
 # ------------------------------------------------------------------------------
 # systemd service
 # ------------------------------------------------------------------------------
 sdc_dir="${HOME}/.config/systemd/user"
 mkdir -p "${sdc_dir}"
-rm -f "${sdc_dir}/eagilog-psql.service"
-cat > "${sdc_dir}/eagilog-psql.service" << SERVICE
+rm -f "${sdc_dir}/eagilog-server.service"
+cat > "${sdc_dir}/eagilog-server.service" << SERVICE
 [Unit]
-Description=eagine psql logging database service.
+Description=eagine logging server server.
 
 [Service]
 Type=oneshot
 WorkingDirectory=${cfg_dir}
 RemainAfterExit=yes
-ExecStart=/bin/bash ${bin_dir}/eaglog-psql-server-start
-ExecStop=/bin/bash  ${bin_dir}/eaglog-psql-server-stop
+ExecStart=/bin/bash ${bin_dir}/eaglog-server-start
+ExecStop=/bin/bash  ${bin_dir}/eaglog-server-stop
 
 [Install]
 WantedBy=default.target

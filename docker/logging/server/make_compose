@@ -6,25 +6,19 @@
 #
 source "$(dirname ${BASH_SOURCE[0]})/../../common.sh"
 this_dir="$(realpath $(dirname ${0}))"
-temp_dir="$(mktemp -d)"
+cfg_dir="${1:-${this_dir}}"
 
-function cleanup() {
-	rm -rf "${temp_dir}"
-}
+if [[ -d "${cfg_dir}/_secrets" ]]
+then pwd_dir="${cfg_dir}/_secrets"
+elif [[ -d "${cfg_dir}/secrets" ]]
+then pwd_dir="${cfg_dir}/secrets"
+fi
 
-trap cleanup EXIT
-
-work_dir="${temp_dir}/eagine"
-
-mkdir -p "${work_dir}/_secrets/"
-cp "${this_dir}/_secrets/"* "${work_dir}/_secrets/"
-chmod 400 "${work_dir}/_secrets/"*
-
-cat > "${work_dir}/docker-compose.yml" << COMPOSE
+cat << COMPOSE
 version: "3.6"
 services:
-    log_psql_database:
-        image: ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_database
+    eagilog_postgres:
+        image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_postgres
         restart: always
         networks:
           - eagilog
@@ -34,29 +28,28 @@ services:
           - postgres_pg.passwd
           - eagilog_pg.passwd
           - backup_pg.passwd
-    log_psql_forwarder:
-        image: ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_forwarder
+    eagilog_server:
+        image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_server
         restart: always
         networks:
           - eagilog
         ports:
+          - "34915:34915"
           - "34917:34917"
         secrets:
           - eagilog_pg.passwd
         depends_on:
-          - log_psql_database
+          - eagilog_postgres
 
 networks:
     eagilog:
 
 secrets:
     postgres_pg.passwd:
-        file: ./_secrets/postgres_pg.passwd
+        file: ${pwd_dir}/postgres_pg.passwd
     eagilog_pg.passwd:
-        file: ./_secrets/eagilog_pg.passwd
+        file: ${pwd_dir}/eagilog_pg.passwd
     backup_pg.passwd:
-        file: ./_secrets/backup_pg.passwd
+        file: ${pwd_dir}/backup_pg.passwd
 COMPOSE
 
-pushd "${work_dir}"
-docker-compose up

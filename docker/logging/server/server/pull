@@ -5,4 +5,4 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 #
 source "$(dirname ${BASH_SOURCE[0]})/../../../common.sh"
-docker push ${EAGINE_DOCKER_REGISTRY}/eagine:log_psql_forwarder
+docker push ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_server

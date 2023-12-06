@@ -1,0 +1,6 @@
+#!/bin/sh
+echo "Starting..."
+/usr/src/app/eagine-core-log-server \
+	--network \
+	--libpq "postgresql://eagilog:$(cat /run/secrets/eagilog_pg.passwd)@eagilog_postgres/eagilog" \
+	--netcat
