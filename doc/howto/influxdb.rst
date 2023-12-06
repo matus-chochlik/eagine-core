@@ -50,6 +50,12 @@ The basic connectivity can be tested with:
 
   docker exec -it influxdb influx ping 
 
+A reusable authentication token can be created with the following command:
+
+::
+
+  docker exec -it influxdb influx auth create --org OGLplus --all-access
+
 Ensuring the client and server major versions match
 ---------------------------------------------------
 
@@ -97,6 +103,15 @@ Alternatively the data can be formatted using the influx default line protocol:
   while echo sensors,source=cpu,kind=load cpuLoad=$(cpuLoad) $(date +%s%N)
   do sleep 1
   done | influx write --bucket EAGine
+
+Data can also be inserted through the REST API with CURL:
+
+::
+
+  curl \
+    --request POST "http://localhost:8086/api/v2/write?org=OGLplus&bucket=EAGine" \
+    --header "Authorization: Token ABCDEFHIJKLMN1234==" \
+    --data "arg,app=RootLogger,source=Progress,msg_tag=finish,name=progress,arg_tag=MainPrgrss value=10 1701767329842634752"
 
 Query the `cpuLoad` values in the last 12 hours:
 
