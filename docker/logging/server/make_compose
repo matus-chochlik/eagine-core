@@ -17,6 +17,17 @@ fi
 cat << COMPOSE
 version: "3.6"
 services:
+    eagilog_influxdb:
+        image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_influxdb
+        restart: always
+        networks:
+          - eagilog
+        ports:
+          - "8086:8086"
+        environment:
+         - INFLUXDB_DB=db0
+         - INFLUXDB_ADMIN_USER=eagine
+         - INFLUXDB_ADMIN_PASSWORD=$(<${pwd_dir}/admin_influxdb.passwd)
     eagilog_postgres:
         image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_postgres
         restart: always
@@ -39,6 +50,7 @@ services:
         secrets:
           - eagilog_pg.passwd
         depends_on:
+          - eagilog_influxdb
           - eagilog_postgres
 
 networks:

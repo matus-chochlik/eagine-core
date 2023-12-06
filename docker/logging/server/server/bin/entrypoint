@@ -1,6 +1,12 @@
-#!/bin/sh
+#!/bin/bash
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
 echo "Starting..."
 /usr/src/app/eagine-core-log-server \
 	--network \
-	--libpq "postgresql://eagilog:$(cat /run/secrets/eagilog_pg.passwd)@eagilog_postgres/eagilog" \
+	--libpq "postgresql://eagilog:$(</run/secrets/eagilog_pg.passwd)@eagilog_postgres/eagilog" \
+	--influxdb "http://eagilog_influxdb:8086/api/v2?token=$(</usr/src/app/influxdb.token)" \
 	--netcat
