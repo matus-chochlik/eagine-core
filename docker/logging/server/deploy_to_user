@@ -16,7 +16,7 @@ rm -f "${cfg_dir}/secrets/"*
 cp "${this_dir}/_secrets/"* "${cfg_dir}/secrets/"
 chmod 400 "${cfg_dir}/secrets/"*
 
-"${this_dir}/make_compose" > "${cfg_dir}/docker-compose.yml"
+"${this_dir}/make_compose" "${cfg_dir}" > "${cfg_dir}/docker-compose.yml"
 # ------------------------------------------------------------------------------
 # executables
 # ------------------------------------------------------------------------------

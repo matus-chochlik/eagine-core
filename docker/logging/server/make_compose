@@ -25,9 +25,12 @@ services:
         ports:
           - "8086:8086"
         environment:
-         - INFLUXDB_DB=db0
-         - INFLUXDB_ADMIN_USER=eagine
-         - INFLUXDB_ADMIN_PASSWORD=$(<${pwd_dir}/admin_influxdb.passwd)
+          - INFLUXDB_DB=db0
+          - INFLUXDB_ADMIN_USER=eagine
+          - INFLUXDB_ADMIN_PASSWORD=$(<${pwd_dir}/admin_influxdb.passwd)
+        volumes:
+          - influxdb-etc-storage:/etc/influxdb2
+          - influxdb-var-storage:/var/lib/influxdb2
     eagilog_postgres:
         image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_postgres
         restart: always
@@ -36,9 +39,11 @@ services:
         ports:
           - "5432:5432"
         secrets:
-          - postgres_pg.passwd
-          - eagilog_pg.passwd
-          - backup_pg.passwd
+          - postgres_postgres.passwd
+          - eagilog_postgres.passwd
+          - backup_postgres.passwd
+        volumes:
+          - postgres-storage:/var/lib/postgresql
     eagilog_grafana:
         image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_grafana
         restart: always
@@ -48,6 +53,8 @@ services:
           - "3000:3000"
         depends_on:
           - eagilog_influxdb
+        volumes:
+          - grafana-storage:/var/lib/influxdb
         environment:
           - GF_SECURITY_ADMIN_USER=eagine
           - GF_SECURITY_ADMIN_PASSWORD=$(<${pwd_dir}/admin_grafana.passwd)
@@ -60,7 +67,8 @@ services:
           - "34915:34915"
           - "34917:34917"
         secrets:
-          - eagilog_pg.passwd
+          - eagilog_postgres.passwd
+          - eagilog_influxdb.token
         depends_on:
           - eagilog_influxdb
           - eagilog_postgres
@@ -69,11 +77,19 @@ networks:
     eagilog:
 
 secrets:
-    postgres_pg.passwd:
-        file: ${pwd_dir}/postgres_pg.passwd
-    eagilog_pg.passwd:
-        file: ${pwd_dir}/eagilog_pg.passwd
-    backup_pg.passwd:
-        file: ${pwd_dir}/backup_pg.passwd
+    postgres_postgres.passwd:
+        file: ${pwd_dir}/postgres_postgres.passwd
+    eagilog_postgres.passwd:
+        file: ${pwd_dir}/eagilog_postgres.passwd
+    backup_postgres.passwd:
+        file: ${pwd_dir}/backup_postgres.passwd
+    eagilog_influxdb.token:
+        file: ${pwd_dir}/eagilog_influxdb.token
+
+volumes:
+    influxdb-etc-storage:
+    influxdb-var-storage:
+    postgres-storage:
+    grafana-storage:
 COMPOSE
 

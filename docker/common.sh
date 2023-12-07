@@ -17,7 +17,7 @@ function eagine_build_dir {
 	while [[ "${srch_dir}" != "/" ]]
 	do
 		if [[ -f "${srch_dir}/BINARY_DIR" ]]
-		then cat "${srch_dir}/BINARY_DIR"
+		then cat "${srch_dir}/BINARY_DIR" && break
 		fi
 		srch_dir=$(dirname "${srch_dir}")
 	done

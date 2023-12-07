@@ -12,6 +12,6 @@ RUN apt --yes install\
 
 WORKDIR /usr/src/app
 
-COPY bin/eagine-core-log-server bin/entrypoint bin/influxdb.token ./
+COPY bin/eagine-core-log-server bin/entrypoint ./
 
 ENTRYPOINT /bin/bash /usr/src/app/entrypoint

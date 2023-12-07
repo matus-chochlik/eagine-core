@@ -5,7 +5,7 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 #
 libpq_url="postgresql://eagilog:$(</run/secrets/eagilog_pg.passwd)@eagilog_postgres/eagilog"
-influxdb_url="http://eagilog_influxdb:8086/api/v2?token=$(</usr/src/app/influxdb.token)"
+influxdb_url="http://eagilog_influxdb:8086/api/v2?token=$(</run/secrets/eagilog_influxdb.token)"
 /usr/src/app/eagine-core-log-server \
 	--network \
 	--libpq "${libpq_url}" \

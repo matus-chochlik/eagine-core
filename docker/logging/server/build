@@ -16,11 +16,12 @@ function ensure_passwd() {
 }
 
 mkdir -p "${this_dir}/_secrets/"
-ensure_passwd "${this_dir}/_secrets/postgres_pg.passwd"
-ensure_passwd "${this_dir}/_secrets/eagilog_pg.passwd"
-ensure_passwd "${this_dir}/_secrets/backup_pg.passwd"
+ensure_passwd "${this_dir}/_secrets/postgres_postgres.passwd"
+ensure_passwd "${this_dir}/_secrets/eagilog_postgres.passwd"
+ensure_passwd "${this_dir}/_secrets/backup_postgres.passwd"
 ensure_passwd "${this_dir}/_secrets/admin_influxdb.passwd"
 ensure_passwd "${this_dir}/_secrets/admin_grafana.passwd"
+ensure_passwd "${this_dir}/_secrets/eagilog_influxdb.token"
 
 "$(dirname ${0})/influxdb/build"
 "$(dirname ${0})/postgres/build"
