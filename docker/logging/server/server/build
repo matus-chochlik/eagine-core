@@ -7,7 +7,7 @@
 source "$(dirname ${BASH_SOURCE[0]})/../../../common.sh"
 this_dir="$(realpath $(dirname ${0}))"
 repo_dir="$(realpath $(dirname ${0})/../../../..)"
-build_dir="$(eagine_build_dir ${repo_dir})"
+build_dir="${1:-$(eagine_build_dir ${repo_dir})}"
 work_dir="$(mktemp -d)"
 
 function cleanup() {
@@ -24,6 +24,7 @@ mkdir -p "${work_dir}/bin"
 cp  "${build_dir}/submodules/eagine-core/source/app/log_server/eagine-core-log-server"\
 	"${work_dir}/bin/"
 cp "${this_dir}/bin/entrypoint" "${work_dir}/bin/"
+cp "${this_dir}/bin/influxdb.token" "${work_dir}/bin/"
 cp "${this_dir}/Dockerfile" "${work_dir}/"
 
 docker build "${work_dir}" \

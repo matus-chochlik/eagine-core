@@ -9,7 +9,7 @@ this_dir="$(realpath $(dirname ${0}))"
 # ------------------------------------------------------------------------------
 # docker compose
 # ------------------------------------------------------------------------------
-cfg_dir="${HOME}/.config/eagine/eagilog/psql"
+cfg_dir="${HOME}/.config/eagine/eagilog"
 mkdir -p "${cfg_dir}/secrets"
 rm -f "${cfg_dir}/secrets/"*
 
@@ -60,5 +60,5 @@ WantedBy=default.target
 SERVICE
 
 systemctl --user daemon-reload
-systemctl --user enable eagilog-psql
+systemctl --user enable eagilog-server
 # ------------------------------------------------------------------------------
