@@ -393,21 +393,6 @@ void influxdb_stream_sink_factory::_append_data(
             append_to(
               std::format(
                 "arg,stream={},app={},source={},msg_tag={},name={},arg_tag={},"
-                "instance={} value={} {}\n",
-                stream.id(),
-                std::string_view{stream.root().name()},
-                std::string_view{msg.source.name()},
-                std::string_view{msg.tag.name()},
-                std::string_view{arg.name.name()},
-                std::string_view{arg.tag.name()},
-                msg.instance,
-                *val,
-                stream.time_since_start(msg).count()),
-              _entry_arg_batch);
-        } else {
-            append_to(
-              std::format(
-                "arg,stream={},app={},source={},msg_tag={},name={},arg_tag={},"
                 "instance={} value={},min={},max={} {}\n",
                 stream.id(),
                 std::string_view{stream.root().name()},
@@ -419,6 +404,21 @@ void influxdb_stream_sink_factory::_append_data(
                 *val,
                 *(arg.min),
                 *(arg.max),
+                stream.time_since_start(msg).count()),
+              _entry_arg_batch);
+        } else {
+            append_to(
+              std::format(
+                "arg,stream={},app={},source={},msg_tag={},name={},arg_tag={},"
+                "instance={} value={} {}\n",
+                stream.id(),
+                std::string_view{stream.root().name()},
+                std::string_view{msg.source.name()},
+                std::string_view{msg.tag.name()},
+                std::string_view{arg.name.name()},
+                std::string_view{arg.tag.name()},
+                msg.instance,
+                *val,
                 stream.time_since_start(msg).count()),
               _entry_arg_batch);
         }
@@ -465,9 +465,10 @@ auto influxdb_stream_sink_factory::consume(
     _interval_buffer.clear();
     append_to(
       std::format(
-        "interval,stream={},tag={},instance={} "
+        "interval,stream={},app={},tag={},instance={} "
         "hit_count={},hit_interval={},min={},avg={},max={} {}\n",
         stream.id(),
+        std::string_view{stream.root().name()},
         std::string_view{info.tag.name()},
         info.instance,
         info.hit_count(),
