@@ -159,7 +159,7 @@ private:
       const message_info&,
       const message_info::arg_info&) noexcept;
 
-    auto _write_data() noexcept -> bool;
+    auto _write_arg_data() noexcept -> bool;
 
     auto _make_write_url() noexcept -> std::string;
     auto _make_auth_hdr() noexcept -> std::string;
@@ -170,8 +170,9 @@ private:
 
     curl::library _lib_curl;
     curl::connection _conn;
-    std::string _entry_batch;
-    std::string _entry_buffer;
+    std::string _entry_arg_batch;
+    std::string _entry_arg_buffer;
+    std::string _interval_buffer;
     stream_id_t _id_seq{0};
 };
 //------------------------------------------------------------------------------
@@ -187,8 +188,8 @@ public:
     auto id() const noexcept -> stream_id_t;
     auto root() const noexcept -> identifier;
 
-    auto time_since_start(const message_info&) noexcept
-      -> std::chrono::nanoseconds;
+    auto time_since_start() noexcept -> std::chrono::nanoseconds;
+    auto time_since_start(const auto&) noexcept -> std::chrono::nanoseconds;
 
     void consume(const begin_info&) noexcept final;
     void consume(const description_info&) noexcept final;
@@ -263,7 +264,15 @@ auto influxdb_stream_sink::root() const noexcept -> identifier {
     return _root;
 }
 //------------------------------------------------------------------------------
-auto influxdb_stream_sink::time_since_start(const message_info& info) noexcept
+auto influxdb_stream_sink::time_since_start() noexcept
+  -> std::chrono::nanoseconds {
+    using std::chrono::duration_cast;
+    using std::chrono::nanoseconds;
+    return duration_cast<nanoseconds>(
+      std::chrono::system_clock::now().time_since_epoch());
+}
+//------------------------------------------------------------------------------
+auto influxdb_stream_sink::time_since_start(const auto& info) noexcept
   -> std::chrono::nanoseconds {
     using std::chrono::duration_cast;
     using std::chrono::nanoseconds;
@@ -394,7 +403,7 @@ void influxdb_stream_sink_factory::_append_data(
                 msg.instance,
                 *val,
                 stream.time_since_start(msg).count()),
-              _entry_batch);
+              _entry_arg_batch);
         } else {
             append_to(
               std::format(
@@ -411,24 +420,24 @@ void influxdb_stream_sink_factory::_append_data(
                 *(arg.min),
                 *(arg.max),
                 stream.time_since_start(msg).count()),
-              _entry_batch);
+              _entry_arg_batch);
         }
     }
 }
 //------------------------------------------------------------------------------
-auto influxdb_stream_sink_factory::_write_data() noexcept -> bool {
-    if(not _entry_buffer.empty()) {
+auto influxdb_stream_sink_factory::_write_arg_data() noexcept -> bool {
+    if(not _entry_arg_buffer.empty()) {
         if(not _conn.reinit()
                  .set_url(_write_url)
                  .add_header(_auth_hdr)
-                 .post_data(_entry_buffer)
+                 .post_data(_entry_arg_buffer)
                  .perform()) {
             return false;
         }
-        _entry_buffer.clear();
+        _entry_arg_buffer.clear();
     }
-    append_to(_entry_batch, _entry_buffer);
-    _entry_batch.clear();
+    append_to(_entry_arg_batch, _entry_arg_buffer);
+    _entry_arg_batch.clear();
     return true;
 }
 //------------------------------------------------------------------------------
@@ -438,13 +447,43 @@ auto influxdb_stream_sink_factory::consume(
     for(const auto& arg : info.args) {
         _append_data(stream, info, arg);
     }
-    _write_data();
+    _write_arg_data();
     return true;
 }
 //------------------------------------------------------------------------------
 auto influxdb_stream_sink_factory::consume(
-  influxdb_stream_sink&,
-  const aggregate_interval_info&) noexcept -> bool {
+  influxdb_stream_sink& stream,
+  const aggregate_interval_info& info) noexcept -> bool {
+    using std::chrono::duration;
+    using std::chrono::duration_cast;
+    const auto to_s{[](auto d) {
+        return duration_cast<duration<float>>(d).count();
+    }};
+    const auto to_ms{[](auto d) {
+        return duration_cast<duration<float, std::milli>>(d).count();
+    }};
+    _interval_buffer.clear();
+    append_to(
+      std::format(
+        "interval,stream={},tag={},instance={} "
+        "hit_count={},hit_interval={},min={},avg={},max={} {}\n",
+        stream.id(),
+        std::string_view{info.tag.name()},
+        info.instance,
+        info.hit_count(),
+        to_s(info.hit_interval()),
+        to_ms(info.min_duration()),
+        to_ms(info.avg_duration()),
+        to_ms(info.max_duration()),
+        stream.time_since_start().count()),
+      _interval_buffer);
+    if(not _conn.reinit()
+             .set_url(_write_url)
+             .add_header(_auth_hdr)
+             .post_data(_interval_buffer)
+             .perform()) {
+        return false;
+    }
     return true;
 }
 //------------------------------------------------------------------------------
