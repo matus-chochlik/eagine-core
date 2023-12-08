@@ -12,7 +12,12 @@ import eagine.core.build_config;
 import eagine.core.types;
 
 namespace eagine {
-
+//------------------------------------------------------------------------------
+export struct no_lock {
+    constexpr void lock() noexcept {}
+    constexpr void unlock() noexcept {}
+};
+//------------------------------------------------------------------------------
 export struct spinlock_stats {
 public:
     void locked() noexcept {
@@ -35,7 +40,7 @@ private:
     std::uintmax_t _lock_count{0U};
     std::uintmax_t _yield_count{0U};
 };
-
+//------------------------------------------------------------------------------
 /// @brief Spinlock drop-in replacement for std mutex.
 /// @ingroup utility
 export template <unsigned yieldModulo>
@@ -76,7 +81,7 @@ private:
     [[no_unique_address]] not_in_low_profile<spinlock_stats> _stats{};
     std::atomic_flag _flag{};
 };
-
+//------------------------------------------------------------------------------
 export using spinlock = basic_spinlock<32U>;
-
+//------------------------------------------------------------------------------
 } // namespace eagine
