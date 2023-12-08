@@ -31,44 +31,6 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION fast_json_backend
-	IMPORTS
-		std backend
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.string
-		eagine.core.identifier
-		eagine.core.reflection
-		eagine.core.utility
-)
-
-eagine_add_module(
-	eagine.core.logging PARTITION fast_xml_backend
-	IMPORTS
-		std backend
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.string
-		eagine.core.identifier
-		eagine.core.reflection
-		eagine.core.utility
-)
-
-eagine_add_module(
-	eagine.core.logging PARTITION ostream_backend
-	IMPORTS
-		std backend
-		fast_xml_backend
-		fast_json_backend
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.string
-		eagine.core.identifier
-		eagine.core.reflection
-		eagine.core.utility
-)
-
-eagine_add_module(
 	eagine.core.logging PARTITION entry
 	IMPORTS
 		std entry_arg backend
@@ -124,10 +86,13 @@ eagine_add_module(
 	eagine.core.logging
 	SOURCES
 		null_backend
-		ostream_backend
-		asio_backend
 		syslog_backend
+		json_backend
+		xml_backend
 		proxy_backend
+		std_output_stream
+		asio_output_stream
+		factory
 		logger
 		root_logger
 	IMPORTS

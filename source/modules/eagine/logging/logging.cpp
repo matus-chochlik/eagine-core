@@ -10,7 +10,6 @@ export module eagine.core.logging;
 export import :config;
 export import :backend;
 export import :entry_arg;
-export import :ostream_backend;
 export import :entry;
 export import :logger;
 export import :root_logger;
