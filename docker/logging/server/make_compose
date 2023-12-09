@@ -54,7 +54,7 @@ services:
         depends_on:
           - eagilog_influxdb
         volumes:
-          - grafana-storage:/var/lib/influxdb
+          - grafana-storage:/var/lib/grafana
         environment:
           - GF_SECURITY_ADMIN_USER=eagine
           - GF_SECURITY_ADMIN_PASSWORD=$(<${pwd_dir}/admin_grafana.passwd)
