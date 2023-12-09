@@ -250,7 +250,7 @@ void json_log_backend<Lockable>::_add(const memory::const_block data) {
     _buffer.clear();
     base64dump(data).apply([this](const char c) {
         _b64lob.push_back(c);
-        if(_b64lob.size() >= 512) {
+        if(_b64lob.size() >= 1024) {
             _output->write(_b64lob);
             _b64lob.clear();
         }
@@ -272,8 +272,8 @@ void json_log_backend<Lockable>::_add(const T& value) {
 //------------------------------------------------------------------------------
 template <typename Lockable>
 void json_log_backend<Lockable>::_flush(bool force) noexcept {
+    _add("\n");
     _output->write(_buffer);
-    _output->write("\n");
     _output->flush(force);
     _buffer.clear();
 }
