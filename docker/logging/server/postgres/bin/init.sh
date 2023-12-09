@@ -13,12 +13,12 @@ echo "host eagilog eagilog all scram-sha-256"
 done
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-ALTER USER postgres WITH ENCRYPTED PASSWORD '$(/bin/eagine-getpwd postgres_pg)';
+ALTER USER postgres WITH ENCRYPTED PASSWORD '$(/bin/eagine-getpwd postgres_postgres)';
 
-CREATE USER eagilog WITH ENCRYPTED PASSWORD '$(/bin/eagine-getpwd eagilog_pg)';
+CREATE USER eagilog WITH ENCRYPTED PASSWORD '$(/bin/eagine-getpwd eagilog_postgres)';
 CREATE DATABASE eagilog WITH OWNER eagilog;
 
-CREATE USER backup WITH ENCRYPTED PASSWORD '$(/bin/eagine-getpwd backup_pg)';
+CREATE USER backup WITH ENCRYPTED PASSWORD '$(/bin/eagine-getpwd backup_postgres)';
 GRANT CONNECT ON DATABASE eagilog TO backup;
 GRANT USAGE ON SCHEMA public TO backup;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO backup;
@@ -33,7 +33,7 @@ do
 		for sql in ${dir}/*.sql
 		do
 			db_name="$(basename ${sql} .sql)"
-			PGPASSWORD=$(/bin/eagine-getpwd ${db_user}_pg) psql \
+			PGPASSWORD=$(/bin/eagine-getpwd ${db_user}_postgres) psql \
 				--username "${db_user}" \
 				--dbname "${db_name}" \
 				< "${sql}"

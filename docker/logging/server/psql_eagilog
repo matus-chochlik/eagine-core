@@ -4,7 +4,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-PGPASSWORD=$(< "$(dirname ${0})/_secrets/eagilog_pg.passwd") psql \
+PGPASSWORD=$(< "$(dirname ${0})/_secrets/eagilog_postgres.passwd") psql \
 	-h localhost \
 	-d eagilog \
 	-U eagilog \

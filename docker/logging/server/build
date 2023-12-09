@@ -7,7 +7,7 @@
 this_dir="$(realpath $(dirname ${0}))"
 
 function gen_passwd() {
-	head -c 64 /dev/urandom | base64 -w 0 - | cut -b-64 | tr -d '\n'
+	head -c 64 /dev/urandom | base64 -w 0 - | cut -b-64 | tr '/:@' '-_+' | tr -d '\n'
 }
 
 function ensure_passwd() {
