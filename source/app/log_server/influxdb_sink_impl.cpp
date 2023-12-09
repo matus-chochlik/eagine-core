@@ -154,6 +154,11 @@ public:
 private:
     auto _get_stream_id() noexcept -> stream_id_t;
 
+    void _handle_special_arg(
+      const span_size_t entry_id,
+      const message_info& msg,
+      const message_info::arg_info& arg) noexcept;
+
     void _append_data(
       influxdb_stream_sink&,
       const message_info&,
@@ -174,6 +179,9 @@ private:
     std::string _entry_arg_buffer;
     std::string _interval_buffer;
     stream_id_t _id_seq{0};
+
+    flat_map<stream_id_t, flat_map<string_view, std::string, str_view_less>>
+      _stream_metadata;
 };
 //------------------------------------------------------------------------------
 // stream sink
@@ -384,44 +392,61 @@ auto influxdb_stream_sink_factory::consume(
     return true;
 }
 //------------------------------------------------------------------------------
+void influxdb_stream_sink_factory::_handle_special_arg(
+  const span_size_t stream_id,
+  const message_info& msg,
+  const message_info::arg_info& arg) noexcept {
+    if(msg.tag.matches("OSInfo") and arg.name.matches("osCodeName")) {
+        if(const auto val{arg.value_string()}) {
+            _stream_metadata[stream_id]["os_name"] = *val;
+        }
+    } else if(msg.tag.matches("Instance") and arg.name.matches("hostname")) {
+        if(const auto val{arg.value_string()}) {
+            _stream_metadata[stream_id]["hostname"] = *val;
+        }
+    } else if(msg.tag.matches("GitInfo") and arg.name.matches("gitHashId")) {
+        if(const auto val{arg.value_string()}) {
+            _stream_metadata[stream_id]["git_hash"] = *val;
+        }
+    }
+}
+//------------------------------------------------------------------------------
 void influxdb_stream_sink_factory::_append_data(
   influxdb_stream_sink& stream,
   const message_info& msg,
   const message_info::arg_info& arg) noexcept {
     if(const auto val{arg.value_float()}) {
+        append_to(
+          std::format(
+            "arg,stream={},app={},source={},msg_tag={},name={},arg_tag={}",
+            stream.id(),
+            std::string_view{stream.root().name()},
+            std::string_view{msg.source.name()},
+            std::string_view{msg.tag.name()},
+            std::string_view{arg.name.name()},
+            std::string_view{arg.tag.name()}),
+          _entry_arg_batch);
+
+        for(const auto& [name, value] : _stream_metadata[stream.id()]) {
+            _entry_arg_batch.append(",");
+            append_to(name, _entry_arg_batch);
+            _entry_arg_batch.append("=");
+            append_to(value, _entry_arg_batch);
+        }
+
+        append_to(std::format(",instance={} ", msg.instance), _entry_arg_batch);
+
         if(arg.min and arg.max) {
             append_to(
               std::format(
-                "arg,stream={},app={},source={},msg_tag={},name={},arg_tag={},"
-                "instance={} value={},min={},max={} {}\n",
-                stream.id(),
-                std::string_view{stream.root().name()},
-                std::string_view{msg.source.name()},
-                std::string_view{msg.tag.name()},
-                std::string_view{arg.name.name()},
-                std::string_view{arg.tag.name()},
-                msg.instance,
-                *val,
-                *(arg.min),
-                *(arg.max),
-                stream.time_since_start(msg).count()),
+                "value={},min={},max={}", *val, *(arg.min), *(arg.max)),
               _entry_arg_batch);
         } else {
-            append_to(
-              std::format(
-                "arg,stream={},app={},source={},msg_tag={},name={},arg_tag={},"
-                "instance={} value={} {}\n",
-                stream.id(),
-                std::string_view{stream.root().name()},
-                std::string_view{msg.source.name()},
-                std::string_view{msg.tag.name()},
-                std::string_view{arg.name.name()},
-                std::string_view{arg.tag.name()},
-                msg.instance,
-                *val,
-                stream.time_since_start(msg).count()),
-              _entry_arg_batch);
+            append_to(std::format("value={}", *val), _entry_arg_batch);
         }
+        append_to(
+          std::format(" {}\n", stream.time_since_start(msg).count()),
+          _entry_arg_batch);
     }
 }
 //------------------------------------------------------------------------------
@@ -445,6 +470,7 @@ auto influxdb_stream_sink_factory::consume(
   influxdb_stream_sink& stream,
   const message_info& info) noexcept -> bool {
     for(const auto& arg : info.args) {
+        _handle_special_arg(stream.id(), info, arg);
         _append_data(stream, info, arg);
     }
     _write_arg_data();
