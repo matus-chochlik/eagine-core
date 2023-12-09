@@ -27,13 +27,25 @@ class null_log_backend {
 class syslog_log_backend {
 }
 
-class ostream_log_backend {
-}
-
-class asio_ostream_log_backend {
+class json_log_backend {
 }
 
 class proxy_log_backend <<Proxy>> {
+}
+
+interface log_output_stream {
+    +write(block)
+    +flush()
+}
+
+class std_log_output_stream {
+    +write(block)
+    +flush()
+}
+
+class asio_log_output_stream {
+    +write(block)
+    +flush()
 }
 
 class log_entry {
@@ -86,10 +98,14 @@ class main_ctx_object {
 class main_ctx {
 }
 
+std_log_output_stream --|> log_output_stream: implements
+asio_log_output_stream --|> log_output_stream: implements
+
+log_output_stream <--o json_log_backend: uses
+
 logger_backend <|-- null_log_backend : implements
 logger_backend <|-- syslog_log_backend : implements
-logger_backend <|-- ostream_log_backend : implements
-ostream_log_backend <|-- asio_ostream_log_backend
+logger_backend <|-- json_log_backend : implements
 proxy_log_backend --|> logger_backend : implements
 proxy_log_backend *--> logger_backend : delegates to
 
