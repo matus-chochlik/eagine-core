@@ -974,6 +974,81 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
+-- object lifetime
+--------------------------------------------------------------------------------
+CREATE TABLE eagilog.object_lifetime(
+	stream_id INTEGER NOT NULL,
+	object_id VARCHAR(10) NOT NULL,
+	instance BIGINT NOT NULL,
+	parent_id VARCHAR(10) NOT NULL,
+	parent_instance BIGINT NOT NULL,
+	create_time INTERVAL NOT NULL,
+	destroy_time INTERVAL NULL
+);
+
+ALTER TABLE eagilog.object_lifetime
+ADD FOREIGN KEY(stream_id)
+REFERENCES eagilog.stream
+ON DELETE CASCADE;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.destroy_object(
+	_stream_id eagilog.object_lifetime.stream_id%TYPE,
+	_object_id eagilog.object_lifetime.object_id%TYPE,
+	_instance eagilog.object_lifetime.instance%TYPE,
+	_destroy_time eagilog.object_lifetime.destroy_time%TYPE
+) RETURNS VOID
+AS
+$$
+	UPDATE eagilog.object_lifetime
+	SET destroy_time = _destroy_time
+	WHERE stream_id = _stream_id
+	AND object_id = _object_id
+	AND instance = _instance;
+$$
+LANGUAGE sql;
+--------------------------------------------------------------------------------
+CREATE FUNCTION eagilog.create_object(
+	_stream_id eagilog.object_lifetime.stream_id%TYPE,
+	_object_id eagilog.object_lifetime.object_id%TYPE,
+	_instance eagilog.object_lifetime.instance%TYPE,
+	_parent_id eagilog.object_lifetime.parent_id%TYPE,
+	_parent_instance eagilog.object_lifetime.parent_instance%TYPE,
+	_create_time eagilog.object_lifetime.create_time%TYPE,
+	_destroy_parent BOOLEAN
+) RETURNS VOID
+AS
+$$
+BEGIN
+	BEGIN
+		INSERT INTO eagilog.object_lifetime (
+			stream_id,
+			object_id,
+			instance,
+			parent_id,
+			parent_instance,
+			create_time
+		) VALUES (
+			_stream_id,
+			_object_id,
+			_instance,
+			_parent_id,
+			_parent_instance,
+			_create_time
+		);
+
+	EXCEPTION WHEN UNIQUE_VIOLATION THEN
+	END;
+	IF _destroy_parent
+	THEN
+		PERFORM eagilog.destroy_object(
+			_stream_id,
+			_parent_id,
+			_parent_instance,
+			_create_time);
+	END IF;
+END
+$$ LANGUAGE plpgsql;
+--------------------------------------------------------------------------------
 -- returns the latest overlapping set of streams
 --------------------------------------------------------------------------------
 CREATE FUNCTION eagilog.recent_streams()
