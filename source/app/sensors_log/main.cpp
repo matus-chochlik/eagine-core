@@ -19,19 +19,19 @@ void do_log(main_ctx& ctx) noexcept {
       .arg("short", "ratio", sys.short_average_load().or_default())
       .arg("long", "ratio", sys.long_average_load().or_default());
 
-    log.log_stat("Memory usage (free: ${free}, total: ${total})")
+    log.log_stat("memory usage (free: ${free}, total: ${total})")
       .tag("ramUsage")
       .arg("free", "ByteSize", sys.free_ram_size().or_default())
       .arg("total", "ByteSize", sys.total_ram_size().or_default());
 
-    log.log_stat("Swap usage (free: ${free}, total: ${total})")
+    log.log_stat("swap usage (free: ${free}, total: ${total})")
       .tag("swapUsage")
       .arg("free", "ByteSize", sys.free_swap_size().or_default())
       .arg("total", "ByteSize", sys.total_swap_size().or_default());
 
     const auto [tk_min, tk_max]{sys.temperature_min_max()};
     if(tk_min and tk_max) {
-        log.log_stat("Thermal info: (min: ${min}, max: ${max})")
+        log.log_stat("thermal info: (min: ${min}, max: ${max})")
           .tag("thermal")
           .arg("min", "DegreeK", tk_min->value())
           .arg("max", "DegreeK", tk_max->value());
@@ -48,6 +48,7 @@ auto main(main_ctx& ctx) -> int {
 
         auto alive{ctx.watchdog().start_watch()};
         resetting_timeout should_log{log_interval.value()};
+
         while(not interrupted) {
             if(should_log) {
                 do_log(ctx);
