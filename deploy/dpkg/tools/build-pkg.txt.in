@@ -1,1 +1,2 @@
 $<TARGET_FILE:eagine-core-log-server>
+$<TARGET_FILE:eagine-core-sensors-log>
