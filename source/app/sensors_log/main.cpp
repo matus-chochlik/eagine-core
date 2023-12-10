@@ -41,12 +41,19 @@ void do_log(main_ctx& ctx) noexcept {
 auto main(main_ctx& ctx) -> int {
     try {
         signal_switch interrupted;
-        const application_reconfig_value<std::chrono::seconds> interval{
-          ctx.config(), "sensors_log.interval", std::chrono::minutes(1)};
+        const application_reconfig_value<std::chrono::seconds> log_interval{
+          ctx.config(),
+          "app.sensors_log.log_interval",
+          std::chrono::minutes(1)};
 
+        auto alive{ctx.watchdog().start_watch()};
+        resetting_timeout should_log{log_interval.value()};
         while(not interrupted) {
-            do_log(ctx);
-            std::this_thread::sleep_for(interval.value());
+            if(should_log) {
+                do_log(ctx);
+            }
+            alive.notify();
+            std::this_thread::sleep_for(std::chrono::seconds{1});
         }
         return 0;
     } catch(std::exception& error) {
