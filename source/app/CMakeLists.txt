@@ -52,6 +52,7 @@ install(
 )
 
 add_subdirectory(log_server)
+add_subdirectory(sensors_log)
 
 find_package(Qt5 COMPONENTS Core Widgets Xml Qml Quick)
 if(Qt5_FOUND)

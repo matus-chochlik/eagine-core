@@ -104,7 +104,7 @@ public:
 protected:
     void _accept();
 
-    asio::io_context _io{1};
+    asio::io_context _io{};
     Acceptor _acceptor;
     Socket _socket{_io};
 

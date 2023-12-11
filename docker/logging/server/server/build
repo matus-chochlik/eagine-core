@@ -1,0 +1,42 @@
+#!/bin/bash -e
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+source "$(dirname ${BASH_SOURCE[0]})/../../../common.sh"
+this_dir="$(realpath $(dirname ${0}))"
+repo_dir="$(realpath $(dirname ${0})/../../../..)"
+build_dir="$(eagine_build_dir ${repo_dir})"
+work_dir="$(mktemp -d)"
+
+function cleanup() {
+	rm -rf "${work_dir}"
+}
+
+trap cleanup EXIT
+
+pushd ${build_dir}
+while [[ "$(pwd)" != "/" ]]
+do
+	if [[ -f build.ninja ]]
+	then cmake --build . --target eagine-core-log-server && break
+	else cd ..
+	fi
+done
+popd
+
+mkdir -p "${work_dir}/bin"
+cp  "${build_dir}/source/app/log_server/eagine-core-log-server"\
+	"${work_dir}/bin/"
+cp "${this_dir}/bin/entrypoint" "${work_dir}/bin/"
+cp "${this_dir}/Dockerfile" "${work_dir}/"
+
+docker build "${work_dir}" \
+	--network host \
+	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_server \
+
+docker tag \
+	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_server \
+	eagine:eagilog_server
+

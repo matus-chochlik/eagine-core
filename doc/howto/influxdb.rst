@@ -50,6 +50,12 @@ The basic connectivity can be tested with:
 
   docker exec -it influxdb influx ping 
 
+A reusable authentication token can be created with the following command:
+
+::
+
+  docker exec -it influxdb influx auth create --org OGLplus --all-access
+
 Ensuring the client and server major versions match
 ---------------------------------------------------
 
@@ -57,7 +63,7 @@ Check the client version:
 
 ::
 
-  influx --version
+  influx version
 
 Check the server version:
 
@@ -69,21 +75,45 @@ Check the server version:
 Examples
 --------
 
-Writing CPU load every second (using the CLI):
+Define a helper function that prints the CPU load:
 
 ::
 
-  while echo cpuLoad,$(date --iso-8601=seconds),$(awk -v oldidle=$(awk '/cpu / {print $5}' /proc/stat; sleep 1) '/cpu / {perc=100-($5-oldidle)/100 ; printf "%s", perc}' /proc/stat)
+  function cpuLoad { awk -v oldidle=$(awk '/cpu / {print $5}' /proc/stat; sleep 1) '/cpu / {perc=100-($5-oldidle)/100 ; printf "%0.2f", perc}' /proc/stat; }
+
+
+Write CPU load every second (using the CLI):
+
+::
+
+  while echo $(date --iso-8601=seconds),$(cpuLoad),cpuLoad,longTerm
   do sleep 1
   done | influx write \
-    --bucket OGLplus \
+    --bucket EAGine \
     --format csv \
-    --header "#constant tag,measurement,sensors" \
-    --header "#datatype tag,dateTime:RFC3339,double" \
-    --header "#group true,false,false" \
-    --header "sensor,time,load"
+    --header "#constant measurement,sensors" \
+    --header "#datatype dateTime:RFC3339,double,tag,tag" \
+    --header "#group false,false,true,true" \
+    --header "time,load,cpuLoad,period"
 
-Querying the `cpuLoad` values in the last 12 hours:
+Alternatively the data can be formatted using the influx default line protocol:
+
+::
+
+  while echo sensors,source=cpu,kind=load cpuLoad=$(cpuLoad) $(date +%s%N)
+  do sleep 1
+  done | influx write --bucket EAGine
+
+Data can also be inserted through the REST API with CURL:
+
+::
+
+  curl \
+    --request POST "http://localhost:8086/api/v2/write?org=OGLplus&bucket=EAGine" \
+    --header "Authorization: Token ABCDEFHIJKLMN1234==" \
+    --data "arg,app=RootLogger,source=Progress,msg_tag=finish,name=progress,arg_tag=MainPrgrss value=10 1701767329842634752"
+
+Query the `cpuLoad` values in the last 12 hours:
 
 ::
 
@@ -94,7 +124,7 @@ Querying the `cpuLoad` values in the last 12 hours:
       |> filter(fn: (r) => r._field == "load")
       |> filter(fn: (r) => r.sensor == "cpuLoad")'
 
-Deleting everything from the specified bucket:
+Delete everything from the specified bucket:
 
 ::
 

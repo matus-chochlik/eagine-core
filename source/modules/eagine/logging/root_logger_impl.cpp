@@ -38,7 +38,6 @@ import eagine.core.runtime;
 import :config;
 import :entry;
 import :backend;
-import :ostream_backend;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -54,7 +53,13 @@ auto root_logger_choose_backend(
   const root_logger_options& opts,
   const log_stream_info& info) -> unique_holder<logger_backend> {
 
-    const bool use_spinlock{args.find("--log-use-spinlock")};
+    auto lock_type{log_backend_lock::mutex};
+    if(args.find("--log-use-spinlock")) {
+        lock_type = log_backend_lock::spinlock;
+    } else if(args.find("--log-use-no-lock")) {
+        lock_type = log_backend_lock::none;
+    }
+
     auto format{log_data_format::json};
     if(args.find("--log-format-json")) {
         format = log_data_format::json;
@@ -66,9 +71,9 @@ auto root_logger_choose_backend(
         if(arg.is_long_tag("use-null-log")) {
             return make_null_log_backend();
         } else if(arg.is_long_tag("use-cerr-log")) {
-            return make_ostream_log_backend(info, format, use_spinlock);
+            return make_ostream_log_backend(std::cerr, info, format, lock_type);
         } else if(arg.is_long_tag("use-syslog")) {
-            return make_syslog_log_backend(info, use_spinlock);
+            return make_syslog_log_backend(info, lock_type);
         } else if(arg.is_long_tag("use-asio-nw-log")) {
             string_view nw_addr;
             if(arg.next() and not arg.next().starts_with("-")) {
@@ -77,8 +82,8 @@ auto root_logger_choose_backend(
                         "EAGINE_LOG_NETWORK_ADDRESS")}) {
                 nw_addr = *env_var;
             }
-            return make_asio_tcpipv4_ostream_log_backend(
-              nw_addr, info, format, use_spinlock);
+            return make_asio_tcpipv4_log_backend(
+              nw_addr, info, format, lock_type);
         } else if(arg.is_long_tag("use-asio-log")) {
             string_view path;
             if(arg.next() and not arg.next().starts_with("-")) {
@@ -87,8 +92,7 @@ auto root_logger_choose_backend(
                         get_environment_variable("EAGINE_LOG_LOCAL_PATH")}) {
                 path = *env_var;
             }
-            return make_asio_local_ostream_log_backend(
-              path, info, format, use_spinlock);
+            return make_asio_local_log_backend(path, info, format, lock_type);
         }
     }
 

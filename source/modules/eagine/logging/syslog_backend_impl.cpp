@@ -353,22 +353,16 @@ private:
     }
 };
 //------------------------------------------------------------------------------
-auto make_syslog_log_backend_mutex(const log_stream_info& info)
-  -> unique_holder<logger_backend> {
-    return {hold<syslog_log_backend<std::mutex>>, info};
-}
-
-auto make_syslog_log_backend_spinlock(const log_stream_info& info)
-  -> unique_holder<logger_backend> {
-    return {hold<syslog_log_backend<spinlock>>, info};
-}
-//------------------------------------------------------------------------------
-auto make_syslog_log_backend(const log_stream_info& info, bool use_spinlock)
-  -> unique_holder<logger_backend> {
-    if(use_spinlock) {
-        return make_syslog_log_backend_spinlock(info);
-    } else {
-        return make_syslog_log_backend_mutex(info);
+auto make_syslog_log_backend(
+  const log_stream_info& info,
+  log_backend_lock lock_type) -> unique_holder<logger_backend> {
+    switch(lock_type) {
+        case log_backend_lock::none:
+            return {hold<syslog_log_backend<no_lock>>, info};
+        case log_backend_lock::mutex:
+            return {hold<syslog_log_backend<std::mutex>>, info};
+        case log_backend_lock::spinlock:
+            return {hold<syslog_log_backend<spinlock>>, info};
     }
 }
 //------------------------------------------------------------------------------

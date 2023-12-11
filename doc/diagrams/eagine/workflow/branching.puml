@@ -1,0 +1,72 @@
+@startuml
+participant main
+participant develop
+participant feature1
+participant feature2
+participant release
+participant hotfix
+
+activate main
+
+main -> develop: checkout -b\ndevelop
+activate develop
+
+develop -> develop: commit 1
+
+group feature1
+develop -> feature1: checkout -b\nfeature1
+activate feature1
+feature1 -> feature1: commit 1
+feature1 -> feature1: commit 2
+
+develop -> develop: commit 2
+develop -> develop: commit 3
+
+group feature2
+develop -> feature2: checkout -b\nfeature2
+activate feature2
+feature2 -> feature2: commit 1
+feature2 -> feature2: commit 2
+
+feature1 -> feature1: commit 3
+feature2 -> develop: merge\nfeature2
+destroy feature2
+end
+
+develop -> develop: commit 4
+
+feature1 -> feature1: commit 4
+feature1 -> develop: merge\nfeature1
+destroy feature1
+end
+
+group release-X.1.0
+develop -> release: checkout -b\nrelease-X.1.0
+activate release
+release -> release: update version\ncommit
+release -> release: fix\ncommit
+release -> main: merge\nrelease-X.1.0
+main -> main: tag release-X.1.0
+release -> develop: merge\nrelease-X.1.0
+destroy release
+
+end
+
+group hotfix-X.1.1
+main -> hotfix: checkout -b\nhotfix-X.1.1
+activate hotfix
+hotfix -> hotfix: update version\ncommit
+hotfix -> hotfix: fix\ncommit
+hotfix -> main: merge\nhotfix-X.1.1
+main -> main: tag release-X.1.1
+hotfix -> develop: merge\nhotfix-X.1.1
+destroy hotfix
+
+end
+
+develop -> develop: commit 5
+develop -> develop: commit 6
+
+deactivate develop
+deactivate main
+@enduml

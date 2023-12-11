@@ -70,7 +70,7 @@ protected:
 
     watched_process_lifetime _alive;
     shared_holder<stream_sink_factory> _factory;
-    asio::io_context _io{1};
+    asio::io_context _io{};
     asio::signal_set _signals{_io, SIGINT, SIGTERM};
     asio::steady_timer _update_timer{_io};
     asio::steady_timer _alive_timer{_io};
@@ -191,7 +191,10 @@ void asio_reader_base<Acceptor, Socket>::on_read(std::size_t size) noexcept {
 template <typename Acceptor, typename Socket>
 auto asio_reader_base<Acceptor, Socket>::run() noexcept -> bool {
     try {
-        _io.run();
+        while(not _io.stopped()) {
+            _io.run_one();
+            std::this_thread::sleep_for(std::chrono::milliseconds{1});
+        }
         return true;
     } catch(std::exception& error) {
         log_error("ASIO reader error: ${what}").arg("what", error.what());

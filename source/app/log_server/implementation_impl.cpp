@@ -234,6 +234,13 @@ auto make_text_output(main_ctx& ctx) -> unique_holder<text_output> {
 auto make_sink_factory(main_ctx& ctx) noexcept
   -> shared_holder<stream_sink_factory> {
     std::vector<shared_holder<stream_sink_factory>> factories;
+    if(const auto arg{ctx.args().find("--influxdb")}) {
+        string_view address;
+        if(not arg.next().starts_with("-")) {
+            address = arg.next().get();
+        }
+        factories.emplace_back(make_influxdb_sink_factory(ctx, address));
+    }
     if(const auto arg{ctx.args().find("--libpq")}) {
         string_view address;
         if(not arg.next().starts_with("-")) {
@@ -241,7 +248,7 @@ auto make_sink_factory(main_ctx& ctx) noexcept
         }
         factories.emplace_back(make_libpq_sink_factory(ctx, address));
     }
-    if(ctx.args().find("--ostream") or factories.empty()) {
+    if(ctx.args().find("--text-tree") or factories.empty()) {
         factories.emplace_back(
           make_text_tree_sink_factory(ctx, make_text_output(ctx)));
     }

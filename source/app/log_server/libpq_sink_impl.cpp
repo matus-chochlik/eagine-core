@@ -25,7 +25,6 @@ import :utilities;
 namespace eagine::logs {
 #if EAGINE_USE_LIBPQ
 //------------------------------------------------------------------------------
-using stream_id_t = std::size_t;
 namespace pq {
 //------------------------------------------------------------------------------
 using connection_handle = std::unique_ptr<PGconn, void (*)(PGconn*)>;
@@ -219,9 +218,22 @@ private:
 
     void _setup_special_args() noexcept;
     void _handle_special_arg(
-      const span_size_t entry_id,
+      const span_size_t stream_id,
       const message_info& msg,
       const message_info::arg_info& arg) noexcept;
+
+    void _handle_object_created(
+      const span_size_t stream_id,
+      const message_info& msg,
+      bool destroy_parent) noexcept;
+
+    void _handle_object_destroyed(
+      const span_size_t stream_id,
+      const message_info& msg) noexcept;
+
+    void _handle_lifetime_msg(
+      const span_size_t stream_id,
+      const message_info& msg) noexcept;
 
     struct _special_arg {
         std::string_view attribute_name;
@@ -571,15 +583,20 @@ auto libpq_stream_sink_factory::add_entry_arg_string(
   libpq_stream_sink& stream,
   const span_size_t entry_id,
   const message_info::arg_info& info) noexcept -> bool {
-    return _conn
-      .execute(
-        "SELECT eagilog.add_entry_arg_string("
-        "	$1::INTEGER, $2, $3, $4)",
-        entry_id,
-        info.name,
-        info.tag,
-        info.value_string().or_default())
-      .is_ok();
+    if(const auto val{info.value_string()}) {
+        if(not val->empty()) {
+            return _conn
+              .execute(
+                "SELECT eagilog.add_entry_arg_string("
+                "	$1::INTEGER, $2, $3, $4)",
+                entry_id,
+                info.name,
+                info.tag,
+                *val)
+              .is_ok();
+        }
+    }
+    return true;
 }
 //------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
@@ -656,6 +673,72 @@ void libpq_stream_sink_factory::_handle_special_arg(
     }
 }
 //------------------------------------------------------------------------------
+void libpq_stream_sink_factory::_handle_object_created(
+  const span_size_t stream_id,
+  const message_info& msg,
+  bool destroy_parent) noexcept {
+    const auto srch_arg{
+      [&](identifier id) -> optional_reference<const message_info::arg_info> {
+          if(const auto pos{std::find_if(
+               msg.args.begin(),
+               msg.args.end(),
+               [id, &msg](const auto& arg) { return arg.name == id; })};
+             pos != msg.args.end()) {
+              return {*pos};
+          }
+          return {};
+      }};
+    const auto id_arg{srch_arg("sourceId")};
+    const auto inst_arg{srch_arg("sourceInst")};
+    if(id_arg and inst_arg) {
+        const auto parent_id{id_arg->value_string()};
+        const auto parent_inst{inst_arg->value_uint64()};
+        if(parent_id and parent_inst) {
+            _conn.execute(
+              "SELECT eagilog.create_object("
+              "	$1, $2, $3, $4, $5, $6::INTERVAL, $7::BOOLEAN)",
+              stream_id,
+              msg.source,
+              msg.instance,
+              *parent_id,
+              *parent_inst,
+              msg.offset,
+              destroy_parent);
+        }
+    }
+}
+//------------------------------------------------------------------------------
+void libpq_stream_sink_factory::_handle_object_destroyed(
+  const span_size_t stream_id,
+  const message_info& msg) noexcept {
+    _conn.execute(
+      "SELECT eagilog.destroy_object($1, $2, $3, $4::INTERVAL)",
+      stream_id,
+      msg.source,
+      msg.instance,
+      msg.offset);
+}
+//------------------------------------------------------------------------------
+void libpq_stream_sink_factory::_handle_lifetime_msg(
+  const span_size_t stream_id,
+  const message_info& msg) noexcept {
+    if(msg.tag.matches("objCreate")) {
+        _handle_object_created(stream_id, msg, false);
+    } else if(msg.tag.matches("objMove")) {
+        _handle_object_created(stream_id, msg, true);
+    } else if(msg.tag.matches("objCopy")) {
+        _handle_object_created(stream_id, msg, false);
+    } else if(msg.tag.matches("assignMove")) {
+        _handle_object_destroyed(stream_id, msg);
+        _handle_object_created(stream_id, msg, true);
+    } else if(msg.tag.matches("assignCopy")) {
+        _handle_object_destroyed(stream_id, msg);
+        _handle_object_created(stream_id, msg, false);
+    } else if(msg.tag.matches("objDestroy")) {
+        _handle_object_destroyed(stream_id, msg);
+    }
+}
+//------------------------------------------------------------------------------
 auto libpq_stream_sink_factory::consume(
   libpq_stream_sink& stream,
   const message_info& info) noexcept -> bool {
@@ -664,6 +747,7 @@ auto libpq_stream_sink_factory::consume(
             consume(stream, *entry_id, arg);
             _handle_special_arg(stream.id(), info, arg);
         }
+        _handle_lifetime_msg(stream.id(), info);
         return true;
     }
     return false;

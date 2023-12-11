@@ -65,6 +65,27 @@ constexpr auto enumerator_mapping(
        {"fatal", log_event_severity::fatal}}};
 }
 //------------------------------------------------------------------------------
+/// @brief Log back-end lockable.
+/// @ingroup logging
+export enum class log_backend_lock : std::uint8_t {
+    /// @brief No thread lock.
+    none,
+    /// @brief Mutex.
+    mutex,
+    /// @brief Spinlock.
+    spinlock
+};
+
+export template <typename Selector>
+constexpr auto enumerator_mapping(
+  const std::type_identity<log_backend_lock>,
+  const Selector) noexcept {
+    return enumerator_map_type<log_backend_lock, 3>{
+      {{"none", log_backend_lock::none},
+       {"mutex", log_backend_lock::mutex},
+       {"spinlock", log_backend_lock::spinlock}}};
+}
+//------------------------------------------------------------------------------
 /// @brief Log data format.
 /// @ingroup logging
 export enum class log_data_format : std::uint8_t {
@@ -73,6 +94,14 @@ export enum class log_data_format : std::uint8_t {
     /// @brief JSON format.
     json
 };
+
+export template <typename Selector>
+constexpr auto enumerator_mapping(
+  const std::type_identity<log_data_format>,
+  const Selector) noexcept {
+    return enumerator_map_type<log_data_format, 2>{
+      {{"xml", log_data_format::xml}, {"json", log_data_format::json}}};
+}
 //------------------------------------------------------------------------------
 /// @brief Structure used to supply initial log stream information to a logger.
 /// @ingroup logging
@@ -377,24 +406,62 @@ export struct logger_backend : interface<logger_backend> {
     virtual void finish_log() noexcept = 0;
 };
 //------------------------------------------------------------------------------
-template <typename Lockable, typename Derived, log_data_format>
-class formatted_log_backend;
+// Log output stream
+//------------------------------------------------------------------------------
+struct log_output_stream : interface<log_output_stream> {
+    virtual void write(const memory::const_block&) noexcept = 0;
+    void write(const string_view str) noexcept {
+        write(as_bytes(str));
+    }
+    virtual void flush(bool force) noexcept = 0;
+};
+//------------------------------------------------------------------------------
+auto make_std_output_stream(std::ostream&) -> unique_holder<log_output_stream>;
+auto make_asio_local_output_stream(const string_view)
+  -> unique_holder<log_output_stream>;
+auto make_asio_tcpipv4_output_stream(const string_view)
+  -> unique_holder<log_output_stream>;
+//------------------------------------------------------------------------------
+//
 //------------------------------------------------------------------------------
 // backend getters
 //------------------------------------------------------------------------------
 export auto make_null_log_backend() -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
-export auto make_asio_local_ostream_log_backend(
-  string_view addr,
+auto make_syslog_log_backend(
   const log_stream_info&,
-  const log_data_format format,
-  bool use_spinlock) -> unique_holder<logger_backend>;
+  const log_backend_lock lock_type) -> unique_holder<logger_backend>;
+//------------------------------------------------------------------------------
+auto make_json_log_backend(
+  const log_stream_info&,
+  shared_holder<log_output_stream>,
+  const log_backend_lock lock_type) -> unique_holder<logger_backend>;
 
-export auto make_asio_tcpipv4_ostream_log_backend(
+auto make_xml_log_backend(
+  const log_stream_info&,
+  shared_holder<log_output_stream>,
+  const log_backend_lock lock_type) -> unique_holder<logger_backend>;
+//------------------------------------------------------------------------------
+auto make_proxy_log_backend(log_stream_info info)
+  -> unique_holder<logger_backend>;
+//------------------------------------------------------------------------------
+auto make_asio_local_log_backend(
   string_view addr,
   const log_stream_info&,
   const log_data_format format,
-  bool use_spinlock) -> unique_holder<logger_backend>;
+  const log_backend_lock lock_type) -> unique_holder<logger_backend>;
+
+auto make_asio_tcpipv4_log_backend(
+  string_view addr,
+  const log_stream_info&,
+  const log_data_format format,
+  const log_backend_lock lock_type) -> unique_holder<logger_backend>;
+//------------------------------------------------------------------------------
+auto make_ostream_log_backend(
+  std::ostream&,
+  const log_stream_info& info,
+  const log_data_format format,
+  const log_backend_lock lock_type) -> unique_holder<logger_backend>;
 //------------------------------------------------------------------------------
 export class log_backend_error : public std::system_error {
 public:
@@ -402,22 +469,10 @@ public:
       : std::system_error{std::move(orig)} {}
 };
 //------------------------------------------------------------------------------
-export auto make_proxy_log_backend(log_stream_info info)
-  -> unique_holder<logger_backend>;
-//------------------------------------------------------------------------------
-auto make_ostream_log_backend(
-  const log_stream_info& info,
-  const log_data_format format,
-  const bool use_spinlock) -> unique_holder<logger_backend>;
-//------------------------------------------------------------------------------
-export auto make_syslog_log_backend(const log_stream_info&, bool use_spinlock)
-  -> unique_holder<logger_backend>;
-//------------------------------------------------------------------------------
 /// @brief Class representing a single log time interval measurement.
 /// @ingroup logging
 /// @note Do not use directly, use logger instead.
 class log_time_interval {
-
 public:
     log_time_interval(
       const time_interval_id id,

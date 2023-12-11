@@ -156,13 +156,45 @@ struct begin_extractor : begin_extractor_base {
     auto add(const extractor_arg<string_view>&) noexcept -> bool final;
 
 private:
+    auto _parse_timestamp(const string_view str)
+      -> optionally_valid<std::chrono::sys_time<std::chrono::microseconds>>;
+
+    const std::regex _ts_re{
+      R"(([0-9]{1,5}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})(\.[0-9]+))"};
+    const basic_string_path _tms_pattern{"_/time"};
     const basic_string_path _ssn_pattern{"_/session"};
     const basic_string_path _idy_pattern{"_/identity"};
 };
 //------------------------------------------------------------------------------
+auto begin_extractor::_parse_timestamp(const string_view str)
+  -> optionally_valid<std::chrono::sys_time<std::chrono::microseconds>> {
+    // TODO: replace this with std::chrono::from_stream/parse when possible
+    const auto ts_str{to_string(str)};
+    std::smatch ts_match{};
+    if(std::regex_match(ts_str, ts_match, _ts_re)) {
+        std::stringstream src{ts_str};
+        std::tm temp{};
+        if((src >> std::get_time(&temp, "%Y-%m-%d %T")).good()) {
+            if(const auto ts{::timegm(&temp)}; ts > 0) {
+                return {
+                  std::chrono::system_clock::from_time_t(ts) +
+                  std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::duration<float>(
+                      std::strtof(std::string(ts_match[2]).c_str(), nullptr)))};
+            }
+        }
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
 auto begin_extractor::add(const extractor_arg<string_view>& a) noexcept
   -> bool {
-    if(a.path.like(_ssn_pattern)) {
+    if(a.path.like(_tms_pattern)) {
+        if(const auto ts{_parse_timestamp(a.value)}) {
+            this->info.start = *ts;
+        }
+        return true;
+    } else if(a.path.like(_ssn_pattern)) {
         assign_to(a.value, this->info.session);
         return true;
     } else if(a.path.like(_idy_pattern)) {

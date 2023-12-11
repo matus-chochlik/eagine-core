@@ -11,3 +11,14 @@ function eagine_docker() {
 	EAGINE_DOCKER_REGISTRY_PORT=${EAGINE_DOCKER_REGISTRY_HOST:-5000} \
 	docker "${@}"
 }
+
+function eagine_build_dir {
+	srch_dir="${1:-${PWD}}"
+	while [[ "${srch_dir}" != "/" ]]
+	do
+		if [[ -f "${srch_dir}/BINARY_DIR" ]]
+		then cat "${srch_dir}/BINARY_DIR" && break
+		fi
+		srch_dir=$(dirname "${srch_dir}")
+	done
+}

@@ -97,22 +97,27 @@ named_logging_object::named_logging_object(
   const named_logging_object& parent) noexcept
   : base{static_cast<const base&>(parent)}
   , _object_id{id} {
-    log_lifetime(_object_id, "created as a child of ${parent}")
+    log_lifetime(_object_id, "created as a child of ${sourceId}")
       .tag("objCreate")
-      .arg("parent", "LogId", parent._object_id);
+      .arg("sourceId", "LogId", parent._object_id)
+      .arg("sourceInst", "LogInst", parent.instance_id());
 }
 //------------------------------------------------------------------------------
 named_logging_object::named_logging_object(named_logging_object&& temp) noexcept
   : base{static_cast<base&&>(temp)}
   , _object_id{std::exchange(temp._object_id, identifier{})} {
-    log_lifetime(_object_id, "being moved").tag("objMove");
+    log_lifetime(_object_id, "being moved")
+      .tag("objMove")
+      .arg("sourceInst", "LogInst", temp.instance_id());
 }
 //------------------------------------------------------------------------------
 named_logging_object::named_logging_object(
   const named_logging_object& that) noexcept
   : base{static_cast<const base&>(that)}
   , _object_id{that._object_id} {
-    log_lifetime(_object_id, "being copied").tag("objCopy");
+    log_lifetime(_object_id, "being copied")
+      .tag("objCopy")
+      .arg("sourceInst", "LogInst", that.instance_id());
 }
 //------------------------------------------------------------------------------
 auto named_logging_object::operator=(named_logging_object&& temp) noexcept
@@ -121,6 +126,9 @@ auto named_logging_object::operator=(named_logging_object&& temp) noexcept
         using std::swap;
         swap(static_cast<base&>(*this), static_cast<base&>(temp));
         swap(_object_id, temp._object_id);
+        log_lifetime(_object_id, "being moved")
+          .tag("assignMove")
+          .arg("sourceInst", "LogInst", temp.instance_id());
     }
     return *this;
 }
@@ -130,6 +138,9 @@ auto named_logging_object::operator=(const named_logging_object& that)
     if(this != &that) {
         static_cast<base&>(*this) = static_cast<const base&>(that);
         _object_id = that._object_id;
+        log_lifetime(_object_id, "being copied")
+          .tag("assignCopy")
+          .arg("sourceInst", "LogInst", that.instance_id());
     }
     return *this;
 }

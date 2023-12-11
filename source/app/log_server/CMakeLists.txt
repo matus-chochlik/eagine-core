@@ -8,6 +8,12 @@ eagine_common_import_lib(
 	 HEADER "libpq-fe.h"
 	 LIBRARY pq)
 
+eagine_common_import_lib(
+	PREFIX LIBCURL
+	 PKGCONFIG libcurl
+	 HEADER "curl/curl.h"
+	 LIBRARY curl)
+
 eagine_add_module(
 	eagine.core.log_server PARTITION interfaces
 	IMPORTS std eagine.core)
@@ -26,6 +32,7 @@ eagine_add_module(
 		asio_reader
 		json_parser
 		text_tree_sink
+		influxdb_sink
 		libpq_sink
 		ostream_output
 		asio_output
@@ -35,6 +42,7 @@ eagine_add_module(
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${PROJECT_SOURCE_DIR}/submodules/asio/asio/include"
 	PRIVATE_LINK_LIBRARIES
+		EAGine::Deps::LIBCURL
 		EAGine::Deps::LIBPQ)
 
 add_executable(eagine-core-log-server main.cpp)
