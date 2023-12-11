@@ -9,6 +9,8 @@ enum log_event_severity {
     fatal
 }
 
+package "Backends" #DDDDDD {
+
 interface logger_backend {
     +type_id() : identifier
     +set_description()
@@ -30,8 +32,16 @@ class syslog_log_backend {
 class json_log_backend {
 }
 
+class xml_log_backend {
+}
+
 class proxy_log_backend <<Proxy>> {
 }
+
+json_log_backend -[hidden]- proxy_log_backend
+xml_log_backend -[hidden]- proxy_log_backend
+
+package "Text log\noutputs" #BBBBBB {
 
 interface log_output_stream {
     +write(block)
@@ -39,19 +49,29 @@ interface log_output_stream {
 }
 
 class std_log_output_stream {
+    -output: ostream
     +write(block)
     +flush()
 }
 
 class asio_log_output_stream {
+    -socket: Socket
     +write(block)
     +flush()
 }
+
+asio_log_output_stream -[hidden]- std_log_output_stream
+
+}
+}
+
 
 class log_entry {
     +set_format(...)
     +arg(...)
 }
+
+package Loggers #DDDDDD {
 
 class basic_logger {
     +instance_id() : identifier
@@ -80,7 +100,11 @@ class named_logging_object {
     +log_trace()
 }
 
-class root_logger {
+named_logging_object --> named_logging_object: parent
+
+class root_logger <<Single instance>> {
+}
+
 }
 
 class root_logger_options {
@@ -95,30 +119,39 @@ class program_args {
 class main_ctx_object {
 }
 
-class main_ctx {
+class main_ctx <<Single instance>> {
+}
+
+class main <<Function>> {
 }
 
 std_log_output_stream --|> log_output_stream: implements
 asio_log_output_stream --|> log_output_stream: implements
 
 log_output_stream <--o json_log_backend: uses
+log_output_stream <--o xml_log_backend: uses
 
-logger_backend <|-- null_log_backend : implements
+logger_backend <|-right- null_log_backend : implements
 logger_backend <|-- syslog_log_backend : implements
-logger_backend <|-- json_log_backend : implements
+json_log_backend --|> logger_backend : implements
+xml_log_backend --|> logger_backend : implements
 proxy_log_backend --|> logger_backend : implements
 proxy_log_backend *--> logger_backend : delegates to
 
-log_entry --> log_event_severity : has
+log_event_severity <-- log_entry : has
 log_entry --> logger_backend : uses
 
-basic_logger ..> log_entry : instantiates
+log_entry <.. basic_logger : instantiates
 basic_logger o--> logger_backend
 logger --|> basic_logger
 basic_logger <|-- named_logging_object
 named_logging_object <|--  main_ctx_object
-main_ctx_object --> main_ctx
+main_ctx_object -left-> main_ctx
+program_args <--* main_ctx
 root_logger --|> logger
-root_logger --> program_args : uses
-root_logger --> root_logger_options : uses
+root_logger -up-> program_args : uses
+root_logger -up-> root_logger_options : uses
+
+main ..> main_ctx: instantiates
+main ..> root_logger_options: instantiates
 @enduml
