@@ -345,6 +345,7 @@ void libpq_stream_sink::consume(const active_state_info& info) noexcept {
 void libpq_stream_sink::consume(const message_info& info) noexcept {
     if(not _root) {
         _root = info.source;
+        _parent->set_stream_application_id(_id, _root);
     }
     _dispatch(info);
 }
@@ -797,7 +798,6 @@ auto libpq_stream_sink_factory::consume(
 auto libpq_stream_sink_factory::consume(
   const libpq_stream_sink& stream,
   const finish_info& info) noexcept -> bool {
-    set_stream_application_id(stream.id(), stream.root());
     return _conn
       .execute(
         "SELECT eagilog.finish_stream($1::INTEGER, $2::BOOLEAN)",
