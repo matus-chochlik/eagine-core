@@ -310,7 +310,7 @@ class LogFormattingUtils(object):
     # --------------------------------------------------------------------------
     def formatIdentifier(self, i, w = 0):
         c = self.getCenterText(w)
-        return c(i)
+        return c(i if i is not None else "N/A")
 
     # --------------------------------------------------------------------------
     def formatYesNoMaybe(self, v, w = 0):
@@ -769,7 +769,7 @@ class LogRenderer(object):
         self.renderLogSeverity(data["severity"], 9)
         self.write("│")
         self.writeColor(
-            self._utils.formatIdentifier(data["application_id"], 10),
+            self._utils.formatIdentifier(data.get("application_id"), 10),
             "Blue")
         self.write("│")
         self.writeColor(
