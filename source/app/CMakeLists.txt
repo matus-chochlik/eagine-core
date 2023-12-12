@@ -19,11 +19,6 @@ install(
 	DESTINATION bin
 )
 install(
-	PROGRAMS xml_logs-cl.py
-	RENAME eagine-xml-logs-cl
-	DESTINATION bin
-)
-install(
 	PROGRAMS log-schema-stats.sh
 	RENAME eagine-log-schema-stats
 	DESTINATION bin

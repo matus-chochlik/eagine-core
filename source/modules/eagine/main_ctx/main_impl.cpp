@@ -53,7 +53,7 @@ auto main_impl(
         const auto code{log_err.code().value()};
         if((code == ENOENT) or (code == ECONNREFUSED)) {
             std::cerr << "Logger failed to connect to the formatter. "
-                      << "Start one of the 'xml_logs-*' apps";
+                      << "Start one of the log server apps";
             if(const auto prefix{build_info().install_prefix()}) {
                 std::cerr << " installed in '" << prefix << "/bin'";
             }
