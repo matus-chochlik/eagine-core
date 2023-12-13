@@ -12,6 +12,7 @@ import json
 import time
 import flask
 import argparse
+import psycopg2
 
 # ------------------------------------------------------------------------------
 # Argument parsing
@@ -154,9 +155,7 @@ class EAGilogWebApp(flask.Flask):
         return os.path.join(
             os.path.realpath(
                 os.environ.get('EAGILOG_WEB_ROOT', os.path.dirname(__file__))
-            ),
-            'static'
-        )
+            ), 'static')
     # --------------------------------------------------------------------------
     def __init__(self):
         flask.Flask.__init__(self, "eagilog-web")
@@ -166,6 +165,26 @@ class EAGilogWebApp(flask.Flask):
 eagilog_web = None
 eagilog_web_app = EAGilogWebApp()
 # ------------------------------------------------------------------------------
+# PostgreSQL connection
+# ------------------------------------------------------------------------------
+class PSQLConnection(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options):
+        self._pg_conn = psycopg2.connect(
+            user=options.psql_user,
+            password=options.get_psql_password(),
+            database=options.psql_name,
+            host=options.psql_host,
+            port=options.psql_port)
+        self._pg_conn.__enter__()
+    # --------------------------------------------------------------------------
+    def __del__(self):
+        self._pg_conn.close()
+    # --------------------------------------------------------------------------
+    def cursor(self):
+        return self._pg_conn.cursor()
+
+# ------------------------------------------------------------------------------
 # App
 # ------------------------------------------------------------------------------
 class EAGilogWeb(object):
@@ -173,10 +192,27 @@ class EAGilogWeb(object):
     def __init__(self, options):
         self._options = options
         self._start_time = time.time()
+        self._psql_conn = None
 
         self._stat_getters = {
-            "uptime_seconds": self.uptime_seconds
+            "uptime_seconds": self.uptime_seconds,
+            "psql_stream_count": self.psql_stream_count,
+            "psql_active_stream_count": self.psql_active_stream_count,
+            "psql_interval_count": self.psql_interval_count,
+            "psql_entry_count": self.psql_entry_count,
+            "psql_entry_arg_count": self.psql_entry_arg_count,
+            "psql_schema_data_size_mib": self.psql_schema_data_size_mib
         }
+
+    # --------------------------------------------------------------------------
+    def psql_connect(self):
+        return PSQLConnection(self._options)
+
+    # --------------------------------------------------------------------------
+    def psql_cursor(self):
+        if self._psql_conn is None:
+            self._psql_conn = self.psql_connect()
+        return self._psql_conn.cursor()
 
     # --------------------------------------------------------------------------
     def _gather_values(self, getters):
@@ -198,6 +234,61 @@ class EAGilogWeb(object):
     # --------------------------------------------------------------------------
     def uptime_seconds(self):
         return time.time() - self._start_time
+
+    # --------------------------------------------------------------------------
+    def psql_stream_count(self):
+        try:
+            with self.psql_cursor() as cur:
+                cur.execute("SELECT count(1) FROM eagilog.stream")
+                return int(cur.fetchone()[0])
+        except Exception as err:
+            return str(err)
+
+    # --------------------------------------------------------------------------
+    def psql_active_stream_count(self):
+        try:
+            with self.psql_cursor() as cur:
+                cur.execute("SELECT count(1) FROM eagilog.active_stream")
+                return int(cur.fetchone()[0])
+        except Exception as err:
+            return str(err)
+
+    # --------------------------------------------------------------------------
+    def psql_interval_count(self):
+        try:
+            with self.psql_cursor() as cur:
+                cur.execute("SELECT count(1) FROM eagilog.profile_interval")
+                return int(cur.fetchone()[0])
+        except Exception as err:
+            return str(err)
+
+    # --------------------------------------------------------------------------
+    def psql_entry_count(self):
+        try:
+            with self.psql_cursor() as cur:
+                cur.execute("SELECT count(1) FROM eagilog.entry")
+                return int(cur.fetchone()[0])
+        except Exception as err:
+            return str(err)
+
+    # --------------------------------------------------------------------------
+    def psql_entry_arg_count(self):
+        try:
+            with self.psql_cursor() as cur:
+                cur.execute("SELECT count(1) FROM eagilog.entry_and_args")
+                return int(cur.fetchone()[0])
+        except Exception as err:
+            return str(err)
+
+    # --------------------------------------------------------------------------
+    def psql_schema_data_size_mib(self):
+        try:
+            with self.psql_cursor() as cur:
+                cur.execute("SELECT eagilog.schema_data_size_mib()")
+                return float(cur.fetchone()[0])
+        except Exception as err:
+            return str(err)
+
 # ------------------------------------------------------------------------------
 # Routing
 # ------------------------------------------------------------------------------
