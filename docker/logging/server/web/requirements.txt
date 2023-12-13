@@ -1,0 +1,5 @@
+flask >= 2.0.0
+gevent
+WSGIserver
+requests
+psycopg2

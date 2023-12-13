@@ -1,0 +1,234 @@
+#!/usr/bin/env python3
+# coding: UTF-8
+# Copyright (c) 2020-2021 Matus Chochlik
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+
+import os
+import re
+import io
+import json
+import time
+import flask
+import argparse
+
+# ------------------------------------------------------------------------------
+# Argument parsing
+# ------------------------------------------------------------------------------
+class ArgumentParser(argparse.ArgumentParser):
+    # -------------------------------------------------------------------------
+    def _positive_int(self, x):
+        try:
+            assert(int(x) > 0)
+            return int(x)
+        except:
+            self.error("`%s' is not a positive integer value" % str(x))
+    # -------------------------------------------------------------------------
+    def _port_number(self, x):
+        try:
+            p = int(x)
+            if (p > 1) and (p < 2**16):
+                return p
+            self.error("'%d' is not a valid port number" % (p))
+        except TypeError:
+            self.error("port number must be an integer value" )
+    # -------------------------------------------------------------------------
+    def __init__(self, **kw):
+        argparse.ArgumentParser.__init__(self, **kw)
+
+        self.add_argument(
+            "--psql-host",
+            metavar='HOSTNAME',
+            dest='psql_host',
+            action="store",
+            default="localhost"
+        )
+
+        self.add_argument(
+            "--psql-port",
+            metavar='PORT-NUMBER',
+            dest='psql_port',
+            type=self._positive_int,
+            action="store",
+            default=5432
+        )
+
+        self.add_argument(
+            "--psql-name",
+            metavar='DATABASE',
+            dest='psql_name',
+            action="store",
+            default="eagilog"
+        )
+
+        self.add_argument(
+            "--psql-user",
+            metavar='USERNAME',
+            dest='psql_user',
+            action="store",
+            default="eagilog"
+        )
+
+        self.add_argument(
+            "--psql-password",
+            metavar='PASSWORD',
+            dest='psql_password',
+            action="store",
+            default=None
+        )
+
+        self.add_argument(
+            "--psql-pass-file",
+            metavar='FILE-PATH',
+            dest='psql_password_file',
+            action="store",
+            default=None
+        )
+
+        self.add_argument(
+            "--port", "-P",
+            dest="port_number",
+            metavar="NUMBER",
+            type=self._port_number,
+            default=34913,
+            help="""
+            Specifies the port number (34913) by default.
+            """
+        )
+
+        self.add_argument(
+            "--debug", "-D",
+            dest="debug_mode",
+            action="store_true",
+            default=False,
+            help="""
+            Starts the service in debug mode.
+            """
+        )
+
+    # -------------------------------------------------------------------------
+    def process_parsed_options(self, options):
+        return options
+
+    # -------------------------------------------------------------------------
+    def parse_args(self):
+        class _Options(object):
+            # ------------------------------------------------------------------
+            def __init__(self, options):
+                self.__dict__.update(options.__dict__)
+
+            # ------------------------------------------------------------------
+            def get_psql_password(self):
+                if self.psql_password is None:
+                    def _getpwd(passfd):
+                        return passfd.readline().rstrip().split(":")[-1]
+
+                    try:
+                        with open(self.psql_password_file, "r") as passfd:
+                            self.psql_password = _getpwd(passfd)
+                    except:
+                        try:
+                            with open(os.path.expanduser("~/.pgpass"), "r") as passfd:
+                                self.psql_password = _getpwd(passfd)
+                        except:
+                            self.psql_password = getpass.getpass("psql password: ")
+                return self.psql_password
+
+        return _Options(self.process_parsed_options(
+            argparse.ArgumentParser.parse_args(self)))
+
+# ------------------------------------------------------------------------------
+def get_argument_parser():
+    return ArgumentParser(
+        prog=os.path.basename(__file__),
+        description="""Web/REST server for EAGilog server"""
+    )
+# ------------------------------------------------------------------------------
+# Flask app
+# ------------------------------------------------------------------------------
+class EAGilogWebApp(flask.Flask):
+    # --------------------------------------------------------------------------
+    @staticmethod
+    def get_static_folder():
+        return os.path.join(
+            os.path.realpath(
+                os.environ.get('EAGILOG_WEB_ROOT', os.path.dirname(__file__))
+            ),
+            'static'
+        )
+    # --------------------------------------------------------------------------
+    def __init__(self):
+        flask.Flask.__init__(self, "eagilog-web")
+        self.config["STATIC_FOLDER"] = self.get_static_folder()
+
+# ------------------------------------------------------------------------------
+eagilog_web = None
+eagilog_web_app = EAGilogWebApp()
+# ------------------------------------------------------------------------------
+# App
+# ------------------------------------------------------------------------------
+class EAGilogWeb(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options):
+        self._options = options
+        self._start_time = time.time()
+
+        self._stat_getters = {
+            "uptime_seconds": self.uptime_seconds
+        }
+
+    # --------------------------------------------------------------------------
+    def _gather_values(self, getters):
+        values = {}
+        for key, getter in getters.items():
+            try: value = getter()
+            except Exception as error: value = str(error)
+
+            if type(value) is float:
+                values[key] = round(value, 2)
+            else:
+                values[key] = value
+        return values
+
+    # --------------------------------------------------------------------------
+    def get_stats(self):
+        return self._gather_values(self._stat_getters)
+
+    # --------------------------------------------------------------------------
+    def uptime_seconds(self):
+        return time.time() - self._start_time
+# ------------------------------------------------------------------------------
+# Routing
+# ------------------------------------------------------------------------------
+# Routing - API
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/api/stats")
+def ewa_api_info():
+    return json.dumps(eagilog_web.get_stats())
+# ------------------------------------------------------------------------------
+# Routing - Web
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/")
+def ewa_server_root():
+    return flask.redirect("/static/index.html", code=302)
+# ------------------------------------------------------------------------------
+# Main
+# ------------------------------------------------------------------------------
+if __name__ == "__main__":
+    argparser = get_argument_parser()
+    options = argparser.parse_args()
+    eagilog_web = EAGilogWeb(options)
+    if options.debug_mode:
+        eagilog_web_app.run(
+            debug=options.debug,
+            host="0.0.0.0",
+            port=options.port_number
+        )
+    else:
+        from gevent.pywsgi import WSGIServer
+        srvr = WSGIServer(("0.0.0.0", options.port_number), eagilog_web_app)
+        try: srvr.serve_forever()
+        except KeyboardInterrupt:
+            pass
+# ------------------------------------------------------------------------------
