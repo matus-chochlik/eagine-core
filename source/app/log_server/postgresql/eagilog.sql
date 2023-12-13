@@ -1679,7 +1679,88 @@ SELECT
 FROM eagilog.any_stream s
 JOIN eagilog.entry e USING(stream_id)
 JOIN eagilog.arg_duration a USING(entry_id)
-WHERE e.tag IS NOT NULL
+WHERE e.tag IS NOT NULL;
+--------------------------------------------------------------------------------
+-- the first and last stream entries with a MainPrgrss arguments
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.stream_main_progress_entries
+AS
+SELECT
+	mpmm.stream_id AS stream_id,
+	min(e_min.entry_id) AS entry_id_min,
+	max(e_cur.entry_id) AS entry_id_cur
+FROM (
+	SELECT
+		stream_id,
+		min(entry_time) AS entry_time_min,
+		max(entry_time) AS entry_time_cur
+	FROM eagilog.entry
+	JOIN eagilog.entry_and_args USING(entry_id)
+	WHERE arg_type = 'MainPrgrss'
+	GROUP BY stream_id
+) AS mpmm
+JOIN (
+	SELECT stream_id, entry_id, entry_time
+	FROM eagilog.entry
+) AS e_min
+ON(mpmm.stream_id = e_min.stream_id AND mpmm.entry_time_min = e_min.entry_time)
+JOIN (
+	SELECT stream_id, entry_id, entry_time
+	FROM eagilog.entry
+) AS e_cur
+ON(mpmm.stream_id = e_cur.stream_id AND mpmm.entry_time_cur = e_cur.entry_time)
+GROUP BY mpmm.stream_id;
+--------------------------------------------------------------------------------
+-- values related to main progress of streams
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.stream_main_progress
+AS
+SELECT
+	mp.stream_id,
+	mp.entry_id_min,
+	mp.entry_id_cur,
+	mp.entry_time_min,
+	mp.entry_time_cur,
+	mp.entry_time_now,
+	(mp.start_time + mp.entry_time_cur) - (mp.start_time + mp.entry_time_min) AS elapsed_time,
+	current_timestamp - (mp.start_time + mp.entry_time_cur) AS age,
+	mp.value_min,
+	mp.value_cur,
+	mp.value_max AS value_max,
+	CASE WHEN mp.value_max > mp.value_min
+	THEN (mp.value_cur - mp.value_min) / (mp.value_max - mp.value_min)
+	ELSE NULL::DOUBLE PRECISION
+	END AS done,
+	CASE WHEN mp.value_cur > mp.value_min
+	THEN (current_timestamp - (mp.start_time + mp.entry_time_min)) * (mp.value_max - mp.value_cur) / (mp.value_cur - mp.value_min)
+	ELSE NULL::INTERVAL
+	END AS remaining_time
+FROM (
+	SELECT
+		smpe.stream_id,
+		s.start_time,
+		smpe.entry_id_min,
+		smpe.entry_id_cur,
+		e_min.entry_time AS entry_time_min,
+		e_cur.entry_time AS entry_time_cur,
+		current_timestamp - s.start_time AS entry_time_now,
+		coalesce(a_min.value_float, a_min.value_integer::DOUBLE PRECISION) AS value_min,
+		coalesce(a_max.value_float, a_max.value_integer::DOUBLE PRECISION) AS value_cur,
+		coalesce(a_max.max_value, coalesce(a_max.value_float, a_max.value_integer::DOUBLE PRECISION)) AS value_max
+	FROM eagilog.stream_main_progress_entries smpe
+	JOIN eagilog.stream s
+	USING(stream_id)
+	JOIN eagilog.entry AS e_min
+	ON(smpe.entry_id_min = e_min.entry_id)
+	JOIN eagilog.entry_and_args AS a_min
+	ON(e_min.entry_id = a_min.entry_id)
+	JOIN eagilog.entry AS e_cur
+	ON(smpe.entry_id_cur = e_cur.entry_id)
+	JOIN eagilog.entry_and_args AS a_max
+	ON(e_cur.entry_id = a_max.entry_id)
+	WHERE a_min.arg_type = 'MainPrgrss'
+	  AND a_max.arg_type = 'MainPrgrss'
+) AS mp;
 --------------------------------------------------------------------------------
 -- END
 --------------------------------------------------------------------------------
