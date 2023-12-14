@@ -8,3 +8,4 @@
 "$(dirname ${0})/postgres/push"
 "$(dirname ${0})/grafana/push"
 "$(dirname ${0})/server/push"
+"$(dirname ${0})/web/push"

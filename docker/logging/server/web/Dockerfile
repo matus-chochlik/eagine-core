@@ -1,7 +1,7 @@
 FROM python:3
 LABEL maintainer="matus.chochlik@proton.me"
 
-ENV EAGILOG_WEB_PORT=34916
+ENV EAGILOG_WEB_PORT=34913
 
 RUN mkdir -p /var/lib/eagilog
 WORKDIR /usr/src/app
@@ -17,5 +17,5 @@ ENTRYPOINT python /usr/src/app/eagilog-web \
 	--psql-port 5432 \
 	--psql-name eagilog \
 	--psql-user eagilog \
-	--psql-pass-file /run/secrets/eagilog_postgres.passwd
+	--psql-pass-file /run/secrets/eagilog_postgres.passwd \
     --port "${EAGILOG_WEB_PORT}"

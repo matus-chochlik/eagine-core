@@ -179,7 +179,8 @@ class PSQLConnection(object):
         self._pg_conn.__enter__()
     # --------------------------------------------------------------------------
     def __del__(self):
-        self._pg_conn.close()
+        try: self._pg_conn.close()
+        except: pass
     # --------------------------------------------------------------------------
     def cursor(self):
         return self._pg_conn.cursor()

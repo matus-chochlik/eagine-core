@@ -4,8 +4,5 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-"$(dirname ${0})/influxdb/pull"
-"$(dirname ${0})/postgres/pull"
-"$(dirname ${0})/grafana/pull"
-"$(dirname ${0})/server/pull"
-"$(dirname ${0})/web/pull"
+source "$(dirname ${BASH_SOURCE[0]})/../../../common.sh"
+docker push ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_web

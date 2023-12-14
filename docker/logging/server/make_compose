@@ -72,6 +72,19 @@ services:
         depends_on:
           - eagilog_influxdb
           - eagilog_postgres
+    eagilog_web:
+        image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_web
+        restart: always
+        networks:
+          - eagilog
+        ports:
+          - "34913:34913"
+        secrets:
+          - eagilog_postgres.passwd
+        depends_on:
+          - eagilog_influxdb
+        environment:
+          - EAGILOG_WEB_PORT=34913
 
 networks:
     eagilog:

@@ -1,0 +1,30 @@
+#!/bin/bash -e
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+source "$(dirname ${BASH_SOURCE[0]})/../../../common.sh"
+this_dir="$(realpath $(dirname ${0}))"
+work_dir="$(mktemp -d)"
+
+function cleanup() {
+	rm -rf "${work_dir}"
+}
+
+trap cleanup EXIT
+
+mkdir -p "${work_dir}"
+cp -r "${this_dir}/static" "${work_dir}/"
+cp "${this_dir}/eagilog-web" "${work_dir}/"
+cp "${this_dir}/requirements.txt" "${work_dir}/"
+cp "${this_dir}/Dockerfile" "${work_dir}/"
+
+docker build "${work_dir}" \
+	--network host \
+	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_web \
+
+docker tag \
+	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_web \
+	eagine:eagilog_web
+
