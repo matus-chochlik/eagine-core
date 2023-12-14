@@ -3,3 +3,4 @@ gevent
 WSGIserver
 requests
 psycopg2
+matplotlib
