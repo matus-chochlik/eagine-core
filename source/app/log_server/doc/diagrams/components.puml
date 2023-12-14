@@ -12,7 +12,7 @@ component "Client 2" as client2
 () "TCP" as client2_tcp
 client2 - client2_tcp
 
-component "Client 3" as client3
+component " Browser" as client3
 () "TCP" as client3_tcp
 client3 - client3_tcp
 
@@ -63,9 +63,22 @@ cloud "Docker swarm" as swarm #EEEEEE {
   grafana_container_tcp - grafana_container
   influxdb_tcp -[thickness=8,#red]> grafana_tcp
 
+  () "TCP" as web_container_tcp
+  node "web <<container>>" as web_container #DDDDDD {
+    () "TCP" as web_tcp
+    node "Web" as web_db {
+    }
+
+    web_tcp - web_db
+  }
+  web_container_tcp - web_container
+  postgres_tcp -[thickness=8,#red]> web_tcp
+  influxdb_tcp -[thickness=8,#red]> web_tcp
+
   log_server_container -[hidden]- postgres_container
   postgres_container -[hidden]- influxdb_container
   influxdb_container -[hidden]- grafana_container
+  grafana_container -[hidden]- web_container
 
 }
 
@@ -78,5 +91,6 @@ client2 -[hidden]- client3
 postgres_container_tcp -[thickness=8,#green]> client1_tcp
 influxdb_container_tcp -[thickness=8,#green]> client2_tcp
 grafana_container_tcp  -[thickness=8,#green]> client3_tcp
+client3_tcp <-[thickness=8,#green]- web_container_tcp
 
 @enduml
