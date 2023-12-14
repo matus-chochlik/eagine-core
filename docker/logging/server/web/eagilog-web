@@ -11,6 +11,7 @@ import io
 import json
 import time
 import flask
+import decimal
 import argparse
 import psycopg2
 
@@ -229,10 +230,6 @@ class EAGilogWeb(object):
         return values
 
     # --------------------------------------------------------------------------
-    def get_stats(self):
-        return self._gather_values(self._stat_getters)
-
-    # --------------------------------------------------------------------------
     def uptime_seconds(self):
         return time.time() - self._start_time
 
@@ -290,14 +287,60 @@ class EAGilogWeb(object):
         except Exception as err:
             return str(err)
 
+    # --------------------------------------------------------------------------
+    def fix_for_json(self, value):
+        if isinstance(value, decimal.Decimal):
+            return float(value)
+        return value
+
+    # --------------------------------------------------------------------------
+    def api_stats(self):
+        return self._gather_values(self._stat_getters)
+
+    # --------------------------------------------------------------------------
+    def api_active_stream_main_progress(self):
+        try:
+            query = """
+            SELECT
+                stream_id,
+                EXTRACT(epoch FROM entry_time_min) AS entry_time_min_s,
+                EXTRACT(epoch FROM entry_time_cur) AS entry_time_cur_s,
+                EXTRACT(epoch FROM entry_time_now) AS entry_time_now_s,
+                EXTRACT(epoch FROM age) AS age_s,
+                value_min,
+                value_cur,
+                value_max,
+                done
+            FROM eagilog.active_stream
+            JOIN eagilog.stream_main_progress
+            USING(stream_id)
+            """
+            with self.psql_cursor() as cur:
+                cur.execute(query)
+                columns = [(idx, desc[0]) for idx, desc in enumerate(cur.description)]
+                result = []
+                while True:
+                    row = cur.fetchone()
+                    if row is None:
+                        break
+                    obj = {col: self.fix_for_json(row[idx]) for idx, col in columns}
+                    result.append(obj)
+                return result
+        except Exception as err:
+            return str(err)
+
 # ------------------------------------------------------------------------------
 # Routing
 # ------------------------------------------------------------------------------
 # Routing - API
 # ------------------------------------------------------------------------------
 @eagilog_web_app.route("/api/stats")
-def ewa_api_info():
-    return json.dumps(eagilog_web.get_stats())
+def ewa_api_stats():
+    return json.dumps(eagilog_web.api_stats())
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/api/active_stream_main_progress")
+def ewa_api_active_stream_main_progress():
+    return json.dumps(eagilog_web.api_active_stream_main_progress())
 # ------------------------------------------------------------------------------
 # Routing - Web
 # ------------------------------------------------------------------------------
