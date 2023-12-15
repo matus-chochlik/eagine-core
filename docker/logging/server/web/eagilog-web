@@ -385,6 +385,7 @@ class EAGilogWeb(object):
             FROM eagilog.active_stream
             JOIN eagilog.stream_main_progress
             USING(stream_id)
+            ORDER BY(stream_id)
             """
             with self.psql_cursor() as cur:
                 cur.execute(query)
