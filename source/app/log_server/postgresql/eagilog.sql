@@ -1762,6 +1762,29 @@ FROM (
 	  AND a_max.arg_type = 'MainPrgrss'
 ) AS mp;
 --------------------------------------------------------------------------------
+-- Sudoku tile / board solutions
+--------------------------------------------------------------------------------
+CREATE VIEW eagilog.sudoku_solved_board
+AS
+SELECT
+	stream_id,
+	entry_time,
+	at.value AS solution_time,
+	cast(ax.value AS INTEGER) AS x,
+	cast(ay.value AS INTEGER) AS y,
+	cast(ceil(aw.value / ac.value) AS INTEGER) AS w,
+	cast(ceil(ah.value / ac.value) AS INTEGER)  AS h
+FROM eagilog.entry e
+JOIN eagilog.arg_integer  ax ON(e.entry_id = ax.entry_id AND ax.arg_id = 'x')
+JOIN eagilog.arg_integer  ay ON(e.entry_id = ay.entry_id AND ay.arg_id = 'y')
+JOIN eagilog.arg_integer  aw ON(e.entry_id = aw.entry_id AND aw.arg_id = 'width')
+JOIN eagilog.arg_integer  ah ON(e.entry_id = ah.entry_id AND ah.arg_id = 'height')
+JOIN eagilog.arg_integer  ac ON(e.entry_id = ac.entry_id AND ac.arg_id = 'celPerSide')
+JOIN eagilog.arg_duration at ON(e.entry_id = at.entry_id AND at.arg_id = 'time')
+WHERE source_id = 'TilingNode'
+  AND tag = 'solvdBoard'
+ORDER BY stream_id, entry_time;
+--------------------------------------------------------------------------------
 -- END
 --------------------------------------------------------------------------------
 
