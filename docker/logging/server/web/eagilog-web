@@ -14,10 +14,12 @@ import time
 import flask
 import decimal
 import argparse
+import colorsys
 import datetime
 import psycopg2
 import matplotlib.pyplot as plt
 import matplotlib.ticker as pltckr
+import PIL
 
 # ------------------------------------------------------------------------------
 # Utilities
@@ -368,8 +370,14 @@ class EAGilogWeb(object):
 
     # --------------------------------------------------------------------------
     @staticmethod
-    def _blend(lt, rt, f):
-        return tuple(max(min(l * (1.0 - f) + r * f, 1), 0) for l, r in zip(lt, rt))
+    def _color_blend(c1, c2, b):
+        a = 1.0 - b
+
+        h1,s1,v1 = colorsys.rgb_to_hsv(c1[0], c1[1], c1[2])
+        h2,s2,v2 = colorsys.rgb_to_hsv(c2[0], c2[1], c2[2])
+        c_hsv = colorsys.hsv_to_rgb(h1*a+h2*b, s1*a+s2*b, v1*a+v2*b)
+        c_rgb = tuple(max(min(l * a + r * b, 1), 0) for l, r in zip(c1, c2))
+        return tuple(rgb * 0.7 + hsv * 0.3 for rgb, hsv in zip(c_rgb, c_hsv))
     # --------------------------------------------------------------------------
     # Plots
     # --------------------------------------------------------------------------
@@ -406,7 +414,7 @@ class EAGilogWeb(object):
             )
 
         def _make_color(s):
-            return self._blend(
+            return self._color_blend(
                 (0.7, 0.2, 0.1),
                 (0.3, 0.8, 0.3),
                 math.exp(-s[4] / (15.0 * 60.0)))
@@ -446,6 +454,97 @@ class EAGilogWeb(object):
         output.seek(0)
 
         return output
+    # --------------------------------------------------------------------------
+    # other images
+    # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling_data(self, stream_id):
+        w = 32
+        h = 32
+        try:
+            query = """
+            SELECT x, y, w, h
+            FROM eagilog.sudoku_solved_board
+            WHERE stream_id = %s
+            ORDER BY(entry_time)
+            """
+            with self.psql_cursor() as cur:
+                cur.execute(query, (stream_id,))
+                cells = []
+                row = cur.fetchone()
+                w = row[2]
+                h = row[3]
+                cells.append((row[0], row[1]))
+                while True:
+                    row = cur.fetchone()
+                    if row is None:
+                        break
+                    assert w == row[2]
+                    assert h == row[3]
+                    cells.append((row[0], row[1]))
+                return w, h, cells
+        except Exception as err:
+            print(str(err))
+            pass
+
+        return w, h, [(None, None)] * (w * h)
+
+    # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling(self, stream_id, w, h, cells = []):
+        num = 1
+        data = [0] * (w * h)
+        for x, y in cells:
+            if x is not None and y is not None:
+                k = (y * w) + x
+                data[k] = num
+                num += 1
+
+        def _get_pix(v):
+            if v == 0:
+                return 0
+            def _adj(c):
+                return tuple(int(255 * e) for e in c)
+            return _adj(self._color_blend(
+                (0.8, 0.7, 0.1),
+                (0.2, 0.3, 0.9),
+                float(num - v) / float(num)))
+
+        img = PIL.Image.new(mode = "RGB", size = (w, h))
+        img.putdata([_get_pix(v) for v in data])
+        return img
+
+    # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling_png(self, stream_id):
+        w, h, cells = self.img_stream_sudoku_tiling_data(stream_id)
+        img = self.img_stream_sudoku_tiling(stream_id, w, h, cells)
+
+        output = io.BytesIO()
+        img.save(output, format="PNG")
+        output.seek(0)
+
+        return output
+
+    # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling_gif(self, stream_id, step = 16):
+        w, h, cells = self.img_stream_sudoku_tiling_data(stream_id)
+        img = self.img_stream_sudoku_tiling(stream_id, w, h)
+
+        def _gen(l, s):
+            for i in range(0, l, s):
+                yield self.img_stream_sudoku_tiling(stream_id, w, h, cells[:i])
+            yield self.img_stream_sudoku_tiling(stream_id, w, h, cells)
+
+        output = io.BytesIO()
+        img.save(
+            output,
+            format="GIF",
+            save_all=True,
+            append_images=_gen(len(cells), step),
+            optimize=False,
+            duration=len(cells)/1000,
+            loop=0)
+        output.seek(0)
+
+        return output
 
 # ------------------------------------------------------------------------------
 # Routing
@@ -468,6 +567,26 @@ def ewa_img_active_stream_main_progress():
         return flask.send_file(
             eagilog_web.img_active_stream_main_progress(),
             mimetype="image/svg+xml"
+        )
+    except Exception as error:
+        return str(error)
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/image/stream/<stream_id>/sudoku_tiling.png")
+def ewa_img_stream_sudoku_tiling_png(stream_id):
+    try:
+        return flask.send_file(
+            eagilog_web.img_stream_sudoku_tiling_png(int(stream_id)),
+            mimetype="image/png"
+        )
+    except Exception as error:
+        return str(error)
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/image/stream/<stream_id>/sudoku_tiling.gif")
+def ewa_img_stream_sudoku_tiling_gif(stream_id):
+    try:
+        return flask.send_file(
+            eagilog_web.img_stream_sudoku_tiling_gif(int(stream_id)),
+            mimetype="image/gif"
         )
     except Exception as error:
         return str(error)
