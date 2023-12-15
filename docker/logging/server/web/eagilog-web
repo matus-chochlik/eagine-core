@@ -9,14 +9,43 @@ import os
 import re
 import io
 import json
+import math
 import time
 import flask
 import decimal
 import argparse
+import datetime
 import psycopg2
 import matplotlib.pyplot as plt
 import matplotlib.ticker as pltckr
 
+# ------------------------------------------------------------------------------
+# Utilities
+# ------------------------------------------------------------------------------
+def format_duration(s, w = 0, n_a = "N/A"):
+    if s is None:
+        return n_a
+    if isinstance(s, str):
+        s = float(s)
+    if isinstance(s, datetime.timedelta):
+        s = s.total_seconds()
+    if s >= 60480000:
+        return "%dw" % (int(s) / 604800)
+    if s >= 604800:
+        return "%dw %2dd" % (int(s) / 604800, (int(s) % 604800) / 86400)
+    if s >= 86400:
+        return "%dd %2dh" % (int(s) / 86400, (int(s) % 86400) / 3600)
+    if s >= 3600:
+        return "%dh %02dm" % (int(s) / 3600, (int(s) % 3600) / 60)
+    if s >= 60:
+        return "%dm %02ds" % (int(s) / 60, int(s) % 60)
+    if s >= 10:
+        return "%ds" % int(s)
+    if s >= 0.01:
+        return "%dms" % int(s*10**3)
+    if s <= 0.0:
+        return "0"
+    return "%dμs" % int(s*10**6)
 # ------------------------------------------------------------------------------
 # Argument parsing
 # ------------------------------------------------------------------------------
@@ -338,6 +367,10 @@ class EAGilogWeb(object):
             return str(err)
 
     # --------------------------------------------------------------------------
+    @staticmethod
+    def _blend(lt, rt, f):
+        return tuple(max(min(l * (1.0 - f) + r * f, 1), 0) for l, r in zip(lt, rt))
+    # --------------------------------------------------------------------------
     # Plots
     # --------------------------------------------------------------------------
     def img_active_stream_main_progress(self, imgfmt="svg"):
@@ -346,6 +379,8 @@ class EAGilogWeb(object):
             SELECT
                 stream_id,
                 done,
+                EXTRACT(epoch FROM elapsed_time) AS elapsed_time_s,
+                EXTRACT(epoch FROM remaining_time) AS remaining_time_s,
                 EXTRACT(epoch FROM age) AS age_s
             FROM eagilog.active_stream
             JOIN eagilog.stream_main_progress
@@ -358,32 +393,45 @@ class EAGilogWeb(object):
                     row = cur.fetchone()
                     if row is None:
                         break
-                    data.append(tuple(v for v in row))
+                    data.append(tuple(self.fix_for_json(v) for v in row))
         except:
             data = tuple()
 
         def _make_label(s):
-            return "%.1f%%" % (s[1] * 100.0)
+            return "%.1f%%\n%s/%s" % (
+                s[1] * 100.0,
+                format_duration(s[2]),
+                format_duration(s[3])
+            )
+
+        def _make_color(s):
+            return self._blend(
+                (0.7, 0.2, 0.1),
+                (0.3, 0.8, 0.3),
+                math.exp(-s[4] / (15.0 * 60.0)))
 
         y_pos = [y for y in range(len(data))]
         streams = [str(e[0]) for e in data]
         progress = [(e[1] * 100) for e in data]
-        labels = [_make_label(e) for e in data]
+        labels_l = [_make_label(e) if e[1] <  0.42 else "" for e in data]
+        labels_r = [_make_label(e) if e[1] >= 0.42 else "" for e in data]
+        colors = [_make_color(e) for e in data]
 
         fig, spl = plt.subplots()
         plt.style.use('dark_background')
-        fig.set_size_inches(16, max(len(data) * 0.5, 1.0))
+        fig.set_size_inches(16, max(len(data) * 0.6, 2.0))
 
-        bars = spl.barh(y_pos, progress)
+        bars = spl.barh(y_pos, progress, color=colors)
         x1,x2,y1,y2 = spl.axis()
         spl.axis((0,100,y1,y2))
         
-        spl.bar_label(bars, labels, padding=5, color='black')
+        spl.bar_label(bars, labels_l, padding=10, color='white', fontweight='bold')
+        spl.bar_label(bars, labels_r, padding=-100, color='black', fontweight='bold')
 
         spl.set_yticks(y_pos, labels=streams)
         spl.invert_yaxis() 
-        spl.set_ylabel("streams")
         spl.set_xlabel("percent")
+        spl.set_ylabel("streams")
         spl.grid(which="both", axis="both", alpha=0.3)
 
         output = io.BytesIO()
