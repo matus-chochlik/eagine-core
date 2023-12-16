@@ -462,7 +462,9 @@ class EAGilogWeb(object):
         h = 32
         try:
             query = """
-            SELECT x, y, w, h
+            SELECT
+                x, y, w, h,
+                EXTRACT(epoch FROM solution_time) as t
             FROM eagilog.sudoku_solved_board
             WHERE stream_id = %s
             ORDER BY(entry_time)
@@ -473,30 +475,30 @@ class EAGilogWeb(object):
                 row = cur.fetchone()
                 w = row[2]
                 h = row[3]
-                cells.append((row[0], row[1]))
+                cells.append((row[0], row[1], float(row[4])))
                 while True:
                     row = cur.fetchone()
                     if row is None:
                         break
                     assert w == row[2]
                     assert h == row[3]
-                    cells.append((row[0], row[1]))
+                    cells.append((row[0], row[1], float(row[4])))
                 return w, h, cells
         except Exception as err:
             print(str(err))
             pass
 
-        return w, h, [(None, None)] * (w * h)
+        return w, h, [(None, None, None)] * (w * h)
 
     # --------------------------------------------------------------------------
     def img_stream_sudoku_tiling(self, stream_id, w, h, cells = []):
-        num = 1
+        num = 0
         data = [0] * (w * h)
-        for x, y in cells:
+        for x, y, t in cells:
             if x is not None and y is not None:
                 k = (y * w) + x
+                num += int(math.ceil(t))
                 data[k] = num
-                num += 1
 
         def _get_pix(v):
             if v == 0:
@@ -571,7 +573,7 @@ def ewa_img_active_stream_main_progress():
     except Exception as error:
         return str(error)
 # ------------------------------------------------------------------------------
-@eagilog_web_app.route("/image/stream/<stream_id>/sudoku_tiling.png")
+@eagilog_web_app.route("/image/stream_sudoku_tiling/<stream_id>.png")
 def ewa_img_stream_sudoku_tiling_png(stream_id):
     try:
         return flask.send_file(
@@ -581,7 +583,7 @@ def ewa_img_stream_sudoku_tiling_png(stream_id):
     except Exception as error:
         return str(error)
 # ------------------------------------------------------------------------------
-@eagilog_web_app.route("/image/stream/<stream_id>/sudoku_tiling.gif")
+@eagilog_web_app.route("/image/stream_sudoku_tiling/<stream_id>.gif")
 def ewa_img_stream_sudoku_tiling_gif(stream_id):
     try:
         return flask.send_file(
