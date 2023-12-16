@@ -5,7 +5,7 @@ doReload = function() {
     chartReloadCount += 1;
     if (isActive || chartReloadCount >= 10) {
         $('#active_stream_main_progress')
-            .attr('src', '/image/active_stream_main_progress.svg?' + new Date().getTime())
+            .attr('src', '/image/active_stream_main_progress.svg?t=' + new Date().getTime())
         chartReloadCount = 0;
     }
 };
