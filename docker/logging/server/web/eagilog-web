@@ -719,6 +719,17 @@ def ewa_img_stream_sudoku_tiling_gif(stream_id):
         raise
         return str(error)
 # ------------------------------------------------------------------------------
+# Routing - Web pages
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/static/stream_sudoku_tiling.html")
+def ewa_html_stream_sudoku_tiling():
+    context = {
+        "streams": [
+            {"id": 5}, {"id": 6}
+        ]
+    }
+    return flask.render_template("stream_sudoku_tiling.html", **context)
+# ------------------------------------------------------------------------------
 # Web root
 # ------------------------------------------------------------------------------
 @eagilog_web_app.route("/")
