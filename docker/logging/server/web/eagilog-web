@@ -652,7 +652,7 @@ class EAGilogWeb(object):
 
     # --------------------------------------------------------------------------
     def img_stream_sudoku_tiling_gif(self, stream_id, step = 16):
-        w, h, cells = self.img_stream_sudoku_tiling_data(stream_id)
+        w, h, cells = self.img_stream_sudoku_tiling_cells(stream_id)
         def _img(cells = []):
             return self.img_stream_sudoku_tiling(stream_id, w, h, cells)
 
