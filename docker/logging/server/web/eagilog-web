@@ -512,15 +512,15 @@ class EAGilogWeb(object):
 
         def _get_pix(v):
             if v == 0:
-                return 0
+                return (0, 0, 0, 0)
             def _adj(c):
                 return tuple(int(255 * e) for e in c)
             return _adj(self._color_blend(
-                (0.8, 0.7, 0.1),
-                (0.2, 0.3, 0.9),
+                (0.8, 0.7, 0.1, 1.0),
+                (0.2, 0.3, 0.9, 1.0),
                 float(tacc - v) / float(tacc)))
 
-        img = PIL.Image.new(mode = "RGB", size = (w, h))
+        img = PIL.Image.new(mode = "RGBA", size = (w, h))
         img.putdata([_get_pix(v) for v in data])
         yield img
 
