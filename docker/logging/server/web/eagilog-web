@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: UTF-8
-# Copyright (c) 2020-2021 Matus Chochlik
+# Copyright (c) 2023-2023 Matus Chochlik
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
@@ -749,9 +749,7 @@ def ewa_img_stream_sudoku_tiling_gif(stream_id):
 # ------------------------------------------------------------------------------
 @eagilog_web_app.route("/static/stream_sudoku_tiling.html")
 def ewa_html_stream_sudoku_tiling():
-    context = {
-        "streams": eagilog_web.stream_sudoku_tiling_data()
-    }
+    context = { "streams": eagilog_web.stream_sudoku_tiling_data() }
     return flask.render_template("stream_sudoku_tiling.html", **context)
 # ------------------------------------------------------------------------------
 # Web root
