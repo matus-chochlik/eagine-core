@@ -224,30 +224,90 @@ class PSQLConnection(object):
 # Queue I/O objects
 # ------------------------------------------------------------------------------
 class QueueWriteIO(object):
+    # --------------------------------------------------------------------------
     def __init__(self, queue):
         self._queue = queue
 
+    # --------------------------------------------------------------------------
     def close(self):
         self._queue.put(None)
         self._queue.close()
 
+    # --------------------------------------------------------------------------
     def write(self, chunk):
         self._queue.put(chunk)
 # ------------------------------------------------------------------------------
 class QueueReadIO(object):
+    # --------------------------------------------------------------------------
     def __init__(self, queue, process):
+        self._buf = io.BytesIO()
+        self._available = 0
+        self._write_pos = 0
+        self._size = 0
         self._queue = queue
         self._process = process
+        self._eof = False
 
+    # --------------------------------------------------------------------------
     def __del__(self):
         self._queue.close()
         self._process.join()
 
-    def read(self, size):
-        try:
-            return self._queue.get()
-        except ValueError:
+    # --------------------------------------------------------------------------
+    def _store(self, chunk):
+        if self._size < self._available + len(chunk):
+            new_buf = io.BytesIO()
+            new_buf.write(self.read())
+            self._write_pos = self._available = new_buf.tell()
+            read_fp = 0
+            while self._size <= self._available + len(chunk):
+                self._size = max(self._size, 1024) * 2
+            new_buf.write(bytearray(self._size - self._write_pos))
+            self._buf = new_buf
+        else:
+            read_fp = self._buf.tell()
+
+        self._buf.seek(self._write_pos)
+        written = self._size - self._write_pos
+        self._buf.write(chunk[:written])
+        self._write_pos += len(chunk)
+        self._available += len(chunk)
+        if written < len(chunk):
+            self._write_pos -= self._size
+            self._buf.seek(0)
+            self._buf.write(chunk[written:])
+        self._buf.seek(read_fp)
+
+    # --------------------------------------------------------------------------
+    def read(self, size = None):
+        if size is not None:
+            while not self._eof and size > self._available:
+                try:
+                    chunk = self._queue.get()
+                    if chunk is None:
+                        self._eof = True
+                        break
+                    self._store(chunk)
+                except ValueError:
+                    self._eof = True
+                    break
+
+        if size is None or size > self._available:
+            size = self._available
+        size = max(size, 0)
+
+        if size == 0 and self._eof:
             return None
+
+        result = self._buf.read(size)
+        self._available -= size
+
+        if len(result) < size:
+            self._buf.seek(0)
+            result += self._buf.read(size - len(result))
+
+        return result
+
 # ------------------------------------------------------------------------------
 # App
 # ------------------------------------------------------------------------------
@@ -594,7 +654,6 @@ class EAGilogWeb(object):
             for cells in _fix_cells():
                 for img in _img(cells):
                     yield img
-
 
         def _save_func(img, imggen, output, l):
             img.save(
