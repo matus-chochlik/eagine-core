@@ -468,6 +468,32 @@ class EAGilogWeb(object):
         c_rgb = tuple(max(min(l * a + r * b, 1), 0) for l, r in zip(c1, c2))
         return tuple(rgb * 0.7 + hsv * 0.3 for rgb, hsv in zip(c_rgb, c_hsv))
     # --------------------------------------------------------------------------
+    # Template data
+    # --------------------------------------------------------------------------
+    def stream_sudoku_tiling_data(self):
+        try:
+            query = """
+            SELECT DISTINCT
+                stream_id
+            FROM eagilog.active_stream
+            JOIN eagilog.sudoku_solved_board
+            USING(stream_id)
+            ORDER BY(stream_id)
+            """
+            with self.psql_cursor() as cur:
+                cur.execute(query)
+                data = []
+                while True:
+                    row = cur.fetchone()
+                    if row is None:
+                        break
+                    data.append({
+                        "id": row[0]
+                    })
+        except:
+            data = []
+        return data
+    # --------------------------------------------------------------------------
     # Plots
     # --------------------------------------------------------------------------
     def img_active_stream_main_progress(self, imgfmt="svg"):
@@ -546,7 +572,7 @@ class EAGilogWeb(object):
     # --------------------------------------------------------------------------
     # other images
     # --------------------------------------------------------------------------
-    def img_stream_sudoku_tiling_data(self, stream_id):
+    def img_stream_sudoku_tiling_cells(self, stream_id):
         w = 32
         h = 32
         try:
@@ -615,7 +641,7 @@ class EAGilogWeb(object):
 
     # --------------------------------------------------------------------------
     def img_stream_sudoku_tiling_png(self, stream_id):
-        w, h, cells = self.img_stream_sudoku_tiling_data(stream_id)
+        w, h, cells = self.img_stream_sudoku_tiling_cells(stream_id)
         img = next(self.img_stream_sudoku_tiling(stream_id, w, h, cells))
 
         output = io.BytesIO()
@@ -724,9 +750,7 @@ def ewa_img_stream_sudoku_tiling_gif(stream_id):
 @eagilog_web_app.route("/static/stream_sudoku_tiling.html")
 def ewa_html_stream_sudoku_tiling():
     context = {
-        "streams": [
-            {"id": 5}, {"id": 6}
-        ]
+        "streams": eagilog_web.stream_sudoku_tiling_data()
     }
     return flask.render_template("stream_sudoku_tiling.html", **context)
 # ------------------------------------------------------------------------------
