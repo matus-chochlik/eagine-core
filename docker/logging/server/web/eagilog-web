@@ -19,6 +19,7 @@ import datetime
 import psycopg2
 import matplotlib.pyplot as plt
 import matplotlib.ticker as pltckr
+import multiprocessing
 import PIL
 
 # ------------------------------------------------------------------------------
@@ -219,6 +220,34 @@ class PSQLConnection(object):
     def cursor(self):
         return self._pg_conn.cursor()
 
+# ------------------------------------------------------------------------------
+# Queue I/O objects
+# ------------------------------------------------------------------------------
+class QueueWriteIO(object):
+    def __init__(self, queue):
+        self._queue = queue
+
+    def close(self):
+        self._queue.put(None)
+        self._queue.close()
+
+    def write(self, chunk):
+        self._queue.put(chunk)
+# ------------------------------------------------------------------------------
+class QueueReadIO(object):
+    def __init__(self, queue, process):
+        self._queue = queue
+        self._process = process
+
+    def __del__(self):
+        self._queue.close()
+        self._process.join()
+
+    def read(self, size):
+        try:
+            return self._queue.get()
+        except ValueError:
+            return None
 # ------------------------------------------------------------------------------
 # App
 # ------------------------------------------------------------------------------
@@ -566,18 +595,25 @@ class EAGilogWeb(object):
                 for img in _img(cells):
                     yield img
 
-        output = io.BytesIO()
-        img.save(
-            output,
-            format="GIF",
-            save_all=True,
-            append_images=_gen(len(cells), step),
-            optimize=False,
-            duration=len(cells)/1000,
-            loop=0)
-        output.seek(0)
 
-        return output
+        def _save_func(img, imggen, output, l):
+            img.save(
+                output,
+                format="GIF",
+                save_all=True,
+                append_images=imggen,
+                optimize=False,
+                duration=l/1000,
+                loop=0)
+            output.close()
+
+        queue = multiprocessing.Queue()
+        writer = multiprocessing.Process(
+            target=_save_func,
+            args=(img, _gen(len(cells), step), QueueWriteIO(queue), len(cells)))
+        writer.start()
+
+        return QueueReadIO(queue, writer)
 
 # ------------------------------------------------------------------------------
 # Routing
@@ -619,8 +655,7 @@ def ewa_img_stream_sudoku_tiling_gif(stream_id):
     try:
         return flask.send_file(
             eagilog_web.img_stream_sudoku_tiling_gif(int(stream_id)),
-            mimetype="image/gif"
-        )
+            mimetype="image/gif")
     except Exception as error:
         raise
         return str(error)
