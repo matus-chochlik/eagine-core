@@ -21,14 +21,12 @@ class WorkflowArgParser(argparse.ArgumentParser):
             dest="release_version",
             metavar="VERSION",
             action="store",
-            default=None
-        )
+            default=None)
 
         self.add_argument(
             '--debug',
             action="store_true",
-            default=False
-        )
+            default=False)
 
         self.add_argument(
             "--dry-run",
@@ -37,8 +35,7 @@ class WorkflowArgParser(argparse.ArgumentParser):
             help="""
                 Only show the commands that should be executed
                 but don't do anything.
-            """
-        )
+            """)
 
         self.add_argument(
             "--branch",
@@ -48,8 +45,7 @@ class WorkflowArgParser(argparse.ArgumentParser):
             default="develop",
             help="""
                 Name of the development git branch that is the source of the release.
-            """
-        )
+            """)
 
         self.add_argument(
             "--remote",
@@ -59,8 +55,7 @@ class WorkflowArgParser(argparse.ArgumentParser):
             default="github",
             help="""
                 Name of the git remote to pull from / push to.
-            """
-        )
+            """)
 
         self.add_argument(
             "--submodule-remote",
@@ -70,8 +65,7 @@ class WorkflowArgParser(argparse.ArgumentParser):
             default="origin",
             help="""
                 Name of the git remote to pull from sub-module updates.
-            """
-        )
+            """)
 
         action_group = self.add_mutually_exclusive_group()
 
@@ -82,8 +76,8 @@ class WorkflowArgParser(argparse.ArgumentParser):
             const="get_release_tag",
             help="""
                 Prints the next release version number or tag.
-            """
-        )
+            """)
+
         action_group.add_argument(
             "--get-hotfix-tag",
             dest="action",
@@ -91,8 +85,8 @@ class WorkflowArgParser(argparse.ArgumentParser):
             const="get_hotfix_tag",
             help="""
                 Prints the next hotfix version number or tag.
-            """
-        )
+            """)
+
         action_group.add_argument(
             "--update-submodules",
             dest="action",
@@ -100,8 +94,8 @@ class WorkflowArgParser(argparse.ArgumentParser):
             const="update_submodules",
             help="""
                 Updates the sub-modules of the current repository.
-            """
-        )
+            """)
+
         action_group.add_argument(
             "--begin-release",
             dest="action",
@@ -109,8 +103,8 @@ class WorkflowArgParser(argparse.ArgumentParser):
             const="begin_release",
             help="""
                 Starts a new release.
-            """
-        )
+            """)
+
         action_group.add_argument(
             "--finish-release",
             dest="action",
@@ -118,8 +112,8 @@ class WorkflowArgParser(argparse.ArgumentParser):
             const="finish_release",
             help="""
                 Finishes the current release.
-            """
-        )
+            """)
+
         action_group.add_argument(
             "--do-release",
             dest="action",
@@ -127,8 +121,8 @@ class WorkflowArgParser(argparse.ArgumentParser):
             const="do_release",
             help="""
                 Begins and finishes a release.
-            """
-        )
+            """)
+
         action_group.add_argument(
             "--begin-hotfix",
             dest="action",
@@ -136,8 +130,8 @@ class WorkflowArgParser(argparse.ArgumentParser):
             const="begin_hotfix",
             help="""
                 Starts a new hotfix.
-            """
-        )
+            """)
+
         action_group.add_argument(
             "--finish-hotfix",
             dest="action",
@@ -145,8 +139,7 @@ class WorkflowArgParser(argparse.ArgumentParser):
             const="finish_hotfix",
             help="""
                 Finishes the current hotfix.
-            """
-        )
+            """)
 
     # --------------------------------------------------------------------------
     def process_parsed_options(self, options):
@@ -155,8 +148,7 @@ class WorkflowArgParser(argparse.ArgumentParser):
     # --------------------------------------------------------------------------
     def parse_args(self, args):
         return self.process_parsed_options(
-            argparse.ArgumentParser.parse_args(self, args)
-        )
+            argparse.ArgumentParser.parse_args(self, args))
 
 # ------------------------------------------------------------------------------
 def make_argument_parser():
@@ -166,7 +158,7 @@ def make_argument_parser():
             EAGine Git workflow helper script
         """,
         epilog="""
-            Copyright (c) Matúš Chochlík.
+            Copyright (c) 2021-2023 Matúš Chochlík.
             Permission is granted to copy, distribute and/or modify this document
             under the terms of the Boost Software License, Version 1.0.
             (See a copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -409,8 +401,7 @@ class Workflow(object):
                 cmd_line,
                 cwd=work_dir,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
+                stderr=subprocess.PIPE)
             out, err = proc.communicate()
             if proc.returncode != 0:
                 text = "command %s:\n\n%s" % (_cmd_str(), err.decode('utf-8'))
@@ -450,23 +441,20 @@ class Workflow(object):
     def git_current_branch(self):
         return self.do_git_command(
             ["rev-parse", "--abbrev-ref", "HEAD"],
-            False
-        ).strip()
+            False).strip()
 
     # --------------------------------------------------------------------------
     def git_has_branch(self, branch_name):
         return bool(self.do_git_command(
                 ["branch", "--list", branch_name],
-                False
-            ).strip())
+                False).strip())
 
     # --------------------------------------------------------------------------
     def git_has_remote_branch(self, branch_name):
         self.do_git_command(["fetch", self._options.git_remote], False)
         return bool(self.do_git_command(
                 ["branch", "--list", branch_name],
-                False
-            ).strip())
+                False).strip())
 
     # --------------------------------------------------------------------------
     def get_release_tag(self):
@@ -525,8 +513,7 @@ class Workflow(object):
                 self.git_command(["pull", remote, release_branch])
             else: raise RuntimeError(
                 "Release branch '"+release_branch+"' does not exist. "
-                "Re-run with --begin-release to start a new release."
-            )
+                "Re-run with --begin-release to start a new release.")
         self.git_command(["checkout", release_branch])
         self.git_command(["pull", remote, release_branch])
         self.git_command(["checkout", "main"])
@@ -624,11 +611,11 @@ def main():
         options = arg_parser.parse_args(sys.argv[1:])
         debug = options.debug
         Workflow(options).run()
+        return 0
     except Exception as err:
-        print(err)
-        if debug:
-            raise
+        if debug: raise
+        else: print(err)
+    return 1
 # ------------------------------------------------------------------------------
-main()
-
-
+if __name__ == "__main__":
+    sys.exit(main())
