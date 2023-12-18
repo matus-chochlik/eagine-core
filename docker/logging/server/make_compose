@@ -85,6 +85,20 @@ services:
           - eagilog_influxdb
         environment:
           - EAGILOG_WEB_PORT=34913
+	eagilog_frontend:
+        image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_frontend
+        restart: always
+        networks:
+          - eagilog
+        ports:
+          - "80:80"
+          - "443:443"
+        volumes:
+		  - nginx-etc-storage:/etc/nginx
+		  - nginx-etc-ssl-storage:/etc/ssl/private
+        depends_on:
+          - eagilog_grafana
+          - eagilog_web
 
 networks:
     eagilog:
@@ -104,5 +118,7 @@ volumes:
     influxdb-var-storage:
     postgres-storage:
     grafana-storage:
+	nginx-etc-storage:
+	nginx-etc-ssl-storage:
 COMPOSE
 

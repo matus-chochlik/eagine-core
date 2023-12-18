@@ -4,8 +4,6 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-"$(dirname ${0})/influxdb/push"
-"$(dirname ${0})/postgres/push"
-"$(dirname ${0})/grafana/push"
-"$(dirname ${0})/server/push"
-"$(dirname ${0})/web/push"
+for container in influxdb postgres grafana server web frontend
+do "$(dirname ${0})/${container}/push"
+done
