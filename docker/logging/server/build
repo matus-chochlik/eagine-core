@@ -15,6 +15,11 @@ function ensure_passwd() {
 	chmod 600 "${1}"
 }
 
+function ensure_ssl_key() {
+	[[ -f "${1}" ]] || openssl genrsa -out "${1}" 4096
+	chmod 600 "${1}"
+}
+
 mkdir -p "${this_dir}/_secrets/"
 ensure_passwd "${this_dir}/_secrets/postgres_postgres.passwd"
 ensure_passwd "${this_dir}/_secrets/eagilog_postgres.passwd"
@@ -22,6 +27,7 @@ ensure_passwd "${this_dir}/_secrets/backup_postgres.passwd"
 ensure_passwd "${this_dir}/_secrets/admin_influxdb.passwd"
 ensure_passwd "${this_dir}/_secrets/admin_grafana.passwd"
 ensure_passwd "${this_dir}/_secrets/eagilog_influxdb.token"
+ensure_ssl_key "${this_dir}/_secrets/eagilog_frontend.pkey"
 
 for container in influxdb postgres grafana server web frontend
 do "$(dirname ${0})/${container}/build"

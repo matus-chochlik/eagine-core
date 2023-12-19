@@ -51,13 +51,13 @@ services:
           - eagilog
         ports:
           - "3000:3000"
-        depends_on:
-          - eagilog_influxdb
         volumes:
           - grafana-storage:/var/lib/grafana
         environment:
           - GF_SECURITY_ADMIN_USER=eagine
           - GF_SECURITY_ADMIN_PASSWORD=$(<${pwd_dir}/admin_grafana.passwd)
+        depends_on:
+          - eagilog_influxdb
     eagilog_server:
         image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_server
         restart: always
@@ -79,23 +79,24 @@ services:
           - eagilog
         ports:
           - "34913:34913"
+        environment:
+          - EAGILOG_WEB_PORT=34913
         secrets:
           - eagilog_postgres.passwd
         depends_on:
           - eagilog_influxdb
-        environment:
-          - EAGILOG_WEB_PORT=34913
-	eagilog_frontend:
+    eagilog_frontend:
         image: ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_frontend
         restart: always
         networks:
           - eagilog
         ports:
-          - "80:80"
-          - "443:443"
+          - "8080:80"
+          - "8443:443"
+        secrets:
+          - eagilog_frontend.pkey
         volumes:
-		  - nginx-etc-storage:/etc/nginx
-		  - nginx-etc-ssl-storage:/etc/ssl/private
+          - /var/run/docker.sock:/tmp/docker.sock:ro
         depends_on:
           - eagilog_grafana
           - eagilog_web
@@ -112,13 +113,13 @@ secrets:
         file: ${pwd_dir}/backup_postgres.passwd
     eagilog_influxdb.token:
         file: ${pwd_dir}/eagilog_influxdb.token
+    eagilog_frontend.pkey:
+        file: ${pwd_dir}/eagilog_frontend.pkey
 
 volumes:
     influxdb-etc-storage:
     influxdb-var-storage:
     postgres-storage:
     grafana-storage:
-	nginx-etc-storage:
-	nginx-etc-ssl-storage:
 COMPOSE
 

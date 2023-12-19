@@ -17,6 +17,32 @@ trap cleanup EXIT
 
 mkdir -p "${work_dir}"
 cp "${this_dir}/Dockerfile" "${work_dir}/"
+cp "${this_dir}/"eagilog.conf "${work_dir}/"
+cp "${this_dir}/index.html" "${work_dir}/"
+
+openssl req \
+	-new -x509 \
+	-subj "/CN=eagilog/O=OGLplus.org/OU=EAGine" \
+	-days 365 \
+	-key "${this_dir}/../_secrets/eagilog_frontend.pkey" \
+	-sha256 \
+	-out "${work_dir}/eagilog_frontend.crt"
+
+openssl req \
+	-new -x509 \
+	-subj "/CN=grafana.eagilog/O=OGLplus.org/OU=EAGine" \
+	-days 365 \
+	-key "${this_dir}/../_secrets/eagilog_frontend.pkey" \
+	-sha256 \
+	-out "${work_dir}/eagilog_grafana.crt"
+
+openssl req \
+	-new -x509 \
+	-subj "/CN=web.eagilog/O=OGLplus.org/OU=EAGine" \
+	-days 365 \
+	-key "${this_dir}/../_secrets/eagilog_frontend.pkey" \
+	-sha256 \
+	-out "${work_dir}/eagilog_web.crt"
 
 docker build "${work_dir}" \
 	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_frontend \

@@ -16,6 +16,7 @@ trap cleanup EXIT
 
 mkdir -p "${work_dir}"
 cp -r "${this_dir}/static" "${work_dir}/"
+cp -r "${this_dir}/templates" "${work_dir}/"
 cp "${this_dir}/eagilog-web" "${work_dir}/"
 cp "${this_dir}/requirements.txt" "${work_dir}/"
 cp "${this_dir}/Dockerfile" "${work_dir}/"
