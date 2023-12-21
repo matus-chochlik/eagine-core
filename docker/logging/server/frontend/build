@@ -20,29 +20,38 @@ cp "${this_dir}/Dockerfile" "${work_dir}/"
 cp "${this_dir}/"eagilog.conf "${work_dir}/"
 cp "${this_dir}/index.html" "${work_dir}/"
 
-openssl req \
+if [[ -f "${this_dir}/eagilog_frontend.crt" ]]
+then cp "${this_dir}/eagilog_frontend.crt" "${work_dir}/eagilog_frontend.crt"
+else openssl req \
 	-new -x509 \
 	-subj "/CN=eagilog/O=OGLplus.org/OU=EAGine" \
 	-days 365 \
 	-key "${this_dir}/../_secrets/eagilog_frontend.pkey" \
 	-sha256 \
 	-out "${work_dir}/eagilog_frontend.crt"
+fi
 
-openssl req \
+if [[ -f "${this_dir}/eagilog_grafana.crt" ]]
+then cp "${this_dir}/eagilog_grafana.crt" "${work_dir}/eagilog_grafana.crt"
+else openssl req \
 	-new -x509 \
 	-subj "/CN=grafana.eagilog/O=OGLplus.org/OU=EAGine" \
 	-days 365 \
 	-key "${this_dir}/../_secrets/eagilog_frontend.pkey" \
 	-sha256 \
 	-out "${work_dir}/eagilog_grafana.crt"
+fi
 
-openssl req \
+if [[ -f "${this_dir}/eagilog_web.crt" ]]
+then cp "${this_dir}/eagilog_web.crt" "${work_dir}/eagilog_web.crt"
+else openssl req \
 	-new -x509 \
 	-subj "/CN=web.eagilog/O=OGLplus.org/OU=EAGine" \
 	-days 365 \
 	-key "${this_dir}/../_secrets/eagilog_frontend.pkey" \
 	-sha256 \
 	-out "${work_dir}/eagilog_web.crt"
+fi
 
 docker build "${work_dir}" \
 	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_frontend \
