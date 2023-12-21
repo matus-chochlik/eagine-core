@@ -52,9 +52,9 @@ asio_log_output_stream_base<Endpoint, Socket>::asio_log_output_stream_base(
 //------------------------------------------------------------------------------
 template <typename Endpoint, typename Socket>
 void asio_log_output_stream_base<Endpoint, Socket>::_write() noexcept {
-    _buffers.front().clear();
     _buffers.swap();
-    if(auto& chunk{_buffers.front()}; not chunk.empty()) {
+    _buffers.next().clear();
+    if(auto& chunk{_buffers.current()}; not chunk.empty()) {
         asio::write(
           _socket, asio::buffer(chunk.data(), std_size(chunk.size())));
     }
@@ -63,7 +63,7 @@ void asio_log_output_stream_base<Endpoint, Socket>::_write() noexcept {
 template <typename Endpoint, typename Socket>
 void asio_log_output_stream_base<Endpoint, Socket>::write(
   const memory::const_block& chunk) noexcept {
-    append_to(chunk, _buffers.back());
+    append_to(chunk, _buffers.next());
 }
 //------------------------------------------------------------------------------
 template <typename Endpoint, typename Socket>
