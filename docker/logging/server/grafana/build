@@ -23,5 +23,5 @@ docker build "${work_dir}" \
 
 docker tag \
 	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_grafana \
-	eagine:eagilog_grafana
+	eagine/eagine:eagilog_grafana
 

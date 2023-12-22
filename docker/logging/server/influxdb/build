@@ -24,5 +24,5 @@ docker build "${work_dir}" \
 
 docker tag \
 	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_influxdb \
-	eagine:eagilog_influxdb
+	eagine/eagine:eagilog_influxdb
 

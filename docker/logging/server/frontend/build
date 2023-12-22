@@ -58,5 +58,5 @@ docker build "${work_dir}" \
 
 docker tag \
 	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_frontend \
-	eagine:eagilog_frontend
+	eagine/eagine:eagilog_frontend
 

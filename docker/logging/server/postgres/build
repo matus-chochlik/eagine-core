@@ -28,5 +28,5 @@ docker build "${work_dir}" \
 
 docker tag \
 	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_postgres \
-	eagine:eagilog_postgres
+	eagine/eagine:eagilog_postgres
 

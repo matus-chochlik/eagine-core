@@ -27,5 +27,5 @@ docker build "${work_dir}" \
 
 docker tag \
 	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_web \
-	eagine:eagilog_web
+	eagine/eagine:eagilog_web
 
