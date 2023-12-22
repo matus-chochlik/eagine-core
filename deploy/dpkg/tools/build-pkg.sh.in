@@ -21,9 +21,6 @@ this_dir="${src_dir}/deploy/dpkg/tools"
 mkdir -p "${bin_prefix}"
 mkdir -p "${bco_prefix}"
 
-cp "${src_dir}/source/app/servicectl.py" \
-   "${bin_prefix}/eagine-servicectl"
-
 cp "${src_dir}/source/app/procman.py" \
    "${bin_prefix}/eagine-procman"
 "${src_dir}/source/app/procman.py" \

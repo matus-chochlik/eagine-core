@@ -35,12 +35,6 @@ install(
 )
 
 install(
-	PROGRAMS servicectl.py
-	RENAME eagine-servicectl
-	DESTINATION bin
-)
-
-install(
 	PROGRAMS procman.py
 	RENAME eagine-procman
 	DESTINATION bin
