@@ -31,6 +31,8 @@ RUN apt --yes install \
 		libalut-dev \
 		libssl-dev \
 		libsystemd-dev \
+		libpq-dev \
+		libcurl4-openssl-dev \
 		zlib1g-dev
 
 RUN adduser \
