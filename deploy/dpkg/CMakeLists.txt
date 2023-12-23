@@ -23,6 +23,7 @@ add_custom_target(eagine-core-deb)
 add_subdirectory(user)
 add_subdirectory(llvm_snapshot)
 add_subdirectory(compiler)
+add_subdirectory(docker)
 add_subdirectory(tools)
 
 if(TARGET eagine.core)

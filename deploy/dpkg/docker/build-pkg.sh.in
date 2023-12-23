@@ -1,0 +1,30 @@
+#!/bin/bash -e
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+source ../../deb_common.sh
+src_dir=$(realpath "@SRC_DIR@")
+pkg_dir=$(realpath "@PKG_DIR@")
+
+mkdir -p "${pkg_dir}/usr"
+pkg_prefix=$(realpath "@PKG_DIR@/usr")
+dkr_dir="${pkg_prefix}/share/eagine/docker/build/default"
+
+# ------------------------------------------------------------------------------
+mkdir -p "${dkr_dir}"
+cp -r "${src_dir}/docker/build/default"/* "${dkr_dir}/"
+# ------------------------------------------------------------------------------
+mkdir -p "${pkg_dir}/DEBIAN"
+cat << CONTROL > "${pkg_dir}/DEBIAN/control"
+Package: eagine-core-docker
+Version: @PKG_VERSION@
+Architecture: all
+Installed-Size: $(eagine_deb_installed_size ${pkg_dir})
+Depends: docker
+Suggests: docker-compose
+Maintainer: Matus Chochlik <matus.chochlik@proton.me>
+Description: Collection of containerized utilities for EAGine
+CONTROL
+# ------------------------------------------------------------------------------
