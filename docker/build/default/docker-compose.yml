@@ -13,7 +13,6 @@ services:
             placement:
                 constraints:
                     - node.platform.os == linux
-                    - node.platform.architecture == aarch64
 
 volumes:
   eagine-build-default-source:

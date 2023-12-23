@@ -45,4 +45,4 @@ docker build "$(dirname ${0})" \
 
 docker tag \
 	${EAGINE_DOCKER_REGISTRY_HOST:-localhost}:${EAGINE_DOCKER_REGISTRY_PORT:-5000}/eagine:build-default \
-	eagine:build-default
+	eagine/eagine:build-default
