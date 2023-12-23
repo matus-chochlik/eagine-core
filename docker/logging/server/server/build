@@ -16,19 +16,26 @@ function cleanup() {
 
 trap cleanup EXIT
 
-pushd ${build_dir}
-while [[ "$(pwd)" != "/" ]]
-do
-	if [[ -f build.ninja ]]
-	then cmake --build . --target eagine-core-log-server && break
-	else cd ..
-	fi
-done
-popd
+if [[ ! -f "${this_dir}/eagilog-core-log-server" ]]
+then
+	pushd ${build_dir}
+	while [[ "$(pwd)" != "/" ]]
+	do
+		if [[ -f build.ninja ]]
+		then cmake --build . --target eagine-core-log-server && break
+		else cd ..
+		fi
+	done
+	popd
+fi
 
 mkdir -p "${work_dir}/bin"
-cp  "${build_dir}/source/app/log_server/eagine-core-log-server"\
-	"${work_dir}/bin/"
+if [[ -f "${this_dir}/eagilog-core-log-server" ]]
+then cp "${this_dir}/eagine-core-log-server"\
+		"${work_dir}/bin/"
+else cp "${build_dir}/source/app/log_server/eagine-core-log-server"\
+		"${work_dir}/bin/"
+fi
 cp "${this_dir}/bin/entrypoint" "${work_dir}/bin/"
 cp "${this_dir}/Dockerfile" "${work_dir}/"
 
