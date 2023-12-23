@@ -39,17 +39,17 @@ cp "${src_dir}/source/app/log-plot.py" \
 "${src_dir}/source/app/log-plot.py" \
 	--print-bash-completion "${bco_prefix}/eagilog-plot"
 
-cp "${src_dir}/source/app/fmd_modify.py" \
+cp "${src_dir}/source/app/fmd-modify.py" \
    "${bin_prefix}/eagine-fmd-modify"
-"${src_dir}/source/app/fmd_modify.py" \
+"${src_dir}/source/app/fmd-modify.py" \
 	--print-bash-completion "${bco_prefix}/eagine-fmd-modify"
 
-cp "${src_dir}/source/app/fmd_get.py" \
+cp "${src_dir}/source/app/fmd-get.py" \
    "${bin_prefix}/eagine-fmd-get"
-"${src_dir}/source/app/fmd_get.py" \
+"${src_dir}/source/app/fmd-get.py" \
 	--print-bash-completion "${bco_prefix}/eagine-fmd-get"
 
-cp "${src_dir}/source/app/ensure_main_key.sh" \
+cp "${src_dir}/source/app/ensure-main-key.sh" \
    "${bin_prefix}/eagine-ensure-main-key"
 
 cp -r "${this_dir}/etc" "${pkg_dir}/"

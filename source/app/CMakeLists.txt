@@ -4,17 +4,17 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 
 install(
-	PROGRAMS ensure_main_key.sh
+	PROGRAMS ensure-main-key.sh
 	RENAME eagine-ensure-main-key
 	DESTINATION bin
 )
 install(
-	PROGRAMS fmd_modify.py
+	PROGRAMS fmd-modify.py
 	RENAME eagine-fmd-modify
 	DESTINATION bin
 )
 install(
-	PROGRAMS fmd_get.py
+	PROGRAMS fmd-get.py
 	RENAME eagine-fmd-get
 	DESTINATION bin
 )
