@@ -8,7 +8,7 @@ source ~/.local/bin/parse_args.sh
 set -x
 
 mkdir -p "${HOME}/binary"
-cmake \
+[[ -f "${HOME}/binary/eagine-${sub_module}/build.ninja" ]] || cmake \
 	"-G" "Ninja" \
 	"-DCMAKE_BUILD_TYPE=${build_type}" \
 	"-DCMAKE_INSTALL_PREFIX=${HOME}/install" \
@@ -17,5 +17,5 @@ cmake \
 	"-B" "${HOME}/binary/eagine-${sub_module}"
 cmake \
 	"--build" "${HOME}/binary/eagine-${sub_module}" \
-	"--parallel" "${cpu_count}" \
+	"--parallel" "${parallel:-${cpu_count}}" \
 	"--target" "${target:-all}"

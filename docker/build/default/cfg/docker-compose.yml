@@ -1,23 +1,23 @@
 version: "3.6"
 services:
-  eagine-build-default:
+  shell:
     image: eagine/eagine:build-default
     network_mode: host
     stdin_open: true
     tty: true
     volumes:
-      - eagine-build-default-source:/home/eagine/source
-      - eagine-build-default-binary:/home/eagine/binary
-      - eagine-build-default-install:/home/eagine/install
+      - source:/home/eagine/source
+      - binary:/home/eagine/binary
+      - install:/home/eagine/install
     deploy:
       placement:
         constraints:
           - node.platform.os == linux
 
 volumes:
-  eagine-build-default-source:
+  source:
     driver: local
-  eagine-build-default-binary:
+  binary:
     driver: local
-  eagine-build-default-install:
+  install:
     driver: local

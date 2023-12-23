@@ -33,6 +33,10 @@ do
 			cpu_count="${2}"
 			shift
 			;;
+		"--jobs"|"--parallel")
+			parallel="${2}"
+			shift
+			;;
 		"--target")
 			target="${2}"
 			shift
