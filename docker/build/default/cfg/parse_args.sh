@@ -8,6 +8,7 @@ sub_module=${EAGINE_SUB_MODULE}
 branch=${EAGINE_BRANCH}
 build_type=${EAGINE_BUILD_TYPE}
 cpu_count=${EAGINE_CPU_COUNT}
+target=${all}
 
 while [[ "${1}" != "" ]]
 do
@@ -30,6 +31,10 @@ do
 			;;
 		"--cpu-count")
 			cpu_count="${2}"
+			shift
+			;;
+		"--target")
+			target="${2}"
 			shift
 			;;
 		*)

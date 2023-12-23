@@ -17,4 +17,5 @@ cmake \
 	"-B" "${HOME}/binary/eagine-${sub_module}"
 cmake \
 	"--build" "${HOME}/binary/eagine-${sub_module}" \
-	"--parallel" "${cpu_count}"
+	"--parallel" "${cpu_count}" \
+	"--target" "${target:-all}"

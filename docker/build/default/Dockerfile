@@ -11,8 +11,8 @@ RUN apt update \
 		pkg-config \
  		git cmake ninja-build
 
-COPY llvm-snapshot.gpg /etc/apt/trusted.gpg.d/
-COPY 80_llvm.list /etc/apt/sources.list.d/
+COPY cfg/llvm-snapshot.gpg /etc/apt/trusted.gpg.d/
+COPY cfg/80_llvm.list /etc/apt/sources.list.d/
 
 RUN apt update \
  && apt --yes upgrade \
@@ -60,11 +60,11 @@ RUN mkdir -p /home/eagine/.config/eagine \
 RUN grep -qx "^[[:space:]]*source ~/.config/eagine/bashrc" "/home/eagine/.bashrc" \
  || echo "source ~/.config/eagine/bashrc" >> "/home/eagine/.bashrc" 
 
-COPY toolchain-clang.cmake /home/eagine/.config/eagine/
+COPY cfg/toolchain-clang.cmake /home/eagine/.config/eagine/
 
 RUN mkdir -p /home/eagine/.local/bin
 
-COPY parse_args.sh /home/eagine/.local/bin/
+COPY cfg/parse_args.sh /home/eagine/.local/bin/
 
 RUN mkdir -p /home/eagine/bin \
  && chown eagine /home/eagine/bin
