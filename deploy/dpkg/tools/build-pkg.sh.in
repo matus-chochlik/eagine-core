@@ -26,9 +26,9 @@ cp "${src_dir}/source/app/procman.py" \
 "${src_dir}/source/app/procman.py" \
 	--print-bash-completion "${bco_prefix}/eagine-procman"
 
-cp "${src_dir}/source/app/psql_logs-cl.py" \
+cp "${src_dir}/source/app/psql-logs-cl.py" \
    "${bin_prefix}/eagine-psql-logs-cl"
-"${src_dir}/source/app/psql_logs-cl.py" \
+"${src_dir}/source/app/psql-logs-cl.py" \
 	--print-bash-completion "${bco_prefix}/eagine-psql-logs-cl"
 
 cp "${src_dir}/source/app/log-psql.sh" \
