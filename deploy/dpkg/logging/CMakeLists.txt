@@ -25,6 +25,7 @@ add_custom_command(
 	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 	DEPENDS
 		eagine-core-log-server
+		eagine-core-sensors-log
 		"${PKG_DIR}/DEBIAN/control"
 	COMMENT "Building ${PKG_NAME}.deb package"
 )
