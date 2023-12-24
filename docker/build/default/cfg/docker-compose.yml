@@ -6,6 +6,7 @@ services:
     stdin_open: true
     tty: true
     volumes:
+      - cache:/home/eagine/.cache
       - source:/home/eagine/source
       - binary:/home/eagine/binary
       - install:/home/eagine/install
@@ -15,6 +16,8 @@ services:
           - node.platform.os == linux
 
 volumes:
+  cache:
+    driver: local
   source:
     driver: local
   binary:

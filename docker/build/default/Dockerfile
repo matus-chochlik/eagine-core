@@ -48,7 +48,9 @@ ARG EAGINE_SUB_MODULE=all
 ARG EAGINE_BRANCH=develop
 ARG EAGINE_BUILD_TYPE=Debug
 
-RUN mkdir -p /home/eagine/.config/eagine \
+RUN mkdir -p /home/eagine/.cache \
+ && chown -R eagine /home/eagine/.cache \
+ && mkdir -p /home/eagine/.config/eagine \
  && echo "export EAGINE_ORIGIN=${EAGINE_ORIGIN}" >> /home/eagine/.config/eagine/bashrc \
  && echo "export EAGINE_SUB_MODULE=${EAGINE_SUB_MODULE}" >> /home/eagine/.config/eagine/bashrc \
  && echo "export EAGINE_BRANCH=${EAGINE_BRANCH}" >> /home/eagine/.config/eagine/bashrc \
