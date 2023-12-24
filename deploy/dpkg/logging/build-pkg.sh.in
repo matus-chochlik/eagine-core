@@ -1,0 +1,43 @@
+#!/bin/bash -e
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+source ../../deb_common.sh
+src_dir=$(realpath "@SRC_DIR@")
+bin_dir=$(realpath "@BIN_DIR@")
+pkg_dir=$(realpath "@PKG_DIR@")
+
+mkdir -p "${pkg_dir}/usr"
+pkg_prefix=$(realpath "@PKG_DIR@/usr")
+lib_prefix="${pkg_prefix}/lib/@PKG_MULTIARCH@"
+bin_prefix="${pkg_prefix}/bin"
+cmk_prefix="${lib_prefix}/cmake/EAGine"
+bco_prefix="${pkg_dir}/etc/bash_completion.d"
+this_dir="${src_dir}/deploy/dpkg/logging"
+
+# ------------------------------------------------------------------------------
+mkdir -p "${bin_prefix}"
+mkdir -p "${bco_prefix}"
+
+cp -r "${this_dir}/etc" "${pkg_dir}/"
+# ------------------------------------------------------------------------------
+while read path
+do
+	cp "${path}" "${bin_prefix}"
+	strip "${bin_prefix}/$(basename ${path})"
+done < "@CMAKE_CURRENT_BINARY_DIR@/build-pkg.txt"
+# ------------------------------------------------------------------------------
+mkdir -p "${pkg_dir}/DEBIAN"
+cat << CONTROL > "${pkg_dir}/DEBIAN/control"
+Package: eagine-core-logging
+Version: @PKG_VERSION@
+Architecture: @PKG_ARCH@
+Installed-Size: $(eagine_deb_installed_size ${pkg_dir})
+Depends: coreutils,python3,python3-pip
+Suggests: libsystemd0,libpq5,libcurl4
+Maintainer: Matus Chochlik <matus.chochlik@proton.me>
+Description: Collection of logging server and core utilities for EAGine
+CONTROL
+# ------------------------------------------------------------------------------

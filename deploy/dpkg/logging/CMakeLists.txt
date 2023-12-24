@@ -3,10 +3,11 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-set(PKG_NAME "eagine-core-tools_${EAGINE_VERSION}-${EAGINE_GIT_COMMITS_SINCE_VERSION}_${PKG_ARCH}")
+set(PKG_NAME "eagine-core-logging_${EAGINE_VERSION}-${EAGINE_GIT_COMMITS_SINCE_VERSION}_${PKG_ARCH}")
 set(PKG_DIR "${CMAKE_CURRENT_BINARY_DIR}/${PKG_NAME}")
 set(PKG_PREFIX "${PKG_DIR}/usr")
 
+file(GENERATE OUTPUT build-pkg.txt INPUT build-pkg.txt.in)
 configure_file(build-pkg.sh.in build-pkg.sh @ONLY)
 
 add_custom_command(
@@ -29,9 +30,9 @@ add_custom_command(
 )
 
 add_custom_target(
-	eagine-core-tools-deb
+	eagine-core-logging-deb
 	DEPENDS ${PKG_NAME}.deb
 )
 
-add_dependencies(eagine-core-deb eagine-core-tools-deb)
+add_dependencies(eagine-core-deb eagine-core-logging-deb)
 
