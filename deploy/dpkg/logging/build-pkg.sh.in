@@ -25,9 +25,11 @@ cp -r "${this_dir}/etc" "${pkg_dir}/"
 # ------------------------------------------------------------------------------
 while read path
 do
+	"${path}" --print-bash-completion > "${bco_prefix}/$(basename ${path})"
 	cp "${path}" "${bin_prefix}"
 	strip "${bin_prefix}/$(basename ${path})"
 done < "@CMAKE_CURRENT_BINARY_DIR@/build-pkg.txt"
+find "${bco_prefix}" -type f -empty -delete
 # ------------------------------------------------------------------------------
 mkdir -p "${pkg_dir}/DEBIAN"
 cat << CONTROL > "${pkg_dir}/DEBIAN/control"
