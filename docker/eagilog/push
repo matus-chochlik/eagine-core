@@ -4,10 +4,8 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-this_dir="$(realpath $(dirname ${0}))"
 architecture=$(docker info | sed -n 's/^\s*Architecture:\s*\(\w\+\)\s*$/\1/p')
 
-docker build "${this_dir}" \
-	--network host \
-	--tag eagine/eagine:eagilog_web-${architecture:-unknown}
-
+for container in influxdb postgres grafana server web frontend
+do docker push eagine/eagine:eagilog_${container}-${architecture:-unknown}
+done

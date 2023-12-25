@@ -94,6 +94,9 @@ services:
           - "8080:80"
           - "8443:443"
         secrets:
+          - eagilog_influxdb.crt
+          - eagilog_grafana.crt
+          - eagilog_web.crt
           - eagilog_frontend.pkey
         volumes:
           - /var/run/docker.sock:/tmp/docker.sock:ro
