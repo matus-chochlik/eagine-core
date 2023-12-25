@@ -4,9 +4,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-source "$(dirname ${BASH_SOURCE[0]})/../../../common.sh"
 this_dir="$(realpath $(dirname ${0}))"
-repo_dir="$(realpath $(dirname ${0})/../../../..)"
 work_dir="$(mktemp -d)"
 
 function cleanup() {
@@ -15,10 +13,10 @@ function cleanup() {
 
 trap cleanup EXIT
 
-mkdir -p "${work_dir}"
+mkdir -p "${work_dir}/cfg"
 cp "${this_dir}/Dockerfile" "${work_dir}/"
-cp "${this_dir}/"eagilog.conf "${work_dir}/"
-cp "${this_dir}/index.html" "${work_dir}/"
+cp "${this_dir}/cfg/eagilog.conf" "${work_dir}/cfg/"
+cp "${this_dir}/cfg/index.html" "${work_dir}/cfg/"
 
 if [[ -f "${this_dir}/eagilog_frontend.crt" ]]
 then cp "${this_dir}/eagilog_frontend.crt" "${work_dir}/eagilog_frontend.crt"
@@ -54,9 +52,5 @@ else openssl req \
 fi
 
 docker build "${work_dir}" \
-	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_frontend \
-
-docker tag \
-	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_frontend \
-	eagine/eagine:eagilog_frontend
+	--tag eagine/eagine:eagilog_frontend
 
