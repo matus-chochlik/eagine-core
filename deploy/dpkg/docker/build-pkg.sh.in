@@ -10,14 +10,13 @@ pkg_dir=$(realpath "@PKG_DIR@")
 
 mkdir -p "${pkg_dir}/usr"
 pkg_prefix=$(realpath "@PKG_DIR@/usr")
-dkr_dir="${pkg_prefix}/share/eagine/docker/build/default"
+dkr_dir="${pkg_prefix}/share/eagine/docker"
 
 # ------------------------------------------------------------------------------
 mkdir -p "${dkr_dir}"
 # ------------------------------------------------------------------------------
-cp -r "${src_dir}/docker/build/default"/* "${dkr_dir}/"
-# ------------------------------------------------------------------------------
-
+cp -r "${src_dir}/docker/build" "${dkr_dir}/"
+cp -r "${src_dir}/docker/eagilog" "${dkr_dir}/"
 # ------------------------------------------------------------------------------
 mkdir -p "${pkg_dir}/DEBIAN"
 cat << CONTROL > "${pkg_dir}/DEBIAN/control"
