@@ -7,5 +7,5 @@
 this_dir="$(realpath $(dirname ${0}))"
 
 docker build "${this_dir}" \
-	--tag eagine/eagine:eagilog_influxdb \
+	--tag eagine/eagine:eagilog_influxdb
 
