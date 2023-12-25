@@ -4,7 +4,6 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-source "$(dirname ${BASH_SOURCE[0]})/../../../common.sh"
 this_dir="$(realpath $(dirname ${0}))"
 repo_dir="$(realpath $(dirname ${0})/../../../..)"
 work_dir="$(mktemp -d)"
@@ -24,9 +23,5 @@ cp "${this_dir}/bin/init.sh" "${work_dir}/bin"
 cp "${this_dir}/Dockerfile" "${work_dir}/"
 
 docker build "${work_dir}" \
-	--tag ${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_postgres \
-
-docker tag \
-	${EAGINE_DOCKER_REGISTRY}/eagine:eagilog_postgres \
-	eagine/eagine:eagilog_postgres
+	--tag eagine/eagine:eagilog_postgres \
 

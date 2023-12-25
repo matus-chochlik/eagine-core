@@ -13,4 +13,3 @@ ENV POSTGRES_PASSWORD=secret
 COPY bin/init.sh /docker-entrypoint-initdb.d/
 RUN chown postgres:postgres /docker-entrypoint-initdb.d/*
 
-
