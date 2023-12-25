@@ -36,13 +36,10 @@ done
 
 docker build "$(dirname ${0})" \
 	--network host \
-	--tag ${EAGINE_DOCKER_REGISTRY_HOST:-localhost}:${EAGINE_DOCKER_REGISTRY_PORT:-5000}/eagine:build-default \
+	--tag eagine/eagine:build-default \
 	--build-arg "EAGINE_ORIGIN=${origin}" \
 	--build-arg "EAGINE_SUB_MODULE=${sub_module}" \
 	--build-arg "EAGINE_BRANCH=${branch}" \
 	--build-arg "EAGINE_BUILD_TYPE=${build_type}" \
 	--build-arg "EAGINE_CPU_COUNT=${cpu_count}"
 
-docker tag \
-	${EAGINE_DOCKER_REGISTRY_HOST:-localhost}:${EAGINE_DOCKER_REGISTRY_PORT:-5000}/eagine:build-default \
-	eagine/eagine:build-default
