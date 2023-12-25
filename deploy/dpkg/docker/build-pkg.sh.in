@@ -8,10 +8,13 @@ source ../../deb_common.sh
 src_dir=$(realpath "@SRC_DIR@")
 pkg_dir=$(realpath "@PKG_DIR@")
 
-mkdir -p "${pkg_dir}/usr"
 pkg_prefix=$(realpath "@PKG_DIR@/usr")
 dkr_dir="${pkg_prefix}/share/eagine/docker"
 
+# ------------------------------------------------------------------------------
+mkdir -p "${pkg_prefix}/share/eagine/"
+cp  "${src_dir}/source/app/log_server/postgresql/eagilog.sql" \
+    "${pkg_prefix}/share/eagine/eagilog.sql"
 # ------------------------------------------------------------------------------
 mkdir -p "${dkr_dir}"
 # ------------------------------------------------------------------------------

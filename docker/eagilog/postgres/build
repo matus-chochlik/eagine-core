@@ -16,8 +16,11 @@ function cleanup() {
 trap cleanup EXIT
 
 mkdir -p "${work_dir}/user/eagilog"
-cp  "${repo_dir}/source/app/log_server/postgresql/eagilog.sql"\
-    "${work_dir}/user/eagilog/eagilog.sql"
+if [[ -f "/usr/share/eagine/eagilog.sql" ]]
+then cp "/usr/share/eagine/eagilog.sql" "${work_dir}/user/eagilog/eagilog.sql"
+else cp "${repo_dir}/source/app/log_server/postgresql/eagilog.sql"\
+    	"${work_dir}/user/eagilog/eagilog.sql"
+fi
 mkdir -p "${work_dir}/bin"
 cc -no-pie -static -o "${work_dir}/bin/eagine-getpwd" "${this_dir}/bin/getpwd.c"
 cp "${this_dir}/bin/init.sh" "${work_dir}/bin"
