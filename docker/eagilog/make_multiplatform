@@ -4,6 +4,8 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
+# usage: make_multiplatform x86_64 aarch64 ...
+#
 for container in influxdb postgres grafana server web frontend
-do "$(dirname ${0})/${container}/build"
+do "$(dirname ${0})/${container}/make_multiplatform" "${@}"
 done

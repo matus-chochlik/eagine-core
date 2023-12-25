@@ -5,7 +5,8 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 #
 this_dir="$(realpath $(dirname ${0}))"
+architecture=$(docker info | sed -n 's/^\s*Architecture:\s*\(\w\+\)\s*$/\1/p')
 
 docker build "${this_dir}" \
-	--tag eagine/eagine:eagilog_grafana
+	--tag eagine/eagine:eagilog_grafana-${architecture:-unknown}
 

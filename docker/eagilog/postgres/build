@@ -7,6 +7,7 @@
 this_dir="$(realpath $(dirname ${0}))"
 repo_dir="$(realpath $(dirname ${0})/../../../..)"
 work_dir="$(mktemp -d)"
+architecture=$(docker info | sed -n 's/^\s*Architecture:\s*\(\w\+\)\s*$/\1/p')
 
 function cleanup() {
 	rm -rf "${work_dir}"
@@ -23,5 +24,5 @@ cp "${this_dir}/bin/init.sh" "${work_dir}/bin"
 cp "${this_dir}/Dockerfile" "${work_dir}/"
 
 docker build "${work_dir}" \
-	--tag eagine/eagine:eagilog_postgres
+	--tag eagine/eagine:eagilog_postgres-${architecture:-unknown}
 
