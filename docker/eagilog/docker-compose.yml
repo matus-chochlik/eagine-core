@@ -69,8 +69,10 @@ services:
     networks:
       - eagilog
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
     secrets:
       - eagilog_frontend.pkey
       - eagilog_influxdb.crt
