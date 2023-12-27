@@ -6,19 +6,18 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 
 import os
-import re
 import io
 import json
 import math
 import time
 import flask
 import decimal
+import getpass
 import argparse
 import colorsys
 import datetime
 import psycopg2
 import matplotlib.pyplot as plt
-import matplotlib.ticker as pltckr
 import multiprocessing
 import PIL
 
@@ -152,6 +151,8 @@ class ArgumentParser(argparse.ArgumentParser):
         class _Options(object):
             # ------------------------------------------------------------------
             def __init__(self, options):
+                self.psql_password = None
+                self.psql_password_file = None
                 self.__dict__.update(options.__dict__)
 
             # ------------------------------------------------------------------
@@ -178,8 +179,7 @@ class ArgumentParser(argparse.ArgumentParser):
 def get_argument_parser():
     return ArgumentParser(
         prog=os.path.basename(__file__),
-        description="""Web/REST server for EAGilog server"""
-    )
+        description="""Web/REST server for EAGilog server""")
 # ------------------------------------------------------------------------------
 # Flask app
 # ------------------------------------------------------------------------------
@@ -366,58 +366,50 @@ class EAGilogWeb(object):
         return time.time() - self._start_time
 
     # --------------------------------------------------------------------------
-    def psql_stream_count(self):
+    def psql_single_value(self, query, cast):
         try:
             with self.psql_cursor() as cur:
-                cur.execute("SELECT count(1) FROM eagilog.stream")
-                return int(cur.fetchone()[0])
+                cur.execute(query)
+                return cast(cur.fetchone()[0])
         except Exception as err:
+            self._psql_conn = None
             return str(err)
+
+    # --------------------------------------------------------------------------
+    def psql_stream_count(self):
+        return self.psql_single_value(
+            "SELECT count(1) FROM eagilog.stream",
+            lambda x: int(x))
 
     # --------------------------------------------------------------------------
     def psql_active_stream_count(self):
-        try:
-            with self.psql_cursor() as cur:
-                cur.execute("SELECT count(1) FROM eagilog.active_stream")
-                return int(cur.fetchone()[0])
-        except Exception as err:
-            return str(err)
+        return self.psql_single_value(
+            "SELECT count(1) FROM eagilog.active_stream",
+            lambda x: int(x))
 
     # --------------------------------------------------------------------------
     def psql_interval_count(self):
-        try:
-            with self.psql_cursor() as cur:
-                cur.execute("SELECT count(1) FROM eagilog.profile_interval")
-                return int(cur.fetchone()[0])
-        except Exception as err:
-            return str(err)
+        return self.psql_single_value(
+            "SELECT count(1) FROM eagilog.profile_interval",
+            lambda x: int(x))
 
     # --------------------------------------------------------------------------
     def psql_entry_count(self):
-        try:
-            with self.psql_cursor() as cur:
-                cur.execute("SELECT count(1) FROM eagilog.entry")
-                return int(cur.fetchone()[0])
-        except Exception as err:
-            return str(err)
+        return self.psql_single_value(
+            "SELECT count(1) FROM eagilog.entry",
+            lambda x: int(x))
 
     # --------------------------------------------------------------------------
     def psql_entry_arg_count(self):
-        try:
-            with self.psql_cursor() as cur:
-                cur.execute("SELECT count(1) FROM eagilog.entry_and_args")
-                return int(cur.fetchone()[0])
-        except Exception as err:
-            return str(err)
+        return self.psql_single_value(
+            "SELECT count(1) FROM eagilog.entry_and_args",
+            lambda x: int(x))
 
     # --------------------------------------------------------------------------
     def psql_schema_data_size_mib(self):
-        try:
-            with self.psql_cursor() as cur:
-                cur.execute("SELECT eagilog.schema_data_size_mib()")
-                return float(cur.fetchone()[0])
-        except Exception as err:
-            return str(err)
+        return self.psql_single_value(
+            "SELECT eagilog.schema_data_size_mib()",
+            lambda x: float(x))
 
     # --------------------------------------------------------------------------
     # API functions
@@ -742,7 +734,6 @@ def ewa_img_stream_sudoku_tiling_gif(stream_id):
             eagilog_web.img_stream_sudoku_tiling_gif(int(stream_id)),
             mimetype="image/gif")
     except Exception as error:
-        raise
         return str(error)
 # ------------------------------------------------------------------------------
 # Routing - Web pages
