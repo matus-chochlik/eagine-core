@@ -1,0 +1,22 @@
+[Unit]
+Description=EAGine log server docker stack
+
+[Service]
+KeyringMode=private
+NoNewPrivileges=true
+PrivateDevices=false
+PrivateNetwork=false
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectKernelTunables=true
+ProtectSystem=full
+RemoveIPC=true
+UMask=007
+Type=oneshot
+WorkingDirectory=/usr/share/eagine/docker/eagilog
+RemainAfterExit=yes
+ExecStart=/bin/bash /usr/bin/eagilog-server-start
+ExecStop=/bin/bash  /usr/bin/eagilog-server-stop
+
+[Install]
+WantedBy=default.target

@@ -22,6 +22,7 @@ cp -r "${src_dir}/docker/build" "${dkr_dir}/"
 cp -r "${src_dir}/docker/eagilog" "${dkr_dir}/"
 # ------------------------------------------------------------------------------
 cp -r "${this_dir}/bin" "${pkg_prefix}/"
+cp -r "${this_dir}/etc" "${pkg_dir}/"
 # ------------------------------------------------------------------------------
 mkdir -p "${pkg_dir}/DEBIAN"
 cat << CONTROL > "${pkg_dir}/DEBIAN/control"
