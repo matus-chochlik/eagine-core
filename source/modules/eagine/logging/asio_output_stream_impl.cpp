@@ -72,6 +72,7 @@ void asio_log_output_stream_base<Endpoint, Socket>::flush(bool) noexcept {
         _write();
     } else {
         _socket.connect(_endpoint);
+        _socket.set_option(typename Socket::keep_alive{true});
         if(_socket.is_open()) {
             _write();
         }
