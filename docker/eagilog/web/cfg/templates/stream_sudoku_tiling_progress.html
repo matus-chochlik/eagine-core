@@ -6,12 +6,12 @@
   <title>Sudoku tiling progress</title>
   <link rel="stylesheet" type="text/css" href="/static/eagilog.css">
   <script type="text/javascript" src="/static/jquery.js"></script>
-  <script type="text/javascript" src="/static/stream_sudoku_tiling.js"></script>
+  <script type="text/javascript" src="/static/stream_sudoku_tiling_progress.js"></script>
 </head>
 <body>
     <div class="images">
     {% for stream in streams %}
-      <img class="tiling" id="tiling_{{ stream.id }}" src="/image/stream_sudoku_tiling/{{ stream.id }}.png"/>
+      <img class="tiling" id="tiling_{{ stream.id }}" src="/image/stream_sudoku_tiling_progress/{{ stream.id }}.png"/>
     {% endfor %}
     </div>
 </body>

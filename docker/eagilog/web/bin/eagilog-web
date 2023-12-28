@@ -462,7 +462,7 @@ class EAGilogWeb(object):
     # --------------------------------------------------------------------------
     # Template data
     # --------------------------------------------------------------------------
-    def stream_sudoku_tiling_data(self):
+    def stream_sudoku_tiling_progress_data(self):
         try:
             query = """
             SELECT DISTINCT
@@ -603,7 +603,7 @@ class EAGilogWeb(object):
         return w, h, [(None, None, None)] * (w * h)
 
     # --------------------------------------------------------------------------
-    def img_stream_sudoku_tiling(self, stream_id, w, h, cells):
+    def img_stream_sudoku_tiling_progress(self, stream_id, w, h, cells):
         def _inc(x, y, t):
             if x is not None and y is not None:
                 k = (y * w) + x
@@ -632,9 +632,9 @@ class EAGilogWeb(object):
         yield img
 
     # --------------------------------------------------------------------------
-    def img_stream_sudoku_tiling_png(self, stream_id):
+    def img_stream_sudoku_tiling_progress_png(self, stream_id):
         w, h, cells = self.img_stream_sudoku_tiling_cells(stream_id)
-        img = next(self.img_stream_sudoku_tiling(stream_id, w, h, cells))
+        img = next(self.img_stream_sudoku_tiling_progress(stream_id, w, h, cells))
 
         output = io.BytesIO()
         img.save(output, format="PNG")
@@ -643,10 +643,10 @@ class EAGilogWeb(object):
         return output
 
     # --------------------------------------------------------------------------
-    def img_stream_sudoku_tiling_gif(self, stream_id, step = 16):
+    def img_stream_sudoku_tiling_progress_gif(self, stream_id, step = 16):
         w, h, cells = self.img_stream_sudoku_tiling_cells(stream_id)
         def _img(cells = []):
-            return self.img_stream_sudoku_tiling(stream_id, w, h, cells)
+            return self.img_stream_sudoku_tiling_progress(stream_id, w, h, cells)
 
         img = next(_img())
 
@@ -717,31 +717,31 @@ def ewa_img_active_stream_main_progress():
     except Exception as error:
         return str(error)
 # ------------------------------------------------------------------------------
-@eagilog_web_app.route("/image/stream_sudoku_tiling/<stream_id>.png")
-def ewa_img_stream_sudoku_tiling_png(stream_id):
+@eagilog_web_app.route("/image/stream_sudoku_tiling_progress/<stream_id>.png")
+def ewa_img_stream_sudoku_tiling_progress_png(stream_id):
     try:
         return flask.send_file(
-            eagilog_web.img_stream_sudoku_tiling_png(int(stream_id)),
+            eagilog_web.img_stream_sudoku_tiling_progress_png(int(stream_id)),
             mimetype="image/png"
         )
     except Exception as error:
         return str(error)
 # ------------------------------------------------------------------------------
-@eagilog_web_app.route("/image/stream_sudoku_tiling/<stream_id>.gif")
-def ewa_img_stream_sudoku_tiling_gif(stream_id):
+@eagilog_web_app.route("/image/stream_sudoku_tiling_progress/<stream_id>.gif")
+def ewa_img_stream_sudoku_tiling_progress_gif(stream_id):
     try:
         return flask.send_file(
-            eagilog_web.img_stream_sudoku_tiling_gif(int(stream_id)),
+            eagilog_web.img_stream_sudoku_tiling_progress_gif(int(stream_id)),
             mimetype="image/gif")
     except Exception as error:
         return str(error)
 # ------------------------------------------------------------------------------
 # Routing - Web pages
 # ------------------------------------------------------------------------------
-@eagilog_web_app.route("/static/stream_sudoku_tiling.html")
-def ewa_html_stream_sudoku_tiling():
-    context = { "streams": eagilog_web.stream_sudoku_tiling_data() }
-    return flask.render_template("stream_sudoku_tiling.html", **context)
+@eagilog_web_app.route("/static/stream_sudoku_tiling_progress.html")
+def ewa_html_stream_sudoku_tiling_progress():
+    context = { "streams": eagilog_web.stream_sudoku_tiling_progress_data() }
+    return flask.render_template("stream_sudoku_tiling_progress.html", **context)
 # ------------------------------------------------------------------------------
 # Web root
 # ------------------------------------------------------------------------------
