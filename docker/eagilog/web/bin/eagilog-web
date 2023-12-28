@@ -603,8 +603,48 @@ class EAGilogWeb(object):
         return w, h, [(None, None, None)] * (w * h)
 
     # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling_time(self, stream_id, w, h, cells):
+        def _val(x, y, t):
+            if x is not None and y is not None:
+                k = (y * w) + x
+                return k, int(math.ceil(t))
+            return 0, 0
+
+        tmax = 0
+        data = [0] * (w * h)
+        for cell in cells:
+            idx, tval = _val(*cell)
+            tmax = max(tmax, tval)
+            data[idx] = tval
+
+        def _get_pix(v):
+            if v == 0:
+                return (0, 0, 0, 0)
+            def _adj(c):
+                return tuple(int(255 * e) for e in c)
+            return _adj(self._color_blend(
+                (0.8, 0.7, 0.1, 1.0),
+                (0.2, 0.3, 0.9, 1.0),
+                float(tmax - v) / float(tmax)))
+
+        img = PIL.Image.new(mode = "RGBA", size = (w, h))
+        img.putdata([_get_pix(v) for v in data])
+        yield img
+
+    # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling_time_png(self, stream_id):
+        w, h, cells = self.img_stream_sudoku_tiling_cells(stream_id)
+        img = next(self.img_stream_sudoku_tiling_time(stream_id, w, h, cells))
+
+        output = io.BytesIO()
+        img.save(output, format="PNG")
+        output.seek(0)
+
+        return output
+
+    # --------------------------------------------------------------------------
     def img_stream_sudoku_tiling_progress(self, stream_id, w, h, cells):
-        def _inc(x, y, t):
+        def _val(x, y, t):
             if x is not None and y is not None:
                 k = (y * w) + x
                 return k, int(math.ceil(t))
@@ -613,7 +653,7 @@ class EAGilogWeb(object):
         tacc = 0
         data = [0] * (w * h)
         for cell in cells:
-            idx, tinc = _inc(*cell)
+            idx, tinc = _val(*cell)
             tacc += tinc
             data[idx] = tacc
 
@@ -713,6 +753,16 @@ def ewa_img_active_stream_main_progress():
         return flask.send_file(
             eagilog_web.img_active_stream_main_progress(),
             mimetype="image/svg+xml"
+        )
+    except Exception as error:
+        return str(error)
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/image/stream_sudoku_tiling_time/<stream_id>.png")
+def ewa_img_stream_sudoku_tiling_time_png(stream_id):
+    try:
+        return flask.send_file(
+            eagilog_web.img_stream_sudoku_tiling_time_png(int(stream_id)),
+            mimetype="image/png"
         )
     except Exception as error:
         return str(error)
