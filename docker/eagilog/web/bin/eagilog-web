@@ -447,6 +447,7 @@ class EAGilogWeb(object):
                     result.append(obj)
                 return result
         except Exception as err:
+            self._psql_conn = None
             return str(err)
 
     # --------------------------------------------------------------------------
@@ -462,7 +463,7 @@ class EAGilogWeb(object):
     # --------------------------------------------------------------------------
     # Template data
     # --------------------------------------------------------------------------
-    def stream_sudoku_tiling_progress_data(self):
+    def stream_sudoku_tiling_data(self):
         try:
             query = """
             SELECT DISTINCT
@@ -483,6 +484,7 @@ class EAGilogWeb(object):
                         "id": row[0]
                     })
         except:
+            self._psql_conn = None
             data = []
         return data
     # --------------------------------------------------------------------------
@@ -511,6 +513,7 @@ class EAGilogWeb(object):
                         break
                     data.append(tuple(self.fix_for_json(v) for v in row))
         except:
+            self._psql_conn = None
             data = tuple()
 
         def _make_label(s):
@@ -598,7 +601,7 @@ class EAGilogWeb(object):
 
                 return w, h, cells
         except Exception as err:
-            pass
+            self._psql_conn = None
 
         return w, h, [(None, None, None)] * (w * h)
 
@@ -790,8 +793,13 @@ def ewa_img_stream_sudoku_tiling_progress_gif(stream_id):
 # ------------------------------------------------------------------------------
 @eagilog_web_app.route("/static/stream_sudoku_tiling_progress.html")
 def ewa_html_stream_sudoku_tiling_progress():
-    context = { "streams": eagilog_web.stream_sudoku_tiling_progress_data() }
+    context = { "streams": eagilog_web.stream_sudoku_tiling_data() }
     return flask.render_template("stream_sudoku_tiling_progress.html", **context)
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/static/stream_sudoku_tiling_time.html")
+def ewa_html_stream_sudoku_tiling_time():
+    context = { "streams": eagilog_web.stream_sudoku_tiling_data() }
+    return flask.render_template("stream_sudoku_tiling_time.html", **context)
 # ------------------------------------------------------------------------------
 # Web root
 # ------------------------------------------------------------------------------
