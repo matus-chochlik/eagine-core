@@ -81,7 +81,7 @@ static auto make_process_watchdog_backend() noexcept
 process_watchdog::process_watchdog(main_ctx_parent parent) noexcept
   : main_ctx_object{"Watchdog", parent}
   , _backend{make_process_watchdog_backend()}
-  , _should_log_heartbeat{std::chrono::seconds{60}, nothing} {}
+  , _should_log_heartbeat{std::chrono::seconds{30}, nothing} {}
 //------------------------------------------------------------------------------
 void process_watchdog::declare_initialized() noexcept {
     _backend->declare_initialized();
