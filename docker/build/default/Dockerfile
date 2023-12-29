@@ -7,7 +7,7 @@ RUN apt update \
  && apt --yes install \
 		apt-utils \
  		ca-certificates \
-		build-essential \
+		build-essential binutils \
 		pkg-config \
  		git cmake ninja-build
 

@@ -8,6 +8,7 @@ ARG EAGINE_BUILD_TYPE=Debug
 
 RUN /home/eagine/bin/eagine-update-source
 RUN /home/eagine/bin/eagine-build --target eagine-core-log-server
+RUN strip /home/eagine/binary/eagine-core/source/app/log_server/eagine-core-log-server
 
 FROM ubuntu:jammy
 LABEL maintainer="matus.chochlik@proton.me"
