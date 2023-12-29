@@ -13,6 +13,8 @@
     {% for stream in streams %}
       <img class="tiling"
         id="tiling_{{ stream.id }}"
+        width="{{ stream.width * 2 }}"
+        height="{{ stream.height * 2 }}"
         src="/image/stream_sudoku_tiling_progress/{{ stream.id }}.png"
         title="visualisation of sudoku solution progress in stream {{ stream.id }}"
         alt="visualisation of sudoku solution progress in stream {{ stream.id }}"/>
