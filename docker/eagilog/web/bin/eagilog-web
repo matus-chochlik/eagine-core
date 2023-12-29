@@ -210,7 +210,11 @@ class PSQLConnection(object):
             password=options.get_psql_password(),
             database=options.psql_name,
             host=options.psql_host,
-            port=options.psql_port)
+            port=options.psql_port,
+            keepalives=1,
+            keepalives_idle=30,
+            keepalives_interval=10,
+            keepalives_count=5)
         self._pg_conn.__enter__()
     # --------------------------------------------------------------------------
     def __del__(self):
@@ -520,8 +524,7 @@ class EAGilogWeb(object):
             return "%.1f%%\n%s/%s" % (
                 s[1] * 100.0,
                 format_duration(s[2]),
-                format_duration(s[3])
-            )
+                format_duration(s[3]))
 
         def _make_color(s):
             return self._color_blend(
@@ -817,8 +820,7 @@ if __name__ == "__main__":
         eagilog_web_app.run(
             debug=options.debug,
             host="0.0.0.0",
-            port=options.port_number
-        )
+            port=options.port_number)
     else:
         from gevent.pywsgi import WSGIServer
         srvr = WSGIServer(("0.0.0.0", options.port_number), eagilog_web_app)
