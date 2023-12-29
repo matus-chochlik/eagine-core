@@ -20,4 +20,4 @@ ENTRYPOINT python /usr/src/app/eagilog-web \
 	--psql-name eagilog \
 	--psql-user eagilog \
 	--psql-pass-file /run/secrets/eagilog_postgres.passwd \
-    --port "${EAGILOG_WEB_PORT}"
+	--port "${EAGILOG_WEB_PORT}"
