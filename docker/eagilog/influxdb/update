@@ -1,0 +1,9 @@
+#!/bin/bash -e
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+source "$(dirname ${0})/build"
+docker tag eagine/eagine:eagilog_influxdb-${architecture:-unknown} eagine/eagine:eagilog_influxdb
+docker service update --force eagilog_eagilog_influxdb --image eagine/eagine:eagilog_influxdb
