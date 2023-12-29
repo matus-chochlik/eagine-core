@@ -631,7 +631,7 @@ class EAGilogWeb(object):
             return _adj(self._color_blend(
                 (0.8, 0.7, 0.1, 1.0),
                 (0.2, 0.3, 0.9, 1.0),
-                float(tmax - v) / float(tmax)))
+                math.sqrt(float(tmax - v) / float(tmax))))
 
         img = PIL.Image.new(mode = "RGBA", size = (w, h))
         img.putdata([_get_pix(v) for v in data])
