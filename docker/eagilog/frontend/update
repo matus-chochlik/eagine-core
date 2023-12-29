@@ -6,4 +6,5 @@
 #
 source "$(dirname ${0})/build"
 docker tag eagine/eagine:eagilog_frontend-${architecture:-unknown} eagine/eagine:eagilog_frontend
+docker push eagine/eagine:eagilog_frontend
 docker service update --force eagilog_eagilog_frontend --image eagine/eagine:eagilog_frontend

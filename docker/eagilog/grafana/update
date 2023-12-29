@@ -6,4 +6,5 @@
 #
 source "$(dirname ${0})/build"
 docker tag eagine/eagine:eagilog_grafana-${architecture:-unknown} eagine/eagine:eagilog_grafana
+docker push eagine/eagine:eagilog_grafana
 docker service update --force eagilog_eagilog_grafana --image eagine/eagine:eagilog_grafana
