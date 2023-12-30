@@ -37,10 +37,10 @@ public:
     using difference_type = std::ptrdiff_t;
 
     /// @brief Iterator type.
-    using iterator = pointer;
+    using iterator = typename std::array<T, N>::iterator;
 
     /// @brief Const iterator type.
-    using const_iterator = const_pointer;
+    using const_iterator = typename std::array<T, N>::const_iterator;
 
     /// @brief Default constructor.
     constexpr static_vector() noexcept = default;
@@ -130,37 +130,37 @@ public:
     /// @brief Returns an iterator pointing to the first element.
     /// @see end
     [[nodiscard]] constexpr auto begin() noexcept -> iterator {
-        return data();
+        return _array.begin();
     }
 
     /// @brief Returns a const iterator pointing to the first element.
     /// @see end
     [[nodiscard]] constexpr auto begin() const noexcept -> const_iterator {
-        return data();
+        return _array.begin();
     }
 
     /// @brief Returns a const iterator pointing to the first element.
     /// @see end
     [[nodiscard]] constexpr auto cbegin() const noexcept -> const_iterator {
-        return data();
+        return _array.cbegin();
     }
 
     /// @brief Returns an iterator pointing past the last element.
     /// @see begin
     [[nodiscard]] constexpr auto end() noexcept -> iterator {
-        return data() + size();
+        return _array.begin() + size();
     }
 
     /// @brief Returns a const iterator pointing past the last element.
     /// @see begin
     [[nodiscard]] constexpr auto end() const noexcept -> const_iterator {
-        return data() + size();
+        return _array.begin() + size();
     }
 
     /// @brief Returns a const iterator pointing past the last element.
     /// @see begin
     [[nodiscard]] constexpr auto cend() const noexcept -> const_iterator {
-        return data() + size();
+        return _array.cbegin() + size();
     }
 
     /// @brief Pushes a new element to the back of this static_vector.
