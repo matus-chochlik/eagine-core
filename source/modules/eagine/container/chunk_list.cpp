@@ -102,13 +102,15 @@ public:
     }
 
     constexpr auto adjust() noexcept -> auto& {
-        if(_iter_c_p != _iter_c_e) {
-            if(_iter_e == (*_iter_c_p)->end()) {
-                if(++_iter_c_p != _iter_c_e) {
-                    _iter_e = (*_iter_c_p)->begin();
-                } else {
-                    _iter_e = {};
-                }
+        while(_iter_c_p != _iter_c_e) {
+            if(_iter_e != (*_iter_c_p)->end()) {
+                break;
+            }
+            if(++_iter_c_p != _iter_c_e) {
+                _iter_e = (*_iter_c_p)->begin();
+            } else {
+                _iter_e = {};
+                break;
             }
         }
         return *this;
@@ -324,18 +326,22 @@ public:
     /// @see end
     [[nodiscard]] constexpr auto begin() noexcept -> iterator {
         if(_chunks.empty()) {
-            return {_chunks.begin(), _chunks.end()};
+            return iterator{_chunks.begin(), _chunks.end()}.adjust();
         }
-        return {_chunks.begin(), _chunks.end(), _chunks.front()->begin()};
+        return iterator{
+          _chunks.begin(), _chunks.end(), _chunks.front()->begin()}
+          .adjust();
     }
 
     /// @brief Returns a constant iterator pointing to the first element.
     /// @see end
     [[nodiscard]] constexpr auto begin() const noexcept -> const_iterator {
         if(_chunks.empty()) {
-            return {_chunks.begin(), _chunks.end()};
+            return const_iterator{_chunks.begin(), _chunks.end()}.adjust();
         }
-        return {_chunks.begin(), _chunks.end(), _chunks.front()->begin()};
+        return const_iterator{
+          _chunks.begin(), _chunks.end(), _chunks.front()->begin()}
+          .adjust();
     }
 
     /// @brief Returns an iterator pointing past the last element.

@@ -109,12 +109,87 @@ void chunk_list_insert(auto& s) {
     }
 }
 //------------------------------------------------------------------------------
+void chunk_list_erase(auto& s) {
+    eagitest::case_ test{s, 5, "erase"};
+    eagine::chunk_list<int, 19> cl;
+
+    test.check(cl.empty(), "is empty");
+    test.check_equal(cl.size(), 0U, "size is zero");
+    test.check(cl.begin() == cl.end(), "begin == end");
+
+    for(int i = 0; i < 10000; ++i) {
+        cl.emplace_back(i);
+    }
+
+    test.check(not cl.empty(), "is not empty");
+    test.check_equal(cl.size(), 10000U, "size is ok");
+    test.check(cl.size() <= cl.capacity(), "capacity is ok");
+    test.check(cl.begin() != cl.end(), "begin != end");
+
+    for(auto it{cl.begin()}; it != cl.end();) {
+        if(*it % 3 == 0) {
+            it = cl.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    test.check(not cl.empty(), "is not empty");
+    test.check(cl.size() <= cl.capacity(), "capacity is ok");
+    test.check(cl.begin() != cl.end(), "begin != end");
+
+    int i = 1;
+    test.check_equal(i, cl.front(), "front is ok");
+    for(const auto e : cl) {
+        if(i % 3 != 0) {
+            test.check_equal(i, e, "element is ok");
+        } else {
+            i++;
+        }
+        i++;
+    }
+    test.check_equal(i - 1, cl.back(), "back is ok");
+}
+//------------------------------------------------------------------------------
+void chunk_list_clear(auto& s) {
+    eagitest::case_ test{s, 6, "clear"};
+    eagine::chunk_list<int, 17> cl;
+
+    test.check(cl.empty(), "is empty");
+    test.check_equal(cl.size(), 0U, "size is zero");
+    test.check(cl.size() <= cl.capacity(), "capacity is ok");
+    test.check(cl.begin() == cl.end(), "begin == end");
+
+    for(int i = 0; i < 10000; ++i) {
+        cl.emplace_back(i);
+    }
+
+    test.check(not cl.empty(), "is not empty");
+    test.check_equal(cl.size(), 10000U, "size is ok");
+    test.check(cl.size() <= cl.capacity(), "capacity is ok");
+    test.check(cl.begin() != cl.end(), "begin != end");
+
+    cl.clear();
+
+    for(const auto e : cl) {
+        (void)e;
+        test.fail("no elements in empty list");
+    }
+
+    test.check(cl.empty(), "is empty");
+    test.check_equal(cl.size(), 0U, "size is zero");
+    test.check(cl.size() <= cl.capacity(), "capacity is ok");
+    test.check(cl.begin() == cl.end(), "begin == end");
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "chunk_list", 4};
+    eagitest::suite test{argc, argv, "chunk_list", 6};
     test.once(chunk_list_default_construct);
     test.once(chunk_list_push_back);
     test.once(chunk_list_emplace_back);
     test.once(chunk_list_insert);
+    test.once(chunk_list_erase);
+    test.once(chunk_list_clear);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
