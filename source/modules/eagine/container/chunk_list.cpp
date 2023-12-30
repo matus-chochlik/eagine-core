@@ -219,6 +219,12 @@ public:
     /// @brief Difference type.
     using difference_type = std::ptrdiff_t;
 
+    /// @brief Reference type
+    using reference = T&;
+
+    /// @brief Constant reference type
+    using const_reference = const T&;
+
     /// @brief Iterator type.
     using iterator = chunk_list_iterator<T, N, false>;
 

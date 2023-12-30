@@ -182,14 +182,62 @@ void chunk_list_clear(auto& s) {
     test.check(cl.begin() == cl.end(), "begin == end");
 }
 //------------------------------------------------------------------------------
+void chunk_list_pop_back(auto& s) {
+    eagitest::case_ test{s, 7, "popback"};
+    eagine::chunk_list<int, 13> cl;
+
+    test.check(cl.empty(), "is empty");
+    test.check_equal(cl.size(), 0U, "size is zero");
+    test.check(cl.begin() == cl.end(), "begin == end");
+
+    int i = 0;
+    for(; i < 10000; ++i) {
+        cl.push_back(i);
+    }
+
+    test.check(not cl.empty(), "is not empty");
+    test.check_equal(cl.size(), 10000U, "size is ok");
+    test.check(cl.size() <= cl.capacity(), "capacity is ok");
+    test.check(cl.begin() != cl.end(), "begin != end");
+
+    while(not cl.empty()) {
+        test.check_equal(0, cl.front(), "front is ok");
+        test.check_equal(--i, cl.back(), "back is ok");
+        cl.pop_back();
+    }
+}
+//------------------------------------------------------------------------------
+void chunk_list_stack(auto& s) {
+    eagitest::case_ test{s, 8, "stack"};
+    std::stack<int, eagine::chunk_list<int, 33>> stk;
+
+    test.check(stk.empty(), "is empty");
+    test.check_equal(stk.size(), 0U, "size is zero");
+
+    int i = 0;
+    for(; i < 10000; ++i) {
+        stk.push(i);
+    }
+
+    test.check(not stk.empty(), "is not empty");
+    test.check_equal(stk.size(), 10000U, "size is ok");
+
+    while(not stk.empty()) {
+        test.check_equal(--i, stk.top(), "top is ok");
+        stk.pop();
+    }
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "chunk_list", 6};
+    eagitest::suite test{argc, argv, "chunk_list", 8};
     test.once(chunk_list_default_construct);
     test.once(chunk_list_push_back);
     test.once(chunk_list_emplace_back);
     test.once(chunk_list_insert);
     test.once(chunk_list_erase);
     test.once(chunk_list_clear);
+    test.once(chunk_list_pop_back);
+    test.once(chunk_list_stack);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
