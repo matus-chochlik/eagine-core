@@ -208,8 +208,7 @@ public:
       std::is_nothrow_copy_constructible_v<T>) -> iterator {
         const auto count{std::distance(iter, iend)};
         assert((size() + count) <= max_size());
-        assert(_valid_pos(iter) and _valid_pos(iend));
-        const auto bpos{begin() + std::distance(cbegin(), iter)};
+        const auto bpos{begin() + std::distance(cbegin(), pos)};
         auto ipos{bpos};
         std::move_backward(ipos, end(), end() + count);
         while(iter != iend) {
