@@ -383,7 +383,7 @@ public:
                   c_p, _chunks.end(), (*c_p)->begin() + e_p};
             } else {
                 return const_iterator{
-                  c_n, _chunks.end(), (*c_n)->begin() + e_p - split - 1};
+                  c_n, _chunks.end(), (*c_n)->begin() + e_p - split};
             }
         }
 

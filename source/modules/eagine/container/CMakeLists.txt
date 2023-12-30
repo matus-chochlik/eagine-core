@@ -67,6 +67,7 @@ eagine_add_module_tests(
 		iterator
 		flat_map
 		flat_set
+		chunk_list
 		object_pool
 		trie
 	IMPORTS
