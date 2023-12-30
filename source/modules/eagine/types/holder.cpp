@@ -231,8 +231,23 @@ public:
 //------------------------------------------------------------------------------
 /// @brief Specialization of basic_holder wrapping unique pointers.
 /// @see basic_holder
+/// @see unique_keeper
 export template <typename T>
 using unique_holder = basic_holder<std::unique_ptr<T>, T>;
+//------------------------------------------------------------------------------
+/// @brief Specialization of unique_holder that holds an object when constructed.
+/// @see unique_holder
+export template <typename T>
+class unique_keeper : public unique_holder<T> {
+public:
+    /// @brief Constructs with held instance constructed with specified parameters.
+    template <typename... Args>
+    constexpr unique_keeper(Args&&... args) noexcept
+      : unique_holder<T> {
+        hold<T>, std::forward<Args>(args)...
+    }
+    {}
+};
 //------------------------------------------------------------------------------
 /// @brief Specialization of basic_holder wrapping shared pointers.
 /// @see basic_holder
