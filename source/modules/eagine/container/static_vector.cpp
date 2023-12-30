@@ -310,7 +310,7 @@ public:
     /// @see front
     [[nodiscard]] constexpr auto back() noexcept -> value_type& {
         assert(not empty());
-        return _array.back();
+        return _array[_size - 1];
     }
 
     /// @brief Returns const reference to the last element.
@@ -318,7 +318,7 @@ public:
     /// @see front
     [[nodiscard]] constexpr auto back() const noexcept -> const value_type& {
         assert(not empty());
-        return _array.back();
+        return _array[_size - 1];
     }
 
     /// @brief Returns reference to the element at the specified index.
