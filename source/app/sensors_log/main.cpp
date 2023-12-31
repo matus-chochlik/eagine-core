@@ -10,6 +10,14 @@ import eagine.core;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+auto handle_special_args(main_ctx& ctx) -> bool {
+    if(ctx.args().find("--print-bash-completion")) {
+        // TODO
+        return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
 void do_log(main_ctx& ctx) noexcept {
     auto& log{ctx.log()};
     auto& sys{ctx.system()};
@@ -40,6 +48,10 @@ void do_log(main_ctx& ctx) noexcept {
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     try {
+        if(handle_special_args(ctx)) {
+            return true;
+        }
+
         signal_switch interrupted;
         const application_reconfig_value<std::chrono::seconds> log_interval{
           ctx.config(),

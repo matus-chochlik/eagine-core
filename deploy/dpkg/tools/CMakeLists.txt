@@ -7,7 +7,6 @@ set(PKG_NAME "eagine-core-tools_${EAGINE_VERSION}-${EAGINE_GIT_COMMITS_SINCE_VER
 set(PKG_DIR "${CMAKE_CURRENT_BINARY_DIR}/${PKG_NAME}")
 set(PKG_PREFIX "${PKG_DIR}/usr")
 
-file(GENERATE OUTPUT build-pkg.txt INPUT build-pkg.txt.in)
 configure_file(build-pkg.sh.in build-pkg.sh @ONLY)
 
 add_custom_command(
@@ -24,7 +23,6 @@ add_custom_command(
 	ARGS --build --root-owner-group ${PKG_NAME}
 	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 	DEPENDS
-		eagine-core-log-server
 		"${PKG_DIR}/DEBIAN/control"
 	COMMENT "Building ${PKG_NAME}.deb package"
 )

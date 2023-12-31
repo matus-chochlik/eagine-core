@@ -250,6 +250,8 @@ struct message_extractor : message_extractor_base {
 
     void add_arg() noexcept final;
 
+    void consume_by(stream_sink& sink) noexcept final;
+
 private:
     template <typename T>
     auto _add_value(const extractor_arg<T>&) noexcept -> bool;
@@ -257,6 +259,8 @@ private:
     basic_string_path _fmt_pattern{"_/f"};
     basic_string_path _lvl_pattern{"_/lvl"};
     basic_string_path _atr_pattern{"_/a/_/*"};
+
+    arg_value_translator _arg_translator;
 };
 //------------------------------------------------------------------------------
 void message_extractor::reset() noexcept {
@@ -332,6 +336,13 @@ auto message_extractor::add(const extractor_arg<string_view>& a) noexcept
 //------------------------------------------------------------------------------
 void message_extractor::add_arg() noexcept {
     this->info.args.emplace_back();
+}
+//------------------------------------------------------------------------------
+void message_extractor::consume_by(stream_sink& sink) noexcept {
+    for(auto& arg : this->info.args) {
+        _arg_translator.translate(this->info, arg);
+    }
+    message_extractor_base::consume_by(sink);
 }
 //------------------------------------------------------------------------------
 // interval extractor

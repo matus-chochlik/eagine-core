@@ -92,7 +92,7 @@ The required packages can be installed with the following command:
 
 ::
 
-  sudo apt install opensc libengine-pkcs11-openssl1.1 softhsm
+  sudo apt install opensc libengine-pkcs11-openssl softhsm
 
 Configuration of Soft HSM
 -------------------------

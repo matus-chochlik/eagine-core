@@ -1,0 +1,15 @@
+#!/bin/bash -e
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+#
+architectures=("${@}")
+for arch in "${architectures[@]}"
+do docker pull eagine/eagine:eagilog_web-${arch}
+done
+
+amend_args=(${architectures[@]/#/--amend eagine/eagine:eagilog_web-})
+docker manifest create eagine/eagine:eagilog_web "${amend_args[@]}"
+
+docker manifest push eagine/eagine:eagilog_web

@@ -20,7 +20,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 export template <unsigned S>
 class basic_sudoku_glyph;
-export template <unsigned S, bool Tight = false>
+export template <unsigned S>
 class basic_sudoku_board;
 export template <unsigned S>
 class basic_sudoku_board_generator;
@@ -58,10 +58,7 @@ public:
         return out << _empty_glyph;
     }
 
-    auto print(std::ostream&, const basic_sudoku_board<S, false>& board) const
-      -> std::ostream&;
-
-    auto print(std::ostream&, const basic_sudoku_board<S, true>& board) const
+    auto print(std::ostream&, const basic_sudoku_board<S>& board) const
       -> std::ostream&;
 
 private:
@@ -264,8 +261,7 @@ public:
     }
 
 private:
-    friend class basic_sudoku_board<S, false>;
-    friend class basic_sudoku_board<S, true>;
+    friend class basic_sudoku_board<S>;
 
     struct from_cell_value_tag {};
     constexpr basic_sudoku_glyph(
@@ -280,7 +276,7 @@ private:
     cell_type _cell_val{0U};
 };
 //------------------------------------------------------------------------------
-export template <unsigned S, bool Tight>
+export template <unsigned S>
 class basic_sudoku_board {
 public:
     using This = basic_sudoku_board;
@@ -312,17 +308,12 @@ public:
         }
     }
 
-    basic_sudoku_board(const board_traits& type) noexcept
-      : _type{type} {
+    basic_sudoku_board() noexcept {
         for_each_coord([&](const auto& coord) {
             set(coord, glyph_type());
             return true;
         });
     }
-
-    basic_sudoku_board(const basic_sudoku_board<S, not Tight>& that) noexcept
-      : _type{that._type}
-      , _blocks{that._blocks} {}
 
     auto blocks() noexcept -> blocks_type& {
         return _blocks;
@@ -330,15 +321,6 @@ public:
 
     auto blocks() const noexcept -> const blocks_type& {
         return _blocks;
-    }
-
-    auto type() const noexcept -> auto& {
-        return _type;
-    }
-
-    friend auto operator<<(std::ostream& out, const This& that)
-      -> std::ostream& {
-        return that._type.get().print(out, that);
     }
 
     auto is_possible(const coord_type& coord, const glyph_type value)
@@ -487,10 +469,6 @@ public:
         return *this;
     }
 
-    auto tight() const noexcept -> basic_sudoku_board<S, true> {
-        return {*this};
-    }
-
 private:
     auto _cell_val(const coord_type& coord) const noexcept {
         const auto [bx, by, cx, cy] = coord;
@@ -514,9 +492,6 @@ private:
         return blocks[y * S + x];
     }
 
-    friend class basic_sudoku_board<S, not Tight>;
-
-    std::reference_wrapper<const board_traits> _type;
     blocks_type _blocks{};
 };
 //------------------------------------------------------------------------------
@@ -530,7 +505,7 @@ public:
       : _traits{traits} {}
 
     auto generate(std::size_t count) -> board_type {
-        board_type result{_traits};
+        board_type result{};
         result.calculate_alternatives();
 
         while(count) {
@@ -580,7 +555,7 @@ private:
 //------------------------------------------------------------------------------
 template <unsigned S>
 auto basic_sudoku_board_traits<S>::make_diagonal() const -> board_type {
-    board_type result{*this};
+    board_type result{};
     unsigned g = 0;
     for(const auto b : integer_range(S)) {
         for(const auto c : integer_range(S)) {
@@ -621,7 +596,7 @@ auto basic_sudoku_board_traits<S>::print(
 template <unsigned S>
 auto basic_sudoku_board_traits<S>::print(
   std::ostream& out,
-  const basic_sudoku_board<S, false>& board) const -> std::ostream& {
+  const basic_sudoku_board<S>& board) const -> std::ostream& {
     for(const auto by : integer_range(S)) {
         for(const auto cy : integer_range(S)) {
             for(const auto bx : integer_range(S)) {
@@ -645,23 +620,6 @@ auto basic_sudoku_board_traits<S>::print(
                 }
                 if(s1 + 1 < S) {
                     out << "-+";
-                }
-            }
-            out << '\n';
-        }
-    }
-    return out;
-}
-//------------------------------------------------------------------------------
-template <unsigned S>
-auto basic_sudoku_board_traits<S>::print(
-  std::ostream& out,
-  const basic_sudoku_board<S, true>& board) const -> std::ostream& {
-    for(const auto by : integer_range(S)) {
-        for(const auto cy : integer_range(S)) {
-            for(const auto bx : integer_range(S)) {
-                for(const auto cx : integer_range(S)) {
-                    print(out, board.get({{bx, by, cx, cy}}));
                 }
             }
             out << '\n';
@@ -834,7 +792,7 @@ private:
     auto _get(const int x, const int y) -> const board_type& {
         auto found{find(_boards, std::make_tuple(x, y))};
         if(not found) {
-            board_type added{_traits};
+            board_type added{};
             if(y > 0) {
                 if(x > 0) {
                     auto& left = _get(x - 1, y);

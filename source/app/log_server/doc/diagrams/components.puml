@@ -1,0 +1,96 @@
+@startuml
+component "Logging\nApplication" as app {
+}
+() "TCP" as app_log_output
+app - app_log_output
+
+component "Client 1" as client1
+() "TCP" as client1_tcp
+client1 - client1_tcp
+
+component "Client 2" as client2
+() "TCP" as client2_tcp
+client2 - client2_tcp
+
+component " Browser" as client3
+() "TCP" as client3_tcp
+client3 - client3_tcp
+
+cloud "Docker swarm" as swarm #EEEEEE {
+  () "TCP" as log_server_container_tcp
+  node "log-server <<container>>" as log_server_container #DDDDDD {
+    () "TCP" as log_server_output
+    component "log-server" as log_server_app {
+    }
+    () "TCP\nserver" as log_server_input
+
+    log_server_app - log_server_input
+    log_server_output - log_server_app
+  }
+  log_server_container - log_server_container_tcp
+  log_server_container_tcp -[thickness=8,#red]> log_server_input
+
+  () "TCP" as postgres_container_tcp
+  node "postgres <<container>>" as postgres_container #DDDDDD {
+    () "TCP" as postgres_tcp
+    database "PostgreSQL" as postgres_db {
+    }
+
+    postgres_tcp - postgres_db
+  }
+  postgres_container_tcp -left- postgres_container
+  log_server_output -[thickness=8,#red]> postgres_tcp
+
+  () "TCP" as influxdb_container_tcp
+  node "influxdb <<container>>" as influxdb_container #DDDDDD {
+    () "TCP" as influxdb_tcp
+    database "InfluxDB" as influxdb_db {
+    }
+
+    influxdb_tcp - influxdb_db
+  }
+  influxdb_container_tcp - influxdb_container
+  log_server_output -[thickness=8,#red]> influxdb_tcp
+
+  () "TCP" as grafana_container_tcp
+  node "grafana <<container>>" as grafana_container #DDDDDD {
+    () "TCP" as grafana_tcp
+    node "Grafana" as grafana_db {
+    }
+
+    grafana_tcp - grafana_db
+  }
+  grafana_container_tcp - grafana_container
+  influxdb_tcp -[thickness=8,#red]> grafana_tcp
+
+  () "TCP" as web_container_tcp
+  node "web <<container>>" as web_container #DDDDDD {
+    () "TCP" as web_tcp
+    node "Web" as web_db {
+    }
+
+    web_tcp - web_db
+  }
+  web_container_tcp - web_container
+  postgres_tcp -[thickness=8,#red]> web_tcp
+  influxdb_tcp -[thickness=8,#red]> web_tcp
+
+  log_server_container -[hidden]- postgres_container
+  postgres_container -[hidden]- influxdb_container
+  influxdb_container -[hidden]- grafana_container
+  grafana_container -[hidden]- web_container
+
+}
+
+app_log_output -[thickness=8,#red]> log_server_container_tcp
+
+app -[hidden]- client1
+client1 -[hidden]- client2
+client2 -[hidden]- client3
+
+postgres_container_tcp -[thickness=8,#green]> client1_tcp
+influxdb_container_tcp -[thickness=8,#green]> client2_tcp
+grafana_container_tcp  -[thickness=8,#green]> client3_tcp
+client3_tcp <-[thickness=8,#green]- web_container_tcp
+
+@enduml

@@ -1,0 +1,12 @@
+.dashboard {
+    font-family: Helvetica;
+    width: 100vw;
+}
+
+body {
+    background-color: #202020;
+}
+
+image {
+    background-color: inherit;
+}

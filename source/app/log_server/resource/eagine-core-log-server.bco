@@ -1,0 +1,68 @@
+#  Distributed under the Boost Software License, Version 1.0.
+#  (See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt)
+#
+#  Automatically generated file. Do NOT modify manually,
+#  edit fmd-get.py instead
+
+function _eagine_core_log_server()
+{
+    COMPREPLY=()
+    local curr="${COMP_WORDS[COMP_CWORD]}"
+    local prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    local only_once_opts=" \
+        -h --help \
+        --istream \
+        --local \
+        --network \
+        --ostream\
+        --socat \
+        --netcat \
+        --influxdb \
+        --libpq \
+        --text-tree \
+        --local \
+        --network \
+    "
+
+    local opts=""
+
+    for opt in ${only_once_opts}
+    do
+        local opt_used=false
+        for pre in ${COMP_WORDS[@]}
+        do
+            if [ "${opt}" == "${pre}" ]
+            then opt_used=true && break
+            fi
+        done
+        if [ "${opt_used}" == "false" ]
+        then
+            if [ "${opt_used}" == "false" ]
+            then opts="${opts} ${opt}"
+            fi
+        fi
+    done
+
+    if [ ${COMP_CWORD} -le 1 ]
+    then opts="--help ${opts}"
+    fi
+
+    case "${prev}" in
+        -h|--help)
+            return 0;;
+        --local)
+            COMPREPLY=( "/tmp/eagine-log" );;
+        --network)
+            COMPREPLY=( "localhost:34917" );;
+        --libpq)
+            COMPREPLY=( "postgresql://eagilog:PASSWORD@eagilog_postgres/eagilog" );;
+        --influxdb)
+            COMPREPLY=( "http://localhost:8086/api/v2?token=TOKEN" );;
+        *)
+            COMPREPLY=($(compgen -W "${opts}" -- "${curr}"));;
+    esac
+
+} && complete -F _eagine_core_log_server eagine-core-log-server
+# vi: syntax=bash

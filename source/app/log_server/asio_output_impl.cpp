@@ -63,7 +63,7 @@ auto asio_output_stream<Socket>::is_connected() noexcept -> bool {
 //------------------------------------------------------------------------------
 template <typename Socket>
 void asio_output_stream<Socket>::write(const memory::const_block data) noexcept {
-    append_to(data, _buffers.front());
+    append_to(data, _buffers.next());
     if(not _writing) {
         _write();
     }
@@ -71,9 +71,9 @@ void asio_output_stream<Socket>::write(const memory::const_block data) noexcept 
 //------------------------------------------------------------------------------
 template <typename Socket>
 void asio_output_stream<Socket>::_write() {
-    _buffers.back().clear();
     _buffers.swap();
-    if(auto& chunk{_buffers.back()}; not chunk.empty()) {
+    _buffers.next().clear();
+    if(auto& chunk{_buffers.current()}; not chunk.empty()) {
         _writing = true;
         asio::async_write(
           _socket,

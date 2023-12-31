@@ -7,12 +7,12 @@ RUN apt update \
  && apt --yes install \
 		apt-utils \
  		ca-certificates \
-		build-essential \
+		build-essential binutils \
 		pkg-config \
  		git cmake ninja-build
 
-COPY llvm-snapshot.gpg /etc/apt/trusted.gpg.d/
-COPY 80_llvm.list /etc/apt/sources.list.d/
+COPY cfg/llvm-snapshot.gpg /etc/apt/trusted.gpg.d/
+COPY cfg/80_llvm.list /etc/apt/sources.list.d/
 
 RUN apt update \
  && apt --yes upgrade \
@@ -31,6 +31,8 @@ RUN apt --yes install \
 		libalut-dev \
 		libssl-dev \
 		libsystemd-dev \
+		libpq-dev \
+		libcurl4-openssl-dev \
 		zlib1g-dev
 
 RUN adduser \
@@ -46,7 +48,9 @@ ARG EAGINE_SUB_MODULE=all
 ARG EAGINE_BRANCH=develop
 ARG EAGINE_BUILD_TYPE=Debug
 
-RUN mkdir -p /home/eagine/.config/eagine \
+RUN mkdir -p /home/eagine/.cache \
+ && chown -R eagine /home/eagine/.cache \
+ && mkdir -p /home/eagine/.config/eagine \
  && echo "export EAGINE_ORIGIN=${EAGINE_ORIGIN}" >> /home/eagine/.config/eagine/bashrc \
  && echo "export EAGINE_SUB_MODULE=${EAGINE_SUB_MODULE}" >> /home/eagine/.config/eagine/bashrc \
  && echo "export EAGINE_BRANCH=${EAGINE_BRANCH}" >> /home/eagine/.config/eagine/bashrc \
@@ -58,11 +62,11 @@ RUN mkdir -p /home/eagine/.config/eagine \
 RUN grep -qx "^[[:space:]]*source ~/.config/eagine/bashrc" "/home/eagine/.bashrc" \
  || echo "source ~/.config/eagine/bashrc" >> "/home/eagine/.bashrc" 
 
-COPY toolchain-clang.cmake /home/eagine/.config/eagine/
+COPY cfg/toolchain-clang.cmake /home/eagine/.config/eagine/
 
 RUN mkdir -p /home/eagine/.local/bin
 
-COPY parse_args.sh /home/eagine/.local/bin/
+COPY cfg/parse_args.sh /home/eagine/.local/bin/
 
 RUN mkdir -p /home/eagine/bin \
  && chown eagine /home/eagine/bin

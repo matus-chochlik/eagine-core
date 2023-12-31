@@ -1,0 +1,833 @@
+#!/usr/bin/env python3
+# coding: UTF-8
+# Copyright (c) 2023-2023 Matus Chochlik
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt
+
+import os
+import io
+import json
+import math
+import time
+import flask
+import decimal
+import getpass
+import argparse
+import colorsys
+import datetime
+import psycopg2
+import matplotlib.pyplot as plt
+import multiprocessing
+import PIL
+
+# ------------------------------------------------------------------------------
+# Utilities
+# ------------------------------------------------------------------------------
+def format_duration(s, w = 0, n_a = "N/A"):
+    if s is None:
+        return n_a
+    if isinstance(s, str):
+        s = float(s)
+    if isinstance(s, datetime.timedelta):
+        s = s.total_seconds()
+    if s >= 60480000:
+        return "%dw" % (int(s) / 604800)
+    if s >= 604800:
+        return "%dw %2dd" % (int(s) / 604800, (int(s) % 604800) / 86400)
+    if s >= 86400:
+        return "%dd %2dh" % (int(s) / 86400, (int(s) % 86400) / 3600)
+    if s >= 3600:
+        return "%dh %02dm" % (int(s) / 3600, (int(s) % 3600) / 60)
+    if s >= 60:
+        return "%dm %02ds" % (int(s) / 60, int(s) % 60)
+    if s >= 10:
+        return "%ds" % int(s)
+    if s >= 0.01:
+        return "%dms" % int(s*10**3)
+    if s <= 0.0:
+        return "0"
+    return "%dμs" % int(s*10**6)
+# ------------------------------------------------------------------------------
+# Argument parsing
+# ------------------------------------------------------------------------------
+class ArgumentParser(argparse.ArgumentParser):
+    # -------------------------------------------------------------------------
+    def _positive_int(self, x):
+        try:
+            assert(int(x) > 0)
+            return int(x)
+        except:
+            self.error("`%s' is not a positive integer value" % str(x))
+    # -------------------------------------------------------------------------
+    def _port_number(self, x):
+        try:
+            p = int(x)
+            if (p > 1) and (p < 2**16):
+                return p
+            self.error("'%d' is not a valid port number" % (p))
+        except TypeError:
+            self.error("port number must be an integer value" )
+    # -------------------------------------------------------------------------
+    def __init__(self, **kw):
+        argparse.ArgumentParser.__init__(self, **kw)
+
+        self.add_argument(
+            "--psql-host",
+            metavar='HOSTNAME',
+            dest='psql_host',
+            action="store",
+            default="localhost"
+        )
+
+        self.add_argument(
+            "--psql-port",
+            metavar='PORT-NUMBER',
+            dest='psql_port',
+            type=self._positive_int,
+            action="store",
+            default=5432
+        )
+
+        self.add_argument(
+            "--psql-name",
+            metavar='DATABASE',
+            dest='psql_name',
+            action="store",
+            default="eagilog"
+        )
+
+        self.add_argument(
+            "--psql-user",
+            metavar='USERNAME',
+            dest='psql_user',
+            action="store",
+            default="eagilog"
+        )
+
+        self.add_argument(
+            "--psql-password",
+            metavar='PASSWORD',
+            dest='psql_password',
+            action="store",
+            default=None
+        )
+
+        self.add_argument(
+            "--psql-pass-file",
+            metavar='FILE-PATH',
+            dest='psql_password_file',
+            action="store",
+            default=None
+        )
+
+        self.add_argument(
+            "--port", "-P",
+            dest="port_number",
+            metavar="NUMBER",
+            type=self._port_number,
+            default=34913,
+            help="""
+            Specifies the port number (34913) by default.
+            """
+        )
+
+        self.add_argument(
+            "--debug", "-D",
+            dest="debug_mode",
+            action="store_true",
+            default=False,
+            help="""
+            Starts the service in debug mode.
+            """
+        )
+
+    # -------------------------------------------------------------------------
+    def process_parsed_options(self, options):
+        return options
+
+    # -------------------------------------------------------------------------
+    def parse_args(self):
+        class _Options(object):
+            # ------------------------------------------------------------------
+            def __init__(self, options):
+                self.psql_password = None
+                self.psql_password_file = None
+                self.__dict__.update(options.__dict__)
+
+            # ------------------------------------------------------------------
+            def get_psql_password(self):
+                if self.psql_password is None:
+                    def _getpwd(passfd):
+                        return passfd.readline().rstrip().split(":")[-1]
+
+                    try:
+                        with open(self.psql_password_file, "r") as passfd:
+                            self.psql_password = _getpwd(passfd)
+                    except:
+                        try:
+                            with open(os.path.expanduser("~/.pgpass"), "r") as passfd:
+                                self.psql_password = _getpwd(passfd)
+                        except:
+                            self.psql_password = getpass.getpass("psql password: ")
+                return self.psql_password
+
+        return _Options(self.process_parsed_options(
+            argparse.ArgumentParser.parse_args(self)))
+
+# ------------------------------------------------------------------------------
+def get_argument_parser():
+    return ArgumentParser(
+        prog=os.path.basename(__file__),
+        description="""Web/REST server for EAGilog server""")
+# ------------------------------------------------------------------------------
+# Flask app
+# ------------------------------------------------------------------------------
+class EAGilogWebApp(flask.Flask):
+    # --------------------------------------------------------------------------
+    @staticmethod
+    def get_static_folder():
+        return os.path.join(
+            os.path.realpath(
+                os.environ.get('EAGILOG_WEB_ROOT', os.path.dirname(__file__))
+            ), 'static')
+    # --------------------------------------------------------------------------
+    def __init__(self):
+        flask.Flask.__init__(self, "eagilog-web")
+        self.config["STATIC_FOLDER"] = self.get_static_folder()
+
+# ------------------------------------------------------------------------------
+eagilog_web = None
+eagilog_web_app = EAGilogWebApp()
+# ------------------------------------------------------------------------------
+# PostgreSQL connection
+# ------------------------------------------------------------------------------
+class PSQLConnection(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options):
+        self._pg_conn = psycopg2.connect(
+            user=options.psql_user,
+            password=options.get_psql_password(),
+            database=options.psql_name,
+            host=options.psql_host,
+            port=options.psql_port,
+            keepalives=1,
+            keepalives_idle=30,
+            keepalives_interval=10,
+            keepalives_count=5)
+        self._pg_conn.__enter__()
+    # --------------------------------------------------------------------------
+    def __del__(self):
+        try: self._pg_conn.close()
+        except: pass
+    # --------------------------------------------------------------------------
+    def cursor(self):
+        return self._pg_conn.cursor()
+
+# ------------------------------------------------------------------------------
+# Queue I/O objects
+# ------------------------------------------------------------------------------
+class QueueWriteIO(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, queue):
+        self._queue = queue
+
+    # --------------------------------------------------------------------------
+    def close(self):
+        self._queue.put(None)
+        self._queue.close()
+
+    # --------------------------------------------------------------------------
+    def write(self, chunk):
+        self._queue.put(chunk)
+# ------------------------------------------------------------------------------
+class QueueReadIO(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, queue, process):
+        self._buf = io.BytesIO()
+        self._available = 0
+        self._write_pos = 0
+        self._size = 0
+        self._queue = queue
+        self._process = process
+        self._eof = False
+
+    # --------------------------------------------------------------------------
+    def __del__(self):
+        self._queue.close()
+        self._process.join()
+
+    # --------------------------------------------------------------------------
+    def _store(self, chunk):
+        if self._size < self._available + len(chunk):
+            new_buf = io.BytesIO()
+            new_buf.write(self.read())
+            self._write_pos = self._available = new_buf.tell()
+            read_fp = 0
+            while self._size <= self._available + len(chunk):
+                self._size = max(self._size, 1024) * 2
+            new_buf.write(bytearray(self._size - self._write_pos))
+            self._buf = new_buf
+        else:
+            read_fp = self._buf.tell()
+
+        self._buf.seek(self._write_pos)
+        written = self._size - self._write_pos
+        self._buf.write(chunk[:written])
+        self._write_pos += len(chunk)
+        self._available += len(chunk)
+        if written < len(chunk):
+            self._write_pos -= self._size
+            self._buf.seek(0)
+            self._buf.write(chunk[written:])
+        self._buf.seek(read_fp)
+
+    # --------------------------------------------------------------------------
+    def read(self, size = None):
+        if size is not None:
+            while not self._eof and size > self._available:
+                try:
+                    chunk = self._queue.get()
+                    if chunk is None:
+                        self._eof = True
+                        break
+                    self._store(chunk)
+                except ValueError:
+                    self._eof = True
+                    break
+
+        if size is None or size > self._available:
+            size = self._available
+        size = max(size, 0)
+
+        if size == 0 and self._eof:
+            return None
+
+        result = self._buf.read(size)
+        self._available -= size
+
+        if len(result) < size:
+            self._buf.seek(0)
+            result += self._buf.read(size - len(result))
+
+        return result
+
+# ------------------------------------------------------------------------------
+# App
+# ------------------------------------------------------------------------------
+class EAGilogWeb(object):
+    # --------------------------------------------------------------------------
+    def __init__(self, options):
+        self._options = options
+        self._start_time = time.time()
+        self._psql_conn = None
+
+        self._stat_getters = {
+            "uptime_seconds": self.uptime_seconds,
+            "psql_stream_count": self.psql_stream_count,
+            "psql_active_stream_count": self.psql_active_stream_count,
+            "psql_interval_count": self.psql_interval_count,
+            "psql_entry_count": self.psql_entry_count,
+            "psql_entry_arg_count": self.psql_entry_arg_count,
+            "psql_schema_data_size_mib": self.psql_schema_data_size_mib
+        }
+
+    # --------------------------------------------------------------------------
+    # Helper functions
+    # --------------------------------------------------------------------------
+    def psql_connect(self):
+        return PSQLConnection(self._options)
+
+    # --------------------------------------------------------------------------
+    def psql_cursor(self):
+        if self._psql_conn is None:
+            self._psql_conn = self.psql_connect()
+        return self._psql_conn.cursor()
+
+    # --------------------------------------------------------------------------
+    def fix_for_json(self, value):
+        if isinstance(value, decimal.Decimal):
+            return float(value)
+        return value
+
+    # --------------------------------------------------------------------------
+    def _gather_values(self, getters):
+        values = {}
+        for key, getter in getters.items():
+            try: value = getter()
+            except Exception as error: value = str(error)
+
+            if type(value) is float:
+                values[key] = round(value, 2)
+            else:
+                values[key] = value
+        return values
+
+    # --------------------------------------------------------------------------
+    # Stat value getters
+    # --------------------------------------------------------------------------
+    def uptime_seconds(self):
+        return time.time() - self._start_time
+
+    # --------------------------------------------------------------------------
+    def psql_single_value(self, query, cast):
+        try:
+            with self.psql_cursor() as cur:
+                cur.execute(query)
+                return cast(cur.fetchone()[0])
+        except Exception as err:
+            self._psql_conn = None
+            return str(err)
+
+    # --------------------------------------------------------------------------
+    def psql_stream_count(self):
+        return self.psql_single_value(
+            "SELECT count(1) FROM eagilog.stream",
+            lambda x: int(x))
+
+    # --------------------------------------------------------------------------
+    def psql_active_stream_count(self):
+        return self.psql_single_value(
+            "SELECT count(1) FROM eagilog.active_stream",
+            lambda x: int(x))
+
+    # --------------------------------------------------------------------------
+    def psql_interval_count(self):
+        return self.psql_single_value(
+            "SELECT count(1) FROM eagilog.profile_interval",
+            lambda x: int(x))
+
+    # --------------------------------------------------------------------------
+    def psql_entry_count(self):
+        return self.psql_single_value(
+            "SELECT count(1) FROM eagilog.entry",
+            lambda x: int(x))
+
+    # --------------------------------------------------------------------------
+    def psql_entry_arg_count(self):
+        return self.psql_single_value(
+            "SELECT count(1) FROM eagilog.entry_and_args",
+            lambda x: int(x))
+
+    # --------------------------------------------------------------------------
+    def psql_schema_data_size_mib(self):
+        return self.psql_single_value(
+            "SELECT eagilog.schema_data_size_mib()",
+            lambda x: float(x))
+
+    # --------------------------------------------------------------------------
+    # API functions
+    # --------------------------------------------------------------------------
+    def api_stats(self):
+        return self._gather_values(self._stat_getters)
+
+    # --------------------------------------------------------------------------
+    def api_active_stream_main_progress(self):
+        try:
+            query = """
+            SELECT
+                stream_id,
+                EXTRACT(epoch FROM entry_time_min) AS entry_time_min_s,
+                EXTRACT(epoch FROM entry_time_cur) AS entry_time_cur_s,
+                EXTRACT(epoch FROM entry_time_now) AS entry_time_now_s,
+                EXTRACT(epoch FROM age) AS age_s,
+                value_min,
+                value_cur,
+                value_max,
+                done
+            FROM eagilog.active_stream
+            JOIN eagilog.stream_main_progress
+            USING(stream_id)
+            """
+            with self.psql_cursor() as cur:
+                cur.execute(query)
+                columns = [(idx, desc[0]) for idx, desc in enumerate(cur.description)]
+                result = []
+                while True:
+                    row = cur.fetchone()
+                    if row is None:
+                        break
+                    obj = {col: self.fix_for_json(row[idx]) for idx, col in columns}
+                    result.append(obj)
+                return result
+        except Exception as err:
+            self._psql_conn = None
+            return str(err)
+
+    # --------------------------------------------------------------------------
+    @staticmethod
+    def _color_blend(c1, c2, b):
+        def _clamp(x):
+            return min(max(0.0, x), 1.0)
+
+        b = _clamp(b)
+        a = 1.0 - b
+
+        h1,s1,v1 = colorsys.rgb_to_hsv(c1[0], c1[1], c1[2])
+        h2,s2,v2 = colorsys.rgb_to_hsv(c2[0], c2[1], c2[2])
+        c_hsv = colorsys.hsv_to_rgb(h1*a+h2*b, s1*a+s2*b, v1*a+v2*b)
+        c_rgb = tuple(max(min(l * a + r * b, 1), 0) for l, r in zip(c1, c2))
+        return tuple(_clamp(rgb * 0.7 + hsv * 0.3) for rgb, hsv in zip(c_rgb, c_hsv))
+    # --------------------------------------------------------------------------
+    # Template data
+    # --------------------------------------------------------------------------
+    def stream_sudoku_tiling_data(self):
+        try:
+            query = """
+            SELECT DISTINCT
+                stream_id, w, h
+            FROM eagilog.active_stream
+            JOIN eagilog.sudoku_solved_board
+            USING(stream_id)
+            ORDER BY(stream_id)
+            """
+            with self.psql_cursor() as cur:
+                cur.execute(query)
+                data = []
+                while True:
+                    row = cur.fetchone()
+                    if row is None:
+                        break
+                    data.append({
+                        "width": int(row[1]),
+                        "height": int(row[2]),
+                        "id": row[0]})
+                        
+        except:
+            self._psql_conn = None
+            data = []
+        return data
+    # --------------------------------------------------------------------------
+    # Plots
+    # --------------------------------------------------------------------------
+    def img_active_stream_main_progress(self, imgfmt="svg"):
+        try:
+            query = """
+            SELECT
+                stream_id,
+                done,
+                EXTRACT(epoch FROM elapsed_time) AS elapsed_time_s,
+                EXTRACT(epoch FROM remaining_time) AS remaining_time_s,
+                EXTRACT(epoch FROM age) AS age_s
+            FROM eagilog.active_stream
+            JOIN eagilog.stream_main_progress
+            USING(stream_id)
+            ORDER BY(stream_id)
+            """
+            with self.psql_cursor() as cur:
+                cur.execute(query)
+                data = []
+                while True:
+                    row = cur.fetchone()
+                    if row is None:
+                        break
+                    data.append(tuple(self.fix_for_json(v) for v in row))
+        except:
+            self._psql_conn = None
+            data = tuple()
+
+        def _make_label(s):
+            return "%.1f%%\n%s/%s" % (
+                s[1] * 100.0,
+                format_duration(s[2]),
+                format_duration(s[3]))
+
+        def _make_color(s):
+            return self._color_blend(
+                (0.7, 0.2, 0.1),
+                (0.3, 0.8, 0.3),
+                math.exp(-s[4] / (15.0 * 60.0)))
+
+        y_pos = [y for y in range(len(data))]
+        streams = [str(e[0]) for e in data]
+        progress = [(e[1] * 100) for e in data]
+        labels_l = [_make_label(e) if e[1] <  0.42 else "" for e in data]
+        labels_r = [_make_label(e) if e[1] >= 0.42 else "" for e in data]
+        colors = [_make_color(e) for e in data]
+
+        fig, spl = plt.subplots()
+        plt.style.use('dark_background')
+        fig.set_size_inches(16, max(len(data) * 0.6, 2.0))
+
+        bars = spl.barh(y_pos, progress, color=colors)
+        x1,x2,y1,y2 = spl.axis()
+        spl.axis((0,100,y1,y2))
+
+        spl.bar_label(bars, labels_l, padding=10, color='white', fontweight='bold')
+        spl.bar_label(bars, labels_r, padding=-100, color='black', fontweight='bold')
+
+        spl.set_yticks(y_pos, labels=streams)
+        spl.invert_yaxis()
+        spl.set_xlabel("percent")
+        spl.set_ylabel("streams")
+        spl.grid(which="both", axis="both", alpha=0.3)
+
+        output = io.BytesIO()
+        plt.savefig(
+            output,
+            transparent=True,
+            format=imgfmt
+        )
+        fig.clear()
+        plt.close(fig)
+        output.seek(0)
+
+        return output
+    # --------------------------------------------------------------------------
+    # other images
+    # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling_cells(self, stream_id):
+        w = 32
+        h = 32
+        try:
+            query = """
+            SELECT
+                x, y, w, h,
+                EXTRACT(epoch FROM entry_time) as t
+            FROM eagilog.sudoku_solved_board
+            WHERE stream_id = %s
+            ORDER BY(entry_time)
+            """
+            with self.psql_cursor() as cur:
+                cur.execute(query, (stream_id,))
+                cells = []
+                row = cur.fetchone()
+                w = row[2]
+                h = row[3]
+                cells.append((row[0], row[1], float(row[4])))
+                while True:
+                    row = cur.fetchone()
+                    if row is None:
+                        break
+                    assert w == row[2]
+                    assert h == row[3]
+                    cells.append((row[0], row[1], float(row[4])))
+
+                l = len(cells)
+                for i in range(1, l):
+                    x, y, t = cells[l-i]
+                    cells[l-i] = (x, y, t - cells[l-i-1][2])
+
+                return w, h, cells
+        except Exception as err:
+            self._psql_conn = None
+
+        return w, h, [(None, None, None)] * (w * h)
+
+    # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling_time(self, stream_id, w, h, cells):
+        def _val(x, y, t):
+            if x is not None and y is not None:
+                k = (y * w) + x
+                return k, int(math.ceil(t))
+            return 0, 0
+
+        tmax = 0
+        data = [0] * (w * h)
+        for cell in cells:
+            idx, tval = _val(*cell)
+            tmax = max(tmax, tval)
+            data[idx] = tval
+
+        def _get_pix(v):
+            def _adj(e):
+                return int(255 * e)
+            if v == 0:
+                return 0
+            return _adj(1.0 - math.log10(float(v)) / math.log10(float(tmax)))
+
+        img = PIL.Image.new(mode = "L", size = (w, h))
+        img.putdata([_get_pix(v) for v in data])
+        yield img
+
+    # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling_time_png(self, stream_id):
+        w, h, cells = self.img_stream_sudoku_tiling_cells(stream_id)
+        img = next(self.img_stream_sudoku_tiling_time(stream_id, w, h, cells))
+
+        output = io.BytesIO()
+        img.save(output, format="PNG")
+        output.seek(0)
+
+        return output
+
+    # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling_progress(self, stream_id, w, h, cells):
+        def _val(x, y, t):
+            if x is not None and y is not None:
+                k = (y * w) + x
+                return k, int(math.ceil(t))
+            return 0, 0
+
+        tacc = 0
+        data = [0] * (w * h)
+        for cell in cells:
+            idx, tinc = _val(*cell)
+            tacc += tinc
+            data[idx] = tacc
+
+        def _get_pix(v):
+            if v == 0:
+                return (0, 0, 0, 0)
+            def _adj(c):
+                return tuple(int(255 * e) for e in c)
+            return _adj(self._color_blend(
+                (0.2, 0.3, 0.9, 0.0),
+                (0.8, 0.7, 0.1, 1.0),
+                float(v) / float(tacc)))
+
+        img = PIL.Image.new(mode = "RGBA", size = (w, h))
+        img.putdata([_get_pix(v) for v in data])
+        yield img
+
+    # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling_progress_png(self, stream_id):
+        w, h, cells = self.img_stream_sudoku_tiling_cells(stream_id)
+        img = next(self.img_stream_sudoku_tiling_progress(stream_id, w, h, cells))
+
+        output = io.BytesIO()
+        img.save(output, format="PNG")
+        output.seek(0)
+
+        return output
+
+    # --------------------------------------------------------------------------
+    def img_stream_sudoku_tiling_progress_gif(self, stream_id, step = 16):
+        w, h, cells = self.img_stream_sudoku_tiling_cells(stream_id)
+        def _img(cells = []):
+            return self.img_stream_sudoku_tiling_progress(stream_id, w, h, cells)
+
+        img = next(_img())
+
+        def _fix_cells(i = len(cells)):
+            clipped = cells[:i]
+            if len(clipped) > 0:
+                last = clipped[-1]
+                frame = 30.0
+                if last[2] > frame * 2:
+                    del clipped[-1]
+                    frames = math.ceil(math.sqrt(last[2]/frame) * 32.0)
+                    for i in range(int(frames)):
+                        yield clipped + [(last[0], last[1], (i+1)*last[2] / frames)]
+                    return
+
+            yield clipped
+
+        def _gen(l, s):
+            for i in range(0, l, s):
+                for cells in _fix_cells(i):
+                    for img in _img(cells):
+                        yield img
+            for cells in _fix_cells():
+                for img in _img(cells):
+                    yield img
+
+        def _save_func(img, imggen, output, l):
+            img.save(
+                output,
+                format="GIF",
+                save_all=True,
+                append_images=imggen,
+                optimize=False,
+                duration=l/1000,
+                loop=0)
+            output.close()
+
+        queue = multiprocessing.Queue()
+        writer = multiprocessing.Process(
+            target=_save_func,
+            args=(img, _gen(len(cells), step), QueueWriteIO(queue), len(cells)))
+        writer.start()
+
+        return QueueReadIO(queue, writer)
+
+# ------------------------------------------------------------------------------
+# Routing
+# ------------------------------------------------------------------------------
+# Routing - API
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/api/stats")
+def ewa_api_stats():
+    return json.dumps(eagilog_web.api_stats())
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/api/active_stream_main_progress")
+def ewa_api_active_stream_main_progress():
+    return json.dumps(eagilog_web.api_active_stream_main_progress())
+# ------------------------------------------------------------------------------
+# Routing - Web
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/image/active_stream_main_progress.svg")
+def ewa_img_active_stream_main_progress():
+    try:
+        return flask.send_file(
+            eagilog_web.img_active_stream_main_progress(),
+            mimetype="image/svg+xml"
+        )
+    except Exception as error:
+        return str(error)
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/image/stream_sudoku_tiling_time/<stream_id>.png")
+def ewa_img_stream_sudoku_tiling_time_png(stream_id):
+    try:
+        return flask.send_file(
+            eagilog_web.img_stream_sudoku_tiling_time_png(int(stream_id)),
+            mimetype="image/png"
+        )
+    except Exception as error:
+        return str(error)
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/image/stream_sudoku_tiling_progress/<stream_id>.png")
+def ewa_img_stream_sudoku_tiling_progress_png(stream_id):
+    try:
+        return flask.send_file(
+            eagilog_web.img_stream_sudoku_tiling_progress_png(int(stream_id)),
+            mimetype="image/png"
+        )
+    except Exception as error:
+        return str(error)
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/image/stream_sudoku_tiling_progress/<stream_id>.gif")
+def ewa_img_stream_sudoku_tiling_progress_gif(stream_id):
+    try:
+        return flask.send_file(
+            eagilog_web.img_stream_sudoku_tiling_progress_gif(int(stream_id)),
+            mimetype="image/gif")
+    except Exception as error:
+        return str(error)
+# ------------------------------------------------------------------------------
+# Routing - Web pages
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/static/stream_sudoku_tiling_progress.html")
+def ewa_html_stream_sudoku_tiling_progress():
+    context = { "streams": eagilog_web.stream_sudoku_tiling_data() }
+    return flask.render_template("stream_sudoku_tiling_progress.html", **context)
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/static/stream_sudoku_tiling_time.html")
+def ewa_html_stream_sudoku_tiling_time():
+    context = { "streams": eagilog_web.stream_sudoku_tiling_data() }
+    return flask.render_template("stream_sudoku_tiling_time.html", **context)
+# ------------------------------------------------------------------------------
+# Web root
+# ------------------------------------------------------------------------------
+@eagilog_web_app.route("/")
+def ewa_server_root():
+    return flask.redirect("/static/index.html", code=302)
+# ------------------------------------------------------------------------------
+# Main
+# ------------------------------------------------------------------------------
+if __name__ == "__main__":
+    argparser = get_argument_parser()
+    options = argparser.parse_args()
+    eagilog_web = EAGilogWeb(options)
+    if options.debug_mode:
+        eagilog_web_app.run(
+            debug=options.debug,
+            host="0.0.0.0",
+            port=options.port_number)
+    else:
+        from gevent.pywsgi import WSGIServer
+        srvr = WSGIServer(("0.0.0.0", options.port_number), eagilog_web_app)
+        try: srvr.serve_forever()
+        except KeyboardInterrupt:
+            pass
+# ------------------------------------------------------------------------------

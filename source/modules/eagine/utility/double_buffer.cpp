@@ -41,32 +41,52 @@ public:
         _idx = not _idx;
     }
 
-    /// @brief Returns a reference to the current "front" instance.
+    /// @brief Returns a reference to the current/front instance.
+    [[nodiscard]] auto current() noexcept -> T& {
+        return _values[_current_index()];
+    }
+
+    /// @brief Returns a constant reference to the current/front instance.
+    [[nodiscard]] auto current() const noexcept -> const T& {
+        return _values[_current_index()];
+    }
+
+    /// @brief Returns a reference to the current/front instance.
     [[nodiscard]] auto front() noexcept -> T& {
-        return _values[front_index()];
+        return _values[_current_index()];
     }
 
-    /// @brief Returns a const reference to the current "front" instance.
+    /// @brief Returns a constant reference to the current/front instance.
     [[nodiscard]] auto front() const noexcept -> const T& {
-        return _values[front_index()];
+        return _values[_current_index()];
     }
 
-    /// @brief Returns a reference to the current "back" instance.
+    /// @brief Returns a reference to the next/back instance.
+    [[nodiscard]] auto next() noexcept -> T& {
+        return _values[_next_index()];
+    }
+
+    /// @brief Returns a constant reference to the next/back instance.
+    [[nodiscard]] auto next() const noexcept -> const T& {
+        return _values[_next_index()];
+    }
+
+    /// @brief Returns a reference to the next/back instance.
     [[nodiscard]] auto back() noexcept -> T& {
-        return _values[back_index()];
+        return _values[_next_index()];
     }
 
-    /// @brief Returns a const reference to the current "back" instance.
+    /// @brief Returns a constant reference to the next/back instance.
     [[nodiscard]] auto back() const noexcept -> const T& {
-        return _values[back_index()];
+        return _values[_next_index()];
     }
 
 private:
-    auto front_index() const noexcept -> std::size_t {
+    auto _current_index() const noexcept -> std::size_t {
         return static_cast<std::size_t>(_idx);
     }
 
-    auto back_index() const noexcept -> std::size_t {
+    auto _next_index() const noexcept -> std::size_t {
         return static_cast<std::size_t>(not _idx);
     }
 

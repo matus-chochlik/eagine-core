@@ -1,0 +1,112 @@
+version: "3.6"
+services:
+  eagilog_influxdb:
+    image: eagine/eagine:eagilog_influxdb
+    networks:
+      - eagilog
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_DB=db0
+      - INFLUXDB_ADMIN_USER=eagine
+      - INFLUXDB_ADMIN_PASSWORD=WIoA8qN92Zr-8jrnkwGE2WoP3Vyzt+PIKmYC58HAj0ldEpCdZ9+eLCMg2qIVjXyb
+    volumes:
+      - influxdb-etc-storage:/etc/influxdb2
+      - influxdb-var-storage:/var/lib/influxdb2
+
+  eagilog_postgres:
+    image: eagine/eagine:eagilog_postgres
+    networks:
+      - eagilog
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-storage:/var/lib/postgresql
+    secrets:
+      - postgres_postgres.passwd
+      - eagilog_postgres.passwd
+      - backup_postgres.passwd
+
+  eagilog_grafana:
+    image: eagine/eagine:eagilog_grafana
+    networks:
+      - eagilog
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=eagine
+      - GF_SECURITY_ADMIN_PASSWORD=cUXjMQ5O1P7OdrdfkaJoCueUs+l6EcjM97bRp2ue1JBHalKyAf5DnIXExy5anfxZ
+    depends_on:
+      - eagilog_influxdb
+
+  eagilog_server:
+    image: eagine/eagine:eagilog_server
+    networks:
+      - eagilog
+    ports:
+      - "34915:34915"
+      - "34917:34917"
+    secrets:
+      - eagilog_postgres.passwd
+      - eagilog_influxdb.token
+    depends_on:
+      - eagilog_influxdb
+      - eagilog_postgres
+
+  eagilog_web:
+    image: eagine/eagine:eagilog_web
+    networks:
+      - eagilog
+    ports:
+      - "34913:34913"
+    environment:
+      - EAGILOG_WEB_PORT=34913
+    secrets:
+      - eagilog_postgres.passwd
+
+  eagilog_frontend:
+    image: eagine/eagine:eagilog_frontend
+    networks:
+      - eagilog
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    secrets:
+      - eagilog_frontend.pkey
+      - eagilog_influxdb.crt
+      - eagilog_grafana.crt
+      - eagilog_web.crt
+    depends_on:
+      - eagilog_influxdb
+      - eagilog_grafana
+      - eagilog_web
+
+networks:
+  eagilog:
+
+volumes:
+  influxdb-etc-storage:
+  influxdb-var-storage:
+  postgres-storage:
+  grafana-storage:
+
+secrets:
+  postgres_postgres.passwd:
+    external: true
+  eagilog_postgres.passwd:
+    external: true
+  backup_postgres.passwd:
+    external: true
+  eagilog_influxdb.token:
+    external: true
+  eagilog_frontend.pkey:
+    external: true
+  eagilog_influxdb.crt:
+    external: true
+  eagilog_grafana.crt:
+    external: true
+  eagilog_web.crt:
+    external: true
+

@@ -16,6 +16,12 @@ eagine_add_module(
 	IMPORTS std static_vector
 )
 eagine_add_module(
+	eagine.core.container PARTITION chunk_list
+	IMPORTS
+		std static_vector
+		eagine.core.types
+)
+eagine_add_module(
 	eagine.core.container PARTITION object_pool
 	IMPORTS
 		std small_vector
@@ -61,6 +67,7 @@ eagine_add_module_tests(
 		iterator
 		flat_map
 		flat_set
+		chunk_list
 		object_pool
 		trie
 	IMPORTS

@@ -13,6 +13,13 @@ import :interfaces;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
+// argument value translator
+//------------------------------------------------------------------------------
+class arg_value_translator {
+public:
+    void translate(const message_info&, message_info::arg_info&) noexcept;
+};
+//------------------------------------------------------------------------------
 auto format_reltime_ns(std::chrono::nanoseconds) noexcept -> std::string;
 auto format_reltime(std::chrono::microseconds) noexcept -> std::string;
 auto format_reltime_s(float_seconds) noexcept -> std::string;

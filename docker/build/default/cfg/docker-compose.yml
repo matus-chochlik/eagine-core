@@ -1,0 +1,26 @@
+version: "3.6"
+services:
+  shell:
+    image: eagine/eagine:build-default
+    network_mode: host
+    stdin_open: true
+    tty: true
+    volumes:
+      - cache:/home/eagine/.cache
+      - source:/home/eagine/source
+      - binary:/home/eagine/binary
+      - install:/home/eagine/install
+    deploy:
+      placement:
+        constraints:
+          - node.platform.os == linux
+
+volumes:
+  cache:
+    driver: local
+  source:
+    driver: local
+  binary:
+    driver: local
+  install:
+    driver: local

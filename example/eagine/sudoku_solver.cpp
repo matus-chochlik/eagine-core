@@ -13,8 +13,7 @@ void solve_sudoku(const eagine::program_args& args) {
     using namespace eagine;
     const default_sudoku_board_traits<S> traits;
 
-    const bool tight = args.find("--tight");
-    std::stack<typename decltype(traits)::board_type> solutions;
+    std::stack<basic_sudoku_board<S>> solutions;
 
     if(args.find("--gen-one")) {
         solutions.push(traits.make_generator().generate_one());
@@ -29,7 +28,7 @@ void solve_sudoku(const eagine::program_args& args) {
     }
 
     const auto print = [&](const auto& b) {
-        (tight ? std::cout << b.tight() : std::cout << b) << std::endl;
+        traits.print(std::cout, b);
     };
     auto board = solutions.top();
     print(board);

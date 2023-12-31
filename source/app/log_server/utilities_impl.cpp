@@ -14,6 +14,78 @@ import :utilities;
 
 namespace eagine::logs {
 //------------------------------------------------------------------------------
+void arg_value_translator::translate(
+  const message_info&,
+  message_info::arg_info& arg) noexcept {
+    if(arg.tag.matches("DbgOutSrce")) {
+        using std::operator""s;
+        switch(arg.value_uint64().or_default()) {
+            case 0x8246:
+                arg.value = "API"s;
+                break;
+            case 0x8247:
+                arg.value = "window system"s;
+                break;
+            case 0x8248:
+                arg.value = "shader compiler"s;
+                break;
+            case 0x8249:
+                arg.value = "third party"s;
+                break;
+            case 0x824A:
+                arg.value = "application"s;
+            case 0x824B:
+                break;
+                arg.value = "other"s;
+                break;
+            default:
+                break;
+        }
+    } else if(arg.tag.matches("DbgOutType")) {
+        using std::operator""s;
+        switch(arg.value_uint64().or_default()) {
+            case 0x824C:
+                arg.value = "error"s;
+                break;
+            case 0x824D:
+                arg.value = "deprecated behavior"s;
+                break;
+            case 0x824E:
+                arg.value = "undefined  behavior"s;
+                break;
+            case 0x824F:
+                arg.value = "portability"s;
+                break;
+            case 0x8250:
+                arg.value = "performance"s;
+                break;
+            case 0x8251:
+                arg.value = "other"s;
+                break;
+            default:
+                break;
+        }
+    } else if(arg.tag.matches("DbgOutSvrt")) {
+        using std::operator""s;
+        switch(arg.value_uint64().or_default()) {
+            case 0x9146:
+                arg.value = "high"s;
+                break;
+            case 0x9147:
+                arg.value = "medium"s;
+                break;
+            case 0x9148:
+                arg.value = "low"s;
+                break;
+            case 0x826B:
+                arg.value = "notification"s;
+                break;
+            default:
+                break;
+        }
+    }
+}
+//------------------------------------------------------------------------------
 // format reltime
 //------------------------------------------------------------------------------
 auto format_reltime_ns(std::chrono::nanoseconds t) noexcept -> std::string {

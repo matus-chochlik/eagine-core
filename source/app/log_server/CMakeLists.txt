@@ -25,6 +25,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.log_server
 	SOURCES
+		special_args
 		implementation
 		utilities
 		internal_backend
@@ -53,4 +54,11 @@ eagine_target_modules(
 	std
 	eagine.core
 	eagine.core.log_server)
+
+eagine_embed_target_resources(
+	TARGET eagine-core-log-server
+	RESOURCES
+		bashCmpltn "resource/eagine-core-log-server.bco"
+	PACKED
+	ENABLE_SEARCH)
 

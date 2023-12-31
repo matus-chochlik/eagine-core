@@ -4,7 +4,8 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt
 #
-EAGINE_DOCKER_REGISTRY_HOST=${EAGINE_DOCKER_REGISTRY_HOST:-localhost} \
-EAGINE_DOCKER_REGISTRY_PORT=${EAGINE_DOCKER_REGISTRY_PORT:-5000} \
-docker-compose -f "$(dirname ${0})/docker-compose.yml" run eagine-build-default /bin/bash
+docker-compose \
+	--project-name "eagine-build-default" \
+	--file "$(dirname ${0})/cfg/docker-compose.yml" \
+	run shell /bin/bash
 

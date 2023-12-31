@@ -49,8 +49,8 @@ public:
       const console_entry_kind kind,
       const string_view format) noexcept -> bool final {
         _lockable.lock();
-        assign_to(format, _message.back());
         _message.swap();
+        assign_to(format, _message.next());
         _source = source;
         _kind = kind;
         _separate = false;
@@ -133,7 +133,8 @@ public:
 
     void finish_message() noexcept final {
         try {
-            _out << std::string(_depth * 2, ' ') << _message.front() << '\n';
+            _message.swap();
+            _out << std::string(_depth * 2, ' ') << _message.current() << '\n';
             if(_separate) {
                 _out << '\n';
             }
@@ -165,10 +166,10 @@ private:
     }
 
     void _add(const identifier arg, const string_view value) noexcept {
-        _message.back().clear();
-        substitute_variable_into(
-          _message.back(), _message.front(), arg.name(), value);
         _message.swap();
+        _message.next().clear();
+        substitute_variable_into(
+          _message.next(), _message.current(), arg.name(), value);
     }
 
     void _add(const identifier arg, const std::string& value) noexcept {
