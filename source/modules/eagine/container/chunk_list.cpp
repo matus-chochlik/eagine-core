@@ -191,6 +191,37 @@ public:
         }
     }
 
+    friend constexpr auto next(
+      chunk_list_iterator pos,
+      difference_type ofs = 1) noexcept -> chunk_list_iterator {
+        pos += ofs;
+        return pos;
+    }
+
+    friend constexpr auto upper_bound(
+      chunk_list_iterator first,
+      chunk_list_iterator last,
+      const auto& value,
+      auto comp) noexcept -> chunk_list_iterator {
+        chunk_list_iterator it;
+        auto count = distance(first, last);
+
+        while(count > 0) {
+            auto it = first;
+            auto step = count / 2;
+            it += step;
+
+            if(!comp(value, *it)) {
+                first = ++it;
+                count -= step + 1;
+            } else {
+                count = step;
+            }
+        }
+
+        return first;
+    }
+
     constexpr auto operator-(const chunk_list_iterator& that) const noexcept
       -> difference_type {
         return distance(that, *this);
@@ -409,6 +440,18 @@ public:
         pos = get_insert_position(pos);
         const auto i_p{pos._iter_c_p - _chunks.cbegin()};
         const auto ins_p{(*pos._iter_c_p)->insert(pos._iter_e, value)};
+        return iterator{_chunks.begin() + i_p, _chunks.end(), ins_p}.adjust();
+    }
+
+    /// @brief Stores elements from the specified range starting at given position.
+    /// @see push_back
+    /// @see insert
+    template <typename... Args>
+    constexpr auto emplace(const_iterator pos, Args&&... args) -> iterator {
+        pos = get_insert_position(pos);
+        const auto i_p{pos._iter_c_p - _chunks.cbegin()};
+        const auto ins_p{
+          (*pos._iter_c_p)->emplace(pos._iter_e, std::forward<Args>(args)...)};
         return iterator{_chunks.begin() + i_p, _chunks.end(), ins_p}.adjust();
     }
 

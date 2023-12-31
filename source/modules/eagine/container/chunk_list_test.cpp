@@ -109,8 +109,47 @@ void chunk_list_insert(auto& s) {
     }
 }
 //------------------------------------------------------------------------------
+void chunk_list_insert(auto& s) {
+    eagitest::case_ test{s, 5, "emplace"};
+    eagine::chunk_list<int, 23> cl;
+
+    test.check(cl.empty(), "is empty");
+    test.check_equal(cl.size(), 0U, "size is zero");
+    test.check(cl.begin() == cl.end(), "begin == end");
+
+    auto ipos{cl.begin()};
+
+    for(int i = 0; i < 10000; ++i) {
+        ipos = cl.emplace(ipos, i);
+        ++ipos;
+    }
+
+    test.check(not cl.empty(), "is not empty");
+    test.check_equal(cl.size(), 10000U, "size is ok");
+    test.check(cl.size() <= cl.capacity(), "capacity is ok");
+    test.check(cl.begin() != cl.end(), "begin != end");
+
+    int i = 0;
+    test.check_equal(i, cl.front(), "front is ok");
+    for(const auto e : cl) {
+        test.check_equal(i++, e, "element is ok");
+    }
+    test.check_equal(i - 1, cl.back(), "back is ok");
+
+    ipos = cl.begin();
+    for(int j = 0; j < 10000; ++j) {
+        ipos = cl.emplace(ipos, j);
+        ipos += 2;
+    }
+
+    i = 0;
+    for(const auto e : cl) {
+        test.check_equal(i++ / 2, e, "element is ok");
+    }
+}
+//------------------------------------------------------------------------------
 void chunk_list_erase(auto& s) {
-    eagitest::case_ test{s, 5, "erase"};
+    eagitest::case_ test{s, 6, "erase"};
     eagine::chunk_list<int, 19> cl;
 
     test.check(cl.empty(), "is empty");
@@ -152,7 +191,7 @@ void chunk_list_erase(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_clear(auto& s) {
-    eagitest::case_ test{s, 6, "clear"};
+    eagitest::case_ test{s, 7, "clear"};
     eagine::chunk_list<int, 17> cl;
 
     test.check(cl.empty(), "is empty");
@@ -183,7 +222,7 @@ void chunk_list_clear(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_pop_back(auto& s) {
-    eagitest::case_ test{s, 7, "popback"};
+    eagitest::case_ test{s, 8, "popback"};
     eagine::chunk_list<int, 13> cl;
 
     test.check(cl.empty(), "is empty");
@@ -208,7 +247,7 @@ void chunk_list_pop_back(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_stack(auto& s) {
-    eagitest::case_ test{s, 8, "stack"};
+    eagitest::case_ test{s, 9, "stack"};
     std::stack<int, eagine::chunk_list<int, 33>> stk;
 
     test.check(stk.empty(), "is empty");
@@ -229,11 +268,12 @@ void chunk_list_stack(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "chunk_list", 8};
+    eagitest::suite test{argc, argv, "chunk_list", 9};
     test.once(chunk_list_default_construct);
     test.once(chunk_list_push_back);
     test.once(chunk_list_emplace_back);
     test.once(chunk_list_insert);
+    test.once(chunk_list_emplace);
     test.once(chunk_list_erase);
     test.once(chunk_list_clear);
     test.once(chunk_list_pop_back);
