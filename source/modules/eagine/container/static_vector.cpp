@@ -45,6 +45,11 @@ public:
     /// @brief Default constructor.
     constexpr static_vector() noexcept = default;
 
+    /// @brief Construction with specified number of elements.
+    constexpr static_vector(size_type n) noexcept {
+        resize(n);
+    }
+
     /// @brief Returns the maximum number of elements that can be stored.
     /// @see size
     /// @see full
@@ -73,6 +78,15 @@ public:
     /// @see full
     [[nodiscard]] constexpr auto size() const noexcept -> std::size_t {
         return _size;
+    }
+
+    /// @brief Returns the number of available free elements in this static_vector.
+    /// @see max_size
+    /// @see size
+    /// @see empty
+    /// @see full
+    [[nodiscard]] constexpr auto available() const noexcept -> std::size_t {
+        return N - _size;
     }
 
     /// @brief Changes the current size to the specified value.
