@@ -131,8 +131,10 @@ public:
     constexpr auto operator+=(difference_type d) noexcept -> auto& {
         assert(_iter_c_p != _iter_c_e);
         const auto dist{[](auto l, auto r) {
-            return limit_cast<difference_type>(std::distance(l, r));
+            using std::distance;
+            return limit_cast<difference_type>(distance(l, r));
         }};
+
         auto curr_d{dist(_iter_e, (*_iter_c_p)->end())};
         if(d <= curr_d) {
             std::advance(_iter_e, d);
@@ -198,20 +200,48 @@ public:
         return pos;
     }
 
+    friend constexpr auto lower_bound(
+      chunk_list_iterator first,
+      chunk_list_iterator last,
+      const auto& value,
+      auto comp) noexcept -> chunk_list_iterator {
+        auto count = distance(first, last);
+
+        while(count > 0) {
+            const auto step = count / 2;
+            auto it = first;
+            it += step;
+
+            if(comp(*it, value)) {
+                first = ++it;
+                count -= step + 1;
+            } else
+                count = step;
+        }
+
+        return first;
+    }
+
+    friend constexpr auto lower_bound(
+      chunk_list_iterator first,
+      chunk_list_iterator last,
+      const T& value) noexcept -> chunk_list_iterator {
+        return lower_bound(first, last, value, std::less<T>{});
+    }
+
     friend constexpr auto upper_bound(
       chunk_list_iterator first,
       chunk_list_iterator last,
       const auto& value,
       auto comp) noexcept -> chunk_list_iterator {
-        chunk_list_iterator it;
         auto count = distance(first, last);
 
         while(count > 0) {
+            const auto step = count / 2;
             auto it = first;
-            auto step = count / 2;
             it += step;
 
-            if(!comp(value, *it)) {
+            if(not comp(value, *it)) {
                 first = ++it;
                 count -= step + 1;
             } else {
@@ -220,6 +250,13 @@ public:
         }
 
         return first;
+    }
+
+    friend constexpr auto upper_bound(
+      chunk_list_iterator first,
+      chunk_list_iterator last,
+      const T& value) noexcept -> chunk_list_iterator {
+        return upper_bound(first, last, value, std::less<T>{});
     }
 
     constexpr auto operator-(const chunk_list_iterator& that) const noexcept

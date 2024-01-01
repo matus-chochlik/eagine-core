@@ -76,7 +76,7 @@ void chunk_list_emplace_back(auto& s) {
 //------------------------------------------------------------------------------
 void chunk_list_insert(auto& s) {
     eagitest::case_ test{s, 4, "insert"};
-    eagitest::track trck{test, 1, 1};
+    eagitest::track trck{test, 2, 2};
     eagine::chunk_list<int, 23> cl;
 
     test.check(cl.empty(), "is empty");
@@ -112,6 +112,7 @@ void chunk_list_insert(auto& s) {
     i = 0;
     for(const auto e : cl) {
         test.check_equal(i++ / 2, e, "element is ok");
+        trck.checkpoint(2);
     }
 }
 //------------------------------------------------------------------------------
@@ -148,12 +149,17 @@ void chunk_list_emplace(auto& s) {
     for(int j = 0; j < 10000; ++j) {
         ipos = cl.emplace(ipos, j);
         ipos += 2;
-        trck.checkpoint(2);
     }
 
     i = 0;
     for(const auto e : cl) {
         test.check_equal(i++ / 2, e, "element is ok");
+        trck.checkpoint(2);
+    }
+
+    i = 0;
+    for(auto it{cl.begin()}; it != cl.end(); it += 2) {
+        test.check_equal(i++, *it, "element is ok");
         trck.checkpoint(3);
     }
 }
@@ -309,8 +315,54 @@ void chunk_list_distance(auto& s) {
     }
 }
 //------------------------------------------------------------------------------
+void chunk_list_lower_bound(auto& s) {
+    eagitest::case_ test{s, 11, "lower_bound"};
+    eagitest::track trck{test, 1, 2};
+    eagine::chunk_list<int, 41> cl;
+
+    int i = 0;
+    for(; i < 10000; ++i) {
+        cl.push_back(i);
+    }
+
+    test.check(cl.begin() != cl.end(), "begin != end");
+
+    for(i = -1; i <= 10000; ++i) {
+        const auto pos{lower_bound(cl.begin(), cl.end(), i)};
+        if(pos != cl.end()) {
+            test.check(*pos >= i, "value is ok");
+            trck.checkpoint(1);
+        } else {
+            trck.checkpoint(2);
+        }
+    }
+}
+//------------------------------------------------------------------------------
+void chunk_list_upper_bound(auto& s) {
+    eagitest::case_ test{s, 12, "upper_bound"};
+    eagitest::track trck{test, 1, 2};
+    eagine::chunk_list<int, 43> cl;
+
+    int i = 0;
+    for(; i < 10000; ++i) {
+        cl.push_back(i);
+    }
+
+    test.check(cl.begin() != cl.end(), "begin != end");
+
+    for(i = -1; i <= 10000; ++i) {
+        const auto pos{upper_bound(cl.begin(), cl.end(), i)};
+        if(pos != cl.end()) {
+            test.check(i < *pos, "value is ok");
+            trck.checkpoint(1);
+        } else {
+            trck.checkpoint(2);
+        }
+    }
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "chunk_list", 10};
+    eagitest::suite test{argc, argv, "chunk_list", 12};
     test.once(chunk_list_default_construct);
     test.once(chunk_list_push_back);
     test.once(chunk_list_emplace_back);
@@ -321,6 +373,8 @@ auto main(int argc, const char** argv) -> int {
     test.once(chunk_list_pop_back);
     test.once(chunk_list_stack);
     test.once(chunk_list_distance);
+    test.once(chunk_list_lower_bound);
+    test.once(chunk_list_upper_bound);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
