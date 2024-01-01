@@ -80,6 +80,15 @@ public:
         return _size;
     }
 
+    /// @brief Returns the number of available free elements in this static_vector.
+    /// @see max_size
+    /// @see size
+    /// @see empty
+    /// @see full
+    [[nodiscard]] constexpr auto available() const noexcept -> std::size_t {
+        return N - _size;
+    }
+
     /// @brief Changes the current size to the specified value.
     /// @pre n <= max_size()
     /// @see max_size

@@ -185,8 +185,12 @@ void chunk_list_emplace(auto& s) {
 //------------------------------------------------------------------------------
 void chunk_list_resize(auto& s) {
     eagitest::case_ test{s, 7, "resize"};
-    eagitest::track trck{test, 1, 1};
+    eagitest::track trck{test, 1, 3};
     eagine::chunk_list<int, 53> cl;
+
+    test.check(cl.empty(), "is empty");
+    test.check_equal(cl.size(), 0U, "size is zero");
+    test.check(cl.begin() == cl.end(), "begin == end");
 
     auto gen{[i{0}] mutable {
         return i++;
@@ -197,9 +201,14 @@ void chunk_list_resize(auto& s) {
         cl.back() = gen();
     }
 
+    test.check(not cl.empty(), "is not empty");
+    test.check_equal(cl.size(), 100U, "size is ok");
+    test.check(cl.size() <= cl.capacity(), "capacity is ok");
+    test.check(cl.begin() != cl.end(), "begin != end");
+
     for(int j = 0; j < 200; ++j) {
         const auto ofs{cl.size()};
-        cl.resize(cl.size() + j);
+        cl.resize(ofs + j);
         for(auto it{cl.begin() + ofs}; it != cl.end(); ++it) {
             *it = gen();
         }
@@ -213,6 +222,26 @@ void chunk_list_resize(auto& s) {
     for(const auto e : cl) {
         test.check_equal(i++, e, "element is ok");
         trck.checkpoint(1);
+    }
+
+    for(int j = 0; j < 200; ++j) {
+        cl.resize(cl.size() - j);
+
+        i = 0;
+        for(const auto e : cl) {
+            test.check_equal(i++, e, "element is ok");
+            trck.checkpoint(2);
+        }
+    }
+
+    while(not cl.empty()) {
+        cl.resize(cl.size() - 1);
+
+        i = 0;
+        for(const auto e : cl) {
+            test.check_equal(i++, e, "element is ok");
+            trck.checkpoint(3);
+        }
     }
 }
 //------------------------------------------------------------------------------

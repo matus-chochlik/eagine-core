@@ -358,9 +358,32 @@ public:
     /// @see size
     /// @see capacity
     constexpr void resize(size_type n) {
-        // TODO this can be optimized
-        while(size() < n) {
-            emplace_back();
+        const auto osz{size()};
+        if(osz > n) {
+            n = osz - n;
+            while(n > 0) {
+                assert(not empty());
+                auto& cnk{*_chunks.back()};
+                const auto csz{cnk.size()};
+                const auto dec{std::min(n, csz)};
+                cnk.resize(cnk.size() - dec);
+                n -= dec;
+                if(cnk.empty()) {
+                    _chunks.pop_back();
+                }
+            }
+        } else if(n > osz) {
+            n = n - osz;
+            while(n > 0) {
+                if(_chunks.empty() or _chunks.back()->full()) {
+                    _chunks.emplace_back();
+                }
+                auto& cnk{*_chunks.back()};
+                const auto avl{cnk.available()};
+                const auto inc{std::min(n, avl)};
+                cnk.resize(cnk.size() + inc);
+                n -= inc;
+            }
         }
     }
 
