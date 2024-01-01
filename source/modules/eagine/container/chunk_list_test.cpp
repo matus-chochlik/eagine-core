@@ -20,8 +20,27 @@ void chunk_list_default_construct(auto& s) {
     test.check(cl.begin() == cl.end(), "begin == end");
 }
 //------------------------------------------------------------------------------
+void chunk_list_construct_resized(auto& s) {
+    eagitest::case_ test{s, 2, "construct resized"};
+    eagitest::track trck{test, 1, 1};
+    eagine::chunk_list<int, 43> cl{10000};
+
+    test.check(not cl.empty(), "is not empty");
+    test.check_equal(cl.size(), 10000U, "size is ok");
+    test.check(cl.size() <= cl.capacity(), "capacity is ok");
+    test.check(cl.begin() != cl.end(), "begin != end");
+
+    std::generate(cl.begin(), cl.end(), [i{0}] mutable { return i++; });
+
+    int i = 0;
+    for(const auto e : cl) {
+        test.check_equal(i++, e, "element is ok");
+        trck.checkpoint(1);
+    }
+}
+//------------------------------------------------------------------------------
 void chunk_list_push_back(auto& s) {
-    eagitest::case_ test{s, 2, "push back"};
+    eagitest::case_ test{s, 3, "push back"};
     eagitest::track trck{test, 1, 1};
     eagine::chunk_list<int, 31> cl;
 
@@ -48,7 +67,7 @@ void chunk_list_push_back(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_emplace_back(auto& s) {
-    eagitest::case_ test{s, 3, "emplace back"};
+    eagitest::case_ test{s, 4, "emplace back"};
     eagitest::track trck{test, 1, 1};
     eagine::chunk_list<int, 27> cl;
 
@@ -75,7 +94,7 @@ void chunk_list_emplace_back(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_insert(auto& s) {
-    eagitest::case_ test{s, 4, "insert"};
+    eagitest::case_ test{s, 5, "insert"};
     eagitest::track trck{test, 2, 2};
     eagine::chunk_list<int, 23> cl;
 
@@ -117,7 +136,7 @@ void chunk_list_insert(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_emplace(auto& s) {
-    eagitest::case_ test{s, 5, "emplace"};
+    eagitest::case_ test{s, 6, "emplace"};
     eagitest::track trck{test, 3, 3};
     eagine::chunk_list<int, 23> cl;
 
@@ -164,8 +183,41 @@ void chunk_list_emplace(auto& s) {
     }
 }
 //------------------------------------------------------------------------------
+void chunk_list_resize(auto& s) {
+    eagitest::case_ test{s, 7, "resize"};
+    eagitest::track trck{test, 1, 1};
+    eagine::chunk_list<int, 53> cl;
+
+    auto gen{[i{0}] mutable {
+        return i++;
+    }};
+
+    for(int j = 0; j < 100; ++j) {
+        cl.resize(cl.size() + 1);
+        cl.back() = gen();
+    }
+
+    for(int j = 0; j < 200; ++j) {
+        const auto ofs{cl.size()};
+        cl.resize(cl.size() + j);
+        for(auto it{cl.begin() + ofs}; it != cl.end(); ++it) {
+            *it = gen();
+        }
+    }
+
+    test.check(not cl.empty(), "is not empty");
+    test.check(cl.size() <= cl.capacity(), "capacity is ok");
+    test.check(cl.begin() != cl.end(), "begin != end");
+
+    int i = 0;
+    for(const auto e : cl) {
+        test.check_equal(i++, e, "element is ok");
+        trck.checkpoint(1);
+    }
+}
+//------------------------------------------------------------------------------
 void chunk_list_erase(auto& s) {
-    eagitest::case_ test{s, 6, "erase"};
+    eagitest::case_ test{s, 8, "erase"};
     eagitest::track trck{test, 2, 2};
     eagine::chunk_list<int, 19> cl;
 
@@ -210,7 +262,7 @@ void chunk_list_erase(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_clear(auto& s) {
-    eagitest::case_ test{s, 7, "clear"};
+    eagitest::case_ test{s, 9, "clear"};
     eagine::chunk_list<int, 17> cl;
 
     test.check(cl.empty(), "is empty");
@@ -241,7 +293,7 @@ void chunk_list_clear(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_pop_back(auto& s) {
-    eagitest::case_ test{s, 8, "popback"};
+    eagitest::case_ test{s, 10, "popback"};
     eagitest::track trck{test, 1, 1};
     eagine::chunk_list<int, 13> cl;
 
@@ -268,7 +320,7 @@ void chunk_list_pop_back(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_stack(auto& s) {
-    eagitest::case_ test{s, 9, "stack"};
+    eagitest::case_ test{s, 11, "stack"};
     eagitest::track trck{test, 1, 1};
     std::stack<int, eagine::chunk_list<int, 33>> stk;
 
@@ -291,7 +343,7 @@ void chunk_list_stack(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_distance(auto& s) {
-    eagitest::case_ test{s, 10, "distance"};
+    eagitest::case_ test{s, 12, "distance"};
     eagitest::track trck{test, 1, 1};
     eagine::chunk_list<int, 111> cl;
 
@@ -316,7 +368,7 @@ void chunk_list_distance(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_lower_bound(auto& s) {
-    eagitest::case_ test{s, 11, "lower_bound"};
+    eagitest::case_ test{s, 13, "lower_bound"};
     eagitest::track trck{test, 1, 2};
     eagine::chunk_list<int, 41> cl;
 
@@ -339,7 +391,7 @@ void chunk_list_lower_bound(auto& s) {
 }
 //------------------------------------------------------------------------------
 void chunk_list_upper_bound(auto& s) {
-    eagitest::case_ test{s, 12, "upper_bound"};
+    eagitest::case_ test{s, 14, "upper_bound"};
     eagitest::track trck{test, 1, 2};
     eagine::chunk_list<int, 43> cl;
 
@@ -362,12 +414,14 @@ void chunk_list_upper_bound(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "chunk_list", 12};
+    eagitest::suite test{argc, argv, "chunk_list", 14};
     test.once(chunk_list_default_construct);
+    test.once(chunk_list_construct_resized);
     test.once(chunk_list_push_back);
     test.once(chunk_list_emplace_back);
     test.once(chunk_list_insert);
     test.once(chunk_list_emplace);
+    test.once(chunk_list_resize);
     test.once(chunk_list_erase);
     test.once(chunk_list_clear);
     test.once(chunk_list_pop_back);

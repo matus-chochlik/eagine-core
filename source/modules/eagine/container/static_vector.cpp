@@ -45,6 +45,11 @@ public:
     /// @brief Default constructor.
     constexpr static_vector() noexcept = default;
 
+    /// @brief Construction with specified number of elements.
+    constexpr static_vector(size_type n) noexcept {
+        resize(n);
+    }
+
     /// @brief Returns the maximum number of elements that can be stored.
     /// @see size
     /// @see full

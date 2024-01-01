@@ -155,6 +155,13 @@ public:
         return adjust();
     }
 
+    friend constexpr auto operator+(
+      chunk_list_iterator pos,
+      difference_type ofs) noexcept -> auto {
+        pos += ofs;
+        return pos;
+    }
+
     friend constexpr auto forward_distance(
       const chunk_list_iterator& first,
       const chunk_list_iterator& second) noexcept -> difference_type {
@@ -302,6 +309,11 @@ public:
     /// @brief Default constructor.
     constexpr chunk_list() noexcept = default;
 
+    /// @brief Construction with specified number of elements.
+    constexpr chunk_list(size_type n) noexcept {
+        resize(n);
+    }
+
     /// @brief Returns the maximum number of elements that can be stored.
     /// @see size
     [[nodiscard]] constexpr auto max_size() const noexcept -> size_type {
@@ -338,6 +350,18 @@ public:
           [](size_type total, const auto& chunk) {
               return total + chunk->size();
           });
+    }
+
+    /// @brief Changes the current size to the specified value.
+    /// @pre n <= max_size()
+    /// @see max_size
+    /// @see size
+    /// @see capacity
+    constexpr void resize(size_type n) {
+        // TODO this can be optimized
+        while(size() < n) {
+            emplace_back();
+        }
     }
 
     /// @brief Indicates if this chunk_list is empty.
