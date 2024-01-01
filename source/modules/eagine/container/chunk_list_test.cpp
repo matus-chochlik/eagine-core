@@ -461,6 +461,7 @@ void chunk_list_random_insert_erase(auto& s) {
       std::default_random_engine{std::random_device{}()});
 
     for(const auto i : vec) {
+        using std::lower_bound;
         cl.insert(lower_bound(cl.begin(), cl.end(), i), i);
         test.check(std::is_sorted(cl.begin(), cl.end()), "is sorted insert");
         trck.checkpoint(1);
@@ -485,7 +486,7 @@ void chunk_list_random_insert_erase(auto& s) {
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "chunk_list", 14};
+    eagitest::suite test{argc, argv, "chunk_list", 15};
     test.once(chunk_list_default_construct);
     test.once(chunk_list_construct_resized);
     test.once(chunk_list_push_back);
@@ -500,7 +501,7 @@ auto main(int argc, const char** argv) -> int {
     test.once(chunk_list_distance);
     test.once(chunk_list_lower_bound);
     test.once(chunk_list_upper_bound);
-    // test.once(chunk_list_random_insert_erase);
+    test.once(chunk_list_random_insert_erase);
 
     return test.exit_code();
 }

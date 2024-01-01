@@ -139,12 +139,21 @@ public:
         if(d <= curr_d) {
             std::advance(_iter_e, d);
         } else {
-            do {
+            while(true) {
                 assert(_iter_c_p != _iter_c_e);
                 d -= curr_d;
-                curr_d = dist((*_iter_c_p)->begin(), (*_iter_c_p)->end());
                 ++_iter_c_p;
-            } while(d > curr_d);
+
+                if(_iter_c_p != _iter_c_e) [[likely]] {
+                    curr_d = dist((*_iter_c_p)->begin(), (*_iter_c_p)->end());
+                } else {
+                    break;
+                }
+                if(d <= curr_d) {
+                    break;
+                }
+            }
+
             if(_iter_c_p != _iter_c_e) {
                 _iter_e = (*_iter_c_p)->begin();
                 std::advance(_iter_e, d);
@@ -166,6 +175,7 @@ public:
     friend constexpr auto forward_distance(
       const chunk_list_iterator& first,
       const chunk_list_iterator& second) noexcept -> difference_type {
+        assert(first._iter_c_e == second._iter_c_e);
         assert(first <= second);
         const auto dist{[](auto l, auto r) {
             return limit_cast<difference_type>(std::distance(l, r));
