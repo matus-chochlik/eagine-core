@@ -149,6 +149,7 @@ public:
                 _iter_e = (*_iter_c_p)->begin();
                 std::advance(_iter_e, d);
             } else {
+                assert(d == 0);
                 _iter_e = {};
             }
         }
@@ -212,18 +213,18 @@ public:
       chunk_list_iterator last,
       const auto& value,
       auto comp) noexcept -> chunk_list_iterator {
-        auto count = distance(first, last);
+        auto count{distance(first, last)};
 
         while(count > 0) {
-            const auto step = count / 2;
-            auto it = first;
-            it += step;
+            const auto step{count / 2};
+            auto it{first + step};
 
             if(comp(*it, value)) {
                 first = ++it;
                 count -= step + 1;
-            } else
+            } else {
                 count = step;
+            }
         }
 
         return first;
@@ -241,12 +242,11 @@ public:
       chunk_list_iterator last,
       const auto& value,
       auto comp) noexcept -> chunk_list_iterator {
-        auto count = distance(first, last);
+        auto count{distance(first, last)};
 
         while(count > 0) {
-            const auto step = count / 2;
-            auto it = first;
-            it += step;
+            const auto step{count / 2};
+            auto it{first + step};
 
             if(not comp(value, *it)) {
                 first = ++it;

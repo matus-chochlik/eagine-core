@@ -20,6 +20,7 @@ eagine_add_module(
 	IMPORTS
 		std static_vector
 		eagine.core.types
+		eagine.core.memory
 )
 eagine_add_module(
 	eagine.core.container PARTITION object_pool
