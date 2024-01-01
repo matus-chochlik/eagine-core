@@ -131,31 +131,51 @@ public:
     constexpr auto operator+=(difference_type d) noexcept -> auto& {
         assert(_iter_c_p != _iter_c_e);
         const auto dist{[](auto l, auto r) {
-            return limit_cast<difference_type>(std::distance(l, r));
+            using std::distance;
+            return limit_cast<difference_type>(distance(l, r));
         }};
+
         auto curr_d{dist(_iter_e, (*_iter_c_p)->end())};
         if(d <= curr_d) {
             std::advance(_iter_e, d);
         } else {
-            do {
+            while(true) {
                 assert(_iter_c_p != _iter_c_e);
                 d -= curr_d;
-                curr_d = dist((*_iter_c_p)->begin(), (*_iter_c_p)->end());
                 ++_iter_c_p;
-            } while(d > curr_d);
+
+                if(_iter_c_p != _iter_c_e) [[likely]] {
+                    curr_d = dist((*_iter_c_p)->begin(), (*_iter_c_p)->end());
+                } else {
+                    break;
+                }
+                if(d <= curr_d) {
+                    break;
+                }
+            }
+
             if(_iter_c_p != _iter_c_e) {
                 _iter_e = (*_iter_c_p)->begin();
                 std::advance(_iter_e, d);
             } else {
+                assert(d == 0);
                 _iter_e = {};
             }
         }
         return adjust();
     }
 
+    friend constexpr auto operator+(
+      chunk_list_iterator pos,
+      difference_type ofs) noexcept -> auto {
+        pos += ofs;
+        return pos;
+    }
+
     friend constexpr auto forward_distance(
       const chunk_list_iterator& first,
       const chunk_list_iterator& second) noexcept -> difference_type {
+        assert(first._iter_c_e == second._iter_c_e);
         assert(first <= second);
         const auto dist{[](auto l, auto r) {
             return limit_cast<difference_type>(std::distance(l, r));
@@ -198,20 +218,18 @@ public:
         return pos;
     }
 
-    friend constexpr auto upper_bound(
+    friend constexpr auto lower_bound(
       chunk_list_iterator first,
       chunk_list_iterator last,
       const auto& value,
       auto comp) noexcept -> chunk_list_iterator {
-        chunk_list_iterator it;
-        auto count = distance(first, last);
+        auto count{distance(first, last)};
 
         while(count > 0) {
-            auto it = first;
-            auto step = count / 2;
-            it += step;
+            const auto step{count / 2};
+            auto it{first + step};
 
-            if(!comp(value, *it)) {
+            if(comp(*it, value)) {
                 first = ++it;
                 count -= step + 1;
             } else {
@@ -220,6 +238,42 @@ public:
         }
 
         return first;
+    }
+
+    friend constexpr auto lower_bound(
+      chunk_list_iterator first,
+      chunk_list_iterator last,
+      const T& value) noexcept -> chunk_list_iterator {
+        return lower_bound(first, last, value, std::less<T>{});
+    }
+
+    friend constexpr auto upper_bound(
+      chunk_list_iterator first,
+      chunk_list_iterator last,
+      const auto& value,
+      auto comp) noexcept -> chunk_list_iterator {
+        auto count{distance(first, last)};
+
+        while(count > 0) {
+            const auto step{count / 2};
+            auto it{first + step};
+
+            if(not comp(value, *it)) {
+                first = ++it;
+                count -= step + 1;
+            } else {
+                count = step;
+            }
+        }
+
+        return first;
+    }
+
+    friend constexpr auto upper_bound(
+      chunk_list_iterator first,
+      chunk_list_iterator last,
+      const T& value) noexcept -> chunk_list_iterator {
+        return upper_bound(first, last, value, std::less<T>{});
     }
 
     constexpr auto operator-(const chunk_list_iterator& that) const noexcept
@@ -265,6 +319,11 @@ public:
     /// @brief Default constructor.
     constexpr chunk_list() noexcept = default;
 
+    /// @brief Construction with specified number of elements.
+    constexpr chunk_list(size_type n) noexcept {
+        resize(n);
+    }
+
     /// @brief Returns the maximum number of elements that can be stored.
     /// @see size
     [[nodiscard]] constexpr auto max_size() const noexcept -> size_type {
@@ -301,6 +360,41 @@ public:
           [](size_type total, const auto& chunk) {
               return total + chunk->size();
           });
+    }
+
+    /// @brief Changes the current size to the specified value.
+    /// @pre n <= max_size()
+    /// @see max_size
+    /// @see size
+    /// @see capacity
+    constexpr void resize(size_type n) {
+        const auto osz{size()};
+        if(osz > n) {
+            n = osz - n;
+            while(n > 0) {
+                assert(not empty());
+                auto& cnk{*_chunks.back()};
+                const auto csz{cnk.size()};
+                const auto dec{std::min(n, csz)};
+                cnk.resize(cnk.size() - dec);
+                n -= dec;
+                if(cnk.empty()) {
+                    _chunks.pop_back();
+                }
+            }
+        } else if(n > osz) {
+            n = n - osz;
+            while(n > 0) {
+                if(_chunks.empty() or _chunks.back()->full()) {
+                    _chunks.emplace_back();
+                }
+                auto& cnk{*_chunks.back()};
+                const auto avl{cnk.available()};
+                const auto inc{std::min(n, avl)};
+                cnk.resize(cnk.size() + inc);
+                n -= inc;
+            }
+        }
     }
 
     /// @brief Indicates if this chunk_list is empty.
