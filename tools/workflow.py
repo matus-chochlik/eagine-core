@@ -158,7 +158,7 @@ def make_argument_parser():
             EAGine Git workflow helper script
         """,
         epilog="""
-            Copyright (c) 2021-2023 Matúš Chochlík.
+            Copyright (c) 2021-2024 Matúš Chochlík.
             Permission is granted to copy, distribute and/or modify this document
             under the terms of the Boost Software License, Version 1.0.
             (See a copy at http://www.boost.org/LICENSE_1_0.txt)
