@@ -13,30 +13,9 @@ import eagine.core.log_server;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-void print_bash_completion(
-  main_ctx& ctx,
-  std::ostream& out,
-  const embedded_resource& res) {
-    if(res) {
-        const auto print{[&](const memory::const_block data) {
-            write_to_stream(out, data);
-            return true;
-        }};
-        res.fetch(ctx, {construct_from, print});
-    }
-}
-//------------------------------------------------------------------------------
-auto handle_special_args(main_ctx& ctx) -> bool {
-    if(ctx.args().find("--print-bash-completion")) {
-        print_bash_completion(ctx, std::cout, search_resource("bashCmpltn"));
-        return true;
-    }
-    return false;
-}
-//------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     try {
-        if(handle_special_args(ctx)) {
+        if(logs::handle_special_args(ctx)) {
             return 0;
         }
         if(const auto sinks{logs::make_sink_factory(ctx)}) {
