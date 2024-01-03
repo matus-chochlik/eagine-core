@@ -10,3 +10,10 @@ eagine_target_modules(
 	std
 	eagine.core)
 
+eagine_embed_target_resources(
+	TARGET eagine-core-sensors-log
+	RESOURCES
+		bashCmpltn "resource/eagine-core-sensors-log.bco"
+	PACKED
+	ENABLE_SEARCH)
+
