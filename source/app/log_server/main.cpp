@@ -15,7 +15,7 @@ namespace eagine {
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     try {
-        if(logs::handle_special_args(ctx)) {
+        if(handle_common_special_args(ctx)) {
             return 0;
         }
         if(const auto sinks{logs::make_sink_factory(ctx)}) {

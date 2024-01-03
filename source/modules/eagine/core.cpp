@@ -30,3 +30,4 @@ export import eagine.core.serialization;
 export import eagine.core.value_tree;
 export import eagine.core.main_ctx;
 export import eagine.core.resource;
+export import eagine.core.app;

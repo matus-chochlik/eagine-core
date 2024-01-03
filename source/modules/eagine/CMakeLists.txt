@@ -25,6 +25,7 @@ add_subdirectory(value_tree)
 add_subdirectory(serialization)
 add_subdirectory(main_ctx)
 add_subdirectory(resource)
+add_subdirectory(app)
 
 eagine_add_module(
 	eagine.core
@@ -52,6 +53,7 @@ eagine_add_module(
 		serialization
 		main_ctx
 		resource
+		app
 	INTERFACE_LINK_LIBRARIES
 		ryml
 		systemd
@@ -73,3 +75,4 @@ eagine_embed_target_resources(
 		CMakeLists "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt"
 	ENABLE_SEARCH
 )
+

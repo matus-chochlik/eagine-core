@@ -10,27 +10,6 @@ import eagine.core;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-void print_bash_completion(
-  main_ctx& ctx,
-  std::ostream& out,
-  const embedded_resource& res) {
-    if(res) {
-        const auto print{[&](const memory::const_block data) {
-            write_to_stream(out, data);
-            return true;
-        }};
-        res.fetch(ctx, {construct_from, print});
-    }
-}
-//------------------------------------------------------------------------------
-auto handle_special_args(main_ctx& ctx) -> bool {
-    if(ctx.args().find("--print-bash-completion")) {
-        print_bash_completion(ctx, std::cout, search_resource("bashCmpltn"));
-        return true;
-    }
-    return false;
-}
-//------------------------------------------------------------------------------
 void do_log(main_ctx& ctx) noexcept {
     auto& log{ctx.log()};
     auto& sys{ctx.system()};
@@ -61,8 +40,8 @@ void do_log(main_ctx& ctx) noexcept {
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     try {
-        if(handle_special_args(ctx)) {
-            return true;
+        if(handle_common_special_args(ctx)) {
+            return 0;
         }
 
         signal_switch interrupted;
