@@ -35,6 +35,6 @@ export void print_bash_completion(main_ctx&, std::ostream&);
 //------------------------------------------------------------------------------
 // common special command line arguments
 //------------------------------------------------------------------------------
-export auto handle_common_special_args(main_ctx& ctx) -> bool;
+export auto handle_common_special_args(main_ctx& ctx) -> std::optional<int>;
 //------------------------------------------------------------------------------
 } // namespace eagine

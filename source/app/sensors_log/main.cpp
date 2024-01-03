@@ -40,8 +40,8 @@ void do_log(main_ctx& ctx) noexcept {
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     try {
-        if(handle_common_special_args(ctx)) {
-            return 0;
+        if(const auto exit_code{handle_common_special_args(ctx)}) {
+            return *exit_code;
         }
 
         signal_switch interrupted;

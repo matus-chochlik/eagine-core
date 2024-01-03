@@ -71,20 +71,28 @@ void print_bash_completion(main_ctx& ctx, std::ostream& out) {
 //------------------------------------------------------------------------------
 // common special arguments
 //------------------------------------------------------------------------------
-auto handle_common_special_args(main_ctx& ctx) -> bool {
+auto handle_common_special_args(main_ctx& ctx) -> std::optional<int> {
     if(ctx.args().find("--version")) {
         print_version(ctx, std::cout);
-        return true;
+        return {0};
+    }
+    if(const auto arg{ctx.args().find("--version-at-least")}) {
+        if(const auto result{ctx.version().version_at_least(arg.next())}) {
+            return {0};
+        } else if(not result) {
+            return {1};
+        }
+        return {2};
     }
     if(ctx.args().find("--copyright") or ctx.args().find("--license")) {
         print_copyright_notice(ctx, std::cout);
-        return true;
+        return {0};
     }
     if(ctx.args().find("--print-bash-completion")) {
         print_bash_completion(ctx, std::cout);
-        return true;
+        return {0};
     }
-    return false;
+    return {};
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

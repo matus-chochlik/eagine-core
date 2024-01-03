@@ -15,8 +15,8 @@ namespace eagine {
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     try {
-        if(handle_common_special_args(ctx)) {
-            return 0;
+        if(const auto exit_code{handle_common_special_args(ctx)}) {
+            return *exit_code;
         }
         if(const auto sinks{logs::make_sink_factory(ctx)}) {
             logs::internal_backend::set_sink(sinks->make_stream());
