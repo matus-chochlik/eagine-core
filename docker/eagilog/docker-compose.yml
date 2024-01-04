@@ -36,6 +36,8 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=eagine
       - GF_SECURITY_ADMIN_PASSWORD=cUXjMQ5O1P7OdrdfkaJoCueUs+l6EcjM97bRp2ue1JBHalKyAf5DnIXExy5anfxZ
+    volumes:
+      - grafana-storage:/var/lib/grafana
     depends_on:
       - eagilog_influxdb
 
