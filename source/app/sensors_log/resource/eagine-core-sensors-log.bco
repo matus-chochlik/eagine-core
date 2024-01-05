@@ -12,6 +12,8 @@ function _eagine_core_sensors_log()
 
     local only_once_opts=" \
         -h --help \
+		--version \
+		--version-at-least \
         --app-sensors-log-log-interval \
     "
 
@@ -41,6 +43,8 @@ function _eagine_core_sensors_log()
     case "${prev}" in
         -h|--help)
             return 0;;
+        --version-at-least)
+            COMPREPLY=($(eagine-core-sensors-log --version));;
         --app-sensors-log-log-interval)
             COMPREPLY=( "60s" );;
         *)

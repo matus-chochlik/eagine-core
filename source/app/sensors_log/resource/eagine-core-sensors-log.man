@@ -1,0 +1,35 @@
+.TH EAGINE-CORE-SENSORS-LOG 1 "2024-01-05" "EAGine sensors log"
+.SH "NAME"
+eagine-core-sensors-log \- System sensor value logger.
+.SH "SYNOPSIS"
+.B eagine-core-sensors-log
+[
+OPTIONS
+]
+.SH "DESCRIPTION"
+This executable reads the values of some system sensors, like temperature, CPU
+load, memory and swap usage, etc. and writes them to the log in specified time
+intervals.
+.SH "OPTIONS"
+.TP
+\fB-h\fR, \fB--help\fR
+show a help message and exit.
+.TP
+\fB--version\fR
+print the version number and exit.
+.TP
+\fB--version-at-least\fR <\fIMAJOR.MINOR[.PATCH[.COMMIT]]\fR>
+checks if the version is at least the specified semantic version number.
+If the version is less than the specified number, exits with non-zero result.
+.TP
+\fB--app-sensors-log-log-interval\fR <\fITIME\fR>
+specifies the time interval (like 30s, 5min, 1hr, etc.) in which the sensor
+values are logged.
+.SH "AUTHOR"
+Matus Chochlik, chochlik@gmail.com
+.SH "COPYRIGHT"
+Copyright (c) 2023-2024 Matus Chochlik
+.PP
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the Boost Software License, Version 1.0.
+(See a copy at http://www.boost.org/LICENSE_1_0.txt)
