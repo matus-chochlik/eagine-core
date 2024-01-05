@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# coding=utf-8
 # Copyright Matus Chochlik.
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
@@ -68,6 +69,10 @@ class FilterArgParser(argparse.ArgumentParser):
         if options.print_bash_completion is None:
             if options.action is None:
                 self.error("Either --clean or --smudge must be specified")
+            if not os.path.exists(options.mapping_path):
+                self.error("Mapping file '%(mapping)s does not exist'" % {
+                    "mapping": options.mapping_path
+                })
         return options
 
     # --------------------------------------------------------------------------

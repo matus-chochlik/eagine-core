@@ -185,7 +185,7 @@ class WorkflowUIBase(object):
     # --------------------------------------------------------------------------
     def execute_command(self, parent, cmd_line, work_dir, simulate, simresult):
         if not self.should_execute(cmd_line, work_dir):
-            raise RuntimeError("Command cancelled")
+            raise RuntimeError("Command canceled")
         if self._commands is None:
             parent.do_execute_command(cmd_line, work_dir, simulate, simresult)
         else:
@@ -196,7 +196,7 @@ class WorkflowUIBase(object):
     # --------------------------------------------------------------------------
     def write_file(self, parent, file_path, contents, simulate):
         if not self.should_write(file_path, contents):
-            raise RuntimeError("Write cancelled")
+            raise RuntimeError("Write canceled")
         if self._commands is None:
             parent.do_write_file(file_path, contents, simulate)
         else:
