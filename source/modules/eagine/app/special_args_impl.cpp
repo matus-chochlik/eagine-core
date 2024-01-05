@@ -50,23 +50,16 @@ void print_copyright_notice(main_ctx& ctx, std::ostream& out) {
     }
 }
 //------------------------------------------------------------------------------
-// bash completion from resource
+// print text from resource
 //------------------------------------------------------------------------------
-void do_print_bash_completion(
-  main_ctx& ctx,
-  std::ostream& out,
-  const embedded_resource& res) {
+void print_resource(main_ctx& ctx, const embedded_resource& res) {
     if(res) {
         const auto print{[&](const memory::const_block data) {
-            write_to_stream(out, data);
+            write_to_stream(std::cout, data);
             return true;
         }};
         res.fetch(ctx, {construct_from, print});
     }
-}
-//------------------------------------------------------------------------------
-void print_bash_completion(main_ctx& ctx, std::ostream& out) {
-    print_bash_completion(ctx, out, "BashCmpltn");
 }
 //------------------------------------------------------------------------------
 // common special arguments
@@ -89,7 +82,15 @@ auto handle_common_special_args(main_ctx& ctx) -> std::optional<int> {
         return {0};
     }
     if(ctx.args().find("--print-bash-completion")) {
-        print_bash_completion(ctx, std::cout);
+        if(const auto res{search_resource("BashCmpltn")}) {
+            print_resource(ctx, res);
+        }
+        return {0};
+    }
+    if(ctx.args().find("--print-manual")) {
+        if(const auto res{search_resource("Manual")}) {
+            print_resource(ctx, res);
+        }
         return {0};
     }
     return {};

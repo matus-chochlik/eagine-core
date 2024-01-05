@@ -18,18 +18,7 @@ export void print_version(main_ctx&, std::ostream&);
 //------------------------------------------------------------------------------
 export void print_copyright_notice(main_ctx&, std::ostream&);
 //------------------------------------------------------------------------------
-void do_print_bash_completion(
-  main_ctx&,
-  std::ostream&,
-  const embedded_resource& res);
-//------------------------------------------------------------------------------
-export template <std::size_t L>
-void print_bash_completion(
-  main_ctx& ctx,
-  std::ostream& out,
-  const char (&res_id)[L]) {
-    do_print_bash_completion(ctx, out, search_resource(res_id));
-}
+void do_print_resource(main_ctx&, std::ostream&, const embedded_resource& res);
 //------------------------------------------------------------------------------
 export void print_bash_completion(main_ctx&, std::ostream&);
 //------------------------------------------------------------------------------
