@@ -176,6 +176,16 @@ public:
         }
     }
 
+    template <typename F>
+        requires(
+          std::is_void_v<std::remove_cvref_t<std::invoke_result_t<F, bool>>>)
+    constexpr auto and_then(F&& function) const
+      noexcept(noexcept(std::invoke(std::forward<F>(function), true))) {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), bool(*this));
+        }
+    }
+
     /// @brief Return the stored value or the result of function.
     /// @see transform
     /// @see and_then

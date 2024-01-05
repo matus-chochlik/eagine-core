@@ -131,6 +131,11 @@ public:
         return R{};
     }
 
+    template <typename F>
+        requires(std::is_void_v<
+                 std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
+    void and_then(F&& function) const {}
+
     template <typename T>
     auto replaced_with(const T&) const
       -> result<T, Info, result_validity::never> {
@@ -332,6 +337,15 @@ public:
             return std::invoke(std::forward<F>(function), _value);
         } else {
             return R{};
+        }
+    }
+
+    template <typename F>
+        requires(std::is_void_v<
+                 std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
+    void and_then(F&& function) const {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), _value);
         }
     }
 
@@ -547,6 +561,15 @@ public:
             return std::invoke(std::forward<F>(function), _value);
         } else {
             return R{};
+        }
+    }
+
+    template <typename F>
+        requires(std::is_void_v<
+                 std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
+    void and_then(F&& function) const {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), _value);
         }
     }
 
