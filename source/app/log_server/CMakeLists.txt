@@ -58,6 +58,7 @@ eagine_embed_target_resources(
 	TARGET eagine-core-log-server
 	RESOURCES
 		BoostLcnse "../../../LICENSE_1_0.txt"
+		Manual     "resource/eagine-core-log-server.man"
 		BashCmpltn "resource/eagine-core-log-server.bco"
 		PSQLSchema "postgresql/eagilog.sql"
 	PACKED

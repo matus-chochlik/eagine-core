@@ -12,6 +12,8 @@ function _eagine_core_log_server()
 
     local only_once_opts=" \
         -h --help \
+        --version \
+        --version-at-least \
         --istream \
         --local \
         --network \
@@ -21,8 +23,6 @@ function _eagine_core_log_server()
         --influxdb \
         --libpq \
         --text-tree \
-        --local \
-        --network \
     "
 
     local opts=""
@@ -51,6 +51,8 @@ function _eagine_core_log_server()
     case "${prev}" in
         -h|--help)
             return 0;;
+        --version-at-least)
+            COMPREPLY=($(eagine-core-log-server --version));;
         --local)
             COMPREPLY=( "/tmp/eagine-log" );;
         --network)
