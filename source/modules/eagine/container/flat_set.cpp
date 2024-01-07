@@ -29,7 +29,7 @@ export template <
   class Container = std::vector<Key>>
 class flat_set : private Compare {
 
-    Container _vec;
+    Container _storage;
 
 public:
     using key_type = Key;
@@ -71,14 +71,14 @@ public:
     /// @brief Replaces the content with elements from an initializer list.
     void assign(std::initializer_list<Key> il) {
         using std::sort;
-        _vec = Container(il);
-        sort(_vec.begin(), _vec.end(), value_comp());
+        _storage = Container(il);
+        sort(_storage.begin(), _storage.end(), value_comp());
     }
 
     void assign(const Container& v) {
         using std::sort;
-        _vec = Container(v.begin(), v.end());
-        sort(_vec.begin(), _vec.end(), value_comp());
+        _storage = Container(v.begin(), v.end());
+        sort(_storage.begin(), _storage.end(), value_comp());
     }
 
     /// @brief Returns the key comparator.
@@ -94,48 +94,48 @@ public:
     /// @brief Indicates if this set is empty.
     /// @see size
     [[nodiscard]] auto empty() const noexcept {
-        return _vec.empty();
+        return _storage.empty();
     }
 
     /// @brief Returns the number of elements in this set.
     /// @see empty
     /// @see max_size
     [[nodiscard]] auto size() const noexcept {
-        return _vec.size();
+        return _storage.size();
     }
 
     /// @brief Returns the maximum number of elements that can be stored in this set.
     /// @see size
     [[nodiscard]] auto max_size() const noexcept {
-        return _vec.max_size();
+        return _storage.max_size();
     }
 
     /// @brief Return an iterator pointing to the first element.
     /// @see end
     /// @see find
     [[nodiscard]] auto begin() -> iterator {
-        return _vec.begin();
+        return _storage.begin();
     }
 
     /// @brief Return a const iterator pointing to the first element.
     /// @see end
     /// @see find
     [[nodiscard]] auto begin() const -> const_iterator {
-        return _vec.begin();
+        return _storage.begin();
     }
 
     /// @brief Return an iterator pointing to the last element.
     /// @see begin
     /// @see find
     [[nodiscard]] auto end() -> iterator {
-        return _vec.end();
+        return _storage.end();
     }
 
     /// @brief Return a const iterator pointing to the last element.
     /// @see begin
     /// @see find
     [[nodiscard]] auto end() const -> const_iterator {
-        return _vec.end();
+        return _storage.end();
     }
 
     [[nodiscard]] auto lower_bound(const Key& key) const noexcept {
@@ -157,7 +157,7 @@ public:
     /// @see contains
     [[nodiscard]] auto find(const Key& key) const noexcept {
         auto [p, i] = _find_insert_pos(key);
-        return i ? _vec.end() : p;
+        return i ? _storage.end() : p;
     }
 
     /// @brief Indicates if the specified key is stored in this set.
@@ -168,7 +168,7 @@ public:
 
     /// @brief Clears all elements from this set.
     auto clear() noexcept {
-        _vec.clear();
+        _storage.clear();
     }
 
     /// @brief Inserts the specified value into this set.
@@ -186,37 +186,43 @@ public:
 
     /// @brief Erases the element pointed to by the specified iterator.
     auto erase(iterator p) -> iterator {
-        return _vec.erase(p);
+        return _storage.erase(p);
     }
 
     /// @brief Erases the element between the specified iterators.
     auto erase(iterator f, iterator t) -> iterator {
-        return _vec.erase(f, t);
+        return _storage.erase(f, t);
     }
 
     /// @brief Erases the specified key from this set.
     auto erase(const Key& key) -> size_type {
         using std::distance;
-        using std::equal_range;
-        const auto p = equal_range(_vec.begin(), _vec.end(), key, key_comp());
-        const auto res = size_type(distance(p.first, p.second));
-        assert(res <= 1);
-        if(res) {
-            _vec.erase(p.first);
+        using std::lower_bound;
+        using std::upper_bound;
+        const auto p{
+          lower_bound(_storage.begin(), _storage.end(), key, key_comp())};
+        if(p != _storage.end()) {
+            assert(
+              distance(
+                p,
+                upper_bound(
+                  _storage.begin(), _storage.end(), key, key_comp())) == 1);
+            _storage.erase(p);
+            return 1;
         }
-        return res;
+        return 0;
     }
 
     [[nodiscard]] auto underlying() const noexcept {
         using memory::view;
-        return view(_vec);
+        return view(_storage);
     }
 
 private:
     auto _find_insert_pos(const Key& k) const noexcept {
         using std::lower_bound;
-        const auto b = _vec.begin();
-        const auto e = _vec.end();
+        const auto b = _storage.begin();
+        const auto e = _storage.end();
         const auto p = lower_bound(b, e, k, key_comp());
 
         return std::pair{p, (p == e) or (k != *p)};
@@ -225,10 +231,10 @@ private:
     template <typename I>
     auto _find_insert_pos(I p, const Key& k) const noexcept {
         using std::lower_bound;
-        auto b = _vec.begin();
-        auto e = _vec.end();
+        auto b = _storage.begin();
+        auto e = _storage.end();
         if(p == e) {
-            if(_vec.empty() or value_comp()(_vec.back(), k)) {
+            if(_storage.empty() or value_comp()(_storage.back(), k)) {
                 return std::pair{p, true};
             }
             p = lower_bound(b, e, k, key_comp());
@@ -249,7 +255,7 @@ private:
     template <typename I>
     auto _do_insert(I ip, const Key& value) -> I {
         if(ip.second) {
-            ip.first = _vec.insert(ip.first, value);
+            ip.first = _storage.insert(ip.first, value);
         }
         return ip;
     }

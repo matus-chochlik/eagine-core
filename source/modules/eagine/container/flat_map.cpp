@@ -264,7 +264,7 @@ class flat_map
       flat_map_view_crtp<Key, Val, Cmp, flat_map<Key, Val, Cmp, Container>>;
     using _base::_ops;
 
-    Container _vec{};
+    Container _storage{};
 
 public:
     using typename _base::key_compare;
@@ -309,38 +309,38 @@ public:
     /// @brief Replaces the elements with keys/values from an initializer list.
     void assign(std::initializer_list<std::pair<Key, Val>> il) {
         using std::sort;
-        _vec.assign(il.begin(), il.end());
-        sort(_vec.begin(), _vec.end(), value_comp());
+        _storage.assign(il.begin(), il.end());
+        sort(_storage.begin(), _storage.end(), value_comp());
     }
 
     void assign(const std::vector<value_type>& v) {
         using std::sort;
-        _vec.assign(v.begin(), v.end());
-        sort(_vec.begin(), _vec.end(), value_comp());
+        _storage.assign(v.begin(), v.end());
+        sort(_storage.begin(), _storage.end(), value_comp());
     }
 
     /// @brief Indicates if this map is empty.
     /// @see size
     /// @see clear
     [[nodiscard]] auto empty() const noexcept -> bool {
-        return _vec.empty();
+        return _storage.empty();
     }
 
     /// @brief Returns the maximum number of elements in this map.
     [[nodiscard]] auto max_size() const noexcept -> size_type {
-        return _vec.max_size();
+        return _storage.max_size();
     }
 
     /// @brief Reserves the underlying storage for the specified number of elements.
     auto reserve(const size_type sz) -> auto& {
-        _vec.reserve(sz);
+        _storage.reserve(sz);
         return *this;
     }
 
     /// @brief Clears all elements from this map.
     /// @see empty
     auto clear() -> auto& {
-        _vec.clear();
+        _storage.clear();
         return *this;
     }
 
@@ -349,7 +349,7 @@ public:
     /// @see back
     /// @see begin
     [[nodiscard]] auto front() const noexcept -> auto& {
-        return _vec.front();
+        return _storage.front();
     }
 
     /// @brief Returns the element with the highest key value.
@@ -357,35 +357,35 @@ public:
     /// @see front
     /// @see end
     [[nodiscard]] auto back() const noexcept -> auto& {
-        return _vec.back();
+        return _storage.back();
     }
 
     /// @brief Returns an iterator pointing to the first element.
     /// @see end
     /// @see front
     [[nodiscard]] auto begin() noexcept -> iterator {
-        return _vec.begin();
+        return _storage.begin();
     }
 
     /// @brief Returns a const iterator pointing to the first element.
     /// @see end
     /// @see front
     [[nodiscard]] auto begin() const -> const_iterator {
-        return _vec.begin();
+        return _storage.begin();
     }
 
     /// @brief Returns an iterator pointing past the last element.
     /// @see begin
     /// @see back
     [[nodiscard]] auto end() -> iterator {
-        return _vec.end();
+        return _storage.end();
     }
 
     /// @brief Returns a const iterator pointing past the last element.
     /// @see begin
     /// @see back
     [[nodiscard]] auto end() const -> const_iterator {
-        return _vec.end();
+        return _storage.end();
     }
 
     /// @brief Returns a reference to the element with the specified key.
@@ -447,27 +447,30 @@ public:
     /// @brief Erases the element pointed to by the specified iterator.
     /// @see erase_if
     auto erase(iterator p) -> iterator {
-        return _vec.erase(p);
+        return _storage.erase(p);
     }
 
     /// @brief Erases elements between the given pair of iterators.
     /// @see erase_if
     auto erase(iterator f, iterator t) -> iterator {
-        return _vec.erase(f, t);
+        return _storage.erase(f, t);
     }
 
     /// @brief Erases the element stored under the specified key.
     /// @see erase_if
     template <typename K>
     auto erase(const K& key) -> size_type {
-        using std::distance;
-        const auto p = _ops().equal_range(_vec.begin(), _vec.end(), key);
-        const auto res = size_type(distance(p.first, p.second));
-        assert(res <= 1);
-        if(res) {
-            _vec.erase(p.first);
+        const auto p{_ops().lower_bound(_storage.begin(), _storage.end(), key)};
+        if(p != _storage.end()) {
+            using std::distance;
+            assert(
+              distance(
+                p, _ops().upper_bound(_storage.begin(), _storage.end(), key)) ==
+              1);
+            _storage.erase(p);
+            return 1;
         }
-        return res;
+        return 0;
     }
 
     /// @brief Erases all elements satisfying the specified predicate.
@@ -475,24 +478,24 @@ public:
     template <typename Predicate>
     auto erase_if(const Predicate& predicate) -> size_type {
         using std::erase_if;
-        return erase_if(_vec, predicate);
+        return erase_if(_storage, predicate);
     }
 
     [[nodiscard]] auto underlying() const noexcept {
         using memory::view;
-        return view(_vec);
+        return view(_storage);
     }
 
     [[nodiscard]] auto underlying() noexcept {
         using memory::cover;
-        return cover(_vec);
+        return cover(_storage);
     }
 
 private:
     template <typename K>
     auto _find_insert_pos(const K& k) noexcept {
-        const auto b = _vec.begin();
-        const auto e = _vec.end();
+        const auto b = _storage.begin();
+        const auto e = _storage.end();
         const auto p = _ops().lower_bound(b, e, k);
 
         return std::pair{p, (p == e) or not are_equal(k, p->first)};
@@ -500,10 +503,10 @@ private:
 
     template <typename I, typename K>
     auto _find_insert_pos(I p, const K& k) {
-        auto b = _vec.begin();
-        auto e = _vec.end();
+        auto b = _storage.begin();
+        auto e = _storage.end();
         if(p == e) {
-            if(_vec.empty() or value_comp()(_vec.back(), k)) {
+            if(_storage.empty() or value_comp()(_storage.back(), k)) {
                 return std::pair{p, true};
             }
             p = _ops().lower_bound(b, e, k);
@@ -525,7 +528,7 @@ private:
     auto _do_emplace(I ip, const K& key, Args&&... args) -> I {
         if(ip.second) {
             ip.first =
-              _vec.emplace(ip.first, key, Val{std::forward<Args>(args)...});
+              _storage.emplace(ip.first, key, Val{std::forward<Args>(args)...});
         }
         return ip;
     }
@@ -533,7 +536,7 @@ private:
     template <typename I, typename V>
     auto _do_insert(I ip, const V& value) -> I {
         if(ip.second) {
-            ip.first = _vec.insert(ip.first, value);
+            ip.first = _storage.insert(ip.first, value);
         }
         return ip;
     }
