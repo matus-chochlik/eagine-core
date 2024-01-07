@@ -11,16 +11,24 @@ import std;
 import eagine.core.types;
 import eagine.core.container;
 //------------------------------------------------------------------------------
-void flat_map_default_construct(auto& s) {
+template <typename FM>
+void flat_map_default_construct_T(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};
-    eagine::flat_map<int, int> fm;
+    FM fm;
 
     test.check(fm.empty(), "is empty");
     test.check_equal(fm.size(), 0U, "size is zero");
     test.check(fm.begin() == fm.end(), "begin == end");
 }
 //------------------------------------------------------------------------------
-void flat_map_init_from_vector(auto& s) {
+void flat_map_default_construct(auto& s) {
+    flat_map_default_construct_T<eagine::flat_map<int, int>>(s);
+    flat_map_default_construct_T<eagine::static_flat_map<int, int, 32>>(s);
+    flat_map_default_construct_T<eagine::chunk_map<int, int, 32>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FM>
+void flat_map_init_from_vector_T(auto& s) {
     eagitest::case_ test{s, 2, "init from vector"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
@@ -42,7 +50,7 @@ void flat_map_init_from_vector(auto& s) {
         trck.checkpoint(1);
     }
 
-    eagine::flat_map<int, std::size_t> fm(d);
+    FM fm{d};
 
     test.check_equal(sm.empty(), fm.empty(), "empty is same");
     test.check_equal(eagine::span_size_t(sm.size()), fm.size(), "size is same");
@@ -63,13 +71,18 @@ void flat_map_init_from_vector(auto& s) {
     test.check(fmi == fm.end(), "flat_map iterator ok");
 }
 //------------------------------------------------------------------------------
-void flat_map_insert(auto& s) {
+void flat_map_init_from_vector(auto& s) {
+    flat_map_init_from_vector_T<eagine::flat_map<int, std::size_t>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FM>
+void flat_map_insert_T(auto& s) {
     eagitest::case_ test{s, 3, "insert"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
     std::map<int, std::size_t> sm;
-    eagine::flat_map<int, std::size_t> fm;
+    FM fm;
 
     using p_t = std::pair<const int, std::size_t>;
 
@@ -103,13 +116,19 @@ void flat_map_insert(auto& s) {
     test.check(fmi == fm.end(), "flat_map iterator ok");
 }
 //------------------------------------------------------------------------------
-void flat_map_insert_at_begin(auto& s) {
+void flat_map_insert(auto& s) {
+    flat_map_insert_T<eagine::flat_map<int, std::size_t>>(s);
+    flat_map_insert_T<eagine::chunk_map<int, std::size_t, 128>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FM>
+void flat_map_insert_at_begin_T(auto& s) {
     eagitest::case_ test{s, 4, "insert at begin"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
     std::map<int, std::size_t> sm;
-    eagine::flat_map<int, std::size_t> fm;
+    FM fm;
 
     using p_t = std::pair<const int, std::size_t>;
 
@@ -143,13 +162,19 @@ void flat_map_insert_at_begin(auto& s) {
     test.check(fmi == fm.end(), "flat_map iterator ok");
 }
 //------------------------------------------------------------------------------
-void flat_map_insert_at_end(auto& s) {
+void flat_map_insert_at_begin(auto& s) {
+    flat_map_insert_at_begin_T<eagine::flat_map<int, std::size_t>>(s);
+    flat_map_insert_at_begin_T<eagine::chunk_map<int, std::size_t, 96>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FM>
+void flat_map_insert_at_end_T(auto& s) {
     eagitest::case_ test{s, 5, "insert at end"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
     std::map<int, std::size_t> sm;
-    eagine::flat_map<int, std::size_t> fm;
+    FM fm;
 
     using p_t = std::pair<const int, std::size_t>;
 
@@ -183,13 +208,19 @@ void flat_map_insert_at_end(auto& s) {
     test.check(fmi == fm.end(), "flat_map iterator ok");
 }
 //------------------------------------------------------------------------------
-void flat_map_insert_at_lower_bound(auto& s) {
+void flat_map_insert_at_end(auto& s) {
+    flat_map_insert_at_end_T<eagine::flat_map<int, std::size_t>>(s);
+    flat_map_insert_at_end_T<eagine::chunk_map<int, std::size_t, 48>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FM>
+void flat_map_insert_at_lower_bound_T(auto& s) {
     eagitest::case_ test{s, 6, "insert at lower bound"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
     std::map<int, std::size_t> sm;
-    eagine::flat_map<int, std::size_t> fm;
+    FM fm;
 
     using p_t = std::pair<const int, std::size_t>;
 
@@ -223,13 +254,19 @@ void flat_map_insert_at_lower_bound(auto& s) {
     test.check(fmi == fm.end(), "flat_map iterator ok");
 }
 //------------------------------------------------------------------------------
-void flat_map_try_emplace(auto& s) {
+void flat_map_insert_at_lower_bound(auto& s) {
+    flat_map_insert_at_lower_bound_T<eagine::flat_map<int, std::size_t>>(s);
+    flat_map_insert_at_lower_bound_T<eagine::chunk_map<int, std::size_t, 8>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FM>
+void flat_map_try_emplace_T(auto& s) {
     eagitest::case_ test{s, 7, "try emplace"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
     std::map<int, std::size_t> sm;
-    eagine::flat_map<int, std::size_t> fm;
+    FM fm;
 
     std::hash<int> h;
 
@@ -263,13 +300,19 @@ void flat_map_try_emplace(auto& s) {
     test.check(fmi == fm.end(), "flat_map iterator ok");
 }
 //------------------------------------------------------------------------------
-void flat_map_emplace(auto& s) {
+void flat_map_try_emplace(auto& s) {
+    flat_map_try_emplace_T<eagine::flat_map<int, std::size_t>>(s);
+    flat_map_try_emplace_T<eagine::chunk_map<int, std::size_t, 108>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FM>
+void flat_map_emplace_T(auto& s) {
     eagitest::case_ test{s, 8, "emplace"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
     std::map<int, std::size_t> sm;
-    eagine::flat_map<int, std::size_t> fm;
+    FM fm;
 
     std::hash<int> h;
 
@@ -303,13 +346,19 @@ void flat_map_emplace(auto& s) {
     test.check(fmi == fm.end(), "flat_map iterator ok");
 }
 //------------------------------------------------------------------------------
-void flat_map_key_assign(auto& s) {
+void flat_map_emplace(auto& s) {
+    flat_map_emplace_T<eagine::flat_map<int, std::size_t>>(s);
+    flat_map_emplace_T<eagine::chunk_map<int, std::size_t, 192>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FM>
+void flat_map_key_assign_T(auto& s) {
     eagitest::case_ test{s, 9, "assign by key"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
     std::map<int, std::size_t> sm;
-    eagine::flat_map<int, std::size_t> fm;
+    FM fm;
 
     std::hash<int> h;
 
@@ -334,13 +383,19 @@ void flat_map_key_assign(auto& s) {
     }
 }
 //------------------------------------------------------------------------------
-void flat_map_erase_key(auto& s) {
+void flat_map_key_assign(auto& s) {
+    flat_map_key_assign_T<eagine::flat_map<int, std::size_t>>(s);
+    flat_map_key_assign_T<eagine::chunk_map<int, std::size_t, 256>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FM>
+void flat_map_erase_key_T(auto& s) {
     eagitest::case_ test{s, 10, "erase key"};
     auto& rg{test.random()};
     eagitest::track trck{test, 3, 3};
 
     std::map<int, std::size_t> sm;
-    eagine::flat_map<int, std::size_t> fm;
+    FM fm;
 
     using p_t = std::pair<const int, std::size_t>;
     std::vector<int> ks;
@@ -390,12 +445,18 @@ void flat_map_erase_key(auto& s) {
     }
 }
 //------------------------------------------------------------------------------
-void flat_map_erase_if(auto& s) {
+void flat_map_erase_key(auto& s) {
+    flat_map_erase_key_T<eagine::flat_map<int, std::size_t>>(s);
+    // TODO: flat_map_erase_key_T<eagine::chunk_map<int, std::size_t, 144>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FM>
+void flat_map_erase_if_T(auto& s) {
     eagitest::case_ test{s, 11, "erase if"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
-    eagine::flat_map<int, std::size_t> fm;
+    FM fm;
 
     std::hash<int> h;
 
@@ -415,6 +476,11 @@ void flat_map_erase_if(auto& s) {
         test.check_equal(p.second % 2, 0U, "all are even");
         trck.checkpoint(2);
     }
+}
+//------------------------------------------------------------------------------
+void flat_map_erase_if(auto& s) {
+    flat_map_erase_if_T<eagine::flat_map<int, std::size_t>>(s);
+    flat_map_erase_if_T<eagine::chunk_map<int, std::size_t, 168>>(s);
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

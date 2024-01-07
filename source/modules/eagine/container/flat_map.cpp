@@ -14,6 +14,8 @@ export module eagine.core.container:flat_map;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
+import :static_vector;
+import :chunk_list;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -66,17 +68,20 @@ struct flat_map_ops : flat_map_value_compare<Key, Val, Cmp> {
 
     template <typename I, typename K>
     auto lower_bound(const I b, const I e, const K& key) const noexcept {
-        return ::std::lower_bound(b, e, key, value_comp());
+        using ::std::lower_bound;
+        return lower_bound(b, e, key, value_comp());
     }
 
     template <typename I, typename K>
     auto upper_bound(const I b, const I e, const K& key) const noexcept {
-        return ::std::upper_bound(b, e, key, value_comp());
+        using ::std::upper_bound;
+        return upper_bound(b, e, key, value_comp());
     }
 
     template <typename I, typename K>
     auto equal_range(const I b, const I e, const K& key) const noexcept {
-        return ::std::equal_range(b, e, key, value_comp());
+        using ::std::equal_range;
+        return equal_range(b, e, key, value_comp());
     }
 
     template <typename I, typename K>
@@ -303,13 +308,15 @@ public:
 
     /// @brief Replaces the elements with keys/values from an initializer list.
     void assign(std::initializer_list<std::pair<Key, Val>> il) {
+        using std::sort;
         _vec.assign(il.begin(), il.end());
-        std::sort(_vec.begin(), _vec.end(), value_comp());
+        sort(_vec.begin(), _vec.end(), value_comp());
     }
 
     void assign(const std::vector<value_type>& v) {
+        using std::sort;
         _vec.assign(v.begin(), v.end());
-        std::sort(_vec.begin(), _vec.end(), value_comp());
+        sort(_vec.begin(), _vec.end(), value_comp());
     }
 
     /// @brief Indicates if this map is empty.
@@ -464,7 +471,8 @@ public:
     /// @see erase
     template <typename Predicate>
     auto erase_if(const Predicate& predicate) -> size_type {
-        return std::erase_if(_vec, predicate);
+        using std::erase_if;
+        return erase_if(_vec, predicate);
     }
 
     [[nodiscard]] auto underlying() const noexcept {
@@ -527,6 +535,22 @@ private:
         return ip;
     }
 };
+//------------------------------------------------------------------------------
+export template <
+  typename Key,
+  typename Val,
+  std::size_t MaxSize,
+  typename Cmp = std::less<Key>>
+using static_flat_map =
+  flat_map<Key, Val, Cmp, static_vector<std::pair<Key, Val>, MaxSize>>;
+//------------------------------------------------------------------------------
+export template <
+  typename Key,
+  typename Val,
+  std::size_t ChunkSize,
+  typename Cmp = std::less<Key>>
+using chunk_map =
+  flat_map<Key, Val, Cmp, chunk_list<std::pair<Key, Val>, ChunkSize>>;
 //------------------------------------------------------------------------------
 export template <typename Key, typename Val, typename Cmp, typename Container>
 auto view(const flat_map<Key, Val, Cmp, Container>& c) noexcept {

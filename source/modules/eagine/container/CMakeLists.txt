@@ -38,7 +38,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.container PARTITION flat_map
 	IMPORTS
-		std
+		std static_vector chunk_list
 		eagine.core.types
 		eagine.core.memory
 )
