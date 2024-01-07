@@ -101,6 +101,11 @@ public:
         return *_iter_e;
     }
 
+    constexpr auto operator->() const noexcept -> auto* {
+        assert(_iter_c_p != _iter_c_e);
+        return &(*_iter_e);
+    }
+
     constexpr auto adjust() noexcept -> auto& {
         while(_iter_c_p != _iter_c_e) {
             if(_iter_e != (*_iter_c_p)->end()) {
@@ -178,7 +183,9 @@ public:
         assert(first._iter_c_e == second._iter_c_e);
         assert(first <= second);
         const auto dist{[](auto l, auto r) {
-            return limit_cast<difference_type>(std::distance(l, r));
+            using I = std::common_type_t<decltype(l), decltype(r)>;
+            using std::distance;
+            return limit_cast<difference_type>(distance(I(l), I(r)));
         }};
         auto c_p{first._iter_c_p};
 
@@ -187,14 +194,14 @@ public:
         } else if(c_p == second._iter_c_p) {
             return dist(first._iter_e, second._iter_e);
         } else {
-            auto r{dist(first._iter_e, (*c_p)->end())};
+            auto r{dist(first._iter_e, (*c_p)->cend())};
             while(++c_p != second._iter_c_p) {
                 if(*c_p) {
-                    r += dist((*c_p)->begin(), (*c_p)->end());
+                    r += dist((*c_p)->cbegin(), (*c_p)->cend());
                 }
             }
             if(c_p != first._iter_c_e) {
-                r += dist((*c_p)->begin(), second._iter_e);
+                r += dist((*c_p)->cbegin(), second._iter_e);
             }
             return r;
         }
@@ -276,6 +283,25 @@ public:
         return upper_bound(first, last, value, std::less<T>{});
     }
 
+    friend constexpr auto equal_range(
+      chunk_list_iterator first,
+      chunk_list_iterator last,
+      const auto& value,
+      auto comp) noexcept
+      -> std::pair<chunk_list_iterator, chunk_list_iterator> {
+        return std::make_pair(
+          lower_bound(first, last, value, comp),
+          upper_bound(first, last, value, comp));
+    }
+
+    friend constexpr auto equal_range(
+      chunk_list_iterator first,
+      chunk_list_iterator last,
+      const auto& value) noexcept
+      -> std::pair<chunk_list_iterator, chunk_list_iterator> {
+        return equal_range(first, last, value, std::less<T>{});
+    }
+
     constexpr auto operator-(const chunk_list_iterator& that) const noexcept
       -> difference_type {
         return distance(that, *this);
@@ -315,6 +341,8 @@ public:
 
     /// @brief Constant iterator type.
     using const_iterator = chunk_list_iterator<T, N, true>;
+
+    using allocator_type = std::allocator<T>;
 
     /// @brief Default constructor.
     constexpr chunk_list() noexcept = default;
@@ -453,6 +481,19 @@ public:
         return (*pos)->pop_back();
     }
 
+    /// @brief Copies the elements from the specified range into this chunk_list.
+    /// @see clear
+    /// @see push_back
+    constexpr void assign(auto first, auto last) {
+        using std::distance;
+        clear();
+        reserve(limit_cast<size_type>(distance(first, last)));
+        while(first != last) {
+            push_back(*first);
+            ++first;
+        }
+    }
+
     /// @brief Returns an iterator pointing to the first element.
     /// @see end
     [[nodiscard]] constexpr auto begin() noexcept -> iterator {
@@ -551,11 +592,30 @@ public:
 
     /// @brief Erases the elements at the specified position.
     /// @see clear
+    /// @see erase_if
     /// @see pop_back
     constexpr auto erase(const_iterator pos) noexcept -> iterator {
         const auto i_p{pos._iter_c_p - _chunks.cbegin()};
         const auto del_p{(*pos._iter_c_p)->erase(pos._iter_e)};
         return iterator{_chunks.begin() + i_p, _chunks.end(), del_p}.adjust();
+    }
+
+    /// @brief Erases the elements satisfying the specified predicate.
+    /// @see erase
+    /// @see clear
+    /// @see pop_back
+    constexpr auto erase_if(const auto& predicate) -> size_type {
+        size_type count{0};
+        for(auto& chunk : _chunks) {
+            using std::erase_if;
+            count += limit_cast<size_type>(erase_if(*chunk, predicate));
+        }
+        return count;
+    }
+
+    friend constexpr auto erase_if(chunk_list& that, const auto& predicate)
+      -> size_type {
+        return that.erase_if(predicate);
     }
 
     /// @brief Returns reference to the first element.
