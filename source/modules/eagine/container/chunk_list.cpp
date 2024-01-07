@@ -136,8 +136,9 @@ public:
     constexpr auto operator+=(difference_type d) noexcept -> auto& {
         assert(_iter_c_p != _iter_c_e);
         const auto dist{[](auto l, auto r) {
+            using I = std::common_type_t<decltype(l), decltype(r)>;
             using std::distance;
-            return limit_cast<difference_type>(distance(l, r));
+            return limit_cast<difference_type>(distance(I(l), I(r)));
         }};
 
         auto curr_d{dist(_iter_e, (*_iter_c_p)->end())};

@@ -14,6 +14,8 @@ export module eagine.core.container:flat_set;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
+import :static_vector;
+import :chunk_list;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -68,13 +70,15 @@ public:
 
     /// @brief Replaces the content with elements from an initializer list.
     void assign(std::initializer_list<Key> il) {
+        using std::sort;
         _vec = Container(il);
-        std::sort(_vec.begin(), _vec.end(), value_comp());
+        sort(_vec.begin(), _vec.end(), value_comp());
     }
 
     void assign(const Container& v) {
+        using std::sort;
         _vec = Container(v.begin(), v.end());
-        std::sort(_vec.begin(), _vec.end(), value_comp());
+        sort(_vec.begin(), _vec.end(), value_comp());
     }
 
     /// @brief Returns the key comparator.
@@ -135,15 +139,18 @@ public:
     }
 
     [[nodiscard]] auto lower_bound(const Key& key) const noexcept {
-        return ::std::lower_bound(begin(), end(), key, value_comp());
+        using ::std::lower_bound;
+        return lower_bound(begin(), end(), key, value_comp());
     }
 
     [[nodiscard]] auto upper_bound(const Key& key) const noexcept {
-        return ::std::upper_bound(begin(), end(), key, value_comp());
+        using ::std::upper_bound;
+        return upper_bound(begin(), end(), key, value_comp());
     }
 
     [[nodiscard]] auto equal_range(const Key& key) const noexcept {
-        return ::std::equal_range(begin(), end(), key, value_comp());
+        using ::std::equal_range;
+        return equal_range(begin(), end(), key, value_comp());
     }
 
     /// @brief Returns the iterator pointing to the element with the specified key.
@@ -189,9 +196,10 @@ public:
 
     /// @brief Erases the specified key from this set.
     auto erase(const Key& key) -> size_type {
-        const auto p =
-          std::equal_range(_vec.begin(), _vec.end(), key, key_comp());
-        const auto res = size_type(std::distance(p.first, p.second));
+        using std::distance;
+        using std::equal_range;
+        const auto p = equal_range(_vec.begin(), _vec.end(), key, key_comp());
+        const auto res = size_type(distance(p.first, p.second));
         assert(res <= 1);
         _vec.erase(p.first, p.second);
         return res;
@@ -204,32 +212,34 @@ public:
 
 private:
     auto _find_insert_pos(const Key& k) const noexcept {
+        using std::lower_bound;
         const auto b = _vec.begin();
         const auto e = _vec.end();
-        const auto p = std::lower_bound(b, e, k, key_comp());
+        const auto p = lower_bound(b, e, k, key_comp());
 
         return std::pair{p, (p == e) or (k != *p)};
     }
 
     template <typename I>
     auto _find_insert_pos(I p, const Key& k) const noexcept {
+        using std::lower_bound;
         auto b = _vec.begin();
         auto e = _vec.end();
         if(p == e) {
             if(_vec.empty() or value_comp()(_vec.back(), k)) {
                 return std::pair{p, true};
             }
-            p = std::lower_bound(b, e, k, key_comp());
+            p = lower_bound(b, e, k, key_comp());
         }
         if(k == *p) {
             return std::pair{p, false};
         }
         if(key_comp()(k, *p)) {
             if(p != b) {
-                p = std::lower_bound(b, p, k, key_comp());
+                p = lower_bound(b, p, k, key_comp());
             }
         } else {
-            p = std::lower_bound(p, e, k, key_comp());
+            p = lower_bound(p, e, k, key_comp());
         }
         return std::pair{p, true};
     }
@@ -242,6 +252,18 @@ private:
         return ip;
     }
 };
+//------------------------------------------------------------------------------
+export template <
+  typename Key,
+  std::size_t MaxSize,
+  typename Compare = std::less<Key>>
+using static_flat_set = flat_set<Key, Compare, static_vector<Key, MaxSize>>;
+//------------------------------------------------------------------------------
+export template <
+  typename Key,
+  std::size_t ChunkSize,
+  typename Compare = std::less<Key>>
+using chunk_set = flat_set<Key, Compare, chunk_list<Key, ChunkSize>>;
 //------------------------------------------------------------------------------
 export template <typename W, typename T, typename C, typename S>
 auto view(const flat_set<T, C, S>& c) noexcept {
