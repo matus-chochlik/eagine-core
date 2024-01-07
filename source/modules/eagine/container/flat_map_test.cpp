@@ -447,7 +447,7 @@ void flat_map_erase_key_T(auto& s) {
 //------------------------------------------------------------------------------
 void flat_map_erase_key(auto& s) {
     flat_map_erase_key_T<eagine::flat_map<int, std::size_t>>(s);
-    // TODO: flat_map_erase_key_T<eagine::chunk_map<int, std::size_t, 144>>(s);
+    flat_map_erase_key_T<eagine::chunk_map<int, std::size_t, 144>>(s);
 }
 //------------------------------------------------------------------------------
 template <typename FM>

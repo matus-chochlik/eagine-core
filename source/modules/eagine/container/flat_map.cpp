@@ -460,10 +460,13 @@ public:
     /// @see erase_if
     template <typename K>
     auto erase(const K& key) -> size_type {
+        using std::distance;
         const auto p = _ops().equal_range(_vec.begin(), _vec.end(), key);
-        const auto res = size_type(std::distance(p.first, p.second));
+        const auto res = size_type(distance(p.first, p.second));
         assert(res <= 1);
-        _vec.erase(p.first, p.second);
+        if(res) {
+            _vec.erase(p.first);
+        }
         return res;
     }
 

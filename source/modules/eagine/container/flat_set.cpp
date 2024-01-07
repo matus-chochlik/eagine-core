@@ -201,7 +201,9 @@ public:
         const auto p = equal_range(_vec.begin(), _vec.end(), key, key_comp());
         const auto res = size_type(distance(p.first, p.second));
         assert(res <= 1);
-        _vec.erase(p.first, p.second);
+        if(res) {
+            _vec.erase(p.first);
+        }
         return res;
     }
 

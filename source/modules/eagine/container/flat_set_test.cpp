@@ -271,7 +271,7 @@ void flat_set_erase(auto& s) {
 //------------------------------------------------------------------------------
 void flat_set_erase(auto& s) {
     flat_set_erase<eagine::flat_set<int>>(s);
-    // TODO: flat_set_erase<eagine::chunk_set<int, 108>>(s);
+    flat_set_erase<eagine::chunk_set<int, 108>>(s);
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

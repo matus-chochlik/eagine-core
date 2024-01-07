@@ -596,6 +596,9 @@ public:
     /// @see erase_if
     /// @see pop_back
     constexpr auto erase(const_iterator pos) noexcept -> iterator {
+        if(pos._iter_c_p == pos._iter_c_e) {
+            return end();
+        }
         const auto i_p{pos._iter_c_p - _chunks.cbegin()};
         const auto del_p{(*pos._iter_c_p)->erase(pos._iter_e)};
         return iterator{_chunks.begin() + i_p, _chunks.end(), del_p}.adjust();
