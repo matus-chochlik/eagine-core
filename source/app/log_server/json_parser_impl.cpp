@@ -421,8 +421,7 @@ public:
 
     void finish_object(const basic_string_path&) noexcept final;
 
-    virtual auto finish() noexcept -> bool final;
-
+    auto finish() noexcept -> bool final;
     void failed() noexcept final;
 
 private:
@@ -437,6 +436,7 @@ private:
     const basic_string_path _ent_pattern{"_"};
     const basic_string_path _typ_pattern{"_/t"};
     const basic_string_path _arg_pattern{"_/a/_"};
+    bool _clean_finish{false};
 };
 //------------------------------------------------------------------------------
 json_data_extractor::json_data_extractor(
@@ -536,15 +536,21 @@ void json_data_extractor::finish_object(const basic_string_path& path) noexcept 
     if(_current_extractor) {
         if(path.like(_ent_pattern)) {
             _current_extractor->consume_by(*_stream);
+            _clean_finish = true;
         }
     }
 }
 //------------------------------------------------------------------------------
 auto json_data_extractor::finish() noexcept -> bool {
+    if(not _clean_finish) {
+        _stream->consume(finish_info{});
+    }
     return true;
 }
 //------------------------------------------------------------------------------
-void json_data_extractor::failed() noexcept {}
+void json_data_extractor::failed() noexcept {
+    _stream->consume(finish_info{});
+}
 //------------------------------------------------------------------------------
 // make extractor
 //------------------------------------------------------------------------------
