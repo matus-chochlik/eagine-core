@@ -543,7 +543,7 @@ void json_data_extractor::finish_object(const basic_string_path& path) noexcept 
 //------------------------------------------------------------------------------
 auto json_data_extractor::finish() noexcept -> bool {
     if(not _clean_finish) {
-        _stream->consume(finish_info{});
+        failed();
     }
     return true;
 }

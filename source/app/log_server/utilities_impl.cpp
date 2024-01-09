@@ -91,7 +91,7 @@ void arg_value_translator::translate(
 auto format_reltime_ns(std::chrono::nanoseconds t) noexcept -> std::string {
     using namespace std::chrono;
     using std::to_string;
-    if(t == nanoseconds{0}) {
+    if(t <= nanoseconds{0}) {
         return "0";
     }
     if(t < microseconds{10}) {
@@ -113,7 +113,7 @@ auto format_reltime_ns(std::chrono::nanoseconds t) noexcept -> std::string {
 auto format_reltime(std::chrono::microseconds t) noexcept -> std::string {
     using namespace std::chrono;
     using std::to_string;
-    if(t == microseconds{0}) {
+    if(t <= microseconds{0}) {
         return "0";
     }
     if(t < milliseconds{10}) {
