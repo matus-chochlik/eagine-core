@@ -461,7 +461,7 @@ public:
     template <typename K>
     auto erase(const K& key) -> size_type {
         const auto p{_ops().lower_bound(_storage.begin(), _storage.end(), key)};
-        if(p != _storage.end()) {
+        if(p != _storage.end() and not value_comp()(key, *p)) {
             using std::distance;
             assert(
               distance(

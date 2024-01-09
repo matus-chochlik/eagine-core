@@ -201,7 +201,7 @@ public:
         using std::upper_bound;
         const auto p{
           lower_bound(_storage.begin(), _storage.end(), key, key_comp())};
-        if(p != _storage.end()) {
+        if(p != _storage.end() and not key_comp()(key, *p)) {
             assert(
               distance(
                 p,
