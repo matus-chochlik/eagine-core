@@ -73,6 +73,9 @@ public:
     url(const program_arg& arg) noexcept
       : url{arg.get_string()} {}
 
+    /// @brief Indicates if the given string is a valid url.
+    static auto is_url(const string_view) noexcept -> bool;
+
     /// @brief Encodes the given string using the URI/URL encoding.
     static auto encode_component(const string_view) noexcept -> std::string;
 

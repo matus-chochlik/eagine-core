@@ -63,10 +63,16 @@ void url_scheme(auto& s) {
     test.check(l4.scheme().has_value(), "4");
     test.check_equal(l4.scheme().value_or("N/A"), "ftp", "4 matches");
 
+    test.check(
+      eagine::url::is_url("sftp://user@server/path/to/file.txt"),
+      "string is url 5");
     const eagine::url l5{"sftp://user@server/path/to/file.txt"};
     test.check(l5.scheme().has_value(), "5");
     test.check_equal(l5.scheme().value_or("N/A"), "sftp", "5 matches");
 
+    test.check(
+      eagine::url::is_url("smb://user:passw0rd1@server/path/to/dir#part"),
+      "string is url 6");
     const eagine::url l6{"smb://user:passw0rd1@server/path/to/dir#part"};
     test.check(l6.scheme().has_value(), "6");
     test.check_equal(l6.scheme().value_or("N/A"), "smb", "6 matches");
@@ -130,6 +136,9 @@ void url_login(auto& s) {
     test.check(l5.login().has_value(), "5");
     test.check_equal(l5.login().value_or("N/A"), "user1", "5 matches");
 
+    test.check(
+      eagine::url::is_url("smb://user2:passw0rd1@server3/path/to/dir#part"),
+      "string is url 6");
     const eagine::url l6{"smb://user2:passw0rd1@server3/path/to/dir#part"};
     test.check(l6.login().has_value(), "6");
     test.check_equal(l6.login().value_or("N/A"), "user2", "6 matches");
@@ -239,6 +248,9 @@ void url_port_str(auto& s) {
     test.check(not l5.port_str().has_value(), "5");
     test.check_equal(l5.port_str().value_or("N/A"), "N/A", "5 matches");
 
+    test.check(
+      eagine::url::is_url("smb://user2:passw0rd1@server3:69/path/to/dir#part"),
+      "string is url 6");
     const eagine::url l6{"smb://user2:passw0rd1@server3:69/path/to/dir#part"};
     test.check(l6.port_str().has_value(), "6");
     test.check_equal(l6.port_str().value_or("N/A"), "69", "6 matches");
@@ -355,6 +367,9 @@ void url_fragment(auto& s) {
     test.check(not l5.fragment().has_value(), "5");
     test.check_equal(l5.fragment().value_or("N/A"), "N/A", "5 matches");
 
+    test.check(
+      eagine::url::is_url("smb://user2:passw0rd1@server3:69/path/to/dir#part"),
+      "string is url 6");
     const eagine::url l6{"smb://user2:passw0rd1@server3:69/path/to/dir#part"};
     test.check(l6.fragment().has_value(), "6");
     test.check_equal(l6.fragment().value_or("N/A"), "part", "6 matches");

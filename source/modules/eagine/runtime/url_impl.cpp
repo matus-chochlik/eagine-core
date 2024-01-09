@@ -152,6 +152,11 @@ auto url::_get_regex() noexcept -> const std::regex& {
     return re;
 }
 //------------------------------------------------------------------------------
+auto url::is_url(const string_view str) noexcept -> bool {
+    std::match_results<string_view::iterator> match{};
+    return std::regex_match(str.begin(), str.end(), match, _get_regex());
+}
+//------------------------------------------------------------------------------
 auto url::_sw(_range r) const noexcept -> string_view {
     return string_view{
       head(skip(view(_url_str), std::get<0>(r)), std::get<1>(r))};
