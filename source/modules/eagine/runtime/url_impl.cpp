@@ -247,7 +247,9 @@ auto url::path() const noexcept -> basic_string_path {
 }
 //------------------------------------------------------------------------------
 auto url::has_path(const string_view str) const noexcept -> bool {
-    return components_are_equal(str, _sw(_path));
+    return components_are_equal(str, _sw(_path)) or
+           (not str.empty() and str.front() != '/' and
+            components_are_equal(str, skip(_sw(_path), 1)));
 }
 //------------------------------------------------------------------------------
 auto url::path_identifier() const noexcept -> identifier {
