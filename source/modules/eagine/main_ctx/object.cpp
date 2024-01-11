@@ -29,6 +29,25 @@ export class application_config;
 export class main_ctx;
 export class main_ctx_object;
 //------------------------------------------------------------------------------
+/// @brief Buffer borrowed from the main context usable by a main_ctxt_object
+/// @ingroup main_context
+export class main_ctx_buffer : public memory::buffer {
+public:
+    main_ctx_buffer(main_ctx_object& parent) noexcept
+      : _parent{parent} {}
+    main_ctx_buffer(main_ctx_buffer&&) = delete;
+    main_ctx_buffer(const main_ctx_buffer&) = delete;
+    auto operator=(main_ctx_buffer&&) = delete;
+    auto operator=(const main_ctx_buffer&) = delete;
+
+    auto get(span_size_t size) noexcept -> main_ctx_buffer&;
+
+    ~main_ctx_buffer() noexcept;
+
+private:
+    main_ctx_object& _parent;
+};
+//------------------------------------------------------------------------------
 export template <typename T>
 auto application_config_initial(
   application_config& config,

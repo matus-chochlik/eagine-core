@@ -13,6 +13,23 @@ import eagine.core.logging;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+// main_ctx_buffer
+//------------------------------------------------------------------------------
+auto main_ctx_buffer::get(span_size_t size) noexcept -> main_ctx_buffer& {
+    static_cast<memory::buffer&>(*this) =
+      _parent.main_context().buffers().get(size);
+    return *this;
+}
+//------------------------------------------------------------------------------
+main_ctx_buffer::~main_ctx_buffer() noexcept {
+    if(not empty()) {
+        _parent.main_context().buffers().eat(
+          static_cast<memory::buffer&&>(*this));
+    }
+}
+//------------------------------------------------------------------------------
+// main_ctx_object
+//------------------------------------------------------------------------------
 auto main_ctx_object::_make_base(
   const identifier obj_id,
   main_ctx_parent parent) noexcept -> base {
