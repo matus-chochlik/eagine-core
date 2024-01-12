@@ -28,6 +28,10 @@ main_ctx_buffer::~main_ctx_buffer() noexcept {
     }
 }
 //------------------------------------------------------------------------------
+auto main_ctx_buffer::buffers() const noexcept -> memory::buffer_pool& {
+    return _parent.main_context().buffers();
+}
+//------------------------------------------------------------------------------
 // main_ctx_object
 //------------------------------------------------------------------------------
 auto main_ctx_object::_make_base(

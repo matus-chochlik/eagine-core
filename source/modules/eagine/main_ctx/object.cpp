@@ -42,6 +42,10 @@ public:
       : _parent{parent} {
         get(size);
     }
+    main_ctx_buffer(main_ctx_object& parent, span_size_t size, nothing_t) noexcept
+      : _parent{parent} {
+        get(size).clear();
+    }
 
     main_ctx_buffer(main_ctx_buffer&&) = delete;
     main_ctx_buffer(const main_ctx_buffer&) = delete;
@@ -51,6 +55,8 @@ public:
     auto get(span_size_t size) noexcept -> main_ctx_buffer&;
 
     ~main_ctx_buffer() noexcept;
+
+    auto buffers() const noexcept -> memory::buffer_pool&;
 
 private:
     main_ctx_object& _parent;
