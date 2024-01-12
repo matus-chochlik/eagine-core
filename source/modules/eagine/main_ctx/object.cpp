@@ -35,6 +35,14 @@ export class main_ctx_buffer : public memory::buffer {
 public:
     main_ctx_buffer(main_ctx_object& parent) noexcept
       : _parent{parent} {}
+    main_ctx_buffer(main_ctx_object& parent, memory::buffer buf) noexcept
+      : memory::buffer{std::move(buf)}
+      , _parent{parent} {}
+    main_ctx_buffer(main_ctx_object& parent, span_size_t size) noexcept
+      : _parent{parent} {
+        get(size);
+    }
+
     main_ctx_buffer(main_ctx_buffer&&) = delete;
     main_ctx_buffer(const main_ctx_buffer&) = delete;
     auto operator=(main_ctx_buffer&&) = delete;
