@@ -42,6 +42,8 @@ public:
     /// @brief Const iterator type.
     using const_iterator = typename std::array<T, N>::const_iterator;
 
+    using allocator_type = std::allocator<T>;
+
     /// @brief Default constructor.
     constexpr static_vector() noexcept = default;
 

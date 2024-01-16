@@ -386,6 +386,66 @@ auto version_info::version_at_least(int major, int minor, int patch, int commit)
     return indeterminate;
 }
 //------------------------------------------------------------------------------
+auto parse_version_string(
+  const string_view str,
+  int& major,
+  int& minor,
+  int& patch,
+  int& commit) noexcept -> bool {
+    static const std::regex re{R"(([0-9]+)\.([0-9]+)\.([0-9]+)[.-]([0-9]+))"};
+    std::match_results<string_view::iterator> match;
+    if(std::regex_match(str.begin(), str.end(), match, re)) {
+        major = std::atoi(match[1].str().c_str());
+        minor = std::atoi(match[2].str().c_str());
+        patch = std::atoi(match[3].str().c_str());
+        commit = std::atoi(match[4].str().c_str());
+        return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto parse_version_string(
+  const string_view str,
+  int& major,
+  int& minor,
+  int& patch) noexcept -> bool {
+    static const std::regex re{R"(([0-9]+)\.([0-9]+)\.([0-9]+))"};
+    std::match_results<string_view::iterator> match;
+    if(std::regex_match(str.begin(), str.end(), match, re)) {
+        major = std::atoi(match[1].str().c_str());
+        minor = std::atoi(match[2].str().c_str());
+        patch = std::atoi(match[3].str().c_str());
+        return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto parse_version_string(const string_view str, int& major, int& minor) noexcept
+  -> bool {
+    static const std::regex re{R"(([0-9]+)\.([0-9]+))"};
+    std::match_results<string_view::iterator> match;
+    if(std::regex_match(str.begin(), str.end(), match, re)) {
+        major = std::atoi(match[1].str().c_str());
+        minor = std::atoi(match[2].str().c_str());
+        return true;
+    }
+    return false;
+}
+//------------------------------------------------------------------------------
+auto version_info::version_at_least(const string_view str) const -> tribool {
+    int major{0}, minor{0}, patch{0}, commit{0};
+    if(parse_version_string(str, major, minor, patch, commit)) {
+        return version_at_least(major, minor, patch, commit);
+    }
+    if(parse_version_string(str, major, minor, patch)) {
+        return version_at_least(major, minor, patch);
+    }
+    if(parse_version_string(str, major, minor)) {
+        return version_at_least(major, minor);
+    }
+    return indeterminate;
+}
+//------------------------------------------------------------------------------
 // build
 //------------------------------------------------------------------------------
 auto build_info::install_prefix() const noexcept

@@ -1,0 +1,74 @@
+.TH EAGINE-CORE-LOG-SERVER 1 "2024-01-05" "EAGine log server"
+.SH "NAME"
+eagine-core-log-server \- Server processing logs from \fBEAGine\fR executables.
+.SH "SYNOPSIS"
+.B eagine-core-log-server
+[
+OPTIONS
+]
+.SH "DESCRIPTION"
+This executable listens on UNIX local and/or network sockets for logger
+connections from \fBEAGine\fR executables, processes, presents and stores
+the logged data in various formats, for example into a PostgreSQL or InfluxDB
+databases or as a pretty-tree-formatted text stream.
+.SH "OPTIONS"
+.TP
+\fB-h\fR, \fB--help\fR
+show a help message and exit.
+.TP
+\fB--version\fR
+print the version number and exit.
+.TP
+\fB--version-at-least\fR <\fIMAJOR.MINOR[.PATCH[.COMMIT]]\fR>
+checks if the version is at least the specified semantic version number.
+If the version is less than the specified number, exits with non-zero result.
+.TP
+\fB--istream\fR
+read the log data from the standard input.
+.TP
+\fB--local\fR [\fISOCKET\fR]
+accept client connections on the specified UNIX local socket and read the log
+data from the clients. If the \fISOCKET\fR path is omitted, then the default
+\fB/tmp/eagine-log\fR is used.
+.TP
+\fB--network\fR [\fIADDRESS:PORT\fR]
+accept client connections on the specified IP address and port and read the log
+data from the clients. If the \fIADDRESS\fR or \fIPORT\fR is omitted then
+the default \fBlocalhost:34917\fR is used.
+.TP
+\fB--influxdb\fR <\fIURL\fR>
+store the processed log data into an \fBInfluxDB\fR instance. The \fIURL\fR
+should be in the following format: \fBhttp://localhost:8086/api/v2?token=TOKEN\fR.
+.TP
+\fB--libpq\fR <\fIURL\fR>
+store the processed log data into a \fBPostgreSQL\fR instance. The \fIURL\fR
+should be in the following format: \fBpostgresql://eagilog:PASSWORD@eagilog_postgres/eagilog\fR.
+.TP
+\fB--text-tree\fR
+aggregate the log data from all streams and format it as a pretty-printed text tree.
+Use together with the \fB--ostream\fR, \fB--socat\fR, \fB--netcat\fR options
+to specify how the formatted output should be provided.
+.TP
+\fB--ostream\fR
+print the formatted text output into the standard output. Use together with
+one of the text format options like \fB--text-tree\fR.
+.TP
+\fB--socat\fR [\fISOCKET\fR]
+accept client connections on the specified UNIX local socket and write the formatted
+text output to all connected clients. If the \fISOCKET\fR path is omitted, then
+the default \fB/tmp/eagine-text-log\fR is used.
+Use together with one of the text format options like \fB--text-tree\fR.
+.TP
+\fB--netcat\fR [\fIADDRESS:PORT\fR]
+accept client connections on the specified UNIX local socket and write the formatted
+text output to all connected clients. If the \fIADDRESS\fR or \fIPORT\fR is
+omitted then the default \fBlocalhost:34915\fR is used. Use together with one
+of the text format options like \fB--text-tree\fR.
+.SH "AUTHOR"
+Matus Chochlik, chochlik@gmail.com
+.SH "COPYRIGHT"
+Copyright (c) 2023-2024 Matus Chochlik
+.PP
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the Boost Software License, Version 1.0.
+(See a copy at http://www.boost.org/LICENSE_1_0.txt)

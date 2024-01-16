@@ -10,16 +10,24 @@
 import std;
 import eagine.core.container;
 //------------------------------------------------------------------------------
-void flat_set_default_construct(auto& s) {
+template <typename FS>
+void flat_set_default_construct_T(auto& s) {
     eagitest::case_ test{s, 1, "default construct"};
-    eagine::flat_set<int> fs;
+    FS fs;
 
     test.check(fs.empty(), "is empty");
     test.check_equal(fs.size(), 0U, "size is zero");
     test.check(fs.begin() == fs.end(), "begin == end");
 }
 //------------------------------------------------------------------------------
-void flat_set_init_from_vector(auto& s) {
+void flat_set_default_construct(auto& s) {
+    flat_set_default_construct_T<eagine::flat_set<int>>(s);
+    flat_set_default_construct_T<eagine::static_flat_set<int, 8>>(s);
+    flat_set_default_construct_T<eagine::chunk_set<int, 32>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FS>
+void flat_set_init_from_vector_T(auto& s) {
     eagitest::case_ test{s, 2, "init from vector"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
@@ -34,7 +42,7 @@ void flat_set_init_from_vector(auto& s) {
         trck.checkpoint(1);
     }
 
-    eagine::flat_set<int> fs(d);
+    FS fs(d);
 
     test.check_equal(ss.empty(), fs.empty(), "empty is same");
     test.check_equal(ss.size(), fs.size(), "size is same");
@@ -53,13 +61,18 @@ void flat_set_init_from_vector(auto& s) {
     test.check(fsi == fs.end(), "flat:set iterator ok");
 }
 //------------------------------------------------------------------------------
-void flat_set_insert(auto& s) {
+void flat_set_init_from_vector(auto& s) {
+    flat_set_init_from_vector_T<eagine::flat_set<int>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FS>
+void flat_set_insert_T(auto& s) {
     eagitest::case_ test{s, 3, "insert"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
     std::set<int> ss;
-    eagine::flat_set<int> fs;
+    FS fs;
 
     for(unsigned i = 0; i < test.repeats(10000); ++i) {
         int k = rg.get_any<int>();
@@ -85,13 +98,19 @@ void flat_set_insert(auto& s) {
     test.check(fsi == fs.end(), "flat:set iterator ok");
 }
 //------------------------------------------------------------------------------
-void flat_set_insert_at_begin(auto& s) {
+void flat_set_insert(auto& s) {
+    flat_set_insert_T<eagine::flat_set<int>>(s);
+    flat_set_insert_T<eagine::chunk_set<int, 12>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FS>
+void flat_set_insert_at_begin_T(auto& s) {
     eagitest::case_ test{s, 4, "insert at begin"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
     std::set<int> ss;
-    eagine::flat_set<int> fs;
+    FS fs;
 
     for(unsigned i = 0; i < test.repeats(10000); ++i) {
         int k = rg.get_any<int>();
@@ -117,13 +136,19 @@ void flat_set_insert_at_begin(auto& s) {
     test.check(fsi == fs.end(), "flat:set iterator ok");
 }
 //------------------------------------------------------------------------------
-void flat_set_insert_at_end(auto& s) {
+void flat_set_insert_at_begin(auto& s) {
+    flat_set_insert_at_begin_T<eagine::flat_set<int>>(s);
+    flat_set_insert_at_begin_T<eagine::chunk_set<int, 48>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FS>
+void flat_set_insert_at_end_T(auto& s) {
     eagitest::case_ test{s, 5, "insert at end"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
     std::set<int> ss;
-    eagine::flat_set<int> fs;
+    FS fs;
 
     for(unsigned i = 0; i < test.repeats(10000); ++i) {
         int k = rg.get_any<int>();
@@ -149,13 +174,19 @@ void flat_set_insert_at_end(auto& s) {
     test.check(fsi == fs.end(), "flat:set iterator ok");
 }
 //------------------------------------------------------------------------------
-void flat_set_insert_at_lower_bound(auto& s) {
+void flat_set_insert_at_end(auto& s) {
+    flat_set_insert_at_end_T<eagine::flat_set<int>>(s);
+    flat_set_insert_at_end_T<eagine::chunk_set<int, 64>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FS>
+void flat_set_insert_at_lower_bound_T(auto& s) {
     eagitest::case_ test{s, 6, "insert at lower bound"};
     eagitest::track trck{test, 2, 2};
     auto& rg{test.random()};
 
     std::set<int> ss;
-    eagine::flat_set<int> fs;
+    FS fs;
 
     for(unsigned i = 0; i < test.repeats(10000); ++i) {
         int k = rg.get_any<int>();
@@ -181,13 +212,19 @@ void flat_set_insert_at_lower_bound(auto& s) {
     test.check(fsi == fs.end(), "flat:set iterator ok");
 }
 //------------------------------------------------------------------------------
+void flat_set_insert_at_lower_bound(auto& s) {
+    flat_set_insert_at_lower_bound_T<eagine::flat_set<int>>(s);
+    flat_set_insert_at_lower_bound_T<eagine::chunk_set<int, 96>>(s);
+}
+//------------------------------------------------------------------------------
+template <typename FS>
 void flat_set_erase(auto& s) {
     eagitest::case_ test{s, 7, "erase"};
     eagitest::track trck{test, 3, 3};
     auto& rg{test.random()};
 
     std::set<int> ss;
-    eagine::flat_set<int> fs;
+    FS fs;
 
     std::vector<int> ks;
 
@@ -230,6 +267,11 @@ void flat_set_erase(auto& s) {
         test.check(not fs.contains(k), "flat_set does not contain");
         trck.checkpoint(3);
     }
+}
+//------------------------------------------------------------------------------
+void flat_set_erase(auto& s) {
+    flat_set_erase<eagine::flat_set<int>>(s);
+    flat_set_erase<eagine::chunk_set<int, 108>>(s);
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {

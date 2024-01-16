@@ -71,7 +71,7 @@ struct within_limits_num<Dst, Src, IsInt, IsInt, false, true> {
 
         if constexpr(IsInt) {
             using Tmp = std::make_unsigned_t<Src>;
-            return (value < Src(0)) ? false : (Tmp(value) < Dnl::max());
+            return (value < Src(0)) ? false : (Tmp(value) <= Dnl::max());
         } else {
             return implicitly_within_limits<Dst, Src>::value;
         }
@@ -81,9 +81,9 @@ struct within_limits_num<Dst, Src, IsInt, IsInt, false, true> {
 template <typename Dst, typename Src, bool IsInt>
 struct within_limits_num<Dst, Src, IsInt, IsInt, true, false> {
     static constexpr auto check(const Src value) noexcept {
-        using dnl = std::numeric_limits<Dst>;
+        using Dnl = std::numeric_limits<Dst>;
 
-        return (value < dnl::max());
+        return (value <= Dnl::max());
     }
 };
 //------------------------------------------------------------------------------

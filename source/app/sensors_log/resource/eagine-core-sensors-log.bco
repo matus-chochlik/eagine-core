@@ -4,7 +4,7 @@
 #
 #  Automatically generated file. Do NOT modify manually.
 
-function _eagine_core_log_server()
+function _eagine_core_sensors_log()
 {
     COMPREPLY=()
     local curr="${COMP_WORDS[COMP_CWORD]}"
@@ -12,17 +12,9 @@ function _eagine_core_log_server()
 
     local only_once_opts=" \
         -h --help \
-        --version \
-        --version-at-least \
-        --istream \
-        --local \
-        --network \
-        --ostream\
-        --socat \
-        --netcat \
-        --influxdb \
-        --libpq \
-        --text-tree \
+		--version \
+		--version-at-least \
+        --app-sensors-log-log-interval \
     "
 
     local opts=""
@@ -52,18 +44,12 @@ function _eagine_core_log_server()
         -h|--help)
             return 0;;
         --version-at-least)
-            COMPREPLY=($(eagine-core-log-server --version));;
-        --local)
-            COMPREPLY=( "/tmp/eagine-log" );;
-        --network)
-            COMPREPLY=( "localhost:34917" );;
-        --libpq)
-            COMPREPLY=( "postgresql://eagilog:PASSWORD@eagilog_postgres/eagilog" );;
-        --influxdb)
-            COMPREPLY=( "http://localhost:8086/api/v2?token=TOKEN" );;
+            COMPREPLY=($(eagine-core-sensors-log --version));;
+        --app-sensors-log-log-interval)
+            COMPREPLY=( "60s" );;
         *)
             COMPREPLY=($(compgen -W "${opts}" -- "${curr}"));;
     esac
 
-} && complete -F _eagine_core_log_server eagine-core-log-server
+} && complete -F _eagine_core_sensors_log eagine-core-sensors-log
 # vi: syntax=bash

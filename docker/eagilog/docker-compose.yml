@@ -9,7 +9,7 @@ services:
     environment:
       - INFLUXDB_DB=db0
       - INFLUXDB_ADMIN_USER=eagine
-      - INFLUXDB_ADMIN_PASSWORD=WIoA8qN92Zr-8jrnkwGE2WoP3Vyzt+PIKmYC58HAj0ldEpCdZ9+eLCMg2qIVjXyb
+      - INFLUXDB_ADMIN_PASSWORD=smudge_INFLUXDB_ADMIN_PASSWORD
     volumes:
       - influxdb-etc-storage:/etc/influxdb2
       - influxdb-var-storage:/var/lib/influxdb2
@@ -35,7 +35,9 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=eagine
-      - GF_SECURITY_ADMIN_PASSWORD=cUXjMQ5O1P7OdrdfkaJoCueUs+l6EcjM97bRp2ue1JBHalKyAf5DnIXExy5anfxZ
+      - GF_SECURITY_ADMIN_PASSWORD=smudge_GF_SECURITY_ADMIN_PASSWORD
+    volumes:
+      - grafana-storage:/var/lib/grafana
     depends_on:
       - eagilog_influxdb
 

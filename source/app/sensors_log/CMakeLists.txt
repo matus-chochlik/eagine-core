@@ -10,3 +10,12 @@ eagine_target_modules(
 	std
 	eagine.core)
 
+eagine_embed_target_resources(
+	TARGET eagine-core-sensors-log
+	RESOURCES
+		BoostLcnse "../../../LICENSE_1_0.txt"
+		Manual     "resource/eagine-core-sensors-log.man"
+		BashCmpltn "resource/eagine-core-sensors-log.bco"
+	PACKED
+	ENABLE_SEARCH)
+

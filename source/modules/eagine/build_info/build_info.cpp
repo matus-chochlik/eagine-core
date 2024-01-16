@@ -345,6 +345,9 @@ public:
       int minor,
       int patch,
       int commit) const -> tribool;
+
+    /// @brief Checks if the project build version is at least as specified.
+    [[nodiscard]] auto version_at_least(const string_view) const -> tribool;
 };
 //------------------------------------------------------------------------------
 // build

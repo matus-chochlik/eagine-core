@@ -4,6 +4,11 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 
 install(
+	PROGRAMS git-filter.py
+	RENAME eagine-git-filter
+	DESTINATION bin
+)
+install(
 	PROGRAMS ensure-main-key.sh
 	RENAME eagine-ensure-main-key
 	DESTINATION bin

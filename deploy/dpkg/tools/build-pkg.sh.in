@@ -21,6 +21,11 @@ this_dir="${src_dir}/deploy/dpkg/tools"
 mkdir -p "${bin_prefix}"
 mkdir -p "${bco_prefix}"
 
+cp "${src_dir}/source/app/git-filter.py" \
+   "${bin_prefix}/eagine-git-filter"
+"${src_dir}/source/app/git-filter.py" \
+	--print-bash-completion "${bco_prefix}/eagine-git-filter"
+
 cp "${src_dir}/source/app/procman.py" \
    "${bin_prefix}/eagine-procman"
 "${src_dir}/source/app/procman.py" \

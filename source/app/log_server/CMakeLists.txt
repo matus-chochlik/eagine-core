@@ -25,7 +25,6 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.log_server
 	SOURCES
-		special_args
 		implementation
 		utilities
 		internal_backend
@@ -58,7 +57,10 @@ eagine_target_modules(
 eagine_embed_target_resources(
 	TARGET eagine-core-log-server
 	RESOURCES
-		bashCmpltn "resource/eagine-core-log-server.bco"
+		BoostLcnse "../../../LICENSE_1_0.txt"
+		Manual     "resource/eagine-core-log-server.man"
+		BashCmpltn "resource/eagine-core-log-server.bco"
+		PSQLSchema "postgresql/eagilog.sql"
 	PACKED
 	ENABLE_SEARCH)
 
