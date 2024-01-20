@@ -418,6 +418,16 @@ export template <typename T, int N, bool V>
     return magnitude(a - b);
 }
 
+export template <std::size_t I, typename T, int N, bool V>
+constexpr auto get(vector<T, N, V>& v) noexcept -> T& {
+    return v._v[I];
+}
+
+export template <std::size_t I, typename T, int N, bool V>
+constexpr auto get(const vector<T, N, V>& v) noexcept -> T {
+    return v._v[I];
+}
+
 /// @brief Generic template for N-dimensional vectors.
 /// @ingroup math
 export template <typename T, int N, bool V = true>
@@ -539,5 +549,19 @@ struct is_arithmetic<eagine::math::vector<T, N, V>> : true_type {};
 
 template <typename T, int N, bool V>
 struct is_arithmetic<eagine::math::tvec<T, N, V>> : true_type {};
+
+template <typename T, int N, bool V>
+struct tuple_size<eagine::math::vector<T, N, V>>
+  : integral_constant<std::size_t, std::size_t(N)> {};
+
+template <std::size_t I, typename T, int N, bool V>
+struct tuple_element<I, eagine::math::vector<T, N, V>> : type_identity<T> {};
+
+template <typename T, int N, bool V>
+struct tuple_size<eagine::math::tvec<T, N, V>>
+  : integral_constant<std::size_t, std::size_t(N)> {};
+
+template <std::size_t I, typename T, int N, bool V>
+struct tuple_element<I, eagine::math::tvec<T, N, V>> : type_identity<T> {};
 
 } // namespace std
