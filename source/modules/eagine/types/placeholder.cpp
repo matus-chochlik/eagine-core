@@ -202,6 +202,14 @@ public:
               dst = g(decltype(args)(args)...);
           });
     }
+
+    template <typename T>
+    [[nodiscard]] constexpr auto equal_to(T& value) noexcept {
+        return make_placeholder_expression(
+          [&value, g{derived()}](auto&&... args) mutable {
+              return tribool{g(decltype(args)(args)...) == value};
+          });
+    }
 };
 
 export template <typename F>
