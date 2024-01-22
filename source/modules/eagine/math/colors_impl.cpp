@@ -94,7 +94,6 @@ static auto make_name_to_rgb_map() noexcept {
     add("#90ee90", "LightGreen");
     add("#ffb6c1", "LightPink");
     add("#ffa07a", "LightSalmon");
-    add("#ffa07a", "LightSalmon");
     add("#20b2aa", "LightSeaGreen");
     add("#87cefa", "LightSkyBlue");
     add("#778899", "LightSlateGray");
@@ -176,6 +175,16 @@ auto name_to_rgb(const string_view name) noexcept
   -> optionally_valid<vector<float, 3, true>> {
     static const auto map{make_name_to_rgb_map()};
     return find(map, name);
+}
+//------------------------------------------------------------------------------
+static auto color_float_to_int(math::vector<float, 3, true> c) noexcept
+  -> optionally_valid<vector<int, 3, true>> {
+    return {{int(c.x() * 255), int(c.y() * 255), int(c.z() * 255)}};
+}
+//------------------------------------------------------------------------------
+auto name_to_rgb_int(const string_view name) noexcept
+  -> optionally_valid<vector<int, 3, true>> {
+    return name_to_rgb(name).and_then(color_float_to_int);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::math

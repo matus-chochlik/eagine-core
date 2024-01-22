@@ -500,6 +500,22 @@ export template <typename T, identifier_t V>
     return false;
 }
 
+export template <typename T, identifier_t V>
+[[nodiscard]] constexpr auto string_has_value(
+  const string_view str,
+  const string_view value,
+  const selector<V>) noexcept -> bool {
+    return str == value;
+}
+
+export template <std::size_t L, identifier_t V>
+[[nodiscard]] constexpr auto string_has_value(
+  const string_view str,
+  const char (&value)[L],
+  const selector<V>) noexcept -> bool {
+    return str == string_view{value};
+}
+
 /// @brief Checks if the string can be converted to a value equal to the one given.
 /// @ingroup type_utils
 /// @see from_string

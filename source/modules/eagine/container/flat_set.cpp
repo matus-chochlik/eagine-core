@@ -166,6 +166,12 @@ public:
         return not _find_insert_pos(key).second;
     }
 
+    /// @brief Reserves the underlying storage for the specified number of elements.
+    auto reserve(const size_type sz) -> auto& {
+        _storage.reserve(sz);
+        return *this;
+    }
+
     /// @brief Clears all elements from this set.
     auto clear() noexcept {
         _storage.clear();

@@ -156,6 +156,8 @@ export template <std::floating_point T = float, bool V = true>
 //------------------------------------------------------------------------------
 export [[nodiscard]] auto name_to_rgb(const string_view) noexcept
   -> optionally_valid<vector<float, 3, true>>;
+export [[nodiscard]] auto name_to_rgb_int(const string_view) noexcept
+  -> optionally_valid<vector<int, 3, true>>;
 //------------------------------------------------------------------------------
 export template <std::size_t L>
 [[nodiscard]] auto string_to_rgb(const char (&str)[L]) noexcept

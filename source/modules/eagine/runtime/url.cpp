@@ -27,6 +27,7 @@ export struct url_query_args
     /// @see arg_has_value
     /// @see arg_value_as
     /// @see decoded_arg_value
+    /// @see has_arg
     auto arg_value(const string_view name) const noexcept
       -> optionally_valid<string_view>;
 
@@ -40,12 +41,29 @@ export struct url_query_args
     /// @brief Converts the value of the argument with the specified name to type T.
     /// @see arg_has_value
     /// @see arg_value
+    /// @see has_arg
     template <typename T>
     auto arg_value_as(const string_view name, std::type_identity<T> = {})
       const noexcept -> optionally_valid<T> {
         return arg_value(name)
           .and_then(from_string<T>(_1))
           .and_then(_1.cast_to<optionally_valid<T>>());
+    }
+
+    auto arg_value_as(
+      const string_view name,
+      std::type_identity<string_view> = {}) const noexcept
+      -> optionally_valid<string_view> {
+        return arg_value(name);
+    }
+
+    /// @brief Checks if argument convertible to type T exists.
+    /// @see arg_has_value
+    /// @see arg_value_as
+    template <typename T = string_view>
+    auto has_arg(const string_view name, std::type_identity<T> tid = {})
+      const noexcept -> bool {
+        return arg_value_as(name, tid).has_value();
     }
 
     /// @brief Checks if the argument with the specified name has the specified value.
