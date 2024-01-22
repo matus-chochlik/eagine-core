@@ -30,6 +30,10 @@ auto url_query_args::decoded_arg_value(const string_view name) const noexcept
     return arg_value(name).and_then(url::decode_component);
 }
 //------------------------------------------------------------------------------
+auto url_query_args::arg_url(const string_view name) const noexcept -> url {
+    return decoded_arg_value(name).transform(_1.cast_to<url>()).or_default();
+}
+//------------------------------------------------------------------------------
 // url
 //------------------------------------------------------------------------------
 auto url::encode_component(const string_view src) noexcept -> std::string {
