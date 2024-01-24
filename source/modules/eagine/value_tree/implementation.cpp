@@ -201,9 +201,44 @@ public:
         visit_mapped(_temp, path, dest, default_selector, _fwd_func<T>{data});
     }
 
+    template <typename T, typename O, identifier_t Id>
+    auto forward_data(
+      const basic_string_path& path,
+      span<const T> data,
+      O& dest,
+      selector<Id> sel) {
+        visit_mapped(_temp, path, dest, sel, _fwd_func<T>{data});
+    }
+
 private:
     basic_string_path _temp;
 };
+//------------------------------------------------------------------------------
+export template <typename O>
+class mapped_struct_builder
+  : public object_builder_impl<mapped_struct_builder<O>> {
+
+public:
+    mapped_struct_builder(O& obj) noexcept
+      : _obj{obj} {}
+
+    auto max_token_size() noexcept -> span_size_t final {
+        return max_identifier_length(_obj);
+    }
+
+    template <typename T>
+    void do_add(const basic_string_path& path, span<const T> data) noexcept {
+        _forwarder.forward_data(path, data, _obj);
+    }
+
+    void failed() noexcept final {}
+
+private:
+    O& _obj;
+    object_builder_data_forwarder _forwarder;
+};
+//------------------------------------------------------------------------------
+// traverse_json_stream
 //------------------------------------------------------------------------------
 export auto traverse_json_stream(
   shared_holder<value_tree_visitor>,
@@ -215,6 +250,8 @@ export auto traverse_json_stream(
   shared_holder<object_builder>,
   memory::buffer_pool&,
   const logger& parent) -> value_tree_stream_input;
+//------------------------------------------------------------------------------
+// compound_implementation
 //------------------------------------------------------------------------------
 template <typename Derived>
 class compound_implementation : public compound_interface {
@@ -369,6 +406,8 @@ public:
     }
 };
 //------------------------------------------------------------------------------
+// file_compound_factory
+//------------------------------------------------------------------------------
 /// @brief Creates a compound representing an empty subtree.
 /// @ingroup valtree
 /// @see from_filesystem_path
@@ -398,6 +437,8 @@ export auto from_filesystem_path(
     return from_filesystem_path(root_path, parent.log(), std::move(factory));
 }
 //------------------------------------------------------------------------------
+// from_json_text
+//------------------------------------------------------------------------------
 /// @brief Creates a compound from a JSON text string view.
 /// @ingroup valtree
 export auto from_json_text(string_view, const logger&) -> compound;
@@ -408,10 +449,14 @@ export auto from_json_text(
     return from_json_text(json_text, parent.log());
 }
 //------------------------------------------------------------------------------
+// from_json_data
+//------------------------------------------------------------------------------
 /// @brief Creates a compound from a collection of consecutive JSON data block
 /// @ingroup valtree
 export auto from_json_data(span<const memory::const_block>, const logger&)
   -> compound;
+//------------------------------------------------------------------------------
+// from_yaml_data
 //------------------------------------------------------------------------------
 /// @brief Creates a compound from a YAML text string view.
 /// @ingroup valtree
@@ -422,6 +467,8 @@ export auto from_yaml_text(
   does_not_hide<logger> auto& parent) -> compound {
     return from_yaml_text(yaml_text, parent.log());
 }
+//------------------------------------------------------------------------------
+// make_overlay
 //------------------------------------------------------------------------------
 /// @brief Creates a overlay compound, combining multiple other compounds.
 /// @ingroup valtree
