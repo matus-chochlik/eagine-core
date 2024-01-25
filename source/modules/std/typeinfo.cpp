@@ -7,4 +7,5 @@
 ///
 export module std:typeinfo;
 export import <typeinfo>;
+export import <typeindex>;
 
