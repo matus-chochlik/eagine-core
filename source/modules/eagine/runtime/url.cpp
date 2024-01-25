@@ -141,6 +141,9 @@ public:
         return {_url_str};
     }
 
+    /// @brief Returns a hash identifier for this URL string.
+    auto hash_id() const noexcept -> identifier;
+
     /// @brief Returns the scheme.
     /// @see has_scheme
     auto scheme() const noexcept -> valid_if_not_empty<string_view> {

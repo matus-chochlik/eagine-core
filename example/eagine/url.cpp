@@ -19,6 +19,8 @@ auto main(main_ctx& ctx) -> int {
     while((std::cin >> line).good()) {
         const url u{line};
 
+        out.cio_print("hash-id:         ${value}").arg("value", u.hash_id());
+
         out.cio_print("scheme:          ${value}")
           .arg("value", either_or(u.scheme(), n));
         out.cio_print("login:           ${value}")

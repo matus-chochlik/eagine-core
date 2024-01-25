@@ -11,6 +11,7 @@ import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
+import eagine.core.utility;
 import eagine.core.identifier;
 
 namespace eagine {
@@ -207,6 +208,11 @@ url::url(
         _cover(_fragment, match, 37);
         _query_args = _parse_args();
     }
+}
+//------------------------------------------------------------------------------
+auto url::hash_id() const noexcept -> identifier {
+    return identifier{
+      integer_hash<identifier_t>(std::hash<std::string>{}(_url_str))};
 }
 //------------------------------------------------------------------------------
 auto url::login() const noexcept -> optionally_valid<std::string> {
