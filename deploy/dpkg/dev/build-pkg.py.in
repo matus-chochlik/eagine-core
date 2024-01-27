@@ -41,7 +41,7 @@ shutil.copy2(
 
 shutil.copy2(
     os.path.join(src_dir, "config", "tools", "embed_generator"),
-    os.path.join(bin_prefix, "eagine-embed_generator"))
+    os.path.join(bin_prefix, "eagine-embed-generator"))
 # ------------------------------------------------------------------------------
 with open(os.path.join("@CMAKE_CURRENT_BINARY_DIR@", "build-pkg.json"), "rb") as build_pkg_json:
     info = json.load(build_pkg_json)
