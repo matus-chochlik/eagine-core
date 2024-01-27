@@ -161,12 +161,12 @@ function(eagine_embed_target_resources)
 
 	add_dependencies(
 		${EAGINE_RESOURCE_TARGET}
-		std eagine.core eagine.core.resource
+		eagine.core eagine.core.resource
 	)
 	if(TARGET ${EAGINE_RESOURCE_TARGET}-objects)
 		add_dependencies(
 			${EAGINE_RESOURCE_TARGET}-objects
-			std eagine.core eagine.core.resource
+			eagine.core eagine.core.resource
 		)
 	endif()
 
