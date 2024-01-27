@@ -67,11 +67,6 @@ with open(os.path.join("@CMAKE_CURRENT_BINARY_DIR@", "eagine.core.json"), "rb") 
     info = json.load(module_json)
     copy_module_files("core", info["build_directory"], info["module"])
 # ------------------------------------------------------------------------------
-for cmake_file in ["module-std-opts.cmake"]:
-    shutil.copy2(
-        os.path.join("@CMAKE_CURRENT_SOURCE_DIR@", cmake_file),
-        os.path.join(cmk_prefix, "@CMAKE_BUILD_TYPE@", cmake_file))
-# ------------------------------------------------------------------------------
 def dir_file_size(path):
     total_size = 0
     for dirpath, dirnames, filenames in os.walk(path):
