@@ -7,7 +7,6 @@ set(PKG_NAME "eagine-core-dev_${EAGINE_VERSION}-${EAGINE_GIT_COMMITS_SINCE_VERSI
 set(PKG_DIR "${CMAKE_CURRENT_BINARY_DIR}/${PKG_NAME}")
 set(PKG_PREFIX "${PKG_DIR}/usr")
 # ------------------------------------------------------------------------------
-eagine_generate_module_json(std)
 eagine_generate_module_json(eagine.core)
 # ------------------------------------------------------------------------------
 file(GENERATE OUTPUT build-pkg.json INPUT build-pkg.json.in)
