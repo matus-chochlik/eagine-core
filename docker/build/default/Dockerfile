@@ -1,4 +1,4 @@
-FROM ubuntu:jammy
+FROM ubuntu:mantic
 LABEL maintainer="matus.chochlik@proton.me"
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -10,9 +10,6 @@ RUN apt update \
 		build-essential binutils \
 		pkg-config \
  		git cmake ninja-build
-
-COPY cfg/llvm-snapshot.gpg /etc/apt/trusted.gpg.d/
-COPY cfg/80_llvm.list /etc/apt/sources.list.d/
 
 RUN apt update \
  && apt --yes upgrade \
