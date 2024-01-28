@@ -3,7 +3,7 @@
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
 /// See accompanying file LICENSE_1_0.txt or copy at
-///  http://www.boost.org/LICENSE_1_0.txt
+/// https://www.boost.org/LICENSE_1_0.txt
 ///
 module;
 
@@ -52,7 +52,7 @@ void print_copyright_notice(main_ctx& ctx) {
     } else {
         cout << "Distributed under the Boost Software License, Version 1.0.\n";
         cout << "See accompanying file LICENSE_1_0.txt or copy at\n";
-        cout << " http://www.boost.org/LICENSE_1_0.txt\n";
+        cout << " https://www.boost.org/LICENSE_1_0.txt\n";
     }
 }
 //------------------------------------------------------------------------------
