@@ -16,6 +16,23 @@ import :logger;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+/// @brief Enumeration of the default logger backend if not other is configured.
+/// @ingroup logging
+export enum class default_log_backend : std::uint8_t {
+    /// @brief Unspecified
+    unspecified,
+    /// @brief Standard error
+    cerr,
+    /// @brief SysLog
+    syslog,
+    /// @brief Local socket
+    local_socket,
+    /// @brief Network  socket
+    network_socket,
+    /// @brief No logging
+    none
+};
+//------------------------------------------------------------------------------
 /// @brief Structure holding root logger customization options.
 /// @ingroup logging
 export struct root_logger_options {
@@ -23,7 +40,7 @@ export struct root_logger_options {
     shared_holder<logger_backend> forced_backend{};
 
     /// @brief Option saying that by default no logging should be done.
-    bool default_no_log{false};
+    default_log_backend default_backend{default_log_backend::unspecified};
 };
 //------------------------------------------------------------------------------
 /// @brief Class typically used as the per-application single root of logger hierarchy.
