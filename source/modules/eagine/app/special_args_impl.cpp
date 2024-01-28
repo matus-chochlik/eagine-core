@@ -71,11 +71,11 @@ void print_resource(main_ctx& ctx, const embedded_resource& res) {
 // common special arguments
 //------------------------------------------------------------------------------
 auto handle_common_special_args(main_ctx& ctx) -> std::optional<int> {
-    if(ctx.args().find("--version")) {
+    if(ctx.args().find("--eagine-version") or ctx.args().find("--version")) {
         print_version(ctx);
         return {0};
     }
-    if(ctx.args().find("--git-hash")) {
+    if(ctx.args().find("--eagine-git-hash") or ctx.args().find("--git-hash")) {
         print_git_hash(ctx);
         return {0};
     }
@@ -87,7 +87,9 @@ auto handle_common_special_args(main_ctx& ctx) -> std::optional<int> {
         }
         return {2};
     }
-    if(ctx.args().find("--copyright") or ctx.args().find("--license")) {
+    if(
+      ctx.args().find("--eagine-license") or ctx.args().find("--license") or
+      ctx.args().find("--copyright")) {
         print_copyright_notice(ctx);
         return {0};
     }
