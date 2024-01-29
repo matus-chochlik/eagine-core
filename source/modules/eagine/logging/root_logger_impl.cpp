@@ -54,16 +54,16 @@ auto root_logger_choose_backend(
   const log_stream_info& info) -> unique_holder<logger_backend> {
 
     auto lock_type{log_backend_lock::mutex};
-    if(args.find("--log-use-spinlock")) {
+    if(args.has("--log-use-spinlock")) {
         lock_type = log_backend_lock::spinlock;
-    } else if(args.find("--log-use-no-lock")) {
+    } else if(args.has("--log-use-no-lock")) {
         lock_type = log_backend_lock::none;
     }
 
     auto format{log_data_format::json};
-    if(args.find("--log-format-json")) {
+    if(args.has("--log-format-json")) {
         format = log_data_format::json;
-    } else if(args.find("--log-format-xml")) {
+    } else if(args.has("--log-format-xml")) {
         format = log_data_format::xml;
     }
 

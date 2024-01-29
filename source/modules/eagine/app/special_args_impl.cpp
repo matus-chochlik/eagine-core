@@ -71,11 +71,11 @@ void print_resource(main_ctx& ctx, const embedded_resource& res) {
 // common special arguments
 //------------------------------------------------------------------------------
 auto handle_common_special_args(main_ctx& ctx) -> std::optional<int> {
-    if(ctx.args().find("--eagine-version") or ctx.args().find("--version")) {
+    if(ctx.args().has_any("--eagine-version", "--version")) {
         print_version(ctx);
         return {0};
     }
-    if(ctx.args().find("--eagine-git-hash") or ctx.args().find("--git-hash")) {
+    if(ctx.args().has_any("--eagine-git-hash", "--git-hash")) {
         print_git_hash(ctx);
         return {0};
     }
@@ -87,19 +87,17 @@ auto handle_common_special_args(main_ctx& ctx) -> std::optional<int> {
         }
         return {2};
     }
-    if(
-      ctx.args().find("--eagine-license") or ctx.args().find("--license") or
-      ctx.args().find("--copyright")) {
+    if(ctx.args().has_any("--eagine-license", "--license", "--copyright")) {
         print_copyright_notice(ctx);
         return {0};
     }
-    if(ctx.args().find("--print-bash-completion")) {
+    if(ctx.args().has("--print-bash-completion")) {
         if(const auto res{search_resource("BashCmpltn")}) {
             print_resource(ctx, res);
         }
         return {0};
     }
-    if(ctx.args().find("--print-manual")) {
+    if(ctx.args().has("--print-manual")) {
         if(const auto res{search_resource("Manual")}) {
             print_resource(ctx, res);
         }
