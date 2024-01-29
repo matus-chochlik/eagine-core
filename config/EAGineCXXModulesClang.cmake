@@ -1,7 +1,7 @@
 # Copyright Matus Chochlik.
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
-#  http://www.boost.org/LICENSE_1_0.txt
+# https://www.boost.org/LICENSE_1_0.txt
 
 define_property(
 	TARGET
@@ -60,12 +60,6 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 				-fmodules
 				-Wno-read-modules-implicitly
 				"-fprebuilt-module-path=${CMAKE_CURRENT_BINARY_DIR}")
-		if("${EAGINE_MODULE_PROPER}" STREQUAL "std")
-			target_compile_options(
-				${EAGINE_MODULE_OBJECTS}
-				PRIVATE
-					-Wno-reserved-module-identifier)
-		endif()
 	endif()
 
 	set(EAGINE_MODULE_CMAKE_FILE
@@ -138,9 +132,6 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(EAGINE_MODULE_COMPILE_OPTIONS
 		"-I${EAGINE_CORE_BINARY_ROOT}/include"
 		"-fprebuilt-module-path=.")
-	if("${EAGINE_MODULE_PROPER}" STREQUAL "std")
-		list(APPEND EAGINE_MODULE_COMPILE_OPTIONS -Wno-reserved-module-identifier)
-	endif()
 
 	foreach(DIR ${EAGINE_MODULE_PRIVATE_INCLUDE_DIRECTORIES})
 		list(APPEND EAGINE_MODULE_COMPILE_OPTIONS "-I${DIR}")
@@ -432,14 +423,16 @@ function(eagine_target_modules TARGET_NAME)
 			-Wno-read-modules-implicitly
 	)
 	foreach(EAGINE_MODULE ${ARGN})
-		get_property(
-			PCM_PATH TARGET ${EAGINE_MODULE}
-			PROPERTY EAGINE_MODULE_PCM_PATH
-		)
-		target_compile_options(
-			${TARGET_NAME}
-			PUBLIC "-fprebuilt-module-path=${PCM_PATH}")
-		target_link_libraries(${TARGET_NAME} PUBLIC ${EAGINE_MODULE})
+		if(NOT "${EAGINE_MODULE}" STREQUAL "std")
+			get_property(
+				PCM_PATH TARGET ${EAGINE_MODULE}
+				PROPERTY EAGINE_MODULE_PCM_PATH
+			)
+			target_compile_options(
+				${TARGET_NAME}
+				PUBLIC "-fprebuilt-module-path=${PCM_PATH}")
+			target_link_libraries(${TARGET_NAME} PUBLIC ${EAGINE_MODULE})
+		endif()
 	endforeach()
 endfunction()
 # ------------------------------------------------------------------------------

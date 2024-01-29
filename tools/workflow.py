@@ -3,7 +3,7 @@
 # Copyright Matus Chochlik.
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
-#  http://www.boost.org/LICENSE_1_0.txt
+# https://www.boost.org/LICENSE_1_0.txt
 import os
 import re
 import sys
@@ -161,7 +161,7 @@ def make_argument_parser():
             Copyright (c) 2021-2024 Matúš Chochlík.
             Permission is granted to copy, distribute and/or modify this document
             under the terms of the Boost Software License, Version 1.0.
-            (See a copy at http://www.boost.org/LICENSE_1_0.txt)
+            (See a copy at https://www.boost.org/LICENSE_1_0.txt)
         """
     )
 # ------------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
 /// See accompanying file LICENSE_1_0.txt or copy at
-///  http://www.boost.org/LICENSE_1_0.txt
+/// https://www.boost.org/LICENSE_1_0.txt
 ///
 #include <filesystem>
 module;
@@ -95,9 +95,19 @@ auto root_logger_choose_backend(
             return make_asio_local_log_backend(path, info, format, lock_type);
         }
     }
-
-    if(opts.default_no_log) {
-        return make_null_log_backend();
+    switch(opts.default_backend) {
+        case default_log_backend::cerr:
+            return make_ostream_log_backend(std::cerr, info, format, lock_type);
+        case default_log_backend::syslog:
+            return make_syslog_log_backend(info, lock_type);
+        case default_log_backend::local_socket:
+            return make_asio_local_log_backend({}, info, format, lock_type);
+        case default_log_backend::network_socket:
+            return make_asio_tcpipv4_log_backend({}, info, format, lock_type);
+        case default_log_backend::none:
+            return make_null_log_backend();
+        case default_log_backend::unspecified:
+            break;
     }
 
     return make_proxy_log_backend(info);

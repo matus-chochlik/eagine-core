@@ -3,7 +3,7 @@
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
 /// See accompanying file LICENSE_1_0.txt or copy at
-///  http://www.boost.org/LICENSE_1_0.txt
+/// https://www.boost.org/LICENSE_1_0.txt
 ///
 export module eagine.core.runtime:url;
 
@@ -17,7 +17,8 @@ import eagine.core.container;
 import :program_args;
 
 namespace eagine {
-
+export class url;
+//------------------------------------------------------------------------------
 /// @brief Value map class for storing URL query parts.
 /// @see url
 export struct url_query_args
@@ -35,8 +36,14 @@ export struct url_query_args
     /// @see arg_value
     /// @see arg_has_value
     /// @see arg_value_as
+    /// @see arg_url
     auto decoded_arg_value(const string_view name) const noexcept
       -> optionally_valid<std::string>;
+
+    /// @brief Returns the value of the specified argument as an URL
+    /// @see arg_value
+    /// @see arg_value_as
+    auto arg_url(const string_view name) const noexcept -> url;
 
     /// @brief Converts the value of the argument with the specified name to type T.
     /// @see arg_has_value
@@ -75,7 +82,7 @@ export struct url_query_args
         return arg_value(name).and_then(string_has_value(_1, value)).or_false();
     }
 };
-
+//------------------------------------------------------------------------------
 /// @brief Class parsing and providing access to parts of an URL.
 /// @see url_query_args
 export class url {
@@ -133,6 +140,9 @@ public:
     auto str() const noexcept -> string_view {
         return {_url_str};
     }
+
+    /// @brief Returns a hash identifier for this URL string.
+    auto hash_id() const noexcept -> identifier;
 
     /// @brief Returns the scheme.
     /// @see has_scheme
@@ -285,6 +295,6 @@ private:
     url_query_args _query_args;
     bool _parsed{false};
 };
-
+//------------------------------------------------------------------------------
 } // namespace eagine
 

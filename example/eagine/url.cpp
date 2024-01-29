@@ -3,7 +3,7 @@
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
 /// See accompanying file LICENSE_1_0.txt or copy at
-///  http://www.boost.org/LICENSE_1_0.txt
+/// https://www.boost.org/LICENSE_1_0.txt
 ///
 import eagine.core;
 import std;
@@ -18,6 +18,8 @@ auto main(main_ctx& ctx) -> int {
     std::string line;
     while((std::cin >> line).good()) {
         const url u{line};
+
+        out.cio_print("hash-id:         ${value}").arg("value", u.hash_id());
 
         out.cio_print("scheme:          ${value}")
           .arg("value", either_or(u.scheme(), n));

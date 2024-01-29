@@ -2,7 +2,7 @@
 # Copyright Matus Chochlik.
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
-#  http://www.boost.org/LICENSE_1_0.txt
+# https://www.boost.org/LICENSE_1_0.txt
 #
 import os, sys 
 # ------------------------------------------------------------------------------
@@ -78,7 +78,7 @@ def printBashComplete(
 
     _printLine('#  Distributed under the Boost Software License, Version 1.0.')
     _printLine('#  (See accompanying file LICENSE_1_0.txt or copy at')
-    _printLine('#  http://www.boost.org/LICENSE_1_0.txt)')
+    _printLine('# https://www.boost.org/LICENSE_1_0.txt)')
     _printLine('#')
     _printLine('#  Automatically generated file. Do NOT modify manually,')
     _printLine('#  edit %(self)s instead' % {"self" : os.path.basename(sys.argv[0])})
@@ -252,5 +252,5 @@ def printManual(
     _printLine(".PP")
     _printLine("Permission is granted to copy, distribute and/or modify this document")
     _printLine("under the terms of the Boost Software License, Version 1.0.")
-    _printLine("(See a copy at http://www.boost.org/LICENSE_1_0.txt)")
+    _printLine("(See a copy at https://www.boost.org/LICENSE_1_0.txt)")
 # ------------------------------------------------------------------------------

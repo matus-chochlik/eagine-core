@@ -3,7 +3,7 @@
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
 /// See accompanying file LICENSE_1_0.txt or copy at
-///  http://www.boost.org/LICENSE_1_0.txt
+/// https://www.boost.org/LICENSE_1_0.txt
 ///
 module eagine.core.runtime;
 
@@ -11,6 +11,7 @@ import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
+import eagine.core.utility;
 import eagine.core.identifier;
 
 namespace eagine {
@@ -28,6 +29,10 @@ auto url_query_args::arg_value(const string_view name) const noexcept
 auto url_query_args::decoded_arg_value(const string_view name) const noexcept
   -> optionally_valid<std::string> {
     return arg_value(name).and_then(url::decode_component);
+}
+//------------------------------------------------------------------------------
+auto url_query_args::arg_url(const string_view name) const noexcept -> url {
+    return decoded_arg_value(name).transform(_1.cast_to<url>()).or_default();
 }
 //------------------------------------------------------------------------------
 // url
@@ -203,6 +208,11 @@ url::url(
         _cover(_fragment, match, 37);
         _query_args = _parse_args();
     }
+}
+//------------------------------------------------------------------------------
+auto url::hash_id() const noexcept -> identifier {
+    return identifier{
+      integer_hash<identifier_t>(std::hash<std::string>{}(_url_str))};
 }
 //------------------------------------------------------------------------------
 auto url::login() const noexcept -> optionally_valid<std::string> {

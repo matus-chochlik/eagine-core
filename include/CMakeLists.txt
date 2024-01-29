@@ -1,7 +1,7 @@
 # Copyright Matus Chochlik.
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
-#  http://www.boost.org/LICENSE_1_0.txt
+# https://www.boost.org/LICENSE_1_0.txt
 #
 configure_file(eagine/config/site.hpp.in eagine/config/site.hpp)
 configure_file(eagine/config/build_info.hpp.in eagine/config/build_info.hpp @ONLY)

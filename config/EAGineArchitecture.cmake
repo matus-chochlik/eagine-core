@@ -1,7 +1,7 @@
 #  Copyright Matus Chochlik.
 #  Distributed under the Boost Software License, Version 1.0.
 #  See accompanying file LICENSE_1_0.txt or copy at
-#   http://www.boost.org/LICENSE_1_0.txt
+#  https://www.boost.org/LICENSE_1_0.txt
 #
 find_program(DPKG_ARCHITECTURE_COMMAND dpkg-architecture)
 find_program(ARCH_COMMAND arch)

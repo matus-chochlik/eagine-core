@@ -3,7 +3,7 @@
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
 /// See accompanying file LICENSE_1_0.txt or copy at
-///  http://www.boost.org/LICENSE_1_0.txt
+/// https://www.boost.org/LICENSE_1_0.txt
 ///
 
 #include <eagine/testing/unit_begin.hpp>
@@ -54,29 +54,7 @@ constexpr auto data_member_mapping(
 }
 //------------------------------------------------------------------------------
 template <typename O>
-class test_builder : public valtree::object_builder_impl<test_builder<O>> {
-
-public:
-    test_builder(O& obj) noexcept
-      : _obj{obj} {}
-
-    auto max_token_size() noexcept -> span_size_t final {
-        return 16;
-    }
-
-    template <typename T>
-    void do_add(const basic_string_path& path, span<const T> data) noexcept {
-        _forwarder.forward_data(path, data, _obj);
-    }
-
-    void failed() noexcept final {}
-
-private:
-    O& _obj;
-    valtree::object_builder_data_forwarder _forwarder;
-};
-template <typename O>
-auto make_builder(O& obj) -> unique_holder<test_builder<O>> {
+auto make_builder(O& obj) -> unique_holder<valtree::mapped_struct_builder<O>> {
     return {default_selector, obj};
 }
 //------------------------------------------------------------------------------
