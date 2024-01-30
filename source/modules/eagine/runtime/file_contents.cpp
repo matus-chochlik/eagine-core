@@ -14,6 +14,32 @@ import eagine.core.utility;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+class temporary_chunk_storage_impl;
+/// @brief Class for storing and retrieving a (possibly large) sequence of binary chunks.
+export class temporary_chunk_storage {
+public:
+    temporary_chunk_storage() noexcept;
+
+    /// @brief Indicates if the storage is empty.
+    auto empty() const noexcept -> bool;
+
+    /// @brief Adds a new chunk to the storage.
+    auto add_chunk(memory::const_block) noexcept -> temporary_chunk_storage&;
+
+    /// @brief Replays all the stored chunks in order and call a function for each.
+    auto for_each_chunk(
+      callable_ref<void(memory::const_block) noexcept>) noexcept
+      -> temporary_chunk_storage&;
+
+    /// @brief Erases everything in the storage.
+    auto clear() noexcept -> temporary_chunk_storage&;
+
+private:
+    shared_holder<temporary_chunk_storage_impl> _impl;
+};
+//------------------------------------------------------------------------------
+// basic read functions
+//------------------------------------------------------------------------------
 export auto read_stream_data(std::istream&, memory::buffer& dest) noexcept
   -> bool;
 export auto read_file_data(const string_view path, memory::buffer& dest) noexcept
@@ -24,6 +50,8 @@ export auto read_file_data(const string_view path, memory::buffer& dest) noexcep
 export struct file_contents_intf : interface<file_contents_intf> {
     virtual auto block() noexcept -> memory::const_block = 0;
 };
+//------------------------------------------------------------------------------
+// file contents
 //------------------------------------------------------------------------------
 /// @brief Class providing access to the contents of a file.
 /// @see structured_file_content
