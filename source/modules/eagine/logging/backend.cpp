@@ -409,11 +409,31 @@ export struct logger_backend : interface<logger_backend> {
 // Log output stream
 //------------------------------------------------------------------------------
 struct log_output_stream : interface<log_output_stream> {
-    virtual void write(const memory::const_block&) noexcept = 0;
-    void write(const string_view str) noexcept {
-        write(as_bytes(str));
+    virtual void begin_stream(
+      const memory::const_block&,
+      const memory::const_block&) noexcept = 0;
+    void begin_stream(
+      const string_view stream_header,
+      const string_view entry_separator) noexcept {
+        begin_stream(as_bytes(stream_header), as_bytes(entry_separator));
     }
-    virtual void flush(bool force) noexcept = 0;
+
+    virtual void begin_entry() noexcept = 0;
+
+    virtual void entry_append(const memory::const_block&) noexcept = 0;
+    void entry_append(const string_view entry_content) noexcept {
+        entry_append(as_bytes(entry_content));
+    }
+    void entry_append(const memory::buffer& entry_content) noexcept {
+        entry_append(view(entry_content));
+    }
+
+    virtual void finish_entry() noexcept = 0;
+
+    virtual void finish_stream(const memory::const_block&) noexcept = 0;
+    void finish_stream(const string_view stream_footer) noexcept {
+        finish_stream(as_bytes(stream_footer));
+    }
 };
 //------------------------------------------------------------------------------
 auto make_std_output_stream(std::ostream&) -> unique_holder<log_output_stream>;
