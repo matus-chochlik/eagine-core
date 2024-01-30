@@ -19,6 +19,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.utility;
+import eagine.core.runtime;
 import :backend;
 
 namespace eagine {
@@ -41,12 +42,18 @@ public:
     void finish_stream(const memory::const_block&) noexcept final;
 
 private:
-    void _send() noexcept;
+    void _send(const memory::const_block) noexcept;
+    void _store(const memory::const_block) noexcept;
+    void _send_stored() noexcept;
+    void _reconnect() noexcept;
+    void _handle_entry() noexcept;
 
     asio::io_context _context{};
     Endpoint _endpoint;
     Socket _socket;
+    timeout _should_reconnect{std::chrono::seconds{1}, nothing};
     double_buffer<memory::buffer> _buffers;
+    temporary_chunk_storage _storage;
     memory::buffer _bgn;
     memory::buffer _sep;
     bool _first{true};
@@ -59,12 +66,42 @@ asio_log_output_stream_base<Endpoint, Socket>::asio_log_output_stream_base(
   , _socket{_context} {}
 //------------------------------------------------------------------------------
 template <typename Endpoint, typename Socket>
-void asio_log_output_stream_base<Endpoint, Socket>::_send() noexcept {
+void asio_log_output_stream_base<Endpoint, Socket>::_send_stored() noexcept {
+    using Self = asio_log_output_stream_base;
+    _storage.for_each_chunk({this, member_function_constant_t<&Self::_send>{}})
+      .clear();
+}
+//------------------------------------------------------------------------------
+template <typename Endpoint, typename Socket>
+void asio_log_output_stream_base<Endpoint, Socket>::_send(
+  const memory::const_block chunk) noexcept {
+    asio::write(_socket, asio::buffer(chunk.data(), std_size(chunk.size())));
+}
+//------------------------------------------------------------------------------
+template <typename Endpoint, typename Socket>
+void asio_log_output_stream_base<Endpoint, Socket>::_store(
+  const memory::const_block chunk) noexcept {
+    _storage.add_chunk(chunk);
+}
+//------------------------------------------------------------------------------
+template <typename Endpoint, typename Socket>
+void asio_log_output_stream_base<Endpoint, Socket>::_handle_entry() noexcept {
     _buffers.swap();
     _buffers.next().clear();
     if(auto& chunk{_buffers.current()}; not chunk.empty()) {
-        asio::write(
-          _socket, asio::buffer(chunk.data(), std_size(chunk.size())));
+        if(_socket.is_open()) [[likely]] {
+            try {
+                if(not _storage.empty()) [[unlikely]] {
+                    _send_stored();
+                }
+                _send(view(chunk));
+            } catch(...) {
+                _socket.close();
+                _store(view(chunk));
+            }
+        } else {
+            _store(view(chunk));
+        }
     }
 }
 //------------------------------------------------------------------------------
@@ -93,16 +130,24 @@ void asio_log_output_stream_base<Endpoint, Socket>::entry_append(
 }
 //------------------------------------------------------------------------------
 template <typename Endpoint, typename Socket>
-void asio_log_output_stream_base<Endpoint, Socket>::finish_entry() noexcept {
-    if(_socket.is_open()) [[likely]] {
-        _send();
-    } else {
-        _socket.connect(_endpoint);
-        _socket.set_option(typename Socket::keep_alive{true});
-        if(_socket.is_open()) {
-            _send();
+void asio_log_output_stream_base<Endpoint, Socket>::_reconnect() noexcept {
+    if(_should_reconnect) {
+        try {
+            _socket.connect(_endpoint);
+            _socket.set_option(typename Socket::keep_alive{true});
+        } catch(...) {
+            _socket.close();
         }
+        _should_reconnect.reset();
     }
+}
+//------------------------------------------------------------------------------
+template <typename Endpoint, typename Socket>
+void asio_log_output_stream_base<Endpoint, Socket>::finish_entry() noexcept {
+    if(not _socket.is_open()) [[unlikely]] {
+        _reconnect();
+    }
+    _handle_entry();
 }
 //------------------------------------------------------------------------------
 template <typename Endpoint, typename Socket>
