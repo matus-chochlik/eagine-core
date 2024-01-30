@@ -42,9 +42,12 @@ public:
     void finish_stream(const memory::const_block&) noexcept final;
 
 private:
-    void _send(const memory::const_block) noexcept;
+    void _do_send(const memory::const_block);
+    void _separate();
+    void _send_first(const memory::const_block);
+    void _send_sep(const memory::const_block);
+    void _send_stored();
     void _store(const memory::const_block) noexcept;
-    void _send_stored() noexcept;
     void _reconnect() noexcept;
     void _handle_entry() noexcept;
 
@@ -54,6 +57,7 @@ private:
     timeout _should_reconnect{std::chrono::seconds{1}, nothing};
     double_buffer<memory::buffer> _buffers;
     temporary_chunk_storage _storage;
+    memory::buffer _hdr;
     memory::buffer _bgn;
     memory::buffer _sep;
     bool _first{true};
@@ -66,16 +70,46 @@ asio_log_output_stream_base<Endpoint, Socket>::asio_log_output_stream_base(
   , _socket{_context} {}
 //------------------------------------------------------------------------------
 template <typename Endpoint, typename Socket>
-void asio_log_output_stream_base<Endpoint, Socket>::_send_stored() noexcept {
+void asio_log_output_stream_base<Endpoint, Socket>::_send_stored() {
     using Self = asio_log_output_stream_base;
-    _storage.for_each_chunk({this, member_function_constant_t<&Self::_send>{}})
+    _storage
+      .for_each_chunk({this, member_function_constant_t<&Self::_send_sep>{}})
       .clear();
 }
 //------------------------------------------------------------------------------
 template <typename Endpoint, typename Socket>
-void asio_log_output_stream_base<Endpoint, Socket>::_send(
-  const memory::const_block chunk) noexcept {
-    asio::write(_socket, asio::buffer(chunk.data(), std_size(chunk.size())));
+void asio_log_output_stream_base<Endpoint, Socket>::_do_send(
+  const memory::const_block chunk) {
+    asio::write(_socket, asio::buffer(chunk.data(), chunk.std_size()));
+}
+//------------------------------------------------------------------------------
+template <typename Endpoint, typename Socket>
+void asio_log_output_stream_base<Endpoint, Socket>::_separate() {
+    _do_send(view(_sep));
+}
+//------------------------------------------------------------------------------
+template <typename Endpoint, typename Socket>
+void asio_log_output_stream_base<Endpoint, Socket>::_send_first(
+  const memory::const_block entry) {
+    _do_send(view(_hdr));
+    if(_bgn.empty()) {
+        memory::append_to(entry, _bgn);
+    } else {
+        _do_send(view(_bgn));
+        _do_send(view(_sep));
+    }
+}
+//------------------------------------------------------------------------------
+template <typename Endpoint, typename Socket>
+void asio_log_output_stream_base<Endpoint, Socket>::_send_sep(
+  const memory::const_block entry) {
+    if(not _first) [[likely]] {
+        _separate();
+    } else {
+        _send_first(entry);
+        _first = false;
+    }
+    _do_send(entry);
 }
 //------------------------------------------------------------------------------
 template <typename Endpoint, typename Socket>
@@ -88,19 +122,20 @@ template <typename Endpoint, typename Socket>
 void asio_log_output_stream_base<Endpoint, Socket>::_handle_entry() noexcept {
     _buffers.swap();
     _buffers.next().clear();
-    if(auto& chunk{_buffers.current()}; not chunk.empty()) {
+    if(auto chunk{view(_buffers.current())}; not chunk.empty()) {
         if(_socket.is_open()) [[likely]] {
             try {
                 if(not _storage.empty()) [[unlikely]] {
                     _send_stored();
                 }
-                _send(view(chunk));
+                _send_sep(chunk);
             } catch(...) {
+                _first = true;
                 _socket.close();
-                _store(view(chunk));
+                _store(chunk);
             }
         } else {
-            _store(view(chunk));
+            _store(chunk);
         }
     }
 }
@@ -109,19 +144,12 @@ template <typename Endpoint, typename Socket>
 void asio_log_output_stream_base<Endpoint, Socket>::begin_stream(
   const memory::const_block& bgn,
   const memory::const_block& sep) noexcept {
-    memory::append_to(bgn, _bgn);
+    memory::append_to(bgn, _hdr);
     memory::append_to(sep, _sep);
 }
 //------------------------------------------------------------------------------
 template <typename Endpoint, typename Socket>
-void asio_log_output_stream_base<Endpoint, Socket>::begin_entry() noexcept {
-    if(not _first) [[likely]] {
-        append_to(view(_sep), _buffers.next());
-    } else {
-        append_to(view(_bgn), _buffers.next());
-        _first = false;
-    }
-}
+void asio_log_output_stream_base<Endpoint, Socket>::begin_entry() noexcept {}
 //------------------------------------------------------------------------------
 template <typename Endpoint, typename Socket>
 void asio_log_output_stream_base<Endpoint, Socket>::entry_append(
@@ -136,6 +164,7 @@ void asio_log_output_stream_base<Endpoint, Socket>::_reconnect() noexcept {
             _socket.connect(_endpoint);
             _socket.set_option(typename Socket::keep_alive{true});
         } catch(...) {
+            _first = true;
             _socket.close();
         }
         _should_reconnect.reset();
@@ -153,8 +182,13 @@ void asio_log_output_stream_base<Endpoint, Socket>::finish_entry() noexcept {
 template <typename Endpoint, typename Socket>
 void asio_log_output_stream_base<Endpoint, Socket>::finish_stream(
   const memory::const_block& end) noexcept {
-    append_to(end, _buffers.next());
-    finish_entry();
+    if(not _socket.is_open()) [[unlikely]] {
+        _reconnect();
+    }
+    try {
+        _do_send(end);
+    } catch(...) {
+    }
 }
 //------------------------------------------------------------------------------
 // Local stream
