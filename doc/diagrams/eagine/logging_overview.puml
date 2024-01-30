@@ -44,20 +44,29 @@ xml_log_backend -[hidden]- proxy_log_backend
 package "Text log\noutputs" #BBBBBB {
 
 interface log_output_stream {
-    +write(block)
-    +flush()
+	+begin_stream()
+	+begin_entry()
+	+entry_append(block)
+	+finish_entry()
+	+finish_stream()
 }
 
 class std_log_output_stream {
     -output: ostream
-    +write(block)
-    +flush()
+	+begin_stream()
+	+begin_entry()
+	+entry_append(block)
+	+finish_entry()
+	+finish_stream()
 }
 
 class asio_log_output_stream {
     -socket: Socket
-    +write(block)
-    +flush()
+	+begin_stream()
+	+begin_entry()
+	+entry_append(block)
+	+finish_entry()
+	+finish_stream()
 }
 
 asio_log_output_stream -[hidden]- std_log_output_stream
