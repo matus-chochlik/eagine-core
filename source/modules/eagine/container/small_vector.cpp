@@ -12,6 +12,7 @@ module;
 export module eagine.core.container:small_vector;
 
 import std;
+import eagine.core.types;
 import :static_vector;
 
 namespace eagine {
@@ -459,7 +460,14 @@ private:
     std::variant<T0, T1> _storage{};
 };
 //------------------------------------------------------------------------------
-/// @brief Erases elementes satisfying the specified predicate from a static_vector.
+export template <typename W, typename T, std::size_t N, typename A>
+constexpr auto find(small_vector<T, N, A>& v, W&& what) noexcept {
+    using std::find;
+    return optional_iterator{
+      v, find(v.begin(), v.end(), std::forward<W>(what))};
+}
+//------------------------------------------------------------------------------
+/// @brief Erases elements satisfying the specified predicate from a static_vector.
 /// @ingroup container
 /// @relates static_vector
 export template <typename T, std::size_t N, typename A, typename Predicate>

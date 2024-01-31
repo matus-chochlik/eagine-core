@@ -9,11 +9,15 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.container PARTITION static_vector
-	IMPORTS std
+	IMPORTS
+		std
+		eagine.core.types
 )
 eagine_add_module(
 	eagine.core.container PARTITION small_vector
-	IMPORTS std static_vector
+	IMPORTS
+		std static_vector
+		eagine.core.types
 )
 eagine_add_module(
 	eagine.core.container PARTITION chunk_list
@@ -60,6 +64,9 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.container
+	IMPORTS
+		std
+		eagine.core.types
 )
 
 eagine_add_module_tests(
