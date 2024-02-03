@@ -704,7 +704,7 @@ public:
     /// @param tag the argument type identifier. Used in value formatting.
     /// @param opt the value of the argument.
     /// @see valid_if_or_fallback
-    template <argument_of_log<log_entry> E>
+    template <typename E>
     auto arg(
       const identifier name,
       const identifier tag,
@@ -715,7 +715,7 @@ public:
         return arg(name, tag, nothing);
     }
 
-    template <argument_of_log<log_entry> E>
+    template <typename E>
     auto arg(const identifier name, const ok<E>& opt) noexcept -> log_entry& {
         if(opt) [[likely]] {
             return arg(name, opt.get());
