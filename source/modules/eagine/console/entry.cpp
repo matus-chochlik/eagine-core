@@ -362,6 +362,15 @@ public:
         return arg(name, tag, nothing);
     }
 
+    template <argument_of_log<console_entry> E>
+    auto arg(const identifier name, const ok<E>& opt) noexcept
+      -> console_entry& {
+        if(opt) [[likely]] {
+            return arg(name, opt.get());
+        }
+        return arg(name, identifier{}, nothing);
+    }
+
     /// @brief Adds a new message argument with valid_if_or_fallback value.
     /// @param name the argument name identifier. Used in message substitution.
     /// @param tag the argument type identifier. Used in value formatting.
