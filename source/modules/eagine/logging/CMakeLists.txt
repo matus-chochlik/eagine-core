@@ -114,4 +114,19 @@ eagine_add_module(
 		"${PROJECT_SOURCE_DIR}/submodules/asio/asio/include"
 )
 
-
+eagine_add_module_tests(
+	eagine.core.logging
+	UNITS
+		backend
+	IMPORTS
+		std
+		eagine.core.debug
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.string
+		eagine.core.utility
+		eagine.core.identifier
+		eagine.core.valid_if
+		eagine.core.units
+		eagine.core.c_api
+)
