@@ -70,13 +70,9 @@ private:
         return "XmlLogView";
     }
 
-    auto make_more_verbose() noexcept -> bool final {
-        return false;
-    }
+    void make_more_verbose() noexcept final {}
 
-    auto make_less_verbose() noexcept -> bool final {
-        return false;
-    }
+    void make_less_verbose() noexcept final {}
 
     void begin_log() noexcept final {}
 

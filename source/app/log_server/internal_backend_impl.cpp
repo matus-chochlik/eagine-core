@@ -69,13 +69,9 @@ auto internal_backend::type_id() noexcept -> identifier {
     return "LogServer";
 }
 //------------------------------------------------------------------------------
-auto internal_backend::make_more_verbose() noexcept -> bool {
-    return false;
-}
+void internal_backend::make_more_verbose() noexcept {}
 //------------------------------------------------------------------------------
-auto internal_backend::make_less_verbose() noexcept -> bool {
-    return false;
-}
+void internal_backend::make_less_verbose() noexcept {}
 //------------------------------------------------------------------------------
 void internal_backend::begin_log() noexcept {
     _dispatch(begin_info{});

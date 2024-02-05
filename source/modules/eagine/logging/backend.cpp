@@ -139,11 +139,11 @@ export struct logger_backend : interface<logger_backend> {
 
     /// @brief Increases the verbosity of log messages.
     /// @see severity
-    virtual auto make_more_verbose() noexcept -> bool = 0;
+    virtual void make_more_verbose() noexcept = 0;
 
     /// @brief Decreases the verbosity of log messages.
     /// @see severity
-    virtual auto make_less_verbose() noexcept -> bool = 0;
+    virtual void make_less_verbose() noexcept = 0;
 
     /// @brief Returns a pointer to the actual backend to be used by an log_entry.
     /// @param source the identifier of the source logger object.

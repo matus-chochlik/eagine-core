@@ -38,8 +38,8 @@ public:
     auto allocator() noexcept -> memory::shared_byte_allocator final;
     auto type_id() noexcept -> identifier final;
 
-    auto make_more_verbose() noexcept -> bool final;
-    auto make_less_verbose() noexcept -> bool final;
+    void make_more_verbose() noexcept final;
+    void make_less_verbose() noexcept final;
 
     void begin_log() noexcept final;
 
@@ -169,18 +169,16 @@ auto proxy_log_backend::type_id() noexcept -> identifier {
     return "Proxy";
 }
 //------------------------------------------------------------------------------
-auto proxy_log_backend::make_more_verbose() noexcept -> bool {
+void proxy_log_backend::make_more_verbose() noexcept {
     if(_delegate) [[likely]] {
-        return _delegate->make_more_verbose();
+        _delegate->make_more_verbose();
     }
-    return false;
 }
 //------------------------------------------------------------------------------
-auto proxy_log_backend::make_less_verbose() noexcept -> bool {
+void proxy_log_backend::make_less_verbose() noexcept {
     if(_delegate) [[likely]] {
-        return _delegate->make_less_verbose();
+        _delegate->make_less_verbose();
     }
-    return false;
 }
 //------------------------------------------------------------------------------
 void proxy_log_backend::begin_log() noexcept {

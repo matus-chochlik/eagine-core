@@ -81,14 +81,12 @@ public:
         return "FastJSON";
     }
 
-    auto make_more_verbose() noexcept -> bool final {
-        _min_severity = increased(_min_severity);
-        return true;
+    void make_more_verbose() noexcept final {
+        _min_severity = decreased(_min_severity);
     }
 
-    auto make_less_verbose() noexcept -> bool final {
-        _min_severity = decreased(_min_severity);
-        return true;
+    void make_less_verbose() noexcept final {
+        _min_severity = increased(_min_severity);
     }
 
     auto entry_backend(const log_event_severity) noexcept

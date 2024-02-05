@@ -56,14 +56,12 @@ public:
         return "Syslog";
     }
 
-    auto make_more_verbose() noexcept -> bool final {
-        _min_severity = increased(_min_severity);
-        return true;
+    void make_more_verbose() noexcept final {
+        _min_severity = decreased(_min_severity);
     }
 
-    auto make_less_verbose() noexcept -> bool final {
-        _min_severity = decreased(_min_severity);
-        return true;
+    void make_less_verbose() noexcept final {
+        _min_severity = increased(_min_severity);
     }
 
     void begin_log() noexcept final {

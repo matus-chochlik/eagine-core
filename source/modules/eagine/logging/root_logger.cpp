@@ -43,6 +43,7 @@ export struct root_logger_options {
     default_log_backend default_backend{default_log_backend::unspecified};
 };
 //------------------------------------------------------------------------------
+struct root_logger_signals;
 /// @brief Class typically used as the per-application single root of logger hierarchy.
 /// @ingroup logging
 export class root_logger : public logger {
@@ -63,7 +64,13 @@ public:
     auto operator=(const root_logger&) = delete;
     ~root_logger() noexcept;
 
+    void make_more_verbose() noexcept;
+    void make_less_verbose() noexcept;
+
 private:
+    void _init(root_logger_signals&) noexcept;
+    void _reset(root_logger_signals&) noexcept;
+
     auto _log_os_info() -> void;
     auto _log_git_info() -> void;
     auto _log_build_info() -> void;
