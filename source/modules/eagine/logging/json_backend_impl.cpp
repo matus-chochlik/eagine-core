@@ -81,6 +81,16 @@ public:
         return "FastJSON";
     }
 
+    auto make_more_verbose() noexcept -> bool final {
+        _min_severity = increased(_min_severity);
+        return true;
+    }
+
+    auto make_less_verbose() noexcept -> bool final {
+        _min_severity = decreased(_min_severity);
+        return true;
+    }
+
     auto entry_backend(const log_event_severity) noexcept
       -> logger_backend* final;
 
@@ -215,7 +225,7 @@ private:
     shared_holder<log_output_stream> _output;
     const std::string _session_identity;
     const std::string _log_identity;
-    const log_event_severity _min_severity;
+    log_event_severity _min_severity;
     const std::chrono::steady_clock::time_point _start;
     std::string _buffer;
     std::string _b64lob;

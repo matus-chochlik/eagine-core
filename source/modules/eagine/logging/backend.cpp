@@ -65,6 +65,16 @@ constexpr auto enumerator_mapping(
        {"fatal", log_event_severity::fatal}}};
 }
 //------------------------------------------------------------------------------
+/// @brief Returns log_event_severity increased by one level.
+/// @relates log_event_severity
+/// @see decreased
+export auto increased(log_event_severity) noexcept -> log_event_severity;
+
+/// @brief Returns log_event_severity increased by one level.
+/// @relates log_event_severity
+/// @see increased
+export auto decreased(log_event_severity) noexcept -> log_event_severity;
+//------------------------------------------------------------------------------
 /// @brief Log back-end lockable.
 /// @ingroup logging
 export enum class log_backend_lock : std::uint8_t {
@@ -126,6 +136,14 @@ export struct logger_backend : interface<logger_backend> {
 
     /// @brief The backend type identifier.
     virtual auto type_id() noexcept -> identifier = 0;
+
+    /// @brief Increases the verbosity of log messages.
+    /// @see severity
+    virtual auto make_more_verbose() noexcept -> bool = 0;
+
+    /// @brief Decreases the verbosity of log messages.
+    /// @see severity
+    virtual auto make_less_verbose() noexcept -> bool = 0;
 
     /// @brief Returns a pointer to the actual backend to be used by an log_entry.
     /// @param source the identifier of the source logger object.

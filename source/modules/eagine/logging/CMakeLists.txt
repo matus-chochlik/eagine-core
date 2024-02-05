@@ -85,6 +85,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.logging
 	SOURCES
+		backend
 		null_backend
 		syslog_backend
 		json_backend

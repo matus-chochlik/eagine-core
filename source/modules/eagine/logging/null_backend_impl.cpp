@@ -30,6 +30,14 @@ struct null_log_backend final : logger_backend {
         return "Null";
     }
 
+    auto make_more_verbose() noexcept -> bool final {
+        return false;
+    }
+
+    auto make_less_verbose() noexcept -> bool final {
+        return false;
+    }
+
     void begin_log() noexcept final {}
 
     auto register_time_interval(

@@ -70,6 +70,14 @@ private:
         return "XmlLogView";
     }
 
+    auto make_more_verbose() noexcept -> bool final {
+        return false;
+    }
+
+    auto make_less_verbose() noexcept -> bool final {
+        return false;
+    }
+
     void begin_log() noexcept final {}
 
     void time_interval_begin(

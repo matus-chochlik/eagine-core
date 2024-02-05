@@ -56,6 +56,16 @@ public:
         return "Syslog";
     }
 
+    auto make_more_verbose() noexcept -> bool final {
+        _min_severity = increased(_min_severity);
+        return true;
+    }
+
+    auto make_less_verbose() noexcept -> bool final {
+        _min_severity = decreased(_min_severity);
+        return true;
+    }
+
     void begin_log() noexcept final {
 #if EAGINE_POSIX
         ::openlog(
