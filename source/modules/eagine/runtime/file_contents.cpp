@@ -27,8 +27,7 @@ public:
     auto add_chunk(memory::const_block) noexcept -> temporary_chunk_storage&;
 
     /// @brief Replays all the stored chunks in order and call a function for each.
-    auto for_each_chunk(
-      callable_ref<void(memory::const_block) noexcept>) noexcept
+    auto for_each_chunk(callable_ref<void(memory::const_block)>)
       -> temporary_chunk_storage&;
 
     /// @brief Erases everything in the storage.

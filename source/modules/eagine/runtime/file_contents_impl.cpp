@@ -26,8 +26,7 @@ class temporary_chunk_storage_impl {
 public:
     auto empty() noexcept -> bool;
     void add_chunk(memory::const_block) noexcept;
-    void for_each_chunk(
-      callable_ref<void(memory::const_block) noexcept>) noexcept;
+    void for_each_chunk(callable_ref<void(memory::const_block)>);
     void clear() noexcept;
 
 private:
@@ -71,7 +70,7 @@ void temporary_chunk_storage_impl::add_chunk(
 }
 //------------------------------------------------------------------------------
 void temporary_chunk_storage_impl::for_each_chunk(
-  callable_ref<void(memory::const_block) noexcept> handler) noexcept {
+  callable_ref<void(memory::const_block)> handler) {
     if(_store) {
         std::rewind(_store.get());
         static_vector<byte, 8> header{};
@@ -127,8 +126,7 @@ auto temporary_chunk_storage::add_chunk(memory::const_block chunk) noexcept
 }
 //------------------------------------------------------------------------------
 auto temporary_chunk_storage::for_each_chunk(
-  callable_ref<void(memory::const_block) noexcept> handler) noexcept
-  -> temporary_chunk_storage& {
+  callable_ref<void(memory::const_block)> handler) -> temporary_chunk_storage& {
     _impl->for_each_chunk(handler);
     return *this;
 }
