@@ -113,6 +113,8 @@ public:
 
     /// @brief Construction a reference to object and member function constant.
     template <typename PtrT, PtrT ptr>
+        requires(member_function_constant<PtrT, ptr>::
+                   template invocable_with<RV, P...>)
     basic_callable_ref(
       optional_reference<typename member_function_constant<PtrT, ptr>::callee>
         obj,
@@ -199,10 +201,7 @@ using callable_ref = basic_callable_ref<Sig, is_noexcept_function_v<Sig>>;
 export template <typename Sig, auto Ptr>
 struct member_function_callable_ref : callable_ref<Sig> {
     constexpr member_function_callable_ref(auto* obj) noexcept
-      : callable_ref<Sig> {
-        obj, member_function_constant_t<Ptr> {}
-    }
-    {}
+      : callable_ref<Sig>{obj, member_function_constant_t<Ptr>{}} {}
 };
 //------------------------------------------------------------------------------
 template <

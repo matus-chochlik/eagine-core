@@ -21,6 +21,11 @@ struct member_function_constant;
 /// @ingroup functional
 export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...)>
 struct member_function_constant<RV (C::*)(P...), Ptr> {
+
+    template <typename R, typename... A>
+    static constexpr auto invocable_with =
+      std::is_invocable_r_v<R, RV (C::*)(P...), C&, A...>;
+
     using type = member_function_constant;
 
     /// @brief Alias for the member function pointer type.
@@ -77,6 +82,11 @@ struct member_function_constant<RV (C::*)(P...), Ptr> {
 //------------------------------------------------------------------------------
 export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...) const>
 struct member_function_constant<RV (C::*)(P...) const, Ptr> {
+
+    template <typename R, typename... A>
+    static constexpr auto invocable_with =
+      std::is_invocable_r_v<R, RV (C::*)(P...) const, const C&, A...>;
+
     using type = member_function_constant;
 
     /// @brief Alias for the member function pointer type.
@@ -130,6 +140,11 @@ struct member_function_constant<RV (C::*)(P...) const, Ptr> {
 //------------------------------------------------------------------------------
 export template <typename RV, typename C, typename... P, RV (C::*Ptr)(P...) noexcept>
 struct member_function_constant<RV (C::*)(P...) noexcept, Ptr> {
+
+    template <typename R, typename... A>
+    static constexpr auto invocable_with =
+      std::is_invocable_r_v<R, RV (C::*)(P...) noexcept, C&, A...>;
+
     using type = member_function_constant;
 
     /// @brief Alias for the member function pointer type.
@@ -187,6 +202,11 @@ export template <
   typename... P,
   RV (C::*Ptr)(P...) const noexcept>
 struct member_function_constant<RV (C::*)(P...) const noexcept, Ptr> {
+
+    template <typename R, typename... A>
+    static constexpr auto invocable_with =
+      std::is_invocable_r_v<R, RV (C::*)(P...) const noexcept, const C&, A...>;
+
     using type = member_function_constant;
 
     /// @brief Alias for the member function pointer type.
