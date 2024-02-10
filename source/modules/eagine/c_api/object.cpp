@@ -248,7 +248,8 @@ class basic_object : public basic_owned_handle<Tag, Handle, invalid> {
 public:
     /// @brief Default constructor.
     /// @post not has_value()
-    constexpr basic_object() noexcept = default;
+    constexpr basic_object(const Api& api) noexcept
+      : _api{api} {}
 
     /// @brief Move constructor.
     constexpr basic_object(basic_object&&) noexcept = default;
