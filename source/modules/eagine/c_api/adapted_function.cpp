@@ -138,7 +138,7 @@ class basic_adapted_function;
 
 export template <typename Api, auto method, typename CppSignature, typename RvArgMap>
 class adapted_function_base {
-    [[no_unique_address]] Api& _api;
+    Api& _api;
 
     [[no_unique_address]] adapted_function_utils<
       CppSignature,
