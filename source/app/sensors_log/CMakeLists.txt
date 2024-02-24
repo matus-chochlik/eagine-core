@@ -19,3 +19,7 @@ eagine_embed_target_resources(
 	PACKED
 	ENABLE_SEARCH)
 
+install(
+	TARGETS eagine-core-sensors-log
+	DESTINATION bin)
+
