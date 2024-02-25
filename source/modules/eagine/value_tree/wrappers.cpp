@@ -931,6 +931,17 @@ public:
         return _c.fetch_values(_a, dest);
     }
 
+    /// @brief Fetches values from this attribute, into dest.
+    template <typename T, typename P, typename L>
+    [[nodiscard]] auto fetch_values(basic_valid_if<T, P, L>& dest) const {
+        T temp{};
+        if(_c.fetch_values(_a, temp)) {
+            dest = std::move(temp);
+            return true;
+        }
+        return false;
+    }
+
     /// @brief Fetches a BLOB from this attribute, into dest.
     [[nodiscard]] auto fetch_blob(memory::block dest) const {
         return _c.fetch_blob(_a, dest);

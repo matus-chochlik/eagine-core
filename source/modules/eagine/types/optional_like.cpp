@@ -396,6 +396,8 @@ public:
             return this->member(ptr, args...);
         };
     }
+
+    void ignore_result() const noexcept {}
 };
 //------------------------------------------------------------------------------
 // optional reference

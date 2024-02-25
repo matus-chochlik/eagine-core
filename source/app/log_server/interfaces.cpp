@@ -266,6 +266,9 @@ private:
 
     auto type_id() noexcept -> identifier final;
 
+    void make_more_verbose() noexcept final;
+    void make_less_verbose() noexcept final;
+
     void begin_log() noexcept final;
 
     auto register_time_interval(

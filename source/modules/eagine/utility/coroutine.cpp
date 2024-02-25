@@ -11,6 +11,107 @@ import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+export template <typename T>
+class generator : public std::ranges::view_interface<generator<T>> {
+public:
+    class promise_type {
+    public:
+        auto get_return_object() noexcept -> generator {
+            return {std::coroutine_handle<promise_type>::from_promise(*this)};
+        }
+
+        static auto initial_suspend() noexcept -> std::suspend_always {
+            return {};
+        }
+
+        static auto final_suspend() noexcept -> std::suspend_always {
+            return {};
+        }
+
+        auto yield_value(T value) noexcept -> std::suspend_always {
+            _value.emplace(std::move(value));
+            return {};
+        }
+
+        static void unhandled_exception() {
+            throw;
+        }
+
+        auto get() noexcept -> auto& {
+            return *_value;
+        }
+
+    private:
+        std::optional<T> _value{};
+    };
+
+    using handle_type = std::coroutine_handle<promise_type>;
+
+    generator() noexcept = default;
+
+    generator(handle_type handle) noexcept
+      : _handle{std::move(handle)} {}
+
+    generator(generator&& that) noexcept
+      : _handle{std::exchange(that._handle, handle_type{})} {}
+    generator(const generator&) = delete;
+
+    auto operator=(generator&& that) noexcept -> generator& {
+        if(this != &that) [[likely]] {
+            std::swap(_handle, that._handle);
+        }
+        return *this;
+    }
+    auto operator=(const generator&) = delete;
+
+    ~generator() noexcept {
+        if(_handle) {
+            _handle.destroy();
+        }
+    }
+
+    using sentinel = std::default_sentinel_t;
+
+    class iterator {
+    public:
+        iterator(handle_type handle) noexcept
+          : _handle{std::move(handle)} {}
+
+        void operator++() noexcept {
+            _handle.resume();
+        }
+
+        [[nodiscard]] auto operator*() noexcept -> auto& {
+            return _handle.promise().get();
+        }
+
+        [[nodiscard]] auto operator==(sentinel) const noexcept -> bool {
+            return not _handle or _handle.done();
+        }
+
+        [[nodiscard]] auto operator!=(sentinel) const noexcept -> bool {
+            return _handle and not _handle.done();
+        }
+
+    private:
+        handle_type _handle;
+    };
+
+    [[nodiscard]] auto begin() const noexcept -> iterator {
+        if(_handle) [[likely]] {
+            _handle.resume();
+        }
+        return {_handle};
+    }
+
+    [[nodiscard]] auto end() const noexcept -> sentinel {
+        return {};
+    }
+
+private:
+    std::coroutine_handle<promise_type> _handle;
+};
+//------------------------------------------------------------------------------
 export template <typename... T>
 class tuple_generator
   : public std::ranges::view_interface<tuple_generator<T...>> {

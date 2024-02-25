@@ -63,8 +63,6 @@ class json_log_backend : public logger_backend {
     template <typename T>
     void _add(const T& value);
 
-    void _flush(bool force = false) noexcept;
-
 public:
     json_log_backend(
       const log_stream_info&,
@@ -81,6 +79,14 @@ public:
 
     auto type_id() noexcept -> identifier override {
         return "FastJSON";
+    }
+
+    void make_more_verbose() noexcept final {
+        _min_severity = decreased(_min_severity);
+    }
+
+    void make_less_verbose() noexcept final {
+        _min_severity = increased(_min_severity);
     }
 
     auto entry_backend(const log_event_severity) noexcept
@@ -211,11 +217,13 @@ public:
     void finish_log() noexcept final;
 
 private:
+    void _write_entry() noexcept;
+
     Lockable _lockable{};
     shared_holder<log_output_stream> _output;
     const std::string _session_identity;
     const std::string _log_identity;
-    const log_event_severity _min_severity;
+    log_event_severity _min_severity;
     const std::chrono::steady_clock::time_point _start;
     std::string _buffer;
     std::string _b64lob;
@@ -246,16 +254,17 @@ void json_log_backend<Lockable>::_add(const bool data) {
 //------------------------------------------------------------------------------
 template <typename Lockable>
 void json_log_backend<Lockable>::_add(const memory::const_block data) {
-    _output->write(_buffer);
+    _output->entry_append(_buffer);
     _buffer.clear();
+    _b64lob.reserve(1024);
     base64dump(data).apply([this](const char c) {
         _b64lob.push_back(c);
         if(_b64lob.size() >= 1024) {
-            _output->write(_b64lob);
+            _output->entry_append(_b64lob);
             _b64lob.clear();
         }
     });
-    _output->write(_b64lob);
+    _output->entry_append(_b64lob);
     _b64lob.clear();
 }
 //------------------------------------------------------------------------------
@@ -268,14 +277,6 @@ void json_log_backend<Lockable>::_add(const T& value) {
     if(conv.ec == std::error_code{}) {
         _buffer.append(temp.data(), std::distance(temp.data(), conv.ptr));
     }
-}
-//------------------------------------------------------------------------------
-template <typename Lockable>
-void json_log_backend<Lockable>::_flush(bool force) noexcept {
-    _add("\n");
-    _output->write(_buffer);
-    _output->flush(force);
-    _buffer.clear();
 }
 //------------------------------------------------------------------------------
 template <typename Lockable>
@@ -300,6 +301,14 @@ auto json_log_backend<Lockable>::entry_backend(
 }
 //------------------------------------------------------------------------------
 template <typename Lockable>
+void json_log_backend<Lockable>::_write_entry() noexcept {
+    _output->begin_entry();
+    _output->entry_append(_buffer);
+    _output->finish_entry();
+    _buffer.clear();
+}
+//------------------------------------------------------------------------------
+template <typename Lockable>
 void json_log_backend<Lockable>::begin_log() noexcept {
     try {
         const auto now_sys{std::chrono::system_clock::now()};
@@ -307,7 +316,7 @@ void json_log_backend<Lockable>::begin_log() noexcept {
         const auto now{now_sys - (now_sdy - _start)};
         const std::string start_tse{std::format("{:%Y-%m-%d %T}", now)};
         const std::lock_guard<Lockable> lock{_lockable};
-        _add("[");
+        _output->begin_stream("[", "\n,");
         _add(R"({"t":"begin","time":")");
         _add(start_tse);
         if(not _session_identity.empty()) {
@@ -319,7 +328,7 @@ void json_log_backend<Lockable>::begin_log() noexcept {
             _add(_log_identity);
         }
         _add(R"("})");
-        _flush();
+        _write_entry();
     } catch(...) {
     }
 }
@@ -373,14 +382,14 @@ void json_log_backend<Lockable>::time_interval_end(
             if(info->count >= batch) {
                 std::chrono::nanoseconds avg{(info->duration / batch)};
                 const std::lock_guard<Lockable> lock{_lockable};
-                _add(R"(,{"t":"i","iid":)");
+                _add(R"({"t":"i","iid":)");
                 _add(info->log_id);
                 _add(R"(,"tag":")");
                 _add(info->tag);
                 _add(R"(","tns":)");
                 _add(avg.count());
                 _add(R"(})");
-                _flush();
+                _write_entry();
                 info->count = 0U;
                 info->duration = {};
             }
@@ -399,7 +408,7 @@ void json_log_backend<Lockable>::set_description(
         const auto now{std::chrono::steady_clock::now()};
         const auto sec{std::chrono::duration<float>(now - _start)};
         const std::lock_guard<Lockable> lock{_lockable};
-        _add(R"(,{"t":"d","src":")");
+        _add(R"({"t":"d","src":")");
         _add(source.name());
         _add(R"(","iid":)");
         _add(instance);
@@ -410,7 +419,7 @@ void json_log_backend<Lockable>::set_description(
         _add(R"(","desc":")");
         _add(description);
         _add(R"("})");
-        _flush();
+        _write_entry();
     } catch(...) {
     }
 }
@@ -425,7 +434,7 @@ void json_log_backend<Lockable>::declare_state(
         const auto now{std::chrono::steady_clock::now()};
         const auto sec{std::chrono::duration<float>(now - _start)};
         const std::lock_guard<Lockable> lock{_lockable};
-        _add(R"(,{"t":"ds","src":")");
+        _add(R"({"t":"ds","src":")");
         _add(source.name());
         _add(R"(","tag":")");
         _add(state_tag.name());
@@ -436,7 +445,7 @@ void json_log_backend<Lockable>::declare_state(
         _add(R"(","end":")");
         _add(end_tag.name());
         _add(R"("})");
-        _flush();
+        _write_entry();
     } catch(...) {
     }
 }
@@ -449,14 +458,14 @@ void json_log_backend<Lockable>::active_state(
         const auto now{std::chrono::steady_clock::now()};
         const auto sec{std::chrono::duration<float>(now - _start)};
         const std::lock_guard<Lockable> lock{_lockable};
-        _add(R"(,{"t":"as","src":")");
+        _add(R"({"t":"as","src":")");
         _add(source.name());
         _add(R"(","tag":")");
         _add(state_tag.name());
         _add(R"(","ts":)");
         _add(sec.count());
         _add(R"(})");
-        _flush();
+        _write_entry();
     } catch(...) {
     }
 }
@@ -475,7 +484,8 @@ auto json_log_backend<Lockable>::begin_message(
         const auto source_name{source.name()};
         const auto tag_name{tag.name()};
         _lockable.lock();
-        _add(R"(,{"t":"m","lvl":")");
+        _output->begin_entry();
+        _add(R"({"t":"m","lvl":")");
         _add(severity_name);
         _add(R"(","src":")");
         _add(source_name);
@@ -604,7 +614,9 @@ template <typename Lockable>
 void json_log_backend<Lockable>::finish_message() noexcept {
     try {
         _add("]}");
-        _flush(true);
+        _output->entry_append(_buffer);
+        _output->finish_entry();
+        _buffer.clear();
         _lockable.unlock();
     } catch(...) {
     }
@@ -627,11 +639,11 @@ void json_log_backend<Lockable>::heartbeat() noexcept {
         const auto now{std::chrono::steady_clock::now()};
         const auto sec{std::chrono::duration<float>(now - _start)};
         const std::lock_guard<Lockable> lock{_lockable};
-        _add(R"(,{"t":"hb")");
+        _add(R"({"t":"hb")");
         _add(R"(,"ts":)");
         _add(sec.count());
         _add(R"(})");
-        _flush();
+        _write_entry();
     } catch(...) {
     }
 }
@@ -642,11 +654,12 @@ void json_log_backend<Lockable>::finish_log() noexcept {
         const auto now{std::chrono::steady_clock::now()};
         const auto sec{std::chrono::duration<float>(now - _start)};
         const std::lock_guard<Lockable> lock{_lockable};
-        _add(R"(,{"t":"end")");
+        _add(R"({"t":"end")");
         _add(R"(,"ts":)");
         _add(sec.count());
-        _add(R"(}])");
-        _flush(true);
+        _add(R"(})");
+        _write_entry();
+        _output->finish_stream("]");
     } catch(...) {
     }
 }

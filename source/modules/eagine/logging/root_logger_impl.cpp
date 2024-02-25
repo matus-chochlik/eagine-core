@@ -5,7 +5,6 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 /// https://www.boost.org/LICENSE_1_0.txt
 ///
-#include <filesystem>
 module;
 
 #include <cassert>
@@ -38,6 +37,7 @@ import eagine.core.runtime;
 import :config;
 import :entry;
 import :backend;
+import <csignal>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -54,16 +54,16 @@ auto root_logger_choose_backend(
   const log_stream_info& info) -> unique_holder<logger_backend> {
 
     auto lock_type{log_backend_lock::mutex};
-    if(args.find("--log-use-spinlock")) {
+    if(args.has("--log-use-spinlock")) {
         lock_type = log_backend_lock::spinlock;
-    } else if(args.find("--log-use-no-lock")) {
+    } else if(args.has("--log-use-no-lock")) {
         lock_type = log_backend_lock::none;
     }
 
     auto format{log_data_format::json};
-    if(args.find("--log-format-json")) {
+    if(args.has("--log-format-json")) {
         format = log_data_format::json;
-    } else if(args.find("--log-format-xml")) {
+    } else if(args.has("--log-format-xml")) {
         format = log_data_format::xml;
     }
 
@@ -142,6 +142,79 @@ auto root_logger_init_backend(
     auto backend{root_logger_choose_backend(args, opts, info)};
 
     return backend;
+}
+//------------------------------------------------------------------------------
+class root_logger_signals {
+public:
+    root_logger_signals() noexcept;
+    ~root_logger_signals() noexcept;
+
+    auto is_initialized() const noexcept -> bool;
+    void initialize(root_logger*) noexcept;
+    void reset() noexcept;
+
+private:
+    static auto _logger() noexcept -> optional_reference<root_logger>;
+    static auto _logger_ptr() noexcept -> root_logger*&;
+
+    static void _handle_usr1(int);
+    static void _handle_usr2(int);
+
+    using _sighandler_t = void(int);
+    _sighandler_t* _usr1_handler{nullptr};
+    _sighandler_t* _usr2_handler{nullptr};
+};
+//------------------------------------------------------------------------------
+auto root_logger_signals::_logger_ptr() noexcept -> root_logger*& {
+    static root_logger* ptr{nullptr};
+    return ptr;
+}
+//------------------------------------------------------------------------------
+root_logger_signals::root_logger_signals() noexcept
+  : _usr1_handler{std::signal(SIGUSR1, &_handle_usr1)}
+  , _usr2_handler{std::signal(SIGUSR2, &_handle_usr2)} {}
+//------------------------------------------------------------------------------
+root_logger_signals::~root_logger_signals() noexcept {
+    [[maybe_unused]] const auto unused_1{std::signal(SIGUSR1, _usr1_handler)};
+    [[maybe_unused]] const auto unused_2{std::signal(SIGUSR2, _usr2_handler)};
+}
+//------------------------------------------------------------------------------
+auto root_logger_signals::is_initialized() const noexcept -> bool {
+    return _logger_ptr() != nullptr;
+}
+//------------------------------------------------------------------------------
+void root_logger_signals::initialize(root_logger* parent) noexcept {
+    assert(not is_initialized());
+    _logger_ptr() = parent;
+}
+//------------------------------------------------------------------------------
+void root_logger_signals::reset() noexcept {
+    _logger_ptr() = nullptr;
+}
+//------------------------------------------------------------------------------
+auto root_logger_signals::_logger() noexcept
+  -> optional_reference<root_logger> {
+    return {_logger_ptr()};
+}
+//------------------------------------------------------------------------------
+void root_logger_signals::_handle_usr1(int) {
+    _logger().member(&root_logger::make_more_verbose);
+}
+//------------------------------------------------------------------------------
+void root_logger_signals::_handle_usr2(int) {
+    _logger().member(&root_logger::make_less_verbose);
+}
+//------------------------------------------------------------------------------
+void cleanup() noexcept;
+//------------------------------------------------------------------------------
+// root logger
+//------------------------------------------------------------------------------
+void root_logger::_init(root_logger_signals& signals) noexcept {
+    signals.initialize(this);
+}
+//------------------------------------------------------------------------------
+void root_logger::_reset(root_logger_signals& signals) noexcept {
+    signals.reset();
 }
 //------------------------------------------------------------------------------
 auto root_logger::_log_args(const program_args& args) -> void {
@@ -224,11 +297,22 @@ auto root_logger::_log_compiler_info() -> void {
       });
 }
 //------------------------------------------------------------------------------
+void root_logger::make_more_verbose() noexcept {
+    backend().member(&logger_backend::make_more_verbose);
+}
+//------------------------------------------------------------------------------
+void root_logger::make_less_verbose() noexcept {
+    backend().member(&logger_backend::make_less_verbose);
+}
+//------------------------------------------------------------------------------
+static root_logger_signals _root_logger_signals{};
+//------------------------------------------------------------------------------
 root_logger::root_logger(
   identifier logger_id,
   const program_args& args,
   root_logger_options& opts) noexcept
   : logger{logger_id, {root_logger_init_backend(args, opts)}} {
+    _init(_root_logger_signals);
     begin_log();
 
     for(auto arg = args.first(); arg; arg = arg.next()) {
@@ -253,6 +337,7 @@ root_logger::root_logger(
 //------------------------------------------------------------------------------
 root_logger::~root_logger() noexcept {
     finish_log();
+    _reset(_root_logger_signals);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

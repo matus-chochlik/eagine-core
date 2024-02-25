@@ -455,26 +455,34 @@ public:
     using iterator = program_arg_iterator;
 
     /// @brief Returns the number of arguments.
+    /// @see argv
     auto argc() const noexcept -> int {
         return _argc;
     }
 
     /// @brief Returns a pointer to tha list of argument C-strings.
+    /// @see argc
     auto argv() const noexcept -> const char** {
         return _argv;
     }
 
     /// @brief Indicates if the argument list is completely empty.
+    /// @see none
+    /// @see size
     auto empty() const noexcept -> bool {
         return _argc <= 0;
     }
 
     /// @brief Indicates if the argument list does not contain any arguments.
+    /// @see empty
+    /// @see size
     auto none() const noexcept -> bool {
         return _argc <= 1;
     }
 
     /// @brief Returns the count of arguments (counting in the command name)
+    /// @see empty
+    /// @see none
     auto size() const noexcept -> int {
         return _argc;
     }
@@ -497,26 +505,56 @@ public:
     }
 
     /// @brief Returns first argument.
+    /// @see last
     auto first() const noexcept -> program_arg {
         return get(1);
     }
 
     /// @brief Returns the first argument past the last.
+    /// @see first
     auto past_last() const noexcept -> program_arg {
         return get(_argc == 0 ? 1 : _argc);
     }
 
     /// @brief Returns an iterator to the first argument (not the command name).
+    /// @see end
     auto begin() const noexcept -> iterator {
         return {first()};
     }
 
     /// @brief Returns an iterator past the last argument.
+    /// @begin
     auto end() const noexcept -> iterator {
         return {past_last()};
     }
 
+    /// @brief Indicates if the specified argument is found in this list.
+    auto has(const value_type what) const noexcept -> bool {
+        if(_argv != nullptr) {
+            int i = 1;
+            while(i < _argc) {
+                if(_argv[i] != nullptr) {
+                    if(are_equal(value_type(_argv[i]), what)) {
+                        return true;
+                    }
+                }
+                ++i;
+            }
+        }
+        return false;
+    }
+
+    /// @brief Indicates if any of the specified arguments are found in this list.
+    template <std::convertible_to<value_type>... Str>
+        requires(sizeof...(Str) > 0)
+    auto has_any(Str&&... what) const noexcept -> bool {
+        return (... or has(std::forward<Str>(what)));
+    }
+
     /// @brief Finds and returns the argument with the specified value.
+    /// @see has
+    /// @see has_any
+    /// @see all_like
     auto find(const value_type what) const noexcept -> program_arg {
         if(_argv != nullptr) {
             int i = 1;
@@ -534,6 +572,9 @@ public:
     }
 
     /// @brief Lists all arguments with the specified value.
+    /// @see has
+    /// @see has_any
+    /// @see find
     auto all_like(const value_type what) const noexcept
       -> pointee_generator<program_arg_iterator> {
         if(_argv != nullptr) {

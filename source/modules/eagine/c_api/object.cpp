@@ -266,12 +266,17 @@ public:
     /// @brief Initializing constructor.
     constexpr basic_object(const Api& api, base init, P... args) noexcept
       : base{std::move(init)}
-      , _api{api}
+      , _papi{&api}
       , _args{args...} {}
 
     /// @brief Uses the associated Api to clean up this object.
     ~basic_object() noexcept {
-        if(this->has_value()) {
+        clean_up();
+    }
+
+    /// @brief Cleans-up this object if it is initialized.
+    void clean_up() noexcept {
+        if(this->has_value() and _papi) {
             _clean_up(std::make_index_sequence<sizeof...(P)>{});
         }
     }
@@ -280,12 +285,12 @@ private:
     template <std::size_t... I>
     void _clean_up(std::index_sequence<I...>) noexcept {
         try {
-            _api.clean_up(static_cast<base&&>(*this), std::get<I>(_args)...);
+            _papi->clean_up(static_cast<base&&>(*this), std::get<I>(_args)...);
         } catch(...) {
         }
     }
 
-    const Api& _api;
+    const Api* _papi{nullptr};
     [[no_unique_address]] std::tuple<P...> _args;
 };
 
