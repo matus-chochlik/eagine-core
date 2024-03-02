@@ -151,7 +151,7 @@ auto url::components_are_equal(const string_view l, const string_view r) noexcep
 auto url::_get_regex() noexcept -> const std::regex& {
     static const std::regex re{
       // clang-format off
-      R"(^((([\w]+):)?\/\/)(([^:]+)(:(\S+))?@)?((((\w[\w_-]{0,62}(\.\w[\w_-]{0,62})*))|((10|127)(\.\d{1,3}){3})|((169\.254|192\.168)(\.\d{1,3}){2})|(172\.(1[6-9]|2\d|3[0-1])(\.\d{1,3}){2})|([1-9]\d?|1\d\d|2[01]\d|22[0-3])(\.(1?\d{1,2}|2[0-4]\d|25[0-5])){2}(\.([1-9]\d?|1\d\d|2[0-4]\d|25[0-4])))(:(\d{1,5}))?)?((/[\w._-]+)*/?)?(\?(([\w._]+=[^+#]*)(\+([\w_]+=[^+#]*))*))?(#([\w_-]*))?$)",
+      R"(^((([\w]+):)?\/\/)(([^:]+)(:(\S+))?@)?((((\w[\w_-]{0,62}(\.\w[\w_-]{0,62})*))|((10|127)(\.\d{1,3}){3})|((169\.254|192\.168)(\.\d{1,3}){2})|(172\.(1[6-9]|2\d|3[0-1])(\.\d{1,3}){2})|([1-9]\d?|1\d\d|2[01]\d|22[0-3])(\.(1?\d{1,2}|2[0-4]\d|25[0-5])){2}(\.([1-9]\d?|1\d\d|2[0-4]\d|25[0-4])))(:(\d{1,5}))?)?((/[\w._-]+)*/?)?(\?(([\w._]+=[^+#]*)([&]([\w_]+=[^+#]*))*))?(#([\w_-]*))?$)",
       // clang-format on
       std::regex::ECMAScript};
     return re;
@@ -173,8 +173,8 @@ auto url::_swov(_range r) const noexcept -> valid_if_not_empty<string_view> {
 //------------------------------------------------------------------------------
 auto url::_parse_args() const noexcept -> url_query_args {
     url_query_args result;
-    for_each_delimited(_sw(_query), string_view{"+"}, [&result](auto part) {
-        auto [name, value] = split_by_first(part, string_view{"="});
+    for_each_delimited(_sw(_query), string_view{"&"}, [&result](auto part) {
+        auto [name, value]{split_by_first(part, string_view{"="})};
         result[name] = value;
     });
     return result;
