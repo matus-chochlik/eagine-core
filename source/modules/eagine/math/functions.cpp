@@ -144,6 +144,29 @@ export template <typename... T, typename A>
       std::make_index_sequence<sizeof...(T)>(), v1, v2, alpha);
 }
 //------------------------------------------------------------------------------
+/// @brief Clamps parameter to (0, 1) and maps the value to (min, max) of type T.
+/// @ingroup math
+/// @see map_to_min_max_11
+export template <std::integral T, std::floating_point F>
+[[nodiscard]] constexpr auto map_to_min_max_01(F parameter) noexcept -> T {
+    return std::lerp(
+      std::numeric_limits<T>::lowest(),
+      std::numeric_limits<T>::max(),
+      clamp(parameter, 0, 1));
+}
+//------------------------------------------------------------------------------
+/// @brief Clamps parameter to (-1, 1) and maps the value to (min, max) of type T.
+/// @ingroup math
+/// @see map_to_min_max_01
+export template <std::integral T, std::floating_point F>
+[[nodiscard]] constexpr auto map_to_min_max_11(F parameter) noexcept -> T {
+    const auto half{F(1) / F(2)};
+    return std::lerp(
+      std::numeric_limits<T>::lowest(),
+      std::numeric_limits<T>::max(),
+      clamp(parameter, -1, 1) * half + half);
+}
+//------------------------------------------------------------------------------
 /// @brief Calculates the inverse logistic (log(x) - log(1 - x)) of @p x.
 /// @ingroup math
 export template <typename T>

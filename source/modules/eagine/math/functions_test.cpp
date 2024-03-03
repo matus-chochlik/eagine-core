@@ -91,9 +91,9 @@ void math_function_min_max_TP(eagitest::case_& test, P... v) {
 //------------------------------------------------------------------------------
 template <typename T>
 void math_function_min_max_T(eagitest::case_& test) {
-    const auto rndval = [&]() {
+    const auto rndval{[&] {
         return test.random().get_any<T>();
-    };
+    }};
 
     math_function_min_max_TP<T>(test, rndval(), rndval());
     math_function_min_max_TP<T>(test, rndval(), rndval(), rndval());
@@ -124,10 +124,95 @@ void math_function_min_max(unsigned, auto& s) {
     math_function_min_max_T<double>(test);
 }
 //------------------------------------------------------------------------------
+template <typename F, typename T>
+void math_function_clamp_to_min_max_01_T(eagitest::case_& test) {
+    const auto rndval{[&] {
+        return test.random().get_between<F>(F(0), F(1));
+    }};
+
+    test.check_equal(
+      eagine::math::map_to_min_max_01<T>(F(0)),
+      std::numeric_limits<T>::lowest(),
+      "min 01");
+    test.check_equal(
+      eagine::math::map_to_min_max_01<T>(F(1)),
+      std::numeric_limits<T>::max(),
+      "max 01");
+
+    for(int i = 0; i < 1000; ++i) {
+        const auto f1{rndval()};
+        const auto f2{rndval()};
+        const auto t1{eagine::math::map_to_min_max_01<T>(f1)};
+        const auto t2{eagine::math::map_to_min_max_01<T>(f2)};
+
+        const auto check{[&] {
+            if(f1 < f2) {
+                return t1 <= t2;
+            }
+            if(f1 > f2) {
+                return t1 >= t2;
+            }
+            return t1 == t2;
+        }};
+
+        test.check(check(), "mid 01");
+    }
+}
+//------------------------------------------------------------------------------
+template <typename F, typename T>
+void math_function_clamp_to_min_max_11_T(eagitest::case_& test) {
+    const auto rndval{[&] {
+        return test.random().get_between<F>(F(-1), F(1));
+    }};
+
+    test.check_equal(
+      eagine::math::map_to_min_max_11<T>(F(-1)),
+      std::numeric_limits<T>::lowest(),
+      "min 11");
+    test.check_equal(
+      eagine::math::map_to_min_max_11<T>(F(1)),
+      std::numeric_limits<T>::max(),
+      "max 11");
+
+    for(int i = 0; i < 1000; ++i) {
+        const auto f1{rndval()};
+        const auto f2{rndval()};
+        const auto t1{eagine::math::map_to_min_max_11<T>(f1)};
+        const auto t2{eagine::math::map_to_min_max_11<T>(f2)};
+
+        const auto check{[&] {
+            if(f1 < f2) {
+                return t1 <= t2;
+            }
+            if(f1 > f2) {
+                return t1 >= t2;
+            }
+            return t1 == t2;
+        }};
+
+        test.check(check(), "mid 11");
+    }
+}
+//------------------------------------------------------------------------------
+void math_function_clamp_to_min_max(auto& s) {
+    eagitest::case_ test{s, 5, "map to min-max"};
+    math_function_clamp_to_min_max_01_T<float, eagine::byte>(test);
+    math_function_clamp_to_min_max_01_T<float, short>(test);
+    math_function_clamp_to_min_max_01_T<float, int>(test);
+    math_function_clamp_to_min_max_01_T<float, unsigned>(test);
+
+    math_function_clamp_to_min_max_11_T<float, eagine::byte>(test);
+    math_function_clamp_to_min_max_11_T<float, short>(test);
+    math_function_clamp_to_min_max_11_T<float, int>(test);
+    math_function_clamp_to_min_max_11_T<float, unsigned>(test);
+}
+//------------------------------------------------------------------------------
+// clamp to min max
+//------------------------------------------------------------------------------
 // factorial
 //------------------------------------------------------------------------------
 void math_function_factorial(auto& s) {
-    eagitest::case_ test{s, 5, "factorial"};
+    eagitest::case_ test{s, 6, "factorial"};
     using namespace eagine::math;
 
     test.check_equal(factorial(-2), 1, "A");
@@ -148,7 +233,7 @@ void math_function_factorial(auto& s) {
 // binomial
 //------------------------------------------------------------------------------
 void math_function_binomial(auto& s) {
-    eagitest::case_ test{s, 6, "binomial"};
+    eagitest::case_ test{s, 7, "binomial"};
     using namespace eagine::math;
 
     test.check_equal(binomial(-1, 0), 0, "A");
@@ -259,7 +344,7 @@ void math_functions_bezier_point_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void math_function_bezier_point(auto& s) {
-    eagitest::case_ test{s, 7, "bezier point"};
+    eagitest::case_ test{s, 8, "bezier point"};
 
     math_functions_bezier_point_T<float>(test);
     math_functions_bezier_point_T<double>(test);
@@ -268,11 +353,12 @@ void math_function_bezier_point(auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "functions", 7};
+    eagitest::suite test{argc, argv, "functions", 8};
     test.once(math_function_is_ppo2_man);
     test.repeat(1000, math_function_is_ppo2_rand);
     test.repeat(1000, math_function_gcd);
     test.repeat(1000, math_function_min_max);
+    test.once(math_function_clamp_to_min_max);
     test.once(math_function_factorial);
     test.once(math_function_binomial);
     test.once(math_function_bezier_point);
