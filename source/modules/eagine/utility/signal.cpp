@@ -71,6 +71,12 @@ public:
     [[nodiscard]] auto bind(const callable_ref<void(Params...) noexcept> slot)
       -> signal_binding;
 
+    /// @brief Connects the specified member function on the specified object.
+    /// @see connect
+    /// @see signal_binding
+    template <auto memFnPtr, typename Class>
+    [[nodiscard]] auto bind_to(Class* object) -> signal_binding;
+
     /// @brief Disconnects the callable by specifying the connection key.
     /// @see connect
     auto disconnect(const binding_key key) noexcept -> auto& {
@@ -209,6 +215,13 @@ template <typename... Params>
 [[nodiscard]] auto signal<void(Params...) noexcept>::bind(
   callable_ref<void(Params...) noexcept> slot) -> signal_binding {
     return {connect(slot), this};
+}
+
+template <typename... Params>
+template <auto memFnPtr, typename Class>
+[[nodiscard]] auto signal<void(Params...) noexcept>::bind_to(Class* object)
+  -> signal_binding {
+    return bind(make_callable_ref<memFnPtr>(object));
 }
 
 export template <auto MemFuncPtr, typename C, typename... Params>
