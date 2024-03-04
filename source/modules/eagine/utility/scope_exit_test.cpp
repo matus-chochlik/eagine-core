@@ -15,9 +15,9 @@ void scope_exit_false_type(auto& s) {
     eagitest::track trck{test, 4, 4};
 
     int i = 10;
-    const auto inc_i = [&i]() {
+    const auto inc_i{[&i] {
         ++i;
-    };
+    }};
 
     {
         test.check_equal(i, 10, "A entry");
@@ -52,9 +52,9 @@ void scope_exit_true_type(auto& s) {
     eagitest::track trck{test, 5, 5};
 
     int i = 11;
-    const auto inc_i = [&i]() {
+    const auto inc_i{[&i] {
         ++i;
-    };
+    }};
 
     {
         test.check_equal(i, 11, "A entry");
@@ -95,9 +95,9 @@ void scope_exit_nothing(auto& s) {
     eagitest::track trck{test, 6, 6};
 
     int i = 41;
-    const auto inc_i = [&i]() {
+    const auto inc_i{[&i] {
         ++i;
-    };
+    }};
 
     {
         test.check_equal(i, 41, "A entry");
@@ -149,7 +149,7 @@ void scope_exit_finally(auto& s) {
 
     {
         test.check_equal(i, 41, "A entry");
-        auto fse = eagine::finally([&i]() { i += 2; });
+        auto fse = eagine::finally([&i] { i += 2; });
         test.check_equal(i, 41, "A inside");
         trck.checkpoint(1);
     }
@@ -157,7 +157,7 @@ void scope_exit_finally(auto& s) {
 
     {
         test.check_equal(i, 43, "B entry");
-        auto fse = eagine::finally([&i]() { i += 2; });
+        auto fse = eagine::finally([&i] { i += 2; });
         test.check_equal(i, 43, "B inside");
         trck.checkpoint(2);
         fse.cancel();
@@ -166,7 +166,7 @@ void scope_exit_finally(auto& s) {
 
     try {
         test.check_equal(i, 43, "C entry");
-        auto fse = eagine::finally([&i]() { --i; });
+        auto fse = eagine::finally([&i] { --i; });
         test.check_equal(i, 43, "C inside");
         trck.checkpoint(3);
 
@@ -177,7 +177,7 @@ void scope_exit_finally(auto& s) {
     }
     try {
         test.check_equal(i, 42, "D entry");
-        auto fse = eagine::finally([&i]() { --i; });
+        auto fse = eagine::finally([&i] { --i; });
         test.check_equal(i, 42, "D inside");
         trck.checkpoint(5);
         fse.cancel();
