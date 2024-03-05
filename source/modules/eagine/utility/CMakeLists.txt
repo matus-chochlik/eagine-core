@@ -90,7 +90,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.utility PARTITION sudoku
 	IMPORTS
-		std
+		std generator
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container

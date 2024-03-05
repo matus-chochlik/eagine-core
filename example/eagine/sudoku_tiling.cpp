@@ -16,7 +16,7 @@ void sudoku_tiling(eagine::span_size_t w, eagine::span_size_t h) {
     basic_sudoku_tile_patch<S> patch(w, h);
     basic_sudoku_tiling<S> bst{
       traits, traits.make_generator().generate_medium()};
-    std::cout << bst.fill(0, 0, patch);
+    std::cout << bst.fill(patch);
 }
 
 auto main(int argc, const char** argv) -> int {

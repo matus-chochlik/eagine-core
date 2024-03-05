@@ -739,28 +739,92 @@ public:
         return *this;
     }
 
-    auto fill(const int xmin, const int ymin, basic_sudoku_tile_patch<S>& patch)
-      -> basic_sudoku_tile_patch<S>& {
-        const int ymax = limit_cast<int>(ymin + patch.height() / (S * (S - 2)));
-        const int xmax = limit_cast<int>(xmin + patch.width() / (S * (S - 2)));
-        std::size_t k = 0;
-        for(auto y = ymax - 1; y >= ymin; --y) {
-            for(const auto by : integer_range(1U, S - 1U)) {
-                for(const auto cy : integer_range(S)) {
-                    for(const auto x : integer_range(xmin, xmax)) {
-                        auto& board = _get(x, y);
-                        for(const auto bx : integer_range(1U, S - 1U)) {
-                            for(const auto cx : integer_range(S)) {
-                                assert(k < patch._cells.size());
-                                patch._cells[k++] = limit_cast<std::uint8_t>(
-                                  board.get({bx, by, cx, cy}).get_index());
+    class patch_fill_state {
+    public:
+        patch_fill_state(
+          basic_sudoku_tiling<S>& parent,
+          basic_sudoku_tile_patch<S>& patch,
+          const int xmin,
+          const int ymin) noexcept
+          : _parent{parent}
+          , _patch{patch}
+          , _xmin{xmin}
+          , _ymin{ymin}
+          , _xmax{limit_cast<int>(_xmin + _patch.width() / (S * (S - 2)))}
+          , _ymax{limit_cast<int>(_ymin + _patch.height() / (S * (S - 2)))} {}
+
+        auto is_done() const noexcept -> bool {
+            return _y <= _ymin;
+        }
+
+        auto fill_current() noexcept -> patch_fill_state& {
+            assert(_k < _patch._cells.size());
+            _patch._cells[_k] = limit_cast<std::uint8_t>(
+              _parent._get(_x, _y).get({_bx, _by, _cx, _cy}).get_index());
+            return *this;
+        }
+
+        auto next() noexcept -> patch_fill_state& {
+            ++_k;
+            if(++_cx >= S) {
+                _cx = 0U;
+                if(++_bx >= (S - 1U)) {
+                    _bx = 1U;
+                    if(++_x >= _xmax) {
+                        _x = _xmin;
+                        if(++_cy >= S) {
+                            _cy = 0U;
+                            if(++_by >= (S - 1U)) {
+                                _by = 1U;
+                                --_y;
                             }
                         }
                     }
                 }
             }
+            return *this;
+        }
+
+    private:
+        basic_sudoku_tiling<S>& _parent;
+        basic_sudoku_tile_patch<S>& _patch;
+        const int _xmin;
+        const int _ymin;
+        const int _xmax;
+        const int _ymax;
+        int _k{0};
+        int _y{_ymax};
+        int _x{_xmin};
+        unsigned _by{1U};
+        unsigned _bx{1U};
+        unsigned _cy{0U};
+        unsigned _cx{0U};
+    };
+
+    auto make_filler(
+      const int xmin,
+      const int ymin,
+      basic_sudoku_tile_patch<S>& patch) noexcept -> patch_fill_state {
+        return {*this, patch, xmin, ymin};
+    }
+
+    auto make_filler(basic_sudoku_tile_patch<S>& patch) noexcept
+      -> patch_fill_state {
+        return make_filler(0, 0, patch);
+    }
+
+    auto fill(const int xmin, const int ymin, basic_sudoku_tile_patch<S>& patch)
+      -> basic_sudoku_tile_patch<S>& {
+        patch_fill_state state{*this, patch, xmin, ymin};
+        while(not state.is_done()) {
+            state.fill_current().next();
         }
         return patch;
+    }
+
+    auto fill(basic_sudoku_tile_patch<S>& patch)
+      -> basic_sudoku_tile_patch<S>& {
+        return fill(0, 0, patch);
     }
 
     auto print(
@@ -789,6 +853,8 @@ public:
     }
 
 private:
+    friend class patch_fill_state;
+
     auto _get(const int x, const int y) -> const board_type& {
         auto found{find(_boards, std::make_tuple(x, y))};
         if(not found) {
