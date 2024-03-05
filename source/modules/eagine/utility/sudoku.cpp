@@ -365,8 +365,7 @@ public:
     auto is_solved() const noexcept {
         bool result = true;
         for_each_coord([&](const auto& coord) {
-            const auto value = get(coord);
-            if(not value.is_single()) {
+            if(const auto value{get(coord)}; not value.is_single()) {
                 result = false;
                 return false;
             }
@@ -638,26 +637,28 @@ public:
     class solution_state {
     public:
         solution_state(const board_type& board) noexcept {
-            _solutions.push(board);
+            _solutions.push_back(board);
         }
 
         auto is_done() const noexcept -> bool {
             return _done or _solutions.empty();
         }
 
+        auto is_solved() const noexcept -> bool {
+            return not _solutions.empty() and _solutions.back().is_solved();
+        }
+
         auto next() -> solution_state& {
-            auto current{_solutions.top()};
-            _solutions.pop();
+            const auto current{_solutions.back()};
+            _solutions.pop_back();
 
             current.for_each_alternative(
-              current.find_unsolved(), [this](auto candidate) {
+              current.find_unsolved(), [this](const auto& candidate) {
                   if(not _done) {
                       if(candidate.is_solved()) {
-                          _board = candidate;
                           _done = true;
-                      } else {
-                          _solutions.push(candidate);
                       }
+                      _solutions.push_back(candidate);
                   }
               });
             return *this;
@@ -665,18 +666,18 @@ public:
 
         auto reset(const board_type& board) noexcept -> board_type& {
             _solutions.clear();
-            _solutions.push(_board);
+            _solutions.push_back(board);
             _done = false;
             return *this;
         }
 
         auto board() const noexcept -> const board_type& {
-            return _board;
+            assert(not _solutions.empty());
+            return _solutions.back();
         }
 
     private:
-        board_type _board{};
-        std::stack<board_type> _solutions;
+        std::vector<board_type> _solutions;
         bool _done{false};
     };
 
@@ -763,8 +764,10 @@ private:
 };
 //------------------------------------------------------------------------------
 export template <unsigned S>
-class basic_sudoku_tiling : basic_sudoku_solver<S> {
-    static_assert(S > 2U);
+class basic_sudoku_tiling {
+    static_assert(S >= 2U);
+
+    using solution_state = typename basic_sudoku_solver<S>::solution_state;
 
 public:
     using board_traits = basic_sudoku_board_traits<S>;
@@ -772,13 +775,12 @@ public:
 
     basic_sudoku_tiling(const board_traits& traits)
       : _traits{traits} {
-        _boards.emplace(
-          std::make_tuple(0, 0), this->solve(traits.make_diagonal()));
+        _do_enqueue(0, 0, traits.make_diagonal());
     }
 
     basic_sudoku_tiling(const board_traits& traits, board_type board)
       : _traits{traits} {
-        _boards.emplace(std::make_tuple(0, 0), this->solve(std::move(board)));
+        _do_enqueue(0, 0, std::move(board));
     }
 
     auto generate(const int xmin, const int ymin, const int xmax, const int ymax)
@@ -903,14 +905,29 @@ private:
       -> optional_reference<const board_type> {
         auto pos{_boards.find(std::make_tuple(x, y))};
         if(pos != _boards.end()) {
-            return {pos->second};
+            if(auto board{get_if<board_type>(pos->second)}) {
+                return board.ref();
+            }
+            if(auto solution{get_if<solution_state>(pos->second)}) {
+                if(solution->is_done()) {
+                    if(solution->is_solved()) {
+                        // we need a copy before assigning to the variant
+                        auto board{solution->board()};
+                        pos->second = std::move(board);
+                    } else {
+                        _boards.erase(pos);
+                    }
+                } else {
+                    solution->next();
+                }
+            }
         } else {
-            _emplace(x, y);
-            return {};
+            _enqueue(x, y);
         }
+        return {};
     }
 
-    void _emplace(const int x, const int y) {
+    void _enqueue(const int x, const int y) {
         board_type added{};
         if(y > 0) {
             if(x > 0) {
@@ -923,7 +940,7 @@ private:
                     for(const auto bx : integer_range(1U, S)) {
                         added.set_block(bx, S - 1U, d->get_block(bx, 0U));
                     }
-                    _do_emplace(x, y, added);
+                    _do_enqueue(x, y, added);
                 }
             } else if(x < 0) {
                 auto r{_get(x + 1, y)};
@@ -935,7 +952,7 @@ private:
                     for(const auto bx : integer_range(S - 1U)) {
                         added.set_block(bx, S - 1U, d->get_block(bx, 0U));
                     }
-                    _do_emplace(x, y, added);
+                    _do_enqueue(x, y, added);
                 }
             } else {
                 auto d{_get(x, y - 1)};
@@ -943,7 +960,7 @@ private:
                     for(const auto bx : integer_range(S)) {
                         added.set_block(bx, S - 1U, d->get_block(bx, 0U));
                     }
-                    _do_emplace(x, y, added);
+                    _do_enqueue(x, y, added);
                 }
             }
         } else if(y < 0) {
@@ -957,7 +974,7 @@ private:
                     for(const auto bx : integer_range(1U, S)) {
                         added.set_block(bx, 0U, u->get_block(bx, S - 1U));
                     }
-                    _do_emplace(x, y, added);
+                    _do_enqueue(x, y, added);
                 }
             } else if(x < 0) {
                 auto r{_get(x + 1, y)};
@@ -969,7 +986,7 @@ private:
                     for(const auto bx : integer_range(S - 1U)) {
                         added.set_block(bx, 0U, u->get_block(bx, S - 1U));
                     }
-                    _do_emplace(x, y, added);
+                    _do_enqueue(x, y, added);
                 }
             } else {
                 auto u{_get(x, y + 1)};
@@ -977,7 +994,7 @@ private:
                     for(const auto bx : integer_range(S)) {
                         added.set_block(bx, 0U, u->get_block(bx, S - 1U));
                     }
-                    _do_emplace(x, y, added);
+                    _do_enqueue(x, y, added);
                 }
             }
         } else {
@@ -987,7 +1004,7 @@ private:
                     for(const auto by : integer_range(S)) {
                         added.set_block(0U, by, l->get_block(S - 1U, by));
                     }
-                    _do_emplace(x, y, added);
+                    _do_enqueue(x, y, added);
                 }
             } else if(x < 0) {
                 auto r{_get(x + 1, y)};
@@ -995,19 +1012,21 @@ private:
                     for(const auto by : integer_range(S)) {
                         added.set_block(S - 1U, by, r->get_block(0U, by));
                     }
-                    _do_emplace(x, y, added);
+                    _do_enqueue(x, y, added);
                 }
             }
         }
     }
 
-    void _do_emplace(const int x, const int y, board_type board) {
+    void _do_enqueue(const int x, const int y, board_type board) {
         _boards.emplace(
-          std::make_tuple(x, y), this->solve(board.calculate_alternatives()));
+          std::make_tuple(x, y),
+          solution_state{board.calculate_alternatives()});
     }
 
     std::reference_wrapper<const board_traits> _traits;
-    flat_map<std::tuple<int, int>, board_type> _boards;
+    flat_map<std::tuple<int, int>, std::variant<solution_state, board_type>>
+      _boards;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine
