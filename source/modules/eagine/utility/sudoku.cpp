@@ -633,26 +633,57 @@ class basic_sudoku_solver {
 public:
     using board_type = basic_sudoku_board<S>;
 
-    auto solve(board_type board) -> board_type {
-        std::stack<board_type> solutions;
-        solutions.push(board);
+    class solution_state {
+    public:
+        solution_state(const board_type& board) noexcept {
+            _solutions.push(board);
+        }
 
-        bool done = false;
-        while(not(solutions.empty() or done)) {
-            board = solutions.top();
-            solutions.pop();
+        auto is_done() const noexcept -> bool {
+            return _done or _solutions.empty();
+        }
 
-            board.for_each_alternative(
-              board.find_unsolved(), [&](auto candidate) {
-                  if(candidate.is_solved()) {
-                      board = candidate;
-                      done = true;
-                  } else {
-                      solutions.push(candidate);
+        auto next() -> solution_state& {
+            auto current{_solutions.top()};
+            _solutions.pop();
+
+            current.for_each_alternative(
+              current.find_unsolved(), [this](auto candidate) {
+                  if(not _done) {
+                      if(candidate.is_solved()) {
+                          _board = candidate;
+                          _done = true;
+                      } else {
+                          _solutions.push(candidate);
+                      }
                   }
               });
+            return *this;
         }
-        return board;
+
+        auto reset(const board_type& board) noexcept -> board_type& {
+            _solutions.clear();
+            _solutions.push(_board);
+            _done = false;
+            return *this;
+        }
+
+        auto board() const noexcept -> const board_type& {
+            return _board;
+        }
+
+    private:
+        board_type _board{};
+        std::stack<board_type> _solutions;
+        bool _done{false};
+    };
+
+    auto solve(board_type board) -> board_type {
+        solution_state solution{board};
+        while(not solution.is_done()) {
+            solution.next();
+        }
+        return solution.board();
     }
 };
 //------------------------------------------------------------------------------
