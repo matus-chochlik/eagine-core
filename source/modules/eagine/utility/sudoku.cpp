@@ -24,6 +24,8 @@ export template <unsigned S>
 class basic_sudoku_board;
 export template <unsigned S>
 class basic_sudoku_board_generator;
+export template <unsigned S>
+class basic_sudoku_tile_patch;
 //------------------------------------------------------------------------------
 export template <unsigned S>
 class basic_sudoku_board_traits {
@@ -696,6 +698,8 @@ class basic_sudoku_tile_patch {
     static constexpr const span_size_t M = span_size(S * (S - 2));
 
 public:
+    using glyph_type = basic_sudoku_glyph<S>;
+
     basic_sudoku_tile_patch(const span_size_t w, const span_size_t h)
       : _width{w % M ? (1 + w / M) * M : w}
       , _height{h % M ? (1 + w / M) * M : h} {
@@ -719,18 +723,35 @@ public:
         return _cells[integer(y * _width + x)];
     }
 
-    friend auto operator<<(
-      std::ostream& out,
-      const basic_sudoku_tile_patch& that) -> std::ostream& {
+    auto print(std::ostream& out) const -> std::ostream& {
         std::size_t k = 0;
-        for([[maybe_unused]] const auto y : integer_range(that._height)) {
-            for([[maybe_unused]] const auto x : integer_range(that._width)) {
-                assert(k < that._cells.size());
-                out << std::setw(3) << unsigned(that._cells[k++]);
+        for([[maybe_unused]] const auto y : integer_range(_height)) {
+            for([[maybe_unused]] const auto x : integer_range(_width)) {
+                assert(k < _cells.size());
+                out << std::setw(3) << unsigned(_cells[k++]);
             }
             out << '\n';
         }
         return out;
+    }
+
+    auto print(std::ostream& out, const basic_sudoku_board_traits<S>& traits)
+      const -> std::ostream& {
+        std::size_t k = 0;
+        for([[maybe_unused]] const auto y : integer_range(_height)) {
+            for([[maybe_unused]] const auto x : integer_range(_width)) {
+                assert(k < _cells.size());
+                traits.print(out, glyph_type{_cells[k++]});
+            }
+            out << '\n';
+        }
+        return out;
+    }
+
+    friend auto operator<<(
+      std::ostream& out,
+      const basic_sudoku_tile_patch& that) -> std::ostream& {
+        return that.print(out);
     }
 
 private:
@@ -785,7 +806,7 @@ public:
           , _ymax{limit_cast<int>(_ymin + _patch.height() / (S * (S - 2)))} {}
 
         auto is_done() const noexcept -> bool {
-            return _y <= _ymin;
+            return _y >= _ymax;
         }
 
         auto fill_current() noexcept -> patch_fill_state& {
@@ -807,7 +828,7 @@ public:
                             _cy = 0U;
                             if(++_by >= (S - 1U)) {
                                 _by = 1U;
-                                --_y;
+                                ++_y;
                             }
                         }
                     }
@@ -824,7 +845,7 @@ public:
         const int _xmax;
         const int _ymax;
         int _k{0};
-        int _y{_ymax};
+        int _y{_ymin};
         int _x{_xmin};
         unsigned _by{1U};
         unsigned _bx{1U};
@@ -858,29 +879,10 @@ public:
         return fill(0, 0, patch);
     }
 
-    auto print(
-      std::ostream& out,
-      const int xmin,
-      const int ymin,
-      const int xmax,
-      const int ymax) -> std::ostream& {
-        for(const auto y : integer_range(ymin, ymax + 1)) {
-            for(const auto by : integer_range(1U, S - 1U)) {
-                for(const auto cy : integer_range(S)) {
-                    for(const auto x : integer_range(xmin, xmax + 1)) {
-                        auto& board = _get(x, y);
-                        for(const auto bx : integer_range(1U, S - 1U)) {
-                            for(const auto cx : integer_range(S)) {
-                                _traits.get().print(
-                                  out, board.get({bx, by, cx, cy}));
-                            }
-                        }
-                    }
-                    out << '\n';
-                }
-            }
-        }
-        return out;
+    auto print(std::ostream& out, const int width, const int height)
+      -> std::ostream& {
+        basic_sudoku_tile_patch<S> patch{width, height};
+        return fill(patch).print(out, _traits);
     }
 
 private:

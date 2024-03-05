@@ -34,7 +34,7 @@ void sudoku_noise(
     const auto height = cfg.get<int>("height").value_or(8);
 
     basic_sudoku_tiling<S> bst{traits, initial()};
-    bst.print(std::cout, 0, 0, width, height);
+    bst.print(std::cout, width, height);
 }
 
 auto main(main_ctx& ctx) -> int {
