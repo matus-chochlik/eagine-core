@@ -801,75 +801,86 @@ public:
           : _parent{parent}
           , _patch{patch}
           , _xmin{xmin}
-          , _ymin{ymin}
-          , _xmax{limit_cast<int>(_xmin + _patch.width() / (S * (S - 2)))}
-          , _ymax{limit_cast<int>(_ymin + _patch.height() / (S * (S - 2)))} {}
+          , _ymin{ymin} {}
 
-        auto is_done() const noexcept -> bool {
-            return _y >= _ymax;
+        auto current_count() const noexcept {
+            return _k + 1U;
         }
 
-        auto fill_current() noexcept -> patch_fill_state& {
-            assert(_k < _patch._cells.size());
-            _patch._cells[_k] = limit_cast<std::uint8_t>(
-              _parent._get(_x, _y).get({_bx, _by, _cx, _cy}).get_index());
-            return *this;
+        auto total_count() const noexcept {
+            return _patch._cells.size();
+        }
+
+        auto is_done() const noexcept -> bool {
+            return not(_k < total_count());
         }
 
         auto next() noexcept -> patch_fill_state& {
-            ++_k;
-            if(++_cx >= S) {
-                _cx = 0U;
-                if(++_bx >= (S - 1U)) {
-                    _bx = 1U;
-                    if(++_x >= _xmax) {
-                        _x = _xmin;
-                        if(++_cy >= S) {
-                            _cy = 0U;
-                            if(++_by >= (S - 1U)) {
-                                _by = 1U;
-                                ++_y;
-                            }
-                        }
-                    }
-                }
+            const auto [gx, gy]{_get_cell_coord(_k)};
+            const auto [x, y]{_get_board_coord(gx, gy)};
+            if(auto board{_parent._get(x, y)}) {
+                const auto [bx, by, cx, cy]{_get_in_board_coord(gx, gy)};
+                _patch._cells[_k] = limit_cast<std::uint8_t>(
+                  board->get({bx, by, cx, cy}).get_index());
+                ++_k;
             }
             return *this;
         }
 
     private:
+        static auto _flr_div(auto num, auto den) noexcept -> auto {
+            if(num * den > 0) {
+                return num / den;
+            } else {
+                const auto res{std::div(num, den)};
+                return (res.rem) ? res.quot - 1 : res.quot;
+            }
+        }
+
+        static auto _pos_mod(auto num, auto den) noexcept -> auto {
+            return ((num % den) + den) % den;
+        }
+
+        auto _get_cell_coord(std::size_t k) const noexcept
+          -> std::tuple<int, int> {
+            return {
+              _xmin + int(k) % int(_patch.width()),
+              _ymin + int(k) / int(_patch.width())};
+        }
+
+        auto _get_board_coord(int kx, int ky) const noexcept
+          -> std::tuple<int, int> {
+            const auto block_size{int(S)};
+            const auto block_per_side{int(S - 1U)};
+            const auto cell_per_side{block_size * block_per_side};
+            return {_flr_div(kx, cell_per_side), _flr_div(ky, cell_per_side)};
+        }
+
+        auto _get_in_board_coord(int kx, int ky) const noexcept
+          -> std::tuple<unsigned, unsigned, unsigned, unsigned> {
+            const auto block_size{int(S)};
+            const auto block_per_side{int(S - 1U)};
+            const auto cell_per_side{block_size * block_per_side};
+            const auto blkx{_pos_mod(_flr_div(kx, block_size), block_per_side)};
+            const auto blky{_pos_mod(_flr_div(ky, block_size), block_per_side)};
+            const auto celx{_pos_mod(kx, block_size)};
+            const auto cely{_pos_mod(ky, block_size)};
+            return {
+              unsigned(blkx), unsigned(blky), unsigned(celx), unsigned(cely)};
+        }
+
         basic_sudoku_tiling<S>& _parent;
         basic_sudoku_tile_patch<S>& _patch;
         const int _xmin;
         const int _ymin;
-        const int _xmax;
-        const int _ymax;
         int _k{0};
-        int _y{_ymin};
-        int _x{_xmin};
-        unsigned _by{1U};
-        unsigned _bx{1U};
-        unsigned _cy{0U};
-        unsigned _cx{0U};
     };
-
-    auto make_filler(
-      const int xmin,
-      const int ymin,
-      basic_sudoku_tile_patch<S>& patch) noexcept -> patch_fill_state {
-        return {*this, patch, xmin, ymin};
-    }
-
-    auto make_filler(basic_sudoku_tile_patch<S>& patch) noexcept
-      -> patch_fill_state {
-        return make_filler(0, 0, patch);
-    }
 
     auto fill(const int xmin, const int ymin, basic_sudoku_tile_patch<S>& patch)
       -> basic_sudoku_tile_patch<S>& {
         patch_fill_state state{*this, patch, xmin, ymin};
         while(not state.is_done()) {
-            state.fill_current().next();
+            state.next();
         }
         return patch;
     }
@@ -888,94 +899,115 @@ public:
 private:
     friend class patch_fill_state;
 
-    auto _get(const int x, const int y) -> const board_type& {
-        auto found{find(_boards, std::make_tuple(x, y))};
-        if(not found) {
-            board_type added{};
-            if(y > 0) {
-                if(x > 0) {
-                    auto& left = _get(x - 1, y);
+    auto _get(const int x, const int y)
+      -> optional_reference<const board_type> {
+        auto pos{_boards.find(std::make_tuple(x, y))};
+        if(pos != _boards.end()) {
+            return {pos->second};
+        } else {
+            _emplace(x, y);
+            return {};
+        }
+    }
+
+    void _emplace(const int x, const int y) {
+        board_type added{};
+        if(y > 0) {
+            if(x > 0) {
+                auto l{_get(x - 1, y)};
+                auto d{_get(x, y - 1)};
+                if(l and d) {
                     for(const auto by : integer_range(S - 1U)) {
-                        added.set_block(0U, by, left.get_block(S - 1U, by));
+                        added.set_block(0U, by, l->get_block(S - 1U, by));
                     }
-                    auto& down = _get(x, y - 1);
                     for(const auto bx : integer_range(1U, S)) {
-                        added.set_block(bx, S - 1U, down.get_block(bx, 0U));
+                        added.set_block(bx, S - 1U, d->get_block(bx, 0U));
                     }
-                    found.reset(_emplace(x, y, added));
-                } else if(x < 0) {
-                    auto& right = _get(x + 1, y);
-                    for(const auto by : integer_range(S - 1U)) {
-                        added.set_block(S - 1U, by, right.get_block(0U, by));
-                    }
-                    auto& down = _get(x, y - 1);
-                    for(const auto bx : integer_range(S - 1U)) {
-                        added.set_block(bx, S - 1U, down.get_block(bx, 0U));
-                    }
-                    found.reset(_emplace(x, y, added));
-                } else {
-                    auto& down = _get(x, y - 1);
-                    for(const auto bx : integer_range(S)) {
-                        added.set_block(bx, S - 1U, down.get_block(bx, 0U));
-                    }
-                    found.reset(_emplace(x, y, added));
+                    _do_emplace(x, y, added);
                 }
-            } else if(y < 0) {
-                if(x > 0) {
-                    auto& left = _get(x - 1, y);
-                    for(const auto by : integer_range(1U, S)) {
-                        added.set_block(0U, by, left.get_block(S - 1U, by));
+            } else if(x < 0) {
+                auto r{_get(x + 1, y)};
+                auto d{_get(x, y - 1)};
+                if(r and d) {
+                    for(const auto by : integer_range(S - 1U)) {
+                        added.set_block(S - 1U, by, r->get_block(0U, by));
                     }
-                    auto& up = _get(x, y + 1);
-                    for(const auto bx : integer_range(1U, S)) {
-                        added.set_block(bx, 0U, up.get_block(bx, S - 1U));
-                    }
-                    found.reset(_emplace(x, y, added));
-                } else if(x < 0) {
-                    auto& right = _get(x + 1, y);
-                    for(const auto by : integer_range(1U, S)) {
-                        added.set_block(S - 1U, by, right.get_block(0U, by));
-                    }
-                    auto& up = _get(x, y + 1);
                     for(const auto bx : integer_range(S - 1U)) {
-                        added.set_block(bx, 0U, up.get_block(bx, S - 1U));
+                        added.set_block(bx, S - 1U, d->get_block(bx, 0U));
                     }
-                    found.reset(_emplace(x, y, added));
-                } else {
-                    auto& up = _get(x, y + 1);
-                    for(const auto bx : integer_range(S)) {
-                        added.set_block(bx, 0U, up.get_block(bx, S - 1U));
-                    }
-                    found.reset(_emplace(x, y, added));
+                    _do_emplace(x, y, added);
                 }
             } else {
-                if(x > 0) {
-                    auto& left = _get(x - 1, y);
-                    for(const auto by : integer_range(S)) {
-                        added.set_block(0U, by, left.get_block(S - 1U, by));
+                auto d{_get(x, y - 1)};
+                if(d) {
+                    for(const auto bx : integer_range(S)) {
+                        added.set_block(bx, S - 1U, d->get_block(bx, 0U));
                     }
-                    found.reset(_emplace(x, y, added));
-                } else if(x < 0) {
-                    auto& right = _get(x + 1, y);
-                    for(const auto by : integer_range(S)) {
-                        added.set_block(S - 1U, by, right.get_block(0U, by));
+                    _do_emplace(x, y, added);
+                }
+            }
+        } else if(y < 0) {
+            if(x > 0) {
+                auto l{_get(x - 1, y)};
+                auto u{_get(x, y + 1)};
+                if(l and u) {
+                    for(const auto by : integer_range(1U, S)) {
+                        added.set_block(0U, by, l->get_block(S - 1U, by));
                     }
-                    found.reset(_emplace(x, y, added));
+                    for(const auto bx : integer_range(1U, S)) {
+                        added.set_block(bx, 0U, u->get_block(bx, S - 1U));
+                    }
+                    _do_emplace(x, y, added);
+                }
+            } else if(x < 0) {
+                auto r{_get(x + 1, y)};
+                auto u{_get(x, y + 1)};
+                if(r and u) {
+                    for(const auto by : integer_range(1U, S)) {
+                        added.set_block(S - 1U, by, r->get_block(0U, by));
+                    }
+                    for(const auto bx : integer_range(S - 1U)) {
+                        added.set_block(bx, 0U, u->get_block(bx, S - 1U));
+                    }
+                    _do_emplace(x, y, added);
+                }
+            } else {
+                auto u{_get(x, y + 1)};
+                if(u) {
+                    for(const auto bx : integer_range(S)) {
+                        added.set_block(bx, 0U, u->get_block(bx, S - 1U));
+                    }
+                    _do_emplace(x, y, added);
+                }
+            }
+        } else {
+            if(x > 0) {
+                auto l{_get(x - 1, y)};
+                if(l) {
+                    for(const auto by : integer_range(S)) {
+                        added.set_block(0U, by, l->get_block(S - 1U, by));
+                    }
+                    _do_emplace(x, y, added);
+                }
+            } else if(x < 0) {
+                auto r{_get(x + 1, y)};
+                if(r) {
+                    for(const auto by : integer_range(S)) {
+                        added.set_block(S - 1U, by, r->get_block(0U, by));
+                    }
+                    _do_emplace(x, y, added);
                 }
             }
         }
-        return *found;
     }
 
-    auto _emplace(const int x, const int y, board_type board) {
-        return _boards
-          .emplace(
-            std::make_tuple(x, y), this->solve(board.calculate_alternatives()))
-          .first;
+    void _do_emplace(const int x, const int y, board_type board) {
+        _boards.emplace(
+          std::make_tuple(x, y), this->solve(board.calculate_alternatives()));
     }
 
     std::reference_wrapper<const board_traits> _traits;
-    flat_map<std::tuple<int, int>, basic_sudoku_board<S>> _boards;
+    flat_map<std::tuple<int, int>, board_type> _boards;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine

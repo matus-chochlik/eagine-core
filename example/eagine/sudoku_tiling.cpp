@@ -13,10 +13,15 @@ void sudoku_tiling(eagine::span_size_t w, eagine::span_size_t h) {
     using namespace eagine;
     const basic_sudoku_board_traits<S> traits;
 
-    basic_sudoku_tile_patch<S> patch(w, h);
-    basic_sudoku_tiling<S> bst{
-      traits, traits.make_generator().generate_medium()};
-    std::cout << bst.fill(patch);
+    const auto print_generated{[&](int x, int y, const auto& board) {
+        basic_sudoku_tile_patch<S> patch(w, h);
+        basic_sudoku_tiling<S> bst{traits, board};
+        std::cout << bst.fill(x, y, patch) << std::endl;
+    }};
+
+    const auto board{traits.make_generator().generate_medium()};
+    print_generated(-1, -1, board);
+    print_generated(1, 1, board);
 }
 
 auto main(int argc, const char** argv) -> int {
