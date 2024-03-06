@@ -677,7 +677,7 @@ public:
         }
 
     private:
-        std::vector<board_type> _solutions;
+        chunk_list<board_type, 256> _solutions;
         bool _done{false};
     };
 
@@ -722,6 +722,11 @@ public:
         assert((x >= 0) and (x < width()));
         assert((y >= 0) and (y < height()));
         return _cells[integer(y * _width + x)];
+    }
+
+    auto get_glyph(const span_size_t x, const span_size_t y) const noexcept
+      -> glyph_type {
+        return {get(x, y)};
     }
 
     auto print(std::ostream& out) const -> std::ostream& {
@@ -806,7 +811,7 @@ public:
           , _ymin{ymin} {}
 
         auto current_count() const noexcept {
-            return _k + 1U;
+            return _k;
         }
 
         auto total_count() const noexcept {
