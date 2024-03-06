@@ -811,11 +811,11 @@ public:
           , _ymin{ymin} {}
 
         auto current_count() const noexcept {
-            return _k;
+            return span_size(_k);
         }
 
         auto total_count() const noexcept {
-            return _patch._cells.size();
+            return span_size(_patch._cells.size());
         }
 
         auto is_done() const noexcept -> bool {
