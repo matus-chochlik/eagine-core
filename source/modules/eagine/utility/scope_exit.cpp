@@ -12,7 +12,7 @@ import eagine.core.types;
 import :callable_ref;
 
 namespace eagine {
-
+//------------------------------------------------------------------------------
 /// @brief Class executing a specified action on scope exit.
 /// @ingroup functional
 /// @see func_on_scope_exit
@@ -23,11 +23,11 @@ public:
     /// @brief The callable action type.
     using action_type = callable_ref<void()>;
 
-    /// @brief Construction intializing with the specified action.
+    /// @brief Construction initializing with the specified action.
     on_scope_exit(action_type action) noexcept
       : _action{std::move(action)} {}
 
-    /// @brief Construction intializing with the specified action.
+    /// @brief Construction initializing with the specified action.
     template <typename Func>
     on_scope_exit(Func& action) noexcept
       : _action{construct_from, action} {}
@@ -45,10 +45,10 @@ public:
     /// @brief Not copy constructible.
     auto operator=(const on_scope_exit&) = delete;
 
-    /// @brief Invokes the stored action, unless it was released or cancelled.
+    /// @brief Invokes the stored action, unless it was released or canceled.
     /// @see release
     /// @see cancel
-    ~on_scope_exit() noexcept(false) {
+    ~on_scope_exit() noexcept(noexcept(_invoke(OnException()))) {
         _invoke(OnException());
     }
 
@@ -78,7 +78,7 @@ public:
 private:
     action_type _action{};
 
-    void _invoke(const std::true_type) const {
+    void _invoke(const std::true_type) const noexcept {
         if(_action) {
             if(std::uncaught_exceptions()) {
                 try {
@@ -97,13 +97,16 @@ private:
         }
     }
 
-    void _invoke(const nothing_t) const {
+    void _invoke(const nothing_t) const noexcept {
         if(_action) {
-            _action();
+            try {
+                _action();
+            } catch(...) {
+            }
         }
     }
 };
-
+//------------------------------------------------------------------------------
 /// @brief Class storing a callable object and an instance of on_scope_exit.
 /// @ingroup functional
 /// @tparam Func type of the callable function object.
@@ -131,7 +134,10 @@ private:
     Func _func;
     on_scope_exit<OnException> _ose;
 };
-
+//------------------------------------------------------------------------------
+export template <typename Func>
+func_on_scope_exit(Func) -> func_on_scope_exit<Func, nothing_t>;
+//------------------------------------------------------------------------------
 /// @brief Function constructing on-scope-exit actions.
 /// @ingroup functional
 ///
@@ -141,6 +147,6 @@ export template <typename Func>
 [[nodiscard]] auto finally(Func func) noexcept -> func_on_scope_exit<Func> {
     return func;
 }
-
+//------------------------------------------------------------------------------
 } // namespace eagine
 

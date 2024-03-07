@@ -25,20 +25,52 @@ if(WITH_CLANG_TIDY)
 endif()
 
 macro(eagine_add_exe_analysis TARGETNAME)
-	target_compile_options(
-		${TARGETNAME}
-		PRIVATE $<$<BOOL:${EAGINE_GNUCXX_COMPILER}>:-pedantic;-Wall;-Werror>
-	)
+	if(EAGINE_GNUCXX_COMPILER)
+		list(APPEND
+			EAGINE_COMPILER_OPTIONS
+				-pedantic
+				-Wall
+				-Werror)
+	endif()
+
+	if(EAGINE_CLANGXX_COMPILER)
+		list(APPEND
+			EAGINE_COMPILER_OPTIONS
+				-Weverything
+				-Wno-sign-conversion
+				-Wno-old-style-cast
+				-Wno-c++98-compat
+				-Wno-c++98-compat-pedantic
+				-Wno-c++20-compat
+				-Wno-double-promotion
+				-Wno-global-constructors
+				-Wno-exit-time-destructors
+				-Wno-date-time
+				-Wno-weak-vtables
+				-Wno-padded
+				-Wno-missing-prototypes
+				-Wno-undefined-inline
+				-Wno-documentation-unknown-command
+				-Wno-switch-enum
+				-Wno-ctad-maybe-unsupported
+				-Wno-used-but-marked-unused
+				-Wno-undef)
+	endif()
+
+	if(EAGINE_GXX_COMPILER)
+		list(APPEND
+			EAGINE_COMPILER_OPTIONS
+				-Wextra
+				-Wshadow
+				-Wno-noexcept-type
+				-Wno-attributes
+				-Wno-unknown-warning-option
+				-Wno-psabi)
+	endif()
 
 	target_compile_options(
 		${TARGETNAME}
-		PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Weverything;-Wno-sign-conversion;-Wno-old-style-cast;-Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-c++20-compat;-Wno-undef;-Wno-double-promotion;-Wno-global-constructors;-Wno-exit-time-destructors;-Wno-date-time;-Wno-weak-vtables;-Wno-padded;-Wno-missing-prototypes;-Wno-undefined-inline;-Wno-documentation-unknown-command;-Wno-switch-enum;-Wno-ctad-maybe-unsupported;-Wno-used-but-marked-unused>
-	)
-
-	target_compile_options(
-		${TARGETNAME}
-		PRIVATE $<$<BOOL:${EAGINE_GXX_COMPILER}>:-Wextra;-Wshadow;-Wno-noexcept-type;-Wno-attributes;-Wno-psabi;-Wno-unknown-warning-option>
-	)
+		PRIVATE ${EAGINE_COMPILER_OPTIONS})
 
 	if(INVOKE_CLANG_TIDY)
 		set_target_properties(

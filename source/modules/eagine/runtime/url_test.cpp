@@ -318,7 +318,7 @@ void url_query_str(auto& s) {
     test.check(l4.query_str().has_value(), "4");
     test.check_equal(l4.query_str().value_or("N/A"), "arg=val", "4 matches");
 
-    const eagine::url l5{"ftp://server2/?A=v%C3%A1%C4%BA%C5%AF%C3%A9+B=X"};
+    const eagine::url l5{"ftp://server2/?A=v%C3%A1%C4%BA%C5%AF%C3%A9&B=X"};
     test.check(l5.has_value(), "5 valid");
     test.check_equal(
       l5.query().decoded_arg_value("A").value_or("N/A"), "váĺůé", "5A matches");
@@ -335,10 +335,10 @@ void url_query_str(auto& s) {
     test.check(not l7.query_str().has_value(), "7");
     test.check_equal(l7.query_str().value_or("N/A"), "N/A", "7 fallback");
 
-    const eagine::url l8{"ldap://user3:pwd@server4:1234?a=1+b=2+c=3#frag"};
+    const eagine::url l8{"ldap://user3:pwd@server4:1234?a=1&b=2&c=3#frag"};
     test.check(l8.query_str().has_value(), "8");
     test.check_equal(
-      l8.query_str().value_or("N/A"), "a=1+b=2+c=3", "8 matches");
+      l8.query_str().value_or("N/A"), "a=1&b=2&c=3", "8 matches");
 }
 //------------------------------------------------------------------------------
 void url_fragment(auto& s) {
