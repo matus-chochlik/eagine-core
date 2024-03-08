@@ -181,7 +181,7 @@ public:
 export template <typename Info>
 class result<void, Info, result_validity::never> : public Info {
 public:
-    using value_type = void;
+    using value_type = nothing_t;
 
     constexpr result() noexcept = default;
 
@@ -196,8 +196,9 @@ public:
         return false;
     }
 
-    constexpr void operator*() const noexcept {
+    constexpr auto operator*() const noexcept -> const nothing_t& {
         assert(has_value());
+        return nothing;
     }
 
     template <
@@ -414,7 +415,7 @@ export template <typename Info>
 class result<void, Info, result_validity::always> : public Info {
 
 public:
-    using value_type = void;
+    using value_type = nothing_t;
 
     constexpr result() noexcept = default;
 
@@ -429,8 +430,9 @@ public:
         return has_value();
     }
 
-    constexpr void operator*() const noexcept {
+    constexpr auto operator*() const noexcept -> const nothing_t& {
         assert(has_value());
+        return nothing;
     }
 
     template <
@@ -661,7 +663,7 @@ export template <typename Info>
 class result<void, Info, result_validity::maybe> : public Info {
 
 public:
-    using value_type = void;
+    using value_type = nothing_t;
 
     constexpr result() noexcept = default;
 
@@ -680,8 +682,19 @@ public:
         return has_value();
     }
 
-    constexpr void operator*() const noexcept {
+    constexpr auto operator*() const noexcept -> const nothing_t& {
         assert(has_value());
+        return nothing;
+    }
+
+    [[nodiscard]] constexpr auto value() const noexcept -> nothing_t {
+        assert(has_value());
+        return {};
+    }
+
+    template <typename U>
+    [[nodiscard]] auto value_or(U value) const noexcept -> U {
+        return value;
     }
 
     template <
@@ -759,7 +772,7 @@ class combined_result : public result<Result, Info, result_validity::maybe> {
     using base = result<Result, Info, result_validity::maybe>;
 
 public:
-    using value_type = Result;
+    using value_type = typename base::value_type;
 
     constexpr combined_result() noexcept = default;
 
