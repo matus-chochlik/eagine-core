@@ -274,6 +274,11 @@ public:
         clean_up();
     }
 
+    /// @brief Returns a reference to the parent API of this object.
+    auto api() const noexcept -> optional_reference<const Api> {
+        return {_papi};
+    }
+
     /// @brief Cleans-up this object if it is initialized.
     void clean_up() noexcept {
         if(this->has_value() and _papi) {
