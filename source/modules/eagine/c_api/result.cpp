@@ -125,14 +125,28 @@ public:
 
     template <
       typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
-    auto and_then(F&&) const -> R {
+      optional_like R =
+        std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
+    auto and_then(F&&) const& -> R {
+        return R{};
+    }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>>
+    auto and_then(F&&) && -> R {
         return R{};
     }
 
     template <typename F>
-        requires(std::is_void_v<std::remove_cvref_t<std::invoke_result_t<F>>>)
-    void and_then(F&&) const {}
+        requires(std::is_void_v<
+                 std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
+    void and_then(F&&) const& {}
+
+    template <typename F>
+        requires(std::is_void_v<
+                 std::remove_cvref_t<std::invoke_result_t<F, Result &&>>>)
+    void and_then(F&&) && {}
 
     template <typename T>
     auto replaced_with(const T&) const
@@ -266,7 +280,7 @@ public:
 /// @brief Specialization of result for always-valid result values.
 /// @ingroup c_api_wrap
 ///
-/// The other specializations (@c maybe, @c never) has the same API as this one.
+/// The other specializations (@c maybe, @c never) have the same API as this one.
 export template <typename Result, typename Info>
 class result<Result, Info, result_validity::always> : public Info {
 
@@ -321,15 +335,27 @@ public:
 
     /// @brief Returns the stored value.
     /// @pre has_value()
+    /// @see value_or
     [[nodiscard]] constexpr auto value() const noexcept -> const Result& {
         return _value;
     }
 
+    /// @brief Returns the stored value or a fallback.
+    /// @see value
+    /// @see or_default
     template <std::convertible_to<Result> U>
-    [[nodiscard]] auto value_or(U&&) const noexcept -> Result {
+    [[nodiscard]] auto value_or(U&&) const& noexcept -> Result {
         return _value;
     }
 
+    template <std::convertible_to<Result> U>
+    [[nodiscard]] auto value_or(U&&) && noexcept -> Result {
+        return std::move(_value);
+    }
+
+    /// @brief Returns the stored value or a default constructed value.
+    /// @see value
+    /// @see value_or
     [[nodiscard]] auto or_default() const& noexcept -> Result {
         return _value;
     }
@@ -338,12 +364,18 @@ public:
         return std::move(_value);
     }
 
+    /// @brief Converts the stored value to boolean or returns true.
+    /// @see or_false
+    /// @see or_default
     [[nodiscard]] auto or_true() const noexcept -> bool
         requires(std::convertible_to<Result, bool>)
     {
         return bool(_value);
     }
 
+    /// @brief Converts the stored value to boolean or returns false.
+    /// @see or_true
+    /// @see or_default
     [[nodiscard]] auto or_false() const noexcept -> bool
         requires(std::convertible_to<Result, bool>)
     {
@@ -354,9 +386,20 @@ public:
       typename F,
       optional_like R =
         std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
-    auto and_then(F&& function) const -> R {
+    auto and_then(F&& function) const& -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), _value);
+        } else {
+            return R{};
+        }
+    }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>>
+    auto and_then(F&& function) && -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), std::move(_value));
         } else {
             return R{};
         }
@@ -365,9 +408,18 @@ public:
     template <typename F>
         requires(std::is_void_v<
                  std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
-    void and_then(F&& function) const {
+    void and_then(F&& function) const& {
         if(has_value()) {
             std::invoke(std::forward<F>(function), _value);
+        }
+    }
+
+    template <typename F>
+        requires(std::is_void_v<
+                 std::remove_cvref_t<std::invoke_result_t<F, Result &&>>>)
+    void and_then(F&& function) && {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), std::move(_value));
         }
     }
 
@@ -571,9 +623,17 @@ public:
     }
 
     template <std::convertible_to<Result> U>
-    [[nodiscard]] auto value_or(U&& fallback) const noexcept -> Result {
+    [[nodiscard]] auto value_or(U&& fallback) const& noexcept -> Result {
         if(has_value()) {
             return _value;
+        }
+        return Result(std::forward<U>(fallback));
+    }
+
+    template <std::convertible_to<Result> U>
+    [[nodiscard]] auto value_or(U&& fallback) && noexcept -> Result {
+        if(has_value()) {
+            return std::move(_value);
         }
         return Result(std::forward<U>(fallback));
     }
@@ -614,9 +674,20 @@ public:
       typename F,
       optional_like R =
         std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
-    auto and_then(F&& function) const -> R {
+    auto and_then(F&& function) const& -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), _value);
+        } else {
+            return R{};
+        }
+    }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>>
+    auto and_then(F&& function) && -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), std::move(_value));
         } else {
             return R{};
         }
@@ -625,9 +696,18 @@ public:
     template <typename F>
         requires(std::is_void_v<
                  std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
-    void and_then(F&& function) const {
+    void and_then(F&& function) const& {
         if(has_value()) {
             std::invoke(std::forward<F>(function), _value);
+        }
+    }
+
+    template <typename F>
+        requires(std::is_void_v<
+                 std::remove_cvref_t<std::invoke_result_t<F, Result &&>>>)
+    void and_then(F&& function) && {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), std::move(_value));
         }
     }
 
