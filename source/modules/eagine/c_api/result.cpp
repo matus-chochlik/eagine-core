@@ -155,8 +155,16 @@ public:
     }
 
     template <typename F>
-    auto transform(const F&) const -> result<
+    auto transform(const F&) const& -> result<
       std::invoke_result_t<F, const Result&>,
+      Info,
+      result_validity::never> {
+        return {*this};
+    }
+
+    template <typename F>
+    auto transform(const F&) && -> result<
+      std::invoke_result_t<F, Result&&>,
       Info,
       result_validity::never> {
         return {*this};
@@ -322,8 +330,12 @@ public:
         return _value;
     }
 
-    [[nodiscard]] auto or_default() const noexcept -> Result {
+    [[nodiscard]] auto or_default() const& noexcept -> Result {
         return _value;
+    }
+
+    [[nodiscard]] auto or_default() && noexcept -> Result {
+        return std::move(_value);
     }
 
     [[nodiscard]] auto or_true() const noexcept -> bool
@@ -382,11 +394,20 @@ public:
 
     /// @brief Returns an result with the value transformed by the specified function.
     template <typename F>
-    auto transform(F&& function) const -> result<
+    auto transform(F&& function) const& -> result<
       std::invoke_result_t<F, const Result&>,
       Info,
       result_validity::always> {
         return {std::invoke(std::forward<F>(function), _value), *this};
+    }
+
+    template <typename F>
+    auto transform(F&& function) && -> result<
+      std::invoke_result_t<F, Result&&>,
+      Info,
+      result_validity::always> {
+        return {
+          std::invoke(std::forward<F>(function), std::move(_value)), *this};
     }
 
     /// @brief Returns an result with the value transformed by the specified function.
@@ -557,9 +578,16 @@ public:
         return Result(std::forward<U>(fallback));
     }
 
-    [[nodiscard]] auto or_default() const noexcept -> Result {
+    [[nodiscard]] auto or_default() const& noexcept -> Result {
         if(has_value()) {
             return _value;
+        }
+        return Result{};
+    }
+
+    [[nodiscard]] auto or_default() && noexcept -> Result {
+        if(has_value()) {
+            return std::move(_value);
         }
         return Result{};
     }
@@ -623,13 +651,27 @@ public:
     }
 
     template <typename F>
-    auto transform(F&& function) const -> result<
+    auto transform(F&& function) const& -> result<
       std::invoke_result_t<F, const Result&>,
       Info,
       result_validity::maybe> {
         if(has_value()) {
             return {
               std::invoke(std::forward<F>(function), _value), true, *this};
+        }
+        return {};
+    }
+
+    template <typename F>
+    auto transform(F&& function) && -> result<
+      std::invoke_result_t<F, Result&&>,
+      Info,
+      result_validity::maybe> {
+        if(has_value()) {
+            return {
+              std::invoke(std::forward<F>(function), std::move(_value)),
+              true,
+              *this};
         }
         return {};
     }
