@@ -13,6 +13,7 @@ export module eagine.core.c_api:result;
 
 import std;
 import eagine.core.types;
+import eagine.core.memory;
 import eagine.core.utility;
 
 namespace eagine {
@@ -586,6 +587,13 @@ public:
       , _value{std::move(value)}
       , _valid{valid} {}
 
+    template <typename SrcInfo, result_validity validity>
+    result(result<Result, SrcInfo, validity> src)
+      : result{
+          src.or_default(),
+          src.has_value(),
+          Info{static_cast<SrcInfo&&>(src)}} {}
+
     constexpr auto has_value() const noexcept -> bool {
         return _valid and bool(*static_cast<const Info*>(this));
     }
@@ -789,12 +797,16 @@ public:
 
     constexpr result() noexcept = default;
 
-    constexpr result(const bool valid) noexcept
+    constexpr result(nothing_t, const bool valid) noexcept
       : _valid{valid} {}
 
     constexpr result(const bool valid, Info info) noexcept
       : Info{std::move(info)}
       , _valid{valid} {}
+
+    template <typename SrcInfo, result_validity validity>
+    result(result<void, SrcInfo, validity> src)
+      : result{src.has_value(), Info{static_cast<SrcInfo&&>(src)}} {}
 
     constexpr auto has_value() const noexcept -> bool {
         return _valid;
@@ -901,6 +913,28 @@ public:
     template <typename SrcInfo, result_validity validity>
     combined_result(result<Result, SrcInfo, validity> src)
       : base{std::move(src)} {}
+};
+//------------------------------------------------------------------------------
+export class string_message_info {
+public:
+    constexpr string_message_info() noexcept = default;
+
+    string_message_info(std::string message) noexcept
+      : _message{std::move(message)} {}
+
+    string_message_info(string_view message) noexcept
+      : _message{to_string(message)} {}
+
+    template <typename Info>
+    string_message_info(Info info)
+      : string_message_info{info.message()} {}
+
+    auto message() const noexcept -> string_view {
+        return {_message};
+    }
+
+private:
+    std::string _message;
 };
 //------------------------------------------------------------------------------
 } // namespace c_api
