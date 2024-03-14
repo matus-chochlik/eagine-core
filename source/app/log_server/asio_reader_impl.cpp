@@ -137,7 +137,7 @@ void asio_reader_base<Acceptor, Socket>::_update_later() {
         if(not error) {
             _factory->update();
         }
-        _notify_later();
+        _update_later();
     });
 }
 //------------------------------------------------------------------------------
