@@ -149,6 +149,21 @@ export template <typename T>
 }
 //------------------------------------------------------------------------------
 export template <typename T, identifier_t V>
+[[nodiscard]] constexpr auto enumerator_by_index(
+  const span_size_t index,
+  const std::type_identity<T> id,
+  const selector<V> sel) noexcept -> T {
+    return enumerator_mapping(id, sel)[span_size_t(index)].enumerator;
+}
+//------------------------------------------------------------------------------
+export template <typename T>
+[[nodiscard]] constexpr auto enumerator_by_index(
+  const span_size_t index,
+  const std::type_identity<T> id) noexcept -> T {
+    return enumerator_by_index(index, id, default_selector);
+}
+//------------------------------------------------------------------------------
+export template <typename T, identifier_t V>
     requires(mapped_enum<T, selector<V>>)
 [[nodiscard]] auto enumerator_name(
   const T enumerator,
