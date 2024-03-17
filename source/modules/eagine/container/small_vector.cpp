@@ -77,7 +77,7 @@ public:
 
     /// @brief Reserves storage for the specified number of elements.
     /// @see size
-    constexpr void reserve(size_type n) const noexcept {
+    constexpr void reserve(size_type n) noexcept {
         if(std::holds_alternative<T0>(_storage)) {
             std::get<T0>(_storage).reserve(n);
         } else {
