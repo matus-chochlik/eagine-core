@@ -442,7 +442,7 @@ struct function_traits<dynamic_function<ApiTraits, Tag, void(P...)>> {
       c_api::dynamic_function<ApiTraits, Tag, void(P...)>& function,
       Args&&... args) noexcept -> result_type<void> {
         function(std::forward<Args>(args)...);
-        return {bool(function)};
+        return {nothing, bool(function)};
     }
 
     template <typename R = void>

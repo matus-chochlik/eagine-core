@@ -242,7 +242,9 @@ export template <
   typename Handle,
   Handle invalid,
   typename... P>
-class basic_object : public basic_owned_handle<Tag, Handle, invalid> {
+class basic_object
+  : public basic_owned_handle<Tag, Handle, invalid>
+  , private std::tuple<P...> {
     using base = basic_owned_handle<Tag, Handle, invalid>;
 
 public:
@@ -266,12 +268,17 @@ public:
     /// @brief Initializing constructor.
     constexpr basic_object(const Api& api, base init, P... args) noexcept
       : base{std::move(init)}
-      , _papi{&api}
-      , _args{args...} {}
+      , std::tuple<P...>{args...}
+      , _papi{&api} {}
 
     /// @brief Uses the associated Api to clean up this object.
     ~basic_object() noexcept {
         clean_up();
+    }
+
+    /// @brief Returns a reference to the parent API of this object.
+    auto api() const noexcept -> optional_reference<const Api> {
+        return {_papi};
     }
 
     /// @brief Cleans-up this object if it is initialized.
@@ -282,16 +289,20 @@ public:
     }
 
 private:
+    auto _args() noexcept -> std::tuple<P...>& {
+        return *this;
+    }
+
     template <std::size_t... I>
     void _clean_up(std::index_sequence<I...>) noexcept {
         try {
-            _papi->clean_up(static_cast<base&&>(*this), std::get<I>(_args)...);
+            _papi->clean_up(
+              static_cast<base&&>(*this), std::get<I>(_args())...);
         } catch(...) {
         }
     }
 
     const Api* _papi{nullptr};
-    [[no_unique_address]] std::tuple<P...> _args;
 };
 
 template <typename Api, typename Handle, typename... P>

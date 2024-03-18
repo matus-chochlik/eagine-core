@@ -64,21 +64,27 @@ public:
         assign(il);
     }
 
+    flat_set(auto bgn, auto end) {
+        assign(bgn, end);
+    }
+
     flat_set(const Container& v) {
         assign(v);
     }
 
-    /// @brief Replaces the content with elements from an initializer list.
-    void assign(std::initializer_list<Key> il) {
+    void assign(auto bgn, auto end) {
         using std::sort;
-        _storage = Container(il);
+        _storage = Container(bgn, end);
         sort(_storage.begin(), _storage.end(), value_comp());
     }
 
+    /// @brief Replaces the content with elements from an initializer list.
+    void assign(std::initializer_list<Key> il) {
+        assign(il.begin(), il.end());
+    }
+
     void assign(const Container& v) {
-        using std::sort;
-        _storage = Container(v.begin(), v.end());
-        sort(_storage.begin(), _storage.end(), value_comp());
+        assign(v.begin(), v.end());
     }
 
     /// @brief Returns the key comparator.

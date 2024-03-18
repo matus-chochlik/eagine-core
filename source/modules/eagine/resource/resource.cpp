@@ -345,6 +345,11 @@ template <identifier_t ResId>
 auto get_embedded_resource(const selector<ResId>, const string_view) noexcept
   -> embedded_resource;
 
+export template <identifier_value ResId>
+auto embedded(const selector<ResId> sel = {}) noexcept -> embedded_resource {
+    return get_embedded_resource(sel, string_view{});
+}
+
 /// @brief Triggers the embedding of data from a file on the specified path.
 /// @ingroup embedding
 /// @see embedded_resource

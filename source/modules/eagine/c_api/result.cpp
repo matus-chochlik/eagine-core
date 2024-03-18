@@ -13,6 +13,7 @@ export module eagine.core.c_api:result;
 
 import std;
 import eagine.core.types;
+import eagine.core.memory;
 import eagine.core.utility;
 
 namespace eagine {
@@ -127,14 +128,26 @@ public:
       typename F,
       optional_like R =
         std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
-    auto and_then(F&& function) const -> R {
+    auto and_then(F&&) const& -> R {
+        return R{};
+    }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>>
+    auto and_then(F&&) && -> R {
         return R{};
     }
 
     template <typename F>
         requires(std::is_void_v<
                  std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
-    void and_then(F&& function) const {}
+    void and_then(F&&) const& {}
+
+    template <typename F>
+        requires(std::is_void_v<
+                 std::remove_cvref_t<std::invoke_result_t<F, Result &&>>>)
+    void and_then(F&&) && {}
 
     template <typename T>
     auto replaced_with(const T&) const
@@ -157,8 +170,16 @@ public:
     }
 
     template <typename F>
-    auto transform(const F&) const -> result<
+    auto transform(const F&) const& -> result<
       std::invoke_result_t<F, const Result&>,
+      Info,
+      result_validity::never> {
+        return {*this};
+    }
+
+    template <typename F>
+    auto transform(const F&) && -> result<
+      std::invoke_result_t<F, Result&&>,
       Info,
       result_validity::never> {
         return {*this};
@@ -183,7 +204,7 @@ public:
 export template <typename Info>
 class result<void, Info, result_validity::never> : public Info {
 public:
-    using value_type = void;
+    using value_type = nothing_t;
 
     constexpr result() noexcept = default;
 
@@ -198,9 +219,21 @@ public:
         return false;
     }
 
-    constexpr void operator*() const noexcept {
+    constexpr auto operator*() const noexcept -> const nothing_t& {
         assert(has_value());
+        return nothing;
     }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
+    auto and_then(F&&) const -> R {
+        return R{};
+    }
+
+    template <typename F>
+        requires(std::is_void_v<std::remove_cvref_t<std::invoke_result_t<F>>>)
+    void and_then(F&&) const {}
 
     template <typename T>
     auto replaced_with(const T&) const noexcept
@@ -248,7 +281,7 @@ public:
 /// @brief Specialization of result for always-valid result values.
 /// @ingroup c_api_wrap
 ///
-/// The other specializations (@c maybe, @c never) has the same API as this one.
+/// The other specializations (@c maybe, @c never) have the same API as this one.
 export template <typename Result, typename Info>
 class result<Result, Info, result_validity::always> : public Info {
 
@@ -303,25 +336,47 @@ public:
 
     /// @brief Returns the stored value.
     /// @pre has_value()
+    /// @see value_or
     [[nodiscard]] constexpr auto value() const noexcept -> const Result& {
         return _value;
     }
 
+    /// @brief Returns the stored value or a fallback.
+    /// @see value
+    /// @see or_default
     template <std::convertible_to<Result> U>
-    [[nodiscard]] auto value_or(U&&) const noexcept -> Result {
+    [[nodiscard]] auto value_or(U&&) const& noexcept -> Result {
         return _value;
     }
 
-    [[nodiscard]] auto or_default() const noexcept -> Result {
+    template <std::convertible_to<Result> U>
+    [[nodiscard]] auto value_or(U&&) && noexcept -> Result {
+        return std::move(_value);
+    }
+
+    /// @brief Returns the stored value or a default constructed value.
+    /// @see value
+    /// @see value_or
+    [[nodiscard]] auto or_default() const& noexcept -> Result {
         return _value;
     }
 
+    [[nodiscard]] auto or_default() && noexcept -> Result {
+        return std::move(_value);
+    }
+
+    /// @brief Converts the stored value to boolean or returns true.
+    /// @see or_false
+    /// @see or_default
     [[nodiscard]] auto or_true() const noexcept -> bool
         requires(std::convertible_to<Result, bool>)
     {
         return bool(_value);
     }
 
+    /// @brief Converts the stored value to boolean or returns false.
+    /// @see or_true
+    /// @see or_default
     [[nodiscard]] auto or_false() const noexcept -> bool
         requires(std::convertible_to<Result, bool>)
     {
@@ -332,9 +387,20 @@ public:
       typename F,
       optional_like R =
         std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
-    auto and_then(F&& function) const -> R {
+    auto and_then(F&& function) const& -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), _value);
+        } else {
+            return R{};
+        }
+    }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>>
+    auto and_then(F&& function) && -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), std::move(_value));
         } else {
             return R{};
         }
@@ -343,9 +409,18 @@ public:
     template <typename F>
         requires(std::is_void_v<
                  std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
-    void and_then(F&& function) const {
+    void and_then(F&& function) const& {
         if(has_value()) {
             std::invoke(std::forward<F>(function), _value);
+        }
+    }
+
+    template <typename F>
+        requires(std::is_void_v<
+                 std::remove_cvref_t<std::invoke_result_t<F, Result &&>>>)
+    void and_then(F&& function) && {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), std::move(_value));
         }
     }
 
@@ -372,11 +447,20 @@ public:
 
     /// @brief Returns an result with the value transformed by the specified function.
     template <typename F>
-    auto transform(F&& function) const -> result<
+    auto transform(F&& function) const& -> result<
       std::invoke_result_t<F, const Result&>,
       Info,
       result_validity::always> {
         return {std::invoke(std::forward<F>(function), _value), *this};
+    }
+
+    template <typename F>
+    auto transform(F&& function) && -> result<
+      std::invoke_result_t<F, Result&&>,
+      Info,
+      result_validity::always> {
+        return {
+          std::invoke(std::forward<F>(function), std::move(_value)), *this};
     }
 
     /// @brief Returns an result with the value transformed by the specified function.
@@ -405,7 +489,7 @@ export template <typename Info>
 class result<void, Info, result_validity::always> : public Info {
 
 public:
-    using value_type = void;
+    using value_type = nothing_t;
 
     constexpr result() noexcept = default;
 
@@ -420,8 +504,28 @@ public:
         return has_value();
     }
 
-    constexpr void operator*() const noexcept {
+    constexpr auto operator*() const noexcept -> const nothing_t& {
         assert(has_value());
+        return nothing;
+    }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
+    auto and_then(F&& function) const -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function));
+        } else {
+            return R{};
+        }
+    }
+
+    template <typename F>
+        requires(std::is_void_v<std::remove_cvref_t<std::invoke_result_t<F>>>)
+    void and_then(F&& function) const {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function));
+        }
     }
 
     template <typename T>
@@ -483,6 +587,13 @@ public:
       , _value{std::move(value)}
       , _valid{valid} {}
 
+    template <typename SrcInfo, result_validity validity>
+    result(result<Result, SrcInfo, validity> src)
+      : result{
+          src.or_default(),
+          src.has_value(),
+          Info{static_cast<SrcInfo&&>(src)}} {}
+
     constexpr auto has_value() const noexcept -> bool {
         return _valid and bool(*static_cast<const Info*>(this));
     }
@@ -520,16 +631,31 @@ public:
     }
 
     template <std::convertible_to<Result> U>
-    [[nodiscard]] auto value_or(U&& fallback) const noexcept -> Result {
+    [[nodiscard]] auto value_or(U&& fallback) const& noexcept -> Result {
         if(has_value()) {
             return _value;
         }
         return Result(std::forward<U>(fallback));
     }
 
-    [[nodiscard]] auto or_default() const noexcept -> Result {
+    template <std::convertible_to<Result> U>
+    [[nodiscard]] auto value_or(U&& fallback) && noexcept -> Result {
+        if(has_value()) {
+            return std::move(_value);
+        }
+        return Result(std::forward<U>(fallback));
+    }
+
+    [[nodiscard]] auto or_default() const& noexcept -> Result {
         if(has_value()) {
             return _value;
+        }
+        return Result{};
+    }
+
+    [[nodiscard]] auto or_default() && noexcept -> Result {
+        if(has_value()) {
+            return std::move(_value);
         }
         return Result{};
     }
@@ -556,9 +682,20 @@ public:
       typename F,
       optional_like R =
         std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
-    auto and_then(F&& function) const -> R {
+    auto and_then(F&& function) const& -> R {
         if(has_value()) {
             return std::invoke(std::forward<F>(function), _value);
+        } else {
+            return R{};
+        }
+    }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>>
+    auto and_then(F&& function) && -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), std::move(_value));
         } else {
             return R{};
         }
@@ -567,9 +704,18 @@ public:
     template <typename F>
         requires(std::is_void_v<
                  std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
-    void and_then(F&& function) const {
+    void and_then(F&& function) const& {
         if(has_value()) {
             std::invoke(std::forward<F>(function), _value);
+        }
+    }
+
+    template <typename F>
+        requires(std::is_void_v<
+                 std::remove_cvref_t<std::invoke_result_t<F, Result &&>>>)
+    void and_then(F&& function) && {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function), std::move(_value));
         }
     }
 
@@ -593,13 +739,27 @@ public:
     }
 
     template <typename F>
-    auto transform(F&& function) const -> result<
+    auto transform(F&& function) const& -> result<
       std::invoke_result_t<F, const Result&>,
       Info,
       result_validity::maybe> {
         if(has_value()) {
             return {
               std::invoke(std::forward<F>(function), _value), true, *this};
+        }
+        return {};
+    }
+
+    template <typename F>
+    auto transform(F&& function) && -> result<
+      std::invoke_result_t<F, Result&&>,
+      Info,
+      result_validity::maybe> {
+        if(has_value()) {
+            return {
+              std::invoke(std::forward<F>(function), std::move(_value)),
+              true,
+              *this};
         }
         return {};
     }
@@ -633,16 +793,20 @@ export template <typename Info>
 class result<void, Info, result_validity::maybe> : public Info {
 
 public:
-    using value_type = void;
+    using value_type = nothing_t;
 
     constexpr result() noexcept = default;
 
-    constexpr result(const bool valid) noexcept
+    constexpr result(nothing_t, const bool valid) noexcept
       : _valid{valid} {}
 
     constexpr result(const bool valid, Info info) noexcept
       : Info{std::move(info)}
       , _valid{valid} {}
+
+    template <typename SrcInfo, result_validity validity>
+    result(result<void, SrcInfo, validity> src)
+      : result{src.has_value(), Info{static_cast<SrcInfo&&>(src)}} {}
 
     constexpr auto has_value() const noexcept -> bool {
         return _valid;
@@ -652,8 +816,38 @@ public:
         return has_value();
     }
 
-    constexpr void operator*() const noexcept {
+    constexpr auto operator*() const noexcept -> const nothing_t& {
         assert(has_value());
+        return nothing;
+    }
+
+    [[nodiscard]] constexpr auto value() const noexcept -> nothing_t {
+        assert(has_value());
+        return {};
+    }
+
+    template <typename U>
+    [[nodiscard]] auto value_or(U value) const noexcept -> U {
+        return value;
+    }
+
+    template <
+      typename F,
+      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
+    auto and_then(F&& function) const -> R {
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function));
+        } else {
+            return R{};
+        }
+    }
+
+    template <typename F>
+        requires(std::is_void_v<std::remove_cvref_t<std::invoke_result_t<F>>>)
+    void and_then(F&& function) const {
+        if(has_value()) {
+            std::invoke(std::forward<F>(function));
+        }
     }
 
     template <typename T>
@@ -712,13 +906,35 @@ class combined_result : public result<Result, Info, result_validity::maybe> {
     using base = result<Result, Info, result_validity::maybe>;
 
 public:
-    using value_type = Result;
+    using value_type = typename base::value_type;
 
     constexpr combined_result() noexcept = default;
 
     template <typename SrcInfo, result_validity validity>
     combined_result(result<Result, SrcInfo, validity> src)
       : base{std::move(src)} {}
+};
+//------------------------------------------------------------------------------
+export class string_message_info {
+public:
+    constexpr string_message_info() noexcept = default;
+
+    string_message_info(std::string message) noexcept
+      : _message{std::move(message)} {}
+
+    string_message_info(string_view message) noexcept
+      : _message{to_string(message)} {}
+
+    template <typename Info>
+    string_message_info(Info info)
+      : string_message_info{info.message()} {}
+
+    auto message() const noexcept -> string_view {
+        return {_message};
+    }
+
+private:
+    std::string _message;
 };
 //------------------------------------------------------------------------------
 } // namespace c_api
