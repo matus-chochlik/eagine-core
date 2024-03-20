@@ -23,17 +23,12 @@ public:
     activity_progress(
       const activity_progress& parent,
       const string_view title,
-      const span_size_t total_steps = 0) noexcept
-      : _backend{parent._backend}
-      , _activity_id{
-          _backend
-            ? _backend->begin_activity(parent._activity_id, title, total_steps)
-            : 0U} {}
+      const span_size_t total_steps = 0) noexcept;
 
     activity_progress() noexcept = default;
     activity_progress(activity_progress&& temp) noexcept
       : _backend{std::move(temp._backend)}
-      , _activity_id{temp._activity_id} {}
+      , _activity_id{std::exchange(temp._activity_id, 0U)} {}
     activity_progress(const activity_progress&) = delete;
     auto operator=(activity_progress&& temp) noexcept -> activity_progress& {
         using std::swap;
@@ -45,27 +40,18 @@ public:
 
     /// @brief Marks the activity as finished.
     /// @see finish
-    ~activity_progress() noexcept {
-        finish();
-    }
+    ~activity_progress() noexcept;
 
     /// @brief Creates a sub-activity progress tracker with a title.
     auto activity(const string_view title, const span_size_t total_steps = 0)
-      const noexcept -> activity_progress {
-        return {*this, title, total_steps};
-    }
+      const noexcept -> activity_progress;
 
     /// @brief Returns the unique id of this logger instance.
     [[nodiscard]] auto activity_id() const noexcept -> activity_progress_id_t {
         return _activity_id;
     }
 
-    auto configure(basic_config_intf& config) const -> bool {
-        if(auto pbe{backend()}) {
-            return pbe->configure(config);
-        }
-        return false;
-    }
+    auto configure(basic_config_intf& config) const -> bool;
 
     /// @brief Updates the activity progress to the specified current value.
     /// @see finish
@@ -74,12 +60,7 @@ public:
     /// The return value indicates if the activity was canceled, true values
     /// means that the activity should continue, false means that the activity
     /// was canceled and should discontinue.
-    auto update_progress(span_size_t current) const noexcept -> bool {
-        if(auto pbe{backend()}) {
-            return pbe->update_progress(_activity_id, current);
-        }
-        return true;
-    }
+    auto update_progress(span_size_t current) const noexcept -> bool;
 
     /// @brief Advances the activity progress by the specified increment.
     /// @see finish
@@ -88,31 +69,19 @@ public:
     /// The return value indicates if the activity was canceled, true values
     /// means that the activity should continue, false means that the activity
     /// was canceled and should discontinue.
-    auto advance_progress(span_size_t increment = 1) const noexcept -> bool {
-        if(auto pbe{backend()}) {
-            return pbe->advance_progress(_activity_id, increment);
-        }
-        return true;
-    }
+    auto advance_progress(span_size_t increment = 1) const noexcept -> bool;
 
     /// @brief Explicitly marks the activity as finished.
     /// @see advance_progress
     /// @see update_progress
-    void finish() noexcept {
-        if(_backend) {
-            _backend->finish_activity(_activity_id);
-            _backend.reset();
-        }
-    }
+    void finish() noexcept;
 
 protected:
     activity_progress(shared_holder<progress_tracker_backend> backend) noexcept
       : _backend{std::move(backend)} {}
 
     auto backend() const noexcept
-      -> optional_reference<progress_tracker_backend> {
-        return _backend;
-    }
+      -> optional_reference<progress_tracker_backend>;
 
 private:
     shared_holder<progress_tracker_backend> _backend;
