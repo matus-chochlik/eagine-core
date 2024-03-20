@@ -34,11 +34,14 @@ public:
     activity_progress(activity_progress&& temp) noexcept
       : _backend{std::move(temp._backend)}
       , _activity_id{temp._activity_id} {}
-    activity_progress(const activity_progress&) noexcept = default;
-    auto operator=(activity_progress&&) noexcept
-      -> activity_progress& = default;
-    auto operator=(const activity_progress&) noexcept
-      -> activity_progress& = default;
+    activity_progress(const activity_progress&) = delete;
+    auto operator=(activity_progress&& temp) noexcept -> activity_progress& {
+        using std::swap;
+        swap(this->_backend, temp._backend);
+        swap(this->_activity_id, temp._activity_id);
+        return *this;
+    }
+    auto operator=(const activity_progress&) = delete;
 
     /// @brief Marks the activity as finished.
     /// @see finish
