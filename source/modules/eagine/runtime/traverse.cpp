@@ -35,7 +35,7 @@ constexpr auto _get_max_identifier_length_idx(
   std::index_sequence<I...>,
   Selector sel) noexcept -> span_size_t {
     return std::max(
-      _get_single_max_identifier_length(std::get<I>(members), sel)...);
+      {_get_single_max_identifier_length(std::get<I>(members), sel)...});
 }
 //------------------------------------------------------------------------------
 export template <typename... M, typename Selector>
