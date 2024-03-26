@@ -121,18 +121,9 @@ export template <std::floating_point T = float, bool V = true>
 }
 //------------------------------------------------------------------------------
 static constexpr auto chars2byte(const char h, const char l) noexcept {
-    const auto char2byte{[](const char c) {
-        if(('0' <= c) and (c <= '9')) {
-            return byte(c - '0');
-        } else if(('a' <= c) and (c <= 'f')) {
-            return byte(10U + (c - 'a'));
-        } else if(('A' <= c) and (c <= 'F')) {
-            return byte(10U + (c - 'A'));
-        } else {
-            return byte{0U};
-        }
-    }};
-    return byte((char2byte(h) << 4U) | char2byte(l));
+    return byte(
+      (hex_char2byte(h).value_or(byte{}) << 4U) |
+      hex_char2byte(l).value_or(byte{}));
 }
 //------------------------------------------------------------------------------
 export template <std::floating_point T = float, bool V = true>

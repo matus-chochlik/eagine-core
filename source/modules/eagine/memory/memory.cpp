@@ -7,6 +7,8 @@
 ///
 export module eagine.core.memory;
 
+import std;
+import eagine.core.types;
 export import :align;
 export import :address;
 export import :bit_density;
@@ -28,3 +30,20 @@ export import :stack_allocator;
 export import :std_allocator;
 export import :buffer;
 export import :object_storage;
+
+namespace eagine {
+//------------------------------------------------------------------------------
+/// @brief Converts a hexadecimal digit character to byte.
+export constexpr auto hex_char2byte(const char c) noexcept
+  -> std::optional<byte> {
+    if(('0' <= c) and (c <= '9')) {
+        return byte(c - '0');
+    } else if(('a' <= c) and (c <= 'f')) {
+        return byte(10U + (c - 'a'));
+    } else if(('A' <= c) and (c <= 'F')) {
+        return byte(10U + (c - 'A'));
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+} // namespace eagine

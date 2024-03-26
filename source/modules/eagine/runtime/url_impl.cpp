@@ -58,24 +58,11 @@ auto url::encode_component(const string_view src) noexcept -> std::string {
     return result;
 }
 //------------------------------------------------------------------------------
-static inline auto _url_from_hex(const char c) -> byte {
-    if((c >= '0') and (c <= '9')) {
-        return byte(c - '0');
-    }
-    if((c >= 'A') and (c <= 'F')) {
-        return byte(c - 'A' + 10);
-    }
-    if((c >= 'a') and (c <= 'f')) {
-        return byte(c - 'a' + 10);
-    }
-    return 0xFFU;
-}
-//------------------------------------------------------------------------------
 static inline auto _url_decode_char(const char hi, const char lo) {
-    const auto bhi{_url_from_hex(hi)};
-    const auto blo{_url_from_hex(lo)};
-    if(bhi != 0x0FFU and blo != 0xFFU) {
-        return char(bhi << 4U | blo);
+    const auto bhi{hex_char2byte(hi)};
+    const auto blo{hex_char2byte(lo)};
+    if(bhi and blo) {
+        return char(*bhi << 4U | *blo);
     }
     return '\0';
 }
