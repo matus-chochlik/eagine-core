@@ -408,12 +408,12 @@ public:
             }
         }
         if(val.IsInt()) {
-            if(assign_if_fits(val.GetInt(), dest)) {
+            if(assign_if_fits(float(val.GetInt()), dest)) {
                 return true;
             }
         }
         if(val.IsInt64()) {
-            if(assign_if_fits(val.GetInt64(), dest)) {
+            if(assign_if_fits(double(val.GetInt64()), dest)) {
                 return true;
             }
         }

@@ -4,15 +4,15 @@
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_common_import_lib(
 	PREFIX LIBPQ
-	 PKGCONFIG libpq
-	 HEADER "libpq-fe.h"
-	 LIBRARY pq)
+	PKGCONFIG libpq
+	HEADER "libpq-fe.h"
+	LIBRARY pq)
 
 eagine_common_import_lib(
 	PREFIX LIBCURL
-	 PKGCONFIG libcurl
-	 HEADER "curl/curl.h"
-	 LIBRARY curl)
+	PKGCONFIG libcurl
+	HEADER "curl/curl.h"
+	LIBRARY curl)
 
 eagine_add_module(
 	eagine.core.log_server PARTITION interfaces

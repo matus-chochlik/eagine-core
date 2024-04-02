@@ -60,7 +60,7 @@ struct within_limits_num<Dst, Src, IsInt, IsInt, IsSig, IsSig> {
     static constexpr auto check(const Src value) noexcept {
         using dnl = std::numeric_limits<Dst>;
 
-        return (dnl::min() <= value) and (value <= dnl::max());
+        return (dnl::lowest() <= value) and (value <= dnl::max());
     }
 };
 //------------------------------------------------------------------------------

@@ -61,12 +61,12 @@ private:
     auto _symbol_unlocked() const noexcept -> string_view;
     auto _symbol_board() const noexcept -> string_view;
     auto _symbol_message() const noexcept -> string_view;
-    auto _symbol(const message_info&) const noexcept -> string_view;
     auto _symbol_interval() const noexcept -> string_view;
     auto _symbol_heart_beat() const noexcept -> string_view;
     auto _symbol_start() const noexcept -> string_view;
     auto _symbol_finish_ok() const noexcept -> string_view;
     auto _symbol_finish_fail() const noexcept -> string_view;
+    auto _symbol(const message_info&) const noexcept -> string_view;
 
     void _flush() noexcept;
     auto _write(const string_view) noexcept -> text_tree_sink_factory&;
@@ -174,6 +174,28 @@ auto text_tree_sink_factory::_symbol_board() const noexcept -> string_view {
     return {" ▦  "};
 }
 //------------------------------------------------------------------------------
+auto text_tree_sink_factory::_symbol_interval() const noexcept -> string_view {
+    return {" \U0001F55B "};
+}
+//------------------------------------------------------------------------------
+auto text_tree_sink_factory::_symbol_heart_beat() const noexcept
+  -> string_view {
+    return {" \U0001F493 "};
+}
+//------------------------------------------------------------------------------
+auto text_tree_sink_factory::_symbol_start() const noexcept -> string_view {
+    return {" \U0001F680 "};
+}
+//------------------------------------------------------------------------------
+auto text_tree_sink_factory::_symbol_finish_ok() const noexcept -> string_view {
+    return {" \U0001F642 "};
+}
+//------------------------------------------------------------------------------
+auto text_tree_sink_factory::_symbol_finish_fail() const noexcept
+  -> string_view {
+    return {" \U0001F480 "};
+}
+//------------------------------------------------------------------------------
 auto text_tree_sink_factory::_symbol(const message_info& info) const noexcept
   -> string_view {
     if(info.tag.matches("objCreate")) {
@@ -211,28 +233,6 @@ auto text_tree_sink_factory::_symbol(const message_info& info) const noexcept
             break;
     }
     return _symbol_message();
-}
-//------------------------------------------------------------------------------
-auto text_tree_sink_factory::_symbol_interval() const noexcept -> string_view {
-    return {" \U0001F55B "};
-}
-//------------------------------------------------------------------------------
-auto text_tree_sink_factory::_symbol_heart_beat() const noexcept
-  -> string_view {
-    return {" \U0001F493 "};
-}
-//------------------------------------------------------------------------------
-auto text_tree_sink_factory::_symbol_start() const noexcept -> string_view {
-    return {" \U0001F680 "};
-}
-//------------------------------------------------------------------------------
-auto text_tree_sink_factory::_symbol_finish_ok() const noexcept -> string_view {
-    return {" \U0001F642 "};
-}
-//------------------------------------------------------------------------------
-auto text_tree_sink_factory::_symbol_finish_fail() const noexcept
-  -> string_view {
-    return {" \U0001F480 "};
 }
 //------------------------------------------------------------------------------
 // I/O

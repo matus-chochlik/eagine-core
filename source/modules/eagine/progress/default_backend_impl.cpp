@@ -25,6 +25,7 @@ struct default_progress_info {
     span_size_t prev_steps{0};
     span_size_t curr_steps{0};
     span_size_t increment{0};
+    activity_progress_id_t map_id{0};
     activity_progress_id_t parent_id{0};
     log_event_severity log_level{log_event_severity::info};
 };
@@ -56,8 +57,7 @@ public:
       const activity_progress_id_t parent_id,
       const string_view title,
       span_size_t total_steps) -> activity_progress_id_t final {
-        auto id_and_info =
-          [&]() -> std::tuple<activity_progress_id_t, default_progress_info&> {
+        auto id_and_info{[&] {
             const std::lock_guard<std::mutex> lock{_mutex};
             while(true) {
                 if(++_id_sequence != 0) {
@@ -68,13 +68,14 @@ public:
             }
             auto& result = _activities[_id_sequence];
             const auto activity_id = _encode(result);
-            _index[activity_id] = _id_sequence;
+            result.map_id = _id_sequence;
             if(_observer) {
                 _observer->activity_begun(
                   parent_id, activity_id, title, total_steps);
             }
-            return {activity_id, result};
-        }();
+            return std::tuple<activity_progress_id_t, default_progress_info&>{
+              activity_id, result};
+        }()};
         const auto activity_id = std::get<0>(id_and_info);
         auto& info = std::get<1>(id_and_info);
         info.title = to_string(title);
@@ -108,26 +109,15 @@ public:
     void finish_activity(
       const activity_progress_id_t activity_id) noexcept final {
         if(activity_id) {
-            auto& info = _decode(activity_id);
+            auto& info{_decode(activity_id)};
             info.curr_steps = info.total_steps;
             _do_log(info);
             const std::lock_guard<std::mutex> lock{_mutex};
-            const auto ipos = _index.find(activity_id);
-            if(ipos != _index.end()) {
-                if(_observer) {
-                    const auto apos = _activities.find(ipos->second);
-                    if(apos != _activities.end()) {
-                        auto& activity = apos->second;
-                        _observer->activity_finished(
-                          activity.parent_id,
-                          activity_id,
-                          activity.title,
-                          activity.total_steps);
-                    }
-                }
-                _activities.erase(ipos->second);
-                _index.erase(ipos);
+            if(_observer) {
+                _observer->activity_finished(
+                  info.parent_id, activity_id, info.title, info.total_steps);
             }
+            _activities.erase(info.map_id);
         }
     }
 

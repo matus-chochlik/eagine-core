@@ -37,6 +37,7 @@ eagine_add_module(
 	eagine.core.progress
 	SOURCES
 		default_backend
+		activity
 		root_activity
 	IMPORTS
 		std
