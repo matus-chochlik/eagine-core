@@ -83,6 +83,10 @@ public:
         return false;
     }
 
+    constexpr auto has_value(const Result&) const noexcept -> bool {
+        return false;
+    }
+
     explicit constexpr operator bool() const noexcept {
         return false;
     }
@@ -300,6 +304,11 @@ public:
     /// @brief Indicates if the result value is valid.
     constexpr auto has_value() const noexcept -> bool {
         return bool(*static_cast<const Info*>(this));
+    }
+
+    /// @brief Indicates if the result value matches the given argument.
+    constexpr auto has_value(const Result& value) const noexcept -> bool {
+        return _value == value;
     }
 
     /// @brief Tests if this result is valid and contains a value.
@@ -596,6 +605,10 @@ public:
 
     constexpr auto has_value() const noexcept -> bool {
         return _valid and bool(*static_cast<const Info*>(this));
+    }
+
+    constexpr auto has_value(const Result& value) const noexcept -> bool {
+        return has_value() and _value == value;
     }
 
     explicit constexpr operator bool() const noexcept {
