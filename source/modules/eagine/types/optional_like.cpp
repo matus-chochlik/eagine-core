@@ -597,19 +597,19 @@ public:
 
     template <optional_like O, typename U>
         requires(not std::same_as<Policy, valid_flag_policy>)
-    constexpr basic_valid_if(O opt, U&& fallback) noexcept(
+    constexpr basic_valid_if(const O& opt, U&& fallback) noexcept(
       std::is_nothrow_copy_constructible_v<T>)
       : _value{opt ? *opt : T(std::forward<U>(fallback))} {}
 
     template <optional_like O>
         requires(not std::same_as<Policy, valid_flag_policy>)
-    constexpr basic_valid_if(O opt, nothing_t) noexcept(
+    constexpr basic_valid_if(const O& opt, nothing_t) noexcept(
       std::is_nothrow_copy_constructible_v<T>)
       : _value{opt ? *opt : T{}} {}
 
     template <optional_like O>
         requires(std::same_as<Policy, valid_flag_policy>)
-    constexpr basic_valid_if(O opt) noexcept(
+    constexpr basic_valid_if(const O& opt) noexcept(
       std::is_nothrow_copy_constructible_v<T>)
       : _value{opt ? *opt : T{}}
       , _policy{_policy_with_value(opt.has_value())} {}
@@ -664,9 +664,24 @@ public:
         _value = std::move(value);
         return *this;
     }
+    template <optional_like O>
+        requires(std::same_as<Policy, valid_flag_policy>)
+    constexpr auto operator=(const O& opt) noexcept(
+      std::is_nothrow_copy_constructible_v<T>) -> auto& {
+        _value = opt ? *opt : T{};
+        _policy = _policy_with_value(opt.has_value());
+        return *this;
+    }
 
     /// @brief The destructor.
     ~basic_valid_if() noexcept = default;
+
+    void reset() noexcept
+        requires(std::same_as<Policy, valid_flag_policy>)
+    {
+        _value = {};
+        _policy._has_value = false;
+    }
 
     /// @brief Checks if @p val is valid according to this object's policy.
     [[nodiscard]] constexpr auto has_value(const value_type& val) const noexcept
