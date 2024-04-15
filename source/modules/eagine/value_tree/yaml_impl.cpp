@@ -86,7 +86,7 @@ class rapidyaml_attribute : public attribute_interface {
     ryml::ConstNodeRef _node{};
 
     static inline auto _usable(const ryml::ConstNodeRef& n) noexcept {
-        return n.valid();
+        return not n.invalid();
     }
 
 public:

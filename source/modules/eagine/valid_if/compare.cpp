@@ -12,7 +12,7 @@ import eagine.core.types;
 import eagine.core.reflection;
 
 namespace eagine {
-
+//------------------------------------------------------------------------------
 /// @brief Policy class for values valid if conversion to bool returns true
 /// @ingroup valid_if
 export template <typename T>
@@ -40,7 +40,7 @@ struct valid_if_true_policy {
 export template <typename T>
 using valid_if_true =
   valid_if<T, valid_if_true_policy<std::remove_reference_t<T>>>;
-
+//------------------------------------------------------------------------------
 /// @brief Policy class for values valid if not equal to zero.
 /// @ingroup valid_if
 export template <typename T>
@@ -74,7 +74,7 @@ using valid_if_not_zero =
 /// @ingroup valid_if
 export template <typename T>
 using nonzero_t = valid_if_not_zero<T>;
-
+//------------------------------------------------------------------------------
 /// @brief Policy class for values valid when they are positive.
 /// @ingroup valid_if
 export template <typename T>
@@ -105,7 +105,7 @@ struct valid_if_positive_policy {
 export template <typename T>
 using valid_if_positive =
   valid_if<T, valid_if_positive_policy<std::remove_reference_t<T>>>;
-
+//------------------------------------------------------------------------------
 /// @brief Policy class for values valid when they are non-negative.
 /// @ingroup valid_if
 export template <typename T>
@@ -134,7 +134,7 @@ struct valid_if_nonneg_policy {
 export template <typename T>
 using valid_if_nonnegative =
   valid_if<T, valid_if_nonneg_policy<std::remove_reference_t<T>>>;
-
+//------------------------------------------------------------------------------
 /// @brief Policy for values valid if between Min and Max.
 /// @tparam T the checked value type must be convertible to @p C.
 /// @tparam C the Min and Max constant type.
@@ -174,7 +174,7 @@ using valid_if_between_c =
 /// @see valid_if_within_limits
 export template <typename T, T Min, T Max>
 using valid_if_between = valid_if_between_c<T, T, Min, Max>;
-
+//------------------------------------------------------------------------------
 /// @brief Policy class for values valid if not equal to Cmp.
 /// @ingroup valid_if
 export template <typename T, T Cmp>
@@ -202,7 +202,7 @@ struct valid_if_ne_policy {
 export template <typename T, T Cmp>
 using valid_if_not =
   valid_if<T, valid_if_ne_policy<std::remove_reference_t<T>, Cmp>>;
-
+//------------------------------------------------------------------------------
 /// @brief Policy for values valid if between zero and one.
 /// @ingroup valid_if
 export template <typename T>
@@ -232,7 +232,7 @@ struct valid_if_ge0_le1_policy {
 export template <typename T>
 using valid_if_between_0_1 =
   valid_if<T, valid_if_ge0_le1_policy<std::remove_reference_t<T>>>;
-
+//------------------------------------------------------------------------------
 /// @brief Policy for values valid if greate or equal to zero, less than one.
 /// @ingroup valid_if
 export template <typename T>
@@ -288,7 +288,7 @@ struct valid_if_gt0_lt1_policy {
 export template <typename T>
 using valid_if_gt0_lt1 =
   valid_if<T, valid_if_gt0_lt1_policy<std::remove_reference_t<T>>>;
-
+//------------------------------------------------------------------------------
 /// @brief Policy class for values valid if greater than Cmp.
 /// @ingroup valid_if
 export template <typename T, T Cmp>
@@ -316,7 +316,7 @@ struct valid_if_gt_policy {
 export template <typename T, T Cmp>
 using valid_if_greater_than =
   valid_if<T, valid_if_gt_policy<std::remove_reference_t<T>, Cmp>>;
-
+//------------------------------------------------------------------------------
 /// @brief Policy class for values valid if less than Cmp.
 /// @ingroup valid_if
 export template <typename T, T Cmp>
@@ -347,5 +347,33 @@ struct valid_if_lt_policy {
 export template <typename T, T Cmp>
 using valid_if_less_than =
   valid_if<T, valid_if_lt_policy<std::remove_reference_t<T>, Cmp>>;
+//------------------------------------------------------------------------------
+/// @brief Policy class for values that can only be powers of two.
+/// @ingroup valid_if
+export template <typename T>
+struct valid_if_ppot_policy {
 
+    /// @brief Indicates value validity, true if value is a positive power of 2.
+    constexpr auto operator()(const T& value) const noexcept {
+        using U = std::make_unsigned_t<T>;
+        return (value > 0) and ((U(value) & (U(value) - 1)) == 0U);
+    }
+
+    struct do_log {
+        template <does_not_hide<do_log> X>
+        constexpr do_log(X&&) noexcept {}
+
+        template <typename Log>
+        void operator()(Log& log, const T& v) const {
+            log << "Value " << v << ", not a power of 2 is invalid";
+        }
+    };
+};
+
+/// @brief Specialization of valid_if, for values valid if positive power of 2.
+/// @ingroup valid_if
+export template <typename T>
+using valid_if_power_of_two =
+  valid_if<T, valid_if_ppot_policy<std::remove_reference_t<T>>>;
+//------------------------------------------------------------------------------
 } // namespace eagine
