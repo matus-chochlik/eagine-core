@@ -218,6 +218,14 @@ export template <std::floating_point T, identifier_t V>
 export template <identifier_t V>
 [[nodiscard]] auto from_string(
   const string_view src,
+  const std::type_identity<std::string_view>,
+  const selector<V>) noexcept -> always_valid<string_view> {
+    return src;
+}
+
+export template <identifier_t V>
+[[nodiscard]] auto from_string(
+  const string_view src,
   const std::type_identity<std::string>,
   const selector<V>) noexcept -> always_valid<std::string> {
     return to_string(src);
