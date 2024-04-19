@@ -37,7 +37,7 @@ Package: eagine-core-logging
 Version: @PKG_VERSION@
 Architecture: @PKG_ARCH@
 Installed-Size: $(eagine_deb_installed_size ${pkg_dir})
-Depends: libsystemd0,libpq5,libcurl4,libc++1-17
+Depends: libsystemd0,libzip4,libpq5,libcurl4,libc++1-17
 Maintainer: Matus Chochlik <matus.chochlik@proton.me>
 Description: Collection of logging server and core utilities for EAGine
 CONTROL
