@@ -314,7 +314,7 @@ auto application_config::is_set(
     }
     if(const auto attr{_find_comp_attr(key, tag)}) {
         bool flag{false};
-        if(attr.select_value(flag, from_config)) {
+        if(attr.fetch_value(flag)) {
             return flag;
         }
     }
@@ -329,7 +329,7 @@ auto application_config::fetch_string(
         return true;
     }
     if(const auto attr{_find_comp_attr(key, tag)}) {
-        if(attr.select_value(dest, from_config)) {
+        if(attr.fetch_value(dest)) {
             return true;
         }
     }

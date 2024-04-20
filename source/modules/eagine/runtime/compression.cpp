@@ -41,15 +41,15 @@ export enum class data_compression_method : std::uint8_t {
     zlib = 1U << 1U
 };
 
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  const std::type_identity<data_compression_method>,
-  const Selector) noexcept {
-    return enumerator_map_type<data_compression_method, 3>{
-      {{"unknown", data_compression_method::unknown},
-       {"none", data_compression_method::none},
-       {"zlib", data_compression_method::zlib}}};
-}
+export template <>
+struct enumerator_traits<data_compression_method> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<data_compression_method, 3>{
+          {{"unknown", data_compression_method::unknown},
+           {"none", data_compression_method::none},
+           {"zlib", data_compression_method::zlib}}};
+    }
+};
 
 /// @brief Returns the default data compression method.
 /// @ingroup main_context

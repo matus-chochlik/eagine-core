@@ -8,6 +8,7 @@
 
 #include <eagine/testing/unit_begin.hpp>
 import eagine.core.types;
+import eagine.core.memory;
 import eagine.core.string;
 //------------------------------------------------------------------------------
 void from_string_int(auto& s) {

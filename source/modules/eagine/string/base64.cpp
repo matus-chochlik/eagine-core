@@ -122,10 +122,8 @@ export template <typename P, typename S, typename Dst>
     return {nothing};
 }
 //------------------------------------------------------------------------------
-export [[nodiscard]] auto assign_if_fits(
-  string_view src,
-  memory::buffer& dst,
-  from_config_t) -> bool {
+export [[nodiscard]] auto assign_if_fits(string_view src, memory::buffer& dst)
+  -> bool {
     return base64_decode(src, dst)
       .and_then([&](const auto& decoded) -> tribool {
           return decoded.empty() == src.empty();

@@ -57,24 +57,24 @@ export enum class embedded_resource_format : std::uint8_t {
     text_utf8
 };
 
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  const std::type_identity<embedded_resource_format>,
-  const Selector) noexcept {
-    return enumerator_map_type<embedded_resource_format, 12>{
-      {{"unknown", embedded_resource_format::unknown},
-       {"xml", embedded_resource_format::xml},
-       {"json", embedded_resource_format::json},
-       {"json_binary", embedded_resource_format::json_binary},
-       {"yaml", embedded_resource_format::yaml},
-       {"glsl", embedded_resource_format::glsl},
-       {"cpp", embedded_resource_format::cpp},
-       {"ttf", embedded_resource_format::ttf},
-       {"otf", embedded_resource_format::otf},
-       {"ogg", embedded_resource_format::ogg},
-       {"chai", embedded_resource_format::chai},
-       {"text_utf8", embedded_resource_format::text_utf8}}};
-}
+export template <>
+struct enumerator_traits<embedded_resource_format> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<embedded_resource_format, 12>{
+          {{"unknown", embedded_resource_format::unknown},
+           {"xml", embedded_resource_format::xml},
+           {"json", embedded_resource_format::json},
+           {"json_binary", embedded_resource_format::json_binary},
+           {"yaml", embedded_resource_format::yaml},
+           {"glsl", embedded_resource_format::glsl},
+           {"cpp", embedded_resource_format::cpp},
+           {"ttf", embedded_resource_format::ttf},
+           {"otf", embedded_resource_format::otf},
+           {"ogg", embedded_resource_format::ogg},
+           {"chai", embedded_resource_format::chai},
+           {"text_utf8", embedded_resource_format::text_utf8}}};
+    }
+};
 //------------------------------------------------------------------------------
 /// @brief Class providing access to a const resource block embedded into the executable.
 /// @ingroup embedding

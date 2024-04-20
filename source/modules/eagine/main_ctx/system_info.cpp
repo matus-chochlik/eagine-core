@@ -30,15 +30,15 @@ export enum class power_supply_kind : std::uint8_t {
     ac_supply
 };
 
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  const std::type_identity<power_supply_kind>,
-  const Selector) noexcept {
-    return enumerator_map_type<power_supply_kind, 3>{
-      {{"unknown", power_supply_kind::unknown},
-       {"battery", power_supply_kind::battery},
-       {"ac_supply", power_supply_kind::ac_supply}}};
-}
+export template <>
+struct enumerator_traits<power_supply_kind> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<power_supply_kind, 3>{
+          {{"unknown", power_supply_kind::unknown},
+           {"battery", power_supply_kind::battery},
+           {"ac_supply", power_supply_kind::ac_supply}}};
+    }
+};
 
 class system_info_impl;
 

@@ -31,13 +31,12 @@ import eagine.core.math;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-auto from_string(
-  const string_view src,
-  const std::type_identity<std::string>) noexcept -> always_valid<std::string> {
+auto string_traits<std::string>::from(const string_view src) noexcept
+  -> always_valid<std::string> {
     return to_string(src);
 }
 //------------------------------------------------------------------------------
-auto from_string(const string_view src, const std::type_identity<char>) noexcept
+auto string_traits<char>::from(const string_view src) noexcept
   -> optionally_valid<char> {
     if(src.has_value()) {
         return {*src, true};
@@ -45,9 +44,8 @@ auto from_string(const string_view src, const std::type_identity<char>) noexcept
     return {};
 }
 //------------------------------------------------------------------------------
-auto from_string(const string_view src, const std::type_identity<bool>) noexcept
+auto string_traits<bool>::from(const string_view src) noexcept
   -> optionally_valid<bool> {
-
     const string_view true_strs[] = {{"true"}, {"True"}, {"1"}, {"t"}, {"T"}};
     if(find_element(view(true_strs), src)) {
         return {true, true};
@@ -62,10 +60,9 @@ auto from_string(const string_view src, const std::type_identity<bool>) noexcept
     return {};
 }
 //------------------------------------------------------------------------------
-auto from_string(
-  const string_view src,
-  const std::type_identity<tribool>) noexcept -> optionally_valid<tribool> {
-    if(const auto val{from_string(src, std::type_identity<bool>{})}) {
+auto string_traits<tribool>::from(const string_view src) noexcept
+  -> optionally_valid<tribool> {
+    if(const auto val{string_traits<bool>{}.from(src)}) {
         return {*val, true};
     }
 
@@ -147,91 +144,95 @@ auto convert_from_string_with(
     return parse_from_string(src, tid);
 }
 //------------------------------------------------------------------------------
-auto from_string(
-  const string_view src,
-  const std::type_identity<short> id,
-  const int base) noexcept -> optionally_valid<short> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto from_string(
-  const string_view src,
-  const std::type_identity<int> id,
-  const int base) noexcept -> optionally_valid<int> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto from_string(
-  const string_view src,
-  const std::type_identity<long> id,
-  const int base) noexcept -> optionally_valid<long> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto from_string(
-  const string_view src,
-  const std::type_identity<long long> id,
-  const int base) noexcept -> optionally_valid<long long> {
-    return convert_from_string_with(&std::strtoll, base, src, id);
-}
-auto from_string(
-  const string_view src,
-  const std::type_identity<unsigned short> id,
-  const int base) noexcept -> optionally_valid<unsigned short> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto from_string(
-  const string_view src,
-  const std::type_identity<unsigned int> id,
-  const int base) noexcept -> optionally_valid<unsigned int> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto from_string(
-  const string_view src,
-  const std::type_identity<unsigned long> id,
-  const int base) noexcept -> optionally_valid<unsigned long> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto from_string(
-  const string_view src,
-  const std::type_identity<unsigned long long> id,
-  const int base) noexcept -> optionally_valid<unsigned long long> {
-    return convert_from_string_with(&std::strtoll, base, src, id);
+auto string_traits<short>::from(const string_view src, const int base) noexcept
+  -> optionally_valid<short> {
+    return convert_from_string_with(
+      &std::strtol, base, src, std::type_identity<short>{});
 }
 //------------------------------------------------------------------------------
-auto from_string(const string_view src, const std::type_identity<byte>) noexcept
+auto string_traits<int>::from(const string_view src, const int base) noexcept
+  -> optionally_valid<int> {
+    return convert_from_string_with(
+      &std::strtol, base, src, std::type_identity<int>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<long>::from(const string_view src, const int base) noexcept
+  -> optionally_valid<long> {
+    return convert_from_string_with(
+      &std::strtol, base, src, std::type_identity<long>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<long long>::from(
+  const string_view src,
+  const int base) noexcept -> optionally_valid<long long> {
+    return convert_from_string_with(
+      &std::strtoll, base, src, std::type_identity<long long>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<unsigned short>::from(
+  const string_view src,
+  const int base) noexcept -> optionally_valid<unsigned short> {
+    return convert_from_string_with(
+      &std::strtoul, base, src, std::type_identity<unsigned short>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<unsigned int>::from(
+  const string_view src,
+  const int base) noexcept -> optionally_valid<unsigned int> {
+    return convert_from_string_with(
+      &std::strtoul, base, src, std::type_identity<unsigned int>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<unsigned long>::from(
+  const string_view src,
+  const int base) noexcept -> optionally_valid<unsigned long> {
+    return convert_from_string_with(
+      &std::strtoul, base, src, std::type_identity<unsigned long>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<unsigned long long>::from(
+  const string_view src,
+  const int base) noexcept -> optionally_valid<unsigned long long> {
+    return convert_from_string_with(
+      &std::strtoull, base, src, std::type_identity<unsigned long long>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<byte>::from(const string_view src) noexcept
   -> optionally_valid<byte> {
     if(starts_with(src, string_view("0x"))) {
         if(const auto opt_val{
-             from_string(skip(src, 2), std::type_identity<unsigned>(), 16)}) {
+             string_traits<unsigned>{}.from(skip(src, 2), 16)}) {
             return {static_cast<byte>(*opt_val), opt_val <= 255U};
         }
     }
     if(starts_with(src, string_view("0"))) {
         if(const auto opt_val{
-             from_string(skip(src, 1), std::type_identity<unsigned>(), 8)}) {
+             string_traits<unsigned>{}.from(skip(src, 1), 8)}) {
             return {static_cast<byte>(*opt_val), opt_val <= 255U};
         }
     }
-    if(const auto opt_val{
-         from_string(src, std::type_identity<unsigned>(), 10)}) {
+    if(const auto opt_val{string_traits<unsigned>{}.from(src, 10)}) {
         return {static_cast<byte>(*opt_val), opt_val <= 255U};
     }
     return {};
 }
 //------------------------------------------------------------------------------
-auto from_string(
-  const string_view src,
-  const std::type_identity<float> id) noexcept -> optionally_valid<float> {
-    return convert_from_string_with(&std::strtof, src, id);
+auto string_traits<float>::from(const string_view src) noexcept
+  -> optionally_valid<float> {
+    return convert_from_string_with(
+      &std::strtof, src, std::type_identity<float>{});
 }
-auto from_string(
-  const string_view src,
-  const std::type_identity<double> id) noexcept -> optionally_valid<double> {
-    return convert_from_string_with(&std::strtod, src, id);
+
+auto string_traits<double>::from(const string_view src) noexcept
+  -> optionally_valid<double> {
+    return convert_from_string_with(
+      &std::strtod, src, std::type_identity<double>{});
 }
-auto from_string(
-  const string_view src,
-  const std::type_identity<long double> id) noexcept
+
+auto string_traits<long double>::from(const string_view src) noexcept
   -> optionally_valid<long double> {
-    return convert_from_string_with(&std::strtold, src, id);
+    return convert_from_string_with(
+      &std::strtold, src, std::type_identity<long double>{});
 }
 //------------------------------------------------------------------------------
 #if EAGINE_USE_BOOST_SPIRIT

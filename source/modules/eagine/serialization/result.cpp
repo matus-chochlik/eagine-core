@@ -32,17 +32,17 @@ export enum class serialization_error_code : std::uint8_t {
     backend_error = 1U << 4U
 };
 //------------------------------------------------------------------------------
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  const std::type_identity<serialization_error_code>,
-  const Selector) noexcept {
-    return enumerator_map_type<serialization_error_code, 5>{
-      {{"not_supported", serialization_error_code::not_supported},
-       {"too_much_data", serialization_error_code::too_much_data},
-       {"incomplete_write", serialization_error_code::incomplete_write},
-       {"data_sink_error", serialization_error_code::data_sink_error},
-       {"backend_error", serialization_error_code::backend_error}}};
-}
+export template <>
+struct enumerator_traits<serialization_error_code> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<serialization_error_code, 5>{
+          {{"not_supported", serialization_error_code::not_supported},
+           {"too_much_data", serialization_error_code::too_much_data},
+           {"incomplete_write", serialization_error_code::incomplete_write},
+           {"data_sink_error", serialization_error_code::data_sink_error},
+           {"backend_error", serialization_error_code::backend_error}}};
+    }
+};
 //------------------------------------------------------------------------------
 /// @brief Deserialization error code bits enumeration.
 /// @ingroup serialization
@@ -74,23 +74,23 @@ export enum class deserialization_error_code : std::uint16_t {
     backend_error = 1U << 10U
 };
 //------------------------------------------------------------------------------
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  const std::type_identity<deserialization_error_code>,
-  const Selector) noexcept {
-    return enumerator_map_type<deserialization_error_code, 11>{
-      {{"not_supported", deserialization_error_code::not_supported},
-       {"not_enough_data", deserialization_error_code::not_enough_data},
-       {"unexpected_data", deserialization_error_code::unexpected_data},
-       {"incomplete_read", deserialization_error_code::incomplete_read},
-       {"missing_element", deserialization_error_code::missing_element},
-       {"excess_element", deserialization_error_code::excess_element},
-       {"missing_member", deserialization_error_code::missing_member},
-       {"excess_member", deserialization_error_code::excess_member},
-       {"invalid_format", deserialization_error_code::invalid_format},
-       {"data_source_error", deserialization_error_code::data_source_error},
-       {"backend_error", deserialization_error_code::backend_error}}};
-}
+export template <>
+struct enumerator_traits<deserialization_error_code> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<deserialization_error_code, 11>{
+          {{"not_supported", deserialization_error_code::not_supported},
+           {"not_enough_data", deserialization_error_code::not_enough_data},
+           {"unexpected_data", deserialization_error_code::unexpected_data},
+           {"incomplete_read", deserialization_error_code::incomplete_read},
+           {"missing_element", deserialization_error_code::missing_element},
+           {"excess_element", deserialization_error_code::excess_element},
+           {"missing_member", deserialization_error_code::missing_member},
+           {"excess_member", deserialization_error_code::excess_member},
+           {"invalid_format", deserialization_error_code::invalid_format},
+           {"data_source_error", deserialization_error_code::data_source_error},
+           {"backend_error", deserialization_error_code::backend_error}}};
+    }
+};
 //------------------------------------------------------------------------------
 /// @brief Alias for serialization error bitfield.
 /// @ingroup serialization

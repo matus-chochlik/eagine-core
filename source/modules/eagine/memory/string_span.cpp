@@ -220,10 +220,7 @@ struct string_literal : std::array<const char, N> {
     constexpr string_literal(
       const char (&s)[N],
       std::index_sequence<I...>) noexcept
-      : std::array<const char, N> {
-        { s[I]... }
-    }
-    {}
+      : std::array<const char, N>{{s[I]...}} {}
 
     /// @brief Construction from a string literal (or char array).
     constexpr string_literal(const char (&s)[N]) noexcept
@@ -316,6 +313,17 @@ auto make_span_putter(
 //------------------------------------------------------------------------------
 export using memory::string_view;
 export using memory::append_to;
+//------------------------------------------------------------------------------
+export template <typename T>
+concept convertible_from_string =
+  requires(string_traits<T> st, const string_view src) { st.from(src); };
+//------------------------------------------------------------------------------
+export template <convertible_from_string T>
+[[nodiscard]] constexpr auto from_string(
+  const string_view src,
+  std::type_identity<T> = {}) noexcept {
+    return string_traits<T>{}.from(src);
+}
 //------------------------------------------------------------------------------
 } // namespace eagine
 

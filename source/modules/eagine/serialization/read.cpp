@@ -10,6 +10,7 @@ export module eagine.core.serialization:read;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
+import eagine.core.string;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.math;
@@ -454,10 +455,7 @@ struct enum_deserializer {
             decl_name_storage temp_name{};
             errors |= _name_deserializer.read(temp_name, backend);
             if(not errors) [[likely]] {
-                if(const auto found{from_string(
-                     temp_name.get(),
-                     std::type_identity<T>{},
-                     default_selector)}) {
+                if(const auto found{from_string<T>(temp_name.get())}) {
                     enumerator = *found;
                 } else {
                     errors |= deserialization_error_code::unexpected_data;
@@ -498,7 +496,7 @@ private:
 export template <typename T>
 struct deserializer
   : std::conditional_t<
-      bool(default_mapped_enum<T>),
+      mapped_enum<T>,
       enum_deserializer<T>,
       std::conditional_t<
         bool(default_mapped_struct<T>),

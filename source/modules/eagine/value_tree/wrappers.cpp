@@ -143,8 +143,7 @@ struct not_converted_value {
         return _dest;
     }
 
-    template <identifier_t V>
-    constexpr auto apply(const selector<V>) const noexcept {
+    constexpr auto apply() const noexcept {
         return true;
     }
 
@@ -153,8 +152,10 @@ private:
 };
 //------------------------------------------------------------------------------
 export template <typename T>
-struct converted_enum_value {
-    static_assert(default_mapped_enum<T>);
+struct converted_enum_value;
+
+export template <mapped_enum T>
+struct converted_enum_value<T> {
 
 public:
     constexpr converted_enum_value(T& dest) noexcept
@@ -164,9 +165,8 @@ public:
         return _temp;
     }
 
-    template <identifier_t V>
-    auto apply(const selector<V> sel) const noexcept -> bool {
-        return assign_if_fits(_temp, _dest, sel);
+    auto apply() const noexcept -> bool {
+        return assign_if_fits(_temp, _dest);
     }
 
 private:
@@ -177,12 +177,12 @@ private:
 export template <typename T>
 struct converted_value
   : std::conditional_t<
-      default_mapped_enum<T>,
+      mapped_enum<T>,
       converted_enum_value<T>,
       not_converted_value<T>> {
 
     using base = std::conditional_t<
-      default_mapped_enum<T>,
+      mapped_enum<T>,
       converted_enum_value<T>,
       not_converted_value<T>>;
 
@@ -208,8 +208,7 @@ public:
         return _temp;
     }
 
-    template <identifier_t V>
-    auto apply(const selector<V>) const {
+    auto apply() const {
         _dest = std::chrono::duration_cast<T>(_temp);
         return true;
     }
@@ -511,69 +510,29 @@ public:
         return fetch_values(name, dest);
     }
 
-    /// @brief Fetches a single value at the specified attribute, with a selector.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto select_value(
-      const attribute& attrib,
-      const span_size_t offset,
-      T& dest,
-      const selector<V> sel) const -> bool {
-        converted_value<T> conv{dest};
-        if(not fetch_values(attrib, offset, cover_one(conv.dest())).empty()) {
-            return conv.apply(sel);
-        }
-        return false;
-    }
-
-    template <identifier_t V>
-    [[nodiscard]] auto select_value(
-      const attribute& attrib,
-      const span_size_t offset,
-      memory::buffer& dest,
-      const selector<V> sel) const -> bool {
-        std::string b64s;
-        if(select_value(attrib, offset, b64s, sel)) {
-            dest.clear();
-            return assign_if_fits(b64s, dest, sel);
-        }
-        return false;
-    }
-
-    /// @brief Fetches a single value at the specified attribute, at offset into @p dest.
+    /// @brief Fetches a single value at the specified attribute.
     template <typename T>
     [[nodiscard]] auto fetch_value(
       const attribute& attrib,
       const span_size_t offset,
       T& dest) const -> bool {
-        return select_value(attrib, offset, dest, default_selector);
+        converted_value<T> conv{dest};
+        if(not fetch_values(attrib, offset, cover_one(conv.dest())).empty()) {
+            return conv.apply();
+        }
+        return false;
     }
 
-    /// @brief Fetches values at the specified attribute, with a selector, into dest.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto select_values(
+    [[nodiscard]] auto fetch_value(
       const attribute& attrib,
       const span_size_t offset,
-      memory::span<T> dest,
-      const selector<V> sel) const -> memory::span<T> {
-        span_size_t index = 0;
-        for(T& elem : dest) {
-            if(not select_value(attrib, offset + index, elem, sel)) {
-                index = 0;
-                break;
-            }
-            ++index;
+      memory::buffer& dest) const -> bool {
+        std::string b64s;
+        if(fetch_value(attrib, offset, b64s)) {
+            dest.clear();
+            return assign_if_fits(b64s, dest);
         }
-        return head(dest, index);
-    }
-
-    /// @brief Fetches values through the specified name, with a selector, into dest.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto select_value(
-      const string_view name,
-      const span_size_t offset,
-      T& dest,
-      const selector<V> sel) const -> bool {
-        return select_value(nested(name), offset, dest, sel);
+        return false;
     }
 
     /// @brief Fetches values through the specified name, into dest.
@@ -582,17 +541,7 @@ public:
       const string_view name,
       const span_size_t offset,
       T& dest) const -> bool {
-        return select_value(name, offset, dest, default_selector);
-    }
-
-    /// @brief Fetches values through the specified path, with a selector, into dest.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto select_value(
-      const basic_string_path& path,
-      const span_size_t offset,
-      T& dest,
-      const selector<V> sel) const -> bool {
-        return select_value(find(path), offset, dest, sel);
+        return fetch_value(nested(name), offset, dest);
     }
 
     /// @brief Fetches values through the specified path, into dest.
@@ -601,64 +550,28 @@ public:
       const basic_string_path& path,
       const span_size_t offset,
       T& dest) const -> bool {
-        return select_value(path, offset, dest, default_selector);
-    }
-
-    /// @brief Fetches values through the specified name, with a selector, into dest.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto select_value(
-      const string_view name,
-      T& dest,
-      const selector<V> sel) const -> bool {
-        return select_value(name, 0, dest, sel);
+        return fetch_value(find(path), offset, dest);
     }
 
     /// @brief Fetches values through the specified name, into dest.
     template <typename T>
     [[nodiscard]] auto fetch_value(const string_view name, T& dest) const
       -> bool {
-        return select_value(name, 0, dest, default_selector);
+        return fetch_value(name, 0, dest);
     }
 
-    /// @brief Fetches a value at the specified attribute, with a selector, into dest.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto select_value(
-      const attribute& attrib,
-      T& dest,
-      const selector<V> sel) const -> bool {
-        return select_value(attrib, 0, dest, sel);
-    }
-
-    /// @brief Fetches values at the specified attribute, with a selector, into dest.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto select_values(
-      const attribute& attrib,
-      memory::span<T> dest,
-      selector<V> sel) const -> memory::span<T> {
-        return select_values(attrib, 0, dest, sel);
-    }
-
-    /// @brief Fetches a single value at the specified attribute, into dest.
+    /// @brief Fetches a value at the specified attribute, into dest.
     template <typename T>
     [[nodiscard]] auto fetch_value(const attribute& attrib, T& dest) const
       -> bool {
-        return select_value(attrib, 0, dest, default_selector);
+        return fetch_value(attrib, 0, dest);
     }
 
     /// @brief Fetches a value through the specified path, with selector, into dest.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto select_value(
-      const basic_string_path& path,
-      T& dest,
-      const selector<V> sel) const -> bool {
-        return select_value(path, 0, dest, sel);
-    }
-
-    /// @brief Fetches a value through the specified path, into dest.
     template <typename T>
     [[nodiscard]] auto fetch_value(const basic_string_path& path, T& dest) const
       -> bool {
-        return selector_value(path, 0, dest, default_selector);
+        return fetch_value(path, 0, dest);
     }
 
     /// @brief Tests if there is an value at an attribute, that starts with @p what.
@@ -673,123 +586,66 @@ public:
     }
 
     /// @brief Returns the value of type T at an attribute, at offset, with selector.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto get(
-      const attribute& attrib,
-      const span_size_t offset,
-      const std::type_identity<T>,
-      const selector<V> sel) const -> std::optional<T> {
-        T temp{};
-        if(select_value(attrib, offset, temp, sel)) {
-            return {std::move(temp)};
-        }
-        return {};
-    }
-
-    /// @brief Returns the value of type T at an attribute, at the given offset.
     template <typename T>
     [[nodiscard]] auto get(
       const attribute& attrib,
       const span_size_t offset,
-      const std::type_identity<T> tid = {}) const -> std::optional<T> {
-        return get<T>(attrib, offset, tid, default_selector);
+      const std::type_identity<T>) const -> std::optional<T> {
+        T temp{};
+        if(fetch_value(attrib, offset, temp)) {
+            return {std::move(temp)};
+        }
+        return {};
     }
 
     /// @brief Returns the value of type T at path, at given offset, with selector.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto get(
-      const basic_string_path& path,
-      const span_size_t offset,
-      const std::type_identity<T>,
-      const selector<V> sel) const -> std::optional<T> {
-        T temp{};
-        if(select_value(path, offset, temp, sel)) {
-            return {std::move(temp)};
-        }
-        return {};
-    }
-
-    /// @brief Returns the value of type T at path, at given offset.
     template <typename T>
     [[nodiscard]] auto get(
       const basic_string_path& path,
       const span_size_t offset,
-      const std::type_identity<T> tid = {}) const -> std::optional<T> {
-        return get<T>(path, offset, tid, default_selector);
+      const std::type_identity<T>) const -> std::optional<T> {
+        T temp{};
+        if(fetch_value(path, offset, temp)) {
+            return {std::move(temp)};
+        }
+        return {};
     }
 
     /// @brief Returns the value of type T at name, at given offset, with selector.
-    template <typename T, identifier_t V>
+    template <typename T>
     [[nodiscard]] auto get(
       const string_view name,
       const span_size_t offset,
-      const std::type_identity<T>,
-      const selector<V> sel) const -> std::optional<T> {
+      const std::type_identity<T>) const -> std::optional<T> {
         T temp{};
-        if(select_value(name, offset, temp, sel)) {
+        if(fetch_value(name, offset, temp)) {
             return {std::move(temp)};
         }
         return {};
     }
 
-    /// @brief Returns the value of type T at name, at given offset.
-    template <typename T>
-    [[nodiscard]] auto get(
-      const string_view name,
-      const span_size_t offset,
-      const std::type_identity<T> tid = {}) const -> std::optional<T> {
-        return get<T>(name, offset, tid, default_selector);
-    }
-
     /// @brief Returns the value of type T at an attribute, with selector.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto get(
-      const attribute& attrib,
-      const std::type_identity<T> tid,
-      const selector<V> sel) const -> std::optional<T> {
-        return get<T>(attrib, 0, tid, sel);
-    }
-
-    /// @brief Returns the value of type T at an attribute.
     template <typename T>
     [[nodiscard]] auto get(
       const attribute& attrib,
       const std::type_identity<T> tid = {}) const -> std::optional<T> {
-        return get<T>(attrib, tid, default_selector);
+        return get<T>(attrib, 0, tid);
     }
 
     /// @brief Returns the value of type T at path, with selector.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto get(
-      const basic_string_path& path,
-      const std::type_identity<T> tid,
-      const selector<V> sel) const -> std::optional<T> {
-        return get<T>(path, 0, tid, sel);
-    }
-
-    /// @brief Returns the value of type T at path.
     template <typename T>
     [[nodiscard]] auto get(
       const basic_string_path& path,
       const std::type_identity<T> tid = {}) const -> std::optional<T> {
-        return get<T>(path, tid, default_selector);
+        return get<T>(path, 0, tid);
     }
 
     /// @brief Returns the value of type T at name, with selector.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto get(
-      const string_view name,
-      const std::type_identity<T> tid,
-      const selector<V> sel) const -> std::optional<T> {
-        return get<T>(name, 0, tid, sel);
-    }
-
-    /// @brief Returns the value of type T at name.
     template <typename T>
     [[nodiscard]] auto get(
       const string_view name,
       const std::type_identity<T> tid = {}) const -> std::optional<T> {
-        return get<T>(name, tid, default_selector);
+        return get<T>(name, 0, tid);
     }
 
     /// @brief Type of traverse/visit handler.
@@ -948,33 +804,16 @@ public:
     }
 
     /// @brief Fetches a value from this attribute, starting at offset, with selector.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto fetch_value(
-      const span_size_t offset,
-      T& dest,
-      const selector<V> sel = default_selector) const -> bool {
-        return _c.select_value(_a, offset, dest, sel);
+    template <typename T>
+    [[nodiscard]] auto fetch_value(const span_size_t offset, T& dest) const
+      -> bool {
+        return _c.fetch_value(_a, offset, dest);
     }
 
     /// @brief Fetches a value from this attribute, with selector.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto select_value(T& dest, const selector<V> sel) const
-      -> bool {
-        return _c.select_value(_a, dest, sel);
-    }
-
-    /// @brief Fetches a value from this attribute, with selector, into dest.
-    template <typename T, identifier_t V>
-    [[nodiscard]] auto select_values(
-      memory::span<T> dest,
-      const selector<V> sel) const -> memory::span<T> {
-        return _c.select_values(_a, dest, sel);
-    }
-
-    /// @brief Fetches a value from this attribute, into dest.
     template <typename T>
     [[nodiscard]] auto fetch_value(T& dest) const -> bool {
-        return _c.select_value(_a, dest, default_selector);
+        return _c.fetch_value(_a, dest);
     }
 
     /// @brief Returns a value of type T, from this attribute, at offset.
