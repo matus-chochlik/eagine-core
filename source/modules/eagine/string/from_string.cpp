@@ -15,6 +15,33 @@ import :c_str;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+export [[nodiscard]] constexpr auto from_string(
+  const string_view src,
+  const std::type_identity<std::string_view>) noexcept
+  -> always_valid<string_view> {
+    return src;
+}
+//------------------------------------------------------------------------------
+export [[nodiscard]] auto from_string(
+  const string_view src,
+  const std::type_identity<std::string>) noexcept -> always_valid<std::string>;
+//------------------------------------------------------------------------------
+export [[nodiscard]] auto from_string(
+  const string_view src,
+  const std::type_identity<bool>) noexcept -> optionally_valid<bool>;
+//------------------------------------------------------------------------------
+export [[nodiscard]] auto from_string(
+  const string_view src,
+  const std::type_identity<tribool>) noexcept -> optionally_valid<tribool>;
+//------------------------------------------------------------------------------
+export [[nodiscard]] auto from_string(
+  const string_view src,
+  const std::type_identity<char>) noexcept -> optionally_valid<char>;
+//------------------------------------------------------------------------------
+export [[nodiscard]] auto from_string(
+  const string_view src,
+  const std::type_identity<byte>) noexcept -> optionally_valid<byte>;
+//------------------------------------------------------------------------------
 auto _parse_from_string(const string_view src, long long int&) noexcept -> bool;
 //------------------------------------------------------------------------------
 export template <std::integral T>
@@ -41,284 +68,144 @@ export template <std::floating_point T>
     return {};
 }
 //------------------------------------------------------------------------------
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
-  const string_view src,
-  const std::type_identity<bool>,
-  const selector<V>) noexcept -> optionally_valid<bool> {
-
-    const string_view true_strs[] = {{"true"}, {"True"}, {"1"}, {"t"}, {"T"}};
-    if(find_element(view(true_strs), src)) {
-        return {true, true};
-    }
-
-    const string_view false_strs[] = {
-      {"false"}, {"False"}, {"0"}, {"f"}, {"F"}};
-    if(find_element(view(false_strs), src)) {
-        return {false, true};
-    }
-
-    return {};
-}
-
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
-  const string_view src,
-  const std::type_identity<tribool>,
-  const selector<V> sel) noexcept -> optionally_valid<tribool> {
-    if(const auto val{from_string(src, std::type_identity<bool>{}, sel)}) {
-        return {*val, true};
-    }
-
-    const string_view unknown_strs[] = {
-      {"indeterminate"}, {"Indeterminate"}, {"unknown"}};
-    if(find_element(view(unknown_strs), src)) {
-        return {indeterminate, true};
-    }
-
-    return {};
-}
-
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
-  const string_view src,
-  const std::type_identity<char>,
-  const selector<V>) noexcept -> optionally_valid<char> {
-    if(src.has_value()) {
-        return {*src, true};
-    }
-    return {};
-}
-//------------------------------------------------------------------------------
-template <typename T, typename N>
-constexpr auto multiply_and_convert_if_fits(const N n, string_view t) noexcept
-  -> optionally_valid<T> {
-    if(t.empty()) {
-        return convert_if_fits<T>(n);
-    } else if(t.has_single_value()) {
-        if(t.back() == 'k') {
-            return convert_if_fits<T>(n * 1000);
-        }
-        if(t.back() == 'M') {
-            return convert_if_fits<T>(n * 1000000);
-        }
-        if(t.back() == 'G') {
-            return convert_if_fits<T>(n * 1000000000);
-        }
-    } else if(t.size() == 2) {
-        if(t.back() == 'i') {
-            if(t.front() == 'K') {
-                return convert_if_fits<T>(n * 1024);
-            }
-            if(t.front() == 'M') {
-                return convert_if_fits<T>(n * 1024 * 1024);
-            }
-            if(t.front() == 'G') {
-                return convert_if_fits<T>(n * 1024 * 1024 * 1024);
-            }
-        }
-    }
-    return {};
-}
-//------------------------------------------------------------------------------
-auto convert_integer_from_string(
+export [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<short> id,
-  const int base) noexcept -> optionally_valid<short>;
+  const int base = 10) noexcept -> optionally_valid<short>;
 
-auto convert_integer_from_string(
+export [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<int> id,
-  const int base) noexcept -> optionally_valid<int>;
+  const int base = 10) noexcept -> optionally_valid<int>;
 
-auto convert_integer_from_string(
+export [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<long> id,
-  const int base) noexcept -> optionally_valid<long>;
+  const int base = 10) noexcept -> optionally_valid<long>;
 
-auto convert_integer_from_string(
+export [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<long long> id,
-  const int base) noexcept -> optionally_valid<long long>;
+  const int base = 10) noexcept -> optionally_valid<long long>;
 
-auto convert_integer_from_string(
+export [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<unsigned short> id,
-  const int base) noexcept -> optionally_valid<unsigned short>;
+  const int base = 10) noexcept -> optionally_valid<unsigned short>;
 
-auto convert_integer_from_string(
+export [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<unsigned int> id,
-  const int base) noexcept -> optionally_valid<unsigned int>;
+  const int base = 10) noexcept -> optionally_valid<unsigned int>;
 
-auto convert_integer_from_string(
+export [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<unsigned long> id,
-  const int base) noexcept -> optionally_valid<unsigned long>;
+  const int base = 10) noexcept -> optionally_valid<unsigned long>;
 
-auto convert_integer_from_string(
+export [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<unsigned long long> id,
-  const int base) noexcept -> optionally_valid<unsigned long long>;
+  const int base = 10) noexcept -> optionally_valid<unsigned long long>;
 //------------------------------------------------------------------------------
-export template <std::integral T, identifier_t V>
-[[nodiscard]] auto from_string(
-  const string_view src,
-  const std::type_identity<T> id,
-  const selector<V>,
-  const int base = 10) noexcept -> optionally_valid<T> {
-    return convert_integer_from_string(src, id, base);
-}
-//------------------------------------------------------------------------------
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
-  const string_view src,
-  const std::type_identity<byte>,
-  const selector<V> sel) noexcept -> optionally_valid<byte> {
-    if(starts_with(src, string_view("0x"))) {
-        if(const auto opt_val{from_string(
-             skip(src, 2), std::type_identity<unsigned>(), sel, 16)}) {
-            return {static_cast<byte>(*opt_val), opt_val <= 255U};
-        }
-    }
-    if(starts_with(src, string_view("0"))) {
-        if(const auto opt_val{from_string(
-             skip(src, 1), std::type_identity<unsigned>(), sel, 8)}) {
-            return {static_cast<byte>(*opt_val), opt_val <= 255U};
-        }
-    }
-    if(const auto opt_val{
-         from_string(src, std::type_identity<unsigned>(), sel, 10)}) {
-        return {static_cast<byte>(*opt_val), opt_val <= 255U};
-    }
-    return {};
-}
-//------------------------------------------------------------------------------
-auto convert_float_from_string(
+export [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<float> id) noexcept -> optionally_valid<float>;
 
-auto convert_float_from_string(
+export [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<double> id) noexcept -> optionally_valid<double>;
 
-auto convert_float_from_string(
+export [[nodiscard]] auto from_string(
   const string_view src,
   const std::type_identity<long double> id) noexcept
   -> optionally_valid<long double>;
 //------------------------------------------------------------------------------
-export template <std::floating_point T, identifier_t V>
-[[nodiscard]] auto from_string(
-  const string_view src,
-  const std::type_identity<T> id,
-  const selector<V>) noexcept -> optionally_valid<T> {
-    return convert_float_from_string(src, id);
-}
-//------------------------------------------------------------------------------
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
-  const string_view src,
-  const std::type_identity<std::string_view>,
-  const selector<V>) noexcept -> always_valid<string_view> {
-    return src;
-}
-
-export template <identifier_t V>
-[[nodiscard]] auto from_string(
-  const string_view src,
-  const std::type_identity<std::string>,
-  const selector<V>) noexcept -> always_valid<std::string> {
-    return to_string(src);
-}
-//------------------------------------------------------------------------------
-export template <typename Rep, typename Period, identifier_t V>
+export template <typename Rep, typename Period>
 [[nodiscard]] auto convert_from_string(
   const string_view src,
   const std::type_identity<std::chrono::duration<Rep, Period>>,
-  const selector<V> sel,
   const string_view symbol) noexcept
   -> optionally_valid<std::chrono::duration<Rep, Period>> {
     if(memory::ends_with(src, symbol)) {
         if(const auto opt_val{from_string(
-             snip(src, symbol.size()), std::type_identity<Rep>(), sel)}) {
+             snip(src, symbol.size()), std::type_identity<Rep>())}) {
             return {std::chrono::duration<Rep, Period>(*opt_val), true};
         }
     }
     return {};
 }
 //------------------------------------------------------------------------------
-export template <typename Rep, typename Period, identifier_t V>
+export template <typename Rep, typename Period>
 [[nodiscard]] auto from_string(
   const string_view str,
-  const std::type_identity<std::chrono::duration<Rep, Period>>,
-  const selector<V> sel) noexcept
+  const std::type_identity<std::chrono::duration<Rep, Period>>) noexcept
   -> optionally_valid<std::chrono::duration<Rep, Period>> {
     using dur_t = std::chrono::duration<Rep, Period>;
 
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::ratio<1>>>(),
-         sel,
          "s")}) {
         return {std::chrono::duration_cast<dur_t>(*d), true};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::milli>>(),
-         sel,
          "ms")}) {
         return {std::chrono::duration_cast<dur_t>(*d), true};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::micro>>(),
-         sel,
          "μs")}) {
         return {std::chrono::duration_cast<dur_t>(*d), true};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::nano>>(),
-         sel,
          "ns")}) {
         return {std::chrono::duration_cast<dur_t>(*d), true};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::ratio<60>>>(),
-         sel,
          "min")}) {
         return {std::chrono::duration_cast<dur_t>(*d), true};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::ratio<3600>>>(),
-         sel,
          "hr")}) {
         return {std::chrono::duration_cast<dur_t>(*d), true};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::ratio<86400LL>>>(),
-         sel,
          "dy")}) {
         return {std::chrono::duration_cast<dur_t>(*d), true};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::ratio<31556952LL>>>(),
-         sel,
          "yr")}) {
         return {std::chrono::duration_cast<dur_t>(*d), true};
     }
     if(const auto d{convert_from_string(
          str,
          std::type_identity<std::chrono::duration<Rep, std::ratio<31556952LL>>>(),
-         sel,
          "a")}) {
         return {std::chrono::duration_cast<dur_t>(*d), true};
     }
     return {};
+}
+//------------------------------------------------------------------------------
+export template <typename T, identifier_t V>
+[[nodiscard]] auto from_string(
+  const string_view src,
+  const std::type_identity<T> tid,
+  const selector<V>) noexcept {
+    return from_string(src, tid);
 }
 //------------------------------------------------------------------------------
 export template <typename T, typename Policy, typename Log, identifier_t V>

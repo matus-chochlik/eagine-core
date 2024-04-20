@@ -31,6 +31,84 @@ import eagine.core.math;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+auto from_string(
+  const string_view src,
+  const std::type_identity<std::string>) noexcept -> always_valid<std::string> {
+    return to_string(src);
+}
+//------------------------------------------------------------------------------
+auto from_string(const string_view src, const std::type_identity<char>) noexcept
+  -> optionally_valid<char> {
+    if(src.has_value()) {
+        return {*src, true};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto from_string(const string_view src, const std::type_identity<bool>) noexcept
+  -> optionally_valid<bool> {
+
+    const string_view true_strs[] = {{"true"}, {"True"}, {"1"}, {"t"}, {"T"}};
+    if(find_element(view(true_strs), src)) {
+        return {true, true};
+    }
+
+    const string_view false_strs[] = {
+      {"false"}, {"False"}, {"0"}, {"f"}, {"F"}};
+    if(find_element(view(false_strs), src)) {
+        return {false, true};
+    }
+
+    return {};
+}
+//------------------------------------------------------------------------------
+auto from_string(
+  const string_view src,
+  const std::type_identity<tribool>) noexcept -> optionally_valid<tribool> {
+    if(const auto val{from_string(src, std::type_identity<bool>{})}) {
+        return {*val, true};
+    }
+
+    const string_view unknown_strs[] = {
+      {"indeterminate"}, {"Indeterminate"}, {"unknown"}};
+    if(find_element(view(unknown_strs), src)) {
+        return {indeterminate, true};
+    }
+
+    return {};
+}
+//------------------------------------------------------------------------------
+template <typename T, typename N>
+constexpr auto multiply_and_convert_if_fits(const N n, string_view t) noexcept
+  -> optionally_valid<T> {
+    if(t.empty()) {
+        return convert_if_fits<T>(n);
+    } else if(t.has_single_value()) {
+        if(t.back() == 'k') {
+            return convert_if_fits<T>(n * 1000);
+        }
+        if(t.back() == 'M') {
+            return convert_if_fits<T>(n * 1000000);
+        }
+        if(t.back() == 'G') {
+            return convert_if_fits<T>(n * 1000000000);
+        }
+    } else if(t.size() == 2) {
+        if(t.back() == 'i') {
+            if(t.front() == 'K') {
+                return convert_if_fits<T>(n * 1024);
+            }
+            if(t.front() == 'M') {
+                return convert_if_fits<T>(n * 1024 * 1024);
+            }
+            if(t.front() == 'G') {
+                return convert_if_fits<T>(n * 1024 * 1024 * 1024);
+            }
+        }
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
 template <typename T, typename N>
 auto convert_from_string_with(
   N (*converter)(const char*, char**),
@@ -69,66 +147,87 @@ auto convert_from_string_with(
     return parse_from_string(src, tid);
 }
 //------------------------------------------------------------------------------
-auto convert_integer_from_string(
+auto from_string(
   const string_view src,
   const std::type_identity<short> id,
   const int base) noexcept -> optionally_valid<short> {
     return convert_from_string_with(&std::strtol, base, src, id);
 }
-auto convert_integer_from_string(
+auto from_string(
   const string_view src,
   const std::type_identity<int> id,
   const int base) noexcept -> optionally_valid<int> {
     return convert_from_string_with(&std::strtol, base, src, id);
 }
-auto convert_integer_from_string(
+auto from_string(
   const string_view src,
   const std::type_identity<long> id,
   const int base) noexcept -> optionally_valid<long> {
     return convert_from_string_with(&std::strtol, base, src, id);
 }
-auto convert_integer_from_string(
+auto from_string(
   const string_view src,
   const std::type_identity<long long> id,
   const int base) noexcept -> optionally_valid<long long> {
     return convert_from_string_with(&std::strtoll, base, src, id);
 }
-auto convert_integer_from_string(
+auto from_string(
   const string_view src,
   const std::type_identity<unsigned short> id,
   const int base) noexcept -> optionally_valid<unsigned short> {
     return convert_from_string_with(&std::strtol, base, src, id);
 }
-auto convert_integer_from_string(
+auto from_string(
   const string_view src,
   const std::type_identity<unsigned int> id,
   const int base) noexcept -> optionally_valid<unsigned int> {
     return convert_from_string_with(&std::strtol, base, src, id);
 }
-auto convert_integer_from_string(
+auto from_string(
   const string_view src,
   const std::type_identity<unsigned long> id,
   const int base) noexcept -> optionally_valid<unsigned long> {
     return convert_from_string_with(&std::strtol, base, src, id);
 }
-auto convert_integer_from_string(
+auto from_string(
   const string_view src,
   const std::type_identity<unsigned long long> id,
   const int base) noexcept -> optionally_valid<unsigned long long> {
     return convert_from_string_with(&std::strtoll, base, src, id);
 }
 //------------------------------------------------------------------------------
-auto convert_float_from_string(
+auto from_string(const string_view src, const std::type_identity<byte>) noexcept
+  -> optionally_valid<byte> {
+    if(starts_with(src, string_view("0x"))) {
+        if(const auto opt_val{
+             from_string(skip(src, 2), std::type_identity<unsigned>(), 16)}) {
+            return {static_cast<byte>(*opt_val), opt_val <= 255U};
+        }
+    }
+    if(starts_with(src, string_view("0"))) {
+        if(const auto opt_val{
+             from_string(skip(src, 1), std::type_identity<unsigned>(), 8)}) {
+            return {static_cast<byte>(*opt_val), opt_val <= 255U};
+        }
+    }
+    if(const auto opt_val{
+         from_string(src, std::type_identity<unsigned>(), 10)}) {
+        return {static_cast<byte>(*opt_val), opt_val <= 255U};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto from_string(
   const string_view src,
   const std::type_identity<float> id) noexcept -> optionally_valid<float> {
     return convert_from_string_with(&std::strtof, src, id);
 }
-auto convert_float_from_string(
+auto from_string(
   const string_view src,
   const std::type_identity<double> id) noexcept -> optionally_valid<double> {
     return convert_from_string_with(&std::strtod, src, id);
 }
-auto convert_float_from_string(
+auto from_string(
   const string_view src,
   const std::type_identity<long double> id) noexcept
   -> optionally_valid<long double> {
