@@ -30,6 +30,12 @@ name_and_enumerator(const decl_name, const T) -> name_and_enumerator<T>;
 export template <typename T, std::size_t N>
 using enumerator_map_type = std::array<const name_and_enumerator<T>, N>;
 //------------------------------------------------------------------------------
+export template <typename T, std::size_t N>
+consteval auto count_of(std::type_identity<enumerator_map_type<T, N>>) noexcept
+  -> span_size_t {
+    return span_size_t(N);
+}
+//------------------------------------------------------------------------------
 export template <typename T>
 struct enumerator_traits;
 
@@ -37,14 +43,15 @@ export template <typename T>
 concept mapped_enum = requires(enumerator_traits<T> et) { et.mapping(); };
 //------------------------------------------------------------------------------
 export template <mapped_enum T>
-constexpr auto enumerators(std::type_identity<T> tid = {}) noexcept {
+constexpr auto enumerators(const std::type_identity<T> = {}) noexcept {
     return enumerator_traits<T>{}.mapping();
 }
 //------------------------------------------------------------------------------
 export template <mapped_enum T>
 [[nodiscard]] constexpr auto enumerator_count(
-  const std::type_identity<T> id = {}) noexcept -> span_size_t {
-    return span_size_t(enumerators(id).size());
+  const std::type_identity<T> = {}) noexcept -> span_size_t {
+    return count_of(
+      std::type_identity<decltype(enumerator_traits<T>{}.mapping())>{});
 }
 //------------------------------------------------------------------------------
 export template <mapped_enum T>
@@ -88,7 +95,7 @@ export template <mapped_enum T>
   const T enumerator,
   const std::type_identity<T> id = {}) noexcept -> span_size_t {
     const auto enum_map{enumerators(id)};
-    if constexpr(is_bitset(id)) {
+    if(is_bitset(id)) {
         const auto pos{std::lower_bound(
           enum_map.begin(), enum_map.end(), enumerator, [](auto e, auto v) {
               return e.enumerator < v;
@@ -118,7 +125,7 @@ export template <mapped_enum T>
   const T enumerator,
   const std::type_identity<T> id = {}) noexcept -> decl_name {
     const auto enum_map{enumerators(id)};
-    if constexpr(is_consecutive(id)) {
+    if(is_consecutive(id)) {
         using UT = std::underlying_type_t<T>;
         const auto index{std::size_t(static_cast<UT>(enumerator))};
         if(index < enum_map.size()) [[likely]] {
