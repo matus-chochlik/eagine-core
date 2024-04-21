@@ -374,6 +374,13 @@ const auto function_call_def =
    ")")[([](auto& c) { _val(c) = std::log(_attr(c)); })] |
   (bs::lit("exp") >> "(" >> numeric_expression >>
    ")")[([](auto& c) { _val(c) = std::exp(_attr(c)); })] |
+  (bs::lit("clamp") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   "," >> numeric_expression >> ")")[([](auto& c) {
+      _val(c) = math::clamp(
+        at_c<0>(_attr(c)).real(),
+        at_c<1>(_attr(c)).real(),
+        at_c<2>(_attr(c)).real());
+  })] |
   (bs::lit("e") >> "^" >>
    numeric_term)[([](auto& c) { _val(c) = std::exp(_attr(c)); })];
 //------------------------------------------------------------------------------
