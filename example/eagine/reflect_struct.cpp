@@ -19,19 +19,26 @@ struct example_struct {
     unsigned u{0U};
 };
 
-template <typename Selector>
-constexpr auto data_member_mapping(
-  const std::type_identity<example_struct>,
-  const Selector) noexcept {
-    using S = example_struct;
-    return make_data_member_mapping<S, bool, char, float, int, std::string, unsigned>(
-      {"b", &S::b},
-      {"c", &S::c},
-      {"f", &S::f},
-      {"i", &S::i},
-      {"s", &S::s},
-      {"u", &S::u});
-}
+template <>
+struct data_member_traits<example_struct> {
+    static constexpr auto mapping() noexcept {
+        using S = example_struct;
+        return make_data_member_mapping<
+          S,
+          bool,
+          char,
+          float,
+          int,
+          std::string,
+          unsigned>(
+          {"b", &S::b},
+          {"c", &S::c},
+          {"f", &S::f},
+          {"i", &S::i},
+          {"s", &S::s},
+          {"u", &S::u});
+    }
+};
 
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;

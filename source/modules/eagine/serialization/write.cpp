@@ -481,10 +481,7 @@ struct serializer
   : std::conditional_t<
       mapped_enum<T>,
       enum_serializer<T>,
-      std::conditional_t<
-        (default_mapped_struct<T>),
-        struct_serializer<T>,
-        nothing_t>> {};
+      std::conditional_t<mapped_struct<T>, struct_serializer<T>, nothing_t>> {};
 //------------------------------------------------------------------------------
 /// @brief Serializes a value with the specified serialization backend.
 /// @ingroup serialization

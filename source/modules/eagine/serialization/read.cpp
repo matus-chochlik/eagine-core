@@ -498,10 +498,8 @@ struct deserializer
   : std::conditional_t<
       mapped_enum<T>,
       enum_deserializer<T>,
-      std::conditional_t<
-        bool(default_mapped_struct<T>),
-        struct_deserializer<T>,
-        nothing_t>> {};
+      std::conditional_t<mapped_struct<T>, struct_deserializer<T>, nothing_t>> {
+};
 //------------------------------------------------------------------------------
 /// @brief Deserializes a value with the specified serialization backend.
 /// @ingroup serialization

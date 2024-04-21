@@ -213,7 +213,7 @@ private:
 export template <identifier_t Sid, typename T, typename Selector>
 struct get_serialize_buffer_size
   : std::conditional_t<
-      default_mapped_struct<T>,
+      mapped_struct<T>,
       get_struct_serialize_buffer_size<Sid, T, Selector>,
       std::conditional_t<mapped_enum<T>, serialize_size_constant<96>, void>> {};
 //------------------------------------------------------------------------------
