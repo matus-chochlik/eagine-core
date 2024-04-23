@@ -21,7 +21,7 @@ export template <std::integral T>
     return (value > 0) and ((U(value) & (U(value) - 1)) == 0);
 }
 //------------------------------------------------------------------------------
-/// @brief Returns the greates common divisor of arguments @p l and @p r.
+/// @brief Returns the greatest common divisor of arguments @p l and @p r.
 /// @ingroup math
 export template <std::integral T>
 [[nodiscard]] constexpr auto greatest_common_divisor(

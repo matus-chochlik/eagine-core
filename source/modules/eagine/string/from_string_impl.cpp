@@ -374,12 +374,57 @@ const auto function_call_def =
    ")")[([](auto& c) { _val(c) = std::log(_attr(c)); })] |
   (bs::lit("exp") >> "(" >> numeric_expression >>
    ")")[([](auto& c) { _val(c) = std::exp(_attr(c)); })] |
+  (bs::lit("sin01") >> "(" >> numeric_expression >>
+   ")")[([](auto& c) { _val(c) = math::sine_wave01(_attr(c)); })] |
+  (bs::lit("cos01") >> "(" >> numeric_expression >>
+   ")")[([](auto& c) { _val(c) = math::cosine_wave01(_attr(c)); })] |
+  (bs::lit("sigmoid") >> "(" >> numeric_expression >> "," >>
+   numeric_expression >> ")")[([](auto& c) {
+      _val(c) =
+        math::sigmoid01(at_c<0>(_attr(c)).real(), at_c<1>(_attr(c)).real());
+  })] |
+  (bs::lit("min") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   ")")[([](auto& c) {
+      _val(c) =
+        math::minimum(at_c<0>(_attr(c)).real(), at_c<1>(_attr(c)).real());
+  })] |
+  (bs::lit("max") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   ")")[([](auto& c) {
+      _val(c) =
+        math::maximum(at_c<0>(_attr(c)).real(), at_c<1>(_attr(c)).real());
+  })] |
   (bs::lit("clamp") >> "(" >> numeric_expression >> "," >> numeric_expression >>
    "," >> numeric_expression >> ")")[([](auto& c) {
       _val(c) = math::clamp(
         at_c<0>(_attr(c)).real(),
         at_c<1>(_attr(c)).real(),
         at_c<2>(_attr(c)).real());
+  })] |
+  (bs::lit("ramp") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   "," >> numeric_expression >> ")")[([](auto& c) {
+      _val(c) = math::ramp(
+        at_c<0>(_attr(c)).real(),
+        at_c<1>(_attr(c)).real(),
+        at_c<2>(_attr(c)).real());
+  })] |
+  (bs::lit("lerp") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   "," >> numeric_expression >> ")")[([](auto& c) {
+      _val(c) = math::lerp(
+        at_c<0>(_attr(c)).real(),
+        at_c<1>(_attr(c)).real(),
+        at_c<2>(_attr(c)).real());
+  })] |
+  (bs::lit("slerp") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   "," >> numeric_expression >> ")")[([](auto& c) {
+      _val(c) = math::smooth_lerp(
+        at_c<0>(_attr(c)).real(),
+        at_c<1>(_attr(c)).real(),
+        at_c<2>(_attr(c)).real());
+  })] |
+  (bs::lit("oscillate") >> "(" >> numeric_expression >> "," >>
+   numeric_expression >> ")")[([](auto& c) {
+      _val(c) = math::smooth_oscillate(
+        at_c<0>(_attr(c)).real(), at_c<1>(_attr(c)).real());
   })] |
   (bs::lit("e") >> "^" >>
    numeric_term)[([](auto& c) { _val(c) = std::exp(_attr(c)); })];
