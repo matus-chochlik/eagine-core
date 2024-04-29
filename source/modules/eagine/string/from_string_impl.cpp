@@ -31,6 +31,81 @@ import eagine.core.math;
 
 namespace eagine {
 //------------------------------------------------------------------------------
+auto string_traits<std::string>::from(const string_view src) noexcept
+  -> always_valid<std::string> {
+    return to_string(src);
+}
+//------------------------------------------------------------------------------
+auto string_traits<char>::from(const string_view src) noexcept
+  -> optionally_valid<char> {
+    if(src.has_value()) {
+        return {*src, true};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto string_traits<bool>::from(const string_view src) noexcept
+  -> optionally_valid<bool> {
+    const string_view true_strs[] = {{"true"}, {"True"}, {"1"}, {"t"}, {"T"}};
+    if(find_element(view(true_strs), src)) {
+        return {true, true};
+    }
+
+    const string_view false_strs[] = {
+      {"false"}, {"False"}, {"0"}, {"f"}, {"F"}};
+    if(find_element(view(false_strs), src)) {
+        return {false, true};
+    }
+
+    return {};
+}
+//------------------------------------------------------------------------------
+auto string_traits<tribool>::from(const string_view src) noexcept
+  -> optionally_valid<tribool> {
+    if(const auto val{string_traits<bool>{}.from(src)}) {
+        return {*val, true};
+    }
+
+    const string_view unknown_strs[] = {
+      {"indeterminate"}, {"Indeterminate"}, {"unknown"}};
+    if(find_element(view(unknown_strs), src)) {
+        return {indeterminate, true};
+    }
+
+    return {};
+}
+//------------------------------------------------------------------------------
+template <typename T, typename N>
+constexpr auto multiply_and_convert_if_fits(const N n, string_view t) noexcept
+  -> optionally_valid<T> {
+    if(t.empty()) {
+        return convert_if_fits<T>(n);
+    } else if(t.has_single_value()) {
+        if(t.back() == 'k') {
+            return convert_if_fits<T>(n * 1000);
+        }
+        if(t.back() == 'M') {
+            return convert_if_fits<T>(n * 1000000);
+        }
+        if(t.back() == 'G') {
+            return convert_if_fits<T>(n * 1000000000);
+        }
+    } else if(t.size() == 2) {
+        if(t.back() == 'i') {
+            if(t.front() == 'K') {
+                return convert_if_fits<T>(n * 1024);
+            }
+            if(t.front() == 'M') {
+                return convert_if_fits<T>(n * 1024 * 1024);
+            }
+            if(t.front() == 'G') {
+                return convert_if_fits<T>(n * 1024 * 1024 * 1024);
+            }
+        }
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
 template <typename T, typename N>
 auto convert_from_string_with(
   N (*converter)(const char*, char**),
@@ -69,70 +144,95 @@ auto convert_from_string_with(
     return parse_from_string(src, tid);
 }
 //------------------------------------------------------------------------------
-auto convert_integer_from_string(
-  const string_view src,
-  const std::type_identity<short> id,
-  const int base) noexcept -> optionally_valid<short> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto convert_integer_from_string(
-  const string_view src,
-  const std::type_identity<int> id,
-  const int base) noexcept -> optionally_valid<int> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto convert_integer_from_string(
-  const string_view src,
-  const std::type_identity<long> id,
-  const int base) noexcept -> optionally_valid<long> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto convert_integer_from_string(
-  const string_view src,
-  const std::type_identity<long long> id,
-  const int base) noexcept -> optionally_valid<long long> {
-    return convert_from_string_with(&std::strtoll, base, src, id);
-}
-auto convert_integer_from_string(
-  const string_view src,
-  const std::type_identity<unsigned short> id,
-  const int base) noexcept -> optionally_valid<unsigned short> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto convert_integer_from_string(
-  const string_view src,
-  const std::type_identity<unsigned int> id,
-  const int base) noexcept -> optionally_valid<unsigned int> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto convert_integer_from_string(
-  const string_view src,
-  const std::type_identity<unsigned long> id,
-  const int base) noexcept -> optionally_valid<unsigned long> {
-    return convert_from_string_with(&std::strtol, base, src, id);
-}
-auto convert_integer_from_string(
-  const string_view src,
-  const std::type_identity<unsigned long long> id,
-  const int base) noexcept -> optionally_valid<unsigned long long> {
-    return convert_from_string_with(&std::strtoll, base, src, id);
+auto string_traits<short>::from(const string_view src, const int base) noexcept
+  -> optionally_valid<short> {
+    return convert_from_string_with(
+      &std::strtol, base, src, std::type_identity<short>{});
 }
 //------------------------------------------------------------------------------
-auto convert_float_from_string(
-  const string_view src,
-  const std::type_identity<float> id) noexcept -> optionally_valid<float> {
-    return convert_from_string_with(&std::strtof, src, id);
+auto string_traits<int>::from(const string_view src, const int base) noexcept
+  -> optionally_valid<int> {
+    return convert_from_string_with(
+      &std::strtol, base, src, std::type_identity<int>{});
 }
-auto convert_float_from_string(
-  const string_view src,
-  const std::type_identity<double> id) noexcept -> optionally_valid<double> {
-    return convert_from_string_with(&std::strtod, src, id);
+//------------------------------------------------------------------------------
+auto string_traits<long>::from(const string_view src, const int base) noexcept
+  -> optionally_valid<long> {
+    return convert_from_string_with(
+      &std::strtol, base, src, std::type_identity<long>{});
 }
-auto convert_float_from_string(
+//------------------------------------------------------------------------------
+auto string_traits<long long>::from(
   const string_view src,
-  const std::type_identity<long double> id) noexcept
+  const int base) noexcept -> optionally_valid<long long> {
+    return convert_from_string_with(
+      &std::strtoll, base, src, std::type_identity<long long>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<unsigned short>::from(
+  const string_view src,
+  const int base) noexcept -> optionally_valid<unsigned short> {
+    return convert_from_string_with(
+      &std::strtoul, base, src, std::type_identity<unsigned short>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<unsigned int>::from(
+  const string_view src,
+  const int base) noexcept -> optionally_valid<unsigned int> {
+    return convert_from_string_with(
+      &std::strtoul, base, src, std::type_identity<unsigned int>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<unsigned long>::from(
+  const string_view src,
+  const int base) noexcept -> optionally_valid<unsigned long> {
+    return convert_from_string_with(
+      &std::strtoul, base, src, std::type_identity<unsigned long>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<unsigned long long>::from(
+  const string_view src,
+  const int base) noexcept -> optionally_valid<unsigned long long> {
+    return convert_from_string_with(
+      &std::strtoull, base, src, std::type_identity<unsigned long long>{});
+}
+//------------------------------------------------------------------------------
+auto string_traits<byte>::from(const string_view src) noexcept
+  -> optionally_valid<byte> {
+    if(starts_with(src, string_view("0x"))) {
+        if(const auto opt_val{
+             string_traits<unsigned>{}.from(skip(src, 2), 16)}) {
+            return {static_cast<byte>(*opt_val), opt_val <= 255U};
+        }
+    }
+    if(starts_with(src, string_view("0"))) {
+        if(const auto opt_val{
+             string_traits<unsigned>{}.from(skip(src, 1), 8)}) {
+            return {static_cast<byte>(*opt_val), opt_val <= 255U};
+        }
+    }
+    if(const auto opt_val{string_traits<unsigned>{}.from(src, 10)}) {
+        return {static_cast<byte>(*opt_val), opt_val <= 255U};
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
+auto string_traits<float>::from(const string_view src) noexcept
+  -> optionally_valid<float> {
+    return convert_from_string_with(
+      &std::strtof, src, std::type_identity<float>{});
+}
+
+auto string_traits<double>::from(const string_view src) noexcept
+  -> optionally_valid<double> {
+    return convert_from_string_with(
+      &std::strtod, src, std::type_identity<double>{});
+}
+
+auto string_traits<long double>::from(const string_view src) noexcept
   -> optionally_valid<long double> {
-    return convert_from_string_with(&std::strtold, src, id);
+    return convert_from_string_with(
+      &std::strtold, src, std::type_identity<long double>{});
 }
 //------------------------------------------------------------------------------
 #if EAGINE_USE_BOOST_SPIRIT
@@ -274,6 +374,58 @@ const auto function_call_def =
    ")")[([](auto& c) { _val(c) = std::log(_attr(c)); })] |
   (bs::lit("exp") >> "(" >> numeric_expression >>
    ")")[([](auto& c) { _val(c) = std::exp(_attr(c)); })] |
+  (bs::lit("sin01") >> "(" >> numeric_expression >>
+   ")")[([](auto& c) { _val(c) = math::sine_wave01(_attr(c)); })] |
+  (bs::lit("cos01") >> "(" >> numeric_expression >>
+   ")")[([](auto& c) { _val(c) = math::cosine_wave01(_attr(c)); })] |
+  (bs::lit("sigmoid") >> "(" >> numeric_expression >> "," >>
+   numeric_expression >> ")")[([](auto& c) {
+      _val(c) =
+        math::sigmoid01(at_c<0>(_attr(c)).real(), at_c<1>(_attr(c)).real());
+  })] |
+  (bs::lit("min") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   ")")[([](auto& c) {
+      _val(c) =
+        math::minimum(at_c<0>(_attr(c)).real(), at_c<1>(_attr(c)).real());
+  })] |
+  (bs::lit("max") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   ")")[([](auto& c) {
+      _val(c) =
+        math::maximum(at_c<0>(_attr(c)).real(), at_c<1>(_attr(c)).real());
+  })] |
+  (bs::lit("clamp") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   "," >> numeric_expression >> ")")[([](auto& c) {
+      _val(c) = math::clamp(
+        at_c<0>(_attr(c)).real(),
+        at_c<1>(_attr(c)).real(),
+        at_c<2>(_attr(c)).real());
+  })] |
+  (bs::lit("ramp") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   "," >> numeric_expression >> ")")[([](auto& c) {
+      _val(c) = math::ramp(
+        at_c<0>(_attr(c)).real(),
+        at_c<1>(_attr(c)).real(),
+        at_c<2>(_attr(c)).real());
+  })] |
+  (bs::lit("lerp") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   "," >> numeric_expression >> ")")[([](auto& c) {
+      _val(c) = math::lerp(
+        at_c<0>(_attr(c)).real(),
+        at_c<1>(_attr(c)).real(),
+        at_c<2>(_attr(c)).real());
+  })] |
+  (bs::lit("slerp") >> "(" >> numeric_expression >> "," >> numeric_expression >>
+   "," >> numeric_expression >> ")")[([](auto& c) {
+      _val(c) = math::smooth_lerp(
+        at_c<0>(_attr(c)).real(),
+        at_c<1>(_attr(c)).real(),
+        at_c<2>(_attr(c)).real());
+  })] |
+  (bs::lit("oscillate") >> "(" >> numeric_expression >> "," >>
+   numeric_expression >> ")")[([](auto& c) {
+      _val(c) = math::smooth_oscillate(
+        at_c<0>(_attr(c)).real(), at_c<1>(_attr(c)).real());
+  })] |
   (bs::lit("e") >> "^" >>
    numeric_term)[([](auto& c) { _val(c) = std::exp(_attr(c)); })];
 //------------------------------------------------------------------------------

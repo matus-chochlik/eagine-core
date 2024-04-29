@@ -20,28 +20,28 @@ struct my_struct {
     unsigned u{0U};
 };
 //------------------------------------------------------------------------------
-template <identifier_t Id>
-constexpr auto data_member_mapping(
-  const std::type_identity<my_struct>,
-  const selector<Id>) noexcept {
-    using S = my_struct;
-    return make_data_member_mapping<
-      S,
-      bool,
-      char,
-      double,
-      identifier,
-      long,
-      std::string,
-      unsigned>(
-      {"b", &S::b},
-      {"c", &S::c},
-      {"d", &S::d},
-      {"i", &S::i},
-      {"l", &S::l},
-      {"s", &S::s},
-      {"u", &S::u});
-}
+template <>
+struct data_member_traits<my_struct> {
+    static constexpr auto mapping() noexcept {
+        using S = my_struct;
+        return make_data_member_mapping<
+          S,
+          bool,
+          char,
+          double,
+          identifier,
+          long,
+          std::string,
+          unsigned>(
+          {"b", &S::b},
+          {"c", &S::c},
+          {"d", &S::d},
+          {"i", &S::i},
+          {"l", &S::l},
+          {"s", &S::s},
+          {"u", &S::u});
+    }
+};
 //------------------------------------------------------------------------------
 void baz(const my_struct& instance) {
     std::cout << instance.b;

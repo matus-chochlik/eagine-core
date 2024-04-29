@@ -49,16 +49,16 @@ export enum class config_source {
     key_value_store
 };
 
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  const std::type_identity<config_source>,
-  const Selector) noexcept {
-    return enumerator_map_type<config_source, 4>{
-      {{"arguments", config_source::arguments},
-       {"environment", config_source::environment},
-       {"filesystem", config_source::filesystem},
-       {"key_value_store", config_source::key_value_store}}};
-}
+export template <>
+struct enumerator_traits<config_source> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<config_source, 4>{
+          {{"arguments", config_source::arguments},
+           {"environment", config_source::environment},
+           {"filesystem", config_source::filesystem},
+           {"key_value_store", config_source::key_value_store}}};
+    }
+};
 
 /// @brief Class for reading application configuration.
 /// @ingroup main_context
@@ -90,7 +90,7 @@ public:
       T& dest,
       const string_view tag = {}) noexcept -> bool {
         if(const auto arg{find_program_arg(key, tag)}) {
-            if(assign_if_fits(arg.next().get(), dest, from_config)) {
+            if(assign_if_fits(arg.next().get(), dest)) {
                 return true;
             } else {
                 _log_could_not_read_value(
@@ -98,7 +98,7 @@ public:
             }
         }
         if(const auto opt_val{eval_environment_var(key, tag)}) {
-            if(assign_if_fits(*opt_val, dest, from_config)) {
+            if(assign_if_fits(*opt_val, dest)) {
                 return true;
             } else {
                 _log_could_not_read_value(
@@ -106,7 +106,7 @@ public:
             }
         }
         if(const auto attr{_find_comp_attr(key, tag)}) {
-            if(attr.select_value(dest, from_config)) {
+            if(attr.fetch_value(dest)) {
                 return true;
             } else {
                 _log_could_not_read_value(
@@ -126,7 +126,7 @@ public:
         for(const auto arg : _prog_args()) {
             if(arg.is_tag(arg_name)) {
                 T temp{};
-                if(assign_if_fits(arg.next().get(), temp, from_config)) {
+                if(assign_if_fits(arg.next().get(), temp)) {
                     dest.emplace_back(std::move(temp));
                 } else {
                     _log_could_not_read_value(
@@ -137,7 +137,7 @@ public:
         }
         if(const auto opt_val{eval_environment_var(key, tag)}) {
             T temp{};
-            if(assign_if_fits(*opt_val, temp, from_config)) {
+            if(assign_if_fits(*opt_val, temp)) {
                 dest.emplace_back(std::move(temp));
             } else {
                 _log_could_not_read_value(
@@ -149,8 +149,7 @@ public:
             const auto count(attr.value_count());
             if(count > 0) {
                 dest.resize(safe_add(dest.size(), std_size(count)));
-                if(not attr.select_values(
-                     tail(memory::cover(dest), count), from_config)) {
+                if(not attr.fetch_values(tail(memory::cover(dest), count))) {
                     _log_could_not_read_value(
                       key, tag, attr.preview(), config_source::filesystem);
                     return false;

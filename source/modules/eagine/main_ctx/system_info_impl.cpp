@@ -138,11 +138,7 @@ public:
               as_chars(machine_id.block()),
               span_size_of<host_id_t>() * 2,
               [this](const auto hexstr) {
-                  if(const auto mi{from_string(
-                       hexstr,
-                       std::type_identity<host_id_t>(),
-                       default_selector,
-                       16)}) {
+                  if(auto mi{string_traits<host_id_t>{}.from(hexstr, 16)}) {
                       _host_id ^= *mi;
                   }
               });

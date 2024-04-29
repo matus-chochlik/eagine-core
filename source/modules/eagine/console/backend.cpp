@@ -29,16 +29,16 @@ export enum class console_entry_kind : std::uint8_t {
     error
 };
 
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  const std::type_identity<console_entry_kind>,
-  const Selector) noexcept {
-    return enumerator_map_type<console_entry_kind, 4>{
-      {{"stat", console_entry_kind::stat},
-       {"info", console_entry_kind::info},
-       {"warning", console_entry_kind::warning},
-       {"error", console_entry_kind::error}}};
-}
+export template <>
+struct enumerator_traits<console_entry_kind> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<console_entry_kind, 4>{
+          {{"stat", console_entry_kind::stat},
+           {"info", console_entry_kind::info},
+           {"warning", console_entry_kind::warning},
+           {"error", console_entry_kind::error}}};
+    }
+};
 //------------------------------------------------------------------------------
 /// @brief Console entry instance id type.
 /// @ingroup console

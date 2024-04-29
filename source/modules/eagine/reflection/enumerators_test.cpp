@@ -15,48 +15,48 @@ import eagine.core.reflection;
 namespace eagine {
 enum class test_enum_1 : unsigned { a, b, c, d, e, f, g, h, i, j };
 
-template <typename Selector>
-constexpr auto enumerator_mapping(
-  std::type_identity<test_enum_1>,
-  Selector) noexcept {
-    return enumerator_map_type<test_enum_1, 10>{
-      {{"a", test_enum_1::a},
-       {"b", test_enum_1::b},
-       {"c", test_enum_1::c},
-       {"d", test_enum_1::d},
-       {"e", test_enum_1::e},
-       {"f", test_enum_1::f},
-       {"g", test_enum_1::g},
-       {"h", test_enum_1::h},
-       {"i", test_enum_1::i},
-       {"j", test_enum_1::j}}};
-}
+template <>
+struct enumerator_traits<test_enum_1> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<test_enum_1, 10>{
+          {{"a", test_enum_1::a},
+           {"b", test_enum_1::b},
+           {"c", test_enum_1::c},
+           {"d", test_enum_1::d},
+           {"e", test_enum_1::e},
+           {"f", test_enum_1::f},
+           {"g", test_enum_1::g},
+           {"h", test_enum_1::h},
+           {"i", test_enum_1::i},
+           {"j", test_enum_1::j}}};
+    }
+};
 //------------------------------------------------------------------------------
 enum class test_enum_2 : unsigned { one = 1U, two = 2U, three = 3U, four = 4U };
 
-template <typename Selector>
-constexpr auto enumerator_mapping(
-  std::type_identity<test_enum_2>,
-  Selector) noexcept {
-    return enumerator_map_type<test_enum_2, 4>{
-      {{"one", test_enum_2::one},
-       {"two", test_enum_2::two},
-       {"three", test_enum_2::three},
-       {"four", test_enum_2::four}}};
-}
+template <>
+struct enumerator_traits<test_enum_2> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<test_enum_2, 4>{
+          {{"one", test_enum_2::one},
+           {"two", test_enum_2::two},
+           {"three", test_enum_2::three},
+           {"four", test_enum_2::four}}};
+    }
+};
 //------------------------------------------------------------------------------
 enum class test_enum_3 : unsigned { one = 1U, two = 2U, four = 4U, eight = 8U };
 
-template <typename Selector>
-constexpr auto enumerator_mapping(
-  std::type_identity<test_enum_3>,
-  Selector) noexcept {
-    return enumerator_map_type<test_enum_3, 4>{
-      {{"one", test_enum_3::one},
-       {"two", test_enum_3::two},
-       {"four", test_enum_3::four},
-       {"eight", test_enum_3::eight}}};
-}
+template <>
+struct enumerator_traits<test_enum_3> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<test_enum_3, 4>{
+          {{"one", test_enum_3::one},
+           {"two", test_enum_3::two},
+           {"four", test_enum_3::four},
+           {"eight", test_enum_3::eight}}};
+    }
+};
 } // namespace eagine
 //------------------------------------------------------------------------------
 // is consecutive
@@ -65,12 +65,9 @@ void enum_is_consecutive(auto& s) {
     using eagine::is_consecutive;
     eagitest::case_ test{s, 1, "is consecutive"};
 
-    test.check_equal(
-      is_consecutive(std::type_identity<eagine::test_enum_1>()), true, "1");
-    test.check_equal(
-      is_consecutive(std::type_identity<eagine::test_enum_2>()), false, "2");
-    test.check_equal(
-      is_consecutive(std::type_identity<eagine::test_enum_3>()), false, "3");
+    test.check_equal(is_consecutive<eagine::test_enum_1>(), true, "1");
+    test.check_equal(is_consecutive<eagine::test_enum_2>(), false, "2");
+    test.check_equal(is_consecutive<eagine::test_enum_3>(), false, "3");
 }
 //------------------------------------------------------------------------------
 // is bitset
@@ -79,12 +76,9 @@ void enum_is_bitset(auto& s) {
     using eagine::is_bitset;
     eagitest::case_ test{s, 2, "is bitset"};
 
-    test.check_equal(
-      is_bitset(std::type_identity<eagine::test_enum_1>()), false, "1");
-    test.check_equal(
-      is_bitset(std::type_identity<eagine::test_enum_2>()), false, "2");
-    test.check_equal(
-      is_bitset(std::type_identity<eagine::test_enum_3>()), true, "3");
+    test.check_equal(is_bitset<eagine::test_enum_1>(), false, "1");
+    test.check_equal(is_bitset<eagine::test_enum_2>(), false, "2");
+    test.check_equal(is_bitset<eagine::test_enum_3>(), true, "3");
 }
 //------------------------------------------------------------------------------
 // enumerator count
@@ -93,12 +87,9 @@ void enum_enumerator_count(auto& s) {
     using eagine::enumerator_count;
     eagitest::case_ test{s, 3, "enumerator count"};
 
-    test.check_equal(
-      enumerator_count(std::type_identity<eagine::test_enum_1>()), 10, "1");
-    test.check_equal(
-      enumerator_count(std::type_identity<eagine::test_enum_2>()), 4, "2");
-    test.check_equal(
-      enumerator_count(std::type_identity<eagine::test_enum_3>()), 4, "3");
+    test.check_equal(enumerator_count<eagine::test_enum_1>(), 10, "1");
+    test.check_equal(enumerator_count<eagine::test_enum_2>(), 4, "2");
+    test.check_equal(enumerator_count<eagine::test_enum_3>(), 4, "3");
 }
 //------------------------------------------------------------------------------
 // enumerator index
@@ -177,75 +168,37 @@ void enum_from_string(auto& s) {
     eagitest::case_ test{s, 6, "from string"};
 
     test.check(
-      eagine::test_enum_1::a ==
-        from_string(
-          "a", std::type_identity<eagine::test_enum_1>{}, default_selector),
-      "1::a");
+      eagine::test_enum_1::a == from_string<eagine::test_enum_1>("a"), "1::a");
     test.check(
-      eagine::test_enum_1::b ==
-        from_string(
-          "b", std::type_identity<eagine::test_enum_1>{}, default_selector),
-      "1::b");
+      eagine::test_enum_1::b == from_string<eagine::test_enum_1>("b"), "1::b");
     test.check(
-      eagine::test_enum_1::c ==
-        from_string(
-          "c", std::type_identity<eagine::test_enum_1>{}, default_selector),
-      "1::c");
+      eagine::test_enum_1::c == from_string<eagine::test_enum_1>("c"), "1::c");
     test.check(
-      eagine::test_enum_1::d ==
-        from_string(
-          "d", std::type_identity<eagine::test_enum_1>{}, default_selector),
-      "1::d");
+      eagine::test_enum_1::d == from_string<eagine::test_enum_1>("d"), "1::d");
     test.check(
-      eagine::test_enum_1::e ==
-        from_string(
-          "e", std::type_identity<eagine::test_enum_1>{}, default_selector),
-      "1::e");
+      eagine::test_enum_1::e == from_string<eagine::test_enum_1>("e"), "1::e");
     test.check(
-      eagine::test_enum_1::f ==
-        from_string(
-          "f", std::type_identity<eagine::test_enum_1>{}, default_selector),
-      "1::f");
+      eagine::test_enum_1::f == from_string<eagine::test_enum_1>("f"), "1::f");
     test.check(
-      eagine::test_enum_1::g ==
-        from_string(
-          "g", std::type_identity<eagine::test_enum_1>{}, default_selector),
-      "1::g");
+      eagine::test_enum_1::g == from_string<eagine::test_enum_1>("g"), "1::g");
     test.check(
-      eagine::test_enum_1::h ==
-        from_string(
-          "h", std::type_identity<eagine::test_enum_1>{}, default_selector),
-      "1::h");
+      eagine::test_enum_1::h == from_string<eagine::test_enum_1>("h"), "1::h");
     test.check(
-      eagine::test_enum_1::i ==
-        from_string(
-          "i", std::type_identity<eagine::test_enum_1>{}, default_selector),
-      "1::i");
+      eagine::test_enum_1::i == from_string<eagine::test_enum_1>("i"), "1::i");
     test.check(
-      eagine::test_enum_1::j ==
-        from_string(
-          "j", std::type_identity<eagine::test_enum_1>{}, default_selector),
-      "1::j");
+      eagine::test_enum_1::j == from_string<eagine::test_enum_1>("j"), "1::j");
 
     test.check(
-      eagine::test_enum_2::one ==
-        from_string(
-          "one", std::type_identity<eagine::test_enum_2>{}, default_selector),
+      eagine::test_enum_2::one == from_string<eagine::test_enum_2>("one"),
       "2::one");
     test.check(
-      eagine::test_enum_2::two ==
-        from_string(
-          "two", std::type_identity<eagine::test_enum_2>{}, default_selector),
+      eagine::test_enum_2::two == from_string<eagine::test_enum_2>("two"),
       "2::two");
     test.check(
-      eagine::test_enum_2::three ==
-        from_string(
-          "three", std::type_identity<eagine::test_enum_2>{}, default_selector),
+      eagine::test_enum_2::three == from_string<eagine::test_enum_2>("three"),
       "2::three");
     test.check(
-      eagine::test_enum_2::four ==
-        from_string(
-          "four", std::type_identity<eagine::test_enum_2>{}, default_selector),
+      eagine::test_enum_2::four == from_string<eagine::test_enum_2>("four"),
       "2::four");
 }
 //------------------------------------------------------------------------------
@@ -306,13 +259,11 @@ void enum_roundtrip_1(auto& s) {
     eagitest::track trck{test, 10, 1};
 
     const std::type_identity<eagine::test_enum_1> tid;
-    for(const auto& info : eagine::enumerator_mapping(tid, default_selector)) {
+    for(const auto& info : eagine::enumerators(tid)) {
         test.check(
-          info.enumerator == from_string(info.name, tid, default_selector),
-          "same value");
+          info.enumerator == from_string(info.name, tid), "same value");
         test.check(
-          info.name == enumerator_name(info.enumerator, tid, default_selector),
-          "same name");
+          info.name == enumerator_name(info.enumerator, tid), "same name");
         trck.checkpoint(1);
     }
 }
@@ -326,13 +277,11 @@ void enum_roundtrip_2(auto& s) {
     eagitest::track trck{test, 4, 1};
 
     const std::type_identity<eagine::test_enum_2> tid;
-    for(const auto& info : eagine::enumerator_mapping(tid, default_selector)) {
+    for(const auto& info : eagine::enumerators(tid)) {
         test.check(
-          info.enumerator == from_string(info.name, tid, default_selector),
-          "same value");
+          info.enumerator == from_string(info.name, tid), "same value");
         test.check(
-          info.name == enumerator_name(info.enumerator, tid, default_selector),
-          "same name");
+          info.name == enumerator_name(info.enumerator, tid), "same name");
         trck.checkpoint(1);
     }
 }
@@ -346,13 +295,11 @@ void enum_roundtrip_3(auto& s) {
     eagitest::track trck{test, 4, 1};
 
     const std::type_identity<eagine::test_enum_3> tid;
-    for(const auto& info : eagine::enumerator_mapping(tid, default_selector)) {
+    for(const auto& info : eagine::enumerators(tid)) {
         test.check(
-          info.enumerator == from_string(info.name, tid, default_selector),
-          "same value");
+          info.enumerator == from_string(info.name, tid), "same value");
         test.check(
-          info.name == enumerator_name(info.enumerator, tid, default_selector),
-          "same name");
+          info.name == enumerator_name(info.enumerator, tid), "same name");
         trck.checkpoint(1);
     }
 }

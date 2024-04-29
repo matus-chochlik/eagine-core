@@ -66,6 +66,7 @@ eagine_add_module(
 		std result interface
 		eagine.core.types
 		eagine.core.memory
+		eagine.core.string
 		eagine.core.identifier
 		eagine.core.reflection
 		eagine.core.math

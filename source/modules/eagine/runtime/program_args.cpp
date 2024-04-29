@@ -231,28 +231,19 @@ private:
     friend class program_args;
 };
 //------------------------------------------------------------------------------
-export template <typename T, identifier_t V>
+export template <typename T>
 auto from_string(
   const program_arg& arg,
-  const std::type_identity<T> tid,
-  const selector<V> self) noexcept -> optionally_valid<T> {
+  const std::type_identity<T> tid) noexcept -> optionally_valid<T> {
     if(arg.has_value()) {
-        return from_string(arg.get(), tid, self);
+        return from_string(arg.get(), tid);
     }
     return {};
 }
 
-export template <typename T, identifier_t V>
-auto assign_if_fits(
-  const program_arg& src,
-  T& dst,
-  const selector<V> sel = default_selector) noexcept -> bool {
-    return assign_if_fits(src.get(), dst, sel);
-}
-
 export template <typename T>
 auto assign_if_fits(const program_arg& src, T& dst) noexcept -> bool {
-    return assign_if_fits(src, dst, default_selector);
+    return assign_if_fits(src.get(), dst);
 }
 //------------------------------------------------------------------------------
 export auto to_string(const program_arg& arg) {

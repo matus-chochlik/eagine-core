@@ -198,16 +198,7 @@ public:
       const basic_string_path& path,
       span<const T> data,
       O& dest) {
-        visit_mapped(_temp, path, dest, default_selector, _fwd_func<T>{data});
-    }
-
-    template <typename T, typename O, identifier_t Id>
-    auto forward_data(
-      const basic_string_path& path,
-      span<const T> data,
-      O& dest,
-      selector<Id> sel) {
-        visit_mapped(_temp, path, dest, sel, _fwd_func<T>{data});
+        visit_mapped(_temp, path, dest, _fwd_func<T>{data});
     }
 
 private:

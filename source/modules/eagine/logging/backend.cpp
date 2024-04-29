@@ -49,21 +49,21 @@ export enum class log_event_severity : std::uint8_t {
     fatal
 };
 
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  const std::type_identity<log_event_severity>,
-  const Selector) noexcept {
-    return enumerator_map_type<log_event_severity, 9>{
-      {{"backtrace", log_event_severity::backtrace},
-       {"trace", log_event_severity::trace},
-       {"debug", log_event_severity::debug},
-       {"stat", log_event_severity::stat},
-       {"info", log_event_severity::info},
-       {"change", log_event_severity::change},
-       {"warning", log_event_severity::warning},
-       {"error", log_event_severity::error},
-       {"fatal", log_event_severity::fatal}}};
-}
+export template <>
+struct enumerator_traits<log_event_severity> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<log_event_severity, 9>{
+          {{"backtrace", log_event_severity::backtrace},
+           {"trace", log_event_severity::trace},
+           {"debug", log_event_severity::debug},
+           {"stat", log_event_severity::stat},
+           {"info", log_event_severity::info},
+           {"change", log_event_severity::change},
+           {"warning", log_event_severity::warning},
+           {"error", log_event_severity::error},
+           {"fatal", log_event_severity::fatal}}};
+    }
+};
 //------------------------------------------------------------------------------
 /// @brief Returns log_event_severity increased by one level.
 /// @relates log_event_severity
@@ -86,15 +86,15 @@ export enum class log_backend_lock : std::uint8_t {
     spinlock
 };
 
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  const std::type_identity<log_backend_lock>,
-  const Selector) noexcept {
-    return enumerator_map_type<log_backend_lock, 3>{
-      {{"none", log_backend_lock::none},
-       {"mutex", log_backend_lock::mutex},
-       {"spinlock", log_backend_lock::spinlock}}};
-}
+export template <>
+struct enumerator_traits<log_backend_lock> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<log_backend_lock, 3>{
+          {{"none", log_backend_lock::none},
+           {"mutex", log_backend_lock::mutex},
+           {"spinlock", log_backend_lock::spinlock}}};
+    }
+};
 //------------------------------------------------------------------------------
 /// @brief Log data format.
 /// @ingroup logging
@@ -105,13 +105,13 @@ export enum class log_data_format : std::uint8_t {
     json
 };
 
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  const std::type_identity<log_data_format>,
-  const Selector) noexcept {
-    return enumerator_map_type<log_data_format, 2>{
-      {{"xml", log_data_format::xml}, {"json", log_data_format::json}}};
-}
+export template <>
+struct enumerator_traits<log_data_format> {
+    static constexpr auto mapping() noexcept {
+        return enumerator_map_type<log_data_format, 2>{
+          {{"xml", log_data_format::xml}, {"json", log_data_format::json}}};
+    }
+};
 //------------------------------------------------------------------------------
 /// @brief Structure used to supply initial log stream information to a logger.
 /// @ingroup logging

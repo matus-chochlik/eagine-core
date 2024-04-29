@@ -17,38 +17,38 @@ struct point {
     int x{}, y{}, z{};
 };
 
-template <identifier_t Id>
-constexpr auto data_member_mapping(
-  const std::type_identity<point>,
-  const selector<Id>) noexcept {
-    return make_data_member_mapping<point, int, int, int>(
-      {"x", &point::x}, {"y", &point::y}, {"z", &point::z});
-}
+template <>
+struct data_member_traits<point> {
+    static constexpr auto mapping() noexcept {
+        return make_data_member_mapping<point, int, int, int>(
+          {"x", &point::x}, {"y", &point::y}, {"z", &point::z});
+    }
+};
 //------------------------------------------------------------------------------
 struct triangle {
     point a{}, b{}, c{};
 };
 
-template <identifier_t Id>
-constexpr auto data_member_mapping(
-  const std::type_identity<triangle>,
-  const selector<Id>) noexcept {
-    return make_data_member_mapping<triangle, point, point, point>(
-      {"a", &triangle::a}, {"b", &triangle::b}, {"c", &triangle::c});
-}
+template <>
+struct data_member_traits<triangle> {
+    static constexpr auto mapping() noexcept {
+        return make_data_member_mapping<triangle, point, point, point>(
+          {"a", &triangle::a}, {"b", &triangle::b}, {"c", &triangle::c});
+    }
+};
 //------------------------------------------------------------------------------
 struct tetrahedron {
     triangle base{};
     point apex{};
 };
 
-template <identifier_t Id>
-constexpr auto data_member_mapping(
-  const std::type_identity<tetrahedron>,
-  const selector<Id>) noexcept {
-    return make_data_member_mapping<tetrahedron, triangle, point>(
-      {"base", &tetrahedron::base}, {"apex", &tetrahedron::apex});
-}
+template <>
+struct data_member_traits<tetrahedron> {
+    static constexpr auto mapping() noexcept {
+        return make_data_member_mapping<tetrahedron, triangle, point>(
+          {"base", &tetrahedron::base}, {"apex", &tetrahedron::apex});
+    }
+};
 //------------------------------------------------------------------------------
 } // namespace eagine
 //------------------------------------------------------------------------------

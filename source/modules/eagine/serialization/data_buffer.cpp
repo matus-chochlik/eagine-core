@@ -213,11 +213,9 @@ private:
 export template <identifier_t Sid, typename T, typename Selector>
 struct get_serialize_buffer_size
   : std::conditional_t<
-      default_mapped_struct<T>,
+      mapped_struct<T>,
       get_struct_serialize_buffer_size<Sid, T, Selector>,
-      std::
-        conditional_t<default_mapped_enum<T>, serialize_size_constant<96>, void>> {
-};
+      std::conditional_t<mapped_enum<T>, serialize_size_constant<96>, void>> {};
 //------------------------------------------------------------------------------
 export template <identifier_t SerializerId, typename T, typename Selector>
 constexpr auto get_serialize_array_for(const T&, Selector) noexcept

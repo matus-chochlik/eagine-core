@@ -40,7 +40,7 @@ auto url_query_args::arg_url(const string_view name) const noexcept -> url {
 auto url::encode_component(const string_view src) noexcept -> std::string {
     const auto is_valid{[](char c) {
         return ((c >= 'a') and (c <= 'z')) or ((c >= 'A') and (c <= 'Z')) or
-               ((c >= '0') and (c <= '0')) or (c == '-') or (c == '_') or
+               ((c >= '0') and (c <= '9')) or (c == '-') or (c == '_') or
                (c == '.') or (c == '~');
     }};
     std::string result;

@@ -45,8 +45,8 @@ private:
             return {pw->pw_name};
         }
         std::array<char, 128> temp{};
-        if(::getlogin_r(temp.data(), temp.size())) {
-            return {temp.data(), temp.size()};
+        if(::getlogin_r(temp.data(), temp.size() - 1) == 0) {
+            return {temp.data()};
         }
 #endif
         if(const auto opt_var{get_environment_variable("USER")}) {

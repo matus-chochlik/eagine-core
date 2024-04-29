@@ -14,24 +14,24 @@ import eagine.core.identifier;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-export template <default_mapped_enum T>
+export template <mapped_enum T>
 constexpr auto adapt_entry_arg(const identifier name, const T value) noexcept {
     return [=](auto& backend) {
         backend.add_string(name, "enum", enumerator_name(value));
     };
 }
 //------------------------------------------------------------------------------
-export template <default_mapped_enum T>
+export template <mapped_enum T>
 constexpr auto adapt_entry_arg(
   const identifier name,
   const bitfield<T> bf) noexcept {
     return [=](auto& backend) {
-        const auto func = [&backend, name, bf](const auto& info) {
+        const auto func{[&backend, name, bf](const auto& info) {
             if(bf.has(static_cast<T>(info.value))) {
                 backend.add_string(name, "bitfield", info.name);
             }
-        };
-        for_each_enumerator(func, std::type_identity<T>{});
+        }};
+        for_each_enumerator<T>(func);
     };
 }
 //------------------------------------------------------------------------------

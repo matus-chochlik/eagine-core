@@ -312,10 +312,8 @@ auto message_extractor::add(const extractor_arg<string_view>& a) noexcept
         assign_to(a.value, this->info.format);
         return true;
     } else if(a.path.like(_lvl_pattern)) {
-        this->info.severity =
-          from_string(
-            a.value, std::type_identity<log_event_severity>{}, default_selector)
-            .value_or(log_event_severity::info);
+        this->info.severity = from_string<log_event_severity>(a.value).value_or(
+          log_event_severity::info);
         return true;
     } else if(a.path.like(_atr_pattern)) {
         if(a.path.ends_with("n")) {

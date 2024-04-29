@@ -16,7 +16,8 @@ import eagine.core.reflection;
 import eagine.core.valid_if;
 import eagine.core.console;
 
-namespace eagine::valtree {
+namespace eagine {
+namespace valtree {
 //------------------------------------------------------------------------------
 /// @brief Value tree value element data type enumeration.
 /// @ingroup valtree
@@ -43,22 +44,25 @@ export enum class value_type : std::uint8_t {
     composite
 };
 //------------------------------------------------------------------------------
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  std::type_identity<value_type>,
-  Selector) noexcept {
-    return enumerator_map_type<value_type, 10>{
-      {{"unknown", value_type::unknown},
-       {"bool_type", value_type::bool_type},
-       {"byte_type", value_type::byte_type},
-       {"int16_type", value_type::int16_type},
-       {"int32_type", value_type::int32_type},
-       {"int64_type", value_type::int64_type},
-       {"float_type", value_type::float_type},
-       {"duration_type", value_type::duration_type},
-       {"string_type", value_type::string_type},
-       {"composite", value_type::composite}}};
-}
+} // namespace valtree
+export template <>
+struct enumerator_traits<valtree::value_type> {
+    static constexpr auto mapping() noexcept {
+        using valtree::value_type;
+        return enumerator_map_type<value_type, 10>{
+          {{"unknown", value_type::unknown},
+           {"bool_type", value_type::bool_type},
+           {"byte_type", value_type::byte_type},
+           {"int16_type", value_type::int16_type},
+           {"int32_type", value_type::int32_type},
+           {"int64_type", value_type::int64_type},
+           {"float_type", value_type::float_type},
+           {"duration_type", value_type::duration_type},
+           {"string_type", value_type::string_type},
+           {"composite", value_type::composite}}};
+    }
+};
+namespace valtree {
 //------------------------------------------------------------------------------
 export struct compound_interface;
 
@@ -397,4 +401,5 @@ export auto make_printing_value_tree_visitor(const console&)
 export auto make_building_value_tree_visitor(
   shared_holder<object_builder> builder) -> unique_holder<value_tree_visitor>;
 //------------------------------------------------------------------------------
-} // namespace eagine::valtree
+} // namespace valtree
+} // namespace eagine

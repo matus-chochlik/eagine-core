@@ -233,32 +233,6 @@ export using from_pack_t = selector<0xF9U>;
 /// @ingroup metaprogramming
 /// @see from_pack_t
 export constexpr const from_pack_t from_pack{};
-
-/// @brief Type alias for application-config function selector.
-/// @ingroup metaprogramming
-/// @see from_config
-///
-/// This type is typically used as an additional parameter some function
-/// overloads.
-export using from_config_t = selector<0xACU>;
-
-/// @brief The from-config function tag-dispatch constant
-/// @ingroup metaprogramming
-/// @see from_config_t
-export constexpr const from_config_t from_config{};
-
-/// @brief Type alias for from-value-tree function selector.
-/// @ingroup metaprogramming
-/// @see from_value_tree
-///
-/// This type is typically used as an additional parameter some function
-/// overloads.
-export using from_value_tree_t = selector<0xF7U>;
-
-/// @brief The from-config function tag-dispatch constant
-/// @ingroup metaprogramming
-/// @see from_config_t
-export constexpr const from_value_tree_t from_value_tree{};
 //------------------------------------------------------------------------------
 /// @brief Template for types that serve as identifiers for specific purpose.
 export template <identifier_t Tag>
@@ -306,5 +280,8 @@ constexpr auto operator<<(std::ostream& out, const tagged_id<Tag> id)
   -> std::ostream& {
     return out << id.value();
 }
+//------------------------------------------------------------------------------
+export template <typename T>
+struct string_traits;
 //------------------------------------------------------------------------------
 } // namespace eagine
