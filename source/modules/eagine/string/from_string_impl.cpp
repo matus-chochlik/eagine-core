@@ -362,6 +362,10 @@ const auto arith_expression_def =
 //------------------------------------------------------------------------------
 // NOLINTNEXTLINE(cert-err58-cpp)
 const auto function_call_def =
+  (bs::lit("floor") >> "(" >> numeric_expression >>
+   ")")[([](auto& c) { _val(c) = std::floor(_attr(c).real()); })] |
+  (bs::lit("ceil") >> "(" >> numeric_expression >>
+   ")")[([](auto& c) { _val(c) = std::ceil(_attr(c).real()); })] |
   (bs::lit("sqrt") >> "(" >> numeric_expression >>
    ")")[([](auto& c) { _val(c) = std::sqrt(_attr(c)); })] |
   (bs::lit("sin") >> "(" >> numeric_expression >>
