@@ -250,6 +250,18 @@ export template <std::integral T>
              : 0;
 }
 //------------------------------------------------------------------------------
+/// @brief Returns the i-th Fibonacci number.
+/// @ingroup math
+export [[nodiscard]] constexpr auto fibonacci(std::uintmax_t n) noexcept
+  -> std::uintmax_t {
+    std::tuple<std::uintmax_t, std::uintmax_t> f{0U, 1U};
+    while(n > 0U) {
+        --n;
+        f = std::make_tuple(std::get<1>(f), std::get<0>(f) + std::get<1>(f));
+    }
+    return std::get<1>(f);
+}
+//------------------------------------------------------------------------------
 /// @brief Linear interpolation between @p a and @p b.
 /// @ingroup math
 /// @see lerp
