@@ -382,6 +382,10 @@ const auto function_call_def =
    ")")[([](auto& c) { _val(c) = math::sine_wave01(_attr(c)); })] |
   (bs::lit("cos01") >> "(" >> numeric_expression >>
    ")")[([](auto& c) { _val(c) = math::cosine_wave01(_attr(c)); })] |
+  (bs::lit("fib") >> "(" >> numeric_expression >> ")")[([](auto& c) {
+      _val(c) =
+        double(math::fibonacci(static_cast<std::uintmax_t>(_attr(c).real())));
+  })] |
   (bs::lit("sigmoid") >> "(" >> numeric_expression >> "," >>
    numeric_expression >> ")")[([](auto& c) {
       _val(c) =
