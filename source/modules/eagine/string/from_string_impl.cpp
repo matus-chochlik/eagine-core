@@ -362,6 +362,10 @@ const auto arith_expression_def =
 //------------------------------------------------------------------------------
 // NOLINTNEXTLINE(cert-err58-cpp)
 const auto function_call_def =
+  (bs::lit("floor") >> "(" >> numeric_expression >>
+   ")")[([](auto& c) { _val(c) = std::floor(_attr(c).real()); })] |
+  (bs::lit("ceil") >> "(" >> numeric_expression >>
+   ")")[([](auto& c) { _val(c) = std::ceil(_attr(c).real()); })] |
   (bs::lit("sqrt") >> "(" >> numeric_expression >>
    ")")[([](auto& c) { _val(c) = std::sqrt(_attr(c)); })] |
   (bs::lit("sin") >> "(" >> numeric_expression >>
@@ -378,6 +382,10 @@ const auto function_call_def =
    ")")[([](auto& c) { _val(c) = math::sine_wave01(_attr(c)); })] |
   (bs::lit("cos01") >> "(" >> numeric_expression >>
    ")")[([](auto& c) { _val(c) = math::cosine_wave01(_attr(c)); })] |
+  (bs::lit("fib") >> "(" >> numeric_expression >> ")")[([](auto& c) {
+      _val(c) =
+        double(math::fibonacci(static_cast<std::uintmax_t>(_attr(c).real())));
+  })] |
   (bs::lit("sigmoid") >> "(" >> numeric_expression >> "," >>
    numeric_expression >> ")")[([](auto& c) {
       _val(c) =
