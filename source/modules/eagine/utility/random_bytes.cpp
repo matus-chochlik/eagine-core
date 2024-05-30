@@ -12,7 +12,7 @@ import eagine.core.types;
 import eagine.core.memory;
 
 namespace eagine {
-
+//------------------------------------------------------------------------------
 export template <typename Engine>
 auto fill_with_random_bytes(span<byte> dst, Engine& engine) -> span<byte> {
     using ui_t = typename Engine::result_type;
@@ -23,11 +23,15 @@ auto fill_with_random_bytes(span<byte> dst, Engine& engine) -> span<byte> {
     generate(dst, [&] { return static_cast<byte>(ibe() & mask); });
     return dst;
 }
-
-export auto fill_with_random_bytes(span<byte> dst) -> span<byte> {
-    std::random_device rd;
-    std::default_random_engine re{rd()};
-    return fill_with_random_bytes(dst, re);
-}
-
+//------------------------------------------------------------------------------
+export auto fill_with_random_bytes(span<byte> dst) -> span<byte>;
+//------------------------------------------------------------------------------
+export auto fill_with_random_identifier(
+  span<char> dst,
+  std::default_random_engine&) -> span<char>;
+export auto fill_with_random_identifier(span<char> dst) -> span<char>;
+export auto fill_with_random_identifier(
+  std::string& dst,
+  std::default_random_engine&) -> std::string&;
+//------------------------------------------------------------------------------
 } // namespace eagine

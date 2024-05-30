@@ -218,6 +218,14 @@ public:
         return result;
     }
 
+    void random_identifier(memory::span<char> dest) noexcept final {
+        _source.random_identifier(dest);
+    }
+
+    void random_identifier(std::string& dest) noexcept final {
+        _source.random_identifier(dest);
+    }
+
     [[nodiscard]] auto encrypt_shared(
       memory::const_block nonce,
       memory::const_block input,

@@ -147,6 +147,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.utility
 	SOURCES
+		random_bytes
 		progress_bar
 		scheduler
 	IMPORTS
