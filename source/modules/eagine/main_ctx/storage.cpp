@@ -178,6 +178,14 @@ public:
         generate(dest, [this] { return _dist_normal_float(_rand_eng); });
     }
 
+    void random_identifier(memory::span<char> dest) noexcept final {
+        eagine::fill_with_random_identifier(dest, _rand_eng);
+    }
+
+    void random_identifier(std::string& dest) noexcept final {
+        eagine::fill_with_random_identifier(dest, _rand_eng);
+    }
+
     auto exe_path() const noexcept -> string_view final {
         return {_exe_path};
     }

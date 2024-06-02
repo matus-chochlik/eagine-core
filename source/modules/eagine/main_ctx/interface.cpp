@@ -166,6 +166,12 @@ export struct main_ctx_getters : interface<main_ctx_getters> {
 
     /// @brief Fills the given span with normal-distributed random values.
     virtual void random_normal(memory::span<float>) noexcept = 0;
+
+    /// @brief Fills the given span with identifier characters
+    virtual void random_identifier(memory::span<char>) noexcept = 0;
+
+    /// @brief Fills the given span with identifier characters
+    virtual void random_identifier(std::string&) noexcept = 0;
 };
 
 export auto try_get_main_ctx() noexcept -> optional_reference<main_ctx_getters>;
