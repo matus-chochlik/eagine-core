@@ -472,6 +472,16 @@ auto split_by_first(
     return {head(spn, pos), skip(spn, pos + what.size())};
 }
 //------------------------------------------------------------------------------
+/// @brief Splits a span by the first occurrence of @p what (before and after, what)
+/// @ingroup memory
+/// @see find_position
+export template <typename T, typename P, typename S, typename E>
+auto split_by_first_element(const basic_span<T, P, S> spn, const E& what)
+  -> std::tuple<basic_span<T, P, S>, basic_span<T, P, S>> {
+    const auto pos{find_element(spn, what).value_or(spn.size())};
+    return {head(spn, pos), skip(spn, pos + 1)};
+}
+//------------------------------------------------------------------------------
 /// @brief Returns a slice of span before the last occurrence of @p what.
 /// @ingroup memory
 /// @see reverse_find_position
