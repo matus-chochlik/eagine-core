@@ -497,9 +497,14 @@ public:
         return identifier{method_id()};
     }
 
-    /// @brief Checks if the stored identifier values are non-zero.
+    /// @brief Checks if the class and method identifier values are non-zero.
     [[nodiscard]] constexpr auto is_valid() const noexcept {
         return (class_id() != 0U) and (method_id() != 0U);
+    }
+
+    /// @brief Checks if the class and method identifier values are non-zero.
+    [[nodiscard]] constexpr explicit operator bool() const noexcept {
+        return is_valid();
     }
 
     /// @brief Returns the class and method identifiers in a tuple.
