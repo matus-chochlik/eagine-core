@@ -1,0 +1,22 @@
+#!/bin/sh -e
+# Copyright Matus Chochlik.
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+# https://www.boost.org/LICENSE_1_0.txt
+#
+if ! getent group eagine > /dev/null
+then
+	addgroup --gid 34917 eagine
+fi
+if ! getent passwd eagine > /dev/null
+then
+	adduser \\
+		--uid 34917 \\
+		--disabled-login \\
+		--disabled-password \\
+		--home "/var/lib/eagine" \\
+		--gecos "EAGine service account" \\
+		--ingroup eagine \\
+		eagine
+fi
+

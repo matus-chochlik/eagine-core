@@ -8,8 +8,8 @@ cmake_minimum_required(VERSION 3.27)
 project(
 	EAGineCore
 	LANGUAGES CXX
-	HOMEPAGE_URL https://github.com/matus-chochlik/eagine-core
-)
+	HOMEPAGE_URL https://github.com/matus-chochlik/eagine-core)
+
 if(NOT EAGINE_CORE_ROOT)
 	set(EAGINE_CORE_ROOT ${PROJECT_SOURCE_DIR})
 endif()
