@@ -4,14 +4,12 @@
 # https://www.boost.org/LICENSE_1_0.txt
 #
 install(
-	PROGRAMS
-		bin/eagilog-server-start
-		bin/eagilog-server-stop
+	DIRECTORY build
 	COMPONENT core-docker
-	DESTINATION bin)
+	DESTINATION share/eagine/docker)
 
 install(
-	DIRECTORY etc
+	DIRECTORY eagilog
 	COMPONENT core-docker
-	DESTINATION /)
+	DESTINATION share/eagine/docker)
 

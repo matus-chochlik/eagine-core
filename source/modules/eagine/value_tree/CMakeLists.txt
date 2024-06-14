@@ -3,7 +3,9 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.value_tree PARTITION interface
+	eagine.core.value_tree
+	COMPONENT core-dev
+	PARTITION interface
 	IMPORTS
 		std
 		eagine.core.types
@@ -16,7 +18,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.value_tree PARTITION wrappers
+	eagine.core.value_tree
+	COMPONENT core-dev
+	PARTITION wrappers
 	IMPORTS
 		std interface
 		eagine.core.types
@@ -29,7 +33,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.value_tree PARTITION implementation
+	eagine.core.value_tree
+	COMPONENT core-dev
+	PARTITION implementation
 	IMPORTS
 		std interface wrappers
 		eagine.core.types
@@ -42,6 +48,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.value_tree
+	COMPONENT core-dev
 	SOURCES
 		wrappers
 		empty

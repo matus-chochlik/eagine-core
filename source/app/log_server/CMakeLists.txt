@@ -83,14 +83,21 @@ install(
 	FILES "${CMAKE_CURRENT_BINARY_DIR}/eagine-core-log-server.1.gz"
 	COMPONENT core-logging
 	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-	DESTINATION /usr/share/man/man1)
+	DESTINATION share/man/man1)
 
 install(
 	FILES "resource/eagine-core-log-server.bco"
 	COMPONENT core-logging
 	RENAME eagine-core-log-server
 	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-	DESTINATION /usr/share/bash-completion/completions)
+	DESTINATION share/bash-completion/completions)
 
 eagine_add_license(core-logging)
 eagine_add_debian_changelog(core-logging)
+
+install(
+	FILES "postgresql/eagilog.sql"
+	COMPONENT core-docker
+	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+	DESTINATION share/eagine)
+

@@ -4,6 +4,7 @@
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
 	eagine.core.build_info
+	COMPONENT core-dev
 	SOURCES
 		build_info
 	IMPORTS

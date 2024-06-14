@@ -2,6 +2,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
+
 add_subdirectory(build_config)
 add_subdirectory(types)
 add_subdirectory(debug)
@@ -29,6 +30,7 @@ add_subdirectory(app)
 
 eagine_add_module(
 	eagine.core
+	COMPONENT core-dev
 	SUBMODULES
 		build_config
 		types
@@ -73,6 +75,8 @@ eagine_embed_target_resources(
 	TARGET test.eagine.core.embed
 	RESOURCES
 		CMakeLists "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt"
-	ENABLE_SEARCH
-)
+	ENABLE_SEARCH)
+
+eagine_add_license(core-dev)
+eagine_add_debian_changelog(core-dev)
 

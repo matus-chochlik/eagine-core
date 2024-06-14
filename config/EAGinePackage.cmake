@@ -48,15 +48,26 @@ set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 set(CPACK_DEBIAN_PACKAGE_SOURCE eagine)
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "important")
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
+set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION ON)
 
 # Package specific options
 #  Debian
 #   Dependencies
+set(CPACK_DEBIAN_CORE-DEV_PACKAGE_DEPENDS "cmake,libsystemd-dev,zlib1g-dev")
+set(CPACK_DEBIAN_CORE-DEV_PACKAGE_SUGGESTS "ninja-build")
 set(CPACK_DEBIAN_CORE-TOOLS_PACKAGE_DEPENDS "coreutils,python3,python3-pip")
 set(CPACK_DEBIAN_CORE-TOOLS_PACKAGE_SUGGESTS "postgresql-client,python3-psycopg2,python3-matplotlib")
+set(CPACK_DEBIAN_CORE-DEV_PACKAGE_DEPENDS "cmake,libsystemd-dev,zlib1g-dev")
+set(CPACK_DEBIAN_CORE-DEV_PACKAGE_SUGGESTS "ninja-build")
+set(CPACK_DEBIAN_CORE-DOCKER_PACKAGE_DEPENDS "docker")
+set(CPACK_DEBIAN_CORE-DOCKER_PACKAGE_SUGGESTS "docker-compose")
 #   Descriptions
+set(CPACK_DEBIAN_CORE-DEV_DESCRIPTION "Collection of various modern C++ utilities.")
+set(CPACK_DEBIAN_CORE-TOOLS_DESCRIPTION "Collection of core command-line utilities for EAGine.")
 set(CPACK_DEBIAN_USER-ACCOUNT_DESCRIPTION "Meta-package managing EAGine user account.")
-set(CPACK_DEBIAN_CORE-TOOLS_DESCRIPTION "Collection of core command-line utilities for EAGine")
+set(CPACK_DEBIAN_CORE-DOCKER_DESCRIPTION "Collection of containerized utilities for EAGine.")
+#   Control scripts
+set(CPACK_DEBIAN_USER-ACCOUNT_PACKAGE_CONTROL_EXTRA "${EAGINE_CORE_ROOT}/deploy/dpkg/user/preinst;${EAGINE_CORE_ROOT}/deploy/dpkg/user/postinst;${EAGINE_CORE_ROOT}/deploy/dpkg/user/postrm")
 
 # Include CPack
 set(CPACK_DEB_COMPONENT_INSTALL ON)

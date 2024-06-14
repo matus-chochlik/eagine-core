@@ -19,7 +19,7 @@ foreach(APP git-filter fmd-modify fmd-get psql-logs-cl log-plot procman)
 		COMPONENT core-tools
 		RENAME eagine-${APP}
 		PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-		DESTINATION /usr/share/bash-completion/completions)
+		DESTINATION share/bash-completion/completions)
 
 	install(
 		PROGRAMS ${APP}.py
@@ -43,6 +43,9 @@ install(
 	COMPONENT core-tools
 	RENAME eagilog-psql
 	DESTINATION bin)
+
+eagine_add_license(core-tools)
+eagine_add_debian_changelog(core-tools)
 
 add_subdirectory(log_server)
 add_subdirectory(sensors_log)

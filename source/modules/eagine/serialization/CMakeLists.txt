@@ -3,14 +3,18 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.serialization PARTITION float_utils
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION float_utils
 	IMPORTS
 		std
 		eagine.core.types
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION data_buffer
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION data_buffer
 	IMPORTS
 		std
 		eagine.core.types
@@ -20,7 +24,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION size_and_data
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION size_and_data
 	IMPORTS
 		std
 		eagine.core.types
@@ -30,7 +36,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION result
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION result
 	IMPORTS
 		std
 		eagine.core.types
@@ -39,7 +47,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION interface
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION interface
 	IMPORTS
 		std result
 		eagine.core.types
@@ -50,7 +60,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION implementation
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION implementation
 	IMPORTS
 		std result interface
 		eagine.core.types
@@ -61,7 +73,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION read
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION read
 	IMPORTS
 		std result interface
 		eagine.core.types
@@ -75,7 +89,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION write
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION write
 	IMPORTS
 		std result interface
 		eagine.core.types
@@ -88,7 +104,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION iostream
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION iostream
 	IMPORTS
 		std result interface
 		eagine.core.types
@@ -96,7 +114,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION block
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION block
 	IMPORTS
 		std result interface
 		eagine.core.types
@@ -104,7 +124,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION packed_block
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION packed_block
 	IMPORTS
 		std result block
 		eagine.core.types
@@ -113,7 +135,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION fast_backend
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION fast_backend
 	IMPORTS
 		std result implementation
 		eagine.core.types
@@ -124,7 +148,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION string_backend
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION string_backend
 	IMPORTS
 		std result implementation
 		eagine.core.types
@@ -136,7 +162,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION portable_backend
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION portable_backend
 	IMPORTS
 		std float_utils result implementation
 		eagine.core.types
@@ -148,7 +176,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION valtree_backend
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION valtree_backend
 	IMPORTS
 		std result interface
 		eagine.core.types
@@ -161,7 +191,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION type_sudoku
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION type_sudoku
 	IMPORTS
 		data_buffer read write
 		eagine.core.types
@@ -170,16 +202,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.serialization PARTITION type_compiler_info
-	IMPORTS
-		data_buffer read write
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.build_info
-)
-
-eagine_add_module(
-	eagine.core.serialization PARTITION type_version_info
+	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION type_compiler_info
 	IMPORTS
 		data_buffer read write
 		eagine.core.types
@@ -189,6 +214,18 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.serialization
+	COMPONENT core-dev
+	PARTITION type_version_info
+	IMPORTS
+		data_buffer read write
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.build_info
+)
+
+eagine_add_module(
+	eagine.core.serialization
+	COMPONENT core-dev
 )
 
 eagine_add_module_tests(

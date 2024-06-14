@@ -3,58 +3,76 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.container PARTITION iterator
+	eagine.core.container
+	COMPONENT core-dev
+	PARTITION iterator
 	IMPORTS std
 )
 
 eagine_add_module(
-	eagine.core.container PARTITION static_vector
+	eagine.core.container
+	COMPONENT core-dev
+	PARTITION static_vector
 	IMPORTS
 		std
 		eagine.core.types
 )
 eagine_add_module(
-	eagine.core.container PARTITION small_vector
+	eagine.core.container
+	COMPONENT core-dev
+	PARTITION small_vector
 	IMPORTS
 		std static_vector
 		eagine.core.types
 )
 eagine_add_module(
-	eagine.core.container PARTITION chunk_list
+	eagine.core.container
+	COMPONENT core-dev
+	PARTITION chunk_list
 	IMPORTS
 		std static_vector
 		eagine.core.types
 		eagine.core.memory
 )
 eagine_add_module(
-	eagine.core.container PARTITION object_pool
+	eagine.core.container
+	COMPONENT core-dev
+	PARTITION object_pool
 	IMPORTS
 		std small_vector
 		eagine.core.types
 )
 eagine_add_module(
-	eagine.core.container PARTITION flat_set
+	eagine.core.container
+	COMPONENT core-dev
+	PARTITION flat_set
 	IMPORTS
 		std static_vector chunk_list
 		eagine.core.types
 		eagine.core.memory
 )
 eagine_add_module(
-	eagine.core.container PARTITION flat_map
+	eagine.core.container
+	COMPONENT core-dev
+	PARTITION flat_map
 	IMPORTS
 		std static_vector chunk_list
 		eagine.core.types
 		eagine.core.memory
 )
 eagine_add_module(
-	eagine.core.container PARTITION trie
+	eagine.core.container
+	COMPONENT core-dev
+	PARTITION trie
 	IMPORTS
 		std
 		eagine.core.types
 		eagine.core.memory
 )
 eagine_add_module(
-	eagine.core.container PARTITION wrapping
+	eagine.core.container
+	COMPONENT core-dev
+	PARTITION wrapping
 	IMPORTS
 		std iterator
 		eagine.core.types
@@ -64,6 +82,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.container
+	COMPONENT core-dev
 	IMPORTS
 		std
 		eagine.core.types

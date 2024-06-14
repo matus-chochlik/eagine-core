@@ -37,5 +37,6 @@ endforeach()
 foreach(FILEPATH ${GEN_HPPS})
 	install(
 		FILES "${CMAKE_CURRENT_BINARY_DIR}/${FILEPATH}"
+		COMPONENT core-dev
 		DESTINATION share/eagine/include/${CMAKE_BUILD_TYPE})
 endforeach()

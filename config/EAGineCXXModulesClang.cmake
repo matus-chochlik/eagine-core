@@ -31,7 +31,9 @@ define_property(
 # ------------------------------------------------------------------------------
 function(eagine_add_module EAGINE_MODULE_PROPER)
 	set(ARG_FLAGS)
-	set(ARG_VALUES PARTITION)
+	set(ARG_VALUES
+		COMPONENT
+		PARTITION)
 	set(ARG_LISTS
 		SOURCES
 		IMPORTS
@@ -91,9 +93,11 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			"file(MAKE_DIRECTORY \"\${PROJECT_BINARY_DIR}/EAGine\")\n")
 		install(
 			FILES "${EAGINE_MODULE_CMAKE_FILE}"
+			COMPONENT ${EAGINE_MODULE_COMPONENT}
 			DESTINATION "${EAGINE_CMAKE_CONFIG_DEST}/${CMAKE_BUILD_TYPE}")
 		install(
 			TARGETS ${EAGINE_MODULE_PROPER}
+			COMPONENT ${EAGINE_MODULE_COMPONENT}
 			DESTINATION lib)
 	endif()
 
@@ -278,6 +282,7 @@ function(eagine_add_module EAGINE_MODULE_PROPER)
 			"${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm")
 	install(
 		FILES "${CMAKE_CURRENT_BINARY_DIR}/${SOURCE}.cppm"
+		COMPONENT ${EAGINE_MODULE_COMPONENT}
 		DESTINATION share/eagine/source/${CMAKE_BUILD_TYPE}/${EAGINE_MODULE_DIRECTORY})
 
 	if("${EAGINE_MODULE_PARTITION}" STREQUAL "")

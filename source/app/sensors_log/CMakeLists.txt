@@ -38,12 +38,17 @@ install(
 	FILES "${CMAKE_CURRENT_BINARY_DIR}/eagine-core-sensors-log.1.gz"
 	COMPONENT core-logging
 	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-	DESTINATION /usr/share/man/man1)
+	DESTINATION share/man/man1)
 
 install(
 	FILES "resource/eagine-core-sensors-log.bco"
 	COMPONENT core-logging
 	RENAME eagine-core-sensors-log
 	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-	DESTINATION /usr/share/bash-completion/completions)
+	DESTINATION share/bash-completion/completions)
+
+install(
+	DIRECTORY etc
+	COMPONENT core-logging
+	DESTINATION /)
 

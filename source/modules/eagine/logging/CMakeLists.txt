@@ -3,7 +3,9 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.logging PARTITION entry_arg
+	eagine.core.logging
+	COMPONENT core-dev
+	PARTITION entry_arg
 	IMPORTS
 		std
 		eagine.core.types
@@ -12,7 +14,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION backend
+	eagine.core.logging
+	COMPONENT core-dev
+	PARTITION backend
 	IMPORTS
 		std entry_arg
 		eagine.core.types
@@ -23,7 +27,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION config
+	eagine.core.logging
+	COMPONENT core-dev
+	PARTITION config
 	IMPORTS
 		std backend
 		eagine.core.build_config
@@ -31,7 +37,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION entry
+	eagine.core.logging
+	COMPONENT core-dev
+	PARTITION entry
 	IMPORTS
 		std entry_arg backend
 		eagine.core.types
@@ -43,7 +51,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION logger
+	eagine.core.logging
+	COMPONENT core-dev
+	PARTITION logger
 	IMPORTS
 		std config backend entry
 		eagine.core.types
@@ -56,7 +66,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION root_logger
+	eagine.core.logging
+	COMPONENT core-dev
+	PARTITION root_logger
 	IMPORTS
 		std entry backend logger
 		eagine.core.types
@@ -69,7 +81,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.logging PARTITION adapt_entry_arg
+	eagine.core.logging
+	COMPONENT core-dev
+	PARTITION adapt_entry_arg
 	IMPORTS
 		std entry_arg
 		eagine.core.build_info
@@ -84,6 +98,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.logging
+	COMPONENT core-dev
 	SOURCES
 		backend
 		null_backend

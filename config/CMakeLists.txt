@@ -8,12 +8,14 @@ install(
 	FILES
 		"${CMAKE_CURRENT_BINARY_DIR}/EAGineEmbed.cmake"
 		"EAGineEmbedCommon.cmake"
+	COMPONENT core-dev
 	DESTINATION "${EAGINE_CMAKE_CONFIG_DEST}")
 
 configure_file(EAGineConfig.cmake.in EAGineConfig.cmake @ONLY)
 install(
 	FILES
 		"${CMAKE_CURRENT_BINARY_DIR}/EAGineConfig.cmake"
+	COMPONENT core-dev
 	DESTINATION "${EAGINE_CMAKE_CONFIG_DEST}")
 
 add_subdirectory(tools)

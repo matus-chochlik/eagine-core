@@ -3,12 +3,16 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.math PARTITION sign
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION sign
 	IMPORTS std
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION traits
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION traits
 	IMPORTS
 		std
 		eagine.core.types
@@ -16,27 +20,35 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION constants
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION constants
 	IMPORTS
 		std
 		eagine.core.types
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION functions
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION functions
 	IMPORTS
 		std constants
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION scalar
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION scalar
 	IMPORTS
 		std
 		eagine.core.vectorization
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION vector
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION vector
 	IMPORTS
 		std traits scalar
 		eagine.core.types
@@ -45,7 +57,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION matrix
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION matrix
 	IMPORTS
 		std traits vector
 		eagine.core.types
@@ -53,7 +67,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION matrix_construct
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION matrix_construct
 	IMPORTS
 		std traits vector matrix
 		eagine.core.types
@@ -63,7 +79,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION tmat
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION tmat
 	IMPORTS
 		std traits vector
 		matrix matrix_construct
@@ -73,7 +91,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION colors
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION colors
 	IMPORTS
 		std constants functions vector
 		eagine.core.types
@@ -81,14 +101,18 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION primitives
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION primitives
 	IMPORTS
 		vector
 		std eagine.core.types
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION curves
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION curves
 	IMPORTS
 		std functions
 		eagine.core.types
@@ -97,7 +121,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION intersection
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION intersection
 	IMPORTS
 		std vector
 		functions primitives
@@ -106,7 +132,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION coordinates
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION coordinates
 	IMPORTS
 		std functions vector
 		eagine.core.valid_if
@@ -114,14 +142,18 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION animated_value
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION animated_value
 	IMPORTS
 		std functions
 		eagine.core.valid_if
 )
 
 eagine_add_module(
-	eagine.core.math PARTITION io
+	eagine.core.math
+	COMPONENT core-dev
+	PARTITION io
 	IMPORTS
 		std
 		primitives
@@ -131,6 +163,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.math
+	COMPONENT core-dev
 	SOURCES
 		colors
 	IMPORTS

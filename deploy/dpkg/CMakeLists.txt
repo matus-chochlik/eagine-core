@@ -21,7 +21,6 @@ set(BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/../..")
 add_custom_target(eagine-core-deb)
 
 add_subdirectory(user)
-add_subdirectory(logging)
 add_subdirectory(docker)
 
 if(TARGET eagine.core)

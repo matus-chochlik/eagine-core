@@ -8,11 +8,9 @@ cpack_add_component(
 	DESCRIPTION "Meta-package maintaining the EAGine user account.")
 
 install(
-	FILES
-		etc/eagine/templates/defaults.yaml
+	DIRECTORY etc
 	COMPONENT user-account
-	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-	DESTINATION /etc/eagine/templates)
+	DESTINATION /)
 
 install(
 	FILES

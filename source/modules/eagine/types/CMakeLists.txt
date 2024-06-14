@@ -2,84 +2,117 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
-eagine_add_module(eagine.core.types PARTITION interface)
 eagine_add_module(
-	eagine.core.types PARTITION concepts
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION interface)
+eagine_add_module(
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION concepts
 	IMPORTS std
 )
 eagine_add_module(
-	eagine.core.types PARTITION bitfield
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION bitfield
 	IMPORTS std
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION basic
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION basic
 	IMPORTS std eagine.core.build_config
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION tribool
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION tribool
 	IMPORTS std concepts
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION structural
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION structural
 	IMPORTS std
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION metaprogramming
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION metaprogramming
 	IMPORTS std basic
 )
 eagine_add_module(
-	eagine.core.types PARTITION function_constant
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION function_constant
 	IMPORTS
 		std basic
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION limits
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION limits
 	IMPORTS std basic
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION optional_like
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION optional_like
 	IMPORTS
 		std basic tribool
 		limits concepts
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION holder
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION holder
 	IMPORTS
 		std basic tribool
 		concepts optional_like
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION placeholder
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION placeholder
 	IMPORTS
 		std tribool optional_like
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION outcome
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION outcome
 	IMPORTS
 		std basic limits concepts
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION compare
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION compare
 	IMPORTS std basic
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION integer_range
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION integer_range
 	IMPORTS std concepts limits
 )
 
 eagine_add_module(
-	eagine.core.types PARTITION enum_map
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION enum_map
 	IMPORTS std basic bitfield
 )
 

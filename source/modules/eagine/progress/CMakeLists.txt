@@ -3,7 +3,9 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.progress PARTITION backend
+	eagine.core.progress
+	COMPONENT core-dev
+	PARTITION backend
 	IMPORTS
 		std
 		eagine.core.types
@@ -14,7 +16,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.progress PARTITION activity
+	eagine.core.progress
+	COMPONENT core-dev
+	PARTITION activity
 	IMPORTS
 		std backend
 		eagine.core.types
@@ -24,7 +28,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.progress PARTITION root_activity
+	eagine.core.progress
+	COMPONENT core-dev
+	PARTITION root_activity
 	IMPORTS
 		std backend activity
 		eagine.core.types
@@ -35,6 +41,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.progress
+	COMPONENT core-dev
 	SOURCES
 		default_backend
 		activity
