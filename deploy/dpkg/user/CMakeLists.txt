@@ -22,3 +22,5 @@ install(
 	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
 	DESTINATION /var/lib/eagine/.config)
 
+eagine_add_license(user-account)
+eagine_add_debian_changelog(user-account)

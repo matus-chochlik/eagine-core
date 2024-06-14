@@ -66,5 +66,31 @@ eagine_embed_target_resources(
 
 install(
 	TARGETS eagine-core-log-server
-	DESTINATION bin)
+	COMPONENT core-logging
+	RUNTIME DESTINATION bin)
 
+add_custom_command(
+	OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/eagine-core-log-server.1.gz"
+	COMMAND ${GZIP_COMMAND} -cn9
+				"${CMAKE_CURRENT_SOURCE_DIR}/resource/eagine-core-log-server.man"
+				> "${CMAKE_CURRENT_BINARY_DIR}/eagine-core-log-server.1.gz"
+	DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/resource/eagine-core-log-server.man")
+
+add_custom_target("eagine-core-log-server-man"
+	ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/eagine-core-log-server.1.gz")
+
+install(
+	FILES "${CMAKE_CURRENT_BINARY_DIR}/eagine-core-log-server.1.gz"
+	COMPONENT core-logging
+	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+	DESTINATION /usr/share/man/man1)
+
+install(
+	FILES "resource/eagine-core-log-server.bco"
+	COMPONENT core-logging
+	RENAME eagine-core-log-server
+	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+	DESTINATION /usr/share/bash-completion/completions)
+
+eagine_add_license(core-logging)
+eagine_add_debian_changelog(core-logging)

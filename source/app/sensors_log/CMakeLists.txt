@@ -21,5 +21,29 @@ eagine_embed_target_resources(
 
 install(
 	TARGETS eagine-core-sensors-log
-	DESTINATION bin)
+	COMPONENT core-logging
+	RUNTIME DESTINATION bin)
+
+add_custom_command(
+	OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/eagine-core-sensors-log.1.gz"
+	COMMAND ${GZIP_COMMAND} -cn9
+				"${CMAKE_CURRENT_SOURCE_DIR}/resource/eagine-core-sensors-log.man"
+				> "${CMAKE_CURRENT_BINARY_DIR}/eagine-core-sensors-log.1.gz"
+	DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/resource/eagine-core-sensors-log.man")
+
+add_custom_target("eagine-core-sensors-log-man"
+	ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/eagine-core-sensors-log.1.gz")
+
+install(
+	FILES "${CMAKE_CURRENT_BINARY_DIR}/eagine-core-sensors-log.1.gz"
+	COMPONENT core-logging
+	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+	DESTINATION /usr/share/man/man1)
+
+install(
+	FILES "resource/eagine-core-sensors-log.bco"
+	COMPONENT core-logging
+	RENAME eagine-core-sensors-log
+	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+	DESTINATION /usr/share/bash-completion/completions)
 
