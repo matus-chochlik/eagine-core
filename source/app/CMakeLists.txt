@@ -5,45 +5,45 @@
 
 install(
 	PROGRAMS git-filter.py
+	COMPONENT core-tools
 	RENAME eagine-git-filter
-	DESTINATION bin
-)
+	DESTINATION bin)
 install(
 	PROGRAMS ensure-main-key.sh
+	COMPONENT core-tools
 	RENAME eagine-ensure-main-key
-	DESTINATION bin
-)
+	DESTINATION bin)
 install(
 	PROGRAMS fmd-modify.py
+	COMPONENT core-tools
 	RENAME eagine-fmd-modify
-	DESTINATION bin
-)
+	DESTINATION bin)
 install(
 	PROGRAMS fmd-get.py
+	COMPONENT core-tools
 	RENAME eagine-fmd-get
-	DESTINATION bin
-)
+	DESTINATION bin)
 install(
 	PROGRAMS log-schema-stats.sh
+	COMPONENT core-tools
 	RENAME eagine-log-schema-stats
-	DESTINATION bin
-)
+	DESTINATION bin)
 install(
 	PROGRAMS log-psql.sh
+	COMPONENT core-tools
 	RENAME eagilog-psql
-	DESTINATION bin
-)
+	DESTINATION bin)
 install(
 	PROGRAMS log-plot.py
+	COMPONENT core-tools
 	RENAME eagilog-plot
-	DESTINATION bin
-)
+	DESTINATION bin)
 
 install(
 	PROGRAMS procman.py
+	COMPONENT core-tools
 	RENAME eagine-procman
-	DESTINATION bin
-)
+	DESTINATION bin)
 
 add_subdirectory(log_server)
 add_subdirectory(sensors_log)

@@ -51,7 +51,12 @@ set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
 
 # Package specific options
 #  Debian
+#   Dependencies
+set(CPACK_DEBIAN_CORE-TOOLS_PACKAGE_DEPENDS "coreutils,python3,python3-pip")
+set(CPACK_DEBIAN_CORE-TOOLS_PACKAGE_SUGGESTS "postgresql-client,python3-psycopg2,python3-matplotlib")
+#   Descriptions
 set(CPACK_DEBIAN_USER-ACCOUNT_DESCRIPTION "Meta-package managing EAGine user account.")
+set(CPACK_DEBIAN_CORE-TOOLS_DESCRIPTION "Collection of core command-line utilities for EAGine")
 
 # Include CPack
 set(CPACK_DEB_COMPONENT_INSTALL ON)

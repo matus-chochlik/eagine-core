@@ -25,4 +25,5 @@ add_subdirectory(rapidyaml ryml EXCLUDE_FROM_ALL)
 
 install(
 	TARGETS ryml
+	COMPONENT core-dev
 	DESTINATION lib)
