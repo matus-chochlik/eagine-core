@@ -53,6 +53,8 @@ set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION ON)
 # Package specific options
 #  Debian
 #   Dependencies
+set(CXX_RUNTIME_PKGS "libc6,libc++1-17")
+set(CPACK_DEBIAN_CORE-LOGGING_PACKAGE_DEPENDS "${CXX_RUNTIME_PKGS},libsystemd-dev,zlib1g-dev")
 set(CPACK_DEBIAN_CORE-DEV_PACKAGE_DEPENDS "cmake,libsystemd-dev,zlib1g-dev")
 set(CPACK_DEBIAN_CORE-DEV_PACKAGE_SUGGESTS "ninja-build")
 set(CPACK_DEBIAN_CORE-TOOLS_PACKAGE_DEPENDS "coreutils,python3,python3-pip")
@@ -61,7 +63,9 @@ set(CPACK_DEBIAN_CORE-DEV_PACKAGE_DEPENDS "cmake,libsystemd-dev,zlib1g-dev")
 set(CPACK_DEBIAN_CORE-DEV_PACKAGE_SUGGESTS "ninja-build")
 set(CPACK_DEBIAN_CORE-DOCKER_PACKAGE_DEPENDS "docker")
 set(CPACK_DEBIAN_CORE-DOCKER_PACKAGE_SUGGESTS "docker-compose")
+set(CPACK_DEBIAN_USER-ACCOUNT_PACKAGE_DEPENDS "docker")
 #   Descriptions
+set(CPACK_DEBIAN_CORE-LOGGING_DESCRIPTION "EAGine logging related applications.")
 set(CPACK_DEBIAN_CORE-DEV_DESCRIPTION "Collection of various modern C++ utilities.")
 set(CPACK_DEBIAN_CORE-TOOLS_DESCRIPTION "Collection of core command-line utilities for EAGine.")
 set(CPACK_DEBIAN_USER-ACCOUNT_DESCRIPTION "Meta-package managing EAGine user account.")
