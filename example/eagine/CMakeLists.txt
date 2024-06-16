@@ -12,6 +12,7 @@ set_target_properties(
 function(eagine_install_example TARGET_NAME)
 	install(
 		TARGETS ${TARGET_NAME}
+		COMPONENT core-examples
 		DESTINATION share/eagine/example/core
 	)
 endfunction()
@@ -127,5 +128,6 @@ target_compile_options(
 install(
 	FILES
 		eagine-application_config.yaml
-	DESTINATION etc/eagine
+	COMPONENT core-examples
+	DESTINATION /etc/eagine
 )
