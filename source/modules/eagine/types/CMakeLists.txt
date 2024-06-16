@@ -118,6 +118,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.types
+	COMPONENT core-dev
 	IMPORTS
 		eagine.core.build_config
 )

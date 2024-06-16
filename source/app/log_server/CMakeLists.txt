@@ -15,15 +15,20 @@ eagine_common_import_lib(
 	LIBRARY curl)
 
 eagine_add_module(
-	eagine.core.log_server PARTITION interfaces
+	eagine.core.log_server
+	COMPONENT core-dev
+	PARTITION interfaces
 	IMPORTS std eagine.core)
 
 eagine_add_module(
-	eagine.core.log_server PARTITION utilities
+	eagine.core.log_server
+	COMPONENT core-dev
+	PARTITION utilities
 	IMPORTS std eagine.core interfaces)
 
 eagine_add_module(
 	eagine.core.log_server
+	COMPONENT core-dev
 	SOURCES
 		implementation
 		utilities
