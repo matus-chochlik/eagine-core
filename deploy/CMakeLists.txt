@@ -3,9 +3,4 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 #
-find_program(PYTHON_COMMAND python3)
-find_program(DPKG_DEB_COMMAND dpkg-deb)
-find_program(DPKG_ARCHITECTURE_COMMAND dpkg-architecture)
-if(PYTHON_COMMAND AND DPKG_DEB_COMMAND AND DPKG_ARCHITECTURE_COMMAND)
-	add_subdirectory(dpkg)
-endif()
+add_subdirectory(dpkg)
