@@ -80,3 +80,21 @@ eagine_embed_target_resources(
 eagine_add_license(core-dev)
 eagine_add_debian_changelog(core-dev)
 
+eagine_add_package_property(
+	core-dev
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_DEPENDS
+	VALUE "cmake,libsystemd-dev,zlib1g-dev")
+
+eagine_add_package_property(
+	core-dev
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_SUGGESTS
+	VALUE "ninja-build")
+
+eagine_add_package_property(
+	core-dev
+	GENERATOR DEBIAN
+	VARIABLE DESCRIPTION
+	VALUE "Collection of various modern C++ utilities.")
+

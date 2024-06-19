@@ -22,3 +22,22 @@ install(
 
 eagine_add_license(user-account)
 eagine_add_debian_changelog(user-account)
+
+eagine_add_package_property(
+	user-account
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_DEPENDS
+	VALUE "docker")
+
+eagine_add_package_property(
+	user-account
+	GENERATOR DEBIAN
+	VARIABLE DESCRIPTION
+	VALUE "Meta-package managing EAGine user account.")
+
+eagine_add_package_property(
+	user-account
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_CONTROL_EXTRA 
+	VALUE "${CMAKE_CURRENT_SOURCE_DIR}/preinst;${CMAKE_CURRENT_SOURCE_DIR}/postinst;${CMAKE_CURRENT_SOURCE_DIR}/postrm")
+

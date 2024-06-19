@@ -100,6 +100,18 @@ install(
 eagine_add_license(core-logging)
 eagine_add_debian_changelog(core-logging)
 
+eagine_add_package_property(
+	core-logging
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_DEPENDS
+	VALUE "\${CXX_RUNTIME_PKGS},\${EAGINE_CORE_RUNTIME_PKGS}")
+
+eagine_add_package_property(
+	core-logging
+	GENERATOR DEBIAN
+	VARIABLE DESCRIPTION
+	VALUE "EAGine logging-related applications.")
+
 install(
 	FILES "postgresql/eagilog.sql"
 	COMPONENT core-docker

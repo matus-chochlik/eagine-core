@@ -15,3 +15,22 @@ install(
 	COMPONENT core-docker
 	DESTINATION /)
 
+eagine_add_package_property(
+	core-docker
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_DEPENDS
+	VALUE "docker")
+
+eagine_add_package_property(
+	core-docker
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_SUGGESTS
+	VALUE "docker-compose")
+
+eagine_add_package_property(
+	core-docker
+	GENERATOR DEBIAN
+	VARIABLE DESCRIPTION
+	VALUE "Collection of containerized utilities for EAGine.")
+
+

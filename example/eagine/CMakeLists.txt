@@ -129,5 +129,17 @@ install(
 	FILES
 		eagine-application_config.yaml
 	COMPONENT core-examples
-	DESTINATION /etc/eagine
-)
+	DESTINATION /etc/eagine)
+
+eagine_add_package_property(
+	core-examples
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_DEPENDS
+	VALUE "\${CXX_RUNTIME_PKGS},\${EAGINE_CORE_RUNTIME_PKGS}")
+
+eagine_add_package_property(
+	core-examples
+	GENERATOR DEBIAN
+	VARIABLE DESCRIPTION
+	VALUE "EAGine core examples.")
+

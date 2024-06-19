@@ -33,48 +33,54 @@ function(eagine_add_debian_changelog COMPONENT)
 	endif()
 endfunction()
 
+set(EAGINE_CPACK_PROPS "${CMAKE_BINARY_DIR}/CPackPropertiesEAGine.cmake")
+
+function(eagine_add_package_property COMPONENT)
+	set(ARG_FLAGS)
+	set(ARG_VALUES GENERATOR VARIABLE)
+	set(ARG_LISTS VALUE)
+	string(TOUPPER "${COMPONENT}" COMPONENT_UC)
+	cmake_parse_arguments(
+		EAGINE_PACKAGE
+		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
+		${ARGN})
+	file(APPEND "${EAGINE_CPACK_PROPS}"
+		"set(CPACK_${EAGINE_PACKAGE_GENERATOR}_${COMPONENT_UC}_${EAGINE_PACKAGE_VARIABLE} \"")
+	set(FIRST TRUE)
+	foreach(VALUE ${EAGINE_PACKAGE_VALUE})
+		if(FIRST)
+			set(FIRST FALSE)
+		else()
+			file(APPEND "${EAGINE_CPACK_PROPS}" ";")
+		endif()
+		file(APPEND "${EAGINE_CPACK_PROPS}" "${VALUE}")
+	endforeach()
+	file(APPEND "${EAGINE_CPACK_PROPS}" "\")\n")
+endfunction()
+
+if(NOT EXISTS "${EAGINE_CPACK_PROPS}")
+	file(WRITE "${EAGINE_CPACK_PROPS}"
+		"set(CXX_RUNTIME_PKGS \"libc6,libc++1-17\")\n"
+		"set(EAGINE_CORE_RUNTIME_PKGS \"libsystemd0,zlib1g\")\n")
+endif()
+
 # General CPack options
 set(CPACK_PACKAGE_NAME eagine)
 set(CPACK_PACKAGE_VENDOR "EAGine")
 
 set(CPACK_VERBATIM_VARIABLES YES)
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
-set(CPACK_OUTPUT_FILE_PREFIX
-	"${PROJECT_BINARY_DIR}/eagine-${EAGINE_VERSION}-${EAGINE_GIT_COMMITS_SINCE_VERSION}")
+set(CPACK_OUTPUT_FILE_PREFIX "${PROJECT_BINARY_DIR}/eagine-release")
 set(CPACK_PACKAGE_VERSION "${EAGINE_VERSION}-${EAGINE_GIT_COMMITS_SINCE_VERSION}")
 set(CPACK_PACKAGE_CONTACT "Matúš Chochlík <matus.chochlik@proton.me>")
 
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 set(CPACK_DEBIAN_PACKAGE_SOURCE eagine)
-set(CPACK_DEBIAN_PACKAGE_PRIORITY "important")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "medium")
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
-set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION ON)
-
-# Package specific options
-#  Debian
-#   Dependencies
-set(CXX_RUNTIME_PKGS "libc6,libc++1-17")
-set(CPACK_DEBIAN_CORE-EXAMPLES_PACKAGE_DEPENDS "${CXX_RUNTIME_PKGS},libsystemd-dev,zlib1g-dev")
-set(CPACK_DEBIAN_CORE-LOGGING_PACKAGE_DEPENDS "${CXX_RUNTIME_PKGS},libsystemd-dev,zlib1g-dev")
-set(CPACK_DEBIAN_CORE-DEV_PACKAGE_DEPENDS "cmake,libsystemd-dev,zlib1g-dev")
-set(CPACK_DEBIAN_CORE-DEV_PACKAGE_SUGGESTS "ninja-build")
-set(CPACK_DEBIAN_CORE-TOOLS_PACKAGE_DEPENDS "coreutils,python3,python3-pip")
-set(CPACK_DEBIAN_CORE-TOOLS_PACKAGE_SUGGESTS "postgresql-client,python3-psycopg2,python3-matplotlib")
-set(CPACK_DEBIAN_CORE-DEV_PACKAGE_DEPENDS "cmake,libsystemd-dev,zlib1g-dev")
-set(CPACK_DEBIAN_CORE-DEV_PACKAGE_SUGGESTS "ninja-build")
-set(CPACK_DEBIAN_CORE-DOCKER_PACKAGE_DEPENDS "docker")
-set(CPACK_DEBIAN_CORE-DOCKER_PACKAGE_SUGGESTS "docker-compose")
-set(CPACK_DEBIAN_USER-ACCOUNT_PACKAGE_DEPENDS "docker")
-#   Descriptions
-set(CPACK_DEBIAN_CORE-EXAMPLES_DESCRIPTION "EAGine core examples.")
-set(CPACK_DEBIAN_CORE-LOGGING_DESCRIPTION "EAGine logging-related applications.")
-set(CPACK_DEBIAN_CORE-DEV_DESCRIPTION "Collection of various modern C++ utilities.")
-set(CPACK_DEBIAN_CORE-TOOLS_DESCRIPTION "Collection of core command-line utilities for EAGine.")
-set(CPACK_DEBIAN_USER-ACCOUNT_DESCRIPTION "Meta-package managing EAGine user account.")
-set(CPACK_DEBIAN_CORE-DOCKER_DESCRIPTION "Collection of containerized utilities for EAGine.")
-#   Control scripts
-set(CPACK_DEBIAN_USER-ACCOUNT_PACKAGE_CONTROL_EXTRA "${EAGINE_CORE_ROOT}/deploy/dpkg/user/preinst;${EAGINE_CORE_ROOT}/deploy/dpkg/user/postinst;${EAGINE_CORE_ROOT}/deploy/dpkg/user/postrm")
+set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION TRUE)
 
 # Include CPack
-set(CPACK_DEB_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENT_UNSPECIFIED_HIDDEN TRUE)
+set(CPACK_DEB_COMPONENT_INSTALL TRUE)
 include(CPack)

@@ -1,4 +1,4 @@
-eagine-core-tools (0.125.0) unstable; urgency=medium
+eagine-core-apps (0.125.0) unstable; urgency=medium
 
   * Initial version with CPack-based packaging.
 
