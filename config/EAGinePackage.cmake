@@ -44,8 +44,10 @@ function(eagine_add_package_property COMPONENT)
 		EAGINE_PACKAGE
 		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
 		${ARGN})
-	file(APPEND "${EAGINE_CPACK_PROPS}"
-		"set(CPACK_${EAGINE_PACKAGE_GENERATOR}_${COMPONENT_UC}_${EAGINE_PACKAGE_VARIABLE} \"")
+	if(NOT "${EAGINE_PACKAGE_VARIABLE}" STREQUAL "PACKAGE_CONTROL_EXTRA")
+		file(APPEND "${EAGINE_CPACK_PROPS}"
+			"set(CPACK_${EAGINE_PACKAGE_GENERATOR}_${COMPONENT_UC}_${EAGINE_PACKAGE_VARIABLE} \"")
+	endif()
 	set(FIRST TRUE)
 	foreach(VALUE ${EAGINE_PACKAGE_VALUE})
 		if("${EAGINE_PACKAGE_VARIABLE}" STREQUAL "PACKAGE_CONTROL_EXTRA")
@@ -56,17 +58,45 @@ function(eagine_add_package_property COMPONENT)
 			else()
 				set(PROP_VALUE "${VALUE}")
 			endif()
+			file(APPEND "${EAGINE_CPACK_PROPS}"
+				"list(APPEND CPACK_${EAGINE_PACKAGE_GENERATOR}_${COMPONENT_UC}_${EAGINE_PACKAGE_VARIABLE} \"${PROP_VALUE}\")\n")
 		else()
-			set(PROP_VALUE "${VALUE}")
+			if(FIRST)
+				set(FIRST FALSE)
+			else()
+				file(APPEND "${EAGINE_CPACK_PROPS}" ";")
+			endif()
+			file(APPEND "${EAGINE_CPACK_PROPS}" "${VALUE}")
 		endif()
-		if(FIRST)
-			set(FIRST FALSE)
-		else()
-			file(APPEND "${EAGINE_CPACK_PROPS}" ";")
-		endif()
-		file(APPEND "${EAGINE_CPACK_PROPS}" "${PROP_VALUE}")
 	endforeach()
-	file(APPEND "${EAGINE_CPACK_PROPS}" "\")\n")
+	if(NOT "${EAGINE_PACKAGE_VARIABLE}" STREQUAL "PACKAGE_CONTROL_EXTRA")
+		file(APPEND "${EAGINE_CPACK_PROPS}" "\")\n")
+	endif()
+endfunction()
+
+function(eagine_add_package_conffiles COMPONENT)
+	string(TOUPPER "${COMPONENT}" COMPONENT_UC)
+	foreach(ARG ${ARGN})
+		if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${ARGN}")
+			set(EAGINE_CONFFILE_PREFIX "") # TODO parse args
+			if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${ARGN}")
+				file(GLOB_RECURSE
+					CONFFILES
+					LIST_DIRECTORIES FALSE
+					RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+					"${CMAKE_CURRENT_SOURCE_DIR}/${ARGN}/*")
+				foreach(CONFFILE ${CONFFILES})
+					file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/conffiles"
+						"${EAGINE_CONFFILE_PREFIX}/${CONFFILE}\n")
+				endforeach()
+
+			endif()
+		endif()
+	endforeach()
+	if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/conffiles")
+		file(APPEND "${EAGINE_CPACK_PROPS}"
+			"list(APPEND CPACK_DEBIAN_${COMPONENT_UC}_PACKAGE_CONTROL_EXTRA \"${CMAKE_CURRENT_BINARY_DIR}/conffiles\")\n")
+	endif()
 endfunction()
 
 if(NOT EXISTS "${EAGINE_CPACK_PROPS}")

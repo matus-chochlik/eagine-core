@@ -41,3 +41,4 @@ eagine_add_package_property(
 	VARIABLE PACKAGE_CONTROL_EXTRA 
 	VALUE "preinst;postinst;postrm")
 
+eagine_add_package_conffiles(user-account etc)
