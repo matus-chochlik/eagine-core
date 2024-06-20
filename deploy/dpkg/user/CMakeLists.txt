@@ -8,17 +8,19 @@ cpack_add_component(
 	DESCRIPTION "Meta-package maintaining the EAGine user account.")
 
 install(
-	DIRECTORY etc
-	COMPONENT user-account
-	DESTINATION /)
-
-install(
 	FILES
 		_config/eagine/systemd/environment
 		_config/eagine/systemd/log_environment
 	COMPONENT user-account
 	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
 	DESTINATION /var/lib/eagine/.config)
+
+install(
+	DIRECTORY etc
+	COMPONENT user-account
+	DESTINATION /)
+
+eagine_add_package_conffiles(user-account etc)
 
 eagine_add_license(user-account)
 eagine_add_debian_changelog(user-account)
@@ -40,5 +42,3 @@ eagine_add_package_property(
 	GENERATOR DEBIAN
 	VARIABLE PACKAGE_CONTROL_EXTRA 
 	VALUE "preinst;postinst;postrm")
-
-eagine_add_package_conffiles(user-account etc)

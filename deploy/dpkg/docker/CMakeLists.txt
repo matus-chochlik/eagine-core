@@ -15,6 +15,8 @@ install(
 	COMPONENT core-docker
 	DESTINATION /)
 
+eagine_add_package_conffiles(core-docker etc)
+
 eagine_add_package_property(
 	core-docker
 	GENERATOR DEBIAN

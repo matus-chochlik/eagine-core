@@ -52,3 +52,5 @@ install(
 	COMPONENT core-logging
 	DESTINATION /)
 
+eagine_add_package_conffiles(core-logging etc)
+
