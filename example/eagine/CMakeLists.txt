@@ -125,6 +125,9 @@ target_compile_options(
 	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>
 )
 
+eagine_add_license(core-examples)
+eagine_add_debian_changelog(core-examples)
+
 install(
 	FILES
 		eagine-application_config.yaml
