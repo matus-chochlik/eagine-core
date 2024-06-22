@@ -86,16 +86,17 @@ function(eagine_add_package_conffiles COMPONENT)
 					RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
 					"${CMAKE_CURRENT_SOURCE_DIR}/${ARGN}/*")
 				foreach(CONFFILE ${CONFFILES})
-					file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/conffiles"
+					file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/${COMPONENT}")
+					file(APPEND "${CMAKE_BINARY_DIR}/${COMPONENT}/conffiles"
 						"${EAGINE_CONFFILE_PREFIX}/${CONFFILE}\n")
 				endforeach()
 
 			endif()
 		endif()
 	endforeach()
-	if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/conffiles")
+	if(EXISTS "${CMAKE_BINARY_DIR}/${COMPONENT}/conffiles")
 		file(APPEND "${EAGINE_CPACK_PROPS}"
-			"list(APPEND CPACK_DEBIAN_${COMPONENT_UC}_PACKAGE_CONTROL_EXTRA \"${CMAKE_CURRENT_BINARY_DIR}/conffiles\")\n")
+			"list(APPEND CPACK_DEBIAN_${COMPONENT_UC}_PACKAGE_CONTROL_EXTRA \"${CMAKE_BINARY_DIR}/${COMPONENT}/conffiles\")\n")
 	endif()
 endfunction()
 
