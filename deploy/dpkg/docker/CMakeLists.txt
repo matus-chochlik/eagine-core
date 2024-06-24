@@ -35,4 +35,9 @@ eagine_add_package_property(
 	VARIABLE DESCRIPTION
 	VALUE "Collection of containerized utilities for EAGine.")
 
+eagine_add_package_property(
+	core-docker
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_ARCHITECTURE
+	VALUE "all")
 

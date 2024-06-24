@@ -42,3 +42,9 @@ eagine_add_package_property(
 	GENERATOR DEBIAN
 	VARIABLE PACKAGE_CONTROL_EXTRA 
 	VALUE "preinst;postinst;postrm")
+
+eagine_add_package_property(
+	user-account
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_ARCHITECTURE
+	VALUE "all")
