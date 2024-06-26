@@ -77,7 +77,7 @@ function(eagine_add_bash_completion COMPONENT SOURCE)
 	endif()
 
 	if("${EAGINE_COMPLETION_NAME}" STREQUAL "")
-		get_filename_component("${SOURCE}" EAGINE_COMPLETION_NAME NAME_WE)
+		get_filename_component(EAGINE_COMPLETION_NAME "${SOURCE}" NAME_WE)
 	endif()
 
 	install(

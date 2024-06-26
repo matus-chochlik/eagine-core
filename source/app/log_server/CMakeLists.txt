@@ -83,7 +83,7 @@ eagine_add_package_property(
 	core-logging
 	GENERATOR DEBIAN
 	VARIABLE PACKAGE_DEPENDS
-	VALUE "\${CXX_RUNTIME_PKGS},\${EAGINE_CORE_RUNTIME_PKGS}")
+	VALUE "\${CXX_RUNTIME_PKGS},\${EAGINE_CORE_RUNTIME_PKGS},libcurl4,libpq5")
 
 eagine_add_package_property(
 	core-logging
