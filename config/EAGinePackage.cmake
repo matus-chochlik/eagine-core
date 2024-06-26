@@ -11,7 +11,81 @@ function(eagine_add_license COMPONENT)
 		COMPONENT ${COMPONENT}
 		RENAME copyright
 		PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-		DESTINATION /usr/share/doc/eagine-${COMPONENT})
+		DESTINATION share/doc/eagine-${COMPONENT})
+endfunction()
+
+function(eagine_add_manual COMPONENT SOURCE)
+	set(ARG_FLAGS)
+	set(ARG_VALUES NAME SECTION)
+	set(ARG_LISTS)
+	cmake_parse_arguments(
+		EAGINE_MANUAL
+		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
+		${ARGN})
+
+	if(GZIP_COMMAND)
+		if(NOT EXISTS "${SOURCE}")
+			if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}")
+				set(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}")
+			else()
+				message(ERROR "Manual file '${SOURCE}' not found")
+			endif()
+		endif()
+
+		if("${EAGINE_MANUAL_NAME}" STREQUAL "")
+			get_filename_component(EAGINE_MANUAL_NAME "${SOURCE}" NAME_WE)
+		endif()
+
+		if("${EAGINE_MANUAL_SECTION}" STREQUAL "")
+			set(EAGINE_MANUAL_SECTION 1)
+		endif()
+
+		set(MAN_FILE "${EAGINE_MANUAL_NAME}.${EAGINE_MANUAL_SECTION}")
+
+		add_custom_command(
+			OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${MAN_FILE}.gz"
+			COMMAND ${GZIP_COMMAND} -cn9 "${SOURCE}"
+				> "${CMAKE_CURRENT_BINARY_DIR}/${MAN_FILE}.gz"
+			DEPENDS "${SOURCE}")
+
+		add_custom_target("${COMPONENT}-man-${MAN_FILE}"
+			ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${MAN_FILE}.gz")
+
+		install(
+			FILES "${CMAKE_CURRENT_BINARY_DIR}/${MAN_FILE}.gz"
+			COMPONENT ${COMPONENT}
+			PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+			DESTINATION share/man/man${EAGINE_MANUAL_SECTION})
+	endif()
+endfunction()
+
+function(eagine_add_bash_completion COMPONENT SOURCE)
+	set(ARG_FLAGS)
+	set(ARG_VALUES NAME)
+	set(ARG_LISTS)
+	cmake_parse_arguments(
+		EAGINE_COMPLETION
+		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
+		${ARGN})
+
+	if(NOT EXISTS "${SOURCE}")
+		if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}")
+			set(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE}")
+		else()
+			message(ERROR "Bash completion file '${SOURCE}' not found")
+		endif()
+	endif()
+
+	if("${EAGINE_COMPLETION_NAME}" STREQUAL "")
+		get_filename_component("${SOURCE}" EAGINE_COMPLETION_NAME NAME_WE)
+	endif()
+
+	install(
+		FILES "${SOURCE}"
+		COMPONENT ${COMPONENT}
+		RENAME ${EAGINE_COMPLETION_NAME}
+		PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+		DESTINATION share/bash-completion/completions)
 endfunction()
 
 function(eagine_add_debian_changelog COMPONENT)
@@ -29,17 +103,17 @@ function(eagine_add_debian_changelog COMPONENT)
 			FILES "${CMAKE_CURRENT_BINARY_DIR}/changelog.gz"
 			COMPONENT ${COMPONENT}
 			PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-			DESTINATION /usr/share/doc/eagine-${COMPONENT})
+			DESTINATION share/doc/eagine-${COMPONENT})
 	endif()
 endfunction()
 
 set(EAGINE_CPACK_PROPS "${CMAKE_BINARY_DIR}/CPackPropertiesEAGine.cmake")
 
 function(eagine_add_package_property COMPONENT)
+	string(TOUPPER "${COMPONENT}" COMPONENT_UC)
 	set(ARG_FLAGS)
 	set(ARG_VALUES GENERATOR VARIABLE)
 	set(ARG_LISTS VALUE)
-	string(TOUPPER "${COMPONENT}" COMPONENT_UC)
 	cmake_parse_arguments(
 		EAGINE_PACKAGE
 		"${ARG_FLAGS}" "${ARG_VALUES}" "${ARG_LISTS}"
