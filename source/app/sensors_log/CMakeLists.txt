@@ -21,5 +21,15 @@ eagine_embed_target_resources(
 
 install(
 	TARGETS eagine-core-sensors-log
-	DESTINATION bin)
+	COMPONENT core-logging
+	RUNTIME DESTINATION bin)
+
+install(
+	DIRECTORY etc
+	COMPONENT core-logging
+	DESTINATION /)
+
+eagine_add_bash_completion(core-logging "resource/eagine-core-sensors-log.bco")
+eagine_add_manual(core-logging "resource/eagine-core-sensors-log.man")
+eagine_add_package_conffiles(core-logging "etc")
 

@@ -3,35 +3,41 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 #
-set(PKG_NAME "eagine-core-docker${EAGINE_VERSION}-${EAGINE_GIT_COMMITS_SINCE_VERSION}")
-set(PKG_DIR "${CMAKE_CURRENT_BINARY_DIR}/${PKG_NAME}")
-set(PKG_PREFIX "${PKG_DIR}/usr")
+install(
+	PROGRAMS
+		bin/eagilog-server-start
+		bin/eagilog-server-stop
+	COMPONENT core-docker
+	DESTINATION bin)
 
-configure_file(build-pkg.sh.in build-pkg.sh @ONLY)
+install(
+	DIRECTORY etc
+	COMPONENT core-docker
+	DESTINATION /)
 
-add_custom_command(
-	OUTPUT "${PKG_DIR}/DEBIAN/control"
-	COMMAND ${BASH_COMMAND}
-	ARGS "${CMAKE_CURRENT_BINARY_DIR}/build-pkg.sh"
-	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-	COMMENT "Copying files for ${PKG_NAME}.deb package"
-)
+eagine_add_package_conffiles(core-docker etc)
 
-add_custom_command(
-	OUTPUT ${PKG_NAME}.deb
-	COMMAND ${DPKG_DEB_COMMAND}
-	ARGS --build --root-owner-group ${PKG_NAME}
-	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-	DEPENDS
-		eagine-core-log-server
-		"${PKG_DIR}/DEBIAN/control"
-	COMMENT "Building ${PKG_NAME}.deb package"
-)
+eagine_add_package_property(
+	core-docker
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_DEPENDS
+	VALUE "docker")
 
-add_custom_target(
-	eagine-core-docker-deb
-	DEPENDS ${PKG_NAME}.deb
-)
+eagine_add_package_property(
+	core-docker
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_SUGGESTS
+	VALUE "docker-compose")
 
-add_dependencies(eagine-core-deb eagine-core-docker-deb)
+eagine_add_package_property(
+	core-docker
+	GENERATOR DEBIAN
+	VARIABLE DESCRIPTION
+	VALUE "Collection of containerized utilities for EAGine.")
+
+eagine_add_package_property(
+	core-docker
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_ARCHITECTURE
+	VALUE "all")
 

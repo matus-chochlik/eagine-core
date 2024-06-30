@@ -3,7 +3,9 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.string PARTITION buffer
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION buffer
 	IMPORTS
 		std
 		eagine.core.types
@@ -11,7 +13,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION multi_byte
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION multi_byte
 	IMPORTS
 		std
 		eagine.core.types
@@ -21,7 +25,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION list
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION list
 	IMPORTS
 		std multi_byte
 		eagine.core.types
@@ -30,7 +36,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION path
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION path
 	IMPORTS
 		std list
 		eagine.core.types
@@ -39,7 +47,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION c_str
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION c_str
 	IMPORTS
 		std
 		eagine.core.types
@@ -47,14 +57,18 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION algorithm
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION algorithm
 	IMPORTS
 		std
 		eagine.core.memory
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION environment
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION environment
 	IMPORTS
 		std c_str
 		eagine.core.types
@@ -63,7 +77,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION format
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION format
 	IMPORTS
 		std c_str
 		eagine.core.types
@@ -72,7 +88,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION base64
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION base64
 	IMPORTS
 		std
 		eagine.core.types
@@ -82,7 +100,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION base64dump
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION base64dump
 	IMPORTS
 		std base64
 		eagine.core.types
@@ -92,7 +112,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION bindump
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION bindump
 	IMPORTS
 		std
 		eagine.core.types
@@ -101,7 +123,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION hexdump
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION hexdump
 	IMPORTS
 		std
 		eagine.core.types
@@ -110,7 +134,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION from_string
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION from_string
 	IMPORTS
 		std c_str
 		eagine.core.types
@@ -120,7 +146,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.string PARTITION keyboard_distance
+	eagine.core.string
+	COMPONENT core-dev
+	PARTITION keyboard_distance
 	IMPORTS
 		std
 		eagine.core.types
@@ -131,6 +159,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.string
+	COMPONENT core-dev
 	SOURCES
 		bindump
 		hexdump

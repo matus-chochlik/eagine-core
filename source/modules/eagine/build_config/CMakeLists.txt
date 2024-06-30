@@ -4,9 +4,9 @@
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
 	eagine.core.build_config
+	COMPONENT core-dev
 	PRIVATE_INCLUDE_DIRECTORIES
 		"${EAGINE_CORE_BINARY_ROOT}/include"
 	PRIVATE_LINK_LIBRARIES
-		eagine-core-generated-headers
-)
+		eagine-core-generated-headers)
 

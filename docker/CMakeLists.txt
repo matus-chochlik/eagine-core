@@ -3,7 +3,13 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 #
-function eagine_deb_installed_size() {
-	du -k -s "${1:-.}" | cut -f 1
-}
+install(
+	DIRECTORY build
+	COMPONENT core-docker
+	DESTINATION share/eagine/docker)
+
+install(
+	DIRECTORY eagilog
+	COMPONENT core-docker
+	DESTINATION share/eagine/docker)
 

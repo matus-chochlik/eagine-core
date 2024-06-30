@@ -1,0 +1,5 @@
+eagine-user-account (0.125.0) unstable; urgency=medium
+
+  * Initial version with CPack-based packaging.
+
+ -- Matúš Chochlík <matus.chochlik@proton.me>  Tue, 11 Jun 2024 22:30:30 +0200

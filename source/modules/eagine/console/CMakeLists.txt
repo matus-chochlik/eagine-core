@@ -3,7 +3,9 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.console PARTITION backend
+	eagine.core.console
+	COMPONENT core-dev
+	PARTITION backend
 	IMPORTS
 		std
 		eagine.core.types
@@ -15,7 +17,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.console PARTITION entry
+	eagine.core.console
+	COMPONENT core-dev
+	PARTITION entry
 	IMPORTS
 		std backend
 		eagine.core.types
@@ -29,6 +33,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.console
+	COMPONENT core-dev
 	SOURCES
 		console
 		null_backend

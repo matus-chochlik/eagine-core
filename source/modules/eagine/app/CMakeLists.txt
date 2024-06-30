@@ -3,7 +3,9 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.app PARTITION special_args
+	eagine.core.app
+	COMPONENT core-dev
+	PARTITION special_args
 	IMPORTS
 		std
 		eagine.core.identifier
@@ -13,6 +15,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.app
+	COMPONENT core-dev
 	SOURCES
 		special_args
 	IMPORTS

@@ -12,6 +12,7 @@ set_target_properties(
 function(eagine_install_example TARGET_NAME)
 	install(
 		TARGETS ${TARGET_NAME}
+		COMPONENT core-examples
 		DESTINATION share/eagine/example/core
 	)
 endfunction()
@@ -124,8 +125,24 @@ target_compile_options(
 	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>
 )
 
+eagine_add_license(core-examples)
+eagine_add_debian_changelog(core-examples)
+
 install(
 	FILES
 		eagine-application_config.yaml
-	DESTINATION etc/eagine
-)
+	COMPONENT core-examples
+	DESTINATION /etc/eagine)
+
+eagine_add_package_property(
+	core-examples
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_DEPENDS
+	VALUE "\${CXX_RUNTIME_PKGS},\${EAGINE_CORE_RUNTIME_PKGS}")
+
+eagine_add_package_property(
+	core-examples
+	GENERATOR DEBIAN
+	VARIABLE DESCRIPTION
+	VALUE "EAGine core examples.")
+

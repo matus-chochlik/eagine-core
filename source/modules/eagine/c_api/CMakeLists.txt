@@ -3,7 +3,9 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.c_api PARTITION result
+	eagine.core.c_api
+	COMPONENT core-dev
+	PARTITION result
 	IMPORTS
 		std
 		eagine.core.types
@@ -12,7 +14,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION api_traits
+	eagine.core.c_api
+	COMPONENT core-dev
+	PARTITION api_traits
 	IMPORTS
 		std
 		eagine.core.types
@@ -20,7 +24,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION key_value_list
+	eagine.core.c_api
+	COMPONENT core-dev
+	PARTITION key_value_list
 	IMPORTS
 		std
 		eagine.core.types
@@ -28,7 +34,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION enum_class
+	eagine.core.c_api
+	COMPONENT core-dev
+	PARTITION enum_class
 	IMPORTS
 		std
 		eagine.core.types
@@ -38,7 +46,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION constant
+	eagine.core.c_api
+	COMPONENT core-dev
+	PARTITION constant
 	IMPORTS
 		std enum_class
 		eagine.core.types
@@ -46,7 +56,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION object
+	eagine.core.c_api
+	COMPONENT core-dev
+	PARTITION object
 	IMPORTS
 		std
 		eagine.core.types
@@ -55,7 +67,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION function
+	eagine.core.c_api
+	COMPONENT core-dev
+	PARTITION function
 	IMPORTS
 		std api_traits result
 		eagine.core.types
@@ -63,7 +77,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION buffer_data
+	eagine.core.c_api
+	COMPONENT core-dev
+	PARTITION buffer_data
 	IMPORTS
 		std
 		eagine.core.types
@@ -71,7 +87,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION parameter_map
+	eagine.core.c_api
+	COMPONENT core-dev
+	PARTITION parameter_map
 	IMPORTS
 		std object buffer_data
 		enum_class key_value_list
@@ -82,7 +100,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION adapted_function
+	eagine.core.c_api
+	COMPONENT core-dev
+	PARTITION adapted_function
 	IMPORTS
 		std object result
 		function parameter_map
@@ -92,7 +112,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.c_api PARTITION reference
+	eagine.core.c_api
+	COMPONENT core-dev
+	PARTITION reference
 	IMPORTS
 		std
 		eagine.core.types
@@ -100,6 +122,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.c_api
+	COMPONENT core-dev
 )
 
 eagine_add_module_tests(

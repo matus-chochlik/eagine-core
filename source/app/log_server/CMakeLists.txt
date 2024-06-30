@@ -15,15 +15,20 @@ eagine_common_import_lib(
 	LIBRARY curl)
 
 eagine_add_module(
-	eagine.core.log_server PARTITION interfaces
+	eagine.core.log_server
+	COMPONENT core-dev
+	PARTITION interfaces
 	IMPORTS std eagine.core)
 
 eagine_add_module(
-	eagine.core.log_server PARTITION utilities
+	eagine.core.log_server
+	COMPONENT core-dev
+	PARTITION utilities
 	IMPORTS std eagine.core interfaces)
 
 eagine_add_module(
 	eagine.core.log_server
+	COMPONENT core-dev
 	SOURCES
 		implementation
 		utilities
@@ -66,5 +71,29 @@ eagine_embed_target_resources(
 
 install(
 	TARGETS eagine-core-log-server
-	DESTINATION bin)
+	COMPONENT core-logging
+	RUNTIME DESTINATION bin)
+
+eagine_add_license(core-logging)
+eagine_add_debian_changelog(core-logging)
+eagine_add_bash_completion(core-logging "resource/eagine-core-log-server.bco")
+eagine_add_manual(core-logging "resource/eagine-core-log-server.man")
+
+eagine_add_package_property(
+	core-logging
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_DEPENDS
+	VALUE "\${CXX_RUNTIME_PKGS},\${EAGINE_CORE_RUNTIME_PKGS},libcurl4,libpq5")
+
+eagine_add_package_property(
+	core-logging
+	GENERATOR DEBIAN
+	VARIABLE DESCRIPTION
+	VALUE "EAGine logging-related applications.")
+
+install(
+	FILES "postgresql/eagilog.sql"
+	COMPONENT core-docker
+	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+	DESTINATION share/eagine)
 

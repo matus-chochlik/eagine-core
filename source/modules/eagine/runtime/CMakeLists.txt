@@ -3,21 +3,27 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.runtime PARTITION signal_switch
+	eagine.core.runtime
+	COMPONENT core-dev
+	PARTITION signal_switch
 	IMPORTS
 		std
 		eagine.core.utility
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION process
+	eagine.core.runtime
+	COMPONENT core-dev
+	PARTITION process
 	IMPORTS
 		std
 		eagine.core.types
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION traverse
+	eagine.core.runtime
+	COMPONENT core-dev
+	PARTITION traverse
 	IMPORTS
 		std
 		eagine.core.types
@@ -27,7 +33,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION program_args
+	eagine.core.runtime
+	COMPONENT core-dev
+	PARTITION program_args
 	IMPORTS
 		std
 		eagine.core.debug
@@ -39,7 +47,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION basic_config
+	eagine.core.runtime
+	COMPONENT core-dev
+	PARTITION basic_config
 	IMPORTS
 		std program_args
 		eagine.core.types
@@ -51,7 +61,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION url
+	eagine.core.runtime
+	COMPONENT core-dev
+	PARTITION url
 	IMPORTS
 		std program_args
 		eagine.core.types
@@ -63,7 +75,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION compression
+	eagine.core.runtime
+	COMPONENT core-dev
+	PARTITION compression
 	IMPORTS
 		std
 		eagine.core.types
@@ -73,7 +87,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION executable_module
+	eagine.core.runtime
+	COMPONENT core-dev
+	PARTITION executable_module
 	IMPORTS
 		std
 		eagine.core.types
@@ -82,7 +98,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION file_contents
+	eagine.core.runtime
+	COMPONENT core-dev
+	PARTITION file_contents
 	IMPORTS
 		std input_data
 		eagine.core.types
@@ -93,7 +111,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION value_with_history
+	eagine.core.runtime
+	COMPONENT core-dev
+	PARTITION value_with_history
 	IMPORTS
 		std
 		eagine.core.types
@@ -102,7 +122,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.runtime PARTITION workshop
+	eagine.core.runtime
+	COMPONENT core-dev
+	PARTITION workshop
 	IMPORTS
 		std
 		eagine.core.types
@@ -110,6 +132,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.core.runtime
+	COMPONENT core-dev
 	SOURCES
 		url
 		process

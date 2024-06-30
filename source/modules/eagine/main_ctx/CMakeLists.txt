@@ -3,7 +3,9 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.core.main_ctx PARTITION interface
+	eagine.core.main_ctx
+	COMPONENT core-dev
+	PARTITION interface
 	IMPORTS
 		std
 		eagine.core.build_info
@@ -18,14 +20,18 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.main_ctx PARTITION parent
+	eagine.core.main_ctx
+	COMPONENT core-dev
+	PARTITION parent
 	IMPORTS
 		std interface
 		eagine.core.runtime
 )
 
 eagine_add_module(
-	eagine.core.main_ctx PARTITION object
+	eagine.core.main_ctx
+	COMPONENT core-dev
+	PARTITION object
 	IMPORTS
 		std parent
 		eagine.core.types
@@ -39,7 +45,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.main_ctx PARTITION system_info
+	eagine.core.main_ctx
+	COMPONENT core-dev
+	PARTITION system_info
 	IMPORTS
 		std parent object
 		eagine.core.types
@@ -51,7 +59,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.main_ctx PARTITION user_info
+	eagine.core.main_ctx
+	COMPONENT core-dev
+	PARTITION user_info
 	IMPORTS
 		std parent object
 		eagine.core.types
@@ -61,7 +71,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.main_ctx PARTITION watchdog
+	eagine.core.main_ctx
+	COMPONENT core-dev
+	PARTITION watchdog
 	IMPORTS
 		std interface parent object
 		eagine.core.types
@@ -70,7 +82,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.main_ctx PARTITION app_config
+	eagine.core.main_ctx
+	COMPONENT core-dev
+	PARTITION app_config
 	IMPORTS
 		std interface
 		eagine.core.types
@@ -86,7 +100,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.main_ctx PARTITION storage
+	eagine.core.main_ctx
+	COMPONENT core-dev
+	PARTITION storage
 	IMPORTS
 		std interface parent object app_config
 		system_info user_info watchdog
@@ -104,13 +120,16 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.core.main_ctx PARTITION main
+	eagine.core.main_ctx
+	COMPONENT core-dev
+	PARTITION main
 	IMPORTS
 		std interface
 )
 
 eagine_add_module(
 	eagine.core.main_ctx
+	COMPONENT core-dev
 	SOURCES
 		system_info
 		user_info
