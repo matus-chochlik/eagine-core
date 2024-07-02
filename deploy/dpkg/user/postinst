@@ -4,7 +4,7 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 #
-chown -R eagine:eagine "/etc/eagine"
-chown -R eagine:eagine "/var/lib/eagine"
-chown -R eagine:eagine "/var/run/eagine"
+chown -Rf eagine:eagine "/etc/eagine"
+chown -Rf eagine:eagine "/var/lib/eagine"
+chown -Rf eagine:eagine "/var/run/eagine"
 

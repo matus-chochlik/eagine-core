@@ -10,13 +10,13 @@ then
 fi
 if ! getent passwd eagine > /dev/null
 then
-	adduser \\
-		--uid 34917 \\
-		--disabled-login \\
-		--disabled-password \\
-		--home "/var/lib/eagine" \\
-		--gecos "EAGine service account" \\
-		--ingroup eagine \\
+	adduser \
+		--uid 34917 \
+		--disabled-login \
+		--disabled-password \
+		--home "/var/lib/eagine" \
+		--gecos "EAGine service account" \
+		--ingroup eagine \
 		eagine
 fi
 
