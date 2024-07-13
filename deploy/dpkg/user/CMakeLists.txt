@@ -28,8 +28,8 @@ eagine_add_debian_changelog(user-account)
 eagine_add_package_property(
 	user-account
 	GENERATOR DEBIAN
-	VARIABLE PACKAGE_DEPENDS
-	VALUE "docker")
+	VARIABLE PACKAGE_SUGGESTS
+	VALUE "wmdocker")
 
 eagine_add_package_property(
 	user-account

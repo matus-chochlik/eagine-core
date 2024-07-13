@@ -269,9 +269,16 @@ public:
 
     /// @brief Releases the internally allocated URL string.
     /// @post not has_value()
+    /// @see get_string
     auto release_string() noexcept -> std::string {
         _parsed = false;
         return {std::move(_url_str)};
+    }
+
+    /// @brief Returns a reference to the internally allocated URL string.
+    /// @see release_string
+    auto get_string() const noexcept -> const std::string& {
+        return _url_str;
     }
 
 private:
