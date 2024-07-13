@@ -48,10 +48,10 @@ class ArgumentParser(argparse.ArgumentParser):
 
     # --------------------------------------------------------------------------
     def __init__(self, **kw):
-        self._msg_re1 = re.compile("^([A-Za-z0-9_]{1,10})$")
-        self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
-        self._msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
-        self._msg_re4 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
+        self._msg_re1 = re.compile(r"^([A-Za-z0-9_]{1,10})$")
+        self._msg_re2 = re.compile(r"^([A-Za-z0-9_]{1,10})\.$")
+        self._msg_re3 = re.compile(r"^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
+        self._msg_re4 = re.compile(r"^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
 
         argparse.ArgumentParser.__init__(self, **kw)
 
@@ -531,7 +531,7 @@ class LogCursesOut(object):
         self._window = window
         self._line = None
         self._lines = None
-        self._re_color = re.compile("[^{]*(([+-]){{([A-Za-z]+)}}).*")
+        self._re_color = re.compile(r"[^{]*(([+-]){{([A-Za-z]+)}}).*")
         self._color_ids = {
             "White": 0,
             "Red": 1,
@@ -612,7 +612,7 @@ class LogRenderer(object):
         self._options = options
         self._output = output
         self._utils = LogFormattingUtils(options)
-        self._re_var = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
+        self._re_var = re.compile(r".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
         self._progress = {}
         self._all_streams = set()
         self._current_stream_attrib = DbMetadata.getDefaultAttrib()

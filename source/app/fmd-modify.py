@@ -185,7 +185,7 @@ def makeSigner(arg_parser):
 class ArgumentParser(argparse.ArgumentParser):
     # -------------------------------------------------------------------------
     def __init__(self, **kw):
-        self._path_re = re.compile("^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
+        self._path_re = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
 
         def _valid_input_path(x):
             try:
