@@ -51,9 +51,9 @@ class ArgumentParser(argparse.ArgumentParser):
     # -------------------------------------------------------------------------
     def __init__(self, **kw):
         self._msg_re1 = re.compile("^([A-Za-z0-9_]{1,10})$")
-        self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10})\.$")
-        self._msg_re3 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
-        self._msg_re4 = re.compile("^([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})\.([A-Za-z0-9_]{1,10})$")
+        self._msg_re2 = re.compile("^([A-Za-z0-9_]{1,10}).$")
+        self._msg_re3 = re.compile("^([A-Za-z0-9_]{1,10}).([A-Za-z0-9_]{1,10})$")
+        self._msg_re4 = re.compile("^([A-Za-z0-9_]{1,10}).([A-Za-z0-9_]{1,10}).([A-Za-z0-9_]{1,10})$")
 
         argparse.ArgumentParser.__init__(self, **kw)
 
