@@ -53,7 +53,8 @@ function _eagine_core_sensors_log()
         -h|--help)
             return 0;;
 		--min-log-severity)
-			COMPREPLY=($(compgen -W "fatal error warning change info stat debug trace backtrace" -- "${curr}"));;
+			opts="fatal error warning change info stat debug trace backtrace"
+			COMPREPLY=($(compgen -W "${opts}" -- "${curr}"));;
 		--use-asio-log)
 			COMPREPLY=( /tmp/eagine-log );;
 		--use-asio-nw-log)
