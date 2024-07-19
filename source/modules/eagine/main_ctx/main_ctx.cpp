@@ -218,6 +218,10 @@ public:
         return result;
     }
 
+    auto random_identifier() noexcept -> identifier final {
+        return _source.random_identifier();
+    }
+
     void random_identifier(memory::span<char> dest) noexcept final {
         _source.random_identifier(dest);
     }
