@@ -103,10 +103,10 @@ class identifier_name {
 public:
     template <typename... C>
     constexpr identifier_name(span_size_t len, C... c) noexcept
-      : _str{c...}
+      : _str{c..., '\n'}
       , _len{std::uint8_t(len)} {}
 
-    /// @brief Alias for the string lenght type.
+    /// @brief Alias for the string length type.
     using size_type = span_size_t;
 
     /// @brief Alias for the string character type.
@@ -157,7 +157,7 @@ public:
     }
 
 private:
-    memory::fixed_size_string<M> _str{};
+    memory::fixed_size_string<M + 1> _str{};
     std::uint8_t _len{0};
 };
 //------------------------------------------------------------------------------
