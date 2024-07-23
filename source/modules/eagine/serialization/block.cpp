@@ -75,7 +75,7 @@ public:
 
     auto write(memory::const_block blk) noexcept -> serialization_errors final {
         auto dst = free();
-        if(dst.size() < blk.size()) {
+        if(dst.size() < blk.size()) [[unlikely]] {
             copy(head(blk, dst.size()), dst);
             _done += dst.size();
             return {serialization_error_code::incomplete_write};
@@ -89,7 +89,7 @@ public:
     /// @see reset
     auto replace_with(const memory::const_block blk) noexcept
       -> serialization_errors {
-        if(_dst.size() < blk.size()) {
+        if(_dst.size() < blk.size()) [[unlikely]] {
             return {serialization_error_code::too_much_data};
         }
         copy(blk, _dst);

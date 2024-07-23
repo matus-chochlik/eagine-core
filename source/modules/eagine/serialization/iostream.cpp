@@ -82,10 +82,10 @@ public:
 
     auto write(memory::const_block blk) noexcept -> serialization_errors final {
         write_to_stream(current(), blk);
-        if(current().eof()) {
+        if(current().eof()) [[unlikely]] {
             return {serialization_error_code::too_much_data};
         }
-        if(not current().good()) {
+        if(not current().good()) [[unlikely]] {
             return {serialization_error_code::data_sink_error};
         }
         return {};
