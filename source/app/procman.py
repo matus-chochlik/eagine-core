@@ -330,70 +330,70 @@ class ExpansionRegExprs(object):
         self._options = options
         self.commands = [
             ("pathid",
-                re.compile(".*(\$\(pathid\s+([^)]+)\)).*"),
+                re.compile(r".*(\$\(pathid\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdPathId(mtch.group(2))
             ),
             ("in_work_dir",
-                re.compile(".*(\$\(in_work_dir\s+([^)]+)\)).*"),
+                re.compile(r".*(\$\(in_work_dir\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdInWorkDir(mtch.group(2))
             ),
             ("basename",
-                re.compile(".*(\$\(basename\s+([^)]+)\)).*"),
+                re.compile(r".*(\$\(basename\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdBasename(mtch.group(2))
             ),
             ("dirname",
-                re.compile(".*(\$\(dirname\s+([^)]+)\)).*"),
+                re.compile(r".*(\$\(dirname\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdDirname(mtch.group(2))
             ),
             ("wildcard",
-                re.compile(".*(\$\(wildcard\s+([^)]+)\)).*"),
+                re.compile(r".*(\$\(wildcard\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdWildcard(mtch.group(2))
             ),
             ("which",
-                re.compile(".*(\$\(which\s+([^)]+)\)).*"),
+                re.compile(r".*(\$\(which\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdWhich(mtch.group(2))
             ),
             ("eagiapp",
-                re.compile(".*(\$\(eagiapp\s+([^)]+)\)).*"),
+                re.compile(r".*(\$\(eagiapp\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdEAGiApp(mtch.group(2))
             ),
             ("range",
-                re.compile(".*(\$\(range\s+([0-9]+)\s+([0-9]+)\)).*"),
+                re.compile(r".*(\$\(range\s+([0-9]+)\s+([0-9]+)\)).*"),
                 lambda mtch : self._resolveCmdRange(mtch.group(2), mtch.group(3))
             ),
             ("nuid",
-                re.compile(".*(\$\(uid\s+([^)]+)\)).*"),
+                re.compile(r".*(\$\(uid\s+([^)]+)\)).*"),
                 lambda mtch : self._resolveCmdUid(mtch.group(2))
             ),
             ("uid",
-                re.compile(".*(\$\(uid\)).*"),
+                re.compile(r".*(\$\(uid\)).*"),
                 lambda mtch : self._resolveCmdUid(None)
             )
         ]
 
         self.adjustments = [
             ("identity",
-                re.compile(".*(\$<identity ([^)]+)>).*"),
+                re.compile(r".*(\$<identity ([^)]+)>).*"),
                 lambda inst, mtch : self._resolveProcIdentity(mtch.group(2))
             ),
             ("timestamp",
-                re.compile(".*(\$<timestamp>).*"),
+                re.compile(r".*(\$<timestamp>).*"),
                 lambda inst, mtch: time.time()
             ),
             ("instance",
-                re.compile(".*(\$<instance>).*"),
+                re.compile(r".*(\$<instance>).*"),
                 lambda inst, mtch: inst.index()
             ),
             ("uid",
-                re.compile(".*(\$<uid>).*"),
+                re.compile(r".*(\$<uid>).*"),
                 lambda inst, mtch: self._resolveCmdUid(None)
             )
         ]
 
-        self.variable = re.compile(".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
-        self.list_exp = re.compile(".*(\$\[([A-Za-z][A-Za-z_0-9]*)\.\.\.\]).*")
-        self.sbsc_exp = re.compile(".*(\$\[([A-Za-z][A-Za-z_0-9]*)\[([0-9]+)\]\]).*")
-        self.eval_exp = re.compile(".*(\$\(([0-9+*/%-]*)\)).*")
+        self.variable = re.compile(r".*(\${([A-Za-z][A-Za-z_0-9]*)}).*")
+        self.list_exp = re.compile(r".*(\$\[([A-Za-z][A-Za-z_0-9]*)\.\.\.\]).*")
+        self.sbsc_exp = re.compile(r".*(\$\[([A-Za-z][A-Za-z_0-9]*)\[([0-9]+)\]\]).*")
+        self.eval_exp = re.compile(r".*(\$\(([0-9+*/%-]*)\)).*")
 
     # --------------------------------------------------------------------------
     def _addCmdWrappers(self, args):
@@ -661,7 +661,7 @@ class ExpectRunTime(object):
         class _Factory(object):
             # ------------------------------------------------------------------
             def __init__(self):
-                self._re = re.compile("^(=|!=|<|>|<=|>=)([0-9]+)$");
+                self._re = re.compile(r"^(=|!=|<|>|<=|>=)([0-9]+)$");
 
             # ------------------------------------------------------------------
             def __call__(self, identity, data):
@@ -710,7 +710,7 @@ class ExpectXPathCount(object):
         class _Factory(object):
             # ------------------------------------------------------------------
             def __init__(self):
-                self._re = re.compile("^count\((.*)\)(=|!=|<|>|<=|>=)([0-9]+)$")
+                self._re = re.compile(r"^count\((.*)\)(=|!=|<|>|<=|>=)([0-9]+)$")
 
             # ------------------------------------------------------------------
             def __call__(self, identity, data):
@@ -764,7 +764,7 @@ class ExpectXPathAggregate(object):
             # ------------------------------------------------------------------
             def __init__(self):
                 self._re = re.compile(
-                    "^(sum|min|max|avg|lean)\((.*)/@(\w+)\)(=|!=|<|>|<=|>=)([0-9]+(\.[0-9]+)?)$")
+                    r"^(sum|min|max|avg|lean)\((.*)/@(\w+)\)(=|!=|<|>|<=|>=)([0-9]+(\.[0-9]+)?)$")
 
             # ------------------------------------------------------------------
             def __call__(self, identity, data):

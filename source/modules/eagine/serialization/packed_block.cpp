@@ -34,7 +34,7 @@ public:
 
     auto finalize() noexcept -> serialization_errors final {
         if(const auto packed{_compressor.default_compress(
-             done(), data_compression_level::normal)}) {
+             done(), data_compression_level::normal)}) [[likely]] {
             return this->replace_with(packed);
         }
         return {serialization_error_code::backend_error};

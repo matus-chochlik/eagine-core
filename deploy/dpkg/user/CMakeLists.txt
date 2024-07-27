@@ -20,6 +20,11 @@ install(
 	COMPONENT user-account
 	DESTINATION /)
 
+install(
+	DIRECTORY usr
+	COMPONENT user-account
+	DESTINATION /)
+
 eagine_add_package_conffiles(user-account etc)
 
 eagine_add_license(user-account)

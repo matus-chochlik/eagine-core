@@ -14,6 +14,15 @@ function _eagine_core_sensors_log()
         -h --help \
         --version \
         --version-at-least \
+		--min-log-severity \
+		--use-asio-log \
+		--use-asio-nw-log \
+		--use-cerr-log \
+		--use-null-log \
+		--use-syslog \
+		--log-format-json \
+		--log-use-spinlock \
+		--log-use-no-lock \
         --app-sensors-log-log-interval \
     "
 
@@ -43,6 +52,13 @@ function _eagine_core_sensors_log()
     case "${prev}" in
         -h|--help)
             return 0;;
+		--min-log-severity)
+			opts="fatal error warning change info stat debug trace backtrace"
+			COMPREPLY=($(compgen -W "${opts}" -- "${curr}"));;
+		--use-asio-log)
+			COMPREPLY=( /tmp/eagine-log );;
+		--use-asio-nw-log)
+			COMPREPLY=( localhost:34917 );;
         --version-at-least)
             COMPREPLY=($(eagine-core-sensors-log --version));;
         --app-sensors-log-log-interval)

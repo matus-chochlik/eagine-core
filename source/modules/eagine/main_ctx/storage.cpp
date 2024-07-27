@@ -178,6 +178,10 @@ public:
         generate(dest, [this] { return _dist_normal_float(_rand_eng); });
     }
 
+    auto random_identifier() noexcept -> identifier final {
+        return eagine::random_identifier(_rand_eng);
+    }
+
     void random_identifier(memory::span<char> dest) noexcept final {
         eagine::fill_with_random_identifier(dest, _rand_eng);
     }
