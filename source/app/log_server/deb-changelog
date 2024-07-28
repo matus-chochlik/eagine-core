@@ -1,3 +1,13 @@
+eagine-core-logging (0.129.0) unstable; urgency=medium
+
+  * Added description of logger arguments to manuals.
+
+ -- Matúš Chochlík <matus.chochlik@proton.me>  Sun, 28 Jul 2024 06:00:00 +0200
+eeagine-core-logging (0.128.0) unstable; urgency=medium
+
+  * Added new arguments to bash-completion scripts.
+
+ -- Matúš Chochlík <matus.chochlik@proton.me>  Fri, 26 Jul 2024 06:00:00 +0200
 eagine-core-logging (0.125.0) unstable; urgency=medium
 
   * Initial version with CPack-based packaging.

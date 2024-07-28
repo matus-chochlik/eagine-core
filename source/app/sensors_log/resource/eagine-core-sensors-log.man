@@ -12,15 +12,50 @@ load, memory and swap usage, etc. and writes them to the log in specified time
 intervals.
 .SH "OPTIONS"
 .TP
-\fB-h\fR, \fB--help\fR
+\fB-\h\fR, \fB\-\-help\fR
 show a help message and exit.
 .TP
-\fB--version\fR
+\fB\-\-version\fR
 print the version number and exit.
 .TP
-\fB--version-at-least\fR <\fIMAJOR.MINOR[.PATCH[.COMMIT]]\fR>
+\fB\-\-version\-at\-least\fR <\fIMAJOR.MINOR[.PATCH[.COMMIT]]\fR>
 checks if the version is at least the specified semantic version number.
 If the version is less than the specified number, exits with non-zero result.
+.TP
+\fB\-\-min\-log\-severity\fR <\fIfatal\fR|\fIerror\fR|\fIwarning\fR|\fIchange\fR|\fIinfo\fR|\fIstat\fR|\fIdebug\fR|\fItrace\fR|\fIbacktrace\fR>
+specifies the minimum log event severity. Only log events with severity equal
+or higher to the specified log level are written to the log entry stream sink
+(\fIfatal\fR being the highest and \fIbacktrace\fR the lowest level respectively).
+.TP
+\fB\-\-use\-asio\-log\fR [\fISOCKET-PATH\fR]
+selects ASIO local client socket-based logger backend. The following parameter
+specifies the file-system path of an existing local socket. A corresponding 
+log server must be running and accepting connections on that socket.
+.TP
+\fB\-\-use\-asio\-nw\-log\fR [\fIHOST\fR[:\fIPORT\fR]]
+selects ASIO TCP/IP client socket-based logger backend. The following parameter
+specifies the host and port of an existing network socket. A corresponding 
+log server must be running and accepting connections on that socket.
+.TP
+\fB\-\-use\-cerr\-log\fR
+selects the standard error output logger backend.
+.TP
+\fB\-\-use\-null\-log\fR
+selects the \fINULL\fR logger backend. All log entries will be discarded.
+.TP
+\fB\-\-use\-syslog\fR
+selects the \fIsyslog\fR logger backend.
+.TP
+\fB\-\-log\-format\-json\fR
+selects the \fIJSON\fR log entry stream format (the default).
+.TP
+\fB\-\-log\-use\-spinlock\fR
+specifies that the selected backend should use spin-locks as a thread synchronization
+mechanism instead of mutexes.
+.TP
+\fB\-\-log\-use\-no\-lock\fR
+specifies that no thread synchronization mechanism shall be used in the selected
+logger backend. This is useful for single-thread logging programs.
 .TP
 \fB--app-sensors-log-log-interval\fR <\fITIME\fR>
 specifies the time interval (like 30s, 5min, 1hr, etc.) in which the sensor
