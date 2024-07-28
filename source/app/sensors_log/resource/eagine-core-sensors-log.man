@@ -29,12 +29,12 @@ or higher to the specified log level are written to the log entry stream sink
 .TP
 \fB\-\-use\-asio\-log\fR [\fISOCKET-PATH\fR]
 selects ASIO local client socket-based logger backend. The following parameter
-specifies the file-system path of an existing local socket. A corresponding 
+specifies the file-system path of an existing local socket. A corresponding
 log server must be running and accepting connections on that socket.
 .TP
 \fB\-\-use\-asio\-nw\-log\fR [\fIHOST\fR[:\fIPORT\fR]]
 selects ASIO TCP/IP client socket-based logger backend. The following parameter
-specifies the host and port of an existing network socket. A corresponding 
+specifies the host and port of an existing network socket. A corresponding
 log server must be running and accepting connections on that socket.
 .TP
 \fB\-\-use\-cerr\-log\fR
