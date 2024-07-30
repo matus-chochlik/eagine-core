@@ -66,6 +66,7 @@ eagine_add_module_tests(
 	eagine.core
 	UNITS
 		embed
+		valtree
 	IMPORTS
 		std
 		eagine.core
