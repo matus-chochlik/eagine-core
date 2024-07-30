@@ -26,8 +26,9 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
-		eagine.core.identifier
 		eagine.core.utility
+		eagine.core.runtime
+		eagine.core.identifier
 		eagine.core.reflection
 		eagine.core.valid_if
 )
@@ -64,6 +65,7 @@ eagine_add_module(
 		eagine.core.string
 		eagine.core.identifier
 		eagine.core.utility
+		eagine.core.runtime
 		eagine.core.valid_if
 		eagine.core.logging
 		eagine.core.console

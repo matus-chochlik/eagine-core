@@ -18,10 +18,10 @@ auto main(main_ctx& ctx) -> int {
         return basic_string_path(str, split_by, "/");
     };
 
-    const auto visitor = [&ctx](
-                           const valtree::compound& c,
-                           const valtree::attribute& a,
-                           const basic_string_path& p) {
+    const auto visitor{[&ctx](
+                         const valtree::compound& c,
+                         const valtree::attribute& a,
+                         const basic_string_path& p) {
         auto ca{c / a};
         ctx.log()
           .info("visit")
@@ -47,7 +47,7 @@ auto main(main_ctx& ctx) -> int {
             }
         }
         return true;
-    };
+    }};
 
     const string_view json_text(R"({
 		"attribA" : {
@@ -56,7 +56,20 @@ auto main(main_ctx& ctx) -> int {
 		"attribC" : [
 			45, "six", 78.9, {"zero": false}
 		],
-		"attribD" : "VGhpcyBpcyBhIGJhc2U2NC1lbmNvZGVkIEJMT0IK"
+		"attribD" : "VGhpcyBpcyBhIGJhc2U2NC1lbmNvZGVkIEJMT0IK",
+		"attribURL" : {
+			"scheme": "https",
+			"login": "user",
+			"password": "mypass123",
+			"domain": "example.com",
+			"port": 1234,
+			"path": "/path/to/resource",
+			"fragment": "bookmark",
+			"args": {
+				"id": 1234,
+				"url": "sftp://example.com/path/to/file#part1"
+			}
+		}
 	})");
 
     if(const auto json_tree{valtree::from_json_text(json_text, ctx)}) {
@@ -78,8 +91,9 @@ auto main(main_ctx& ctx) -> int {
             json_tree.get<bool>(path("attribC/3/zero")),
             n_a)
           .arg(
-            "attribD",
-            view(json_tree.fetch_blob(path("attribD"), cover(temp))));
+            "attribD", view(json_tree.fetch_blob(path("attribD"), cover(temp))))
+          .arg(
+            "attribURL", "string", json_tree.make_url_str(path("attribURL")));
         json_tree.traverse(
           valtree::compound::visit_handler{construct_from, visitor});
     }
