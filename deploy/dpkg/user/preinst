@@ -7,6 +7,10 @@
 if ! getent group eagine > /dev/null
 then
 	addgroup --gid 34917 eagine
+
+	if [ -x /usr/share/update-notifier/notify-reboot-required ]
+	then /usr/share/update-notifier/notify-reboot-required
+	fi
 fi
 if ! getent passwd eagine > /dev/null
 then
@@ -18,5 +22,9 @@ then
 		--gecos "EAGine service account" \
 		--ingroup eagine \
 		eagine
+
+	if [ -x /usr/share/update-notifier/notify-reboot-required ]
+	then /usr/share/update-notifier/notify-reboot-required
+	fi
 fi
 
