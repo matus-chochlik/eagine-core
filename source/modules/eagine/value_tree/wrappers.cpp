@@ -16,6 +16,7 @@ import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
 import eagine.core.utility;
+import eagine.core.runtime;
 import eagine.core.identifier;
 import eagine.core.reflection;
 import eagine.core.valid_if;
@@ -292,7 +293,7 @@ public:
         return {};
     }
 
-    /// @brief Returns the caninical value type of an attribute.
+    /// @brief Returns the canonical value type of an attribute.
     /// @pre this->type_id() == attrib.type_id().
     ///
     /// Tree data referred-to by an attribute can be fetched either using
@@ -669,6 +670,20 @@ public:
     [[nodiscard]] auto as() noexcept -> optional_reference<Implementation> {
         return _pimpl.ref().as(std::type_identity<Implementation>{});
     }
+
+    /// @brief Tries to create an URL string from the sub-attributes of an attribute.
+    [[nodiscard]] auto make_url_str(const attribute&) const -> std::string;
+
+    /// @brief Tries to create an URL string from the sub-attributes at specified path.
+    [[nodiscard]] auto make_url_str(const basic_string_path& path) const
+      -> std::string;
+
+    /// @brief Tries to return an URL from the sub-attributes of an attribute.
+    [[nodiscard]] auto get_url(const attribute&) const noexcept -> url;
+
+    /// @brief Tries to return an URL from the sub-attributes at specified path.
+    [[nodiscard]] auto get_url(const basic_string_path& path) const noexcept
+      -> url;
 
 private:
     compound(shared_holder<compound_interface> pimpl) noexcept
