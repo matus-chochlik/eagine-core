@@ -182,7 +182,7 @@ public:
     auto fetch(
       const string_view key,
       valid_if<T, P>& dest,
-      const string_view tag) noexcept -> bool {
+      const string_view tag = {}) noexcept -> bool {
         T temp{};
         if(fetch(key, temp, tag)) {
             if(dest.has_value(temp)) {
@@ -197,13 +197,30 @@ public:
         return false;
     }
 
+    auto fetch(
+      const string_view key,
+      url& locator,
+      const string_view tag = {}) noexcept -> bool {
+        std::string temp{};
+        if(fetch(key, temp, tag)) {
+            locator = url{std::move(temp)};
+            if(locator) {
+                return true;
+            }
+            _log.error("value '${value}' is not valid for '${key}'")
+              .arg("value", temp)
+              .arg("key", key);
+        }
+        return false;
+    }
+
     /// @brief Returns the configuration value or type @p T, identified by @p key.
     template <typename T>
     [[nodiscard]] auto get(
       const string_view key,
       const std::type_identity<T> = {}) noexcept -> optionally_valid<T> {
         T temp{};
-        const auto fetched = fetch(key, temp);
+        const auto fetched{fetch(key, temp)};
         return {std::move(temp), fetched};
     }
 
