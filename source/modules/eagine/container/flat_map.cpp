@@ -404,6 +404,13 @@ public:
         return ip;
     }
 
+    auto emplace(std::pair<Key, Val>&& elem) -> std::pair<iterator, bool> {
+        auto& [key, val]{elem};
+        auto ip = _find_insert_pos(key);
+        ip = _do_emplace(ip, key, std::move(val));
+        return ip;
+    }
+
     /// @brief Constructs a new element with the specified arguments under specified key.
     /// @see insert
     template <typename... Args>
