@@ -14,7 +14,8 @@ import eagine.core.memory;
 namespace eagine {
 //------------------------------------------------------------------------------
 export template <typename Engine>
-auto fill_with_random_bytes(span<byte> dst, Engine& engine) -> span<byte> {
+auto fill_with_random_bytes(span<byte> dst, Engine& engine) noexcept
+  -> span<byte> {
     using ui_t = typename Engine::result_type;
 
     const ui_t mask = ((1U << 8U) - 1U);
@@ -24,14 +25,14 @@ auto fill_with_random_bytes(span<byte> dst, Engine& engine) -> span<byte> {
     return dst;
 }
 //------------------------------------------------------------------------------
-export auto fill_with_random_bytes(span<byte> dst) -> span<byte>;
+export auto fill_with_random_bytes(span<byte> dst) noexcept -> span<byte>;
 //------------------------------------------------------------------------------
 export auto fill_with_random_identifier(
   span<char> dst,
-  std::default_random_engine&) -> span<char>;
-export auto fill_with_random_identifier(span<char> dst) -> span<char>;
+  std::default_random_engine&) noexcept -> span<char>;
+export auto fill_with_random_identifier(span<char> dst) noexcept -> span<char>;
 export auto fill_with_random_identifier(
   std::string& dst,
-  std::default_random_engine&) -> std::string&;
+  std::default_random_engine&) noexcept -> std::string&;
 //------------------------------------------------------------------------------
 } // namespace eagine

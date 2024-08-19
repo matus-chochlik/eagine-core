@@ -230,6 +230,13 @@ public:
         _source.random_identifier(dest);
     }
 
+    auto random_identifier(std::size_t length) noexcept -> std::string {
+        std::string result;
+        result.resize(length);
+        _source.random_identifier(result);
+        return result;
+    }
+
     [[nodiscard]] auto encrypt_shared(
       memory::const_block nonce,
       memory::const_block input,
