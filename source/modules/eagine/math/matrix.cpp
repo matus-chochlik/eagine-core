@@ -292,10 +292,14 @@ public:
     /// @brief Returns the translation vector of this matrix (4x3 or 4x4)
     /// @see row
     /// @see column
-    [[nodiscard]] constexpr auto translation() noexcept -> vector<T, 3, V>
+    [[nodiscard]] constexpr auto translation() const noexcept -> vector<T, 3, V>
         requires((R == 4) and (C == 3 or C == 4))
     {
-        return vector<T, 3, V>{row(3)};
+        if constexpr(is_row_major()) {
+            return vector<T, 3, V>{_v[3]};
+        } else {
+            return vector<T, 3, V>{_v[0][3], _v[1][3], _v[2][3]};
+        }
     }
 };
 //------------------------------------------------------------------------------
