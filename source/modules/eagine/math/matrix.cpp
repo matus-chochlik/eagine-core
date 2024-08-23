@@ -35,11 +35,7 @@ struct multiplication_result;
 /// @see tmat
 /// @note This is a base class, typically tmat should be used in client code.
 export template <typename T, int C, int R, bool RM, bool V>
-struct matrix {
-    using type = matrix;
-
-    /// @brief Element type.
-    using element_type = T;
+class matrix {
 
     template <int... U>
     using _iseq = std::integer_sequence<int, U...>;
@@ -47,45 +43,213 @@ struct matrix {
     template <int N>
     using _make_iseq = std::make_integer_sequence<int, N>;
 
-    vect::data_t<T, RM ? C : R, V> _v[RM ? R : C];
-
     template <typename P, int... I>
-    static auto _from_hlp(const P* dt, span_size_t sz, _iseq<I...>) noexcept
-      -> matrix {
+    static constexpr auto _from_hlp(
+      const P* dt,
+      span_size_t sz,
+      _iseq<I...>) noexcept -> matrix {
         return matrix{
           {vect::from_array < T,
            RM ? C : R,
            V > ::apply(dt + I * (RM ? C : R), sz - I * (RM ? C : R))...}};
     }
 
-    /// @brief Creates a matrix from data pointer and size.
-    template <typename P>
-    [[nodiscard]] static auto from(const P* dt, const span_size_t sz) noexcept
-      -> matrix {
-        return _from_hlp(dt, sz, _make_iseq < RM ? R : C > ());
-    }
-
     template <typename P, int M, int N, bool W, int... I>
-    static auto _from_hlp(const matrix<P, M, N, RM, W>& m, _iseq<I...>) noexcept
-      -> matrix {
+    static constexpr auto _from_hlp(
+      const matrix<P, M, N, RM, W>& m,
+      _iseq<I...>) noexcept -> matrix {
         return matrix{
           {vect::cast<P, (RM ? M : N), W, T, (RM ? C : R), V>::apply(
             m._v[I], T(0))...}};
     }
 
+    template <bool DstRM>
+    static constexpr auto _transpose_tpl_hlp_4x4(
+      const vect::data_t<T, 4, V>& q0,
+      const vect::data_t<T, 4, V>& q1,
+      const vect::data_t<T, 4, V>& q2,
+      const vect::data_t<T, 4, V>& q3) noexcept {
+        using vect::shuffle2;
+        using vect::shuffle_mask;
+        return matrix<T, 4, 4, DstRM, V>{
+          {shuffle2<T, 4, V>::apply(q0, q2, shuffle_mask<0, 2, 4, 6>{}),
+           shuffle2<T, 4, V>::apply(q0, q2, shuffle_mask<1, 3, 5, 7>{}),
+           shuffle2<T, 4, V>::apply(q1, q3, shuffle_mask<0, 2, 4, 6>{}),
+           shuffle2<T, 4, V>::apply(q1, q3, shuffle_mask<1, 3, 5, 7>{})}};
+    }
+
+    template <bool DstRM>
+    constexpr auto _transpose_tpl() const noexcept -> matrix<T, 4, 4, DstRM, V>
+        requires(R == 4 and C == 4)
+    {
+        using vect::shuffle2;
+        using vect::shuffle_mask;
+        return _transpose_tpl_hlp_4x4<DstRM>(
+          shuffle2<T, 4, V>::apply(_v[0], _v[1], shuffle_mask<0, 1, 4, 5>{}),
+          shuffle2<T, 4, V>::apply(_v[0], _v[1], shuffle_mask<2, 3, 6, 7>{}),
+          shuffle2<T, 4, V>::apply(_v[2], _v[3], shuffle_mask<0, 1, 4, 5>{}),
+          shuffle2<T, 4, V>::apply(_v[2], _v[3], shuffle_mask<2, 3, 6, 7>{}));
+    }
+
+    template <bool DstRM>
+    constexpr auto _transpose_tpl() const noexcept
+      -> matrix<T, (DstRM == RM ? R : C), (DstRM == RM ? C : R), DstRM, V> {
+        const bool S = (DstRM != RM);
+        matrix<T, (S ? C : R), (S ? R : C), DstRM, V> r{};
+
+        for(int i = 0; i < R; ++i) {
+            for(int j = 0; j < C; ++j) {
+                r.set_rm(S ? i : j, S ? j : i, get_rm(i, j));
+            }
+        }
+
+        return r;
+    }
+
+public:
+    vect::data_t<T, RM ? C : R, V> _v[RM ? R : C];
+
+    using type = matrix;
+
+    /// @brief Element type.
+    using element_type = T;
+
+    /// @brief Creates a matrix from data pointer and size.
+    template <typename P>
+    [[nodiscard]] static constexpr auto from(
+      const P* dt,
+      const span_size_t sz) noexcept -> matrix {
+        return _from_hlp(dt, sz, _make_iseq < RM ? R : C > {});
+    }
+
     /// @brief Creates a matrix from another matrix type.
     template <typename P, int M, int N, bool W>
-    [[nodiscard]] static auto from(const matrix<P, M, N, RM, W>& m) noexcept
-      -> matrix
+    [[nodiscard]] static constexpr auto from(
+      const matrix<P, M, N, RM, W>& m) noexcept -> matrix
         requires((C <= M) and (R <= N))
     {
-        return _from_hlp(m, _make_iseq < RM ? R : C > ());
+        return _from_hlp(m, _make_iseq < RM ? R : C > {});
     }
 
     /// @brief Subscript operator.
     [[nodiscard]] auto operator[](const int i) const noexcept
       -> const vector<T, RM ? C : R, V> {
         return {_v[i]};
+    }
+
+    /// @brief Indicates if the matrix is row major.
+    [[nodiscard]] static constexpr auto is_row_major() noexcept -> bool {
+        return RM;
+    }
+
+    /// @brief Returns the number of rows in this matrix type.
+    /// @see columns
+    /// @see dimension
+    [[nodiscard]] static constexpr auto rows() noexcept -> int {
+        return R;
+    }
+
+    /// @brief Returns the number of columns in this matrix type.
+    /// @see rows
+    /// @see dimension
+    [[nodiscard]] static constexpr auto columns() noexcept -> int {
+        return C;
+    }
+
+    /// @brief Indicates if this matrix is square.
+    [[nodiscard]] static constexpr auto is_square() noexcept -> bool {
+        return C == R;
+    }
+
+    /// @brief Returns the number of columns in this matrix type if it's square.
+    /// @see rows
+    /// @see columns
+    [[nodiscard]] static constexpr auto dimension() noexcept -> int
+        requires(is_square())
+    {
+        return C;
+    }
+
+    /// @brief Sets the matrix element at [ri, ci].
+    /// @ingroup math
+    constexpr auto set_rm(const int ri, const int ci, const T v) noexcept
+      -> matrix& {
+        assert(ci < C and ri < R);
+        if constexpr(is_row_major()) {
+            _v[ri][ci] = v;
+        } else {
+            _v[ci][ri] = v;
+        }
+        return *this;
+    }
+
+    /// @brief Sets the matrix element at [ci, ri].
+    /// @ingroup math
+    constexpr auto set_cm(const int ci, const int ri, const T v) noexcept
+      -> matrix& {
+        assert(ci < C and ri < R);
+        if constexpr(is_row_major()) {
+            _v[ri][ci] = v;
+        } else {
+            _v[ci][ri] = v;
+        }
+        return *this;
+    }
+
+    /// @brief Gets the matrix element at [ri, ci].
+    /// @ingroup math
+    constexpr auto get_rm(const int ri, const int ci) const noexcept -> T {
+        assert(ci < C and ri < R);
+        if constexpr(is_row_major()) {
+            return _v[ri][ci];
+        } else {
+            return _v[ci][ri];
+        }
+    }
+
+    /// @brief Gets the matrix element at [ci, ri].
+    /// @ingroup math
+    constexpr auto get_cm(const int ci, const int ri) const noexcept -> T {
+        assert(ci < C and ri < R);
+        if constexpr(is_row_major()) {
+            return _v[ri][ci];
+        } else {
+            return _v[ci][ri];
+        }
+    }
+
+    /// @brief Returns this matrix transposed.
+    /// @see reordered
+    [[nodiscard]] constexpr auto transposed() const noexcept
+      -> matrix<T, R, C, RM, V> {
+        return _transpose_tpl<RM>();
+    }
+
+    /// @brief Returns this matrix reordered (switches row/column major).
+    /// @see transposed
+    [[nodiscard]] constexpr auto reordered() const noexcept
+      -> matrix<T, C, R, not RM, V> {
+        return _transpose_tpl<not RM>();
+    }
+
+    /// @brief Returns this matrix as row-major.
+    /// @see make_column_major
+    [[nodiscard]] constexpr auto as_row_major() const noexcept {
+        if constexpr(is_row_major()) {
+            return *this;
+        } else {
+            return reordered();
+        }
+    }
+
+    /// @brief Returns this matrix as column-major.
+    /// @see make_row_major
+    [[nodiscard]] constexpr auto as_column_major() const noexcept {
+        if constexpr(is_row_major()) {
+            return reordered();
+        } else {
+            return *this;
+        }
     }
 };
 //------------------------------------------------------------------------------
@@ -98,249 +262,6 @@ struct is_row_major<matrix<T, C, R, RM, V>> : std::bool_constant<RM> {};
 /// @ingroup math
 export template <typename X>
 constexpr const auto is_row_major_v = is_row_major<X>::value;
-//------------------------------------------------------------------------------
-/// @brief Returns then number of matrix rows.
-/// @ingroup math
-export template <typename T, int C, int R, bool RM, bool V>
-[[nodiscard]] constexpr auto rows(const matrix<T, C, R, RM, V>&) noexcept {
-    return R;
-}
-//------------------------------------------------------------------------------
-/// @brief Returns then number of matrix columns.
-/// @ingroup math
-export template <typename T, int C, int R, bool RM, bool V>
-[[nodiscard]] constexpr auto columns(const matrix<T, C, R, RM, V>&) noexcept {
-    return C;
-}
-//------------------------------------------------------------------------------
-/// @brief Indicates if a matrix is row-major.
-/// @ingroup math
-export template <typename T, int C, int R, bool RM, bool V>
-[[nodiscard]] constexpr auto row_major(const matrix<T, C, R, RM, V>&) noexcept {
-    return RM;
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the dimension of a square matrix.
-/// @ingroup math
-export template <typename T, int N, bool RM, bool V>
-[[nodiscard]] constexpr auto dimension(const matrix<T, N, N, RM, V>&) noexcept {
-    return N;
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the matrix element at [CI, RI]. Column-major implementation.
-/// @ingroup math
-export template <int CI, int RI, typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto get_cm(const matrix<T, C, R, false, V>& m) noexcept
-  -> T
-    requires(CI < C and RI < R)
-{
-    return m._v[CI][RI];
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the matrix element at [CI, RI]. Row-major implementation.
-/// @ingroup math
-export template <int CI, int RI, typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto get_cm(const matrix<T, C, R, true, V>& m) noexcept
-  -> T
-    requires(CI < C and RI < R)
-{
-    return m._v[RI][CI];
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the matrix element at [ci, ri]. Column-major implementation.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto get_cm(
-  const matrix<T, C, R, false, V>& m,
-  const int ci,
-  const int ri) noexcept -> T {
-    assert(ci < C and ri < R);
-    return m._v[ci][ri];
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the matrix element at [ci, ri]. Row-major implementation.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto get_cm(
-  const matrix<T, C, R, true, V>& m,
-  const int ci,
-  const int ri) noexcept -> T {
-    assert(ci < C and ri < R);
-    return m._v[ri][ci];
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the matrix element at [RI, CI]. Column-major implementation.
-/// @ingroup math
-export template <int RI, int CI, typename T, int C, int R, bool V>
-    requires(CI < C and RI < R)
-[[nodiscard]] constexpr auto get_rm(const matrix<T, C, R, false, V>& m) noexcept
-  -> T {
-    return m._v[CI][RI];
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the matrix element at [RI, CI]. Row-major implementation.
-/// @ingroup math
-export template <int RI, int CI, typename T, int C, int R, bool V>
-    requires(CI < C and RI < R)
-[[nodiscard]] constexpr auto get_rm(const matrix<T, C, R, true, V>& m) noexcept
-  -> T {
-    return m._v[RI][CI];
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the matrix element at [ri, ci]. Column-major implementation.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto get_rm(
-  const matrix<T, C, R, false, V>& m,
-  const int ri,
-  const int ci) noexcept -> T {
-    assert(ci < C and ri < R);
-    return m._v[ci][ri];
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the matrix element at [ri, ci]. Row-major implementation.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto get_rm(
-  const matrix<T, C, R, true, V>& m,
-  const int ri,
-  const int ci) noexcept -> T {
-    assert(ci < C and ri < R);
-    return m._v[ri][ci];
-}
-//------------------------------------------------------------------------------
-/// @brief Sets the matrix element at [CI, RI]. Column-major implementation.
-/// @ingroup math
-export template <int CI, int RI, typename T, int C, int R, bool V>
-    requires(CI < C and RI < R)
-constexpr void set_cm(matrix<T, C, R, false, V>& m, const T v) noexcept {
-    m._v[CI][RI] = v;
-}
-//------------------------------------------------------------------------------
-/// @brief Sets the matrix element at [CI, RI]. Row-major implementation.
-/// @ingroup math
-export template <int CI, int RI, typename T, int C, int R, bool V>
-    requires(CI < C and RI < R)
-constexpr void set_cm(matrix<T, C, R, true, V>& m, const T v) noexcept {
-    m._v[RI][CI] = v;
-}
-//------------------------------------------------------------------------------
-/// @brief Sets the matrix element at [ci, ri]. Column-major implementation.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-constexpr void set_cm(
-  matrix<T, C, R, false, V>& m,
-  const int ci,
-  const int ri,
-  const T v) noexcept {
-    assert(ci < C and ri < R);
-    m._v[ci][ri] = v;
-}
-//------------------------------------------------------------------------------
-/// @brief Sets the matrix element at [ci, ri]. Row-major implementation.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-constexpr void set_cm(
-  matrix<T, C, R, true, V>& m,
-  const int ci,
-  const int ri,
-  const T v) noexcept {
-    assert(ci < C and ri < R);
-    m._v[ri][ci] = v;
-}
-//------------------------------------------------------------------------------
-/// @brief Sets the matrix element at [RI, CI]. Column-major implementation.
-/// @ingroup math
-export template <int RI, int CI, typename T, int C, int R, bool V>
-    requires(CI < C and RI < R)
-constexpr void set_rm(matrix<T, C, R, false, V>& m, const T v) noexcept {
-    m._v[CI][RI] = v;
-}
-//------------------------------------------------------------------------------
-/// @brief Sets the matrix element at [RI, CI]. Row-major implementation.
-/// @ingroup math
-export template <int RI, int CI, typename T, int C, int R, bool V>
-    requires(CI < C and RI < R)
-constexpr void set_rm(matrix<T, C, R, true, V>& m, const T v) noexcept {
-    m._v[RI][CI] = v;
-}
-//------------------------------------------------------------------------------
-/// @brief Sets the matrix element at [ri, ci]. Column-major implementation.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-constexpr void set_rm(
-  matrix<T, C, R, false, V>& m,
-  const int ri,
-  const int ci,
-  const T v) noexcept {
-    assert(ci < C and ri < R);
-    m._v[ci][ri] = v;
-}
-//------------------------------------------------------------------------------
-/// @brief Sets the matrix element at [ri, ci]. Row-major implementation.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-constexpr void set_rm(
-  matrix<T, C, R, true, V>& m,
-  const int ri,
-  const int ci,
-  const T v) noexcept {
-    assert(ci < C and ri < R);
-    m._v[ri][ci] = v;
-}
-//------------------------------------------------------------------------------
-// transpose_tpl helper 4x4 matrix
-export template <bool DstRM, typename T, bool V>
-constexpr auto transpose_tpl_hlp(
-  const vect::data_t<T, 4, V>& q0,
-  const vect::data_t<T, 4, V>& q1,
-  const vect::data_t<T, 4, V>& q2,
-  const vect::data_t<T, 4, V>& q3) noexcept {
-    using vect::shuffle2;
-    using vect::shuffle_mask;
-    return matrix<T, 4, 4, DstRM, V>{
-      {shuffle2<T, 4, V>::apply(q0, q2, shuffle_mask<0, 2, 4, 6>{}),
-       shuffle2<T, 4, V>::apply(q0, q2, shuffle_mask<1, 3, 5, 7>{}),
-       shuffle2<T, 4, V>::apply(q1, q3, shuffle_mask<0, 2, 4, 6>{}),
-       shuffle2<T, 4, V>::apply(q1, q3, shuffle_mask<1, 3, 5, 7>{})}};
-}
-//------------------------------------------------------------------------------
-// transpose_tpl 4x4 matrix
-export template <bool DstRM, bool SrcRM, typename T, bool V>
-constexpr auto transpose_tpl(const matrix<T, 4, 4, SrcRM, V>& m) noexcept
-  -> matrix<T, 4, 4, DstRM, V> {
-    using vect::shuffle2;
-    using vect::shuffle_mask;
-    return transpose_tpl_hlp<DstRM, T, V>(
-      shuffle2<T, 4, V>::apply(m._v[0], m._v[1], shuffle_mask<0, 1, 4, 5>{}),
-      shuffle2<T, 4, V>::apply(m._v[0], m._v[1], shuffle_mask<2, 3, 6, 7>{}),
-      shuffle2<T, 4, V>::apply(m._v[2], m._v[3], shuffle_mask<0, 1, 4, 5>{}),
-      shuffle2<T, 4, V>::apply(m._v[2], m._v[3], shuffle_mask<2, 3, 6, 7>{}));
-}
-//------------------------------------------------------------------------------
-// transpose_tpl
-export template <bool DstRM, bool SrcRM, typename T, int C, int R, bool V>
-constexpr auto transpose_tpl(const matrix<T, C, R, SrcRM, V>& m) noexcept
-  -> matrix<T, (DstRM == SrcRM ? R : C), (DstRM == SrcRM ? C : R), DstRM, V> {
-    const bool S = (DstRM != SrcRM);
-    matrix<T, (S ? C : R), (S ? R : C), DstRM, V> r;
-
-    for(int i = 0; i < R; ++i) {
-        for(int j = 0; j < C; ++j) {
-            set_rm(r, S ? i : j, S ? j : i, get_rm(m, i, j));
-        }
-    }
-
-    return r;
-}
-//------------------------------------------------------------------------------
-/// @brief Transposes a matrix.
-/// @ingroup math
-export template <typename T, int C, int R, bool RM, bool V>
-[[nodiscard]] constexpr auto transpose(const matrix<T, C, R, RM, V>& m) noexcept
-  -> matrix<T, R, C, RM, V> {
-    return transpose_tpl<RM, RM, T>(m);
-}
 //------------------------------------------------------------------------------
 // reordered matrix trait
 export template <typename X>
@@ -355,46 +276,6 @@ using reordered_matrix_t = typename reordered_matrix<X>::type;
 /// @ingroup math
 export template <typename T, int C, int R, bool RM, bool V>
 struct reordered_matrix<matrix<T, C, R, RM, V>> : matrix<T, R, C, not RM, V> {};
-//------------------------------------------------------------------------------
-/// @brief Returns a matrix reordered (switches row/column major).
-/// @ingroup math
-export template <typename T, int C, int R, bool RM, bool V>
-[[nodiscard]] constexpr auto reorder(const matrix<T, C, R, RM, V>& m) noexcept
-  -> matrix<T, C, R, not RM, V> {
-    return transpose_tpl<not RM, RM, T>(m);
-}
-//------------------------------------------------------------------------------
-/// @brief Returns a matrix ordered as row-major.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto make_row_major(matrix<T, C, R, true, V> m) noexcept
-  -> matrix<T, C, R, true, V> {
-    return m;
-}
-//------------------------------------------------------------------------------
-/// @brief Returns a matrix ordered as row-major.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto make_row_major(
-  const matrix<T, C, R, false, V>& m) noexcept -> matrix<T, C, R, true, V> {
-    return reorder(m);
-}
-//------------------------------------------------------------------------------
-/// @brief Returns a matrix ordered as column-major.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto make_column_major(
-  matrix<T, C, R, false, V> m) noexcept -> matrix<T, C, R, false, V> {
-    return m;
-}
-//------------------------------------------------------------------------------
-/// @brief Returns a matrix ordered as column-major.
-/// @ingroup math
-export template <typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto make_column_major(
-  const matrix<T, C, R, true, V>& m) noexcept -> matrix<T, C, R, false, V> {
-    return reorder(m);
-}
 //------------------------------------------------------------------------------
 /// @brief Returns the I-th major vector of a matrix.
 /// @ingroup math
@@ -413,7 +294,7 @@ export template <int I, typename T, int C, int R, bool RM, bool V>
   const matrix<T, C, R, RM, V>& m) noexcept -> vector<T, (RM ? R : C), V>
     requires(I < (RM ? C : R))
 {
-    return major_vector<I>(reorder(m));
+    return major_vector<I>(m.reordered());
 }
 //------------------------------------------------------------------------------
 // minor_vector mat4x4
@@ -569,7 +450,7 @@ export template <bool RM, typename T, int C, int R, bool V>
 export template <bool RM, typename T, int C, int R, bool V>
 [[nodiscard]] constexpr auto construct_matrix(
   const matrix<T, C, R, not RM, V>& m) noexcept -> matrix<T, C, R, RM, V> {
-    return reorder(m);
+    return m.reordered();
 }
 //------------------------------------------------------------------------------
 // are_multiplicable
@@ -595,10 +476,10 @@ export template <typename T, int M, int N, int K, bool RM1, bool RM2, bool V>
             T s = T(0);
 
             for(int k = 0; k < K; ++k) {
-                s += get_rm(m1, i, k) * get_rm(m2, k, j);
+                s += m1.get_rm(i, k) * m2.get_rm(k, j);
             }
 
-            set_rm(m3, i, j, s);
+            m3.set_rm(i, j, s);
         }
     }
     return m3;
@@ -633,7 +514,7 @@ export template <typename T, int C, int R, bool RM, bool V>
     for(int i = 0; i < R; ++i) {
         T s = T(0);
         for(int j = 0; j < C; ++j) {
-            s += get_rm(m, i, j) * v._v[j];
+            s += m.get_rm(i, j) * v._v[j];
         }
         r._v[i] = s;
     }
@@ -707,9 +588,9 @@ export template <typename T, int Ca, int Cb, int R, bool V>
 [[nodiscard]] constexpr auto gauss_elimination(
   matrix<T, Ca, R, false, V>& a,
   matrix<T, Cb, R, true, V>& b) noexcept -> bool {
-    auto ta = reorder(a);
+    auto ta = a.reordered();
     if(gauss_elimination(ta, b)) {
-        a = reorder(ta);
+        a = ta.reordered();
         return true;
     }
     return false;
@@ -722,9 +603,9 @@ export template <typename T, int Ca, int Cb, int R, bool V>
 [[nodiscard]] constexpr auto gauss_elimination(
   matrix<T, Ca, R, true, V>& a,
   matrix<T, Cb, R, false, V>& b) noexcept -> bool {
-    auto tb = reorder(b);
+    auto tb = b.reordered();
     if(gauss_elimination(a, tb)) {
-        b = reorder(tb);
+        b = tb.reordered();
         return true;
     }
     return false;
@@ -737,11 +618,11 @@ export template <typename T, int Ca, int Cb, int R, bool V>
 [[nodiscard]] constexpr auto gauss_elimination(
   matrix<T, Ca, R, false, V>& a,
   matrix<T, Cb, R, false, V>& b) noexcept -> bool {
-    auto ta = reorder(a);
-    auto tb = reorder(b);
+    auto ta = a.reordered();
+    auto tb = b.reordered();
     if(gauss_elimination(ta, tb)) {
-        a = reorder(ta);
-        b = reorder(tb);
+        a = ta.reordered();
+        b = tb.reordered();
         return true;
     }
     return false;
@@ -781,9 +662,9 @@ export template <typename T, int Ca, int Cb, int R, bool V>
 [[nodiscard]] constexpr auto gauss_jordan_elimination(
   matrix<T, Ca, R, false, V>& a,
   matrix<T, Cb, R, true, V>& b) noexcept -> bool {
-    auto ta = reorder(a);
+    auto ta = a.reordered();
     if(gauss_jordan_elimination(ta, b)) {
-        a = reorder(ta);
+        a = ta.reordered();
         return true;
     }
     return false;
@@ -797,9 +678,9 @@ export template <typename T, int Ca, int Cb, int R, bool V>
 [[nodiscard]] constexpr auto gauss_jordan_elimination(
   matrix<T, Ca, R, true, V>& a,
   matrix<T, Cb, R, false, V>& b) noexcept -> bool {
-    auto tb = reorder(b);
+    auto tb = b.reordered();
     if(gauss_jordan_elimination(a, tb)) {
-        b = reorder(tb);
+        b = tb.reordered();
         return true;
     }
     return false;
@@ -813,11 +694,11 @@ export template <typename T, int Ca, int Cb, int R, bool V>
 [[nodiscard]] constexpr auto gauss_jordan_elimination(
   matrix<T, Ca, R, false, V>& a,
   matrix<T, Cb, R, false, V>& b) noexcept -> bool {
-    auto ta = reorder(a);
-    auto tb = reorder(b);
+    auto ta = a.reordered();
+    auto tb = b.reordered();
     if(gauss_jordan_elimination(ta, tb)) {
-        a = reorder(ta);
-        b = reorder(tb);
+        a = ta.reordered();
+        b = tb.reordered();
         return true;
     }
     return false;

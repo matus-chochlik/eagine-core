@@ -988,7 +988,7 @@ private:
     }
 
     constexpr auto _make(std::false_type) const noexcept {
-        return reorder(_make(std::true_type()));
+        return _make(std::true_type()).reordered();
     }
 
 public:
@@ -1093,7 +1093,7 @@ private:
     }
 
     constexpr auto _make(const std::false_type) const noexcept {
-        return reorder(_make(std::true_type()));
+        return _make(std::true_type()).reordered();
     }
 
     vector<T, 3, V> _t;

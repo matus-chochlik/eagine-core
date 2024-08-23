@@ -38,8 +38,8 @@ void math_matrix_mult_TCRRMV(eagitest::case_& test) {
                 e += row(m1, i)[k] * column(m2, j)[k];
             }
 
-            test.check_equal(get_cm(m, j, i), e, "A");
-            test.check_equal(get_rm(m, i, j), e, "B");
+            test.check_equal(m.get_cm(j, i), e, "A");
+            test.check_equal(m.get_rm(i, j), e, "B");
         }
 }
 //------------------------------------------------------------------------------

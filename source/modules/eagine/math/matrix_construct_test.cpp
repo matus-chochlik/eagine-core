@@ -21,31 +21,31 @@ void math_matrix_ctr_MC(eagitest::case_& test, MC mc) {
     auto m1 = construct_matrix<true>(mc);
     auto m2 = construct_matrix<false>(mc);
 
-    test.ensure(rows(m1) == rows(m2), "rows 1,2");
-    test.ensure(columns(m1) == columns(m2), "columns 1,2");
+    test.ensure(m1.rows() == m2.rows(), "rows 1,2");
+    test.ensure(m1.columns() == m2.columns(), "columns 1,2");
 
-    test.check_equal(row_major(m1), !row_major(m2), "row major 1");
-    test.check_equal(row_major(m2), !row_major(m1), "row major 2");
+    test.check_equal(m1.is_row_major(), not m2.is_row_major(), "row major 1");
+    test.check_equal(m2.is_row_major(), not m1.is_row_major(), "row major 2");
 
-    for(int i = 0; i < rows(m1); ++i)
-        for(int j = 0; j < columns(m1); ++j) {
-            test.check_equal(get_rm(m1, i, j), get_cm(m2, j, i), "RMCM 1");
-            test.check_equal(get_rm(m2, i, j), get_cm(m1, j, i), "RMCM 2");
+    for(int i = 0; i < m1.rows(); ++i)
+        for(int j = 0; j < m1.columns(); ++j) {
+            test.check_equal(m1.get_rm(i, j), m2.get_cm(j, i), "RMCM 1");
+            test.check_equal(m2.get_rm(i, j), m1.get_cm(j, i), "RMCM 2");
         }
 
     auto m3 = construct_matrix<true>(multiply(m1, m2));
     auto m4 = construct_matrix<true>(multiply(mc, mc));
 
-    test.ensure(rows(m3) == rows(m4), "rows 3,4");
-    test.ensure(columns(m3) == columns(m4), "columns 3,4");
+    test.ensure(m3.rows() == m4.rows(), "rows 3,4");
+    test.ensure(m3.columns() == m4.columns(), "columns 3,4");
 
-    test.check(row_major(m3), "row major 3");
-    test.check(row_major(m4), "row major 4");
+    test.check(m3.is_row_major(), "row major 3");
+    test.check(m4.is_row_major(), "row major 4");
 
-    for(int i = 0; i < rows(m3); ++i) {
-        for(int j = 0; j < columns(m3); ++j) {
-            test.check_close(get_rm(m3, i, j), get_cm(m4, j, i), "get 1");
-            test.check_close(get_rm(m4, i, j), get_cm(m3, j, i), "get 2");
+    for(int i = 0; i < m3.rows(); ++i) {
+        for(int j = 0; j < m3.columns(); ++j) {
+            test.check_close(m3.get_rm(i, j), m4.get_cm(j, i), "get 1");
+            test.check_close(m4.get_rm(i, j), m3.get_cm(j, i), "get 2");
         }
     }
 }
