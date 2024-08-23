@@ -251,6 +251,52 @@ public:
             return *this;
         }
     }
+
+    /// @brief Returns the i-th major vector of this matrix.
+    /// @see minor_vector
+    [[nodiscard]] constexpr auto major_vector(int i) noexcept
+      -> vector<T, (RM ? C : R), V> {
+        assert(i < (RM ? R : C));
+        return {_v[i]};
+    }
+
+    /// @brief Returns the i-th minor vector of this matrix.
+    /// @see major_vector
+    [[nodiscard]] constexpr auto minor_vector(int i) noexcept
+      -> vector<T, (RM ? R : C), V> {
+        return reordered().major_vector(i);
+    }
+
+    /// @brief Returns the i-th row of this matrix.
+    /// @see column
+    [[nodiscard]] constexpr auto row(int i) noexcept -> vector<T, C, V> {
+        assert(i < R);
+        if constexpr(is_row_major()) {
+            return major_vector(i);
+        } else {
+            return minor_vector(i);
+        }
+    }
+
+    /// @brief Returns the j-th column of this matrix.
+    /// @see column
+    [[nodiscard]] constexpr auto column(int i) noexcept -> vector<T, R, V> {
+        assert(i < C);
+        if constexpr(is_row_major()) {
+            return minor_vector(i);
+        } else {
+            return major_vector(i);
+        }
+    }
+
+    /// @brief Returns the translation vector of this matrix (4x3 or 4x4)
+    /// @see row
+    /// @see column
+    [[nodiscard]] constexpr auto translation() noexcept -> vector<T, 3, V>
+        requires((R == 4) and (C == 3 or C == 4))
+    {
+        return vector<T, 3, V>{row(3)};
+    }
 };
 //------------------------------------------------------------------------------
 /// @brief Class testing if a matrix type is row-major.
@@ -276,136 +322,6 @@ using reordered_matrix_t = typename reordered_matrix<X>::type;
 /// @ingroup math
 export template <typename T, int C, int R, bool RM, bool V>
 struct reordered_matrix<matrix<T, C, R, RM, V>> : matrix<T, R, C, not RM, V> {};
-//------------------------------------------------------------------------------
-/// @brief Returns the I-th major vector of a matrix.
-/// @ingroup math
-export template <int I, typename T, int C, int R, bool RM, bool V>
-[[nodiscard]] constexpr auto major_vector(
-  const matrix<T, C, R, RM, V>& m) noexcept -> vector<T, (RM ? C : R), V>
-    requires(I < (RM ? R : C))
-{
-    return {m._v[I]};
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the I-th minor vector of a matrix.
-/// @ingroup math
-export template <int I, typename T, int C, int R, bool RM, bool V>
-[[nodiscard]] constexpr auto minor_vector(
-  const matrix<T, C, R, RM, V>& m) noexcept -> vector<T, (RM ? R : C), V>
-    requires(I < (RM ? C : R))
-{
-    return major_vector<I>(m.reordered());
-}
-//------------------------------------------------------------------------------
-// minor_vector mat4x4
-export template <int I, typename T, bool RM, bool V>
-[[nodiscard]] constexpr auto minor_vector(
-  const matrix<T, 4, 4, RM, V>& m) noexcept -> vector<T, 4, V>
-    requires(I < 4)
-{
-    return {vect::shuffle2<T, 4, V>::apply(
-      vect::shuffle2<T, 4, V>::apply(
-        m._v[0], m._v[1], vect::shuffle_mask<0 + I, 4 + I, -1, -1>{}),
-      vect::shuffle2<T, 4, V>::apply(
-        m._v[2], m._v[3], vect::shuffle_mask<0 + I, 4 + I, -1, -1>{}),
-      vect::shuffle_mask<0, 1, 4, 5>{})};
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the I-th row vector of a matrix. Row-major implementation.
-/// @ingroup math
-export template <int I, typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto row(const matrix<T, C, R, true, V>& m) noexcept
-  -> vector<T, C, V> {
-    static_assert(I < R);
-    return major_vector<I>(m);
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the I-th row vector of a matrix. Column-major implementation.
-/// @ingroup math
-export template <int I, typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto row(const matrix<T, C, R, false, V>& m) noexcept
-  -> vector<T, C, V> {
-    static_assert(I < R);
-    return minor_vector<I>(m);
-}
-//------------------------------------------------------------------------------
-// _row_hlp
-template <typename T, int C, int R, bool RM, bool V>
-constexpr auto _row_hlp(
-  const matrix<T, C, R, RM, V>& m,
-  const int_constant<0U>,
-  [[maybe_unused]] const int i) noexcept -> vector<T, C, V> {
-    assert(i == 0U);
-    return row<0U>(m);
-}
-//------------------------------------------------------------------------------
-// _row_hlp
-template <typename T, int R, int C, bool RM, bool V, int I>
-constexpr auto _row_hlp(
-  const matrix<T, C, R, RM, V>& m,
-  const int_constant<I>,
-  const int i) noexcept -> vector<T, C, V> {
-    if(I == i) {
-        return row<I>(m);
-    }
-    return _row_hlp(m, int_constant<I - 1>(), i);
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the i-th row vector of a matrix.
-/// @ingroup math
-export template <typename T, int R, int C, bool RM, bool V>
-[[nodiscard]] constexpr auto row(
-  const matrix<T, C, R, RM, V>& m,
-  const int i) noexcept -> vector<T, C, V> {
-    return _row_hlp(m, int_constant<R - 1>(), i);
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the I-th column vector of a matrix. Column-major implementation.
-/// @ingroup math
-export template <int I, typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto column(const matrix<T, C, R, false, V>& m) noexcept
-  -> vector<T, R, V> {
-    return major_vector<I>(m);
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the I-th column vector of a matrix. Row-major implementation.
-/// @ingroup math
-export template <int I, typename T, int C, int R, bool V>
-[[nodiscard]] constexpr auto column(const matrix<T, C, R, true, V>& m) noexcept
-  -> vector<T, R, V> {
-    return minor_vector<I>(m);
-}
-//------------------------------------------------------------------------------
-// _col_hlp
-export template <typename T, int C, int R, bool RM, bool V>
-constexpr auto _col_hlp(
-  const matrix<T, C, R, RM, V>& m,
-  int_constant<0U>,
-  [[maybe_unused]] const int i) noexcept -> vector<T, R, V> {
-    assert(i == 0);
-    return column<0>(m);
-}
-//------------------------------------------------------------------------------
-// _col_hlp
-export template <typename T, int C, int R, bool RM, bool V, int I>
-constexpr auto _col_hlp(
-  const matrix<T, C, R, RM, V>& m,
-  int_constant<I>,
-  const int i) noexcept -> vector<T, R, V> {
-    if(I == i) {
-        return column<I>(m);
-    }
-    return _col_hlp(m, int_constant<I - 1>(), i);
-}
-//------------------------------------------------------------------------------
-/// @brief Returns the i-th column vector of a matrix.
-/// @ingroup math
-export template <typename T, int R, int C, bool RM, bool V>
-[[nodiscard]] constexpr auto column(
-  const matrix<T, C, R, RM, V>& m,
-  const int i) noexcept -> vector<T, R, V> {
-    return _col_hlp(m, int_constant<C - 1>(), i);
-}
 //------------------------------------------------------------------------------
 /// @brief Indicates if the specified type @p X is a matrix constructor.
 /// @ingroup math

@@ -35,7 +35,7 @@ void math_matrix_mult_TCRRMV(eagitest::case_& test) {
             T e = T(0);
 
             for(int k = 0; k < N; ++k) {
-                e += row(m1, i)[k] * column(m2, j)[k];
+                e += m1.row(i)[k] * m2.column(j)[k];
             }
 
             test.check_equal(m.get_cm(j, i), e, "A");
