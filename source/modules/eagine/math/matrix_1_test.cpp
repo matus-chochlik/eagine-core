@@ -73,9 +73,9 @@ struct matrix_default_ctr_test_maker {
     struct _test {
         void operator()(eagitest::case_& test) const {
             eagine::math::matrix<T, C, R, RM, V> m;
-            test.check_equal(rows(m), R, "rows");
-            test.check_equal(columns(m), C, "columns");
-            test.check_equal(row_major(m), RM, "is row major");
+            test.check_equal(m.rows(), R, "rows");
+            test.check_equal(m.columns(), C, "columns");
+            test.check_equal(m.is_row_major(), RM, "is row major");
         }
     };
 
@@ -216,12 +216,12 @@ struct matrix_get_set_test_maker {
 
             for(int i = 0; i < C; ++i)
                 for(int j = 0; j < R; ++j) {
-                    set_cm(m, i, j, get_cm(m, i, j) + 1);
+                    m.set_cm(i, j, m.get_cm(i, j) + 1);
                 }
 
             for(int i = 0; i < R; ++i)
                 for(int j = 0; j < C; ++j) {
-                    test.check_equal(get_rm(m, i, j), get_cm(m, j, i), "B");
+                    test.check_equal(m.get_rm(i, j), m.get_cm(j, i), "B");
                 }
 
             for(int i = 0; i < (RM ? R : C); ++i)
@@ -256,12 +256,12 @@ struct matrix_transpose_test_maker {
             }
 
             auto m = eagine::math::matrix<T, M, N, RM, V>::from(d, M * N);
-            eagine::math::matrix<T, N, M, RM, V> n = transpose(m);
+            eagine::math::matrix<T, N, M, RM, V> n = m.transposed();
 
             for(int i = 0; i < M; ++i)
                 for(int j = 0; j < N; ++j) {
-                    test.check_equal(get_cm(m, i, j), get_cm(n, j, i), "CM");
-                    test.check_equal(get_rm(m, j, i), get_rm(n, i, j), "RM");
+                    test.check_equal(m.get_cm(i, j), n.get_cm(j, i), "CM");
+                    test.check_equal(m.get_rm(j, i), n.get_rm(i, j), "RM");
                 }
         }
     };
@@ -291,15 +291,15 @@ struct matrix_reorder_test_maker {
             }
 
             auto m = eagine::math::matrix<T, M, N, RM, V>::from(d, M * N);
-            eagine::math::matrix<T, M, N, not RM, V> n = reorder(m);
+            eagine::math::matrix<T, M, N, not RM, V> n = m.reordered();
 
-            test.check_equal(row_major(m), not row_major(n), "RMRMmn");
-            test.check_equal(row_major(n), not row_major(m), "RMRMnm");
+            test.check_equal(m.is_row_major(), not n.is_row_major(), "RMRMmn");
+            test.check_equal(n.is_row_major(), not m.is_row_major(), "RMRMnm");
 
             for(int i = 0; i < M; ++i)
                 for(int j = 0; j < N; ++j) {
-                    test.check_equal(get_cm(m, i, j), get_cm(n, i, j), "CM");
-                    test.check_equal(get_rm(m, j, i), get_rm(n, j, i), "RM");
+                    test.check_equal(m.get_cm(i, j), n.get_cm(i, j), "CM");
+                    test.check_equal(m.get_rm(j, i), n.get_rm(j, i), "RM");
                 }
         }
     };

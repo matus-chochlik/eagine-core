@@ -166,6 +166,11 @@ struct vector {
         return _v[3];
     }
 
+    /// @brief Unary minus operator.
+    auto operator-() const noexcept -> vector {
+        return {-_v};
+    }
+
     /// @brief Addition operator.
     auto operator+=(vector_param a) noexcept -> auto& {
         _v = _v + a._v;

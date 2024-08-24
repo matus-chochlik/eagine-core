@@ -1223,6 +1223,10 @@ public:
         return _pos;
     }
 
+    constexpr auto release() noexcept -> auto&& {
+        return std::move(*_pos);
+    }
+
     constexpr auto reset(const Iterator pos) noexcept
       -> optional_iterator_base& {
         _pos = pos;

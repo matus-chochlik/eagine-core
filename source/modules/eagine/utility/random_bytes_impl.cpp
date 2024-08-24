@@ -13,13 +13,15 @@ import eagine.core.memory;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-auto fill_with_random_bytes(span<byte> dst) -> span<byte> {
+auto fill_with_random_bytes(span<byte> dst) noexcept -> span<byte> {
     std::random_device rd;
     std::default_random_engine re{rd()};
     return fill_with_random_bytes(dst, re);
 }
 //------------------------------------------------------------------------------
-auto do_fill_with_random_identifier(auto& dst, std::default_random_engine& re) {
+auto do_fill_with_random_identifier(
+  auto& dst,
+  std::default_random_engine& re) noexcept {
     static const std::string_view next_char{
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789"};
     static const std::string_view first_char{next_char.substr(0, 52)};
@@ -41,13 +43,14 @@ auto do_fill_with_random_identifier(auto& dst, std::default_random_engine& re) {
     return dst;
 }
 //------------------------------------------------------------------------------
-auto fill_with_random_identifier(span<char> dst, std::default_random_engine& re)
-  -> span<char> {
+auto fill_with_random_identifier(
+  span<char> dst,
+  std::default_random_engine& re) noexcept -> span<char> {
     do_fill_with_random_identifier(dst, re);
     return dst;
 }
 //------------------------------------------------------------------------------
-auto fill_with_random_identifier(span<char> dst) -> span<char> {
+auto fill_with_random_identifier(span<char> dst) noexcept -> span<char> {
     std::random_device rd;
     std::default_random_engine re{rd()};
     return fill_with_random_identifier(dst, re);
@@ -55,7 +58,7 @@ auto fill_with_random_identifier(span<char> dst) -> span<char> {
 //------------------------------------------------------------------------------
 auto fill_with_random_identifier(
   std::string& dst,
-  std::default_random_engine& re) -> std::string& {
+  std::default_random_engine& re) noexcept -> std::string& {
     do_fill_with_random_identifier(dst, re);
     return dst;
 }

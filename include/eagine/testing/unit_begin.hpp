@@ -105,6 +105,11 @@ public:
 
     auto exit_code() const noexcept -> int;
 
+protected:
+    void checks_failed() noexcept {
+        _checks_failed = true;
+    }
+
 private:
     friend class case_;
     friend class track;
