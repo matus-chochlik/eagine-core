@@ -166,9 +166,19 @@ struct vector {
         return _v[3];
     }
 
+    /// @brief Unary plus operator.
+    [[nodiscard]] auto operator+() const noexcept -> vector {
+        return *this;
+    }
+
     /// @brief Unary minus operator.
-    auto operator-() const noexcept -> vector {
+    [[nodiscard]] auto operator-() const noexcept -> vector {
         return {-_v};
+    }
+
+    /// @brief Addition operator.
+    [[nodiscard]] auto operator+(vector_param a) const noexcept -> vector {
+        return {_v + a._v};
     }
 
     /// @brief Addition operator.
@@ -178,15 +188,31 @@ struct vector {
     }
 
     /// @brief Subtraction operator.
+    [[nodiscard]] auto operator-(vector_param a) const noexcept -> vector {
+        return {_v - a._v};
+    }
+
+    /// @brief Subtraction operator.
     auto operator-=(vector_param a) noexcept -> auto& {
         _v = _v - a._v;
         return *this;
     }
 
     /// @brief Multiplication operator.
+    [[nodiscard]] auto operator*(vector_param a) const noexcept -> vector {
+        return {_v * a._v};
+    }
+
+    /// @brief Multiplication operator.
     auto operator*=(vector_param a) noexcept -> auto& {
         _v = _v * a._v;
         return *this;
+    }
+
+    /// @brief Multiplication operator.
+    [[nodiscard]] auto operator*(scalar_param c) const noexcept -> vector {
+        static_assert(scalar_type::is_vectorized::value);
+        return {_v * c._v};
     }
 
     /// @brief Multiplication by scalar operator.
@@ -197,9 +223,68 @@ struct vector {
     }
 
     /// @brief Multiplication by constant operator.
+    [[nodiscard]] auto operator*(const T c) const noexcept -> vector {
+        return {_v * vect::fill<T, N, V>::apply(c)};
+    }
+
+    /// @brief Multiplication by constant operator.
     auto operator*=(const T c) noexcept -> auto& {
         _v = _v * vect::fill<T, N, V>::apply(c);
         return *this;
+    }
+
+    /// @brief Division operator.
+    [[nodiscard]] auto operator/(vector_param a) const noexcept -> vector {
+        return {vect::sdiv<T, N, V>::apply(_v, a._v)};
+    }
+
+    /// @brief Division operator.
+    [[nodiscard]] auto operator/(scalar_param c) noexcept -> vector {
+        static_assert(scalar_type::is_vectorized::value);
+        return {vect::sdiv<T, N, V>::apply(_v, c._v)};
+    }
+
+    /// @brief Division by constant operator.
+    [[nodiscard]] auto operator/(const T c) const noexcept -> vector {
+        return {vect::sdiv<T, N, V>::apply(_v, vect::fill<T, N, V>::apply(c))};
+    }
+
+    /// @brief Returns the dimension of this vector.
+    [[nodiscard]] constexpr auto dimension() const noexcept -> span_size_t {
+        return span_size_t(N);
+    }
+
+    /// @brief Returns the magnitude of this vector.
+    /// @see length
+    [[nodiscard]] constexpr auto magnitude() const noexcept {
+        if constexpr(vect::has_simd_data<T, N, V>::value) {
+            return scalar_type{
+              vect::sqrt<T, N, V>::apply(vect::hsum<T, N, V>::apply(_v * _v))};
+        } else {
+            using std::sqrt;
+            return scalar_type{T(sqrt(vect::esum<T, N, V>::apply(_v * _v)))};
+        }
+    }
+
+    /// @brief Returns the length of this vector.
+    [[nodiscard]] constexpr auto length() const noexcept {
+        return magnitude();
+    }
+
+    /// @brief Tests if this vector is zero-length.
+    [[nodiscard]] constexpr auto is_zero() const noexcept -> bool {
+        return vect::is_zero<T, N, V>::apply(_v);
+    }
+
+    ///@brief Returns a normalized copy of this vector.
+    [[nodiscard]] constexpr auto normalized() const noexcept -> vector {
+        const scalar_type l{length()};
+        if constexpr(vect::has_simd_data<T, N, V>::value) {
+            return vector{vect::sdiv<T, N, V>::apply(_v, l._v)};
+        } else {
+            return vector{
+              vect::sdiv<T, N, V>::apply(_v, vect::fill<T, N, V>::apply(l._v))};
+        }
     }
 };
 
@@ -208,47 +293,6 @@ using vector_param = const vector<T, N, V>&;
 
 export template <typename T, int N, bool V>
 using scalar_param = const scalar<T, N, V>&;
-
-/// @brief Unary plus operator.
-/// @relates vector
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto operator+(vector<T, N, V> a) noexcept {
-    return a;
-}
-
-/// @brief Negation operator.
-/// @relates vector
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto operator-(vector_param<T, N, V> a) noexcept {
-    return vector<T, N, V>{-a._v};
-}
-
-/// @brief Addition operator.
-/// @relates vector
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto operator+(
-  vector_param<T, N, V> a,
-  vector_param<T, N, V> b) noexcept {
-    return vector<T, N, V>{a._v + b._v};
-}
-
-/// @brief Subtraction operator.
-/// @relates vector
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto operator-(
-  vector_param<T, N, V> a,
-  vector_param<T, N, V> b) noexcept {
-    return vector<T, N, V>{a._v - b._v};
-}
-
-/// @brief Multiplication operator.
-/// @relates vector
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto operator*(
-  vector_param<T, N, V> a,
-  vector_param<T, N, V> b) noexcept {
-    return vector<T, N, V>{a._v * b._v};
-}
 
 /// @brief Multiplication by scalar operator.
 /// @relates vector
@@ -260,16 +304,6 @@ export template <typename T, int N, bool V>
     return vector<T, N, V>{c._v * a._v};
 }
 
-/// @brief Multiplication by scalar operator.
-/// @relates vector
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto operator*(
-  vector_param<T, N, V> a,
-  scalar_param<T, N, V> c) noexcept {
-    static_assert(scalar<T, N, V>::is_vectorized::value);
-    return vector<T, N, V>{a._v * c._v};
-}
-
 /// @brief Multiplication by constant operator.
 /// @relates vector
 export template <typename T, int N, bool V>
@@ -277,23 +311,6 @@ export template <typename T, int N, bool V>
   const T c,
   vector_param<T, N, V> a) noexcept {
     return vector<T, N, V>{a._v * vect::fill<T, N, V>::apply(c)};
-}
-
-/// @brief Multiplication by constant operator.
-/// @relates vector
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto operator*(
-  vector_param<T, N, V> a,
-  const T c) noexcept {
-    return vector<T, N, V>{a._v * vect::fill<T, N, V>::apply(c)};
-}
-
-/// @brief Division operator.
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto operator/(
-  vector_param<T, N, V> a,
-  vector_param<T, N, V> b) noexcept {
-    return vector<T, N, V>{vect::sdiv<T, N, V>::apply(a._v, b._v)};
 }
 
 /// @brief Scalar division operator.
@@ -305,24 +322,6 @@ export template <typename T, int N, bool V>
     return vector<T, N, V>{vect::sdiv<T, N, V>::apply(c._v, a._v)};
 }
 
-/// @brief Division by scalar operator.
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto operator/(
-  vector_param<T, N, V> a,
-  scalar_param<T, N, V> c) noexcept {
-    static_assert(scalar<T, N, V>::is_vectorized::value);
-    return vector<T, N, V>{vect::sdiv<T, N, V>::apply(a._v, c._v)};
-}
-
-/// @brief Division by constant operator.
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto operator/(
-  vector_param<T, N, V> a,
-  const T c) noexcept {
-    return vector<T, N, V>{
-      vect::sdiv<T, N, V>::apply(a._v, vect::fill<T, N, V>::apply(c))};
-}
-
 /// @brief Constant division operator.
 export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto operator/(
@@ -330,20 +329,6 @@ export template <typename T, int N, bool V>
   vector_param<T, N, V> a) noexcept {
     return vector<T, N, V>{
       vect::sdiv<T, N, V>::apply(vect::fill<T, N, V>::apply(c), a._v)};
-}
-
-/// @brief Returns the dimension of a vector.
-/// @ingroup math
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto dimension(vector_param<T, N, V>) noexcept {
-    return span_size_t(N);
-}
-
-/// @brief Tests if a vector has zero lenght.
-/// @ingroup math
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto is_zero(vector_param<T, N, V> v) noexcept -> bool {
-    return vect::is_zero<T, N, V>::apply(v._v);
 }
 
 /// @brief Vector dot product.
@@ -380,38 +365,18 @@ export template <typename T, bool V>
         _sh::apply(b._v, vect::shuffle_mask<1, 2, 0>{})};
 }
 
-/// @brief Returns the magnitude of a vector. Same as length.
-/// @ingroup math
-export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto magnitude(vector_param<T, N, V> a) noexcept {
-    if constexpr(vect::has_simd_data<T, N, V>::value) {
-        return scalar<T, N, V>{
-          vect::sqrt<T, N, V>::apply(vect::hsum<T, N, V>::apply(a._v * a._v))};
-    } else {
-        using std::sqrt;
-        return scalar<T, N, V>{
-          T(sqrt(vect::esum<T, N, V>::apply(a._v * a._v)))};
-    }
-}
-
 /// @brief Returns the length of a vector.
 /// @ingroup math
 export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto length(vector_param<T, N, V> a) noexcept {
-    return magnitude(a);
+    return a.length();
 }
 
-/// @brief Returns normalized argument.
+/// @brief Returns a normalized copy of the specified vector.
 /// @ingroup math
 export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto normalized(vector_param<T, N, V> a) noexcept {
-    scalar<T, N, V> l = length(a);
-    if constexpr(vect::has_simd_data<T, N, V>::value) {
-        return vector<T, N, V>{vect::sdiv<T, N, V>::apply(a._v, l._v)};
-    } else {
-        return vector<T, N, V>{
-          vect::sdiv<T, N, V>::apply(a._v, vect::fill<T, N, V>::apply(l._v))};
-    }
+    return a.normalized();
 }
 
 /// @brief Returns the distance between two vectors.
@@ -420,7 +385,7 @@ export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto distance(
   vector_param<T, N, V> a,
   vector_param<T, N, V> b) noexcept {
-    return magnitude(a - b);
+    return length(a - b);
 }
 
 export template <std::size_t I, typename T, int N, bool V>
@@ -432,7 +397,7 @@ export template <std::size_t I, typename T, int N, bool V>
 constexpr auto get(const vector<T, N, V>& v) noexcept -> T {
     return v._v[I];
 }
-
+//------------------------------------------------------------------------------
 /// @brief Generic template for N-dimensional vectors.
 /// @ingroup math
 export template <typename T, int N, bool V = true>
@@ -568,5 +533,5 @@ struct tuple_size<eagine::math::tvec<T, N, V>>
 
 template <std::size_t I, typename T, int N, bool V>
 struct tuple_element<I, eagine::math::tvec<T, N, V>> : type_identity<T> {};
-
+//------------------------------------------------------------------------------
 } // namespace std

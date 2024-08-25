@@ -698,7 +698,7 @@ void vector_dimension_TNV(eagitest::case_& test) {
     test.parameter(N, "N");
     test.parameter(V, "V");
     eagine::math::vector<T, N, V> v;
-    test.check_equal(dimension(v), N, "dimension");
+    test.check_equal(v.dimension(), N, "dimension");
 }
 //------------------------------------------------------------------------------
 template <typename T, bool V>
@@ -747,7 +747,7 @@ void vector_magnitude_TNV(eagitest::case_& test) {
     auto v = eagine::math::vector<T, N, V>::from(a, N);
 
     using std::sqrt;
-    test.check_close(T(magnitude(v)), T(sqrt(m)), "magnitude");
+    test.check_close(T(v.magnitude()), T(sqrt(m)), "magnitude");
 }
 //------------------------------------------------------------------------------
 template <typename T, bool V>
