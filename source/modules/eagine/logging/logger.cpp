@@ -320,7 +320,7 @@ public:
         return _object_id;
     }
 
-    ///@brief Sets the human-readable name and description of this object.
+    /// @brief Sets the human-readable name and description of this object.
     void object_description(
       const string_view display_name,
       const string_view description) const noexcept {

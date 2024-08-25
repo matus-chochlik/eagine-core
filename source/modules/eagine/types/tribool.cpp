@@ -47,7 +47,7 @@ public:
         return _value != _value_t::_true;
     }
 
-    ///@ brief Checks if the stored value is indeterminate.
+    /// @brief Checks if the stored value is indeterminate.
     [[nodiscard]] constexpr auto is(const indeterminate_t) const noexcept
       -> bool {
         return _value == _value_t::_unknown;
