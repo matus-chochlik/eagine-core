@@ -254,7 +254,7 @@ public:
 
     /// @brief Returns the i-th major vector of this matrix.
     /// @see minor_vector
-    [[nodiscard]] constexpr auto major_vector(int i) noexcept
+    [[nodiscard]] constexpr auto major_vector(int i) const noexcept
       -> vector<T, (RM ? C : R), V> {
         assert(i < (RM ? R : C));
         return {_v[i]};
@@ -262,14 +262,14 @@ public:
 
     /// @brief Returns the i-th minor vector of this matrix.
     /// @see major_vector
-    [[nodiscard]] constexpr auto minor_vector(int i) noexcept
+    [[nodiscard]] constexpr auto minor_vector(int i) const noexcept
       -> vector<T, (RM ? R : C), V> {
         return reordered().major_vector(i);
     }
 
     /// @brief Returns the i-th row of this matrix.
     /// @see column
-    [[nodiscard]] constexpr auto row(int i) noexcept -> vector<T, C, V> {
+    [[nodiscard]] constexpr auto row(int i) const noexcept -> vector<T, C, V> {
         assert(i < R);
         if constexpr(is_row_major()) {
             return major_vector(i);
@@ -280,7 +280,8 @@ public:
 
     /// @brief Returns the j-th column of this matrix.
     /// @see column
-    [[nodiscard]] constexpr auto column(int i) noexcept -> vector<T, R, V> {
+    [[nodiscard]] constexpr auto column(int i) const noexcept
+      -> vector<T, R, V> {
         assert(i < C);
         if constexpr(is_row_major()) {
             return minor_vector(i);
@@ -300,6 +301,29 @@ public:
         } else {
             return vector<T, 3, V>{_v[0][3], _v[1][3], _v[2][3]};
         }
+    }
+
+    /// @brief Multiplies this matrix by another matrix.
+    template <int K, bool RM2>
+    [[nodiscard]] constexpr auto multiply(const matrix<T, K, C, RM2, V>& m)
+      const noexcept -> matrix<T, K, R, RM, V> {
+        matrix<T, K, R, RM, V> r{};
+        for(int i = 0; i < R; ++i) {
+            for(int j = 0; j < K; ++j) {
+                r.set_rm(i, j, row(i).dot(m.column(j)));
+            }
+        }
+        return r;
+    }
+
+    /// @brief Multiplies a vector by this matrix.
+    [[nodiscard]] constexpr auto multiply(
+      const vector<T, C, V>& v) const noexcept -> vector<T, R, V> {
+        vector<T, R, V> r{};
+        for(int i = 0; i < R; ++i) {
+            r._v[i] = row(i).dot(v);
+        }
+        return r;
     }
 };
 //------------------------------------------------------------------------------
@@ -389,20 +413,7 @@ export template <typename T, int M, int N, int K, bool RM1, bool RM2, bool V>
 [[nodiscard]] constexpr auto multiply(
   const matrix<T, K, M, RM1, V>& m1,
   const matrix<T, N, K, RM2, V>& m2) noexcept -> matrix<T, N, M, RM1, V> {
-    matrix<T, N, M, RM1, V> m3{};
-
-    for(int i = 0; i < M; ++i) {
-        for(int j = 0; j < N; ++j) {
-            T s = T(0);
-
-            for(int k = 0; k < K; ++k) {
-                s += m1.get_rm(i, k) * m2.get_rm(k, j);
-            }
-
-            m3.set_rm(i, j, s);
-        }
-    }
-    return m3;
+    return m1.multiply(m2);
 }
 //------------------------------------------------------------------------------
 // are_multiplicable
@@ -429,16 +440,7 @@ export template <typename T, int C, int R, bool RM, bool V>
 [[nodiscard]] constexpr auto multiply(
   const matrix<T, C, R, RM, V>& m,
   const vector<T, C, V>& v) noexcept -> vector<T, R, V> {
-    vector<T, R, V> r{};
-
-    for(int i = 0; i < R; ++i) {
-        T s = T(0);
-        for(int j = 0; j < C; ++j) {
-            s += m.get_rm(i, j) * v._v[j];
-        }
-        r._v[i] = s;
-    }
-    return r;
+    return m.multiply(v);
 }
 //------------------------------------------------------------------------------
 /// @brief Multiplication operator for matrix constructors.

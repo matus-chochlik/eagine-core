@@ -276,7 +276,7 @@ struct vector {
         return vect::is_zero<T, N, V>::apply(_v);
     }
 
-    ///@brief Returns a normalized copy of this vector.
+    /// @brief Returns a normalized copy of this vector.
     [[nodiscard]] constexpr auto normalized() const noexcept -> vector {
         const scalar_type l{length()};
         if constexpr(vect::has_simd_data<T, N, V>::value) {
@@ -284,6 +284,15 @@ struct vector {
         } else {
             return vector{
               vect::sdiv<T, N, V>::apply(_v, vect::fill<T, N, V>::apply(l._v))};
+        }
+    }
+
+    /// @brief Returns the dot product of this vector and another vector.
+    [[nodiscard]] constexpr auto dot(vector_param v) const noexcept {
+        if constexpr(vect::has_simd_data<T, N, V>::value) {
+            return scalar_type{vect::hsum<T, N, V>::apply(_v * v._v)};
+        } else {
+            return scalar_type{vect::esum<T, N, V>::apply(_v * v._v)};
         }
     }
 };
@@ -337,11 +346,7 @@ export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto dot(
   vector_param<T, N, V> a,
   vector_param<T, N, V> b) noexcept {
-    if constexpr(vect::has_simd_data<T, N, V>::value) {
-        return scalar<T, N, V>{vect::hsum<T, N, V>::apply(a._v * b._v)};
-    } else {
-        return scalar<T, N, V>{vect::esum<T, N, V>::apply(a._v * b._v)};
-    }
+    return a.dot(b);
 }
 
 /// @brief Returns a vector perpendicular to argument.
