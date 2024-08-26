@@ -42,12 +42,6 @@ struct vector {
 
     data_type _v;
 
-    /// @brief vector function parameter type.
-    using vector_param = const vector&;
-
-    /// @brief scalar function parameter type.
-    using scalar_param = const scalar_type&;
-
     /// @brief Creates a new zero vector instance.
     [[nodiscard]] static auto zero() noexcept {
         return vector{vect::fill<T, N, V>::apply(T(0))};
@@ -128,41 +122,33 @@ struct vector {
 
     /// @brief Returns the x-coordinate value.
     /// @pre N >= 1
-    template <int M = N>
     [[nodiscard]] constexpr auto x() const noexcept -> T
-        requires(M > 0)
+        requires(N > 0)
     {
-        static_assert(M == N);
         return _v[0];
     }
 
     /// @brief Returns the y-coordinate value.
     /// @pre N >= 2
-    template <int M = N>
     [[nodiscard]] constexpr auto y() const noexcept -> T
-        requires(M > 1)
+        requires(N > 1)
     {
-        static_assert(M == N);
         return _v[1];
     }
 
     /// @brief Returns the z-coordinate value.
     /// @pre N >= 3
-    template <int M = N>
     [[nodiscard]] constexpr auto z() const noexcept -> T
-        requires(M > 2)
+        requires(N > 2)
     {
-        static_assert(M == N);
         return _v[2];
     }
 
     /// @brief Returns the w-coordinate value.
     /// @pre N >= 4
-    template <int M = N>
     [[nodiscard]] constexpr auto w() const noexcept -> T
-        requires(M > 3)
+        requires(N > 3)
     {
-        static_assert(M == N);
         return _v[3];
     }
 
@@ -177,46 +163,47 @@ struct vector {
     }
 
     /// @brief Addition operator.
-    [[nodiscard]] auto operator+(vector_param a) const noexcept -> vector {
+    [[nodiscard]] auto operator+(const vector& a) const noexcept -> vector {
         return {_v + a._v};
     }
 
     /// @brief Addition operator.
-    auto operator+=(vector_param a) noexcept -> auto& {
+    auto operator+=(const vector& a) noexcept -> auto& {
         _v = _v + a._v;
         return *this;
     }
 
     /// @brief Subtraction operator.
-    [[nodiscard]] auto operator-(vector_param a) const noexcept -> vector {
+    [[nodiscard]] auto operator-(const vector& a) const noexcept -> vector {
         return {_v - a._v};
     }
 
     /// @brief Subtraction operator.
-    auto operator-=(vector_param a) noexcept -> auto& {
+    auto operator-=(const vector& a) noexcept -> auto& {
         _v = _v - a._v;
         return *this;
     }
 
     /// @brief Multiplication operator.
-    [[nodiscard]] auto operator*(vector_param a) const noexcept -> vector {
+    [[nodiscard]] auto operator*(const vector& a) const noexcept -> vector {
         return {_v * a._v};
     }
 
     /// @brief Multiplication operator.
-    auto operator*=(vector_param a) noexcept -> auto& {
+    auto operator*=(const vector& a) noexcept -> auto& {
         _v = _v * a._v;
         return *this;
     }
 
     /// @brief Multiplication operator.
-    [[nodiscard]] auto operator*(scalar_param c) const noexcept -> vector {
+    [[nodiscard]] auto operator*(const scalar_type& c) const noexcept
+      -> vector {
         static_assert(scalar_type::is_vectorized::value);
         return {_v * c._v};
     }
 
     /// @brief Multiplication by scalar operator.
-    auto operator*=(scalar_param c) noexcept -> auto& {
+    auto operator*=(const scalar_type& c) noexcept -> auto& {
         static_assert(scalar_type::is_vectorized::value);
         _v = _v * c._v;
         return *this;
@@ -234,12 +221,12 @@ struct vector {
     }
 
     /// @brief Division operator.
-    [[nodiscard]] auto operator/(vector_param a) const noexcept -> vector {
+    [[nodiscard]] auto operator/(const vector& a) const noexcept -> vector {
         return {vect::sdiv<T, N, V>::apply(_v, a._v)};
     }
 
     /// @brief Division operator.
-    [[nodiscard]] auto operator/(scalar_param c) noexcept -> vector {
+    [[nodiscard]] auto operator/(const scalar_type& c) noexcept -> vector {
         static_assert(scalar_type::is_vectorized::value);
         return {vect::sdiv<T, N, V>::apply(_v, c._v)};
     }
@@ -288,7 +275,7 @@ struct vector {
     }
 
     /// @brief Returns the dot product of this vector and another vector.
-    [[nodiscard]] constexpr auto dot(vector_param v) const noexcept {
+    [[nodiscard]] constexpr auto dot(const vector& v) const noexcept {
         if constexpr(vect::has_simd_data<T, N, V>::value) {
             return scalar_type{vect::hsum<T, N, V>::apply(_v * v._v)};
         } else {
@@ -297,18 +284,12 @@ struct vector {
     }
 };
 
-export template <typename T, int N, bool V>
-using vector_param = const vector<T, N, V>&;
-
-export template <typename T, int N, bool V>
-using scalar_param = const scalar<T, N, V>&;
-
 /// @brief Multiplication by scalar operator.
 /// @relates vector
 export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto operator*(
-  scalar_param<T, N, V> c,
-  vector_param<T, N, V> a) noexcept {
+  const scalar<T, N, V>& c,
+  const vector<T, N, V>& a) noexcept {
     static_assert(scalar<T, N, V>::is_vectorized::value);
     return vector<T, N, V>{c._v * a._v};
 }
@@ -318,15 +299,15 @@ export template <typename T, int N, bool V>
 export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto operator*(
   const T c,
-  vector_param<T, N, V> a) noexcept {
+  const vector<T, N, V>& a) noexcept {
     return vector<T, N, V>{a._v * vect::fill<T, N, V>::apply(c)};
 }
 
 /// @brief Scalar division operator.
 export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto operator/(
-  scalar_param<T, N, V> c,
-  vector_param<T, N, V> a) noexcept {
+  const scalar<T, N, V>& c,
+  const vector<T, N, V>& a) noexcept {
     static_assert(scalar<T, N, V>::is_vectorized::value);
     return vector<T, N, V>{vect::sdiv<T, N, V>::apply(c._v, a._v)};
 }
@@ -335,7 +316,7 @@ export template <typename T, int N, bool V>
 export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto operator/(
   const T c,
-  vector_param<T, N, V> a) noexcept {
+  const vector<T, N, V>& a) noexcept {
     return vector<T, N, V>{
       vect::sdiv<T, N, V>::apply(vect::fill<T, N, V>::apply(c), a._v)};
 }
@@ -344,15 +325,15 @@ export template <typename T, int N, bool V>
 /// @ingroup math
 export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto dot(
-  vector_param<T, N, V> a,
-  vector_param<T, N, V> b) noexcept {
+  const vector<T, N, V>& a,
+  const vector<T, N, V>& b) noexcept {
     return a.dot(b);
 }
 
 /// @brief Returns a vector perpendicular to argument.
 /// @ingroup math
 export template <typename T, bool V>
-[[nodiscard]] constexpr auto perpendicular(vector_param<T, 2, V> a) noexcept {
+[[nodiscard]] constexpr auto perpendicular(const vector<T, 2, V>& a) noexcept {
     return vector<T, 2, V>{{-a._v[1], a._v[0]}};
 }
 
@@ -360,8 +341,8 @@ export template <typename T, bool V>
 /// @ingroup math
 export template <typename T, bool V>
 [[nodiscard]] constexpr auto cross(
-  vector_param<T, 3, V> a,
-  vector_param<T, 3, V> b) noexcept {
+  const vector<T, 3, V>& a,
+  const vector<T, 3, V>& b) noexcept {
     using _sh = vect::shuffle<T, 3, V>;
     return vector<T, 3, V>{
       _sh::apply(a._v, vect::shuffle_mask<1, 2, 0>{}) *
@@ -373,14 +354,14 @@ export template <typename T, bool V>
 /// @brief Returns the length of a vector.
 /// @ingroup math
 export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto length(vector_param<T, N, V> a) noexcept {
+[[nodiscard]] constexpr auto length(const vector<T, N, V>& a) noexcept {
     return a.length();
 }
 
 /// @brief Returns a normalized copy of the specified vector.
 /// @ingroup math
 export template <typename T, int N, bool V>
-[[nodiscard]] constexpr auto normalized(vector_param<T, N, V> a) noexcept {
+[[nodiscard]] constexpr auto normalized(const vector<T, N, V>& a) noexcept {
     return a.normalized();
 }
 
@@ -388,8 +369,8 @@ export template <typename T, int N, bool V>
 /// @ingroup math
 export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto distance(
-  vector_param<T, N, V> a,
-  vector_param<T, N, V> b) noexcept {
+  const vector<T, N, V>& a,
+  const vector<T, N, V>& b) noexcept {
     return length(a - b);
 }
 
