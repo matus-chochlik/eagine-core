@@ -290,40 +290,67 @@ public:
         }
     }
 
-    /// @brief Returns the translation vector of this matrix (4x3 or 4x4)
+    /// @brief Returns the translation vector of this matrix.
     /// @see row
     /// @see column
-    [[nodiscard]] constexpr auto translation() const noexcept -> vector<T, 3, V>
-        requires((R == 4) and (C == 3 or C == 4))
+    [[nodiscard]] constexpr auto translation() const noexcept
+      -> std::conditional_t<R == 4, vector<T, 3, V>, vector<T, 2, V>>
+        requires(
+          ((R == 4) and (C == 3 or C == 4)) or
+          ((R == 3) and (C == 2 or C == 3)))
     {
         if constexpr(is_row_major()) {
-            return vector<T, 3, V>{_v[3]};
-        } else {
-            return vector<T, 3, V>{_v[0][3], _v[1][3], _v[2][3]};
+            if constexpr(R == 4) {
+                return vector<T, 3, V>{_v[3]};
+            } else {
+                return vector<T, 2, V>{_v[2]};
+            }
+        } else { // column-major
+            if constexpr(R == 4) {
+                return vector<T, 3, V>{_v[0][3], _v[1][3], _v[2][3]};
+            } else {
+                return vector<T, 2, V>{_v[0][2], _v[1][2]};
+            }
         }
     }
 
     /// @brief Multiplies this matrix by another matrix.
     template <int K, bool RM2>
     [[nodiscard]] constexpr auto multiply(const matrix<T, K, C, RM2, V>& m)
-      const noexcept -> matrix<T, K, R, RM, V> {
-        matrix<T, K, R, RM, V> r{};
-        for(int i = 0; i < R; ++i) {
-            for(int j = 0; j < K; ++j) {
-                r.set_rm(i, j, row(i).dot(m.column(j)));
+      const noexcept -> matrix<T, K, R, true, V> {
+        if constexpr(RM) {
+            if constexpr(not RM2) {
+                matrix<T, K, R, RM, V> r{};
+                for(int i = 0; i < R; ++i) {
+                    for(int j = 0; j < K; ++j) {
+                        r.set_rm(i, j, row(i).dot(m.column(j)));
+                    }
+                }
+                return r;
+            } else {
+                return multiply(m.reordered());
+            }
+        } else {
+            if constexpr(not RM2) {
+                return reordered().multiply(m);
+            } else {
+                return reordered().multiply(m.reordered());
             }
         }
-        return r;
     }
 
     /// @brief Multiplies a vector by this matrix.
     [[nodiscard]] constexpr auto multiply(
       const vector<T, C, V>& v) const noexcept -> vector<T, R, V> {
-        vector<T, R, V> r{};
-        for(int i = 0; i < R; ++i) {
-            r._v[i] = row(i).dot(v);
+        if constexpr(is_row_major()) {
+            vector<T, R, V> r{};
+            for(int i = 0; i < R; ++i) {
+                r._v[i] = row(i).dot(v);
+            }
+            return r;
+        } else {
+            return reordered().multiply(v);
         }
-        return r;
     }
 };
 //------------------------------------------------------------------------------
@@ -412,7 +439,7 @@ struct multiplication_result<matrix<T, K, M, RM1, V>, matrix<T, N, K, RM2, V>>
 export template <typename T, int M, int N, int K, bool RM1, bool RM2, bool V>
 [[nodiscard]] constexpr auto multiply(
   const matrix<T, K, M, RM1, V>& m1,
-  const matrix<T, N, K, RM2, V>& m2) noexcept -> matrix<T, N, M, RM1, V> {
+  const matrix<T, N, K, RM2, V>& m2) noexcept -> matrix<T, N, M, true, V> {
     return m1.multiply(m2);
 }
 //------------------------------------------------------------------------------
