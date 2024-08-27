@@ -23,8 +23,8 @@ public:
 
     /// @brief Construction from origin point and direction vector.
     constexpr basic_line(
-      const tvec<T, N, V> orig,
-      const tvec<T, N, V> dir) noexcept
+      const vector<T, N, V> orig,
+      const vector<T, N, V> dir) noexcept
       : _origin{orig}
       , _direction{dir} {}
 
@@ -64,9 +64,9 @@ public:
 
     /// @brief Construction from three points making up the triangle.
     constexpr basic_triangle(
-      const tvec<T, N, V> a,
-      const tvec<T, N, V> b,
-      const tvec<T, N, V> c) noexcept
+      const vector<T, N, V> a,
+      const vector<T, N, V> b,
+      const vector<T, N, V> c) noexcept
       : _vertices{{a, b, c}} {}
 
     /// @brief Returns the point at the specified index.
@@ -135,7 +135,7 @@ public:
     constexpr basic_sphere() noexcept = default;
 
     /// @brief Construction from center point and radius value.
-    constexpr basic_sphere(const tvec<T, N, V> cntr, const T rad) noexcept
+    constexpr basic_sphere(const vector<T, N, V> cntr, const T rad) noexcept
       : _params{cntr, rad} {}
 
     /// @brief Returns the sphere center.

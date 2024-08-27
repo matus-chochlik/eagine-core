@@ -779,13 +779,13 @@ void vector_dot(auto& s) {
     vector_dot_T<double>(test);
 }
 //------------------------------------------------------------------------------
-// tvec default constructor
+// vector default constructor
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void tvec_default_ctr_TNV(eagitest::case_& test) {
     test.parameter(N, "N");
     test.parameter(V, "V");
-    eagine::math::tvec<T, N, V> v;
+    eagine::math::vector<T, N, V> v;
     for(int i = 0; i < N; ++i) {
         test.check_equal(v[i], T(0), "is zero");
     }
@@ -814,13 +814,13 @@ void tvec_default_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_default_ctr(auto& s) {
-    eagitest::case_ test{s, 31, "tvec default constructor"};
+    eagitest::case_ test{s, 31, "vector default constructor"};
     tvec_default_ctr_T<int>(test);
     tvec_default_ctr_T<float>(test);
     tvec_default_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
-// tvec fill
+// vector fill
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void tvec_fill_ctr_TNV(eagitest::case_& test) {
@@ -829,7 +829,7 @@ void tvec_fill_ctr_TNV(eagitest::case_& test) {
     auto& rg{test.random()};
 
     const T r = rg.get_any<T>();
-    eagine::math::tvec<T, N, V> v(r);
+    eagine::math::vector<T, N, V> v(r);
     for(int i = 0; i < N; ++i) {
         test.check_equal(v[i], r, "value");
     }
@@ -858,13 +858,13 @@ void tvec_fill_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_fill_ctr(auto& s) {
-    eagitest::case_ test{s, 32, "tvec fill constructor"};
+    eagitest::case_ test{s, 32, "vector fill constructor"};
     tvec_fill_ctr_T<int>(test);
     tvec_fill_ctr_T<float>(test);
     tvec_fill_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
-// tvec vector constructor
+// vector constructor
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void tvec_vector_ctr_TNV(eagitest::case_& test) {
@@ -873,7 +873,7 @@ void tvec_vector_ctr_TNV(eagitest::case_& test) {
     auto& rg{test.random()};
 
     const T r = rg.get_any<T>();
-    eagine::math::tvec<T, N, V> v{eagine::math::vector<T, N, V>(r)};
+    eagine::math::vector<T, N, V> v{eagine::math::vector<T, N, V>(r)};
     for(int i = 0; i < N; ++i) {
         test.check_equal(v[i], r, "equal");
     }
@@ -902,13 +902,13 @@ void tvec_vector_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_vector_ctr(auto& s) {
-    eagitest::case_ test{s, 33, "tvec vector constructor"};
+    eagitest::case_ test{s, 33, "vector constructor"};
     tvec_vector_ctr_T<int>(test);
     tvec_vector_ctr_T<float>(test);
     tvec_vector_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
-// tvec array constructor
+// vector array constructor
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void tvec_array_ctr_TNV(eagitest::case_& test) {
@@ -921,7 +921,7 @@ void tvec_array_ctr_TNV(eagitest::case_& test) {
         a[i] = rg.get_any<T>();
     }
 
-    eagine::math::tvec<T, N, V> v(a);
+    eagine::math::vector<T, N, V> v(a);
 
     for(int i = 0; i < N; ++i) {
         test.check_equal(v[i], a[i], "equal");
@@ -951,13 +951,13 @@ void tvec_array_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_array_ctr(auto& s) {
-    eagitest::case_ test{s, 34, "tvec vector constructor"};
+    eagitest::case_ test{s, 34, "vector constructor"};
     tvec_array_ctr_T<int>(test);
     tvec_array_ctr_T<float>(test);
     tvec_array_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
-// tvec pack constructor
+// vector pack constructor
 //------------------------------------------------------------------------------
 template <typename T, bool V>
 void tvec_pack_ctr_TV(eagitest::case_& test) {
@@ -965,29 +965,29 @@ void tvec_pack_ctr_TV(eagitest::case_& test) {
     auto& rg{test.random()};
 
     const T r1 = rg.get_any<T>();
-    eagine::math::tvec<T, 1, V> v1(r1);
+    eagine::math::vector<T, 1, V> v1(r1);
     test.check_equal(v1[0], r1, "v1r1");
 
     const T r2 = rg.get_any<T>();
-    eagine::math::tvec<T, 2, V> v2(r1, r2);
+    eagine::math::vector<T, 2, V> v2(r1, r2);
     test.check_equal(v2[0], r1, "v2r1");
     test.check_equal(v2[1], r2, "v2r2");
 
     const T r3 = rg.get_any<T>();
-    eagine::math::tvec<T, 3, V> v3(r1, r2, r3);
+    eagine::math::vector<T, 3, V> v3(r1, r2, r3);
     test.check_equal(v3[0], r1, "v3r1");
     test.check_equal(v3[1], r2, "v3r2");
     test.check_equal(v3[2], r3, "v3r3");
 
     const T r4 = rg.get_any<T>();
-    eagine::math::tvec<T, 4, V> v4(r1, r2, r3, r4);
+    eagine::math::vector<T, 4, V> v4(r1, r2, r3, r4);
     test.check_equal(v4[0], r1, "v4r1");
     test.check_equal(v4[1], r2, "v4r2");
     test.check_equal(v4[2], r3, "v4r3");
     test.check_equal(v4[3], r4, "v4r4");
 
     const T r5 = rg.get_any<T>();
-    eagine::math::tvec<T, 5, V> v5(r1, r2, r3, r4, r5);
+    eagine::math::vector<T, 5, V> v5(r1, r2, r3, r4, r5);
     test.check_equal(v5[0], r1, "v5r1");
     test.check_equal(v5[1], r2, "v5r2");
     test.check_equal(v5[2], r3, "v5r3");
@@ -995,7 +995,7 @@ void tvec_pack_ctr_TV(eagitest::case_& test) {
     test.check_equal(v5[4], r5, "v5r5");
 
     const T r6 = rg.get_any<T>();
-    eagine::math::tvec<T, 6, V> v6(r1, r2, r3, r4, r5, r6);
+    eagine::math::vector<T, 6, V> v6(r1, r2, r3, r4, r5, r6);
     test.check_equal(v6[0], r1, "v6r1");
     test.check_equal(v6[1], r2, "v6r2");
     test.check_equal(v6[2], r3, "v6r3");
@@ -1011,13 +1011,13 @@ void tvec_pack_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_pack_ctr(auto& s) {
-    eagitest::case_ test{s, 35, "tvec vector constructor"};
+    eagitest::case_ test{s, 35, "vector constructor"};
     tvec_pack_ctr_T<int>(test);
     tvec_pack_ctr_T<float>(test);
     tvec_pack_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
-// tvec vector + value constructor
+// vector + value constructor
 //------------------------------------------------------------------------------
 template <typename T, bool V>
 void tvec_vec_val_ctr_TV(eagitest::case_& test) {
@@ -1025,67 +1025,67 @@ void tvec_vec_val_ctr_TV(eagitest::case_& test) {
     auto& rg{test.random()};
 
     const T r1 = rg.get_any<T>();
-    eagine::math::tvec<T, 1, V> v10(r1);
+    eagine::math::vector<T, 1, V> v10(r1);
     test.check_equal(v10[0], r1, "v01r1");
 
     const T r2 = rg.get_any<T>();
-    eagine::math::tvec<T, 2, V> v21(v10, r2);
+    eagine::math::vector<T, 2, V> v21(v10, r2);
     test.check_equal(v21[0], r1, "v21r1");
     test.check_equal(v21[1], r2, "v21r2");
 
     const T r3 = rg.get_any<T>();
-    eagine::math::tvec<T, 3, V> v31(v10, r3);
+    eagine::math::vector<T, 3, V> v31(v10, r3);
     test.check_equal(v31[0], r1, "v31r1");
     test.check_equal(v31[1], r3, "v31r3");
     test.check_equal(v31[2], r3, "v31r3");
 
-    eagine::math::tvec<T, 3, V> v32(v21, r3);
+    eagine::math::vector<T, 3, V> v32(v21, r3);
     test.check_equal(v32[0], r1, "v32r1");
     test.check_equal(v32[1], r2, "v32r2");
     test.check_equal(v32[2], r3, "v32r3");
 
     const T r4 = rg.get_any<T>();
-    eagine::math::tvec<T, 4, V> v41(v10, r4);
+    eagine::math::vector<T, 4, V> v41(v10, r4);
     test.check_equal(v41[0], r1, "v41r1");
     test.check_equal(v41[1], r4, "v41r4");
     test.check_equal(v41[2], r4, "v41r4");
     test.check_equal(v41[3], r4, "v41r4");
 
-    eagine::math::tvec<T, 4, V> v42(v21, r4);
+    eagine::math::vector<T, 4, V> v42(v21, r4);
     test.check_equal(v42[0], r1, "v42r1");
     test.check_equal(v42[1], r2, "v42r2");
     test.check_equal(v42[2], r4, "v42r3");
     test.check_equal(v42[3], r4, "v42r4");
 
-    eagine::math::tvec<T, 4, V> v43(v32, r4);
+    eagine::math::vector<T, 4, V> v43(v32, r4);
     test.check_equal(v43[0], r1, "v43r1");
     test.check_equal(v43[1], r2, "v43r2");
     test.check_equal(v43[2], r3, "v43r3");
     test.check_equal(v43[3], r4, "v43r4");
 
     const T r5 = rg.get_any<T>();
-    eagine::math::tvec<T, 5, V> v51(v10, r5);
+    eagine::math::vector<T, 5, V> v51(v10, r5);
     test.check_equal(v51[0], r1, "v51r1");
     test.check_equal(v51[1], r5, "v51r5");
     test.check_equal(v51[2], r5, "v51r5");
     test.check_equal(v51[3], r5, "v51r5");
     test.check_equal(v51[4], r5, "v51r5");
 
-    eagine::math::tvec<T, 5, V> v52(v21, r5);
+    eagine::math::vector<T, 5, V> v52(v21, r5);
     test.check_equal(v52[0], r1, "v52r1");
     test.check_equal(v52[1], r2, "v52r2");
     test.check_equal(v52[2], r5, "v52r5");
     test.check_equal(v52[3], r5, "v52r5");
     test.check_equal(v52[4], r5, "v52r5");
 
-    eagine::math::tvec<T, 5, V> v53(v32, r5);
+    eagine::math::vector<T, 5, V> v53(v32, r5);
     test.check_equal(v53[0], r1, "v53r1");
     test.check_equal(v53[1], r2, "v53r2");
     test.check_equal(v53[2], r3, "v53r3");
     test.check_equal(v53[3], r5, "v53r5");
     test.check_equal(v53[4], r5, "v53r5");
 
-    eagine::math::tvec<T, 5, V> v54(v43, r5);
+    eagine::math::vector<T, 5, V> v54(v43, r5);
     test.check_equal(v54[0], r1, "v54r1");
     test.check_equal(v54[1], r2, "v54r2");
     test.check_equal(v54[2], r3, "v54r3");
@@ -1100,13 +1100,13 @@ void tvec_vec_val_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_vec_val_ctr(auto& s) {
-    eagitest::case_ test{s, 36, "tvec vector + value constructor"};
+    eagitest::case_ test{s, 36, "vector + value constructor"};
     tvec_vec_val_ctr_T<int>(test);
     tvec_vec_val_ctr_T<float>(test);
     tvec_vec_val_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
-// tvec vector + vector constructor
+// vector + vector constructor
 //------------------------------------------------------------------------------
 template <typename T, bool V>
 void tvec_vec_vec_ctr_TV(eagitest::case_& test) {
@@ -1114,69 +1114,69 @@ void tvec_vec_vec_ctr_TV(eagitest::case_& test) {
     auto& rg{test.random()};
 
     T ra = rg.get_any<T>();
-    eagine::math::tvec<T, 1, V> va(ra);
+    eagine::math::vector<T, 1, V> va(ra);
     test.check_equal(va[0], ra, "vara");
 
     T rb = rg.get_any<T>();
-    eagine::math::tvec<T, 1, V> vb(rb);
+    eagine::math::vector<T, 1, V> vb(rb);
     test.check_equal(vb[0], rb, "vbrb");
 
-    eagine::math::tvec<T, 2, V> vaa(va, va);
+    eagine::math::vector<T, 2, V> vaa(va, va);
     test.check_equal(vaa[0], ra, "vaa0ra");
     test.check_equal(vaa[1], ra, "vaa1ra");
 
-    eagine::math::tvec<T, 2, V> vab(va, vb);
+    eagine::math::vector<T, 2, V> vab(va, vb);
     test.check_equal(vab[0], ra, "vab0ra");
     test.check_equal(vab[1], rb, "vab1rb");
 
-    eagine::math::tvec<T, 2, V> vbb(vb, vb);
+    eagine::math::vector<T, 2, V> vbb(vb, vb);
     test.check_equal(vbb[0], rb, "vbb0rb");
     test.check_equal(vbb[1], rb, "vbb1rb");
 
-    eagine::math::tvec<T, 3, V> vaba(vab, va);
+    eagine::math::vector<T, 3, V> vaba(vab, va);
     test.check_equal(vaba[0], ra, "vaba0ra");
     test.check_equal(vaba[1], rb, "vaba1rb");
     test.check_equal(vaba[2], ra, "vaba2ra");
 
-    eagine::math::tvec<T, 3, V> vbab(vb, vab);
+    eagine::math::vector<T, 3, V> vbab(vb, vab);
     test.check_equal(vbab[0], rb, "vbab0rb");
     test.check_equal(vbab[1], ra, "vbab1ra");
     test.check_equal(vbab[2], rb, "vbab2rb");
 
-    eagine::math::tvec<T, 4, V> vabab(vaba, vb);
+    eagine::math::vector<T, 4, V> vabab(vaba, vb);
     test.check_equal(vabab[0], ra, "vabab0ra");
     test.check_equal(vabab[1], rb, "vabab1rb");
     test.check_equal(vabab[2], ra, "vabab2ra");
     test.check_equal(vabab[3], rb, "vabab3rb");
 
-    eagine::math::tvec<T, 4, V> vaabb(vaa, vbb);
+    eagine::math::vector<T, 4, V> vaabb(vaa, vbb);
     test.check_equal(vaabb[0], ra, "vaabb0ra");
     test.check_equal(vaabb[1], ra, "vaabb1ra");
     test.check_equal(vaabb[2], rb, "vaabb2rb");
     test.check_equal(vaabb[3], rb, "vaabb3rb");
 
-    eagine::math::tvec<T, 5, V> vababa(vabab, va);
+    eagine::math::vector<T, 5, V> vababa(vabab, va);
     test.check_equal(vababa[0], ra, "vababa0ra");
     test.check_equal(vababa[1], rb, "vababa1rb");
     test.check_equal(vababa[2], ra, "vababa2ra");
     test.check_equal(vababa[3], rb, "vababa3rb");
     test.check_equal(vababa[4], ra, "vababa4ra");
 
-    eagine::math::tvec<T, 5, V> vababb(vaba, vbb);
+    eagine::math::vector<T, 5, V> vababb(vaba, vbb);
     test.check_equal(vababb[0], ra, "vababb0ra");
     test.check_equal(vababb[1], rb, "vababb1rb");
     test.check_equal(vababb[2], ra, "vababb2ra");
     test.check_equal(vababb[3], rb, "vababb3rb");
     test.check_equal(vababb[4], rb, "vababb4rb");
 
-    eagine::math::tvec<T, 5, V> vaabab(vaa, vbab);
+    eagine::math::vector<T, 5, V> vaabab(vaa, vbab);
     test.check_equal(vaabab[0], ra, "vaabab0ra");
     test.check_equal(vaabab[1], ra, "vaabab1ra");
     test.check_equal(vaabab[2], rb, "vaabab2rb");
     test.check_equal(vaabab[3], ra, "vaabab3ra");
     test.check_equal(vaabab[4], rb, "vaabab4rb");
 
-    eagine::math::tvec<T, 5, V> vbabab(vb, vabab);
+    eagine::math::vector<T, 5, V> vbabab(vb, vabab);
     test.check_equal(vbabab[0], rb, "vbabab0rb");
     test.check_equal(vbabab[1], ra, "vbabab1ra");
     test.check_equal(vbabab[2], rb, "vbabab2rb");
@@ -1191,7 +1191,7 @@ void tvec_vec_vec_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_vec_vec_ctr(auto& s) {
-    eagitest::case_ test{s, 37, "tvec vector + vector constructor"};
+    eagitest::case_ test{s, 37, "vector + vector constructor"};
     tvec_vec_vec_ctr_T<int>(test);
     tvec_vec_vec_ctr_T<float>(test);
     tvec_vec_vec_ctr_T<double>(test);

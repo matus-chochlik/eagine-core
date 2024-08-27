@@ -14,8 +14,8 @@ namespace eagine::math {
 //------------------------------------------------------------------------------
 /// @brief Basic scalar implementation template.
 /// @ingroup math
-/// @see tvec
-/// @note This class is used in vectorizer vector-scalar operations.
+/// @see vector
+/// @note This class is used in SIMD vector-scalar operations.
 export template <typename T, int N, bool V>
 class scalar {
 public:

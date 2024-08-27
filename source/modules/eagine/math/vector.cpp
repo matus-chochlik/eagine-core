@@ -402,9 +402,6 @@ constexpr auto get(const vector<T, N, V>& v) noexcept -> T {
     return v._v[I];
 }
 
-export template <typename T, int N, bool V>
-using tvec = vector<T, N, V>;
-
 } // namespace math
 //------------------------------------------------------------------------------
 export template <typename T, int N, bool V>
