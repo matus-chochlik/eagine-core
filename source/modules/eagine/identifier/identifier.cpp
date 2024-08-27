@@ -542,7 +542,7 @@ private:
 #if __SIZEOF_INT128__
     __uint128_t _data{0U};
 #else
-    vect::data_t<identifier_t, 2, false> _data{0U, 0U};
+    simd::data_t<identifier_t, 2, false> _data{0U, 0U};
 #endif
 };
 //------------------------------------------------------------------------------

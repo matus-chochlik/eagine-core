@@ -19,10 +19,10 @@ void vect_compare_TNV_1(eagitest::case_& test) {
         bool gen_zero = rg.get_int(0, 9) == 0;
         T a = gen_zero ? 0 : rg.get_between<T>(1, 1000);
 
-        typename eagine::vect::data<T, N, V>::type v =
-          eagine::vect::fill<T, N, V>::apply(a);
+        typename eagine::simd::data<T, N, V>::type v =
+          eagine::simd::fill<T, N, V>::apply(a);
 
-        bool is_zero = eagine::vect::is_zero<T, N, V>::apply(v);
+        bool is_zero = eagine::simd::is_zero<T, N, V>::apply(v);
 
         test.check_equal(gen_zero, is_zero, "is zero");
     }

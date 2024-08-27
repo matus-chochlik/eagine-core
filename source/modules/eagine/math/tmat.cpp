@@ -83,7 +83,7 @@ struct canonical_compound_type<math::tmat<T, C, R, RM, V>>
 export template <typename T, int C, int R, bool RM, bool V>
 struct compound_view_maker<math::tmat<T, C, R, RM, V>> {
     auto operator()(const math::tmat<T, C, R, RM, V>& m) const noexcept {
-        return vect::view < T, RM ? C : R, V > ::apply(m._v);
+        return simd::view < T, RM ? C : R, V > ::apply(m._v);
     }
 };
 

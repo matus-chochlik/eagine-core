@@ -25,10 +25,10 @@ public:
     using value_type = T;
 
     /// @brief Indicates if the implementation uses SIMD extensions.
-    using is_vectorized = vect::has_simd_data<T, N, V>;
+    using is_vectorized = simd::has_simd_data<T, N, V>;
 
     using data_type =
-      std::conditional_t<is_vectorized::value, vect::data_t<T, N, V>, T>;
+      std::conditional_t<is_vectorized::value, simd::data_t<T, N, V>, T>;
 
     data_type _v{};
 
@@ -37,7 +37,7 @@ public:
     /// @brief Creates a scalar with the specified value.
     [[nodiscard]] static constexpr auto make(const T v) noexcept {
         if constexpr(is_vectorized()) {
-            return scalar{vect::fill<T, N, V>::apply(v)};
+            return scalar{simd::fill<T, N, V>::apply(v)};
         } else {
             return scalar{v};
         }
@@ -55,7 +55,7 @@ public:
     /// @brief Assignment from the value type.
     auto operator=(const T v) noexcept -> scalar& {
         if constexpr(is_vectorized()) {
-            _v = vect::fill<T, N, V>::apply(v);
+            _v = simd::fill<T, N, V>::apply(v);
         } else {
             _v = v;
         }

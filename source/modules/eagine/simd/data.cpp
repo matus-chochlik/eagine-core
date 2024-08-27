@@ -11,7 +11,7 @@ import std;
 import :data_array;
 import :data_simd;
 
-namespace eagine::vect {
+namespace eagine::simd {
 
 // has_simd_data
 export template <typename T, int N, bool V>
@@ -49,4 +49,4 @@ using data_param_t = typename data_param<T, N, V>::type;
 export template <typename T, int N, bool V>
 struct param<data<T, N, V>> : data_param<T, N, V> {};
 
-} // namespace eagine::vect
+} // namespace eagine::simd

@@ -18,8 +18,8 @@ void vect_fill_TNV_1(eagitest::case_& test) {
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
         T a = rg.get_any<T>();
 
-        typename eagine::vect::data<T, N, V>::type v =
-          eagine::vect::fill<T, N, V>::apply(a);
+        typename eagine::simd::data<T, N, V>::type v =
+          eagine::simd::fill<T, N, V>::apply(a);
 
         for(int i = 0; i < N; ++i) {
             test.check_equal(v[i], a, "equal");

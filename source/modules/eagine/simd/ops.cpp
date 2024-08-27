@@ -17,7 +17,7 @@ import eagine.core.memory;
 import :data_simd;
 import :data;
 
-namespace eagine::vect {
+namespace eagine::simd {
 //------------------------------------------------------------------------------
 // is_zero
 //------------------------------------------------------------------------------
@@ -556,7 +556,7 @@ struct diff {
     [[nodiscard]] static constexpr auto apply(
       data_param_t<T, N, V> a,
       data_param_t<T, N, V> b) noexcept -> data_t<T, N, V> {
-        return vect::abs<T, N, V>::apply(a - b);
+        return simd::abs<T, N, V>::apply(a - b);
     }
 };
 //------------------------------------------------------------------------------
@@ -745,4 +745,4 @@ struct sqrt {
     }
 };
 //------------------------------------------------------------------------------
-} // namespace eagine::vect
+} // namespace eagine::simd

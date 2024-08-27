@@ -10,7 +10,7 @@ export module eagine.core.simd:data_array;
 import std;
 import eagine.core.types;
 
-namespace eagine::vect {
+namespace eagine::simd {
 
 export template <typename T, int N>
 struct data_array;
@@ -185,5 +185,5 @@ struct data_array<T, 0U> {
     auto operator[](const int i) const -> T;
 };
 
-} // namespace eagine::vect
+} // namespace eagine::simd
 

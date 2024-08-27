@@ -18,15 +18,15 @@ void vect_abs_TNV_1(eagitest::case_& test) {
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
         T a[N];
 
-        typename eagine::vect::data<T, N, V>::type u = {};
+        typename eagine::simd::data<T, N, V>::type u = {};
 
         for(int i = 0; i < N; ++i) {
             a[i] = rg.get_between<T>(-1000, 1000);
             u[i] = a[i];
         }
 
-        typename eagine::vect::data<T, N, V>::type v =
-          eagine::vect::abs<T, N, V>::apply(u);
+        typename eagine::simd::data<T, N, V>::type v =
+          eagine::simd::abs<T, N, V>::apply(u);
 
         for(int i = 0; i < N; ++i) {
             using std::abs;

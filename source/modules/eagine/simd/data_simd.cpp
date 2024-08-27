@@ -10,7 +10,7 @@ export module eagine.core.simd:data_simd;
 import std;
 import eagine.core.types;
 
-namespace eagine::vect {
+namespace eagine::simd {
 
 export template <typename T, int N>
 struct data_simd;
@@ -197,4 +197,4 @@ struct _has_simd_data<double, N>
       false> {
 };
 
-} // namespace eagine::vect
+} // namespace eagine::simd

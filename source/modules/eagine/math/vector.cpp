@@ -27,18 +27,18 @@ export template <typename T, int N, bool V>
 class vector {
 
     static constexpr auto _zero() noexcept {
-        return vect::fill<T, N, V>::apply(T(0));
+        return simd::fill<T, N, V>::apply(T(0));
     }
 
     static constexpr auto _fill(const T v) noexcept {
-        return vect::fill<T, N, V>::apply(v);
+        return simd::fill<T, N, V>::apply(v);
     }
 
     template <typename P, int M, bool W>
     [[nodiscard]] static constexpr auto _from(
       const vector<P, M, W>& v,
       const vector<T, N - M, W>& u) noexcept {
-        return vector{vect::cast<P, M, W, T, N, V>::apply(v._v, u._v)};
+        return simd::cast<P, M, W, T, N, V>::apply(v._v, u._v);
     }
 
 public:
@@ -51,9 +51,9 @@ public:
     using value_type = T;
 
     /// @brief Indicates if the implementation uses SIMD extensions.
-    using is_vectorized = vect::has_simd_data<T, N, V>;
+    using is_vectorized = simd::has_simd_data<T, N, V>;
 
-    using data_type = vect::data_t<T, N, V>;
+    using data_type = simd::data_t<T, N, V>;
 
     data_type _v;
 
@@ -61,14 +61,14 @@ public:
     /// @pre I < N
     template <int I>
     [[nodiscard]] static constexpr auto axis() noexcept {
-        return vector{vect::axis<T, N, I, V>::apply(T(1))};
+        return vector{simd::axis<T, N, I, V>::apply(T(1))};
     }
 
     /// @brief Creates an axis vector for the I-th dimension with specified length.
     /// @pre I < N
     template <int I>
     [[nodiscard]] static constexpr auto axis(const T v) noexcept {
-        return vector{vect::axis<T, N, I, V>::apply(v)};
+        return vector{simd::axis<T, N, I, V>::apply(v)};
     }
 
     /// @brief Creates an axis vector for the i-th dimension with specified length.
@@ -93,11 +93,11 @@ public:
 
     /// @brief Construction from pointer and length.
     constexpr vector(const T* dt, span_size_t sz) noexcept
-      : _v{vect::from_array<T, N, V>::apply(dt, sz)} {}
+      : _v{simd::from_array<T, N, V>::apply(dt, sz)} {}
 
     /// @brief Construction from pointer and length and additional initializer.
     constexpr vector(const T* dt, span_size_t sz, T fv) noexcept
-      : _v{vect::from_saafv<T, N, V>::apply(dt, sz, fv)} {}
+      : _v{simd::from_saafv<T, N, V>::apply(dt, sz, fv)} {}
 
     /// @brief Construction from native array.
     constexpr vector(const T (&d)[N]) noexcept
@@ -113,12 +113,12 @@ public:
     template <typename P, int M, bool W>
     constexpr vector(const vector<P, M, W>& v) noexcept
         requires(not std::is_same_v<P, T> or not(M == N))
-      : _v{vect::cast<P, M, W, T, N, V>::apply(v._v, T(0))} {}
+      : _v{simd::cast<P, M, W, T, N, V>::apply(v._v, T(0))} {}
 
     /// @brief Construction from vector of different dimensionality.
     template <typename P, int M, bool W>
     constexpr vector(const vector<P, M, W>& v, const T d) noexcept
-      : _v{vect::cast<P, M, W, T, N, V>::apply(v._v, d)} {}
+      : _v{simd::cast<P, M, W, T, N, V>::apply(v._v, d)} {}
 
     /// @brief Construction from vector of different dimensionality.
     template <std::convertible_to<T> P, int M, bool W, std::convertible_to<T>... R>
@@ -229,29 +229,29 @@ public:
 
     /// @brief Multiplication by constant operator.
     [[nodiscard]] auto operator*(const T c) const noexcept -> vector {
-        return {_v * vect::fill<T, N, V>::apply(c)};
+        return {_v * simd::fill<T, N, V>::apply(c)};
     }
 
     /// @brief Multiplication by constant operator.
     auto operator*=(const T c) noexcept -> auto& {
-        _v = _v * vect::fill<T, N, V>::apply(c);
+        _v = _v * simd::fill<T, N, V>::apply(c);
         return *this;
     }
 
     /// @brief Division operator.
     [[nodiscard]] auto operator/(const vector& a) const noexcept -> vector {
-        return {vect::sdiv<T, N, V>::apply(_v, a._v)};
+        return {simd::sdiv<T, N, V>::apply(_v, a._v)};
     }
 
     /// @brief Division operator.
     [[nodiscard]] auto operator/(const scalar_type& c) noexcept -> vector {
         static_assert(scalar_type::is_vectorized::value);
-        return {vect::sdiv<T, N, V>::apply(_v, c._v)};
+        return {simd::sdiv<T, N, V>::apply(_v, c._v)};
     }
 
     /// @brief Division by constant operator.
     [[nodiscard]] auto operator/(const T c) const noexcept -> vector {
-        return {vect::sdiv<T, N, V>::apply(_v, vect::fill<T, N, V>::apply(c))};
+        return {simd::sdiv<T, N, V>::apply(_v, simd::fill<T, N, V>::apply(c))};
     }
 
     /// @brief Returns the dimension of this vector.
@@ -262,12 +262,12 @@ public:
     /// @brief Returns the magnitude of this vector.
     /// @see length
     [[nodiscard]] constexpr auto magnitude() const noexcept {
-        if constexpr(vect::has_simd_data<T, N, V>::value) {
+        if constexpr(simd::has_simd_data<T, N, V>::value) {
             return scalar_type{
-              vect::sqrt<T, N, V>::apply(vect::hsum<T, N, V>::apply(_v * _v))};
+              simd::sqrt<T, N, V>::apply(simd::hsum<T, N, V>::apply(_v * _v))};
         } else {
             using std::sqrt;
-            return scalar_type{T(sqrt(vect::esum<T, N, V>::apply(_v * _v)))};
+            return scalar_type{T(sqrt(simd::esum<T, N, V>::apply(_v * _v)))};
         }
     }
 
@@ -278,26 +278,26 @@ public:
 
     /// @brief Tests if this vector is zero-length.
     [[nodiscard]] constexpr auto is_zero() const noexcept -> bool {
-        return vect::is_zero<T, N, V>::apply(_v);
+        return simd::is_zero<T, N, V>::apply(_v);
     }
 
     /// @brief Returns a normalized copy of this vector.
     [[nodiscard]] constexpr auto normalized() const noexcept -> vector {
         const scalar_type l{length()};
-        if constexpr(vect::has_simd_data<T, N, V>::value) {
-            return vector{vect::sdiv<T, N, V>::apply(_v, l._v)};
+        if constexpr(simd::has_simd_data<T, N, V>::value) {
+            return vector{simd::sdiv<T, N, V>::apply(_v, l._v)};
         } else {
             return vector{
-              vect::sdiv<T, N, V>::apply(_v, vect::fill<T, N, V>::apply(l._v))};
+              simd::sdiv<T, N, V>::apply(_v, simd::fill<T, N, V>::apply(l._v))};
         }
     }
 
     /// @brief Returns the dot product of this vector and another vector.
     [[nodiscard]] constexpr auto dot(const vector& v) const noexcept {
-        if constexpr(vect::has_simd_data<T, N, V>::value) {
-            return scalar_type{vect::hsum<T, N, V>::apply(_v * v._v)};
+        if constexpr(simd::has_simd_data<T, N, V>::value) {
+            return scalar_type{simd::hsum<T, N, V>::apply(_v * v._v)};
         } else {
-            return scalar_type{vect::esum<T, N, V>::apply(_v * v._v)};
+            return scalar_type{simd::esum<T, N, V>::apply(_v * v._v)};
         }
     }
 };
@@ -318,7 +318,7 @@ export template <typename T, int N, bool V>
 [[nodiscard]] constexpr auto operator*(
   const T c,
   const vector<T, N, V>& a) noexcept {
-    return vector<T, N, V>{a._v * vect::fill<T, N, V>::apply(c)};
+    return vector<T, N, V>{a._v * simd::fill<T, N, V>::apply(c)};
 }
 
 /// @brief Scalar division operator.
@@ -327,7 +327,7 @@ export template <typename T, int N, bool V>
   const scalar<T, N, V>& c,
   const vector<T, N, V>& a) noexcept {
     static_assert(scalar<T, N, V>::is_vectorized::value);
-    return vector<T, N, V>{vect::sdiv<T, N, V>::apply(c._v, a._v)};
+    return vector<T, N, V>{simd::sdiv<T, N, V>::apply(c._v, a._v)};
 }
 
 /// @brief Constant division operator.
@@ -336,7 +336,7 @@ export template <typename T, int N, bool V>
   const T c,
   const vector<T, N, V>& a) noexcept {
     return vector<T, N, V>{
-      vect::sdiv<T, N, V>::apply(vect::fill<T, N, V>::apply(c), a._v)};
+      simd::sdiv<T, N, V>::apply(simd::fill<T, N, V>::apply(c), a._v)};
 }
 
 /// @brief Vector dot product.
@@ -361,12 +361,12 @@ export template <typename T, bool V>
 [[nodiscard]] constexpr auto cross(
   const vector<T, 3, V>& a,
   const vector<T, 3, V>& b) noexcept {
-    using _sh = vect::shuffle<T, 3, V>;
+    using _sh = simd::shuffle<T, 3, V>;
     return vector<T, 3, V>{
-      _sh::apply(a._v, vect::shuffle_mask<1, 2, 0>{}) *
-        _sh::apply(b._v, vect::shuffle_mask<2, 0, 1>{}) -
-      _sh::apply(a._v, vect::shuffle_mask<2, 0, 1>{}) *
-        _sh::apply(b._v, vect::shuffle_mask<1, 2, 0>{})};
+      _sh::apply(a._v, simd::shuffle_mask<1, 2, 0>{}) *
+        _sh::apply(b._v, simd::shuffle_mask<2, 0, 1>{}) -
+      _sh::apply(a._v, simd::shuffle_mask<2, 0, 1>{}) *
+        _sh::apply(b._v, simd::shuffle_mask<1, 2, 0>{})};
 }
 
 /// @brief Returns the length of a vector.
@@ -417,7 +417,7 @@ struct canonical_compound_type<math::vector<T, N, V>>
 export template <typename T, int N, bool V>
 struct compound_view_maker<math::vector<T, N, V>> {
     constexpr auto operator()(const math::vector<T, N, V>& v) const noexcept {
-        return vect::view<T, N, V>::apply(v._v);
+        return simd::view<T, N, V>::apply(v._v);
     }
 };
 //------------------------------------------------------------------------------
@@ -443,7 +443,7 @@ struct flatten_traits<math::vector<T, N, V>, T> {
 private:
     template <typename Pd, typename Sd, std::size_t... I>
     static void _do_apply(
-      const vect::data_t<T, N, V> src,
+      const simd::data_t<T, N, V> src,
       memory::basic_span<T, Pd, Sd> dst,
       std::index_sequence<I...>) noexcept {
         ((dst[I] = src[I]), ...);

@@ -63,7 +63,7 @@ template <typename T, int N, bool V>
 void vector_fill_TNV(eagitest::case_& test) {
     test.parameter(N, "N");
     const auto r{test.random().get_any<T>()};
-    auto v = eagine::math::vector<T, N, V>::fill(r);
+    auto v = eagine::math::vector<T, N, V>(r);
     for(int i = 0; i < N; ++i) {
         test.check_equal(v[i], r, "correct value");
     }
@@ -92,17 +92,17 @@ void vector_fill_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_fill_int(auto& s) {
-    eagitest::case_ test{s, 7, "fill int"};
+    eagitest::case_ test{s, 4, "fill int"};
     vector_fill_T<int>(test);
 }
 //------------------------------------------------------------------------------
 void vector_fill_float(auto& s) {
-    eagitest::case_ test{s, 8, "fill float"};
+    eagitest::case_ test{s, 5, "fill float"};
     vector_fill_T<float>(test);
 }
 //------------------------------------------------------------------------------
 void vector_fill_double(auto& s) {
-    eagitest::case_ test{s, 9, "fill double"};
+    eagitest::case_ test{s, 6, "fill double"};
     vector_fill_T<double>(test);
 }
 //------------------------------------------------------------------------------
@@ -143,17 +143,17 @@ void vector_axis_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_axis_int(auto& s) {
-    eagitest::case_ test{s, 10, "axis int"};
+    eagitest::case_ test{s, 7, "axis int"};
     vector_axis_T<int>(test);
 }
 //------------------------------------------------------------------------------
 void vector_axis_float(auto& s) {
-    eagitest::case_ test{s, 11, "axis float"};
+    eagitest::case_ test{s, 8, "axis float"};
     vector_axis_T<float>(test);
 }
 //------------------------------------------------------------------------------
 void vector_axis_double(auto& s) {
-    eagitest::case_ test{s, 12, "axis double"};
+    eagitest::case_ test{s, 9, "axis double"};
     vector_axis_T<double>(test);
 }
 //------------------------------------------------------------------------------
@@ -225,17 +225,17 @@ void vector_axis_TI(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_axis_I_int(auto& s) {
-    eagitest::case_ test{s, 13, "axis I int"};
+    eagitest::case_ test{s, 10, "axis I int"};
     vector_axis_TI<int>(test);
 }
 //------------------------------------------------------------------------------
 void vector_axis_I_float(auto& s) {
-    eagitest::case_ test{s, 14, "axis I float"};
+    eagitest::case_ test{s, 11, "axis I float"};
     vector_axis_TI<float>(test);
 }
 //------------------------------------------------------------------------------
 void vector_axis_I_double(auto& s) {
-    eagitest::case_ test{s, 15, "axis I double"};
+    eagitest::case_ test{s, 12, "axis I double"};
     vector_axis_TI<double>(test);
 }
 //------------------------------------------------------------------------------
@@ -314,17 +314,17 @@ void vector_make_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_make_int(auto& s) {
-    eagitest::case_ test{s, 16, "make int"};
+    eagitest::case_ test{s, 13, "make int"};
     vector_make_T<int>(test);
 }
 //------------------------------------------------------------------------------
 void vector_make_float(auto& s) {
-    eagitest::case_ test{s, 17, "make float"};
+    eagitest::case_ test{s, 14, "make float"};
     vector_make_T<float>(test);
 }
 //------------------------------------------------------------------------------
 void vector_make_double(auto& s) {
-    eagitest::case_ test{s, 18, "make double"};
+    eagitest::case_ test{s, 15, "make double"};
     vector_make_T<double>(test);
 }
 //------------------------------------------------------------------------------
@@ -403,17 +403,17 @@ void vector_from_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_from_int(auto& s) {
-    eagitest::case_ test{s, 19, "from int"};
+    eagitest::case_ test{s, 16, "from int"};
     vector_from_T<int>(test);
 }
 //------------------------------------------------------------------------------
 void vector_from_float(auto& s) {
-    eagitest::case_ test{s, 20, "from float"};
+    eagitest::case_ test{s, 17, "from float"};
     vector_from_T<float>(test);
 }
 //------------------------------------------------------------------------------
 void vector_from_double(auto& s) {
-    eagitest::case_ test{s, 21, "from double"};
+    eagitest::case_ test{s, 18, "from double"};
     vector_from_T<double>(test);
 }
 //------------------------------------------------------------------------------
@@ -508,17 +508,17 @@ void vector_from2_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_from2_int(auto& s) {
-    eagitest::case_ test{s, 22, "from 2 int"};
+    eagitest::case_ test{s, 19, "from 2 int"};
     vector_from2_T<int>(test);
 }
 //------------------------------------------------------------------------------
 void vector_from2_float(auto& s) {
-    eagitest::case_ test{s, 23, "from 2 float"};
+    eagitest::case_ test{s, 20, "from 2 float"};
     vector_from2_T<float>(test);
 }
 //------------------------------------------------------------------------------
 void vector_from2_double(auto& s) {
-    eagitest::case_ test{s, 24, "from 2 double"};
+    eagitest::case_ test{s, 21, "from 2 double"};
     vector_from2_T<double>(test);
 }
 //------------------------------------------------------------------------------
@@ -564,17 +564,17 @@ void vector_from3_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_from3_int(auto& s) {
-    eagitest::case_ test{s, 25, "from 3 int"};
+    eagitest::case_ test{s, 22, "from 3 int"};
     vector_from3_T<int>(test);
 }
 //------------------------------------------------------------------------------
 void vector_from3_float(auto& s) {
-    eagitest::case_ test{s, 26, "from 3 float"};
+    eagitest::case_ test{s, 23, "from 3 float"};
     vector_from3_T<float>(test);
 }
 //------------------------------------------------------------------------------
 void vector_from3_double(auto& s) {
-    eagitest::case_ test{s, 27, "from 3 double"};
+    eagitest::case_ test{s, 24, "from 3 double"};
     vector_from3_T<double>(test);
 }
 //------------------------------------------------------------------------------
@@ -628,17 +628,17 @@ void vector_from4_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_from4_int(auto& s) {
-    eagitest::case_ test{s, 28, "from 4 int"};
+    eagitest::case_ test{s, 25, "from 4 int"};
     vector_from4_T<int>(test);
 }
 //------------------------------------------------------------------------------
 void vector_from4_float(auto& s) {
-    eagitest::case_ test{s, 29, "from 4 float"};
+    eagitest::case_ test{s, 26, "from 4 float"};
     vector_from4_T<float>(test);
 }
 //------------------------------------------------------------------------------
 void vector_from4_double(auto& s) {
-    eagitest::case_ test{s, 30, "from 4 double"};
+    eagitest::case_ test{s, 27, "from 4 double"};
     vector_from4_T<double>(test);
 }
 //------------------------------------------------------------------------------
@@ -673,7 +673,7 @@ void vector_dimension_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_dimension(auto& s) {
-    eagitest::case_ test{s, 31, "dimension"};
+    eagitest::case_ test{s, 28, "dimension"};
     vector_dimension_T<int>(test);
     vector_dimension_T<float>(test);
     vector_dimension_T<double>(test);
@@ -722,7 +722,7 @@ void vector_magnitude_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_magnitude(auto& s) {
-    eagitest::case_ test{s, 32, "magnitude"};
+    eagitest::case_ test{s, 29, "magnitude"};
     vector_magnitude_T<int>(test);
     vector_magnitude_T<float>(test);
     vector_magnitude_T<double>(test);
@@ -773,7 +773,7 @@ void vector_dot_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_dot(auto& s) {
-    eagitest::case_ test{s, 33, "dot"};
+    eagitest::case_ test{s, 30, "dot"};
     vector_dot_T<int>(test);
     vector_dot_T<float>(test);
     vector_dot_T<double>(test);
@@ -814,7 +814,7 @@ void tvec_default_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_default_ctr(auto& s) {
-    eagitest::case_ test{s, 34, "tvec default constructor"};
+    eagitest::case_ test{s, 31, "tvec default constructor"};
     tvec_default_ctr_T<int>(test);
     tvec_default_ctr_T<float>(test);
     tvec_default_ctr_T<double>(test);
@@ -858,7 +858,7 @@ void tvec_fill_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_fill_ctr(auto& s) {
-    eagitest::case_ test{s, 35, "tvec fill constructor"};
+    eagitest::case_ test{s, 32, "tvec fill constructor"};
     tvec_fill_ctr_T<int>(test);
     tvec_fill_ctr_T<float>(test);
     tvec_fill_ctr_T<double>(test);
@@ -873,7 +873,7 @@ void tvec_vector_ctr_TNV(eagitest::case_& test) {
     auto& rg{test.random()};
 
     const T r = rg.get_any<T>();
-    eagine::math::tvec<T, N, V> v{eagine::math::vector<T, N, V>::fill(r)};
+    eagine::math::tvec<T, N, V> v{eagine::math::vector<T, N, V>(r)};
     for(int i = 0; i < N; ++i) {
         test.check_equal(v[i], r, "equal");
     }
@@ -902,7 +902,7 @@ void tvec_vector_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_vector_ctr(auto& s) {
-    eagitest::case_ test{s, 36, "tvec vector constructor"};
+    eagitest::case_ test{s, 33, "tvec vector constructor"};
     tvec_vector_ctr_T<int>(test);
     tvec_vector_ctr_T<float>(test);
     tvec_vector_ctr_T<double>(test);
@@ -951,7 +951,7 @@ void tvec_array_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_array_ctr(auto& s) {
-    eagitest::case_ test{s, 37, "tvec vector constructor"};
+    eagitest::case_ test{s, 34, "tvec vector constructor"};
     tvec_array_ctr_T<int>(test);
     tvec_array_ctr_T<float>(test);
     tvec_array_ctr_T<double>(test);
@@ -1011,7 +1011,7 @@ void tvec_pack_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_pack_ctr(auto& s) {
-    eagitest::case_ test{s, 38, "tvec vector constructor"};
+    eagitest::case_ test{s, 35, "tvec vector constructor"};
     tvec_pack_ctr_T<int>(test);
     tvec_pack_ctr_T<float>(test);
     tvec_pack_ctr_T<double>(test);
@@ -1100,7 +1100,7 @@ void tvec_vec_val_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_vec_val_ctr(auto& s) {
-    eagitest::case_ test{s, 39, "tvec vector + value constructor"};
+    eagitest::case_ test{s, 36, "tvec vector + value constructor"};
     tvec_vec_val_ctr_T<int>(test);
     tvec_vec_val_ctr_T<float>(test);
     tvec_vec_val_ctr_T<double>(test);
@@ -1191,7 +1191,7 @@ void tvec_vec_vec_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void tvec_vec_vec_ctr(auto& s) {
-    eagitest::case_ test{s, 40, "tvec vector + vector constructor"};
+    eagitest::case_ test{s, 37, "tvec vector + vector constructor"};
     tvec_vec_vec_ctr_T<int>(test);
     tvec_vec_vec_ctr_T<float>(test);
     tvec_vec_vec_ctr_T<double>(test);
@@ -1200,7 +1200,7 @@ void tvec_vec_vec_ctr(auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "vector", 40};
+    eagitest::suite test{argc, argv, "vector", 37};
     test.once(vector_default_ctr_int);
     test.once(vector_default_ctr_float);
     test.once(vector_default_ctr_double);

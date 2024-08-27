@@ -49,7 +49,7 @@ class matrix {
       span_size_t sz,
       _iseq<I...>) noexcept -> matrix {
         return matrix{
-          {vect::from_array < T,
+          {simd::from_array < T,
            RM ? C : R,
            V > ::apply(dt + I * (RM ? C : R), sz - I * (RM ? C : R))...}};
     }
@@ -59,18 +59,18 @@ class matrix {
       const matrix<P, M, N, RM, W>& m,
       _iseq<I...>) noexcept -> matrix {
         return matrix{
-          {vect::cast<P, (RM ? M : N), W, T, (RM ? C : R), V>::apply(
+          {simd::cast<P, (RM ? M : N), W, T, (RM ? C : R), V>::apply(
             m._v[I], T(0))...}};
     }
 
     template <bool DstRM>
     static constexpr auto _transpose_tpl_hlp_4x4(
-      const vect::data_t<T, 4, V>& q0,
-      const vect::data_t<T, 4, V>& q1,
-      const vect::data_t<T, 4, V>& q2,
-      const vect::data_t<T, 4, V>& q3) noexcept {
-        using vect::shuffle2;
-        using vect::shuffle_mask;
+      const simd::data_t<T, 4, V>& q0,
+      const simd::data_t<T, 4, V>& q1,
+      const simd::data_t<T, 4, V>& q2,
+      const simd::data_t<T, 4, V>& q3) noexcept {
+        using simd::shuffle2;
+        using simd::shuffle_mask;
         return matrix<T, 4, 4, DstRM, V>{
           {shuffle2<T, 4, V>::apply(q0, q2, shuffle_mask<0, 2, 4, 6>{}),
            shuffle2<T, 4, V>::apply(q0, q2, shuffle_mask<1, 3, 5, 7>{}),
@@ -82,8 +82,8 @@ class matrix {
     constexpr auto _transpose_tpl() const noexcept -> matrix<T, 4, 4, DstRM, V>
         requires(R == 4 and C == 4)
     {
-        using vect::shuffle2;
-        using vect::shuffle_mask;
+        using simd::shuffle2;
+        using simd::shuffle_mask;
         return _transpose_tpl_hlp_4x4<DstRM>(
           shuffle2<T, 4, V>::apply(_v[0], _v[1], shuffle_mask<0, 1, 4, 5>{}),
           shuffle2<T, 4, V>::apply(_v[0], _v[1], shuffle_mask<2, 3, 6, 7>{}),
@@ -107,7 +107,7 @@ class matrix {
     }
 
 public:
-    vect::data_t<T, RM ? C : R, V> _v[RM ? R : C];
+    simd::data_t<T, RM ? C : R, V> _v[RM ? R : C];
 
     using type = matrix;
 
@@ -659,7 +659,7 @@ export template <typename T, int C, int R, bool RM, bool V>
 struct compound_view_maker<math::matrix<T, C, R, RM, V>> {
     [[nodiscard]] auto operator()(
       const math::matrix<T, C, R, RM, V>& m) const noexcept {
-        return vect::view < T, RM ? C : R, V > ::apply(m._v);
+        return simd::view < T, RM ? C : R, V > ::apply(m._v);
     }
 };
 

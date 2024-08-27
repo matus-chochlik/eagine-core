@@ -18,7 +18,7 @@ void vect_diff_TNV_1(eagitest::case_& test) {
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
         T a[N];
 
-        typename eagine::vect::data<T, N, V>::type u = {}, v = {};
+        typename eagine::simd::data<T, N, V>::type u = {}, v = {};
 
         for(int i = 0; i < N; ++i) {
             a[i] = rg.get_between<T>(-10000, +10000);
@@ -26,8 +26,8 @@ void vect_diff_TNV_1(eagitest::case_& test) {
             v[i] = a[i];
         }
 
-        using _diff = eagine::vect::diff<T, N, V>;
-        using _esum = eagine::vect::esum<T, N, V>;
+        using _diff = eagine::simd::diff<T, N, V>;
+        using _esum = eagine::simd::esum<T, N, V>;
 
         test.check_equal(_esum::apply(_diff::apply(u, u)), T(0), "u=u");
         test.check_equal(_esum::apply(_diff::apply(v, u)), T(0), "v=u");

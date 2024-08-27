@@ -17,14 +17,14 @@ void vect_view_TNV_1(eagitest::case_& test) {
     auto& rg{test.random()};
 
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
-        typename eagine::vect::data<T, N, V>::type v = {};
+        typename eagine::simd::data<T, N, V>::type v = {};
 
         for(int i = 0; i < N; ++i) {
             T n = rg.get_between<T>(-5000, 5000);
             v[i] = n;
         }
 
-        auto vv = eagine::vect::view<T, N, V>::apply(v);
+        auto vv = eagine::simd::view<T, N, V>::apply(v);
         eagine::span<const T> av = vv;
 
         for(int i = 0; i < N; ++i) {

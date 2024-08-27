@@ -23,16 +23,16 @@ void vect_shuffle_TNVI(eagitest::case_& test) {
     for(unsigned k = 0; k < test.repeats(10); ++k) {
         T a[N];
 
-        typename eagine::vect::data<T, N, V>::type v = {};
-        typename eagine::vect::shuffle_mask<I...> m = {};
+        typename eagine::simd::data<T, N, V>::type v = {};
+        typename eagine::simd::shuffle_mask<I...> m = {};
 
         for(int i = 0; i < N; ++i) {
             a[i] = rg.get_any<T>();
             v[i] = a[i];
         }
 
-        typename eagine::vect::data<T, N, V>::type u =
-          eagine::vect::shuffle<T, N, V>::apply(v, m);
+        typename eagine::simd::data<T, N, V>::type u =
+          eagine::simd::shuffle<T, N, V>::apply(v, m);
 
         for(int i = 0; i < N; ++i) {
             test.check_equal(u[i], a[n[size_t(i)]], "compare");
@@ -240,8 +240,8 @@ void vect_shuffle2_TNVI(eagitest::case_& test) {
     for(unsigned k = 0; k < test.repeats(10); ++k) {
         T a[N * 2];
 
-        typename eagine::vect::data<T, N, V>::type v = {}, u = {};
-        typename eagine::vect::shuffle_mask<I...> m = {};
+        typename eagine::simd::data<T, N, V>::type v = {}, u = {};
+        typename eagine::simd::shuffle_mask<I...> m = {};
 
         for(int i = 0; i < N * 2; ++i) {
             a[i] = rg.get_any<T>();
@@ -251,8 +251,8 @@ void vect_shuffle2_TNVI(eagitest::case_& test) {
             u[i] = a[N + i];
         }
 
-        typename eagine::vect::data<T, N, V>::type w =
-          eagine::vect::shuffle2<T, N, V>::apply(v, u, m);
+        typename eagine::simd::data<T, N, V>::type w =
+          eagine::simd::shuffle2<T, N, V>::apply(v, u, m);
 
         for(int i = 0; i < N; ++i) {
             test.check_equal(w[i], a[n[size_t(i)]], "compare");

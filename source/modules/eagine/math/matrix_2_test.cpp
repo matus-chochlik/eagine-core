@@ -16,8 +16,8 @@ import eagine.core.simd;
 template <typename T, int N, bool V, int K, int... I>
 static auto get_math_matrix_vec(
   std::integral_constant<int, K>,
-  std::integer_sequence<int, I...>) -> eagine::vect::data_t<T, N, V> {
-    return eagine::vect::data_t<T, N, V>{T(K + I)...};
+  std::integer_sequence<int, I...>) -> eagine::simd::data_t<T, N, V> {
+    return eagine::simd::data_t<T, N, V>{T(K + I)...};
 }
 //------------------------------------------------------------------------------
 template <typename T, int C, int R, bool RM, bool V, int... J, int... I>

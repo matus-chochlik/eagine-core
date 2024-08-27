@@ -147,7 +147,7 @@ private:
     template <int... I>
     static constexpr auto _identity(const _useq<I...>) noexcept
       -> matrix<T, R, C, RM, V> {
-        return {{vect::axis < T, RM ? C : R, I, V > ::apply(1)...}};
+        return {{simd::axis < T, RM ? C : R, I, V > ::apply(1)...}};
     }
 };
 //------------------------------------------------------------------------------
@@ -190,7 +190,7 @@ struct is_matrix_constructor<translation<matrix<T, N, N, RM, V>>>
 export template <typename T, bool RM, bool V>
 class translation<matrix<T, 4, 4, RM, V>> {
 public:
-    constexpr translation(const vect::data_t<T, 3, V> v) noexcept
+    constexpr translation(const simd::data_t<T, 3, V> v) noexcept
       : _v{v} {}
 
     /// @brief Initializes the matrix constructor.
@@ -229,7 +229,7 @@ private:
     }
 
 public:
-    vect::data_t<T, 3, V> _v;
+    simd::data_t<T, 3, V> _v;
 };
 
 // multiply
@@ -272,7 +272,7 @@ struct is_matrix_constructor<scale<matrix<T, N, N, RM, V>>> : std::true_type {};
 export template <typename T, bool RM, bool V>
 class scale<matrix<T, 4, 4, RM, V>> {
 public:
-    constexpr scale(const vect::data_t<T, 3, V> v) noexcept
+    constexpr scale(const simd::data_t<T, 3, V> v) noexcept
       : _v{v} {}
 
     /// @brief Initializes the matrix constructor.
@@ -297,7 +297,7 @@ public:
         return {c._v};
     }
 
-    vect::data_t<T, 3, V> _v;
+    simd::data_t<T, 3, V> _v;
 };
 
 // multiply
@@ -647,7 +647,7 @@ struct is_matrix_constructor<ortho<matrix<T, N, N, RM, V>>> : std::true_type {};
 export template <typename T, bool RM, bool V>
 class ortho<matrix<T, 4, 4, RM, V>> {
 public:
-    constexpr ortho(const vect::data_t<T, 6, V>& v) noexcept
+    constexpr ortho(const simd::data_t<T, 6, V>& v) noexcept
       : _v{v} {}
 
     /// @brief Initializes the matrix constructor.
@@ -725,7 +725,7 @@ private:
            {_m30(), _m31(), _m32(), T(1)}}};
     }
 
-    using _dT = vect::data_t<T, 6, V>;
+    using _dT = simd::data_t<T, 6, V>;
 
 public:
     _dT _v;
@@ -762,7 +762,7 @@ struct is_matrix_constructor<perspective<matrix<T, N, N, RM, V>>>
 export template <typename T, bool RM, bool V>
 class perspective<matrix<T, 4, 4, RM, V>> {
 public:
-    constexpr perspective(const vect::data_t<T, 6, V>& v) noexcept
+    constexpr perspective(const simd::data_t<T, 6, V>& v) noexcept
       : _v{v} {}
 
     /// @brief Initialized the matrix constructor.
@@ -901,7 +901,7 @@ private:
            {T(0), T(0), _m32(), T(0)}}};
     }
 
-    using _dT = vect::data_t<T, 6, V>;
+    using _dT = simd::data_t<T, 6, V>;
 
 public:
     _dT _v;
