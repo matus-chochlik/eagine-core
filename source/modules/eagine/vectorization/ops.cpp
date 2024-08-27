@@ -23,7 +23,8 @@ namespace eagine::vect {
 //------------------------------------------------------------------------------
 export template <typename T, int N, bool V>
 struct is_zero {
-    [[nodiscard]] static auto apply(data_param_t<T, N, V> v) noexcept -> bool {
+    [[nodiscard]] static constexpr auto apply(data_param_t<T, N, V> v) noexcept
+      -> bool {
         bool result = true;
         for(int i = 0; i < N; ++i) {
             result &= not(v[i] > T(0) or v[i] < T(0));
@@ -36,7 +37,8 @@ struct is_zero {
 //------------------------------------------------------------------------------
 export template <typename T, int N, bool V>
 struct fill {
-    [[nodiscard]] static auto apply(const T v) noexcept -> data_t<T, N, V> {
+    [[nodiscard]] static constexpr auto apply(const T v) noexcept
+      -> data_t<T, N, V> {
         data_t<T, N, V> r;
         for(int i = 0; i < N; ++i) {
             r[i] = v;
@@ -91,7 +93,8 @@ struct fill<T, 8, V> {
 //------------------------------------------------------------------------------
 export template <typename T, int N, int I, bool V>
 struct axis {
-    [[nodiscard]] static auto apply(const T v) noexcept -> data_t<T, N, V> {
+    [[nodiscard]] static constexpr auto apply(const T v) noexcept
+      -> data_t<T, N, V> {
         data_t<T, N, V> r;
         for(int i = 0; i < N; ++i) {
             r[i] = (i == I) ? v : T(0);
@@ -243,7 +246,9 @@ struct from_array<T, 2, V> {
 
 export template <typename T, bool V>
 struct from_array<T, 3, V> {
-    [[nodiscard]] static auto apply(const T* d, const span_size_t n) noexcept {
+    [[nodiscard]] static constexpr auto apply(
+      const T* d,
+      const span_size_t n) noexcept {
         assert(3 <= n);
         return data_t<T, 3, V>{d[0], d[1], d[2]};
     }
@@ -251,7 +256,9 @@ struct from_array<T, 3, V> {
 
 export template <typename T, bool V>
 struct from_array<T, 4, V> {
-    [[nodiscard]] static auto apply(const T* d, const span_size_t n) noexcept {
+    [[nodiscard]] static constexpr auto apply(
+      const T* d,
+      const span_size_t n) noexcept {
         assert(4 <= n);
         return data_t<T, 4, V>{d[0], d[1], d[2], d[3]};
     }
@@ -259,7 +266,9 @@ struct from_array<T, 4, V> {
 
 export template <typename T, bool V>
 struct from_array<T, 8, V> {
-    [[nodiscard]] static auto apply(const T* d, const span_size_t n) noexcept {
+    [[nodiscard]] static constexpr auto apply(
+      const T* d,
+      const span_size_t n) noexcept {
         assert(8 <= n);
         return data_t<T, 8, V>{d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7]};
     }
@@ -432,7 +441,7 @@ export template <typename T, int N, bool V>
 struct shuffle2 {
 private:
     template <int M, int... I>
-    static auto _do_apply(
+    static constexpr auto _do_apply(
       data_param_t<T, N, V> v1,
       data_param_t<T, N, V> v2,
       const shuffle_mask<I...>,
@@ -443,7 +452,7 @@ private:
     }
 
     template <int M, int... I>
-    static auto _do_apply(
+    static constexpr auto _do_apply(
       data_param_t<T, N, V> v1,
       data_param_t<T, N, V> v2,
       const shuffle_mask<I...>,
@@ -463,7 +472,7 @@ private:
     }
 
     template <int... I>
-    static auto _do_apply(
+    static constexpr auto _do_apply(
       data_param_t<T, N, V> v1,
       data_param_t<T, N, V> v2,
       const shuffle_mask<I...>,
@@ -485,7 +494,7 @@ private:
 
 public:
     template <int... I>
-    [[nodiscard]] static auto apply(
+    [[nodiscard]] static constexpr auto apply(
       data_param_t<T, N, V> v1,
       data_param_t<T, N, V> v2,
       const shuffle_mask<I...> m) noexcept {
@@ -499,26 +508,28 @@ public:
 export template <typename T, int N, bool V>
 struct view {
 private:
-    static auto _addr(const data_t<T, N, V>& d, const std::false_type) noexcept
-      -> const T* {
+    static constexpr auto _addr(
+      const data_t<T, N, V>& d,
+      const std::false_type) noexcept -> const T* {
         return static_cast<const T*>(d._v);
     }
 
-    static auto _addr(const data_t<T, N, V>& d, const std::true_type) noexcept
-      -> const T* {
+    static constexpr auto _addr(
+      const data_t<T, N, V>& d,
+      const std::true_type) noexcept -> const T* {
         return reinterpret_cast<const T*>(&d);
     }
 
 public:
-    [[nodiscard]] static auto apply(const data_t<T, N, V>& d) noexcept
+    [[nodiscard]] static constexpr auto apply(const data_t<T, N, V>& d) noexcept
       -> span<const T> {
         static_assert(sizeof(T[N]) <= sizeof(data_t<T, N, V>));
         return {_addr(d, has_simd_data<T, N, V>()), N};
     }
 
     template <int M>
-    [[nodiscard]] static auto apply(const data_t<T, N, V> (&d)[M]) noexcept
-      -> span<const T> {
+    [[nodiscard]] static constexpr auto apply(
+      const data_t<T, N, V> (&d)[M]) noexcept -> span<const T> {
         static_assert(sizeof(T[N][M]) == sizeof(data_t<T, N, V>[M]));
         return {_addr(d[0], has_simd_data<T, N, V>()), N * M};
     }
@@ -528,7 +539,7 @@ public:
 //------------------------------------------------------------------------------
 export template <typename T, int N, bool V>
 struct abs {
-    [[nodiscard]] static auto apply(data_t<T, N, V> v) noexcept
+    [[nodiscard]] static constexpr auto apply(data_t<T, N, V> v) noexcept
       -> data_t<T, N, V> {
         for(int i = 0; i < N; ++i) {
             using std::abs;
@@ -542,7 +553,7 @@ struct abs {
 //------------------------------------------------------------------------------
 export template <typename T, int N, bool V>
 struct diff {
-    [[nodiscard]] static auto apply(
+    [[nodiscard]] static constexpr auto apply(
       data_param_t<T, N, V> a,
       data_param_t<T, N, V> b) noexcept -> data_t<T, N, V> {
         return vect::abs<T, N, V>::apply(a - b);
@@ -557,7 +568,7 @@ private:
     using _sh = shuffle<T, N, V>;
 
     template <int M, bool B>
-    static auto _hlp(
+    static constexpr auto _hlp(
       data_t<T, N, V> v,
       const int_constant<M>,
       const std::bool_constant<B>) noexcept -> data_t<T, N, V> {
@@ -643,7 +654,7 @@ export template <typename T, int N, bool V>
 struct esum {
 private:
     template <int M, bool B>
-    static auto _hlp(
+    static constexpr auto _hlp(
       data_param_t<T, N, V> v,
       int_constant<M>,
       std::bool_constant<B>) noexcept -> T {
@@ -665,7 +676,7 @@ private:
     }
 
     template <int M>
-    static auto _hlp(
+    static constexpr auto _hlp(
       data_param_t<T, N, V> v,
       int_constant<M>,
       std::true_type) noexcept -> T {
@@ -674,7 +685,8 @@ private:
     }
 
 public:
-    [[nodiscard]] static auto apply(data_param_t<T, N, V> v) noexcept -> T {
+    [[nodiscard]] static constexpr auto apply(data_param_t<T, N, V> v) noexcept
+      -> T {
         return _hlp(v, int_constant<N>{}, has_simd_data<T, N, V>{});
     }
 };
