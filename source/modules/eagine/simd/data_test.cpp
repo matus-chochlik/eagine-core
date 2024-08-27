@@ -7,7 +7,7 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.vectorization;
+import eagine.core.simd;
 //------------------------------------------------------------------------------
 // default construction
 //------------------------------------------------------------------------------

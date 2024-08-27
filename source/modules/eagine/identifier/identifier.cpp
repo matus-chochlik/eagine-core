@@ -10,7 +10,7 @@ export module eagine.core.identifier;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
-import eagine.core.vectorization;
+import eagine.core.simd;
 
 namespace eagine {
 //------------------------------------------------------------------------------

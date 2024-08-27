@@ -10,7 +10,7 @@ export module eagine.core.math:tmat;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
-import eagine.core.vectorization;
+import eagine.core.simd;
 import :traits;
 import :vector;
 import :matrix;
@@ -78,7 +78,7 @@ struct is_known_matrix_type<math::tmat<T, C, R, RM, V>> : std::is_scalar<T> {};
 
 export template <typename T, int C, int R, bool RM, bool V>
 struct canonical_compound_type<math::tmat<T, C, R, RM, V>>
-  : std::type_identity<std::remove_cv_t<T[C][R]>>{};
+  : std::type_identity<std::remove_cv_t<T[C][R]>> {};
 
 export template <typename T, int C, int R, bool RM, bool V>
 struct compound_view_maker<math::tmat<T, C, R, RM, V>> {

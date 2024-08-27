@@ -13,7 +13,7 @@ export module eagine.core.math:matrix;
 
 import std;
 import eagine.core.types;
-import eagine.core.vectorization;
+import eagine.core.simd;
 
 import :traits;
 import :vector;

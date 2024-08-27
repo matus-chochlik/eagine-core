@@ -11,7 +11,7 @@ eagine_add_module(
 		std
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.vectorization
+		eagine.core.simd
 )
 
 eagine_add_module_tests(

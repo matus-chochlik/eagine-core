@@ -7,10 +7,10 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.vectorization;
+import eagine.core.simd;
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
-void vect_abs_TNV_1(eagitest::case_& test) {
+void vect_diff_TNV_1(eagitest::case_& test) {
     test.parameter(N, "N");
     test.parameter(V, "V");
     auto& rg{test.random()};
@@ -18,64 +18,63 @@ void vect_abs_TNV_1(eagitest::case_& test) {
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
         T a[N];
 
-        typename eagine::vect::data<T, N, V>::type u = {};
+        typename eagine::vect::data<T, N, V>::type u = {}, v = {};
 
         for(int i = 0; i < N; ++i) {
-            a[i] = rg.get_between<T>(-1000, 1000);
+            a[i] = rg.get_between<T>(-10000, +10000);
             u[i] = a[i];
+            v[i] = a[i];
         }
 
-        typename eagine::vect::data<T, N, V>::type v =
-          eagine::vect::abs<T, N, V>::apply(u);
+        using _diff = eagine::vect::diff<T, N, V>;
+        using _esum = eagine::vect::esum<T, N, V>;
 
-        for(int i = 0; i < N; ++i) {
-            using std::abs;
-            test.check(not(v[i] < T(0)), "not less than");
-            test.check_equal(v[i], abs(a[i]), "compare 1");
-            test.check_equal(v[i], abs(u[i]), "compare 2");
-        }
+        test.check_equal(_esum::apply(_diff::apply(u, u)), T(0), "u=u");
+        test.check_equal(_esum::apply(_diff::apply(v, u)), T(0), "v=u");
+        test.check_equal(_esum::apply(_diff::apply(u, v)), T(0), "u=v");
+        test.check_equal(_esum::apply(_diff::apply(v, v)), T(0), "v=v");
     }
 }
 //------------------------------------------------------------------------------
 template <typename T, bool V>
-void vect_abs_TV_1(eagitest::case_& test) {
-    vect_abs_TNV_1<T, 2, V>(test);
-    vect_abs_TNV_1<T, 3, V>(test);
-    vect_abs_TNV_1<T, 4, V>(test);
-    vect_abs_TNV_1<T, 5, V>(test);
-    vect_abs_TNV_1<T, 7, V>(test);
-    vect_abs_TNV_1<T, 8, V>(test);
-    vect_abs_TNV_1<T, 11, V>(test);
-    vect_abs_TNV_1<T, 15, V>(test);
-    vect_abs_TNV_1<T, 19, V>(test);
+void vect_diff_TV_1(eagitest::case_& test) {
+    vect_diff_TNV_1<T, 2, V>(test);
+    vect_diff_TNV_1<T, 3, V>(test);
+    vect_diff_TNV_1<T, 4, V>(test);
+    vect_diff_TNV_1<T, 5, V>(test);
+    vect_diff_TNV_1<T, 7, V>(test);
+    vect_diff_TNV_1<T, 8, V>(test);
+    vect_diff_TNV_1<T, 11, V>(test);
+    vect_diff_TNV_1<T, 15, V>(test);
+    vect_diff_TNV_1<T, 19, V>(test);
 }
 //------------------------------------------------------------------------------
 template <typename T>
-void vect_abs_T_1(eagitest::case_& test) {
-    vect_abs_TV_1<T, true>(test);
-    vect_abs_TV_1<T, false>(test);
+void vect_diff_T_1(eagitest::case_& test) {
+    vect_diff_TV_1<T, true>(test);
+    vect_diff_TV_1<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void vect_abs_int_1(auto& s) {
+void vect_diff_int_1(auto& s) {
     eagitest::case_ test{s, 1, "int 1"};
-    vect_abs_T_1<int>(test);
+    vect_diff_T_1<int>(test);
 }
 //------------------------------------------------------------------------------
-void vect_abs_float_1(auto& s) {
+void vect_diff_float_1(auto& s) {
     eagitest::case_ test{s, 2, "float 1"};
-    vect_abs_T_1<float>(test);
+    vect_diff_T_1<float>(test);
 }
 //------------------------------------------------------------------------------
-void vect_abs_double_1(auto& s) {
+void vect_diff_double_1(auto& s) {
     eagitest::case_ test{s, 3, "double 1"};
-    vect_abs_T_1<double>(test);
+    vect_diff_T_1<double>(test);
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "vect_abs", 3};
-    test.once(vect_abs_int_1);
-    test.once(vect_abs_float_1);
-    test.once(vect_abs_double_1);
+    eagitest::suite test{argc, argv, "vect_diff", 3};
+    test.once(vect_diff_int_1);
+    test.once(vect_diff_float_1);
+    test.once(vect_diff_double_1);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

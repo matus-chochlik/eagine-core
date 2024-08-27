@@ -8,7 +8,7 @@
 export module eagine.core.math:scalar;
 
 import std;
-import eagine.core.vectorization;
+import eagine.core.simd;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------

@@ -9,7 +9,7 @@ module;
 
 #include <cassert>
 
-export module eagine.core.vectorization:ops;
+export module eagine.core.simd:ops;
 
 import std;
 import eagine.core.types;

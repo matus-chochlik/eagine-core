@@ -8,7 +8,7 @@ add_subdirectory(types)
 add_subdirectory(debug)
 add_subdirectory(memory)
 add_subdirectory(reflection)
-add_subdirectory(vectorization)
+add_subdirectory(simd)
 add_subdirectory(identifier)
 add_subdirectory(valid_if)
 add_subdirectory(container)
@@ -40,7 +40,7 @@ eagine_add_module(
 		container
 		utility
 		valid_if
-		vectorization
+		simd
 		reflection
 		build_info
 		units

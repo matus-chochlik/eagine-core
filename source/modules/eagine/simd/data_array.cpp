@@ -5,7 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 /// https://www.boost.org/LICENSE_1_0.txt
 ///
-export module eagine.core.vectorization:data_array;
+export module eagine.core.simd:data_array;
 
 import std;
 import eagine.core.types;

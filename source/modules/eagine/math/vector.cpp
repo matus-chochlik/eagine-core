@@ -14,7 +14,7 @@ export module eagine.core.math:vector;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
-import eagine.core.vectorization;
+import eagine.core.simd;
 import :traits;
 import :scalar;
 

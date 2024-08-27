@@ -193,7 +193,7 @@ eagine_add_module_tests(
 		eagine.core.types
 		eagine.core.debug
 		eagine.core.memory
-		eagine.core.vectorization
+		eagine.core.simd
 		eagine.core.valid_if
 		eagine.core.units
 	ENVIRONMENT

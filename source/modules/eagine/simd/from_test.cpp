@@ -7,7 +7,7 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.vectorization;
+import eagine.core.simd;
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void vect_from_TNV_array(eagitest::case_& test) {

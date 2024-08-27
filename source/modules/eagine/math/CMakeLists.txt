@@ -42,7 +42,7 @@ eagine_add_module(
 	PARTITION scalar
 	IMPORTS
 		std
-		eagine.core.vectorization
+		eagine.core.simd
 )
 
 eagine_add_module(
@@ -53,7 +53,7 @@ eagine_add_module(
 		std traits scalar
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.vectorization
+		eagine.core.simd
 )
 
 eagine_add_module(
@@ -63,7 +63,7 @@ eagine_add_module(
 	IMPORTS
 		std traits vector
 		eagine.core.types
-		eagine.core.vectorization
+		eagine.core.simd
 )
 
 eagine_add_module(
@@ -74,7 +74,7 @@ eagine_add_module(
 		std traits vector matrix
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.vectorization
+		eagine.core.simd
 		eagine.core.units
 )
 
@@ -87,7 +87,7 @@ eagine_add_module(
 		matrix matrix_construct
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.vectorization
+		eagine.core.simd
 )
 
 eagine_add_module(
@@ -170,7 +170,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
-		eagine.core.vectorization
+		eagine.core.simd
 )
 
 eagine_add_module_tests(
@@ -188,7 +188,7 @@ eagine_add_module_tests(
 		eagine.core.debug
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.vectorization
+		eagine.core.simd
 		eagine.core.valid_if
 		eagine.core.units
 )
