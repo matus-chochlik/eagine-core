@@ -980,7 +980,7 @@ private:
     }
 
     static constexpr auto _make(const _dT& z) noexcept {
-        return _make(z, _dT::make(z.z(), T(0), -z.x()));
+        return _make(z, _dT(z.z(), T(0), -z.x()));
     }
 
     constexpr auto _make(std::true_type) const noexcept {

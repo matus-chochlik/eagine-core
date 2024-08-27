@@ -136,11 +136,11 @@ public:
 
     /// @brief Construction from center point and radius value.
     constexpr basic_sphere(const tvec<T, N, V> cntr, const T rad) noexcept
-      : _params{vector<T, N + 1, V>::from(cntr, rad)} {}
+      : _params{cntr, rad} {}
 
     /// @brief Returns the sphere center.
     [[nodiscard]] constexpr auto center() const noexcept -> vector<T, N, V> {
-        return vector<T, N, V>::from(_params);
+        return {_params};
     }
 
     /// @brief Returns the sphere radius.

@@ -57,54 +57,6 @@ void vector_default_ctr_double(auto& s) {
     vector_default_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
-// zero
-//------------------------------------------------------------------------------
-template <typename T, int N, bool V>
-void vector_zero_TNV(eagitest::case_& test) {
-    test.parameter(N, "N");
-    auto v = eagine::math::vector<T, N, V>::zero();
-    for(int i = 0; i < N; ++i) {
-        test.check_equal(v[i], T(0), "is zero");
-    }
-}
-//------------------------------------------------------------------------------
-template <typename T, bool V>
-void vector_zero_TV(eagitest::case_& test) {
-    test.parameter(V, "V");
-    vector_zero_TNV<T, 1, V>(test);
-    vector_zero_TNV<T, 2, V>(test);
-    vector_zero_TNV<T, 3, V>(test);
-    vector_zero_TNV<T, 4, V>(test);
-    vector_zero_TNV<T, 5, V>(test);
-    vector_zero_TNV<T, 6, V>(test);
-    vector_zero_TNV<T, 7, V>(test);
-    vector_zero_TNV<T, 8, V>(test);
-    vector_zero_TNV<T, 11, V>(test);
-    vector_zero_TNV<T, 17, V>(test);
-    vector_zero_TNV<T, 23, V>(test);
-}
-//------------------------------------------------------------------------------
-template <typename T>
-void vector_zero_T(eagitest::case_& test) {
-    vector_zero_TV<T, true>(test);
-    vector_zero_TV<T, false>(test);
-}
-//------------------------------------------------------------------------------
-void vector_zero_int(auto& s) {
-    eagitest::case_ test{s, 4, "zero int"};
-    vector_zero_T<int>(test);
-}
-//------------------------------------------------------------------------------
-void vector_zero_float(auto& s) {
-    eagitest::case_ test{s, 5, "zero float"};
-    vector_zero_T<float>(test);
-}
-//------------------------------------------------------------------------------
-void vector_zero_double(auto& s) {
-    eagitest::case_ test{s, 6, "zero double"};
-    vector_zero_T<double>(test);
-}
-//------------------------------------------------------------------------------
 // fill
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
@@ -295,29 +247,29 @@ void vector_make_TV(eagitest::case_& test) {
     auto& rg{test.random()};
 
     T r1 = rg.template get_any<T>();
-    auto v1 = eagine::math::vector<T, 1, V>::make(r1);
+    auto v1 = eagine::math::vector<T, 1, V>(r1);
     test.check_equal(v1[0], r1, "10");
 
     T r2 = rg.template get_any<T>();
-    auto v2 = eagine::math::vector<T, 2, V>::make(r2, r1);
+    auto v2 = eagine::math::vector<T, 2, V>(r2, r1);
     test.check_equal(v2[0], r2, "20");
     test.check_equal(v2[1], r1, "21");
 
     T r3 = rg.template get_any<T>();
-    auto v3 = eagine::math::vector<T, 3, V>::make(r3, r2, r1);
+    auto v3 = eagine::math::vector<T, 3, V>(r3, r2, r1);
     test.check_equal(v3[0], r3, "30");
     test.check_equal(v3[1], r2, "31");
     test.check_equal(v3[2], r1, "32");
 
     T r4 = rg.template get_any<T>();
-    auto v4 = eagine::math::vector<T, 4, V>::make(r4, r3, r2, r1);
+    auto v4 = eagine::math::vector<T, 4, V>(r4, r3, r2, r1);
     test.check_equal(v4[0], r4, "40");
     test.check_equal(v4[1], r3, "41");
     test.check_equal(v4[2], r2, "42");
     test.check_equal(v4[3], r1, "43");
 
     T r5 = rg.template get_any<T>();
-    auto v5 = eagine::math::vector<T, 5, V>::make(r5, r4, r3, r2, r1);
+    auto v5 = eagine::math::vector<T, 5, V>(r5, r4, r3, r2, r1);
     test.check_equal(v5[0], r5, "50");
     test.check_equal(v5[1], r4, "51");
     test.check_equal(v5[2], r3, "52");
@@ -325,7 +277,7 @@ void vector_make_TV(eagitest::case_& test) {
     test.check_equal(v5[4], r1, "54");
 
     T r6 = rg.template get_any<T>();
-    auto v6 = eagine::math::vector<T, 6, V>::make(r6, r5, r4, r3, r2, r1);
+    auto v6 = eagine::math::vector<T, 6, V>(r6, r5, r4, r3, r2, r1);
     test.check_equal(v6[0], r6, "60");
     test.check_equal(v6[1], r5, "61");
     test.check_equal(v6[2], r4, "62");
@@ -334,7 +286,7 @@ void vector_make_TV(eagitest::case_& test) {
     test.check_equal(v6[5], r1, "65");
 
     T r7 = rg.template get_any<T>();
-    auto v7 = eagine::math::vector<T, 7, V>::make(r7, r6, r5, r4, r3, r2, r1);
+    auto v7 = eagine::math::vector<T, 7, V>(r7, r6, r5, r4, r3, r2, r1);
     test.check_equal(v7[0], r7, "70");
     test.check_equal(v7[1], r6, "71");
     test.check_equal(v7[2], r5, "72");
@@ -344,8 +296,7 @@ void vector_make_TV(eagitest::case_& test) {
     test.check_equal(v7[6], r1, "76");
 
     T r8 = rg.template get_any<T>();
-    auto v8 =
-      eagine::math::vector<T, 8, V>::make(r8, r7, r6, r5, r4, r3, r2, r1);
+    auto v8 = eagine::math::vector<T, 8, V>(r8, r7, r6, r5, r4, r3, r2, r1);
     test.check_equal(v8[0], r8, "80");
     test.check_equal(v8[1], r7, "81");
     test.check_equal(v8[2], r6, "82");
@@ -385,29 +336,29 @@ void vector_from_TV(eagitest::case_& test) {
     auto& rg{test.random()};
 
     T r1 = rg.template get_any<T>();
-    auto v1 = eagine::math::vector<T, 1, V>::make(r1);
+    auto v1 = eagine::math::vector<T, 1, V>(r1);
     test.check_equal(v1[0], r1, "10");
 
     T r2 = rg.template get_any<T>();
-    auto v2 = eagine::math::vector<T, 2, V>::from(v1, r2);
+    auto v2 = eagine::math::vector<T, 2, V>(v1, r2);
     test.check_equal(v2[0], r1, "20");
     test.check_equal(v2[1], r2, "21");
 
     T r3 = rg.template get_any<T>();
-    auto v3 = eagine::math::vector<T, 3, V>::from(v2, r3);
+    auto v3 = eagine::math::vector<T, 3, V>(v2, r3);
     test.check_equal(v3[0], r1, "30");
     test.check_equal(v3[1], r2, "31");
     test.check_equal(v3[2], r3, "32");
 
     T r4 = rg.template get_any<T>();
-    auto v4 = eagine::math::vector<T, 4, V>::from(v3, r4);
+    auto v4 = eagine::math::vector<T, 4, V>(v3, r4);
     test.check_equal(v4[0], r1, "40");
     test.check_equal(v4[1], r2, "41");
     test.check_equal(v4[2], r3, "42");
     test.check_equal(v4[3], r4, "43");
 
     T r5 = rg.template get_any<T>();
-    auto v5 = eagine::math::vector<T, 5, V>::from(v4, r5);
+    auto v5 = eagine::math::vector<T, 5, V>(v4, r5);
     test.check_equal(v5[0], r1, "50");
     test.check_equal(v5[1], r2, "51");
     test.check_equal(v5[2], r3, "52");
@@ -415,7 +366,7 @@ void vector_from_TV(eagitest::case_& test) {
     test.check_equal(v5[4], r5, "54");
 
     T r6 = rg.template get_any<T>();
-    auto v6 = eagine::math::vector<T, 6, V>::from(v5, r6);
+    auto v6 = eagine::math::vector<T, 6, V>(v5, r6);
     test.check_equal(v6[0], r1, "60");
     test.check_equal(v6[1], r2, "61");
     test.check_equal(v6[2], r3, "62");
@@ -424,7 +375,7 @@ void vector_from_TV(eagitest::case_& test) {
     test.check_equal(v6[5], r6, "65");
 
     T r7 = rg.template get_any<T>();
-    auto v7 = eagine::math::vector<T, 7, V>::from(v6, r7);
+    auto v7 = eagine::math::vector<T, 7, V>(v6, r7);
     test.check_equal(v7[0], r1, "70");
     test.check_equal(v7[1], r2, "71");
     test.check_equal(v7[2], r3, "72");
@@ -434,7 +385,7 @@ void vector_from_TV(eagitest::case_& test) {
     test.check_equal(v7[6], r7, "76");
 
     T r8 = rg.template get_any<T>();
-    auto v8 = eagine::math::vector<T, 8, V>::from(v7, r8);
+    auto v8 = eagine::math::vector<T, 8, V>(v7, r8);
     test.check_equal(v8[0], r1, "80");
     test.check_equal(v8[1], r2, "81");
     test.check_equal(v8[2], r3, "82");
@@ -474,75 +425,75 @@ void vector_from2_TV(eagitest::case_& test) {
     auto& rg{test.random()};
 
     T ra = rg.get_any<T>();
-    auto v1a = eagine::math::vector<T, 1, V>::make(ra);
+    auto v1a = eagine::math::vector<T, 1, V>(ra);
     test.check_equal(v1a[0], ra, "a0");
 
     T rb = rg.get_any<T>();
-    auto v1b = eagine::math::vector<T, 1, V>::make(rb);
+    auto v1b = eagine::math::vector<T, 1, V>(rb);
     test.check_equal(v1b[0], rb, "b0");
 
-    auto v2aa = eagine::math::vector<T, 2, V>::from(v1a, v1a);
+    auto v2aa = eagine::math::vector<T, 2, V>(v1a, v1a);
     test.check_equal(v2aa[0], ra, "aa0");
     test.check_equal(v2aa[1], ra, "aa1");
 
-    auto v2ab = eagine::math::vector<T, 2, V>::from(v1a, v1b);
+    auto v2ab = eagine::math::vector<T, 2, V>(v1a, v1b);
     test.check_equal(v2ab[0], ra, "ab0");
     test.check_equal(v2ab[1], rb, "ab1");
 
-    auto v2bb = eagine::math::vector<T, 2, V>::from(v1b, v1b);
+    auto v2bb = eagine::math::vector<T, 2, V>(v1b, v1b);
     test.check_equal(v2bb[0], rb, "bb0");
     test.check_equal(v2bb[1], rb, "bb1");
 
-    auto v3aba = eagine::math::vector<T, 3, V>::from(v2ab, v1a);
+    auto v3aba = eagine::math::vector<T, 3, V>(v2ab, v1a);
     test.check_equal(v3aba[0], ra, "aba0");
     test.check_equal(v3aba[1], rb, "aba1");
     test.check_equal(v3aba[2], ra, "aba2");
 
-    auto v3bab = eagine::math::vector<T, 3, V>::from(v1b, v2ab);
+    auto v3bab = eagine::math::vector<T, 3, V>(v1b, v2ab);
     test.check_equal(v3bab[0], rb, "bab0");
     test.check_equal(v3bab[1], ra, "bab1");
     test.check_equal(v3bab[2], rb, "bab2");
 
-    auto v4abab = eagine::math::vector<T, 4, V>::from(v1a, v3bab);
+    auto v4abab = eagine::math::vector<T, 4, V>(v1a, v3bab);
     test.check_equal(v4abab[0], ra, "abab0");
     test.check_equal(v4abab[1], rb, "abab1");
     test.check_equal(v4abab[2], ra, "abab2");
     test.check_equal(v4abab[3], rb, "abab3");
 
-    auto v4aabb = eagine::math::vector<T, 4, V>::from(v2aa, v2bb);
+    auto v4aabb = eagine::math::vector<T, 4, V>(v2aa, v2bb);
     test.check_equal(v4aabb[0], ra, "aabb0");
     test.check_equal(v4aabb[1], ra, "aabb1");
     test.check_equal(v4aabb[2], rb, "aabb2");
     test.check_equal(v4aabb[3], rb, "aabb3");
 
-    auto v4baba = eagine::math::vector<T, 4, V>::from(v3bab, v1a);
+    auto v4baba = eagine::math::vector<T, 4, V>(v3bab, v1a);
     test.check_equal(v4baba[0], rb, "baba0");
     test.check_equal(v4baba[1], ra, "baba1");
     test.check_equal(v4baba[2], rb, "baba2");
     test.check_equal(v4baba[3], ra, "baba3");
 
-    auto v5ababa = eagine::math::vector<T, 5, V>::from(v1a, v4baba);
+    auto v5ababa = eagine::math::vector<T, 5, V>(v1a, v4baba);
     test.check_equal(v5ababa[0], ra, "ababa0");
     test.check_equal(v5ababa[1], rb, "ababa1");
     test.check_equal(v5ababa[2], ra, "ababa2");
     test.check_equal(v5ababa[3], rb, "ababa3");
     test.check_equal(v5ababa[4], ra, "ababa4");
 
-    auto v5aabab = eagine::math::vector<T, 5, V>::from(v2aa, v3bab);
+    auto v5aabab = eagine::math::vector<T, 5, V>(v2aa, v3bab);
     test.check_equal(v5aabab[0], ra, "aabab0");
     test.check_equal(v5aabab[1], ra, "aabab1");
     test.check_equal(v5aabab[2], rb, "aabab2");
     test.check_equal(v5aabab[3], ra, "aabab3");
     test.check_equal(v5aabab[4], rb, "aabab4");
 
-    auto v5ababb = eagine::math::vector<T, 5, V>::from(v3aba, v2bb);
+    auto v5ababb = eagine::math::vector<T, 5, V>(v3aba, v2bb);
     test.check_equal(v5ababb[0], ra, "ababb0");
     test.check_equal(v5ababb[1], rb, "ababb1");
     test.check_equal(v5ababb[2], ra, "ababb2");
     test.check_equal(v5ababb[3], rb, "ababb3");
     test.check_equal(v5ababb[4], rb, "ababb4");
 
-    auto v5babab = eagine::math::vector<T, 5, V>::from(v4baba, v1b);
+    auto v5babab = eagine::math::vector<T, 5, V>(v4baba, v1b);
     test.check_equal(v5babab[0], rb, "babab0");
     test.check_equal(v5babab[1], ra, "babab1");
     test.check_equal(v5babab[2], rb, "babab2");
@@ -584,7 +535,7 @@ void vector_from3_TNV(eagitest::case_& test) {
         a[i] = rg.get_any<T>();
     }
 
-    auto v = eagine::math::vector<T, N, V>::from(a, N);
+    auto v = eagine::math::vector<T, N, V>(a, N);
 
     for(int i = 0; i < N; ++i) {
         test.check_equal(v[i], a[i], "equal");
@@ -643,7 +594,7 @@ void vector_from4_TNV(eagitest::case_& test) {
 
         T r = rg.get_any<T>();
 
-        auto v = eagine::math::vector<T, N, V>::from(a, N - j, r);
+        auto v = eagine::math::vector<T, N, V>(a, N - j, r);
 
         for(int i = 0; i < N - j; ++i) {
             test.check_equal(v[i], a[i], "equal 1");
@@ -744,7 +695,7 @@ void vector_magnitude_TNV(eagitest::case_& test) {
         m += a[i] * a[i];
     }
 
-    auto v = eagine::math::vector<T, N, V>::from(a, N);
+    auto v = eagine::math::vector<T, N, V>(a, N);
 
     using std::sqrt;
     test.check_close(T(v.magnitude()), T(sqrt(m)), "magnitude");
@@ -794,8 +745,8 @@ void vector_dot_TNV(eagitest::case_& test) {
         d += a[i] * b[i];
     }
 
-    auto u = eagine::math::vector<T, N, V>::from(a, N);
-    auto v = eagine::math::vector<T, N, V>::from(b, N);
+    auto u = eagine::math::vector<T, N, V>(a, N);
+    auto v = eagine::math::vector<T, N, V>(b, N);
 
     test.check_close(T(dot(u, v)), d, "dot 1");
     test.check_close(T(dot(u, v)), T(dot(v, u)), "dot 2");
@@ -1253,9 +1204,6 @@ auto main(int argc, const char** argv) -> int {
     test.once(vector_default_ctr_int);
     test.once(vector_default_ctr_float);
     test.once(vector_default_ctr_double);
-    test.once(vector_zero_int);
-    test.once(vector_zero_float);
-    test.once(vector_zero_double);
     test.once(vector_fill_int);
     test.once(vector_fill_float);
     test.once(vector_fill_double);
