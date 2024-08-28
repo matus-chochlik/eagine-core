@@ -533,6 +533,13 @@ public:
         static_assert(sizeof(T[N][M]) == sizeof(data_t<T, N, V>[M]));
         return {_addr(d[0], has_simd_data<T, N, V>()), N * M};
     }
+
+    template <std::size_t M>
+    [[nodiscard]] static constexpr auto apply(
+      const std::array<data_t<T, N, V>, M>& d) noexcept -> span<const T> {
+        static_assert(sizeof(T[N][M]) == sizeof(data_t<T, N, V>[M]));
+        return {_addr(d.front(), has_simd_data<T, N, V>()), N * M};
+    }
 };
 //------------------------------------------------------------------------------
 // abs

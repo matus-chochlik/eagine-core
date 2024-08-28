@@ -202,7 +202,19 @@ public:
 
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
-        return _make(std::bool_constant<RM>());
+        if constexpr(RM) {
+            return matrix<T, 4, 4, true, V>{
+              {T(1), T(0), T(0), _v[0]},
+              {T(0), T(1), T(0), _v[1]},
+              {T(0), T(0), T(1), _v[2]},
+              {T(0), T(0), T(0), T(1)}};
+        } else {
+            return matrix<T, 4, 4, false, V>{
+              {T(1), T(0), T(0), T(0)},
+              {T(0), T(1), T(0), T(0)},
+              {T(0), T(0), T(1), T(0)},
+              {_v[0], _v[1], _v[2], T(1)}};
+        }
     }
 
     [[nodiscard]] friend constexpr auto reorder_mat_ctr(
@@ -211,24 +223,6 @@ public:
         return {c._v};
     }
 
-private:
-    constexpr auto _make(const std::true_type) const noexcept {
-        return matrix<T, 4, 4, true, V>{
-          {{T(1), T(0), T(0), _v[0]},
-           {T(0), T(1), T(0), _v[1]},
-           {T(0), T(0), T(1), _v[2]},
-           {T(0), T(0), T(0), T(1)}}};
-    }
-
-    constexpr auto _make(const std::false_type) const noexcept {
-        return matrix<T, 4, 4, false, V>{
-          {{T(1), T(0), T(0), T(0)},
-           {T(0), T(1), T(0), T(0)},
-           {T(0), T(0), T(1), T(0)},
-           {_v[0], _v[1], _v[2], T(1)}}};
-    }
-
-public:
     simd::data_t<T, 3, V> _v;
 };
 
@@ -285,10 +279,10 @@ public:
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{_v[0], T(0), T(0), T(0)},
-           {T(0), _v[1], T(0), T(0)},
-           {T(0), T(0), _v[2], T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {_v[0], T(0), T(0), T(0)},
+          {T(0), _v[1], T(0), T(0)},
+          {T(0), T(0), _v[2], T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     [[nodiscard]] friend constexpr auto reorder_mat_ctr(
@@ -334,10 +328,10 @@ public:
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{_v, T(0), T(0), T(0)},
-           {T(0), _v, T(0), T(0)},
-           {T(0), T(0), _v, T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {_v, T(0), T(0), T(0)},
+          {T(0), _v, T(0), T(0)},
+          {T(0), T(0), _v, T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     [[nodiscard]] friend constexpr auto reorder_mat_ctr(
@@ -415,10 +409,10 @@ public:
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{v(0), T(0), T(0), T(0)},
-           {T(0), v(1), T(0), T(0)},
-           {T(0), T(0), v(2), T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {v(0), T(0), T(0), T(0)},
+          {T(0), v(1), T(0), T(0)},
+          {T(0), T(0), v(2), T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     T _v{};
@@ -542,26 +536,26 @@ private:
 
     static constexpr auto _make(const T cx, const T sx, _x) noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{T(1), T(0), T(0), T(0)},
-           {T(0), cx, -sx, T(0)},
-           {T(0), sx, cx, T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {T(1), T(0), T(0), T(0)},
+          {T(0), cx, -sx, T(0)},
+          {T(0), sx, cx, T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     static constexpr auto _make(const T cx, const T sx, _y) noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{cx, T(0), sx, T(0)},
-           {T(0), T(1), T(0), T(0)},
-           {-sx, T(0), cx, T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {cx, T(0), sx, T(0)},
+          {T(0), T(1), T(0), T(0)},
+          {-sx, T(0), cx, T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     static constexpr auto _make(const T cx, const T sx, _z) noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{cx, -sx, T(0), T(0)},
-           {sx, cx, T(0), T(0)},
-           {T(0), T(0), T(1), T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {cx, -sx, T(0), T(0)},
+          {sx, cx, T(0), T(0)},
+          {T(0), T(0), T(1), T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
 public:
@@ -711,18 +705,18 @@ private:
 
     constexpr auto _make(const std::true_type) const noexcept {
         return matrix<T, 4, 4, true, V>{
-          {{_m00(), T(0), T(0), _m30()},
-           {T(0), _m11(), T(0), _m31()},
-           {T(0), T(0), _m22(), _m32()},
-           {T(0), T(0), T(0), T(1)}}};
+          {_m00(), T(0), T(0), _m30()},
+          {T(0), _m11(), T(0), _m31()},
+          {T(0), T(0), _m22(), _m32()},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     constexpr auto _make(const std::false_type) const noexcept {
         return matrix<T, 4, 4, false, V>{
-          {{_m00(), T(0), T(0), T(0)},
-           {T(0), _m11(), T(0), T(0)},
-           {T(0), T(0), _m22(), T(0)},
-           {_m30(), _m31(), _m32(), T(1)}}};
+          {_m00(), T(0), T(0), T(0)},
+          {T(0), _m11(), T(0), T(0)},
+          {T(0), T(0), _m22(), T(0)},
+          {_m30(), _m31(), _m32(), T(1)}};
     }
 
     using _dT = simd::data_t<T, 6, V>;
@@ -887,18 +881,18 @@ private:
 
     constexpr auto _make(const std::true_type) const noexcept {
         return matrix<T, 4, 4, true, V>{
-          {{_m00(), T(0), _m20(), T(0)},
-           {T(0), _m11(), _m21(), T(0)},
-           {T(0), T(0), _m22(), _m32()},
-           {T(0), T(0), _m23(), T(0)}}};
+          {_m00(), T(0), _m20(), T(0)},
+          {T(0), _m11(), _m21(), T(0)},
+          {T(0), T(0), _m22(), _m32()},
+          {T(0), T(0), _m23(), T(0)}};
     }
 
     constexpr auto _make(const std::false_type) const noexcept {
         return matrix<T, 4, 4, false, V>{
-          {{_m00(), T(0), T(0), T(0)},
-           {T(0), _m11(), T(0), T(0)},
-           {_m20(), _m21(), _m22(), _m23()},
-           {T(0), T(0), _m32(), T(0)}}};
+          {_m00(), T(0), T(0), T(0)},
+          {T(0), _m11(), T(0), T(0)},
+          {_m20(), _m21(), _m22(), _m23()},
+          {T(0), T(0), _m32(), T(0)}};
     }
 
     using _dT = simd::data_t<T, 6, V>;
@@ -962,10 +956,10 @@ private:
       const _dT& z,
       const _dT& t) noexcept {
         return matrix<T, 4, 4, true, V>{
-          {{x[0], x[1], x[2], -dot(x, t)},
-           {y[0], y[1], y[2], -dot(y, t)},
-           {z[0], z[1], z[2], -dot(z, t)},
-           {T(0), T(0), T(0), T(1)}}};
+          {x[0], x[1], x[2], -dot(x, t)},
+          {y[0], y[1], y[2], -dot(y, t)},
+          {z[0], z[1], z[2], -dot(z, t)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     static constexpr auto _make(
@@ -1086,10 +1080,10 @@ public:
 private:
     constexpr auto _make(const std::true_type) const noexcept {
         return matrix<T, 4, 4, true, V>{
-          {{_x[0], _x[1], _x[2], -_r * dot(_x, _z) - dot(_x, _t)},
-           {_y[0], _y[1], _y[2], -_r * dot(_y, _z) - dot(_y, _t)},
-           {_z[0], _z[1], _z[2], -_r * dot(_z, _z) - dot(_z, _t)},
-           {T(0), T(0), T(0), T(1)}}};
+          {_x[0], _x[1], _x[2], -_r * dot(_x, _z) - dot(_x, _t)},
+          {_y[0], _y[1], _y[2], -_r * dot(_y, _z) - dot(_y, _t)},
+          {_z[0], _z[1], _z[2], -_r * dot(_z, _z) - dot(_z, _t)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     constexpr auto _make(const std::false_type) const noexcept {

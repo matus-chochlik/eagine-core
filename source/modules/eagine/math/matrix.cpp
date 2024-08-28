@@ -29,14 +29,16 @@ struct are_multiplicable : std::false_type {};
 
 export template <typename T1, typename T2>
 struct multiplication_result;
-
+//------------------------------------------------------------------------------
 /// @brief Basic RxC matrix implementation template.
 /// @ingroup math
-/// @see tmat
-/// @note This is a base class, typically tmat should be used in client code.
 export template <typename T, int C, int R, bool RM, bool V = true>
 class matrix {
+public:
+    using data_type =
+      std::array<simd::data_t<T, (RM ? C : R), V>, std::size_t(RM ? R : C)>;
 
+private:
     template <int... U>
     using _iseq = std::integer_sequence<int, U...>;
 
@@ -47,28 +49,30 @@ class matrix {
     static constexpr auto _from_hlp(
       const P* dt,
       span_size_t sz,
-      _iseq<I...>) noexcept -> matrix {
-        return matrix{
-          {simd::from_array < T,
-           RM ? C : R,
-           V > ::apply(dt + I * (RM ? C : R), sz - I * (RM ? C : R))...}};
+      _iseq<I...>) noexcept -> data_type {
+        return {{simd::from_array<T, (RM ? C : R), V>::apply(
+          dt + I * (RM ? C : R), sz - I * (RM ? C : R))...}};
     }
 
     template <typename P, int M, int N, bool W, int... I>
     static constexpr auto _from_hlp(
       const matrix<P, M, N, RM, W>& m,
-      _iseq<I...>) noexcept -> matrix {
-        return matrix{
-          {simd::cast<P, (RM ? M : N), W, T, (RM ? C : R), V>::apply(
-            m._v[I], T(0))...}};
+      _iseq<I...>) noexcept -> data_type {
+        return {{simd::cast<P, (RM ? M : N), W, T, (RM ? C : R), V>::apply(
+          m._v[I], T(0))...}};
+    }
+
+    template <int... I>
+    static constexpr auto _from_hlp(const matrix& m, _iseq<I...>) noexcept {
+        return m._v;
     }
 
     template <bool DstRM>
     static constexpr auto _transpose_tpl_hlp_4x4(
-      const simd::data_t<T, 4, V>& q0,
-      const simd::data_t<T, 4, V>& q1,
-      const simd::data_t<T, 4, V>& q2,
-      const simd::data_t<T, 4, V>& q3) noexcept {
+      const simd::data_t<T, 4, V> q0,
+      const simd::data_t<T, 4, V> q1,
+      const simd::data_t<T, 4, V> q2,
+      const simd::data_t<T, 4, V> q3) noexcept {
         using simd::shuffle2;
         using simd::shuffle_mask;
         return matrix<T, 4, 4, DstRM, V>{
@@ -107,19 +111,86 @@ class matrix {
     }
 
 public:
-    simd::data_t<T, RM ? C : R, V> _v[RM ? R : C];
+    data_type _v;
 
     using type = matrix;
 
     /// @brief Element type.
     using element_type = T;
 
+    /// @brief Default constructor (constructs identity matrix)
+    constexpr matrix() noexcept {
+        if constexpr(RM) {
+            for(int i = 0; i < R; ++i) {
+                for(int j = 0; j < C; ++j) {
+                    _v[std::size_t(i)][j] = (i == j) ? T(1) : T(0);
+                }
+            }
+        } else {
+            for(int j = 0; j < C; ++j) {
+                for(int i = 0; i < R; ++i) {
+                    _v[std::size_t(j)][i] = (i == j) ? T(1) : T(0);
+                }
+            }
+        }
+    }
+
+    /// @brief Construction from the base data type.
+    constexpr matrix(data_type v) noexcept
+      : _v{v} {}
+
+    /// @brief The major vector type.
+    using major_vector_type = vector<T, (RM ? C : R), V>;
+
+    constexpr matrix(const major_vector_type v0) noexcept
+        requires((RM ? R : C) == 1)
+      : _v{{v0._v}} {}
+
+    constexpr matrix(
+      const major_vector_type v0,
+      const major_vector_type v1) noexcept
+        requires((RM ? R : C) == 2)
+      : _v{{v0._v, v1._v}} {}
+
+    constexpr matrix(
+      const major_vector_type v0,
+      const major_vector_type v1,
+      const major_vector_type v2) noexcept
+        requires((RM ? R : C) == 3)
+      : _v{{v0._v, v1._v, v2._v}} {}
+
+    constexpr matrix(
+      const major_vector_type v0,
+      const major_vector_type v1,
+      const major_vector_type v2,
+      const major_vector_type v3) noexcept
+        requires((RM ? R : C) == 4)
+      : _v{{v0._v, v1._v, v2._v, v3._v}} {}
+
+    template <std::same_as<T>... P>
+    constexpr matrix(const vector<P, RM ? C : R, V>&... v) noexcept
+        requires((sizeof...(P)) > 4 and (sizeof...(P)) == (RM ? R : C))
+      : _v{{v._v...}} {}
+
+    /// @brief Creates a matrix from data pointer and size.
+    template <typename P>
+    constexpr matrix(const P* dt, const span_size_t sz) noexcept
+      : _v{_from_hlp(dt, sz, _make_iseq<(RM ? R : C)>{})} {}
+
+    template <typename P, int M, int N, bool W>
+    constexpr matrix(const matrix<P, M, N, RM, W>& m) noexcept
+        requires((C <= M) and (R <= N))
+      : _v{_from_hlp(m, _make_iseq<(RM ? R : C)>{})} {}
+
+    constexpr matrix(const T (&d)[C * R]) noexcept
+      : _v{_from_hlp(d, C * R, _make_iseq<(RM ? R : C)>{})} {}
+
     /// @brief Creates a matrix from data pointer and size.
     template <typename P>
     [[nodiscard]] static constexpr auto from(
       const P* dt,
       const span_size_t sz) noexcept -> matrix {
-        return _from_hlp(dt, sz, _make_iseq < RM ? R : C > {});
+        return {dt, sz};
     }
 
     /// @brief Creates a matrix from another matrix type.
@@ -128,7 +199,7 @@ public:
       const matrix<P, M, N, RM, W>& m) noexcept -> matrix
         requires((C <= M) and (R <= N))
     {
-        return _from_hlp(m, _make_iseq < RM ? R : C > {});
+        return {m};
     }
 
     /// @brief Subscript operator.
@@ -353,6 +424,9 @@ public:
         }
     }
 };
+//------------------------------------------------------------------------------
+export template <typename T, int C, int R, bool RM, bool V = true>
+using tmat = matrix<T, C, R, RM, V>;
 //------------------------------------------------------------------------------
 /// @brief Class testing if a matrix type is row-major.
 /// @ingroup math
@@ -657,9 +731,9 @@ struct canonical_compound_type<math::matrix<T, C, R, RM, V>>
 
 export template <typename T, int C, int R, bool RM, bool V>
 struct compound_view_maker<math::matrix<T, C, R, RM, V>> {
-    [[nodiscard]] auto operator()(
+    [[nodiscard]] constexpr auto operator()(
       const math::matrix<T, C, R, RM, V>& m) const noexcept {
-        return simd::view < T, RM ? C : R, V > ::apply(m._v);
+        return simd::view<T, (RM ? C : R), V>::apply(m._v);
     }
 };
 

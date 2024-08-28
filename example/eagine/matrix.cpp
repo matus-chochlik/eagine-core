@@ -15,10 +15,10 @@ auto matrix_ops(auto& out, std::integral_constant<bool, useSimd> = {}) noexcept 
 
     using M = math::matrix<float, 4, 4, true, useSimd>;
     const M m0{
-      {{1.F, 0.F, 0.F, 0.F},
-       {0.F, 1.F, 0.F, 0.F},
-       {0.F, 0.F, 1.F, 0.F},
-       {0.F, 0.F, 0.F, 1.F}}};
+      {1.F, 0.F, 0.F, 0.F},
+      {0.F, 1.F, 0.F, 0.F},
+      {0.F, 0.F, 1.F, 0.F},
+      {0.F, 0.F, 0.F, 1.F}};
 
     using V = math::vector<float, 4, useSimd>;
     const V v{1.F, 1.F, 1.F, 1.F};

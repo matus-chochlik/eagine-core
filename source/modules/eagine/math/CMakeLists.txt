@@ -81,18 +81,6 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.math
 	COMPONENT core-dev
-	PARTITION tmat
-	IMPORTS
-		std traits vector
-		matrix matrix_construct
-		eagine.core.types
-		eagine.core.memory
-		eagine.core.simd
-)
-
-eagine_add_module(
-	eagine.core.math
-	COMPONENT core-dev
 	PARTITION colors
 	IMPORTS
 		std constants functions vector

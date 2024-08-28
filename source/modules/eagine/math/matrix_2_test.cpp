@@ -16,8 +16,8 @@ import eagine.core.simd;
 template <typename T, int N, bool V, int K, int... I>
 static auto get_math_matrix_vec(
   std::integral_constant<int, K>,
-  std::integer_sequence<int, I...>) -> eagine::simd::data_t<T, N, V> {
-    return eagine::simd::data_t<T, N, V>{T(K + I)...};
+  std::integer_sequence<int, I...>) -> eagine::math::vector<T, N, V> {
+    return {eagine::simd::data_t<T, N, V>{T(K + I)...}};
 }
 //------------------------------------------------------------------------------
 template <typename T, int C, int R, bool RM, bool V, int... J, int... I>
@@ -27,9 +27,8 @@ void math_matrix_init_TCRRMVJI(
   std::integer_sequence<int, I...>) {
     using M = eagine::math::matrix<T, C, R, RM, V>;
 
-    M m = {{get_math_matrix_vec<T, (RM ? C : R), V>(
-      std::integral_constant<int, J>(),
-      std::integer_sequence<int, I...>())...}};
+    M m = {get_math_matrix_vec<T, (RM ? C : R), V>(
+      std::integral_constant<int, J>(), std::integer_sequence<int, I...>())...};
 
     for(int i = 0; i < (RM ? R : C); ++i)
         for(int j = 0; j < (RM ? C : R); ++j) {
