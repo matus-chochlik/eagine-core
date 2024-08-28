@@ -67,6 +67,14 @@ private:
         return m._v;
     }
 
+    template <std::convertible_to<T>... P>
+    static constexpr auto _make(P&&... p) noexcept
+        requires((sizeof...(P)) == (C * R))
+    {
+        const T d[C * R] = {T(p)...};
+        return _from_hlp(d, C * R, _make_iseq<(RM ? R : C)>{});
+    }
+
     template <bool DstRM>
     static constexpr auto _transpose_tpl_hlp_4x4(
       const simd::data_t<T, 4, V> q0,
@@ -171,6 +179,11 @@ public:
     constexpr matrix(const vector<P, RM ? C : R, V>&... v) noexcept
         requires((sizeof...(P)) > 4 and (sizeof...(P)) == (RM ? R : C))
       : _v{{v._v...}} {}
+
+    template <std::convertible_to<T>... P>
+    constexpr matrix(P&&... p) noexcept
+        requires((sizeof...(P)) == (R * C))
+      : _v{_make(std::forward<P>(p)...)} {}
 
     /// @brief Creates a matrix from data pointer and size.
     template <typename P>
@@ -424,9 +437,6 @@ public:
         }
     }
 };
-//------------------------------------------------------------------------------
-export template <typename T, int C, int R, bool RM, bool V = true>
-using tmat = matrix<T, C, R, RM, V>;
 //------------------------------------------------------------------------------
 /// @brief Class testing if a matrix type is row-major.
 /// @ingroup math
