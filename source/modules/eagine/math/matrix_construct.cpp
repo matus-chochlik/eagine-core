@@ -252,7 +252,7 @@ constexpr auto multiply(
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_translation =
   convertible_matrix_constructor<translation<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -365,7 +365,7 @@ export template <typename T, int N, bool RM1, bool RM2, bool V>
 /// @see matrix_rotation_y
 /// @see matrix_rotation_z
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_scale =
   convertible_matrix_constructor<scale<matrix<T, 4, 4, true, V>>>;
 
@@ -379,7 +379,7 @@ using matrix_scale =
 /// @see matrix_reflection_y
 /// @see matrix_reflection_z
 /// @see matrix_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_uniform_scale =
   convertible_matrix_constructor<uniform_scale<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -466,7 +466,7 @@ using reflection_z = reflection_I<M, 2>;
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_reflection_x =
   convertible_matrix_constructor<reflection_x<matrix<T, 4, 4, true, V>>>;
 
@@ -480,7 +480,7 @@ using matrix_reflection_x =
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_reflection_y =
   convertible_matrix_constructor<reflection_y<matrix<T, 4, 4, true, V>>>;
 
@@ -494,7 +494,7 @@ using matrix_reflection_y =
 /// @see matrix_reflection_y
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_reflection_z =
   convertible_matrix_constructor<reflection_z<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -599,7 +599,7 @@ using rotation_z = rotation_I<M, 2>;
 /// @see matrix_rotation_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_rotation_x =
   convertible_matrix_constructor<rotation_x<matrix<T, 4, 4, true, V>>>;
 
@@ -613,7 +613,7 @@ using matrix_rotation_x =
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_rotation_y =
   convertible_matrix_constructor<rotation_y<matrix<T, 4, 4, true, V>>>;
 
@@ -627,7 +627,7 @@ using matrix_rotation_y =
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_rotation_z =
   convertible_matrix_constructor<rotation_z<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -741,7 +741,7 @@ export template <typename T, int N, bool RM, bool V>
 
 /// @brief Alias for constructor of orthographic projection matrix.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_ortho =
   convertible_matrix_constructor<ortho<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -917,7 +917,7 @@ export template <typename T, int N, bool RM, bool V>
 
 /// @brief Alias for constructor of perspective projection matrix.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_perspective =
   convertible_matrix_constructor<perspective<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -1005,7 +1005,7 @@ export template <typename T, int N, bool RM, bool V>
 
 /// @brief Alias for constructor of look-at matrix used for camera transformations.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_looking_at_y_up =
   convertible_matrix_constructor<looking_at_y_up<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -1105,7 +1105,7 @@ public:
 
 /// @brief Alias for constructor of orbiting matrix used for camera transformations.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_orbiting_y_up =
   convertible_matrix_constructor<orbiting_y_up<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
