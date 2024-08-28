@@ -34,7 +34,7 @@ struct multiplication_result;
 /// @ingroup math
 /// @see tmat
 /// @note This is a base class, typically tmat should be used in client code.
-export template <typename T, int C, int R, bool RM, bool V>
+export template <typename T, int C, int R, bool RM, bool V = true>
 class matrix {
 
     template <int... U>

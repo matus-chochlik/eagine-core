@@ -15,7 +15,7 @@ namespace eagine::math {
 //------------------------------------------------------------------------------
 /// @brief Basic template for lines in N-dimensional space.
 /// @ingroup math
-export template <typename T, int N, bool V>
+export template <typename T, int N, bool V = true>
 class basic_line {
 public:
     /// @brief Default constructor.
@@ -51,12 +51,12 @@ private:
 
 /// @brief Alias for lines in 3D space.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using line = basic_line<T, 3, V>;
 //------------------------------------------------------------------------------
 /// @brief Basic template for triangles in N-dimensional space.
 /// @ingroup math
-export template <typename T, int N, bool V>
+export template <typename T, int N, bool V = true>
 class basic_triangle {
 public:
     /// @brief Default constructor.
@@ -123,12 +123,12 @@ private:
 
 /// @brief Alias for triangles in 3D space.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using triangle = basic_triangle<T, 3, V>;
 //------------------------------------------------------------------------------
 /// @brief Basic template for spheres in N-dimensional space.
 /// @ingroup math
-export template <typename T, int N, bool V>
+export template <typename T, int N, bool V = true>
 class basic_sphere {
 public:
     /// @brief Default constructor.
@@ -154,7 +154,7 @@ private:
 
 /// @brief Alias for spheres in 3D space.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using sphere = basic_sphere<T, 3, V>;
 //------------------------------------------------------------------------------
 } // namespace eagine::math

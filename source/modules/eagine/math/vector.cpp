@@ -23,7 +23,7 @@ namespace math {
 //------------------------------------------------------------------------------
 /// @brief Basic N-dimensional vector implementation template.
 /// @ingroup math
-export template <typename T, int N, bool V>
+export template <typename T, int N, bool V = true>
 class vector {
 
     static constexpr auto _zero() noexcept {

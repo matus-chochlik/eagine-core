@@ -17,7 +17,7 @@ namespace eagine::math {
 //------------------------------------------------------------------------------
 /// @brief Class representing unit spherical coordinate.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 class unit_spherical_coordinate {
 public:
     /// @brief Default constructor.

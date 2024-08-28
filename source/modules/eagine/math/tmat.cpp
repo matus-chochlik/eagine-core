@@ -21,7 +21,7 @@ namespace math {
 
 /// @brief Generic template for RxC dimensional matrices.
 /// @ingroup math
-export template <typename T, int C, int R, bool RM, bool V>
+export template <typename T, int C, int R, bool RM, bool V = true>
 struct tmat : matrix<T, C, R, RM, V> {
     /// @brief The base matrix type.
     using base = matrix<T, C, R, RM, V>;

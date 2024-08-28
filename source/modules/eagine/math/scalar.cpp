@@ -16,7 +16,7 @@ namespace eagine::math {
 /// @ingroup math
 /// @see vector
 /// @note This class is used in SIMD vector-scalar operations.
-export template <typename T, int N, bool V>
+export template <typename T, int N, bool V = true>
 class scalar {
 public:
     using type = scalar;
