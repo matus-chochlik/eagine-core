@@ -171,86 +171,91 @@ public:
     }
 
     /// @brief Unary plus operator.
-    [[nodiscard]] auto operator+() const noexcept -> vector {
+    [[nodiscard]] constexpr auto operator+() const noexcept -> vector {
         return *this;
     }
 
     /// @brief Unary minus operator.
-    [[nodiscard]] auto operator-() const noexcept -> vector {
+    [[nodiscard]] constexpr auto operator-() const noexcept -> vector {
         return {-_v};
     }
 
     /// @brief Addition operator.
-    [[nodiscard]] auto operator+(const vector& a) const noexcept -> vector {
+    [[nodiscard]] constexpr auto operator+(const vector& a) const noexcept
+      -> vector {
         return {_v + a._v};
     }
 
     /// @brief Addition operator.
-    auto operator+=(const vector& a) noexcept -> auto& {
+    constexpr auto operator+=(const vector& a) noexcept -> auto& {
         _v = _v + a._v;
         return *this;
     }
 
     /// @brief Subtraction operator.
-    [[nodiscard]] auto operator-(const vector& a) const noexcept -> vector {
+    [[nodiscard]] constexpr auto operator-(const vector& a) const noexcept
+      -> vector {
         return {_v - a._v};
     }
 
     /// @brief Subtraction operator.
-    auto operator-=(const vector& a) noexcept -> auto& {
+    constexpr auto operator-=(const vector& a) noexcept -> auto& {
         _v = _v - a._v;
         return *this;
     }
 
     /// @brief Multiplication operator.
-    [[nodiscard]] auto operator*(const vector& a) const noexcept -> vector {
+    [[nodiscard]] constexpr auto operator*(const vector& a) const noexcept
+      -> vector {
         return {_v * a._v};
     }
 
     /// @brief Multiplication operator.
-    auto operator*=(const vector& a) noexcept -> auto& {
+    constexpr auto operator*=(const vector& a) noexcept -> auto& {
         _v = _v * a._v;
         return *this;
     }
 
     /// @brief Multiplication operator.
-    [[nodiscard]] auto operator*(const scalar_type& c) const noexcept
+    [[nodiscard]] constexpr auto operator*(const scalar_type& c) const noexcept
       -> vector {
         static_assert(scalar_type::is_vectorized::value);
         return {_v * c._v};
     }
 
     /// @brief Multiplication by scalar operator.
-    auto operator*=(const scalar_type& c) noexcept -> auto& {
+    constexpr auto operator*=(const scalar_type& c) noexcept -> auto& {
         static_assert(scalar_type::is_vectorized::value);
         _v = _v * c._v;
         return *this;
     }
 
     /// @brief Multiplication by constant operator.
-    [[nodiscard]] auto operator*(const T c) const noexcept -> vector {
+    [[nodiscard]] constexpr auto operator*(const T c) const noexcept -> vector {
         return {_v * simd::fill<T, N, V>::apply(c)};
     }
 
     /// @brief Multiplication by constant operator.
-    auto operator*=(const T c) noexcept -> auto& {
+    constexpr auto operator*=(const T c) noexcept -> auto& {
         _v = _v * simd::fill<T, N, V>::apply(c);
         return *this;
     }
 
     /// @brief Division operator.
-    [[nodiscard]] auto operator/(const vector& a) const noexcept -> vector {
+    [[nodiscard]] constexpr auto operator/(const vector& a) const noexcept
+      -> vector {
         return {simd::sdiv<T, N, V>::apply(_v, a._v)};
     }
 
     /// @brief Division operator.
-    [[nodiscard]] auto operator/(const scalar_type& c) noexcept -> vector {
+    [[nodiscard]] constexpr auto operator/(const scalar_type& c) noexcept
+      -> vector {
         static_assert(scalar_type::is_vectorized::value);
         return {simd::sdiv<T, N, V>::apply(_v, c._v)};
     }
 
     /// @brief Division by constant operator.
-    [[nodiscard]] auto operator/(const T c) const noexcept -> vector {
+    [[nodiscard]] constexpr auto operator/(const T c) const noexcept -> vector {
         return {simd::sdiv<T, N, V>::apply(_v, simd::fill<T, N, V>::apply(c))};
     }
 
@@ -429,7 +434,7 @@ struct flatten_traits<math::vector<T, N, V>, T> {
     }
 
     template <typename Pd, typename Sd>
-    static auto apply(
+    static constexpr auto apply(
       const math::vector<T, N, V>& src,
       memory::basic_span<T, Pd, Sd> dst) noexcept {
         assert(N <= dst.size());
@@ -439,7 +444,7 @@ struct flatten_traits<math::vector<T, N, V>, T> {
 
 private:
     template <typename Pd, typename Sd, std::size_t... I>
-    static void _do_apply(
+    static constexpr void _do_apply(
       const simd::data_t<T, N, V> src,
       memory::basic_span<T, Pd, Sd> dst,
       std::index_sequence<I...>) noexcept {
