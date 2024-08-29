@@ -151,8 +151,8 @@ export template <typename T, bool V>
   const line<T, V>& ray,
   const triangle<T, V>& tri) noexcept -> optionally_valid<T> {
 
-    const vector<T, 3, V> h{cross(ray.direction(), tri.ac())};
-    const T a = dot(tri.ab(), h);
+    const auto h{cross(ray.direction(), tri.ac().direction())};
+    const T a = dot(tri.ab().direction(), h);
 
     if(const auto ia{reciprocal(a)}) {
         const T f{*ia};
@@ -160,11 +160,11 @@ export template <typename T, bool V>
         const T u = f * dot(s, h);
 
         if((u >= T(0)) and (u <= T(1))) {
-            const vector<T, 3, V> q = cross(s, tri.ab());
+            const auto q{cross(s, tri.ab().direction())};
             const T v = f * dot(ray.direction(), q);
 
             if((v >= T(0)) and (u + v <= T(1))) {
-                const T t = f * dot(tri.ac(), q);
+                const T t = f * dot(tri.ac().direction(), q);
                 if(t >= T(0)) {
                     return {t, true};
                 }

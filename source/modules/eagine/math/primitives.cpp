@@ -28,6 +28,13 @@ public:
       : _origin{orig}
       , _direction{dir} {}
 
+    /// @brief Construction from a pair of points.
+    constexpr basic_line(
+      const point<T, N, V> bgn,
+      const point<T, N, V> end) noexcept
+      : _origin{bgn}
+      , _direction{end - bgn} {}
+
     /// @brief Returns the line origin point.
     [[nodiscard]] constexpr auto origin() const noexcept -> point<T, N, V> {
         return _origin;
@@ -70,61 +77,68 @@ public:
 
     /// @brief Construction from three points making up the triangle.
     constexpr basic_triangle(
-      const vector<T, N, V> a,
-      const vector<T, N, V> b,
-      const vector<T, N, V> c) noexcept
+      const point<T, N, V> a,
+      const point<T, N, V> b,
+      const point<T, N, V> c) noexcept
       : _vertices{{a, b, c}} {}
 
     /// @brief Returns the point at the specified index.
     /// @pre index < 3
     [[nodiscard]] constexpr auto vertex(const span_size_t index) const noexcept
-      -> vector<T, N, V> {
+      -> point<T, N, V> {
         return _vertices[index];
     }
 
     /// @brief Returns the first point of the triangle.
-    [[nodiscard]] constexpr auto a() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto a() const noexcept -> point<T, N, V> {
         return _vertices[0];
     }
 
     /// @brief Returns the second point of the triangle.
-    [[nodiscard]] constexpr auto b() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto b() const noexcept -> point<T, N, V> {
         return _vertices[1];
     }
 
     /// @brief Returns the third point of the triangle.
-    [[nodiscard]] constexpr auto c() const noexcept -> vector<T, N, V> {
+    [[nodiscard]] constexpr auto c() const noexcept -> point<T, N, V> {
         return _vertices[2];
     }
 
-    /// @brief Returns the ab edge vector of the triangle.
-    [[nodiscard]] constexpr auto ab() const noexcept -> vector<T, N, V> {
-        return b() - a();
+    /// @brief Returns the ab edge line of the triangle.
+    [[nodiscard]] constexpr auto ab() const noexcept -> basic_line<T, N, V> {
+        return {a(), b()};
     }
 
-    /// @brief Returns the ac edge vector of the triangle.
-    [[nodiscard]] constexpr auto ac() const noexcept -> vector<T, N, V> {
-        return c() - a();
+    /// @brief Returns the ac edge line of the triangle.
+    [[nodiscard]] constexpr auto ac() const noexcept -> basic_line<T, N, V> {
+        return {a(), c()};
+    }
+
+    /// @brief Returns the bc edge line of the triangle.
+    [[nodiscard]] constexpr auto bc() const noexcept -> basic_line<T, N, V> {
+        return {b(), c()};
     }
 
     /// @brief Returns the center of the triangle.
-    [[nodiscard]] constexpr auto center() const noexcept -> vector<T, N, V> {
-        return (a() + b() + c()) / T(3);
+    [[nodiscard]] constexpr auto center() const noexcept -> point<T, N, V> {
+        return ((a().to_vector() + b().to_vector() + c().to_vector()) / T(3))
+          .to_point();
     }
 
     /// @brief Returns the normal vector of the triangle, in specified direction.
     [[nodiscard]] constexpr auto normal(bool cw) const noexcept
       -> vector<T, N, V> {
-        return cw ? cross(ac(), ab()) : cross(ab(), ac());
+        return cw ? cross(ac().direction(), ab().direction())
+                  : cross(ab().direction(), ac().direction());
     }
 
     /// @brief Returns the area of the triangle.
     [[nodiscard]] constexpr auto area() const noexcept -> T {
-        return length(cross(ab(), ac())) / T(2);
+        return length(cross(ab().direction(), ac().direction())) / T(2);
     }
 
 private:
-    std::array<vector<T, N, V>, 3> _vertices{};
+    std::array<point<T, N, V>, 3> _vertices{};
 };
 
 /// @brief Alias for triangles in 3D space.
