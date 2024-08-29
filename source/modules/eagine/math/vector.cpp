@@ -74,6 +74,9 @@ public:
     [[nodiscard]] constexpr auto operator-(
       const vector<T, N, V>& a) const noexcept -> point;
 
+    /// @brief Conversion to analgous vector.
+    [[nodiscard]] constexpr auto to_vector() const noexcept -> vector<T, N, V>;
+
     /// @brief Returns the x-coordinate value.
     /// @pre N >= 1
     [[nodiscard]] constexpr auto x() const noexcept -> T
@@ -218,6 +221,11 @@ public:
     /// @brief Subscript operator.
     [[nodiscard]] constexpr auto operator[](const int pos) const noexcept {
         return _v[pos];
+    }
+
+    /// @brief Returns an analogous point.
+    [[nodiscard]] constexpr auto to_point() const noexcept -> point<T, N, V> {
+        return {_v};
     }
 
     /// @brief Returns the x-coordinate value.
@@ -405,6 +413,11 @@ constexpr auto point<T, N, V>::operator-(const vector<T, N, V>& a) const noexcep
     return {_v + a._v};
 }
 //------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+constexpr auto point<T, N, V>::to_vector() const noexcept -> vector<T, N, V> {
+    return {_v};
+}
+//------------------------------------------------------------------------------
 /// @brief Direction vector between two points.
 /// @relates vector
 /// @relates point
@@ -505,6 +518,15 @@ export template <typename T, int N, bool V>
     return length(a - b);
 }
 
+/// @brief Returns the distance between two points.
+/// @ingroup math
+export template <typename T, int N, bool V>
+[[nodiscard]] constexpr auto distance(
+  const point<T, N, V>& a,
+  const point<T, N, V>& b) noexcept {
+    return length(a - b);
+}
+
 export template <std::size_t I, typename T, int N, bool V>
 constexpr auto get(vector<T, N, V>& v) noexcept -> T& {
     return v._v[I];
@@ -516,6 +538,20 @@ constexpr auto get(const vector<T, N, V>& v) noexcept -> T {
 }
 
 } // namespace math
+//------------------------------------------------------------------------------
+export template <typename T, int N, bool V>
+struct is_known_vector_type<math::point<T, N, V>> : std::is_scalar<T> {};
+
+export template <typename T, int N, bool V>
+struct canonical_compound_type<math::point<T, N, V>>
+  : std::type_identity<std::remove_cv_t<T[N]>> {};
+
+export template <typename T, int N, bool V>
+struct compound_view_maker<math::point<T, N, V>> {
+    constexpr auto operator()(const math::point<T, N, V>& v) const noexcept {
+        return simd::view<T, N, V>::apply(v._v);
+    }
+};
 //------------------------------------------------------------------------------
 export template <typename T, int N, bool V>
 struct is_known_vector_type<math::vector<T, N, V>> : std::is_scalar<T> {};

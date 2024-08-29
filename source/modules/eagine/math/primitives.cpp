@@ -141,12 +141,17 @@ public:
     constexpr basic_sphere() noexcept = default;
 
     /// @brief Construction from center point and radius value.
-    constexpr basic_sphere(const vector<T, N, V> cntr, const T rad) noexcept
-      : _params{cntr, rad} {}
+    constexpr basic_sphere(const point<T, N, V> cntr, const T rad) noexcept
+      : _params{cntr.to_vector(), rad} {}
+
+    /// @brief Returns the sphere center as a vector.
+    [[nodiscard]] constexpr auto direction() const noexcept -> vector<T, N, V> {
+        return vector<T, N, V>{_params};
+    }
 
     /// @brief Returns the sphere center.
-    [[nodiscard]] constexpr auto center() const noexcept -> vector<T, N, V> {
-        return {_params};
+    [[nodiscard]] constexpr auto center() const noexcept -> point<T, N, V> {
+        return direction().to_point();
     }
 
     /// @brief Returns the sphere radius.

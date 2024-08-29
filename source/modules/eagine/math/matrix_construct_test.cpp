@@ -74,7 +74,7 @@ void math_matrix_ctrs_TRMV(eagitest::case_& test) {
     math_matrix_ctr_MC(
       test,
       orbiting_y_up<matrix<T, 4, 4, RM, V>>(
-        vector<T, 3, V>{{r(), r(), r()}}, r(), radians_(r()), radians_(r())));
+        point<T, 3, V>{r(), r(), r()}, r(), radians_(r()), radians_(r())));
     math_matrix_ctr_MC(
       test,
       looking_at_y_up<matrix<T, 4, 4, RM, V>>(

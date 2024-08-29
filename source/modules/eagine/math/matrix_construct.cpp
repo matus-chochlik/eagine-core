@@ -1016,7 +1016,7 @@ export template <typename T, bool RM, bool V>
 class orbiting_y_up<matrix<T, 4, 4, RM, V>> {
 public:
     constexpr orbiting_y_up(
-      const vector<T, 3, V>& t,
+      const point<T, 3, V>& t,
       const vector<T, 3, V>& x,
       const vector<T, 3, V>& y,
       const vector<T, 3, V>& z,
@@ -1028,7 +1028,7 @@ public:
       , _r{r} {}
 
     constexpr orbiting_y_up(
-      const vector<T, 3, V>& t,
+      const point<T, 3, V>& t,
       const T rs,
       const T sa,
       const T ca,
@@ -1046,7 +1046,7 @@ public:
     /// @param azimuth is the azimuth (longitude) angle.
     /// @param elevation is the elevation (latitude) angle.
     constexpr orbiting_y_up(
-      const vector<T, 3, V>& target,
+      const point<T, 3, V>& target,
       const T radius,
       const radians_t<T> azimuth,
       const radians_t<T> elevation)
@@ -1071,10 +1071,11 @@ public:
 
 private:
     constexpr auto _make(const std::true_type) const noexcept {
+        const vector<T, 3, V> tv{_t};
         return matrix<T, 4, 4, true, V>{
-          {_x[0], _x[1], _x[2], -_r * dot(_x, _z) - dot(_x, _t)},
-          {_y[0], _y[1], _y[2], -_r * dot(_y, _z) - dot(_y, _t)},
-          {_z[0], _z[1], _z[2], -_r * dot(_z, _z) - dot(_z, _t)},
+          {_x[0], _x[1], _x[2], -_r * dot(_x, _z) - dot(_x, tv)},
+          {_y[0], _y[1], _y[2], -_r * dot(_y, _z) - dot(_y, tv)},
+          {_z[0], _z[1], _z[2], -_r * dot(_z, _z) - dot(_z, tv)},
           {T(0), T(0), T(0), T(1)}};
     }
 
@@ -1082,7 +1083,7 @@ private:
         return _make(std::true_type()).reordered();
     }
 
-    vector<T, 3, V> _t;
+    point<T, 3, V> _t;
     vector<T, 3, V> _x, _z, _y;
 
 public:
