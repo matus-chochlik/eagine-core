@@ -23,13 +23,13 @@ public:
 
     /// @brief Construction from origin point and direction vector.
     constexpr basic_line(
-      const vector<T, N, V> orig,
+      const point<T, N, V> orig,
       const vector<T, N, V> dir) noexcept
       : _origin{orig}
       , _direction{dir} {}
 
-    /// @brief Returns the line origin.
-    [[nodiscard]] constexpr auto origin() const noexcept -> vector<T, N, V> {
+    /// @brief Returns the line origin point.
+    [[nodiscard]] constexpr auto origin() const noexcept -> point<T, N, V> {
         return _origin;
     }
 
@@ -38,14 +38,20 @@ public:
         return _direction;
     }
 
+    /// @brief Returns the line destination point.
+    [[nodiscard]] constexpr auto destination() const noexcept
+      -> point<T, N, V> {
+        return _origin + _direction;
+    }
+
     /// @brief Returns a point on the line at the specified parameter @p t.
     [[nodiscard]] constexpr auto point_at(T t) const noexcept
-      -> vector<T, N, V> {
+      -> point<T, N, V> {
         return _origin + _direction * t;
     }
 
 private:
-    vector<T, N, V> _origin{};
+    point<T, N, V> _origin{};
     vector<T, N, V> _direction{};
 };
 
