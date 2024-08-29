@@ -21,6 +21,84 @@ import :scalar;
 namespace eagine {
 namespace math {
 //------------------------------------------------------------------------------
+export template <typename T, int N, bool V = true>
+class vector;
+//------------------------------------------------------------------------------
+/// @brief Basic N-dimensional point implementation template.
+/// @ingroup math
+export template <typename T, int N, bool V = true>
+class point {
+    static constexpr auto _zero() noexcept {
+        return simd::fill<T, N, V>::apply(T(0));
+    }
+
+public:
+    using type = point;
+
+    /// @brief Element value type.
+    using value_type = T;
+
+    /// @brief Indicates if the implementation uses SIMD extensions.
+    using is_vectorized = simd::has_simd_data<T, N, V>;
+
+    using data_type = simd::data_t<T, N, V>;
+
+    data_type _v;
+
+    constexpr point(data_type v) noexcept
+      : _v{v} {}
+
+    /// @brief Default constructor. Constructs a zero point.
+    constexpr point() noexcept
+      : _v{_zero()} {}
+
+    /// @brief Construction from coordinates.
+    template <std::convertible_to<T>... P>
+    constexpr point(P&&... p) noexcept
+        requires(sizeof...(P) == N)
+      : _v{T(std::forward<P>(p))...} {}
+
+    /// @brief Conversion from vector.
+    explicit constexpr point(const vector<T, N, V>& v) noexcept;
+
+    /// @brief Subscript operator.
+    [[nodiscard]] constexpr auto operator[](const int pos) const noexcept {
+        return _v[pos];
+    }
+
+    /// @brief Vector to point addition.
+    [[nodiscard]] constexpr auto operator+(
+      const vector<T, N, V>& a) const noexcept -> point;
+
+    /// @brief Vector from point subtraction.
+    [[nodiscard]] constexpr auto operator-(
+      const vector<T, N, V>& a) const noexcept -> point;
+
+    /// @brief Returns the x-coordinate value.
+    /// @pre N >= 1
+    [[nodiscard]] constexpr auto x() const noexcept -> T
+        requires(N > 0)
+    {
+        return _v[0];
+    }
+
+    /// @brief Returns the y-coordinate value.
+    /// @pre N >= 2
+    [[nodiscard]] constexpr auto y() const noexcept -> T
+        requires(N > 1)
+    {
+        return _v[1];
+    }
+
+    /// @brief Returns the z-coordinate value.
+    /// @pre N >= 3
+    [[nodiscard]] constexpr auto z() const noexcept -> T
+        requires(N > 2)
+    {
+        return _v[2];
+    }
+};
+//------------------------------------------------------------------------------
 /// @brief Basic N-dimensional vector implementation template.
 /// @ingroup math
 export template <typename T, int N, bool V = true>
@@ -132,6 +210,10 @@ public:
       const vector<P, M, W>& v,
       const vector<T, N - M, W>& w) noexcept
       : _v{_from(v, w)} {}
+
+    /// @brief Conversion from point.
+    explicit constexpr vector(const point<T, N, V>& p) noexcept
+      : _v{p._v} {}
 
     /// @brief Subscript operator.
     [[nodiscard]] constexpr auto operator[](const int pos) const noexcept {
@@ -306,7 +388,33 @@ public:
         }
     }
 };
-
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+constexpr point<T, N, V>::point(const vector<T, N, V>& v) noexcept
+  : _v{v._v} {}
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+constexpr auto point<T, N, V>::operator+(const vector<T, N, V>& a) const noexcept
+  -> point {
+    return {_v + a._v};
+}
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+constexpr auto point<T, N, V>::operator-(const vector<T, N, V>& a) const noexcept
+  -> point {
+    return {_v + a._v};
+}
+//------------------------------------------------------------------------------
+/// @brief Direction vector between two points.
+/// @relates vector
+/// @relates point
+export template <typename T, int N, bool V>
+[[nodiscard]] constexpr auto operator-(
+  const point<T, N, V>& b,
+  const point<T, N, V>& a) noexcept -> vector<T, N, V> {
+    return {b._v - a._v};
+}
+//------------------------------------------------------------------------------
 /// @brief Multiplication by scalar operator.
 /// @relates vector
 export template <typename T, int N, bool V>
