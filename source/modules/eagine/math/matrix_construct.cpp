@@ -656,7 +656,19 @@ public:
 
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
-        return _make(std::bool_constant<RM>());
+        if constexpr(RM) {
+            return matrix<T, 4, 4, true, V>{
+              {_m00(), T(0), T(0), _m30()},
+              {T(0), _m11(), T(0), _m31()},
+              {T(0), T(0), _m22(), _m32()},
+              {T(0), T(0), T(0), T(1)}};
+        } else {
+            return matrix<T, 4, 4, false, V>{
+              {_m00(), T(0), T(0), T(0)},
+              {T(0), _m11(), T(0), T(0)},
+              {T(0), T(0), _m22(), T(0)},
+              {_m30(), _m31(), _m32(), T(1)}};
+        }
     }
 
 private:
@@ -679,44 +691,28 @@ private:
         return _v[5];
     }
 
-    constexpr auto _m00() const noexcept {
+    constexpr auto _m00() const noexcept -> T {
         return T(2) / (_x_right() - _x_left());
     }
 
-    constexpr auto _m11() const noexcept {
+    constexpr auto _m11() const noexcept -> T {
         return T(2) / (_y_top() - _y_bottom());
     }
 
-    constexpr auto _m22() const noexcept {
+    constexpr auto _m22() const noexcept -> T {
         return -T(2) / (_z_far() - _z_near());
     }
 
-    constexpr auto _m30() const noexcept {
+    constexpr auto _m30() const noexcept -> T {
         return -(_x_right() + _x_left()) / (_x_right() - _x_left());
     }
 
-    constexpr auto _m31() const noexcept {
+    constexpr auto _m31() const noexcept -> T {
         return -(_y_top() + _y_bottom()) / (_y_top() - _y_bottom());
     }
 
-    constexpr auto _m32() const noexcept {
+    constexpr auto _m32() const noexcept -> T {
         return -(_z_far() + _z_near()) / (_z_far() - _z_near());
-    }
-
-    constexpr auto _make(const std::true_type) const noexcept {
-        return matrix<T, 4, 4, true, V>{
-          {_m00(), T(0), T(0), _m30()},
-          {T(0), _m11(), T(0), _m31()},
-          {T(0), T(0), _m22(), _m32()},
-          {T(0), T(0), T(0), T(1)}};
-    }
-
-    constexpr auto _make(const std::false_type) const noexcept {
-        return matrix<T, 4, 4, false, V>{
-          {_m00(), T(0), T(0), T(0)},
-          {T(0), _m11(), T(0), T(0)},
-          {T(0), T(0), _m22(), T(0)},
-          {_m30(), _m31(), _m32(), T(1)}};
     }
 
     using _dT = simd::data_t<T, 6, V>;
@@ -771,7 +767,19 @@ public:
 
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
-        return _make(std::bool_constant<RM>());
+        if constexpr(RM) {
+            return matrix<T, 4, 4, true, V>{
+              {_m00(), T(0), _m20(), T(0)},
+              {T(0), _m11(), _m21(), T(0)},
+              {T(0), T(0), _m22(), _m32()},
+              {T(0), T(0), _m23(), T(0)}};
+        } else {
+            return matrix<T, 4, 4, false, V>{
+              {_m00(), T(0), T(0), T(0)},
+              {T(0), _m11(), T(0), T(0)},
+              {_m20(), _m21(), _m22(), _m23()},
+              {T(0), T(0), _m32(), T(0)}};
+        }
     }
 
     /// @brief Constructs perspective matrix with x-FOV angle and aspect ratio.
@@ -851,48 +859,32 @@ private:
         return _v[5];
     }
 
-    constexpr auto _m00() const noexcept {
+    constexpr auto _m00() const noexcept -> T {
         return (T(2) * _z_near()) / (_x_right() - _x_left());
     }
 
-    constexpr auto _m11() const noexcept {
+    constexpr auto _m11() const noexcept -> T {
         return (T(2) * _z_near()) / (_y_top() - _y_bottom());
     }
 
-    constexpr auto _m22() const noexcept {
+    constexpr auto _m22() const noexcept -> T {
         return -(_z_far() + _z_near()) / (_z_far() - _z_near());
     }
 
-    constexpr auto _m20() const noexcept {
+    constexpr auto _m20() const noexcept -> T {
         return (_x_right() + _x_left()) / (_x_right() - _x_left());
     }
 
-    constexpr auto _m21() const noexcept {
+    constexpr auto _m21() const noexcept -> T {
         return (_y_top() + _y_bottom()) / (_y_top() - _y_bottom());
     }
 
-    constexpr auto _m23() const noexcept {
+    constexpr auto _m23() const noexcept -> T {
         return -T(1);
     }
 
-    constexpr auto _m32() const noexcept {
+    constexpr auto _m32() const noexcept -> T {
         return -(T(2) * _z_far() * _z_near()) / (_z_far() - _z_near());
-    }
-
-    constexpr auto _make(const std::true_type) const noexcept {
-        return matrix<T, 4, 4, true, V>{
-          {_m00(), T(0), _m20(), T(0)},
-          {T(0), _m11(), _m21(), T(0)},
-          {T(0), T(0), _m22(), _m32()},
-          {T(0), T(0), _m23(), T(0)}};
-    }
-
-    constexpr auto _make(const std::false_type) const noexcept {
-        return matrix<T, 4, 4, false, V>{
-          {_m00(), T(0), T(0), T(0)},
-          {T(0), _m11(), T(0), T(0)},
-          {_m20(), _m21(), _m22(), _m23()},
-          {T(0), T(0), _m32(), T(0)}};
     }
 
     using _dT = simd::data_t<T, 6, V>;
@@ -1120,13 +1112,13 @@ struct compound_view_maker<math::convertible_matrix_constructor<MC>> {
         using T = typename M::element_type;
         M _m;
 
-        operator span<const T>() const noexcept {
+        constexpr operator span<const T>() const noexcept {
             compound_view_maker<M> cvm;
             return cvm(_m);
         }
     };
 
-    auto operator()(
+    constexpr auto operator()(
       const math::convertible_matrix_constructor<MC>& mc) const noexcept {
         return _result_type{mc()};
     }
