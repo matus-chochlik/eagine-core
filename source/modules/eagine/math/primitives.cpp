@@ -13,6 +13,41 @@ import :vector;
 
 namespace eagine::math {
 //------------------------------------------------------------------------------
+/// @brief Template for planes in 3 dimensions.
+/// @ingroup math
+export template <typename T, bool V = true>
+class plane {
+public:
+    /// @brief Default constructor.
+    constexpr plane() noexcept = default;
+
+    /// @brief Construction from point and normal.
+    constexpr plane(const point<T, 3, V>& p, const vector<T, 3, V>& n) noexcept
+      : _equation{n, -n.dot(p.to_vector())} {}
+
+    /// @brief Construction from point and two vectors.
+    constexpr plane(
+      const point<T, 3, V>& p,
+      const vector<T, 3, V>& u,
+      const vector<T, 3, V>& v) noexcept
+      : plane{cross(u, v).normalized(), p} {}
+
+    /// @brief Construction from three points.
+    constexpr plane(
+      const point<T, 3, V>& p0,
+      const point<T, 3, V>& p1,
+      const point<T, 3, V>& p2) noexcept
+      : plane{p0, p1 - p0, p2 - p0} {}
+
+    /// @brief Returns the plane equation.
+    constexpr auto equation() const noexcept -> const vector<T, 4, V>& {
+        return _equation;
+    }
+
+private:
+    vector<T, 4, V> _equation{};
+};
+//------------------------------------------------------------------------------
 /// @brief Basic template for lines in N-dimensional space.
 /// @ingroup math
 export template <typename T, int N, bool V = true>
@@ -135,6 +170,13 @@ public:
     /// @brief Returns the area of the triangle.
     [[nodiscard]] constexpr auto area() const noexcept -> T {
         return length(cross(ab().direction(), ac().direction())) / T(2);
+    }
+
+    /// @brief Returns the plane coplanar with this triangle.
+    [[nodiscard]] constexpr auto to_plane() const noexcept -> plane<T, V>
+        requires(N == 3)
+    {
+        return {a(), b(), c()};
     }
 
 private:
