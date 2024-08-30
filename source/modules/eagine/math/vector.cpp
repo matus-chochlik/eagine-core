@@ -395,6 +395,15 @@ public:
             return scalar_type{simd::esum<T, N, V>::apply(_v * v._v)};
         }
     }
+
+    /// @brief Returns a new vector with components of this vector shuffled.
+    template <int... I>
+    [[nodiscard]] constexpr auto shuffled(
+      simd::shuffle_mask<I...> m = {}) const noexcept -> vector
+        requires((sizeof...(I)) == N)
+    {
+        return {simd::shuffle<T, N, V>::apply(_v, m)};
+    }
 };
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
@@ -487,12 +496,8 @@ export template <typename T, bool V>
 [[nodiscard]] constexpr auto cross(
   const vector<T, 3, V>& a,
   const vector<T, 3, V>& b) noexcept {
-    using _sh = simd::shuffle<T, 3, V>;
-    return vector<T, 3, V>{
-      _sh::apply(a._v, simd::shuffle_mask<1, 2, 0>{}) *
-        _sh::apply(b._v, simd::shuffle_mask<2, 0, 1>{}) -
-      _sh::apply(a._v, simd::shuffle_mask<2, 0, 1>{}) *
-        _sh::apply(b._v, simd::shuffle_mask<1, 2, 0>{})};
+    return a.template shuffled<1, 2, 0>() * b.template shuffled<2, 0, 1>() -
+           b.template shuffled<1, 2, 0>() * a.template shuffled<2, 0, 1>();
 }
 
 /// @brief Returns the length of a vector.
