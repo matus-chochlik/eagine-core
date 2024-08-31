@@ -378,7 +378,7 @@ public:
     constexpr auto is_unit(
       const T eps = std::numeric_limits<T>::epsilon()) const noexcept -> bool {
         using std::abs;
-        return abs(dot(*this) - T(1)) <= eps;
+        return abs(dot(*this) - T(1)) <= eps * T(N);
     }
 
     /// @brief Indicates if this vector has zero magnitude.

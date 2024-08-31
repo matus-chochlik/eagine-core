@@ -137,6 +137,21 @@ public:
         return {_params * c};
     }
 
+    /// @brief Multiplication operator.
+    constexpr auto operator*(const quaternion& q) const noexcept -> quaternion {
+        return {vector<T, 4, V>{
+          _sp<+1, +1, -1, +1>().dot(q._params.template shuffled<3, 2, 1, 0>()),
+          _sp<-1, +1, +1, +1>().dot(q._params.template shuffled<2, 3, 0, 1>()),
+          _sp<+1, -1, +1, +1>().dot(q._params.template shuffled<1, 0, 3, 2>()),
+          _sp<-1, -1, -1, +1>().dot(q._params.template shuffled<0, 1, 2, 3>())}};
+    }
+
+    /// @brief Rotates a vector by a quaternion.
+    constexpr auto rotate(const vector<T, 3, V>& v) const noexcept
+      -> vector<T, 3, V> {
+        return (*this * quaternion(T(0), v) * conjugate()).imag();
+    }
+
 private:
     constexpr quaternion(const vector<T, 4, V> params) noexcept
       : _params{params} {}

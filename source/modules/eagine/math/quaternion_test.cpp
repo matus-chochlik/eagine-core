@@ -123,6 +123,18 @@ void quaternion_conjugate_TV(eagitest::case_& test) {
     test.check_equal(p.i(), -c.i(), "-i");
     test.check_equal(p.j(), -c.j(), "-j");
     test.check_equal(p.k(), -c.k(), "-k");
+
+    const eagine::math::quaternion<T, V> q{
+      eagine::math::vector<T, 3, V>{
+        test.random().get_between<T>(-5000.F, 5000.F),
+        test.random().get_between<T>(-5000.F, 5000.F),
+        test.random().get_between<T>(-5000.F, 5000.F)}
+        .normalized(),
+      eagine::radians_t<T>{test.random().get_between<T>(-5000.F, 5000.F)}};
+
+    test.check(
+      (p * q).conjugate().close_to(q.conjugate() * p.conjugate(), T(0.001)),
+      "mult");
 }
 //------------------------------------------------------------------------------
 template <typename T>
@@ -141,10 +153,50 @@ void quaternion_conjugate_double(auto& s) {
     quaternion_conjugate_T<double>(test);
 }
 //------------------------------------------------------------------------------
+// quaternion inverse
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void quaternion_inverse_TV(eagitest::case_& test) {
+    const eagine::math::quaternion<T, V> p{
+      eagine::math::vector<T, 3, V>{
+        test.random().get_between<T>(-5000.F, 5000.F),
+        test.random().get_between<T>(-5000.F, 5000.F),
+        test.random().get_between<T>(-5000.F, 5000.F)}
+        .normalized(),
+      eagine::radians_t<T>{test.random().get_between<T>(-5000.F, 5000.F)}};
+
+    const eagine::math::quaternion<T, V> q{
+      eagine::math::vector<T, 3, V>{
+        test.random().get_between<T>(-5000.F, 5000.F),
+        test.random().get_between<T>(-5000.F, 5000.F),
+        test.random().get_between<T>(-5000.F, 5000.F)}
+        .normalized(),
+      eagine::radians_t<T>{test.random().get_between<T>(-5000.F, 5000.F)}};
+
+    test.check(
+      (p * q).inverse().close_to(q.inverse() * p.inverse(), T(0.001)), "mult");
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void quaternion_inverse_T(eagitest::case_& test) {
+    quaternion_inverse_TV<T, true>(test);
+    quaternion_inverse_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void quaternion_inverse_float(auto& s) {
+    eagitest::case_ test{s, 9, "inverse float"};
+    quaternion_inverse_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void quaternion_inverse_double(auto& s) {
+    eagitest::case_ test{s, 10, "inverse double"};
+    quaternion_inverse_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "quaternion", 8};
+    eagitest::suite test{argc, argv, "quaternion", 10};
     test.once(quaternion_default_ctr_float);
     test.once(quaternion_default_ctr_double);
     test.once(quaternion_real_imag_ctr_float);
@@ -153,6 +205,8 @@ auto main(int argc, const char** argv) -> int {
     test.once(quaternion_axis_angle_ctr_double);
     test.once(quaternion_conjugate_float);
     test.once(quaternion_conjugate_double);
+    test.once(quaternion_inverse_float);
+    test.once(quaternion_inverse_double);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
