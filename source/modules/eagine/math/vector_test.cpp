@@ -828,6 +828,57 @@ void vector_dot(auto& s) {
     vector_dot_T<double>(test);
 }
 //------------------------------------------------------------------------------
+// cross product
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+void vector_cross_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
+    auto& rg{test.random()};
+
+    T a[N], b[N];
+
+    while(true) {
+        for(int i = 0; i < N; ++i) {
+            a[i] = rg.get_between<T>(-5000, 5000);
+            b[i] = rg.get_between<T>(-5000, 5000);
+        }
+
+        auto u = eagine::math::vector<T, N, V>(a, N);
+        auto v = eagine::math::vector<T, N, V>(b, N);
+        if(not u.is_zero() and not v.is_zero()) {
+            u = u.normalized();
+            v = v.normalized();
+
+            using std::abs;
+            if(T(4) * abs(u.dot(v)) < T(1)) {
+                auto w = cross(u, v);
+                test.check_close(T(dot(u, w)), T(0), "dot u w");
+                test.check_close(T(dot(v, w)), T(0), "dot v w");
+                break;
+            }
+        }
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void vector_cross_TV(eagitest::case_& test) {
+    vector_cross_TNV<T, 3, V>(test);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void vector_cross_T(eagitest::case_& test) {
+    vector_cross_TV<T, true>(test);
+    vector_cross_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void vector_cross(auto& s) {
+    eagitest::case_ test{s, 32, "cross"};
+    vector_cross_T<int>(test);
+    vector_cross_T<float>(test);
+    vector_cross_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // vector fill
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
@@ -866,7 +917,7 @@ void vector_fill_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_fill_ctr(auto& s) {
-    eagitest::case_ test{s, 32, "vector fill constructor"};
+    eagitest::case_ test{s, 33, "vector fill constructor"};
     vector_fill_ctr_T<int>(test);
     vector_fill_ctr_T<float>(test);
     vector_fill_ctr_T<double>(test);
@@ -910,7 +961,7 @@ void vector_vector_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_vector_ctr(auto& s) {
-    eagitest::case_ test{s, 33, "vector constructor"};
+    eagitest::case_ test{s, 34, "vector constructor"};
     vector_vector_ctr_T<int>(test);
     vector_vector_ctr_T<float>(test);
     vector_vector_ctr_T<double>(test);
@@ -959,7 +1010,7 @@ void vector_array_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_array_ctr(auto& s) {
-    eagitest::case_ test{s, 34, "vector constructor"};
+    eagitest::case_ test{s, 35, "vector constructor"};
     vector_array_ctr_T<int>(test);
     vector_array_ctr_T<float>(test);
     vector_array_ctr_T<double>(test);
@@ -1019,7 +1070,7 @@ void vector_pack_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_pack_ctr(auto& s) {
-    eagitest::case_ test{s, 35, "vector constructor"};
+    eagitest::case_ test{s, 36, "vector constructor"};
     vector_pack_ctr_T<int>(test);
     vector_pack_ctr_T<float>(test);
     vector_pack_ctr_T<double>(test);
@@ -1108,7 +1159,7 @@ void vector_vec_val_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_vec_val_ctr(auto& s) {
-    eagitest::case_ test{s, 36, "vector + value constructor"};
+    eagitest::case_ test{s, 37, "vector + value constructor"};
     vector_vec_val_ctr_T<int>(test);
     vector_vec_val_ctr_T<float>(test);
     vector_vec_val_ctr_T<double>(test);
@@ -1199,7 +1250,7 @@ void vector_vec_vec_ctr_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_vec_vec_ctr(auto& s) {
-    eagitest::case_ test{s, 37, "vector + vector constructor"};
+    eagitest::case_ test{s, 38, "vector + vector constructor"};
     vector_vec_vec_ctr_T<int>(test);
     vector_vec_vec_ctr_T<float>(test);
     vector_vec_vec_ctr_T<double>(test);
@@ -1208,7 +1259,7 @@ void vector_vec_vec_ctr(auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "vector", 37};
+    eagitest::suite test{argc, argv, "vector", 38};
     test.once(vector_default_ctr_int);
     test.once(vector_default_ctr_float);
     test.once(vector_default_ctr_double);
@@ -1240,6 +1291,7 @@ auto main(int argc, const char** argv) -> int {
     test.once(vector_magnitude);
     test.once(vector_normalized);
     test.once(vector_dot);
+    test.once(vector_cross);
     test.once(vector_fill_ctr);
     test.once(vector_vector_ctr);
     test.once(vector_array_ctr);
