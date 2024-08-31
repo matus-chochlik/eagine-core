@@ -728,6 +728,55 @@ void vector_magnitude(auto& s) {
     vector_magnitude_T<double>(test);
 }
 //------------------------------------------------------------------------------
+// normalized
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+void vector_normalized_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
+    auto& rg{test.random()};
+
+    T a[N];
+
+    for(int i = 0; i < N; ++i) {
+        a[i] = rg.get_between<T>(-5000, 5000);
+    }
+
+    const auto v = eagine::math::vector<T, N, V>(a, N);
+    const auto n = v.normalized();
+
+    test.check(not n.is_zero(), "normalized is not zero");
+    test.check(n.is_unit(), "normalized is unit");
+    test.check_close(T(n.length()), T(1), "length is one");
+    test.check_close(T(n.magnitude()), T(1), "magnitude is one");
+}
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void vector_normalized_TV(eagitest::case_& test) {
+    vector_normalized_TNV<T, 1, V>(test);
+    vector_normalized_TNV<T, 2, V>(test);
+    vector_normalized_TNV<T, 3, V>(test);
+    vector_normalized_TNV<T, 4, V>(test);
+    vector_normalized_TNV<T, 5, V>(test);
+    vector_normalized_TNV<T, 6, V>(test);
+    vector_normalized_TNV<T, 7, V>(test);
+    vector_normalized_TNV<T, 8, V>(test);
+    vector_normalized_TNV<T, 13, V>(test);
+    vector_normalized_TNV<T, 17, V>(test);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void vector_normalized_T(eagitest::case_& test) {
+    vector_normalized_TV<T, true>(test);
+    vector_normalized_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void vector_normalized(auto& s) {
+    eagitest::case_ test{s, 30, "normalized"};
+    vector_normalized_T<float>(test);
+    vector_normalized_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // dot product
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
@@ -773,57 +822,16 @@ void vector_dot_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void vector_dot(auto& s) {
-    eagitest::case_ test{s, 30, "dot"};
+    eagitest::case_ test{s, 31, "dot"};
     vector_dot_T<int>(test);
     vector_dot_T<float>(test);
     vector_dot_T<double>(test);
 }
 //------------------------------------------------------------------------------
-// vector default constructor
-//------------------------------------------------------------------------------
-template <typename T, int N, bool V>
-void tvec_default_ctr_TNV(eagitest::case_& test) {
-    test.parameter(N, "N");
-    test.parameter(V, "V");
-    eagine::math::vector<T, N, V> v;
-    for(int i = 0; i < N; ++i) {
-        test.check_equal(v[i], T(0), "is zero");
-    }
-}
-//------------------------------------------------------------------------------
-template <typename T, bool V>
-void tvec_default_ctr_TV(eagitest::case_& test) {
-    tvec_default_ctr_TNV<T, 1, V>(test);
-    tvec_default_ctr_TNV<T, 2, V>(test);
-    tvec_default_ctr_TNV<T, 3, V>(test);
-    tvec_default_ctr_TNV<T, 4, V>(test);
-    tvec_default_ctr_TNV<T, 5, V>(test);
-    tvec_default_ctr_TNV<T, 6, V>(test);
-    tvec_default_ctr_TNV<T, 7, V>(test);
-    tvec_default_ctr_TNV<T, 8, V>(test);
-    tvec_default_ctr_TNV<T, 11, V>(test);
-    tvec_default_ctr_TNV<T, 13, V>(test);
-    tvec_default_ctr_TNV<T, 19, V>(test);
-    tvec_default_ctr_TNV<T, 23, V>(test);
-}
-//------------------------------------------------------------------------------
-template <typename T>
-void tvec_default_ctr_T(eagitest::case_& test) {
-    tvec_default_ctr_TV<T, true>(test);
-    tvec_default_ctr_TV<T, false>(test);
-}
-//------------------------------------------------------------------------------
-void tvec_default_ctr(auto& s) {
-    eagitest::case_ test{s, 31, "vector default constructor"};
-    tvec_default_ctr_T<int>(test);
-    tvec_default_ctr_T<float>(test);
-    tvec_default_ctr_T<double>(test);
-}
-//------------------------------------------------------------------------------
 // vector fill
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
-void tvec_fill_ctr_TNV(eagitest::case_& test) {
+void vector_fill_ctr_TNV(eagitest::case_& test) {
     test.parameter(N, "N");
     test.parameter(V, "V");
     auto& rg{test.random()};
@@ -836,38 +844,38 @@ void tvec_fill_ctr_TNV(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 template <typename T, bool V>
-void tvec_fill_ctr_TV(eagitest::case_& test) {
-    tvec_fill_ctr_TNV<T, 1, V>(test);
-    tvec_fill_ctr_TNV<T, 2, V>(test);
-    tvec_fill_ctr_TNV<T, 3, V>(test);
-    tvec_fill_ctr_TNV<T, 4, V>(test);
-    tvec_fill_ctr_TNV<T, 5, V>(test);
-    tvec_fill_ctr_TNV<T, 6, V>(test);
-    tvec_fill_ctr_TNV<T, 7, V>(test);
-    tvec_fill_ctr_TNV<T, 8, V>(test);
-    tvec_fill_ctr_TNV<T, 11, V>(test);
-    tvec_fill_ctr_TNV<T, 13, V>(test);
-    tvec_fill_ctr_TNV<T, 19, V>(test);
-    tvec_fill_ctr_TNV<T, 23, V>(test);
+void vector_fill_ctr_TV(eagitest::case_& test) {
+    vector_fill_ctr_TNV<T, 1, V>(test);
+    vector_fill_ctr_TNV<T, 2, V>(test);
+    vector_fill_ctr_TNV<T, 3, V>(test);
+    vector_fill_ctr_TNV<T, 4, V>(test);
+    vector_fill_ctr_TNV<T, 5, V>(test);
+    vector_fill_ctr_TNV<T, 6, V>(test);
+    vector_fill_ctr_TNV<T, 7, V>(test);
+    vector_fill_ctr_TNV<T, 8, V>(test);
+    vector_fill_ctr_TNV<T, 11, V>(test);
+    vector_fill_ctr_TNV<T, 13, V>(test);
+    vector_fill_ctr_TNV<T, 19, V>(test);
+    vector_fill_ctr_TNV<T, 23, V>(test);
 }
 //------------------------------------------------------------------------------
 template <typename T>
-void tvec_fill_ctr_T(eagitest::case_& test) {
-    tvec_fill_ctr_TV<T, true>(test);
-    tvec_fill_ctr_TV<T, false>(test);
+void vector_fill_ctr_T(eagitest::case_& test) {
+    vector_fill_ctr_TV<T, true>(test);
+    vector_fill_ctr_TV<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void tvec_fill_ctr(auto& s) {
+void vector_fill_ctr(auto& s) {
     eagitest::case_ test{s, 32, "vector fill constructor"};
-    tvec_fill_ctr_T<int>(test);
-    tvec_fill_ctr_T<float>(test);
-    tvec_fill_ctr_T<double>(test);
+    vector_fill_ctr_T<int>(test);
+    vector_fill_ctr_T<float>(test);
+    vector_fill_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
 // vector constructor
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
-void tvec_vector_ctr_TNV(eagitest::case_& test) {
+void vector_vector_ctr_TNV(eagitest::case_& test) {
     test.parameter(N, "N");
     test.parameter(V, "V");
     auto& rg{test.random()};
@@ -880,38 +888,38 @@ void tvec_vector_ctr_TNV(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 template <typename T, bool V>
-void tvec_vector_ctr_TV(eagitest::case_& test) {
-    tvec_vector_ctr_TNV<T, 1, V>(test);
-    tvec_vector_ctr_TNV<T, 2, V>(test);
-    tvec_vector_ctr_TNV<T, 3, V>(test);
-    tvec_vector_ctr_TNV<T, 4, V>(test);
-    tvec_vector_ctr_TNV<T, 5, V>(test);
-    tvec_vector_ctr_TNV<T, 6, V>(test);
-    tvec_vector_ctr_TNV<T, 7, V>(test);
-    tvec_vector_ctr_TNV<T, 8, V>(test);
-    tvec_vector_ctr_TNV<T, 11, V>(test);
-    tvec_vector_ctr_TNV<T, 13, V>(test);
-    tvec_vector_ctr_TNV<T, 19, V>(test);
-    tvec_vector_ctr_TNV<T, 23, V>(test);
+void vector_vector_ctr_TV(eagitest::case_& test) {
+    vector_vector_ctr_TNV<T, 1, V>(test);
+    vector_vector_ctr_TNV<T, 2, V>(test);
+    vector_vector_ctr_TNV<T, 3, V>(test);
+    vector_vector_ctr_TNV<T, 4, V>(test);
+    vector_vector_ctr_TNV<T, 5, V>(test);
+    vector_vector_ctr_TNV<T, 6, V>(test);
+    vector_vector_ctr_TNV<T, 7, V>(test);
+    vector_vector_ctr_TNV<T, 8, V>(test);
+    vector_vector_ctr_TNV<T, 11, V>(test);
+    vector_vector_ctr_TNV<T, 13, V>(test);
+    vector_vector_ctr_TNV<T, 19, V>(test);
+    vector_vector_ctr_TNV<T, 23, V>(test);
 }
 //------------------------------------------------------------------------------
 template <typename T>
-void tvec_vector_ctr_T(eagitest::case_& test) {
-    tvec_vector_ctr_TV<T, true>(test);
-    tvec_vector_ctr_TV<T, false>(test);
+void vector_vector_ctr_T(eagitest::case_& test) {
+    vector_vector_ctr_TV<T, true>(test);
+    vector_vector_ctr_TV<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void tvec_vector_ctr(auto& s) {
+void vector_vector_ctr(auto& s) {
     eagitest::case_ test{s, 33, "vector constructor"};
-    tvec_vector_ctr_T<int>(test);
-    tvec_vector_ctr_T<float>(test);
-    tvec_vector_ctr_T<double>(test);
+    vector_vector_ctr_T<int>(test);
+    vector_vector_ctr_T<float>(test);
+    vector_vector_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
 // vector array constructor
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
-void tvec_array_ctr_TNV(eagitest::case_& test) {
+void vector_array_ctr_TNV(eagitest::case_& test) {
     test.parameter(N, "N");
     test.parameter(V, "V");
     auto& rg{test.random()};
@@ -929,38 +937,38 @@ void tvec_array_ctr_TNV(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 template <typename T, bool V>
-void tvec_array_ctr_TV(eagitest::case_& test) {
-    tvec_array_ctr_TNV<T, 1, V>(test);
-    tvec_array_ctr_TNV<T, 2, V>(test);
-    tvec_array_ctr_TNV<T, 3, V>(test);
-    tvec_array_ctr_TNV<T, 4, V>(test);
-    tvec_array_ctr_TNV<T, 5, V>(test);
-    tvec_array_ctr_TNV<T, 6, V>(test);
-    tvec_array_ctr_TNV<T, 7, V>(test);
-    tvec_array_ctr_TNV<T, 8, V>(test);
-    tvec_array_ctr_TNV<T, 11, V>(test);
-    tvec_array_ctr_TNV<T, 13, V>(test);
-    tvec_array_ctr_TNV<T, 19, V>(test);
-    tvec_array_ctr_TNV<T, 23, V>(test);
+void vector_array_ctr_TV(eagitest::case_& test) {
+    vector_array_ctr_TNV<T, 1, V>(test);
+    vector_array_ctr_TNV<T, 2, V>(test);
+    vector_array_ctr_TNV<T, 3, V>(test);
+    vector_array_ctr_TNV<T, 4, V>(test);
+    vector_array_ctr_TNV<T, 5, V>(test);
+    vector_array_ctr_TNV<T, 6, V>(test);
+    vector_array_ctr_TNV<T, 7, V>(test);
+    vector_array_ctr_TNV<T, 8, V>(test);
+    vector_array_ctr_TNV<T, 11, V>(test);
+    vector_array_ctr_TNV<T, 13, V>(test);
+    vector_array_ctr_TNV<T, 19, V>(test);
+    vector_array_ctr_TNV<T, 23, V>(test);
 }
 //------------------------------------------------------------------------------
 template <typename T>
-void tvec_array_ctr_T(eagitest::case_& test) {
-    tvec_array_ctr_TV<T, true>(test);
-    tvec_array_ctr_TV<T, false>(test);
+void vector_array_ctr_T(eagitest::case_& test) {
+    vector_array_ctr_TV<T, true>(test);
+    vector_array_ctr_TV<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void tvec_array_ctr(auto& s) {
+void vector_array_ctr(auto& s) {
     eagitest::case_ test{s, 34, "vector constructor"};
-    tvec_array_ctr_T<int>(test);
-    tvec_array_ctr_T<float>(test);
-    tvec_array_ctr_T<double>(test);
+    vector_array_ctr_T<int>(test);
+    vector_array_ctr_T<float>(test);
+    vector_array_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
 // vector pack constructor
 //------------------------------------------------------------------------------
 template <typename T, bool V>
-void tvec_pack_ctr_TV(eagitest::case_& test) {
+void vector_pack_ctr_TV(eagitest::case_& test) {
     test.parameter(V, "V");
     auto& rg{test.random()};
 
@@ -1005,22 +1013,22 @@ void tvec_pack_ctr_TV(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 template <typename T>
-void tvec_pack_ctr_T(eagitest::case_& test) {
-    tvec_pack_ctr_TV<T, true>(test);
-    tvec_pack_ctr_TV<T, false>(test);
+void vector_pack_ctr_T(eagitest::case_& test) {
+    vector_pack_ctr_TV<T, true>(test);
+    vector_pack_ctr_TV<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void tvec_pack_ctr(auto& s) {
+void vector_pack_ctr(auto& s) {
     eagitest::case_ test{s, 35, "vector constructor"};
-    tvec_pack_ctr_T<int>(test);
-    tvec_pack_ctr_T<float>(test);
-    tvec_pack_ctr_T<double>(test);
+    vector_pack_ctr_T<int>(test);
+    vector_pack_ctr_T<float>(test);
+    vector_pack_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
 // vector + value constructor
 //------------------------------------------------------------------------------
 template <typename T, bool V>
-void tvec_vec_val_ctr_TV(eagitest::case_& test) {
+void vector_vec_val_ctr_TV(eagitest::case_& test) {
     test.parameter(V, "V");
     auto& rg{test.random()};
 
@@ -1094,22 +1102,22 @@ void tvec_vec_val_ctr_TV(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 template <typename T>
-void tvec_vec_val_ctr_T(eagitest::case_& test) {
-    tvec_vec_val_ctr_TV<T, true>(test);
-    tvec_vec_val_ctr_TV<T, false>(test);
+void vector_vec_val_ctr_T(eagitest::case_& test) {
+    vector_vec_val_ctr_TV<T, true>(test);
+    vector_vec_val_ctr_TV<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void tvec_vec_val_ctr(auto& s) {
+void vector_vec_val_ctr(auto& s) {
     eagitest::case_ test{s, 36, "vector + value constructor"};
-    tvec_vec_val_ctr_T<int>(test);
-    tvec_vec_val_ctr_T<float>(test);
-    tvec_vec_val_ctr_T<double>(test);
+    vector_vec_val_ctr_T<int>(test);
+    vector_vec_val_ctr_T<float>(test);
+    vector_vec_val_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
 // vector + vector constructor
 //------------------------------------------------------------------------------
 template <typename T, bool V>
-void tvec_vec_vec_ctr_TV(eagitest::case_& test) {
+void vector_vec_vec_ctr_TV(eagitest::case_& test) {
     test.parameter(V, "V");
     auto& rg{test.random()};
 
@@ -1185,16 +1193,16 @@ void tvec_vec_vec_ctr_TV(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 template <typename T>
-void tvec_vec_vec_ctr_T(eagitest::case_& test) {
-    tvec_vec_vec_ctr_TV<T, true>(test);
-    tvec_vec_vec_ctr_TV<T, false>(test);
+void vector_vec_vec_ctr_T(eagitest::case_& test) {
+    vector_vec_vec_ctr_TV<T, true>(test);
+    vector_vec_vec_ctr_TV<T, false>(test);
 }
 //------------------------------------------------------------------------------
-void tvec_vec_vec_ctr(auto& s) {
+void vector_vec_vec_ctr(auto& s) {
     eagitest::case_ test{s, 37, "vector + vector constructor"};
-    tvec_vec_vec_ctr_T<int>(test);
-    tvec_vec_vec_ctr_T<float>(test);
-    tvec_vec_vec_ctr_T<double>(test);
+    vector_vec_vec_ctr_T<int>(test);
+    vector_vec_vec_ctr_T<float>(test);
+    vector_vec_vec_ctr_T<double>(test);
 }
 //------------------------------------------------------------------------------
 // main
@@ -1230,14 +1238,14 @@ auto main(int argc, const char** argv) -> int {
     test.once(vector_from4_double);
     test.once(vector_dimension);
     test.once(vector_magnitude);
+    test.once(vector_normalized);
     test.once(vector_dot);
-    test.once(tvec_default_ctr);
-    test.once(tvec_fill_ctr);
-    test.once(tvec_vector_ctr);
-    test.once(tvec_array_ctr);
-    test.once(tvec_pack_ctr);
-    test.once(tvec_vec_val_ctr);
-    test.once(tvec_vec_vec_ctr);
+    test.once(vector_fill_ctr);
+    test.once(vector_vector_ctr);
+    test.once(vector_array_ctr);
+    test.once(vector_pack_ctr);
+    test.once(vector_vec_val_ctr);
+    test.once(vector_vec_vec_ctr);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
