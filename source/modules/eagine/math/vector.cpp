@@ -388,6 +388,13 @@ public:
         return simd::is_zero<T, N, V>::apply(_v);
     }
 
+    /// @brief Indicates if this vector is close to another vector.
+    [[nodiscard]] auto close_to(
+      const vector& v,
+      const T eps = std::numeric_limits<T>::epsilon()) const noexcept -> bool {
+        return vector{_v - v._v}.magnitude() <= eps;
+    }
+
     /// @brief Returns a normalized copy of this vector.
     [[nodiscard]] constexpr auto normalized() const noexcept -> vector {
         const scalar_type l{length()};
@@ -431,7 +438,7 @@ constexpr auto point<T, N, V>::operator+(const vector<T, N, V>& a) const noexcep
 template <typename T, int N, bool V>
 constexpr auto point<T, N, V>::operator-(const vector<T, N, V>& a) const noexcept
   -> point {
-    return {_v + a._v};
+    return {_v - a._v};
 }
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
