@@ -81,6 +81,18 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.math
 	COMPONENT core-dev
+	PARTITION quaternion
+	IMPORTS
+		std functions vector
+		eagine.core.types
+		eagine.core.memory
+		eagine.core.simd
+		eagine.core.units
+)
+
+eagine_add_module(
+	eagine.core.math
+	COMPONENT core-dev
 	PARTITION colors
 	IMPORTS
 		std constants functions vector
@@ -172,6 +184,7 @@ eagine_add_module_tests(
 		matrix_2
 		matrix_3
 		matrix_construct
+		quaternion
 	IMPORTS
 		eagine.core.debug
 		eagine.core.types
