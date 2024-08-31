@@ -193,10 +193,78 @@ void quaternion_inverse_double(auto& s) {
     quaternion_inverse_T<double>(test);
 }
 //------------------------------------------------------------------------------
+// vector rotation
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void quaternion_rotate_TV(eagitest::case_& test) {
+    using deg = eagine::degrees_t<T>;
+    using qtn = eagine::math::quaternion<T, V>;
+    using vec = eagine::math::vector<T, 3, V>;
+    const auto one = T(1);
+
+    test.check(
+      qtn{vec::axis(0, one), deg(0)}
+        .rotate(vec::axis(1, one))
+        .close_to(vec::axis(1, one)),
+      "A");
+
+    test.check(
+      qtn{vec::axis(1, one), deg(0)}
+        .rotate(vec::axis(2, one))
+        .close_to(vec::axis(2, one)),
+      "B");
+
+    test.check(
+      qtn{vec::axis(2, one), deg(0)}
+        .rotate(vec::axis(0, one))
+        .close_to(vec::axis(0, one)),
+      "C");
+
+    test.check(
+      qtn{vec::axis(0, one), -deg(90)}
+        .rotate(vec::axis(2, one))
+        .close_to(vec::axis(1, one)),
+      "D");
+
+    test.check(
+      qtn{vec::axis(0, one), deg(90)}
+        .rotate(vec::axis(2, one))
+        .close_to(-vec::axis(1, one)),
+      "E");
+
+    test.check(
+      qtn{vec::axis(0, one), deg(180)}
+        .rotate(vec::axis(2, one))
+        .close_to(-vec::axis(2, one)),
+      "F");
+
+    test.check(
+      qtn{vec::axis(0, one), deg(270)}
+        .rotate(vec::axis(1, one))
+        .close_to(-vec::axis(2, one)),
+      "F");
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void quaternion_rotate_T(eagitest::case_& test) {
+    quaternion_rotate_TV<T, true>(test);
+    quaternion_rotate_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void quaternion_rotate_float(auto& s) {
+    eagitest::case_ test{s, 11, "rotate float"};
+    quaternion_rotate_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void quaternion_rotate_double(auto& s) {
+    eagitest::case_ test{s, 12, "rotate double"};
+    quaternion_rotate_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "quaternion", 10};
+    eagitest::suite test{argc, argv, "quaternion", 12};
     test.once(quaternion_default_ctr_float);
     test.once(quaternion_default_ctr_double);
     test.once(quaternion_real_imag_ctr_float);
@@ -207,6 +275,8 @@ auto main(int argc, const char** argv) -> int {
     test.once(quaternion_conjugate_double);
     test.once(quaternion_inverse_float);
     test.once(quaternion_inverse_double);
+    test.once(quaternion_rotate_float);
+    test.once(quaternion_rotate_double);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
