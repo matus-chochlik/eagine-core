@@ -49,6 +49,7 @@ public:
       : _v{v} {}
 
     /// @brief Default constructor. Constructs a zero point.
+    /// @post to_vector().is_zero()
     constexpr point() noexcept
       : _v{_zero()} {}
 
@@ -165,6 +166,7 @@ public:
       : _v{v} {}
 
     /// @brief Default constructor. Constructs a zero vector.
+    /// @post is_zero()
     constexpr vector() noexcept
       : _v{_zero()} {}
 
@@ -371,8 +373,18 @@ public:
         return magnitude();
     }
 
-    /// @brief Tests if this vector is zero-length.
-    [[nodiscard]] constexpr auto is_zero() const noexcept -> bool {
+    /// @brief Indicates if this vector has unit magnitude.
+    /// @see is_zero
+    constexpr auto is_unit(
+      const T eps = std::numeric_limits<T>::epsilon()) const noexcept -> bool {
+        using std::abs;
+        return abs(dot(*this) - T(1)) <= eps;
+    }
+
+    /// @brief Indicates if this vector has zero magnitude.
+    /// @see is_unit
+    [[nodiscard]] constexpr auto is_zero(
+      const T = std::numeric_limits<T>::epsilon()) const noexcept -> bool {
         return simd::is_zero<T, N, V>::apply(_v);
     }
 
