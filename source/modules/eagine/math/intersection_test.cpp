@@ -34,6 +34,22 @@ void math_ray_plane_intersection_TV(eagitest::case_& test) {
         .value_or(pnt{})
         .close_to(pnt{T(1), T(0), T(0)}),
       "B");
+
+    test.check(
+      eagine::math::line_plane_intersection(
+        ray{pnt{T(-2), T(0), T(0)}, vec{T(1), T(0), T(0)}},
+        pln{pnt{T(2), T(0), T(0)}, vec{T(-2), T(0), T(0)}})
+        .value_or(pnt{})
+        .close_to(pnt{T(2), T(0), T(0)}),
+      "C");
+
+    test.check(
+      eagine::math::line_plane_intersection(
+        ray{pnt{T(0), T(2), T(0)}, vec{T(0), T(-4), T(0)}},
+        pln{pnt{T(0), T(-3), T(0)}, vec{T(0), T(1), T(0)}})
+        .value_or(pnt{})
+        .close_to(pnt{T(0), T(-3), T(0)}),
+      "D");
 }
 //------------------------------------------------------------------------------
 template <typename T>

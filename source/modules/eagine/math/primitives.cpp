@@ -52,7 +52,7 @@ public:
 
     /// @brief Returns the distance part of the plane equation.
     constexpr auto distance() const noexcept -> T {
-        return _equation[3] / normal().length();
+        return -_equation[3];
     }
 
     /// @brief Returns the plane equation.
