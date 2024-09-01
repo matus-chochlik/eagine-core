@@ -185,6 +185,7 @@ eagine_add_module_tests(
 		matrix_3
 		matrix_construct
 		quaternion
+		intersection
 	IMPORTS
 		eagine.core.debug
 		eagine.core.types

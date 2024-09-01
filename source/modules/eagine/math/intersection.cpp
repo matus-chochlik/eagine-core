@@ -165,9 +165,7 @@ export template <typename T, bool V>
 
             if((v >= T(0)) and (u + v <= T(1))) {
                 const T t = f * dot(tri.ac().direction(), q);
-                if(t >= T(0)) {
-                    return {t, true};
-                }
+                return {t, t >= T(0)};
             }
         }
     }
@@ -181,7 +179,37 @@ export template <typename T, bool V>
   const line<T, V>& ray,
   const triangle<T, V>& tri) noexcept -> optionally_valid<point<T, 3, V>> {
     return line_triangle_intersection_param(ray, tri).and_then(
-      [&](auto t) -> optionally_valid<point<T, 3, V>> {
+      [&](const auto t) -> optionally_valid<point<T, 3, V>> {
+          return {ray.origin() + ray.direction() * t, true};
+      });
+}
+//------------------------------------------------------------------------------
+// line-plane
+//------------------------------------------------------------------------------
+export template <typename T, bool V>
+[[nodiscard]] constexpr auto line_plane_intersection_param(
+  const line<T, V>& ray,
+  const plane<T, V>& pln) noexcept -> optionally_valid<T> {
+    const auto rd{ray.direction()};
+    const auto pn{pln.normal()};
+    const T ddn{dot(rd, pn)};
+    if(ddn != T(0)) {
+        const auto don{dot(ray.origin().to_vector(), pn)};
+        const auto t{(pln.distance() - don) / ddn};
+        return {t, t >= T(0)};
+    }
+
+    return {};
+}
+//------------------------------------------------------------------------------
+/// @brief Finds line-plane intersection point.
+/// @ingroup math
+export template <typename T, bool V>
+[[nodiscard]] constexpr auto line_plane_intersection(
+  const line<T, V>& ray,
+  const plane<T, V>& pln) noexcept -> optionally_valid<point<T, 3, V>> {
+    return line_plane_intersection_param(ray, pln).and_then(
+      [&](const auto t) -> optionally_valid<point<T, 3, V>> {
           return {ray.origin() + ray.direction() * t, true};
       });
 }

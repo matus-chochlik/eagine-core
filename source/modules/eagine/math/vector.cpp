@@ -101,6 +101,13 @@ public:
     {
         return _v[2];
     }
+
+    /// @brief Indicates if this point is close to another point.
+    [[nodiscard]] constexpr auto close_to(
+      const point& p,
+      const T eps = std::numeric_limits<T>::epsilon()) const noexcept -> bool {
+        return (*this - p).magnitude() <= eps;
+    }
 };
 //------------------------------------------------------------------------------
 /// @brief Basic N-dimensional vector implementation template.
@@ -389,7 +396,7 @@ public:
     }
 
     /// @brief Indicates if this vector is close to another vector.
-    [[nodiscard]] auto close_to(
+    [[nodiscard]] constexpr auto close_to(
       const vector& v,
       const T eps = std::numeric_limits<T>::epsilon()) const noexcept -> bool {
         return vector{_v - v._v}.magnitude() <= eps;

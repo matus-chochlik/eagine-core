@@ -5,6 +5,10 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 /// https://www.boost.org/LICENSE_1_0.txt
 ///
+module;
+
+#include <cassert>
+
 export module eagine.core.math:primitives;
 
 import std;
@@ -23,7 +27,9 @@ public:
 
     /// @brief Construction from point and normal.
     constexpr plane(const point<T, 3, V>& p, const vector<T, 3, V>& n) noexcept
-      : _equation{n, -n.dot(p.to_vector())} {}
+      : _equation{n, -n.dot(p.to_vector())} {
+        assert(not normal().is_zero());
+    }
 
     /// @brief Construction from point and two vectors.
     constexpr plane(
@@ -38,6 +44,16 @@ public:
       const point<T, 3, V>& p1,
       const point<T, 3, V>& p2) noexcept
       : plane{p0, p1 - p0, p2 - p0} {}
+
+    /// @brief Returns the normal vector part of the plane equation.
+    constexpr auto normal() const noexcept -> vector<T, 3, V> {
+        return vector<T, 3, V>{_equation};
+    }
+
+    /// @brief Returns the distance part of the plane equation.
+    constexpr auto distance() const noexcept -> T {
+        return _equation[3] / normal().length();
+    }
 
     /// @brief Returns the plane equation.
     constexpr auto equation() const noexcept -> const vector<T, 4, V>& {
