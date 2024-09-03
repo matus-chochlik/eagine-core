@@ -60,6 +60,15 @@ void math_matrix_ctrs_TRMV(eagitest::case_& test) {
     };
 
     math_matrix_ctr_MC(test, identity<matrix<T, 4, 4, RM, V>>());
+    const auto x{r()};
+    const auto y{r()};
+    const auto z{r()};
+
+    test.check(
+      translation<matrix<T, 4, 4, RM, V>>(x, y, z)().translation().close_to(
+        {x, y, z}),
+      "translation");
+
     math_matrix_ctr_MC(
       test, translation<matrix<T, 4, 4, RM, V>>(r(), r(), r()));
     math_matrix_ctr_MC(test, scale<matrix<T, 4, 4, RM, V>>(r(), r(), r()));

@@ -385,15 +385,15 @@ public:
     {
         if constexpr(is_row_major()) {
             if constexpr(R == 4) {
-                return vector<T, 3, V>{_v[3]};
-            } else {
-                return vector<T, 2, V>{_v[2]};
-            }
-        } else { // column-major
-            if constexpr(R == 4) {
                 return vector<T, 3, V>{_v[0][3], _v[1][3], _v[2][3]};
             } else {
                 return vector<T, 2, V>{_v[0][2], _v[1][2]};
+            }
+        } else { // column-major
+            if constexpr(R == 4) {
+                return vector<T, 3, V>{major_vector(3)};
+            } else {
+                return vector<T, 2, V>{major_vector(2)};
             }
         }
     }
