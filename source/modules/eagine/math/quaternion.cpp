@@ -43,56 +43,57 @@ public:
     }
 
     /// @brief Returns the i-imaginary part of the quaternion.
-    constexpr auto i() const noexcept -> T {
+    [[nodiscard]] constexpr auto i() const noexcept -> T {
         return _params[0];
     }
 
     /// @brief Returns the j-imaginary part of the quaternion.
-    constexpr auto j() const noexcept -> T {
+    [[nodiscard]] constexpr auto j() const noexcept -> T {
         return _params[1];
     }
 
     /// @brief Returns the k-imaginary part of the quaternion.
-    constexpr auto k() const noexcept -> T {
+    [[nodiscard]] constexpr auto k() const noexcept -> T {
         return _params[2];
     }
 
     /// @brief Returns the real part of the quaternion.
-    constexpr auto r() const noexcept -> T {
+    [[nodiscard]] constexpr auto r() const noexcept -> T {
         return _params[3];
     }
 
     /// @brief Returns the real part of the quaternion.
-    constexpr auto real() const noexcept -> T {
+    [[nodiscard]] constexpr auto real() const noexcept -> T {
         return _params[3];
     }
 
     /// @brief Returns the imaginary part of the quaternion.
-    constexpr auto imag() const noexcept -> vector<T, 3, V> {
+    [[nodiscard]] constexpr auto imag() const noexcept -> vector<T, 3, V> {
         return vector<T, 3, V>{_params};
     }
 
     /// @brief Returns the dot product of this quaternion with other quaternion.
-    constexpr auto dot(const quaternion& that) const noexcept -> T {
+    [[nodiscard]] constexpr auto dot(const quaternion& that) const noexcept
+      -> T {
         return _params.dot(that._params);
     }
 
     /// @brief Returns the magnitude of this quaternion.
-    constexpr auto magnitude() const noexcept -> T {
+    [[nodiscard]] constexpr auto magnitude() const noexcept -> T {
         using std::sqrt;
         return sqrt(dot(*this));
     }
 
     /// @brief Indicates if this quaternion has unit magnitude.
     /// @see is_zero
-    constexpr auto is_unit(
+    [[nodiscard]] constexpr auto is_unit(
       const T eps = std::numeric_limits<T>::epsilon()) const noexcept -> bool {
         return _params.is_unit(eps);
     }
 
     /// @brief Indicates if this quaternion has zero magnitude.
     /// @see is_unit
-    constexpr auto is_zero(
+    [[nodiscard]] constexpr auto is_zero(
       const T eps = std::numeric_limits<T>::epsilon()) const noexcept -> bool {
         return _params.is_zero(eps);
     }
@@ -100,8 +101,9 @@ public:
     /// @brief Returns this quaternion normalized
     /// @pre not is_zero()
     /// @post is_unit()
-    constexpr auto normalized(const T eps = std::numeric_limits<T>::epsilon())
-      const noexcept -> quaternion {
+    [[nodiscard]] constexpr auto normalized(
+      const T eps = std::numeric_limits<T>::epsilon()) const noexcept
+      -> quaternion {
         return {_params.normalized()};
     }
 
@@ -114,31 +116,34 @@ public:
 
     /// @brief Returns the inverse of this quaternion.
     /// @pre not is_zero()
-    constexpr auto inverse(const T eps = std::numeric_limits<T>::epsilon())
-      const noexcept -> quaternion {
+    [[nodiscard]] constexpr auto inverse(
+      const T eps = std::numeric_limits<T>::epsilon()) const noexcept
+      -> quaternion {
         const auto dp{dot(*this)};
         assert(dp > eps);
         return {real() / dp, -imag() / dp};
     }
 
     /// @brief Returns the conjugate of this quaternion.
-    constexpr auto conjugate() const noexcept -> quaternion {
+    [[nodiscard]] constexpr auto conjugate() const noexcept -> quaternion {
         return {real(), -imag()};
     }
 
     /// @brief Addition operator.
-    constexpr auto operator+(const quaternion& that) const noexcept
+    [[nodiscard]] constexpr auto operator+(const quaternion& that) const noexcept
       -> quaternion {
         return {_params + that._params};
     }
 
     /// @brief Multiplication by constant operator.
-    constexpr auto operator*(const T c) const noexcept -> quaternion {
+    [[nodiscard]] constexpr auto operator*(const T c) const noexcept
+      -> quaternion {
         return {_params * c};
     }
 
     /// @brief Multiplication operator.
-    constexpr auto operator*(const quaternion& q) const noexcept -> quaternion {
+    [[nodiscard]] constexpr auto operator*(const quaternion& q) const noexcept
+      -> quaternion {
         return {vector<T, 4, V>{
           _sp<+1, +1, -1, +1>().dot(q._params.template shuffled<3, 2, 1, 0>()),
           _sp<-1, +1, +1, +1>().dot(q._params.template shuffled<2, 3, 0, 1>()),
@@ -147,7 +152,7 @@ public:
     }
 
     /// @brief Rotates a vector by a quaternion.
-    constexpr auto rotate(const vector<T, 3, V>& v) const noexcept
+    [[nodiscard]] constexpr auto rotate(const vector<T, 3, V>& v) const noexcept
       -> vector<T, 3, V> {
         return (*this * quaternion(T(0), v) * conjugate()).imag();
     }
