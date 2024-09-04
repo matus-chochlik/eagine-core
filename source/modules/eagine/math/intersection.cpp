@@ -22,15 +22,11 @@ export template <typename V>
 [[nodiscard]] constexpr auto nearest_ray_param(
   const std::pair<V, V>& params) noexcept -> V {
 
-    const auto& [t0, t1] = params;
+    const auto& [t0, t1]{params};
 
     if(t0 >= 0.F) {
         if(t1 >= 0.F) {
-            if(t0 < t1) {
-                return t0;
-            } else {
-                return t1;
-            }
+            return t0 < t1 ? t0 : t1;
         } else {
             return t0;
         }
