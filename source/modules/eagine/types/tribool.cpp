@@ -129,10 +129,7 @@ public:
     /// @see or_default
     [[nodiscard]] constexpr auto value_or(bool fallback) const noexcept
       -> bool {
-        if(has_value()) {
-            return bool(*this);
-        }
-        return fallback;
+        return has_value() ? (_value == _value_t::_true) : fallback;
     }
 
     /// @brief Returns the boolean value if not indeterminate, true otherwise.
