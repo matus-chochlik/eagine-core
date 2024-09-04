@@ -46,17 +46,18 @@ public:
       : plane{p0, p1 - p0, p2 - p0} {}
 
     /// @brief Returns the normal vector part of the plane equation.
-    constexpr auto normal() const noexcept -> vector<T, 3, V> {
+    [[nodiscard]] constexpr auto normal() const noexcept -> vector<T, 3, V> {
         return vector<T, 3, V>{_equation};
     }
 
     /// @brief Returns the distance part of the plane equation.
-    constexpr auto distance() const noexcept -> T {
+    [[nodiscard]] constexpr auto distance() const noexcept -> T {
         return -_equation[3];
     }
 
     /// @brief Returns the plane equation.
-    constexpr auto equation() const noexcept -> const vector<T, 4, V>& {
+    [[nodiscard]] constexpr auto equation() const noexcept
+      -> const vector<T, 4, V>& {
         return _equation;
     }
 
