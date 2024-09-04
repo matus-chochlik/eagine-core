@@ -76,9 +76,10 @@ constexpr auto _line_sphere_intersection_t(
     using std::sqrt;
     using E = optionally_valid<T>;
     using R = std::pair<E, E>;
-    return d ? b ? R{E{(a + sqrt(*b)) / *d, true}, E{(a - sqrt(*b)) / *d, true}}
-                 : R{E{a / *d, true}, E{}}
-             : R{};
+    const auto invd{T(1) / d.value_or(T(1))};
+    return b ? R{E{(a + sqrt(*b)) * invd, d.has_value()},
+                 E{(a - sqrt(*b)) * invd, d.has_value()}}
+             : R{E{a * invd, d.has_value()}, E{}};
 }
 //------------------------------------------------------------------------------
 export template <typename T, bool V>
@@ -89,8 +90,8 @@ constexpr auto _line_sphere_intersection_p(
     using R = std::pair<E, E>;
     const auto& [t0, t1] = ts;
     return R{
-      t0 ? E{ray.point_at(*t0), true} : E{},
-      t1 ? E{ray.point_at(*t1), true} : E{}};
+      E{ray.point_at(t0.value_anyway()), t0.has_value()},
+      E{ray.point_at(t1.value_anyway()), t1.has_value()}};
 }
 //------------------------------------------------------------------------------
 export template <typename T, bool V>
@@ -124,13 +125,12 @@ constexpr auto _line_sphere_intersection_n_p(
   const std::pair<optionally_valid<T>, optionally_valid<T>>& ts) noexcept {
     using R = optionally_valid<vector<T, 3, V>>;
     using std::abs;
+    const auto [t0, t1]{ts};
 
-    return std::get<0>(ts) ? std::get<1>(ts)
-                               ? abs(*std::get<0>(ts)) < abs(*std::get<1>(ts))
-                                   ? R{ray.point_at(*std::get<0>(ts)), true}
-                                   : R{ray.point_at(*std::get<1>(ts)), true}
-                               : R{ray.point_at(*std::get<0>(ts)), true}
-                           : R{};
+    return t0 ? t1 ? abs(*t0) < abs(*t1) ? R{ray.point_at(*t0), true}
+                                         : R{ray.point_at(*t1), true}
+                   : R{ray.point_at(*t0), true}
+              : R{};
 }
 //------------------------------------------------------------------------------
 /// @brief Finds nearest line-sphere intersection point.
