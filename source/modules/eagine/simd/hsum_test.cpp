@@ -7,7 +7,7 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.vectorization;
+import eagine.core.simd;
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void vect_hsum_TNV_1(eagitest::case_& test) {
@@ -16,7 +16,7 @@ void vect_hsum_TNV_1(eagitest::case_& test) {
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
         T s = T(0);
 
-        typename eagine::vect::data<T, N, V>::type v = {};
+        typename eagine::simd::data<T, N, V>::type v = {};
 
         for(int i = 0; i < N; ++i) {
             T n = rg.get_between<T>(0, 5000);
@@ -24,8 +24,8 @@ void vect_hsum_TNV_1(eagitest::case_& test) {
             s += n;
         }
 
-        typename eagine::vect::data<T, N, V>::type r =
-          eagine::vect::hsum<T, N, V>::apply(v);
+        typename eagine::simd::data<T, N, V>::type r =
+          eagine::simd::hsum<T, N, V>::apply(v);
 
         for(int i = 0; i < N; ++i) {
             test.check_close(s, r[i], "compare");

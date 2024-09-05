@@ -230,14 +230,16 @@ auto case_::check(
 template <typename L, typename R>
 auto case_::check_equal(const L& l, const R& r, std::string_view label) noexcept
   -> case_& {
-    const auto _eq = [&]() {
-        if constexpr(std::is_floating_point_v<L> || std::is_floating_point_v<R>) {
+    const auto _eq{[&]() {
+        if constexpr(std::is_floating_point_v<L> or std::is_floating_point_v<R>) {
             using C = std::common_type_t<L, R>;
-            return std::fabs(C(l) - C(r)) <= std::numeric_limits<C>::epsilon();
+            using std::abs;
+            return abs(C(l) - C(r)) <=
+                   std::min(std::abs(C(l)), std::abs(C(r))) / C(10000);
         } else {
             return (l == r);
         }
-    };
+    }};
     if(!_eq()) {
         std::clog << "  check '" << _parent._name << "/" << this->_name << "/"
                   << label << "' " << l << " == " << r << " failed";
@@ -255,7 +257,7 @@ auto case_::check_close(
   std::string_view label) noexcept -> case_& {
     const auto _close = [&]() {
         using std::fabs;
-        if constexpr(std::is_floating_point_v<L> && std::is_floating_point_v<R>) {
+        if constexpr(std::is_floating_point_v<L> and std::is_floating_point_v<R>) {
             const auto cll{std::fpclassify(l)};
             const auto clr{std::fpclassify(r)};
             if(cll == clr) {

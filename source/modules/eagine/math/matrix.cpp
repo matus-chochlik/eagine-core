@@ -13,7 +13,7 @@ export module eagine.core.math:matrix;
 
 import std;
 import eagine.core.types;
-import eagine.core.vectorization;
+import eagine.core.simd;
 
 import :traits;
 import :vector;
@@ -29,14 +29,16 @@ struct are_multiplicable : std::false_type {};
 
 export template <typename T1, typename T2>
 struct multiplication_result;
-
+//------------------------------------------------------------------------------
 /// @brief Basic RxC matrix implementation template.
 /// @ingroup math
-/// @see tmat
-/// @note This is a base class, typically tmat should be used in client code.
-export template <typename T, int C, int R, bool RM, bool V>
+export template <typename T, int C, int R, bool RM, bool V = true>
 class matrix {
+public:
+    using data_type =
+      std::array<simd::data_t<T, (RM ? C : R), V>, std::size_t(RM ? R : C)>;
 
+private:
     template <int... U>
     using _iseq = std::integer_sequence<int, U...>;
 
@@ -47,30 +49,40 @@ class matrix {
     static constexpr auto _from_hlp(
       const P* dt,
       span_size_t sz,
-      _iseq<I...>) noexcept -> matrix {
-        return matrix{
-          {vect::from_array < T,
-           RM ? C : R,
-           V > ::apply(dt + I * (RM ? C : R), sz - I * (RM ? C : R))...}};
+      _iseq<I...>) noexcept -> data_type {
+        return {{simd::from_array<T, (RM ? C : R), V>::apply(
+          dt + I * (RM ? C : R), sz - I * (RM ? C : R))...}};
     }
 
     template <typename P, int M, int N, bool W, int... I>
     static constexpr auto _from_hlp(
       const matrix<P, M, N, RM, W>& m,
-      _iseq<I...>) noexcept -> matrix {
-        return matrix{
-          {vect::cast<P, (RM ? M : N), W, T, (RM ? C : R), V>::apply(
-            m._v[I], T(0))...}};
+      _iseq<I...>) noexcept -> data_type {
+        return {{simd::cast<P, (RM ? M : N), W, T, (RM ? C : R), V>::apply(
+          m._v[I], T(0))...}};
+    }
+
+    template <int... I>
+    static constexpr auto _from_hlp(const matrix& m, _iseq<I...>) noexcept {
+        return m._v;
+    }
+
+    template <std::convertible_to<T>... P>
+    static constexpr auto _make(P&&... p) noexcept
+        requires((sizeof...(P)) == (C * R))
+    {
+        const T d[C * R] = {T(p)...};
+        return _from_hlp(d, C * R, _make_iseq<(RM ? R : C)>{});
     }
 
     template <bool DstRM>
     static constexpr auto _transpose_tpl_hlp_4x4(
-      const vect::data_t<T, 4, V>& q0,
-      const vect::data_t<T, 4, V>& q1,
-      const vect::data_t<T, 4, V>& q2,
-      const vect::data_t<T, 4, V>& q3) noexcept {
-        using vect::shuffle2;
-        using vect::shuffle_mask;
+      const simd::data_t<T, 4, V> q0,
+      const simd::data_t<T, 4, V> q1,
+      const simd::data_t<T, 4, V> q2,
+      const simd::data_t<T, 4, V> q3) noexcept {
+        using simd::shuffle2;
+        using simd::shuffle_mask;
         return matrix<T, 4, 4, DstRM, V>{
           {shuffle2<T, 4, V>::apply(q0, q2, shuffle_mask<0, 2, 4, 6>{}),
            shuffle2<T, 4, V>::apply(q0, q2, shuffle_mask<1, 3, 5, 7>{}),
@@ -82,8 +94,8 @@ class matrix {
     constexpr auto _transpose_tpl() const noexcept -> matrix<T, 4, 4, DstRM, V>
         requires(R == 4 and C == 4)
     {
-        using vect::shuffle2;
-        using vect::shuffle_mask;
+        using simd::shuffle2;
+        using simd::shuffle_mask;
         return _transpose_tpl_hlp_4x4<DstRM>(
           shuffle2<T, 4, V>::apply(_v[0], _v[1], shuffle_mask<0, 1, 4, 5>{}),
           shuffle2<T, 4, V>::apply(_v[0], _v[1], shuffle_mask<2, 3, 6, 7>{}),
@@ -107,19 +119,91 @@ class matrix {
     }
 
 public:
-    vect::data_t<T, RM ? C : R, V> _v[RM ? R : C];
+    data_type _v;
 
     using type = matrix;
 
     /// @brief Element type.
     using element_type = T;
 
+    /// @brief Default constructor (constructs identity matrix)
+    constexpr matrix() noexcept {
+        if constexpr(RM) {
+            for(int i = 0; i < R; ++i) {
+                for(int j = 0; j < C; ++j) {
+                    _v[std::size_t(i)][j] = (i == j) ? T(1) : T(0);
+                }
+            }
+        } else {
+            for(int j = 0; j < C; ++j) {
+                for(int i = 0; i < R; ++i) {
+                    _v[std::size_t(j)][i] = (i == j) ? T(1) : T(0);
+                }
+            }
+        }
+    }
+
+    /// @brief Construction from the base data type.
+    constexpr matrix(data_type v) noexcept
+      : _v{v} {}
+
+    /// @brief The major vector type.
+    using major_vector_type = vector<T, (RM ? C : R), V>;
+
+    constexpr matrix(const major_vector_type v0) noexcept
+        requires((RM ? R : C) == 1)
+      : _v{{v0._v}} {}
+
+    constexpr matrix(
+      const major_vector_type v0,
+      const major_vector_type v1) noexcept
+        requires((RM ? R : C) == 2)
+      : _v{{v0._v, v1._v}} {}
+
+    constexpr matrix(
+      const major_vector_type v0,
+      const major_vector_type v1,
+      const major_vector_type v2) noexcept
+        requires((RM ? R : C) == 3)
+      : _v{{v0._v, v1._v, v2._v}} {}
+
+    constexpr matrix(
+      const major_vector_type v0,
+      const major_vector_type v1,
+      const major_vector_type v2,
+      const major_vector_type v3) noexcept
+        requires((RM ? R : C) == 4)
+      : _v{{v0._v, v1._v, v2._v, v3._v}} {}
+
+    template <std::same_as<T>... P>
+    constexpr matrix(const vector<P, RM ? C : R, V>&... v) noexcept
+        requires((sizeof...(P)) > 4 and (sizeof...(P)) == (RM ? R : C))
+      : _v{{v._v...}} {}
+
+    template <std::convertible_to<T>... P>
+    constexpr matrix(P&&... p) noexcept
+        requires((sizeof...(P)) == (R * C))
+      : _v{_make(std::forward<P>(p)...)} {}
+
+    /// @brief Creates a matrix from data pointer and size.
+    template <typename P>
+    constexpr matrix(const P* dt, const span_size_t sz) noexcept
+      : _v{_from_hlp(dt, sz, _make_iseq<(RM ? R : C)>{})} {}
+
+    template <typename P, int M, int N, bool W>
+    constexpr matrix(const matrix<P, M, N, RM, W>& m) noexcept
+        requires((C <= M) and (R <= N))
+      : _v{_from_hlp(m, _make_iseq<(RM ? R : C)>{})} {}
+
+    constexpr matrix(const T (&d)[C * R]) noexcept
+      : _v{_from_hlp(d, C * R, _make_iseq<(RM ? R : C)>{})} {}
+
     /// @brief Creates a matrix from data pointer and size.
     template <typename P>
     [[nodiscard]] static constexpr auto from(
       const P* dt,
       const span_size_t sz) noexcept -> matrix {
-        return _from_hlp(dt, sz, _make_iseq < RM ? R : C > {});
+        return {dt, sz};
     }
 
     /// @brief Creates a matrix from another matrix type.
@@ -128,7 +212,7 @@ public:
       const matrix<P, M, N, RM, W>& m) noexcept -> matrix
         requires((C <= M) and (R <= N))
     {
-        return _from_hlp(m, _make_iseq < RM ? R : C > {});
+        return {m};
     }
 
     /// @brief Subscript operator.
@@ -254,7 +338,7 @@ public:
 
     /// @brief Returns the i-th major vector of this matrix.
     /// @see minor_vector
-    [[nodiscard]] constexpr auto major_vector(int i) noexcept
+    [[nodiscard]] constexpr auto major_vector(int i) const noexcept
       -> vector<T, (RM ? C : R), V> {
         assert(i < (RM ? R : C));
         return {_v[i]};
@@ -262,14 +346,14 @@ public:
 
     /// @brief Returns the i-th minor vector of this matrix.
     /// @see major_vector
-    [[nodiscard]] constexpr auto minor_vector(int i) noexcept
+    [[nodiscard]] constexpr auto minor_vector(int i) const noexcept
       -> vector<T, (RM ? R : C), V> {
         return reordered().major_vector(i);
     }
 
     /// @brief Returns the i-th row of this matrix.
     /// @see column
-    [[nodiscard]] constexpr auto row(int i) noexcept -> vector<T, C, V> {
+    [[nodiscard]] constexpr auto row(int i) const noexcept -> vector<T, C, V> {
         assert(i < R);
         if constexpr(is_row_major()) {
             return major_vector(i);
@@ -280,7 +364,8 @@ public:
 
     /// @brief Returns the j-th column of this matrix.
     /// @see column
-    [[nodiscard]] constexpr auto column(int i) noexcept -> vector<T, R, V> {
+    [[nodiscard]] constexpr auto column(int i) const noexcept
+      -> vector<T, R, V> {
         assert(i < C);
         if constexpr(is_row_major()) {
             return minor_vector(i);
@@ -289,16 +374,66 @@ public:
         }
     }
 
-    /// @brief Returns the translation vector of this matrix (4x3 or 4x4)
+    /// @brief Returns the translation vector of this matrix.
     /// @see row
     /// @see column
-    [[nodiscard]] constexpr auto translation() const noexcept -> vector<T, 3, V>
-        requires((R == 4) and (C == 3 or C == 4))
+    [[nodiscard]] constexpr auto translation() const noexcept
+      -> std::conditional_t<R == 4, vector<T, 3, V>, vector<T, 2, V>>
+        requires(
+          ((R == 4) and (C == 3 or C == 4)) or
+          ((R == 3) and (C == 2 or C == 3)))
     {
         if constexpr(is_row_major()) {
-            return vector<T, 3, V>{_v[3]};
+            if constexpr(R == 4) {
+                return vector<T, 3, V>{_v[0][3], _v[1][3], _v[2][3]};
+            } else {
+                return vector<T, 2, V>{_v[0][2], _v[1][2]};
+            }
+        } else { // column-major
+            if constexpr(R == 4) {
+                return vector<T, 3, V>{major_vector(3)};
+            } else {
+                return vector<T, 2, V>{major_vector(2)};
+            }
+        }
+    }
+
+    /// @brief Multiplies this matrix by another matrix.
+    template <int K, bool RM2>
+    [[nodiscard]] constexpr auto multiply(const matrix<T, K, C, RM2, V>& m)
+      const noexcept -> matrix<T, K, R, true, V> {
+        if constexpr(RM) {
+            if constexpr(not RM2) {
+                matrix<T, K, R, RM, V> r{};
+                for(int i = 0; i < R; ++i) {
+                    for(int j = 0; j < K; ++j) {
+                        r.set_rm(i, j, row(i).dot(m.column(j)));
+                    }
+                }
+                return r;
+            } else {
+                return multiply(m.reordered());
+            }
         } else {
-            return vector<T, 3, V>{_v[0][3], _v[1][3], _v[2][3]};
+            if constexpr(not RM2) {
+                return reordered().multiply(m);
+            } else {
+                return reordered().multiply(m.reordered());
+            }
+        }
+    }
+
+    /// @brief Multiplies a vector by this matrix.
+    [[nodiscard]] constexpr auto multiply(
+      const vector<T, C, V>& v) const noexcept -> vector<T, R, V> {
+        if constexpr(is_row_major()) {
+            vector<T, R, V> r{};
+            for(int i = 0; i < R; ++i) {
+                r._v[i] = row(i).dot(v);
+            }
+            return r;
+        } else {
+            return reordered().multiply(v);
         }
     }
 };
@@ -388,39 +523,18 @@ struct multiplication_result<matrix<T, K, M, RM1, V>, matrix<T, N, K, RM2, V>>
 export template <typename T, int M, int N, int K, bool RM1, bool RM2, bool V>
 [[nodiscard]] constexpr auto multiply(
   const matrix<T, K, M, RM1, V>& m1,
-  const matrix<T, N, K, RM2, V>& m2) noexcept -> matrix<T, N, M, RM1, V> {
-    matrix<T, N, M, RM1, V> m3{};
-
-    for(int i = 0; i < M; ++i) {
-        for(int j = 0; j < N; ++j) {
-            T s = T(0);
-
-            for(int k = 0; k < K; ++k) {
-                s += m1.get_rm(i, k) * m2.get_rm(k, j);
-            }
-
-            m3.set_rm(i, j, s);
-        }
-    }
-    return m3;
+  const matrix<T, N, K, RM2, V>& m2) noexcept -> matrix<T, N, M, true, V> {
+    return m1.multiply(m2);
 }
 //------------------------------------------------------------------------------
 // are_multiplicable
 export template <typename T, int C, int R, bool RM, bool V>
 struct are_multiplicable<matrix<T, C, R, RM, V>, vector<T, C, V>>
   : std::true_type {};
-
-export template <typename T, int C, int R, bool RM, bool V>
-struct are_multiplicable<matrix<T, C, R, RM, V>, tvec<T, C, V>>
-  : std::true_type {};
 //------------------------------------------------------------------------------
 // multiplication_result MxV
 export template <typename T, int C, int R, bool RM, bool V>
 struct multiplication_result<matrix<T, C, R, RM, V>, vector<T, C, V>>
-  : vector<T, R, V> {};
-
-export template <typename T, int C, int R, bool RM, bool V>
-struct multiplication_result<matrix<T, C, R, RM, V>, tvec<T, C, V>>
   : vector<T, R, V> {};
 //------------------------------------------------------------------------------
 /// @brief Matrix-vector multiplication function.
@@ -429,16 +543,7 @@ export template <typename T, int C, int R, bool RM, bool V>
 [[nodiscard]] constexpr auto multiply(
   const matrix<T, C, R, RM, V>& m,
   const vector<T, C, V>& v) noexcept -> vector<T, R, V> {
-    vector<T, R, V> r{};
-
-    for(int i = 0; i < R; ++i) {
-        T s = T(0);
-        for(int j = 0; j < C; ++j) {
-            s += m.get_rm(i, j) * v._v[j];
-        }
-        r._v[i] = s;
-    }
-    return r;
+    return m.multiply(v);
 }
 //------------------------------------------------------------------------------
 /// @brief Multiplication operator for matrix constructors.
@@ -636,9 +741,9 @@ struct canonical_compound_type<math::matrix<T, C, R, RM, V>>
 
 export template <typename T, int C, int R, bool RM, bool V>
 struct compound_view_maker<math::matrix<T, C, R, RM, V>> {
-    [[nodiscard]] auto operator()(
+    [[nodiscard]] constexpr auto operator()(
       const math::matrix<T, C, R, RM, V>& m) const noexcept {
-        return vect::view < T, RM ? C : R, V > ::apply(m._v);
+        return simd::view<T, (RM ? C : R), V>::apply(m._v);
     }
 };
 

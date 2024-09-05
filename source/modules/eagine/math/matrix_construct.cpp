@@ -14,7 +14,7 @@ export module eagine.core.math:matrix_construct;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
-import eagine.core.vectorization;
+import eagine.core.simd;
 import eagine.core.units;
 import :traits;
 import :vector;
@@ -147,7 +147,7 @@ private:
     template <int... I>
     static constexpr auto _identity(const _useq<I...>) noexcept
       -> matrix<T, R, C, RM, V> {
-        return {{vect::axis < T, RM ? C : R, I, V > ::apply(1)...}};
+        return {{simd::axis < T, RM ? C : R, I, V > ::apply(1)...}};
     }
 };
 //------------------------------------------------------------------------------
@@ -190,7 +190,7 @@ struct is_matrix_constructor<translation<matrix<T, N, N, RM, V>>>
 export template <typename T, bool RM, bool V>
 class translation<matrix<T, 4, 4, RM, V>> {
 public:
-    constexpr translation(const vect::data_t<T, 3, V> v) noexcept
+    constexpr translation(const simd::data_t<T, 3, V> v) noexcept
       : _v{v} {}
 
     /// @brief Initializes the matrix constructor.
@@ -202,7 +202,19 @@ public:
 
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
-        return _make(std::bool_constant<RM>());
+        if constexpr(RM) {
+            return matrix<T, 4, 4, true, V>{
+              {T(1), T(0), T(0), _v[0]},
+              {T(0), T(1), T(0), _v[1]},
+              {T(0), T(0), T(1), _v[2]},
+              {T(0), T(0), T(0), T(1)}};
+        } else {
+            return matrix<T, 4, 4, false, V>{
+              {T(1), T(0), T(0), T(0)},
+              {T(0), T(1), T(0), T(0)},
+              {T(0), T(0), T(1), T(0)},
+              {_v[0], _v[1], _v[2], T(1)}};
+        }
     }
 
     [[nodiscard]] friend constexpr auto reorder_mat_ctr(
@@ -211,25 +223,7 @@ public:
         return {c._v};
     }
 
-private:
-    constexpr auto _make(const std::true_type) const noexcept {
-        return matrix<T, 4, 4, true, V>{
-          {{T(1), T(0), T(0), _v[0]},
-           {T(0), T(1), T(0), _v[1]},
-           {T(0), T(0), T(1), _v[2]},
-           {T(0), T(0), T(0), T(1)}}};
-    }
-
-    constexpr auto _make(const std::false_type) const noexcept {
-        return matrix<T, 4, 4, false, V>{
-          {{T(1), T(0), T(0), T(0)},
-           {T(0), T(1), T(0), T(0)},
-           {T(0), T(0), T(1), T(0)},
-           {_v[0], _v[1], _v[2], T(1)}}};
-    }
-
-public:
-    vect::data_t<T, 3, V> _v;
+    simd::data_t<T, 3, V> _v;
 };
 
 // multiply
@@ -252,7 +246,7 @@ constexpr auto multiply(
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_translation =
   convertible_matrix_constructor<translation<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -272,7 +266,7 @@ struct is_matrix_constructor<scale<matrix<T, N, N, RM, V>>> : std::true_type {};
 export template <typename T, bool RM, bool V>
 class scale<matrix<T, 4, 4, RM, V>> {
 public:
-    constexpr scale(const vect::data_t<T, 3, V> v) noexcept
+    constexpr scale(const simd::data_t<T, 3, V> v) noexcept
       : _v{v} {}
 
     /// @brief Initializes the matrix constructor.
@@ -285,10 +279,10 @@ public:
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{_v[0], T(0), T(0), T(0)},
-           {T(0), _v[1], T(0), T(0)},
-           {T(0), T(0), _v[2], T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {_v[0], T(0), T(0), T(0)},
+          {T(0), _v[1], T(0), T(0)},
+          {T(0), T(0), _v[2], T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     [[nodiscard]] friend constexpr auto reorder_mat_ctr(
@@ -297,7 +291,7 @@ public:
         return {c._v};
     }
 
-    vect::data_t<T, 3, V> _v;
+    simd::data_t<T, 3, V> _v;
 };
 
 // multiply
@@ -334,10 +328,10 @@ public:
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{_v, T(0), T(0), T(0)},
-           {T(0), _v, T(0), T(0)},
-           {T(0), T(0), _v, T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {_v, T(0), T(0), T(0)},
+          {T(0), _v, T(0), T(0)},
+          {T(0), T(0), _v, T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     [[nodiscard]] friend constexpr auto reorder_mat_ctr(
@@ -365,7 +359,7 @@ export template <typename T, int N, bool RM1, bool RM2, bool V>
 /// @see matrix_rotation_y
 /// @see matrix_rotation_z
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_scale =
   convertible_matrix_constructor<scale<matrix<T, 4, 4, true, V>>>;
 
@@ -379,7 +373,7 @@ using matrix_scale =
 /// @see matrix_reflection_y
 /// @see matrix_reflection_z
 /// @see matrix_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_uniform_scale =
   convertible_matrix_constructor<uniform_scale<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -415,10 +409,10 @@ public:
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{v(0), T(0), T(0), T(0)},
-           {T(0), v(1), T(0), T(0)},
-           {T(0), T(0), v(2), T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {v(0), T(0), T(0), T(0)},
+          {T(0), v(1), T(0), T(0)},
+          {T(0), T(0), v(2), T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     T _v{};
@@ -466,7 +460,7 @@ using reflection_z = reflection_I<M, 2>;
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_reflection_x =
   convertible_matrix_constructor<reflection_x<matrix<T, 4, 4, true, V>>>;
 
@@ -480,7 +474,7 @@ using matrix_reflection_x =
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_reflection_y =
   convertible_matrix_constructor<reflection_y<matrix<T, 4, 4, true, V>>>;
 
@@ -494,7 +488,7 @@ using matrix_reflection_y =
 /// @see matrix_reflection_y
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_reflection_z =
   convertible_matrix_constructor<reflection_z<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -542,26 +536,26 @@ private:
 
     static constexpr auto _make(const T cx, const T sx, _x) noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{T(1), T(0), T(0), T(0)},
-           {T(0), cx, -sx, T(0)},
-           {T(0), sx, cx, T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {T(1), T(0), T(0), T(0)},
+          {T(0), cx, -sx, T(0)},
+          {T(0), sx, cx, T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     static constexpr auto _make(const T cx, const T sx, _y) noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{cx, T(0), sx, T(0)},
-           {T(0), T(1), T(0), T(0)},
-           {-sx, T(0), cx, T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {cx, T(0), sx, T(0)},
+          {T(0), T(1), T(0), T(0)},
+          {-sx, T(0), cx, T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     static constexpr auto _make(const T cx, const T sx, _z) noexcept {
         return matrix<T, 4, 4, RM, V>{
-          {{cx, -sx, T(0), T(0)},
-           {sx, cx, T(0), T(0)},
-           {T(0), T(0), T(1), T(0)},
-           {T(0), T(0), T(0), T(1)}}};
+          {cx, -sx, T(0), T(0)},
+          {sx, cx, T(0), T(0)},
+          {T(0), T(0), T(1), T(0)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
 public:
@@ -599,7 +593,7 @@ using rotation_z = rotation_I<M, 2>;
 /// @see matrix_rotation_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_rotation_x =
   convertible_matrix_constructor<rotation_x<matrix<T, 4, 4, true, V>>>;
 
@@ -613,7 +607,7 @@ using matrix_rotation_x =
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_rotation_y =
   convertible_matrix_constructor<rotation_y<matrix<T, 4, 4, true, V>>>;
 
@@ -627,7 +621,7 @@ using matrix_rotation_y =
 /// @see matrix_reflection_z
 /// @see matrix_scale
 /// @see matrix_uniform_scale
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_rotation_z =
   convertible_matrix_constructor<rotation_z<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -647,7 +641,7 @@ struct is_matrix_constructor<ortho<matrix<T, N, N, RM, V>>> : std::true_type {};
 export template <typename T, bool RM, bool V>
 class ortho<matrix<T, 4, 4, RM, V>> {
 public:
-    constexpr ortho(const vect::data_t<T, 6, V>& v) noexcept
+    constexpr ortho(const simd::data_t<T, 6, V>& v) noexcept
       : _v{v} {}
 
     /// @brief Initializes the matrix constructor.
@@ -662,7 +656,19 @@ public:
 
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
-        return _make(std::bool_constant<RM>());
+        if constexpr(RM) {
+            return matrix<T, 4, 4, true, V>{
+              {_m00(), T(0), T(0), _m30()},
+              {T(0), _m11(), T(0), _m31()},
+              {T(0), T(0), _m22(), _m32()},
+              {T(0), T(0), T(0), T(1)}};
+        } else {
+            return matrix<T, 4, 4, false, V>{
+              {_m00(), T(0), T(0), T(0)},
+              {T(0), _m11(), T(0), T(0)},
+              {T(0), T(0), _m22(), T(0)},
+              {_m30(), _m31(), _m32(), T(1)}};
+        }
     }
 
 private:
@@ -685,47 +691,31 @@ private:
         return _v[5];
     }
 
-    constexpr auto _m00() const noexcept {
+    constexpr auto _m00() const noexcept -> T {
         return T(2) / (_x_right() - _x_left());
     }
 
-    constexpr auto _m11() const noexcept {
+    constexpr auto _m11() const noexcept -> T {
         return T(2) / (_y_top() - _y_bottom());
     }
 
-    constexpr auto _m22() const noexcept {
+    constexpr auto _m22() const noexcept -> T {
         return -T(2) / (_z_far() - _z_near());
     }
 
-    constexpr auto _m30() const noexcept {
+    constexpr auto _m30() const noexcept -> T {
         return -(_x_right() + _x_left()) / (_x_right() - _x_left());
     }
 
-    constexpr auto _m31() const noexcept {
+    constexpr auto _m31() const noexcept -> T {
         return -(_y_top() + _y_bottom()) / (_y_top() - _y_bottom());
     }
 
-    constexpr auto _m32() const noexcept {
+    constexpr auto _m32() const noexcept -> T {
         return -(_z_far() + _z_near()) / (_z_far() - _z_near());
     }
 
-    constexpr auto _make(const std::true_type) const noexcept {
-        return matrix<T, 4, 4, true, V>{
-          {{_m00(), T(0), T(0), _m30()},
-           {T(0), _m11(), T(0), _m31()},
-           {T(0), T(0), _m22(), _m32()},
-           {T(0), T(0), T(0), T(1)}}};
-    }
-
-    constexpr auto _make(const std::false_type) const noexcept {
-        return matrix<T, 4, 4, false, V>{
-          {{_m00(), T(0), T(0), T(0)},
-           {T(0), _m11(), T(0), T(0)},
-           {T(0), T(0), _m22(), T(0)},
-           {_m30(), _m31(), _m32(), T(1)}}};
-    }
-
-    using _dT = vect::data_t<T, 6, V>;
+    using _dT = simd::data_t<T, 6, V>;
 
 public:
     _dT _v;
@@ -741,7 +731,7 @@ export template <typename T, int N, bool RM, bool V>
 
 /// @brief Alias for constructor of orthographic projection matrix.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_ortho =
   convertible_matrix_constructor<ortho<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -762,7 +752,7 @@ struct is_matrix_constructor<perspective<matrix<T, N, N, RM, V>>>
 export template <typename T, bool RM, bool V>
 class perspective<matrix<T, 4, 4, RM, V>> {
 public:
-    constexpr perspective(const vect::data_t<T, 6, V>& v) noexcept
+    constexpr perspective(const simd::data_t<T, 6, V>& v) noexcept
       : _v{v} {}
 
     /// @brief Initialized the matrix constructor.
@@ -777,7 +767,19 @@ public:
 
     /// @brief Returns the constructed matrix.
     [[nodiscard]] constexpr auto operator()() const noexcept {
-        return _make(std::bool_constant<RM>());
+        if constexpr(RM) {
+            return matrix<T, 4, 4, true, V>{
+              {_m00(), T(0), _m20(), T(0)},
+              {T(0), _m11(), _m21(), T(0)},
+              {T(0), T(0), _m22(), _m32()},
+              {T(0), T(0), _m23(), T(0)}};
+        } else {
+            return matrix<T, 4, 4, false, V>{
+              {_m00(), T(0), T(0), T(0)},
+              {T(0), _m11(), T(0), T(0)},
+              {_m20(), _m21(), _m22(), _m23()},
+              {T(0), T(0), _m32(), T(0)}};
+        }
     }
 
     /// @brief Constructs perspective matrix with x-FOV angle and aspect ratio.
@@ -857,51 +859,35 @@ private:
         return _v[5];
     }
 
-    constexpr auto _m00() const noexcept {
+    constexpr auto _m00() const noexcept -> T {
         return (T(2) * _z_near()) / (_x_right() - _x_left());
     }
 
-    constexpr auto _m11() const noexcept {
+    constexpr auto _m11() const noexcept -> T {
         return (T(2) * _z_near()) / (_y_top() - _y_bottom());
     }
 
-    constexpr auto _m22() const noexcept {
+    constexpr auto _m22() const noexcept -> T {
         return -(_z_far() + _z_near()) / (_z_far() - _z_near());
     }
 
-    constexpr auto _m20() const noexcept {
+    constexpr auto _m20() const noexcept -> T {
         return (_x_right() + _x_left()) / (_x_right() - _x_left());
     }
 
-    constexpr auto _m21() const noexcept {
+    constexpr auto _m21() const noexcept -> T {
         return (_y_top() + _y_bottom()) / (_y_top() - _y_bottom());
     }
 
-    constexpr auto _m23() const noexcept {
+    constexpr auto _m23() const noexcept -> T {
         return -T(1);
     }
 
-    constexpr auto _m32() const noexcept {
+    constexpr auto _m32() const noexcept -> T {
         return -(T(2) * _z_far() * _z_near()) / (_z_far() - _z_near());
     }
 
-    constexpr auto _make(const std::true_type) const noexcept {
-        return matrix<T, 4, 4, true, V>{
-          {{_m00(), T(0), _m20(), T(0)},
-           {T(0), _m11(), _m21(), T(0)},
-           {T(0), T(0), _m22(), _m32()},
-           {T(0), T(0), _m23(), T(0)}}};
-    }
-
-    constexpr auto _make(const std::false_type) const noexcept {
-        return matrix<T, 4, 4, false, V>{
-          {{_m00(), T(0), T(0), T(0)},
-           {T(0), _m11(), T(0), T(0)},
-           {_m20(), _m21(), _m22(), _m23()},
-           {T(0), T(0), _m32(), T(0)}}};
-    }
-
-    using _dT = vect::data_t<T, 6, V>;
+    using _dT = simd::data_t<T, 6, V>;
 
 public:
     _dT _v;
@@ -917,7 +903,7 @@ export template <typename T, int N, bool RM, bool V>
 
 /// @brief Alias for constructor of perspective projection matrix.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_perspective =
   convertible_matrix_constructor<perspective<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -962,10 +948,10 @@ private:
       const _dT& z,
       const _dT& t) noexcept {
         return matrix<T, 4, 4, true, V>{
-          {{x[0], x[1], x[2], -dot(x, t)},
-           {y[0], y[1], y[2], -dot(y, t)},
-           {z[0], z[1], z[2], -dot(z, t)},
-           {T(0), T(0), T(0), T(1)}}};
+          {x[0], x[1], x[2], -dot(x, t)},
+          {y[0], y[1], y[2], -dot(y, t)},
+          {z[0], z[1], z[2], -dot(z, t)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     static constexpr auto _make(
@@ -980,7 +966,7 @@ private:
     }
 
     static constexpr auto _make(const _dT& z) noexcept {
-        return _make(z, _dT::make(z.z(), T(0), -z.x()));
+        return _make(z, _dT(z.z(), T(0), -z.x()));
     }
 
     constexpr auto _make(std::true_type) const noexcept {
@@ -1005,7 +991,7 @@ export template <typename T, int N, bool RM, bool V>
 
 /// @brief Alias for constructor of look-at matrix used for camera transformations.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_looking_at_y_up =
   convertible_matrix_constructor<looking_at_y_up<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -1030,7 +1016,7 @@ export template <typename T, bool RM, bool V>
 class orbiting_y_up<matrix<T, 4, 4, RM, V>> {
 public:
     constexpr orbiting_y_up(
-      const vector<T, 3, V>& t,
+      const point<T, 3, V>& t,
       const vector<T, 3, V>& x,
       const vector<T, 3, V>& y,
       const vector<T, 3, V>& z,
@@ -1042,7 +1028,7 @@ public:
       , _r{r} {}
 
     constexpr orbiting_y_up(
-      const vector<T, 3, V>& t,
+      const point<T, 3, V>& t,
       const T rs,
       const T sa,
       const T ca,
@@ -1060,7 +1046,7 @@ public:
     /// @param azimuth is the azimuth (longitude) angle.
     /// @param elevation is the elevation (latitude) angle.
     constexpr orbiting_y_up(
-      const vector<T, 3, V>& target,
+      const point<T, 3, V>& target,
       const T radius,
       const radians_t<T> azimuth,
       const radians_t<T> elevation)
@@ -1085,18 +1071,19 @@ public:
 
 private:
     constexpr auto _make(const std::true_type) const noexcept {
+        const vector<T, 3, V> tv{_t};
         return matrix<T, 4, 4, true, V>{
-          {{_x[0], _x[1], _x[2], -_r * dot(_x, _z) - dot(_x, _t)},
-           {_y[0], _y[1], _y[2], -_r * dot(_y, _z) - dot(_y, _t)},
-           {_z[0], _z[1], _z[2], -_r * dot(_z, _z) - dot(_z, _t)},
-           {T(0), T(0), T(0), T(1)}}};
+          {_x[0], _x[1], _x[2], -_r * dot(_x, _z) - dot(_x, tv)},
+          {_y[0], _y[1], _y[2], -_r * dot(_y, _z) - dot(_y, tv)},
+          {_z[0], _z[1], _z[2], -_r * dot(_z, _z) - dot(_z, tv)},
+          {T(0), T(0), T(0), T(1)}};
     }
 
     constexpr auto _make(const std::false_type) const noexcept {
         return _make(std::true_type()).reordered();
     }
 
-    vector<T, 3, V> _t;
+    point<T, 3, V> _t;
     vector<T, 3, V> _x, _z, _y;
 
 public:
@@ -1105,7 +1092,7 @@ public:
 
 /// @brief Alias for constructor of orbiting matrix used for camera transformations.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 using matrix_orbiting_y_up =
   convertible_matrix_constructor<orbiting_y_up<matrix<T, 4, 4, true, V>>>;
 //------------------------------------------------------------------------------
@@ -1126,13 +1113,13 @@ struct compound_view_maker<math::convertible_matrix_constructor<MC>> {
         using T = typename M::element_type;
         M _m;
 
-        operator span<const T>() const noexcept {
+        constexpr operator span<const T>() const noexcept {
             compound_view_maker<M> cvm;
             return cvm(_m);
         }
     };
 
-    auto operator()(
+    constexpr auto operator()(
       const math::convertible_matrix_constructor<MC>& mc) const noexcept {
         return _result_type{mc()};
     }

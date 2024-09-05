@@ -74,7 +74,7 @@ void math_coord_cartesian_spherical_roundtrip(eagitest::case_& test) {
         auto y = rg.get_between(T(-1), T(1));
         auto z = rg.get_between(T(-1), T(1));
 
-        const auto orig = normalized(vector<T, 3, V>::make(x, y, z));
+        const auto orig = normalized(vector<T, 3, V>(x, y, z));
         const auto calc = to_cartesian(to_unit_spherical(orig));
 
         test.check_close(orig.x(), calc.x(), "x");

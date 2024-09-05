@@ -7,7 +7,7 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.vectorization;
+import eagine.core.simd;
 //------------------------------------------------------------------------------
 template <typename T, int I, int N, bool V>
 void vect_axis_TINV_1(eagitest::case_& test) {
@@ -18,8 +18,8 @@ void vect_axis_TINV_1(eagitest::case_& test) {
     for(unsigned k = 0; k < test.repeats(1000); ++k) {
         T a = rg.get_any<T>();
 
-        typename eagine::vect::data<T, N, V>::type v =
-          eagine::vect::axis<T, N, I, V>::apply(a);
+        typename eagine::simd::data<T, N, V>::type v =
+          eagine::simd::axis<T, N, I, V>::apply(a);
 
         for(int i = 0; i < N; ++i) {
             test.check_equal(v[i], T(i == I ? a : 0), "element ok");

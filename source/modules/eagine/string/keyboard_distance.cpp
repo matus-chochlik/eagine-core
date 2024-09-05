@@ -17,7 +17,7 @@ namespace eagine {
 
 export class default_keyboard_layout {
 public:
-    using coord_type = math::tvec<float, 3, true>;
+    using coord_type = math::vector<float, 3, true>;
 
     default_keyboard_layout(const float shift = 1.F);
 
@@ -33,12 +33,14 @@ public:
     }
 
 protected:
-    void add_key_coord(const char key, const math::tvec<float, 3, true> coord) {
+    void add_key_coord(
+      const char key,
+      const math::vector<float, 3, true> coord) {
         _key_coord[key] = coord;
     }
 
 private:
-    flat_map<char, math::tvec<float, 3, true>> _key_coord;
+    flat_map<char, math::vector<float, 3, true>> _key_coord;
 };
 //------------------------------------------------------------------------------
 export class keyboard_distance {

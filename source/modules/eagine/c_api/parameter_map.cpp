@@ -1068,7 +1068,7 @@ struct make_args_map<
   CI,
   CppI,
   mp_list<T, T, CT...>,
-  mp_list<math::tvec<T, 2, V>, CppT...>>
+  mp_list<math::vector<T, 2, V>, CppT...>>
   : make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
     using make_args_map<CI + 2, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();
@@ -1095,7 +1095,7 @@ struct make_args_map<
   CI,
   CppI,
   mp_list<T, T, T, CT...>,
-  mp_list<math::tvec<T, 3, V>, CppT...>>
+  mp_list<math::vector<T, 3, V>, CppT...>>
   : make_args_map<CI + 3, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
     using make_args_map<CI + 3, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();
@@ -1127,7 +1127,7 @@ struct make_args_map<
   CI,
   CppI,
   mp_list<T, T, T, T, CT...>,
-  mp_list<math::tvec<T, 4, V>, CppT...>>
+  mp_list<math::vector<T, 4, V>, CppT...>>
   : make_args_map<CI + 4, CppI + 1, mp_list<CT...>, mp_list<CppT...>> {
     using make_args_map<CI + 4, CppI + 1, mp_list<CT...>, mp_list<CppT...>>::
     operator();

@@ -7,7 +7,7 @@
 ///
 
 #include <eagine/testing/unit_begin.hpp>
-import eagine.core.vectorization;
+import eagine.core.simd;
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
 void vect_from_TNV_array(eagitest::case_& test) {
@@ -21,8 +21,8 @@ void vect_from_TNV_array(eagitest::case_& test) {
             a[i] = rg.get_any<T>();
         }
 
-        typename eagine::vect::data<T, N, V>::type v =
-          eagine::vect::from_array<T, N, V>::apply(a, N);
+        typename eagine::simd::data<T, N, V>::type v =
+          eagine::simd::from_array<T, N, V>::apply(a, N);
 
         for(int i = 0; i < N; ++i) {
             test.check_equal(v[i], a[i], "equal");
@@ -77,8 +77,8 @@ void vect_from_saafv_TNMV(eagitest::case_& test) {
         }
         T f = rg.get_any<T>();
 
-        typename eagine::vect::data<T, N, V>::type v =
-          eagine::vect::from_saafv<T, N, V>::apply(a, M, f);
+        typename eagine::simd::data<T, N, V>::type v =
+          eagine::simd::from_saafv<T, N, V>::apply(a, M, f);
 
         for(int i = 0; i < M; ++i) {
             test.check_equal(v[i], a[i], "equal a");

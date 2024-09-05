@@ -17,7 +17,7 @@ namespace eagine::math {
 //------------------------------------------------------------------------------
 /// @brief Class representing unit spherical coordinate.
 /// @ingroup math
-export template <typename T, bool V>
+export template <typename T, bool V = true>
 class unit_spherical_coordinate {
 public:
     /// @brief Default constructor.
@@ -51,7 +51,7 @@ export template <typename T, bool V>
 [[nodiscard]] constexpr auto to_cartesian(
   const unit_spherical_coordinate<T, V> c) noexcept -> vector<T, 3, V> {
     using std::abs;
-    return vector<T, 3, V>::make(
+    return vector<T, 3, V>(
       cos(c.azimuth()) * abs(cos(c.elevation())),
       sin(c.elevation()),
       -sin(c.azimuth()) * abs(cos(c.elevation())));

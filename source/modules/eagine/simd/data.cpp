@@ -5,13 +5,13 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 /// https://www.boost.org/LICENSE_1_0.txt
 ///
-export module eagine.core.vectorization:data;
+export module eagine.core.simd:data;
 
 import std;
 import :data_array;
 import :data_simd;
 
-namespace eagine::vect {
+namespace eagine::simd {
 
 // has_simd_data
 export template <typename T, int N, bool V>
@@ -49,4 +49,4 @@ using data_param_t = typename data_param<T, N, V>::type;
 export template <typename T, int N, bool V>
 struct param<data<T, N, V>> : data_param<T, N, V> {};
 
-} // namespace eagine::vect
+} // namespace eagine::simd
