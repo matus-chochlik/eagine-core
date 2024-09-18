@@ -12,7 +12,7 @@ import eagine.core.types;
 import :span;
 
 namespace eagine {
-
+//------------------------------------------------------------------------------
 /// @brief Class storing a sequence of bytes converting them to and from unsigned integer.
 /// @ingroup type_utils
 /// @tparam N the size - number of elements - in the byte sequence.
@@ -62,7 +62,7 @@ public:
         requires((sizeof(UInt) >= N) and std::is_integral_v<UInt>)
       : _bytes{value_type((init >> (8 * (N - I - 1))) & 0xFFU)...} {}
 
-    /// @brief Construiction from unsigned integer that is then split into bytes.
+    /// @brief Construction from unsigned integer that is then split into bytes.
     template <typename UInt>
     explicit constexpr byteset(const UInt init) noexcept
         requires(
@@ -70,88 +70,63 @@ public:
           std::is_unsigned_v<UInt>)
       : byteset(std::make_index_sequence<N>(), init) {}
 
+    /// @brief Returns the count of bytes in the stored sequence.
+    [[nodiscard]] constexpr auto size() const noexcept -> size_type {
+        return N;
+    }
+
     /// @brief Returns a pointer to the byte sequence start.
     /// @see size
-    constexpr auto data() noexcept -> pointer {
-        return _bytes;
+    [[nodiscard]] constexpr auto data() noexcept -> pointer {
+        return reinterpret_cast<pointer>(&_bytes);
     }
 
     /// @brief Returns a const pointer to the byte sequence start.
     /// @see size
-    constexpr auto data() const noexcept -> const_pointer {
-        return _bytes;
-    }
-
-    /// @brief Returns the count of bytes in the stored sequence.
-    constexpr auto size() const noexcept -> size_type {
-        return N;
+    [[nodiscard]] constexpr auto data() const noexcept -> const_pointer {
+        return reinterpret_cast<const_pointer>(&_bytes);
     }
 
     /// @brief Creates a const view over the stored sequence of bytes.
-    constexpr auto block() const noexcept -> memory::const_block {
+    [[nodiscard]] constexpr auto block() const noexcept -> memory::const_block {
         return {data(), size()};
     }
 
     /// @brief Subscript operator.
-    constexpr auto operator[](const size_type i) noexcept -> reference {
+    [[nodiscard]] constexpr auto operator[](const size_type i) noexcept
+      -> reference {
         return _bytes[i];
     }
 
     /// @brief Subscript operator.
-    constexpr auto operator[](const size_type i) const noexcept
-      -> const_reference {
+    [[nodiscard]] constexpr auto operator[](const size_type i) const noexcept
+      -> value_type {
         return _bytes[i];
     }
 
-    /// @brief Returns the first byte in the sequence.
-    /// @see back
-    constexpr auto front() noexcept -> reference {
-        return _bytes[0];
-    }
-
-    /// @brief Returns the first byte in the sequence.
-    /// @see back
-    constexpr auto front() const noexcept -> const_reference {
-        return _bytes[0];
-    }
-
-    /// @brief Returns the last byte in the sequence.
-    /// @see front
-    constexpr auto back() noexcept -> reference {
-        return _bytes[N - 1];
-    }
-
-    /// @brief Returns the last byte in the sequence.
-    /// @see front
-    constexpr auto back() const noexcept -> const_reference {
-        return _bytes[N - 1];
-    }
-
     /// @brief Returns an iterator to the start of the byte sequence.
-    constexpr auto begin() noexcept -> iterator {
-        return _bytes + 0;
+    [[nodiscard]] constexpr auto begin() noexcept -> iterator {
+        return data();
     }
 
     /// @brief Returns an iterator past the end of the byte sequence.
-    constexpr auto end() noexcept -> iterator {
-        return _bytes + N;
+    [[nodiscard]] constexpr auto end() noexcept -> iterator {
+        return data() + N;
     }
 
     /// @brief Returns a const iterator to the start of the byte sequence.
-    constexpr auto begin() const noexcept -> const_iterator {
-        return _bytes + 0;
+    [[nodiscard]] constexpr auto begin() const noexcept -> const_iterator {
+        return data();
     }
 
     /// @brief Returns a const iterator past the end of the byte sequence.
-    constexpr auto end() const noexcept -> const_iterator {
-        return _bytes + N;
+    [[nodiscard]] constexpr auto end() const noexcept -> const_iterator {
+        return data() + N;
     }
 
     /// @brief Comparison operator.
     constexpr auto operator<=>(const byteset& that) const noexcept
-      -> std::strong_ordering {
-        return _do_cmp(*this, that, std::make_index_sequence<N>{});
-    }
+      -> std::strong_ordering = default;
     constexpr auto operator==(const byteset& that) const noexcept
       -> bool = default;
     constexpr auto operator<(const byteset& that) const noexcept
@@ -159,53 +134,26 @@ public:
 
     /// @brief Converts the byte sequence into an unsigned integer value.
     template <typename UInt>
-    constexpr auto as(const UInt i = 0) const noexcept
+    [[nodiscard]] constexpr auto as(const UInt i = 0) const noexcept
         requires(
-          (sizeof(UInt) >= N) and (
+          std::is_unsigned_v<UInt> and (sizeof(UInt) >= N) and
+          (
 #if __SIZEOF_INT128__
-                                    std::is_same_v<UInt, __uint128_t> or
-                                    std::is_same_v<UInt, __int128_t> or
+            std::is_same_v<UInt, __uint128_t> or
 #endif
-                                    std::is_integral_v<UInt>))
+            std::is_integral_v<UInt>))
     {
-        return _push_back_to(i, 0);
+        return _as<UInt>(std::make_index_sequence<N>());
     }
 
 private:
-    value_type _bytes[N]{};
+    simd::data_t<value_type, N, true> _bytes{};
 
-    template <typename UInt>
-    constexpr auto _push_back_to(const UInt state, const std::size_t i)
-      const noexcept -> UInt {
+    template <typename UInt, std::size_t... I>
+    constexpr auto _as(std::index_sequence<I...>) const noexcept -> UInt {
         // NOLINTNEXTLINE(hicpp-signed-bitwise)
-        return (i < N) ? _push_back_to((state << 8U) | _bytes[i], i + 1)
-                       : state;
-    }
-
-    static constexpr auto _cmp_byte(
-      const value_type a,
-      const value_type b) noexcept -> std::strong_ordering {
-        return (a == b)  ? std::strong_ordering::equal
-               : (a < b) ? std::strong_ordering::less
-                         : std::strong_ordering::greater;
-    }
-
-    static constexpr auto _do_cmp(
-      const byteset&,
-      const byteset&,
-      const std::index_sequence<>) noexcept -> std::strong_ordering {
-        return std::strong_ordering::equal;
-    }
-
-    template <std::size_t I, std::size_t... In>
-    static constexpr auto _do_cmp(
-      const byteset& a,
-      const byteset& b,
-      const std::index_sequence<I, In...>) noexcept -> std::strong_ordering {
-        return (a._bytes[I] == b._bytes[I])
-                 ? _do_cmp(a, b, std::index_sequence<In...>{})
-                 : _cmp_byte(a._bytes[I], b._bytes[I]);
+        return (... | (UInt(_bytes[I]) << UInt(8Z * (N - I - 1Z))));
     }
 };
-
+//------------------------------------------------------------------------------
 } // namespace eagine
