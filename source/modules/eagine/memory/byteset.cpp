@@ -147,7 +147,7 @@ public:
     }
 
 private:
-    simd::data_t<value_type, N, true> _bytes{};
+    simd::data_t<value_type, N, false> _bytes{};
 
     template <typename UInt, std::size_t... I>
     constexpr auto _as(std::index_sequence<I...>) const noexcept -> UInt {

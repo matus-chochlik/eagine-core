@@ -19,6 +19,51 @@ struct _has_simd_data : std::false_type {};
 
 #if defined(__clang__)
 
+// uint8_t
+export template <>
+struct data_simd<std::uint8_t, 8> {
+    using type __attribute__((vector_size(8))) = std::uint8_t;
+};
+
+export template <>
+struct data_simd<std::uint8_t, 16> {
+    using type __attribute__((vector_size(16))) = std::uint8_t;
+};
+
+export template <>
+struct data_simd<std::uint8_t, 32> {
+    using type __attribute__((vector_size(32))) = std::uint8_t;
+};
+
+// uint16_t
+export template <>
+struct data_simd<std::uint16_t, 4> {
+    using type __attribute__((vector_size(8))) = std::uint16_t;
+};
+
+// uint32_t
+export template <>
+struct data_simd<std::uint32_t, 2> {
+    using type __attribute__((vector_size(8))) = std::uint32_t;
+};
+
+export template <>
+struct data_simd<std::uint32_t, 4> {
+    using type __attribute__((vector_size(16))) = std::uint32_t;
+};
+
+// uint64_t
+export template <>
+struct data_simd<std::uint64_t, 2> {
+    using type __attribute__((vector_size(16))) = std::uint64_t;
+};
+
+// uint64_t
+export template <>
+struct data_simd<std::uint64_t, 4> {
+    using type __attribute__((vector_size(32))) = std::uint64_t;
+};
+
 // int8_t
 export template <>
 struct data_simd<std::int8_t, 8> {
@@ -46,11 +91,6 @@ struct data_simd<std::int32_t, 4> {
 export template <>
 struct data_simd<std::int64_t, 2> {
     using type __attribute__((vector_size(16))) = std::int64_t;
-};
-
-export template <>
-struct data_simd<std::uint64_t, 2> {
-    using type __attribute__((vector_size(16))) = std::uint64_t;
 };
 
 export template <>
@@ -109,7 +149,23 @@ struct data_simd<T, 4> : _gnuc_vec_data<T, 4> {};
 export template <typename T>
 struct data_simd<T, 8> : _gnuc_vec_data<T, 8> {};
 
+export template <typename T>
+struct data_simd<T, 16> : _gnuc_vec_data<T, 16> {};
+
 #endif // platform
+
+// has_vec_data<uint8_t>
+export template <int N>
+struct _has_simd_data<std::uint8_t, N>
+  : std::bool_constant<
+#if defined(__SSE2__) && __SSE2__
+      ((N == 2) or (N == 4) or (N == 8) or (N == 16)) or
+#endif
+#if defined(__MMX__) && __MMX__
+      ((N == 2) or (N == 4) or (N == 8)) or
+#endif
+      false> {
+};
 
 // has_vec_data<int8_t>
 export template <int N>
