@@ -64,6 +64,13 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
+	PARTITION simd_data
+	IMPORTS std basic
+)
+
+eagine_add_module(
+	eagine.core.types
+	COMPONENT core-dev
 	PARTITION optional_like
 	IMPORTS
 		std basic tribool

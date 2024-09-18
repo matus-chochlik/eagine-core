@@ -14,10 +14,13 @@ export module eagine.core.simd:ops;
 import std;
 import eagine.core.types;
 import eagine.core.memory;
-import :data_simd;
-import :data;
 
 namespace eagine::simd {
+//------------------------------------------------------------------------------
+export using eagine::simd::has_simd_data;
+export using eagine::simd::data;
+export using eagine::simd::data_t;
+export using eagine::simd::data_param_t;
 //------------------------------------------------------------------------------
 // is_zero
 //------------------------------------------------------------------------------

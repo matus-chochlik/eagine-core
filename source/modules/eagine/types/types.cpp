@@ -11,6 +11,7 @@ export import :concepts;
 export import :basic;
 export import :interface;
 export import :compare;
+export import :simd_data;
 export import :limits;
 export import :integer_range;
 export import :tribool;
