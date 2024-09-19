@@ -16,7 +16,7 @@ import eagine.core.types;
 import :byteset;
 
 namespace eagine {
-
+//------------------------------------------------------------------------------
 /// @brief Selects the appropriate type for biteset element representation.
 /// @ingroup type_utils
 /// @see biteset
@@ -31,7 +31,7 @@ using biteset_cell_type = std::conditional_t<
       (B <= 32),
       std::uint_least32_t,
       std::conditional_t<(B <= 64), std::uint_least64_t, void>>>>;
-
+//------------------------------------------------------------------------------
 export template <std::size_t N, std::size_t B, typename T = biteset_cell_type<B>>
 class biteset;
 
@@ -41,7 +41,7 @@ class biteset;
 /// @see biteset_iterator
 export template <typename BiS>
 class biteset_value_proxy;
-
+//------------------------------------------------------------------------------
 /// @brief Base class for biteset value proxy.
 /// @ingroup type_utils
 /// @see biteset
@@ -109,7 +109,7 @@ protected:
     BiS* const _ptr{nullptr};
     size_type _pos{0};
 };
-
+//------------------------------------------------------------------------------
 /// @brief Specialization of biteset proxy for const biteset values.
 /// @ingroup type_utils
 /// @see biteset
@@ -128,7 +128,7 @@ public:
       const size_type pos) noexcept
       : _base{bs, pos} {}
 };
-
+//------------------------------------------------------------------------------
 /// @brief Specialization of biteset proxy for mutable biteset values.
 /// @ingroup type_utils
 /// @see biteset
@@ -176,7 +176,7 @@ export template <typename BiS>
 void swap(biteset_value_proxy<BiS>&& a, biteset_value_proxy<BiS>&& b) noexcept {
     return a.swap(b);
 }
-
+//------------------------------------------------------------------------------
 export template <typename BiS>
 class biteset_iterator;
 
@@ -282,7 +282,7 @@ void swap(
   biteset_iterator_base<BiS>& b) noexcept {
     return a.swap(b);
 }
-
+//------------------------------------------------------------------------------
 export template <std::size_t N, std::size_t B, typename T>
 class biteset_iterator<const biteset<N, B, T>>
   : public biteset_iterator_base<const biteset<N, B, T>> {
@@ -310,12 +310,12 @@ public:
 
     constexpr biteset_iterator() = default;
 
-    constexpr auto operator*() const noexcept -> const_proxy {
+    [[nodiscard]] constexpr auto operator*() const noexcept -> const_proxy {
         assert(is_valid());
         return const_proxy(*_ptr, _pos);
     }
 };
-
+//------------------------------------------------------------------------------
 /// @brief Iterator type for biteset.
 /// @ingroup type_utils
 /// @see biteset
@@ -350,27 +350,27 @@ public:
 
     constexpr biteset_iterator() noexcept = default;
 
-    constexpr auto operator*() noexcept -> proxy {
+    [[nodiscard]] constexpr auto operator*() noexcept -> proxy {
         assert(is_valid());
         return proxy(*_ptr, _pos);
     }
 
-    constexpr auto operator*() const noexcept -> const_proxy {
+    [[nodiscard]] constexpr auto operator*() const noexcept -> const_proxy {
         assert(is_valid());
         return const_proxy(*_ptr, _pos);
     }
 
-    constexpr auto operator->() noexcept -> proxy {
+    [[nodiscard]] constexpr auto operator->() noexcept -> proxy {
         assert(is_valid());
         return proxy(*_ptr, _pos);
     }
 
-    auto operator->() const noexcept -> const_proxy {
+    [[nodiscard]] auto operator->() const noexcept -> const_proxy {
         assert(is_valid());
         return const_proxy(*_ptr, _pos);
     }
 };
-
+//------------------------------------------------------------------------------
 /// @brief Sequence of unsigned integer values with specified number bits.
 /// @ingroup type_utils
 /// @tparam N the size - count of elements - in the sequence.
@@ -432,19 +432,19 @@ public:
 
     /// @brief Constructs a biteset from the specified values splitting bit groups of size=B.
     template <typename UIntT>
-    static constexpr auto from_value(const UIntT init) noexcept {
+    [[nodiscard]] static constexpr auto from_value(const UIntT init) noexcept {
         return biteset{_bytes_t{init}};
     }
 
     /// @brief Returns the number of elements in this biteset.
     /// @see get
-    constexpr auto size() const noexcept -> size_type {
+    [[nodiscard]] constexpr auto size() const noexcept -> size_type {
         return N;
     }
 
     /// @brief Returns the i-th element in this biteset.
     /// @pre i < size()
-    constexpr auto get(const size_type i) const noexcept {
+    [[nodiscard]] constexpr auto get(const size_type i) const noexcept {
         return _get_cell(i);
     }
 
@@ -455,32 +455,33 @@ public:
     }
 
     /// @brief Returns an iterator to the start of the sequence.
-    constexpr auto begin() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto begin() const noexcept -> const_iterator {
         return {*this, 0};
     }
 
     /// @brief Returns an iterator past the end of the sequence.
-    constexpr auto end() const noexcept -> const_iterator {
+    [[nodiscard]] constexpr auto end() const noexcept -> const_iterator {
         return {*this, N};
     }
 
     /// @brief Returns a const iterator to the start of the sequence.
-    constexpr auto begin() noexcept -> iterator {
+    [[nodiscard]] constexpr auto begin() noexcept -> iterator {
         return {*this, 0};
     }
 
     /// @brief Returns a const iterator past the end of the sequence.
-    constexpr auto end() noexcept -> iterator {
+    [[nodiscard]] constexpr auto end() noexcept -> iterator {
         return {*this, N};
     }
 
     /// @brief Subscript operator.
-    constexpr auto operator[](const size_type i) const noexcept -> T {
+    [[nodiscard]] constexpr auto operator[](const size_type i) const noexcept
+      -> T {
         return _get_cell(i);
     }
 
     /// @brief Subscript operator.
-    constexpr auto operator[](const size_type i) noexcept
+    [[nodiscard]] constexpr auto operator[](const size_type i) noexcept
       -> biteset_value_proxy<biteset> {
         return {*this, i};
     }
@@ -491,7 +492,8 @@ public:
     constexpr auto operator<(const biteset&) const noexcept -> bool = default;
 
     /// @brief Converts this biteset into a byteset.
-    constexpr auto bytes() const noexcept -> const byteset<store_size>& {
+    [[nodiscard]] constexpr auto bytes() const noexcept
+      -> const byteset<store_size>& {
         return _bytes;
     }
 
@@ -746,5 +748,5 @@ private:
           {T(p)...}, std::make_index_sequence<store_size>{});
     }
 };
-
+//------------------------------------------------------------------------------
 } // namespace eagine
