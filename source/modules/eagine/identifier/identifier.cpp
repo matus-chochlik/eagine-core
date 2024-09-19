@@ -183,9 +183,14 @@ auto operator<<(std::ostream& out, const identifier_name<M>& n)
 /// Comparison operations on identifiers are typically more efficient than
 /// regular character string comparisons, but note that integer comparisons
 /// are used instead lexicographical comparisons.
-export template <std::size_t M, std::size_t B, typename CharSet, typename UIntT>
+export template <
+  std::size_t M,
+  std::size_t B,
+  typename CharSet,
+  typename UIntT,
+  bool V = true>
 class basic_identifier {
-    using _bites_t = biteset<M, B, std::uint8_t>;
+    using _bites_t = biteset<M, B, std::uint8_t, V>;
 
 public:
     static_assert(
@@ -333,8 +338,7 @@ private:
       const char* init,
       std::size_t l,
       std::index_sequence<I...>) noexcept {
-        return biteset<M, B, std::uint8_t>{
-          encoding::encode((I < l) ? init[I] : '\0')...};
+        return _bites_t{encoding::encode((I < l) ? init[I] : '\0')...};
     }
 
     template <std::size_t... I>
@@ -355,7 +359,12 @@ private:
 /// @ingroup identifiers
 /// @see basic_identifier
 /// @see identifier_value
-export template <std::size_t M, std::size_t B, typename CharSet, typename UIntT>
+export template <
+  std::size_t M,
+  std::size_t B,
+  typename CharSet,
+  typename UIntT,
+  bool V = false>
 struct basic_identifier_value {
     UIntT _value{};
 
@@ -363,14 +372,16 @@ struct basic_identifier_value {
     using value_type = UIntT;
 
     /// @brief The type of the identifier instantiation.
-    using identifier_type = basic_identifier<M, B, CharSet, UIntT>;
+    using identifier_type = basic_identifier<M, B, CharSet, UIntT, V>;
 
     /// @brief Construction from the value type.
     constexpr basic_identifier_value(const value_type value) noexcept
       : _value{value} {}
 
     /// @brief Construction from the identifier type.
-    constexpr basic_identifier_value(const identifier_type id) noexcept
+    template <bool W>
+    constexpr basic_identifier_value(
+      const basic_identifier<M, B, CharSet, UIntT, W> id) noexcept
       : _value{id.value()} {}
 
     /// @brief Construction from a string literal.
@@ -423,7 +434,9 @@ concept identifier_literal_length = (L <= identifier::max_length + 1U);
 export template <std::size_t N>
 [[nodiscard]] consteval auto id_v(const char (&str)[N]) noexcept
   -> identifier_t {
-    return identifier{str}.value();
+    using I =
+      basic_identifier<10, 6, default_identifier_char_set, identifier_t, false>;
+    return I{str}.value();
 }
 //------------------------------------------------------------------------------
 // message_id

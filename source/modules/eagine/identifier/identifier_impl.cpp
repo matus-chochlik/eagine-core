@@ -101,14 +101,15 @@ template <
   std::size_t B,
   typename CharSet,
   typename UIntT,
+  bool V,
   typename Engine>
 auto make_random_basic_identifier(
-  std::type_identity<basic_identifier<M, B, CharSet, UIntT>>,
+  std::type_identity<basic_identifier<M, B, CharSet, UIntT, V>>,
   Engine& engine) {
     char temp[M + 1];
     fill_random_charset_string(
       cover(temp), view(CharSet::values), std::make_index_sequence<M>(), engine);
-    return basic_identifier<M, B, CharSet, UIntT>{temp};
+    return basic_identifier<M, B, CharSet, UIntT, V>{temp};
 }
 //------------------------------------------------------------------------------
 template <
@@ -116,15 +117,16 @@ template <
   std::size_t B,
   typename CharSet,
   typename UIntT,
+  bool V,
   typename Engine>
 auto make_random_basic_identifier(
-  std::type_identity<basic_identifier<M, B, CharSet, UIntT>>,
+  std::type_identity<basic_identifier<M, B, CharSet, UIntT, V>>,
   const span<const char> src,
   Engine& engine) {
     char temp[M + 1];
     fill_random_charset_string(
       cover(temp), src, std::make_index_sequence<M>(), engine);
-    return basic_identifier<M, B, CharSet, UIntT>{temp};
+    return basic_identifier<M, B, CharSet, UIntT, V>{temp};
 }
 //------------------------------------------------------------------------------
 template <typename Engine>
