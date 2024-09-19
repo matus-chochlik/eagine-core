@@ -187,6 +187,65 @@ void simd_equal_double(auto& s) {
     simd_equal_T<double>(test);
 }
 //------------------------------------------------------------------------------
+// vector less
+//------------------------------------------------------------------------------
+template <typename T, int N, bool V>
+void simd_less_TNV(eagitest::case_& test) {
+    test.parameter(N, "N");
+    test.parameter(V, "V");
+    auto& rg{test.random()};
+
+    for(unsigned k = 0; k < test.repeats(1000); ++k) {
+        const bool gen_less = rg.get_int(0, 9) == 0;
+        const T a = rg.get_any<T>();
+        const T b = gen_less ? a : rg.get_any<T>();
+
+        eagine::simd::data_t<T, N, V> va{eagine::simd::fill<T, N, V>::apply(a)};
+        eagine::simd::data_t<T, N, V> vb{eagine::simd::fill<T, N, V>::apply(b)};
+
+        const auto cmp = eagine::simd::vector_less<T, N, V>::apply(va, vb);
+
+        test.check((a < b) == cmp, "ok");
+    }
+}
+//------------------------------------------------------------------------------
+template <typename T, bool V>
+void simd_less_TV(eagitest::case_& test) {
+    simd_less_TNV<T, 2, V>(test);
+    simd_less_TNV<T, 3, V>(test);
+    simd_less_TNV<T, 4, V>(test);
+    simd_less_TNV<T, 5, V>(test);
+    simd_less_TNV<T, 6, V>(test);
+    simd_less_TNV<T, 7, V>(test);
+    simd_less_TNV<T, 8, V>(test);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void simd_less_T(eagitest::case_& test) {
+    simd_less_TV<T, true>(test);
+    simd_less_TV<T, false>(test);
+}
+//------------------------------------------------------------------------------
+void simd_less_byte(auto& s) {
+    eagitest::case_ test{s, 13, "byte"};
+    simd_less_T<unsigned char>(test);
+}
+//------------------------------------------------------------------------------
+void simd_less_int(auto& s) {
+    eagitest::case_ test{s, 14, "int"};
+    simd_less_T<int>(test);
+}
+//------------------------------------------------------------------------------
+void simd_less_float(auto& s) {
+    eagitest::case_ test{s, 15, "float"};
+    simd_less_T<float>(test);
+}
+//------------------------------------------------------------------------------
+void simd_less_double(auto& s) {
+    eagitest::case_ test{s, 16, "double"};
+    simd_less_T<double>(test);
+}
+//------------------------------------------------------------------------------
 // vector compare
 //------------------------------------------------------------------------------
 template <typename T, int N, bool V>
@@ -227,27 +286,27 @@ void simd_compare_T(eagitest::case_& test) {
 }
 //------------------------------------------------------------------------------
 void simd_compare_byte(auto& s) {
-    eagitest::case_ test{s, 13, "byte"};
+    eagitest::case_ test{s, 17, "byte"};
     simd_compare_T<unsigned char>(test);
 }
 //------------------------------------------------------------------------------
 void simd_compare_int(auto& s) {
-    eagitest::case_ test{s, 14, "int"};
+    eagitest::case_ test{s, 18, "int"};
     simd_compare_T<int>(test);
 }
 //------------------------------------------------------------------------------
 void simd_compare_float(auto& s) {
-    eagitest::case_ test{s, 15, "float"};
+    eagitest::case_ test{s, 19, "float"};
     simd_compare_T<float>(test);
 }
 //------------------------------------------------------------------------------
 void simd_compare_double(auto& s) {
-    eagitest::case_ test{s, 16, "double"};
+    eagitest::case_ test{s, 20, "double"};
     simd_compare_T<double>(test);
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "simd_compare", 16};
+    eagitest::suite test{argc, argv, "simd_compare", 20};
     test.once(simd_fill_byte);
     test.once(simd_fill_int);
     test.once(simd_fill_float);
@@ -260,6 +319,10 @@ auto main(int argc, const char** argv) -> int {
     test.once(simd_equal_int);
     test.once(simd_equal_float);
     test.once(simd_equal_double);
+    test.once(simd_less_byte);
+    test.once(simd_less_int);
+    test.once(simd_less_float);
+    test.once(simd_less_double);
     test.once(simd_compare_byte);
     test.once(simd_compare_int);
     test.once(simd_compare_float);

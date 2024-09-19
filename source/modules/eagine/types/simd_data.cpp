@@ -533,18 +533,6 @@ struct is_zero {
     }
 };
 //------------------------------------------------------------------------------
-// vector_equal
-//------------------------------------------------------------------------------
-export template <typename T, int N, bool V>
-struct vector_equal {
-    static constexpr auto apply(
-      data_param_t<T, N, V> l,
-      data_param_t<T, N, V> r) noexcept -> bool {
-        const auto diff{l - r};
-        return is_zero<T, N, V>::apply(diff);
-    }
-};
-//------------------------------------------------------------------------------
 // vector_compare
 //------------------------------------------------------------------------------
 export template <typename T, int N, bool V>
@@ -564,6 +552,30 @@ struct vector_compare {
         } else {
             return l <=> r;
         }
+    }
+};
+//------------------------------------------------------------------------------
+// vector_equal
+//------------------------------------------------------------------------------
+export template <typename T, int N, bool V>
+struct vector_equal {
+    static constexpr auto apply(
+      data_param_t<T, N, V> l,
+      data_param_t<T, N, V> r) noexcept -> bool {
+        const auto diff{l - r};
+        return is_zero<T, N, V>::apply(diff);
+    }
+};
+//------------------------------------------------------------------------------
+// vector_less
+//------------------------------------------------------------------------------
+export template <typename T, int N, bool V>
+struct vector_less {
+    static constexpr auto apply(
+      data_param_t<T, N, V> l,
+      data_param_t<T, N, V> r) noexcept -> bool {
+        return vector_compare<T, N, V>::apply(l, r) ==
+               std::strong_ordering::less;
     }
 };
 //------------------------------------------------------------------------------
