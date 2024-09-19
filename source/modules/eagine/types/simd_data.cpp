@@ -21,6 +21,16 @@ struct _has_simd_data : std::false_type {};
 
 // uint8_t
 export template <>
+struct data_simd<std::uint8_t, 2> {
+    using type __attribute__((vector_size(2))) = std::uint8_t;
+};
+
+export template <>
+struct data_simd<std::uint8_t, 4> {
+    using type __attribute__((vector_size(4))) = std::uint8_t;
+};
+
+export template <>
 struct data_simd<std::uint8_t, 8> {
     using type __attribute__((vector_size(8))) = std::uint8_t;
 };
@@ -244,7 +254,7 @@ export template <int N>
 struct _has_simd_data<double, N>
   : std::bool_constant<
 #if defined(__AVX__) && __AVX__
-      ((N == 2) or (N == 4)) or
+      ((N == 2) or (N == 3) or (N == 4)) or
 #endif
 #if defined(__SSE2__) && __SSE2__
       (N == 2) or
@@ -460,5 +470,89 @@ using data_param_t = typename data_param<T, N, V>::type;
 
 export template <typename T, int N, bool V>
 struct param<data<T, N, V>> : data_param<T, N, V> {};
+//------------------------------------------------------------------------------
+// fill
+//------------------------------------------------------------------------------
+export template <typename T, int N, bool V>
+struct fill {
+    [[nodiscard]] static constexpr auto apply(const T v) noexcept
+      -> data_t<T, N, V> {
+        if constexpr(N == 0) {
+            return data_t<T, 0, V>{};
+        } else if constexpr(N == 1) {
+            return data_t<T, 1, V>{v};
+        } else if constexpr(N == 2) {
+            return data_t<T, 2, V>{v, v};
+        } else if constexpr(N == 3) {
+            return data_t<T, 3, V>{v, v, v};
+        } else if constexpr(N == 4) {
+            return data_t<T, 4, V>{v, v, v, v};
+        } else if constexpr(N == 8) {
+            return data_t<T, 8, V>{v, v, v, v, v, v, v, v};
+        } else {
+            data_t<T, N, V> r;
+            for(int i = 0; i < N; ++i) {
+                r[i] = v;
+            }
+            return r;
+        }
+    }
+};
+//------------------------------------------------------------------------------
+// is_zero
+//------------------------------------------------------------------------------
+export template <typename T, int N, bool V>
+struct is_zero {
+    static constexpr auto _is_zero(std::floating_point auto v) noexcept
+      -> bool {
+        return not(v > T(0) or v < T(0));
+    }
+
+    static constexpr auto _is_zero(std::integral auto v) noexcept -> bool {
+        return not v;
+    }
+
+    static constexpr auto apply(data_param_t<T, N, V> v) noexcept {
+#if defined(__clang__)
+        if constexpr(has_simd_data<T, N, V>::value) {
+            if constexpr(std::is_integral_v<T>) {
+                if constexpr(std::is_unsigned_v<T>) {
+                    return _is_zero(__builtin_reduce_max(v));
+                } else {
+                    return _is_zero(
+                      __builtin_reduce_max(__builtin_elementwise_abs(v)));
+                }
+            }
+        }
+#endif
+        bool result = true;
+        for(int i = 0; i < N; ++i) {
+            result = result and _is_zero(v[i]);
+        }
+        return result;
+    }
+};
+//------------------------------------------------------------------------------
+// vector_compare
+//------------------------------------------------------------------------------
+export template <typename T, int N, bool V>
+struct vector_compare {
+    static constexpr auto apply(
+      data_param_t<T, N, V> l,
+      data_param_t<T, N, V> r) noexcept {
+        if constexpr(has_simd_data<T, N, V>::value) {
+            for(int i = 0; i < N; ++i) {
+                if(l[i] < r[i]) {
+                    return std::strong_ordering::less;
+                } else if(l[i] > r[i]) {
+                    return std::strong_ordering::greater;
+                }
+            }
+            return std::strong_ordering::equal;
+        } else {
+            return l <=> r;
+        }
+    }
+};
 //------------------------------------------------------------------------------
 } // namespace eagine::simd

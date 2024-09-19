@@ -135,6 +135,7 @@ eagine_add_module_tests(
 	UNITS
 		anything
 		bitfield
+		simd_data
 		enum_map
 		placeholder
 		integer_range
