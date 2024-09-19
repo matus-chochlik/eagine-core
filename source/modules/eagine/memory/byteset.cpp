@@ -17,7 +17,7 @@ namespace eagine {
 /// @ingroup type_utils
 /// @tparam N the size - number of elements - in the byte sequence.
 /// @see biteset
-export template <std::size_t N>
+export template <std::size_t N, bool V = false>
 class byteset {
 public:
     static_assert(N > 0, "byteset size must be greater than zero");
@@ -147,7 +147,7 @@ public:
     }
 
 private:
-    simd::data_t<value_type, N, false> _bytes{};
+    simd::data_t<value_type, N, V> _bytes{};
 
     template <typename UInt, std::size_t... I>
     constexpr auto _as(std::index_sequence<I...>) const noexcept -> UInt {
