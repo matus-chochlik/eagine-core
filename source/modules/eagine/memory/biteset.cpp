@@ -662,17 +662,18 @@ private:
                  : _get_cell_bits((i + 0) * _bite_s, (i + 1) * _bite_s);
     }
 
-    static constexpr void _store_cell_bits(
+    static constexpr auto _set_cell_bits(
       const T v,
-      byte& by,
+      byte by,
       const std::size_t ofs,
-      const std::size_t len) noexcept {
+      const std::size_t len) noexcept -> byte {
         const auto msk =
           // NOLINTNEXTLINE(hicpp-signed-bitwise)
           static_cast<byte>(((1U << len) - 1U) << (_byte_s - ofs - len));
         // NOLINTNEXTLINE(hicpp-signed-bitwise)
         by ^= (by & msk);
         by |= (v << (_byte_s - ofs - len));
+        return by;
     }
 
     template <std::size_t L>
@@ -685,8 +686,10 @@ private:
       const std::size_t cb,
       const std::size_t ce,
       const size_constant<L>) noexcept {
-        _store_cell_bits(
-          (state >> (_cell_s - bl)), _bytes[size_type(cb)], bo, bl);
+        _bytes.set(
+          size_type(cb),
+          _set_cell_bits(
+            (state >> (_cell_s - bl)), _bytes[size_type(cb)], bo, bl));
         return _set_cell_bits(
           T(state << bl), bb + bl, be, cb + 1, ce, size_constant<L + 1>{});
     }
@@ -730,7 +733,7 @@ private:
 
     constexpr void _set_cell(const std::size_t i, const T value) noexcept {
         if(B == _byte_s) {
-            _bytes[size_type(i)] = byte(value);
+            _bytes.set(size_type(i), byte(value));
         } else {
             _set_cell_bits(
               T(value << (_cell_s - _bite_s)),

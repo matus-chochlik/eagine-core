@@ -46,6 +46,9 @@ public:
     /// @brief Alias for const iterator type.
     using const_iterator = const value_type*;
 
+    /// @brief Indicates if the implementation uses SIMD vector types.
+    using is_vectorized = simd::has_simd_data<value_type, N, V>;
+
     /// @brief Default constructor.
     constexpr byteset() noexcept = default;
 
@@ -92,9 +95,14 @@ public:
         return {data(), size()};
     }
 
-    /// @brief Subscript operator.
+    constexpr void set(const size_type i, value_type v) noexcept {
+        _bytes[i] = v;
+    }
+
     [[nodiscard]] constexpr auto operator[](const size_type i) noexcept
-      -> reference {
+      -> reference
+        requires(not is_vectorized::value)
+    {
         return _bytes[i];
     }
 
@@ -126,11 +134,18 @@ public:
 
     /// @brief Comparison operator.
     constexpr auto operator<=>(const byteset& that) const noexcept
-      -> std::strong_ordering = default;
-    constexpr auto operator==(const byteset& that) const noexcept
-      -> bool = default;
-    constexpr auto operator<(const byteset& that) const noexcept
-      -> bool = default;
+      -> std::strong_ordering {
+        return simd::vector_compare<value_type, N, V>::apply(
+          _bytes, that._bytes);
+    }
+
+    constexpr auto operator==(const byteset& that) const noexcept -> bool {
+        return simd::vector_equal<value_type, N, V>::apply(_bytes, that._bytes);
+    }
+
+    constexpr auto operator<(const byteset& that) const noexcept -> bool {
+        return simd::vector_less<value_type, N, V>::apply(_bytes, that._bytes);
+    }
 
     /// @brief Converts the byte sequence into an unsigned integer value.
     template <typename UInt>
