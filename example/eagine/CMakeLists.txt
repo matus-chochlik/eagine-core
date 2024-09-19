@@ -95,6 +95,7 @@ eagine_example_common(sudoku_solver)
 eagine_example_common(sudoku_tiling)
 eagine_example_common(sudoku_noise)
 eagine_example_common(simd_data)
+eagine_example_common(simd_ident)
 eagine_example_common(matrix)
 #
 eagine_example_common(embed_self)

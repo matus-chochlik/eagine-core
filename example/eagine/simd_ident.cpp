@@ -1,4 +1,4 @@
-/// @example eagine/simd_data.cpp
+/// @example eagine/simd_ident.cpp
 ///
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
@@ -11,17 +11,30 @@ import std;
 namespace eagine {
 //------------------------------------------------------------------------------
 template <bool useSimd>
-auto vect_ops(auto& out, std::integral_constant<bool, useSimd> = {}) noexcept {
+auto ident_ops(auto& out, std::integral_constant<bool, useSimd> = {}) noexcept {
+    using ident_t =
+      basic_identifier<10, 6, default_identifier_char_set, identifier_t, useSimd>;
+
+    ident_t id{};
+    std::vector<ident_t> vid;
+
+    const std::size_t n = 128Z * 1024Z;
+    vid.reserve(n);
 
     const time_measure measurement;
 
-    for(int i = 0; i < 100'000'000; ++i) {
-        eagine::simd::data_t<int, 4, useSimd> va{
-          eagine::simd::fill<int, 4, useSimd>::apply(i)};
-        eagine::simd::data_t<int, 4, useSimd> vb{
-          eagine::simd::fill<int, 4, useSimd>::apply(i)};
+    const auto sort_pred{[](const ident_t l, const ident_t r) {
+        return r < l;
+    }};
 
-        if(not eagine::simd::vector_equal<int, 4, useSimd>::apply(va, vb)) {
+    for(int i = 0; i < 100; ++i) {
+        vid.clear();
+        for(std::size_t k = 0Z; k < n; ++k) {
+            vid.push_back(id);
+            id = increment(id);
+        }
+        std::sort(vid.begin(), vid.end(), sort_pred);
+        if(not std::is_sorted(vid.begin(), vid.end(), sort_pred)) {
             break;
         }
     }
@@ -35,8 +48,8 @@ auto vect_ops(auto& out, std::integral_constant<bool, useSimd> = {}) noexcept {
 auto main(main_ctx& ctx) -> int {
     main_ctx_object out{"matrix", ctx};
 
-    const auto t_simd{vect_ops(out, std::true_type{})};
-    const auto t_base{vect_ops(out, std::false_type{})};
+    const auto t_simd{ident_ops(out, std::true_type{})};
+    const auto t_base{ident_ops(out, std::false_type{})};
 
     out.cio_print("speedup: ${val}").arg("val", t_simd / t_base);
 
