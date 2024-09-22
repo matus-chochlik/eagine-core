@@ -374,6 +374,9 @@ struct basic_identifier_value {
     /// @brief The type of the identifier instantiation.
     using identifier_type = basic_identifier<M, B, CharSet, UIntT, V>;
 
+    /// @brief Alias for the unpacked identifier_name type.
+    using name_type = identifier_name<M>;
+
     /// @brief Construction from the value type.
     constexpr basic_identifier_value(const value_type value) noexcept
       : _value{value} {}
@@ -398,6 +401,16 @@ struct basic_identifier_value {
     /// @brief Conversion to identifier type.
     [[nodiscard]] constexpr operator identifier_type() const noexcept {
         return identifier_type{_value};
+    }
+
+    /// @brief Conversion to identifier type.
+    [[nodiscard]] constexpr auto identifier() const noexcept {
+        return identifier_type{_value};
+    }
+
+    /// @brief Conversion to identifier name.
+    [[nodiscard]] constexpr auto name() const noexcept {
+        return identifier_type{_value}.name();
     }
 };
 //------------------------------------------------------------------------------
