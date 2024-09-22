@@ -377,6 +377,10 @@ struct basic_identifier_value {
     /// @brief Alias for the unpacked identifier_name type.
     using name_type = identifier_name<M>;
 
+    /// @brief Default constructor.
+    constexpr basic_identifier_value() noexcept
+      : _value{identifier_type{}.value()} {}
+
     /// @brief Construction from the value type.
     constexpr basic_identifier_value(const value_type value) noexcept
       : _value{value} {}
