@@ -10,8 +10,7 @@ eagine_add_module(
 		std
 		eagine.core.identifier
 		eagine.core.main_ctx
-		eagine.core.resource
-)
+		eagine.core.resource)
 
 eagine_add_module(
 	eagine.core.app
@@ -25,6 +24,5 @@ eagine_add_module(
 		eagine.core.identifier
 		eagine.core.memory
 		eagine.core.main_ctx
-		eagine.core.resource
-)
+		eagine.core.resource)
 

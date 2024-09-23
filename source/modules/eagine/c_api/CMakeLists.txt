@@ -10,8 +10,7 @@ eagine_add_module(
 		std
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.utility
-)
+		eagine.core.utility)
 
 eagine_add_module(
 	eagine.core.c_api
@@ -20,8 +19,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.c_api
@@ -30,9 +28,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
-
+		eagine.core.memory)
 eagine_add_module(
 	eagine.core.c_api
 	COMPONENT core-dev
@@ -42,8 +38,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
-		eagine.core.identifier
-)
+		eagine.core.identifier)
 
 eagine_add_module(
 	eagine.core.c_api
@@ -52,8 +47,7 @@ eagine_add_module(
 	IMPORTS
 		std enum_class
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.c_api
@@ -63,8 +57,7 @@ eagine_add_module(
 		std
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.container
-)
+		eagine.core.container)
 
 eagine_add_module(
 	eagine.core.c_api
@@ -73,8 +66,7 @@ eagine_add_module(
 	IMPORTS
 		std api_traits result
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.c_api
@@ -83,8 +75,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.c_api
@@ -96,8 +87,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
-		eagine.core.math
-)
+		eagine.core.math)
 
 eagine_add_module(
 	eagine.core.c_api
@@ -107,9 +97,8 @@ eagine_add_module(
 		std object result
 		function parameter_map
 		eagine.core.types
-		eagine.core.memory;
-		eagine.core.utility;
-)
+		eagine.core.memory
+		eagine.core.utility)
 
 eagine_add_module(
 	eagine.core.c_api
@@ -117,13 +106,11 @@ eagine_add_module(
 	PARTITION reference
 	IMPORTS
 		std
-		eagine.core.types
-)
+		eagine.core.types)
 
 eagine_add_module(
 	eagine.core.c_api
-	COMPONENT core-dev
-)
+	COMPONENT core-dev)
 
 eagine_add_module_tests(
 	eagine.core.c_api
@@ -143,5 +130,4 @@ eagine_add_module_tests(
 		eagine.core.identifier
 		eagine.core.container
 		eagine.core.valid_if
-		eagine.core.units
-)
+		eagine.core.units)

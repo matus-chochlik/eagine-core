@@ -8,8 +8,7 @@ eagine_add_module(
 	PARTITION float_utils
 	IMPORTS
 		std
-		eagine.core.types
-)
+		eagine.core.types)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -20,8 +19,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.identifier
-		eagine.core.reflection
-)
+		eagine.core.reflection)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -32,8 +30,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -43,8 +40,7 @@ eagine_add_module(
 		std
 		eagine.core.types
 		eagine.core.reflection
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -56,8 +52,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.identifier
 		eagine.core.reflection
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -69,8 +64,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.identifier
 		eagine.core.reflection
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -85,8 +79,7 @@ eagine_add_module(
 		eagine.core.reflection
 		eagine.core.math
 		eagine.core.valid_if
-		eagine.core.units
-)
+		eagine.core.units)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -100,8 +93,7 @@ eagine_add_module(
 		eagine.core.reflection
 		eagine.core.math
 		eagine.core.valid_if
-		eagine.core.units
-)
+		eagine.core.units)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -110,8 +102,7 @@ eagine_add_module(
 	IMPORTS
 		std result interface
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -120,8 +111,7 @@ eagine_add_module(
 	IMPORTS
 		std result interface
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -131,8 +121,7 @@ eagine_add_module(
 		std result block
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.runtime
-)
+		eagine.core.runtime)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -144,8 +133,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.identifier
 		eagine.core.reflection
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -158,8 +146,7 @@ eagine_add_module(
 		eagine.core.string
 		eagine.core.identifier
 		eagine.core.reflection
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -172,8 +159,7 @@ eagine_add_module(
 		eagine.core.string
 		eagine.core.identifier
 		eagine.core.reflection
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -187,8 +173,7 @@ eagine_add_module(
 		eagine.core.identifier
 		eagine.core.reflection
 		eagine.core.value_tree
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -198,8 +183,7 @@ eagine_add_module(
 		data_buffer read write
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.utility
-)
+		eagine.core.utility)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -209,8 +193,7 @@ eagine_add_module(
 		data_buffer read write
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.build_info
-)
+		eagine.core.build_info)
 
 eagine_add_module(
 	eagine.core.serialization
@@ -220,13 +203,11 @@ eagine_add_module(
 		data_buffer read write
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.build_info
-)
+		eagine.core.build_info)
 
 eagine_add_module(
 	eagine.core.serialization
-	COMPONENT core-dev
-)
+	COMPONENT core-dev)
 
 eagine_add_module_tests(
 	eagine.core.serialization
@@ -245,5 +226,4 @@ eagine_add_module_tests(
 		eagine.core.valid_if
 		eagine.core.value_tree
 		eagine.core.c_api
-		eagine.core.units
-)
+		eagine.core.units)

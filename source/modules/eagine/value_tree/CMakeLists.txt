@@ -14,8 +14,7 @@ eagine_add_module(
 		eagine.core.identifier
 		eagine.core.reflection
 		eagine.core.valid_if
-		eagine.core.console
-)
+		eagine.core.console)
 
 eagine_add_module(
 	eagine.core.value_tree
@@ -30,8 +29,7 @@ eagine_add_module(
 		eagine.core.runtime
 		eagine.core.identifier
 		eagine.core.reflection
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.value_tree
@@ -44,8 +42,7 @@ eagine_add_module(
 		eagine.core.string
 		eagine.core.utility
 		eagine.core.runtime
-		eagine.core.logging
-)
+		eagine.core.logging)
 
 eagine_add_module(
 	eagine.core.value_tree
@@ -74,8 +71,7 @@ eagine_add_module(
 	PRIVATE_LINK_LIBRARIES
 		ryml
 	INTERFACE_LINK_LIBRARIES
-		ryml
-)
+		ryml)
 
 eagine_add_module_tests(
 	eagine.core.value_tree
@@ -90,7 +86,6 @@ eagine_add_module_tests(
 		eagine.core.reflection
 		eagine.core.logging
 		eagine.core.units
-		eagine.core.c_api
-)
+		eagine.core.c_api)
 
 set_tests_properties(execute-test.eagine.core.value_tree.visitors PROPERTIES COST 3)

@@ -9,13 +9,11 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.simd
-	COMPONENT core-dev
-)
+	COMPONENT core-dev)
 
 eagine_add_module_tests(
 	eagine.core.simd
@@ -32,5 +30,4 @@ eagine_add_module_tests(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)

@@ -16,8 +16,7 @@ eagine_add_module(
 		eagine.core.runtime
 		eagine.core.logging
 		eagine.core.progress
-		eagine.core.console
-)
+		eagine.core.console)
 
 eagine_add_module(
 	eagine.core.main_ctx
@@ -25,8 +24,7 @@ eagine_add_module(
 	PARTITION parent
 	IMPORTS
 		std interface
-		eagine.core.runtime
-)
+		eagine.core.runtime)
 
 eagine_add_module(
 	eagine.core.main_ctx
@@ -41,8 +39,7 @@ eagine_add_module(
 		eagine.core.runtime
 		eagine.core.logging
 		eagine.core.console
-		eagine.core.progress
-)
+		eagine.core.progress)
 
 eagine_add_module(
 	eagine.core.main_ctx
@@ -55,8 +52,7 @@ eagine_add_module(
 		eagine.core.string
 		eagine.core.valid_if
 		eagine.core.reflection
-		eagine.core.units
-)
+		eagine.core.units)
 
 eagine_add_module(
 	eagine.core.main_ctx
@@ -67,8 +63,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.string
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.main_ctx
@@ -78,8 +73,7 @@ eagine_add_module(
 		std interface parent object
 		eagine.core.types
 		eagine.core.utility
-		eagine.core.identifier
-)
+		eagine.core.identifier)
 
 eagine_add_module(
 	eagine.core.main_ctx
@@ -96,8 +90,7 @@ eagine_add_module(
 		eagine.core.valid_if
 		eagine.core.runtime
 		eagine.core.logging
-		eagine.core.value_tree
-)
+		eagine.core.value_tree)
 
 eagine_add_module(
 	eagine.core.main_ctx
@@ -116,16 +109,14 @@ eagine_add_module(
 		eagine.core.runtime
 		eagine.core.logging
 		eagine.core.console
-		eagine.core.progress
-)
+		eagine.core.progress)
 
 eagine_add_module(
 	eagine.core.main_ctx
 	COMPONENT core-dev
 	PARTITION main
 	IMPORTS
-		std interface
-)
+		std interface)
 
 eagine_add_module(
 	eagine.core.main_ctx
@@ -157,8 +148,7 @@ eagine_add_module(
 		eagine.core.valid_if
 		eagine.core.value_tree
 	INTERFACE_LINK_LIBRARIES
-		systemd
-)
+		systemd)
 
 eagine_add_module_tests(
 	eagine.core.main_ctx
@@ -169,6 +159,6 @@ eagine_add_module_tests(
 		std
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.c_api
-)
+		eagine.core.c_api)
+
 set_tests_properties(execute-test.eagine.core.main_ctx.system_info PROPERTIES COST 10)

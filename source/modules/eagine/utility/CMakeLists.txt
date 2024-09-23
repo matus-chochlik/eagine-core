@@ -6,71 +6,68 @@ eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION count
-	IMPORTS std eagine.core.types
-)
+	IMPORTS std eagine.core.types)
+
 eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION coroutine
-	IMPORTS std
-)
+	IMPORTS std)
+
 eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION overloaded
-	IMPORTS std
-)
+	IMPORTS std)
+
 eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION double_buffer
-	IMPORTS std
-)
+	IMPORTS std)
+
 eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION interleaved_call
-	IMPORTS std
-)
+	IMPORTS std)
+
 eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION integer_hash
-	IMPORTS std
-)
+	IMPORTS std)
+
 eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION bool_aggregate
-	IMPORTS std
-)
+	IMPORTS std)
+
 eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION protected_member
-	IMPORTS std
-)
+	IMPORTS std)
+
 eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION unreachable
-	IMPORTS std
-)
+	IMPORTS std)
 
 eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION sliding_average
-	IMPORTS std eagine.core.types
-)
+	IMPORTS std eagine.core.types)
 
 eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION callable_ref
 	IMPORTS
-		std eagine.core.types
-)
+		std eagine.core.types)
 
 eagine_add_module(
 	eagine.core.utility
@@ -79,8 +76,7 @@ eagine_add_module(
 	IMPORTS
 		std callable_ref
 		eagine.core.types
-		eagine.core.container
-)
+		eagine.core.container)
 
 eagine_add_module(
 	eagine.core.utility
@@ -89,8 +85,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.build_config
-		eagine.core.types
-)
+		eagine.core.types)
 
 eagine_add_module(
 	eagine.core.utility
@@ -99,8 +94,7 @@ eagine_add_module(
 	IMPORTS
 		std callable_ref
 		eagine.core.types
-		eagine.core.container
-)
+		eagine.core.container)
 
 eagine_add_module(
 	eagine.core.utility
@@ -109,15 +103,15 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.utility
 	COMPONENT core-dev
 	PARTITION scope_exit
-	IMPORTS std callable_ref eagine.core.types
-)
+	IMPORTS
+		std callable_ref
+		eagine.core.types)
 
 eagine_add_module(
 	eagine.core.utility
@@ -127,8 +121,7 @@ eagine_add_module(
 		std generator
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.container
-)
+		eagine.core.container)
 
 eagine_add_module(
 	eagine.core.utility
@@ -137,8 +130,7 @@ eagine_add_module(
 	IMPORTS
 		std scope_exit
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.utility
@@ -146,8 +138,7 @@ eagine_add_module(
 	PARTITION timeline
 	IMPORTS
 		std
-		eagine.core.types
-)
+		eagine.core.types)
 
 eagine_add_module(
 	eagine.core.utility
@@ -156,8 +147,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.debug
-)
+		eagine.core.debug)
 
 eagine_add_module(
 	eagine.core.utility
@@ -167,8 +157,7 @@ eagine_add_module(
 		std
 		eagine.core.types
 		eagine.core.identifier
-		eagine.core.container
-)
+		eagine.core.container)
 
 eagine_add_module(
 	eagine.core.utility
@@ -177,8 +166,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.utility
@@ -187,8 +175,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.utility
@@ -201,8 +188,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
-		eagine.core.identifier
-)
+		eagine.core.identifier)
 
 eagine_add_module_tests(
 	eagine.core.utility
@@ -226,8 +212,7 @@ eagine_add_module_tests(
 		eagine.core.debug
 		eagine.core.identifier
 		eagine.core.container
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 set_tests_properties(execute-test.eagine.core.utility.sudoku PROPERTIES COST 30)
 set_tests_properties(execute-test.eagine.core.utility.timeout PROPERTIES COST 20)

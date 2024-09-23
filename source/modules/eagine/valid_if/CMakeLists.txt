@@ -9,8 +9,8 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.reflection
-)
+		eagine.core.reflection)
+
 eagine_add_module(
 	eagine.core.valid_if
 	COMPONENT core-dev
@@ -18,24 +18,22 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
+
 eagine_add_module(
 	eagine.core.valid_if
 	COMPONENT core-dev
 	PARTITION range
 	IMPORTS
 		std compare
-		eagine.core.types
-)
+		eagine.core.types)
 
 eagine_add_module(
 	eagine.core.valid_if
 	COMPONENT core-dev
 	IMPORTS
 		eagine.core.types
-		eagine.core.reflection
-)
+		eagine.core.reflection)
 
 eagine_add_module_tests(
 	eagine.core.valid_if
@@ -46,5 +44,4 @@ eagine_add_module_tests(
 		std
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.reflection
-)
+		eagine.core.reflection)
