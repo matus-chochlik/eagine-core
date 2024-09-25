@@ -306,7 +306,8 @@ public:
     }
 
     /// @brief Returns a new identifier by incrementing the argument by one.
-    friend auto increment(basic_identifier i) noexcept -> basic_identifier {
+    [[nodiscard]] friend auto increment(basic_identifier i) noexcept
+      -> basic_identifier {
         const auto _inc_bites{[](_bites_t v) {
             using T = std::uint8_t;
             using D = std::uintmax_t;
@@ -415,6 +416,12 @@ struct basic_identifier_value {
     /// @brief Conversion to identifier name.
     [[nodiscard]] constexpr auto name() const noexcept {
         return identifier_type{_value}.name();
+    }
+
+    /// @brief Returns a new identifier_value by incrementing the argument by one.
+    [[nodiscard]] friend auto increment(basic_identifier_value i) noexcept
+      -> basic_identifier_value {
+        return increment(identifier_type{i._value}).value();
     }
 };
 //------------------------------------------------------------------------------
