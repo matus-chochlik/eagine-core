@@ -59,7 +59,7 @@ export struct url_query_args
     }
 
     auto arg_value_as(const string_view name, std::type_identity<std::string>)
-      const noexcept -> optionally_valid<string_view> {
+      const noexcept -> optionally_valid<std::string> {
         return decoded_arg_value(name);
     }
 
