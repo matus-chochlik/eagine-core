@@ -59,8 +59,7 @@ eagine_add_module(
 	INTERFACE_LINK_LIBRARIES
 		ryml
 		systemd
-		z
-)
+		z)
 
 eagine_add_module_tests(
 	eagine.core
@@ -69,8 +68,7 @@ eagine_add_module_tests(
 		valtree
 	IMPORTS
 		std
-		eagine.core
-)
+		eagine.core)
 
 eagine_embed_target_resources(
 	TARGET test.eagine.core.embed

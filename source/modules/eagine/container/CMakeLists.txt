@@ -6,8 +6,7 @@ eagine_add_module(
 	eagine.core.container
 	COMPONENT core-dev
 	PARTITION iterator
-	IMPORTS std
-)
+	IMPORTS std)
 
 eagine_add_module(
 	eagine.core.container
@@ -15,16 +14,16 @@ eagine_add_module(
 	PARTITION static_vector
 	IMPORTS
 		std
-		eagine.core.types
-)
+		eagine.core.types)
+
 eagine_add_module(
 	eagine.core.container
 	COMPONENT core-dev
 	PARTITION small_vector
 	IMPORTS
 		std static_vector
-		eagine.core.types
-)
+		eagine.core.types)
+
 eagine_add_module(
 	eagine.core.container
 	COMPONENT core-dev
@@ -32,16 +31,16 @@ eagine_add_module(
 	IMPORTS
 		std static_vector
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
+
 eagine_add_module(
 	eagine.core.container
 	COMPONENT core-dev
 	PARTITION object_pool
 	IMPORTS
 		std small_vector
-		eagine.core.types
-)
+		eagine.core.types)
+
 eagine_add_module(
 	eagine.core.container
 	COMPONENT core-dev
@@ -49,8 +48,8 @@ eagine_add_module(
 	IMPORTS
 		std static_vector chunk_list
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
+
 eagine_add_module(
 	eagine.core.container
 	COMPONENT core-dev
@@ -58,8 +57,8 @@ eagine_add_module(
 	IMPORTS
 		std static_vector chunk_list
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
+
 eagine_add_module(
 	eagine.core.container
 	COMPONENT core-dev
@@ -67,8 +66,8 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
+
 eagine_add_module(
 	eagine.core.container
 	COMPONENT core-dev
@@ -77,16 +76,14 @@ eagine_add_module(
 		std iterator
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.container
 	COMPONENT core-dev
 	IMPORTS
 		std
-		eagine.core.types
-)
+		eagine.core.types)
 
 eagine_add_module_tests(
 	eagine.core.container
@@ -101,5 +98,4 @@ eagine_add_module_tests(
 		std
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)

@@ -13,13 +13,11 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.valid_if
 	PRIVATE_LINK_LIBRARIES
-		eagine-core-generated-headers
-)
+		eagine-core-generated-headers)
 
 eagine_add_module_tests(
 	eagine.core.build_info
 	UNITS
 		build_info
 	IMPORTS
-		std
-)
+		std)

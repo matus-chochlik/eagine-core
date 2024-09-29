@@ -18,6 +18,5 @@ eagine_add_module(
 		eagine.core.logging
 		eagine.core.valid_if
 		eagine.core.value_tree
-		eagine.core.main_ctx
-)
+		eagine.core.main_ctx)
 

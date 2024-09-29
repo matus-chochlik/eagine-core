@@ -7,7 +7,4 @@
 ///
 export module eagine.core.simd;
 
-export import :data_array;
-export import :data_simd;
-export import :data;
 export import :ops;

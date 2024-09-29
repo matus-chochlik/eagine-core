@@ -6,29 +6,25 @@ eagine_add_module(
 	eagine.core.units
 	COMPONENT core-dev
 	PARTITION base
-	IMPORTS std eagine.core.types
-)
+	IMPORTS std eagine.core.types)
 
 eagine_add_module(
 	eagine.core.units
 	COMPONENT core-dev
 	PARTITION dimension
-	IMPORTS base eagine.core.types
-)
+	IMPORTS base eagine.core.types)
 
 eagine_add_module(
 	eagine.core.units
 	COMPONENT core-dev
 	PARTITION dimensions
-	IMPORTS base dimension eagine.core.types
-)
+	IMPORTS base dimension eagine.core.types)
 
 eagine_add_module(
 	eagine.core.units
 	COMPONENT core-dev
 	PARTITION unit
-	IMPORTS std base eagine.core.types
-)
+	IMPORTS std base eagine.core.types)
 
 eagine_add_module(
 	eagine.core.units
@@ -36,15 +32,13 @@ eagine_add_module(
 	PARTITION si
 	IMPORTS
 		std base unit dimension dimensions
-		eagine.core.types
-)
+		eagine.core.types)
 
 eagine_add_module(
 	eagine.core.units
 	COMPONENT core-dev
 	PARTITION quantity
-	IMPORTS std base eagine.core.types
-)
+	IMPORTS std base eagine.core.types)
 
 eagine_add_module(
 	eagine.core.units
@@ -53,8 +47,7 @@ eagine_add_module(
 	IMPORTS
 		std base unit dimension
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.units
@@ -62,8 +55,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.units.framework
-)
+		eagine.core.units.framework)
 
 eagine_add_module_tests(
 	eagine.core.units
@@ -76,5 +68,4 @@ eagine_add_module_tests(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)

@@ -159,8 +159,38 @@ void trie_traverse(auto& s) {
     });
 }
 //------------------------------------------------------------------------------
+void trie_is_valid_char(auto& s) {
+    eagitest::case_ test{s, 8, "is valid char"};
+    eagitest::track trck{test, 0, 1};
+
+    eagine::basic_identifier_trie<std::string> t;
+
+    for(const char c : t.valid_chars()) {
+        test.check(t.is_valid_char(c), "yes");
+    }
+
+    const auto chars{t.valid_chars()};
+    for(char c = std::numeric_limits<char>::min();
+        c < std::numeric_limits<char>::max();
+        ++c) {
+        if(std::find(chars.begin(), chars.end(), c) == chars.end()) {
+            test.check(not t.is_valid_char(c), "no");
+            trck.checkpoint(1);
+        }
+    }
+}
+//------------------------------------------------------------------------------
+void trie_is_valid_key(auto& s) {
+    eagitest::case_ test{s, 9, "is valid key"};
+
+    eagine::basic_identifier_trie<std::string> t;
+    test.check(t.is_valid_key(t.valid_chars()), "yes");
+
+    test.check(not t.is_valid_key("abcd/123#"), "no");
+}
+//------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
-    eagitest::suite test{argc, argv, "trie", 7};
+    eagitest::suite test{argc, argv, "trie", 9};
     test.once(trie_empty);
     test.once(trie_insert_1);
     test.once(trie_insert_2);
@@ -168,6 +198,8 @@ auto main(int argc, const char** argv) -> int {
     test.once(trie_add_2);
     test.once(trie_remove);
     test.once(trie_traverse);
+    test.once(trie_is_valid_char);
+    test.once(trie_is_valid_key);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

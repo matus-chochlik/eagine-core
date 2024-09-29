@@ -9,8 +9,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.reflection
@@ -19,8 +18,7 @@ eagine_add_module(
 	IMPORTS
 		std decl_name
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.reflection
@@ -29,8 +27,7 @@ eagine_add_module(
 	IMPORTS
 		std decl_name
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.reflection
@@ -39,13 +36,11 @@ eagine_add_module(
 	IMPORTS
 		std decl_name
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.reflection
-	COMPONENT core-dev
-)
+	COMPONENT core-dev)
 
 eagine_add_module_tests(
 	eagine.core.reflection
@@ -56,6 +51,5 @@ eagine_add_module_tests(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 

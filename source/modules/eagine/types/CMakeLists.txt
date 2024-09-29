@@ -10,56 +10,56 @@ eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION concepts
-	IMPORTS std
-)
+	IMPORTS std)
+
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION bitfield
-	IMPORTS std
-)
+	IMPORTS std)
 
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION basic
-	IMPORTS std eagine.core.build_config
-)
+	IMPORTS std eagine.core.build_config)
 
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION tribool
-	IMPORTS std concepts
-)
+	IMPORTS std concepts)
 
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION structural
-	IMPORTS std
-)
+	IMPORTS std)
 
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION metaprogramming
-	IMPORTS std basic
-)
+	IMPORTS std basic)
+
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION function_constant
 	IMPORTS
-		std basic
-)
+		std basic)
 
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION limits
-	IMPORTS std basic
-)
+	IMPORTS std basic)
+
+eagine_add_module(
+	eagine.core.types
+	COMPONENT core-dev
+	PARTITION simd_data
+	IMPORTS std basic)
 
 eagine_add_module(
 	eagine.core.types
@@ -67,8 +67,7 @@ eagine_add_module(
 	PARTITION optional_like
 	IMPORTS
 		std basic tribool
-		limits concepts
-)
+		limits concepts)
 
 eagine_add_module(
 	eagine.core.types
@@ -76,58 +75,52 @@ eagine_add_module(
 	PARTITION holder
 	IMPORTS
 		std basic tribool
-		concepts optional_like
-)
+		concepts optional_like)
 
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION placeholder
 	IMPORTS
-		std tribool optional_like
-)
+		std tribool optional_like)
 
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION outcome
 	IMPORTS
-		std basic limits concepts
-)
+		std basic limits concepts)
 
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION compare
-	IMPORTS std basic
-)
+	IMPORTS std basic)
 
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION integer_range
-	IMPORTS std concepts limits
-)
+	IMPORTS std concepts limits)
 
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	PARTITION enum_map
-	IMPORTS std basic bitfield
-)
+	IMPORTS std basic bitfield)
 
 eagine_add_module(
 	eagine.core.types
 	COMPONENT core-dev
 	IMPORTS
-		eagine.core.build_config
-)
+		eagine.core.build_config)
 
 eagine_add_module_tests(
 	eagine.core.types
 	UNITS
 		anything
 		bitfield
+		simd_data
 		enum_map
 		placeholder
 		integer_range
@@ -141,5 +134,4 @@ eagine_add_module_tests(
 		tribool
 		holder
 	IMPORTS
-		std
-)
+		std)

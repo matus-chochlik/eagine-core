@@ -6,8 +6,7 @@ eagine_add_module(
 	eagine.core.math
 	COMPONENT core-dev
 	PARTITION sign
-	IMPORTS std
-)
+	IMPORTS std)
 
 eagine_add_module(
 	eagine.core.math
@@ -16,8 +15,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.math
@@ -25,16 +23,14 @@ eagine_add_module(
 	PARTITION constants
 	IMPORTS
 		std
-		eagine.core.types
-)
+		eagine.core.types)
 
 eagine_add_module(
 	eagine.core.math
 	COMPONENT core-dev
 	PARTITION functions
 	IMPORTS
-		std constants
-)
+		std constants)
 
 eagine_add_module(
 	eagine.core.math
@@ -42,8 +38,7 @@ eagine_add_module(
 	PARTITION scalar
 	IMPORTS
 		std
-		eagine.core.simd
-)
+		eagine.core.simd)
 
 eagine_add_module(
 	eagine.core.math
@@ -53,8 +48,7 @@ eagine_add_module(
 		std traits scalar
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.simd
-)
+		eagine.core.simd)
 
 eagine_add_module(
 	eagine.core.math
@@ -63,8 +57,7 @@ eagine_add_module(
 	IMPORTS
 		std traits vector
 		eagine.core.types
-		eagine.core.simd
-)
+		eagine.core.simd)
 
 eagine_add_module(
 	eagine.core.math
@@ -75,8 +68,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.simd
-		eagine.core.units
-)
+		eagine.core.units)
 
 eagine_add_module(
 	eagine.core.math
@@ -87,8 +79,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.simd
-		eagine.core.units
-)
+		eagine.core.units)
 
 eagine_add_module(
 	eagine.core.math
@@ -97,8 +88,7 @@ eagine_add_module(
 	IMPORTS
 		std constants functions vector
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.math
@@ -106,8 +96,7 @@ eagine_add_module(
 	PARTITION primitives
 	IMPORTS
 		vector
-		std eagine.core.types
-)
+		std eagine.core.types)
 
 eagine_add_module(
 	eagine.core.math
@@ -117,8 +106,7 @@ eagine_add_module(
 		std functions
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.math
@@ -128,8 +116,7 @@ eagine_add_module(
 		std vector
 		functions primitives
 		eagine.core.types
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.math
@@ -138,8 +125,7 @@ eagine_add_module(
 	IMPORTS
 		std functions vector
 		eagine.core.valid_if
-		eagine.core.units
-)
+		eagine.core.units)
 
 eagine_add_module(
 	eagine.core.math
@@ -147,8 +133,7 @@ eagine_add_module(
 	PARTITION animated_value
 	IMPORTS
 		std functions
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.core.math
@@ -158,8 +143,7 @@ eagine_add_module(
 		std
 		primitives
 		vector
-		matrix
-)
+		matrix)
 
 eagine_add_module(
 	eagine.core.math
@@ -170,8 +154,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.container
-		eagine.core.simd
-)
+		eagine.core.simd)
 
 eagine_add_module_tests(
 	eagine.core.math
@@ -192,5 +175,4 @@ eagine_add_module_tests(
 		eagine.core.memory
 		eagine.core.simd
 		eagine.core.valid_if
-		eagine.core.units
-)
+		eagine.core.units)

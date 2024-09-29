@@ -11,8 +11,7 @@ eagine_add_module(
 		std
 		eagine.core.types
 		eagine.core.memory
-		eagine.core.simd
-)
+		eagine.core.simd)
 
 eagine_add_module_tests(
 	eagine.core.identifier
@@ -20,5 +19,4 @@ eagine_add_module_tests(
 		identifier
 	IMPORTS
 		std
-		eagine.core.types
-)
+		eagine.core.types)

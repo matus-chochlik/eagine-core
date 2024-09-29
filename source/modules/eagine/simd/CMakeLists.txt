@@ -5,39 +5,15 @@
 eagine_add_module(
 	eagine.core.simd
 	COMPONENT core-dev
-	PARTITION data_array
-	IMPORTS std eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.simd
-	COMPONENT core-dev
-	PARTITION data_simd
-	IMPORTS std eagine.core.types
-)
-
-eagine_add_module(
-	eagine.core.simd
-	COMPONENT core-dev
-	PARTITION data
-	IMPORTS std data_array data_simd
-)
-
-eagine_add_module(
-	eagine.core.simd
-	COMPONENT core-dev
 	PARTITION ops
 	IMPORTS
-		std data
-		data_simd
+		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)
 
 eagine_add_module(
 	eagine.core.simd
-	COMPONENT core-dev
-)
+	COMPONENT core-dev)
 
 eagine_add_module_tests(
 	eagine.core.simd
@@ -47,7 +23,6 @@ eagine_add_module_tests(
 		compare
 		data
 		diff
-		fill
 		from
 		hsum
 		shuffle
@@ -55,5 +30,4 @@ eagine_add_module_tests(
 	IMPORTS
 		std
 		eagine.core.types
-		eagine.core.memory
-)
+		eagine.core.memory)

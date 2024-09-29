@@ -12,8 +12,7 @@ eagine_add_module(
 		eagine.core.memory
 		eagine.core.utility
 		eagine.core.runtime
-		eagine.core.logging
-)
+		eagine.core.logging)
 
 eagine_add_module(
 	eagine.core.progress
@@ -24,8 +23,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
-		eagine.core.runtime
-)
+		eagine.core.runtime)
 
 eagine_add_module(
 	eagine.core.progress
@@ -36,8 +34,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.memory
 		eagine.core.utility
-		eagine.core.logging
-)
+		eagine.core.logging)
 
 eagine_add_module(
 	eagine.core.progress
@@ -55,6 +52,5 @@ eagine_add_module(
 		eagine.core.utility
 		eagine.core.runtime
 		eagine.core.valid_if
-		eagine.core.logging
-)
+		eagine.core.logging)
 

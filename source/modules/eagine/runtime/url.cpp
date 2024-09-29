@@ -22,7 +22,7 @@ export class url;
 /// @brief Value map class for storing URL query parts.
 /// @see url
 export struct url_query_args
-  : flat_map<string_view, string_view, basic_view_less<string_view>> {
+  : flat_map<std::string, std::string, basic_view_less<string_view>> {
 
     /// @brief Returns the value of the argument with the specified name.
     /// @see arg_has_value
@@ -59,7 +59,7 @@ export struct url_query_args
     }
 
     auto arg_value_as(const string_view name, std::type_identity<std::string>)
-      const noexcept -> optionally_valid<string_view> {
+      const noexcept -> optionally_valid<std::string> {
         return decoded_arg_value(name);
     }
 
