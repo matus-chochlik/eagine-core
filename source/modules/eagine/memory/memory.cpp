@@ -13,6 +13,7 @@ export import :align;
 export import :address;
 export import :bit_density;
 export import :null_ptr;
+export import :parent_ptr;
 export import :offset_ptr;
 export import :span;
 export import :offset_span;
