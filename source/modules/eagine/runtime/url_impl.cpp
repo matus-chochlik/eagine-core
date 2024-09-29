@@ -162,7 +162,7 @@ auto url::_parse_args() const noexcept -> url_query_args {
     url_query_args result;
     for_each_delimited(_sw(_query), string_view{"&"}, [&result](auto part) {
         auto [name, value]{split_by_first(part, string_view{"="})};
-        result[name] = value;
+        result[to_string(name)] = to_string(value);
     });
     return result;
 }
