@@ -18,12 +18,17 @@ namespace eagine {
 //------------------------------------------------------------------------------
 // query args
 //------------------------------------------------------------------------------
+url_query_args::url_query_args(url& parent) noexcept
+  : _parent{parent} {}
+//------------------------------------------------------------------------------
+auto url_query_args::all() const noexcept
+  -> generator<std::tuple<string_view, string_view>> {
+    return _parent->_all_args();
+}
+//------------------------------------------------------------------------------
 auto url_query_args::arg_value(const string_view name) const noexcept
   -> optionally_valid<string_view> {
-    if(const auto pos{find(name)}; pos != end()) {
-        return {std::get<1>(*pos), true};
-    }
-    return {};
+    return _parent->_arg_value(name);
 }
 //------------------------------------------------------------------------------
 auto url_query_args::decoded_arg_value(const string_view name) const noexcept
@@ -158,13 +163,34 @@ auto url::_swov(_range r) const noexcept -> valid_if_not_empty<string_view> {
     return {_sw(r)};
 }
 //------------------------------------------------------------------------------
-auto url::_parse_args() const noexcept -> url_query_args {
-    url_query_args result;
-    for_each_delimited(_sw(_query), string_view{"&"}, [&result](auto part) {
+void url::_parse_args() noexcept {
+    const string_view str{_url_str};
+
+    _arg_list.clear();
+    for_each_delimited(_sw(_query), string_view{"&"}, [&, this](auto part) {
         auto [name, value]{split_by_first(part, string_view{"="})};
-        result[to_string(name)] = to_string(value);
+        const auto n_offs{std::distance(str.data(), name.data())};
+        const auto v_offs{std::distance(str.data(), value.data())};
+        _arg_list.emplace_back(std::make_tuple(
+          _range{n_offs, name.size()}, _range{v_offs, value.size()}));
     });
-    return result;
+}
+//------------------------------------------------------------------------------
+auto url::_all_args() const noexcept
+  -> generator<std::tuple<string_view, string_view>> {
+    for(const auto& [name_r, value_r] : _arg_list) {
+        co_yield std::make_tuple(_sw(name_r), _sw(value_r));
+    }
+}
+//------------------------------------------------------------------------------
+auto url::_arg_value(const string_view name) const noexcept
+  -> optionally_valid<string_view> {
+    for(const auto& [name_r, value_r] : _arg_list) {
+        if(_sw(name_r) == name) {
+            return {_sw(value_r)};
+        }
+    }
+    return {};
 }
 //------------------------------------------------------------------------------
 void url::_cover(
@@ -193,7 +219,7 @@ url::url(
         _cover(_path, match, 29);
         _cover(_query, match, 32);
         _cover(_fragment, match, 37);
-        _query_args = _parse_args();
+        _parse_args();
     }
 }
 //------------------------------------------------------------------------------

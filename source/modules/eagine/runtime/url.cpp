@@ -11,6 +11,7 @@ import std;
 import eagine.core.types;
 import eagine.core.memory;
 import eagine.core.string;
+import eagine.core.utility;
 import eagine.core.identifier;
 import eagine.core.valid_if;
 import eagine.core.container;
@@ -21,8 +22,13 @@ export class url;
 //------------------------------------------------------------------------------
 /// @brief Value map class for storing URL query parts.
 /// @see url
-export struct url_query_args
-  : flat_map<std::string, std::string, basic_view_less<string_view>> {
+export class url_query_args {
+public:
+    url_query_args(url& parent) noexcept;
+
+    /// @brief Allows to iterate through all name and value argument pairs in query.
+    auto all() const noexcept
+      -> generator<std::tuple<string_view, string_view>>;
 
     /// @brief Returns the value of the argument with the specified name.
     /// @see arg_has_value
@@ -90,6 +96,15 @@ export struct url_query_args
       -> bool {
         return arg_value(name).and_then(string_has_value(_1, value)).or_false();
     }
+
+private:
+    friend class url;
+
+    url_query_args(const url_query_args&) noexcept = default;
+    auto operator=(const url_query_args&) noexcept -> url_query_args& = default;
+    ~url_query_args() noexcept = default;
+
+    memory::basic_parent_ptr<url, std::int16_t> _parent;
 };
 //------------------------------------------------------------------------------
 /// @brief Class parsing and providing access to parts of an URL.
@@ -282,6 +297,8 @@ public:
     }
 
 private:
+    friend class url_query_args;
+
     url(std::string, std::match_results<std::string::iterator>) noexcept;
 
     using _range = std::pair<span_size_t, span_size_t>;
@@ -289,7 +306,13 @@ private:
     auto _sw(_range r) const noexcept -> string_view;
     auto _swov(_range r) const noexcept -> valid_if_not_empty<string_view>;
 
-    auto _parse_args() const noexcept -> url_query_args;
+    void _parse_args() noexcept;
+
+    auto _all_args() const noexcept
+      -> generator<std::tuple<string_view, string_view>>;
+
+    auto _arg_value(const string_view name) const noexcept
+      -> optionally_valid<string_view>;
 
     void _cover(
       _range& part,
@@ -308,7 +331,8 @@ private:
     _range _path;
     _range _query;
     _range _fragment;
-    url_query_args _query_args;
+    std::vector<std::tuple<_range, _range>> _arg_list;
+    url_query_args _query_args{*this};
     bool _parsed{false};
 };
 //------------------------------------------------------------------------------

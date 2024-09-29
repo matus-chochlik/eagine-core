@@ -298,44 +298,52 @@ void url_port(auto& s) {
 void url_query_str(auto& s) {
     eagitest::case_ test{s, 10, "query string"};
 
-    const eagine::url l1{"//"};
+    eagine::url l1o{"//"};
+    const eagine::url l1{std::move(l1o)};
     test.check(l1.has_value(), "1 valid");
     test.check(not l1.query_str().has_value(), "1");
     test.check_equal(l1.query_str().value_or("N/A"), "N/A", "1 fallback");
 
-    const eagine::url l2{"https://"};
+    eagine::url l2o{"https://"};
+    const eagine::url l2{std::move(l2o)};
     test.check(l2.has_value(), "2 valid");
     test.check(not l2.query_str().has_value(), "2");
     test.check_equal(l2.query_str().value_or("N/A"), "N/A", "2 fallback");
 
-    const eagine::url l3{"file:///tmp"};
+    eagine::url l3o{"file:///tmp"};
+    const eagine::url l3{std::move(l3o)};
     test.check(l3.has_value(), "3 valid");
     test.check(not l3.query_str().has_value(), "3");
     test.check_equal(l3.query_str().value_or("N/A"), "N/A", "3 fallback");
 
-    const eagine::url l4{"ftp://server1:42/?arg=val#frag"};
+    eagine::url l4o{"ftp://server1:42/?arg=val#frag"};
+    const eagine::url l4{std::move(l4o)};
     test.check(l4.has_value(), "4 valid");
     test.check(l4.query_str().has_value(), "4");
     test.check_equal(l4.query_str().value_or("N/A"), "arg=val", "4 matches");
 
-    const eagine::url l5{"ftp://server2/?A=v%C3%A1%C4%BA%C5%AF%C3%A9&B=X"};
+    eagine::url l5o{"ftp://server2/?A=v%C3%A1%C4%BA%C5%AF%C3%A9&B=X"};
+    const eagine::url l5{std::move(l5o)};
     test.check(l5.has_value(), "5 valid");
     test.check_equal(
       l5.query().decoded_arg_value("A").value_or("N/A"), "váĺůé", "5A matches");
     test.check_equal(
       l5.query().decoded_arg_value("B").value_or("N/A"), "X", "5B matches");
 
-    const eagine::url l6{"sftp://user1@server2/path/to/file.txt"};
+    eagine::url l6o{"sftp://user1@server2/path/to/file.txt"};
+    const eagine::url l6{std::move(l6o)};
     test.check(l6.has_value(), "6 valid");
     test.check(not l6.query_str().has_value(), "6");
     test.check_equal(l6.query_str().value_or("N/A"), "N/A", "6 fallback");
 
-    const eagine::url l7{"smb://user2:passw0rd1@server3:69/path/to/dir#part"};
+    eagine::url l7o{"smb://user2:passw0rd1@server3:69/path/to/dir#part"};
+    const eagine::url l7{std::move(l7o)};
     test.check(l7.has_value(), "7 valid");
     test.check(not l7.query_str().has_value(), "7");
     test.check_equal(l7.query_str().value_or("N/A"), "N/A", "7 fallback");
 
-    const eagine::url l8{"ldap://user3:pwd@server4:1234?a=1&b=2&c=3#frag"};
+    eagine::url l8o{"ldap://user3:pwd@server4:1234?a=1&b=2&c=3#frag"};
+    const eagine::url l8{std::move(l8o)};
     test.check(l8.query_str().has_value(), "8");
     test.check_equal(
       l8.query_str().value_or("N/A"), "a=1&b=2&c=3", "8 matches");
