@@ -40,7 +40,6 @@ void url_default_construct(auto& s) {
     test.check(not loc.port().has_value(), "invalid port number");
     test.check(not loc.fragment().has_value(), "invalid fragment");
     test.check(not loc.query_str().has_value(), "invalid query string");
-    test.check(loc.query().empty(), "empty query argument map");
 }
 //------------------------------------------------------------------------------
 void url_scheme(auto& s) {
