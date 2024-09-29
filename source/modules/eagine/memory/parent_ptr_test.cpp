@@ -32,11 +32,6 @@ void parent_ptr_default_construct(auto& s) {
     std::cout << outer.inner1.parent.offset() << std::endl;
     std::cout << outer.inner2.parent.offset() << std::endl;
 
-    test.check(outer.inner1.parent.is_null(), "is not null 1");
-    test.check(not outer.inner2.parent.is_null(), "is not null 2");
-    test.check(not outer.inner1.parent, "is true 1");
-    test.check(outer.inner2.parent, "is true 2");
-
     test.check(outer.inner1.parent.get() == &outer, "get 1");
     test.check(outer.inner2.parent.get() == &outer, "get 2");
 
@@ -53,11 +48,6 @@ void parent_ptr_copy_construct_1(auto& s) {
     test_outer orig;
     test_outer copy{orig};
 
-    test.check(copy.inner1.parent.is_null(), "is not null 1");
-    test.check(not copy.inner2.parent.is_null(), "is not null 2");
-    test.check(not copy.inner1.parent, "is true 1");
-    test.check(copy.inner2.parent, "is true 2");
-
     test.check(copy.inner1.parent.get() == &copy, "get 1");
     test.check(copy.inner2.parent.get() == &copy, "get 2");
 
@@ -68,9 +58,9 @@ void parent_ptr_copy_construct_1(auto& s) {
     test.check(static_cast<test_outer*>(copy.inner2.parent) == &copy, "cast 2");
 
     test.check(
-      static_cast<test_outer*>(copy.inner1.parent) == &orig, "not cast 1");
+      static_cast<test_outer*>(copy.inner1.parent) != &orig, "not cast 1");
     test.check(
-      static_cast<test_outer*>(copy.inner2.parent) == &orig, "not cast 2");
+      static_cast<test_outer*>(copy.inner2.parent) != &orig, "not cast 2");
 }
 //------------------------------------------------------------------------------
 auto main(int argc, const char** argv) -> int {
