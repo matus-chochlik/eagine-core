@@ -223,9 +223,8 @@ url::url(
     }
 }
 //------------------------------------------------------------------------------
-auto url::hash_id() const noexcept -> identifier {
-    return identifier{
-      integer_hash<identifier_t>(std::hash<std::string>{}(_url_str))};
+auto url::hash_id() const noexcept -> identifier_t {
+    return integer_hash<identifier_t>(std::hash<std::string>{}(_url_str));
 }
 //------------------------------------------------------------------------------
 auto url::login() const noexcept -> optionally_valid<std::string> {
