@@ -254,19 +254,31 @@ public:
 
     auto finish() noexcept -> bool final {
         if(not _path.empty()) {
-            _builder->failed();
+            if(not _fail_called) {
+                _fail_called = true;
+                _builder->failed();
+            }
         }
-        return _builder->finish();
+        if(not _finish_called) {
+            _finish_called = true;
+            return _builder->finish();
+        }
+        return true;
     }
 
     void failed() noexcept final {
-        _builder->failed();
+        if(not _fail_called) {
+            _fail_called = true;
+            _builder->failed();
+        }
     }
 
 private:
     shared_holder<object_builder> _builder;
     basic_string_path _path;
     bool _should_continue{false};
+    bool _finish_called{false};
+    bool _fail_called{false};
 };
 //------------------------------------------------------------------------------
 [[nodiscard]] auto make_building_value_tree_visitor(
