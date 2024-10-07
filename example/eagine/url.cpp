@@ -50,7 +50,7 @@ auto main(main_ctx& ctx) -> int {
 
         const auto arg_cio{out.cio_print("query arguments:").to_be_continued()};
 
-        for(auto& [name, value] : u.query()) {
+        for(auto& [name, value] : u.query().all()) {
             arg_cio.print("${name}: '${value}'")
               .arg("name", name)
               .arg("value", value);

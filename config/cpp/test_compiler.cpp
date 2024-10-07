@@ -4,6 +4,6 @@
 /// https://www.boost.org/LICENSE_1_0.txt
 ///
 ///
-int main(void) {
+auto main() -> int {
     return 0;
 }

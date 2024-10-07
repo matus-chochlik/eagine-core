@@ -192,7 +192,7 @@ public:
         return get();
     }
 
-    /// @brief Pointer arithmentic increment.
+    /// @brief Pointer arithmetic increment.
     auto operator++() noexcept -> auto& {
         return *this = basic_offset_ptr(get() + 1);
     }
@@ -201,7 +201,7 @@ public:
         return basic_offset_ptr(get() + d);
     }
 
-    /// @brief Pointer arithmentic decrement.
+    /// @brief Pointer arithmetic decrement.
     auto operator--() noexcept -> auto& {
         return *this = basic_offset_ptr(get() - 1);
     }
@@ -224,7 +224,7 @@ public:
     }
 
 private:
-    offset_type _offs = {0};
+    offset_type _offs{0};
     using _rawptr = typename address::pointer;
 
     template <typename P, typename O>

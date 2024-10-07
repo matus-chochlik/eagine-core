@@ -29,6 +29,14 @@ eagine_add_module(
 eagine_add_module(
 	eagine.core.memory
 	COMPONENT core-dev
+	PARTITION parent_ptr
+	IMPORTS
+		std address
+		eagine.core.types)
+
+eagine_add_module(
+	eagine.core.memory
+	COMPONENT core-dev
 	PARTITION offset_ptr
 	IMPORTS
 		std address
@@ -178,6 +186,7 @@ eagine_add_module_tests(
 		byte_allocator
 		byteset
 		fixed_size_string
+		parent_ptr
 		offset_ptr
 		offset_span
 		span
