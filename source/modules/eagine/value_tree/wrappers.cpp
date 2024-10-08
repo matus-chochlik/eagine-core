@@ -691,6 +691,9 @@ private:
     compound(shared_holder<compound_interface> pimpl) noexcept
       : _pimpl{std::move(pimpl)} {}
 
+    void _traverse(const shared_holder<value_tree_visitor>&, const attribute&)
+      const;
+
     shared_holder<compound_interface> _pimpl{};
 };
 //------------------------------------------------------------------------------
