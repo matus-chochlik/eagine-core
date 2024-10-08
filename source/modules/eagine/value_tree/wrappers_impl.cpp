@@ -57,6 +57,126 @@ void compound::traverse(const stack_visit_handler visit) const {
     }
 }
 //------------------------------------------------------------------------------
+void compound::traverse(const shared_holder<value_tree_visitor>& visitor) const {
+    if(visitor and visitor->should_continue()) {
+        std::vector<attribute> atr;
+        std::vector<span_size_t> pos;
+        bool struct_otherwise_list{false};
+
+        atr.push_back(structure());
+        pos.push_back(0);
+        visitor->begin();
+
+        bool bool_value{false};
+        std::vector<byte> byte_values;
+        std::vector<std::int64_t> int64_values;
+        std::vector<float> float_values;
+
+        while(true) {
+            assert(atr.size() == pos.size());
+            const auto nc{nested_count(atr.back())};
+
+            if(pos.back() < nc) {
+                auto child{nested(atr.back(), pos.back())};
+                const auto name{attribute_name(child)};
+                if(name) {
+                    struct_otherwise_list = true;
+                } else {
+                    struct_otherwise_list = false;
+                }
+                if(not is_link(child) and visitor->should_continue()) {
+                    if(pos.back() == 0) {
+                        if(struct_otherwise_list) {
+                            visitor->begin_struct();
+                        } else {
+                            visitor->begin_list();
+                        }
+                    }
+                    if(name) {
+                        visitor->begin_attribute(name);
+                    }
+                    atr.push_back(child);
+                    pos.push_back(0);
+                    continue;
+                }
+            } else if(nc == 0) {
+                if(visitor->should_continue()) {
+                    switch(canonical_type(atr.back())) {
+                        case value_type::bool_type:
+                            if(value_count(atr.back()) == 1) {
+                                if(fetch_values(
+                                     atr.back(), cover_one(bool_value))) {
+                                    visitor->consume(view_one(bool_value));
+                                }
+                            } else {
+                                // TODO
+                            }
+                            break;
+                        case value_type::byte_type:
+                            byte_values.resize(
+                              std_size(value_count(atr.back())));
+                            if(fetch_values(atr.back(), cover(byte_values))) {
+                                memory::const_block blob{view(byte_values)};
+                                visitor->unparsed_data(view_one(blob));
+                            }
+                            break;
+                        case value_type::int16_type:
+                            int64_values.resize(
+                              std_size(value_count(atr.back())));
+                            if(fetch_values(atr.back(), cover(int64_values))) {
+                                visitor->consume(view(int64_values));
+                            }
+                            break;
+                        case value_type::int32_type:
+                            int64_values.resize(
+                              std_size(value_count(atr.back())));
+                            if(fetch_values(atr.back(), cover(int64_values))) {
+                                visitor->consume(view(int64_values));
+                            }
+                            break;
+                        case value_type::int64_type:
+                            int64_values.resize(
+                              std_size(value_count(atr.back())));
+                            if(fetch_values(atr.back(), cover(int64_values))) {
+                                visitor->consume(view(int64_values));
+                            }
+                            break;
+                        case value_type::float_type:
+                            float_values.resize(
+                              std_size(value_count(atr.back())));
+                            if(fetch_values(atr.back(), cover(float_values))) {
+                                visitor->consume(view(float_values));
+                            }
+                            break;
+                        case value_type::duration_type:
+                            // TODO
+                            break;
+                        case value_type::string_type:
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                atr.pop_back();
+                pos.pop_back();
+            } else {
+                if(struct_otherwise_list) {
+                    visitor->finish_struct();
+                } else {
+                    visitor->finish_list();
+                }
+                atr.pop_back();
+                pos.pop_back();
+            }
+            if(pos.empty()) {
+                break;
+            }
+            ++pos.back();
+        }
+        visitor->finish();
+    }
+}
+//------------------------------------------------------------------------------
 void compound::traverse(const visit_handler visit) const {
     const auto adapted{
       [visit](

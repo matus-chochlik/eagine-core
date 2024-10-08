@@ -242,6 +242,19 @@ export auto traverse_json_stream(
   memory::buffer_pool&,
   const logger& parent) -> value_tree_stream_input;
 //------------------------------------------------------------------------------
+// traverse_yaml_stream
+//------------------------------------------------------------------------------
+export auto traverse_yaml_stream(
+  shared_holder<value_tree_visitor>,
+  span_size_t max_token_size,
+  memory::buffer_pool&,
+  const logger& parent) -> value_tree_stream_input;
+
+export auto traverse_yaml_stream(
+  shared_holder<object_builder>,
+  memory::buffer_pool&,
+  const logger& parent) -> value_tree_stream_input;
+//------------------------------------------------------------------------------
 // compound_implementation
 //------------------------------------------------------------------------------
 template <typename Derived>

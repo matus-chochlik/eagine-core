@@ -372,15 +372,74 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-[[nodiscard]] static auto rapidyaml_make_new_node(
+static auto rapidyaml_make_new_node(
   rapidyaml_tree_compound& owner,
   ryml::ConstNodeRef node) noexcept -> optional_reference<rapidyaml_attribute> {
     return owner.make_node(node);
 }
 //------------------------------------------------------------------------------
-[[nodiscard]] auto from_yaml_text(string_view yaml_text, const logger& parent)
-  -> compound {
+auto from_yaml_text(string_view yaml_text, const logger& parent) -> compound {
     return compound::make<rapidyaml_tree_compound>(yaml_text, parent);
+}
+//------------------------------------------------------------------------------
+class yaml_value_tree_stream_parser : public value_tree_stream_parser {
+    // TODO: this is a very inefficient implementation
+public:
+    yaml_value_tree_stream_parser(
+      shared_holder<value_tree_visitor> visitor,
+      span_size_t,
+      memory::buffer_pool&,
+      const logger& parent) noexcept
+      : _parent{parent}
+      , _visitor{std::move(visitor)} {}
+
+    auto begin() noexcept -> bool final {
+        _yaml_text.clear();
+        return true;
+    }
+
+    auto parse_data(memory::const_block data) noexcept -> bool final {
+        append_to(as_chars(data), _yaml_text);
+        return true;
+    }
+
+    auto finish() noexcept -> bool final {
+        if(auto tree{from_yaml_text(_yaml_text, _parent)}) {
+            tree.traverse(_visitor);
+            return true;
+        }
+        return false;
+    }
+
+private:
+    const logger& _parent;
+    shared_holder<value_tree_visitor> _visitor;
+    std::string _yaml_text;
+};
+//------------------------------------------------------------------------------
+auto traverse_yaml_stream(
+  shared_holder<value_tree_visitor> visitor,
+  span_size_t max_token_size,
+  memory::buffer_pool& buffers,
+  const logger& parent) -> value_tree_stream_input {
+    return {
+      {hold<yaml_value_tree_stream_parser>,
+       std::move(visitor),
+       max_token_size,
+       buffers,
+       parent}};
+}
+//------------------------------------------------------------------------------
+auto traverse_yaml_stream(
+  shared_holder<object_builder> builder,
+  memory::buffer_pool& buffers,
+  const logger& parent) -> value_tree_stream_input {
+    const auto max_token_size{builder->max_token_size()};
+    return traverse_yaml_stream(
+      make_building_value_tree_visitor(std::move(builder)),
+      max_token_size,
+      buffers,
+      parent);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::valtree

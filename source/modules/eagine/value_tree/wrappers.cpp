@@ -656,6 +656,8 @@ public:
     /// @brief Traverses the tree, calls the @p visitor function on each node.
     void traverse(const visit_handler visitor) const;
 
+    void traverse(const shared_holder<value_tree_visitor>& visitor) const;
+
     /// @brief Type of traverse/visit handler using full attribute stack.
     using stack_visit_handler = callable_ref<bool(
       const compound&,
