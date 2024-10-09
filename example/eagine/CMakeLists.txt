@@ -6,15 +6,13 @@
 add_custom_target(eagine-core-examples ALL)
 set_target_properties(
 	eagine-core-examples
-	PROPERTIES FOLDER "Example/Core"
-)
+	PROPERTIES FOLDER "Example/Core")
 
 function(eagine_install_example TARGET_NAME)
 	install(
 		TARGETS ${TARGET_NAME}
 		COMPONENT core-examples
-		DESTINATION share/eagine/example/core
-	)
+		DESTINATION share/eagine/example/core)
 endfunction()
 
 function(eagine_example_common EXAMPLE_NAME)
@@ -22,16 +20,16 @@ function(eagine_example_common EXAMPLE_NAME)
 		eagine-${EXAMPLE_NAME}
 		EXCLUDE_FROM_ALL
 		"${EXAMPLE_NAME}.cpp"
-		${ARGN}
-	)
+		${ARGN})
+
 	add_dependencies(eagine-core-examples eagine-${EXAMPLE_NAME})
 	eagine_add_exe_analysis(eagine-${EXAMPLE_NAME})
 	eagine_target_modules(eagine-${EXAMPLE_NAME} std eagine.core)
 
 	set_target_properties(
 		eagine-${EXAMPLE_NAME}
-		PROPERTIES FOLDER "Example/Core"
-	)
+		PROPERTIES FOLDER "Example/Core")
+
 	eagine_install_example(eagine-${EXAMPLE_NAME})
 endfunction()
 
@@ -107,8 +105,7 @@ eagine_embed_target_resources(
 	RESOURCES
 		packedSelf "${CMAKE_CURRENT_SOURCE_DIR}/embed_packed.cpp"
 	PACKED
-	ENABLE_SEARCH
-)
+	ENABLE_SEARCH)
 #
 eagine_example_common(value_tree_builder)
 eagine_embed_target_resources(
@@ -116,17 +113,15 @@ eagine_embed_target_resources(
 	RESOURCES
 		json1 "value_tree_builder_1.json"
 		json2 "value_tree_builder_2.json"
-	ENABLE_SEARCH
-)
+	ENABLE_SEARCH)
 #
 target_compile_options(
 	eagine-valgrind
-	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>
-)
+	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>)
+
 target_compile_options(
 	eagine-limit_cast
-	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>
-)
+	PRIVATE $<$<BOOL:${EAGINE_CLANGXX_COMPILER}>:-Wno-unreachable-code>)
 
 eagine_add_license(core-examples)
 eagine_add_debian_changelog(core-examples)
