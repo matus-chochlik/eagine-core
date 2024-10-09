@@ -1,3 +1,27 @@
+eagine-core-dev (0.134.0) unstable; urgency=medium
+
+  * Added interface for yaml stream parsing and an initial (non-streaming)
+    implementation.
+
+ -- Matúš Chochlík <matus.chochlik@proton.me>  Wed, 09 Oct 2024 07:00:00 +0200
+
+eagine-core-dev (0.132.0) unstable; urgency=medium
+
+  * Added new SIMD types, refactoring in SIMD operation wrappers.
+  * Used SIMD in additional types like biteset and byteset.
+  * Additions to basic_identifier_value.
+  * Small additions to trie.
+  * Added parent_ptr.
+  * Memory safety fix in url_arg_map.
+
+ -- Matúš Chochlík <matus.chochlik@proton.me>  Wed, 04 Sep 2024 07:00:00 +0200
+
+eagine-core-dev (0.131.0) unstable; urgency=medium
+
+  * Small refactoring in math primitive intersection algorithms.
+
+ -- Matúš Chochlík <matus.chochlik@proton.me>  Wed, 04 Sep 2024 07:00:00 +0200
+
 eagine-core-dev (0.130.0) unstable; urgency=medium
 
   * Major refactoring in math primitives.
