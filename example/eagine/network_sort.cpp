@@ -1,4 +1,4 @@
-/// @example eagine/network_sorter.cpp
+/// @example eagine/network_sort.cpp
 ///
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
