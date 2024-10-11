@@ -65,6 +65,7 @@ struct enumerator_traits<valtree::value_type> {
 namespace valtree {
 //------------------------------------------------------------------------------
 export struct compound_interface;
+export struct object_builder;
 
 /// @brief Interface for value tree attribute implementations.
 /// @ingroup valtree
@@ -300,6 +301,17 @@ export struct value_tree_visitor : interface<value_tree_visitor> {
     /// @brief Called when the parsing and traversal failed.
     /// @see begin
     virtual void failed() noexcept = 0;
+
+    /// @brief Returns the associated builder (if any)
+    virtual auto get_builder() noexcept -> shared_holder<object_builder> = 0;
+
+    template <std::derived_from<object_builder> Builder>
+    auto get_builder_as() noexcept -> shared_holder<Builder> {
+        if(auto builder{get_builder()}) {
+            return std::move(builder).template as<Builder>();
+        }
+        return {};
+    }
 };
 //------------------------------------------------------------------------------
 /// @brief Interface for classes that initialize or change values in an object.

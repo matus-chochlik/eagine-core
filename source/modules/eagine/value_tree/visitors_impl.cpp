@@ -94,6 +94,16 @@ public:
         _right->failed();
     }
 
+    auto get_builder() noexcept -> shared_holder<object_builder> final {
+        if(auto left{_left->get_builder()}) {
+            return left;
+        }
+        if(auto right{_right->get_builder()}) {
+            return right;
+        }
+        return {};
+    }
+
 private:
     shared_holder<value_tree_visitor> _left;
     shared_holder<value_tree_visitor> _right;
@@ -180,6 +190,10 @@ public:
 
     void failed() noexcept final {
         _cio.print("traversal failed");
+    }
+
+    auto get_builder() noexcept -> shared_holder<object_builder> final {
+        return {};
     }
 
 private:
@@ -271,6 +285,10 @@ public:
             _fail_called = true;
             _builder->failed();
         }
+    }
+
+    auto get_builder() noexcept -> shared_holder<object_builder> final {
+        return _builder;
     }
 
 private:
