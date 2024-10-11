@@ -382,7 +382,7 @@ export struct object_builder : interface<object_builder> {
 
     /// @brief Called when the tree traversal failed.
     /// @see finish
-    virtual void failed() noexcept = 0;
+    virtual void failed() noexcept {}
 };
 //------------------------------------------------------------------------------
 /// @brief Make a value tree visitor that combines two other visitors.
