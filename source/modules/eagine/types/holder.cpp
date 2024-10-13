@@ -222,10 +222,21 @@ public:
     }
 
     template <std::derived_from<T> D>
+    [[nodiscard]] auto is(std::type_identity<D> = {}) && noexcept -> bool {
+        return dynamic_cast<D*>(get()) != nullptr;
+    }
+
+    template <std::derived_from<T> D>
     [[nodiscard]] auto as(std::type_identity<D> = {}) && noexcept
       -> basic_holder<std::shared_ptr<D>, D> {
         return {std::dynamic_pointer_cast<D>(
           std::shared_ptr<T>{std::move(*this).release()})};
+    }
+
+    template <std::derived_from<T> D>
+    [[nodiscard]] auto as_ref(std::type_identity<D> = {}) && noexcept
+      -> optional_reference<D> {
+        return {dynamic_cast<D*>(get())};
     }
 };
 //------------------------------------------------------------------------------
@@ -243,10 +254,7 @@ public:
     /// @brief Constructs with held instance constructed with specified parameters.
     template <typename... Args>
     constexpr unique_keeper(Args&&... args) noexcept
-      : unique_holder<T> {
-        hold<T>, std::forward<Args>(args)...
-    }
-    {}
+      : unique_holder<T>{hold<T>, std::forward<Args>(args)...} {}
 };
 //------------------------------------------------------------------------------
 /// @brief Specialization of basic_holder wrapping shared pointers.
