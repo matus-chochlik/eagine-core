@@ -128,30 +128,23 @@ public:
         return false;
     }
 
-    template <
-      typename F,
-      optional_like R =
-        std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
-    auto and_then(F&&) const& -> R {
-        return R{};
-    }
-
-    template <
-      typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>>
-    auto and_then(F&&) && -> R {
-        return R{};
+    template <typename F>
+    auto and_then(F&&) && {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>;
+        if constexpr(not std::is_void_v<R>) {
+            static_assert(optional_like<R>);
+            return R{};
+        }
     }
 
     template <typename F>
-        requires(std::is_void_v<
-                 std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
-    void and_then(F&&) const& {}
-
-    template <typename F>
-        requires(std::is_void_v<
-                 std::remove_cvref_t<std::invoke_result_t<F, Result &&>>>)
-    void and_then(F&&) && {}
+    auto and_then(F&&) const& {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, const Result&>>;
+        if constexpr(not std::is_void_v<R>) {
+            static_assert(optional_like<R>);
+            return R{};
+        }
+    }
 
     template <typename T>
     auto replaced_with(const T&) const
@@ -228,16 +221,14 @@ public:
         return nothing;
     }
 
-    template <
-      typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
-    auto and_then(F&&) const -> R {
-        return R{};
-    }
-
     template <typename F>
-        requires(std::is_void_v<std::remove_cvref_t<std::invoke_result_t<F>>>)
-    void and_then(F&&) const {}
+    auto and_then(F&&) const {
+        using R = std::remove_cvref_t<std::invoke_result_t<F>>;
+        if constexpr(not std::is_void_v<R>) {
+            static_assert(optional_like<R>);
+            return R{};
+        }
+    }
 
     template <typename T>
     auto replaced_with(const T&) const noexcept
@@ -392,44 +383,25 @@ public:
         return bool(_value);
     }
 
-    template <
-      typename F,
-      optional_like R =
-        std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
-    auto and_then(F&& function) const& -> R {
-        if(has_value()) {
-            return std::invoke(std::forward<F>(function), _value);
-        } else {
-            return R{};
-        }
-    }
-
-    template <
-      typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>>
-    auto and_then(F&& function) && -> R {
+    template <typename F>
+    auto and_then(F&& function) && {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>;
         if(has_value()) {
             return std::invoke(std::forward<F>(function), std::move(_value));
-        } else {
+        } else if constexpr(not std::is_void_v<R>) {
+            static_assert(optional_like<R>);
             return R{};
         }
     }
 
     template <typename F>
-        requires(std::is_void_v<
-                 std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
-    void and_then(F&& function) const& {
+    auto and_then(F&& function) const& {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, const Result&>>;
         if(has_value()) {
-            std::invoke(std::forward<F>(function), _value);
-        }
-    }
-
-    template <typename F>
-        requires(std::is_void_v<
-                 std::remove_cvref_t<std::invoke_result_t<F, Result &&>>>)
-    void and_then(F&& function) && {
-        if(has_value()) {
-            std::invoke(std::forward<F>(function), std::move(_value));
+            return std::invoke(std::forward<F>(function), _value);
+        } else if constexpr(not std::is_void_v<R>) {
+            static_assert(optional_like<R>);
+            return R{};
         }
     }
 
@@ -518,22 +490,14 @@ public:
         return nothing;
     }
 
-    template <
-      typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
-    auto and_then(F&& function) const -> R {
+    template <typename F>
+    auto and_then(F&& function) const {
+        using R = std::remove_cvref_t<std::invoke_result_t<F>>;
         if(has_value()) {
             return std::invoke(std::forward<F>(function));
-        } else {
+        } else if constexpr(not std::is_void_v<R>) {
+            static_assert(optional_like<R>);
             return R{};
-        }
-    }
-
-    template <typename F>
-        requires(std::is_void_v<std::remove_cvref_t<std::invoke_result_t<F>>>)
-    void and_then(F&& function) const {
-        if(has_value()) {
-            std::invoke(std::forward<F>(function));
         }
     }
 
@@ -691,44 +655,25 @@ public:
         return false;
     }
 
-    template <
-      typename F,
-      optional_like R =
-        std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>
-    auto and_then(F&& function) const& -> R {
-        if(has_value()) {
-            return std::invoke(std::forward<F>(function), _value);
-        } else {
-            return R{};
-        }
-    }
-
-    template <
-      typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>>
-    auto and_then(F&& function) && -> R {
+    template <typename F>
+    auto and_then(F&& function) && {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, Result&&>>;
         if(has_value()) {
             return std::invoke(std::forward<F>(function), std::move(_value));
-        } else {
+        } else if constexpr(not std::is_void_v<R>) {
+            static_assert(optional_like<R>);
             return R{};
         }
     }
 
     template <typename F>
-        requires(std::is_void_v<
-                 std::remove_cvref_t<std::invoke_result_t<F, const Result&>>>)
-    void and_then(F&& function) const& {
+    auto and_then(F&& function) const& {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, const Result&>>;
         if(has_value()) {
-            std::invoke(std::forward<F>(function), _value);
-        }
-    }
-
-    template <typename F>
-        requires(std::is_void_v<
-                 std::remove_cvref_t<std::invoke_result_t<F, Result &&>>>)
-    void and_then(F&& function) && {
-        if(has_value()) {
-            std::invoke(std::forward<F>(function), std::move(_value));
+            return std::invoke(std::forward<F>(function), _value);
+        } else if constexpr(not std::is_void_v<R>) {
+            static_assert(optional_like<R>);
+            return R{};
         }
     }
 
@@ -844,22 +789,14 @@ public:
         return value;
     }
 
-    template <
-      typename F,
-      optional_like R = std::remove_cvref_t<std::invoke_result_t<F>>>
-    auto and_then(F&& function) const -> R {
+    template <typename F>
+    auto and_then(F&& function) const {
+        using R = std::remove_cvref_t<std::invoke_result_t<F>>;
         if(has_value()) {
             return std::invoke(std::forward<F>(function));
-        } else {
+        } else if constexpr(not std::is_void_v<R>) {
+            static_assert(optional_like<R>);
             return R{};
-        }
-    }
-
-    template <typename F>
-        requires(std::is_void_v<std::remove_cvref_t<std::invoke_result_t<F>>>)
-    void and_then(F&& function) const {
-        if(has_value()) {
-            std::invoke(std::forward<F>(function));
         }
     }
 

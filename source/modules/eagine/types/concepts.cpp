@@ -58,10 +58,10 @@ constinit const auto has_value_type_v =
 export template <typename V>
 concept optional_like = requires(V v) {
     v.transform([]<typename... T>(T&&... x) -> std::size_t {
-        return (... + sizeof(std::forward<T>(x)));
+        return (0Z + ... + sizeof(std::forward<T>(x)));
     });
     v.and_then([]<typename... T>(T&&... x) -> std::optional<std::size_t> {
-        return {(... + sizeof(std::forward<T>(x)))};
+        return {(0Z + ... + sizeof(std::forward<T>(x)))};
     });
     static_cast<bool>(v);
     v.value();
