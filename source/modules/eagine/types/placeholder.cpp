@@ -200,6 +200,16 @@ public:
         return make_placeholder_expression(
           [&dst, g{derived()}](auto&&... args) mutable {
               dst = g(decltype(args)(args)...);
+              return optional_reference<T>{dst};
+          });
+    }
+
+    template <typename T>
+    [[nodiscard]] constexpr auto move_to(T& dst) noexcept {
+        return make_placeholder_expression(
+          [&dst, g{derived()}](auto&&... args) mutable {
+              dst = std::move(g(decltype(args)(args)...));
+              return optional_reference<T>{dst};
           });
     }
 
@@ -256,7 +266,7 @@ struct placeholder_expression<placeholder_i<1>>
     }
 
     constexpr auto operator()(auto&& arg1, auto&&...) const noexcept
-      -> decltype(auto) {
+      -> decltype(arg1) {
         return decltype(arg1)(arg1);
     }
 };
@@ -266,7 +276,7 @@ export template <>
 struct placeholder_expression<placeholder_i<2>>
   : placeholder_ops<placeholder_expression<placeholder_i<2>>> {
     constexpr auto operator()(auto&&, auto&& arg2, auto&&...) const noexcept
-      -> decltype(auto) {
+      -> decltype(arg2) {
         return decltype(arg2)(arg2);
     }
 };
@@ -276,7 +286,7 @@ export template <>
 struct placeholder_expression<placeholder_i<3>>
   : placeholder_ops<placeholder_expression<placeholder_i<3>>> {
     constexpr auto operator()(auto&&, auto&&, auto&& arg3, auto&&...)
-      const noexcept -> decltype(auto) {
+      const noexcept -> decltype(arg3) {
         return decltype(arg3)(arg3);
     }
 };
