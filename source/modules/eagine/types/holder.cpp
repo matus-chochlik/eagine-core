@@ -222,7 +222,7 @@ public:
     }
 
     template <std::derived_from<T> D>
-    [[nodiscard]] auto is(std::type_identity<D> = {}) && noexcept -> bool {
+    [[nodiscard]] auto is(std::type_identity<D> = {}) const noexcept -> bool {
         return dynamic_cast<D*>(get()) != nullptr;
     }
 
@@ -234,7 +234,7 @@ public:
     }
 
     template <std::derived_from<T> D>
-    [[nodiscard]] auto as_ref(std::type_identity<D> = {}) && noexcept
+    [[nodiscard]] auto as_ref(std::type_identity<D> = {}) const noexcept
       -> optional_reference<D> {
         return {dynamic_cast<D*>(get())};
     }
