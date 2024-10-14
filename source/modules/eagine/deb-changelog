@@ -3,6 +3,8 @@ eagine-core-dev (0.134.0) unstable; urgency=medium
   * Added interface for yaml stream parsing and an initial (non-streaming)
     implementation.
   * Refactoring in c_api::result.
+  * Added basic_holder::is and basic_holder::as_ref.
+  * Added placeholder_expression::move_to.
 
  -- Matúš Chochlík <matus.chochlik@proton.me>  Wed, 09 Oct 2024 07:00:00 +0200
 
