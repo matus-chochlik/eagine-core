@@ -40,6 +40,16 @@ auto url_query_args::arg_url(const string_view name) const noexcept -> url {
     return decoded_arg_value(name).transform(_1.cast_to<url>()).or_default();
 }
 //------------------------------------------------------------------------------
+auto url_query_args::arg_identifier(const string_view name) const noexcept
+  -> identifier {
+    if(const auto str{arg_value(name)}) {
+        if(identifier::can_be_encoded(*str)) {
+            return identifier{*str};
+        }
+    }
+    return {};
+}
+//------------------------------------------------------------------------------
 // url
 //------------------------------------------------------------------------------
 auto url::encode_component(const string_view src) noexcept -> std::string {

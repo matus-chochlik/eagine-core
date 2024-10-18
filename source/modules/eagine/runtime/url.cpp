@@ -51,6 +51,11 @@ public:
     /// @see arg_value_as
     auto arg_url(const string_view name) const noexcept -> url;
 
+    /// @brief Returns the value of the specified argument as an identifier
+    /// @see arg_value
+    /// @see arg_value_as
+    auto arg_identifier(const string_view name) const noexcept -> identifier;
+
     template <typename T>
     auto arg_value_as(const string_view name, std::type_identity<T>)
       const noexcept -> optionally_valid<T> {
