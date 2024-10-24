@@ -15,8 +15,8 @@ utilities, logging and debugging utilities, serialization, compile-time
 unit system, unified YAML and JSON reader API, application configuration
 provider, etc.
 
-Cloning the repo
-================
+Cloning the repository
+======================
 ::
 
  git clone --recursive https://github.com/matus-chochlik/eagine-core.git
