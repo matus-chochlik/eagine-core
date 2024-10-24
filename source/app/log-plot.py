@@ -152,7 +152,7 @@ class ArgumentParser(argparse.ArgumentParser):
         if options.db_user is None:
             options.db_user = os.getlogin()
 
-        if options.db_password is None:
+        if options.db_password is None and not options.print_bash_completion:
             def _getpwd(passfd):
                 return passfd.readline().rstrip().split(":")[-1]
 
